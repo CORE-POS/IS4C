@@ -124,12 +124,12 @@ class ViewsheetPage extends FanniePage {
             SELECT ROUND(SUM(hours), 2),
                 date_format(t.tdate, '%a %b %D'),
                 t.emp_no,
-                e.FirstName,
+                e.firstName,
                 date_format(p.periodStart, '%M %D, %Y'),
                 date_format(p.periodEnd, '%M %D, %Y'),
                 t.tdate
             FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
-                INNER JOIN {$FANNIE_OP_DB}.employees AS e ON (t.emp_no = e.emp_no)
+                INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.TimesheetEmployees AS e ON (t.emp_no = e.timesheetEmployeeID)
                 INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p ON (t.periodID = p.periodID)
                 WHERE t.emp_no = ?
                     AND t.area <> 31
@@ -173,9 +173,12 @@ class ViewsheetPage extends FanniePage {
                 AND t.periodID = $periodID
                 AND t.area = 31";
 
-        $WageQ = $ts_db->prepare_statement("SELECT 0 AS pay_rate FROM {$FANNIE_OP_DB}.employees WHERE emp_no = ?");
-
-        $WageR = $ts_db->exec_statement($WageQ, array($emp_no));
+        $employee = new TimesheetEmployeesModel($ts_db);
+        $employee->timesheetEmployeeID($emp_no);
+        $employee->load();
+        $Wage = $employee->wage();
+        if (is_null($Wage)) $Wage = 0; 
+        $name = $employee->firstName();
 
         list($weekone) = $ts_db->fetch_row($weekoneR);
         if (is_null($weekone)) $weekone = 0;
@@ -186,13 +189,6 @@ class ViewsheetPage extends FanniePage {
         $vacationID=0;
         if ($ts_db->num_rows($vacationR) != 0) 
             list($vacation, $vacationID) = $ts_db->fetch_row($vacationR);
-
-        list($Wage) = $ts_db->fetch_row($WageR);
-        if (is_null($Wage)) $Wage = 0; 
-
-        $nameQ = $ts_db->prepare_statement("SELECT firstName FROM {$FANNIE_OP_DB}.employees WHERE emp_no=?");
-        $nameR = $ts_db->exec_statement($nameQ,array($emp_no));
-        list($name) = $ts_db->fetch_row($nameR);
 
         /**
           I merged two sections a bit here rather than having separate
@@ -276,21 +272,23 @@ class ViewsheetPage extends FanniePage {
             return $this->show_sheet(FormLib::get_form_value('emp_no'),FormLib::get_form_value('period'));
 
         include ('./includes/header.html');
-        $query = $ts_db->prepare_statement("SELECT FirstName, LastName, emp_no 
-            FROM {$FANNIE_OP_DB}.employees where EmpActive=1 ORDER BY FirstName ASC");
-        $result = $ts_db->exec_statement($query);
         echo '<form action="'.$_SERVER['PHP_SELF'].'" method="POST">';
 
         echo '<div class="form-group">';
         if ($_SESSION['logged_in'] == True) {
             echo '<label>Name</label><select name="emp_no" class="form-control">
                 <option>Select staff member</option>';
-            while ($row = $ts_db->fetch_array($result)) {
-                echo "<option value='".$row[2]."'>" . ucwords($row[0]) . " " . ucwords(substr($row[1],0,1)) . ".</option>\n";
+            $model = new TimesheetEmployeesModel($ts_db);
+            $model->active(1);
+            foreach ($model->find('firstName') as $obj) {
+                printf('<option value="%d">%s %s</option>',
+                    $obj->timesheetEmployeeID(),
+                    $obj->firstName(),
+                    substr($obj->lastName(), 0, 1)
+                );
             }
             echo '</select>';
-        } 
-        else {
+        } else {
             echo "<label>Employee Number*</label>
                 <input type='text' name='emp_no' size=4 
                 class=\"form-control\" autocomplete='off' />";

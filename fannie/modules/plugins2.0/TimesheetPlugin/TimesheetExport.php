@@ -80,9 +80,21 @@ class TimesheetExport extends FannieReportPage {
         $perDatesR = $ts_db->exec_statement($perDatesQ,array($periodID));
         $perDates = $ts_db->fetch_array($perDatesR);
 
-        $dumpQ = $ts_db->prepare_statement("SELECT t.tdate, e.emp_no, e.LastName, e.FirstName, t.area, SUM(t.hours) AS hours 
-            FROM (SELECT emp_no,FirstName, LastName FROM ".$FANNIE_OP_DB.".employees WHERE empActive = 1) e 
-            LEFT JOIN ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t ON e.emp_no = t.emp_no 
+        $dumpQ = $ts_db->prepare_statement("
+            SELECT t.tdate, 
+                e.emp_no, 
+                e.LastName, 
+                e.FirstName, 
+                t.area, 
+                SUM(t.hours) AS hours 
+            FROM (
+                SELECT timesheetEmployeeID AS emp_no,
+                    FirstName, 
+                    LastName 
+                FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".TimesheetEmployees 
+                WHERE active = 1
+                ) AS e 
+                LEFT JOIN ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t ON e.emp_no = t.emp_no 
             AND t.periodID = ? GROUP BY e.emp_no");
         $result = $ts_db->exec_statement($dumpQ,array($periodID));
 

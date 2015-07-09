@@ -169,11 +169,11 @@ class EditTimesheetDatePage extends FanniePage {
         $date = FormLib::get_form_value('date','');
         $periodID = FormLib::get_form_value('periodID','');
 
-        $query = $ts_db->prepare_statement("SELECT CONCAT(FirstName,' ',LastName) 
-                FROM {$FANNIE_OP_DB}.employees where emp_no=?");
-        $result = $ts_db->exec_statement($query,array($emp_no));
-        // echo $query;
-        list($name) = $ts_db->fetch_row($result);
+        $employee = new TimesheetEmployeesModel($ts_db);
+        $employee->timesheetEmployeeID($emp_no);
+        $employee->load();
+        $name = $employee->firstName() . ' ' . $employee->lastName();
+
         echo "<form action='".$_SERVER['PHP_SELF']."' method='POST'>
             <input type='hidden' name='emp_no' value='$emp_no' />
             <input type='hidden' name='date' value='$date' />

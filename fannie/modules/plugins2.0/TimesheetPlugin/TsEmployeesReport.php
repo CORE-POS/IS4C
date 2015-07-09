@@ -69,12 +69,8 @@ class TsEmployeesReport extends FanniePage {
             $end = FormLib::get_form_value('end',$periodID);
             if ($end == 0) $end = $periodID;
     
-            $namesq = $ts_db->prepare_statement("
-                SELECT e.emp_no, e.FirstName, e.LastName, 0 AS pay_rate, JobTitle 
-                FROM " . $this->config->get('OP_DB') . $ts_db->sep() . "employees e 
-                WHERE e.empActive = 1 
-                ORDER BY e.LastName");
-            $namesr = $ts_db->exec_statement($namesq);
+            $employees = new TimesheetEmployeesModel($ts_db);
+            $employees->active(1);
             $areasq = $ts_db->prepare_statement("SELECT ShiftName, ShiftID 
                 FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".shifts 
                 WHERE visible = 1 AND ShiftID <> 31 ORDER BY ShiftOrder");
@@ -153,13 +149,13 @@ class TsEmployeesReport extends FanniePage {
                 $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet 
                 WHERE periodID >= ? AND periodID <= ?
                 AND area <> 31 AND emp_no = ?");
-            while ($row = $ts_db->fetch_row($namesr)) {
-                $emp_no = $row['emp_no'];
+            foreach ($employees->find('lastName') as $employee) {
+                $emp_no = $employee->timesheetEmployeeID();
         
-                $totalr = $ts_db->exec_statement($totalP,array($periodID,$end,$row['emp_no']));
+                $totalr = $ts_db->exec_statement($totalP,array($periodID,$end,$emp_no));
                 $total = $ts_db->fetch_row($totalr);
                 $color = ($total[0] > (80 * $periodct)) ? "FF0000" : "000000";
-                echo "<tr><td>".ucwords($row['FirstName'])." - " . ucwords(substr($row['FirstName'],0,1)) . ucwords(substr($row['LastName'],0,1)) . "</td><td align='right'>$" . $row['pay_rate'] . "</td>";
+                echo "<tr><td>".ucwords($employee->firstName())." - " . ucwords(substr($employee->firstName(),0,1)) . ucwords(substr($employee->lastName(),0,1)) . "</td><td align='right'>$" . $employee->wage() . "</td>";
                 $total0 = (!$total[0]) ? 0 : number_format($total[0],2);
                 //
                 //  LABOR DEPARTMENT TOTALS
@@ -209,7 +205,7 @@ class TsEmployeesReport extends FanniePage {
                 //  PTO CALC
                 $nonPTOtotalr = $ts_db->exec_statement($nonPTOtotalP,array($periodID,$end,$emp_no));
                 $nonPTOtotal = $ts_db->fetch_row($nonPTOtotalr);
-                $ptoAcc = ($row['JobTitle'] == 'STAFF') ? $nonPTOtotal[0] * 0.075 : 0;
+                $ptoAcc = ($employee->primaryShiftID()) ? $nonPTOtotal[0] * 0.075 : 0;
                 echo "<td align='right'>" . number_format($ptoAcc,2) . "</td>";
                 $PTOnew[] = $ptoAcc;
         

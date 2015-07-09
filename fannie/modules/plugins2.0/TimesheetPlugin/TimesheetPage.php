@@ -63,16 +63,13 @@ class TimesheetPage extends FanniePage
             $row = $ts_db->fetchRow($result);
             $datediff = $row[0];
         
-            $empnoChkQ = $ts_db->prepare_statement("
-                SELECT * 
-                FROM " . $this->config->get('OP_DB') . $ts_db->sep() . "employees 
-                WHERE emp_no = ?");
-            $empnoChkR = $ts_db->exec_statement($empnoChkQ,array($_POST['emp_no']));
+            $employee = new TimesheetEmployeesModel($ts_db);
+            $employee->timesheetEmployeeID(FormLib::get('emp_no'));
     
             if ($_POST['emp_no'] && ($_POST['emp_no'] != '')) {
                 if (!is_numeric($_POST['emp_no'])) {
                     $this->errors[] = 'Employee number entered is not numeric.';
-                } elseif ($ts_db->num_rows($empnoChkR) != 1) { 
+                } elseif (!$employee->load()) {
                     $this->errors[] = 'Error finding that Employee Number.';
                 } else {
                     $emp_no = $_POST['emp_no'];
@@ -215,13 +212,14 @@ class TimesheetPage extends FanniePage
                 Name: <select name="emp_no" class="form-control">
                 <option value="error">Select staff member</option>' . "\n";
         
-            $query = $ts_db->prepare_statement("SELECT FirstName, 
-                CASE WHEN LastName='' OR LastName IS NULL THEN ''
-                ELSE ".$ts_db->concat('LEFT(LastName,1)',"'.'", '')." END,
-                emp_no FROM ".$FANNIE_OP_DB.".employees where EmpActive=1 ORDER BY FirstName ASC");
-            $result = $ts_db->exec_statement($query);
-            while ($row = $ts_db->fetch_array($result)) {
-                echo "<option value=\"$row[2]\">$row[0] $row[1]</option>\n";
+            $model = new TimesheetEmployeesModel($ts_db);
+            $model->active(1);
+            foreach ($model->find('firstName') as $obj) {
+                printf('<option value="%d">%s %s</option>',
+                    $obj->timesheetEmployeeID(),
+                    $obj->firstName(),
+                    substr($obj->lastName(), 0, 1)
+                );
             }
             echo '</select>*</div>';
         } else {

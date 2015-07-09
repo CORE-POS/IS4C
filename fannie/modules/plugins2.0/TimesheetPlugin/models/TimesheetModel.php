@@ -28,6 +28,7 @@ class TimesheetModel extends BasicModel
 {
 
     protected $name = "timesheet";
+    protected $preferred_db = 'plugin:TimesheetDatabase';
 
     protected $columns = array(
     'emp_no' => array('type'=>'INT', 'index'=>true),

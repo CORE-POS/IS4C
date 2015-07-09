@@ -44,17 +44,19 @@ class TsStaffMemReport extends FanniePage {
             echo '<label class="col-sm-2">Name</label>
                 <div class="col-sm-5"><select name="emp_no" class="form-control">
             <option value="error">Select staff member</option>' . "\n";
-    
-            $query = $ts_db->prepare_statement("SELECT FirstName, 
-                IF(LastName='','',CONCAT(SUBSTR(LastName,1,1),\".\")), emp_no 
-                FROM ".$FANNIE_OP_DB.".employees where EmpActive=1 ORDER BY FirstName ASC");
-            $result = $ts_db->exec_statement($query);
-            while ($row = $ts_db->fetch_array($result)) {
-                echo "<option value=\"$row[2]\">$row[0] $row[1]</option>\n";
+
+            $model = new TimesheetEmployeesModel($ts_db);
+            $model->active(1);
+            foreach ($model->find('firstName') as $obj) {
+                printf('<option value="%d">%s %s</option>',
+                    $obj->timesheetEmployeeID(),
+                    $obj->firstName(),
+                    substr($obj->lastName(), 0, 1)
+                );
             }
+    
             echo '</select></div>';
-        } 
-        else {
+        } else {
             echo "<label class=\"col-sm-2\">Employee Number</label>
                 <div class=\"col-sm-5\">
                 <input type='text' class=\"form-control\" name='emp_no' value='$stored' 
@@ -108,23 +110,13 @@ class TsStaffMemReport extends FanniePage {
         if (FormLib::get_form_value('run','') == 'run') {
     
             $emp_no = FormLib::get_form_value('emp_no',0);
-            $namesq = $ts_db->prepare_statement("
-                SELECT e.emp_no, 
-                    e.FirstName, 
-                    e.LastName, 
-                    0 AS pay_rate, 
-                    JobTitle 
-                FROM " . $this->config->get('OP_DB') . $ts_db->sep() . "employees e 
-                WHERE e.emp_no = ? 
-                    AND e.empActive = 1");
-            $namesr = $ts_db->exec_statement($namesq,array($_GET['emp_no']));
+            $employee = new TimesheetEmployeesModel($ts_db);
+            $employee->timesheetEmployeeID($emp_no);
     
-            if (!$namesr) {
+            if (!$employee->load()) {
                 echo "<div id='alert'><h1>Error!</h1><p>Incorrect, invalid, or inactive employee number entered.</p>
                     <p><a href='".$_SERVER['PHP_SELF']."'>Please try again</a></p></div>";
             } else {
-                $name = $ts_db->fetch_row($namesr);
-        
                 setcookie("timesheet", $emp_no, time()+60*3);
         
                 $periodID = FormLib::get_form_value('period',0);
@@ -158,16 +150,7 @@ class TsStaffMemReport extends FanniePage {
                     $y[] = $i;
                 }
 
-                // $sql_incl = "";
-                // $sql_excl = "AND emp_no <> 9999";
-                $staffQ = $ts_db->prepare_statement("
-                    SELECT * 
-                    FROM " . $this->config->get('OP_DB') . $ts_db->sep() . "employees 
-                    WHERE emp_no = ?");
-                $staffR = $ts_db->exec_statement($staffQ,array($emp_no));
-                $staff = $ts_db->fetch_row($staffR);
-
-                echo "<h2>$emp_no &mdash; ".$staff['FirstName']." ". $staff['LastName']."</h2>";
+                echo "<h2>$emp_no &mdash; ".$employee->firstName()." ". $employee->lastName()."</h2>";
 
                 // BEGIN TITLE
                 // 
@@ -254,7 +237,7 @@ class TsStaffMemReport extends FanniePage {
                     $total = $ts_db->fetch_row($totalr);
                     $color = ($total[0] > (80 * $periodct)) ? "FF0000" : "000000";
                     echo "<tr><td>$week_no</td>";
-                    echo "<td>".ucwords($name['FirstName'])." - " . ucwords(substr($name['FirstName'],0,1)) . ucwords(substr($name['LastName'],0,1)) . "</td><td align='right'>$" . $name['pay_rate'] . "</td>";
+                    echo "<td>".ucwords($employee->firstName())." - " . ucwords(substr($employee->firstName(),0,1)) . ucwords(substr($employee->lastName(),0,1)) . "</td><td align='right'>$" . $employee->wage() . "</td>";
                     $total0 = (!$total[0]) ? 0 : number_format($total[0],2);
 
 

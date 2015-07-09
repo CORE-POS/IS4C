@@ -67,9 +67,11 @@ class TsAreasReport extends FanniePage {
                 FROM ". $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t 
                 WHERE t.periodID = ? 
                     AND t.area = ?");
-            $query2P = $ts_db->prepare_statement("SELECT SUM(e.pay_rate) as agg FROM ".$FANNIE_OP_DB.".employees e, ".
-                $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t 
-                WHERE t.emp_no = e.emp_no AND t.periodID = ? AND t.area = ?");
+            $query2P = $ts_db->prepare_statement("
+                SELECT SUM(e.wage) as agg 
+                FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".TimesheetEmployees e, ".
+                    $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t 
+                WHERE t.emp_no = e.timesheetEmployeeID AND t.periodID = ? AND t.area = ?");
             while ($row = $ts_db->fetch_row($result)) {
 
                 echo "<tr><td>".$row['id']."</td><td>".$row['area']."</td><td align='right'>";
@@ -82,7 +84,7 @@ class TsAreasReport extends FanniePage {
                 echo $tot . "</td>";
                 
                 // echo $query2;
-                $result2 = $ts_db->exec_statement($query2,array($periodID,$row['id']));
+                $result2 = $ts_db->exec_statement($query2P,array($periodID,$row['id']));
                 $totAgg = $ts_db->fetch_row($result2);
                 $agg = ($totAgg[0]) ? $totAgg[0] : 0;
         
