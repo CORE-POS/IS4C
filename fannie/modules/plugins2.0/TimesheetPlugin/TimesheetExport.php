@@ -54,7 +54,9 @@ class TimesheetExport extends FannieReportPage {
             WHERE periodStart < ".$ts_db->now()." ORDER BY periodID DESC");
         $result = $ts_db->exec_statement($query);
 
-        echo '<p>Pay Period: <select name="period">
+        echo '<div class="form-group">
+            <label>Pay Period</label>
+            <select class="form-control" name="period">
             <option>Please select a payperiod to view.</option>';
 
         while ($per = $ts_db->fetch_array($result)) {
@@ -62,7 +64,10 @@ class TimesheetExport extends FannieReportPage {
             if ($per['periodID'] == ($ID)) { echo ' SELECTED';}
             echo ">(" . $per['periodStart'] . " - " . $per['periodEnd'] . ")</option>";
         }
-        echo '</select><button value="run" name="Run">Run</button></p></form>';
+        echo '</select></div>
+            <p>
+                <button class="btn btn-default" value="run" name="Run">Run</button>
+            </p></form>';
     }
 
     function fetch_report_data(){
@@ -75,9 +80,21 @@ class TimesheetExport extends FannieReportPage {
         $perDatesR = $ts_db->exec_statement($perDatesQ,array($periodID));
         $perDates = $ts_db->fetch_array($perDatesR);
 
-        $dumpQ = $ts_db->prepare_statement("SELECT t.date, e.emp_no, e.LastName, e.FirstName, t.area, SUM(t.hours) AS hours 
-            FROM (SELECT emp_no,FirstName, LastName FROM ".$FANNIE_OP_DB.".employees WHERE empActive = 1) e 
-            LEFT JOIN ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t ON e.emp_no = t.emp_no 
+        $dumpQ = $ts_db->prepare_statement("
+            SELECT t.tdate, 
+                e.emp_no, 
+                e.LastName, 
+                e.FirstName, 
+                t.area, 
+                SUM(t.hours) AS hours 
+            FROM (
+                SELECT timesheetEmployeeID AS emp_no,
+                    FirstName, 
+                    LastName 
+                FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".TimesheetEmployees 
+                WHERE active = 1
+                ) AS e 
+                LEFT JOIN ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t ON e.emp_no = t.emp_no 
             AND t.periodID = ? GROUP BY e.emp_no");
         $result = $ts_db->exec_statement($dumpQ,array($periodID));
 
@@ -115,7 +132,7 @@ class TimesheetExport extends FannieReportPage {
             $nonPTOtotal = $ts_db->fetch_row($nonPTOtotalr);
             
             $nonPTOtot = $nonPTOtotal[0];
-            $date = (is_null($row['date'])) ? 0 : $row['date'];
+            $date = (is_null($row['tdate'])) ? 0 : $row['tdate'];
             $area = (is_null($row['area'])) ? 0 : $row['area'];
             $hours = (is_null($row['hours'])) ? 0 : $row['hours'];
         

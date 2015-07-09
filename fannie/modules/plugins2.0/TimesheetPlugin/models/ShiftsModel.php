@@ -28,6 +28,7 @@ class ShiftsModel extends BasicModel
 {
 
     protected $name = "shifts";
+    protected $preferred_db = 'plugin:TimesheetDatabase';
 
     protected $columns = array(
     'ShiftName' => array('type'=>'VARCHAR(25)'),
@@ -35,15 +36,8 @@ class ShiftsModel extends BasicModel
     'ShiftID' => array('type'=>'INT', 'primary_key'=>true),
     'visible' => array('type'=>'TINYINT'),
     'ShiftOrder' => array('type'=>'INT'),
+    'timesheetDepartmentID' => array('type'=>'INT'),
     );
-
-    public function preferredDB()
-    {
-        $config = FannieConfig::factory();
-        $plugins = $config->get('PLUGIN_SETTINGS');
-
-        return 'plugin:' . $plugins['TimesheetDatabase'];
-    }
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -57,6 +51,22 @@ class ShiftsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'ShiftName',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["ShiftName"]) || $this->instance["ShiftName"] != func_get_args(0)) {
                 if (!isset($this->columns["ShiftName"]["ignore_updates"]) || $this->columns["ShiftName"]["ignore_updates"] == false) {
@@ -65,6 +75,7 @@ class ShiftsModel extends BasicModel
             }
             $this->instance["ShiftName"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function NiceName()
@@ -77,6 +88,22 @@ class ShiftsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'NiceName',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["NiceName"]) || $this->instance["NiceName"] != func_get_args(0)) {
                 if (!isset($this->columns["NiceName"]["ignore_updates"]) || $this->columns["NiceName"]["ignore_updates"] == false) {
@@ -85,6 +112,7 @@ class ShiftsModel extends BasicModel
             }
             $this->instance["NiceName"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function ShiftID()
@@ -97,6 +125,22 @@ class ShiftsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'ShiftID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["ShiftID"]) || $this->instance["ShiftID"] != func_get_args(0)) {
                 if (!isset($this->columns["ShiftID"]["ignore_updates"]) || $this->columns["ShiftID"]["ignore_updates"] == false) {
@@ -105,6 +149,7 @@ class ShiftsModel extends BasicModel
             }
             $this->instance["ShiftID"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function visible()
@@ -117,6 +162,22 @@ class ShiftsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'visible',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["visible"]) || $this->instance["visible"] != func_get_args(0)) {
                 if (!isset($this->columns["visible"]["ignore_updates"]) || $this->columns["visible"]["ignore_updates"] == false) {
@@ -125,6 +186,7 @@ class ShiftsModel extends BasicModel
             }
             $this->instance["visible"] = func_get_arg(0);
         }
+        return $this;
     }
 
     public function ShiftOrder()
@@ -137,6 +199,22 @@ class ShiftsModel extends BasicModel
             } else {
                 return null;
             }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'ShiftOrder',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
         } else {
             if (!isset($this->instance["ShiftOrder"]) || $this->instance["ShiftOrder"] != func_get_args(0)) {
                 if (!isset($this->columns["ShiftOrder"]["ignore_updates"]) || $this->columns["ShiftOrder"]["ignore_updates"] == false) {
@@ -145,6 +223,44 @@ class ShiftsModel extends BasicModel
             }
             $this->instance["ShiftOrder"] = func_get_arg(0);
         }
+        return $this;
+    }
+
+    public function timesheetDepartmentID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["timesheetDepartmentID"])) {
+                return $this->instance["timesheetDepartmentID"];
+            } else if (isset($this->columns["timesheetDepartmentID"]["default"])) {
+                return $this->columns["timesheetDepartmentID"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'timesheetDepartmentID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["timesheetDepartmentID"]) || $this->instance["timesheetDepartmentID"] != func_get_args(0)) {
+                if (!isset($this->columns["timesheetDepartmentID"]["ignore_updates"]) || $this->columns["timesheetDepartmentID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["timesheetDepartmentID"] = func_get_arg(0);
+        }
+        return $this;
     }
     /* END ACCESSOR FUNCTIONS */
 }

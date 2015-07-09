@@ -108,8 +108,9 @@ class FannieCRUDPage extends \FannieRESTfulPage
             if (substr($this->model->preferredDB(), 0, 7) == 'plugin:') {
                 $settings = $this->config->get('PLUGIN_SETTINGS');
                 $pluginDB = substr($this->model->preferredDB(), 7);
-                $this->connection->setDefaultDB($pluginDB);
-                $this->model->whichDB($pluginDB);
+                $db_name = $settings[$pluginDB]; 
+                $this->connection->setDefaultDB($db_name);
+                $this->model->whichDB($db_name);
             }
         }
 
