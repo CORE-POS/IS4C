@@ -72,7 +72,7 @@ function subscribeToQueue(rel_prefix)
 			if (typeof runParser == 'function') {
 				runParser(encodeURI(x.body), SCALE_REL_PRE);
             }
-        } else if (/^\d+$/.test(x.body) {
+        } else if (/^\d+$/.test(x.body)) {
 			var v = $('#reginput').val();
             var url = document.URL;
             parseWrapper(v+x.body);
