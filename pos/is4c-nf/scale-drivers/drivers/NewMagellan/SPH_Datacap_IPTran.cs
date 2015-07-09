@@ -96,6 +96,10 @@ public class SPH_Datacap_IPTran : SerialPortHandler
                         } while (stream.DataAvailable);
 
                         message = GetHttpBody(message);
+                        // insert extra IPTran field into lane-generated XML
+                        if (message.Contains("<Transaction>")) {
+                            message = message.Replace("<Transaction>", "<Transaction><TranDeviceID>" + this.iptran_identifier + "</TranDeviceID>");
+                        }
 
                         // Send EMV messages to EMVX, others
                         // to PDCX
