@@ -15,7 +15,7 @@
   <!-- Defined constants -->
   <ItemGroup>
     <MonoDefine Include="MONO" Condition=" '$(OS)' == 'Unix' " />
-
+    <RabbitDefine Include="CORE_RABBIT" Condition=" Exists('rabbimq\RabbitMQ.Client.dll') " />
     <JsonDefine Include="NEWTONSOFT_JSON" />
   </ItemGroup>
 
@@ -41,7 +41,7 @@
   </ItemGroup>
   <Target Name="Build" DependsOnTargets="@(MagellanTarget)">
     <Csc Sources="@(Magellan)" References="@(MagellanRef)" TargetType="exe" OutputAssembly="pos.exe" 
-        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" DefineConstants="@(JsonDefine)" />
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" DefineConstants="@(JsonDefine) @(RabbitDefine)" />
   </Target>
 
   <!-- Build DelegateForm.dll -->

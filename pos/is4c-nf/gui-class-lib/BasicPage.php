@@ -403,8 +403,20 @@ class BasicPage {
         <script type="text/javascript"
             src="<?php echo $this->page_url; ?>js/<?php echo $scaleObj->javascriptFile(); ?>">
         </script>
+        <script type="text/javascript"
+            src="<?php echo $this->page_url; ?>js/sockjs.min.js">
+        </script>
+        <script type="text/javascript"
+            src="<?php echo $this->page_url; ?>js/stomp.min.js">
+        </script>
         <?php
-        $this->add_onload_command("pollScale('".$this->page_url."');\n");
+        if (CoreLocal::get('MQ')) {
+            UdpComm::udpSend('mq_up');
+            $this->add_onload_command("subscribeToQueue('".$this->page_url."');\n");
+        } else {
+            UdpComm::udpSend('mq_down');
+            $this->add_onload_command("pollScale('".$this->page_url."');\n");
+        }
     }
 
     /**

@@ -37,6 +37,12 @@ if (CoreLocal::get("SessionFirstRun") == "") {
 
 CoreLocal::migrateSettings();
 
+if (MiscLib::pingport('127.0.0.1:15674')) {
+    CoreLocal::set('MQ', true);
+} else {
+    CoreLocal::set('MQ', false);
+}
+
 /**
   Go to login screen if no one is signed in
   Go to lock screen if someone is signed in

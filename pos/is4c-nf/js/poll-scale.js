@@ -54,3 +54,42 @@ function rePoll(){
 	var timeout = 100;
 	setTimeout("pollScale('"+SCALE_REL_PRE+"')",timeout);
 }
+
+function subscribeToQueue(rel_prefix)
+{
+	SCALE_REL_PRE = rel_prefix;
+    // Stomp.js boilerplate
+    var ws = new SockJS('http://127.0.0.1:15674/stomp');
+    var client = Stomp.over(ws);
+    // SockJS does not support heart-beat: disable heart-beats
+    client.heartbeat.outgoing = 0;
+    client.heartbeat.incoming = 0;
+
+    var message_callback = function(x) {
+        if (x.body.indexOf(":") !== -1) {
+			// data from the cc terminal
+			// run directly; don't include user input
+			if (typeof runParser == 'function') {
+				runParser(encodeURI(x.body), SCALE_REL_PRE);
+            }
+        } else if (/^\d+$/.test(x.body) {
+			var v = $('#reginput').val();
+            var url = document.URL;
+            parseWrapper(v+x.body);
+        } else {
+			if (typeof runParser == 'function') {
+				runParser(encodeURI(x.body), SCALE_REL_PRE);
+            }
+        }
+    };
+
+    var connect_callback = function(x) {
+        client.subscribe("/amq/queue/core-pos", message_callback);
+    };
+
+    var error_callback = function(x) {
+        console.log(x);
+    };
+    client.connect('guest', 'guest', connect_callback, error_callback, '/');
+}
+
