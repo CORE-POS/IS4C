@@ -37,7 +37,7 @@ if (CoreLocal::get("SessionFirstRun") == "") {
 
 CoreLocal::migrateSettings();
 
-if (MiscLib::pingport('127.0.0.1:15674')) {
+if (MiscLib::pingport('127.0.0.1:15674', 'not a database')) {
     CoreLocal::set('MQ', true);
 } else {
     CoreLocal::set('MQ', false);
