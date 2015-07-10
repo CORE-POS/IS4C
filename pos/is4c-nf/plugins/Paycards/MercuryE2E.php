@@ -2145,7 +2145,7 @@ class MercuryE2E extends BasicCCModule
     private function getTermID()
     {
         if (CoreLocal::get("training") == 1) {
-            return '337234005'; // emv
+            //return '337234005'; // emv
             return '118725340908147'; // newer
             return "395347308=E2ETKN"; // old
         } else {

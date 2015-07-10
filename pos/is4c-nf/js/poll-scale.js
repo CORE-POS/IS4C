@@ -77,9 +77,7 @@ function subscribeToQueue(rel_prefix)
             var url = document.URL;
             parseWrapper(v+x.body);
         } else {
-			if (typeof runParser == 'function') {
-				runParser(encodeURI(x.body), SCALE_REL_PRE);
-            }
+            parseWrapper(x.body);
         }
     };
 
