@@ -35,7 +35,7 @@ class ReportMetricsTask extends FannieTask
     public $description = 'Reports overall health via email';
 
     public $default_schedule = array(
-        'min' => 50,
+        'min' => 45,
         'hour' => 23,
         'day' => '*',
         'month' => '*',
@@ -50,10 +50,16 @@ class ReportMetricsTask extends FannieTask
             return false;
         }
 
-        foreach ($this->get('LANES', array()) as $lane) {
+        $free = disk_free_space(dirname(__FILE__));
+        $total = disk_total_space(dirname(__FILE__));
+        $msg .= sprintf('Disk space available: %d/%d (%.2f)%%', $free, $total, ($free/$total)*100) 
+            . "\n\n";
+
+        $msg .= 'Lane status' . "\n";
+        foreach ($this->config->get('LANES', array()) as $lane) {
             $sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
                         $lane['user'],$lane['pw']);    
-            if (!is_object($sql) || $sql->connections[$lane['op']] === false) {
+            if (!$sql->isConnected($lane['op'])) {
                 $msg .= 'OFFLINE ' . $lane['host'] . "\n";
             } else {
                 $msg .= 'ONLINE ' . $lane['host'] . "\n";
@@ -61,7 +67,7 @@ class ReportMetricsTask extends FannieTask
         }
         $msg .= "\n" . 'Lane activity' . "\n";
 
-        $dbc = FannieDB::get($this->config->get('TRANS_DB)'));
+        $dbc = FannieDB::get($this->config->get('TRANS_DB'));
         $res = $dbc->query('
             SELECT register_no,
                 COUNT(*) as activity
@@ -69,39 +75,82 @@ class ReportMetricsTask extends FannieTask
             GROUP BY register_no
             ORDER by register_no');
         while ($w = $dbc->fetchRow($res)){
-            $msg .= 'Lane #' . $w['register_no'] . ', ' . $w['activity'] . "\n";
+            $msg .= 'Lane #' . $w['register_no'] . ', ' . $w['activity'] . " records\n";
         }
 
         $LOG_MAX = 100;
+        $syslog_date = date('M j ');
         $msg .= "\nLog Entries:\n";
-        $logs = array();
-        $fp = fopen(dirname(__FILE__) . '/../../log/fannie.log', 'r');
-        while (($line=fgets($fp)) !== false) {
-            if (count($logs) >= $LOG_MAX) {
-                array_shift($logs);
-            }
-            $logs[] = $line;
-        }
-        fclose($fp);
+        $logs = $this->tail(dirname(__FILE__) . '/../../../logs/fannie.log', $LOG_MAX);
         foreach ($logs as $l) {
+            if (substr($l, 0, strlen($syslog_date)) != $syslog_date) {
+                continue;
+            }
             $msg .= $l . "\n";
         }
 
         $msg .= "\nError Entries:\n";
         $logs = array();
-        $fp = fopen(dirname(__FILE__) . '/../../log/debug_fannie.log', 'r');
-        while (($line=fgets($fp)) !== false) {
-            if (count($logs) >= $LOG_MAX) {
-                array_shift($logs);
-            }
-            $logs[] = $line;
-        }
-        fclose($fp);
+        $logs = $this->tail(dirname(__FILE__) . '/../../../logs/debug_fannie.log', $LOG_MAX);
         foreach ($logs as $l) {
+            if (substr($l, 0, strlen($syslog_date)) != $syslog_date) {
+                continue;
+            }
             $msg .= $l . "\n";
         }
 
-        mail($settings['ReportMetricsEmail'], 'CORE Metrics', $msg);
+        if (class_exists('PHPMailer')) {
+            $mail = new PHPMailer();
+            $mail->isSMTP();
+            $mail->Host = '127.0.0.1';
+            $mail->Port = 25;
+            if ($settings['ReportMetricsSmtpUser'] && $settings['ReportMetricsSmtpPass']) {
+                $mail->SMTPAuth = true;
+                $mail->Username = $settings['ReportMetricsSmtpUser'];
+                $mail->Password = $settings['ReportMetricsSmtpPass'];
+            } else {
+                $mail->SMTPAuth = false;
+            }
+            if ($settings['ReportMetricsSmtpEnc']) {
+                $mail->SMTPSecure = strtolower($settings['ReportMetricsSmtpEnc']);
+            }
+            $mail->From = 'report-metrics-task@wholefoods.coop';
+            $mail->FromName = 'CORE Metrics Report';
+            $mail->addReplyTo('no-reply@wholefoods.coop');
+            $mail->addAddress($settings['ReportMetricsEmail']);
+            $mail->isHTML(false);
+            $mail->Subject = 'CORE Metrics';
+            $mail->Body = $msg;
+            $mail->send();
+        } else {
+            mail($settings['ReportMetricsEmail'], 'CORE Metrics', $msg);
+        }
+    }
+
+    private function tail($filename, $num=500)
+    {
+        $lines = 0;
+        $data = "";
+        $fp = fopen($filename, 'r');
+        if (!$fp) {
+            return array('Could not find ' . $filename);
+        }
+        fseek($fp, 0, SEEK_END);
+        $pos = -1;
+        while ($lines < $num && ftell($fp)) {
+            $char = fgetc($fp);
+            if ($char == "\r") {
+                $char = '';
+            }
+            if ($char == "\n") {
+                $lines++;
+            }
+            $data = $char . $data;
+            fseek($fp, $pos, SEEK_END);
+            $pos--;
+        }
+
+        return explode("\n", $data);
     }
 }
 

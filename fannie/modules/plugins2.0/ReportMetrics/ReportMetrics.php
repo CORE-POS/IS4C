@@ -33,8 +33,20 @@ class ReportMetrics extends \COREPOS\Fannie\API\FanniePlugin
     public $plugin_settings = array(
     'ReportMetricsEmail' => array('default'=>'', 'label'=>'Email Address',
             'description'=>'Send status info to address(es)'), 
+    'ReportMetricsSmtpHost' => array('default'=>'127.0.0.1', 'label'=>'SMTP Host',
+            'description'=>''),
+    'ReportMetricsSmtpPort' => array('default'=>'25', 'label'=>'SMTP Port',
+            'description'=>''),
+    'ReportMetricsSmtpEnc' => array('default'=>'', 'label'=>'SMTP Encryption',
+            'description'=>'', 
+            'options'=> array('none'=>'', 'SSL'=>'ssl', 'TLS'=>'tls')),
+    'ReportMetricsSmtpUser' => array('default'=>'', 'label'=>'SMTP Username',
+            'description'=>'(can be blank if authentication is not required)'),
+    'ReportMetricsSmtpPass' => array('default'=>'', 'label'=>'SMTP Password',
+            'description'=>'(can be blank if authentication is not required)'),
     );
 
-    public $plugin_description = 'Plugin for submitting installation status.';
+    public $plugin_description = 'Plugin for submitting installation status.
+    Requires PHPMailer if using remote and/or authenticated SMTP.';
 }
 
