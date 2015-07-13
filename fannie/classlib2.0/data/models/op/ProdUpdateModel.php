@@ -38,6 +38,7 @@ class ProdUpdateModel extends BasicModel
     'prodUpdateID' => array('type'=>'BIGINT UNSIGNED', 'primary_key'=>true, 'increment'=>true),
     'updateType' => array('type'=>'VARCHAR(20)'),
     'upc' => array('type'=>'VARCHAR(13)', 'index'=>true),
+    'storeID' => array('type'=>'INT', 'default'=>0),
     'description' => array('type'=>'VARCHAR(50)'),
     'price' => array('type'=>'MONEY'),
     'salePrice' => array('type'=>'MONEY'),
@@ -107,6 +108,7 @@ tools/cron jobs/sprocs/etc actually do. They probably
             return false;
         }
 
+        $this->storeID($product->store_id());
         $this->updateType($type);
         $this->description($product->description());
         $this->price($product->normal_price());
@@ -165,6 +167,7 @@ tools/cron jobs/sprocs/etc actually do. They probably
             'noDisc' => 'discount',
             'inUse' => 'inUse',
             'likeCode' => 'likeCode',
+            'storeID' => 'store_id',
         );
 
         if (!$user) {
@@ -309,6 +312,43 @@ tools/cron jobs/sprocs/etc actually do. They probably
                 }
             }
             $this->instance["upc"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function storeID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["storeID"])) {
+                return $this->instance["storeID"];
+            } else if (isset($this->columns["storeID"]["default"])) {
+                return $this->columns["storeID"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'storeID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["storeID"]) || $this->instance["storeID"] != func_get_args(0)) {
+                if (!isset($this->columns["storeID"]["ignore_updates"]) || $this->columns["storeID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["storeID"] = func_get_arg(0);
         }
         return $this;
     }

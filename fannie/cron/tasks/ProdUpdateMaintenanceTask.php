@@ -165,6 +165,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             if ($prevPrice != $update->price()) {
                 $history->reset();
                 $history->upc($upc);
+                $history->storeID($update->storeID());
                 $history->modified($update->modified());
                 $history->price($update->price());
                 $history->uid($update->user());
@@ -232,6 +233,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             if ($prevPrice != $update->cost()) {
                 $history->reset();
                 $history->upc($upc);
+                $history->storeID($update->storeID());
                 $history->modified($update->modified());
                 $history->cost($update->cost());
                 $history->uid($update->user());
@@ -292,6 +294,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             if ($prevDept != $update->dept()) {
                 $history->reset();
                 $history->upc($upc);
+                $history->storeID($update->storeID());
                 $history->modified($update->modified());
                 $history->dept_ID($update->dept());
                 $history->uid($update->user());

@@ -314,6 +314,29 @@ it won\'t *do* anything.
         ';
     }
 
+    /**
+      Transition mechanism. Auto-append store_id value
+      if only a UPC has been specified.
+    */
+    public function load()
+    {
+        if (!isset($this->instance['store_id'])) {
+            $config = FannieConfig::factory(); 
+            $host = $config->get('SERVER');
+            $p = $this->connection->prepare('
+                SELECT storeID
+                FROM Stores
+                WHERE dbHost=?');
+            $r = $this->connection->execute($p, array($host));
+            if ($r && $this->connection->numRows($r)) {
+                $w = $this->connection->fetchRow($r);
+                $this->store_id($w['storeID']);
+            }
+        }
+
+        return parent::load();
+    }
+
     public function save()
     {
         // using save() to update lane-side product records

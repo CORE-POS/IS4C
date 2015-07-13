@@ -33,6 +33,7 @@ class ProdPriceHistoryModel extends BasicModel
     protected $columns = array(
     'prodPriceHistoryID' => array('type'=>'BIGINT UNSIGNED', 'primary_key'=>true, 'increment'=>true),
     'upc' => array('type'=>'VARCHAR(13)', 'index'=>true),
+    'storeID' => array('type'=>'INT', 'default'=>0),
     'modified' => array('type'=>'DATETIME'),
     'price' => array('type'=>'MONEY'),
     'uid' => array('type'=>'INT'),
@@ -124,6 +125,43 @@ changes. uid is the user who made the change.
                 }
             }
             $this->instance["upc"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function storeID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["storeID"])) {
+                return $this->instance["storeID"];
+            } else if (isset($this->columns["storeID"]["default"])) {
+                return $this->columns["storeID"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'storeID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["storeID"]) || $this->instance["storeID"] != func_get_args(0)) {
+                if (!isset($this->columns["storeID"]["ignore_updates"]) || $this->columns["storeID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["storeID"] = func_get_arg(0);
         }
         return $this;
     }
