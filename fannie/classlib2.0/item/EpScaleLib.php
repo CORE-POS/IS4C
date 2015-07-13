@@ -55,7 +55,7 @@ class EpScaleLib
     */
     static public function getItemLine($item_info)
     {
-        if ($item_info['RecordType'] == 'ChangeOneItem') {
+        if ($item_info['RecordType'] == 'WriteOneItem') {
             return self::getAddItemLine($item_info);
         } else {
             return self::getUpdateItemLine($item_info);
@@ -132,6 +132,7 @@ class EpScaleLib
                 switch ($key) {
                     case 'PLU':
                         $line .= 'PNO' . $item_info[$key] . chr(253);
+                        $line .= 'UPC' . '2' . str_pad($item_info[$key],4,'0',STR_PAD_LEFT) . '000000' . chr(253);
                         break;
                     case 'Description':
                         $line .= 'DN1' . $item_info[$key] . chr(253);
@@ -206,6 +207,10 @@ class EpScaleLib
         foreach ($selected_scales as $scale) {
             $scale_model->reset();
             $scale_model->host($scale['host']);
+            $matches = $scale_model->find();
+            if (count($matches) > 0) {
+                $scale_model = $matches[0];
+            }
 
             $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_writeItem_' . $i . '.dat';
             $fp = fopen($file_name, 'w');
