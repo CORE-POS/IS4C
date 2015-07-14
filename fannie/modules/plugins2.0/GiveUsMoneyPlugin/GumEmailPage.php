@@ -132,12 +132,13 @@ class GumEmailPage extends FannieRESTfulPage
         // bridge may change selected database
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
 
-        $preamble = 'Hello, Owner ' . "\n";
+        $preamble = 'Hello Owner, ' . "\n";
         $preamble .= 'Here is a statement on your owner loan to WFC as of '
             . date('m/d/Y', mktime(0, 0, 0, GumLib::getSetting('FYendMonth'), GumLib::getSetting('FYendDay'), date('Y')))
             . ', the end of the co-op\'s fiscal year. This is just for your information -'
             . ' no action is required and you do not have to report interest income until your'
-            . ' loan is repaid. Thank you for your support';
+            . ' loan is repaid. Thank you for your support.'
+            . ' If you have any questions, please contact finance@wholefoods.coop  (218) 728-0884, ext. 1.';
 
         $info_section = 'First Name: ' . $this->custdata->FirstName() . "\n"
             . 'Last Name: ' . $this->custdata->LastName() . "\n"
