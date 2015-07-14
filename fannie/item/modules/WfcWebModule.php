@@ -86,7 +86,7 @@ class WfcWebModule extends ItemModule
         $pu->soldOut(FormLib::get('u_soldout') == 1 ? 1 : 0);
         $pu->save();
 
-        include(dirname(__FILE__) . '/../../src/Credentials/OutsideDB.is4c.php');
+        include(dirname(__FILE__) . '/../../src/Credentials/OutsideDB.tunneled.php');
         $remote = $dbc;
 
         $pu->load();
