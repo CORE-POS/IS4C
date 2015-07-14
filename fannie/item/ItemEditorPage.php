@@ -461,16 +461,16 @@ class ItemEditorPage extends FanniePage
         $ret .= '</div>'; // close fluid-container
 
         if (isset($shown['BaseItemModule'])) {
-            $this->add_onload_command("bindAutoComplete('#brand-field', '$ws', 'brand');\n");
-            $this->add_onload_command("bindAutoComplete('#vendor_field', '$ws', 'vendor');\n");
-            $this->add_onload_command("bindAutoComplete('#unit-of-measure', '$ws', 'unit');\n");
-            $this->add_onload_command("\$('#unit-of-measure').autocomplete('option', 'minLength', 1);\n");
+            $this->add_onload_command("bindAutoComplete('.brand-field', '$ws', 'brand');\n");
+            $this->add_onload_command("bindAutoComplete('input.vendor_field', '$ws', 'vendor');\n");
+            $this->add_onload_command("bindAutoComplete('.unit-of-measure', '$ws', 'unit');\n");
+            $this->add_onload_command("\$('.unit-of-measure').autocomplete('option', 'minLength', 1);\n");
             $this->add_onload_command("addVendorDialog();\n");
         }
 
         if (isset($shown['ItemMarginModule'])) {
-            $this->add_onload_command('$(\'#price\').change(updateMarginMod)');
-            $this->add_onload_command('$(\'#cost\').change(updateMarginMod)');
+            $this->add_onload_command('$(\'.price-input\').change(updateMarginMod)');
+            $this->add_onload_command('$(\'.cost-input\').change(updateMarginMod)');
         }
 
         if (isset($shown['ProdUserModule'])) {
@@ -480,7 +480,12 @@ class ItemEditorPage extends FanniePage
         if (isset($shown['LikeCodeModule'])) {
             $this->add_onload_command("addLcDialog();\n");
         }
-        $this->add_onload_command('$(\'.chosen-select\').chosen();');
+        /**
+          Chosen initializes incorrectly if the <select> is not displayed
+          Reapplying each time a new Bootstrap tab is shown fixes this
+        */
+        $this->add_onload_command('$(\'.chosen-select:visible\').chosen();');
+        $this->add_onload_command('$(\'#store-tabs a\').on(\'shown.bs.tab\', function(){$(\'.chosen-select:visible\').chosen();});');
 
         $ret .= '</form>';
 
@@ -491,7 +496,7 @@ class ItemEditorPage extends FanniePage
         }
 
         $this->add_onload_command('$(\'.fancyboxLink\').fancybox({\'width\':\'85%;\',\'titlePosition\':\'inside\'});');
-        $this->add_onload_command('$(\'#price\').focus();');
+        $this->add_onload_command('$(\'.price-input:visible:first\').focus();');
         
         return $ret;
     }
