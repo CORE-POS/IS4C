@@ -322,16 +322,7 @@ it won\'t *do* anything.
     {
         if (!isset($this->instance['store_id'])) {
             $config = FannieConfig::factory(); 
-            $host = $config->get('SERVER');
-            $p = $this->connection->prepare('
-                SELECT storeID
-                FROM Stores
-                WHERE dbHost=?');
-            $r = $this->connection->execute($p, array($host));
-            if ($r && $this->connection->numRows($r)) {
-                $w = $this->connection->fetchRow($r);
-                $this->store_id($w['storeID']);
-            }
+            $this->store_id($config->get('STORE_ID'));
         }
 
         return parent::load();

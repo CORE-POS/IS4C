@@ -66,7 +66,7 @@ class VendorSalesReport extends FannieReportPage
                 ' . DTrans::sumQuantity('t') . ' AS qty,
                 SUM(t.total) AS ttl
             FROM ' . $dlog . ' AS t
-                LEFT JOIN products AS p ON t.upc=p.upc
+                ' . DTrans::joinProducts('t', 'p', 'LEFT') . '
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
                 LEFT JOIN prodExtra AS x ON p.upc=x.upc AND x.distributor <> \'\'
                 ';

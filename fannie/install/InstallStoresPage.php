@@ -140,7 +140,7 @@ class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
 
     public function body_content()
     {
-        global $FANNIE_OP_DB, $FANNIE_SERVER;
+        include(dirname(__FILE__) . '/../config.php');
         ob_start();
 
         echo showInstallTabs('Stores');
@@ -177,7 +177,7 @@ if (count($myself) == 0) {
 } else if (count($myself) > 1) {
     echo '<i>Warning: more than one entry for store host: ' . $FANNIE_SERVER . '</i><br />';
 } else {
-    echo '<i>This store is #' . $myself[0]->storeID() . '</i><br />';
+    echo '<i>This store is #' . installTextField('FANNIE_STORE_ID', $FANNIE_STORE_ID, $myself[0]->storeID()) . '</i><br />';
 }
 $model->reset();
 
