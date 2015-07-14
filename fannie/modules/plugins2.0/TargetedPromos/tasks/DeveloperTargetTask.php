@@ -54,6 +54,14 @@ class DeveloperTargetTask extends FannieTask
                 AND personNum=1
         ');
 
+        $meminfoP = $dbc->prepare('
+            SELECT card_no
+            FROM ' . $this->config->OP_DB . $dbc->sep() . 'meminfo
+            WHERE ads_OK = 1
+                AND (zip LIKE \'55%\' OR zip LIKE \'56%\')
+                AND card_no=?
+        ');
+
         /**
           Lookup accounts with activity matching
           the developer criteria
@@ -75,6 +83,7 @@ class DeveloperTargetTask extends FannieTask
             ($rules->examineMonths() * $rules->minMonthAvg()),
         );
         $activityR = $dbc->execute($activityP, $args);
+        $def_target = new DefectorTargetsModel($dbc);
         while ($w = $dbc->fetchRow($activityR)) {
             /**
               Enforce rules about account status
@@ -90,6 +99,10 @@ class DeveloperTargetTask extends FannieTask
             if (!$rules->includeStaff() && $status['staff']) {
                 continue;
             }
+            $infoP =  $dbc->execute($meminfoP, array($w['card_no']));
+            if (!$infoP || $dbc->numRows($infoP) == 0) {
+                continue;
+            }
 
             /**
               If the account is already in the developer
@@ -103,7 +116,10 @@ class DeveloperTargetTask extends FannieTask
             */
             $targets->reset();
             $targets->card_no($w['card_no']);
-            if ($targets->load()) {
+            $def_target->card_no($w['card_no']);
+            if ($targets->load() && !$def_target->load()) {
+                // temp logic change; skip all previous issued
+                continue;
                 if ($targets->redeemed() == 0) {
                     continue;
                 } else {

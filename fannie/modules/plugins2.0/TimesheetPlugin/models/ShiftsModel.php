@@ -37,6 +37,14 @@ class ShiftsModel extends BasicModel
     'ShiftOrder' => array('type'=>'INT'),
     );
 
+    public function preferredDB()
+    {
+        $config = FannieConfig::factory();
+        $plugins = $config->get('PLUGIN_SETTINGS');
+
+        return 'plugin:' . $plugins['TimesheetDatabase'];
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function ShiftName()

@@ -32,8 +32,7 @@ class WfcClassMenuTask extends FannieTask
 {
     public $name = 'WFC Class Menu Task';
 
-    public $description = 'Tracks usage of WFC virtual coupon and updates custdata.blueLine
-    to indicate whether the coupon is available. Replaces older script "nightly.memcoupon.php".';
+    public $description = 'Build custom menu for buying class registrations.';
 
     public function run()
     {

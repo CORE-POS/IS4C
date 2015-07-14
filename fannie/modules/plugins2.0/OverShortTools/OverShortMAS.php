@@ -275,7 +275,7 @@ class OverShortMAS extends FannieRESTfulPage {
                 $dateID, $dateStr,
                 str_pad(66600,9,'0',STR_PAD_RIGHT),
                 sprintf('%.2f', $w['amount']),
-                0.00, 'PAT REBATE DISCOUNT',
+                0.00, 'MISC RECEIPT INSTORE COUPON',
             );
             $records[] = $record; 
         }

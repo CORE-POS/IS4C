@@ -144,6 +144,61 @@ class NewMemberTool extends FanniePage
             $manual_start = false;
         }
 
+        $mt = $dbc->tableDefinition('memtype');
+        $defaultsQ = $dbc->prepare_statement("SELECT custdataType,discount,staff,ssi from memtype WHERE memtype=?");
+        if ($dbc->tableExists('memdefaults') && (!isset($mt['custdataType']) || !isset($mt['discount']) || !isset($mt['staff']) || !isset($mt['ssi']))) {
+            $defaultsQ = $dbc->prepare_statement("SELECT cd_type as custdataType,discount,staff,SSI as ssi
+                    FROM memdefaults WHERE memtype=?");
+        }
+        $defaultsR = $dbc->exec_statement($defaultsQ,array($mtype));
+        $defaults = $dbc->fetch_row($defaultsR);
+
+        /**
+          1Jul2015
+          Use FannieREST API calls to create new members
+          Not tested yet.
+        $json = array(
+            'customerTypeID' => $mtype,
+            'memberStatus' => $mt['custdataType'],
+            'addressFirstLine' => '',
+            'addressSecondLine' => '',
+            'city' => '',
+            'state' => '',
+            'zip' => '',
+            'contactAllowed' => 1,
+            'contactMethod' => 'mail',
+            'customers' => array(
+                array(
+                    'firstName' => '',
+                    'lastName' => $name,
+                    'phone' => '',
+                    'altPhone' => '',
+                    'email' => 1,
+                    'discount' => $mt['discount'],
+                    'staff' => $mt['staff'],
+                    'lowIncomeBenefits' => $mt['ssi'],
+                ),
+            ),
+        );
+
+        $start = PHP_INT_MAX;
+        $end = 0;
+        for ($i=0; $i<$num; $i++) {
+            if ($manual_start) {
+                $resp = \COREPOS\Fannie\API\member\MemberREST::post($manual_start+$i, $json);
+            } else {
+                $resp = \COREPOS\Fannie\API\member\MemberREST::post(0, $json);
+            }
+
+            if (isset($resp['account']) && $resp['account']['cardNo'] > $end) {
+                $end = $resp['account']['cardNo'];
+            }
+            if (isset($resp['account']) && $resp['account']['cardNo'] < $start) {
+                $start = $resp['account']['cardNo'];
+            }
+        }
+        */
+
         /* going to create memberships
            part of the insert arrays can
            be prepopulated */
@@ -161,15 +216,6 @@ class NewMemberTool extends FanniePage
             'email_2'=>"''",
             'ads_OK'=>1
         );
-
-        $mt = $dbc->tableDefinition('memtype');
-        $defaultsQ = $dbc->prepare_statement("SELECT custdataType,discount,staff,ssi from memtype WHERE memtype=?");
-        if ($dbc->tableExists('memdefaults') && (!isset($mt['custdataType']) || !isset($mt['discount']) || !isset($mt['staff']) || !isset($mt['ssi']))) {
-            $defaultsQ = $dbc->prepare_statement("SELECT cd_type as custdataType,discount,staff,SSI as ssi
-                    FROM memdefaults WHERE memtype=?");
-        }
-        $defaultsR = $dbc->exec_statement($defaultsQ,array($mtype));
-        $defaults = $dbc->fetch_row($defaultsR);
 
         /* everything's set but the actual member #s */
         $numQ = $dbc->prepare_statement("SELECT MAX(CardNo) FROM custdata");

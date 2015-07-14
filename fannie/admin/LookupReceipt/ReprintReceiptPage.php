@@ -65,26 +65,29 @@ class ReprintReceiptPage extends FanniePage
             }
 
             $dbc = FannieDB::get($FANNIE_OP_DB);
-            $dlog = $FANNIE_TRANS_DB . $dbc->sep() . "dlog_15";
+            $dlog = $FANNIE_TRANS_DB . $dbc->sep() . "transarchive";
             $query = "SELECT 
-                year(tdate) AS year,
-                month(tdate) AS month,
-                day(tdate) AS day,
+                year(datetime) AS year,
+                month(datetime) AS month,
+                day(datetime) AS day,
                 emp_no,
                 register_no,
                 trans_no,
                 MAX(card_no) AS card_no,
-                MAX(tdate) AS ts
+                MAX(datetime) AS ts
             FROM $dlog WHERE 1=1 ";
             $args = array();
             if ($date != "") {
                 $date2 = ($date2 != "") ? $date2 : $date;
-                $query .= ' AND tdate BETWEEN ? AND ? ';
+                $query .= ' AND datetime BETWEEN ? AND ? ';
                 $args[] = $date.' 00:00:00';
                 $args[] = $date2.' 23:59:59';
-                $dlog = DTransactionsModel::selectDlog($date, $date2);
+                $dlog = DTransactionsModel::selectDTrans($date, $date2);
                 // update the table we're searching
-                $query = str_replace($FANNIE_TRANS_DB . $dbc->sep() . 'dlog_15', $dlog, $query);
+                $query = str_replace($FANNIE_TRANS_DB . $dbc->sep() . 'transarchive', $dlog, $query);
+            } else {
+                $query .= ' AND datetime >= ? ';
+                $args[] = date('Y-m-d 00:00:00', strtotime('-15 days'));
             }
             if ($card_no != "") {
                 $query .= " AND card_no=? ";
@@ -101,6 +104,12 @@ class ReprintReceiptPage extends FanniePage
             if ($trans_no != "") {
                 $query .= " AND trans_no=? ";
                 $args[] = $trans_no;
+            }
+            if (FormLib::get('no-training') == '1') {
+                $query .= ' AND emp_no <> 9999 AND register_no <> 99 ';
+            }
+            if (FormLib::get('no-canceled') == '1') {
+                $query .= ' AND trans_status <> \'X\' ';
             }
 
             $tender_clause = "( 1=1";
@@ -142,8 +151,8 @@ class ReprintReceiptPage extends FanniePage
             }
             $query .= ' AND '.$or_clause;
 
-            $query .= " GROUP BY year(tdate),month(tdate),day(tdate),emp_no,register_no,trans_no ";
-            $query .= " ORDER BY year(tdate),month(tdate),day(tdate),emp_no,register_no,trans_no ";
+            $query .= " GROUP BY year(datetime),month(datetime),day(datetime),emp_no,register_no,trans_no ";
+            $query .= " ORDER BY year(datetime),month(datetime),day(datetime),emp_no,register_no,trans_no ";
 
             $prep = $dbc->prepare_statement($query);
             $result = $dbc->exec_statement($prep,$args);
@@ -179,13 +188,14 @@ class ReprintReceiptPage extends FanniePage
                 $subTotalP = $dbc->prepare("
                     SELECT SUM(-total) AS subtotal
                     FROM {$dlog} AS d
-                    WHERE tdate BETWEEN ? AND ?
+                    WHERE datetime BETWEEN ? AND ?
                         AND trans_type='T'
                         AND department = 0
                         AND emp_no=?
                         AND register_no=?
                         AND trans_no=?
                 ");
+                $num_results = $dbc->numRows($result);
                 while ($row = $dbc->fetch_row($result)) {
                     $this->results .= '<tr>';
                     $year = $row[0];
@@ -198,17 +208,21 @@ class ReprintReceiptPage extends FanniePage
                     $this->results .= '<td>' . $row['emp_no'] . '</td>';
                     $this->results .= '<td>' . $row['register_no'] . '</td>';
                     $this->results .= '<td>' . $row['card_no'] . '</td>';
-                    $subTotalArgs = array(
-                        date('Y-m-d 00:00:00', strtotime($row['ts'])),
-                        date('Y-m-d 23:59:59', strtotime($row['ts'])),
-                        $row['emp_no'],
-                        $row['register_no'],
-                        $row['trans_no'],
-                    );
-                    $subTotalR = $dbc->execute($subTotalP, $subTotalArgs);
-                    $subTotalW = $dbc->fetchRow($subTotalR);
-                    $subTotal = is_array($subTotalW) ? $subTotalW['subtotal'] : 0;
-                    $this->results .= sprintf('<td>%.2f</td>', $subTotal);
+                    if ($num_results < 50) {
+                        $subTotalArgs = array(
+                            date('Y-m-d 00:00:00', strtotime($row['ts'])),
+                            date('Y-m-d 23:59:59', strtotime($row['ts'])),
+                            $row['emp_no'],
+                            $row['register_no'],
+                            $row['trans_no'],
+                        );
+                        $subTotalR = $dbc->execute($subTotalP, $subTotalArgs);
+                        $subTotalW = $dbc->fetchRow($subTotalR);
+                        $subTotal = is_array($subTotalW) ? $subTotalW['subtotal'] : 0;
+                        $this->results .= sprintf('<td>%.2f</td>', $subTotal);
+                    } else {
+                        $this->results .= '<td>n/a</td>';
+                    }
                     $this->results .= '</tr>';
                 }
                 $this->results .= '</tbody></table>';
@@ -288,6 +302,16 @@ class ReprintReceiptPage extends FanniePage
     <label>
         Mem Discount
         <input type="checkbox" class="checkbox-inline" name="mem_discount" value="1" />
+    </label>
+    &nbsp;
+    <label>
+        Exclude Canceled
+        <input type="checkbox" class="checkbox-inline" name="no-canceled" value="1" checked />
+    </label>
+    &nbsp;
+    <label>
+        Exclude Training
+        <input type="checkbox" class="checkbox-inline" name="no-training" value="1" checked />
     </label>
 </div>
 <div class="row form-group form-inline">

@@ -371,7 +371,7 @@ class FannieAPI
 
             return substr($name, 0, strlen($name)-4);
         } else {
-            $name = basename($file);        
+            $name = basename($path);
 
             return substr($name, 0, strlen($name)-4);
         }

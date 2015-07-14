@@ -1,6 +1,6 @@
 <?php
 global $FANNIE_DYNAMIC_MENU, $FANNIE_NAV_POSITION, $FANNIE_CSS_LOGO, $FANNIE_CHARSET, $FANNIE_CUSTOM_TITLE, $FANNIE_BACKEND_NAME;
-if ($headerConfig instanceof FannieConfig) {
+if (isset($headerConfig) && $headerConfig instanceof FannieConfig) {
     $FANNIE_DYNAMIC_MENU = $headerConfig->get('DYNAMIC_MENU');
     $FANNIE_NAV_POSITION = $headerConfig->get('NAV_POSITION');
     $FANNIE_CSS_LOGO = $headerConfig->get('CSS_LOGO');
@@ -8,6 +8,8 @@ if ($headerConfig instanceof FannieConfig) {
     $FANNIE_CUSTOM_TITLE = $headerConfig->get('CUSTOM_TITLE');
     $FANNIE_MENU = $headerConfig->get('MENU');
     $BACKEND_NAME = $headerConfig->get('BACKEND_NAME', 'Fannie');
+} else {
+    $BACKEND_NAME = $FANNIE_BACKEND_NAME;
 }
 if (preg_match('/^Fannie[^\w]+.*$/', $page_title)) {
     $page_title = preg_replace('/^Fannie(.*)$/', $BACKEND_NAME . '$1', $page_title);

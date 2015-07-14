@@ -46,6 +46,7 @@ class VendorSalesReport extends FannieReportPage
         $date2 = FormLib::getDate('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart', 1);
         $deptEnd = FormLib::get('deptStart', 1);
+        $deptMulti = FormLib::get('departments', array());
         $buyer = FormLib::get('buyer', '');
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
@@ -87,9 +88,18 @@ class VendorSalesReport extends FannieReportPage
             }
         }
         if ($buyer != -1) {
-            $query .= ' AND t.department BETWEEN ? AND ? ';
-            $args[] = $deptStart;
-            $args[] = $deptEnd;
+            if (count($deptMulti) > 0) {
+                $query .= ' AND t.department IN (';
+                foreach ($deptMulti as $d) {
+                    $query .= '?,';
+                    $args[] = $d;
+                }
+                $query = substr($query, 0, strlen($query)-1) . ')';
+            } else {
+                $query .= ' AND t.department BETWEEN ? AND ? ';
+                $args[] = $deptStart;
+                $args[] = $deptEnd;
+            }
         }
         $query .= '
             GROUP BY COALESCE(v.vendorName, x.distributor)

@@ -57,6 +57,7 @@ class HourlySalesReport extends FannieReportPage
     {
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
+        $deptMulti = FormLib::get('departments', array());
         $weekday = FormLib::get('weekday', 0);
         $buyer = FormLib::get('buyer', '');
     
@@ -112,6 +113,7 @@ class HourlySalesReport extends FannieReportPage
         $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
+        $deptMulti = FormLib::get('departments', array());
         $weekday = FormLib::get('weekday', 0);
     
         $buyer = FormLib::get('buyer', '');
@@ -129,9 +131,18 @@ class HourlySalesReport extends FannieReportPage
             }
         }
         if ($buyer != -1) {
-            $where .= ' AND d.department BETWEEN ? AND ? ';
-            $args[] = $deptStart;
-            $args[] = $deptEnd;
+            if (count($deptMulti) > 0) {
+                $where .= ' AND d.department IN (';
+                foreach ($deptMulti as $d) {
+                    $where .= '?,';
+                    $args[] = $d;
+                }
+                $where = substr($where, 0, strlen($where)-1) . ')';
+            } else {
+                $where .= ' AND d.department BETWEEN ? AND ? ';
+                $args[] = $deptStart;
+                $args[] = $deptEnd;
+            }
         }
 
         $date_selector = 'year(tdate), month(tdate), day(tdate)';

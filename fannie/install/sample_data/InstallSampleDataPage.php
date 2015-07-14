@@ -130,21 +130,35 @@ if (isset($_REQUEST['employees'])){
     echo "Loading employees";
     $db->query("TRUNCATE TABLE employees");
     \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'employees');  
-}
-elseif(isset($_REQUEST['custdata'])){
+} elseif (isset($_REQUEST['custdata'])) {
     echo "Loading custdata";
-    $db->query("TRUNCATE TABLE custdata");
-    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'custdata');
-}
-elseif(isset($_REQUEST['memtype'])){
+    $backup1 = $db->query('TRUNCATE TABLE custdataBackup');
+    $backup2 = $db->query('INSERT INTO custdataBackup SELECT * FROM custdata');
+    if ($backup1 === false || $backup2 === false) {
+        echo _(' - failed to backup current data. Sample data not loaded.');
+    } else {
+        $db->query("TRUNCATE TABLE custdata");
+        \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'custdata');
+    }
+} elseif(isset($_REQUEST['memtype'])){
     echo "Loading memtype";
     $db->query("TRUNCATE TABLE memtype");
     \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'memtype');
-}
-elseif(isset($_REQUEST['products'])){
+} elseif (isset($_REQUEST['products'])) {
     echo "Loading products";
-    $db->query("TRUNCATE TABLE products");
-    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'products');
+    $backup1 = $db->query('TRUNCATE TABLE productBackup');
+    $backup2 = $db->query('INSERT INTO productBackup SELECT * FROM products');
+    if ($backup1 === false || $backup2 === false) {
+        echo _(' - failed to backup current data. Sample data not loaded.');
+    } else {
+        $db->query("TRUNCATE TABLE products");
+        \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'products');
+    }
+}
+elseif(isset($_REQUEST['prod-flags'])){
+    echo "Loading product flags";
+    $db->query("TRUNCATE TABLE prodFlags");
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'prodFlags');
 }
 elseif(isset($_REQUEST['depts'])){
     echo "Loading departments";
@@ -208,53 +222,59 @@ utilities to populate the lane tables.
 </p>
 <hr />
 <h4 class="install"><?php echo _('Cashiers'); ?></h4>
-This table contains login information for cashiers. The two
-included logins are '56' and '7000'.<br />
-<button type=submit name=employees value="1" class="btn btn-default"><?php echo _('Load sample cashiers'); ?></button>
+    This table contains login information for cashiers. The two
+    included logins are '56' and '7000'.<br />
+    <?php echo $this->loadButton('employees', 'employees', _('Load sample cashiers')); ?>
 <hr />
-<h4 class="install">Custdata</h4>
-Customer data is the membership information. Sample data includes
-a bunch of members and default non-member 11.<br />
-<button type=submit name=custdata value="1" class="btn btn-default">Load sample customers</button>
-<br />
-<button type=submit name=memtype value="1" class="btn btn-default">Load sample member types</button>
+<h4 class="install">Customer Data</h4>
+    Customer data is the membership information. Sample data includes
+    a bunch of members and default non-member 11.<br />
+    <?php echo $this->loadButton('custdata', 'custdata', _('Load sample customers')); ?>
+    <br />
+    <br />
+    Customers are classified into different membership types.<br />
+    <?php echo $this->loadButton('memtype', 'memtype', _('Load sample member types')); ?>
 <hr />
-<h4 class="install">Products</h4>
-Stuff to sell. There's a lot of sample data. I think this might
-be the Wedge's or at least a snapshot of it.<br />
-<button type=submit name=products value="1" class="btn btn-default">Load sample products</button>
+    <h4 class="install">Products</h4>
+    Stuff to sell. There's a lot of sample data. I think this might
+    be the Wedge's or at least a snapshot of it.<br />
+    <?php echo $this->loadButton('products', 'products', _('Load sample products')); ?>
 <hr />
-<h4 class="install">Departments</h4>
-Products get categorized into departments .
-You can also ring amounts directly to a department. Not needed,
-strictly speaking, for a basic lane (Ring up items, total, 
-accept tender, provide change).<br />
-<button type=submit name=depts value="1" class="btn btn-default">Load sample departments</button>
+    <h4 class="install">Product Flags</h4>
+    Product Flags are a flexible method for identifying custom attributes of items.
+    CORE includes a default set of some more common flags.<br />
+    <?php echo $this->loadButton('prodFlags', 'prod-flags', _('Load sample product flags')); ?>
 <hr />
-<h4 class="install">Super-Department Names <span style="font-weight:400;">and</span> Super-Department Links</h4>
-Super Departments are tags for grouping Departments.
-A Department can have more than one, that is, belong to more than one Super-Department.
-<br />This rudimentary set agrees with the Products sample data.
-<br />Super-Departments can also be used to group the domains of Buyers.
-<br />Use them with e.g. the <a href="../../fannie/item/productList.php">Product List report/tool</a>
-<br />They are also used for grouping shelftags for printing and for grouping data in reports.
-<br />
-<button type=submit name=superdepts value="1" class="btn btn-default">Load sample super departments</button>
+    <h4 class="install">Departments</h4>
+    Products get categorized into departments .
+    You can also ring amounts directly to a department. Not needed,
+    strictly speaking, for a basic lane (Ring up items, total, 
+    accept tender, provide change).<br />
+    <?php echo $this->loadButton('departments', 'depts', _('Load sample departments')); ?>
+<hr />
+    <h4 class="install">Super-Department Names <span style="font-weight:400;">and</span> Super-Department Links</h4>
+    Super Departments are tags for grouping Departments.
+    A Department can have more than one, that is, belong to more than one Super-Department.
+    This rudimentary set agrees with the Products sample data.
+    Super-Departments can also be used to group the domains of Buyers.
+    Use them with e.g. the <a href="../../fannie/item/productList.php">Product List report/tool</a>
+    They are also used for grouping shelftags for printing and for grouping data in reports.
+    <?php echo $this->loadButton('superdepts', 'superdepts', _('Load sample super departments')); ?>
 <hr />
 <h4 class="install">Tenders</h4>
-Load all the default tenders into the tenders table.<br />
-<button type=submit name=tenders value="1" class="btn btn-default">Load default tenders</button>
+    Load all the default tenders into the tenders table.<br />
+    <?php echo $this->loadButton('tenders', 'tenders', _('Load sample tenders')); ?>
 <hr />
-<h4 class="install">Authentication</h4>
-Load information about currently defined authorization classes<br />
-<button type=submit name=authentication value="1" class="btn btn-default">Load auth classes</button>
+    <h4 class="install">Authentication</h4>
+    Load information about currently defined authorization classes<br />
+    <?php echo $this->loadButton('userKnownPrivs', 'authentication', _('Load auth classes')); ?>
 <br /><br />
-Load default groups<br />
-<button type=submit name=authGroups value="1" class="btn btn-default">Load auth groups</button>
+    Load default groups<br />
+    <?php echo $this->loadButton('userGroups', 'authGroups', _('Load auth groups')); ?>
 <hr />
-<h4 class="install">Countries, States, and Provinces</h4>
-Load default place-of-origin information<br />
-<button type=submit name=origin value="1" class="btn btn-default">Load origin info</button>
+    <h4 class="install">Countries, States, and Provinces</h4>
+    Load default place-of-origin information<br />
+    <?php echo $this->loadButton('originCountry', 'origin', _('Load origin info')); ?>
 <hr />
 
 </form>
@@ -264,6 +284,40 @@ Load default place-of-origin information<br />
         return ob_get_clean();
 
     // body_content
+    }
+
+    private function loadButton($table_name, $button_name, $label)
+    {
+        $dbc = $this->connection;
+        $chk = $dbc->query('
+            SELECT COUNT(*)
+            FROM ' . $dbc->identifierEscape($table_name));
+        if ($chk === false) {
+            return '<div class="alert alert-danger">Table "' . $table_name . '" is 
+                missing so sample data cannot be loaded.</div>';
+        }
+        $count = $dbc->fetchRow($chk);
+        if ($count[0] > 0) {
+            return '
+                <div class="alert alert-warning">
+                    This table is not empty. Loading sample data will replace all
+                    current data.
+                </div>
+                <button type="submit" name="' . $button_name . '" value="1"
+                    class="btn btn-default"
+                    onclick="return confirm(\'Replace current data with sample data?\');"
+                    >' . $label . '
+                </button>';
+        } else {
+            return '
+                <div class="alert alert-info">
+                    This table is currently empty.
+                </div>
+                <button type="submit" name="' . $button_name . '" value="1"
+                    class="btn btn-default"
+                    >' . $label . '
+                </button>';
+        }
     }
 }
 

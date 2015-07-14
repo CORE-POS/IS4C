@@ -43,6 +43,7 @@ class SignFromSearch extends FannieRESTfulPage
     {
        $this->__routes[] = 'post<u>'; 
        $this->__routes[] = 'post<batch>'; 
+       $this->__routes[] = 'get<batch>'; 
        return parent::preprocess();
     }
 
@@ -117,6 +118,11 @@ class SignFromSearch extends FannieRESTfulPage
         }
     }
 
+    public function get_batch_handler()
+    {
+        return $this->post_batch_handler();
+    }
+
     function post_batch_handler()
     {
         if (!is_array($this->batch)) {
@@ -177,6 +183,11 @@ class SignFromSearch extends FannieRESTfulPage
         }
     }
 
+    function get_batch_view()
+    {
+        return $this->post_batch_view();
+    }
+
     function post_batch_view()
     {
         return $this->post_u_view();
@@ -198,8 +209,13 @@ class SignFromSearch extends FannieRESTfulPage
         $ret .= '<label>Layout</label>: 
             <select name="signmod" class="form-control" onchange="$(\'#signform\').submit()">';
         foreach ($mods as $m) {
-            $ret .= sprintf('<option %s>%s</option>',
-                    ($m == $this->signage_mod ? 'selected' : ''), $m);
+            $name = $m;
+            if (strstr($m, '\\')) {
+                $pts = explode('\\', $m);
+                $name = $pts[count($pts)-1];
+            }
+            $ret .= sprintf('<option %s value="%s">%s</option>',
+                    ($m == $this->signage_mod ? 'selected' : ''), $m, $name);
         }
         $ret .= '</select>';
         

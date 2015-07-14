@@ -39,6 +39,7 @@ class FannieSignage
         - batchbarcodes => data is in batchBarcodes table
         - batch => get data from normal product and vendor tables but
             use batch(es) for price
+        - provided => $items contains all necessary data
         - empty => get data from normal product and vendor tables
       @param $source_id [optional]
         - for shelftags, shelftags.id
@@ -59,6 +60,10 @@ class FannieSignage
 
     public function loadItems()
     {
+        if ($this->source == 'provided') {
+            return $this->items;
+        }
+
         $op_db = \FannieConfig::factory()->get('OP_DB');
         $dbc = \FannieDB::get($op_db);
         $args = array();
@@ -130,7 +135,7 @@ class FannieSignage
                         p.description AS posDescription,
                         CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                         v.units,
-                        v.size,
+                        CASE WHEN v.size IS NULL tHEN p.size ELSE v.size END AS size,
                         v.sku,
                         \'\' AS pricePerUnit,
                         n.vendorName AS vendor,
@@ -162,7 +167,7 @@ class FannieSignage
                         p.description AS posDescription,
                         CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                         v.units,
-                        v.size,
+                        CASE WHEN v.size IS NULL tHEN p.size ELSE v.size END AS size,
                         v.sku,
                         \'\' AS pricePerUnit,
                         n.vendorName AS vendor,
@@ -186,7 +191,7 @@ class FannieSignage
                             p.description AS posDescription,
                             CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                             v.units,
-                            v.size,
+                            CASE WHEN v.size IS NULL tHEN p.size ELSE v.size END AS size,
                             v.sku,
                             \'\' AS pricePerUnit,
                             n.vendorName AS vendor,
@@ -214,7 +219,7 @@ class FannieSignage
                             p.description AS posDescription,
                             CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                             v.units,
-                            v.size,
+                            CASE WHEN v.size IS NULL tHEN p.size ELSE v.size END AS size,
                             v.sku,
                             \'\' AS pricePerUnit,
                             n.vendorName AS vendor,
@@ -238,7 +243,7 @@ class FannieSignage
                             p.description AS posDescription,
                             CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
                             v.units,
-                            v.size,
+                            CASE WHEN v.size IS NULL tHEN p.size ELSE v.size END AS size,
                             v.sku,
                             \'\' AS pricePerUnit,
                             n.vendorName AS vendor,
@@ -428,7 +433,7 @@ class FannieSignage
                             $item['upc'], $item['upc'], $item['upc'],
                             $item['upc'],
                             $item['brand'],
-                            $item['description'],
+                            str_replace('"', '&quot;', $item['description']),
                             $item['normal_price'],
                             $item['originName']
             );
@@ -504,6 +509,35 @@ class FannieSignage
             $this->overrides[$upc] = array();
         }
         $this->overrides[$upc][$field_name] = $value;
+    }
+
+    public function formatPrice($price)
+    {
+        if (substr($price, -3) == '.33') {
+            $ttl = round(3*$price);
+            return '3/$' . $ttl;
+        } elseif (substr($price, -3) == '.66' || substr($price, -3) == '.67') {
+            $ttl = round(3*$price);
+            return '3/$' . $ttl;
+        } elseif (substr($price, -3) == '.50') {
+            $ttl = round(2*$price);
+            return '2/$' . $ttl;
+        } elseif (substr($price, -3) == '.25') {
+            $ttl = round(4*$price);
+            return '4/$' . $ttl;
+        } elseif (substr($price, -3) == '.00' && $price <= 5.00) {
+            $mult = 2;
+            while (($mult+1)*$price <= 10) {
+                $mult++;
+            }
+            return sprintf('%d/$%d', $mult, round($mult*$price));
+        } elseif (substr($price, 0, 1) == '$') {
+            return $price;
+        } elseif (strstr($price, '/')) {
+            return $price;
+        } else {
+            return sprintf('$%.2f', $price);
+        }
     }
 
     public function drawPDF()

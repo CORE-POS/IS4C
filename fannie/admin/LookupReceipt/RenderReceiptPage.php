@@ -88,7 +88,7 @@ class RenderReceiptPage extends FanniePage {
             }
         }
 
-        if ($date1 !== '' && $transNum !== ''){
+        if ($date1 !== '' && $transNum !== '') {
             $ret .= '<p>';
             $ret .= $this->receiptHeader($date1,$transNum);
             $ret .= $this->ccInfo($date1, $transNum);
@@ -96,6 +96,10 @@ class RenderReceiptPage extends FanniePage {
             $ret .= '</p>';
             $this->add_onload_command("\$('#date-field').val('$date1');\n");
             $this->add_onload_command("\$('#trans-field').val('$transNum');\n");
+
+            $ret .= '<p class="hidden-print">';
+            $ret .= '<a href="RawReceipt.php?date=' . $date1 . '&trans=' . $transNum . '">Database Details</a>';
+            $ret .= '</p>';
         }
         $this->add_onload_command("\$('#date-field').datepicker({dateFormat:'yy-mm-dd'});\n");
 

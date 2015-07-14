@@ -282,6 +282,9 @@ function checkLogin(){
     Could enforce expired, optionally
   */
   $sql = dbconnect();
+  if (!$sql->isConnected()) {
+      return false;
+  }
   $checkQ = $sql->prepare_statement("select * from Users AS u LEFT JOIN
             userSessions AS s ON u.uid=s.uid where u.name=? 
             and s.session_id=?");

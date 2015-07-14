@@ -37,35 +37,9 @@ class StatementsPluginPostCards extends FannieRESTfulPage
 
     public function post_id_handler()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        $cards = "(";
-        $args = array();
         if (!is_array($this->id)) {
             $this->id = array($this->id);
         }
-        foreach ($this->id as $c){
-            $cards .= "?,";
-            $args[] = $c;
-        }
-        $cards = rtrim($cards,",");
-        $cards .= ")";
-
-        $memberP = $dbc->prepare("
-            SELECT m.card_no,
-                c.FirstName,
-                c.LastName,
-                m.street,
-                m.city,
-                m.state,
-                m.zip
-            FROM meminfo AS m 
-                INNER JOIN custdata AS c ON m.card_no=c.CardNo AND c.personNum=1
-            WHERE cardno IN $cards
-            ORDER BY m.card_no,
-                c.personNum");
-        $memberR = $dbc->execute($memberP, $args);
 
         $today = date("F j, Y");
 
@@ -76,19 +50,27 @@ class StatementsPluginPostCards extends FannieRESTfulPage
         $pdf->SetAutoPageBreak(true,0);
         $pdf->SetFont("Gill","",10);
         //Meat of the statement
-        while ($memberW = $dbc->fetch_row($memberR)) {
+        foreach ($this->id as $card_no) {
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($card_no);
             $pdf->AddPage();
 
-            $fullname = $memberW['FirstName'] . ' ' . $memberW['LastName'];
             $pdf->SetXY(2.75,1.45);
-            $pdf->Cell(2,0.25,$fullname,"",1,"L");
+            foreach ($account['customers'] as $c) {
+                if ($c['accountHolder']) {
+                    $pdf->Cell(2,0.25,$c['firstName'] . ' ' . $c['lastName'],"",1,"L");
+                    break;
+                }
+            }
 
             $pdf->SetX(2.75);
-            $address = str_replace("\n"," ",$memberW['street']);
-            $pdf->Cell(2,0.25,$address,"",1,"L");
+            $pdf->Cell(2,0.25,$account['addressFirstLine'],"",1,"L");
+            if ($account['addressSecondLine']) {
+                $pdf->SetX(2.75);
+                $pdf->Cell(2,0.25,$account['addressSecondLine'],"",1,"L");
+            }
     
             $pdf->SetX(2.75);
-            $str = $memberW['city'].", ".$memberW['state']." ".$memberW['zip'];
+            $str = $account['city'].", ".$account['state']." ".$account['zip'];
             $pdf->Cell(2,0.25,$str,"",1,"L");
         }
 

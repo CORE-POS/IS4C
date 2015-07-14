@@ -31,19 +31,8 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
     function showEditForm($memNum, $country="US")
     {
         $dbc = $this->db();
+        $account = self::getAccount();
         
-        $infoQ = $dbc->prepare_statement("
-            SELECT c.memType AS custdataType,
-                n.memType,
-                n.memDesc,
-                c.discount AS custdataDiscount,
-                n.discount AS memTypeDiscount
-            FROM custdata AS c
-                CROSS JOIN memtype AS n 
-            WHERE c.CardNo=? AND c.personNum=1
-            ORDER BY n.memType");
-        $infoR = $dbc->exec_statement($infoQ,array($memNum));
-
         /**
           Check parameters setting to decide whether
           the discount value from custdata should be
@@ -71,21 +60,27 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
         $ret .= '<select name="MemType_type" class="form-control">';
         $disc = 0;
         $mDesc = '';
-        while($infoW = $dbc->fetch_row($infoR)){
+        $types = new MemtypeModel($dbc);
+        foreach ($types->find('memtype') as $type) {
             $ret .= sprintf("<option value=%d %s>%s</option>",
-                $infoW['memType'],
-                ($infoW['custdataType'] == $infoW['memType'] ? 'selected' : ''),
-                $infoW['memDesc']);
-            if ($discount_mode == 'custdata.discount') {
-                $disc = $infoW['custdataDiscount'];
-            } elseif ($infoW['custdataType'] == $infoW['memType']) {
-                $disc = $infoW['memTypeDiscount'];
-            }
-            if ($infoW['custdataType'] == $infoW['memType']) {
-                $mDesc = $infoW['memDesc'];
+                $type->memtype(), 
+                ($account['customerTypeID'] == $type->memtype() ? 'selected' : ''),
+                $type->memDesc());
+            if ($account['customerTypeID'] == $type->memtype()) {
+                $mDesc = $type->memDesc();
+                $disc = $type->discount();
+                if ($discount_mode = 'custdata.discount') {
+                    foreach ($account['customers'] as $c) {
+                        if ($c['accountHolder']) {
+                            $disc = $c['discount'];
+                            break;
+                        }
+                    }
+                }
             }
         }
         $ret .= "</select> ";
+        $ret .= '<input type="hidden" name="MemType_inactive" value="' . $account['activeStatus'] . '" />';
 
         if ($discount_mode == 'memtype.discount') {
             $discountTip = " title=\"The discount for the Member's current Type: " .
@@ -112,14 +107,27 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
         $dbc = $this->db();
 
         $mtype = FormLib::get_form_value('MemType_type',0);
+        $inactive = FormLib::get('MemType_inactive');
+        // cannot alter type of inactive members. Must
+        // re-activate first
+        if ($inactive != '') {
+            return '';
+        }
 
         // Default values for custdata fields that depend on Member Type.
-        $CUST_FIELDS = array();
-        $CUST_FIELDS['memType'] = $mtype;
-        $CUST_FIELDS['Type'] = 'REG';
-        $CUST_FIELDS['Staff'] = 0;
-        $CUST_FIELDS['Discount'] = 0;
-        $CUST_FIELDS['SSI'] = 0;
+        $json = array(
+            'cardNo' => $memNum,
+            'memberStatus' => 'Reg',
+            'customerTypeID' => $mtype,
+            'customers' => array(
+                array(
+                    'accountHolder' => 1,
+                    'staff' => 0,
+                    'discount' => 0,
+                    'lowIncomeBenefits' => 0,
+                ),
+            ),
+        );
 
         // Get any special values for this Member Type.
         $mt = $dbc->tableDefinition('memtype');
@@ -131,32 +139,19 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
         $r = $dbc->exec_statement($q,array($mtype));
         if ($dbc->num_rows($r) > 0){
             $w = $dbc->fetch_row($r);
-            $CUST_FIELDS['Type'] = $w['custdataType'];
-            $CUST_FIELDS['Discount'] = $w['discount'];
-            $CUST_FIELDS['Staff'] = $w['staff'];
-            $CUST_FIELDS['SSI'] = $w['ssi'];
+            $json['memberStatus'] = $w['custdataType'];
+            $json['customers'][0]['discount'] = $w['discount'];
+            $json['customers'][0]['staff'] = $w['staff'];
+            $json['customers'][0]['lowIncomeBenefits'] = $w['ssi'];
         }
 
-        // Assign Member Type values to each custdata record for the Membership.
-        $cust = new CustdataModel($dbc);
-        $cust->CardNo($memNum);
-        $error = "";
-        foreach($cust->find() as $obj){
-            $obj->memType($mtype);
-            $obj->Type($CUST_FIELDS['Type']);
-            $obj->Staff($CUST_FIELDS['Staff']);
-            $obj->Discount($CUST_FIELDS['Discount']);
-            $obj->SSI($CUST_FIELDS['SSI']);
-            $upR = $obj->save();
-            if ($upR === False)
-                $error .= $mtype;
-        }
+        $resp = \COREPOS\Fannie\API\member\MemberREST::post($memNum, $json);
         
-        if ($error)
+        if ($resp['errors'] > 0) {
             return "Error: problem saving Member Type<br />";
-        else
+        } else {
             return "";
+        }
     }
 }
 
-?>

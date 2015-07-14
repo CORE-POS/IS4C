@@ -63,6 +63,9 @@ class PriceLib
         }
         $num = (float)$num;
         $num = $num*$mult;
+        if ($num == 0) {
+            return '';
+        }
 
         switch($unit) {
             case '#':

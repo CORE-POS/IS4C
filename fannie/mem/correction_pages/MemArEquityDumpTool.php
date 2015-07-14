@@ -149,16 +149,19 @@ class MemArEquityDumpTool extends FanniePage
                 return True;
             }
 
-            $q = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE CardNo=? AND personNum=1");
-            $r = $dbc->exec_statement($q,array($this->cn));
-            if ($dbc->num_rows($r) == 0){
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($this->cn);
+            if ($account == false) {
                 $this->errors .= "<div class=\"alert alert-success\">Error: no such member: ".$this->cn."</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
-            $row = $dbc->fetch_row($r);
-            $this->name1 = $row[0].' '.$row[1];
+            foreach ($account['customers'] as $c) {
+                if ($c['accountHolder']) {
+                    $this->name1 = $c['firstName'] . ' ' . $c['lastName'];
+                    break;
+                }
+            }
         }
 
         return True;

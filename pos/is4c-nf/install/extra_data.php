@@ -42,7 +42,11 @@ elseif(isset($_REQUEST['products'])){
     $db->query("TRUNCATE TABLE products");
     InstallUtilities::loadSampleData($db,'products');
 }
-elseif(isset($_REQUEST['depts'])){
+elseif (isset($_REQUEST['tenders'])){
+    echo "Loading tenders";
+    $db->query("TRUNCATE TABLE tenders");
+    InstallUtilities::loadSampleData($db,'tenders');
+} elseif(isset($_REQUEST['depts'])){
     echo "Loading departments";
     $db->query("TRUNCATE TABLE departments");
     InstallUtilities::loadSampleData($db,'departments');
@@ -82,6 +86,10 @@ You can also ring amounts directly to a department. Not needed,
 strictly speaking, for a basic lane (Ring up items, total, 
 accept tender, provide change).</p>
 <input type=submit name=depts value="Load sample departments" />
+<hr />
+<b>Tenders</b>
+<p>Methods of payment such as cash, check, credit, etc</p>
+<input type=submit name=tenders value="Load sample tenders" />
 <?php if ($db->table_exists('QuickLookups')) { ?>
 <hr />
 <b>Quick Lookups</b>

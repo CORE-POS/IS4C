@@ -32,7 +32,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
     public $report_set = 'Membership';
     public $themed = true;
 
-    protected $title = "Fannie :  Ownersship Status Report";
+    protected $title = "Fannie :  Ownership Status Report";
     protected $header = "Ownership Status Report";
     protected $required_fields = array('date1', 'date2');
 
@@ -340,8 +340,8 @@ class OwnerJoinLeaveReport extends FannieReportPage
         }
 
         if ($this->config->COOP_ID == 'WFC_Duluth') {
-            $this->report_headers[] = array('Fran Requests', null, null, null, null);
-            $this->report_headers[] = array('Date', 'Number', 'Name', 'Stock', 'Request');
+            $this->report_headers[] = array('Fran Allocations', null, null, null, null);
+            $this->report_headers[] = array('Date', 'Number', 'Name', 'Stock', 'Allocation');
             $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
                 'meta_background'=>'#000','meta_foreground'=>'#fff');
             $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
@@ -354,7 +354,8 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 WHERE note LIKE \'%FUNDS REQ%\'
                     AND stamp >= ?
                     AND e.payments < 100
-                GROUP BY cardno');
+                GROUP BY cardno
+                ORDER BY cardno');
             $detailP = $dbc->prepare('
                 SELECT c.CardNo,
                     c.FirstName,
@@ -367,7 +368,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                     LEFT JOIN memberNotes AS n ON c.CardNo=n.cardno
                 WHERE c.CardNo=?
                     AND c.personNum=1
-                ORDER BY n.note DESC');
+                ORDER BY n.stamp DESC');
             $franR = $dbc->execute($franP, $args[0]);
             while ($w = $dbc->fetchRow($franR)) {
                 $detailR = $dbc->execute($detailP, array($w['cardno']));

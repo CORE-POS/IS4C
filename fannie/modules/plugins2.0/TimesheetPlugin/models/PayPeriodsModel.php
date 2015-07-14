@@ -35,6 +35,14 @@ class PayPeriodsModel extends BasicModel
     'periodEnd' => array('type'=>'DATETIME'),
     );
 
+    public function preferredDB()
+    {
+        $config = FannieConfig::factory();
+        $plugins = $config->get('PLUGIN_SETTINGS');
+
+        return 'plugin:' . $plugins['TimesheetDatabase'];
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function periodID()

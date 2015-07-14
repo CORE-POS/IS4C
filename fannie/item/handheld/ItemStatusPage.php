@@ -36,7 +36,16 @@ class ItemStatusPage extends FannieRESTfulPage
 
     public function preprocess()
     {
+        if (php_sapi_name() !== 'cli') {
+            /* this page requires a session to pass some extra
+               state information through multiple requests */
+            if (session_id() == '') {
+                session_start();
+            }
+        }
+
         $this->__routes[] = 'get<tagID><upc>';
+        $this->__routes[] = 'get<floorID><upc>';
 
         return parent::preprocess();
     }
@@ -49,7 +58,7 @@ class ItemStatusPage extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $product = new ProductsModel($dbc);
-        $product->upc($upc);
+        $product->upc($this->upc);
         $product->load();
         $info = $product->getTagData();
 
@@ -61,7 +70,8 @@ class ItemStatusPage extends FannieRESTfulPage
             }
         }
 
-        $tag->id($this->ID);
+        $_SESSION['LastTagQueue'] = $this->tagID;
+        $tag->id($this->tagID);
         $tag->description($info['description']);
         $tag->brand($info['brand']);
         $tag->normal_price($info['normal_price']);
@@ -71,6 +81,21 @@ class ItemStatusPage extends FannieRESTfulPage
         $tag->vendor($info['vendor']);
         $tag->pricePerUnit($info['pricePerUnit']);
         $tag->save();
+
+        header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $this->upc);
+
+        return false;
+    }
+
+    public function get_floorID_upc_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $loc = new ProdPhysicalLocationModel($dbc);
+        $loc->upc(BarcodeLib::padUPC($this->upc));
+        $loc->floorSectionID($this->floorID);
+        $loc->save();
+        $_SESSION['LastFloorSection'] = $this->floorID;
 
         header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $this->upc);
 
@@ -139,6 +164,10 @@ class ItemStatusPage extends FannieRESTfulPage
             ORDER BY s.superID');
         $supersR = $dbc->execute($supersP, array($product->department()));
         $master = false;
+        // preserve queue selection if user is entering several tags
+        if (isset($_SESSION['LastTagQueue']) && is_numeric($_SESSION['LastTagQueue'])) {
+            $master = $_SESSION['LastTagQueue'];
+        }
         $ret .= '<p><strong>Super(s)</strong>: ';
         while ($supersW = $dbc->fetch_row($supersR)) {
             if ($master === false) {
@@ -163,14 +192,15 @@ class ItemStatusPage extends FannieRESTfulPage
         $ret .= '<p><form class="form-inline" method="get">';
         $tags = new ShelftagsModel($dbc);
         $tags->upc($upc);
+        $tags->id(0, '>=');
         $queued = $tags->find('id');
         $queues = new ShelfTagQueuesModel($dbc);
         $verb = 'Queue';
         if (count($queued) > 0) {
-            if ($tags->id() == 0) {
+            if ($queued[0]->id() == 0) {
                 $ret .= 'Tags queued for Default';
             } else {
-                $queues->shelfTagQueueID($tags->id());
+                $queues->shelfTagQueueID($queued[0]->id());
                 $queues->load();
                 $ret .= 'Tags queued for ' . $queues->description();
             }
@@ -181,8 +211,34 @@ class ItemStatusPage extends FannieRESTfulPage
         $ret .= '<input type="hidden" name="upc" value="' . $upc . '" />
             <button class="btn btn-default" type="submit">' . $verb . ' Tags</button>
             for <select name="tagID" class="form-control">';
+        $queues->reset();
         $ret .= $queues->toOptions($master);
         $ret .= '</select></form></p>';
+
+        $ret .= '<p><form class="form-inline" method="get">
+            <label>Loc.</label>
+            <select name="floorID" class="form-control">
+                <option value="0">n/a</option>';
+        $loc = new ProdPhysicalLocationModel($dbc);
+        $loc->upc($upc);
+        $loc->load();
+        $selected = 0;
+        if ($loc->floorSectionID()) {
+            $selected = $loc->floorSectionID();
+        } elseif (isset($_SESSION['LastFloorSection'])) {
+            $selected = $_SESSION['LastFloorSection'];
+        }
+        $sections = new FloorSectionsModel($dbc);
+        foreach ($sections->find('name') as $s) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                    ($selected == $s->floorSectionID() ? 'selected' : ''),
+                    $s->floorSectionID(), $s->name()
+            );
+        }
+        $ret .= '</select>';
+        $ret .= '<input type="hidden" name="upc" value="' . $upc . '" />
+            <button class="btn btn-default" type="submit">Update Location</button>
+            </form></p>';
 
         if (FannieAuth::validateUserQuiet('pricechange') || FannieAuth::validateUserQuiet('audited_pricechange')) {
             $ret .= '<p><a href="../ItemEditorPage.php?searchupc=' . $this->id . '"
@@ -198,8 +254,11 @@ class ItemStatusPage extends FannieRESTfulPage
     {
         $this->add_script('../autocomplete.js');
         $this->add_onload_command("bindAutoComplete('#upc', '../../ws/', 'item');\n");
-        $this->add_onload_command("\$('#upc').focus();\n");
-        return '<form action="' . $_SERVER['PHP_SELF'] . '" method="get">
+        if (FormLib::get('linea') != 1) {
+            $this->add_onload_command("\$('#upc').focus();\n");
+        }
+        $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
+        return '<form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '" method="get">
             <div class="form-group form-inline">
                 <label>UPC</label>
                 <input type="text" name="id" id="upc" class="form-control" />

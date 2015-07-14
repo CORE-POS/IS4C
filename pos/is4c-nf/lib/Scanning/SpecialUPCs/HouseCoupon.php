@@ -604,6 +604,21 @@ class HouseCoupon extends SpecialUPC
                 Database::getsubtotals();
                 $value = $infoW["discountValue"] * CoreLocal::get("discountableTotal");
                 break;
+            case "%B": // better percent discount applies
+                Database::getsubtotals();
+                $coupon_discount = (int)($infoW['discountValue']*100);
+                if ($coupon_discount <= CoreLocal::get('percentDiscount')) {
+                    // customer's discount is better than coupon discount; skip
+                    // applying coupon
+                    $value = 0;
+                } else {
+                    // coupon discount is better than customer's discount
+                    // apply coupon & zero out customer's discount
+                    $value = $infoW["discountValue"] * CoreLocal::get("discountableTotal");
+                    CoreLocal::set('percentDiscount', 0);
+                    $transDB->query('UPDATE localtemptrans SET percentDiscount=0');
+                }
+                break;
             case "%D": // percent discount on all items in give department(s)
                 $valQ = "select sum(total) from localtemptrans
                     as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems

@@ -1207,6 +1207,16 @@ static public function memReceiptMessages($card_no)
           FROM custReceiptMessage
           WHERE card_no=' . ((int)$card_no) . '
           ORDER BY msg_text';
+    // use newer CustomerNotifications table if present
+    if ($db->tableExists('CustomerNotifications')) {
+        $q = '
+            SELECT message AS msg_text,
+                modifierModule AS modifier_module
+            FROM CustomerNotifications
+            WHERE cardNo=' . ((int)$card_no) . '
+                AND type=\'receipt\'
+            ORDER BY message';
+    }
     $r = $db->query($q);
     $ret = array('any'=>'', 'print'=>'');
     while ($w = $db->fetch_row($r)) {

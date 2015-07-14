@@ -121,7 +121,7 @@ class AuditLib
             $desc = $infoW['likeCodeDesc'];
             $dept = $infoW['department'];
         } else {
-            $product = new ProductsModel($dbc);
+            $product = new \ProductsModel($dbc);
             $product->upc($upc);
             $product->load();
             $desc = $product->description();
@@ -170,9 +170,12 @@ class AuditLib
         }
 
         $message .= "\n";
-        $message .= "Go to the batch page:\n";
+        $message .= "View this batch:\n";
         $url = $conf->get('URL');
-        $message .= "http://{$_SERVER['SERVER_NAME']}{$url}batches/newbatch/\n";
+        $message .= "http://{$_SERVER['SERVER_NAME']}{$url}batches/newbatch/EditBatchPage.php?id={$batchID}\n";
+        $message .= "\n";
+        $message .= "View this item:\n";
+        $message .= "http://{$_SERVER['SERVER_NAME']}/{$url}item/ItemEditorPage.php?searchupc=$upc\n";
         $message .= "\n";
         $username = \FannieAuth::checkLogin();
         if (!$username) {

@@ -81,6 +81,9 @@ class MemberEditor extends FanniePage {
             /* form was submitted. save input. */
             if (FormLib::get_form_value('saveBtn',False) !== False){
                 $whichBtn = FormLib::get_form_value('saveBtn');
+                /** get current account settings for reference **/
+                $account = \COREPOS\Fannie\API\member\MemberREST::get($this->memNum);
+                \COREPOS\Fannie\API\member\MemberModule::setAccount($account);
                 FannieAPI::listModules('MemberModule');
                 foreach($FANNIE_MEMBER_MODULES as $mm){
                     if (class_exists($mm)) {
@@ -163,35 +166,18 @@ class MemberEditor extends FanniePage {
 
             return $ret;
         } else {
-            $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-            $prevP = $dbc->prepare('
-                SELECT MAX(CardNo) AS prev
-                FROM custdata 
-                WHERE CardNo < ?');
-            $prevR = $dbc->execute($prevP,array($card_no));
-            if ($dbc->numRows($prevR) > 0) {
-                $prevW = $dbc->fetchRow($prevR);
-                $prev = $prevW['prev'];
-            }
-            $nextP = $dbc->prepare('
-                SELECT MIN(CardNo) AS next 
-                FROM custdata 
-                WHERE CardNo > ?');
-            $nextR = $dbc->execute($nextP,array($card_no));
-            if ($dbc->numRows($nextR) > 0) {
-                $nextW = $dbc->fetchRow($nextR);
-                $next = $nextW['next'];
-            }
+            $prev = \COREPOS\Fannie\API\member\MemberREST::prevAccount($card_no);
+            $next = \COREPOS\Fannie\API\member\MemberREST::nextAccount($card_no);
             
             $ret = array('', '');
             if ($prev != false) {
                 $ret[0] = sprintf('<a id="prevLink" href="MemberEditor.php?memNum=%d">Prev</a>',
-                    $prev
+                    $prev['cardNo']
                 );
             }
             if ($next != false) {
                 $ret[1] = sprintf('<a id="nextLink" href="MemberEditor.php?memNum=%d">Next</a>',
-                    $next
+                    $next['cardNo']
                 );
             }
             
@@ -220,6 +206,8 @@ class MemberEditor extends FanniePage {
             $ret .= '<div class="alert alert-danger">' . $this->msgs . '</div>';
         }
         $current_width = 100;
+        $account = \COREPOS\Fannie\API\member\MemberREST::get($this->memNum);
+        \COREPOS\Fannie\API\member\MemberModule::setAccount($account);
         FannieAPI::listModules('MemberModule');
         foreach ($FANNIE_MEMBER_MODULES as $mm) {
             if (!class_exists($mm)) {

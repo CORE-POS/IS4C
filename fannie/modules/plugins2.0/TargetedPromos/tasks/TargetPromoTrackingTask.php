@@ -39,14 +39,15 @@ class TargetPromoTrackingTask extends FannieTask
             $couponUPC = $rules->couponUPC();
             $prep = $dbc->prepare('
                 SELECT card_no,
-                    SUM(quantity) AS qty
+                    SUM(quantity) AS qty,
                     MAX(tdate) AS tdate
-                FROM ' . $this->config->TRANS_DB . $dbc->sep() . 'dlog_15
-                WHERE ' . $dbc->datediff($dbc->curdate(), 'tdate') . ' = 1
+                FROM ' . $this->config->TRANS_DB . $dbc->sep() . 'dlog_90_view
+                WHERE ' . $dbc->datediff($dbc->curdate(), 'tdate') . ' <> 0
                     AND trans_type=\'T\'
-                    AND tran_subtype=\'IC\'
+                    AND trans_subtype=\'IC\'
                     AND upc=?
                 GROUP BY card_no');
+            echo $couponUPC . "\n";
             $res = $dbc->execute($prep, array($couponUPC));
             $updateP = $dbc->prepare('
                 UPDATE DeveloperTargets
@@ -54,6 +55,7 @@ class TargetPromoTrackingTask extends FannieTask
                     lastRedeemDate=?
                 WHERE card_no=?');
             while ($w = $dbc->fetchRow($res)) {
+                echo $w['card_no'] . "\n";
                 $dbc->execute($updateP, array($w['qty'], $w['tdate'], $w['card_no']));
             }
         }
@@ -69,12 +71,12 @@ class TargetPromoTrackingTask extends FannieTask
             $couponUPC = $rules->couponUPC();
             $prep = $dbc->prepare('
                 SELECT card_no,
-                    SUM(quantity) AS qty
+                    SUM(quantity) AS qty,
                     MAX(tdate) AS tdate
-                FROM ' . $this->config->TRANS_DB . $dbc->sep() . 'dlog_15
-                WHERE ' . $dbc->datediff($dbc->curdate(), 'tdate') . ' = 1
+                FROM ' . $this->config->TRANS_DB . $dbc->sep() . 'dlog_90_view
+                WHERE ' . $dbc->datediff($dbc->curdate(), 'tdate') . ' <> 0
                     AND trans_type=\'T\'
-                    AND tran_subtype=\'IC\'
+                    AND trans_subtype=\'IC\'
                     AND upc=?
                 GROUP BY card_no');
             $res = $dbc->execute($prep, array($couponUPC));

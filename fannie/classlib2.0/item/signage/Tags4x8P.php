@@ -29,10 +29,19 @@ class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
     protected $MED_FONT = 14;
     protected $SMALL_FONT = 10;
 
+    protected $font = 'Arial';
+    protected $alt_font = 'Arial';
+
     public function drawPDF()
     {
         $pdf = new \FPDF('P', 'mm', 'Letter');
-        $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+        if (\COREPOS\Fannie\API\FanniePlugin::isEnabled('CoopDealsSigns')) {
+            $this->font = 'Gill';
+            $this->alt_font = 'GillBook';
+            define('FPDF_FONTPATH', dirname(__FILE__) . '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+            $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+            $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
+        }
 
         $width = 52; // tag width in mm
         $height = 31; // tag height in mm
@@ -75,10 +84,11 @@ class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
                 'align' => 'L',
                 'suffix' => date('  n/j/y'),
                 'fontsize' => 8,
+                'font' => $this->font,
             );
             $pdf = $this->drawBarcode($upc, $pdf, $x + 7, $y + 4, $args);
 
-            $pdf->SetFont('Gill', '', 8);
+            $pdf->SetFont($this->font, '', 8);
 
             $pdf->SetXY($x,$y+12);
             $pdf->Cell($width,4,$desc,0,1,'L');
@@ -98,7 +108,7 @@ class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
             }
 
             $pdf->SetXY($x, $y+16);
-            $pdf->SetFont('Arial','B',24);  //change font size
+            $pdf->SetFont($this->font,'B',24);  //change font size
             $pdf->Cell($width-5,8,$price,0,0,'R');
 
             // move right by tag width

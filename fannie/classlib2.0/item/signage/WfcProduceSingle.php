@@ -30,13 +30,21 @@ class WfcProduceSingle extends \COREPOS\Fannie\API\item\FannieSignage
     protected $MED_FONT = 24;
     protected $SMALL_FONT = 14;
 
+    protected $font = 'Arial';
+    protected $alt_font = 'Arial';
+
     public function drawPDF()
     {
         $pdf = new \FPDF('L', 'mm', 'Letter');
         $pdf->SetMargins(3.175, 3.175, 3.175);
         $pdf->SetAutoPageBreak(false);
-        $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
-        $pdf->SetFont('Gill', '', 16);
+        if (\COREPOS\Fannie\API\FanniePlugin::isEnabled('CoopDealsSigns')) {
+            $this->font = 'Gill';
+            $this->alt_font = 'GillBook';
+            define('FPDF_FONTPATH', dirname(__FILE__) . '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+            $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+        }
+        $pdf->SetFont($this->font, '', 16);
 
         $data = $this->loadItems();
         $width = 136.52;

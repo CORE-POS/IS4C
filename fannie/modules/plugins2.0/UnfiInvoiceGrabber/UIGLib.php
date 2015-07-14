@@ -75,14 +75,12 @@ class UIGLib
 
             if (count($item_info) > 0) {
                 $id = false;
-                if ($repeat) {
-                    // date has been downloaded before; lookup orderID
-                    $idR = $dbc->execute($find, array($vendorID, $header_info['vendorInvoiceID']));
-                    if ($dbc->num_rows($idR) > 0) {
-                        $idW = $dbc->fetch_row($idR);
-                        $id = $idW['orderID'];
-                        $dbc->execute($clear, array($id));
-                    }
+                // check whether order already exists
+                $idR = $dbc->execute($find, array($vendorID, $header_info['vendorInvoiceID']));
+                if ($dbc->num_rows($idR) > 0) {
+                    $idW = $dbc->fetch_row($idR);
+                    $id = $idW['orderID'];
+                    $dbc->execute($clear, array($id));
                 }
                 if (!$id) {
                     // date has not been downloaded before OR

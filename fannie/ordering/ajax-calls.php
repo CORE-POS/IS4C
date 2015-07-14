@@ -772,7 +772,8 @@ function duplicateOrder($old_id,$from='CompleteSpecialOrder')
             WHERE order_id=?");
     $dbc->exec_statement($delQ,array($new_id));
 
-    $copyQ = $dbc->prepare_statement("INSERT INTO {$TRANS}PendingSpecialOrder
+    $copyP = $dbc->prepare_statement("
+        INSERT INTO {$TRANS}PendingSpecialOrder
         SELECT ?,".$dbc->now().",
         register_no,emp_no,trans_no,upc,description,
         trans_type,trans_subtype,trans_status,
@@ -782,8 +783,41 @@ function duplicateOrder($old_id,$from='CompleteSpecialOrder')
         voided,percentDiscount,ItemQtty,volDiscType,
         volume,VolSpecial,mixMatch,matched,memtype,
         staff,0,'',card_no,trans_id
-        FROM {$TRANS}$from WHERE order_id=?");
-    $dbc->exec_statement($copyQ, array($new_id,$old_id));
+        FROM {$TRANS}$from WHERE order_id=? AND trans_id=?");
+    $dbc->exec_statement($copyP, array($new_id,$old_id,0));
+
+    /**
+      Copy order items one at a time
+      If the item exists in products or vendorItems, re-add it
+      by UPC so that the new order reflects up to date pricing.
+      Otherwise if the item is completely unknown, just copy it
+      from the old order to the new one.
+    */
+    $prodP = $dbc->prepare('SELECT upc FROM products WHERE upc=?');
+    $vendP = $dbc->prepare('SELECT upc FROM vendorItems WHERE upc=?');
+    $itemP = $dbc->prepare('
+        SELECT upc,
+            ItemQtty,
+            card_no,
+            trans_id
+        FROM ' . $TRANS . $from . '
+        WHERE order_id=?
+            AND trans_id > 0');
+    $itemR = $dbc->execute($itemP, array($old_id));
+    while ($itemW = $dbc->fetchRow($itemR)) {
+        $prod = $dbc->execute($prodP, array($itemW['upc']));
+        if ($itemW['upc'] != '0000000000000' && $prod && $dbc->numRows($prod)) {
+            addUPC($new_id, $itemW['card_no'], $itemW['upc'], $itemW['ItemQtty']);
+            continue;
+        }
+        $vend = $dbc->execute($vendP, array($itemW['upc']));
+        if ($itemW['upc'] != '0000000000000' && $vend && $dbc->numRows($vend)) {
+            addUPC($new_id, $itemW['card_no'], $itemW['upc'], $itemW['ItemQtty']);
+            continue;
+        }
+
+        $dbc->execute($copyP, array($new_id,$old_id,$itemW['trans_id']));
+    }
 
     $user = checkLogin();
     $userQ = $dbc->prepare_statement("UPDATE {$TRANS}PendingSpecialOrder SET mixMatch=?

@@ -46,25 +46,62 @@ class ProdUserModule extends ItemModule
         $model->upc($upc);
         $model->load();
 
+        $loc = new ProdPhysicalLocationModel($dbc);
+        $loc->upc($upc);
+        $loc->load();
+
+        $sections = new FloorSectionsModel($dbc);
+
         $prod = new ProductsModel($dbc);
         $prod->upc($upc);
         $prod->load();
 
         $ret .= '<div class="col-sm-6">';
-        $ret .= '<div class="form-group form-inline">'
-                . '<label>Brand</label> '
+        $ret .= '<div class="row form-group">'
+                . '<label class="col-sm-1">Brand</label> '
+                . '<div class="col-sm-8">'
                 . '<input type="text" class="form-control" id="lf_brand" name="lf_brand" value="' . $model->brand() . '" />'
+                . '</div>'
+                . '<div class="col-sm-3">'
                 . ' <a href="" onclick="createSign(); return false;">Make Sign</a>'
+                . '</div>'
                 . '</div>';
-        $ret .= '<div class="form-group form-inline">'
-                . '<label>Desc.</label> '
-                . '<input type="text" class="form-control" id="lf_desc" name="lf_desc" value="' . $model->description() . '" />'
+        $ret .= '<div class="row form-group">'
+                . '<label class="col-sm-1">Desc.</label> '
+                . '<div class="col-sm-8">'
+                . '<textarea class="form-control" rows="2" id="lf_desc" name="lf_desc">'
+                . $model->description()
+                . '</textarea>'
+                . '</div>'
                 . '</div>';
 
-        $otherOriginBlock = '<div class=form-inline><select name=otherOrigin[] class=form-control><option value=0>n/a</option>';
+        $ret .= '<div class="row form-group">
+                    <label tile="Location on the floor" class="col-sm-1">Loc.</label>
+                    <div class="col-sm-8">
+                        <select name="floor-id" class="form-control">
+                            <option value="0">n/a</option>';
+        foreach ($sections->find('name') as $section) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                    ($loc->floorSectionID() == $section->floorSectionID() ? 'selected' : ''),
+                    $section->floorSectionID(), $section->name()
+            );
+        }
+        $ret .= '</select>
+                </div>
+                <div class="col-sm-3 text-left">
+                    <a href="mapping/FloorSectionsPage.php" target="_blank">Add more</a>
+                </div>
+                </div>';
 
-        $ret .= '<div class="form-group form-inline">'
-                . '<label><a href="' . $FANNIE_URL . 'item/origins/OriginEditor.php">Origin</a></label>'
+
+        $otherOriginBlock = '<div class=row>
+                <div class=col-sm-1 />
+                <div class=col-sm-8>
+            <select name=otherOrigin[] class=form-control><option value=0>n/a</option>';
+
+        $ret .= '<div class="row form-group">'
+                . '<label class="col-sm-1"><a href="' . $FANNIE_URL . 'item/origins/OriginEditor.php">Origin</a></label>'
+                . '<div class="col-sm-8">'
                 . ' <select name="origin" class="form-control">'
                 . '<option value="0">n/a</option>';
         $origins = new OriginsModel($dbc);
@@ -76,11 +113,12 @@ class ProdUserModule extends ItemModule
             $otherOriginBlock .= sprintf('<option value=%d>%s</option>',
                                             $o->originID(), $o->name());
         }
-        $ret .= '</select>';
-        $otherOriginBlock .= '</div>';
+        $ret .= '</select></div>';
+        $otherOriginBlock .= '</div></div>';
+        $ret .= '<div class="col-sm-3 text-left">';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;<a href="" 
                 onclick="$(\'#originsBeforeMe\').before(\'' . $otherOriginBlock . '\'); return false;">Add more</a>';
-        $ret .= '</div>';
+        $ret .= '</div></div>';
 
         $mapP = 'SELECT originID FROM ProductOriginsMap WHERE upc=? AND originID <> ?';
         $mapR = $dbc->execute($mapP, array($upc, $prod->current_origin_id()));
@@ -118,6 +156,7 @@ class ProdUserModule extends ItemModule
         $brand = FormLib::get('lf_brand');
         $desc = FormLib::get('lf_desc');
         $origin = FormLib::get('origin', 0);
+        $floorID = FormLib::get('floor-id', 0);
         $text = FormLib::get('lf_text');
         $text = str_replace("\r", '', $text);
         $text = str_replace("\n", '<br />', $text);
@@ -125,6 +164,11 @@ class ProdUserModule extends ItemModule
         $text = preg_replace("/[^\x01-\x7F]/","", $text); 
 
         $dbc = $this->db();
+
+        $loc = new ProdPhysicalLocationModel($dbc);
+        $loc->upc($upc);
+        $loc->floorSectionID($floorID);
+        $loc->save();
 
         $model = new ProductUserModel($dbc);
         $model->upc($upc);

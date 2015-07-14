@@ -67,6 +67,7 @@ class OpenRingsReport extends FannieReportPage
         $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
+        $deptMulti = FormLib::get('departments', array());
     
         $buyer = FormLib::get('buyer', '');
 
@@ -83,9 +84,18 @@ class OpenRingsReport extends FannieReportPage
             }
         }
         if ($buyer != -1) {
-            $where .= ' AND d.department BETWEEN ? AND ? ';
-            $args[] = $deptStart;
-            $args[] = $deptEnd;
+            if (count($deptMulti) > 0) {
+                $where .= ' AND d.department IN (';
+                foreach ($deptMulti as $d) {
+                    $where .= '?,';
+                    $args[] = $d;
+                }
+                $where = substr($where, 0, strlen($where)-1) . ')';
+            } else {
+                $where .= ' AND d.department BETWEEN ? AND ? ';
+                $args[] = $deptStart;
+                $args[] = $deptEnd;
+            }
         }
 
         $tempTables = array(

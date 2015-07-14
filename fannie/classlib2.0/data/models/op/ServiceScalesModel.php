@@ -37,6 +37,9 @@ class ServiceScalesModel extends BasicModel
     'scaleType' => array('type'=>'VARCHAR(50)'),
     'scaleDeptName' => array('type'=>'VARCHAR(25)'),
     'superID' => array('type'=>'INT'),
+    'epDeptNo' => array('type'=>'SMALLINT', 'default'=>1),
+    'epStoreNo' => array('type'=>'SMALLINT', 'default'=>0),
+    'epScaleAddress' => array('type'=>'SMALLINT', 'default'=>1),
     );
 
     public function doc()
@@ -267,6 +270,117 @@ List service scales and network info.
                 }
             }
             $this->instance["superID"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function epDeptNo()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["epDeptNo"])) {
+                return $this->instance["epDeptNo"];
+            } else if (isset($this->columns["epDeptNo"]["default"])) {
+                return $this->columns["epDeptNo"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'epDeptNo',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["epDeptNo"]) || $this->instance["epDeptNo"] != func_get_args(0)) {
+                if (!isset($this->columns["epDeptNo"]["ignore_updates"]) || $this->columns["epDeptNo"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["epDeptNo"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function epStoreNo()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["epStoreNo"])) {
+                return $this->instance["epStoreNo"];
+            } else if (isset($this->columns["epStoreNo"]["default"])) {
+                return $this->columns["epStoreNo"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'epStoreNo',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["epStoreNo"]) || $this->instance["epStoreNo"] != func_get_args(0)) {
+                if (!isset($this->columns["epStoreNo"]["ignore_updates"]) || $this->columns["epStoreNo"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["epStoreNo"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function epScaleAddress()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["epScaleAddress"])) {
+                return $this->instance["epScaleAddress"];
+            } else if (isset($this->columns["epScaleAddress"]["default"])) {
+                return $this->columns["epScaleAddress"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'epScaleAddress',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["epScaleAddress"]) || $this->instance["epScaleAddress"] != func_get_args(0)) {
+                if (!isset($this->columns["epScaleAddress"]["ignore_updates"]) || $this->columns["epScaleAddress"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["epScaleAddress"] = func_get_arg(0);
         }
         return $this;
     }

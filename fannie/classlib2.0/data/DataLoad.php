@@ -116,7 +116,7 @@ class DataLoad
                 $error = $sql->error();
                 echo "<br><span style='color:red;'>"
                     . (strlen($error)? $error : 'Unknown error')
-                    . " executing:<br><code>{$query}</code><br></span><br>\n";
+                    . " executing:<br><code>{$prep[0]}</code><br></span><br>\n";
             }
             /** alternate implementation
                 for non-mysql and/or LOAD DATA LOCAL

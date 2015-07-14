@@ -92,6 +92,14 @@ class TenderModule
                 false,
                 $clearButton
             );
+        } elseif (CoreLocal::get('refund') == 1) {
+            CoreLocal::set('refund', 0);
+            return DisplayLib::boxMsg(
+                _("refund cannot apply to tender"),
+                '',
+                false,
+                $clearButton
+            );
         } else if ($this->amount > 99999.99) {
             return DisplayLib::boxMsg(
                 _("tender amount of") . " " . $this->amount . "<br />" . _("exceeds allowable limit"),
@@ -123,6 +131,13 @@ class TenderModule
         } elseif(CoreLocal::get("amtdue")>0 && $this->amount < 0) { 
             return DisplayLib::xboxMsg(
                 _("Why are you using a negative number for a positive sale?"),
+                $clearButton
+            );
+        } elseif (CoreLocal::get('TenderHardMinMax') && $this->amount > $this->max_limit) {
+            return DisplayLib::boxMsg(
+                "$" . $this->amount . " " . _("is greater than tender limit for") . " " . $this->name_string,
+                '',
+                false,
                 $clearButton
             );
         }

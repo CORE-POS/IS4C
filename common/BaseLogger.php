@@ -131,6 +131,7 @@ class BaseLogger
             return false;
         }
 
+        socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 5, 'usec' => 0)); 
         if (!socket_connect($socket, $this->syslog_host, $this->syslog_port)) {
             $this->debug('Unable to connect to ' . $this->syslog_host . ':' . $this->syslog_port
                 . ' for remote logging. Error: ' . socket_last_error(), $context);

@@ -146,10 +146,22 @@ class ScaleItemModule extends ItemModule
                 }
             }
 
-            $ret .= sprintf('<input type="checkbox" name="scaleID[]" id="scaleID%d" value=%d %s />
-                            <label for="scaleID%d">%s</label><br />',
+            $css_class = '';
+            $title = '';
+            if ($checked) {
+                $online = \COREPOS\Fannie\API\item\HobartDgwLib::scaleOnline($scale->host());
+                $css_class = $online ? 'has-success' : 'has-danger';
+                $title = $online ? 'Scale Online' : 'Scale Offline';
+            }
+            $ret .= sprintf('<div class="form-group %s" title="%s"><div class="checkbox">
+                            <label class="control-label">
+                            <input type="checkbox" name="scaleID[]" id="scaleID%d" value=%d %s />
+                            %s</label>
+                            </div></div>',
+                            $css_class, $title,
                             $scale->serviceScaleID(), $scale->serviceScaleID(), ($checked ? 'checked' : ''),
-                            $scale->serviceScaleID(), $scale->description());
+                            $scale->description()
+            );
         }
         $ret .= '</div>';
         $ret .= "</td></tr>";
@@ -266,37 +278,85 @@ class ScaleItemModule extends ItemModule
         $scales = array();
         $scaleIDs = FormLib::get('scaleID', array());
         $model = new ServiceScalesModel($dbc);
-        $chkMap = $dbc->prepare('SELECT upc
-                                 FROM ServiceScaleItemMap
-                                 WHERE serviceScaleID=?
-                                    AND upc=?');
-        $addMap = $dbc->prepare('INSERT INTO ServiceScaleItemMap
-                                    (serviceScaleID, upc)
-                                 VALUES
-                                    (?, ?)');
-        foreach ($scaleIDs as $scaleID) {
-            $model->reset();
-            $model->serviceScaleID($scaleID);
-            if (!$model->load()) {
-                // scale doesn't exist
-                continue;
-            }
-            $repr = array(
-                'host' => $model->host(),
-                'dept' => $model->scaleDeptName(),
-                'type' => $model->scaleType(),  
-                'new' => false,
-            );
-            $exists = $dbc->execute($chkMap, array($scaleID, $upc));
-            if ($dbc->num_rows($exists) == 0) {
-                $repr['new'] = true;
-                $dbc->execute($addMap, array($scaleID, $upc));
+        /**
+          Send item to requested scales
+        */
+        if (count($scaleIDs) > 0) {
+            $chkMap = $dbc->prepare('SELECT upc
+                                     FROM ServiceScaleItemMap
+                                     WHERE serviceScaleID=?
+                                        AND upc=?');
+            $addMap = $dbc->prepare('INSERT INTO ServiceScaleItemMap
+                                        (serviceScaleID, upc)
+                                     VALUES
+                                        (?, ?)');
+            foreach ($scaleIDs as $scaleID) {
+                $model->reset();
+                $model->serviceScaleID($scaleID);
+                if (!$model->load()) {
+                    // scale doesn't exist
+                    continue;
+                }
+                $repr = array(
+                    'host' => $model->host(),
+                    'dept' => $model->scaleDeptName(),
+                    'type' => $model->scaleType(),  
+                    'new' => false,
+                );
+                $exists = $dbc->execute($chkMap, array($scaleID, $upc));
+                if ($dbc->num_rows($exists) == 0) {
+                    $repr['new'] = true;
+                    $dbc->execute($addMap, array($scaleID, $upc));
+                }
+
+                $scales[] = $repr;
             }
 
-            $scales[] = $repr;
+            HobartDgwLib::writeItemsToScales($item_info, $scales);
+            EpScaleLib::writeItemsToScales($item_info, $scales);
         }
 
-        HobartDgwLib::writeItemsToScales($item_info, $scales);
+        /**
+          Delete item from scales if that
+          option was unchecked
+        */
+        $mapP = $dbc->prepare('
+            SELECT serviceScaleID
+            FROM ServiceScaleItemMap
+            WHERE upc=?');
+        $mapR = $dbc->execute($mapP, array($upc));
+        $delP = $dbc->prepare('
+            DELETE
+            FROM ServiceScaleItemMap
+            WHERE serviceScaleID=?
+                AND upc=?');
+        if ($mapR && $dbc->numRows($mapR)) {
+            $scales = array();
+            while ($mapW = $dbc->fetchRow($mapR)) {
+                if (in_array($mapW['serviceScaleID'], $scaleIDs)) {
+                    // item sent to that scale
+                    continue;
+                }
+                $model->reset();
+                $model->serviceScaleID($mapW['serviceScaleID']);
+                if (!$model->load()) {
+                    // scale doesn't exist
+                    continue;
+                }
+                $repr = array(
+                    'host' => $model->host(),
+                    'dept' => $model->scaleDeptName(),
+                    'type' => $model->scaleType(),  
+                    'new' => false,
+                );
+                $scales[] = $repr;
+
+                $dbc->execute($delP, array($mapW['serviceScaleID'], $upc));
+            }
+            if (count($scales) > 0) {
+                HobartDgwLib::deleteItemsFromScales($item_info['PLU'], $scales); 
+            }
+        }
     }
 }
 

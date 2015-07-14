@@ -30,6 +30,9 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected $title = "Fannie -  Sales Batch";
     protected $header = "Upload Batch file";
 
+    protected $auth_classes = array('batches');
+    protected $must_authenticate = true;
+
     public $description = '[Excel Batch] creates a sale or price change batch from a spreadsheet.';
     public $themed = true;
 

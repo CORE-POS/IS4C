@@ -31,23 +31,31 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
     protected $SMALLER_FONT = 8;
     protected $SMALLEST_FONT = 6;
 
+    protected $font = 'Arial';
+    protected $alt_font = 'Arial';
+
     public function drawPDF()
     {
         $pdf = new \FPDF('L', 'mm', 'Letter');
         $pdf->SetMargins(3.175, 3.175, 3.175);
         $pdf->SetAutoPageBreak(false);
-        $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
-        $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
-        $pdf->AddFont('GillBook', '', 'GillSansMTPro-Book.php');
-        $pdf->SetFont('Gill', '', 16);
+        if (\COREPOS\Fannie\API\FanniePlugin::isEnabled('CoopDealsSigns')) {
+            $this->font = 'Gill';
+            $this->alt_font = 'GillBook';
+            define('FPDF_FONTPATH', dirname(__FILE__) . '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+            $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+            $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
+            $pdf->AddFont('GillBook', '', 'GillSansMTPro-Book.php');
+        }
+        $pdf->SetFont($this->font, '', 16);
 
         $data = $this->loadItems();
         $count = 0;
         $sign = 0;
-        $width = 66.67;
-        $height = 70;
-        $top = 18;
-        $left = 10;
+        $width = 68.67;
+        $height = 71;
+        $top = 15;
+        $left = 8.5;
         $effective_width = $width - $left;
         foreach ($data as $item) {
             if ($count % 12 == 0) {
@@ -58,13 +66,18 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
             $row = floor($sign / 4);
             $column = $sign % 4;
 
-            $price = sprintf('$%.2f', $item['normal_price']);
+            $price = $item['normal_price'];
             if ($item['scale']) {
-                $price .= ' / lb';
+                if (substr($price, 0, 1) != '$') {
+                    $price = sprintf('$%.2f', $price);
+                }
+                $price .= ' /lb.';
+            } else {
+                $price = $this->formatPrice($item['normal_price']);
             }
 
             $pdf->SetXY($left + ($width*$column), $top + ($row*$height));
-            $pdf->SetFont('Gill', 'B', $this->SMALL_FONT);
+            $pdf->SetFont($this->font, 'B', $this->SMALL_FONT);
             $pdf->MultiCell($effective_width, 7, strtoupper($item['brand']), 0, 'C');
 
             /**
@@ -75,7 +88,7 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
               effective text size with smart line breaks seems
               really tough.
             */
-            $pdf->SetFont('Gill', '', $this->MED_FONT);
+            $pdf->SetFont($this->font, '', $this->MED_FONT);
             $font_shrink = 0;
             while (true) {
                 $pdf->SetX($left + ($width*$column));
@@ -92,34 +105,58 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
                     $pdf->SetXY($left + ($width*$column), $y);
                 } else {
                     if ($pdf->GetY() - $y < 14) {
-                        $pdf->Ln(7);
+                        $words = explode(' ', $item['description']);
+                        $multi = '';
+                        for ($i=0;$i<floor(count($words)/2);$i++) {
+                            $multi .= $words[$i] . ' ';
+                        }
+                        $multi = trim($multi) . "\n";
+                        for ($i=floor(count($words)/2); $i<count($words); $i++) {
+                            $multi .= $words[$i] . ' ';
+                        }
+                        $item['description'] = trim($multi);
+                        $pdf->SetFillColor(0xff, 0xff, 0xff);
+                        $pdf->Rect($left + ($width*$column), $y, $left + ($width*$column) + $effective_width, $pdf->GetY(), 'F');
+                        $pdf->SetXY($left + ($width*$column), $y);
+                        $pdf->MultiCell($effective_width, 7, $item['description'], 0, 'C');
                     }
                     break;
                 }
             }
 
             $pdf->SetX($left + ($width*$column));
-            $pdf->SetFont('GillBook', '', $this->SMALLER_FONT);
+            $pdf->SetFont($this->alt_font, '', $this->SMALLER_FONT);
+            $item['size'] = strtolower($item['size']);
+            if (substr($item['size'], -1) != '.') {
+                $item['size'] .= '.'; // end abbreviation w/ period
+                $item['size'] = str_replace('fz.', 'fl oz.', $item['size']);
+            }
+            if (substr($item['size'], 0, 1) == '.') {
+                $item['size'] = '0' . $item['size']; // add leading zero on decimal qty
+            }
+            if (strlen(ltrim($item['upc'], '0')) < 5 && $item['scale']) {
+                $item['size'] = 'PLU# ' . ltrim($item['upc'], '0'); // show PLU #s on by-weight
+            }
             $pdf->Cell($effective_width, 6, $item['size'], 0, 1, 'C');
 
-            $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 23));
-            $pdf->SetFontSize($this->BIG_FONT);
+            $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 41));
+            $pdf->SetFont($this->font, '', $this->BIG_FONT);
             $pdf->Cell($effective_width, 12, $price, 0, 1, 'C');
 
             if ($item['startDate'] != '' && $item['endDate'] != '') {
                 // intl would be nice
-                $datestr = date('M j', strtotime($item['startDate']))
-                    . '-'
-                    . date('M j', strtotime($item['endDate']));
-                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 15));
-                $pdf->SetFont('GillBook', '', $this->SMALL_FONT);
-                $pdf->Cell($effective_width, 20, $datestr, 0, 1, 'R');
+                $datestr = date('M d', strtotime($item['startDate']))
+                    . chr(0x96) // en dash in cp1252
+                    . date('M d', strtotime($item['endDate']));
+                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 33));
+                $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+                $pdf->Cell($effective_width, 20, strtoupper($datestr), 0, 1, 'R');
             }
 
             if ($item['originShortName'] != '') {
-                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 15));
+                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 33));
                 $pdf->SetFontSize($this->SMALL_FONT);
-                $pdf->SetFont('GillBook', '', $this->SMALL_FONT);
+                $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $pdf->Cell($effective_width, 20, $item['originShortName'], 0, 1, 'L');
             }
 

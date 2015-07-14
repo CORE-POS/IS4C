@@ -51,43 +51,51 @@ class BaseItemModule extends ItemModule
         $ret = '<div id="BaseItemFieldset" class="panel panel-default">';
 
         $dbc = $this->db();
-        $p = $dbc->prepare_statement('SELECT
-                                        p.description,
-                                        p.pricemethod,
-                                        p.normal_price,
-                                        p.cost,
-                                        CASE 
-                                            WHEN p.size IS NULL OR p.size=\'\' OR p.size=\'0\' AND v.size IS NOT NULL THEN v.size 
-                                            ELSE p.size 
-                                        END AS size,
-                                        p.unitofmeasure,
-                                        p.modified,
-                                        p.special_price,
-                                        p.end_date,
-                                        p.subdept,
-                                        p.department,
-                                        p.tax,
-                                        p.foodstamp,
-                                        p.scale,
-                                        p.qttyEnforced,
-                                        p.discount,
-                                        p.line_item_discountable,
-                                        p.brand AS manufacturer,
-                                        x.distributor,
-                                        u.description as ldesc,
-                                        p.default_vendor_id,
-                                        v.units AS caseSize,
-                                        v.sku,
-                                        p.inUse,
-                                        p.idEnforced,
-                                        p.local,
-                                        p.deposit,
-                                        p.discounttype
-                                      FROM products AS p 
-                                        LEFT JOIN prodExtra AS x ON p.upc=x.upc 
-                                        LEFT JOIN productUser AS u ON p.upc=u.upc 
-                                        LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id = v.vendorID
-                                      WHERE p.upc=?');
+        $q = '
+            SELECT
+                p.description,
+                p.pricemethod,
+                p.normal_price,
+                p.cost,
+                CASE 
+                    WHEN p.size IS NULL OR p.size=\'\' OR p.size=\'0\' AND v.size IS NOT NULL THEN v.size 
+                    ELSE p.size 
+                END AS size,
+                p.unitofmeasure,
+                p.modified,
+                p.last_sold,
+                p.special_price,
+                p.end_date,
+                p.subdept,
+                p.department,
+                p.tax,
+                p.foodstamp,
+                p.scale,
+                p.qttyEnforced,
+                p.discount,
+                p.line_item_discountable,
+                p.brand AS manufacturer,
+                x.distributor,
+                u.description as ldesc,
+                p.default_vendor_id,
+                v.units AS caseSize,
+                v.sku,
+                p.inUse,
+                p.idEnforced,
+                p.local,
+                p.deposit,
+                p.discounttype,
+                p.wicable
+            FROM products AS p 
+                LEFT JOIN prodExtra AS x ON p.upc=x.upc 
+                LEFT JOIN productUser AS u ON p.upc=u.upc 
+                LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id = v.vendorID
+            WHERE p.upc=?';
+        $p_def = $dbc->tableDefinition('products');
+        if (!isset($p_def['last_sold'])) {
+            $q = str_replace('p.last_sold', 'NULL as last_sold', $q);
+        }
+        $p = $dbc->prepare($q);
         $r = $dbc->exec_statement($p,array($upc));
         $rowItem = array();
         $prevUPC = False;
@@ -159,6 +167,7 @@ class BaseItemModule extends ItemModule
                 'deposit' => 0,
                 'cost' => 0,
                 'discounttype' => 0,
+                'wicable' => 0,
             );
 
             /**
@@ -180,7 +189,7 @@ class BaseItemModule extends ItemModule
                     i.vendorID as default_vendor_id
                 FROM vendorItems AS i 
                     LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
-                    LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID
+                    LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID AND d.vendorID=i.vendorID
                 WHERE i.upc=?";
             $args = array($upc);
             $vID = FormLib::get_form_value('vid','');
@@ -188,13 +197,14 @@ class BaseItemModule extends ItemModule
                 $vendorP .= ' AND i.vendorID=?';
                 $args[] = $vID;
             }
+            $vendorP .= ' ORDER BY i.vendorID';
             $vendorP = $dbc->prepare_statement($vendorP);
             $vendorR = $dbc->exec_statement($vendorP,$args);
             
             if ($dbc->num_rows($vendorR) > 0){
                 $v = $dbc->fetch_row($vendorR);
-                $ret .= "<br /><i>This product is in the ".$v['distributor']." catalog. Values have
-                    been filled in where possible</i><br />";
+                $ret .= "<div><i>This product is in the ".$v['distributor']." catalog. Values have
+                    been filled in where possible</i></div>";
                 $rowItem['description'] = $v['description'];
                 $rowItem['manufacturer'] = $v['manufacturer'];
                 $rowItem['cost'] = $v['cost'];
@@ -205,8 +215,8 @@ class BaseItemModule extends ItemModule
                 $rowItem['caseSize'] = $v['units'];
                 $rowItem['sku'] = $v['sku'];
 
-                while($v = $dbc->fetch_row($vendorR)){
-                    printf('This product is also in <a href="?searchupc=%s&vid=%d">%s</a><br />',
+                while ($v = $dbc->fetch_row($vendorR)) {
+                    $ret .= sprintf('This product is also in <a href="?searchupc=%s&vid=%d">%s</a><br />',
                         $upc,$v['vendorID'],$v['distributor']);
                 }
             }
@@ -218,30 +228,52 @@ class BaseItemModule extends ItemModule
             */
             $rowItem['department'] = 0;
             $search = substr($upc,0,12);
-            $searchP = $dbc->prepare_statement('SELECT department FROM products WHERE upc LIKE ?');
-            while(strlen($search) >= 8){
-                $searchR = $dbc->exec_statement($searchP,array($search.'%'));
-                if ($dbc->num_rows($searchR) > 0){
-                    $searchW = $dbc->fetch_row($searchR);
+            $searchP = $dbc->prepare('SELECT department FROM products WHERE upc LIKE ?');
+            while (strlen($search) >= 8) {
+                $searchR = $dbc->execute($searchP,array($search.'%'));
+                if ($dbc->numRows($searchR) > 0) {
+                    $searchW = $dbc->fetchRow($searchR);
                     $rowItem['department'] = $searchW['department'];
-                    $settingP = $dbc->prepare_statement('SELECT dept_tax,dept_fs,dept_discount
-                                FROM departments WHERE dept_no=?');
-                    $settingR = $dbc->exec_statement($settingP,array($rowItem['department']));
-                    if ($dbc->num_rows($settingR) > 0){
-                        $d = $dbc->fetch_row($settingR);
-                        $rowItem['tax'] = $d['dept_tax'];
-                        $rowItem['foodstamp'] = $d['dept_fs'];
-                        $rowItem['discount'] = $d['dept_discount'];
-                    }
                     break;
                 }
                 $search = substr($search,0,strlen($search)-1);
             }
+            /**
+              If no match is found, pick the most
+              commonly used department
+            */
+            if ($rowItem['department'] == 0) {
+                $commonQ = '
+                    SELECT department,
+                        COUNT(*)
+                    FROM products
+                    GROUP BY department
+                    ORDER BY COUNT(*) DESC';
+                $commonR = $dbc->query($commonQ);
+                if ($commonR && $dbc->numRows($commonR)) {
+                    $commonW = $dbc->fetchRow($commonR);
+                    $rowItem['department'] = $commonW['department'];
+                }
+            }
+            /**
+              Get defaults for chosen department
+            */
+            $dmodel = new DepartmentsModel($dbc);
+            $dmodel->dept_no($rowItem['department']);
+            if ($dmodel->load()) {
+                $rowItem['tax'] = $dmodel->dept_tax();
+                $rowItem['foodstamp'] = $dmodel->dept_fs();
+                $rowItem['discount'] = $dmodel->dept_discount();
+            }
         }
 
-        $ret .= '
-            <div class="panel-heading">
-                <strong>UPC</strong>
+        $ret .= '<div class="panel-heading">';
+        if ($prevUPC) {
+            $ret .= ' <a class="btn btn-default btn-xs small" href="ItemEditorPage.php?searchupc=' . $prevUPC . '"
+                title="Previous item in this department">
+                <span class="glyphicon glyphicon-chevron-left"></span></a> ';
+        }
+        $ret .= '<strong>UPC</strong>
                 <span class="text-danger">';
         switch ($barcode_type) {
             case 'EAN':
@@ -272,14 +304,15 @@ class BaseItemModule extends ItemModule
         }
         $ret .= '</span>';
         $ret .= '<input type="hidden" id="upc" name="upc" value="' . $upc . '" />';
-        if ($prevUPC) {
-            $ret .= ' <a class="small" href="ItemEditorPage.php?searchupc=' . $prevUPC . '">Previous</a>';
-        }
         if ($nextUPC) {
-            $ret .= ' <a class="small" href="ItemEditorPage.php?searchupc=' . $nextUPC . '">Next</a>';
+            $ret .= ' <a class="btn btn-default btn-xs small" href="ItemEditorPage.php?searchupc=' . $nextUPC . '"
+                title="Next item in this department">
+                <span class="glyphicon glyphicon-chevron-right"></span></a>';
         }
         $ret .= ' <label style="color:darkmagenta;">Modified</label>
                 <span style="color:darkmagenta;">'. $rowItem['modified'] . '</span>';
+        $ret .= ' | <label style="color:darkmagenta;">Last Sold</label>
+                <span style="color:darkmagenta;">'. (empty($rowItem['last_sold']) ? 'n/a' : $rowItem['last_sold']) . '</span>';
         $ret .= '</div>'; // end panel-heading
 
         $ret .= '<div class="panel-body">';
@@ -293,15 +326,15 @@ class BaseItemModule extends ItemModule
         $ret .= '<input type="hidden" name="store_id" value="0" />';
         $ret .= '<table class="table table-bordered">';
 
-        $limit = 35 - strlen(isset($rowItem['description'])?$rowItem['description']:'');
+        $limit = 30 - strlen(isset($rowItem['description'])?$rowItem['description']:'');
         $ret .= 
             '<tr>
-                <th>Description</th>
+                <th class="text-right">Description</th>
                 <td colspan="5">
                     <div class="input-group" style="width:100%;">
                         <input type="text" maxlength="30" class="form-control"
                             name="descript" id="descript" value="' . $rowItem['description'] . '"
-                            onkeyup="$(\'#dcounter\').html(35-(this.value.length));" />
+                            onkeyup="$(\'#dcounter\').html(30-(this.value.length));" />
                         <span id="dcounter" class="input-group-addon">' . $limit . '</span>
                     </div>
                 </td>
@@ -381,7 +414,8 @@ class BaseItemModule extends ItemModule
                 ."\" id=\"vendor_field\" class=\"form-control\" />";
         }
         $ret .= ' <button type="button" id="newVendorButton"
-                    class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>';
+                    title="Create new vendor"
+                    class="btn btn-default btn-sm"><span class="glyphicon glyphicon-plus"></span></button>';
         $ret .= '</td></tr>'; // end row
 
         $ret .= '<div id="newVendorDialog" title="Create new Vendor" class="collapse">';
@@ -487,7 +521,7 @@ class BaseItemModule extends ItemModule
                 <select name="department" id="department" 
                     class="form-control chosen-select" onchange="baseItemChainSubs();">';
         foreach ($depts as $id => $name){
-            if (is_array($supers[$superID])) {
+            if (is_numeric($superID) && is_array($supers[$superID])) {
                 if (!in_array($id, $supers[$superID]) && $id != $rowItem['department']) {
                     continue;
                 }
@@ -546,6 +580,11 @@ class BaseItemModule extends ItemModule
                     ' . ($rowItem['qttyEnforced'] == 1 ? 'checked' : '') . ' />
                 </label>
                 &nbsp;&nbsp;&nbsp;&nbsp;
+                <label>WIC
+                <input type="checkbox" value="1" name="prod-wicable" id="prod-wicable-checkbox"
+                    ' . ($rowItem['wicable'] == 1 ? 'checked' : '') . '  />
+                </label>
+                &nbsp;&nbsp;&nbsp;&nbsp;
                 <label>InUse
                 <input type="checkbox" value="1" name="prod-in-use" id="in-use-checkbox"
                     ' . ($rowItem['inUse'] == 1 ? 'checked' : '') . ' 
@@ -601,12 +640,12 @@ class BaseItemModule extends ItemModule
                         onchange="$(\'#vsize' . $jsVendorID . '\').val(this.value);" 
                         id="product-pack-size" />
                 </td>
-                <th class="small">Unit of measure</th>
+                <th class="small text-right">Unit of measure</th>
                 <td class="col-sm-1">
                     <input type="text" name="unitm" class="form-control input-sm"
                         value="' . $rowItem['unitofmeasure'] . '" id="unit-of-measure" />
                 </td>
-                <th class="small">Age Req</th>
+                <th class="small text-right">Age Req</th>
                 <td class="col-sm-1">
                     <select name="id-enforced" id="id-enforced" class="form-control input-sm"
                         onchange="$(\'#idReq\').val(this.value);">';
@@ -802,6 +841,7 @@ class BaseItemModule extends ItemModule
         $model->foodstamp(FormLib::get_form_value('FS',0));
         $model->scale(FormLib::get_form_value('Scale',0));
         $model->qttyEnforced(FormLib::get_form_value('QtyFrc',0));
+        $model->wicable(FormLib::get('prod-wicable', 0));
         $discount_setting = FormLib::get('discount', 1);
         switch ($discount_setting) {
             case 0:

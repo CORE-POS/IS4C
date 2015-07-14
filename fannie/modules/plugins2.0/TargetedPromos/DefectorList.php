@@ -12,6 +12,7 @@ class DefectorList extends FanniePage
         $settings = $this->config->PLUGIN_SETTINGS;
         $dbc->selectDB($settings['TargetedPromosDB']);
         $model = new DefectorTargetsModel($dbc);
+        $model->addedDate('2015-06-01', '>');
         echo '<textarea>';
         foreach ($model->find() as $obj) {
             echo $obj->card_no() . "\n";

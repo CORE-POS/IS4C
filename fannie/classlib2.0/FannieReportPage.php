@@ -118,6 +118,13 @@ class FannieReportPage extends FanniePage
     protected $sort_direction = 0;
 
     /**
+      false => use tablesorter v. 2.0.5b
+      true  => use tablesorter v. 2.22.1 (bootstrap compatible)
+    */
+    protected $new_tablesorter = false;
+
+
+    /**
       Disable inclusion of jquery. In rare cases the report 
       content may be embedded in a page that already included
       jquery and multiple copies included can cause problems.
@@ -178,6 +185,7 @@ class FannieReportPage extends FanniePage
             $this->content_function = 'report_content'; 
             if ($this->config->get('WINDOW_DRESSING')) {
                 $this->has_menus(true);
+                $this->new_tablesorter = true;
             } else {
                 $this->has_menus(false);
             }
@@ -603,7 +611,11 @@ class FannieReportPage extends FanniePage
         switch(strtolower($format)) {
             case 'html':
                 if ($this->multi_counter == 1) {
-                    $this->add_css_file($url . 'src/javascript/tablesorter/themes/blue/style.css');
+                    if (!$this->new_tablesorter) {
+                        $this->add_css_file($url . 'src/javascript/tablesorter/themes/blue/style.css');
+                    } else {
+                        $this->add_css_file($url . 'src/javascript/tablesorter-2.22.1/css/theme.bootstrap.css');
+                    }
                     if (!$this->window_dressing) {
                         $ret .= '<!DOCTYPE html><html><head>' .
                         '<meta http-equiv="Content-Type" ' .
@@ -746,13 +758,25 @@ class FannieReportPage extends FanniePage
                 foreach($this->report_end_content() as $line) {
                     $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
                 }
-                if (!$this->no_jquery) {
+                if (!$this->no_jquery && !$this->new_tablesorter) {
                     $this->add_script($url . 'src/javascript/jquery.js');
                 }
-                $this->add_script($url . 'src/javascript/tablesorter/jquery.tablesorter.js');
+                if (!$this->new_tablesorter) {
+                    $this->add_script($url . 'src/javascript/tablesorter/jquery.tablesorter.js');
+                } else {
+                    $this->add_script($url . 'src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.js');
+                    $this->add_script($url . 'src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');
+                }
                 $sort = sprintf('[[%d,%d]]',$this->sort_column,$this->sort_direction);
                 if ($this->sortable) {
-                    $this->add_onload_command("\$('.mySortableTable').tablesorter({sortList: $sort, widgets: ['zebra']});");
+                    if (!$this->new_tablesorter) {
+                        $this->add_onload_command("\$('.mySortableTable').tablesorter({sortList: $sort, widgets: ['zebra']});");
+                    } else {
+                        $this->add_onload_command("\$.tablesorter.themes.bootstrap['active'] = 'info';");
+                        $this->add_onload_command("\$.tablesorter.themes.bootstrap['table'] += ' tablesorter-core table-condensed small';");
+                        $this->add_onload_command("\$.tablesorter.themes.bootstrap['header'] += ' table-condensed small';");
+                        $this->add_onload_command("\$('.mySortableTable').tablesorter({sortList: $sort, theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
+                    }
                 }
                 break;
             case 'csv':
@@ -913,9 +937,12 @@ class FannieReportPage extends FanniePage
                 // auto-link UPCs to edit tool
                 $row[$i] = sprintf('<a target="_new%s" href="%sitem/itemMaint.php?upc=%s">%s</a>',
                     $row[$i],$url,$row[$i],$row[$i]);
-            } else if (!$date && preg_match('/^\d\d\d\d-\d\d-\d\d$/', $row[$i])) {
+            } else if (!$header && !$date && preg_match('/^\d\d\d\d-\d\d-\d\d$/', $row[$i])) {
                 // cell contains a date column
                 $date = $row[$i];
+            } elseif (!$header && !$date && preg_match('/^\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d$/', $row[$i])) {
+                // cell contains a date column
+                list($date, $time) = explode(' ', $row[$i]);
             } else if ($date && !$trans && preg_match('/^\d+-\d+-\d+$/', $row[$i])) {
                 // row contains a trans_num column & a date column
                 // auto-link to reprint receipt
@@ -1102,7 +1129,7 @@ class FannieReportPage extends FanniePage
               Unlike normal pages, the override is only applied
               when the output format is HTML.
             */
-            if ($this->config->get('WINDOW_DRESSING') && $this->report_format == 'html') {
+            if (($this->config->get('WINDOW_DRESSING') || $this->new_tablesorter) && $this->report_format == 'html') {
                 $this->window_dressing = true;
             }
             

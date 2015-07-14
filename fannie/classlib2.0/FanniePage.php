@@ -45,9 +45,9 @@ class FanniePage
     public $doc_link = '';
 
     /**
-      Page has been updated to support themeing
+      Page uses newer bootstrap based UI
     */
-    public $themed = false;
+    public $themed = true;
 
     /** force users to login immediately */
     protected $must_authenticate = False;
@@ -342,7 +342,20 @@ function enableLinea(selector, callback)
         }
     });
     ScannerDevice.registerListener(Device);
+
+    function lineaSilent()
+    {
+        if (typeof cordova.exec != 'function') {
+            setTimeout('lineaSilent()', 500);
+        } else {
+            if (Device) {
+                Device.setScanBeep(false, []);
+            }
+        }
+    }
+    lineaSilent();
 }
+
         <?php
 
         return ob_get_clean();

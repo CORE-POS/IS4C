@@ -175,6 +175,37 @@ Click or ctrl-Click or shift-Click to select/deselect modules for enablement.
 Member Card UPC Prefix: 
 <?php echo installTextField('FANNIE_MEMBER_UPC_PREFIX', $FANNIE_MEMBER_UPC_PREFIX, ''); ?>
 <hr />
+<h4 class="install">Lane On-Screen Display</h4>
+<div id="blueline-input-div">
+This controls what is displayed on the upper left of the cashier's screen after a member
+is selected.
+<?php echo installTextField('FANNIE_BLUELINE_TEMPLATE', $FANNIE_BLUELINE_TEMPLATE, ''); ?>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{ACCOUNTNO}}'); return false;">
+    Account#
+</a>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{ACCOUNTTYPE}}'); return false;">
+    Account Type
+</a>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{FIRSTNAME}}'); return false;">
+    First Name
+</a>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{LASTNAME}}'); return false;">
+    Last Name
+</a>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{FIRSTINITIAL}}'); return false;">
+    First Initial
+</a>
+<a href="" class="btn btn-default btn-xs"
+    onclick="$('#blueline-input-div input').focus().val($('#blueline-input-div input').val() + '{{LASTINITIAL}}'); return false;">
+    Last Initial
+</a>
+</div>
+<hr />
 <p>
     <button type="submit" class="btn btn-default">Save Configuration</button>
 </p>
@@ -199,38 +230,29 @@ else {
 
     // rebuild views that depend on ar & equity
     // department definitions
-    function recreate_views($con){
-        global $FANNIE_TRANS_DB,$FANNIE_OP_DB,$FANNIE_SERVER_DBMS;
+    function recreate_views($con)
+    {
+        $con->query("DROP VIEW ar_history_today",$FANNIE_TRANS_DB);
+        $model = new ArHistoryTodayModel($con);
+        $model->createIfNeeded($this->config->get('TRANS_DB'));
 
         $con->query("DROP VIEW ar_history_today_sum",$FANNIE_TRANS_DB);
-        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'ar_history_today_sum','trans');
+        $model = new ArHistoryTodaySumModel($con);
+        $model->createIfNeeded($this->config->get('TRANS_DB'));
 
         $con->query("DROP VIEW ar_live_balance",$FANNIE_TRANS_DB);
-        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'ar_live_balance','trans');
+        $model = new ArLiveBalanceModel($con);
+        $model->addExtraDB($this->config->get('OP_DB'));
+        $model->createIfNeeded($this->config->get('TRANS_DB'));
 
         $con->query("DROP VIEW stockSumToday",$FANNIE_TRANS_DB);
-        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'stockSumToday','trans');
+        $model = new StockSumTodayModel($con);
+        $model->createIfNeeded($this->config->get('TRANS_DB'));
 
         $con->query("DROP VIEW equity_live_balance",$FANNIE_TRANS_DB);
-        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'equity_live_balance','trans');
-
-        if ($con->tableExists('newBalanceStockToday_test')) {
-            $con->query("DROP VIEW newBalanceStockToday_test",$FANNIE_TRANS_DB);
-            create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                    'newBalanceStockToday_test','trans');
-        }
-
-        $con->query("DROP VIEW dheader",$FANNIE_TRANS_DB);
-        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'dheader','trans');
-
-        $con->query("DROP VIEW ar_history_today",$FANNIE_TRANS_DB);
-        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'ar_history_today','trans');
+        $model = new EquityLiveBalanceModel($con);
+        $model->addExtraDB($this->config->get('OP_DB'));
+        $model->createIfNeeded($this->config->get('TRANS_DB'));
     }
 
 // InstallMembershipPage

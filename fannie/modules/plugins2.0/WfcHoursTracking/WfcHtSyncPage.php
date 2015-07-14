@@ -100,8 +100,11 @@ class WfcHtSyncPage extends FanniePage
                 $db->exec_statement($insQ, array($uid, $name));
                 $ret .= "Added ADP entry for $name<br />";
             } else {
-                echo "$name exists as ";
                 $w = $db->fetch_row($chkR);
+                if ($name != $w['name']) {
+                    echo '<span class="glpyhicon glyphicon-exclamation-sign"></span>';
+                }
+                echo "$name exists as ";
                 echo $w['name'] . '<br />';
             }
         }

@@ -43,7 +43,7 @@ while($hereW = $fannieDB->fetch_row($hereR)){
     $records[] = $hereW;
 }
 
-include($FANNIE_ROOT.'src/Credentials/OutsideDB.tunneled.php');
+include($FANNIE_ROOT.'src/Credentials/OutsideDB.is4c.php');
 // online registrations
 $q = "SELECT tdate,r.card_no,name,email,
     phone,guest_count,child_count,

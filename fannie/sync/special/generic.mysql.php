@@ -128,4 +128,7 @@ if ($ret > 0) {
 }
 
 unlink($tempfile);
+if (file_exists($tempfile . '.err')) {
+    unlink($tempfile . '.err');
+}
 

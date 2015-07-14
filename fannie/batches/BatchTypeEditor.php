@@ -36,6 +36,9 @@ class BatchTypeEditor extends FanniePage {
     protected $title = 'Fannie - Batch Module';
     protected $header = 'Sales Batches';
 
+    protected $auth_classes = array('batches');
+    protected $must_authenticate = true;
+
     public $description = '[Batch Type Editor] manages different kinds of batches.';
     public $themed = true;
 

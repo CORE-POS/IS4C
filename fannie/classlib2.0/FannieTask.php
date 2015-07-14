@@ -216,6 +216,8 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         $obj->setArguments($parsed['arguments']);
     }
 
+    $logger->info('Starting task: ' . $class);
     $obj->run();
+    $logger->info('Finished task: ' . $class);
 }
 

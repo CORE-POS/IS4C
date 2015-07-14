@@ -38,6 +38,9 @@ class VendorPricingBatchPage extends FannieRESTfulPage
     vendor and edits it based on catalog cost information.';
     public $themed = true;
 
+    protected $auth_classes = array('batches');
+    protected $must_authenticate = true;
+
     private $mode = 'start';
 
     public function css_content()
@@ -249,6 +252,7 @@ function saveprice(upc){
 
         $costSQL = Margin::adjustedCostSQL('v.cost', 'b.discountRate', 'b.shippingMarkup');
         $marginSQL = Margin::toMarginSQL($costSQL, 'p.normal_price');
+        $p_def = $dbc->tableDefinition('products');
 
         $query = "SELECT p.upc,
             p.description,
@@ -263,7 +267,7 @@ function saveprice(upc){
             v.vendorDept,
             x.variable_pricing
             FROM products AS p 
-                INNER JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID=?
+                INNER JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 INNER JOIN vendors as b ON v.vendorID=b.vendorID
                 LEFT JOIN prodExtra AS x on p.upc=x.upc ";
         $args = array($vendorID);
@@ -272,6 +276,7 @@ function saveprice(upc){
                 ON p.department=m.dept_ID ";
         }
         $query .= "WHERE v.cost > 0 
+                    AND v.vendorID=?
                     AND p.inUse=1 ";
         if ($superID != 99) {
             $query .= " AND m.superID=? ";
@@ -282,6 +287,9 @@ function saveprice(upc){
         }
 
         $query .= " ORDER BY p.upc";
+        if (isset($p_def['price_rule_id'])) {
+            $query = str_replace('x.variable_pricing', 'p.price_rule_id AS variable_pricing', $query);
+        }
 
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($prep,$args);
@@ -301,7 +309,7 @@ function saveprice(upc){
             $bg = "white";
             if (isset($batchUPCs[$row['upc']])) {
                 $bg = 'selection';
-            } elseif ($row['variable_pricing'] != 1) {
+            } elseif ($row['variable_pricing'] == 0) {
                 $bg = ($row['normal_price']<$row['srp'])?'red':'green';
             }
             if (isset($batchUPCs[$row['upc']])) {

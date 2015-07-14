@@ -31,6 +31,9 @@ class UploadVendorPriceFile extends FanniePage {
     protected $title = "Fannie - Upload Price File";
     protected $header = "Upload Price File";
 
+    protected $auth_classes = array('batches');
+    protected $must_authenticate = true;
+
     public $description = '[Vendor Price File] loads or reloads catalog information from a spreadsheet.';
     public $themed = true;
 

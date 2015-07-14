@@ -55,6 +55,15 @@ class FannieUI
         </div>';
     }
 
+    public static function tableSortIcons()
+    {
+        return '
+            <span class="core-sort-none glyphicon glyphicon-sort"></span>
+            <span class="core-sort-down glyphicon glyphicon-arrow-down"></span>
+            <span class="core-sort-up glyphicon glyphicon-arrow-up"></span>
+        ';
+    }
+
 }
 
 }

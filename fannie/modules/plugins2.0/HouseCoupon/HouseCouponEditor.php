@@ -398,6 +398,7 @@ class HouseCouponEditor extends FanniePage
             'F'=>'Flat Discount',
             'PI'=>'Per-Item Discount',
             '%'=>'Percent Discount (End of transaction)',
+            '%B' => 'Percent Discount (Coupon discount OR member discount)',
             '%D'=>'Percent Discount (Department)',
             'PD'=>'Percent Discount (Anytime)',
             '%C'=>'Percent Discount (Capped)',
