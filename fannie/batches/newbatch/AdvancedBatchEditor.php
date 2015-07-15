@@ -127,9 +127,10 @@ class AdvancedBatchEditor extends FannieRESTfulPage
         }
         $ret .= '</tbody></table>
             <p>
-                <button type="submit" class="btn btn-defualt">Save</button>
+                <button type="submit" class="btn btn-default">Save</button>
             </p>
             </form>';
+        $this->addOnloadCommand("\$('.table input.form-control:first').focus();\n");
 
         return $ret;
     }
@@ -139,6 +140,8 @@ class AdvancedBatchEditor extends FannieRESTfulPage
     */
     public function get_view()
     {
+        $this->addOnloadCommand("\$('.form-group input.form-control:first').focus();\n");
+
         return <<<HTML
 <form method="get">
     <div class="form-group">
