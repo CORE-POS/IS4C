@@ -40,11 +40,12 @@ class SaleItemsByDate extends FannieReportPage
 
     public function report_description_content()
     {
-        return array('Items from batches beginning on '.$this->startdate);
+        return array('Items from batches beginning on ');
     }
 
     public function fetch_report_data()
     {        
+	$item = array();
         $batchID = array();
         $upc = array();
         $salePrice = array();
