@@ -40,7 +40,7 @@ class SaleItemsByDate extends FannieReportPage
 
     public function report_description_content()
     {
-        return array('Items from batches beginning on '.$this->startDate);
+        return array('Items from batches beginning on '.$this->startdate);
     }
 
     public function fetch_report_data()
