@@ -121,7 +121,15 @@ class SuperDeptEditor extends FanniePage {
                 ORDER BY dept_no');
         $result = $dbc->exec_statement($prep,array($id));
         $ret = array();
+        $superP = $dbc->prepare('
+            SELECT dept_ID
+            FROM superdepts
+            WHERE dept_ID=?');
         while ($row = $dbc->fetch_row($result)) {
+            $superR = $dbc->execute($superP, array($row['dept_no']));
+            if ($dbc->numRows($superR) == 0) {
+                $row['dept_name'] = '*' . $row['dept_name'];
+            }
             $ret[$row['dept_no']] = $row['dept_name'];
         }
 
