@@ -44,16 +44,9 @@ class SaleItemsByDate extends FannieReportPage
     }
 
     public function fetch_report_data()
-    {
-        $host = 129.103.2.3;
-        $username = 'phpmyadmin';
-        $password = 'wfc'
-        $database_name = 'is4c_op';
-        
+    {        
         $batchID = array();
-        $batchID_count = 0;
         $upc = array();
-        $upc_count = 0;
         $salePrice = array();
         $owner = array();
         
