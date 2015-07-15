@@ -45,6 +45,11 @@ class SaleItemsByDate extends FannieReportPage
 
     public function fetch_report_data()
     {
+        $host = 129.103.2.3;
+        $username = 'phpmyadmin';
+        $password = 'wfc'
+        $database_name = 'is4c_op';
+        
         $batchID = array();
         $batchID_count = 0;
         $upc = array();
@@ -56,30 +61,27 @@ class SaleItemsByDate extends FannieReportPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
         //procure batchIDs from 'batches'
-        $sql = "select batchID, owner from batches where startDate='{$_POST['startdate']} 00:00:00';";   
-        foreach ($dbc->fetch_row($sql) as $row) {
-            $batchID[$i] = $row['batchID'];
-            $batchID_count++;
-            $owner[$i] = $row['owner'];
-            $i++;
-        }
-        
+        $query = "select batchID, owner from batches where startDate='{$_POST['startdate']} 00:00:00';";
+        $result = $dbc->query($query);
+        while ($row = $dbc->fetch_row($result)) {
+            $batchID[] = $row['batchID'];
+            $owner[] = $row['owner'];
+        }     
+    
         //procure upcs from 'batchList' --this is going to pull every upc of every item that is going on sale
-        for ($i = 0; $i < $batchID_count; $i++){
+        for ($i = 0; $i < count($batchID); $i++){
             $sql = "select upc, salePrice from batchList where batchID='$batchID[$i]';";   
-            foreach ($dbc->fetch_row($sql) as $row) {
-                $upc[$upc_count] = $row['upc'];
-                $salePrice[$upc_count] = $row['salePrice'];
-                $upc_count++;
+            while ($row = $dbc->fetch_row($result)) {
+                $upc[] = $row['upc'];
+                $salePrice[] = $row['salePrice'];
             }
         }
-        echo $upc_count . " items found for this sales period: <br>";
+        echo count($upc) . " items found for this sales period: <br>";
         
         //procure description of items based on 'upc's, and return their descriptions, organized by department and brand 
-        for ($i = 0; $i < $upc_count; $i++){
+        for ($i = 0; $i < count($upc); $i++){
             $sql = "select upc, brand, description from vendorItems where upc='$upc[$i]'group by 'upc' order by 'brand';"; 
-            
-            foreach ($dbc->fetch_row($sql) as $row){
+            while ($row = $dbc->fetch_row($result)) {
                 $item[$i][0] = $row['brand'];
                 $item[$i][1] = $row['description'];
                 $item[$i][2] = $salePrice[$i];
