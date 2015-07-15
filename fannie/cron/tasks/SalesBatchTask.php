@@ -72,6 +72,7 @@ class SalesBatchTask extends FannieTask
                     l.batchID, 
                     l.pricemethod, 
                     l.salePrice, 
+                    l.groupSalePrice,
                     l.quantity,
                     b.startDate, 
                     b.endDate, 
@@ -84,6 +85,10 @@ class SalesBatchTask extends FannieTask
                     AND b.endDate >= ?
                   ORDER BY l.upc,
                     l.salePrice DESC';
+        $t_def = $dbc->tableDefinition('batchList');
+        if (!isset($t_def['groupSalePrice'])) {
+            $query = str_replace('l.groupSalePrice', 'NULL AS groupSalePrice', $query);
+        }
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, array($now, $now));
         while ($row = $dbc->fetch_row($result)) {
@@ -94,7 +99,11 @@ class SalesBatchTask extends FannieTask
             // use products column names for readability below
             $special_price = $row['salePrice'];
             $specialpricemethod = $row['pricemethod'];
-            $specialgroupprice = abs($row['salePrice']);
+            if ($row['groupSalePrice'] != null) {
+                $specialgroupprice = $row['groupSalePrice'];
+            } else {
+                $specialgroupprice = abs($row['salePrice']);
+            }
             $specialquantity = $row['quantity'];
             $special_limit = $row['transLimit'];
             $start_date = $row['startDate'];

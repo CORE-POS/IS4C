@@ -35,6 +35,7 @@ class BatchListModel extends BasicModel
     'upc' => array('type'=>'VARCHAR(13)','index'=>True),
     'batchID' => array('type'=>'INT','index'=>True),
     'salePrice' => array('type'=>'MONEY'),
+    'groupSalePrice' => array('type'=>'MONEY'),
     'active' => array('type'=>'TINYINT'),
     'pricemethod' => array('type'=>'SMALLINT','default'=>0),
     'quantity' => array('type'=>'SMALLINT','default'=>0)
@@ -206,6 +207,43 @@ upc can be a likecode, prefixed with \'LC\'
                 }
             }
             $this->instance["salePrice"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function groupSalePrice()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["groupSalePrice"])) {
+                return $this->instance["groupSalePrice"];
+            } else if (isset($this->columns["groupSalePrice"]["default"])) {
+                return $this->columns["groupSalePrice"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'groupSalePrice',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["groupSalePrice"]) || $this->instance["groupSalePrice"] != func_get_args(0)) {
+                if (!isset($this->columns["groupSalePrice"]["ignore_updates"]) || $this->columns["groupSalePrice"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["groupSalePrice"] = func_get_arg(0);
         }
         return $this;
     }

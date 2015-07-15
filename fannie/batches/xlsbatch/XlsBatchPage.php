@@ -131,6 +131,7 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
             $model->upc($upc);
             $model->salePrice($price);
+            $model->groupSalePrice($price);
             $model->save();
         }
 

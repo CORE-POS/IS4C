@@ -247,6 +247,7 @@ class EditBatchPage extends FannieRESTfulPage
             $model->upc($upc);
             $model->batchID($id);
             $model->salePrice($price);
+            $model->groupSalePrice($price);
             $model->quantity($qty);
             $model->pricemethod(0);
             $model->save();
@@ -403,6 +404,7 @@ class EditBatchPage extends FannieRESTfulPage
         $model->upc($this->upc);
         $model->batchID($this->id);
         $model->salePrice($this->price);
+        $model->groupSalePrice($this->price);
         $model->quantity($this->qty);
         // quantity functions as a per-transaction limit
         // when pricemethod=0

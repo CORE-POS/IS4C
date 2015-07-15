@@ -101,6 +101,7 @@ class BatchFromSearch extends FannieRESTfulPage
             $bl->upc(BarcodeLib::padUPC($upc));
             $bl->batchID($id);
             $bl->salePrice($price);
+            $bl->groupSalePrice($price);
             $bl->active(0);
             $bl->pricemethod(0);
             $bl->quantity(0);
