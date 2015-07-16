@@ -56,36 +56,50 @@ class SaleItemsByDate extends FannieReportPage
         
         //procure batchIDs from 'batches'
         $query = "select batchID, owner from batches where startDate='{$_POST['startdate']} 00:00:00';";
+        
+        if($_POST['dept'] == 2) {
+            $query = "select batchID, owner from batches where startDate='{$_POST['startdate']} 00:00:00' and (owner='Bulk' or owner='BULK');";
+        }
+        if($_POST['dept'] == 3) {
+            $query = "select batchID, owner from batches where startDate='{$_POST['startdate']} 00:00:00' and (owner='Cool' or owner='COOL');";   
+        }
+        if($_POST['dept'] == 4){
+            $query = "select batchID, owner from batches where startDate='{$_POST['startdate']} 00:00:00' and (owner='Grocery' or owner='GROCERY');"; 
+        }
+        if($_POST['dept'] == 5){
+            $query = "select batchID, owner from batches where startDate='{$_POST['startdate']} 00:00:00' and (owner='HBC');";   
+        }
+        
         $result = $dbc->query($query);
         while ($row = $dbc->fetch_row($result)) {
             $batchID[] = $row['batchID'];
             $owner[] = $row['owner'];
         }     
 
-	echo count($batchID) . " batches found\n";
+        echo count($batchID) . " batches found\n";
     
         //procure upcs from 'batchList' --this is going to pull every upc of every item that is going on sale
         for ($i = 0; $i < count($batchID); $i++){
             $query = "select upc, salePrice from batchList where batchID='$batchID[$i]';";   
-	    $result = $dbc->query($query);
-            while ($row = $dbc->fetch_row($result)) {
-                $upc[] = $row['upc'];
-                $salePrice[] = $row['salePrice'];
+            $result = $dbc->query($query);
+                while ($row = $dbc->fetch_row($result)) {
+                    $upc[] = $row['upc'];
+                    $salePrice[] = $row['salePrice'];
+                }
             }
-        }
         echo count($upc) . " items found for this sales period <br>";
-        
+
         //procure description of items based on 'upc's, and return their descriptions, organized by department and brand 
         for ($i = 0; $i < count($upc); $i++){
             $query = "select upc, brand, description from products where upc='$upc[$i]' order by 'brand';"; 
-	    $result = $dbc->query($query);
-            while ($row = $dbc->fetch_row($result)) {
-                $item[$i][0] = $row['brand'];
-                $item[$i][1] = $row['description'];
-                $item[$i][2] = $salePrice[$i];
-                $item[$i][3] = $row['upc'];
-                
-            }
+            $result = $dbc->query($query);
+                while ($row = $dbc->fetch_row($result)) {
+                    $item[$i][0] = $row['brand'];
+                    $item[$i][1] = $row['description'];
+                    $item[$i][2] = $salePrice[$i];
+                    $item[$i][3] = $row['upc'];
+                    
+                }
         }
         sort($item);
         return $item;
