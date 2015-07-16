@@ -172,9 +172,6 @@ class FannieUploadPage extends \FanniePage
                         // Extract lines & process
                         $lines = array();
                         for ($i=$offset; $i<count($fileData); $i++) {
-                            if (count($fileData[$i]) < $num_columns-2 || count($fileData[$i]) > $num_columns+2) {
-                                continue;
-                            }
                             $lines[] = $fileData[$i];
                             if (count($lines) > $chunk_size) {
                                 break;
