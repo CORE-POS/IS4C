@@ -32,7 +32,7 @@ class SaleItemsByDate extends FannieReportPage
     public $report_set = 'Reports';
     public $themed = true;
 
-    protected $report_headers = array('brand', 'description', 'salePrice', 'upc');
+    protected $report_headers = array('Brand', 'Description', 'Sale Price', 'UPC');
     protected $sort_direction = 1;
     protected $title = "Fannie : Sale Items by Start-Date Report";
     protected $header = "List Sale Items by Batch Date Report";
@@ -61,20 +61,24 @@ class SaleItemsByDate extends FannieReportPage
             $batchID[] = $row['batchID'];
             $owner[] = $row['owner'];
         }     
+
+	echo count($batchID) . " batches found\n";
     
         //procure upcs from 'batchList' --this is going to pull every upc of every item that is going on sale
         for ($i = 0; $i < count($batchID); $i++){
-            $sql = "select upc, salePrice from batchList where batchID='$batchID[$i]';";   
+            $query = "select upc, salePrice from batchList where batchID='$batchID[$i]';";   
+	    $result = $dbc->query($query);
             while ($row = $dbc->fetch_row($result)) {
                 $upc[] = $row['upc'];
                 $salePrice[] = $row['salePrice'];
             }
         }
-        echo count($upc) . " items found for this sales period: <br>";
+        echo count($upc) . " items found for this sales period <br>";
         
         //procure description of items based on 'upc's, and return their descriptions, organized by department and brand 
         for ($i = 0; $i < count($upc); $i++){
-            $sql = "select upc, brand, description from vendorItems where upc='$upc[$i]'group by 'upc' order by 'brand';"; 
+            $query = "select upc, brand, description from products where upc='$upc[$i]' order by 'brand';"; 
+	    $result = $dbc->query($query);
             while ($row = $dbc->fetch_row($result)) {
                 $item[$i][0] = $row['brand'];
                 $item[$i][1] = $row['description'];
