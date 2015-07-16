@@ -103,7 +103,7 @@ class AdvancedBatchEditor extends FannieRESTfulPage
             <tbody>';
         $t_def = $dbc->tableDefinition('batchList');
         foreach ($list->find('listID', true) as $item) {
-            if (!isset($t_def['groupSalePrice']) || $dbc->groupSalePrice() == null) {
+            if (!isset($t_def['groupSalePrice']) || $item->groupSalePrice() == null) {
                 $item->groupSalePrice($item->salePrice());
             }
             $ret .= sprintf('
