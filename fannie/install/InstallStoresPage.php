@@ -61,7 +61,7 @@ class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
 
     public function preprocess()
     {
-        global $FANNIE_OP_DB;
+        global $FANNIE_OP_DB, $FANNIE_STORE_MODE, $FANNIE_STORE_ID;
         $model = new StoresModel(FannieDB::get($FANNIE_OP_DB));
         $posted = false;
 
@@ -118,6 +118,9 @@ class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
         // redirect to self so refreshing the page
         // doesn't repeat HTML POST
         if ($posted) {
+            // capture POST of input field
+            installTextField('FANNIE_STORE_ID', $FANNIE_STORE_ID, 1);
+            installSelectField('FANNIE_STORE_MODE', $FANNIE_STORE_MODE, array('STORE'=>'Single Store', 'HQ'=>'HQ'),'STORE');
             header('Location: InstallStoresPage.php');
             return false;
         }
@@ -180,6 +183,8 @@ if (count($myself) == 0) {
     echo '<i>This store is #' . installTextField('FANNIE_STORE_ID', $FANNIE_STORE_ID, $myself[0]->storeID()) . '</i><br />';
 }
 $model->reset();
+echo '<label>Mode</label>';
+echo installSelectField('FANNIE_STORE_MODE', $FANNIE_STORE_MODE, array('STORE'=>'Single Store', 'HQ'=>'HQ'),'STORE');
 
 $supportedTypes = array('none'=>'');
 if (extension_loaded('pdo') && extension_loaded('pdo_mysql'))
