@@ -127,6 +127,7 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
 
             $model->reset();
             $model->upc($upc);
+            $model->store_id(1);
             if ($model->load() && $skipExisting) {
                 continue;
             }

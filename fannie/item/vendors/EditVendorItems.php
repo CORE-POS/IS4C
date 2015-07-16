@@ -114,8 +114,10 @@ class EditVendorItems extends FannieRESTfulPage
                 while ($prodW = $dbc->fetch_row($prodR)) {
                     $model->reset();
                     $model->upc($prodW['upc']);
-                    $model->cost($this->value);
-                    $model->save();
+                    foreach ($model->find('store_id') as $obj) {
+                        $obj->cost($this->value);
+                        $obj->save();
+                    }
                 }
             }
         }

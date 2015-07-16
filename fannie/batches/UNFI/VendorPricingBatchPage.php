@@ -50,7 +50,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             background:#ccffcc;
         }
         tr.red td.sub {
-            background:#ff6677;
+            background:#F7BABA;
         }
         tr.white td.sub {
             background:#ffffff;

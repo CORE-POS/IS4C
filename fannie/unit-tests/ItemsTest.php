@@ -25,6 +25,7 @@ class ItemsTest extends PHPUnit_Framework_TestCase
         $upc = BarcodeLib::padUPC('16');
         $product = new ProductsModel($connection);
         $product->upc($upc);
+        $product->store_id(0);
         $product->load();
         if ($product->numflag() != 0) {
             $product->numflag(0);

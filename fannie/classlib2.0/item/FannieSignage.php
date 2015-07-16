@@ -483,8 +483,10 @@ class FannieSignage
                 $model->save();
                 $model = new \ProductsModel(\FannieDB::get($op_db));
                 $model->upc(\BarcodeLib::padUPC($upc));
-                $model->brand($brand);
-                $model->save();
+                foreach ($model->find('store_id') as $obj) {
+                    $obj->brand($brand);
+                    $obj->save();
+                }
                 break;
         }
     }

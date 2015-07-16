@@ -41,6 +41,7 @@ class EndItemSale extends FannieRESTfulPage {
 
         $model = new ProductsModel($dbc);
         $model->upc($upc);
+        $model->store_id(1);
         $model->discounttype(0);
         $model->special_price(0);
         $model->modified(date('Y-m-d H:i:s'));

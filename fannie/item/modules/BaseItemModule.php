@@ -729,7 +729,7 @@ HTML;
         }
         $ret .= '</div>';
         // sync button will copy current tab values to all other store tabs
-        // $nav_tabs .= '<li><a href="" onclick="syncStoreTabs(); return false;">Sync</a></li>';
+        //$nav_tabs .= '<li><a href="" onclick="syncStoreTabs(); return false;">Sync</a></li>';
         $nav_tabs .= '</ul>';
         $ret = str_replace('{{nav_tabs}}', $nav_tabs, $ret);
 

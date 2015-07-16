@@ -74,6 +74,7 @@ class SaPriceChangePage extends FannieRESTfulPage {
 
         $prod = new ProductsModel($dbc);
         $prod->upc(BarcodeLib::padUPC($this->upc));
+        $prod->store_id(1);
         $prod->normal_price($this->price);
         $prod->save();
         $prod->pushToLanes();

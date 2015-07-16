@@ -447,11 +447,13 @@ class EditBatchPage extends FannieRESTfulPage
             // take the item off sale if this batch is currently on sale
             $product = new ProductsModel($dbc);
             $product->upc($upc);
-            $product->discounttype(0);
-            $product->special_price(0);
-            $product->start_date(0);
-            $product->end_date(0);
-            $unsaleR = $product->save();
+            foreach ($product->find('store_id') as $obj) {
+                $obj->discounttype(0);
+                $obj->special_price(0);
+                $obj->start_date(0);
+                $obj->end_date(0);
+                $unsaleR = $obj->save();
+            }
 
             if ($unsaleR === false) {
                 $json['error'] = 1;
@@ -467,11 +469,13 @@ class EditBatchPage extends FannieRESTfulPage
             foreach ($upcLike->find() as $u) {
                 $product = new ProductsModel($dbc);
                 $product->upc($u->upc());
-                $product->discounttype(0);
-                $product->special_price(0);
-                $product->start_date(0);
-                $product->end_date(0);
-                $unsaleR = $product->save();
+                foreach ($product->find('store_id') as $p) {
+                    $p->discounttype(0);
+                    $p->special_price(0);
+                    $p->start_date(0);
+                    $p->end_date(0);
+                    $unsaleR = $p->save();
+                }
             }
 
             if ($unsaleR === false) {
