@@ -111,6 +111,9 @@ class SignFromSearch extends FannieRESTfulPage
         }
 
         if (FormLib::get('pdf') == 'Print') {
+            foreach (FormLib::get('exclude', array()) as $e) {
+                $this->signage_obj->addExclude($e);
+            }
             $this->signage_obj->drawPDF();
             return false;
         } else {
@@ -155,6 +158,9 @@ class SignFromSearch extends FannieRESTfulPage
         }
         
         if (FormLib::get('pdf') == 'Print') {
+            foreach (FormLib::get('exclude', array()) as $e) {
+                $this->signage_obj->addExclude($e);
+            }
             $this->signage_obj->drawPDF();
             return false;
         } else {
