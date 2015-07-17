@@ -32,6 +32,7 @@ class MemMailList extends FannieReportPage
 
     protected $required_fields = array('type');
     protected $report_headers = array('Mem#', 'Last Name', 'First Name', 'Address', 'Address2', 'City', 'State', 'Zip', 'Phone', 'Email');
+    public $description = '[Member Mailing List] lists contact information for selected customers.';
 
     public function fetch_report_data()
     {
