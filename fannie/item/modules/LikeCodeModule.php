@@ -124,11 +124,13 @@ class LikeCodeModule extends ItemModule
         $upcR = $dbc->exec_statement($upcP,array($lc,$upc));
         $model = new ProductsModel($dbc);
         $model->upc($upc);
+        $model->store_id(1);
         $model->mixmatchcode($lc+500);
         $model->save();
         while ($upcW = $dbc->fetch_row($upcR)) {
             $model->reset();
             $model->upc($upcW['upc']);
+            $model->store_id(1);
             $model->normal_price($values['normal_price']);
             $model->pricemethod($values['pricemethod']);
             $model->groupprice($values['groupprice']);

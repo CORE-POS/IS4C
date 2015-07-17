@@ -214,6 +214,7 @@ class ScaleItemModule extends ItemModule
         if ($weight == 1 && $bycount == 1) {
             $p = new ProductsModel($dbc);
             $p->upc($upc);
+            $p->store_id(1);
             if($p->load()) {
                 $p->Scale(0);
                 $p->save();
@@ -250,10 +251,10 @@ class ScaleItemModule extends ItemModule
         $item_info = array(
             'RecordType' => $action,
             'PLU' => $s_plu,
-            'Description' => $desc,
+            'Description' => array_pop($desc),
             'Tare' => $tare,
             'ShelfLife' => $shelf,
-            'Price' => $price,
+            'Price' => array_pop($price),
             'Label' => $label,
             'ExpandedText' => $text,
             'ByCount' => $bycount,

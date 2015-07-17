@@ -78,6 +78,7 @@ class VolumePricingModule extends ItemModule
 
         $model = new ProductsModel($dbc);
         $model->upc($upc);
+        $model->store_id(1);
 
         $method = FormLib::get_form_value('vp_method',0);
         $qty = FormLib::get_form_value('vp_qty',0);

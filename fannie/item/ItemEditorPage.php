@@ -210,8 +210,8 @@ class ItemEditorPage extends FanniePage
                         WHERE p.upc = ?
                             AND p.store_id=?
                         ORDER BY p.description";
-                    $args[] = $store_id;
                     $args[] = $upc;
+                    $args[] = $store_id;
                     break;
             }
         } else {

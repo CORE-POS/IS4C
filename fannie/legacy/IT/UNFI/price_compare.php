@@ -42,6 +42,7 @@ if (isset($_GET['action'])){
         $model = new ProductsModel($sql);
         $model->upc($upc);
         $model->normal_price($price);
+        $model->store_id(1);
         $model->save();
         $model->pushToLanes();
 
@@ -92,6 +93,7 @@ if (isset($_GET['action'])){
         if ($val == 1) {
             $prod = new ProductsModel($sql);
             $prod->upc($upc);
+            $prod->store_id(1);
             $prod->load();
             // make sure another rule isn't overwritten with a generic one
             if ($prod->price_rule_id() == 0) {
@@ -101,6 +103,7 @@ if (isset($_GET['action'])){
         } else {
             $prod = new ProductsModel($sql);
             $prod->upc($upc);
+            $prod->store_id(1);
             $prod->load();
             $ruleID = 0;
             // remove the rule but save its ID

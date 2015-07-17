@@ -106,6 +106,7 @@ class ExtraInfoModule extends ItemModule
 
         $pm = new ProductsModel($dbc);
         $pm->upc($upc);
+        $pm->store_id(1);
         $pm->deposit($deposit);
         $pm->local($local);
         $pm->inUse($inUse);
