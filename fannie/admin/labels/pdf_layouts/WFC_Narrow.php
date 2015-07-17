@@ -219,7 +219,10 @@ foreach($data as $row){
    $pdf->TEXT($k,$l,$price);  //add price
 
    $newUPC = $upc . $check; //add check digit to upc
-   $pdf->UPC_A($i,$j,$upc,7,.23);  //generate barcode and place on label
+   if (strlen($upc) <= 11)
+    $pdf->UPC_A($i,$j,$upc,7,.25);  //generate barcode and place on label
+   else
+    $pdf->EAN13($i,$j,$upc,7,.25);  //generate barcode and place on label
 
    //increment counters    
    $i =$i+ 52.7;
