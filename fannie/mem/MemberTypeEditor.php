@@ -386,8 +386,9 @@ class MemberTypeEditor extends FannieRESTfulPage
 
         $page = $this->get_view();
 
+        $testID = 127;
         $values->_method = 'post';
-        $values->new = 127;
+        $values->new = $testID;
         $this->setForm($values);
         $this->readRoutes();
 
@@ -402,9 +403,9 @@ class MemberTypeEditor extends FannieRESTfulPage
         $newpage = $this->get_view();
 
         $phpunit->assertNotEquals($page, $newpage);
-        $phpunit->assertNotEquals(false, strpos($newpage, '127'));
+        $phpunit->assertNotEquals(false, strpos($newpage, "$testID"));
 
-        $this->connection->query('DELETE FROM memtype WHERE memtype=100');
+        $this->connection->query('DELETE FROM memtype WHERE memtype=' . $testID);
     }
 }
 
