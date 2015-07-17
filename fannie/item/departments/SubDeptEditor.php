@@ -31,6 +31,9 @@ class SubDeptEditor extends FanniePage
     protected $title = "Fannie : Manage Subdepartments";
     protected $header = "Manage Subdepartments";
 
+    protected $must_authenticate = true;
+    protected $auth_classes = array('departments', 'admin');
+
     public $description = '[Subdepartment Editor] manges POS sub departments.';
     public $themed = true;
 

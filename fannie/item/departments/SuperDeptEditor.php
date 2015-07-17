@@ -30,6 +30,9 @@ class SuperDeptEditor extends FanniePage {
     protected $title = "Fannie : Manage Super Departments";
     protected $header = "Manage Super Departments";
 
+    protected $must_authenticate = true;
+    protected $auth_classes = array('departments', 'admin');
+
     public $description = '[Superdepartment Editor] manges POS super departments.';
     public $themed = true;
 

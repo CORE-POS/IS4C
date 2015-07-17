@@ -30,6 +30,9 @@ class DepartmentIndexPage extends FanniePage {
     protected $title = "Fannie : Manage Departments";
     protected $header = "Manage Departments";
 
+    protected $must_authenticate = true;
+    protected $auth_classes = array('departments', 'admin');
+
     public $description = '[Department Menu] lists pages related to departments.';
     public $themed = true;
     
