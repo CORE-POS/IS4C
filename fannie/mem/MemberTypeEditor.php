@@ -78,8 +78,7 @@ class MemberTypeEditor extends FannieRESTfulPage
                 $mtModel->ssi(0);
                 $mtModel->save();
 
-                header('Location: ' . $_SERVER['PHP_SELF']);
-                return false;
+                return $_SERVER['PHP_SELF'];
             }
         }
     }
@@ -345,7 +344,7 @@ class MemberTypeEditor extends FannieRESTfulPage
                     ($w['cd_type']=='PC'?'checked':''),$w['memtype'],
                     $w['discount'],$w['memtype'],
                     ($w['staff']=='1'?'checked':''),$w['memtype'],
-                    ($w['SSI']=='1'?'checked':''),$w['memtype']
+                    ($w['ssi']=='1'?'checked':''),$w['memtype']
                 );
         }
         $ret .= "</table>";
@@ -376,6 +375,36 @@ class MemberTypeEditor extends FannieRESTfulPage
                 <li><em>SSI</em> is a flag for low-income customers who
                 receive some kind of benefit.</li>
             </ul>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $values = new \COREPOS\common\mvc\ValueContainer();
+        $values->_method = 'get';
+        $this->setForm($values);
+        $this->readRoutes();
+
+        $page = $this->get_view();
+
+        $values->_method = 'post';
+        $values->new = 127;
+        $this->setForm($values);
+        $this->readRoutes();
+
+        $create = $this->post_new_handler();
+
+        unset($values->new);
+
+        $values->_method = 'get';
+        $this->setForm($values);
+        $this->readRoutes();
+
+        $newpage = $this->get_view();
+
+        $phpunit->assertNotEquals($page, $newpage);
+        $phpunit->assertNotEquals(false, strpos($newpage, '127'));
+
+        $this->connection->query('DELETE FROM memtype WHERE memtype=100');
     }
 }
 

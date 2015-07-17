@@ -184,16 +184,29 @@ class FannieRESTfulPage extends FanniePage
         $view = $this->__route_stem.'View';    
         $old_handler = $this->__route_stem.'_handler';
         $old_view = $this->__route_stem.'_view';    
+        $ret = true;
         if (method_exists($this, $handler)) {
-            return $this->$handler();
+            $ret = $this->$handler();
         } elseif (method_exists($this, $old_handler)) {
-            return $this->$old_handler();
+            $ret = $this->$old_handler();
         } elseif (method_exists($this, $view)) {
-            return true;
+            $ret = true;
         } elseif (method_exists($this, $old_view)) {
-            return true;
+            $ret = true;
         } else {
-            return $this->unknownRequestHandler();
+            $ret = $this->unknownRequestHandler();
+        }
+
+        if ($ret === true) {
+            return true;
+        } elseif ($ret === false) {
+            return false;
+        } elseif (is_string($ret)) {
+            header('Location: ' . $ret);
+            return false;
+        } else {
+            // dev error/bug?
+            return false;
         }
     }
 

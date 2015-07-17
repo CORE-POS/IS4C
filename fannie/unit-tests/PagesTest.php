@@ -32,10 +32,16 @@ class PagesTest extends PHPUnit_Framework_TestCase
     {
         $pages = FannieAPI::listModules('FanniePage', true);
         $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $op_db = $config->get('OP_DB');
+        $dbc = FannieDB::get($op_db);
 
         foreach($pages as $page_class) {
             $obj = new $page_class();
             $obj->setConfig($config);
+            $obj->setLogger($logger);
+            $dbc->selectDB($op_db);
+            $obj->setConnection($dbc);
             if ($page_class == 'WfcHtViewSalaryPage') continue; // header/redirect problem
 
             ob_start();
