@@ -47,11 +47,6 @@ class MemberTypeEditor extends FanniePage {
             $mtModel->memtype($id);
             $mtModel->custdataType($type);
             $saved = $mtModel->save();
-            if ($dbc->tableExists('memdefaults')) {
-                $q = $dbc->prepare_statement("UPDATE memdefaults SET cd_type=?
-                    WHERE memtype=?");
-                $r = $dbc->exec_statement($q,array($type, $id));
-            }
             if (!$saved) {
                 $json['msg'] = 'Error saving membership status';
             }
@@ -64,11 +59,6 @@ class MemberTypeEditor extends FanniePage {
             $mtModel->memtype($id);
             $mtModel->staff($staff);
             $saved = $mtModel->save();
-            if ($dbc->tableExists('memdefaults')) {
-                $q = $dbc->prepare_statement("UPDATE memdefaults SET staff=?
-                    WHERE memtype=?");
-                $r = $dbc->exec_statement($q,array($staff, $id));
-            }
             if (!$saved) {
                 $json['msg'] = 'Error saving staff status';
             }
@@ -81,11 +71,6 @@ class MemberTypeEditor extends FanniePage {
             $mtModel->memtype($id);
             $mtModel->ssi($ssi);
             $saved = $mtModel->save();
-            if ($dbc->tableExists('memdefaults')) {
-                $q = $dbc->prepare_statement("UPDATE memdefaults SET SSI=?
-                    WHERE memtype=?");
-                $r = $dbc->exec_statement($q,array($ssi, $id));
-            }
             if (!$saved) {
                 $json['msg'] = 'Error saving SSI status';
             }
@@ -98,11 +83,6 @@ class MemberTypeEditor extends FanniePage {
             $mtModel->memtype($id);
             $mtModel->discount($disc);
             $saved = $mtModel->save();
-            if ($dbc->tableExists('memdefaults')) {
-                $q = $dbc->prepare_statement("UPDATE memdefaults SET discount=?
-                    WHERE memtype=?");
-                $r = $dbc->exec_statement($q,array($disc, $id));
-            }
             if (!$saved) {
                 $json['msg'] = 'Error saving discount';
             }
@@ -164,11 +144,6 @@ class MemberTypeEditor extends FanniePage {
                     $mtModel->staff(0);
                     $mtModel->ssi(0);
                     $mtModel->save();
-                    if ($dbc->tableExists('memdefaults')) {
-                        $mdP = $dbc->prepare_statement("INSERT INTO memdefaults (memtype,cd_type,
-                                discount,staff,SSI) VALUES (?, 'REG', 0, 0, 0)");
-                        $dbc->exec_statement($mdP, array($id));
-                    }
 
                     echo $this->getTypeTable();
                 }
@@ -195,9 +170,14 @@ class MemberTypeEditor extends FanniePage {
             <th>Staff</th><th>SSI</th>
             </tr>';
 
-        $q = $dbc->prepare_statement("SELECT m.memtype,m.memDesc,d.cd_type,d.discount,d.staff,d.SSI
-            FROM memtype AS m LEFT JOIN memdefaults AS d
-            ON m.memtype=d.memtype
+        $q = $dbc->prepare_statement("
+            SELECT m.memtype,
+                m.memDesc,
+                m.custdataType AS cd_type,
+                m.discount,
+                m.staff,
+                m.ssi
+            FROM memtype AS m 
             ORDER BY m.memtype");
         $r = $dbc->exec_statement($q);
         while($w = $dbc->fetch_row($r)){
