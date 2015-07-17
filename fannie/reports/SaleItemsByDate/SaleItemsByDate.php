@@ -45,7 +45,7 @@ class SaleItemsByDate extends FannieReportPage
 
     public function fetch_report_data()
     {        
-	$item = array();
+        $item = array();
         $batchID = array();
         $upc = array();
         $salePrice = array();
