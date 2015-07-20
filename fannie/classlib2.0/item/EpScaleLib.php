@@ -215,7 +215,15 @@ class EpScaleLib
             $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_writeItem_' . $i . '.dat';
             $fp = fopen($file_name, 'w');
             fwrite($fp, 'BNA' . $file_prefix . '_' . $i . chr(253) . self::$NL);
+            $depts = array();
             foreach($items as $item) {
+                // batches run per-department rather than per-scale
+                // so duplicates can be skipped
+                if (in_array($scale_model->epDeptNo(), $depts)) {
+                    continue;
+                } else {
+                    $depts[] = $scale_model->epDeptNo();
+                }
                 $item_line = self::getItemLine($item);
                 if ($scale_model->epStoreNo() != 0) {
                     $item_line .= 'SNO' . $scale_model->epStoreNo() . chr(253);

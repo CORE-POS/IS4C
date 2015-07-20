@@ -293,7 +293,9 @@ class EditBatchPage extends FannieRESTfulPage
                 left join prodExtra as x on l.upc=x.upc
                 left join vendorItems as v on l.upc=v.upc AND p.default_vendor_id=v.vendorID
                 left join vendors as z on p.default_vendor_id=z.vendorID
-            where batchID=? ORDER BY l.upc");
+            where batchID=? 
+                AND p.store_id=1 
+            ORDER BY l.upc");
         $selR = $dbc->exec_statement($selQ,array($bid));
         $upc = "";
         $insP = $dbc->prepare_statement("INSERT INTO batchBarcodes
@@ -579,7 +581,8 @@ class EditBatchPage extends FannieRESTfulPage
             FROM batchList AS b
                 INNER JOIN products AS p ON b.upc=p.upc
             WHERE b.batchID=?
-                AND b.salePrice=p.normal_price';
+                AND b.salePrice=p.normal_price
+            GROUP BY b.upc';
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, array($this->id));
 
@@ -805,6 +808,7 @@ class EditBatchPage extends FannieRESTfulPage
                 LEFT JOIN prodPhysicalLocation AS y ON b.upc=y.upc
                 LEFT JOIN superDeptNames AS m ON y.section=m.superID
             WHERE b.batchID = ? 
+                AND p.store_id=1
             $orderby";
         if ($dbc->dbms_name() == "mssql") {
             $fetchQ = "select b.upc,
@@ -935,6 +939,7 @@ class EditBatchPage extends FannieRESTfulPage
             FROM products AS p 
                 INNER JOIN upcLike AS u ON p.upc=u.upc
             WHERE u.likeCode = ? 
+                AND store_id=1
             ORDER BY p.upc DESC");
         
         $colors = array('#ffffff','#ffffcc');
@@ -1127,6 +1132,7 @@ class EditBatchPage extends FannieRESTfulPage
             FROM products AS p 
                 INNER JOIN upcLike AS u ON p.upc=u.upc
             WHERE u.likeCode = ? 
+                AND p.store_id=1
             ORDER BY p.upc DESC");
         
         $colors = array('#ffffff','#ffffcc');

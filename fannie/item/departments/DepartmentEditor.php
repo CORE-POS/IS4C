@@ -29,6 +29,9 @@ if (!class_exists('FannieAPI')) {
 class DepartmentEditor extends FanniePage {
     protected $title = "Fannie : Manage Departments";
     protected $header = "Manage Departments";
+    
+    protected $must_authenticate = true;
+    protected $auth_classes = array('departments', 'admin');
 
     public $description = '[Department Editor] creates, updates, and deletes POS departments.';
     public $themed = true;

@@ -133,8 +133,6 @@ if ($FANNIE_AUTH_ENABLED){
 if ($FANNIE_AUTH_ENABLED){
     if (!function_exists("login"))
         include($FANNIE_ROOT.'auth/login.php');
-    // create user authentication support tables if they don't exist.
-    table_check();
 
     // if no users exist, offer to create one
     if (getNumUsers() == 0){

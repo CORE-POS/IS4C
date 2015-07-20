@@ -66,6 +66,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
             $model = new ProductsModel($dbc);
             $upc = BarcodeLib::padUPC($upcs[$i]);
             $model->upc($upc);
+            $model->store_id(1);
             
             if (isset($dept[$i])) {
                 $model->department($dept[$i]);

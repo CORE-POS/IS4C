@@ -346,7 +346,7 @@ function enableLinea(selector, callback)
     function lineaSilent()
     {
         if (typeof cordova.exec != 'function') {
-            setTimeout('lineaSilent()', 500);
+            setTimeout(lineaSilent, 100);
         } else {
             if (Device) {
                 Device.setScanBeep(false, []);

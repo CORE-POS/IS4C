@@ -30,6 +30,7 @@ class FannieSignage
     protected $source_id = 0;
     protected $data = array();
     protected $overrides = array();
+    protected $excludes = array();
 
     /**
       constructor
@@ -280,7 +281,11 @@ class FannieSignage
                                 AND o.name <> ?
                                 AND o.shortName <> ?');
 
-        while($row = $dbc->fetch_row($result)) {
+        while ($row = $dbc->fetch_row($result)) {
+
+            if (in_array($row['upc'], $this->excludes)) {
+                continue;
+            }
 
             if ($row['pricePerUnit'] == '') {
                 $row['pricePerUnit'] = \COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($row['normal_price'], $row['size']);
@@ -414,8 +419,16 @@ class FannieSignage
     public function listItems()
     {
         $url = \FannieConfig::factory()->get('URL');
-        $ret = '<table class="table">';
-        $ret .= '<tr><th>UPC</th><th>Brand</th><th>Description</th><th>Price</th><th>Origin</th></tr>';
+        $ret = '<table class="table tablesorter tablesorter-core">';
+        $ret .= '<thead>';
+        $ret .= '<tr>
+            <th>UPC</th><th>Brand</th><th>Description</th><th>Price</th><th>Origin</th>
+            <th><label>Exclude
+                <input type="checkbox" onchange="$(\'.exclude-checkbox\').prop(\'checked\', $(this).prop(\'checked\'));" />
+                </label>
+            </th>
+            </tr>';
+        $ret .= '</thead><tbody>';
         $data = $this->loadItems();
         foreach ($data as $item) {
             $ret .= sprintf('<tr>
@@ -428,6 +441,7 @@ class FannieSignage
                             <td>%.2f</td>
                             <td><input class="FannieSignageField form-control" type="text" 
                                 name="update_origin[]" value="%s" /></td>
+                            <td><input type="checkbox" name="exclude[]" class="exclude-checkbox" value="%s" /></td>
                             </tr>',
                             $url,
                             $item['upc'], $item['upc'], $item['upc'],
@@ -435,10 +449,11 @@ class FannieSignage
                             $item['brand'],
                             str_replace('"', '&quot;', $item['description']),
                             $item['normal_price'],
-                            $item['originName']
+                            $item['originName'],
+                            $item['upc']
             );
         }
-        $ret .= '</table>';
+        $ret .= '</tbody></table>';
 
         return $ret;
     }
@@ -511,6 +526,11 @@ class FannieSignage
             $this->overrides[$upc] = array();
         }
         $this->overrides[$upc][$field_name] = $value;
+    }
+
+    public function addExclude($upc)
+    {
+        $this->excludes[] = $upc;
     }
 
     public function formatPrice($price)

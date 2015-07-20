@@ -32,6 +32,9 @@ class FloorSectionsPage extends \COREPOS\Fannie\API\FannieCRUDPage
     protected $header = 'Named Sales Floor Sections';
     protected $title = 'Named Sales Floor Sections';
 
+    public $description = '[Floor Sections] assigns names to physical areas of the store
+    for tracking items\' approximate location.';
+
     protected $display_sorting = array('name');
 
     public function helpContent()

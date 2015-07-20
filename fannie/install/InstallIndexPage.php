@@ -266,15 +266,6 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 if ($msg['error'] == 0) continue;
                 echo $msg['error_msg'] . '<br />';
             }
-
-            // create auth tables later than the original
-            // setting in case db settings were wrong
-            if (isset($FANNIE_AUTH_ENABLED) && $FANNIE_AUTH_ENABLED === true) {
-                if (!function_exists('table_check')) {
-                    include($FILEPATH.'auth/utilities.php');
-                }
-                table_check();
-            }
         }
 
         $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
@@ -677,6 +668,12 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'VendorSKUtoPLUModel',
             'VendorBreakdownsModel',
             'VendorDepartmentsModel',
+            'UsersModel',
+            'UserPrivsModel',
+            'UserKnownPrivsModel',
+            'UserGroupsModel',
+            'UserGroupPrivsModel',
+            'UserSessionsModel',
             // VIEWS
             'SuperMinIdViewModel',
             'MasterSuperDeptsModel',

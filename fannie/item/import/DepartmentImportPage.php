@@ -33,6 +33,9 @@ class DepartmentImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Departments";
 
+    protected $must_authenticate = true;
+    protected $auth_classes = array('departments', 'admin');
+
     public $description = '[Department Import] load POS departments from a spreadsheet.';
     public $themed = true;
 

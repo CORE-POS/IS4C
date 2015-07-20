@@ -35,6 +35,9 @@ class SubdeptImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Sub-Departments";
 
+    protected $must_authenticate = true;
+    protected $auth_classes = array('departments', 'admin');
+
     public $description = '[Subdepartment Import] loads subdept data from a spreadsheet.';
     public $themed = true;
 

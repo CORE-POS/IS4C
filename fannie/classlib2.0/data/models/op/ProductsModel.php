@@ -358,6 +358,28 @@ it won\'t *do* anything.
         return $try;
     }
 
+    public function saveAllStores()
+    {
+        $current_store = $this->store_id();
+        if ($this->upc() == '') {
+            return false;
+        }
+
+        $stores = new StoresModel($dbc);
+        $ret = true;
+        foreach ($stores->find() as $store) {
+            $this->store_id($store->storeID());
+            if (!$this->save()) {
+                $ret = false;
+            }
+        }
+        if ($current_store) {
+            $this->store_id($current_store);
+        }
+
+        return $ret;
+    }
+
     /**
       Log deletes to prodUpdate
       Delete corresponding records from other tables

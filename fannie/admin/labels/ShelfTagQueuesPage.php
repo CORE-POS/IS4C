@@ -31,6 +31,8 @@ class ShelfTagQueuesPage extends \COREPOS\Fannie\API\FannieCRUDPage
     protected $model_name = 'ShelfTagQueuesModel';
     protected $header = 'Shelf Tag Queues';
     protected $title = 'Shelf Tag Queues';
+    public $description = '[Shelf Tag Queues] are named slots where new tags
+    can be queued before printing.';
 
     public function helpContent()
     {

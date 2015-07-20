@@ -110,6 +110,7 @@ class ItemFlagsModule extends ItemModule
         $dbc = $this->connection;
         $model = new ProductsModel($dbc);
         $model->upc($upc);
+        $model->store_id(1);
         $model->numflag($numflag);
         $saved = $model->save();
 

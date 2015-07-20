@@ -90,10 +90,12 @@ class AdvancedBatchEditor extends FannieRESTfulPage
         $list->batchID($this->id);
         $ret = '<form method="post">
             <input type="hidden" name="id" value="' . $this->id . '" />
-            <table class="table table-bordered table-striped">
+            <table class="table table-bordered table-striped tablesorter tablesorter-core">
             <thead>
             <tr>
                 <th>UPC</th>
+                <th>Brand</th>
+                <th>Description</th>
                 <th>Sale Price</th>
                 <th>Group Price</th>
                 <th>Price Method</th>
@@ -102,13 +104,21 @@ class AdvancedBatchEditor extends FannieRESTfulPage
             </thead>
             <tbody>';
         $t_def = $dbc->tableDefinition('batchList');
+        $prodP = $dbc->prepare('
+            SELECT brand,
+                description
+            FROM products
+            WHERE upc=?');
         foreach ($list->find('listID', true) as $item) {
             if (!isset($t_def['groupSalePrice']) || $item->groupSalePrice() == null) {
                 $item->groupSalePrice($item->salePrice());
             }
+            $prod = $dbc->getRow($prodP, array($item->upc()));
             $ret .= sprintf('
                 <tr>
                     <td>%s<input type="hidden" name="upc[]" value="%s" /></td>
+                    <td>%s</td>
+                    <td>%s</td>
                     <td><input type="text" class="form-control price-field input-sm"
                         value="%.2f" name="price[]" /></td>
                     <td><input type="text" class="form-control price-field input-sm"
@@ -119,6 +129,8 @@ class AdvancedBatchEditor extends FannieRESTfulPage
                         value="%d" name="quantity[]" /></td>
                 </tr>',
                 $item->upc(), $item->upc(),
+                $prod['brand'],
+                $prod['description'],
                 $item->salePrice(),
                 $item->groupSalePrice(),
                 $item->pricemethod(),
@@ -130,6 +142,8 @@ class AdvancedBatchEditor extends FannieRESTfulPage
                 <button type="submit" class="btn btn-default">Save</button>
             </p>
             </form>';
+        $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.min.js');
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter();");
         $this->addOnloadCommand("\$('.table input.form-control:first').focus();\n");
 
         return $ret;
