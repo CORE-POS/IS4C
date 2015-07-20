@@ -30,7 +30,8 @@ $UNFI_ALL_QUERY = "
     INNER JOIN products as p ON v.upc=p.upc
     LEFT JOIN prodExtra AS x ON p.upc=x.upc
     where 
-    v.vendorID=1";
+    v.vendorID=1
+    AND p.store_id=1";
 
 if (isset($_GET['action'])){
     $out = $_GET['action']."`";

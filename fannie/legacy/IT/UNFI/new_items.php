@@ -2,6 +2,8 @@
 include('../../../config.php');
 if (!class_exists('FannieAPI'))
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+header('Location: ' . $FANNIE_URL . 'item/vendors/BrowseVendorItems.php?vid=1');
+exit;
 
 require($FANNIE_ROOT.'src/SQLManager.php');
 include('../../db.php');
@@ -127,6 +129,7 @@ else if (isset($_POST["upc"])){
     $bID = $_POST["shelftagpage"];
 
     $product = new ProductsModel($sql);
+    $product->store_id(1);
     $product->pricemethod(0);
     $product->groupprice(0);
     $product->quantity(0);
