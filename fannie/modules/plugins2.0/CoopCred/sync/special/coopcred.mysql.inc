@@ -40,7 +40,21 @@
 
 if (!isset($FANNIE_ROOT))
 	include(dirname(__FILE__).'/../../../../../config.php');
-include_once($FANNIE_ROOT.'src/tmp_dir.php');
+// function sys_get_temp_dir doesn't exist in PHP < 5.2.1
+if ( !function_exists('sys_get_temp_dir')) {
+  function sys_get_temp_dir() {
+      if (!empty($_ENV['TMP'])) { return realpath($_ENV['TMP']); }
+      if (!empty($_ENV['TMPDIR'])) { return realpath( $_ENV['TMPDIR']); }
+      if (!empty($_ENV['TEMP'])) { return realpath( $_ENV['TEMP']); }
+      $tempfile=tempnam(__FILE__,'');
+      if (file_exists($tempfile)) {
+          unlink($tempfile);
+          return realpath(dirname($tempfile));
+      }
+      return null;
+      }
+}
+
 
 $ret = 0;
 $output = array();
