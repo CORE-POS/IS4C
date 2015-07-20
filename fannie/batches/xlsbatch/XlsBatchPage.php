@@ -93,6 +93,10 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $insR = $dbc->exec_statement($insQ,$args);
         $id = $dbc->insert_id();
 
+        if ($this->config->get('STORE_MODE') === 'HQ') {
+            StoreBatchMapModel::initBatch($id);
+        }
+
         $upcChk = $dbc->prepare_statement("SELECT upc FROM products WHERE upc=?");
 
         $model = new BatchListModel($dbc);

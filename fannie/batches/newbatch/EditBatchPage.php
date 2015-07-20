@@ -75,6 +75,7 @@ class EditBatchPage extends FannieRESTfulPage
         $this->__routes[] = 'post<id><upc><swap>';
         $this->__routes[] = 'post<id><qualifiers><discount>';
         $this->__routes[] = 'post<id><trim>';
+        $this->__routes[] = 'post<id><storeID>';
 
         return parent::preprocess();
     }
@@ -599,6 +600,31 @@ class EditBatchPage extends FannieRESTfulPage
         return false;
     }
 
+    public function post_id_storeID_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->OP_DB);
+        $ret = array('error'=>0, 'display'=>'');
+
+        $map = new StoreBatchMapModel($dbc);
+        $map->storeID($this->storeID);
+        $map->batchID($this->id);
+        if ($map->load()) {
+            $deleted = $map->delete();
+            if (!$deleted) {
+                $ret['error'] = 'Error removing store mapping';
+            }
+        } else {
+            $saved = $map->save();
+            if (!$saved) {
+                $ret['error'] = 'Error saving store mapping';
+            }
+        }
+        echo json_encode($ret);
+
+        return false;
+    }
+
     private function addItemUPCInput($newtags=false)
     {
         global $FANNIE_OP_DB;
@@ -857,7 +883,26 @@ class EditBatchPage extends FannieRESTfulPage
         $row = $dbc->fetch_row($res);
         $cp = $row[0];
         
-        $ret = "<span class=\"newBatchBlack\"><b>Batch name</b>: $name</span><br />";
+        $ret = "<span class=\"newBatchBlack\"><b>Batch name</b>: $name</span> | ";
+        $ret .= '<b>Sale Dates</b>: ' 
+            . date('Y-m-d', strtotime($model->startDate())) 
+            . ' - ' 
+            . date('Y-m-d', strtotime($model->endDate())) . '<br />';
+        if ($this->config->get('STORE_MODE') === 'HQ') {
+            $stores = new StoresModel($dbc);
+            $mapP = $dbc->prepare('SELECT storeID FROM StoreBatchMap WHERE storeID=? AND batchID=?');
+            foreach ($stores->find('storeID') as $s) {
+                $mapR = $dbc->execute($mapP, array($s->storeID(), $id));
+                $checked = ($mapR && $dbc->numRows($mapR)) ? 'checked' : '';
+                $ret .= sprintf('<label>
+                    <input type="checkbox" onchange="toggleStore(%d, %d);" %s />
+                    %s
+                    </label> | ',
+                    $s->storeID(), $id,
+                    $checked, $s->description());
+            }
+            $ret .= '<br />';
+        }
         $ret .= "<a href=\"BatchListPage.php\">Back to batch list</a> | ";
         $ret .= sprintf('<input type="hidden" id="batch-discount-type" value="%d" />', $model->discounttype());
         /**
@@ -1315,5 +1360,5 @@ class EditBatchPage extends FannieRESTfulPage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

@@ -131,6 +131,10 @@ class CoopDealsReviewPage extends FanniePage
                 $dbc->exec_statement($batchP,$args);
                 $bID = $dbc->insert_id();
                 $batchIDs[$row[BATCHNAME_COL]] = $bID;
+
+                if ($this->config->get('STORE_MODE') === 'HQ') {
+                    StoreBatchMapModel::initBatch($bID);
+                }
             }
             $id = $batchIDs[$row[BATCHNAME_COL]];
 

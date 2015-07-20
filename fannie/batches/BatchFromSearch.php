@@ -88,6 +88,10 @@ class BatchFromSearch extends FannieRESTfulPage
         $b->owner($owner);
         $id = $b->save();
 
+        if ($this->config->get('STORE_MODE') === 'HQ') {
+            StoreBatchMapModel::initBatch($id);
+        }
+
         if ($dbc->tableExists('batchowner')) {
             $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
             $insR = $dbc->exec_statement($insQ,array($id,$owner));

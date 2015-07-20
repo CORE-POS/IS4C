@@ -296,3 +296,17 @@ function trimPcBatch(id)
 
 }
 
+function toggleStore(storeID, batchID)
+{
+    $.ajax({
+        type: 'post',
+        data: 'id='+batchID+'&storeID='+storeID,
+        dataType: 'json',
+        success: function(resp) {
+            if (resp.error) {
+                showBootstrapAlert('#inputarea', 'danger', resp.error);
+            }
+        }
+    });
+}
+

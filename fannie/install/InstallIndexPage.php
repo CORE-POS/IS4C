@@ -655,6 +655,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'SuperDeptEmailsModel',
             'SuperDeptNamesModel',
             'StoresModel',
+            'StoreBatchMapModel',
             'SuspensionsModel',
             'SuspensionHistoryModel',
             'TaxRatesModel',
