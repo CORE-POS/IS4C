@@ -117,22 +117,7 @@ class DeveloperTargetTask extends FannieTask
             $targets->reset();
             $targets->card_no($w['card_no']);
             $def_target->card_no($w['card_no']);
-            if ($targets->load() && !$def_target->load()) {
-                // temp logic change; skip all previous issued
-                continue;
-                if ($targets->redeemed() == 0) {
-                    continue;
-                } else {
-                    echo "Updating: " . $w['card_no'] . "\n";
-                    $targets->issued($targets->issued() - $targets->redeemed());
-                    if ($targets->issued() > 0) {
-                        $targets->issued(0);
-                    }
-                    $targets->redeemed(0);
-                    $targets->addedDate(date('Y-m-d H:i:s'));
-                    $targets->save();
-                }
-            } else {
+            if (!$def_target->load()) {
                 echo "Adding: " . $w['card_no'] . "\n";
                 $targets->card_no($w['card_no']);
                 $targets->addedDate(date('Y-m-d H:i:s'));

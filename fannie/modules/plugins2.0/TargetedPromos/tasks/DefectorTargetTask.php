@@ -117,7 +117,7 @@ class DefectorTargetTask extends FannieTask
             $targets->reset();
             $targets->card_no($w['card_no']);
             $dev_targets->card_no($w['card_no']);
-            if (!$targets->load() && !$dev_targets->load()) {
+            if (!$dev_targets->load()) {
                 echo "Adding " . $w['card_no'] . "\n";
                 $targets->addedDate(date('Y-m-d H:i:s'));
                 $targets->card_no($w['card_no']);
