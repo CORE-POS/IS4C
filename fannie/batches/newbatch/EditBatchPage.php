@@ -802,13 +802,12 @@ class EditBatchPage extends FannieRESTfulPage
                 y.shelf,
                 p.brand
             FROM batchList AS b 
-                LEFT JOIN products AS p ON b.upc = p.upc 
+                LEFT JOIN products AS p ON b.upc = p.upc AND p.store_id=1
                 LEFT JOIN likeCodes AS l ON b.upc = CONCAT('LC',CONVERT(l.likeCode,CHAR))
                 LEFT JOIN batchCutPaste AS c ON b.upc=c.upc AND b.batchID=c.batchID
                 LEFT JOIN prodPhysicalLocation AS y ON b.upc=y.upc
                 LEFT JOIN superDeptNames AS m ON y.section=m.superID
             WHERE b.batchID = ? 
-                AND p.store_id=1
             $orderby";
         if ($dbc->dbms_name() == "mssql") {
             $fetchQ = "select b.upc,
