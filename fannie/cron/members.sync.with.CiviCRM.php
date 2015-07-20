@@ -21,14 +21,24 @@
 
 *********************************************************************************/
 
+/* ChangeLog
+ * 24May2015 Option to fill in placeholder NEW MEMBER records after every run.
+ * 22Apr2015 For CiviCRM 4.6.2
+ *           More vars in the external config file.
+ *           members.sync.with.CiviCRM_new405.php
+ *           New: get $dummy_membershp_type from CiviCRM
+ *           New: move more co-op-specific assignments to the config include().
+ */
+
 /* HELP
 
-   members.sync.with.CiviCRM.php
+members.sync.with.CiviCRM.php
 
-     Synchronizes membership data between Fannie and CiviCRM 3.4.4.
-     Matches records on custdata.CardNo = civicrm_membership.id
-      and updates the older of the pair from the newer.
-     Add records that don't exist in the other database, both ways.
+Synchronizes membership data between CORE and CiviCRM 4.6.2.
+Matches records on custdata.CardNo = civicrm_membership.id
+ and updates the older of the pair from the newer.
+Add records that don't exist in the other database,
+ both ways.
 
 */
 
@@ -54,18 +64,7 @@
  --functionality } - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
  #'Z --COMMENTZ { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
- *  2Jul14 EL Ignore in initial select where civicrm_contact.is_deleted <> 0
- * 16Jan14 EL Assign civicrm_membership.status_id = 1 at insert.
- *             It has no default in Civi, was defaulting to 0 which
- *              prevented it from being found
- *              and caused label "Pending and Inactive"
- * 28Oct13 EL Change $is4cMax from 99989 to 99900 to allow more special cases.
- * 20Jun13 EL Finish report the new member number obtained from CiviCRM.
- *            +>2add +>1add, +>3add
- * 23May13 EL Include table memberNotes in adjustIS4C().
- *            memberNotes is not synced with CiviCRM.
- * 11May13 EL In production.
- *  7May13 EL Add support for and try dry run.
+
  --commentz } - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 */
@@ -85,20 +84,10 @@ function selectIS4C ($member_id) {
     $selWhere = "1";
 
     $selLimit = "LIMIT 1";
-    //$selLimit = "LIMIT 1";
 
     $orderBy = "";
-    //$orderBy = "ORDER BY c.CardNo";
 
     $distinct = "";
-    //$distinct = "DISTINCT";
-
-    /* Re the big select:
-         Re the join:
-            There must be: custdata
-            There will always be: meminfo (unless no email), memDates, memContact
-            There might be one or more: memberCards
-    */
 
     $selectMember = "SELECT $distinct
 c.CardNo
@@ -227,14 +216,6 @@ function selectCivi ($member_id) {
     $selLimit = "";
     //$selLimit = "LIMIT 1";
 
-    /* Re the big select:
-         Re the join:
-            There must be: _membership, _contact
-            There will always be: _email
-            There might be one or more: _address and/or _phone and/or _contribution
-            There will always be: _log
-    */
-
     $selectMember = "SELECT
 c.id as contact_id
  ,c.contact_type, c.is_opt_out
@@ -246,7 +227,7 @@ c.id as contact_id
 ,p.phone
 ,e.email ,e.on_hold, e.is_bulkmail
 ,m.id as member_id, m.membership_type_id as mti, m.is_pay_later as mipl
- ,m.join_date, m.start_date, m.end_date 
+ ,m.join_date, m.start_date, m.end_date, m.status_id as msi
 ,v.{$memberCardField} as mcard
 ,s.abbreviation as province
 FROM
@@ -260,10 +241,7 @@ WHERE m.id = $member_id
 ORDER BY c.id
 $selLimit;";
 
-//LEFT JOIN civicrm_log u ON m.contact_id = u.entity_id AND u.entity_table = 'civicrm_contact'
-
     $member = $dbConn->query("$selectMember");
-    //$member = $dbConn->query("$selectMember", MYSQLI_STORE_RESULT);
     if ( $dbConn->errno ) {
         $message = sprintf("Select failed: %s\n", $dbConn->error);
         dieHere("$message", $dieMail);
@@ -323,7 +301,7 @@ function assignLocalI ($row, $is4cOps, $updated) {
     // This lets autoincrement of custdata.id do its thing.
     $custdata[id] = "";
     // Fields that are the same for all.
-    $custdata[CashBack] = 999.99;   // double
+    $custdata[CashBack] = 999.99;    // double
     $custdata[Type] = "PC";
     $custdata[memType] = $row[mti]; // int
 
@@ -510,8 +488,8 @@ WHERE card_no = $memDates[card_no]
          Preference about being contacted.
             0 => no contact
             1 => postal mail only  # WEFC doesn't do, so not used.
-            2 => email only # Default.
-            3 => both   # Not used.
+            2 => email only    # Default.
+            3 => both    # Not used.
          May want to do only if "no".
     */
 
@@ -582,13 +560,16 @@ WHERE card_no = $memberCards[card_no]
 /* Assign IS4C data to the local Civi arrays.
  * Create and store the $insert* and $update* statement arrays.
 */
-function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
+function assignLocalC ($row, $civiOps, $updated, $civiContactId, $civiMemberId) {
 
     global $dbConn;
     // Base
     global $civicrm_contact;
     // Membership#
     global $civicrm_membership;
+    global $civicrm_membership_status;
+    // Membership changes
+    global $civicrm_membership_log;
     // email
     global $civicrm_email;
     // addres
@@ -600,10 +581,13 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
     // Datestamp
     global $civicrm_log;
 
+    global $adminId;
+
     /* SQL DML statements
     */
     global $insertContact;
     global $insertMembership;
+    global $insertMembershipLog;
     global $insertEmail;
     global $insertAddress;
     global $insertPhone;
@@ -742,30 +726,74 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
     // These civi dates are date only, no time.
     $civicrm_membership[join_date] = substr($row[start_date], 0, 10);
     $civicrm_membership[start_date] = substr($row[start_date], 0, 10);
+    $civicrm_membership[end_date] = substr($row[end_date], 0, 10);
+    if ($civicrm_membership[end_date] == '0000-00-00')
+        $civicrm_membership[end_date] = 'NULL';
+    else
+        $civicrm_membership[end_date] = "'" .  $civicrm_membership[end_date] . "'"; 
 
+    // Skeletal new records were created earlier, inserts never done here. 
     if ( $civiOps[civicrm_membership] == "insert" ) {
         $insertMembership = "INSERT INTO civicrm_membership
         (id, contact_id
         , membership_type_id
+        , status_id
         , join_date
         , start_date
-        , status_id
+        , end_date
         )
         VALUES
         ('', $civiContactId
         , $civicrm_membership[membership_type_id])
+        , $civicrm_membership_status[New]
         , '$civicrm_membership[join_date]'
         , '$civicrm_membership[start_date]'
-        , 1
+        , $civicrm_membership[end_date]
         )";
     }
-    else {
+    elseif ( $civiOps[civicrm_membership] == "update" ) {
+        // Cannot assign status_id because it isn't edited in IS4C
+        //  For records created here status_id was intialized on creation.
         $updateMembership = "UPDATE civicrm_membership
         SET
         membership_type_id = $civicrm_membership[membership_type_id]
         , join_date = '$civicrm_membership[join_date]'
         , start_date = '$civicrm_membership[start_date]'
-        WHERE contact_id = $civiContactId";
+        , end_date = $civicrm_membership[end_date]
+        WHERE
+        id = $civiMemberId";
+        // o> 25Nov13. Used to be on contact_id.
+        // contact_id = $civiContactId";
+    }
+    else {
+        $noop = 1;
+    }
+
+    /* Membership log
+     *  Always insert if done at all.
+     *  modified_* agree with civicrm_log
+    */
+    if ( $civiOps[civicrm_membership_log] == "insert" ) {
+        $civicrm_membership_log['modified_id'] = "$adminId";
+        $civicrm_membership_log['modified_date'] = "$updated";
+        $insertMembership = "INSERT INTO civicrm_membership_log
+        (id
+        , membership_id
+        , status_id
+        , start_date
+        , end_date
+        , modified_id
+        , modified_date
+        )
+        VALUES
+        (''
+        , $civiMemberId
+        , $civicrm_membership_status[Current]
+        , '$civicrm_membership[start_date]'
+        , $civicrm_membership[end_date]
+        , $civicrm_membership_log[modified_id]
+        , '$civicrm_membership_log[modified_date]'
+        )";
     }
 
     /* Email(s)
@@ -1012,9 +1040,13 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
     }
     if ( $civiOps["$memberCardTable"] == "insert" ) {
         $insertMemberCard = "INSERT INTO $memberCardTable
-        (id, entity_id, $memberCardField)
+        (id
+        , entity_id
+        , $memberCardField)
         VALUES
-        ('', $civiContactId, $civicrm_value_identification_and_cred[$memberCardField])";
+        (''
+        , $civiContactId
+        , $civicrm_value_identification_and_cred[$memberCardField])";
     }
     else {
         $updateMemberCard = "UPDATE $memberCardTable
@@ -1028,11 +1060,16 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
     $civicrm_log['entity_id'] = $civiContactId;
     $civicrm_log['data'] = "{$civicrm_log['entity_table']},{$civicrm_log['entity_id']}";
     // This is civicrm_contact.id of an "IS4C" record in Civi.
-    $civicrm_log['modified_id'] = "4982";
+    $civicrm_log['modified_id'] = "$adminId";
     $civicrm_log['modified_date'] = "$updated";
 
     $insertLog = "INSERT INTO civicrm_log
-    (id, entity_table, entity_id, data, modified_id, modified_date)
+    (id
+    , entity_table
+    , entity_id
+    , data
+    , modified_id
+    , modified_date)
     VALUES
     ('',
     '$civicrm_log[entity_table]',
@@ -1043,6 +1080,134 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
     )";
 
 // assignLocalC
+}
+
+/* Assign IS4C data to the local Civi arrays.
+ * Create and store the $insert* and $update* statement arrays.
+ * Only for civicrm_log and maybe civicrm_membership_log.
+*/
+function assignLocalClog ($row, $civiOps, $updated, $civiContactId, $civiMemberId) {
+
+    global $dbConn;
+    // Base
+    global $civicrm_contact;
+    // Membership#
+    global $civicrm_membership;
+    global $civicrm_membership_status;
+    // Membership changes
+    global $civicrm_membership_log;
+    // email
+    global $civicrm_email;
+    // addres
+    global $civicrm_address;
+    // phone
+    global $civicrm_phone;
+    // Membership card#
+    global $civicrm_value_identification_and_cred;
+    // Datestamp
+    global $civicrm_log;
+
+    global $adminId;
+
+    /* SQL DML statements
+    */
+    global $insertContact;
+    global $insertMembership;
+    global $insertMembershipLog;
+    global $insertEmail;
+    global $insertAddress;
+    global $insertPhone;
+    global $insertMemberCard;
+    global $insertLog;
+
+    global $updateContact;
+    global $updateMembership;
+    global $updateEmail;
+    global $updateAddress;
+    global $updatePhone;
+    global $updateMemberCard;
+    global $updateLog;
+
+    global $memberCardTable;
+    global $memberCardField;
+
+    // #'u
+    /* In general:
+     * - Use the civicrm_* array elements for prepared versions of the data for that table.
+     * - Assign prepared versions of the data for that table to the civicrm_* array elements.
+     * - Test civiOps[table_name] for whether to prepare an insert or update.
+     * - Compose the statement and assign/append it to the statement list for that table.
+     * - Create a civicrm_log record (datestamp) to match the IS4C datestamp.
+    */
+
+    /* Membership
+    */
+    $civicrm_membership[membership_type_id] = $row[memType];
+    // These civi dates are date only, no time.
+    $civicrm_membership[join_date] = substr($row[start_date], 0, 10);
+    $civicrm_membership[start_date] = substr($row[start_date], 0, 10);
+    $civicrm_membership[end_date] = substr($row[end_date], 0, 10);
+    if ($civicrm_membership[end_date] == '0000-00-00')
+        $civicrm_membership[end_date] = 'NULL';
+    else
+        $civicrm_membership[end_date] = "'" .  $civicrm_membership[end_date] . "'"; 
+
+
+    /* Membership log
+     *  Always insert if done at all.
+     *  modified_* agree with civicrm_log
+    */
+    if ( True && $civiOps[civicrm_membership_log] == "insert" ) {
+        $civicrm_membership_log['modified_id'] = "$adminId";
+        $civicrm_membership_log['modified_date'] = "$updated";
+        $insertMembership = "INSERT INTO civicrm_membership_log
+        (id
+        , membership_id
+        , status_id
+        , start_date
+        , end_date
+        , modified_id
+        , modified_date
+        , membership_type_id
+        )
+        VALUES
+        (''
+        , $civiMemberId
+        , $civicrm_membership_status[Current]
+        , '$civicrm_membership[start_date]'
+        , $civicrm_membership[end_date]
+        , $civicrm_membership_log[modified_id]
+        , '$civicrm_membership_log[modified_date]'
+        , $civicrm_membership[membership_type_id]
+        )";
+    }
+
+    // Datestamp
+    // Create a civicrm_log record (datestamp) to match the IS4C datestamp.
+    $civicrm_log['entity_table'] = "civicrm_contact";
+    $civicrm_log['entity_id'] = $civiContactId;
+    $civicrm_log['data'] = "{$civicrm_log['entity_table']},{$civicrm_log['entity_id']}";
+    // This is civicrm_contact.id of an "IS4C" record in Civi.
+    $civicrm_log['modified_id'] = "$adminId";
+    $civicrm_log['modified_date'] = "$updated";
+
+    $insertLog = "INSERT INTO civicrm_log
+    (id
+    , entity_table
+    , entity_id
+    , data
+    , modified_id
+    , modified_date)
+    VALUES
+    ('',
+    '$civicrm_log[entity_table]',
+    $civicrm_log[entity_id],
+    '$civicrm_log[data]',
+    $civicrm_log[modified_id],
+    '$civicrm_log[modified_date]'
+    )";
+
+// assignLocalClog
 }
 
 
@@ -1058,16 +1223,14 @@ function toCivi($mode, $member, $updated) {
     global $dieMail;
     global $tempMemberRange;
 
-    // In production do not override here.
-    // 1=notify, no-write, 2=notify but write.
-    //$debug = 2;
-
     $funcName = "toCivi";
     if ( $debug )
         goOrDie("In $funcName debug: $debug > ");
 
-    if ($dryRun)
+    if ($dryRun) {
+        echo "Bailing on dryRun.\n";
         return True;
+    }
 
     $newMember = 0;
     $upshot = "";
@@ -1108,7 +1271,8 @@ function toCivi($mode, $member, $updated) {
         // This should never happen.
         //  Means that a member was entered in IS4C with id below the new-record range.
         else {
-            $msg = "$funcName insert to Civi from regular IS4C range : member: $member <= $tempMemberRange. Not done.";
+            $msg = "$funcName insert to Civi from regular IS4C range : " .
+                "member: $member <= $tempMemberRange. Not done.";
             if ( $debug > 0 ) {
                 goOrDie("$msg");
             }
@@ -1135,17 +1299,20 @@ function toCivi($mode, $member, $updated) {
      *  In other words, whether a record for this member exists in each Civi table.
      * Assign civiContactId
     */
-    $civiOps = searchCivi2($member);    // see 't
+    $civiOps = searchCivi2($member, $row);    // see 't
     if ( preg_match("/^Error/", $civiOps[0][0]) ) {
         dieHere("{$civiOps[0][0]}", $dieMail);
     }
 
-    if ($debug)
+    if ($debug) {
+        print_r($civiOps);
+        //foreach ($civiOps as $key => $value) { echo "civiOps $key :: $value\n";    }
         goOrDie("After searchCivi2: civiContactId: $civiContactId");
+    }
 
     // Populate the local arrays
     // and create the DML statements.
-    assignLocalC($row, $civiOps, $updated, $civiContactId);
+    assignLocalC($row, $civiOps, $updated, $civiContactId, $member);
 
     if ($debug) {
         goOrDie("Before toCivi DML for member: $member debug: $debug");
@@ -1178,6 +1345,150 @@ function toCivi($mode, $member, $updated) {
 }
 
 
+
+/* Insert or Update CiviCRM from IS4C.
+ * Specialized for only doing insert to civicrm_log
+*/
+function toCiviLog($mode, $member, $updated) {
+
+    global $civiOps;
+    global $debug;
+    global $dryRun;
+    global $civiTableNames;
+    global $civiContactId;
+    global $dieMail;
+    global $tempMemberRange;
+
+    $funcName = "toCiviLog";
+    if ( $debug )
+        goOrDie("In $funcName debug: $debug > ");
+
+    if ($dryRun) {
+        echo "Bailing on dryRun.\n";
+        return True;
+    }
+
+    $newMember = 0;
+    $upshot = "";
+
+    // For toCiviLog() it never will be.
+    if ( $mode == "insert" ) {
+
+        if ( $member > $tempMemberRange ) {
+
+            //#'h Get a contact number from Civi.
+            $civiContactId = getNewContactId($member);
+            if ( $debug > 0 )
+                goOrDie("Got new Civi contact# $civiContactId");
+            if ( $civiContactId == 0 ) {
+                dieHere("$funcName unable to get new Civi contact#.", $dieMail);
+            }
+
+            //#'i Get a member number from Civi.
+            $newMember = getNewMemberId($civiContactId);
+            if ( $debug > 0 )
+                goOrDie("Got new Civi member# $newMember");
+            if ( $newMember == 0 ) {
+                dieHere("$funcName unable to get new Civi member#.", $dieMail);
+            }
+
+            //#'j Change the tempMember to newMember in all IS4C tables.
+            $upshot = adjustIS4C($member, $newMember, $updated);
+            if ( $debug > 0 )
+                goOrDie("Upshot of changing IS4C $member to $newMember : >{$upshot}<");
+            if ( $upshot != "OK" ) {
+                dieHere("$funcName unable to adjust IS4C for new member.", $dieMail);
+            }
+
+            // Rejoin the mainstream to finish the Civi side as though it were an update:
+            $mode = "update";
+            $member = $newMember;
+
+        }
+        // This should never happen.
+        //  Means that a member was entered in IS4C with id below the new-record range.
+        else {
+            $msg = "$funcName insert to Civi from regular IS4C range : " .
+                "member: $member <= $tempMemberRange. Not done.";
+            if ( $debug > 0 ) {
+                goOrDie("$msg");
+            }
+            problemHere($msg);
+            return;
+        }
+    }
+
+    /* Get all the data from IS4C for this member.
+    */
+    $row = selectIS4C($member);
+
+    if ($debug) {
+        $msg = "IS4C member: $member first: {$row[FirstName]} last: {$row[LastName]}
+        street: {$row[street]}
+        start_date: {$row[start_date]}
+        pref: {$row[pref]}
+        upc: {$row[member_card_upc]}
+        ";
+        goOrDie($msg);
+    }
+
+    /* Find out and note whether the operation to each Civi table will be insert or update.
+     *  In other words, whether a record for this member exists in each Civi table.
+     * Assign civiContactId
+    */
+    $civiOps = searchCivi2($member, $row);
+    //$civiOps['civicrm_log'] = "insert";
+    /* If you want _membership_log let searchCivi2() do it.
+     * $civiOps['civicrm_membership_log'] = "insert";
+     */
+    if ( preg_match("/^Error/", $civiOps[0][0]) ) {
+        dieHere("{$civiOps[0][0]}", $dieMail);
+    }
+
+    if ($debug) {
+        print_r($civiOps);
+        //foreach ($civiOps as $key => $value) { echo "civiOps $key :: $value\n";    }
+        goOrDie("After searchCivi2: civiContactId: $civiContactId");
+    }
+
+    // Populate the local arrays
+    // and create the DML statements.
+    assignLocalClog($row, $civiOps, $updated, $civiContactId, $member);
+    //assignLocalC($row, $civiOps, $updated, $civiContactId, $member);
+
+    if ($debug) {
+        goOrDie("Before toCivi DML for member: $member debug: $debug");
+        1;
+    }
+
+    // Make the changes to Civi tables.
+    // The datestamp is an insert to civicrm_log
+    $resultString = insertToCivi();
+    if ( $resultString != "OK" ) {
+        dieHere("$resultString", $dieMail );
+    }
+    /*
+    $resultString = updateCivi($mode);
+    if ( $resultString != "OK" ) {
+        dieHere("$resultString", $dieMail);
+    }
+
+    if ($debug) {
+        goOrDie("After {$funcName} DML for member: $member ");
+    }
+     */
+
+    // Clear for next operation.
+    clearCiviWorkVars();
+    $civiOps = array();
+
+    return $member;
+    //return True;
+
+// toCiviLog()
+}
+
+
 /*  Return the number of a newly-created CiviCRM contact or 0 on failure.
  * 
 */
@@ -1187,10 +1498,12 @@ function getNewContactId($tempMember) {
     global $debug;
     global $dieMail;
 
+    $funcName = "getNewContactId";
+
     $retVal = 0;
 
     if ( $debug > 0 )
-        $ans = readline("In getNewContactId > ");
+        $ans = readline("In $funcName > ");
 
     $sql = "INSERT INTO civicrm_contact (last_name) VALUES ('NEW_$tempMember')";
     $rslt = $dbConn->query("$sql");
@@ -1199,27 +1512,38 @@ function getNewContactId($tempMember) {
         dieHere($msg, $dieMail);
     }
     if ( ! $rslt ) {
-        $msg = "getNewContactId failed: $sql";
+        $msg = "$funcName failed: $sql";
         dieHere($msg, $dieMail);
     }
 
-    //  Get the _contact.id, which was created by auto-increment
-    $sql = "SELECT id FROM civicrm_contact WHERE last_name = 'NEW_$tempMember'";
+    // Get the _contact.id, which was created by auto-increment
+    //$retVal = $dbConn->insert_id; // returns 0, don't know why.
+    $sql = "SELECT LAST_INSERT_ID()";
     $rslt = $dbConn->query("$sql");
     if ( $dbConn->errno ) {
         $msg = sprintf("Failed: %s", $dbConn->error);
         dieHere($msg, $dieMail);
     }
     if ( ! $rslt ) {
-        $msg = "getNewContactId failed: $sql";
+        $msg = "$funcName failed: $sql";
         dieHere($msg, $dieMail);
     }
     $rows = $dbConn->num_rows($rslt);
     if ( $rows > 0 ) {
         $row = $dbConn->fetch_row($rslt);
-        $retVal = $row[id];
+        $retVal = $row[0];
     } else {
         $retVal = 0;
+    }
+
+    if ( $retVal == 0 ) {
+        $msg = sprintf("Failed to return new contact id for tempMember: %d", $tempMember);
+        dieHere($msg, $dieMail);
+    }
+
+    if ( $debug ) {
+        $msg = sprintf("Returned new contact id %d for tempMember: %d", $retVal, $tempMember);
+        goOrDie("In $funcName :: $msg :: debug: $debug > ");
     }
 
     return($retVal);
@@ -1228,47 +1552,67 @@ function getNewContactId($tempMember) {
 }
 
 /* Return the id# of a newly-created CiviCRM membership or 0 on failure.
- * 
+ * Assign .status_id in the new record.  It isn't maintained in IS4C.
 */
 function getNewMemberId($contactId) {
 
     global $dbConn;
     global $debug;
     global $dieMail;
+    global $civicrm_membership_status;
+    global $dummy_membership_type;
+
+    $funcName = "getNewMemberId";
 
     if ( $debug > 0 ) 
-        $ans = readline("In getNewMemberId > ");
+        $ans = readline("In $funcName > ");
 
     $retVal = 0;
 
-    $sql = "INSERT INTO civicrm_membership (contact_id, status_id) VALUES ($contactId, 1)";
+    $sql = "INSERT INTO civicrm_membership " .
+        "(contact_id, membership_type_id, status_id) " .
+        "VALUES ($contactId" .
+        ", $dummy_membership_type" .
+        ", $civicrm_membership_status[New]" .
+    ")";
     $rslt = $dbConn->query("$sql");
     if ( $dbConn->errno ) {
         $msg = sprintf("Failed: %s", $dbConn->error);
         dieHere($msg, $dieMail);
     }
     if ( ! $rslt ) {
-        $msg = "getNewMemberId failed: $sql";
+        $msg = "$funcName failed: $sql";
         dieHere($msg, $dieMail);
     }
 
-    //  Get the _membership.id, which was created by auto-increment
-    $sql = "SELECT id FROM civicrm_membership WHERE contact_id = $contactId";
+    // Get the _membership.id, which was created by auto-increment
+    //$retVal = $dbConn->insert_id; // returns 0, don't know why.
+    $sql = "SELECT LAST_INSERT_ID()";
     $rslt = $dbConn->query("$sql");
     if ( $dbConn->errno ) {
         $msg = sprintf("Failed: %s", $dbConn->error);
         dieHere($msg, $dieMail);
     }
     if ( ! $rslt ) {
-        $msg = "getNewMemberId failed: $sql";
+        $msg = "$funcName failed: $sql";
         dieHere($msg, $dieMail);
     }
     $rows = $dbConn->num_rows($rslt);
     if ( $rows > 0 ) {
         $row = $dbConn->fetch_row($rslt);
-        $retVal = $row[id];
+        $retVal = $row[0];
     } else {
         $retVal = 0;
+    }
+
+    if ( $retVal == 0 ) {
+        $msg = sprintf("Failed to return new member id %d for contactId: %d", $retVal, $contactId);
+        dieHere($msg, $dieMail);
+    }
+
+    if ( $debug ) {
+        $msg = sprintf("Returned new member id %d for contactId: %d", $retVal, $contactId);
+        goOrDie("In $funcName :: $msg :: debug: $debug > ");
     }
 
     return($retVal);
@@ -1302,7 +1646,7 @@ function adjustIS4C($tempMember, $newMember, $updated) {
         dieHere($msg, $dieMail);
     }
     if ( ! $rslt ) {
-        $msg = "getNewMemberId failed: $sql";
+        $msg = "In $funcName check for dup new member $newMember failed: $sql";
         dieHere($msg, $dieMail);
     }
     $rows = $dbConn2->num_rows($rslt);
@@ -1373,8 +1717,10 @@ function toIS4C($mode, $member, $updated) {
     // debug=2 allows inserts and updates while displaying messages.
     //$debug = 2;
 
-    if ($dryRun)
+    if ($dryRun) {
+        echo "Bailing on dryRun.";
         return True;
+    }
 
     // Get all the data from Civi for this member.
     // You don't know contact_id at this point.
@@ -1422,7 +1768,7 @@ function toIS4C($mode, $member, $updated) {
     //  Better to do at start.
     // Each IS4C table is represented by an assoc array.
     clearIs4cWorkVars();
-    $is4cOps = array(); // Is the clearing needed?
+    $is4cOps = array();    // Is the clearing needed?
 
     return True;
 
@@ -1578,7 +1924,7 @@ LEFT JOIN memberCards r ON c.CardNo = r.card_no
  *  to insert (add) or update.
  *  $civiOps[table-name][insert|update]
 */
-function searchCivi2($member) {
+function searchCivi2($member, $is4cData=array()) {
 
     global $dbConn;
     global $dieMail;
@@ -1600,6 +1946,11 @@ c.id as c_id
 ,p.contact_id as p_id
 ,e.contact_id as e_id
 ,m.contact_id as m_id
+    ,m.membership_type_id
+    ,m.status_id
+    ,m.join_date
+    ,m.start_date
+    ,m.end_date
 ,v.entity_id as v_id
 FROM
 civicrm_membership m
@@ -1631,6 +1982,27 @@ $selLimit;";
         $civiContactId = $row[c_id];
         $civiOps['civicrm_contact'] = "update";
         $civiOps['civicrm_membership'] = ( $row[m_id] != "" ) ? "update" : "insert";
+        // Log membership inserts and actual changes.
+        //$civiOps['civicrm_membership_log'] = "init";    // for debugging
+        if ($civiOps['civicrm_membership'] == "insert") {
+            $civiOps['civicrm_membership_log'] = "insert";
+        }
+        else {
+            if ($row[end_date] == 'NULL')
+                $row[end_date] = '0000-00-00';
+            if (
+                //$row[status_id] == $is4cData[foo] // if IS4C stores status.
+                substr($row[start_date],0,9) == substr($is4cData[start_date],0,9) &&
+                substr($row[end_date],0,9) == substr($is4cData[end_date],0,9) &&
+                $row[membership_type_id] == $is4cData[memType]
+            ) {
+                $civiOps['civicrm_membership'] = "none";
+                $civiOps['civicrm_membership_log'] = "none";
+            }
+            else {
+                $civiOps['civicrm_membership_log'] = "insert";
+            }
+        }
         $civiOps['civicrm_email'] = ( $row[e_id] != "" ) ? "update" : "insert";
         $civiOps['civicrm_address'] = ( $row[a_id] != "" ) ? "update" : "insert";
         $civiOps['civicrm_phone'] = ( $row[p_id] != "" ) ? "update" : "insert";
@@ -1819,6 +2191,7 @@ function insertToCivi() {
     $statements = array();
     $statements[] = $insertContact;
     $statements[] = $insertMembership;
+    $statements[] = $insertMembershipLog;
     $statements = array_merge($statements,$insertEmail);
     $statements = array_merge($statements,$insertAddress);
     $statements = array_merge($statements,$insertPhone);
@@ -1924,8 +2297,8 @@ function clearIs4cWorkVars() {
 
     // in core_op
     // Card#, Person#, Name
-//  $custdata[CardNo] = 0;
-//  $custdata[personNum] = 0;
+//    $custdata[CardNo] = 0;
+//    $custdata[personNum] = 0;
     $flds = array_keys($custdata);
     foreach ($flds as $field) {
         $custdata[$field] = "";
@@ -1998,6 +2371,8 @@ function clearCiviWorkVars() {
     global $civicrm_contact;
     // Membership#
     global $civicrm_membership;
+    // Membership log
+    global $civicrm_membership_log;
     // email
     global $civicrm_email;
     // addres
@@ -2017,6 +2392,11 @@ function clearCiviWorkVars() {
     $flds = array_keys($civicrm_membership);
     foreach ($flds as $field) {
         $civicrm_membership[$field] = "";
+    }
+
+    $flds = array_keys($civicrm_membership_log);
+    foreach ($flds as $field) {
+        $civicrm_membership_log[$field] = "";
     }
 
     $flds = array_keys($civicrm_email);
@@ -2048,6 +2428,7 @@ function clearCiviWorkVars() {
     */
     global $insertContact;
     global $insertMembership;
+    global $insertMembershipLog;
     global $insertEmail;
     global $insertAddress;
     global $insertPhone;
@@ -2067,6 +2448,7 @@ function clearCiviWorkVars() {
     */
     $insertContact = "";
     $insertMembership = "";
+    $insertMembershipLog = "";
     $insertEmail = array();
     $insertAddress = array();
     $insertPhone = array();
@@ -2267,7 +2649,7 @@ function isPhone($str) {
 //isPhone()
 }
 
-/* Abort, with message to email or terminal.
+/* Abort, with message to $mail=1 email or $mail=0 terminal.
  * Better to depend on $dieMail than $mail?
 */
 function dieHere($msg="", $mail="1") {
@@ -2290,7 +2672,7 @@ function dieHere($msg="", $mail="1") {
         echo cron_msg("$msg\n");
     }
     else {
-        echo "dieHere: $msg";
+        echo "dieHere: $msg\n";
     }
 
     if ( $dbConn ) {
@@ -2381,6 +2763,7 @@ function getNameValues($row) {
 }
 
 /* Little tests of civicrm connection. Then die.
+ * civicrm_membership
 */
 function civiTestAndDie($dbConn) {
 
@@ -2411,19 +2794,52 @@ function civiTestAndDie($dbConn) {
         echo $lineOut;
         $lineOut = implode("\t", array($row[id], $row[contact_id])) . "\n";
         echo $lineOut;
-        // This gives duplicate values, for each of: first number, then name reference.
-        //$lineOut = implode("\t", $row) . "\n";
-        // Reduce to one set.
-        /*
-        $vals = getNameValues($row);
-        $lineOut = implode("\t", $vals) . "\n";
-        echo $lineOut;
-        */
     }
-    
+
     dieHere("Civi test OK, bailing ...", 0);
 
-// civiTest()
+// civiTestAndDie()
+}
+
+/* Little tests of civicrm connection. Then die.
+ * civicrm_contact
+*/
+function civiTestAndDie2($dbConn) {
+
+    global $dieMail;
+
+    $selectCivi = "SELECT id, first_name, last_name FROM civicrm_contact LIMIT 5;";
+    $civim = $dbConn->query("$selectCivi");
+    // Does not complain about error in MySQL statement.
+    //  $civim is FALSE in that case.
+    // See $LOGS/queries.log for them.
+    if ( $dbConn->errno ) {
+        $message = printf("Select failed: %s\n", $dbConn->error);
+        dieHere("$message", 0);
+    }
+    if ( ! $civim ) {
+        $msg = sprintf("Failed on: %s", $selectCivi);
+        dieHere("$msg", 0);
+    }
+
+    // Quick test.
+    echo "Civi Contacts, Numbered\n";
+    //mysqli: while ( $row = $civim->fetch_row() ) {}
+    while ( $row = $dbConn->fetch_array($civim) ) {
+        // The numeric keys come first. 0,2,4. Name keys 1, 3, 5.
+        //$flds = getNameKeys($row);
+        //$lineOut = implode("\t", $flds) . "\n";
+        //echo $lineOut;
+        //$lineOut = implode("\t", array($row['id'], $row['first_name']),
+         //   $row['last_name']) . "\n";
+        //echo $lineOut;
+        printf("%s %s, %s%s",$row['id'], $row['last_name'],
+            $row['first_name'], "\n");
+    }
+
+    dieHere("Civi2 test OK, bailing ...", 0);
+
+// civiTestAndDie2()
 }
 
 // Little tests of is4c connection.
@@ -2473,6 +2889,162 @@ function goOrDie($prompt) {
     }
 }
 
+/* Return integer of first membership type
+ * or error message on failure.
+ */
+function getDummyMembershipType($dbConn) {
+    $dbQ = "SELECT id FROM civicrm_membership_type ORDER BY id";
+    $dbR = $dbConn->query("$dbQ");
+    if ($dbR === False) {
+        return "Query failed: $dbQ";
+    } elseif ( $dbConn->num_rows($dbR) > 0 ) {
+        $row = $dbConn->fetch_row($dbR);
+        return $row[id];
+    } else {
+        return "There are no CiviCRM membership types defined.";
+    }
+}
+
+/* #'AAdd (fill in gaps in the range) the placeholder membership records for
+ *  New Members.
+ * @return integer the number added, 0 if none,
+ *  or string error message on failure.
+ */
+function addTempMembers($dbc="")
+{
+
+    //global $dbConn2;
+
+    global $tempMemberRange;
+    /* End of range to fill with NEW MEMBER records.
+     * 0 means "do no fill"
+     */
+    global $tempMemberRangeMax;
+    /* Placeholder custdata.LastName that will be:
+     * - ignored when it occurrs in the range of synced records
+     * - assigned to new placeholder records if filling is being done.
+     */
+    global $tempMemberLastName;
+    /* custdata.memType for placeholder records.
+     * Must be real.
+     */
+    global $tempMemberMemberType;
+    /* memContact.pref for placeholder records.
+     * Must be real.
+     */
+    global $tempMemberContactPref;
+    $retval = null;
+    $errors = '';
+
+    if ($dbc == "") {
+        $errors = "addTempMembers() no database connection supplied.";
+        return $errors;
+    }
+
+    /* Much of what follows is lifted from $MEM/NewMemberTool.php
+     */
+
+    $name = $tempMemberLastName;
+    /* Validate in memtypes.memtype
+     */
+    $mtype = $tempMemberMemberType;
+    $memtypes = new MemtypeModel($dbc);
+    $memtypes->memtype($mtype);
+    $mtypes = $memtypes->find();
+    if (count($mtypes) == 0) {
+        $errors = "Member type $mtype is not known.";
+        return $errors;
+    }
+    /* Validate in memContactPrefs.pref_id
+     */
+    $pref = $tempMemberContactPref;
+    $memprefs = new MemContactPrefsModel($dbc);
+    $memprefs->pref_id($pref);
+    $mprefs = $memprefs->find();
+    if (count($mprefs) == 0) {
+        $errors = "Contact preference $pref is not known.";
+        return $errors;
+    }
+
+    $mt = $dbc->tableDefinition('memtype');
+    $dQuery = "SELECT custdataType,discount,staff,ssi from memtype " .
+        "WHERE memtype=?";
+    $defaultsQ = $dbc->prepare_statement($dQuery);
+    if ($dbc->tableExists('memdefaults') && 
+        (!isset($mt['custdataType']) || !isset($mt['discount']) ||
+        !isset($mt['staff']) || !isset($mt['ssi']))) {
+        $dQuery = "SELECT cd_type as custdataType,discount,staff,SSI as ssi " .
+                "FROM memdefaults WHERE memtype=?";
+        $defaultsQ = $dbc->prepare_statement($dQuery);
+    }
+    $defaultsR = $dbc->exec_statement($defaultsQ,array($mtype));
+    $defaults = $dbc->fetch_row($defaultsR);
+
+    $start = $tempMemberRange + 1;
+    $end = $tempMemberRangeMax;
+
+    $custdata = new CustdataModel($dbc);
+    /* Pre-populate most custdata fields. */
+    $custdata->personNum(1);
+    $custdata->LastName($name);
+    $custdata->FirstName('');
+    $custdata->CashBack(999.99);
+    $custdata->Balance(0);
+    $custdata->memCoupons(0);
+    $custdata->Discount($defaults['discount']);
+    $custdata->Type($defaults['custdataType']);
+    $custdata->staff($defaults['staff']);
+    $custdata->SSI($defaults['ssi']);
+    $custdata->memType($mtype);
+
+    $meminfo = new MeminfoModel($dbc);
+    /* Pre-populate most meminfo fields. */
+    $meminfo->last_name('');
+    $meminfo->first_name('');
+    $meminfo->othlast_name('');
+    $meminfo->othfirst_name('');
+    $meminfo->street('');
+    $meminfo->city('');
+    $meminfo->state('');
+    $meminfo->zip('');
+    $meminfo->phone('');
+    $meminfo->email_1('');
+    $meminfo->email_2('');
+
+    $chkP = $dbc->prepare_statement('SELECT CardNo FROM custdata WHERE CardNo=?');
+    $mdP = $dbc->prepare_statement("INSERT INTO memDates VALUES (?,NULL,NULL)");
+    $mcP = $dbc->prepare_statement("INSERT INTO memContact (card_no,pref) VALUES (?,?)");
+    $membersAdded = 0;
+    for($i=$start; $i<=$end; $i++) {
+        // skip if record already exists
+        $chkR = $dbc->exec_statement($chkP,array($i));
+        if ($dbc->num_rows($chkR) > 0) {
+            continue;
+        }
+
+        $custdata->CardNo($i);
+        $custdata->blueLine($i.' '.$name);
+        $custdata->save();
+
+        $meminfo->card_no($i);
+        $meminfo->save();
+
+        /* memDates */
+        $dbc->exec_statement($mdP, array($i));
+        /* memContact */
+        $dbc->exec_statement($mcP, array($i,$pref));
+
+        $membersAdded++;
+    }
+
+    $retval = ($errors) ? $errors : $membersAdded;
+    return $retval;
+
+// addTempMembers()
+}
+
+
+
 // --functions } - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // --PREP - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2486,14 +3058,48 @@ error_reporting(E_ERROR | E_WARNING);
 
 //#'C --CONSTANTS { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-include('../config.php');
-// Connection id's, etc.
-include('../config_wefc.php');
-include('../src/SQLManager.php');
-include($FANNIE_ROOT.'src/cron_msg.php');
+require('../config.php');
+//require('../src/SQLManager.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+require_once($FANNIE_ROOT.'src/cron_msg.php');
 
-// No limit on PHP execution time.
+/* No limit on PHP execution time.
+ * This program does not ordinarily take very long to run.
 set_time_limit(0);
+ */
+
+/* Development-related vars.
+*/
+/*
+ * Controls some monitoring and info.
+ * 0= production, 1=notify, no-write to db, 2=notify but write to db.
+ */
+$debug = 0;
+/*
+ * Whether dieHere() =1 sends email or =0 Displays the message.
+ * Optional arg to dieHere(); defaults to 1.
+ */
+$dieMail = 1;    // -> Restore to 1 for production
+/*
+ * Used in composing vars for Civi db access.
+ */
+$dev = "";
+//$dev = "_DEV";
+/*
+ * 0=normal, 1=return from to[ISC4C|Civi]() without changing anything.
+ */
+$dryRun = 0;
+
+/* The log files will be created if they don't exist
+ * as long as fannie/logs is writeableC.
+ */
+if (!is_writable('../logs')) {
+    $message = $FANNIE_ROOT.
+    'logs must be writable by the user running this program.';
+    dieHere($message, $dieMail);
+}
 
 // Only used during development, for a local source for remote data.
 $outFile = "../logs/updateMembers.tab";
@@ -2510,43 +3116,95 @@ $reportFile = "../logs/updateMembersReport.log";
 
 // test: 4000  production: 0
 $memberIdOffset = 0;
-// IS4C member#s above this are temporaries. See toCivi().
-$tempMemberRange = 65000;
+/* IS4C member#s above this are placeholders for card_no's that will
+ * be obtained from CiviCRM.
+ * See toCivi().
+ * The value is co-op specific, so set in the external configuration.
+ $tempMemberRange = 65000;
+ */
 
-/* Development-related vars.
-*/
-// Controls some monitoring and info.
-// 1=notify, no-write to db, 2=notify but write to db.
-$debug = 0;
-//
-// Whether dieHere() =1 sends email or =0 Displays the message.
-// Optional arg to dieHere(); defaults to 1.
-$dieMail = 1;
-//
-// Used in composing vars for Civi db access.
-//  Use _DEV for new-conact tests.
-$dev = "";
-//$dev = "_DEV";
-//
-// 0=normal, 1=return from to[ISC4C|Civi]() without changing anything.
-$dryRun = 0;
-
-$memberCardTable = "civicrm_value_identification_and_cred_5";
-$memberCardField = "member_card_number2_21";
+/* The CiviCRM user-defined table and field are named by CiviCRM at the time
+ *  and they are created and will likely vary from one installation to another.
+ *  See config_civicrm.php
+$memberCardTable = "civicrm_value_identification_and_cred_1";
+$memberCardField = "member_card_number_1";
 if ( $dev != "" ) {
     $memberCardTable = "civicrm_value_identification_and_cred_4";
     $memberCardField = "member_card_number_16";
 }
+*/
 
-// People to whom news is mailed.
+/* People to whom news is mailed.
+ * Set in confic_civicrm.php
 $admins = array("el66gr@gmail.com");
+ */
 
-$is4cTableNames = array('custdata', 'meminfo', 'memContact', 'memDates', 'memberCards',
+$is4cTableNames = array('custdata',
+    'meminfo',
+    'memContact',
+    'memDates',
+    'memberCards',
     'stockpurchases');
-$civiTableNames = array('civicrm_contact', 'civicrm_membership',
-    'civicrm_email', 'civicrm_address', 'civicrm_phone',
+$civiTableNames = array('civicrm_contact',
+    'civicrm_membership',
+    'civicrm_email',
+    'civicrm_address',
+    'civicrm_phone',
     "$memberCardTable",
+    'civicrm_membership_log',
     'civicrm_log');
+
+    $civicrm_membership_status = array(
+        'New' => 1,
+        'Current' => 2,
+        'Cancelled' => 6
+    );
+
+/* To use when getting new membership numbers,
+ *  before the real one is known.
+ *  Must exist in civicrm_membership_type.
+ */
+$dummy_membership_type = NULL;
+
+/* CiviCRM civicrm_contact.id authorizing modifications.
+ * Used in civicrm_log.
+ * Must be real.
+ * Is co-op-specific. See config_civicrm.php
+$adminId = 5;
+if ($dev != "") {
+    $adminId = 130;
+}
+ */
+
+/* A set of connection constants and other co-op-specific constants.
+ * In a file that will not be made public e.g. in a github repo.
+$CIVICRM_SERVER = "a.b.com";
+$CIVICRM_SERVER_DBMS = 'MYSQL';
+$CIVICRM_SERVER_USER = "civi_user";
+$CIVICRM_SERVER_PW = "civi_password";
+$CIVICRM_DB = "civi_db";
+// Beginning of range of temporary IS4C CardNo values,
+//  pending assignment of real values by this program.
+$tempMemberRange = 65000;
+// CiviCRM civicrm_contact.id for IS4C Admin user.
+$adminId = 5;
+// Send notices to these addresses.
+$admins = array("joe.bloggs@gmail.com");
+// CiviCRM membership card# table and field. Optional.
+$memberCardTable = "civicrm_value_identification_and_cred_1";
+$memberCardField = "member_card_number_1";
+// Range of regular and temporary-regular IS4C CardNo values.
+$is4cMin = 470;
+$is4cMax = 99900;
+ */
+$civiConfig = $FANNIE_ROOT . 'config_civicrm.php';
+if (!is_readable($civiConfig)) {
+    $message = "The file $civiConfig which defines database connection " .
+        "and other values needed by this program doesn't exist.\n" .
+        "See the source code of the program for what it must contain.";
+    dieHere("$message", $dieMail);
+}
+require($civiConfig);
 
 // --constants } - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -2679,20 +3337,55 @@ $civicrm_contact = array(
     "middle_name" => "",
     "last_name" => "",
 // Use? 1=Dr. Where are real codes? Table civicrm_prefix doesn't exist.
-//  "prefix_id" => "",
+//    "prefix_id" => "",
     "organization_name" => "",
 // [0]/1 Leave alone.  Rarely if ever used in Civi and not supported in IS4C.
     "is_deleted" => "",
     "x" => ""
 );
 
+/* membership_type_id:
+ * 1=Non-member
+ * 2=Placeholder 2
+ * 3=Community Partner
+ * 4=Eater
+ * 5=Producer
+ * 6=Worker
+ * 7=Intra-Coop
+ * 8=Volunteer
+ * 9=CC Worker
+ *
+ * status_id:
+ * 1=New
+ * 2=Current
+ * 6=Cancelled
+*/
+
 // Membership
 $civicrm_membership = array(
     "id" => "",
     "contact_id" => "",
     "membership_type_id" => "",
+    // 25Nov13 Added. -> No support yet.
+    "status_id" => "",
     "join_date" => "",
     "start_date" => "",
+    // 25Nov13 Added. -> No support yet.
+    "end_date" => "",
+    "x" => ""
+);
+
+// Membership log
+// 25Nov13 Added. o> No support yet.
+$civicrm_membership_log = array(
+    "id" => "",
+    "membership_id" => "",
+    "membership_type_id" => "",
+    "status_id" => "",
+    "start_date" => "",
+    "end_date" => "",
+    "modified_date" => "",
+    "modified_id" => "",
     "x" => ""
 );
 
@@ -2768,19 +3461,21 @@ $civicrm_log = array(
     "x" => ""
 );
 
-$civiTables = array("parkdale_wefc_c|civicrm_contact|id",
-    "parkdale_wefc_c|civicrm_membership|contact_id",
-    "parkdale_wefc_c|civicrm_email|contact_id",
-    "parkdale_wefc_c|civicrm_address|contact_id",
-    "parkdale_wefc_c|civicrm_phone|contact_id",
-    "parkdale_wefc_c|{$memberCardTable}|contact_id",
-    "parkdale_wefc_c|civicrm_log|entity_id");
+$civiTables = array("dbname|civicrm_contact|id",
+    "dbname|civicrm_membership|contact_id",
+    "dbname|civicrm_membership_log|membership_id",
+    "dbname|civicrm_email|contact_id",
+    "dbname|civicrm_address|contact_id",
+    "dbname|civicrm_phone|contact_id",
+    "dbname|{$memberCardTable}|contact_id",
+    "dbname|civicrm_log|entity_id");
 
 /* SQL insert statements
  *  Are arrays if multiple is possible, e.g. email or phone
 */
 $insertContact = "";
 $insertMembership = "";
+$insertMembershipLog = "";
 $insertEmail = array();
 $insertAddress = array();
 $insertPhone = array();
@@ -2826,7 +3521,8 @@ if ( $message != "" ) {
 }
 
 /* Little tests of civiCRM connection.
-civiTestAndDie($dbConn);
+dieHere("Civi connection did not fail, bailing ...", 0);
+civiTestAndDie2($dbConn);
 */
 
 $dbConn2 = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
@@ -2844,6 +3540,25 @@ if ( $dbConn2->connect_errno ) {
 $epoch = "0000-00-00 00:00:00";
 $latestRunDate = $epoch;
 //$latestRunDate = getLatestRun($reportFile);
+
+if (!isset($adminId)) {
+    dieHere("\$adminId is not set. Is usually set in config_civicrm.php\n", $dieMail);
+}
+if ($tempMemberRange == 0) {
+    dieHere("\$tempMemberRange is 0. Probably not what you want.\n", $dieMail);
+}
+if (!isset($tempMemberRange)) {
+    dieHere("\$tempMemberRange is not set. Is usually set in config_civicrm.php\n", $dieMail);
+}
+if ($tempMemberRange == 0) {
+    dieHere("\$tempMemberRange is 0. Probably not what you want.\n", $dieMail);
+}
+
+$dummy_membership_type = getDummyMembershipType($dbConn);
+if (!preg_match('/^\d+$/',$dummy_membership_type)) {
+    dieHere($dummy_membership_type, $dieMail);
+}
+//dieHere("OK dummy_membership_type: $dummy_membership_type", $dieMail);
 
 /* Open the log files */
 
@@ -2877,14 +3592,19 @@ fwrite($reporter, "STARTED: $dbNow\n");
 /* End of open the log files */
 
 
-// #'N True in production.
+// #'N ->True in production.
 //     False in development, False to disable getting actual data and use local source instead.
-if ( TRUE ) {
+if ( False ) {
 
 /* CiviCRM members with date modified.
  * There is a record for each modified_date; 2nd+ are ignored in the loop.
- * Need to expand mofified date to also check _membership_log
- *  and use the most recent for the test.
+ * Use the most recent of _log.modified_date, _membership_log.modified.
+ *  Note that _membership_.log modified_date is a day, not date+time.
+ *  Change of membership type in Civi also creates and Activity about it
+ *   and a _log with entit_id =1 and
+ *   .data ="Activity created for source=3, target=9",
+ *   where source is the _contact.id of the changer and
+ *   target is the contact.id is the member being changed.
 */
 $c_selectMembers = "SELECT DISTINCT
 c.id as contact_id
@@ -2893,19 +3613,30 @@ c.id as contact_id
 ,m.id as member_id
  ,m.join_date
 ,v.{$memberCardField} as mcard
-,u.modified_date
-FROM
-civicrm_membership m
-INNER JOIN civicrm_contact c ON c.id = m.contact_id
-LEFT JOIN {$memberCardTable} v ON m.contact_id = v.entity_id
-LEFT JOIN civicrm_log u ON m.contact_id = u.entity_id AND u.entity_table = 'civicrm_contact'
-WHERE u.modified_date > '$latestRunDate'
- AND c.is_deleted = 0
- AND NOT (m.is_override = 1 AND m.status_id = 6)
-ORDER BY c.id, m.id, u.modified_date DESC;";
+,u.modified_date udate
+,p.modified_date pdate
+,CASE WHEN p.modified_date > u.modified_date THEN p.modified_date ELSE u.modified_date END
+    as change_date
+FROM civicrm_membership m
+    INNER JOIN civicrm_contact c ON c.id = m.contact_id
+    LEFT JOIN {$memberCardTable} v ON m.contact_id = v.entity_id
+    LEFT JOIN civicrm_log u ON m.contact_id = u.entity_id
+        AND u.entity_table = 'civicrm_contact'
+    LEFT JOIN civicrm_membership_log p ON m.id = p.membership_id
+WHERE
+    CASE WHEN p.modified_date > u.modified_date
+        THEN p.modified_date
+        ELSE u.modified_date END > '$latestRunDate'
+    AND c.is_deleted = 0
+    AND NOT (m.is_override = 1 AND m.status_id = 6)
+ORDER BY c.id,
+    m.id,
+    u.modified_date DESC,
+    udate DESC, pdate DESC;";
 
+// Defeat set False for _log.php
+if (True) {
 $c_members = $dbConn->query("$c_selectMembers");
-//$c_members = $dbConn->query("$c_selectMembers", MYSQLI_STORE_RESULT);
 if ( $dbConn->errno ) {
     $message = sprintf("Select failed: %s\n", $dbConn->error);
     dieHere("$message", $dieMail);
@@ -2914,6 +3645,7 @@ if ( ! $c_members ) {
     $msg = sprintf("Failed on: %s", $c_selectMembers);
     dieHere("$msg", $dieMail);
 }
+}
 
 // Populate the big list with Civi members.
 $allMembers = array();
@@ -2921,7 +3653,8 @@ $ami = -1;
 $lastCid = -1;
 $lastMid = -1;
 $memberForContact = -1;
-while ( $c_row = $dbConn->fetch_row($c_members) ) {
+// Defeat set False for _log.php
+while ( True && $c_row = $dbConn->fetch_row($c_members) ) {
 
     if ( $c_row['contact_id'] == $lastCid ) {
         if ( $c_row['member_id'] == $lastMid ) {
@@ -2930,7 +3663,9 @@ while ( $c_row = $dbConn->fetch_row($c_members) ) {
         } else {
             $uniqueCid++;
             $isDupCid = 0;
-            $problems[] = "{$c_row[first_name]} {$c_row[last_name]} contact $lastCid has membership $lastMid and membership {$c_row[member_id]}";
+            $problems[] = "{$c_row[first_name]} {$c_row[last_name]} " .
+                "contact $lastCid has membership $lastMid and " .
+                "membership {$c_row[member_id]}";
             $lastMid = "$c_row[member_id]";
         }
     } else {
@@ -2945,20 +3680,26 @@ while ( $c_row = $dbConn->fetch_row($c_members) ) {
     if ( $isDupCid == 0 ) {
 
         $ami++;
-        $allMembers[$ami] = sprintf("%05d|%s|C", $c_row[member_id], $c_row[modified_date]);
-        //$allMembers[$ami] = sprintf("%05d|%s|C %05d", $c_row[member_id], $c_row[modified_date], $c_row[contact_id]);
+        $allMembers[$ami] = sprintf("%05d|%s|C", $c_row[member_id], $c_row[change_date]);
+        //$allMembers[$ami] = sprintf("%05d|%s|C", $c_row[member_id], $c_row[modified_date]);
 
     }
 }
 
-// Get all the the members from IS4C, except placeholder "NEW MEMBER"s
-//  and the Dummy 99990-99998 and Non-Member 99999.
-$is4cMin = 470;
-$is4cMax = 99900; // 99989
+/* Get all the the members from IS4C, except placeholder "NEW MEMBER"s
+ *  and the Dummy 99900-99998 and Non-Member 99999.
+ *  Set in config_civicrm.php
+ * $is4cMin = 470;
+ * $is4cMax = 99900;
+ * $tempMemberLastName = 'NEW MEMBER';
+ */
+if (empty($tempMemberLastName)) {
+    $tempMemberLastName = 'NEW MEMBER';
+}
 $i_selectMembers ="SELECT CardNo, LastChange
 FROM custdata
 WHERE CardNo between $is4cMin AND $is4cMax
- AND (LastName IS NULL OR LastName != 'NEW MEMBER')
+ AND (LastName IS NULL OR LastName != '{$tempMemberLastName}')
  AND NumberOfChecks != 9";
 $i_members = $dbConn2->query("$i_selectMembers");
 if ( $dbConn2->errno ) {
@@ -2989,12 +3730,17 @@ if ( count($problems) > 0 ) {
     echo implode("\n", $problems), "\n";;
 }
 
-//dieHere("Got real list in $outFile", 0);
+/* In some development situations you may want to stop here.
+dieHere("Got real list in $outFile\n", 0);
+echo "Got real list in $outFile\n";
+ */
 
 // Enable/Defeat normal member-getting from dbs.
 }
 else {
-    // During dev't use this instead of getting from dbs
+    // During dev't use this instead of getting from dbms
+    echo "Using updateMembers.txt\n";
+    echo "dryRun: $dryRun\n";
     $allMembers = file("../logs/updateMembers_real.txt", FILE_IGNORE_NEW_LINES);
 }
 
@@ -3011,21 +3757,42 @@ list($m2,$d2,$s2) = explode("|", $allMembers[++$ami]);
 $prevAmi = ($ami - 1);
 $nextAmi = ($ami + 1);
 
-// This is a card_no, not civicrm_contact.id
-$maxM = 575;
+/* maxM is a card_no, not civicrm_contact.id
+ * Only used in development.
+$maxM = 490;
+ */
 // Does not work if there is only one item in $allMembers.
 while ( $ami <= $lastAmi ) {
 
-    /* Used in development
-    if ( $m1 > $maxM || $m2 > $maxM )
+    /* 21Apr2015 I think this was for a jiggered run to populate civicrm_log
+     * with the current values from IS4C.
+    list($m1,$d1,$s1) = explode("|", $allMembers[++$ami]);
+    // Used in development
+    if ( $m1 > $maxM || $m2 > $maxM ) {
+    if ( $debug > 0 )
+        echo "Exit on $m1 > $maxM\n";
         break;
+    }
+    $msg = " $m1:$d1 adding log\n";
+    $problems[] = $msg;
+    fwrite($reporter, $msg);
+    if ( $debug > 0 )
+        echo $msg;
+    //$dryRun = 1;
+    $updateC++;
+    toCiviLog("update", $m1, $d1);
+    continue;
+     */
+
+    /* Used in development
+     *  to stop after a certain number of actions.
     if ( $noChange > 9999 )
         break;
-    if ( $updateI > 9999 )
+    if ( $updateI > 1 )
         break;
     if ( $updateC > 1 )
         break;
-    if ( $insertI > 9999 )
+    if ( $insertI > 1 )
         break;
     if ( $insertC > 9 )
         break;
@@ -3188,14 +3955,30 @@ while ( $ami <= $lastAmi ) {
 // Each member --loop
 }
 
+/* #'D Re-populate the range of dummy "NEW MEMBER" records.
+ */
+$tempMembersAdded = null;
+$tempMembersAddedMessage = '';
+if (!empty($tempMemberRangeMax) && $tempMemberRangeMax > $tempMemberRange) {
+    $tempMembersAdded = addTempMembers($dbConn2);
+    $tempMembersAddedMessage = "\nFilled in IS4C placeholder members: $tempMembersAdded for $tempMemberRange to $tempMemberRangeMax";
+    //$tempMembersAddedMessage = "\nFilled in IS4C placeholder members: $tempMembersAdded";
+}
 
 /* #'R Logging and reporting
 */
 
 $dbNow = date("Y-m-d H:i:s"); // " e"
-$subject = "{$problemPrefix}PoS: $dbNow Update members: added $insertC to CiviCRM, $insertI to IS4C";
+$subject = "{$problemPrefix}PoS: $dbNow Update members: added $insertC " .
+    "to CiviCRM, $insertI to IS4C";
 $shortMessage = ($dryRun == 1)?"Dry Run: ":"";
-$shortMessage .= "No change needed: $noChange \nAdded to CiviCRM: $insertC \nUpdated CiviCRM: $updateC \nAdded to IS4C: $insertI \nUpdated IS4C: $updateI \n";
+$shortMessage .= "No change needed: $noChange " .
+    "\nAdded to CiviCRM: $insertC " .
+    "\nUpdated CiviCRM: $updateC " .
+    "\nAdded to IS4C: $insertI " .
+    "\nUpdated IS4C: $updateI " .
+    $tempMembersAddedMessage .
+    "\n";
 $cronMessage = str_replace(" \n", " : ", $shortMessage);
 if ( count($problems) > 0 ) {
     $shortMessage .= implode("\n", $problems);
