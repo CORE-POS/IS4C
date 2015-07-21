@@ -194,8 +194,8 @@ those same items revert to normal pricing.
                     INNER JOIN batchList as b on b.upc=concat('LC',convert(v.likecode,char))
                 SET p.normal_price = b.salePrice,
                     p.modified=now()
-                WHERE l.upc LIKE 'LC%'
-                    AND l.batchID = ?";
+                WHERE b.upc LIKE 'LC%'
+                    AND b.batchID = ?";
 
             if ($this->connection->dbms_name() == 'mssql') {
                 $forceQ = "UPDATE products
