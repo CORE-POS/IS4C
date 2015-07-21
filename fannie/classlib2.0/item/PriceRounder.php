@@ -58,8 +58,8 @@ class PriceRounder
         if ($price < 300 && $price > 100){
             if ($price % 100 <= 15){
                 $price = $price - ($price % 100) - 1;
-            } elseif ($price % 100 != 19 && $price % 100 != 39 && $price % 100 != 49 && $price % 100 != 89 && $price % 100 != 99) {
-                while ($price % 100 != 19 && $price % 100 != 39 && $price % 100 != 49 && $price % 100 != 89 && $price % 100 != 99) {
+            } elseif ($price % 100 != 19 && $price % 100 != 39 && $price % 100 != 49 && $price % 100 != 69 && $price % 100 != 89 && $price % 100 != 99) {
+                while ($price % 100 != 19 && $price % 100 != 39 && $price % 100 != 49 && $price % 100 != 69 && $price % 100 != 89 && $price % 100 != 99) {
                     $price++;
                 }
             }
