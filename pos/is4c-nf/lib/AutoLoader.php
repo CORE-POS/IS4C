@@ -325,3 +325,12 @@ if (function_exists('setlocale') && defined('LC_MESSAGES') && CoreLocal::get('lo
     }
 }
 
+/**
+  Add placeholder gettext function if
+  the module is not enabled. Translations
+  won't work but pages won't crash either
+*/
+if (!function_exists('gettext')) {
+    function _($str) { return $str; }
+}
+
