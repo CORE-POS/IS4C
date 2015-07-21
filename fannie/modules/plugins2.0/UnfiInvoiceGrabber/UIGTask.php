@@ -60,7 +60,6 @@ class UIGTask extends FannieTask
         curl_setopt($ch, CURLOPT_COOKIEJAR, $cookies);
         $login_page = curl_exec($ch);
         curl_close($ch);
-        $this->cronMsg("Login (1/4)", FannieLogger::INFO);
 
         /**
           Get hidden fields from login page
@@ -94,7 +93,6 @@ class UIGTask extends FannieTask
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $referer = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
         curl_close($ch);
-        $this->cronMsg("Login (2/4)", FannieLogger::INFO);
 
         /**
           Find iframes in the resulting page
@@ -126,7 +124,6 @@ class UIGTask extends FannieTask
             curl_setopt($ch, CURLOPT_REFERER, $referer);
             $iframe = curl_exec($ch);
             curl_close($ch);
-            $this->cronMsg("Login (3/4)", FannieLogger::INFO);
 
             preg_match_all($inputs_regex, $iframe, $matches);
             $post_data = '';
@@ -154,7 +151,6 @@ class UIGTask extends FannieTask
             $body = curl_exec($ch);
             $referer = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
             curl_close($ch);
-            $this->cronMsg("Login (4/4)", FannieLogger::INFO);
         }
 
         /**
@@ -187,7 +183,6 @@ class UIGTask extends FannieTask
         curl_setopt($ch, CURLOPT_COOKIEJAR, $cookies);
         $invoice_page = curl_exec($ch);
         curl_close($ch);
-        $this->cronMsg("Getting available dates", FannieLogger::INFO);
 
         // not sure if this is actually needed
         // browser ends up with this cookie
@@ -234,10 +229,8 @@ class UIGTask extends FannieTask
             $diff = time() - strtotime($date->Text);
             $repeat = false;
             if ($dbc->num_rows($doCheck) > 0 && $diff > (3 * 24 * 60 * 60)) {
-                $this->cronMsg("Skipping " . $date->Text . " (already imported)", FannieLogger::INFO);
                 continue;
             } else if ($dbc->num_rows($doCheck) > 0) {
-                $this->cronMsg("Redownloading " . $date->Text, FannieLogger::INFO);
                 $repeat = true;
             }
 
@@ -295,7 +288,6 @@ class UIGTask extends FannieTask
             $response = json_decode($gen_report);
 
             if ($response) {
-                $this->cronMsg("Downloading " . $date->Text . "...", FannieLogger::INFO);
                 $filename = $temp_dir . '/' . str_replace('/','-',$date->Text).'.zip';
                 $fp = fopen($filename, 'w');
                 $ch = curl_init($response->d);

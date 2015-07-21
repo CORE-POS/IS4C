@@ -59,7 +59,6 @@ class UIGLib
                 continue;
             }
 
-            echo "Processing invoice {$info['name']}\n";
             $fp = $za->getStream($info['name']);
             $header_info = array();
             $item_info = array();
