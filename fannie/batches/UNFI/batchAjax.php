@@ -88,6 +88,12 @@ case 'newPrice':
         WHERE upc=?
             AND vendorID=?');
     $dbc->execute($viP, array($price,$upc,$vid));
+    $batchP = $dbc->prepare('
+        UPDATE batchList
+        SET salePrice=?
+        WHERE batchID=?
+            AND upc=?');
+    $dbc->execute($batchP, array($price, $bid, $upc));
     if ($dbc->tableExists('vendorSRPs')) {
         $sP = $dbc->prepare_statement("UPDATE vendorSRPs SET srp=? WHERE upc=? AND vendorID=?");
         $dbc->exec_statement($sP,array($price,$upc,$vid));
