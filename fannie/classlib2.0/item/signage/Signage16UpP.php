@@ -135,8 +135,10 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
             $pdf->SetX($left + ($width*$column));
             $pdf->SetFont($this->alt_font, '', $this->SMALLER_FONT);
-            $item['size'] = strtolower($item['size']);
-            if (substr($item['size'], -1) != '.') {
+            $item['size'] = trim(strtolower($item['size']));
+            if ($item['size'] == '0' || $item['size'] == '00' || $item['size'] == '') {
+                $item['size'] = '';
+            } elseif (substr($item['size'], -1) != '.') {
                 $item['size'] .= '.'; // end abbreviation w/ period
                 $item['size'] = str_replace('fz.', 'fl oz.', $item['size']);
             }
@@ -155,9 +157,13 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
             if ($item['startDate'] != '' && $item['endDate'] != '') {
                 // intl would be nice
-                $datestr = date('M d', strtotime($item['startDate']))
-                    . chr(0x96) // en dash in cp1252
-                    . date('M d', strtotime($item['endDate']));
+                if ($item['startDate'] == 'While supplies last') {
+                    $datestr = $item['startDate'];
+                } else {
+                    $datestr = date('M d', strtotime($item['startDate']))
+                        . chr(0x96) // en dash in cp1252
+                        . date('M d', strtotime($item['endDate']));
+                }
                 $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 10));
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $pdf->Cell($effective_width, 6, strtoupper($datestr), 0, 1, 'R');

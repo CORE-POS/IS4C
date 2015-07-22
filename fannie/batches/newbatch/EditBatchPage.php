@@ -794,8 +794,11 @@ class EditBatchPage extends FannieRESTfulPage
         $dtype = $model->discounttype();
         $start = strtotime($model->startDate());
         $end = strtotime($model->endDate()) + (60*60*24);
+        $typeModel = new BatchTypeModel($dbc);
+        $typeModel->batchTypeID($type);
+        $typeModel->load();
 
-        if ($this->config->get('COOP_ID') == 'WFC_Duluth' && $type == 10) {
+        if ($typeModel->editorUI() == 2) {
             return $this->showPairedBatchDisplay($id,$name);
         }
 

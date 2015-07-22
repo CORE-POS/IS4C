@@ -130,6 +130,7 @@ class FannieSignage
                 $ids .= '?,';
             }
             $ids = substr($ids, 0, strlen($ids)-1);
+            $b_def = $dbc->tableDefinition('batchType');
             $query = 'SELECT l.upc,
                         l.salePrice AS normal_price,
                         CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
@@ -141,14 +142,21 @@ class FannieSignage
                         \'\' AS pricePerUnit,
                         n.vendorName AS vendor,
                         p.scale,
-                        p.numflag,
-                        b.startDate,
-                        b.endDate,
-                        o.name AS originName,
-                        o.shortName AS originShortName
+                        p.numflag,';
+            // 22Jul2015 check table compatibility
+            if (isset($b_def['datedSigns'])) {
+                $query .= 'CASE WHEN t.datedSigns=0 THEN \'While supplies last\' ELSE b.startDate END AS startDate,';
+                $query .= 'CASE WHEN t.datedSigns=0 THEN \'While supplies last\' ELSE b.endDate END AS endDate,';
+            } else {
+                $query .= 'b.startDate, b.endDate,';
+            }
+            $query .= ' o.name AS originName,
+                        o.shortName AS originShortName,
+                        b.batchType
                      FROM batchList AS l
                         INNER JOIN products AS p ON l.upc=p.upc
                         INNER JOIN batches AS b ON b.batchID=l.batchID
+                        LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID
                         LEFT JOIN productUser AS u ON p.upc=u.upc
                         LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                         LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
