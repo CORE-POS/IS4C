@@ -89,6 +89,14 @@ class SalesBatchTask extends FannieTask
         if (!isset($t_def['groupSalePrice'])) {
             $query = str_replace('l.groupSalePrice', 'NULL AS groupSalePrice', $query);
         }
+        /**
+          In HQ mode, join on junction table to get UPC+storeID rows
+          when applying sale pricing
+        */
+        if ($this->config->get('STORE_MODE') === 'HQ') {
+            $query = str_replace('WHERE', ' LEFT JOIN StoreBatchMap AS s ON b.batchID=s.batchID WHERE ', $query);
+            $query = str_replace('SELECT', 'SELECT s.storeID,', $query);
+        }
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, array($now, $now));
         while ($row = $dbc->fetch_row($result)) {
@@ -141,6 +149,18 @@ class SalesBatchTask extends FannieTask
                 $product->reset();
                 $product->upc($upc);
                 $this->cronMsg('Checking item ' . $upc, FannieLogger::INFO);
+                /**
+                  Transistion mechanism. A batch that is set to apply to
+                  zero stores really should apply to zero stores. For now
+                  it fails over to using the local store's ID
+                */
+                if ($this->config->get('STORE_MODE') === 'HQ') {
+                    $storeID = $row['storeID'];
+                    if ($storeID == null) {
+                        $storeID = $this->config->get('STORE_ID');
+                    }
+                    $product->store_id($storeID);
+                }
                 if (!$product->load()) {
                     $this->cronMsg("\tError: item does not exist in products", FannieLogger::NOTICE);
                     continue;
@@ -149,77 +169,46 @@ class SalesBatchTask extends FannieTask
                 $sale_upcs[] = $upc;
 
                 $changed = false;
-                ob_start();
-                if ($product->special_price() == $special_price) {
-                    $this->cronMsg("\tspecial_price is correct", FannieLogger::INFO);
-                } else {
-                    $this->cronMsg("\tspecial_price will be updated", FannieLogger::INFO);
+                if ($product->special_price() != $special_price) {
                     $changed = true;
                     $product->special_price($special_price);
                 }
-                if ($product->specialpricemethod() == $specialpricemethod) {
-                    $this->cronMsg("\tspecialpricemethod is correct", FannieLogger::INFO);
-                } else {
-                    $this->cronMsg("\tspecialpricemethod will be updated", FannieLogger::INFO);
+                if ($product->specialpricemethod() != $specialpricemethod) {
                     $changed = true;
                     $product->specialpricemethod($specialpricemethod);
                 }
-                if ($product->specialgroupprice() == $specialgroupprice) {
-                    $this->cronMsg("\tspecialgroupprice is correct", FannieLogger::INFO);
-                } else {
-                    $this->cronMsg("\tspecialgroupprice will be updated", FannieLogger::INFO);
+                if ($product->specialgroupprice() != $specialgroupprice) {
                     $changed = true;
                     $product->specialgroupprice($specialgroupprice);
                 }
-                if ($product->specialquantity() == $specialquantity) {
-                    $this->cronMsg("\tspecialquantity is correct", FannieLogger::INFO);
-                } else {
-                    $this->cronMsg("\tspecialquantity will be updated", FannieLogger::INFO);
+                if ($product->specialquantity() != $specialquantity) {
                     $changed = true;
                     $product->specialquantity($specialquantity);
                 }
-                if ($product->special_limit() == $special_limit) {
-                    $this->cronMsg("\tspecial_limit is correct", FannieLogger::INFO);
-                } else {
-                    $this->cronMsg("\tspecial_limit will be updated", FannieLogger::INFO);
+                if ($product->special_limit() != $special_limit) {
                     $changed = true;
                     $product->special_limit($special_limit);
                 }
-                if ($product->start_date() == $start_date) {
-                    $this->cronMsg("\tstart_date is correct", FannieLogger::INFO);
-                } else {
-                    $this->cronMsg("\tstart_date will be updated", FannieLogger::INFO);
+                if ($product->start_date() != $start_date) {
                     $changed = true;
                     $product->start_date($start_date);
                 }
-                if ($product->end_date() == $end_date) {
-                    $this->cronMsg("\tend_date is correct", FannieLogger::INFO);
-                } else {
-                    $this->cronMsg("\tend_date will be updated", FannieLogger::INFO);
+                if ($product->end_date() != $end_date) {
                     $changed = true;
                     $product->end_date($end_date);
                 }
-                if ($product->discounttype() == $discounttype) {
-                    $this->cronMsg("\tdiscounttype is correct", FannieLogger::INFO);
-                } else {
-                    $this->cronMsg("\tdiscounttype will be updated", FannieLogger::INFO);
+                if ($product->discounttype() != $discounttype) {
                     $changed = true;
                     $product->discounttype($discounttype);
                 }
-                if ($mixmatch === false || $product->mixmatchcode() == $mixmatch) {
-                    $this->cronMsg("\tmixmatch is correct", FannieLogger::INFO);
-                } else {
-                    $this->cronMsg("\tmixmatch will be updated", FannieLogger::INFO);
+                if ($mixmatch !== false && $product->mixmatchcode() != $mixmatch) {
                     $changed = true;
                     $product->mixmatchcode($mixmatch);
                 }
 
                 if ($changed) {
-                    ob_end_flush(); // report what is changing
                     $product->save();
-                } else {
-                    ob_end_clean();
-                    $this->cronMsg("\tAll settings correct", FannieLogger::INFO);
+                    $this->cronMsg("\tUpdated item", FannieLogger::INFO);
                 }
             } // end loop on batchList record items
         } // end loop on batchList records
