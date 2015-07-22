@@ -95,6 +95,10 @@ class DeptSettingsReport extends FannieReportPage
                     $row[4],
                     $row[5]
             );
+            if (empty($row['super_name'])) {
+                $record['meta'] = FannieReportPage::META_COLOR;
+                $record['meta_background'] = '#ff9999';
+            }
             $data[] = $record;
         }
 
