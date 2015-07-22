@@ -115,8 +115,10 @@ equity reaches final required balance';
                 continue;
             }
             $equity = $dbc->fetchRow($equityR);
-            if ($equity['payments'] > 100) {
-                // paid-in-full snuck through somehow
+            if ($equity['payments'] >= 100) {
+                // clear end date from paid-in-full
+                $account['endDate'] = '0000-00-00 00:00:00';
+                $resp = \COREPOS\Fannie\API\member\MemberREST::post($account['cardNo'], $account);
                 continue;
             }
 
