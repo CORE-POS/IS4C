@@ -30,9 +30,9 @@ function vendorchange(){
 
 	if (vID == 'new'){
 		var content = "<b>New vendor name</b>: ";
-		content += "<input type=text id=\"newname\" />";
+		content += "<input class=\"form-control\" type=text id=\"newname\" />";
 		content += "<p />";
-		content += "<input type=submit value=\"Create vendor\" ";
+		content += "<input type=submit value=\"Create vendor\" class=\"btn btn-default\" ";
 		content += "onclick=\"newvendor(); return false;\" />";
 		$('#contentarea').html(content);
 		return;

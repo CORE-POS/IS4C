@@ -457,7 +457,7 @@ class VendorIndexPage extends FanniePage {
         ob_start();
         ?>
         <p id="vendorarea">
-        <select onchange="location='?vid='+this.value;" id=vendorselect class="form-control">
+        <select onchange="if (this.value=='new') vendorchange(); else location='?vid='+this.value;" id=vendorselect class="form-control">
         <?php echo $vendors; ?>
         </select>
         </p>
