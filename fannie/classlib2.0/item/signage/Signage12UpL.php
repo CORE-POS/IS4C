@@ -53,8 +53,8 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
         $count = 0;
         $sign = 0;
         $width = 68.67;
-        $height = 71;
-        $top = 15;
+        $height = 70.5;
+        $top = 17;
         $left = 8.5;
         $effective_width = $width - $left;
         foreach ($data as $item) {
@@ -76,9 +76,9 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
                 $price = $this->formatPrice($item['normal_price']);
             }
 
-            $pdf->SetXY($left + ($width*$column), $top + ($row*$height));
+            $pdf->SetXY($left + ($width*$column), $top + ($row*$height) + 6);
             $pdf->SetFont($this->font, 'B', $this->SMALL_FONT);
-            $pdf->MultiCell($effective_width, 7, strtoupper($item['brand']), 0, 'C');
+            $pdf->MultiCell($effective_width, 6, strtoupper($item['brand']), 0, 'C');
 
             /**
               This block attempts to write the description then
@@ -93,7 +93,7 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
             while (true) {
                 $pdf->SetX($left + ($width*$column));
                 $y = $pdf->GetY();
-                $pdf->MultiCell($effective_width, 7, $item['description'], 0, 'C');
+                $pdf->MultiCell($effective_width, 6, $item['description'], 0, 'C');
                 if ($pdf->GetY() - $y > 14) {
                     $pdf->SetFillColor(0xff, 0xff, 0xff);
                     $pdf->Rect($left + ($width*$column), $y, $left + ($width*$column) + $effective_width, $pdf->GetY(), 'F');
@@ -118,7 +118,7 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
                         $pdf->SetFillColor(0xff, 0xff, 0xff);
                         $pdf->Rect($left + ($width*$column), $y, $left + ($width*$column) + $effective_width, $pdf->GetY(), 'F');
                         $pdf->SetXY($left + ($width*$column), $y);
-                        $pdf->MultiCell($effective_width, 7, $item['description'], 0, 'C');
+                        $pdf->MultiCell($effective_width, 6, $item['description'], 0, 'C');
                     }
                     break;
                 }
@@ -141,7 +141,7 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
             }
             $pdf->Cell($effective_width, 6, $item['size'], 0, 1, 'C');
 
-            $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 41));
+            $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 39));
             $pdf->SetFont($this->font, '', $this->BIG_FONT);
             $pdf->Cell($effective_width, 12, $price, 0, 1, 'C');
 

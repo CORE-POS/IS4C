@@ -53,7 +53,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
         $count = 0;
         $sign = 0;
         $width = 53.975;
-        $height = 69.85;
+        $height = 69.35;
         $top = 15;
         $left = 5.175;
         $effective_width = $width - (2*$left);
@@ -76,7 +76,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
                 $price = $this->formatPrice($item['normal_price']);
             }
 
-            $pdf->SetXY($left + ($width*$column), $top + ($row*$height));
+            $pdf->SetXY($left + ($width*$column), $top + ($row*$height)+6);
             $pdf->SetFont($this->font, 'B', $this->SMALL_FONT);
             $font_shrink = 0;
             while (true) {
