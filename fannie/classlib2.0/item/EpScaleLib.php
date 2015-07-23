@@ -58,6 +58,13 @@ class EpScaleLib
         if ($item_info['RecordType'] == 'WriteOneItem') {
             return self::getAddItemLine($item_info);
         } else {
+            $line = self::getAddItemLine($item_info);
+            return 'CCOSPIC' . substr($line, 7);
+            /**
+              Docs say you don't have to send all fields with
+              a change but it throws weird errors if I just send
+              the changed fields.
+            */
             return self::getUpdateItemLine($item_info);
         }
 
@@ -68,7 +75,7 @@ class EpScaleLib
     {
         $line = 'CCOSPIA' . chr(253);
         $line .= 'PNO' . $item_info['PLU'] . chr(253);
-        $line .= 'UPC' . '2' . str_pad($item_info['PLU'],4,'0',STR_PAD_LEFT) . '000000' . chr(253);
+        $line .= 'UPC' . '002' . str_pad($item_info['PLU'],4,'0',STR_PAD_LEFT) . '000000' . chr(253);
         $line .= 'DN1' . (isset($item_info['Description']) ? $item_info['Description'] : '') . chr(253);
         $line .= 'DS1' . '0' . chr(253);
         $line .= 'DN2' . chr(253);
@@ -132,7 +139,7 @@ class EpScaleLib
                 switch ($key) {
                     case 'PLU':
                         $line .= 'PNO' . $item_info[$key] . chr(253);
-                        $line .= 'UPC' . '2' . str_pad($item_info[$key],4,'0',STR_PAD_LEFT) . '000000' . chr(253);
+                        $line .= 'UPC' . '002' . str_pad($item_info[$key],4,'0',STR_PAD_LEFT) . '000000' . chr(253);
                         break;
                     case 'Description':
                         $line .= 'DN1' . $item_info[$key] . chr(253);
@@ -242,6 +249,8 @@ class EpScaleLib
                     $et_line .= 'SAD' . $scale_model->epScaleAddress() . chr(253);
                     $et_line .= 'PNO' . $item['PLU'] . chr(253);
                     $et_line .= 'INO' . $item['PLU'] . chr(253);
+                    $item['ExpandedText'] = str_replace("\r", '', $item['ExpandedText']);
+                    $item['ExpandedText'] = str_replace("\n", '<br>', $item['ExpandedText']);
                     $et_line .= 'ITE' . $item['ExpandedText'] . chr(253);
                     $et_line .= self::$NL;
                     fwrite($fp, $et_line);
