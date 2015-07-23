@@ -145,6 +145,8 @@ class ScheduledEmailTemplatePage extends FannieRESTfulPage
 
         $ret .= '<div class="form-group">
             <button type="submit" class="btn btn-default">Save Template</button>
+            |
+            <a href="' . $_SERVER['PHP_SELF'] . '" class="btn btn-default">Back to Template List</a>
             </div>
             </form>
             </div>
@@ -161,6 +163,8 @@ class ScheduledEmailTemplatePage extends FannieRESTfulPage
             </div>
             <div class="form-group">
                 <button type="submit" class="btn btn-default">Send Test Email</button>
+                |
+                <a href="' . $_SERVER['PHP_SELF'] . '" class="btn btn-default">Back to Template List</a>
             </div>
             </form>
             </div>
