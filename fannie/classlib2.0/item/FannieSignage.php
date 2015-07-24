@@ -131,6 +131,7 @@ class FannieSignage
             }
             $ids = substr($ids, 0, strlen($ids)-1);
             $b_def = $dbc->tableDefinition('batchType');
+            $l_def = $dbc->tableDefinition('batchList');
             $query = 'SELECT l.upc,
                         l.salePrice AS normal_price,
                         CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
@@ -149,6 +150,11 @@ class FannieSignage
                 $query .= 'CASE WHEN t.datedSigns=0 THEN \'While supplies last\' ELSE b.endDate END AS endDate,';
             } else {
                 $query .= 'b.startDate, b.endDate,';
+            }
+            if (isset($l_def['signMultiplier'])) {
+                $query .= 'l.signMultiplier,';
+            } else {
+                $query .= '1 AS signMultiplier,';
             }
             $query .= ' o.name AS originName,
                         o.shortName AS originShortName,
@@ -541,8 +547,13 @@ class FannieSignage
         $this->excludes[] = $upc;
     }
 
-    public function formatPrice($price)
+    public function formatPrice($price, $multiplier=1)
     {
+        if ($multiplier > 1) {
+            $ttl = round($multiplier*$price);
+            return $multiplier . '/$' . $ttl;
+        }
+
         if (substr($price, -3) == '.33') {
             $ttl = round(3*$price);
             return '3/$' . $ttl;

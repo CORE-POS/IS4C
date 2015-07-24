@@ -79,7 +79,8 @@ class CoopDealsReviewPage extends FanniePage
         }
         $saleItemsP = $dbc->prepare_statement("
             SELECT t.upc,
-                t.price,"
+                t.price,
+                t.multiplier,"
                 . $dbc->concat(
                     ($superdept_grouping ? $superdept_grouping : "''"),
                     ($superdept_grouping ? "' '" : "''"),
@@ -141,6 +142,7 @@ class CoopDealsReviewPage extends FanniePage
             $list->upc($row[UPC_COL]);
             $list->batchID($id);
             $list->salePrice(sprintf("%.2f",$row[PRICE_COL]));
+            $list->signMultiplier($row['multiplier']);
             $list->save();
         }
 

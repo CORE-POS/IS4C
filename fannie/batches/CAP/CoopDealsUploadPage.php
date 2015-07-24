@@ -65,7 +65,13 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             'display_name' => 'Sub',
             'default' => 6,
             'required' => False
-        )
+        ),
+        'mult' => array(
+            'name' => 'mult',
+            'display_name' => 'Line Notes',
+            'default' => 13,
+            'required' => false,
+        ),
     );
 
     function process_file($linedata){
@@ -75,7 +81,13 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $drop = $dbc->prepare_statement("DROP TABLE tempCapPrices");
             $dbc->exec_statement($drop);
         }
-        $create = $dbc->prepare_statement("CREATE TABLE tempCapPrices (upc varchar(13), price decimal(10,2), abtpr varchar(3))");
+        $create = $dbc->prepare_statement("
+            CREATE TABLE tempCapPrices (
+                upc varchar(13), 
+                price decimal(10,2), 
+                abtpr varchar(3), 
+                multiplier INT DEFAULT 1
+            )");
         $dbc->exec_statement($create);
 
         $SUB = $this->get_column_index('sub');
@@ -83,6 +95,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $SKU = $this->get_column_index('sku');
         $PRICE = $this->get_column_index('price');
         $ABT = $this->get_column_index('abt');
+        $MULT = $this->get_column_index('mult');
 
         $rm_checks = (FormLib::get_form_value('rm_cds') != '') ? True : False;
         $upcP = $dbc->prepare_statement('SELECT upc FROM products WHERE upc=? AND inUse=1');
@@ -92,8 +105,8 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 INNER JOIN vendors AS v ON s.vendorID=v.vendorID
             WHERE s.sku=?
                 AND v.vendorName LIKE \'%UNFI%\'');
-        $insP = $dbc->prepare_statement('INSERT INTO tempCapPrices VALUES (?,?,?)');
-        foreach($linedata as $data){
+        $insP = $dbc->prepare_statement('INSERT INTO tempCapPrices VALUES (?,?,?,?)');
+        foreach($linedata as $data) {
             if (!is_array($data)) continue;
             if (count($data) < 14) continue;
 
@@ -112,6 +125,13 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                     $upc = $w['upc'];
                 }
             }
+            $mult = 1;
+            if ($MULT !== false) {
+                $line_notes = $data[$MULT];
+                if (preg_match('/(\d+)\/\$(\d+)/', $line_notes, $matches)) {
+                    $mult = $matches[1];
+                }
+            }
 
             $price = trim($data[$PRICE],"\$");
             $abt = array();
@@ -122,7 +142,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             if (strstr($data[$ABT],"TPR"))
                 $abt[] = "TPR";
             foreach($abt as $type){
-                $dbc->exec_statement($insP,array($upc,$price,$type));
+                $dbc->exec_statement($insP,array($upc,$price,$type,$mult));
             }
         }
 

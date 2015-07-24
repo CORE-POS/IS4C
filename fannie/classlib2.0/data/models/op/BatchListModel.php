@@ -38,7 +38,8 @@ class BatchListModel extends BasicModel
     'groupSalePrice' => array('type'=>'MONEY'),
     'active' => array('type'=>'TINYINT'),
     'pricemethod' => array('type'=>'SMALLINT','default'=>0),
-    'quantity' => array('type'=>'SMALLINT','default'=>0)
+    'quantity' => array('type'=>'SMALLINT','default'=>0),
+    'signMultiplier' => array('type'=>'TINYINT', 'default'=>1),
     );
 
     protected $unique = array('batchID','upc');
@@ -355,6 +356,43 @@ upc can be a likecode, prefixed with \'LC\'
                 }
             }
             $this->instance["quantity"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function signMultiplier()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["signMultiplier"])) {
+                return $this->instance["signMultiplier"];
+            } else if (isset($this->columns["signMultiplier"]["default"])) {
+                return $this->columns["signMultiplier"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'signMultiplier',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["signMultiplier"]) || $this->instance["signMultiplier"] != func_get_args(0)) {
+                if (!isset($this->columns["signMultiplier"]["ignore_updates"]) || $this->columns["signMultiplier"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["signMultiplier"] = func_get_arg(0);
         }
         return $this;
     }
