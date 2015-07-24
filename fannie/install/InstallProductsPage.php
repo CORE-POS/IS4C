@@ -287,6 +287,15 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         <p class='ichunk' style="margin:0.4em 0em 0.4em 0em;"><b>E-Plum directory</b>
         <?php
         echo installTextField('FANNIE_EPLUM_DIRECTORY', $FANNIE_EPLUM_DIRECTORY, '');
+        if ($FANNIE_EPLUM_DIRECTORY !== '') {
+            if (is_writable($FANNIE_EPLUM_DIRECTORY)) {
+                echo "<div class=\"alert alert-success\">$FANNIE_EPLUM_DIRECTORY is writable</div>";
+            } elseif (!file_exists($FANNIE_EPLUM_DIRECTORY)) {
+                echo "<div class=\"alert alert-danger\">$FANNIE_EPLUM_DIRECTORY does not exist</div>";
+            } else {
+                echo "<div class=\"alert alert-danger\">$FANNIE_EPLUM_DIRECTORY is not writable</div>";
+            }
+        }
         ?>
 
         <hr />
