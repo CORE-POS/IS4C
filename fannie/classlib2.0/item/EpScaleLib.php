@@ -94,7 +94,7 @@ class EpScaleLib
         }
         $line .= 'BCO' . '0' . chr(253);
         $line .= 'WTA' . '0' . chr(253);
-        $line .= 'UWT' . (isset($item_info['Tare']) ? floor(100*$item_info['Tare']) : '0') . chr(253);
+        $line .= 'UTA' . (isset($item_info['Tare']) ? floor(1000*$item_info['Tare']) : '0') . chr(253);
         $line .= 'SLI' . (isset($item_info['ShelfLife']) ? $item_info['ShelfLife'] : '0') . chr(253);
         $line .= 'SLT' . '0' . chr(253);
         $line .= 'EBY' . '0' . chr(253);
@@ -125,7 +125,7 @@ class EpScaleLib
         $line .= 'UF5' . chr(253);
         $line .= 'UF6' . chr(253);
         $line .= 'UF7' . chr(253);
-        $line .= 'UF8' . chr(253);
+        $line .= 'UF8' . '1' . chr(253);
         $line .= 'PTN' . '1' . chr(253);
 
         return $line;
@@ -211,6 +211,7 @@ class EpScaleLib
         }
         $scale_model = new \ServiceScalesModel(\FannieDB::get($config->get('OP_DB')));
         $i = 0;
+        $depts = array();
         foreach ($selected_scales as $scale) {
             $scale_model->reset();
             $scale_model->host($scale['host']);
@@ -218,19 +219,18 @@ class EpScaleLib
             if (count($matches) > 0) {
                 $scale_model = $matches[0];
             }
+            // batches run per-department rather than per-scale
+            // so duplicates can be skipped
+            if (in_array($scale_model->epDeptNo(), $depts)) {
+                continue;
+            } else {
+                $depts[] = $scale_model->epDeptNo();
+            }
 
             $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_writeItem_' . $i . '.dat';
             $fp = fopen($file_name, 'w');
             fwrite($fp, 'BNA' . $file_prefix . '_' . $i . chr(253) . self::$NL);
-            $depts = array();
             foreach($items as $item) {
-                // batches run per-department rather than per-scale
-                // so duplicates can be skipped
-                if (in_array($scale_model->epDeptNo(), $depts)) {
-                    continue;
-                } else {
-                    $depts[] = $scale_model->epDeptNo();
-                }
                 $item_line = self::getItemLine($item);
                 if ($scale_model->epStoreNo() != 0) {
                     $item_line .= 'SNO' . $scale_model->epStoreNo() . chr(253);
