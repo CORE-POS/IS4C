@@ -55,19 +55,19 @@ class SaleItemsByDate extends FannieReportPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
         //procure batchIDs from 'batches'
-        $query = "select batchID, owner from batches where startDate='{$_POST['startdate']} 00:00:00';";
+        $query = "select batchID, owner from batches where startDate='{$_REQUEST['startdate']} 00:00:00';";
         
-        if($_POST['dept'] == 2) {
-            $query = "select batchID, owner from batches where startDate='{$_POST['startdate']} 00:00:00' and (owner='Bulk' or owner='BULK');";
+        if($_REQUEST['dept'] == 2) {
+            $query = "select batchID, owner from batches where startDate='{$_REQUEST['startdate']} 00:00:00' and (owner='Bulk' or owner='BULK');";
         }
-        if($_POST['dept'] == 3) {
-            $query = "select batchID, owner from batches where startDate='{$_POST['startdate']} 00:00:00' and (owner='Cool' or owner='COOL');";   
+        if($_REQUEST['dept'] == 3) {
+            $query = "select batchID, owner from batches where startDate='{$_REQUEST['startdate']} 00:00:00' and (owner='Cool' or owner='COOL');";   
         }
-        if($_POST['dept'] == 4){
-            $query = "select batchID, owner from batches where startDate='{$_POST['startdate']} 00:00:00' and (owner='Grocery' or owner='GROCERY');"; 
+        if($_REQUEST['dept'] == 4){
+            $query = "select batchID, owner from batches where startDate='{$_REQUEST['startdate']} 00:00:00' and (owner='Grocery' or owner='GROCERY');"; 
         }
-        if($_POST['dept'] == 5){
-            $query = "select batchID, owner from batches where startDate='{$_POST['startdate']} 00:00:00' and (owner='HBC');";   
+        if($_REQUEST['dept'] == 5){
+            $query = "select batchID, owner from batches where startDate='{$_REQUEST['startdate']} 00:00:00' and (owner='HBC');";   
         }
         
         $result = $dbc->query($query);
@@ -108,17 +108,21 @@ class SaleItemsByDate extends FannieReportPage
     public function form_content()
     {
         $this->add_onload_command('$(\'#startdate\').focus()');
-        return '<form method="post" action="SaleItemsByDate.php" id="form1">
+        return '<form method="get" action="SaleItemsByDate.php" id="form1">
+            <div class="form-group">
             <label>Enter Batch Start Date and Select a Department</label>
-            <input type="text" name="startdate" value="" class="form-control"
+            <input type="text" name="startdate" value="" class="form-control date-field"
                 required id="startdate" />
-            <select form="form1" name="dept">
+            </div>
+            <div class="form-group">
+            <select form="form1" name="dept" class="form-control">
                 <option value="1">All Departments</option>
                 <option value="2">Bulk</option>
                 <option value="3">Cool</option>
                 <option value="4">Grocery</option>
                 <option value="5">Wellness</option>
             </select>
+            </div>
             <p>
             <button type="submit" class="btn btn-default">Get Report</button>
             </p>
