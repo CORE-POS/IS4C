@@ -176,9 +176,15 @@ class ScaleItemModule extends ItemModule
         if (FormLib::get('s_plu') === '') return False;
 
         $desc = FormLib::get('descript','');
+        if (is_array($desc)) {
+            $desc = array_pop($desc);
+        }
         $longdesc = FormLib::get('s_longdesc','');
         if (trim($longdesc) !== '') $desc = $longdesc;
         $price = FormLib::get('price',0);
+        if (is_array($price)) {
+            $price = array_pop($price);
+        }
         $tare = FormLib::get('s_tare',0);
         $shelf = FormLib::get('s_shelflife',0);
         $bycount = FormLib::get('s_bycount',0);
@@ -251,10 +257,10 @@ class ScaleItemModule extends ItemModule
         $item_info = array(
             'RecordType' => $action,
             'PLU' => $s_plu,
-            'Description' => array_pop($desc),
+            'Description' => $desc,
             'Tare' => $tare,
             'ShelfLife' => $shelf,
-            'Price' => array_pop($price),
+            'Price' => $price,
             'Label' => $label,
             'ExpandedText' => $text,
             'ByCount' => $bycount,
