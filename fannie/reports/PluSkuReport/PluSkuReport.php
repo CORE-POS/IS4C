@@ -47,7 +47,7 @@ class PluSkuReport extends FannieReportPage
         $departments = FormLib::get('departments', array());
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
-        $subs = FormLib::get('subdepts', array());
+        $subdepts = FormLib::get('subdepts', array());
 
         $args = array();
         $query = '
