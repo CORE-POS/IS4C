@@ -209,7 +209,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
         }
 
         array_unshift($data, array(
-            'Year to Date: ' . date('Y-m-d', strtotime($args[0])) . ' - ' . date('Y-m-d', strtotime($args[1])),
+            'Year to Date: ' . date('Y-m-d', strtotime($ytdArgs[0])) . ' - ' . date('Y-m-d', strtotime($ytdArgs[1])),
             null,
             $ytd['numOwners'],
             '$' . number_format($ytd['stock'], 2),
@@ -217,7 +217,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
         ));
 
         array_unshift($data, array(
-            'Current Report: ' . date('Y-m-d', strtotime($ytdArgs[0])) . ' - ' . date('Y-m-d', strtotime($ytdArgs[1])),
+            'Current Report: ' . date('Y-m-d', strtotime($args[0])) . ' - ' . date('Y-m-d', strtotime($args[1])),
             null,
             $totals['new'],
             '$' . number_format($totals['newStock'], 2),
