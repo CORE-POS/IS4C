@@ -43,7 +43,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
     public function preprocess()
     {
         $this->__routes[] = 'get<added>';
-        $this->__routes[] = 'post<upc><price><batchID>';
+        $this->__routes[] = 'post<upc><price><batchID><mult>';
 
         return parent::preprocess();
     }
@@ -65,6 +65,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
             $batchList->salePrice($this->price[$i]);
             $batchList->batchID($this->batchID[$i]);
             $batchList->upc(BarcodeLib::padUPC($this->upc[$i]));
+            $batchList->signMultiplier($this->mult[$i]);
             if ($batchList->save()) {
                 $added++;
             }
@@ -92,7 +93,8 @@ class CoopDealsMergePage extends FannieRESTfulPage
                 p.brand,
                 t.price,
                 CASE WHEN s.super_name IS NULL THEN 'sale' ELSE s.super_name END as batch,
-                t.abtpr as subbatch
+                t.abtpr as subbatch,
+                multiplier
             FROM
                 tempCapPrices as t
                 INNER JOIN products AS p on t.upc = p.upc
@@ -132,13 +134,16 @@ class CoopDealsMergePage extends FannieRESTfulPage
             }
             $name = $row['batch'] . ' Co-op Deals ' . $row['subbatch'];
             $ret .= sprintf('<tr>
-                        <td><input type="hidden" name="upc[]" value="%s"/>%s</td>
+                        <td><input type="hidden" name="upc[]" value="%s"/>%s
+                            <input type="hiden" name="mult[]" value="%d" />
+                        </td>
                         <td>%s</td>
                         <td>%s</td>
                         <td><input type="hidden" name="price[]" value="%.2f"/>%.2f</td>
                         <td><select class="form-control input-sm" name="batchID[]">
                             <option value="">Select batch...</option>',
                         $row['upc'], $row['upc'],
+                        $row['multiplier'],
                         $row['brand'],
                         $row['description'],
                         $row['price'],$row['price']
