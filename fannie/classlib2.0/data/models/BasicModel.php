@@ -1252,6 +1252,10 @@ class BasicModel
         return 'This model has yet to be documented';
     }
 
+    /**
+      Return a Github-flavored markdown table of
+      information about the model's column structure
+    */
     public function columnsDoc()
     {
         $ret = str_pad('Name', 25, ' ') . '|' . str_pad('Type', 15, ' ') . '|Info' . "\n";
@@ -1423,6 +1427,10 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
     // newModel()
     }
 
+    /**
+      Interface method
+      Should eventually inherit from \COREPOS\common\BasicModel
+    */
     public function getModels()
     {
         /**
@@ -1455,16 +1463,42 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
         return $models;
     }
 
+    /**
+      Interface method
+      Should eventually inherit from \COREPOS\common\BasicModel
+    */
     public function setConnectionByName($db_name)
     {
         $this->connection = FannieDB::get($db_name);
     }
 
+    /**
+      Interface method
+      Should eventually inherit from \COREPOS\common\BasicModel
+    */
+    protected function afterNormalize($db_name, $mode, $doCreate)
+    {
+        if ($this->normalize_lanes && !$this->currently_normalizing_lane) {
+            $this->normalizeLanes($db_name, $mode, $doCreate);
+        }
+    }
+
+    /**
+      Return column names and values as JSON object
+    */
     public function toJSON()
     {
         return json_encode($this->instance);
     }
 
+    /**
+      Return an HTML string with <option> tags for
+      each record. Table must have a single column 
+      primary key. The 2nd column of the table is used
+      to label the <options>.
+      @param $selected [PK value] marks one of the tags
+        as selected.
+    */
     public function toOptions($selected=0)
     {
         if (count($this->unique) != 1) {
