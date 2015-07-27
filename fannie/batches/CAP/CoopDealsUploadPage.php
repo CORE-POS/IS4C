@@ -124,6 +124,12 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                     $w = $dbc->fetch_row($look2);
                     $upc = $w['upc'];
                 }
+                $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
+                $look3 = $dbc->exec_statement($skuP, array($sku));
+                if ($dbc->num_rows($look3)) {
+                    $w = $dbc->fetch_row($look3);
+                    $upc = $w['upc'];
+                }
             }
             $mult = 1;
             if ($MULT !== false) {
