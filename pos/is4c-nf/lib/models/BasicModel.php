@@ -882,6 +882,10 @@ class $name extends BasicModel\n");
     // newModel()
     }
 
+    /**
+      Interface method
+      Should eventually inherit from \COREPOS\common\BasicModel
+    */
     public function getModels()
     {
         /**
@@ -912,6 +916,34 @@ class $name extends BasicModel\n");
         $models = $search(dirname(__FILE__));
 
         return $models;
+    }
+
+    /**
+      Interface method
+      Should eventually inherit from \COREPOS\common\BasicModel
+    */
+    public function setConnectionByName($db_name)
+    {
+        if ($db_name == CoreLocal::get('pDatabase')) {
+            $this->connection = Database::pDataConnect();
+        } else if ($db_name == CoreLocal::get('tDatabase')) {
+            $this->connection = Database::tDataConnect();
+        } else {
+            /**
+              Allow for db other than main ones, e.g. for a plugin.
+              Force a new connection to avoid messing with the
+              one maintained by the Database class
+            */
+            $this->connection = new SQLManager(
+                $CORE_LOCAL->get("localhost"),
+                $CORE_LOCAL->get("DBMS"),
+                $db_name,
+                $CORE_LOCAL->get("localUser"),
+                $CORE_LOCAL->get("localPass"),
+                false,
+                true
+            );
+        }
     }
 }
 

@@ -120,6 +120,8 @@ class BasicModel
     */
     protected $config;
 
+    protected $find_limit = 0;
+
     /**
       Name of preferred database
     */
@@ -385,6 +387,11 @@ class BasicModel
         return $this->fq_name;
     }
 
+    public function setFindLimit($fl)
+    {
+        $this->find_limit = $fl;
+    }
+
     /**
       Find records that match this instance
       @param $sort array of columns to sort by
@@ -454,6 +461,9 @@ class BasicModel
                 $obj->$name($row[$name]);
             }
             $ret[] = $obj;
+            if ($this->find_limit > 0 && count($ret) >= $this->find_limit) {
+                break;
+            }
         }
 
         return $ret;
@@ -721,6 +731,9 @@ class BasicModel
                 echo "==========================================\n";
                 if ($doCreate) {
                     $cResult = $this->create(); 
+                    if ($cResult) {
+                        $this->afterNormalize($db_name, $mode, $doCreate);
+                    }
                     printf("Update complete. Creation of table %s %s\n",$this->name, ($cResult)?"OK":"failed");
                 } else {
                     printf("Update complete. Creation of table %s %s\n",$this->name, ($doCreate)?"OK":"not supported");
@@ -1027,6 +1040,10 @@ class BasicModel
             );
         echo "==========================================\n\n";
 
+        if ($mode == BasicModel::NORMALIZE_MODE_APPLY && count($new_columns) > 0) {
+            $this->afterNormalize($db_name, $mode, $doCreate);
+        }
+
         if ($alters > 0) {
             return $alters;
         } else if (count($unknown) > 0) {
@@ -1036,16 +1053,6 @@ class BasicModel
         return 0;
 
     // normalize()
-    }
-
-
-    /**
-      Return information about the table/view
-      this model deals with
-    */
-    public function doc()
-    {
-        return 'This model has yet to be documented';
     }
 
     /**
@@ -1194,9 +1201,78 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
     // newModel()
     }
 
+    /**
+      Return column names and values as JSON object
+    */
     public function toJSON()
     {
         return json_encode($this->instance);
+    }
+
+    /**
+      Return an HTML string with <option> tags for
+      each record. Table must have a single column 
+      primary key. The 2nd column of the table is used
+      to label the <options>.
+      @param $selected [PK value] marks one of the tags
+        as selected.
+    */
+    public function toOptions($selected=0)
+    {
+        if (count($this->unique) != 1) {
+            return '';
+        }
+        $id_col = $this->unique[0];
+        $label_col = array_keys($this->columns);
+        $label_col = $label_col[1];
+        $ret = '';
+        foreach ($this->find($label_col) as $obj) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                    $selected == $obj->$id_col() ? 'selected' : '',
+                    $obj->$id_col(),
+                    $obj->$label_col()
+            );
+        }
+
+        return $ret;
+    }
+
+    /**
+      Return information about the table/view
+      this model deals with
+    */
+    public function doc()
+    {
+        return 'This model has yet to be documented';
+    }
+
+    /**
+      Return a Github-flavored markdown table of
+      information about the model's column structure
+    */
+    public function columnsDoc()
+    {
+        $ret = str_pad('Name', 25, ' ') . '|' . str_pad('Type', 15, ' ') . '|Info' . "\n";
+        $ret .= str_repeat('-', 25) . '|' . str_repeat('-', 15) . '|' . str_repeat('-', 10) . "\n";
+        foreach ($this->columns as $name => $info) {
+            $ret .= str_pad($name, 25, ' ') . '|';
+            $ret .= str_pad($info['type'], 15, ' ') . '|';
+            if (isset($info['primary_key'])) {
+                $ret .= 'PK ';
+            }
+            if (isset($info['index'])) {
+                $ret .= 'Indexed ';
+            }
+            if (isset($info['increment'])) {
+                $ret .= 'Increment ';
+            }
+            if (isset($info['default'])) {
+                $ret .= 'Default=' . $info['default'];
+            }
+            $ret .= "\n";
+        }
+
+        return $ret;
     }
 
     /**
@@ -1230,6 +1306,14 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
     {
     }
 
+    /**
+      Interface method
+      Called after normalize() method applies 
+    */
+    protected function afterNormalize($db_name, $mode, $doCreate)
+    {
+    }
+
     /* Argument signatures, to php, where BasicModel.php is the first:
      * 2 args: Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
      * 3 args: Create new Model: php BasicModel.php --new <Model Name>\n";
@@ -1237,11 +1321,57 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
     */
     public function cli($argc, $argv)
     {
+        if ($argc > 2 && $argv[1] == '--doc') {
+            array_shift($argv);
+            array_shift($argv);
+            $tables = array();
+            foreach ($argv as $file) {
+                if (!file_exists($file)) {
+                    continue;
+                }
+                if (!substr($file, -4) == 'php') {
+                    continue;
+                }
+                $class = pathinfo($file, PATHINFO_FILENAME);
+                if (!class_exists($class)) { // nested / cross-linked includes
+                    include($file);
+                    if (!class_exists($class)) {
+                        continue;
+                    }
+                }
+                $obj = new $class(null);
+                if (!is_a($obj, 'BasicModel')) {
+                    continue;
+                }
+
+                $table = $obj->getName();
+                $doc = '### ' . $table . "\n";
+                if (is_a($obj, 'ViewModel')) {
+                    $doc .= '**View**' . "\n\n";
+                }
+                $doc .= $obj->columnsDoc();
+                $doc .= $obj->doc();
+
+                $tables[$table] = $doc;
+            }
+            ksort($tables);
+            foreach ($tables as $t => $doc) {
+                echo '* [' . $t . '](#' . strtolower($t) . ')' . "\n";
+            }
+            echo "\n";
+            foreach ($tables as $t => $doc) {
+                echo $doc;
+                echo "\n";
+            }
+            exit;
+        }
+
         if (($argc < 2 || $argc > 4) || ($argc == 3 && $argv[1] != "--new" && $argv[1] != '--new-view') || ($argc == 4 && $argv[1] != '--update')) {
             echo "Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
             echo "Create new Model: php BasicModel.php --new <Model Name>\n";
             echo "Create new View Model: php BasicModel.php --new-view <Model Name>\n";
             echo "Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename>\n";
+            echo "Generate markdown documentation: php BasicModel.php --doc <Model Filename(s)>\n";
             exit;
         }
 
