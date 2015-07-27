@@ -63,6 +63,21 @@ class CashierEditor extends FanniePage {
             $employee->birthdate($dob);
             $saved = $employee->save();
 
+            $map = new StoreEmployeeMapModel($dbc);
+            $map->empNo($emp_no);
+            $stores = FormLib::get('store', array());
+            foreach ($stores as $s) {
+                $map->storeID($s);
+                $map->save();
+            }
+            $map->reset();
+            $map->empNo($emp_no);
+            foreach ($map->find() as $obj) {
+                if (!in_array($obj->storeID(), $stores)) {
+                    $obj->delete();
+                }
+            }
+
             if ($saved) {
                 $message = "Cashier Updated. <a href=ViewCashiersPage.php>Back to List of Cashiers</a>";
                 $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', '$message');\n");
@@ -129,6 +144,24 @@ class CashierEditor extends FanniePage {
                 id="birth-date-field" value="<?php echo $employee->birthdate(); ?>"
                 placeholder="Optional; for stores selling age-restricted items" />
         </div>
+        <?php
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            echo '<div class="form-group">';
+            $stores = new StoresModel($dbc);
+            $mapP = $dbc->prepare('SELECT storeID FROM StoreEmployeeMap WHERE storeID=? AND empNo=?');
+            foreach ($stores->find('storeID') as $s) {
+                $mapR = $dbc->execute($mapP, array($s->storeID(), $emp_no));
+                $checked = ($mapR && $dbc->numRows($mapR)) ? 'checked' : '';
+                printf('<label>
+                    <input type="checkbox" name="store[]" value="%d" %s />
+                    %s
+                    </label> | ',
+                    $s->storeID(),
+                    $checked, $s->description());
+            }
+            echo '</div>';
+        }
+        ?>
         <p>
             <button type="submit" class="btn btn-default">Save</button>
             <button type="button" class="btn btn-default"
