@@ -45,6 +45,7 @@ class MemberPreferences extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $cardno = $this->id;
+        $notice = new CustomerNotificationsModel($dbc);
         if (isset($_REQUEST['savebtn'])){
             $pk = isset($_REQUEST['pref_k']) ? $_REQUEST['pref_k'] : array();
             $pv = isset($_REQUEST['pref_v']) ? $_REQUEST['pref_v'] : array();
@@ -60,6 +61,27 @@ class MemberPreferences extends FannieRESTfulPage
                     $prefModel->custAvailablePrefID($availModel->custAvailablePrefID());
                     $prefModel->pref_value($pv[$i]);
                     $prefModel->save();
+
+                    if ($pk[$i] == 'email_receipt' && filter_var($pv[$i], FILTER_VALIDATE_EMAIL)) {
+                        $notice->reset();
+                        $notice->cardNo($cardno);
+                        $notice->source('email_receipt');
+                        $notice->type('memlist');
+                        $exists = $notice->find();
+                        if (count($exists) > 0) {
+                            $notice = array_pop($exists);
+                        }
+                        $notice->message('&#x2709;');
+                        $notice->save();
+                    } elseif ($pk[$i] == 'email_receipt') {
+                        $notice->reset();
+                        $notice->cardNo($cardno);
+                        $notice->source('email_receipt');
+                        $notice->type('memlist');
+                        foreach ($notice->find() as $obj) {
+                            $obj->delete();
+                        }
+                    }
                 }
                 $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', 'Saved Settings');\n");
             }
