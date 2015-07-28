@@ -31,8 +31,42 @@ class PIApply extends FannieRESTfulPage
     public function preprocess()
     {
         $this->__routes[] = 'get<id><email>';
+        $this->__routes[] = 'get<json>';
 
         return parent::preprocess();
+    }
+
+    /**
+      Update a member account based on a JSON encoded array
+    */
+    public function get_json_handler()
+    {
+        $json = json_decode(base64_decode($this->json), true);
+        if (!is_array($json)) {
+            echo 'Invalid data!';
+            return false;
+        } 
+        $rest = array(
+            'cardNo' => $json['card_no'],
+            'addressFirstLine' => $json['addr1'], 
+            'addressSecondLine' => $json['addr2'], 
+            'city' => $json['city'], 
+            'state' => $json['state'], 
+            'zip' => $json['zip'], 
+            'customers' => array(
+                array(
+                    'accountHolder' => 1,
+                    'firstName' => $json['fn'],
+                    'lastName' => $json['ln'],
+                    'phone' => $json['ph'],
+                    'email' => $json['email'],
+                ),
+            ),
+        );
+        \COREPOS\Fannie\API\member\MemberREST::post($json['card_no'], $rest);
+        header('Location: PIMemberPage.php?id=' . $json['card_no']);
+
+        return false;
     }
 
     public function get_id_email_handler()
