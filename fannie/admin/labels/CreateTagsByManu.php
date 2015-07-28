@@ -46,11 +46,11 @@ class CreateTagsByManu extends FanniePage {
             if (is_numeric($_REQUEST['manufacturer']))
                 $cond = " p.upc LIKE ? ";
             else
-                $cond = " x.manufacturer LIKE ? ";
+                $cond = " p.brand LIKE ? ";
             $dbc = FannieDB::get($FANNIE_OP_DB);
             $q = $dbc->prepare_statement("
                 SELECT
-                    p.upc,
+                    p.upc
                 FROM
                     products AS p
                 WHERE $cond
@@ -90,7 +90,7 @@ class CreateTagsByManu extends FanniePage {
         if (!empty($this->msgs)){
             $ret .= '<div class="alert alert-success">';
             $ret .= $this->msgs;
-            $ret .= '</blockquote>';
+            $ret .= '</div>';
         }
 
         ob_start();
