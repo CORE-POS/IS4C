@@ -1010,6 +1010,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
             $receipt['any'] = self::printReceiptHeader($dateTimeStamp, $ref);
 
             $receipt['any'] .= self::receiptDetail($reprint, $ref);
+            $receipt['any'] .= self::$PRINT_OBJ->addRenderingSpacer('end of items');
             $member = trim(CoreLocal::get("memberID"));
 
             $savingsMode = CoreLocal::get('ReceiptSavingsMode');

@@ -715,5 +715,15 @@ class PrintHandler {
     {
         return '';
     }
+
+    /**
+      Insert a chunk of information into the
+      receipt that writeLine() will later use
+      during rendering. By default adds nothing.
+    */
+    public function addRenderingSpacer($str)
+    {
+        return '';
+    }
 } 
 
