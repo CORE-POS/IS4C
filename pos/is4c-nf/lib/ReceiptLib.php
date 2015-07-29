@@ -259,7 +259,10 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
             // save image bytes in cache so they're not recalculated
             // on every receipt
             $img_file = $graphics_path.'/'.$headerLine;
-            if (isset($img_cache[basename($img_file)]) && !empty($img_cache[basename($img_file)]) && get_class(self::$PRINT_OBJ)!='EmailPrintHandler'){
+            if (isset($img_cache[basename($img_file)]) && !empty($img_cache[basename($img_file)]) 
+                && get_class(self::$PRINT_OBJ)!='EmailPrintHandler'
+                && get_class(self::$PRINT_OBJ)!='HtmlPrintHandler'
+                ){
                 $receipt .= $img_cache[basename($img_file)]."\n";
             }
             else {
@@ -1006,7 +1009,10 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
 
         if ($arg1 == "full") {
             $receipt = array('any'=>'','print'=>'');
-            if ($email) self::$PRINT_OBJ = new EmailPrintHandler();
+            if ($email) {
+                $eph = self::emailReceiptMod();
+                self::$PRINT_OBJ = new $eph();
+            }
             $receipt['any'] = self::printReceiptHeader($dateTimeStamp, $ref);
 
             $receipt['any'] .= self::receiptDetail($reprint, $ref);
@@ -1297,6 +1303,15 @@ static public function code39($barcode)
     }
 
     return self::$PRINT_OBJ->BarcodeCODE39($barcode);
+}
+
+static public function emailReceiptMod()
+{
+    if (class_exists('PHPMailer') && CoreLocal::get('emailReceiptHtmlHead') != '' && CoreLocal::get('emailReceiptHtmlFoot')) {
+        return 'HtmlPrintHandler';
+    } else {
+        return 'EmailPrintHandler';
+    }
 }
 
 }

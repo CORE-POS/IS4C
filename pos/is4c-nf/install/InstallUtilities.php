@@ -726,7 +726,7 @@ class InstallUtilities extends LibraryClass
 
       @return [string] html input field
     */
-    static public function installTextField($name, $default_value='', $storage=self::EITHER_SETTING, $quoted=true, $attributes=array())
+    static public function installTextField($name, $default_value='', $storage=self::EITHER_SETTING, $quoted=true, $attributes=array(), $area=false)
     {
         $current_value = CoreLocal::get($name);
         if ($current_value === '') {
@@ -800,18 +800,29 @@ class InstallUtilities extends LibraryClass
             $attributes['title'] = 'Stored in opdata.parameters';
         }
 
-        $ret = sprintf('<input name="%s" value="%s"',
-            $name, $current_value);
-        if (!isset($attributes['type'])) {
-            $attributes['type'] = 'text';
-        }
-        foreach ($attributes as $name => $value) {
-            if ($name == 'name' || $name == 'value') {
-                continue;
+        if ($area) {
+            $ret = sprintf('<textarea name="%s"', $name);
+            foreach ($attributes as $attr => $value) {
+                if ($attr == 'name') {
+                    continue;
+                }
+                $ret .= ' ' . $attr . '="' . $value . '"';
             }
-            $ret .= ' ' . $name . '="' . $value . '"';
+            $ret .= '>' . $current_value . '</textarea>';
+        } else {
+            $ret = sprintf('<input name="%s" value="%s"',
+                $name, $current_value);
+            if (!isset($attributes['type'])) {
+                $attributes['type'] = 'text';
+            }
+            foreach ($attributes as $name => $value) {
+                if ($name == 'name' || $name == 'value') {
+                    continue;
+                }
+                $ret .= ' ' . $name . '="' . $value . '"';
+            }
+            $ret .= " />\n";
         }
-        $ret .= " />\n";
 
         return $ret;
     }

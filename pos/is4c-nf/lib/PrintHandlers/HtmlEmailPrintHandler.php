@@ -27,51 +27,57 @@ class HtmlEmailPrintHandler extends EmailPrintHandler
     public function writeLine($text, $to=false)
     {
         $text = substr($text,0,strlen($text)-2);
-        if (CoreLocal::get("print") != 0 && $to !== False) {
+        if (CoreLocal::get("print") != 0 && $to !== false) {
 
             $subject = "Receipt ".date("Y-m-d");
             $subject .= " ".CoreLocal::get("CashierNo");
             $subject .= "-".CoreLocal::get("laneno");
             $subject .= "-".CoreLocal::get("transno");
+
+            $mail = new PHPMailer();
+            $mail->isSMTP();
+            $mail->Host = CoreLocal::get('emailReceiptSmtp');
+            $mail->Port = CoreLocal::get('emailReceiptPort');
+            $mail->SMTPAuth = false;
+            $mail->From = CoreLocal::get('emailReceiptFrom');
+            $mail->FromName = CoreLocal::get('emailReceiptName');
+            $mail->addAddress($to);
+            $mail->Subject = $subject;
             
-            $headers = "From: ".CoreLocal::get("emailReceiptFrom") . "\r\n";
-            $headers .= "MIME-Version: 1.0\r\n";
-            $headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+            $message = CoreLocal::get('emailReceiptHtmlHead');
 
-            $start_message = '
-            <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-            <html xmlns="http://www.w3.org/1999/xhtml">
-            <head>
-                <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-                <title></title>
-                <style></style>
-            </head>
-            <body>
-            <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="body-table">
-                <tr>
-                    <td align="center" valign="top">
-                        <table border="0" cellpadding="10" cellspacing="0" width="600" id="email-container">';
+            $message .= '<table border="0" cellpadding="10" cellspacing="0" width="600" id="email-container">';
             $message = '';
+            $table = true;
+            /** rewrite item lines in a table; end the table at
+                the end-of-items spacer and add any footers 
+                as simple lines of text
+            **/
             foreach (explode("\n", $text) as $line) {
-                $message .= '<tr>';
-                if (preg_match('/^(.*)(\d+\.\d\d)(.*)$/', $line, $matches)) {
-                    $message .= '<td>' . $matches[1] . '</td>';
-                    $message .= '<td>' . $matches[2] . '</td>';
-                    $message .= '<td>' . $matches[3] . '</td>';
+                if ($table && strstr($line, '<!-- end of items -->')) {
+                    $message .= '</table>' . $line . '<br>';
+                    $table = false;
+                } elseif ($table) {
+                    $message .= '<tr>';
+                    if (preg_match('/^(.*)(\d+\.\d\d)(.*)$/', $line, $matches)) {
+                        $message .= '<td>' . $matches[1] . '</td>';
+                        $message .= '<td>' . $matches[2] . '</td>';
+                        $message .= '<td>' . $matches[3] . '</td>';
+                    } else {
+                        $message .= '<td colspan="3">' . $line . '</td>';
+                    }
+                    $message .= '</tr>' . "\n";
                 } else {
-                    $message .= '<td colspan="3">' . $line . '</td>';
+                    $message .= $line ."<br>\n";
                 }
-                $message .= '</tr>' . "\n";
             }
-            $end_message = "
-                        </table>\n
-                    </td>\n
-                </tr>\n
-            </table>\n
-            </body>\n
-            </html>\n";
+            $message .= CoreLocal::get('emailReceiptHtmlFoot');
 
-            mail($to, $subject, $start_message . $message . $end_message, $headers);
+            $mail->isHTML(true);
+            $mail->Body = $message;
+            $mail->AltBody = $text;
+            
+            $mail->send();
         }
     }
 

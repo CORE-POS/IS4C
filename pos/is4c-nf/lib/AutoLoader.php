@@ -310,6 +310,11 @@ else {
     }
 }
 
+// add composer classes if present
+if (file_exists(dirname(__FILE__) . '/../../../vendor/autoload.php')) {
+    include(dirname(__FILE__) . '/../../../vendor/autoload.php');
+}
+
 /** 
   Internationalization 
   setlocale() probably always exists

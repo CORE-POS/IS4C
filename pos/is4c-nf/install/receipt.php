@@ -107,10 +107,6 @@ include('InstallUtilities.php');
     </td>
 </tr>
 <tr>
-    <td><b>Email Receipt Sender</b>:</td>
-    <td><?php echo InstallUtilities::installTextField('emailReceiptFrom', ''); ?></td>
-</tr>
-<tr>
     <td colspan="2"><h3>PHP Receipt Modules</h3></td>
 </tr>
 <tr>
@@ -183,6 +179,33 @@ for($i=0;$i<=count($current);$i++){
 InstallUtilities::paramSave('ReceiptMessageMods',CoreLocal::get('ReceiptMessageMods'));
 ?>
 </td></tr>
+<tr>
+    <td colspan="2"><h3>Email Receipts</h3></td>
+</tr>
+<tr>
+    <td><b>Email Receipt Sender Address</b>:</td>
+    <td><?php echo InstallUtilities::installTextField('emailReceiptFrom', ''); ?></td>
+</tr>
+<tr>
+    <td><b>Email Receipt Sender Name</b>:</td>
+    <td><?php echo InstallUtilities::installTextField('emailReceiptName', 'CORE-POS'); ?></td>
+</tr>
+<tr>
+    <td><b>STMP Server</b>:</td>
+    <td><?php echo InstallUtilities::installTextField('emailReceiptSmtp', '127.0.0.1'); ?></td>
+</tr>
+<tr>
+    <td><b>STMP Port</b>:</td>
+    <td><?php echo InstallUtilities::installTextField('emailReceiptPort', '25'); ?></td>
+</tr>
+<tr>
+    <td><b>HTML Receipt Header</b>:</td>
+    <td><?php echo InstallUtilities::installTextField('emailReceiptHtmlHead', '', InstallUtilities::PARAM_SETTING, true, array('rows'=>5,'cols'=>40),true); ?></td>
+</tr>
+<tr>
+    <td><b>HTML Receipt Footer</b>:</td>
+    <td><?php echo InstallUtilities::installTextField('emailReceiptHtmlFoot', '', InstallUtilities::PARAM_SETTING, true, array('rows'=>5,'cols'=>40),true); ?></td>
+</tr>
 <tr><td colspan=2 class="submitBtn">
 <input type=submit name=esubmit value="Save Changes" />
 </td></tr>
