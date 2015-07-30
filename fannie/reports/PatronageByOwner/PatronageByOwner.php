@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class SaleItemsByDate extends FannieReportPage 
+class PatronageByOwner extends FannieReportPage 
 {
     public $description = '[Patronage] lists top patrons by purchases/avg basket';
     public $report_set = 'Reports';
