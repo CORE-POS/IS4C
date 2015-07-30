@@ -35,19 +35,37 @@ class HtmlEmailPrintHandler extends EmailPrintHandler
             $subject .= "-".CoreLocal::get("transno");
 
             $mail = new PHPMailer();
-            $mail->isSMTP();
-            $mail->Host = CoreLocal::get('emailReceiptSmtp');
-            $mail->Port = CoreLocal::get('emailReceiptPort');
-            $mail->SMTPAuth = false;
+            if (CoreLocal::get('emailReceiptSmtp') == 1) {
+                /** setup SMTP parameters **/
+                $mail->isSMTP();
+                $mail->Host = CoreLocal::get('emailReceiptHost');
+                $mail->Port = CoreLocal::get('emailReceiptPort');
+                if (CoreLocal::get('emailReceiptSecurity') == 'SSL') {
+                    $mail->SMTPSecure = 'ssl';
+                } elseif (CoreLocal::get('emailReceiptSecurity') == 'TLS') {
+                    $mail->SMTPSecure = 'tls';
+                }
+                if (CoreLocal::get('emailReceiptUser') != '' && CoreLocal::get('emailReceiptPw') != '') {
+                    $mail->SMTPAuth = true;
+                    $mail->Username = CoreLocal::get('emailReceiptUser');
+                    $mail->Password = CoreLocal::get('emailReceiptPw');
+                } else {
+                    $mail->SMTPAuth = false;
+                }
+            } else {
+                /** or just use PHP mail() **/
+                $mail->isMail();
+            }
             $mail->From = CoreLocal::get('emailReceiptFrom');
             $mail->FromName = CoreLocal::get('emailReceiptName');
             $mail->addAddress($to);
             $mail->Subject = $subject;
             
-            $message = CoreLocal::get('emailReceiptHtmlHead');
+            $e_class = CoreLocal::get('emailReceiptHtml');
+            $e_obj = new $e_class();
+            $message = $e_obj->receiptHeader();
 
             $message .= '<table border="0" cellpadding="10" cellspacing="0" width="600" id="email-container">';
-            $message = '';
             $table = true;
             /** rewrite item lines in a table; end the table at
                 the end-of-items spacer and add any footers 
@@ -71,7 +89,7 @@ class HtmlEmailPrintHandler extends EmailPrintHandler
                     $message .= $line ."<br>\n";
                 }
             }
-            $message .= CoreLocal::get('emailReceiptHtmlFoot');
+            $message .= $e_obj->receiptFooter();
 
             $mail->isHTML(true);
             $mail->Body = $message;

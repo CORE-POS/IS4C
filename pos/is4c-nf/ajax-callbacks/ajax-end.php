@@ -127,7 +127,8 @@ if (strlen($receiptType) > 0) {
         $receiptContent = array();
     }
 
-    $EMAIL_OBJ = new EmailPrintHandler();
+    $email_class = ReceiptLib::emailReceiptMod();
+    $EMAIL_OBJ = new $email_class();
     foreach($receiptContent as $receipt) {
         if(is_array($receipt)) {
             if (!empty($receipt['print'])) {

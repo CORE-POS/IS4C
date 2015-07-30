@@ -1307,8 +1307,8 @@ static public function code39($barcode)
 
 static public function emailReceiptMod()
 {
-    if (class_exists('PHPMailer') && CoreLocal::get('emailReceiptHtmlHead') != '' && CoreLocal::get('emailReceiptHtmlFoot')) {
-        return 'HtmlPrintHandler';
+    if (class_exists('PHPMailer') && CoreLocal::get('emailReceiptHtml') != '' && class_exists(CoreLocal::get('emailReceiptHtml'))) {
+        return 'HtmlEmailPrintHandler';
     } else {
         return 'EmailPrintHandler';
     }

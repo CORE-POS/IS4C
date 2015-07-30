@@ -191,20 +191,40 @@ InstallUtilities::paramSave('ReceiptMessageMods',CoreLocal::get('ReceiptMessageM
     <td><?php echo InstallUtilities::installTextField('emailReceiptName', 'CORE-POS'); ?></td>
 </tr>
 <tr>
+    <td><b>Use SMTP</b>:</td>
+    <td><?php echo InstallUtilities::installSelectField('emailReceiptSmtp', array(1=>'Yes',0=>'No'), 0); ?></td>
+</tr>
+<tr>
     <td><b>STMP Server</b>:</td>
-    <td><?php echo InstallUtilities::installTextField('emailReceiptSmtp', '127.0.0.1'); ?></td>
+    <td><?php echo InstallUtilities::installTextField('emailReceiptHost', '127.0.0.1'); ?></td>
 </tr>
 <tr>
     <td><b>STMP Port</b>:</td>
     <td><?php echo InstallUtilities::installTextField('emailReceiptPort', '25'); ?></td>
 </tr>
 <tr>
-    <td><b>HTML Receipt Header</b>:</td>
-    <td><?php echo InstallUtilities::installTextField('emailReceiptHtmlHead', '', InstallUtilities::PARAM_SETTING, true, array('rows'=>5,'cols'=>40),true); ?></td>
+    <td><b>STMP Username</b>:</td>
+    <td><?php echo InstallUtilities::installTextField('emailReceiptUser', ''); ?></td>
 </tr>
 <tr>
-    <td><b>HTML Receipt Footer</b>:</td>
-    <td><?php echo InstallUtilities::installTextField('emailReceiptHtmlFoot', '', InstallUtilities::PARAM_SETTING, true, array('rows'=>5,'cols'=>40),true); ?></td>
+    <td><b>STMP Password</b>:</td>
+    <td><?php echo InstallUtilities::installTextField('emailReceiptPw', '', InstallUtilities::PARAM_SETTING, true, array('type'=>'password')); ?></td>
+</tr>
+<tr>
+    <td><b>STMP Security</b>:</td>
+    <td><?php echo InstallUtilities::installSelectField('emailReceiptSSL', array('none', 'SSL', 'TLS'), 'none'); ?></td>
+</tr>
+<tr>
+    <td><b>HTML Receipt Builder</b>:</td>
+    <?php
+    $mods = AutoLoader::listModules('DefaultHtmlEmail');
+    sort($mods);
+    $e_mods = array('' => '[None]');
+    foreach ($mods as $m) {
+        $e_mods[$m] = $m;
+    }
+    ?>
+    <td><?php echo InstallUtilities::installSelectField('emailReceiptHtml', $e_mods, ''); ?></td>
 </tr>
 <tr><td colspan=2 class="submitBtn">
 <input type=submit name=esubmit value="Save Changes" />
