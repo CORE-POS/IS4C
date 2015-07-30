@@ -536,12 +536,14 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                   WHEN i.local > 0 AND o.originID IS NOT NULL THEN LEFT(o.shortName,1) ELSE '-' END) as local,
                 COALESCE(v.vendorName, x.distributor) AS distributor,
                 i.cost,
-                i.store_id
+                i.store_id,
+                l.description AS storeName
             FROM products as i 
                 LEFT JOIN departments as d ON i.department = d.dept_no
                 LEFT JOIN taxrates AS t ON t.id = i.tax
                 LEFT JOIN prodExtra as x on i.upc = x.upc
                 LEFT JOIN vendors AS v ON i.default_vendor_id=v.vendorID
+                LEFT JOIN Stores AS l ON i.store_id=l.storeID
                 LEFT JOIN origins AS o ON i.local=o.originID";
         /** add extra joins if this lookup requires them **/
         if ($supertype == 'dept' && $super !== '') {
@@ -631,11 +633,15 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         }
         $ret .= "</tr></thead><tbody>";
 
+        $multi = ($this->config->get('STORE_MODE') == 'HQ') ? true : false;
         while ($row = $dbc->fetch_row($result)) {
             $ret .= '<tr id="'.$row[0].'">';
             $enc = base64_encode($row[1]);
             if (!$this->excel) {
                 $ret .= "<td align=center class=\"td_upc\"><a href=ItemEditorPage.php?searchupc=$row[0]>$row[0]</a>"; 
+                if ($multi) {
+                    $ret .= ' (' . substr($row['storeName'], 0, 1) . ')';
+                }
                 if ($this->canDeleteItems !== false) {
                     $ret .= " <a href=\"\" onclick=\"deleteCheck('$row[0]','$enc'); return false;\">";
                     $ret .= \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a>';
