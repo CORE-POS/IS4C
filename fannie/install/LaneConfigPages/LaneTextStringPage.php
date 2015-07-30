@@ -95,7 +95,7 @@ class LaneTextStringPage extends InstallPage {
             'welcomeMsg'=>'Welcome On-screen Message',
             'farewellMsg'=>'Goodbye On-screen Message',
             'trainingMsg'=>'Training On-screen Message',
-            'chargeSlip'=>'Store Charge Slip'
+            'chargeSlip'=>'Store Charge Slip',
         );
 
         if (isset($_REQUEST['new_submit'])){
@@ -163,7 +163,9 @@ receipts, the lane Welcome screen, and elsewhere.
 <br />All types of text strings may initially have no lines, i.e. be empty.
 <br />The maximum length of a line is 55 characters.
 </p>
-<select name="new_type" size="5">
+<div class="form-group">
+    <label>Text Type</label>
+<select class="form-control" name="new_type" size="5">
 <?php
 $tcount = 0;
 foreach($TRANSLATE as $short=>$long){
@@ -178,8 +180,14 @@ foreach($TRANSLATE as $short=>$long){
 }
 ?>
 </select>
-<input type="text" name="new_content" size="55" maxlength="55" />
-<input type="submit" name="new_submit" value="Add a line of the selected type" />
+</div>
+<div class="form-group">
+    <label>Content</label>
+<input type="text" class="form-control" name="new_content" size="55" maxlength="55" />
+</div>
+<div class="form-group">
+<button type="submit" class="btn btn-default" name="new_submit" value="1">Add a line of the selected type</button>
+</div>
 </form>
 <hr />
 
@@ -201,12 +209,16 @@ while($w = $dbc->fetch_row($r)){
         $header = $w['type'];    
         $i=1;
     }
-    printf('<p>%d:<input type="text" size="55" maxlength="55" name="old_content[]" value="%s" />
+    printf('<p class="form-inline">
+        <label>%d</label>: <input type="text" size="55" maxlength="55" 
+        class="form-control" name="old_content[]" value="%s" />
         <input type="hidden" name="old_type[]" value="%s" /></p>',
         $i++,$w['text'],$w['type']);
 }
 ?>
-<input type="submit" name="old_submit" value="Save Changes" />
+<p>
+    <button type="submit" name="old_submit" value="1" class="btn btn-default">Save Changes</button>
+</p>
 </form>
 
 <?php
