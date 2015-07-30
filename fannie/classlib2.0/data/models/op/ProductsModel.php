@@ -90,6 +90,15 @@ class ProductsModel extends BasicModel
 
     protected $normalize_lanes = true;
 
+    public function __construct($con)
+    {
+        // change uniqueness constraint in HQ mode
+        if (FannieConfig::config('STORE_MODE') == 'HQ') {
+            $this->unique[] = 'store_id';
+        }
+        parent::__construct($con);
+    }
+
     /**
       Standardization method to ensure shelf tag
       fields are calculated consistently for a given 

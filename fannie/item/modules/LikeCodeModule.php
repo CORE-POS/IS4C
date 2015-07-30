@@ -255,17 +255,25 @@ class LikeCodeModule extends ItemModule
         $ret = "<b>Like Code Linked Items</b><div id=lctable>";
         $ret .= "<table class=\"alert alert-warning table\">";
         $dbc = $this->db();
-        $p = $dbc->prepare_statement("SELECT p.upc,p.description FROM
-            products AS p INNER JOIN upcLike AS u ON
-            p.upc=u.upc WHERE u.likeCode=?
+        $p = $dbc->prepare("
+            SELECT p.upc,
+                p.description 
+            FROM products AS p 
+                INNER JOIN upcLike AS u ON p.upc=u.upc 
+            WHERE u.likeCode=?
             ORDER BY p.upc");
         $res = $dbc->exec_statement($p,array($lc));
+        $prev = false;
         while($row = $dbc->fetch_row($res)){
+            if ($prev === $row['upc']) {
+                continue;
+            }
             $tag = ($upc == $row['upc']) ? 'th' : 'td';
             $ret .= sprintf("<tr><%s><a href=itemMaint.php?upc=%s>%s</a></%s>
                     <%s>%s</%s></tr>",
                     $tag, $row['upc'],$row['upc'], $tag,
                     $tag, $row[1], $tag);
+            $prev = $row['upc'];
         }
         $ret .= "</table>";
         $ret .= '</div>';

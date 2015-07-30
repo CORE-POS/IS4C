@@ -36,6 +36,26 @@ class IncompleteItemsPage extends FannieRESTfulPage
     protected $must_authenticate = true;
     protected $auth_classes = array('admin');
 
+    public function get_id_handler()
+    {
+        $upc = BarcodeLib::padUPC($this->id);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $product = new ProductsModel($dbc);
+        $product->upc($upc);
+        $matches = $product->find('store_id');
+        if (count($matches) > 0) {
+            $product = $matches[0];
+            $stores = new StoresModel($dbc);
+            foreach ($stores->find('storeID') as $store) {
+                $product->store_id($store->storeID());
+                $product->save();
+            }
+        }
+
+        return '../ItemEditorPage.php?searchupc=' . $upc;
+    }
+
     /**
       For each store, examine all items.
       For all items in a given store, check

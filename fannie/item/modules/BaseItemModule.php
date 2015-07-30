@@ -331,9 +331,11 @@ class BaseItemModule extends ItemModule
 
         $ret .= '<div class="panel-body">';
 
+        $new_item = false;
         if ($dbc->num_rows($r) == 0) {
             // new item
             $ret .= "<div class=\"alert alert-warning\">Item not found.  You are creating a new one.</div>";
+            $new_item = true;
         }
 
         $nav_tabs = '<ul id="store-tabs" class="nav nav-tabs small" role="tablist">';
@@ -725,11 +727,21 @@ HTML;
 
             $ret = str_replace('{{store_id}}', $store_id, $ret);
             $active_tab = false;
-            break; // temporary limit to single store
+            if ($new_item || FannieConfig::config('STORE_MODE') != 'HQ') {
+                break;
+            }
         }
         $ret .= '</div>';
         // sync button will copy current tab values to all other store tabs
-        //$nav_tabs .= '<li><a href="" onclick="syncStoreTabs(); return false;">Sync</a></li>';
+        if (!$new_item && FannieConfig::config('STORE_MODE') == 'HQ') {
+            if (count($items) == count($stores)) {
+                $nav_tabs .= '<li><a href="" onclick="syncStoreTabs(); return false;"
+                    title="Set other stores to match this one">Sync</a></li>';
+            } else {
+                $nav_tabs .= '<li><a href="multistore/IncompleteItemsPage.php?id=' . $upc . '"
+                    title="Add item to other stores">Sync</a></li>';
+            }
+        }
         $nav_tabs .= '</ul>';
         $ret = str_replace('{{nav_tabs}}', $nav_tabs, $ret);
 
@@ -892,6 +904,9 @@ HTML;
                     var name = $(this).attr('name');
                     if (name in current) {
                         $(this).val(current[name]);
+                        if ($(this).hasClass('chosen-select')) {
+                            $(this).trigger('chosen:updated');
+                        }
                     }
                 }
             });

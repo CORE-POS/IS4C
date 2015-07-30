@@ -32,6 +32,8 @@ function addProductAllLanes($upc)
 {
     $FANNIE_OP_DB = FannieConfig::config('OP_DB');
     $FANNIE_LANES = FannieConfig::config('LANES');
+    $STORE_MODE = FannieConfig::config('STORE_MODE');
+    $STORE_ID = FannieConfig::config('STORE_ID');
     $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
 
     $server_table_def = $laneupdate_sql->table_definition('products',$FANNIE_OP_DB);
@@ -65,7 +67,11 @@ function addProductAllLanes($upc)
             $selQ .= $col.",";
             $ins .= $col.",";
         }
-        $selQ = rtrim($selQ,",")." FROM products WHERE upc='$upc' ORDER BY store_id DESC";
+        $selQ = rtrim($selQ,",")
+            . " FROM products WHERE upc='$upc' ";
+        if ($STORE_MODE == 'HQ') {
+            $selQ .= ' AND store_id=' . ((int)$STORE_ID);
+        }
         $selQ = $laneupdate_sql->add_select_limit($selQ, 1, $FANNIE_OP_DB);
         $ins = rtrim($ins,",").")";
 

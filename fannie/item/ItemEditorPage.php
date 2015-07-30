@@ -37,6 +37,41 @@ class ItemEditorPage extends FanniePage
     public $themed = true;
     protected $enable_linea = true;
 
+    public function readinessCheck()
+    {
+        if ($this->config->get('STORE_MODE') != 'HQ') {
+            return true;
+        } else {
+            if ($this->config->get('STORE_ID') === '') {
+                $this->error_msg = 'In HQ Mode store must have an ID!';
+                return false;
+            } elseif (!is_numeric($this->config->get('STORE_ID'))) {
+                $this->error_msg = 'Invalid store ID: ' . $this->config->get('STORE_ID');
+                return false;
+            } else {
+                $this->connection->selectDB($this->config->get('OP_DB'));
+                $p = $this->connection->prepare('
+                    SELECT storeID
+                    FROM Stores
+                    WHERE storeID=?');
+                $r = $this->connection->execute($p, array($this->config->get('STORE_ID')));
+                if ($r === false || $this->connection->numRows($r) == 0) {
+                    $this->error_msg = 'No record exists for this store';
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    public function errorContent()
+    {
+        return '<div class="alert alert-danger">'
+            . $this->error_msg . '</div>'
+            . '<p><a href="../install/InstallStoresPage.php">Adjust Store Settings</a></p>';
+    }
+
     function preprocess()
     {
         $FANNIE_PRODUCT_MODULES = $this->config->get('PRODUCT_MODULES');
