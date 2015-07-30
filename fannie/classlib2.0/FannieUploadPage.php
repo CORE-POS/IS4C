@@ -119,7 +119,12 @@ class FannieUploadPage extends \FanniePage
                 if (!$this->themed) {
                     $this->window_dressing = false;
                 }
-                $this->add_script($this->config->get('URL') . 'src/javascript/jquery.js');
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    // windows has trouble with symlinks
+                    $this->add_script($this->config->get('URL') . 'src/javascript/jquery-1.11.1/jquery-1.11.1.min.js');
+                } else {
+                    $this->add_script($this->config->get('URL') . 'src/javascript/jquery.js');
+                }
             } else {
                 $this->content_function = 'uploadError';
             }
@@ -273,7 +278,12 @@ class FannieUploadPage extends \FanniePage
             } else { // selected columns were invalid; redisplay preview screen
                 $this->content_function = 'basicPreview';
                 $this->window_dressing = False;
-                $this->add_script($this->config->get('URL') . 'src/javascript/jquery.js');
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    // windows has trouble with symlinks
+                    $this->add_script($this->config->get('URL') . 'src/javascript/jquery-1.11.1/jquery-1.11.1.min.js');
+                } else {
+                    $this->add_script($this->config->get('URL') . 'src/javascript/jquery.js');
+                }
             }
         }
 

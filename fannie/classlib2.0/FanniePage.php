@@ -161,10 +161,20 @@ class FanniePage
             if (!$this->addBootstrap()) {
                 echo '<em>Warning: bootstrap does not appear to be installed. Try running composer update</em>';
             }
-            $this->addScript($url . 'src/javascript/jquery-ui.js');
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                // windows has trouble with symlinks
+                $this->addScript($url . 'src/javascript/jquery-ui-1.10.4/js/jquery-ui-1.10.4.min.js');
+            } else {
+                $this->addScript($url . 'src/javascript/jquery-ui.js');
+            }
             $this->addScript($url . 'src/javascript/calculator.js');
             $this->addScript($url . 'src/javascript/core.js');
-            $this->addCssFile($url . 'src/javascript/jquery-ui.css?id=20140625');
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                // windows has trouble with symlinks
+                $this->addCssFile($url . 'src/javascript/jquery-ui-1.10.4/css/smoothness/jquery-ui.min.css?id=20140625');
+            } else {
+                $this->addCssFile($url . 'src/javascript/jquery-ui.css?id=20140625');
+            }
             $this->addCssFile($url . 'src/css/configurable.php');
             $this->addCssFile($url . 'src/css/core.css');
             $this->addCssFile($url . 'src/css/print.css');
@@ -215,6 +225,9 @@ class FanniePage
         $path2 = dirname(__FILE__) . '/../src/javascript/';
         if (file_exists($path1 . 'jquery/jquery.min.js')) {
             $this->addFirstScript($url . 'src/javascript/composer-components/jquery/jquery.min.js');
+        } elseif (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            // windows has trouble with symlinks
+            $this->addFirstScript($url . 'src/javascript/jquery-1.11.1/jquery-1.11.1.min.js');
         } elseif (file_exists($path2 . 'jquery.js')) {
             $this->addFirstScript($url . 'src/javascript/jquery.js');
         } else {
