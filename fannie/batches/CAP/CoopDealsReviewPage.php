@@ -91,6 +91,7 @@ class CoopDealsReviewPage extends FanniePage
             FROM tempCapPrices as t
                 INNER JOIN products AS p on t.upc = p.upc
                 LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
+            WHERE p.inUse=1
             ORDER BY s.super_name, t.upc
         ");
         $saleItemsR = $dbc->exec_statement($saleItemsP);
