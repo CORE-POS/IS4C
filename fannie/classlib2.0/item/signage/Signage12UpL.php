@@ -80,7 +80,24 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
 
             $pdf->SetXY($left + ($width*$column), $top + ($row*$height) + 6);
             $pdf->SetFont($this->font, 'B', $this->SMALL_FONT);
-            $pdf->MultiCell($effective_width, 6, strtoupper($item['brand']), 0, 'C');
+            $font_shrink = 0;
+            while (true) {
+                $pdf->SetX($left + ($width*$column));
+                $y = $pdf->GetY();
+                $pdf->MultiCell($effective_width, 6, strtoupper($item['brand']), 0, 'C');
+                if ($pdf->GetY() - $y > 6) {
+                    $pdf->SetFillColor(0xff, 0xff, 0xff);
+                    $pdf->Rect($left + ($width*$column), $y, $left + ($width*$column) + $effective_width, $pdf->GetY(), 'F');
+                    $font_shrink++;
+                    if ($font_shrink >= $this->SMALL_FONT) {
+                        break;
+                    }
+                    $pdf->SetFontSize($this->SMALL_FONT - $font_shrink);
+                    $pdf->SetXY($left + ($width*$column), $y);
+                } else {
+                    break;
+                }
+            }
 
             /**
               This block attempts to write the description then
@@ -96,7 +113,7 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
                 $pdf->SetX($left + ($width*$column));
                 $y = $pdf->GetY();
                 $pdf->MultiCell($effective_width, 6, $item['description'], 0, 'C');
-                if ($pdf->GetY() - $y > 14) {
+                if ($pdf->GetY() - $y > 12) {
                     $pdf->SetFillColor(0xff, 0xff, 0xff);
                     $pdf->Rect($left + ($width*$column), $y, $left + ($width*$column) + $effective_width, $pdf->GetY(), 'F');
                     $font_shrink++;
@@ -106,7 +123,7 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
                     $pdf->SetFontSize($this->MED_FONT - $font_shrink);
                     $pdf->SetXY($left + ($width*$column), $y);
                 } else {
-                    if ($pdf->GetY() - $y < 14) {
+                    if ($pdf->GetY() - $y < 12) {
                         $words = explode(' ', $item['description']);
                         $multi = '';
                         for ($i=0;$i<floor(count($words)/2);$i++) {

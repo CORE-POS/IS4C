@@ -92,7 +92,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
                     if ($font_shrink >= $this->SMALL_FONT) {
                         break;
                     }
-                    $pdf->SetFontSize($this->MED_FONT - $font_shrink);
+                    $pdf->SetFontSize($this->SMALL_FONT - $font_shrink);
                     $pdf->SetXY($left + ($width*$column), $y);
                 } else {
                     break;
