@@ -94,6 +94,14 @@ class FannieRESTfulPage extends FanniePage
 
     protected $form;
 
+    protected $routing_trait;
+
+    public function __construct()
+    {
+        $this->routing_trait = new \COREPOS\common\ui\CoreRESTfulRouter();
+        parent::__construct();
+    }
+
     /**
       Extract paramaters from route definition
       @param $route string route definition
@@ -178,6 +186,12 @@ class FannieRESTfulPage extends FanniePage
 
     public function preprocess()
     {
+        /*
+        $this->form = new COREPOS\common\mvc\FormValueContainer();
+        $this->routing_trait->setForm($this->form);
+        return $this->routing_trait->handler($this);
+        */
+
         $this->form = new COREPOS\common\mvc\FormValueContainer();
         $this->readRoutes();
         $handler = $this->__route_stem.'Handler';
@@ -225,6 +239,8 @@ class FannieRESTfulPage extends FanniePage
 
     public function bodyContent()
     {
+        //return $this->routing_trait->view($this);
+
         $func = $this->__route_stem.'View';
         $old_func = $this->__route_stem.'_view';
         if (method_exists($this, $func)) {
