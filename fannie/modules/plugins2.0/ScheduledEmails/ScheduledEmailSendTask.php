@@ -43,7 +43,7 @@ class ScheduledEmailSendTask extends FannieTask
         $sentP = $dbc->prepare('
             UPDATE ScheduledEmailQueue
             SET sentDate=' . $dbc->now() . ',
-                sent=0,
+                sent=1,
                 sentToEmail=?
             WHERE scheduledEmailQueueID=?');
 
@@ -54,7 +54,7 @@ class ScheduledEmailSendTask extends FannieTask
                 cardNo,
                 templateData
             FROM ScheduledEmailQueue
-            WHERE sent=1
+            WHERE sent=0
                 AND sendDate <= ' . $dbc->now();
         $result = $dbc->query($query);
         $template = new ScheduledEmailTemplatesModel($dbc);
@@ -116,6 +116,7 @@ class ScheduledEmailSendTask extends FannieTask
         $mail->FromName = $settings['ScheduledEmailFromName'];
         $mail->addReplyTo($settings['ScheduledEmailReplyTo']);
         $mail->addAddress($address);
+        $mail->addBCC('andy@wholefoods.coop');
         $mail->Subject = $template->subject();
         if ($template->hasHTML()) {
             $mail->isHTML(true);
