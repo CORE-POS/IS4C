@@ -232,6 +232,8 @@ else {
     // department definitions
     function recreate_views($con)
     {
+        global $FANNIE_TRANS_DB;
+
         $con->query("DROP VIEW ar_history_today",$FANNIE_TRANS_DB);
         $model = new ArHistoryTodayModel($con);
         $model->createIfNeeded($this->config->get('TRANS_DB'));
