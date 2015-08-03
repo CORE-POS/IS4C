@@ -528,7 +528,7 @@ class WfcHtmlWrapper extends DefaultHtmlEmail
  <tr>
  <td class="mcnCaptionRightImageContent" valign="top" style="mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;">
  <a href="http://wholefoods.coop" title="" class="" target="_blank" style="word-wrap: break-word;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;">
- <img alt="" src="https://gallery.mailchimp.com/65809d7ed355da55d2218ac02/images/ae323244-82a5-44f8-b700-f42c773c22ab.png" style="max-width: 216px;border: 0;outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;vertical-align: bottom;" class="mcnImage" width="176">
+ <img alt="" src="http://wholefoods.coop/images/email/logo.png" style="max-width: 216px;border: 0;outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;vertical-align: bottom;" class="mcnImage" width="176">
  </a>
  </td>
  </tr>
@@ -647,7 +647,7 @@ HTML;
  <tbody>
  <tr>
  <td class="mcnFollowIconContent" align="center" valign="middle" width="24" style="mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;">
- <a href="https://www.facebook.com/pages/Whole-Foods-Co-op/49852317869" target="_blank" style="word-wrap: break-word;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><img src="http://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png" style="display: block;border: 0;outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;" class="" height="24" width="24"></a>
+ <a href="https://www.facebook.com/pages/Whole-Foods-Co-op/49852317869" target="_blank" style="word-wrap: break-word;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><img src="http://wholefoods.coop/images/email/color-facebook-48.png" style="display: block;border: 0;outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;" class="" height="24" width="24"></a>
  </td>
  <td class="mcnFollowTextContent" style="padding-left: 5px;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" align="left" valign="middle">
  <a href="https://www.facebook.com/pages/Whole-Foods-Co-op/49852317869" target="" style="font-size: 10px;text-decoration: none;color: #606060;font-weight: bold;line-height: 100%;text-align: center;word-wrap: break-word;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;">Facebook</a>
@@ -679,7 +679,7 @@ HTML;
  <tbody>
  <tr>
  <td class="mcnFollowIconContent" align="center" valign="middle" width="24" style="mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;">
- <a href="https://twitter.com/WFCduluth" target="_blank" style="word-wrap: break-word;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><img src="http://cdn-images.mailchimp.com/icons/social-block-v2/color-twitter-48.png" style="display: block;border: 0;outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;" class="" height="24" width="24"></a>
+ <a href="https://twitter.com/WFCduluth" target="_blank" style="word-wrap: break-word;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><img src="http://wholefoods.coop/images/email/color-twitter-48.png" style="display: block;border: 0;outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;" class="" height="24" width="24"></a>
  </td>
  <td class="mcnFollowTextContent" style="padding-left: 5px;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" align="left" valign="middle">
  <a href="https://twitter.com/WFCduluth" target="" style="font-size: 10px;text-decoration: none;color: #606060;font-weight: bold;line-height: 100%;text-align: center;word-wrap: break-word;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;">Twitter</a>
@@ -711,7 +711,7 @@ HTML;
  <tbody>
  <tr>
  <td class="mcnFollowIconContent" align="center" valign="middle" width="24" style="mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;">
- <a href="http://www.pinterest.com/wholefoodscoop/" target="_blank" style="word-wrap: break-word;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><img src="http://cdn-images.mailchimp.com/icons/social-block-v2/color-pinterest-48.png" style="display: block;border: 0;outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;" class="" height="24" width="24"></a>
+ <a href="http://www.pinterest.com/wholefoodscoop/" target="_blank" style="word-wrap: break-word;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><img src="http://wholefoods.coop/images/email/color-pinterest-48.png" style="display: block;border: 0;outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;" class="" height="24" width="24"></a>
  </td>
  <td class="mcnFollowTextContent" style="padding-left: 5px;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" align="left" valign="middle">
  <a href="http://www.pinterest.com/wholefoodscoop/" target="" style="font-size: 10px;text-decoration: none;color: #606060;font-weight: bold;line-height: 100%;text-align: center;word-wrap: break-word;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;">Pinterest</a>
@@ -743,7 +743,7 @@ HTML;
  <tbody>
  <tr>
  <td class="mcnFollowIconContent" align="center" valign="middle" width="24" style="mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;">
- <a href="http://wholefoods.coop" target="_blank" style="word-wrap: break-word;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><img src="http://cdn-images.mailchimp.com/icons/social-block-v2/color-link-48.png" style="display: block;border: 0;outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;" class="" height="24" width="24"></a>
+ <a href="http://wholefoods.coop" target="_blank" style="word-wrap: break-word;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;"><img src="http://wholefoods.coop/images/email/color-link-48.png" style="display: block;border: 0;outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;" class="" height="24" width="24"></a>
  </td>
  <td class="mcnFollowTextContent" style="padding-left: 5px;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" align="left" valign="middle">
  <a href="http://wholefoods.coop" target="" style="font-size: 10px;text-decoration: none;color: #606060;font-weight: bold;line-height: 100%;text-align: center;word-wrap: break-word;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;">Website</a>
