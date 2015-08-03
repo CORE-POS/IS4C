@@ -102,7 +102,7 @@ class SignFromSearch extends FannieRESTfulPage
                     $this->signage_obj->addOverride($upc[$i], 'brand', $brand[$i]);
                 }
                 if (isset($desc[$i])) {
-                    $this->signage_obj->addOverride($upc[$i], 'description', $desc[$i]);
+                    //$this->signage_obj->addOverride($upc[$i], 'description', $desc[$i]);
                 }
                 if (isset($origin[$i])) {
                     $this->signage_obj->addOverride($upc[$i], 'originName', $origin[$i]);
