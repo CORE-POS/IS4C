@@ -77,15 +77,6 @@ class FanniePage extends \COREPOS\common\ui\CorePage
     }
 
     /**
-      DI Setter method for configuration
-      @param $fc [FannieConfig] configuration object
-    */
-    public function setConfig(FannieConfig $fc)
-    {
-        $this->config = $fc;
-    }
-
-    /**
       Get the standard header
       @return An HTML string
     */
