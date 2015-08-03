@@ -94,6 +94,9 @@ if (strlen($receiptType) > 0) {
         CoreLocal::set("autoReprint",0);
         $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum, true);
     }
+    // use same email class for sending the receipt
+    // as was used to generate the receipt
+    $email_class = ReceiptLib::emailReceiptMod();
 
     if ($transFinished) {
         CoreLocal::set("End",0);
@@ -127,7 +130,6 @@ if (strlen($receiptType) > 0) {
         $receiptContent = array();
     }
 
-    $email_class = ReceiptLib::emailReceiptMod();
     $EMAIL_OBJ = new $email_class();
     foreach($receiptContent as $receipt) {
         if(is_array($receipt)) {
