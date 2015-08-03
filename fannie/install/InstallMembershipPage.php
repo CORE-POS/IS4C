@@ -232,29 +232,29 @@ else {
     // department definitions
     function recreate_views($con)
     {
-        global $FANNIE_TRANS_DB;
+        $db_name = $this->config->get('TRANS_DB');
 
-        $con->query("DROP VIEW ar_history_today",$FANNIE_TRANS_DB);
+        $con->query("DROP VIEW ar_history_today",$db_name);
         $model = new ArHistoryTodayModel($con);
-        $model->createIfNeeded($this->config->get('TRANS_DB'));
+        $model->createIfNeeded($db_name);
 
-        $con->query("DROP VIEW ar_history_today_sum",$FANNIE_TRANS_DB);
+        $con->query("DROP VIEW ar_history_today_sum",$db_name);
         $model = new ArHistoryTodaySumModel($con);
-        $model->createIfNeeded($this->config->get('TRANS_DB'));
+        $model->createIfNeeded($db_name);
 
-        $con->query("DROP VIEW ar_live_balance",$FANNIE_TRANS_DB);
+        $con->query("DROP VIEW ar_live_balance",$db_name);
         $model = new ArLiveBalanceModel($con);
         $model->addExtraDB($this->config->get('OP_DB'));
-        $model->createIfNeeded($this->config->get('TRANS_DB'));
+        $model->createIfNeeded($db_name);
 
-        $con->query("DROP VIEW stockSumToday",$FANNIE_TRANS_DB);
+        $con->query("DROP VIEW stockSumToday",$db_name);
         $model = new StockSumTodayModel($con);
-        $model->createIfNeeded($this->config->get('TRANS_DB'));
+        $model->createIfNeeded($db_name);
 
-        $con->query("DROP VIEW equity_live_balance",$FANNIE_TRANS_DB);
+        $con->query("DROP VIEW equity_live_balance",$db_name);
         $model = new EquityLiveBalanceModel($con);
         $model->addExtraDB($this->config->get('OP_DB'));
-        $model->createIfNeeded($this->config->get('TRANS_DB'));
+        $model->createIfNeeded($db_name);
     }
 
 // InstallMembershipPage
