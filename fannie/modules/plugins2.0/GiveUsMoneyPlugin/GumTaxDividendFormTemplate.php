@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class GumTaxFormTemplate 
+class GumTaxDividendFormTemplate extends GumTaxFormTemplate
 {
     private $my_address = array();
     private $their_address = array();
@@ -34,6 +34,67 @@ class GumTaxFormTemplate
     private $my_federal_id = 'xx-xxxxxxx';
     private $my_state_id = 'xxxxxx';
     
+    public function __construct($custdata, $meminfo, $tax_id, $tax_year, $fields, $account_number='')
+    {
+        global $FANNIE_PLUGIN_SETTINGS;
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
+        $settings = new GumSettingsModel($dbc);
+
+        $this->tax_id = $tax_id;
+        $this->tax_year = $tax_year;
+        $this->fields = $fields;
+        $this->account_number = $account_number;
+
+        $this->their_address[] = $custdata->FirstName() . ' ' . $custdata->LastName();
+        $this->their_address[] = $meminfo->street();
+        $this->their_address[] = $meminfo->city() . ', ' . $meminfo->state() . ' ' . $meminfo->zip();
+
+        $settings->key('storeFederalID');
+        if ($settings->load()) {
+            $this->my_federal_id = $settings->value();
+        }
+
+        $settings->key('storeStateID');
+        if ($settings->load()) {
+            $this->my_state_id = $settings->value();
+        }
+
+        $this->my_address[0] = 'Name of Co-op';
+        $settings->key('storeName');
+        if ($settings->load()) {
+            $this->my_address[0] = $settings->value();
+        }
+        $this->my_address[1] = 'Street Address';
+        $settings->key('storeAddress');
+        if ($settings->load()) {
+            $this->my_address[1] = $settings->value();
+        }
+        $this->my_address[2] = '';
+        $settings->key('storeCity');
+        if ($settings->load()) {
+            $this->my_address[2] .= $settings->value() . ', ';
+        } else {
+            $this->my_address[2] .= 'City, ';
+        }
+        $settings->key('storeState');
+        if ($settings->load()) {
+            $this->my_address[2] .= $settings->value() . ' ';
+        } else {
+            $this->my_address[2] .= 'XX ';
+        }
+        $settings->key('storeZip');
+        if ($settings->load()) {
+            $this->my_address[2] .= $settings->value();
+        } else {
+            $this->my_address[2] .= '12345';
+        }
+        $this->my_address[3] = '555-867-5309';
+        $settings->key('storePhone');
+        if ($settings->load()) {
+            $this->my_address[3] = $settings->value();
+        }
+    }
+
     public function renderAsHTML()
     {
         $ret = '<table style="border: 1px solid black; border-collapse: collapse;">';
@@ -52,18 +113,18 @@ class GumTaxFormTemplate
         $ret .= '<td style="border: 1px solid black; width:20%;">Payer\'s RTIN (optional)<br />$</td>';
 
         $ret .= '<td style="border: 1px solid black; text-align: center; width:20%;" rowspan="2">';
-        $ret .= 'OMB No. 1545-0115';
+        $ret .= 'OMB No. 1545-0110';
         $ret .= '<div style="font-size:180%; font-weight:bold;">' . $this->tax_year . '</div>';
-        $ret .= 'Form <b>1099-INT</b>';
+        $ret .= 'Form <b>1099-DIV</b>';
         $ret .= '</td>';
 
         $ret .= '<td style="border: 1px solid black; text-align: center; font-size:150%; font-weight: bold; width:20%;" rowspan="2">';
-        $ret .= 'Interest Income';
+        $ret .= 'Dividends and Distributions';
         $ret .= '</td>';
 
         $ret .= '</tr><tr>';
 
-        $ret .= '<td style="border: 1px solid black;">1. Interest Income<br />$ ';
+        $ret .= '<td style="border: 1px solid black;">1a. Total ordinary dividends<br />$ ';
         if (isset($this->fields[1])) {
             $ret .= number_format($this->fields[1], 2);
         }
@@ -71,7 +132,7 @@ class GumTaxFormTemplate
 
         $ret .= '</tr><tr>';
 
-        $ret .= '<td style="border: 1px solid black;" colspan="2">2. Early withdrawl penalty<br />$ ';
+        $ret .= '<td style="border: 1px solid black;" colspan="2">1b. Qualified dividends<br />$ ';
         if (isset($this->fields[2])) {
             $ret .= number_format($this->fields[2], 2);
         }
@@ -79,8 +140,8 @@ class GumTaxFormTemplate
 
         $ret .= '<td style="border: 1px solid black;" rowspan="5">';
         $ret .= '<div style="text-align:right;"><b>Copy B</b><br />For Recipient</div>';
-        $ret .= '<i>This is important tax information related to interest income earned during ';
-        $ret .= $this->tax_year . ' that is being furnished to the Internal Revenue Service. If
+        $ret .= '<i>This is important tax information 
+                and is being furnished to the Internal Revenue Service. If
                 you are required to file a return, a negligence penalty or other sanction may be
                 imposed on you if this income is taxable and the IRS determines that it has not
                 been reported.</i>';
@@ -94,7 +155,7 @@ class GumTaxFormTemplate
         $ret .= '<td style="border: 1px solid black;">RECIPIENT\'s federal identification number<br />';
         $ret .= $this->tax_id . '</td>';
 
-        $ret .= '<td style="border: 1px solid black;" colspan="2">3. Interest on U.S. Savings Bonds and Treas. Obligations<br />$ ';
+        $ret .= '<td style="border: 1px solid black;" colspan="2">2a. Total capital gain distr.<br />$ ';
         if (isset($this->fields[3])) {
             $ret .= number_format($this->fields[3], 2);
         }
@@ -201,18 +262,21 @@ class GumTaxFormTemplate
 
         $pdf->SetLineWidth(0.2);
         $pdf->Line($top_left_x + 88.9, $start_y, $top_left_x + 88.9, $start_y + 76.2);
-        $pdf->Line($top_left_x + 165.1, $start_y, $top_left_x + 165.1, $start_y + 76.2);
+        $pdf->Line($top_left_x + 165.1, $start_y, $top_left_x + 165.1, $start_y + 59.9625);
+        $pdf->Line($top_left_x + 165.1, $start_y+66.9875, $top_left_x + 165.1, $start_y + 76.2);
         $pdf->Line($top_left_x, $start_y + 26.9875, $top_left_x + 165.1, $start_y + 26.9875);
-        $pdf->Line($top_left_x, $start_y + 38.1, $top_left_x + 165.1, $start_y + 38.1);
-        $pdf->Line($top_left_x, $start_y + 65.0875, $top_left_x + 203.2, $start_y + 65.0875);
-        $pdf->Line($top_left_x + 44.45, $start_y + 26.9876, $top_left_x + 44.45, $start_y + 38.1);
-        $pdf->Line($top_left_x + 44.45, $start_y + 65.0875, $top_left_x + 44.45, $start_y + 76.2);
-        $pdf->Line($top_left_x + 127.0, $start_y + 38.1, $top_left_x + 127.0, $start_y + 76.2);
-        $pdf->Line($top_left_x + 127.0, $start_y, $top_left_x + 127.0, $start_y + 19.05);
+        $pdf->Line($top_left_x, $start_y + 36.1, $top_left_x + 165.1, $start_y + 36.1);
+        $pdf->Line($top_left_x, $start_y + 66.9875, $top_left_x + 203.2, $start_y + 66.9875);
+        $pdf->Line($top_left_x + 44.45, $start_y + 26.9876, $top_left_x + 44.45, $start_y + 36.1);
+        $pdf->Line($top_left_x + 62.45, $start_y + 66.9875, $top_left_x + 62.45, $start_y + 76.2);
+        $pdf->Line($top_left_x + 127.0, $start_y, $top_left_x + 127.0, $start_y + 76.2);
         $pdf->Line($top_left_x + 88.9, $start_y + 19.05, $top_left_x + 203.2, $start_y + 19.05);
         $pdf->Line($top_left_x + 88.9, $start_y + 9.525, $top_left_x + 127.0, $start_y + 9.525);
-        $pdf->Line($top_left_x + 88.9, $start_y + 46.0375, $top_left_x + 165.1, $start_y + 46.0375);
-        $pdf->Line($top_left_x + 88.9, $start_y + 55.5625, $top_left_x + 165.1, $start_y + 55.5625);
+        $pdf->Line($top_left_x + 88.9, $start_y + 42.1, $top_left_x + 165.1, $start_y + 42.1);
+        $pdf->Line($top_left_x + 88.9, $start_y + 48.0375, $top_left_x + 165.1, $start_y + 48.0375);
+        $pdf->Line($top_left_x + 88.9, $start_y + 54.0625, $top_left_x + 165.1, $start_y + 54.0625);
+        $pdf->Line($top_left_x + 88.9, $start_y + 59.9625, $top_left_x + 203.2, $start_y + 59.9625);
+        $pdf->Rect($top_left_x + 73, $start_y + 72, 3, 3, 'D');
 
         $pdf->SetFont('Arial', '', 6);
         $small_height = 3;
@@ -227,11 +291,8 @@ class GumTaxFormTemplate
         $pdf->SetFont('Arial', '', 6);
 
         $pdf->SetXY($top_left_x + 89, $start_y);
-        $pdf->Cell((127.0-88.9), $small_height, 'Payer\'s RTIN (optional)');
-
-        $pdf->SetXY($top_left_x + 89, $start_y + 9.6);
-        $pdf->Cell(127.0-88.9, $small_height, '1. Interest Income');
-        $pdf->SetXY($top_left_x + 89, $start_y + 9.6 + $small_height);
+        $pdf->Cell((127.0-88.9), $small_height, '1a. Total ordinary dividends');
+        $pdf->SetXY($top_left_x + 89, $start_y + $small_height);
         $text = '$';
         if (isset($this->fields[1])) {
             $text .= number_format($this->fields[1], 2);
@@ -240,29 +301,51 @@ class GumTaxFormTemplate
         $pdf->Cell((127.0-88.9), $med_height, $text);
         $pdf->SetFont('Arial', '', 6);
 
-        $pdf->SetXY($top_left_x + 127.0, $start_y);
-        $pdf->Cell((165.1-127), $small_height, 'OMB No. 1545-0115', 0, 0, 'C');
-        $pdf->SetFont('Arial', 'B', 18);
-        $pdf->SetXY($top_left_x + 127.0, $start_y + $med_height);
-        $pdf->Cell((165.1-127), $med_height, $this->tax_year, 0, 0, 'C');
-        $pdf->SetFont('Arial', '', 6);
-        $pdf->SetXY($top_left_x + 127.0, $start_y + 19.05 - $small_height);
-        $pdf->Cell((165.1-127), $small_height, 'Form 1099-INT', 0, 0, 'C');
-
-        $pdf->SetFont('Arial', '', 14);
-        $pdf->SetXY($top_left_x + 165.1, $start_y + $med_height);
-        $pdf->Cell(203.2-165.1, $med_height, 'Interest Income', 0, 0, 'C');
-        $pdf->SetFont('Arial', '', 6);
-
-        $pdf->SetXY($top_left_x + 89, $start_y + 19.05);
-        $pdf->Cell((165.1-88.9), $small_height, '2. Early withdrawl penalty');
-        $pdf->SetXY($top_left_x + 89, $start_y + 19.05 + $small_height);
+        $pdf->SetXY($top_left_x + 89, $start_y + 9.6);
+        $pdf->Cell(127.0-88.9, $small_height, '1b. Qualified dividends');
+        $pdf->SetXY($top_left_x + 89, $start_y + 9.6 + $small_height);
         $text = '$';
         if (isset($this->fields[2])) {
             $text .= number_format($this->fields[2], 2);
         }
         $pdf->SetFont('Arial', '', 8);
-        $pdf->Cell((165.0-88.9), $med_height, $text);
+        $pdf->Cell((127.0-88.9), $med_height, $text);
+        $pdf->SetFont('Arial', '', 6);
+
+        $pdf->SetXY($top_left_x + 127.0, $start_y);
+        $pdf->Cell((165.1-127), $small_height, 'OMB No. 1545-0110', 0, 0, 'C');
+        $pdf->SetFont('Arial', 'B', 18);
+        $pdf->SetXY($top_left_x + 127.0, $start_y + $med_height);
+        $pdf->Cell((165.1-127), $med_height, $this->tax_year, 0, 0, 'C');
+        $pdf->SetFont('Arial', '', 6);
+        $pdf->SetXY($top_left_x + 127.0, $start_y + 19.05 - $small_height);
+        $pdf->Cell((165.1-127), $small_height, 'Form 1099-DIV', 0, 0, 'C');
+
+        $pdf->SetFont('Arial', '', 14);
+        $pdf->SetXY($top_left_x + 165.1, $start_y + $med_height);
+        $pdf->MultiCell(203.2-165.1, $med_height, "Dividends and\nDistributions", 0, 0, 'C');
+        $pdf->SetFont('Arial', '', 6);
+
+        $pdf->SetXY($top_left_x + 89, $start_y + 19.05);
+        $pdf->Cell((127-88.9), $small_height, '2a. Total Capital gain distr.');
+        $pdf->SetXY($top_left_x + 89, $start_y + 19.05 + $small_height);
+        $text = '$';
+        if (isset($this->fields[3])) {
+            $text .= number_format($this->fields[3], 2);
+        }
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->Cell((127-88.9), $med_height, $text);
+        $pdf->SetFont('Arial', '', 6);
+
+        $pdf->SetXY($top_left_x + 127.0, $start_y + 19.05);
+        $pdf->Cell((165.1-127), $small_height, '2b. Unrecap. Sec. 1250 gain');
+        $pdf->SetXY($top_left_x + 127.0, $start_y + 19.05 + $small_height);
+        $text = '$';
+        if (isset($this->fields[3])) {
+            $text .= number_format($this->fields[3], 2);
+        }
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->Cell((165.1-127), $med_height, $text);
         $pdf->SetFont('Arial', '', 6);
 
         $pdf->SetXY($top_left_x, $start_y + 26.9875);
@@ -280,80 +363,128 @@ class GumTaxFormTemplate
         $pdf->SetFont('Arial', '', 6);
 
         $pdf->SetXY($top_left_x + 89, $start_y + 26.9875);
-        $pdf->Cell(165.1-88.9, $small_height, '3. Interest on U.S. Savings Bonds and Treas. Obligations');
+        $pdf->Cell(127-88.9, $small_height, '2c. Section 1202 gain');
         $pdf->SetXY($top_left_x + 89, $start_y + 26.9875 + $small_height);
-        $text = '$';
-        if (isset($this->fields[3])) {
-            $text .= number_format($this->fields[3], 2);
-        }
-        $pdf->SetFont('Arial', '', 8);
-        $pdf->Cell((165.1-88.9), $med_height, $text);
-        $pdf->SetFont('Arial', '', 6);
-
-        $pdf->SetXY($top_left_x + 89, $start_y + 38.1);
-        $pdf->Cell((127-88.9), $small_height, '4. Federal Tax Withheld');
-        $pdf->SetXY($top_left_x + 89, $start_y + 38.1 + $small_height);
-        $text = '$';
-        if (isset($this->fields[4])) {
-            $text .= number_format($this->fields[4], 2);
-        }
-        $pdf->SetFont('Arial', '', 8);
-        $pdf->Cell((127-88.9), $med_height, $text);
-        $pdf->SetFont('Arial', '', 6);
-
-        $pdf->SetXY($top_left_x + 127, $start_y + 38.1);
-        $pdf->Cell((127-88.9), $small_height, '5. Investment expenses');
-        $pdf->SetXY($top_left_x + 127, $start_y + 38.1 + $small_height);
         $text = '$';
         if (isset($this->fields[5])) {
             $text .= number_format($this->fields[5], 2);
         }
         $pdf->SetFont('Arial', '', 8);
-        $pdf->Cell((165.1-127), $med_height, $text);
+        $pdf->Cell((127-88.9), $med_height, $text);
         $pdf->SetFont('Arial', '', 6);
 
-        $pdf->SetXY($top_left_x + 89, $start_y + 46.0375);
+        $pdf->SetXY($top_left_x + 127, $start_y + 26.9875);
+        $pdf->Cell(165.1-127, $small_height, '2d. Collectibles (28%) gain');
+        $pdf->SetXY($top_left_x + 127, $start_y + 26.9875 + $small_height);
+        $text = '$';
+        if (isset($this->fields[5])) {
+            $text .= number_format($this->fields[5], 2);
+        }
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->Cell((165.1-127), $small_height, $text);
+        $pdf->SetFont('Arial', '', 6);
+
+        $pdf->SetXY($top_left_x + 89, $start_y + 36.1);
+        $pdf->Cell((127-88.9), $small_height, '3. Nondividend distributions');
+        $pdf->SetXY($top_left_x + 89, $start_y + 36.1 + $small_height);
+        $text = '$';
+        if (isset($this->fields[4])) {
+            $text .= number_format($this->fields[4], 2);
+        }
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->Cell((127-88.9), $small_height, $text);
+        $pdf->SetFont('Arial', '', 6);
+
+        $pdf->SetXY($top_left_x + 127, $start_y + 36.1);
+        $pdf->Cell((127-88.9), $small_height, '4. Federal income tax withheld');
+        $pdf->SetXY($top_left_x + 127, $start_y + 36.1 + $small_height);
+        $text = '$';
+        if (isset($this->fields[5])) {
+            $text .= number_format($this->fields[5], 2);
+        }
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->Cell((165.1-127), $small_height, $text);
+        $pdf->SetFont('Arial', '', 6);
+
+        $pdf->SetXY($top_left_x + 89, $start_y + 41.4);
+        $pdf->Cell((127-88.9), $small_height, ''); // blank field
+        $pdf->SetXY($top_left_x + 89, $start_y + 41.4 + $small_height);
+
+        $pdf->SetXY($top_left_x + 127, $start_y + 42.1);
+        $pdf->Cell((127-88.9), $small_height, '5. Investment expenses');
+        $pdf->SetXY($top_left_x + 127, $start_y + 42.1 + $small_height);
+        $text = '$';
+        if (isset($this->fields[5])) {
+            $text .= number_format($this->fields[5], 2);
+        }
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->Cell((165.1-127), $small_height, $text);
+        $pdf->SetFont('Arial', '', 6);
+
+        $pdf->SetXY($top_left_x + 89, $start_y + 48.0375);
         $pdf->Cell((127-88.9), $small_height, '6. Foreign tax paid');
-        $pdf->SetXY($top_left_x + 89, $start_y + 46.0375 + $small_height);
+        $pdf->SetXY($top_left_x + 89, $start_y + 48.0375 + $small_height);
         $text = '$';
         if (isset($this->fields[6])) {
             $text .= number_format($this->fields[6], 2);
         }
         $pdf->SetFont('Arial', '', 8);
-        $pdf->Cell((127-88.9), $med_height, $text);
+        $pdf->Cell((127-88.9), $small_height, $text);
         $pdf->SetFont('Arial', '', 6);
         
-        $pdf->SetXY($top_left_x + 127, $start_y + 46.0375);
+        $pdf->SetXY($top_left_x + 127, $start_y + 48.0375);
         $pdf->Cell((127-88.9), $small_height, '7. Foreign or U.S. Posessions');
-        $pdf->SetXY($top_left_x + 127, $start_y + 46.0375 + $small_height);
+        $pdf->SetXY($top_left_x + 127, $start_y + 48.0375 + $small_height);
         $text = '$';
         if (isset($this->fields[7])) {
             $text .= number_format($this->fields[7], 2);
         }
         $pdf->SetFont('Arial', '', 8);
-        $pdf->Cell((165.1-127), $med_height, $text);
+        $pdf->Cell((165.1-127), $small_height, $text);
         $pdf->SetFont('Arial', '', 6);
 
-        $pdf->SetXY($top_left_x + 89, $start_y + 55.5625);
-        $pdf->Cell((127-88.9), $small_height, '8. Tax exempt interest');
-        $pdf->SetXY($top_left_x + 89, $start_y + 55.5625 + $small_height);
+        $pdf->SetXY($top_left_x + 89, $start_y + 54.0625);
+        $pdf->Cell((127-88.9), $small_height, '8. Cash liquidation distributions');
+        $pdf->SetXY($top_left_x + 89, $start_y + 54.0625 + $small_height);
         $text = '$';
         if (isset($this->fields[8])) {
             $text .= number_format($this->fields[8], 2);
         }
         $pdf->SetFont('Arial', '', 8);
-        $pdf->Cell((127-88.9), $med_height, $text);
+        $pdf->Cell((127-88.9), $small_height, $text);
         $pdf->SetFont('Arial', '', 6);
 
-        $pdf->SetXY($top_left_x + 127, $start_y + 55.5625);
-        $pdf->Cell((127-88.9), $small_height, '9. Specified private bont in.');
-        $pdf->SetXY($top_left_x + 127, $start_y + 55.5625 + $small_height);
+        $pdf->SetXY($top_left_x + 127, $start_y + 54.0625);
+        $pdf->Cell((127-88.9), $small_height, '9. Noncash liquidation distributions');
+        $pdf->SetXY($top_left_x + 127, $start_y + 54.0625 + $small_height);
         $text = '$';
         if (isset($this->fields[9])) {
             $text .= number_format($this->fields[9], 2);
         }
         $pdf->SetFont('Arial', '', 8);
-        $pdf->Cell((165.1-127), $med_height, $text);
+        $pdf->Cell((165.1-127), $small_height, $text);
+        $pdf->SetFont('Arial', '', 6);
+
+        $pdf->SetXY($top_left_x + 89, $start_y + 59.9625);
+        $pdf->Cell((127-88.9), $small_height, '10. Exempt-interest dividends');
+        $pdf->SetXY($top_left_x + 89, $start_y + 59.9625 + $small_height);
+        $text = '$';
+        if (isset($this->fields[8])) {
+            $text .= number_format($this->fields[8], 2);
+        }
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->Cell((127-88.9), $small_height, $text);
+        $pdf->SetFont('Arial', '', 6);
+
+        $pdf->SetXY($top_left_x + 127, $start_y + 59.9625);
+        $pdf->Cell((127-88.9), $small_height, '11. Specified private activity bond interest dividends');
+        $pdf->SetXY($top_left_x + 127, $start_y + 59.9625 + $small_height);
+        $text = '$';
+        if (isset($this->fields[9])) {
+            $text .= number_format($this->fields[9], 2);
+        }
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->Cell((165.1-127), $small_height, $text);
         $pdf->SetFont('Arial', '', 6);
 
         $pdf->SetXY($top_left_x, $start_y + 38.1);
@@ -381,27 +512,19 @@ class GumTaxFormTemplate
             $pdf->SetFont('Arial', '', 6);
         }
 
-        $pdf->SetXY($top_left_x, $start_y + 65.0875);
-        $pdf->Cell(44.45, $small_height, 'Account number (optional)');
-        $pdf->SetXY($top_left_x, $start_y + 65.0875 + $small_height);
+        $pdf->SetXY($top_left_x, $start_y + 66.9875);
+        $pdf->Cell(44.45, $small_height, 'Account number (see instructions)');
+        $pdf->SetXY($top_left_x, $start_y + 66.9875 + $small_height);
         $pdf->SetFont('Arial', '', 8);
         $pdf->Cell(44.45, $med_height, $this->account_number, 0, 0, 'C');
         $pdf->SetFont('Arial', '', 6);
 
-        $pdf->SetXY($top_left_x + 44.45, $start_y + 65.0875);
-        $pdf->Cell((127-88.9), $small_height, '10. Tax exmpt CUSIP no.');
-        $pdf->SetXY($top_left_x + 44.45, $start_y + 65.0875 + $small_height);
-        $text = '';
-        if (isset($this->fields[10])) {
-            $text .= $this->fields[10];
-        }
-        $pdf->SetFont('Arial', '', 8);
-        $pdf->Cell(44.45, $med_height, $text, 0, 0, 'C');
-        $pdf->SetFont('Arial', '', 6);
+        $pdf->SetXY($top_left_x + 62.45, $start_y + 66.9875);
+        $pdf->Cell((127-88.9), $small_height, 'FATCA filing requirement');
 
-        $pdf->SetXY($top_left_x + 89, $start_y + 65.0875);
-        $pdf->Cell((127-88.9), $small_height, '11. State');
-        $pdf->SetXY($top_left_x + 89, $start_y + 65.0875 + $small_height);
+        $pdf->SetXY($top_left_x + 89, $start_y + 66.9875);
+        $pdf->Cell((127-88.9), $small_height, '12. State');
+        $pdf->SetXY($top_left_x + 89, $start_y + 66.9875 + $small_height);
         $text = '';
         if (isset($this->fields[11])) {
             $text .= $this->fields[11];
@@ -410,20 +533,15 @@ class GumTaxFormTemplate
         $pdf->Cell((127-88.9), $med_height, $text, 0, 0, 'C');
         $pdf->SetFont('Arial', '', 6);
 
-        $pdf->SetXY($top_left_x + 127, $start_y + 65.0875);
-        $pdf->Cell((165.1-127), $small_height, '12. State/Payer\'s state no.');
-        $pdf->SetXY($top_left_x + 127, $start_y + 65.0875 + $small_height);
-        $text = '';
-        if (isset($this->fields[12])) {
-            $text .= $this->fields[12];
-        }
-        $pdf->SetFont('Arial', '', 8);
-        $pdf->Cell((165.1-127), $med_height, $text, 0, 0, 'C');
+        $pdf->SetXY($top_left_x + 127, $start_y + 66.9875);
+        $pdf->Cell((165.1-127), $small_height, '13. State identification no.');
+        $pdf->SetXY($top_left_x + 127, $start_y + 66.9875 + $small_height);
+        $pdf->Cell((165.1-127), $med_height, $this->my_state_id, 0, 0, 'C');
         $pdf->SetFont('Arial', '', 6);
 
-        $pdf->SetXY($top_left_x + 165.1, $start_y + 65.0875);
-        $pdf->Cell(203.2-165.1, $small_height, '13. State income withheld');
-        $pdf->SetXY($top_left_x + 165.1, $start_y + 65.0875 + $small_height);
+        $pdf->SetXY($top_left_x + 165.1, $start_y + 66.9875);
+        $pdf->Cell(203.2-165.1, $small_height, '14. State tax withheld');
+        $pdf->SetXY($top_left_x + 165.1, $start_y + 66.9875 + $small_height);
         $text = '';
         if (isset($this->fields[13])) {
             $text .= $this->fields[13];
@@ -440,7 +558,7 @@ class GumTaxFormTemplate
         $pdf->Cell(203.2-165.1, $med_height, 'For Recipient', 0, 0, 'R');
         $pdf->SetXY($top_left_x + 165.1, $start_y + 19.05 + 2*$med_height);
         $pdf->SetFont('Arial', '', 6);
-        $box_height = 65.0875 - (19.05 + 2*$med_height);
+        $box_height = 65.08749 - (19.05 + 2*$med_height);
         $text = 'This is important tax information related to interest income earned during ';
         $text .= $this->tax_year . ' that is being furnished to the Internal Revenue Service. If you are required to file a return, a negligence penalty or other sanction may be imposed on you if this income is taxable and the IRS determines that it has not been reported.';
         $pdf->MultiCell(203.2-165.1, $small_height, $text);
