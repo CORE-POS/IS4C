@@ -135,7 +135,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
             $name = $row['batch'] . ' Co-op Deals ' . $row['subbatch'];
             $ret .= sprintf('<tr>
                         <td><input type="hidden" name="upc[]" value="%s"/>%s
-                            <input type="hiden" name="mult[]" value="%d" />
+                            <input type="hidden" name="mult[]" value="%d" />
                         </td>
                         <td>%s</td>
                         <td>%s</td>
