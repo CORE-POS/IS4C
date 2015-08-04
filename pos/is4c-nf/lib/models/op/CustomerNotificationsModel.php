@@ -28,6 +28,8 @@ class CustomerNotificationsModel extends BasicModel
 {
 
     protected $name = "CustomerNotifications";
+    
+    protected $preferred_db = 'op';
 
     protected $columns = array(
     'customerNotificationID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
