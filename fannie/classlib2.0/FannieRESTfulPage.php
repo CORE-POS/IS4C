@@ -187,8 +187,9 @@ class FannieRESTfulPage extends FanniePage
     public function preprocess()
     {
         /*
-        $this->form = new COREPOS\common\mvc\FormValueContainer();
-        $this->routing_trait->setForm($this->form);
+        foreach ($this->__routes[] as $route) {
+            $this->routing_trait->addRoute($route);
+        }
         return $this->routing_trait->handler($this);
         */
 

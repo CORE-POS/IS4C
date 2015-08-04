@@ -114,7 +114,9 @@ class CoreRESTfulRouter
 
     public function addRoute($r)
     {
-        $this->__routes[] = $r;
+        if (!in_array($r, $this->__routes)) {
+            $this->__routes[] = $r;
+        }
     }
 
 
