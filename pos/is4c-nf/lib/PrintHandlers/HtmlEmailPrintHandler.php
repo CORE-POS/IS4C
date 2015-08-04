@@ -77,7 +77,7 @@ class HtmlEmailPrintHandler extends EmailPrintHandler
                     $table = false;
                 } elseif ($table) {
                     $message .= '<tr>';
-                    if (preg_match('/^(.*)(\d+\.\d\d)(.*)$/', $line, $matches)) {
+                    if (preg_match('/^(.*?)(-?\d+\.\d\d)(.*)$/', $line, $matches)) {
                         $message .= '<td>' . $matches[1] . '</td>';
                         $message .= '<td>' . $matches[2] . '</td>';
                         $message .= '<td>' . $matches[3] . '</td>';
