@@ -41,12 +41,12 @@ class GumIssueDividendPage extends FannieRESTfulPage
         $this->__routes[] = 'post<endDate><rate>';
         $this->__routes[] = 'post<confirmEndDate><confirmRate>';
         $this->__routes[] = 'get<done>';
-        $this->__routes[] = 'get<printFY>';
+        $this->__routes[] = 'post<printFY>';
 
         return parent::preprocess();
     }
 
-    function get_printFY_handler()
+    function post_printFY_handler()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_ROOT;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
@@ -58,6 +58,12 @@ class GumIssueDividendPage extends FannieRESTfulPage
         $pdf = new FPDF('P', 'mm', 'Letter');
         $pdf->SetMargins(6.35, 6.35, 6.35); // quarter-inch margins
         $pdf->SetAutoPageBreak(false);
+
+        $key = FormLib::get('key');
+        $privkey = false;
+        if ($key) {
+            $privkey = openssl_pkey_get_private($key);
+        }
 
         $map = new GumDividendPayoffMapModel($dbc);
         $bridge = GumLib::getSetting('posLayer');
@@ -121,6 +127,12 @@ class GumIssueDividendPage extends FannieRESTfulPage
                 $ssn = 'Unknown';
                 if ($this->taxid->load()) {
                     $ssn = 'xxx-xx-' . $this->taxid->maskedTaxIdentifier();
+                    if ($privkey) {
+                        $try = openssl_private_decrypt($this->taxid->encryptedTaxIdentifier(), $decrypted, $privkey);
+                        if ($try) {
+                            $ssn = $decrypted;
+                        }
+                    }
                 }
 
                 $form =  new GumTaxDividendFormTemplate($custdata, $meminfo, $ssn, date('Y'), array(1 => sprintf('%.2f',$ttl)));
@@ -133,7 +145,7 @@ class GumIssueDividendPage extends FannieRESTfulPage
                 $check->issueDate(date('Y-m-d H:i:s'));
                 $check->save();
 
-                $pdf->Image('img/new_letterhead.png', 10, 10, 38);
+                $pdf->Image('img/new_letterhead.png', 10, 10, 35);
 
                 if (!isset($pdf->fonts['gillsansmtpro-book'])) {
                     $pdf->AddFont('GillSansMTPro-Book', '', 'GillSansMTPro-Book.php');
@@ -359,7 +371,7 @@ class GumIssueDividendPage extends FannieRESTfulPage
         </table>
         </form>
         <hr />
-        <form method="get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+        <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
         <h3>Print Checks</h3>
         FY Ending: <select name="printFY">
         <?php
@@ -374,6 +386,7 @@ class GumIssueDividendPage extends FannieRESTfulPage
         }
         ?>
         </select>
+        <textarea rows="5" cols="20" name="key"></textarea>
         <input type="submit" name="print" value="Print Checks" />
         </form>
         <?php
