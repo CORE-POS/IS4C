@@ -31,6 +31,7 @@ class OutOfStockReport extends FannieReportPage
     protected $title = 'Out of Stock Report';
     protected $header = 'Out of Stock Report';
     public $description = '[Out of Stock Report] lists item that were ordered from vendors but not received';
+    public $report_set = 'Purchasing';
 
     protected $report_headers = array('Vendor', 'Order Date', 'Invoice#', 'SKU', 'UPC', 'Brand', 'Description', 'Qty Ordered', 'Number of Orders');
     protected $required_fields = array('date1', 'date2');
