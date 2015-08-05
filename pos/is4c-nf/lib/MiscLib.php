@@ -113,7 +113,7 @@ static public function pingport($host, $dbms)
     $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
     socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
     socket_set_block($sock);
-    $test = socket_connect($sock,$host,$port);
+    $test = @socket_connect($sock,$host,$port);
     socket_close($sock);
 
     return ($test ? 1 : 0);
