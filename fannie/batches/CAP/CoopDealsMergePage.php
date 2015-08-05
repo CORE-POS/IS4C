@@ -48,7 +48,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
         return parent::preprocess();
     }
 
-    public function post_upc_price_batchID_handler()
+    public function post_upc_price_batchID_mult_handler()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
