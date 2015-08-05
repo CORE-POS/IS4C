@@ -629,6 +629,34 @@ class HouseCoupon extends SpecialUPC
                 $row = $transDB->fetch_row($valR);
                 $value = $row[0] * $infoW["discountValue"];
                 break;
+            case "%E": // better percent discount applies to specified department only
+                Database::getsubtotals();
+                $coupon_discount = (int)($infoW['discountValue']*100);
+                if ($coupon_discount <= CoreLocal::get('percentDiscount')) {
+                    // customer's discount is better than coupon discount; skip
+                    // applying coupon
+                    $value = 0;
+                } else {
+                    // coupon discount is better than customer's discount
+                    // apply coupon & exclude those items from customer's discount
+                    $valQ = "select sum(total) from localtemptrans as l 
+                        left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
+                        as h on l.department = h.upc
+                        where h.coupID = " . $coupID . "
+                        and h.type in ('BOTH', 'DISCOUNT')";
+                    $valR = $transDB->query($valQ);
+                    $row = $transDB->fetch_row($valR);
+                    $value = $row[0] * $infoW["discountValue"];                 
+
+                    $clearQ = "
+                        UPDATE localtemptrans AS l 
+                            INNER JOIN " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems AS h ON l.department = h.upc
+                        SET l.discountable=0
+                        WHERE h.coupID = " . $coupID . "
+                            AND h.type IN ('BOTH', 'DISCOUNT')";
+                    $clearR = $transDB->query($clearR);
+                }
+                break;
             case 'PD': // modify customer percent discount
                    // rather than add line-item
                 $couponPD = $infoW['discountValue'] * 100;
