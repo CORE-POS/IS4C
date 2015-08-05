@@ -47,6 +47,13 @@ class ScheduledEmailSendTask extends FannieTask
                 sentToEmail=?
             WHERE scheduledEmailQueueID=?');
 
+        $failP = $dbc->prepare('
+            UPDATE ScheduledEmailQueue
+            SET sentDate=' . $dbc->now() . ',
+                sent=2,
+                sentToEmail=?
+            WHERE scheduledEmailQueueID=?');
+
         // find messages due to be sent
         $query = '
             SELECT scheduledEmailQueueID,
@@ -91,6 +98,8 @@ class ScheduledEmailSendTask extends FannieTask
 
             if (self::sendEmail($template, $email, $data)) {
                 $dbc->execute($sentP, array($email, $row['scheduledEmailQueueID']));
+            } else {
+                $dbc->execute($failP, array('error sending', $row['scheduledEmailQueueID']));
             }
         }
     }
@@ -116,7 +125,6 @@ class ScheduledEmailSendTask extends FannieTask
         $mail->FromName = $settings['ScheduledEmailFromName'];
         $mail->addReplyTo($settings['ScheduledEmailReplyTo']);
         $mail->addAddress($address);
-        $mail->addBCC('andy@wholefoods.coop');
         $mail->Subject = $template->subject();
         if ($template->hasHTML()) {
             $mail->isHTML(true);
