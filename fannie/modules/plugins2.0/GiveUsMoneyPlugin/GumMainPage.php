@@ -347,33 +347,33 @@ class GumMainPage extends FannieRESTfulPage
 
         $ret .= '<form id="piForm" action="GumMainPage.php" method="post">';
         $ret .= '<input type="hidden" name="id" value="' . $this->id . '" />';
-        $ret .= '<table cellspacing="0" cellpadding="4" class="bordered">';
+        $ret .= '<table cellspacing="0" cellpadding="4" class="table bordered">';
         $ret .= '<tr>';
         $ret .= '<td class="blackfield">### Owner Financing ###</td>';
-        $ret .= '<td>First Name: <input type="text" name="fn" value="' . $this->custdata->FirstName() . '" /></td>';
-        $ret .= '<td>City: <input type="text" name="city" value="' . $this->meminfo->city() . '" /></td>';
+        $ret .= '<td>First Name: <input type="text" name="fn" class="form-control" value="' . $this->custdata->FirstName() . '" /></td>';
+        $ret .= '<td>City: <input type="text" name="city" class="form-control" value="' . $this->meminfo->city() . '" /></td>';
         $ret .= '<td class="greenfield"><a href="GumSearchPage.php">Home</a></td>';
         $ret .= '</tr>';
         $ret .= '<tr>';
-        $ret .= '<td>Primary Ph: <input type="text" name="ph1" value="' . $this->meminfo->phone() . '" /></td>';
-        $ret .= '<td>Last Name: <input type="text" name="ln" value="' . $this->custdata->LastName() . '" /></td>';
-        $ret .= '<td>State: <input type="text" name="state" value="' . $this->meminfo->state() . '" /></td>';
+        $ret .= '<td>Primary Ph: <input type="text" name="ph1" class="form-control" value="' . $this->meminfo->phone() . '" /></td>';
+        $ret .= '<td>Last Name: <input type="text" name="ln" class="form-control" value="' . $this->custdata->LastName() . '" /></td>';
+        $ret .= '<td>State: <input type="text" class="form-control" name="state" value="' . $this->meminfo->state() . '" /></td>';
         $ret .= '<td class="greenfield"><a href="" onclick="$(\'#piForm\').submit(); return false;">Save</a></td>';
         $ret .= '</tr>';
         $ret .= '<tr>';
-        $ret .= '<td>Alternate Ph: <input type="text" name="ph2" value="' . $this->meminfo->email_2() . '" /></td>';
+        $ret .= '<td>Alternate Ph: <input class="form-control" type="text" name="ph2" value="' . $this->meminfo->email_2() . '" /></td>';
         $addr = $this->meminfo->street();
         $addr2 = '';
         if (strstr($addr, "\n")) {
             list($addr, $addr2) = explode("\n", $addr, 2);
         }
-        $ret .= '<td>Address: <input type="text" name="addr1" value="' . $addr . '" /></td>';
-        $ret .= '<td>Zip: <input type="text" name="zip" value="' . $this->meminfo->zip() . '" /></td>';
-        $ret .= '<td><input type="text" size="5" id="nextMem" placeholder="Mem#" /></td>';
+        $ret .= '<td>Address: <input type="text" class="form-control" name="addr1" value="' . $addr . '" /></td>';
+        $ret .= '<td>Zip: <input type="text" name="zip" class="form-control" value="' . $this->meminfo->zip() . '" /></td>';
+        $ret .= '<td><input type="text" size="5" id="nextMem" class="form-control" placeholder="Mem#" /></td>';
         $ret .= '</tr>';
         $ret .= '<tr class="bborder">';
-        $ret .= '<td>Email: <input type="text" name="email" value="' . $this->meminfo->email_1() . '" /></td>';
-        $ret .= '<td>Address: <input type="text" name="addr2" value="' . $addr2 . '" /></td>';
+        $ret .= '<td>Email: <input type="text" class="form-control" name="email" value="' . $this->meminfo->email_1() . '" /></td>';
+        $ret .= '<td>Address: <input type="text" class="form-control" name="addr2" value="' . $addr2 . '" /></td>';
         $ssn = 'Unknown';
         if ($this->taxid->load()) {
             $ssn = 'Ends In ' . $this->taxid->maskedTaxIdentifier();
@@ -396,7 +396,7 @@ class GumMainPage extends FannieRESTfulPage
         $ret .= '<hr />';
 
         $ret .= '<form id="loanform" action="GumMainPage.php" method="post">';
-        $ret .= '<table cellspacing="0" cellpadding="4" class="bordered">';
+        $ret .= '<table cellspacing="0" cellpadding="4" class="table bordered">';
         $ret .= '<tr><td>Loan Amount</td><td>Term</td><td>Loan Date</td><td>Interest Rate</td><td>Maturity Date</td>';
         $ret .= '<td class="blackfield" colspan="4">###### Owner Loans ######</td></tr>';
         foreach($this->loans->find('loanDate') as $obj) {
@@ -423,8 +423,14 @@ class GumMainPage extends FannieRESTfulPage
             );
         }
         $ret .= '<tr class="bborder">';
-        $ret .= '<td>$<input type="text" size="8" id="principal" name="principal" onchange="getDefaultRate(this.value);" /></td>';
-        $ret .= '<td><select name="term" id="term" onchange="getEndDate();">';
+        $ret .= '<td>
+            <div class="input-group">
+            <span class="input-group-addon">$</span>
+            <input type="text" size="8" id="principal" name="principal" 
+                class="form-control" onchange="getDefaultRate(this.value);" />
+            </div>
+            </td>';
+        $ret .= '<td><select name="term" id="term" class="form-control" onchange="getEndDate();">';
         $default_term = false;
         foreach($this->terms->find('termInMonths') as $obj) {
             $ret .= sprintf('<option value="%d">%d Years</option>',
@@ -435,16 +441,21 @@ class GumMainPage extends FannieRESTfulPage
         }
         $ret .= '</select></td>';
         $ldate = date('Y-m-d');
-        $ret .= '<td><input type="text" size="10" id="loandate" name="loandate" 
+        $ret .= '<td><input type="text" class="form-control" size="10" id="loandate" name="loandate" 
                         onchange="getEndDate();" value="'.$ldate.'" /></td>';
         $this->add_onload_command("\$('#loandate').datepicker();\n");
-        $ret .= '<td><input type="text" size="4" id="rate" name="rate" onchange="validateRate();" />%
+        $ret .= '<td>
+                <div class="input-group">
+                <input type="text" size="4" id="rate" name="rate" onchange="validateRate();" class="form-control" />
+                <span class="input-group-addon">%</span>
+                </div>
                 <input type="hidden" id="maxrate" value="0" />
                 </td>';
         $enddate = date('Y-m-d', mktime(0, 0, 0, date('n')+$default_term, date('j'), date('Y')));
         $ret .= '<td id="enddate">' . $enddate . '</td>';
         $ret .= '<input type="hidden" name="id" value="' . $this->id . '" />';
-        $ret .= '<td colspan="3"><input type="button" onclick="confirmNewLoan(); return false;" value="Create New Loan" /></td>';
+        $ret .= '<td colspan="3"><button type="button" class="btn btn-default" 
+            onclick="confirmNewLoan(); return false;" value="Create New Loan">Create New Loan</button></td>';
         $ret .= '</tr>';
         $ret .= '</table>';
         $ret .= '</form>';
@@ -453,7 +464,7 @@ class GumMainPage extends FannieRESTfulPage
 
         $ret .= '<form id="equityForm" method="post" >';
         $ret .= '<input type="hidden" name="id" value="' . $this->id . '" />';
-        $ret .= '<table class="bordered" cellspacing="0" cellpadding="4">';
+        $ret .= '<table class="table bordered" cellspacing="0" cellpadding="4">';
         $bal_num = 0;
         $bal_amount = 0;
         foreach($this->equity->find() as $obj) {
@@ -464,7 +475,7 @@ class GumMainPage extends FannieRESTfulPage
         $ret .= '<td>' . $bal_num . '</td>';
         $ret .= '<td>' . number_format($bal_amount, 2) . '</td>';
         $ret .= '<td colspan="2" class="blackfield"># Class C Stock #</td>';
-        $ret .= '<td><input type="text" size="6" placeholder="Shares" name="shares" onchange="updateEquityTotal(this.value); "/></td>';
+        $ret .= '<td><input type="text" size="6" placeholder="Shares" name="shares" class="form-control" onchange="updateEquityTotal(this.value); "/></td>';
         $ret .= '<td id="totalForShares">$0.00</td>';
         $ret .= '<input type="hidden" id="equityType" name="type" value="" />';
         // html is idiotic and treats the enter key differently
