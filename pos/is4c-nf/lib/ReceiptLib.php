@@ -1308,12 +1308,7 @@ static public function code39($barcode)
 static public function emailReceiptMod()
 {
     if (class_exists('PHPMailer') && CoreLocal::get('emailReceiptHtml') != '' && class_exists(CoreLocal::get('emailReceiptHtml'))) {
-        // temporary measure to limit roll out
-        if (CoreLocal::get('memberID') == 10000 || strstr(CoreState::getCustomerPref('email_receipt'), 'wholefoods.coop')) {
-            return 'HtmlEmailPrintHandler';
-        } else {
-            return 'EmailPrintHandler';
-        }
+        return 'HtmlEmailPrintHandler';
     } else {
         return 'EmailPrintHandler';
     }
