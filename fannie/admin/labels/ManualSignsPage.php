@@ -94,7 +94,8 @@ class ManualSignsPage extends FannieRESTfulPage
                 $pts = explode('\\', $m);
                 $name = $pts[count($pts)-1];
             }
-            $ret .= sprintf('<option value="%s">%s</option>',
+            $ret .= sprintf('<option %s value="%s">%s</option>',
+                        ($m == $this->config->get('DEFAULT_SIGNAGE') ? 'selected' : ''),
                         $m, $name);
         }
         $ret .= '</select>';

@@ -268,6 +268,11 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         }
         echo installSelectField('FANNIE_TAG_DATA_SOURCE', $FANNIE_TAG_DATA_SOURCE, $source);
         ?>
+        <label>Default Signage Layout</label>
+        <?php
+        $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
+        echo installSelectField('FANNIE_DEFAULT_SIGNAGE', $FANNIE_DEFAULT_SIGNAGE, $mods);
+        ?>
 
         <hr />
         <h4 class="install">Service Scale Integration</h4>
