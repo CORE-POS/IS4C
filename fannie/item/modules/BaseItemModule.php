@@ -991,8 +991,8 @@ HTML;
                 $model->wicable(0);
             }
             $discount_setting = FormLib::get('discount');
-            if (isset($discount[$i])) {
-                switch ($discount_setting) {
+            if (isset($discount_setting[$i])) {
+                switch ($discount_setting[$i]) {
                     case 0:
                         $model->discount(0);
                         $model->line_item_discountable(0);
