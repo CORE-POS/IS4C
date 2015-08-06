@@ -89,7 +89,7 @@ class QuickKeyLauncher extends Parser
             include(dirname(__FILE__) . '/quickkeys/keys/' . $number . '.php');
         }
         if (count($my_keys) == 0) {
-            return DisplayLib::boxMsg('Menu not found');
+            return DisplayLib::boxMsg('Menu not found', '', false, DisplayLib::standardClearButton());
         }
 
         $clearButton = false;
