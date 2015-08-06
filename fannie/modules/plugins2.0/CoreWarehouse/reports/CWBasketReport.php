@@ -178,6 +178,26 @@ class CWBasketReport extends FannieReportPage
         return $report;
     }
 
+    public function calculate_footers($data)
+    {
+        $sums = array();
+        $count = 0;
+        foreach ($data as $row) {
+            for ($i=1; $i<count($row); $i++) {
+                if (!isset($sums[$i])) {
+                    $sums[$i] = 0;
+                }
+                $sums[$i] += $row[$i];
+            }
+            $count++;
+        }
+        $ret = array('Averages');
+        foreach ($sums as $s) {
+            $ret[] = sprintf('%.2f', $s/$count);
+        }
+        return $ret;
+    }
+
     public function form_content()
     {
         $ret = '<form method="get">'
