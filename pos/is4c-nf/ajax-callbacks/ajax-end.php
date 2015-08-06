@@ -80,7 +80,7 @@ if (strlen($receiptType) > 0) {
     }
     $PRINT_OBJ = new $print_class();
 
-    $email = CoreState::getCustomerPref('email_receipt');
+    $email = trim(CoreState::getCustomerPref('email_receipt'));
     $customerEmail = filter_var($email, FILTER_VALIDATE_EMAIL);
     $doEmail = ($customerEmail !== false) ? true : false;
     
