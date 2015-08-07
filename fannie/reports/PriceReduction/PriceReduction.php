@@ -109,31 +109,12 @@ class SaleItemsByDate extends FannieReportPage
             $desiredPrice = $cost[$i] / (1 - $deptMarg[$i]);
             $srp[] = $desiredPrice; //instead of $desiredPrice, we should have "$srp[] = $rounder->round($desiredPrice);" 
             $devPrice[] = $price[$i] - $srp[$i];
-}
-    
+        }
     
         return $info;
     }
 
-    public function form_content()
-    {
-        $this->add_onload_command('$(\'#startdate\').focus()');
-        return '<form method="post" action="SaleItemsByDate.php" id="form1">
-            <label>Enter Batch Start Date and Select a Department</label>
-            <input type="text" name="startdate" value="" class="form-control"
-                required id="startdate" />
-            <select form="form1" name="dept">
-                <option value="1">All Departments</option>
-                <option value="2">Bulk</option>
-                <option value="3">Cool</option>
-                <option value="4">Grocery</option>
-                <option value="5">Wellness</option>
-            </select>
-            <p>
-            <button type="submit" class="btn btn-default">Get Report</button>
-            </p>
-            </form>';
-    }
+    
 
     public function helpContent()
     {
