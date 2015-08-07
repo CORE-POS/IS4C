@@ -32,7 +32,7 @@ class SaleItemsByDate extends FannieReportPage
     public $report_set = 'Reports';
     public $themed = true;
 
-    protected $report_headers = array('Brand', 'Description', 'Sale Price', 'UPC');
+    protected $report_headers = array('Brand', 'Description', 'Size', 'Sale Price', 'UPC');
     protected $sort_direction = 1;
     protected $title = "Fannie : Sale Items by Start-Date Report";
     protected $header = "List Sale Items by Batch Date Report";
@@ -50,6 +50,7 @@ class SaleItemsByDate extends FannieReportPage
         $upc = array();
         $salePrice = array();
         $owner = array();
+        $size = array();
         
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -80,7 +81,9 @@ class SaleItemsByDate extends FannieReportPage
     
         //procure upcs from 'batchList' --this is going to pull every upc of every item that is going on sale
         for ($i = 0; $i < count($batchID); $i++){
-            $query = "select upc, salePrice from batchList where batchID='$batchID[$i]';";   
+            $query = "SELECT upc, salePrice 
+            FROM batchList where batchID='$batchID[$i]';
+            ";   
             $result = $dbc->query($query);
                 while ($row = $dbc->fetch_row($result)) {
                     $upc[] = $row['upc'];
@@ -91,13 +94,16 @@ class SaleItemsByDate extends FannieReportPage
 
         //procure description of items based on 'upc's, and return their descriptions, organized by department and brand 
         for ($i = 0; $i < count($upc); $i++){
-            $query = "select upc, brand, description from products where upc='$upc[$i]' order by 'brand';"; 
+            $query = "SELECT p.upc, u.brand, u.description, p.size from products as p
+                    LEFT JOIN productUser as u ON p.upc=u.upc
+                    WHERE p.upc = '$upc[$i]' order by 'brand';"; 
             $result = $dbc->query($query);
                 while ($row = $dbc->fetch_row($result)) {
                     $item[$i][0] = $row['brand'];
                     $item[$i][1] = $row['description'];
-                    $item[$i][2] = $salePrice[$i];
-                    $item[$i][3] = $row['upc'];
+                    $item[$i][2] = $row['size'];
+                    $item[$i][3] = $salePrice[$i];
+                    $item[$i][4] = $row['upc'];
                     
                 }
         }
