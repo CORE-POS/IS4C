@@ -80,7 +80,9 @@ class SaleItemsByDate extends FannieReportPage
     
         //procure upcs from 'batchList' --this is going to pull every upc of every item that is going on sale
         for ($i = 0; $i < count($batchID); $i++){
-            $query = "select upc, salePrice from batchList where batchID='$batchID[$i]';";   
+            $query = "SELECT upc, salePrice 
+            FROM batchList where batchID='$batchID[$i]';
+            ";   
             $result = $dbc->query($query);
                 while ($row = $dbc->fetch_row($result)) {
                     $upc[] = $row['upc'];
@@ -91,7 +93,9 @@ class SaleItemsByDate extends FannieReportPage
 
         //procure description of items based on 'upc's, and return their descriptions, organized by department and brand 
         for ($i = 0; $i < count($upc); $i++){
-            $query = "select upc, brand, description from products where upc='$upc[$i]' order by 'brand';"; 
+            $query = "SELECT p.upc, u.brand, u.description from products as p
+                    LEFT JOIN productUser as u ON p.upc=u.upc
+                    WHERE p.upc = '$upc[$i]' order by 'brand';"; 
             $result = $dbc->query($query);
                 while ($row = $dbc->fetch_row($result)) {
                     $item[$i][0] = $row['brand'];
