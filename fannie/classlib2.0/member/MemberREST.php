@@ -479,7 +479,7 @@ class MemberREST
                     if ($col_name == 'cardNo') continue;
                     if ($col_name == 'modified') continue;
 
-                    if ($col_name == 'customerID' isset($c_json[$col_name]) && $c_json[$col_name] != 0) {
+                    if ($col_name == 'customerID' && isset($c_json[$col_name]) && $c_json[$col_name] != 0) {
                         $deletable++;
                     } elseif ($col_name == 'firstName' && isset($c_json[$col_name]) && $c_json[$col_name] == '') {
                         $deletable++;
