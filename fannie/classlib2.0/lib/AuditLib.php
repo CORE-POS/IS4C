@@ -211,7 +211,7 @@ class AuditLib
                 continue;
             }
             $addr = $model->emailAddress();
-            if (!strstr($emails, $addr)) {
+            if ($addr && !strstr($emails, $addr)) {
                 if ($emails !== '') {
                     $emails .= ', ';
                 }
