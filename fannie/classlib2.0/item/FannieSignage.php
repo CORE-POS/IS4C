@@ -168,7 +168,7 @@ class FannieSignage
                         LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                         LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                      WHERE l.batchID IN (' . $ids . ')
-                     ORDER BY p.department, p.upc';
+                     ORDER BY brand, description';
         } else {
             $ids = '';
             foreach ($this->items as $id) {
@@ -448,9 +448,13 @@ class FannieSignage
             $ret .= sprintf('<tr>
                             <td><a href="%sitem/ItemEditorPage.php?searchupc=%s" target="_edit%s">%s</a></td>
                             <input type="hidden" name="update_upc[]" value="%d" />
-                            <td><input class="FannieSignageField form-control" type="text" 
+                            <td>
+                                <span class="collapse">%s</span>
+                                <input class="FannieSignageField form-control" type="text" 
                                 name="update_brand[]" value="%s" /></td>
-                            <td><input class="FannieSignageField form-control" type="text" 
+                            <td>
+                                <span class="collapse">%s</span>
+                                <input class="FannieSignageField form-control" type="text" 
                                 name="update_desc[]" value="%s" /></td>
                             <td>%.2f</td>
                             <td><input class="FannieSignageField form-control" type="text" 
@@ -461,6 +465,8 @@ class FannieSignage
                             $item['upc'], $item['upc'], $item['upc'],
                             $item['upc'],
                             $item['brand'],
+                            $item['brand'],
+                            str_replace('"', '&quot;', $item['description']),
                             str_replace('"', '&quot;', $item['description']),
                             $item['normal_price'],
                             $item['originName'],

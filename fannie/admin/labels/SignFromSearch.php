@@ -268,6 +268,8 @@ class SignFromSearch extends FannieRESTfulPage
         });');
 
         $ret .= '</form>';
+        $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter();");
 
         return $ret;
     }
