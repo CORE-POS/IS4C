@@ -301,18 +301,13 @@ class UPC extends Parser
          *   if the flag is not set, display a warning dialog noting this
          *   and allowing the sale to be confirmed or canceled
          */
-        if ($row["inUse"] == 0){
-            if (CoreLocal::get('msgrepeat') == 0){
-                CoreLocal::set("strEntered",$row["upc"]);
-                CoreLocal::set("boxMsg","<b>".$row["upc"]." - ".$row["description"]."</b>
-                    <br />"._("Item not for sale"));
-                CoreLocal::set('boxMsgButtons', array(
-                    'Continue Sale [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-                ));
-                $ret['main_frame'] = $my_url."gui-modules/boxMsg2.php?quiet=1";
-                return $ret;
-            }
+        if ($row["inUse"] == 0) {
+            TransRecord::addLogRecord(array(
+                'upc' => $row['upc'],
+                'description' => $row['description'],
+                'department' => $row['department'],
+                'charflag' => 'IU',
+            ));
         }
 
         /**
