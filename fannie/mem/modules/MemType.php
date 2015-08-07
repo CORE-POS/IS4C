@@ -128,6 +128,12 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
                 ),
             ),
         );
+        $account = self::getAccount();
+        foreach ($account['customers'] as $c) {
+            if ($c['accountHolder']) {
+                $json['customers'][0]['customerID'] = $c['customerID'];
+            }
+        }
 
         // Get any special values for this Member Type.
         $mt = $dbc->tableDefinition('memtype');

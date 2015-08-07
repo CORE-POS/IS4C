@@ -82,15 +82,9 @@ class InstallMembershipPage extends \COREPOS\Fannie\API\InstallPage {
     }
     */
 
-    function body_content(){
-        global $FANNIE_URL,
-            $FANNIE_EQUITY_DEPARTMENTS,
-            $FANNIE_AR_DEPARTMENTS,
-            $FANNIE_NAMES_PER_MEM,
-            $FANNIE_MEMBER_MODULES,
-            $FANNIE_MEMBER_UPC_PREFIX,
-            $FANNIE_SERVER,$FANNIE_SERVER_DBMS, $FANNIE_TRANS_DB,$FANNIE_SERVER_USER, $FANNIE_SERVER_PW;
-
+    function body_content()
+    {
+        include('../config.php');
         ob_start();
 
         echo showInstallTabs("Members");
@@ -205,6 +199,19 @@ is selected.
     Last Initial
 </a>
 </div>
+<hr />
+<h4 class="install">Data Mode</h4>
+<div>
+Choose how customer data is stored in the database. Using "classic" is highly
+recommended in production environments. The "new" mode should not be without
+a developer and/or database administrator on hand to help with potential bugs.
+<?php
+$modes = array(
+    1 => 'New',
+    0 => 'Classic',
+);
+echo installSelectField('FANNIE_CUST_SCHEMA', $FANNIE_CUST_SCHEMA, $modes, 0);
+?>
 <hr />
 <p>
     <button type="submit" class="btn btn-default">Save Configuration</button>

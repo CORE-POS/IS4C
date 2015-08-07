@@ -48,8 +48,9 @@ class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
                     maxlength="30" value="%s" class="form-control" />
                 <input name="HouseholdMembers_ln[]" placeholder="Last"
                     maxlength="30" value="%s" class="form-control" />
+                <input name="HouseholdMembers_ID[] type="hidden" value="%d" />
                 </div>',
-                $infoW['firstName'],$infoW['lastName']);
+                $infoW['firstName'],$infoW['lastName'],$infoW['customerID']);
             $count++;
         }
 
@@ -61,6 +62,7 @@ class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
                     maxlength="30" value="" class="form-control" />
                 <input name="HouseholdMembers_ln[]" placeholder="Last"
                     maxlength="30" value="" class="form-control" />
+                <input name="HouseholdMembers_ID[]" type="hidden" value="0" />
                 </div>');
             $count++;
         }
@@ -100,8 +102,10 @@ class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
 
         $fns = FormLib::get_form_value('HouseholdMembers_fn',array());
         $lns = FormLib::get_form_value('HouseholdMembers_ln',array());
+        $ids = FormLib::get('HouseholdMembers_ID', array());
         for ($i=0; $i<count($lns); $i++) {
             $json['customers'][] = array(
+                'customerID' => $ids[$i],
                 'firstName' => $fns[$i],
                 'lastName' => $lns[$i],
                 'accountHolder' => 0,

@@ -123,6 +123,7 @@ class PIMemberPage extends PIKillerPage {
         $account_holder = array('accountHolder' => 1);
         $account_holder['firstName'] = FormLib::get('FirstName');
         $account_holder['lastName'] = FormLib::get('LastName');
+        $account_holder['customerID'] = FormLib::get('customerID');
         $json['addressFirstLine'] = FormLib::get('address1');
         $json['addressSecondLine'] = FormLib::get('address2');
         $json['city'] = FormLib::get('city');
@@ -178,12 +179,15 @@ class PIMemberPage extends PIKillerPage {
                 'last'=>FormLib::get_form_value('ln'));
         $fn = FormLib::get_form_value('fn');
         $ln = FormLib::get_form_value('ln');
+        $hhID = FormLib::get('hhID');
         for ($i=0;$i<count($fn);$i++) {
             $set = array(
                 'first' => isset($fn[$i]) ? $fn[$i] : '',
-                'last' => isset($ln[$i]) ? $ln[$i] : ''
+                'last' => isset($ln[$i]) ? $ln[$i] : '',
+                'id' => isset($hhID[$i]) ? $hhID[$i] : '',
             );
             $json['customers'][] = array(
+                'customerID' => $hhID[$i],
                 'accountHolder' => 0,
                 'firstName' => $set['first'],
                 'lastName' => $set['last'],
@@ -275,6 +279,7 @@ class PIMemberPage extends PIKillerPage {
         echo "</tr>";
 
         echo "<tr>";
+        echo '<input type="hidden" name="customerID" value="' . $this->primary_customer['customerID'] . '" />';
         echo "<td class=\"yellowbg\">First Name: </td>";
         echo '<td>'.$this->text_or_field('FirstName',$this->primary_customer['firstName']).'</td>';
         echo "<td class=\"yellowbg\">Last Name: </td>";
@@ -383,6 +388,7 @@ class PIMemberPage extends PIKillerPage {
             echo '<td class="yellowbg">'.($i+1).'</td>';
             echo '<td>'.$this->text_or_field('fn[]',$c['firstName']).'</td>';
             echo '<td>'.$this->text_or_field('ln[]',$c['lastName']).'</td>';
+            echo '<input type="hidden" name="hhID[]" value="' . $c['customerID'] . '" />';
             $i++;
         }
         for ($i; $i<3; $i++) {
@@ -390,6 +396,7 @@ class PIMemberPage extends PIKillerPage {
             echo '<td class="yellowbg">'.($i+1).'</td>';
             echo '<td>'.$this->text_or_field('fn[]','').'</td>';
             echo '<td>'.$this->text_or_field('ln[]','').'</td>';
+            echo '<input type="hidden" name="hhID[]" value="0" />';
 
         }
         echo '</tr>';

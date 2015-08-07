@@ -84,12 +84,24 @@ class AR extends \COREPOS\Fannie\API\member\MemberModule
             'customers' => array(),
         );
         $account = self::getAccount();
+        $json['customerAccountID'] = $account['customerAccountID'];
         foreach ($account['customers'] as $c) {
             if ($c['accountHolder']) {
                 $json['customers'][] = array(
                     'customerID' => $c['customerID'],
+                    'customerAccountID' => $account['customerAccountID'],
                     'chargeAllowed' => ($limit == 0 ? 0 : 1),
                     'accountHolder' => 1,
+                    'cardNo' => $memNum,
+                );
+            } elseif ($c['customerID']) {
+                // unnecessary to specify all customers in old schema
+                // new schema will only update correctly if IDs exist
+                $json['customers'][] = array(
+                    'customerID' => $c['customerID'],
+                    'cardNo' => $memNum,
+                    'chargeAllowed' => ($limit == 0 ? 0 : 1),
+                    'accountHolder' => 0,
                 );
             }
         }
