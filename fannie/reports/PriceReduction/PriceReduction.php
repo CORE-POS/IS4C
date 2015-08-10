@@ -36,12 +36,6 @@ class PriceReduction extends FannieReportPage
     protected $sort_direction = 1;
     protected $title = "Fannie : Price Reduction Report";
     protected $header = "Price Reduction Report";
-    //protected $required_fields = array('startdate');
-
-    public function report_description_content()
-    {
-        return array('Items located in system: ');
-    }
 
     public function fetch_report_data()
     {        
@@ -101,13 +95,15 @@ class PriceReduction extends FannieReportPage
         echo mysql_errno() . ": " . mysql_error(). "<br>";
         echo count($upc) . " items found<br>";
 
+        $rounder = new \COREPOS\Fannie\API\item\PriceRounder();
         // Calculations
         for($i=0; $i<count($upc); $i++) {
             $marg[] = ($price[$i] - $cost[$i]) / $price[$i];
             $devMarg[] = $marg[$i] - $deptMarg[$i];
             $desiredPrice = 0;
             $desiredPrice = $cost[$i] / (1 - $deptMarg[$i]);
-            $srp[] = $desiredPrice; //instead of $desiredPrice, we should have "$srp[] = $rounder->round($desiredPrice);" 
+            $srp[] = $rounder->round($desiredPrice);
+            
             $devPrice[] = $price[$i] - $srp[$i];
         }
     
