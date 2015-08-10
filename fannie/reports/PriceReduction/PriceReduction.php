@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class SaleItemsByDate extends FannieReportPage 
+class PriceReduction extends FannieReportPage 
 {
     public $description = '[Price Reduction Report] lists items above desired margin';
     public $report_set = 'Reports';
@@ -119,8 +119,9 @@ class SaleItemsByDate extends FannieReportPage
     public function helpContent()
     {
         return '<p>
-            View all Accounts Receivable (AR) activity for a given member.
-            Enter the desired member number.
+            This report reviews every item currently in use on sales floor 
+            and checks the actual margin against our desired margin in order
+            to locate items that may be reduced in price.
             </p>';
     }
 
