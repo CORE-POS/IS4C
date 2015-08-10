@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class SaleItemsByDate extends FannieReportPage 
+class PriceReduction extends FannieReportPage 
 {
     public $description = '[Sale Items/Batch Start Date] lists all sales items with a given start date';
     public $report_set = 'Reports';
