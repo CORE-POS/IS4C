@@ -103,15 +103,12 @@ class PriceReduction extends FannieReportPage
             $desiredPrice = 0;
             $desiredPrice = $cost[$i] / (1 - $deptMarg[$i]);
             $srp[] = $rounder->round($desiredPrice);
-            
             $devPrice[] = $price[$i] - $srp[$i];
         }
     
         return $info;
     }
-
     
-
     public function helpContent()
     {
         return '<p>
