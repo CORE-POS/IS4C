@@ -102,6 +102,12 @@ class ItemMarginModule extends ItemModule
     public function avgSales($upc)
     {
         $config = FannieConfig::factory();
+        $dbc = FannieDB::get($config->get('OP_DB'));
+        $prodP = $dbc->prepare('SELECT auto_par FROM products WHERE upc=?');
+        $avg = $dbc->getValue($prodP, array($upc));
+        if ($avg) {
+            return $avg;
+        }
         $dbc = FannieDB::get($config->get('ARCHIVE_DB'));
         $avg = 0.0;
         if ($dbc->tableExists('productWeeklyLastQuarter')) {
