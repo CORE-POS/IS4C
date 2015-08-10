@@ -59,13 +59,14 @@ class PriceReduction extends FannieReportPage
         $uMarg = array();       //UNFI margin
         $dMarg = array();       //Department margin
         $roundSRP = array();
-
+        
         // Connect
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         // Create List of Items
         $query = "SELECT P.upc, P.description, P.cost, P.normal_price, P.department, 
-                P.modified, V.vendorDept, V.vendorID, D.margin as uMarg, D.vendorID, D.deptID, S.margin as dMarg, sum(L.quantity)
+                P.modified, V.vendorDept, V.vendorID, D.margin as uMarg, D.vendorID, 
+                D.deptID, S.margin as dMarg, sum(L.quantity)
                 FROM is4c_op.products as P
                 LEFT JOIN vendorItems as V ON P.upc = V.upc
                 LEFT JOIN vendorDepartments as D ON (D.vendorID = V.vendorID) and (D.deptID = V.vendorDept) 
@@ -78,23 +79,91 @@ class PriceReduction extends FannieReportPage
                 ;";
         $result = $dbc->query($query);
         while ($row = $dbc->fetch_row($result)) {
-            $upc[] = $row['upc'];
-            $desc[] = $row['description'];
-            $cost[] = $row['cost'];
-            $price[] = $row['normal_price'];
-            $dept[] = $row['department'];
-            
-            $uMarg = $row['uMarg'];
-            $dMarg = $row['dMarg'];
-            if($uMarg < 0.01) { 
-                $deptMarg[] = $dMarg;
-            } else {
-                $deptMarg[] = $uMarg;
+        if ($_POST['dept'] == 1) {
+            if ( ($row['department'] >= 1 && $row['department'] <= 25) || ($row['department'] >= 239 && $row['department'] <= 259) ) {
+                $upc[] = $row['upc'];
+                $desc[] = $row['description'];
+                $cost[] = $row['cost'];
+                $price[] = $row['normal_price'];
+                $dept[] = $row['department'];
+                $uMarg = $row['uMarg'];
+                $dMarg = $row['dMarg'];
+                if($uMarg < 0.01) { 
+                    $deptMarg[] = $dMarg;
+                } else {
+                    $deptMarg[] = $uMarg;
+                }
             }
-            // add movement (sales) of items
+        } else if ($_POST['dept'] == 2) {
+            if ($row['department'] >= 1 && $row['department'] <= 25) {
+                $upc[] = $row['upc'];
+                $desc[] = $row['description'];
+                $cost[] = $row['cost'];
+                $price[] = $row['normal_price'];
+                $dept[] = $row['department'];
+                
+                $uMarg = $row['uMarg'];
+                $dMarg = $row['dMarg'];
+                if($uMarg < 0.01) { 
+                    $deptMarg[] = $dMarg;
+                } else {
+                    $deptMarg[] = $uMarg;
+                }
+            } 
+        } else if ($_POST['dept'] == 3) {
+            if ($row['department'] >= 151 && $row['department'] <= 191) {
+                $upc[] = $row['upc'];
+                $desc[] = $row['description'];
+                $cost[] = $row['cost'];
+                $price[] = $row['normal_price'];
+                $dept[] = $row['department'];
+                
+                $uMarg = $row['uMarg'];
+                $dMarg = $row['dMarg'];
+                if($uMarg < 0.01) { 
+                    $deptMarg[] = $dMarg;
+                } else {
+                    $deptMarg[] = $uMarg;
+                }
+            }
+        } else if ($_POST['dept'] == 4) {
+            if ($row['department'] >= 86 && $row['department'] <= 128) {
+                $upc[] = $row['upc'];
+                $desc[] = $row['description'];
+                $cost[] = $row['cost'];
+                $price[] = $row['normal_price'];
+                $dept[] = $row['department'];
+                
+                $uMarg = $row['uMarg'];
+                $dMarg = $row['dMarg'];
+                if($uMarg < 0.01) { 
+                    $deptMarg[] = $dMarg;
+                } else {
+                    $deptMarg[] = $uMarg;
+                }
+            }
+        } else if ($_POST['dept'] == 5) {
+            if ($row['department'] >= 240 && $row['department'] <= 250) {
+                $upc[] = $row['upc'];
+                $desc[] = $row['description'];
+                $cost[] = $row['cost'];
+                $price[] = $row['normal_price'];
+                $dept[] = $row['department'];
+                
+                $uMarg = $row['uMarg'];
+                $dMarg = $row['dMarg'];
+                if($uMarg < 0.01) { 
+                    $deptMarg[] = $dMarg;
+                } else {
+                    $deptMarg[] = $uMarg;
+                }
+            }
+        }
+        
+            
+            
 
         }
-        echo mysql_errno() . ": " . mysql_error(). "<br>";
         echo count($upc) . " items found<br>";
 
         $rounder = new \COREPOS\Fannie\API\item\PriceRounder();
@@ -125,6 +194,7 @@ class PriceReduction extends FannieReportPage
                 );
             }
         }
+        
         return $item;
     }
     
@@ -136,36 +206,11 @@ class PriceReduction extends FannieReportPage
             <input type="text" name="degree" value="" class="form-control"
                 required id="degree" />
             <select form="form1" name="dept">
-                <option value="0.03">0.03</option>
-                    <option value="0.01">0.01</option>
-                        <option value="0.02">0.02</option>
-                        <option value="0.03">0.03</option>
-                        <option value="0.04">0.04</option>
-                        <option value="0.05">0.05</option>
-                        <option value="0.06">0.06</option>
-                        <option value="0.07">0.07</option>
-                        <option value="0.08">0.08</option>
-                        <option value="0.09">0.09</option>
-                        <option value="0.1">0.1</option>
-                        <option value="0.11">0.11</option>
-                        <option value="0.12">0.12</option>
-                        <option value="0.13">0.13</option>
-                        <option value="0.14">0.14</option>
-                        <option value="0.15">0.15</option>
-                        <option value="0.16">0.16</option>
-                        <option value="0.17">0.17</option>
-                        <option value="0.18">0.18</option>
-                        <option value="0.19">0.19</option>
-                        <option value="0.2">0.2</option>
-                        <option value="0.21">0.21</option>
-                        <option value="0.22">0.22</option>
-                        <option value="0.23">0.23</option>
-                        <option value="0.24">0.24</option>
-                        <option value="0.25">0.25</option>
-                        <option value="0.26">0.26</option>
-                        <option value="0.27">0.27</option>
-                        <option value="0.28">0.28</option>
-                        <option value="0.29">0.29</option>
+                <option value="1">Bulk</option>
+                <option value="2">Cool</option>
+                <option value="3">Grocery</option>
+                <option value="4">Wellness</option>                
+                <option value="5">General Merch</option>                
             </select>
             <p>
             <button type="submit" class="btn btn-default">Get Report</button>
