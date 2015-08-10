@@ -119,6 +119,10 @@ class UIGLib
                         $pluInfo = $dbc->fetch_row($pluCheck);
                         $model->internalUPC($pluInfo['upc']);
                     }
+                    if ($model->salesCode() == '') {
+                        $code = $model->guessCode();
+                        $model->salesCode($code);
+                    }
 
                     $model->save();
                 }
