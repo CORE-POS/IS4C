@@ -32,32 +32,33 @@ class PriceReduction extends FannieReportPage
     public $report_set = 'Reports';
     public $themed = true;
 
-    protected $report_headers = array('UPC', 'Description', 'Cost', 'Price', 'actMarg', '+/- Marg', 'SRP', '+/-:Price');
+    protected $report_headers = array('UPC', 'Description', 'Cost', 'Price', 'actMarg', '+/- Marg', 'SRP', 'RoundSRP', '+/-:Price');
     protected $sort_direction = 1;
     protected $title = "Fannie : Price Reduction Report";
     protected $header = "Price Reduction Report";
+    protected $required_fields = array('degree');
 
     public function fetch_report_data()
     {        
         $count = 0;
-        $info = array(    
-            $upc = array(),
-            $desc = array(),   
-            $cost = array(), 
-            $price = array(), 
-            $marg = array(), 
-            $var = array(),
-            $srp = array(),
-            $movement = array(),
-            $dept = array(),
-            $deptID = array(),
-            $vendor = array(),
-            $deptMarg = array(),    //The Margin We're Using
-            $devMarg = array(),
-            $devPrice = array(),
-            $uMarg = array(),       //UNFI margin
-            $dMarg = array(),       //Department margin
-        );       
+        $item = array();       
+        $upc = array(),
+        $desc = array(),   
+        $cost = array(), 
+        $price = array(), 
+        $marg = array(), 
+        $var = array(),
+        $srp = array(),
+        $movement = array(),
+        $dept = array(),
+        $deptID = array(),
+        $vendor = array(),
+        $deptMarg = array(),    //The Margin We're Using
+        $devMarg = array(),
+        $devPrice = array(),
+        $uMarg = array(),       //UNFI margin
+        $dMarg = array(),       //Department margin
+        $roundSRP = array();
 
         // Connect
         global $FANNIE_OP_DB, $FANNIE_URL;
@@ -106,7 +107,64 @@ class PriceReduction extends FannieReportPage
             $devPrice[] = $price[$i] - $srp[$i];
         }
     
+        for ($i = 0; $i < count($upc); $i++){
+            if( ($upc[$i] != NULL) && ($srp[$i] > 0) && ($devPrice[$i] > 0) && ($devPrice[$i] >= $_POST['degree']) ) {
+                $item[$i][0] = $upc[$i];
+                $item[$i][1] = $cost[$i];
+                $item[$i][2] = $price[$i];
+                $item[$i][3] = $marg[$i];
+                $item[$i][4] = $devMarg[$i];
+                $item[$i][5] = $srp[$i];
+                $item[$i][6] = $roundSRP[$i];
+                $item[$i][7] = $devPrice[$i];
+            }
+        }
         return $info;
+    }
+    
+    public function form_content()
+    {
+        $this->add_onload_command('$(\'#startdate\').focus()');
+        return '<form method="post" action="PriceRounder.php" id="form1">
+            <label>Select %/degree to check margins to</label>
+            <input type="text" name="degree" value="" class="form-control"
+                required id="degree" />
+            <select form="form1" name="dept">
+                <option value="0.03">0.03</option>
+                    <option value="0.01">0.01</option>
+                        <option value="0.02">0.02</option>
+                        <option value="0.03">0.03</option>
+                        <option value="0.04">0.04</option>
+                        <option value="0.05">0.05</option>
+                        <option value="0.06">0.06</option>
+                        <option value="0.07">0.07</option>
+                        <option value="0.08">0.08</option>
+                        <option value="0.09">0.09</option>
+                        <option value="0.1">0.1</option>
+                        <option value="0.11">0.11</option>
+                        <option value="0.12">0.12</option>
+                        <option value="0.13">0.13</option>
+                        <option value="0.14">0.14</option>
+                        <option value="0.15">0.15</option>
+                        <option value="0.16">0.16</option>
+                        <option value="0.17">0.17</option>
+                        <option value="0.18">0.18</option>
+                        <option value="0.19">0.19</option>
+                        <option value="0.2">0.2</option>
+                        <option value="0.21">0.21</option>
+                        <option value="0.22">0.22</option>
+                        <option value="0.23">0.23</option>
+                        <option value="0.24">0.24</option>
+                        <option value="0.25">0.25</option>
+                        <option value="0.26">0.26</option>
+                        <option value="0.27">0.27</option>
+                        <option value="0.28">0.28</option>
+                        <option value="0.29">0.29</option>
+            </select>
+            <p>
+            <button type="submit" class="btn btn-default">Get Report</button>
+            </p>
+            </form>';
     }
     
     public function helpContent()
