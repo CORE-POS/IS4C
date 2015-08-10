@@ -90,11 +90,13 @@ class UnitBreakdownPage extends FannieRESTfulPage
                 // update cost in products table, too
                 $product->reset();
                 $product->upc($obj->upc());
-                if ($product->load() && $product->default_vendor_id() == $this->id) {
-                    $product->cost($original->cost());
-                    $product->save();
-                    $original->description($product->description());
-                    $original->save();
+                foreach ($product->find('store_id') as $p) {
+                    if ($p->load() && $p->default_vendor_id() == $this->id) {
+                        $p->cost($original->cost());
+                        $p->save();
+                        $original->description($p->description());
+                        $original->save();
+                    }
                 }
             } else {
                 $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'success', 'Error saving vendor SKU #" . $obj->sku() . "');\n");

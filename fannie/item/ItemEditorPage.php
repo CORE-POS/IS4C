@@ -37,6 +37,41 @@ class ItemEditorPage extends FanniePage
     public $themed = true;
     protected $enable_linea = true;
 
+    public function readinessCheck()
+    {
+        if ($this->config->get('STORE_MODE') != 'HQ') {
+            return true;
+        } else {
+            if ($this->config->get('STORE_ID') === '') {
+                $this->error_msg = 'In HQ Mode store must have an ID!';
+                return false;
+            } elseif (!is_numeric($this->config->get('STORE_ID'))) {
+                $this->error_msg = 'Invalid store ID: ' . $this->config->get('STORE_ID');
+                return false;
+            } else {
+                $this->connection->selectDB($this->config->get('OP_DB'));
+                $p = $this->connection->prepare('
+                    SELECT storeID
+                    FROM Stores
+                    WHERE storeID=?');
+                $r = $this->connection->execute($p, array($this->config->get('STORE_ID')));
+                if ($r === false || $this->connection->numRows($r) == 0) {
+                    $this->error_msg = 'No record exists for this store';
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    public function errorContent()
+    {
+        return '<div class="alert alert-danger">'
+            . $this->error_msg . '</div>'
+            . '<p><a href="../install/InstallStoresPage.php">Adjust Store Settings</a></p>';
+    }
+
     function preprocess()
     {
         $FANNIE_PRODUCT_MODULES = $this->config->get('PRODUCT_MODULES');
@@ -169,6 +204,7 @@ class ItemEditorPage extends FanniePage
         $upc = FormLib::get_form_value('searchupc');
         $numType = FormLib::get_form_value('ntype','UPC');
         $inUseFlag = FormLib::get('inUse', false);
+        $store_id = $this->config->get('STORE_ID');
 
         $query = "";
         $args = array();
@@ -179,8 +215,10 @@ class ItemEditorPage extends FanniePage
                         FROM products as p inner join 
                         vendorItems as v ON p.upc=v.upc 
                         left join prodExtra as x on p.upc=x.upc 
-                        WHERE v.sku LIKE ?";
+                        WHERE v.sku LIKE ?
+                            AND p.store_id=? ";
                     $args[] = '%'.$upc;
+                    $args[] = $store_id;
                     if (!$inUseFlag) {
                         $query .= ' AND inUse=1 ';
                     }
@@ -190,8 +228,10 @@ class ItemEditorPage extends FanniePage
                         FROM products as p left join 
                         prodExtra as x on p.upc=x.upc 
                         WHERE p.upc like ?
+                            AND p.store_id=?
                         ORDER BY p.upc";
                     $args[] = '%'.$upc.'%';
+                    $args[] = $store_id;
                     if (!$inUseFlag) {
                         $query .= ' AND inUse=1 ';
                     }
@@ -203,20 +243,24 @@ class ItemEditorPage extends FanniePage
                         FROM products as p left join 
                         prodExtra as x on p.upc=x.upc 
                         WHERE p.upc = ?
+                            AND p.store_id=?
                         ORDER BY p.description";
                     $args[] = $upc;
+                    $args[] = $store_id;
                     break;
             }
         } else {
             $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
                 FROM products AS p LEFT JOIN 
                 prodExtra AS x ON p.upc=x.upc
-                WHERE description LIKE ? ";
+                WHERE description LIKE ? 
+                    AND p.store_id=? ";
             if (!$inUseFlag) {
                 $query .= ' AND inUse=1 ';
             }
             $query .= " ORDER BY description";
             $args[] = '%'.$upc.'%';    
+            $args[] = $store_id;
         }
 
         $query = $dbc->addSelectLimit($query, 500);
@@ -461,16 +505,16 @@ class ItemEditorPage extends FanniePage
         $ret .= '</div>'; // close fluid-container
 
         if (isset($shown['BaseItemModule'])) {
-            $this->add_onload_command("bindAutoComplete('#brand-field', '$ws', 'brand');\n");
-            $this->add_onload_command("bindAutoComplete('#vendor_field', '$ws', 'vendor');\n");
-            $this->add_onload_command("bindAutoComplete('#unit-of-measure', '$ws', 'unit');\n");
-            $this->add_onload_command("\$('#unit-of-measure').autocomplete('option', 'minLength', 1);\n");
+            $this->add_onload_command("bindAutoComplete('.brand-field', '$ws', 'brand');\n");
+            $this->add_onload_command("bindAutoComplete('input.vendor_field', '$ws', 'vendor');\n");
+            $this->add_onload_command("bindAutoComplete('.unit-of-measure', '$ws', 'unit');\n");
+            $this->add_onload_command("\$('.unit-of-measure').autocomplete('option', 'minLength', 1);\n");
             $this->add_onload_command("addVendorDialog();\n");
         }
 
         if (isset($shown['ItemMarginModule'])) {
-            $this->add_onload_command('$(\'#price\').change(updateMarginMod)');
-            $this->add_onload_command('$(\'#cost\').change(updateMarginMod)');
+            $this->add_onload_command('$(\'.price-input\').change(updateMarginMod)');
+            $this->add_onload_command('$(\'.cost-input\').change(updateMarginMod)');
         }
 
         if (isset($shown['ProdUserModule'])) {
@@ -480,7 +524,12 @@ class ItemEditorPage extends FanniePage
         if (isset($shown['LikeCodeModule'])) {
             $this->add_onload_command("addLcDialog();\n");
         }
-        $this->add_onload_command('$(\'.chosen-select\').chosen();');
+        /**
+          Chosen initializes incorrectly if the <select> is not displayed
+          Reapplying each time a new Bootstrap tab is shown fixes this
+        */
+        $this->add_onload_command('$(\'.chosen-select:visible\').chosen();');
+        $this->add_onload_command('$(\'#store-tabs a\').on(\'shown.bs.tab\', function(){$(\'.chosen-select:visible\').chosen();});');
 
         $ret .= '</form>';
 
@@ -491,7 +540,7 @@ class ItemEditorPage extends FanniePage
         }
 
         $this->add_onload_command('$(\'.fancyboxLink\').fancybox({\'width\':\'85%;\',\'titlePosition\':\'inside\'});');
-        $this->add_onload_command('$(\'#price\').focus();');
+        $this->add_onload_command('$(\'.price-input:visible:first\').focus();');
         
         return $ret;
     }

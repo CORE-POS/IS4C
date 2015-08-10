@@ -103,8 +103,8 @@ class BatchReport extends FannieReportPage
                 p.description, 
                 SUM(d.total) AS sales, "
                 . DTrans::sumQuantity('d') . " AS quantity 
-            FROM $dlog AS d 
-                INNER JOIN products AS p ON d.upc = p.upc
+            FROM $dlog AS d "
+                . DTrans::joinProducts('d', 'p', 'INNER') . "
             WHERE d.tdate BETWEEN ? AND ?
                 AND d.upc IN ($in_sql)
             GROUP BY d.upc, 

@@ -80,6 +80,10 @@ class ScaleItemsReport extends FannieReportPage
             $args[] = '%' . $search . '%';
             $args[] = '%' . $search . '%';
         }
+        if ($this->config->get('STORE_ID')) {
+            $query .= ' AND p.store_id=? ';
+            $args[] = $this->config->get('STORE_ID');
+        }
         $query .= ' ORDER BY s.plu';
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);

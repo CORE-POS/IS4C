@@ -612,7 +612,12 @@ class FannieReportPage extends FanniePage
             case 'html':
                 if ($this->multi_counter == 1) {
                     if (!$this->new_tablesorter) {
-                        $this->add_css_file($url . 'src/javascript/tablesorter/themes/blue/style.css');
+                        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                            // windows has trouble with symlinks
+                            $this->add_css_file($url . 'src/javascript/tablesorter-2.0.5b/themes/blue/style.css');
+                        } else {
+                            $this->add_css_file($url . 'src/javascript/tablesorter/themes/blue/style.css');
+                        }
                     } else {
                         $this->add_css_file($url . 'src/javascript/tablesorter-2.22.1/css/theme.bootstrap.css');
                     }
@@ -759,10 +764,20 @@ class FannieReportPage extends FanniePage
                     $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
                 }
                 if (!$this->no_jquery && !$this->new_tablesorter) {
-                    $this->add_script($url . 'src/javascript/jquery.js');
+                    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                        // windows has trouble with symlinks
+                        $this->add_script($url . 'src/javascript/jquery-1.11.1/jquery-1.11.1.min.js');
+                    } else {
+                        $this->add_script($url . 'src/javascript/jquery.js');
+                    }
                 }
                 if (!$this->new_tablesorter) {
-                    $this->add_script($url . 'src/javascript/tablesorter/jquery.tablesorter.js');
+                    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                        // windows has trouble with symlinks
+                        $this->add_script($url . 'src/javascript/tablesorter-2.0.5b/jquery.tablesorter.js');
+                    } else {
+                        $this->add_script($url . 'src/javascript/tablesorter/jquery.tablesorter.js');
+                    }
                 } else {
                     $this->add_script($url . 'src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.js');
                     $this->add_script($url . 'src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');

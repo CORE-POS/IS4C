@@ -28,6 +28,8 @@ class IgnoredBarcodesModel extends BasicModel
 {
 
     protected $name = "IgnoredBarcodes";
+    
+    protected $preferred_db = 'op';
 
     protected $columns = array(
     'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),

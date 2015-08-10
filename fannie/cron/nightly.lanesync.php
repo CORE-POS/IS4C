@@ -37,7 +37,7 @@
    nightly.lanesync.php
 
    Send the following tables to all lanes:
-    products, custdata, memberCards, employees, departments, custReceiptMessage
+    products, custdata, memberCards, employees, departments, custReceiptMessage, CustomerNotifications
    Optionally also send:
     productUser
 
@@ -118,6 +118,11 @@ curl_close($memcards);
 
 // 15May13 EL This table doesn't seem to exist on lanes.
 $crm = curl_init($url."?tablename=&othertable=custReceiptMessage");
+curl_setopt($crm, CURLOPT_RETURNTRANSFER, True);
+$r1 = curl_exec($crm);
+curl_close($crm);
+
+$crm = curl_init($url."?tablename=&othertable=CustomerNotifications");
 curl_setopt($crm, CURLOPT_RETURNTRANSFER, True);
 $r1 = curl_exec($crm);
 curl_close($crm);

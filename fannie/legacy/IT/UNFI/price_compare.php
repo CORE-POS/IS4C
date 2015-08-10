@@ -30,7 +30,8 @@ $UNFI_ALL_QUERY = "
     INNER JOIN products as p ON v.upc=p.upc
     LEFT JOIN prodExtra AS x ON p.upc=x.upc
     where 
-    v.vendorID=1";
+    v.vendorID=1
+    AND p.store_id=1";
 
 if (isset($_GET['action'])){
     $out = $_GET['action']."`";
@@ -42,6 +43,7 @@ if (isset($_GET['action'])){
         $model = new ProductsModel($sql);
         $model->upc($upc);
         $model->normal_price($price);
+        $model->store_id(1);
         $model->save();
         $model->pushToLanes();
 
@@ -92,6 +94,7 @@ if (isset($_GET['action'])){
         if ($val == 1) {
             $prod = new ProductsModel($sql);
             $prod->upc($upc);
+            $prod->store_id(1);
             $prod->load();
             // make sure another rule isn't overwritten with a generic one
             if ($prod->price_rule_id() == 0) {
@@ -101,6 +104,7 @@ if (isset($_GET['action'])){
         } else {
             $prod = new ProductsModel($sql);
             $prod->upc($upc);
+            $prod->store_id(1);
             $prod->load();
             $ruleID = 0;
             // remove the rule but save its ID

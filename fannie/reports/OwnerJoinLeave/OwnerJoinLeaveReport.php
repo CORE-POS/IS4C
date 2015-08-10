@@ -202,14 +202,14 @@ class OwnerJoinLeaveReport extends FannieReportPage
             array_unshift($data, array(
                 'Yearly Budget',
                 null,
-                '1,000',
-                '$72,000.00',
+                '1,500',
+                '$95,000.00',
                 null,
             ));
         }
 
         array_unshift($data, array(
-            'Year to Date: ' . date('Y-m-d', strtotime($args[0])) . ' - ' . date('Y-m-d', strtotime($args[1])),
+            'Year to Date: ' . date('Y-m-d', strtotime($ytdArgs[0])) . ' - ' . date('Y-m-d', strtotime($ytdArgs[1])),
             null,
             $ytd['numOwners'],
             '$' . number_format($ytd['stock'], 2),
@@ -217,7 +217,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
         ));
 
         array_unshift($data, array(
-            'Current Report: ' . date('Y-m-d', strtotime($ytdArgs[0])) . ' - ' . date('Y-m-d', strtotime($ytdArgs[1])),
+            'Current Report: ' . date('Y-m-d', strtotime($args[0])) . ' - ' . date('Y-m-d', strtotime($args[1])),
             null,
             $totals['new'],
             '$' . number_format($totals['newStock'], 2),
@@ -353,7 +353,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                     LEFT JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance AS e ON n.cardno=e.memnum
                 WHERE note LIKE \'%FUNDS REQ%\'
                     AND stamp >= ?
-                    AND e.payments < 100
+                    AND e.payments <= 100
                 GROUP BY cardno
                 ORDER BY cardno');
             $detailP = $dbc->prepare('

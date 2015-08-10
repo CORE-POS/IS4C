@@ -27,7 +27,12 @@ $dbc = FannieDB::get($FANNIE_OP_DB);
 <style type="text/css">
 a { color:blue; }
 </style>
+<link rel="stylesheet" type="text/css" href="<?php echo $FANNIE_URL; ?>src/javascript/jquery-ui.css">
 <script type="text/javascript" src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js">
+</script>
+<script type="text/javascript" src="<?php echo $FANNIE_URL; ?>src/javascript/jquery-ui.js">
+</script>
+<script type="text/javascript" src="<?php echo $FANNIE_URL; ?>item/autocomplete.js">
 </script>
 <script type="text/javascript">
 function setItem(upc){
@@ -40,8 +45,10 @@ function setOwner(cardno){
     window.close();
 }
 $(document).ready(function(){
-    if ($('#q').length != 0)
+    if ($('#q').length != 0) {
+        bindAutoComplete('#q', '../ws/', 'item');
         $('#q').focus();
+    }
 });
 </script>
 <?php
@@ -58,9 +65,9 @@ if (isset($_REQUEST['q'])){
     echo '<input type="submit" onclick="window.close();" value="Close" />';
 
     echo '<div id="one" style="display:block;">';
-    $itemP = $dbc->prepare_statement("SELECT upc,description FROM products WHERE description LIKE ?
+    $itemP = $dbc->prepare_statement("SELECT upc,description FROM products WHERE description LIKE ? OR upc=?
         ORDER BY description");
-    $itemR = $dbc->exec_statement($itemP,array('%'.$_REQUEST['q'].'%'));
+    $itemR = $dbc->exec_statement($itemP,array('%'.$_REQUEST['q'].'%', $_REQUEST['q']));
     if ($dbc->num_rows($itemR) == 0)
         echo 'No matching items';
     else {

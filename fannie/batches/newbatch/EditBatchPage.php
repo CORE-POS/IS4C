@@ -75,6 +75,7 @@ class EditBatchPage extends FannieRESTfulPage
         $this->__routes[] = 'post<id><upc><swap>';
         $this->__routes[] = 'post<id><qualifiers><discount>';
         $this->__routes[] = 'post<id><trim>';
+        $this->__routes[] = 'post<id><storeID>';
 
         return parent::preprocess();
     }
@@ -247,6 +248,7 @@ class EditBatchPage extends FannieRESTfulPage
             $model->upc($upc);
             $model->batchID($id);
             $model->salePrice($price);
+            $model->groupSalePrice($price);
             $model->quantity($qty);
             $model->pricemethod(0);
             $model->save();
@@ -292,7 +294,9 @@ class EditBatchPage extends FannieRESTfulPage
                 left join prodExtra as x on l.upc=x.upc
                 left join vendorItems as v on l.upc=v.upc AND p.default_vendor_id=v.vendorID
                 left join vendors as z on p.default_vendor_id=z.vendorID
-            where batchID=? ORDER BY l.upc");
+            where batchID=? 
+                AND p.store_id=1 
+            ORDER BY l.upc");
         $selR = $dbc->exec_statement($selQ,array($bid));
         $upc = "";
         $insP = $dbc->prepare_statement("INSERT INTO batchBarcodes
@@ -403,6 +407,7 @@ class EditBatchPage extends FannieRESTfulPage
         $model->upc($this->upc);
         $model->batchID($this->id);
         $model->salePrice($this->price);
+        $model->groupSalePrice($this->price);
         $model->quantity($this->qty);
         // quantity functions as a per-transaction limit
         // when pricemethod=0
@@ -445,11 +450,13 @@ class EditBatchPage extends FannieRESTfulPage
             // take the item off sale if this batch is currently on sale
             $product = new ProductsModel($dbc);
             $product->upc($upc);
-            $product->discounttype(0);
-            $product->special_price(0);
-            $product->start_date(0);
-            $product->end_date(0);
-            $unsaleR = $product->save();
+            foreach ($product->find('store_id') as $obj) {
+                $obj->discounttype(0);
+                $obj->special_price(0);
+                $obj->start_date(0);
+                $obj->end_date(0);
+                $unsaleR = $obj->save();
+            }
 
             if ($unsaleR === false) {
                 $json['error'] = 1;
@@ -465,11 +472,13 @@ class EditBatchPage extends FannieRESTfulPage
             foreach ($upcLike->find() as $u) {
                 $product = new ProductsModel($dbc);
                 $product->upc($u->upc());
-                $product->discounttype(0);
-                $product->special_price(0);
-                $product->start_date(0);
-                $product->end_date(0);
-                $unsaleR = $product->save();
+                foreach ($product->find('store_id') as $p) {
+                    $p->discounttype(0);
+                    $p->special_price(0);
+                    $p->start_date(0);
+                    $p->end_date(0);
+                    $unsaleR = $p->save();
+                }
             }
 
             if ($unsaleR === false) {
@@ -573,7 +582,8 @@ class EditBatchPage extends FannieRESTfulPage
             FROM batchList AS b
                 INNER JOIN products AS p ON b.upc=p.upc
             WHERE b.batchID=?
-                AND b.salePrice=p.normal_price';
+                AND b.salePrice=p.normal_price
+            GROUP BY b.upc';
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, array($this->id));
 
@@ -585,6 +595,31 @@ class EditBatchPage extends FannieRESTfulPage
             $dbc->execute($delP, array($this->id, $w['upc']));
         }
         $ret['display'] = $this->showBatchDisplay($this->id);
+        echo json_encode($ret);
+
+        return false;
+    }
+
+    public function post_id_storeID_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->OP_DB);
+        $ret = array('error'=>0, 'display'=>'');
+
+        $map = new StoreBatchMapModel($dbc);
+        $map->storeID($this->storeID);
+        $map->batchID($this->id);
+        if ($map->load()) {
+            $deleted = $map->delete();
+            if (!$deleted) {
+                $ret['error'] = 'Error removing store mapping';
+            }
+        } else {
+            $saved = $map->save();
+            if (!$saved) {
+                $ret['error'] = 'Error saving store mapping';
+            }
+        }
         echo json_encode($ret);
 
         return false;
@@ -759,8 +794,11 @@ class EditBatchPage extends FannieRESTfulPage
         $dtype = $model->discounttype();
         $start = strtotime($model->startDate());
         $end = strtotime($model->endDate()) + (60*60*24);
+        $typeModel = new BatchTypeModel($dbc);
+        $typeModel->batchTypeID($type);
+        $typeModel->load();
 
-        if ($this->config->get('COOP_ID') == 'WFC_Duluth' && $type == 10) {
+        if ($typeModel->editorUI() == 2) {
             return $this->showPairedBatchDisplay($id,$name);
         }
 
@@ -793,7 +831,7 @@ class EditBatchPage extends FannieRESTfulPage
                 y.shelf,
                 p.brand
             FROM batchList AS b 
-                LEFT JOIN products AS p ON b.upc = p.upc 
+                LEFT JOIN products AS p ON b.upc = p.upc AND p.store_id=1
                 LEFT JOIN likeCodes AS l ON b.upc = CONCAT('LC',CONVERT(l.likeCode,CHAR))
                 LEFT JOIN batchCutPaste AS c ON b.upc=c.upc AND b.batchID=c.batchID
                 LEFT JOIN prodPhysicalLocation AS y ON b.upc=y.upc
@@ -848,7 +886,26 @@ class EditBatchPage extends FannieRESTfulPage
         $row = $dbc->fetch_row($res);
         $cp = $row[0];
         
-        $ret = "<span class=\"newBatchBlack\"><b>Batch name</b>: $name</span><br />";
+        $ret = "<span class=\"newBatchBlack\"><b>Batch name</b>: $name</span> | ";
+        $ret .= '<b>Sale Dates</b>: ' 
+            . date('Y-m-d', strtotime($model->startDate())) 
+            . ' - ' 
+            . date('Y-m-d', strtotime($model->endDate())) . '<br />';
+        if ($this->config->get('STORE_MODE') === 'HQ') {
+            $stores = new StoresModel($dbc);
+            $mapP = $dbc->prepare('SELECT storeID FROM StoreBatchMap WHERE storeID=? AND batchID=?');
+            foreach ($stores->find('storeID') as $s) {
+                $mapR = $dbc->execute($mapP, array($s->storeID(), $id));
+                $checked = ($mapR && $dbc->numRows($mapR)) ? 'checked' : '';
+                $ret .= sprintf('<label>
+                    <input type="checkbox" onchange="toggleStore(%d, %d);" %s />
+                    %s
+                    </label> | ',
+                    $s->storeID(), $id,
+                    $checked, $s->description());
+            }
+            $ret .= '<br />';
+        }
         $ret .= "<a href=\"BatchListPage.php\">Back to batch list</a> | ";
         $ret .= sprintf('<input type="hidden" id="batch-discount-type" value="%d" />', $model->discounttype());
         /**
@@ -929,6 +986,7 @@ class EditBatchPage extends FannieRESTfulPage
             FROM products AS p 
                 INNER JOIN upcLike AS u ON p.upc=u.upc
             WHERE u.likeCode = ? 
+                AND store_id=1
             ORDER BY p.upc DESC");
         
         $colors = array('#ffffff','#ffffcc');
@@ -1121,6 +1179,7 @@ class EditBatchPage extends FannieRESTfulPage
             FROM products AS p 
                 INNER JOIN upcLike AS u ON p.upc=u.upc
             WHERE u.likeCode = ? 
+                AND p.store_id=1
             ORDER BY p.upc DESC");
         
         $colors = array('#ffffff','#ffffcc');
@@ -1304,5 +1363,5 @@ class EditBatchPage extends FannieRESTfulPage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

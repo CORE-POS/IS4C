@@ -15,7 +15,7 @@
   <!-- Defined constants -->
   <ItemGroup>
     <MonoDefine Include="MONO" Condition=" '$(OS)' == 'Unix' " />
-
+    <RabbitDefine Include="CORE_RABBIT" Condition=" Exists('RabbitMQ.Client.dll') " />
     <JsonDefine Include="NEWTONSOFT_JSON" />
   </ItemGroup>
 
@@ -30,7 +30,7 @@
     <MagellanRef Include="UDPMsgBox.dll" />
     <MagellanRef Include="SPH.dll" />
     <MagellanRef Include="Newtonsoft.Json.dll" />
-    <MagellanRef Include="rabbitmq\RabbitMQ.Client.dll" Condition=" Exists('rabbimq\RabbitMQ.Client.dll') " />
+    <MagellanRef Include="RabbitMQ.Client.dll" Condition=" Exists('RabbitMQ.Client.dll') " />
     <MagellanRef Include="Discover.dll" />
 
     <MagellanTarget Include="DelegateFormLibrary" />
@@ -41,7 +41,7 @@
   </ItemGroup>
   <Target Name="Build" DependsOnTargets="@(MagellanTarget)">
     <Csc Sources="@(Magellan)" References="@(MagellanRef)" TargetType="exe" OutputAssembly="pos.exe" 
-        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" DefineConstants="@(JsonDefine)" />
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" DefineConstants="@(JsonDefine) @(RabbitDefine)" />
   </Target>
 
   <!-- Build DelegateForm.dll -->
@@ -114,6 +114,7 @@
     <SPH Include="SPH_IngenicoRBA_IP.cs" />
     <SPH Include="SPH_IngenicoRBA_USB.cs" />
     <SPH Include="SPH_Parallel_Writer.cs" />
+    <SPH Include="SPH_Datacap_IPTran.cs" />
     <SPH Include="SPH_Datacap_PDCX.cs" Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') " />
     <SPH Include="SPH_Datacap_EMVX.cs" 
         Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') And Exists('DSIEMVXLib.dll') AND Exists('AxDSIEMVXLib.dll') " />

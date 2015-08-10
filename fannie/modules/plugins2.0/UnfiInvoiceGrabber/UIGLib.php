@@ -59,7 +59,6 @@ class UIGLib
                 continue;
             }
 
-            echo "Processing invoice {$info['name']}\n";
             $fp = $za->getStream($info['name']);
             $header_info = array();
             $item_info = array();
@@ -119,6 +118,10 @@ class UIGLib
                     if ($dbc->num_rows($pluCheck) > 0) {
                         $pluInfo = $dbc->fetch_row($pluCheck);
                         $model->internalUPC($pluInfo['upc']);
+                    }
+                    if ($model->salesCode() == '') {
+                        $code = $model->guessCode();
+                        $model->salesCode($code);
                     }
 
                     $model->save();

@@ -82,15 +82,9 @@ class InstallMembershipPage extends \COREPOS\Fannie\API\InstallPage {
     }
     */
 
-    function body_content(){
-        global $FANNIE_URL,
-            $FANNIE_EQUITY_DEPARTMENTS,
-            $FANNIE_AR_DEPARTMENTS,
-            $FANNIE_NAMES_PER_MEM,
-            $FANNIE_MEMBER_MODULES,
-            $FANNIE_MEMBER_UPC_PREFIX,
-            $FANNIE_SERVER,$FANNIE_SERVER_DBMS, $FANNIE_TRANS_DB,$FANNIE_SERVER_USER, $FANNIE_SERVER_PW;
-
+    function body_content()
+    {
+        include('../config.php');
         ob_start();
 
         echo showInstallTabs("Members");
@@ -206,6 +200,19 @@ is selected.
 </a>
 </div>
 <hr />
+<h4 class="install">Data Mode</h4>
+<div>
+Choose how customer data is stored in the database. Using "classic" is highly
+recommended in production environments. The "new" mode should not be without
+a developer and/or database administrator on hand to help with potential bugs.
+<?php
+$modes = array(
+    1 => 'New',
+    0 => 'Classic',
+);
+echo installSelectField('FANNIE_CUST_SCHEMA', $FANNIE_CUST_SCHEMA, $modes, 0);
+?>
+<hr />
 <p>
     <button type="submit" class="btn btn-default">Save Configuration</button>
 </p>
@@ -232,27 +239,29 @@ else {
     // department definitions
     function recreate_views($con)
     {
-        $con->query("DROP VIEW ar_history_today",$FANNIE_TRANS_DB);
+        $db_name = $this->config->get('TRANS_DB');
+
+        $con->query("DROP VIEW ar_history_today",$db_name);
         $model = new ArHistoryTodayModel($con);
-        $model->createIfNeeded($this->config->get('TRANS_DB'));
+        $model->createIfNeeded($db_name);
 
-        $con->query("DROP VIEW ar_history_today_sum",$FANNIE_TRANS_DB);
+        $con->query("DROP VIEW ar_history_today_sum",$db_name);
         $model = new ArHistoryTodaySumModel($con);
-        $model->createIfNeeded($this->config->get('TRANS_DB'));
+        $model->createIfNeeded($db_name);
 
-        $con->query("DROP VIEW ar_live_balance",$FANNIE_TRANS_DB);
+        $con->query("DROP VIEW ar_live_balance",$db_name);
         $model = new ArLiveBalanceModel($con);
         $model->addExtraDB($this->config->get('OP_DB'));
-        $model->createIfNeeded($this->config->get('TRANS_DB'));
+        $model->createIfNeeded($db_name);
 
-        $con->query("DROP VIEW stockSumToday",$FANNIE_TRANS_DB);
+        $con->query("DROP VIEW stockSumToday",$db_name);
         $model = new StockSumTodayModel($con);
-        $model->createIfNeeded($this->config->get('TRANS_DB'));
+        $model->createIfNeeded($db_name);
 
-        $con->query("DROP VIEW equity_live_balance",$FANNIE_TRANS_DB);
+        $con->query("DROP VIEW equity_live_balance",$db_name);
         $model = new EquityLiveBalanceModel($con);
         $model->addExtraDB($this->config->get('OP_DB'));
-        $model->createIfNeeded($this->config->get('TRANS_DB'));
+        $model->createIfNeeded($db_name);
     }
 
 // InstallMembershipPage

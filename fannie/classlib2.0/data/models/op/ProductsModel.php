@@ -77,7 +77,7 @@ class ProductsModel extends BasicModel
     'subdept'=>array('type'=>'SMALLINT'),
     'deposit'=>array('type'=>'DOUBLE'),
     'local'=>array('type'=>'INT','default'=>0),
-    'store_id'=>array('type'=>'SMALLINT','default'=>0),
+    'store_id'=>array('type'=>'SMALLINT','default'=>1),
     'default_vendor_id'=>array('type'=>'INT','default'=>0),
     'current_origin_id'=>array('type'=>'INT','default'=>0),
     'auto_par'=>array('type'=>'DOUBLE','default'=>0),
@@ -89,6 +89,15 @@ class ProductsModel extends BasicModel
     protected $unique = array('upc');
 
     protected $normalize_lanes = true;
+
+    public function __construct($con)
+    {
+        // change uniqueness constraint in HQ mode
+        if (FannieConfig::config('STORE_MODE') == 'HQ') {
+            $this->unique[] = 'store_id';
+        }
+        parent::__construct($con);
+    }
 
     /**
       Standardization method to ensure shelf tag
@@ -314,6 +323,20 @@ it won\'t *do* anything.
         ';
     }
 
+    /**
+      Transition mechanism. Auto-append store_id value
+      if only a UPC has been specified.
+    */
+    public function load()
+    {
+        if (!isset($this->instance['store_id'])) {
+            $config = FannieConfig::factory(); 
+            $this->store_id($config->get('STORE_ID'));
+        }
+
+        return parent::load();
+    }
+
     public function save()
     {
         // using save() to update lane-side product records
@@ -342,6 +365,28 @@ it won\'t *do* anything.
         }
 
         return $try;
+    }
+
+    public function saveAllStores()
+    {
+        $current_store = $this->store_id();
+        if ($this->upc() == '') {
+            return false;
+        }
+
+        $stores = new StoresModel($dbc);
+        $ret = true;
+        foreach ($stores->find() as $store) {
+            $this->store_id($store->storeID());
+            if (!$this->save()) {
+                $ret = false;
+            }
+        }
+        if ($current_store) {
+            $this->store_id($current_store);
+        }
+
+        return $ret;
     }
 
     /**

@@ -94,6 +94,14 @@ class FannieRESTfulPage extends FanniePage
 
     protected $form;
 
+    protected $routing_trait;
+
+    public function __construct()
+    {
+        $this->routing_trait = new \COREPOS\common\ui\CoreRESTfulRouter();
+        parent::__construct();
+    }
+
     /**
       Extract paramaters from route definition
       @param $route string route definition
@@ -178,22 +186,42 @@ class FannieRESTfulPage extends FanniePage
 
     public function preprocess()
     {
+        /*
+        foreach ($this->__routes[] as $route) {
+            $this->routing_trait->addRoute($route);
+        }
+        return $this->routing_trait->handler($this);
+        */
+
         $this->form = new COREPOS\common\mvc\FormValueContainer();
         $this->readRoutes();
         $handler = $this->__route_stem.'Handler';
         $view = $this->__route_stem.'View';    
         $old_handler = $this->__route_stem.'_handler';
         $old_view = $this->__route_stem.'_view';    
+        $ret = true;
         if (method_exists($this, $handler)) {
-            return $this->$handler();
+            $ret = $this->$handler();
         } elseif (method_exists($this, $old_handler)) {
-            return $this->$old_handler();
+            $ret = $this->$old_handler();
         } elseif (method_exists($this, $view)) {
-            return true;
+            $ret = true;
         } elseif (method_exists($this, $old_view)) {
-            return true;
+            $ret = true;
         } else {
-            return $this->unknownRequestHandler();
+            $ret = $this->unknownRequestHandler();
+        }
+
+        if ($ret === true) {
+            return true;
+        } elseif ($ret === false) {
+            return false;
+        } elseif (is_string($ret)) {
+            header('Location: ' . $ret);
+            return false;
+        } else {
+            // dev error/bug?
+            return false;
         }
     }
 
@@ -212,6 +240,8 @@ class FannieRESTfulPage extends FanniePage
 
     public function bodyContent()
     {
+        //return $this->routing_trait->view($this);
+
         $func = $this->__route_stem.'View';
         $old_func = $this->__route_stem.'_view';
         if (method_exists($this, $func)) {

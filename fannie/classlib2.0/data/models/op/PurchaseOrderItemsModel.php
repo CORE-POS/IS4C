@@ -41,7 +41,8 @@ class PurchaseOrderItemsModel extends BasicModel
     'unitSize' => array('type'=>'VARCHAR(25)'),
     'brand' => array('type'=>'VARCHAR(50)'),
     'description' => array('type'=>'VARCHAR(50)'),
-    'internalUPC' => array('type'=>'VARCHAR(13)')
+    'internalUPC' => array('type'=>'VARCHAR(13)'),
+    'salesCode' => array('type'=>'INT'),
     );
 
     protected $preferred_db = 'op';
@@ -73,6 +74,59 @@ are simply copied from vendorItems. If the
 vendor discontinues a SKU or switches it to a
 different product, this record will still 
         ';
+    }
+
+    public function guessCode()
+    {
+        $dbc = $this->connection;
+
+        // case 1: item exists in products
+        $deptP = $dbc->prepare('
+            SELECT d.salesCode
+            FROM products AS p
+                INNER JOIN departments AS d ON p.department=d.dept_no
+            WHERE p.upc=?');
+        $deptR = $dbc->execute($deptP, array($this->internalUPC()));
+        if ($dbc->numRows($deptR)) {
+            $w = $dbc->fetchRow($deptR);
+            return $w['salesCode'];
+        }
+
+        $order = new PurchaseOrderModel($dbc);
+        $order->orderID($this->orderID());
+        $order->load();
+
+        // case 2: item is SKU-mapped but the order record
+        // does not reflect the internal PLU
+        $deptP = $dbc->prepare('
+            SELECT d.salesCode
+            FROM vendorSKUtoPLU AS v
+                INNER JOIN products AS p ON v.upc=p.upc
+                INNER JOIN departments AS d ON p.department=d.dept_no
+            WHERE v.sku=?
+                AND v.vendorID=?');
+        $deptR = $dbc->execute($deptP, array($this->sku(), $order->vendorID()));
+        if ($dbc->numRows($deptR)) {
+            $w = $dbc->fetchRow($deptR);
+            return $w['salesCode'];
+        }
+
+        // case 3: item is not normally carried but is in a vendor catalog
+        // that has vendor => POS department mapping
+        $deptP = $dbc->prepare('
+            SELECT d.salesCode
+            FROM vendorItems AS v
+                INNER JOIN vendorDepartments AS z ON v.vendorDept=z.deptID AND v.vendorID=z.vendorID
+                INNER JOIN departments AS d ON z.posDeptID=d.dept_no
+            WHERE v.sku=?
+                AND v.vendorID=?');
+        $deptR = $dbc->execute($deptP, array($this->sku(), $order->vendorID()));
+        if ($dbc->numRows($deptR)) {
+            $w = $dbc->fetchRow($deptR);
+            return $w['salesCode'];
+        }
+
+        return false;
     }
 
     /**
@@ -550,6 +604,43 @@ different product, this record will still
                 }
             }
             $this->instance["internalUPC"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function salesCode()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["salesCode"])) {
+                return $this->instance["salesCode"];
+            } else if (isset($this->columns["salesCode"]["default"])) {
+                return $this->columns["salesCode"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'salesCode',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["salesCode"]) || $this->instance["salesCode"] != func_get_args(0)) {
+                if (!isset($this->columns["salesCode"]["ignore_updates"]) || $this->columns["salesCode"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["salesCode"] = func_get_arg(0);
         }
         return $this;
     }

@@ -53,8 +53,6 @@ function login($name,$password){
   }
   if ($password == "") return false;
 
-  table_check();
-
   $sql = dbconnect();
   $gatherQ = $sql->prepare_statement("select password,salt from Users where name=?");
   $gatherR = $sql->exec_statement($gatherQ,array($name));
@@ -190,7 +188,6 @@ function createLogin($name,$password){
   }
 
   if (init_check())
-    table_check();
 
     // 10Nov12 EL Add FANNIE_AUTH_ENABLED test per intent in first-user call from auth.php.
     if ( $FANNIE_AUTH_ENABLED ) {

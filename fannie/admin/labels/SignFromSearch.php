@@ -44,7 +44,22 @@ class SignFromSearch extends FannieRESTfulPage
        $this->__routes[] = 'post<u>'; 
        $this->__routes[] = 'post<batch>'; 
        $this->__routes[] = 'get<batch>'; 
+       $this->__routes[] = 'get<queueID>'; 
        return parent::preprocess();
+    }
+
+    public function get_queueID_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $tags = new ShelftagsModel($dbc);
+        $tags->id($this->queueID);
+        $this->u = array();
+        foreach ($tags->find() as $tag) {
+            $this->u[] = $tag->upc();
+        }
+
+        return $this->post_u_handler();
     }
 
     function post_u_handler()
@@ -102,7 +117,7 @@ class SignFromSearch extends FannieRESTfulPage
                     $this->signage_obj->addOverride($upc[$i], 'brand', $brand[$i]);
                 }
                 if (isset($desc[$i])) {
-                    $this->signage_obj->addOverride($upc[$i], 'description', $desc[$i]);
+                    //$this->signage_obj->addOverride($upc[$i], 'description', $desc[$i]);
                 }
                 if (isset($origin[$i])) {
                     $this->signage_obj->addOverride($upc[$i], 'originName', $origin[$i]);
@@ -111,6 +126,9 @@ class SignFromSearch extends FannieRESTfulPage
         }
 
         if (FormLib::get('pdf') == 'Print') {
+            foreach (FormLib::get('exclude', array()) as $e) {
+                $this->signage_obj->addExclude($e);
+            }
             $this->signage_obj->drawPDF();
             return false;
         } else {
@@ -155,6 +173,9 @@ class SignFromSearch extends FannieRESTfulPage
         }
         
         if (FormLib::get('pdf') == 'Print') {
+            foreach (FormLib::get('exclude', array()) as $e) {
+                $this->signage_obj->addExclude($e);
+            }
             $this->signage_obj->drawPDF();
             return false;
         } else {
@@ -174,7 +195,11 @@ class SignFromSearch extends FannieRESTfulPage
             return true;
         } else {
             $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
-            if (isset($mods[0])) {
+            $default = $this->config->get('DEFAULT_SIGNAGE');
+            if (in_array($default, $mods)) {
+                $this->signage_mod = $default;
+                return true;
+            } elseif (isset($mods[0])) {
                 $this->signage_mod = $mods[0];
                 return true;
             } else {
@@ -189,6 +214,11 @@ class SignFromSearch extends FannieRESTfulPage
     }
 
     function post_batch_view()
+    {
+        return $this->post_u_view();
+    }
+
+    public function get_queueID_view()
     {
         return $this->post_u_view();
     }
@@ -258,6 +288,8 @@ class SignFromSearch extends FannieRESTfulPage
         });');
 
         $ret .= '</form>';
+        $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter();");
 
         return $ret;
     }

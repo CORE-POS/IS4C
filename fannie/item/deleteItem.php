@@ -80,7 +80,11 @@ if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
     else if (isset($_REQUEST['confirm'])){
         $model = new ProductsModel($dbc);
         $model->upc($upc);
-        $model->delete();
+        $stores = new StoresModel($dbc);
+        foreach ($stores->find() as $s) {
+            $model->store_id($s->storeID());
+            $model->delete();
+        }
 
         if ($dbc->table_exists("scaleItems")){
             $scaleQ = $dbc->prepare_statement("DELETE FROM scaleItems WHERE plu=?");

@@ -38,6 +38,8 @@ class CheckCouponMailing extends FannieRESTfulPage
     protected $title = 'Check Coupon Mailing';
     protected $header = 'Check Coupon Mailing';
     public $themed = true;
+    public $description = '[Check Coupon Mailing] generates a custom coupon designed to print
+    on tri-fold check paper.';
 
     public function preprocess()
     {
@@ -154,7 +156,7 @@ class CheckCouponMailing extends FannieRESTfulPage
 
                 $pdf->SetXY($check_left_x+145, $check_top_y+(6*$line_height)+1);
                 $pdf->SetFont('Gill', '', 8);
-                $pdf->MultiCell(50, $line_height-2, 'Limit one per purchase. Cannot be applied to previous purchases. No cash value.');
+                $pdf->MultiCell(50, $line_height-2, 'Limit one per day. Cannot be applied to previous purchases. No cash value.');
                 $pdf->SetFont('Gill', '', 10);
 
                 $pdf->SetFillColor(0xCC, 0xCC, 0xCC);

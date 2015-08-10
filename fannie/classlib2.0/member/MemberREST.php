@@ -39,7 +39,7 @@ class MemberREST
         $config = \FannieConfig::factory();
         $dbc = \FannieDB::get($config->get('OP_DB'));
 
-        if ($dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
+        if ($config->get('CUST_SCHEMA') == 1 && $dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
             return self::getAccount($dbc, $id);
         } else {
             return self::getCustdata($dbc, $id);
@@ -231,11 +231,51 @@ class MemberREST
             $ret['customers'][] = $customer;
         }
 
+        // if the new tables are present in classic mode,
+        // migrate the account if needed and include the new style
+        // record ID in the response
+        if ($dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
+            $account = new \CustomerAccountsModel($dbc);
+            $account->cardNo($id);
+            if ($account->load()) {
+                $ret['customerAccountID'] = $account->customerAccountID();
+            } else {
+                $ret['customerAccountID'] = $account->migrateAccount($id);
+            }
+            // customers tables is more complicated
+            // try to match IDs by names
+            $customers = new \CustomersModel($dbc);
+            $customers->cardNo($id);
+            $current = $customers->find();
+            if (count($current) != count($ret['customers'])) {
+                foreach ($customers as $c) {
+                    $c->delete();
+                }
+                $customers->migrateAccount($id);
+                $customers->reset();
+            }
+            foreach ($customers->find() as $c) {
+                for ($i=0; $i<count($ret['customers']); $i++) {
+                    if ($ret['customers'][$i]['firstName'] == $c->firstName() && $ret['customers'][$i]['lastName'] == $c->lastName()) {
+                        $ret['customers'][$i]['customerID'] = $c->customerID();
+                        $ret['customers'][$i]['customerAccountID'] = $ret['customerAccountID'];
+                        break;
+                    }
+                }
+            }
+        }
+
         return $ret;
     }
 
     private static function getAllCustdata($dbc)
     {
+        // grab supplementary data from new tables if present
+        $new_available = false;
+        if ($dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
+            $new_available = true;
+        }
+
         $query = '
             SELECT c.CardNo,
                 CASE WHEN s.memtype2 IS NOT NULL THEN s.memtype2 ELSE c.Type END AS memberStatus,
@@ -265,6 +305,7 @@ class MemberREST
                 c.SSI,
                 c.personNum,
                 CASE WHEN c.LastChange > m.modified THEN c.LastChange ELSE m.modified END AS modified
+                ' . ($new_available ? ', a.customerAccountID ' : '') . '
             FROM custdata AS c
                 LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
                 LEFT JOIN memContact AS z ON c.CardNo=z.card_no
@@ -272,6 +313,7 @@ class MemberREST
                 LEFT JOIN memberCards AS u ON c.CardNo=u.card_no
                 LEFT JOIN suspensions AS s ON c.CardNo=s.cardno
                 LEFT JOIN memtype AS t ON c.memType=t.memtype
+                ' . ($new_available ? ' LEFT JOIN CustomerAccounts AS a ON c.CardNo=a.cardNo ' : '') . '
             ORDER BY c.personNum';
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep);
@@ -309,6 +351,9 @@ class MemberREST
                     $account['contactMethod'] == 'email';
                 } elseif ($row['pref'] == 3) {
                     $account['contactMethod'] == 'both';
+                }
+                if (isset($row['customerAccountID'])) {
+                    $account['customerAccountID'] = $row['customerAccountID'];
                 }
 
                 $account['customers'] = array();
@@ -354,10 +399,10 @@ class MemberREST
         $dbc = \FannieDB::get($config->get('OP_DB'));
 
         if ($id == 0) {
-            $id = self::createAccount($dbc);
+            $id = self::createAccount($dbc, $config);
         }
 
-        if ($dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
+        if ($config->get('CUST_SCHEMA') == 1 && $dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
             return self::postAccount($dbc, $id, $json);
         } else {
             return self::postCustdata($dbc, $id, $json);
@@ -367,10 +412,10 @@ class MemberREST
     /**
       Update customer account using newer tables
     */
-    private static function createAccount($dbc)
+    private static function createAccount($dbc, $config)
     {
         $max = 1;
-        if ($dbc->tableExists('CustomerAccounts')) {
+        if ($config->get('CUST_SCHEMA') == 1 && $dbc->tableExists('CustomerAccounts')) {
             $query = 'SELECT MAX(cardNo) FROM customerAccounts';
         } else {
             $query = 'SELECT MAX(CardNo) FROM custdata';
@@ -381,6 +426,8 @@ class MemberREST
             $max = $row[0] + 1;
         }
 
+        // even if using the old schema it should still create
+        // this record if the new table exists.
         if ($dbc->tableExists('CustomerAccounts')) {
             $ca = new \CustomerAccountsModel($dbc);
             $ca->cardNo($max);
@@ -427,23 +474,39 @@ class MemberREST
             foreach ($json['customers'] as $c_json) {
                 $customers->reset();
                 $customers->cardNo($id); 
+                $deletable = 0;
                 foreach ($columns as $col_name => $info) {
                     if ($col_name == 'cardNo') continue;
                     if ($col_name == 'modified') continue;
+
+                    if ($col_name == 'customerID' && isset($c_json[$col_name]) && $c_json[$col_name] != 0) {
+                        $deletable++;
+                    } elseif ($col_name == 'firstName' && isset($c_json[$col_name]) && $c_json[$col_name] == '') {
+                        $deletable++;
+                    } elseif ($col_name == 'lastName' && isset($c_json[$col_name]) && $c_json[$col_name] == '') {
+                        $deletable++;
+                    }
 
                     if (isset($c_json[$col_name])) {
                         $customers->$col_name($c_json[$col_name]);
                     }
                 }
-                if (!$customers->save()) {
+                if ($deletable == 3) {
+                    // submitted an ID and blank name fields
+                    $customers->delete();
+                } elseif ($deletable == 2 && $customers->customerID() == 0) {
+                    // skip creating member
+                } elseif (!$customers->save()) {
                     $ret['errors']++;
                 }
             }
         }
 
         // mirror changes to older tables
-        $account->legacySync($id);
-        $customers->legacySync($id);
+        if ($config->get('CUST_SCHEMA') == 1) {
+            $account->legacySync($id);
+            $customers->legacySync($id);
+        }
 
         $ret['account'] = self::get($id);
 
@@ -647,6 +710,11 @@ class MemberREST
         }
         self::setBlueLines($id);
 
+        // in classic mode sync changes back to the new table if present
+        if ($config->get('CUST_SCHEMA') != 1 && $dbc->tableExists('CustomerAccounts')) {
+            self::postAccount($dbc, $id, $json);
+        }
+
         $ret['account'] = self::get($id);
 
         return $ret;
@@ -703,7 +771,7 @@ class MemberREST
         $config = \FannieConfig::factory();
         $dbc = \FannieDB::get($config->get('OP_DB'));
 
-        if ($dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
+        if ($config->get('CUST_SCHEMA') == 1 && $dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
             return self::searchAccount($dbc, $json, $limit);
         } else {
             return self::searchCustdata($dbc, $json, $limit);
@@ -995,7 +1063,7 @@ class MemberREST
     {
         $config = \FannieConfig::factory();
         $dbc = \FannieDB::get($config->get('OP_DB'));
-        if ($dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
+        if ($config->get('CUST_SCHEMA') == 1 && $dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
             $query = 'SELECT MIN(cardNo) FROM customerAccounts WHERE cardNo > ?';
         } else {
             $query = 'SELECT MIN(CardNo) FROM custdata WHERE CardNo > ?';
@@ -1019,7 +1087,7 @@ class MemberREST
     {
         $config = \FannieConfig::factory();
         $dbc = \FannieDB::get($config->get('OP_DB'));
-        if ($dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
+        if ($config->get('CUST_SCHEMA') == 1 && $dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
             $query = 'SELECT MAX(cardNo) FROM customerAccounts WHERE cardNo < ?';
         } else {
             $query = 'SELECT MAX(CardNo) FROM custdata WHERE CardNo < ?';
@@ -1043,7 +1111,7 @@ class MemberREST
     {
         $config = \FannieConfig::factory();
         $dbc = \FannieDB::get($config->get('OP_DB'));
-        if ($dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
+        if ($config->get('CUST_SCHEMA') == 1 && $dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
             return self::autoCompleteAccount($dbc, $field, $val);
         } else {
             return self::autoCompleteCustdata($dbc, $field, $val);

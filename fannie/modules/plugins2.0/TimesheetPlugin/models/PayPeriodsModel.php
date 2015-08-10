@@ -28,20 +28,13 @@ class PayPeriodsModel extends BasicModel
 {
 
     protected $name = "payperiods";
+    protected $preferred_db = 'plugin:TimesheetDatabase';
 
     protected $columns = array(
     'periodID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
     'periodStart' => array('type'=>'DATETIME'),
     'periodEnd' => array('type'=>'DATETIME'),
     );
-
-    public function preferredDB()
-    {
-        $config = FannieConfig::factory();
-        $plugins = $config->get('PLUGIN_SETTINGS');
-
-        return 'plugin:' . $plugins['TimesheetDatabase'];
-    }
 
     /* START ACCESSOR FUNCTIONS */
 

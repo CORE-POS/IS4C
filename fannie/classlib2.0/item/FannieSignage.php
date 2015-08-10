@@ -30,6 +30,7 @@ class FannieSignage
     protected $source_id = 0;
     protected $data = array();
     protected $overrides = array();
+    protected $excludes = array();
 
     /**
       constructor
@@ -129,6 +130,8 @@ class FannieSignage
                 $ids .= '?,';
             }
             $ids = substr($ids, 0, strlen($ids)-1);
+            $b_def = $dbc->tableDefinition('batchType');
+            $l_def = $dbc->tableDefinition('batchList');
             $query = 'SELECT l.upc,
                         l.salePrice AS normal_price,
                         CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
@@ -140,20 +143,32 @@ class FannieSignage
                         \'\' AS pricePerUnit,
                         n.vendorName AS vendor,
                         p.scale,
-                        p.numflag,
-                        b.startDate,
-                        b.endDate,
-                        o.name AS originName,
-                        o.shortName AS originShortName
+                        p.numflag,';
+            // 22Jul2015 check table compatibility
+            if (isset($b_def['datedSigns'])) {
+                $query .= 'CASE WHEN t.datedSigns=0 THEN \'While supplies last\' ELSE b.startDate END AS startDate,';
+                $query .= 'CASE WHEN t.datedSigns=0 THEN \'While supplies last\' ELSE b.endDate END AS endDate,';
+            } else {
+                $query .= 'b.startDate, b.endDate,';
+            }
+            if (isset($l_def['signMultiplier'])) {
+                $query .= 'l.signMultiplier,';
+            } else {
+                $query .= '1 AS signMultiplier,';
+            }
+            $query .= ' o.name AS originName,
+                        o.shortName AS originShortName,
+                        b.batchType
                      FROM batchList AS l
                         INNER JOIN products AS p ON l.upc=p.upc
                         INNER JOIN batches AS b ON b.batchID=l.batchID
+                        LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID
                         LEFT JOIN productUser AS u ON p.upc=u.upc
                         LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                         LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                         LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                      WHERE l.batchID IN (' . $ids . ')
-                     ORDER BY p.department, p.upc';
+                     ORDER BY brand, description';
         } else {
             $ids = '';
             foreach ($this->items as $id) {
@@ -280,7 +295,11 @@ class FannieSignage
                                 AND o.name <> ?
                                 AND o.shortName <> ?');
 
-        while($row = $dbc->fetch_row($result)) {
+        while ($row = $dbc->fetch_row($result)) {
+
+            if (in_array($row['upc'], $this->excludes)) {
+                continue;
+            }
 
             if ($row['pricePerUnit'] == '') {
                 $row['pricePerUnit'] = \COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($row['normal_price'], $row['size']);
@@ -414,31 +433,47 @@ class FannieSignage
     public function listItems()
     {
         $url = \FannieConfig::factory()->get('URL');
-        $ret = '<table class="table">';
-        $ret .= '<tr><th>UPC</th><th>Brand</th><th>Description</th><th>Price</th><th>Origin</th></tr>';
+        $ret = '<table class="table tablesorter tablesorter-core">';
+        $ret .= '<thead>';
+        $ret .= '<tr>
+            <th>UPC</th><th>Brand</th><th>Description</th><th>Price</th><th>Origin</th>
+            <th><label>Exclude
+                <input type="checkbox" onchange="$(\'.exclude-checkbox\').prop(\'checked\', $(this).prop(\'checked\'));" />
+                </label>
+            </th>
+            </tr>';
+        $ret .= '</thead><tbody>';
         $data = $this->loadItems();
         foreach ($data as $item) {
             $ret .= sprintf('<tr>
                             <td><a href="%sitem/ItemEditorPage.php?searchupc=%s" target="_edit%s">%s</a></td>
                             <input type="hidden" name="update_upc[]" value="%d" />
-                            <td><input class="FannieSignageField form-control" type="text" 
+                            <td>
+                                <span class="collapse">%s</span>
+                                <input class="FannieSignageField form-control" type="text" 
                                 name="update_brand[]" value="%s" /></td>
-                            <td><input class="FannieSignageField form-control" type="text" 
+                            <td>
+                                <span class="collapse">%s</span>
+                                <input class="FannieSignageField form-control" type="text" 
                                 name="update_desc[]" value="%s" /></td>
                             <td>%.2f</td>
                             <td><input class="FannieSignageField form-control" type="text" 
                                 name="update_origin[]" value="%s" /></td>
+                            <td><input type="checkbox" name="exclude[]" class="exclude-checkbox" value="%s" /></td>
                             </tr>',
                             $url,
                             $item['upc'], $item['upc'], $item['upc'],
                             $item['upc'],
                             $item['brand'],
+                            $item['brand'],
+                            str_replace('"', '&quot;', $item['description']),
                             str_replace('"', '&quot;', $item['description']),
                             $item['normal_price'],
-                            $item['originName']
+                            $item['originName'],
+                            $item['upc']
             );
         }
-        $ret .= '</table>';
+        $ret .= '</tbody></table>';
 
         return $ret;
     }
@@ -483,8 +518,10 @@ class FannieSignage
                 $model->save();
                 $model = new \ProductsModel(\FannieDB::get($op_db));
                 $model->upc(\BarcodeLib::padUPC($upc));
-                $model->brand($brand);
-                $model->save();
+                foreach ($model->find('store_id') as $obj) {
+                    $obj->brand($brand);
+                    $obj->save();
+                }
                 break;
         }
     }
@@ -511,8 +548,18 @@ class FannieSignage
         $this->overrides[$upc][$field_name] = $value;
     }
 
-    public function formatPrice($price)
+    public function addExclude($upc)
     {
+        $this->excludes[] = $upc;
+    }
+
+    public function formatPrice($price, $multiplier=1)
+    {
+        if ($multiplier > 1) {
+            $ttl = round($multiplier*$price);
+            return $multiplier . '/$' . $ttl;
+        }
+
         if (substr($price, -3) == '.33') {
             $ttl = round(3*$price);
             return '3/$' . $ttl;
@@ -522,6 +569,9 @@ class FannieSignage
         } elseif (substr($price, -3) == '.50') {
             $ttl = round(2*$price);
             return '2/$' . $ttl;
+        } elseif (substr($price, -3) == '.80') {
+            $ttl = round(5*$price);
+            return '5/$' . $ttl;
         } elseif (substr($price, -3) == '.25') {
             $ttl = round(4*$price);
             return '4/$' . $ttl;

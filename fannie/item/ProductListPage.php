@@ -116,63 +116,63 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         var taxObj = <?php echo json_encode($taxes); ?>;
         var localObj = <?php echo json_encode($local_opts); ?>;
         var vendorObj = <?php echo json_encode($vendors); ?>;
-        function edit(upc){
-            var brand = $('tr#'+upc+' .td_brand').html();
+        function edit(elem){
+            var brand = elem.find('.td_brand:first').html();
             var content = "<input type=text class=\"in_brand form-control input-sm\" size=8 value=\""+brand+"\" />";   
-            $('tr#'+upc+' .td_brand').html(content);
+            elem.find('.td_brand:first').html(content);
 
-            var desc = $('tr#'+upc+' .td_desc').html();
+            var desc = elem.find('.td_desc:first').html();
             var content = "<input type=text class=\"in_desc form-control input-sm\" size=10 value=\""+desc+"\" />";   
-            $('tr#'+upc+' .td_desc').html(content);
+            elem.find('.td_desc:first').html(content);
 
-            var dept = $('tr#'+upc+' .td_dept').text();
+            var dept = elem.find('.td_dept:first').text();
             var content = '<select class=\"in_dept form-control input-sm\"><optgroup style="font-size: 90%;">';
             for(dept_no in deptObj){
                 content += "<option value=\""+dept_no+"\" "+((dept==deptObj[dept_no])?'selected':'')+">";
                 content += deptObj[dept_no]+"</option>";
             }
             content += '</optgroup></select>';
-            $('tr#'+upc+' .td_dept').html(content);
+            elem.find('.td_dept:first').html(content);
 
-            var supplier = $('tr#'+upc+' .td_supplier').text();
+            var supplier = elem.find('.td_supplier:first').text();
             var content = '<select class=\"in_supplier form-control input-sm\"><optgroup style="font-size: 90%;">';
             for(var i in vendorObj){
                 content += "<option "+((supplier==vendorObj[i])?'selected':'')+">";
                 content += vendorObj[i]+"</option>";
             }
             content += '</optgroup></select>';
-            $('tr#'+upc+' .td_supplier').html(content);
+            elem.find('.td_supplier:first').html(content);
 
-            var cost = $('tr#'+upc+' .td_cost').html();
+            var cost = elem.find('.td_cost:first').html();
             var content = "<input type=text class=\"in_cost form-control input-sm\" size=4 value=\""+cost+"\" />";    
-            $('tr#'+upc+' .td_cost').html(content);
+            elem.find('.td_cost:first').html(content);
 
-            var price = $('tr#'+upc+' .td_price').html();
+            var price = elem.find('.td_price:first').html();
             var content = "<input type=text class=\"in_price form-control input-sm\" size=4 value=\""+price+"\" />";  
-            $('tr#'+upc+' .td_price').html(content);
+            elem.find('.td_price:first').html(content);
 
-            var tax = $('tr#'+upc+' .td_tax').html();
+            var tax = elem.find('.td_tax:first').html();
             var content = '<select class=\"in_tax form-control input-sm\">';
             for (ch in taxObj){
                 var sel = (tax == ch) ? 'selected' : '';
                 content += "<option value=\""+ch+":"+taxObj[ch][0]+"\" "+sel+">";
                 content += taxObj[ch][1]+"</option>";
             }
-            $('tr#'+upc+' .td_tax').html(content);
+            elem.find('.td_tax:first').html(content);
 
-            var fs = $('tr#'+upc+' .td_fs').html();
+            var fs = elem.find('.td_fs:first').html();
             var content = "<input type=checkbox class=in_fs "+((fs=='X')?'checked':'')+" />";
-            $('tr#'+upc+' .td_fs').html(content);
+            elem.find('.td_fs:first').html(content);
 
-            var disc = $('tr#'+upc+' .td_disc').html();
+            var disc = elem.find('.td_disc:first').html();
             var content = "<input type=checkbox class=in_disc "+((disc=='X')?'checked':'')+" />";
-            $('tr#'+upc+' .td_disc').html(content);
+            elem.find('.td_disc:first').html(content);
 
-            var wgt = $('tr#'+upc+' .td_wgt').html();
+            var wgt = elem.find('.td_wgt:first').html();
             var content = "<input type=checkbox class=in_wgt "+((wgt=='X')?'checked':'')+" />";
-            $('tr#'+upc+' .td_wgt').html(content);
+            elem.find('.td_wgt:first').html(content);
 
-            var local = $('tr#'+upc+' .td_local').html();
+            var local = elem.find('.td_local:first').html();
             //var content = "<input type=checkbox class=in_local "+((local=='X')?'checked':'')+" />";
             var content = '<select class=\"in_local form-control input-sm\">';
             for (ch in localObj){
@@ -180,68 +180,70 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 content += "<option value=\""+ch+":"+localObj[ch][0]+"\" "+sel+">";
                 content += localObj[ch][1]+"</option>";
             }
-            $('tr#'+upc+' .td_local').html(content);
+            elem.find('.td_local:first').html(content);
 
-            $('tr#'+upc+' .td_cmd .edit-link').hide();
-            $('tr#'+upc+' .td_cmd .save-link').show();
+            elem.find('.td_cmd:first .edit-link').hide();
+            elem.find('.td_cmd:first .save-link').show();
 
-            $('tr#'+upc+' input:text').keydown(function(event) {
+            elem.find('input:text').keydown(function(event) {
                 if (event.which == 13) {
-                    save(upc);
+                    save(elem);
                 }
             });
-            $('tr#'+upc+' .clickable input:text').click(function(event){
+            elem.find('.clickable input:text').click(function(event){
                 // do nothing
                 event.stopPropagation();
             });
-            $('tr#'+upc+' .clickable select').click(function(event){
+            elem.find('.clickable select').click(function(event){
                 // do nothing
                 event.stopPropagation();
             });
         }
-        function save(upc){
-            var brand = $('tr#'+upc+' .in_brand').val();
-            $('tr#'+upc+' .td_brand').html(brand);
+        function save(elem){
+            var upc = elem.find('.hidden_upc:first').val();
+            var store_id = elem.find('.hidden_store_id:first').val();
 
-            var desc = $('tr#'+upc+' .in_desc').val();
-            $('tr#'+upc+' .td_desc').html(desc);
+            var brand = elem.find('.in_brand:first').val();
+            elem.find('.td_brand:first').html(brand);
+
+            var desc = elem.find('.in_desc:first').val();
+            elem.find('.td_desc:first').html(desc);
         
-            var dept = $('tr#'+upc+' .in_dept').val();
-            $('tr#'+upc+' .td_dept').html(deptObj[dept]);
+            var dept = elem.find('.in_dept:first').val();
+            elem.find('.td_dept:first').html(deptObj[dept]);
 
-            var supplier = $('tr#'+upc+' .in_supplier').val();
-            $('tr#'+upc+' .td_supplier').html(supplier);
+            var supplier = elem.find('.in_supplier:first').val();
+            elem.find('.td_supplier:first').html(supplier);
 
-            mathField($('tr#'+upc+' .in_cost').get(0));
-            var cost = $('tr#'+upc+' .in_cost').val();
-            $('tr#'+upc+' .td_cost').html(cost);
+            mathField(elem.find('.in_cost:first').get(0));
+            var cost = elem.find('.in_cost:first').val();
+            elem.find('.td_cost:first').html(cost);
 
-            var price = $('tr#'+upc+' .in_price').val();
-            $('tr#'+upc+' .td_price').html(price);
+            var price = elem.find('.in_price:first').val();
+            elem.find('.td_price:first').html(price);
 
-            var tax = $('tr#'+upc+' .in_tax').val().split(':');
-            $('tr#'+upc+' .td_tax').html(tax[0]);
+            var tax = elem.find('.in_tax:first').val().split(':');
+            elem.find('.td_tax:first').html(tax[0]);
             
-            var fs = $('tr#'+upc+' .in_fs').is(':checked') ? 1 : 0;
-            $('tr#'+upc+' .td_fs').html((fs==1)?'X':'-');
+            var fs = elem.find('.in_fs:first').is(':checked') ? 1 : 0;
+            elem.find('.td_fs:first').html((fs==1)?'X':'-');
 
-            var disc = $('tr#'+upc+' .in_disc').is(':checked') ? 1 : 0;
-            $('tr#'+upc+' .td_disc').html((disc==1)?'X':'-');
+            var disc = elem.find('.in_disc:first').is(':checked') ? 1 : 0;
+            elem.find('.td_disc:first').html((disc==1)?'X':'-');
 
-            var wgt = $('tr#'+upc+' .in_wgt').is(':checked') ? 1 : 0;
-            $('tr#'+upc+' .td_wgt').html((wgt==1)?'X':'-');
+            var wgt = elem.find('.in_wgt:first').is(':checked') ? 1 : 0;
+            elem.find('.td_wgt:first').html((wgt==1)?'X':'-');
 
-            //var local = $('tr#'+upc+' .in_local').is(':checked') ? 1 : 0;
-            //$('tr#'+upc+' .td_local').html((local==1)?'X':'-');
-            var local = $('tr#'+upc+' .in_local').val().split(':');
-            $('tr#'+upc+' .td_local').html(local[0]);
+            var local = elem.find('.in_local:first').val().split(':');
+            elem.find('.td_local:first').html(local[0]);
 
-            $('tr#'+upc+' .td_cmd .edit-link').show();
-            $('tr#'+upc+' .td_cmd .save-link').hide();
+            elem.find('.td_cmd:first .edit-link').show();
+            elem.find('.td_cmd:first .save-link').hide();
 
             var dstr = 'ajax=save&upc='+upc+'&desc='+desc+'&dept='+dept+'&price='+price+'&cost='+cost;
             dstr += '&tax='+tax[1]+'&fs='+fs+'&disc='+disc+'&wgt='+wgt+'&supplier='+supplier+'&local='+local[1];
             dstr += '&brand='+encodeURIComponent(brand);
+            dstr += '&store_id='+store_id;
             $.ajax({
             url: 'ProductListPage.php',
             data: dstr,
@@ -284,7 +286,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                     var upc = $(this).find('.hidden_upc').val();
                     $(this).find('.clickable').click(function() {
                         if ($(this).find(':input').length == 0) {
-                            edit(upc);
+                            edit($(this).closest('tr'));
                             $(this).find(':input').select();
                         }
                     });
@@ -303,10 +305,12 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         switch(FormLib::get_form_value('ajax')){
         case 'save':
             $upc = FormLib::get_form_value('upc');
+            $store_id = FormLib::get('store_id');
             $upc = BarcodeLib::padUPC($upc);
             $values = array();
             $model = new ProductsModel($dbc);
             $model->upc($upc);
+            $model->store_id($store_id);
             $brand = FormLib::get('brand');
             if ($brand !== '') {
                 $model->brand($brand);
@@ -531,12 +535,15 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 (CASE WHEN i.local > 0 AND o.originID IS NULL THEN 'X' 
                   WHEN i.local > 0 AND o.originID IS NOT NULL THEN LEFT(o.shortName,1) ELSE '-' END) as local,
                 COALESCE(v.vendorName, x.distributor) AS distributor,
-                i.cost
+                i.cost,
+                i.store_id,
+                l.description AS storeName
             FROM products as i 
                 LEFT JOIN departments as d ON i.department = d.dept_no
                 LEFT JOIN taxrates AS t ON t.id = i.tax
                 LEFT JOIN prodExtra as x on i.upc = x.upc
                 LEFT JOIN vendors AS v ON i.default_vendor_id=v.vendorID
+                LEFT JOIN Stores AS l ON i.store_id=l.storeID
                 LEFT JOIN origins AS o ON i.local=o.originID";
         /** add extra joins if this lookup requires them **/
         if ($supertype == 'dept' && $super !== '') {
@@ -626,17 +633,22 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         }
         $ret .= "</tr></thead><tbody>";
 
+        $multi = ($this->config->get('STORE_MODE') == 'HQ') ? true : false;
         while ($row = $dbc->fetch_row($result)) {
             $ret .= '<tr id="'.$row[0].'">';
             $enc = base64_encode($row[1]);
             if (!$this->excel) {
                 $ret .= "<td align=center class=\"td_upc\"><a href=ItemEditorPage.php?searchupc=$row[0]>$row[0]</a>"; 
+                if ($multi) {
+                    $ret .= ' (' . substr($row['storeName'], 0, 1) . ')';
+                }
                 if ($this->canDeleteItems !== false) {
                     $ret .= " <a href=\"\" onclick=\"deleteCheck('$row[0]','$enc'); return false;\">";
                     $ret .= \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a>';
                 }
                 $ret .= '</td>';
                 $ret .= '<input type="hidden" class="hidden_upc" value="'.$row[0].'" />';
+                $ret .= '<input type="hidden" class="hidden_store_id" value="'.$row['store_id'].'" />';
             } else {
                 $ret .= "<td align=center>$row[0]</td>";
             }
@@ -654,10 +666,10 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             if (!$this->excel && $this->canEditItems !== False){
                 $ret .= "<td align=center class=td_cmd><a href=\"\" 
                     class=\"edit-link\"
-                    onclick=\"edit('$row[0]'); return false;\">"
+                    onclick=\"edit(\$(this).closest('tr')); return false;\">"
                     . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . '</a>
                     <a href="" class="save-link collapse"
-                    onclick="save(\'' . $row[0] . '\'); return false;">'
+                    onclick="save($(this).closest(\'tr\')); return false;">'
                     . \COREPOS\Fannie\API\lib\FannieUI::saveIcon() . '</a></td>';
             }
             $ret .= "</tr>\n";

@@ -210,8 +210,10 @@ class ProdUserModule extends ItemModule
         }
 
         $prod = new ProductsModel($dbc);
+        $stores = new StoresModel($dbc);
         foreach ($items as $item) {
             $prod->upc($item);
+            $prod->store_id(1);
             $prod->current_origin_id($origin);
             $prod->save();
 

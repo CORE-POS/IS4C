@@ -38,7 +38,6 @@ class DLog15Model extends DTransactionsModel
         $this->columns = $tdate + $this->columns + $trans_num;
         $this->columns['store_row_id']['increment'] = false;
         $this->columns['store_row_id']['primary_key'] = false;
-        $this->columns['store_row_id']['index'] = false;
         $this->columns['pos_row_id']['index'] = false;
 
         parent::__construct($con);

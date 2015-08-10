@@ -88,6 +88,10 @@ class BatchFromSearch extends FannieRESTfulPage
         $b->owner($owner);
         $id = $b->save();
 
+        if ($this->config->get('STORE_MODE') === 'HQ') {
+            StoreBatchMapModel::initBatch($id);
+        }
+
         if ($dbc->tableExists('batchowner')) {
             $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
             $insR = $dbc->exec_statement($insQ,array($id,$owner));
@@ -101,6 +105,7 @@ class BatchFromSearch extends FannieRESTfulPage
             $bl->upc(BarcodeLib::padUPC($upc));
             $bl->batchID($id);
             $bl->salePrice($price);
+            $bl->groupSalePrice($price);
             $bl->active(0);
             $bl->pricemethod(0);
             $bl->quantity(0);

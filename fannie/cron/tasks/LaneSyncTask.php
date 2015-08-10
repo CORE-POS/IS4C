@@ -60,6 +60,7 @@ Replaces nightly.lanesync.php and/or lanesync.api.php';
             'custdata',
             'memberCards',
             'custReceiptMessage',
+            'CustomerNotifications',
             'employees',
             'departments',
             'houseCoupons',

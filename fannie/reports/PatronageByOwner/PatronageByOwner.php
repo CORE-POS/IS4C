@@ -36,7 +36,7 @@ class PatronageByOwner extends FannieReportPage
     protected $sort_direction = 1;
     protected $title = "Fannie : Patronage by Owner Report";
     protected $header = "Patronage by Owner Report";
-    protected $required_fields = array('startdate');
+    protected $required_fields = array('num');
 
     public function report_description_content()
     {
@@ -45,17 +45,14 @@ class PatronageByOwner extends FannieReportPage
 
     public function fetch_report_data()
     {
-    
-        $info = array(    
-            $card_no = array(),
-            $id = array(),   
-            $total = array(),       // Total Spent for desired Range
-            $avg = array(),         // Average Basket
-            $numTran = array()      // Number of transactions for selected Range for each Owner
-        );      
+        $card_no = array();
+        $id = array();   
+        $total = array();       // Total Spent for desired Range
+        $avg = array();         // Average Basket
+        $numTran = array();     // Number of transactions for selected Range for each Owner
         
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        global $FANNIE_TRANS_DB, $FANNIE_URL;
+        $dbc = FannieDB::get($FANNIE_TRANS_DB);
         
         $query = "SELECT card_no, sum(unitPrice*quantity) as T  
                 FROM dlog_90_view
@@ -85,8 +82,15 @@ class PatronageByOwner extends FannieReportPage
             $numTran[] = $count;
         }
         
+        $info = array();
         for($i=0; $i<count($card_no);$i++) {
-            $avg[] = $total[$i] / $numTran[$i];
+            $table_row = array(
+                $card_no[$i],
+                $total[$i],
+                $total[$i] / $numTran[$i],
+                $numTran[$i],
+            );
+            $info[] = $table_row;
         }
         
         return $info;

@@ -22,7 +22,7 @@ class TsWagesReport extends FanniePage {
         //  FULL TIME: Number of hours per week
         $ft = 40;
 
-        echo "<form action='".$_SERVER['PHP_SELF']."' method=GET>";
+        echo "<form action='".$_SERVER['PHP_SELF']."' method=GET class=\"form-horizontal\">";
 
         $currentQ = $ts_db->prepare_statement("SELECT periodID 
             FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
@@ -36,7 +36,10 @@ class TsWagesReport extends FanniePage {
             WHERE periodStart < ".$ts_db->now()." ORDER BY periodID DESC");
         $result = $ts_db->exec_statement($query);
 
-        echo '<p>Starting Pay Period: <select name="period">
+        echo '<div class="row form-group">
+            <label class="col-sm-2">Starting Pay Period</label>
+            <div class="col-sm-5">
+            <select class="form-control" name="period">
             <option>Please select a starting pay period.</option>';
 
         while ($row = $ts_db->fetch_array($result)) {
@@ -45,8 +48,11 @@ class TsWagesReport extends FanniePage {
             echo ">(" . $row['periodStart'] . " - " . $row['periodEnd'] . ")</option>";
         }
 
-        echo "</select><br />";
-        echo '<p>Ending Pay Period: <select name="end">
+        echo "</select></div></div>";
+        echo '<div class="row form-group">
+            <label class="col-sm-2">Ending Pay Period</label>
+            <div class="col-sm-5">
+            <select class="form-control" name="end">
             <option value=0>Please select an ending pay period.</option>';
         $result = $ts_db->exec_statement($query);
         while ($row = $ts_db->fetch_array($result)) {
@@ -54,7 +60,11 @@ class TsWagesReport extends FanniePage {
             if ($row['periodID'] == $ID) { echo ' SELECTED';}
             echo ">(" . $row['periodStart'] . " - " . $row['periodEnd'] . ")</option>";
         }
-        echo '</select><button value="export" name="Export">Export</button></p></form>';
+        echo '</select></div></div>
+            <p>
+                <button class="btn btn-default" value="export" name="Export">Export</button>
+            </p>
+            </form>';
 
         if (FormLib::get_form_value('Export') == 'export') {
             $periodID = FormLib::get_form_value('period',0);
@@ -96,15 +106,17 @@ class TsWagesReport extends FanniePage {
             // echo $query;
             $result = $ts_db->exec_statement($query);
         
-            echo "<table cellpadding='5'><thead>\n<tr>
+            echo "<table class=\"table table-bordered table-striped\"><thead>\n<tr>
                 <th>ID</th><th>Area</th><th>Total Hrs</th><!--<th>agg</th>--><th>wages</th></tr></thead>\n<tbody>\n";   
     
             $queryP = $ts_db->prepare_statement("SELECT SUM(t.hours) as total 
                 FROM ". $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t 
                 WHERE t.periodID >= ? AND t.periodID <= ? AND t.area = ?");
-            $query2P = $ts_db->prepare_statement("SELECT SUM(e.pay_rate) as agg FROM ".$FANNIE_OP_DB.".employees e, ".
+            $query2P = $ts_db->prepare_statement("
+                SELECT SUM(e.wage) as agg 
+                FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".TimesheetEmployees e, ".
                 $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t 
-                WHERE t.emp_no = e.emp_no AND t.periodID >= ?
+                WHERE t.emp_no = e.timesheetEmployeeID AND t.periodID >= ?
                 AND t.periodID <= ? AND t.area = ?");
             while ($row = $ts_db->fetch_row($result)) {
 
@@ -157,7 +169,8 @@ class TsWagesReport extends FanniePage {
             // 
             $OT1 = array();
             $OT2 = array();
-            $empP = $ts_db->prepare_statement("SELECT emp_no FROM employees WHERE EmpActive = 1");
+            $employees = new TimesheetEmployeesModel($ts_db);
+            $employees->active(1);
             $weekoneP = $ts_db->prepare_statement("SELECT ROUND(SUM(hours), 2) 
                 FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
                 INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p 
@@ -177,8 +190,8 @@ class TsWagesReport extends FanniePage {
                 AND t.tdate >= DATE(date_add(p.periodStart, INTERVAL 7 day)) 
                 AND t.tdate <= DATE(p.periodEnd)");
             foreach ($p as $v) {
-                $empR = $ts_db->exec_statement($empP);
-                while ($row = $ts_db->fetch_array($empR)) {
+                foreach ($employees->find() as $employee) {
+                    $row = array('emp_no' => $employee->timesheetEmployeeID());
 
                     $weekoneR = $ts_db->exec_statement($weekoneP,array($row['emp_no'],$v));
                     $weektwoR = $ts_db->exec_statement($weektwoP,array($row['emp_no'],$v));
@@ -215,16 +228,13 @@ class TsWagesReport extends FanniePage {
             //  END PTO REQUESTED
     
             //  PTO NEW
-            $empQ = $ts_db->prepare_statement("SELECT emp_no FROM employees 
-                WHERE EmpActive = 1 AND JobTitle = 'STAFF'");
-            $empR = $ts_db->exec_statement($empQ);
             $nonPTOtotalP = $ts_db->prepare_statement("SELECT SUM(hours) 
                 FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet 
                 WHERE periodID >= ? AND periodID <= ? AND area <> 31 
                 AND emp_no = ?");
             $PTOnew = array();
-            while ($row = $ts_db->fetch_array($empR)) {
-                $nonPTOtotalr = $ts_db->exec_statement($nonPTOtotalP,array($periodID,$end,$row['emp_no']));
+            foreach ($employees->find() as $employee) {
+                $nonPTOtotalr = $ts_db->exec_statement($nonPTOtotalP,array($periodID,$end,$employee->timesheetEmployeeID()));
                 $nonPTOtotal = $ts_db->fetch_row($nonPTOtotalr);
                 $ptoAcc = $nonPTOtotal[0] * 0.075;
                 $PTOnew[] = $ptoAcc;

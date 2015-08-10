@@ -33,7 +33,9 @@ class TsAreasReport extends FanniePage {
             WHERE periodStart < ".$ts_db->now()." ORDER BY periodID DESC");
         $result = $ts_db->exec_statement($query);
 
-        echo '<p>Starting Pay Period: <select name="period">
+        echo '<div class="form-group">
+            <label>Starting Pay Period</label>
+            <select name="period" class="form-control">
             <option>Please select a starting pay period.</option>';
 
         while ($row = $ts_db->fetch_array($result)) {
@@ -42,7 +44,10 @@ class TsAreasReport extends FanniePage {
             echo ">(" . $row['periodStart'] . " - " . $row['periodEnd'] . ")</option>";
         }
 
-        echo '</select>&nbsp;&nbsp;<button value="export" name="Export">Run</button></p></form>';
+        echo '</select></div>
+            <div class="form-group">
+            <button value="export" class="btn btn-default" name="Export">Run</button>
+            </div></form>';
 
         if (FormLib::get_form_value('Export') == 'export') {
             $periodID = FormLib::get_form_value('period',0);
@@ -55,14 +60,18 @@ class TsAreasReport extends FanniePage {
                 GROUP BY s.ShiftID ORDER BY s.ShiftOrder");
             // echo $query;
             $result = $ts_db->exec_statement($query);
-            echo "<table cellpadding='5'><thead>\n<tr>
+            echo "<table class=\"table table-bordered table-striped\"><thead>\n<tr>
                 <th>ID</th><th>Area</th><th>Total</th><th>wages</th></tr></thead>\n<tbody>\n";
-            $queryP = $ts_db->prepare_statement("SELECT SUM(IF(".$row['id']." = 31, t.vacation,t.hours)) as total 
+            $queryP = $ts_db->prepare_statement("
+                SELECT SUM(IF(ID = 31, t.vacation,t.hours)) as total 
                 FROM ". $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t 
-                WHERE t.periodID = ? AND t.area = ?");
-            $query2P = $ts_db->prepare_statement("SELECT SUM(e.pay_rate) as agg FROM ".$FANNIE_OP_DB.".employees e, ".
-                $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t 
-                WHERE t.emp_no = e.emp_no AND t.periodID = ? AND t.area = ?");
+                WHERE t.periodID = ? 
+                    AND t.area = ?");
+            $query2P = $ts_db->prepare_statement("
+                SELECT SUM(e.wage) as agg 
+                FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".TimesheetEmployees e, ".
+                    $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t 
+                WHERE t.emp_no = e.timesheetEmployeeID AND t.periodID = ? AND t.area = ?");
             while ($row = $ts_db->fetch_row($result)) {
 
                 echo "<tr><td>".$row['id']."</td><td>".$row['area']."</td><td align='right'>";
@@ -75,7 +84,7 @@ class TsAreasReport extends FanniePage {
                 echo $tot . "</td>";
                 
                 // echo $query2;
-                $result2 = $ts_db->exec_statement($query2,array($periodID,$row['id']));
+                $result2 = $ts_db->exec_statement($query2P,array($periodID,$row['id']));
                 $totAgg = $ts_db->fetch_row($result2);
                 $agg = ($totAgg[0]) ? $totAgg[0] : 0;
         

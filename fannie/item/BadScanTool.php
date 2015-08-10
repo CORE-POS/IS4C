@@ -35,17 +35,25 @@ class BadScanTool extends FannieRESTfulPage
     at the lanes but not found in POS.';
     public $themed = true;
 
-    private $date_restrict = true;
+    private $date_restrict = 1;
 
     function preprocess()
     {
         $this->__routes[] = 'get<lastquarter>';
+        $this->__routes[] = 'get<today>';
         return parent::preprocess();
     }
 
     function get_lastquarter_view()
     {
-        $this->date_restrict = false;
+        $this->date_restrict = 0;
+
+        return $this->get_view();
+    }
+
+    function get_today_view()
+    {
+        $this->date_restrict = 2;
 
         return $this->get_view();
     }
@@ -84,6 +92,9 @@ class BadScanTool extends FannieRESTfulPage
             }
             $query .= "GROUP BY t.upc, p.description
                     ORDER BY t.upc DESC";
+            if ($this->date_restrict == 2) {
+                $query = str_replace('transarchive', 'dtransactions', $query);
+            }
             $result = $dbc->query($query);
             $data = array();
             while($row = $dbc->fetch_row($result)) {
@@ -109,8 +120,13 @@ class BadScanTool extends FannieRESTfulPage
         $ret .= ' ';
         $ret .= '<a href="BadScanTool.php"
                     class="btn btn-default navbar-btn'
-                    . ($this->date_restrict ? ' active' : '')
+                    . ($this->date_restrict == 1? ' active' : '')
                     . '">View Last Week</a>';
+        $ret .= ' ';
+        $ret .= '<a href="BadScanTool.php?today=1"
+                    class="btn btn-default navbar-btn'
+                    . ($this->date_restrict == 2? ' active' : '')
+                    . '">View Today</a>';
         $ret .= '</div>';
 
         $ret .= '<br /><b>Show</b>: ';

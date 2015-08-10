@@ -26,9 +26,12 @@
 */
 class CustomersModel extends BasicModel
 {
-
     protected $name = "Customers";
+    /**
+      Suppress create offer from updates tab
+      until functionality is ready
     protected $preferred_db = 'op';
+    */
 
     protected $columns = array(
     'customerID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),

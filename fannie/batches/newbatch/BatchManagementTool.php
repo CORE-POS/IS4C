@@ -775,6 +775,7 @@ class BatchManagementTool extends FanniePage
             $model = new ProductsModel($dbc);
             foreach ($items as $item) {
                 $model->upc($item);
+                $model->store_id($this->config->get('STORE_ID'));
                 $model->pushToLanes();
             }
             break;

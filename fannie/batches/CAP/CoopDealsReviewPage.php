@@ -79,7 +79,8 @@ class CoopDealsReviewPage extends FanniePage
         }
         $saleItemsP = $dbc->prepare_statement("
             SELECT t.upc,
-                t.price,"
+                t.price,
+                t.multiplier,"
                 . $dbc->concat(
                     ($superdept_grouping ? $superdept_grouping : "''"),
                     ($superdept_grouping ? "' '" : "''"),
@@ -90,12 +91,10 @@ class CoopDealsReviewPage extends FanniePage
             FROM tempCapPrices as t
                 INNER JOIN products AS p on t.upc = p.upc
                 LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
+            WHERE p.inUse=1
             ORDER BY s.super_name, t.upc
         ");
         $saleItemsR = $dbc->exec_statement($saleItemsP);
-        define("UPC_COL",0);
-        define("PRICE_COL",1);
-        define("BATCHNAME_COL",2);
 
         $batchP = $dbc->prepare_statement('
             INSERT INTO batches (
@@ -115,12 +114,12 @@ class CoopDealsReviewPage extends FanniePage
         $list->quantity(0);
 
         while ($row = $dbc->fetch_row($saleItemsR)) {
-            if (!isset($batchIDs[$row[BATCHNAME_COL]])) {
-                $args = array($row[BATCHNAME_COL] . ' ' . $naming, 1, 1);
-                if (substr($row[BATCHNAME_COL],-2) == " A"){
+            if (!isset($batchIDs[$row['batch']])) {
+                $args = array($row['batch'] . ' ' . $naming, 1, 1);
+                if (substr($row['batch'],-2) == " A"){
                     $args[] = $start;
                     $args[] = $end;
-                } else if (substr($row[BATCHNAME_COL],-2) == " B") {
+                } else if (substr($row['batch'],-2) == " B") {
                     $args[] = $b_start;
                     $args[] = $b_end;
                 } else {
@@ -130,13 +129,18 @@ class CoopDealsReviewPage extends FanniePage
     
                 $dbc->exec_statement($batchP,$args);
                 $bID = $dbc->insert_id();
-                $batchIDs[$row[BATCHNAME_COL]] = $bID;
-            }
-            $id = $batchIDs[$row[BATCHNAME_COL]];
+                $batchIDs[$row['batch']] = $bID;
 
-            $list->upc($row[UPC_COL]);
+                if ($this->config->get('STORE_MODE') === 'HQ') {
+                    StoreBatchMapModel::initBatch($bID);
+                }
+            }
+            $id = $batchIDs[$row['batch']];
+
+            $list->upc($row['upc']);
             $list->batchID($id);
-            $list->salePrice(sprintf("%.2f",$row[PRICE_COL]));
+            $list->salePrice(sprintf("%.2f",$row['price']));
+            $list->signMultiplier($row['multiplier']);
             $list->save();
         }
 

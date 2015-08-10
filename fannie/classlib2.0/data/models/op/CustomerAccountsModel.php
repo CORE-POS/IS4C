@@ -28,7 +28,11 @@ class CustomerAccountsModel extends BasicModel
 {
 
     protected $name = "CustomerAccounts";
+    /**
+      Suppress create offer from updates tab
+      until functionality is ready
     protected $preferred_db = 'op';
+    */
     protected $unique = array('cardNo');
 
     protected $columns = array(

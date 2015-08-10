@@ -875,6 +875,7 @@ static public function finalizeTransaction($incomplete=false)
     }
 
     // advance trans_no value
+    Database::loadglobalvalues();
     $nextTransNo = Database::gettransno(CoreLocal::get('CashierNo'));
     CoreLocal::set('transno', $nextTransNo);
     Database::setglobalvalue('TransNo', $nextTransNo);

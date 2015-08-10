@@ -60,9 +60,10 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
                         <span class="label primaryBackground">FFA</span>
                         <input type="checkbox" name="HouseholdSeparateDiscounts_SSI[] value="%d" />
                     </label>
+                    <input name="HouseholdMembers_ID[] type="hidden" value="%d" />
                 </div>',
                 $infoW['firstName'],$infoW['lastName'],$infoW['discount'],
-                $count+2, $count+2); // $count+2 == personNum
+                $count+2, $count+2, $infoW['customerID']); // $count+2 == personNum
             $count++;
         }
 
@@ -87,6 +88,7 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
                         <span class="label primaryBackground">FFA</span>
                         <input type="checkbox" name="HouseholdSeparateDiscounts_SSI[] value="%d" />
                     </label>
+                    <input name="HouseholdMembers_ID[]" type="hidden" value="0" />
                 </div>', $count+2, $count+2);
             $count++;
         }
@@ -127,9 +129,11 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
         $discs = FormLib::get('HouseholdSeparateDiscounts_discount', array());
         $checks = FormLib::get('HouseholdSeparateDiscounts_writeChecks', array());
         $ssi = FormLib::get('HouseholdSeparateDiscounts_SSI', array());
+        $ids = FormLib::get('HouseholdMembers_ID', array());
         $pn = 2;
         for ($i=0; $i<count($lns); $i++) {
             $json['customers'][] = array(
+                'customerID' => $ids[$i],
                 'firstName' => $fns[$i],
                 'lastName' => $lns[$i],
                 'accountHolder' => 0,

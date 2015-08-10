@@ -102,6 +102,12 @@ class ItemMarginModule extends ItemModule
     public function avgSales($upc)
     {
         $config = FannieConfig::factory();
+        $dbc = FannieDB::get($config->get('OP_DB'));
+        $prodP = $dbc->prepare('SELECT auto_par FROM products WHERE upc=?');
+        $avg = $dbc->getValue($prodP, array($upc));
+        if ($avg) {
+            return $avg;
+        }
         $dbc = FannieDB::get($config->get('ARCHIVE_DB'));
         $avg = 0.0;
         if ($dbc->tableExists('productWeeklyLastQuarter')) {
@@ -149,6 +155,7 @@ class ItemMarginModule extends ItemModule
         if ($new_rule != $old_rule) {
             $prod = new ProductsModel($db);
             $prod->upc(BarcodeLib::padUPC($upc));
+            $prod->store_id(1);
             $rule = new PriceRulesModel($db);
             switch ($new_rule) {
                 case 0: // no custom rule
@@ -277,9 +284,10 @@ class ItemMarginModule extends ItemModule
         ob_start();
         ?>
         function updateMarginMod(){
+            var store_id = $(this).data('store-id');
             $.ajax({
                 url: '<?php echo FannieConfig::config('URL'); ?>item/modules/ItemMarginModule.php',
-                data: 'p='+$('#price').val()+'&d='+$('#department').val()+'&c='+$('#cost').val()+'&u=<?php echo $upc; ?>',
+                data: 'p='+$('#price'+store_id).val()+'&d='+$('#department'+store_id).val()+'&c='+$('#cost'+store_id).val()+'&u=<?php echo $upc; ?>',
                 cache: false,
                 success: function(data){
                     $('#ItemMarginMeter').html(data);

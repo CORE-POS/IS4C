@@ -32,7 +32,7 @@ class PriceReduction extends FannieReportPage
     public $report_set = 'Reports';
     public $themed = true;
 
-    protected $report_headers = array('UPC', 'Description', 'Cost', 'Price', 'actMarg', '+/- Marg', 'SRP', 'RoundSRP', '+/-:Price');
+    protected $report_headers = array('UPC', 'Description', 'Cost', 'Price', 'Margin Goal', 'actMarg', '+/- Marg', 'SRP', 'RoundSRP', '+/-:Price');
     protected $sort_direction = 1;
     protected $title = "Fannie : Price Reduction Report";
     protected $header = "Price Reduction Report";
@@ -42,22 +42,22 @@ class PriceReduction extends FannieReportPage
     {        
         $count = 0;
         $item = array();       
-        $upc = array(),
-        $desc = array(),   
-        $cost = array(), 
-        $price = array(), 
-        $marg = array(), 
-        $var = array(),
-        $srp = array(),
-        $movement = array(),
-        $dept = array(),
-        $deptID = array(),
-        $vendor = array(),
-        $deptMarg = array(),    //The Margin We're Using
-        $devMarg = array(),
-        $devPrice = array(),
-        $uMarg = array(),       //UNFI margin
-        $dMarg = array(),       //Department margin
+        $upc = array();
+        $desc = array(); 
+        $cost = array(); 
+        $price = array(); 
+        $marg = array(); 
+        $var = array();
+        $srp = array();
+        $movement = array();
+        $dept = array();
+        $deptID = array();
+        $vendor = array();
+        $deptMarg = array();    //The Margin We're Using
+        $devMarg = array();
+        $devPrice = array();
+        $uMarg = array();       //UNFI margin
+        $dMarg = array();       //Department margin
         $roundSRP = array();
 
         // Connect
@@ -72,6 +72,7 @@ class PriceReduction extends FannieReportPage
                 LEFT JOIN is4c_trans.dlog_90_view as L ON (L.upc = V.upc)
                 LEFT JOIN departments as S ON (P.department = S.dept_no)
                 WHERE P.inUse = 1 and P.price_rule_id = 0 
+                    AND P.cost <> 0
                 GROUP BY P.upc 
                 ORDER BY P.modified
                 ;";
@@ -103,29 +104,34 @@ class PriceReduction extends FannieReportPage
             $devMarg[] = $marg[$i] - $deptMarg[$i];
             $desiredPrice = 0;
             $desiredPrice = $cost[$i] / (1 - $deptMarg[$i]);
-            $srp[] = $rounder->round($desiredPrice);
+            $srp[] = $desiredPrice;
+            $roundSRP[] = $rounder->round($desiredPrice);
             $devPrice[] = $price[$i] - $srp[$i];
         }
     
         for ($i = 0; $i < count($upc); $i++){
-            if( ($upc[$i] != NULL) && ($srp[$i] > 0) && ($devPrice[$i] > 0) && ($devPrice[$i] >= $_POST['degree']) ) {
-                $item[$i][0] = $upc[$i];
-                $item[$i][1] = $cost[$i];
-                $item[$i][2] = $price[$i];
-                $item[$i][3] = $marg[$i];
-                $item[$i][4] = $devMarg[$i];
-                $item[$i][5] = $srp[$i];
-                $item[$i][6] = $roundSRP[$i];
-                $item[$i][7] = $devPrice[$i];
+            if( ($upc[$i] != NULL) && ($srp[$i] > 0) && ($devPrice[$i] > 0) && ($devMarg[$i] >= $_POST['degree']) ) {
+                $item[] = array(
+                    $upc[$i],
+                    $desc[$i],
+                    $cost[$i],
+                    $price[$i],
+                    sprintf('%.3f%%', $deptMarg[$i]*100),
+                    sprintf('%.3f%%', $marg[$i]*100),
+                    sprintf('%.3f%%', $devMarg[$i]*100),
+                    sprintf('%.2f', $srp[$i]),
+                    $roundSRP[$i],
+                    sprintf('%.2f', $devPrice[$i]),
+                );
             }
         }
-        return $info;
+        return $item;
     }
     
     public function form_content()
     {
         $this->add_onload_command('$(\'#startdate\').focus()');
-        return '<form method="post" action="PriceRounder.php" id="form1">
+        return '<form method="post" id="form1">
             <label>Select %/degree to check margins to</label>
             <input type="text" name="degree" value="" class="form-control"
                 required id="degree" />

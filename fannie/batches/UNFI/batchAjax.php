@@ -39,36 +39,39 @@ case 'addVarPricing':
     $dbc->exec_statement($prep,array($upc));
     $prod = new ProductsModel($dbc);
     $prod->upc($upc);
-    $prod->load();
-    // make sure another rule isn't overwritten with a generic one
-    if ($prod->price_rule_id() == 0) {
-        $prod->price_rule_id(1);
+    foreach ($prod->find('store_id') as $p) {
+        // make sure another rule isn't overwritten with a generic one
+        if ($p->price_rule_id() == 0) {
+            $p->price_rule_id(1);
+        }
+        $p->save();
     }
-    $prod->save();
     break;
 case 'delVarPricing':
     $prep = $dbc->prepare_statement("UPDATE prodExtra SET variable_pricing=0 WHERE upc=?");
     $dbc->exec_statement($prep,array($upc));
+    $ruleProd = new ProductsModel($dbc);
     $prod = new ProductsModel($dbc);
     $prod->upc($upc);
-    $prod->load();
-    $ruleID = 0;
-    // remove the rule but save its ID
-    if ($prod->price_rule_id() != 0) {
-        $ruleID = $prod->price_rule_id();
-        $prod->price_rule_id(0);
-    }
-    $prod->save();
-    // make sure no other item is using the same
-    // rule before deleting it
-    if ($ruleID > 1) {
-        $prod->reset();
-        $prod->price_rule_id($ruleID);
-        if (count($prod->find()) == 0) {
-            // no products are using this rule
-            $rule = new PriceRulesModel($dbc);
-            $rule->priceRuleID($ruleID);
-            $rule->delete();
+    foreach ($prod->find('store_id') as $p) {
+        $ruleID = 0;
+        // remove the rule but save its ID
+        if ($p->price_rule_id() != 0) {
+            $ruleID = $p->price_rule_id();
+            $p->price_rule_id(0);
+        }
+        $p->save();
+        // make sure no other item is using the same
+        // rule before deleting it
+        if ($ruleID > 1) {
+            $ruleProd->reset();
+            $ruleProd->price_rule_id($ruleID);
+            if (count($ruleProd->find()) == 0) {
+                // no products are using this rule
+                $rule = new PriceRulesModel($dbc);
+                $rule->priceRuleID($ruleID);
+                $rule->delete();
+            }
         }
     }
     break;
@@ -85,6 +88,12 @@ case 'newPrice':
         WHERE upc=?
             AND vendorID=?');
     $dbc->execute($viP, array($price,$upc,$vid));
+    $batchP = $dbc->prepare('
+        UPDATE batchList
+        SET salePrice=?
+        WHERE batchID=?
+            AND upc=?');
+    $dbc->execute($batchP, array($price, $bid, $upc));
     if ($dbc->tableExists('vendorSRPs')) {
         $sP = $dbc->prepare_statement("UPDATE vendorSRPs SET srp=? WHERE upc=? AND vendorID=?");
         $dbc->exec_statement($sP,array($price,$upc,$vid));

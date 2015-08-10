@@ -36,7 +36,7 @@ HIDSharp.dll:
 SPH.dll: DelegateForm.dll USBLayer.dll ParallelLayer.dll SerialPortHandler.cs SPH_Magellan_Scale.cs \
         SPH_SignAndPay_USB.cs SPH_SignAndPay_Auto.cs SPH_SignAndPay_Native.cs \
 		SPH_Parallel_Writer.cs SPH_IngenicoRBA_Common.cs SPH_IngenicoRBA_IP.cs \
-		SPH_IngenicoRBA_USB.cs SPH_IngenicoRBA_RS232.cs \
+		SPH_IngenicoRBA_USB.cs SPH_IngenicoRBA_RS232.cs SPH_Datacap_IPTran.cs \
 		Bitmap.dll
 	$(CC) -define:MONO -target:library $(BASE_LIBS) \
 		-r:DelegateForm.dll -r:USBLayer.dll -r:ParallelLayer.dll -r:Bitmap.dll \

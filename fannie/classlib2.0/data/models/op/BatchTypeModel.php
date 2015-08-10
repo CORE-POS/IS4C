@@ -34,6 +34,9 @@ class BatchTypeModel extends BasicModel
         'batchTypeID' => array('type'=>'INT', 'primary_key'=>true),
         'typeDesc' => array('type'=>'VARCHAR(50)'),
         'discType' => array('type'=>'INT'),
+        'datedSigns' => array('type'=>'TINYINT', 'default'=>1),
+        'specialOrderEligible' => array('type'=>'TINYINT', 'default'=>1),
+        'editorUI' => array('type'=>'TINYINT', 'default'=>1),
     );
 
     public function doc()
@@ -156,6 +159,117 @@ more for organizational purposes
                 }
             }
             $this->instance["discType"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function datedSigns()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["datedSigns"])) {
+                return $this->instance["datedSigns"];
+            } else if (isset($this->columns["datedSigns"]["default"])) {
+                return $this->columns["datedSigns"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'datedSigns',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["datedSigns"]) || $this->instance["datedSigns"] != func_get_args(0)) {
+                if (!isset($this->columns["datedSigns"]["ignore_updates"]) || $this->columns["datedSigns"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["datedSigns"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function specialOrderEligible()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["specialOrderEligible"])) {
+                return $this->instance["specialOrderEligible"];
+            } else if (isset($this->columns["specialOrderEligible"]["default"])) {
+                return $this->columns["specialOrderEligible"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'specialOrderEligible',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["specialOrderEligible"]) || $this->instance["specialOrderEligible"] != func_get_args(0)) {
+                if (!isset($this->columns["specialOrderEligible"]["ignore_updates"]) || $this->columns["specialOrderEligible"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["specialOrderEligible"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function editorUI()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["editorUI"])) {
+                return $this->instance["editorUI"];
+            } else if (isset($this->columns["editorUI"]["default"])) {
+                return $this->columns["editorUI"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'editorUI',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["editorUI"]) || $this->instance["editorUI"] != func_get_args(0)) {
+                if (!isset($this->columns["editorUI"]["ignore_updates"]) || $this->columns["editorUI"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["editorUI"] = func_get_arg(0);
         }
         return $this;
     }

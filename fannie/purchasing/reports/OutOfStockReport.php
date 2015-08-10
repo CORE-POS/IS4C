@@ -31,10 +31,13 @@ class OutOfStockReport extends FannieReportPage
     protected $title = 'Out of Stock Report';
     protected $header = 'Out of Stock Report';
     public $description = '[Out of Stock Report] lists item that were ordered from vendors but not received';
+    public $report_set = 'Purchasing';
 
-    protected $report_headers = array('Vendor', 'Order Date', 'Invoice#', 'SKU', 'UPC', 'Brand', 'Description', 'Qty Ordered');
+    protected $report_headers = array('Vendor', 'Order Date', 'Invoice#', 'SKU', 'UPC', 'Brand', 'Description', 'Qty Ordered', 'Number of Orders');
     protected $required_fields = array('date1', 'date2');
     public $themed = true;
+    protected $sort_column = 8;
+    protected $sort_direction = 1;
 
     function fetch_report_data()
     {
@@ -71,7 +74,12 @@ class OutOfStockReport extends FannieReportPage
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
         $report = array();
+        $counts = array();
         while ($w = $dbc->fetchRow($res)) {
+            if (!isset($counts[$w['sku']])) {
+                $counts[$w['sku']] = 0;
+            }
+            $counts[$w['sku']]++;
             $report[] = array(
                 $w['vendorName'],
                 $w['placedDate'],
@@ -81,7 +89,13 @@ class OutOfStockReport extends FannieReportPage
                 $w['brand'],
                 $w['description'],
                 $w['quantity'],
+                1,
             );
+        }
+
+        for ($i=0; $i<count($report); $i++) {
+            $sku = $report[$i][3];
+            $report[$i][8] = $counts[$sku];
         }
 
         return $report;

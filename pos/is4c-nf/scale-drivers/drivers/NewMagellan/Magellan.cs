@@ -53,10 +53,15 @@ public class Magellan : DelegateForm
     private List<SerialPortHandler> sph;
     private UDPMsgBox u;
 
+    private bool mq_enabled = false;
+
     #if CORE_RABBIT
+    private bool mq_available = true;
     ConnectionFactory rabbit_factory;
     IConnection rabbit_con;
     IModel rabbit_channel;
+    #else
+    private bool mq_available = false;
     #endif
 
     // read deisred modules from config file
@@ -128,31 +133,38 @@ public class Magellan : DelegateForm
     {
         if (msg == "exit") {
             this.ShutDown();
+        } else if (msg == "mq_up" && mq_available) {
+            mq_enabled = true;
+        } else if (msg == "mq_down") {
+            mq_enabled = false;
         } else {
-	    sph.ForEach(s => { s.HandleMsg(msg); });
+            sph.ForEach(s => { s.HandleMsg(msg); });
         }
     }
 
     public void MsgSend(string msg)
     {
-        int ticks = Environment.TickCount;
-        string my_location = AppDomain.CurrentDomain.BaseDirectory;
-        char sep = Path.DirectorySeparatorChar;
-        while (File.Exists(my_location + sep + "ss-output/"  + sep + ticks)) {
-            ticks++;
+        if (mq_available && mq_enabled) {
+            #if CORE_RABBIT
+            byte[] body = System.Text.Encoding.UTF8.GetBytes(msg);
+            rabbit_channel.BasicPublish("", "core-pos", null, body);
+            #endif
+        } else {
+            int ticks = Environment.TickCount;
+            string my_location = AppDomain.CurrentDomain.BaseDirectory;
+            char sep = Path.DirectorySeparatorChar;
+            while (File.Exists(my_location + sep + "ss-output/"  + sep + ticks)) {
+                ticks++;
+            }
+
+            TextWriter sw = new StreamWriter(my_location + sep + "ss-output/" +sep+"tmp"+sep+ticks);
+            sw = TextWriter.Synchronized(sw);
+            sw.WriteLine(msg);
+            sw.Close();
+            File.Move(my_location+sep+"ss-output/" +sep+"tmp"+sep+ticks,
+                  my_location+sep+"ss-output/" +sep+ticks);
         }
 
-        TextWriter sw = new StreamWriter(my_location + sep + "ss-output/" +sep+"tmp"+sep+ticks);
-        sw = TextWriter.Synchronized(sw);
-        sw.WriteLine(msg);
-        sw.Close();
-        File.Move(my_location+sep+"ss-output/" +sep+"tmp"+sep+ticks,
-              my_location+sep+"ss-output/" +sep+ticks);
-
-        #if CORE_RABBIT
-        byte[] body = System.Text.Encoding.UTF8.GetBytes(msg);
-        rabbit_channel.BasicPublish("", "core-pos", null, body);
-        #endif
     }
 
     public void ShutDown()

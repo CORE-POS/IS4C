@@ -51,6 +51,7 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
             <div class=\"panel-body\">";
 
         $ret .= '<div class="form-group form-inline">';
+        $ret .= '<input type="hidden" name="ContactInfo_customerID" value="' . $primary['customerID'] . '" />';
         $ret .= '<span class="label primaryBackground">First Name</span>';
         $ret .= sprintf('<input name="ContactInfo_fn" maxlength="30"
                 value="%s" class="form-control" />',$primary['firstName']);
@@ -165,7 +166,7 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         if ($resp['errors'] > 0) {
             return "Error: problem saving Contact Information<br />";
         } else {
-            return "";
+            return '';
         }
     }
 

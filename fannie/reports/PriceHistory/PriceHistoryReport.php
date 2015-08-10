@@ -90,41 +90,82 @@ class PriceHistoryReport extends FannieReportPage
         $sql = FannieDB::get($FANNIE_OP_DB);
         $type = FormLib::get('type');
         if ($type === '') { // not set
-            $q = "select h.upc,p.description,price,h.modified,p.normal_price from prodPriceHistory
-            as h left join products as p on h.upc=p.upc
-              where h.upc = ?
-              order by h.upc,h.modified desc";
+            $q = "
+                SELECT h.upc,
+                    p.description,
+                    price,
+                    h.modified,
+                    p.normal_price 
+                FROM prodPriceHistory AS h 
+                    LEFT JOIN products AS p ON h.upc=p.upc
+                WHERE h.upc = ?
+                ORDER BY h.upc,
+                    h.modified DESC";
             $args = array($upc);
         } else if ($type == 'upc') {
-            $q = "select h.upc,p.description,price,h.modified from prodPriceHistory
-            as h left join products as p on h.upc=p.upc
-              where h.upc = ? and h.modified between ? AND ?
-              order by h.upc,h.modified";
+            $q = "
+                SELECT h.upc,
+                    p.description,
+                    price,
+                    h.modified,
+                    p.normal_price 
+                FROM prodPriceHistory AS h 
+                    LEFT JOIN products AS p ON h.upc=p.upc
+                WHERE h.upc = ?
+                    AND h.modified BETWEEN ? AND ?
+                ORDER BY h.upc,
+                    h.modified DESC";
             $args = array($upc,$start_date.' 00:00:00',$end_date.' 23:59:59');
         } else if ($type == 'department') {
-            $q = "select h.upc,p.description,price,h.modified,p.normal_price from prodPriceHistory
-            as h left join products as p on h.upc=p.upc
-              where department between ? and ? and h.modified BETWEEN ? AND ?
-              order by h.upc, h.modified";
+            $q = "
+                SELECT h.upc,
+                    p.description,
+                    price,
+                    h.modified,
+                    p.normal_price 
+                FROM prodPriceHistory AS h 
+                    LEFT JOIN products AS p ON h.upc=p.upc
+                WHERE department BETWEEN ? AND ?
+                    AND h.modified BETWEEN ? AND ?
+                ORDER BY h.upc,
+                    h.modified DESC";
             $args = array($dept1,$dept2,$start_date.' 00:00:00',$end_date.' 23:59:59');
             $upc = ''; // if UPC and dept submitted, unset UPC
         } else {
             if ($mtype == 'upc') {
-                $q = "select h.upc,p.description,price,h.modified,p.normal_price from prodPriceHistory
-                    as h left join products as p on h.upc=p.upc
-                    where h.upc like ? and h.modified BETWEEN ? AND ?
-                    order by h.upc,h.modified";
+                $q = "
+                    SELECT h.upc,
+                        p.description,
+                        price,
+                        h.modified,
+                        p.normal_price 
+                    FROM prodPriceHistory AS h 
+                        LEFT JOIN products AS p ON h.upc=p.upc
+                    WHERE h.upc LIKE ?
+                        AND h.modified BETWEEN ? AND ?
+                    ORDER BY h.upc,
+                        h.modified DESC";
                 $args = array('%'.$manu.'%',$start_date.' 00:00:00',$end_date.' 23:59:59');
             } else {
-                $q = "select p.upc,b.description,p.price,p.modified,b.normal_price
-                    from prodPriceHistory as p left join products as x
-                    on p.upc = x.upc left join products as b on
-                    p.upc=b.upc where x.brand ? and
-                    p.modified between ? AND ?
-                    order by p.upc,p.modified";
+                $q = "
+                    SELECT h.upc,
+                        p.description,
+                        price,
+                        h.modified,
+                        p.normal_price 
+                    FROM prodPriceHistory AS h 
+                        LEFT JOIN products AS p ON h.upc=p.upc
+                    WHERE x.brand LIKE ?
+                        AND h.modified BETWEEN ? AND ?
+                    ORDER BY h.upc,
+                        h.modified DESC";
                     $args = array($manu,$start_date.' 00:00:00',$end_date.' 23:59:59');
             }
             $upc = ''; // if UPC and manu submitted, unset UPC
+        }
+        $def = $sql->tableDefinition('prodPriceHistory');
+        if (isset($def['storeID']) && $this->config->get('STORE_ID')) {
+            $q = str_replace('h.upc=p.upc', 'h.upc=p.upc AND h.storeID=p.store_id', $q);
         }
         $p = $sql->prepare_statement($q);
         $r = $sql->exec_statement($p,$args);

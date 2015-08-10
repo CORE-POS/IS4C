@@ -67,6 +67,8 @@ class FannieAutoComplete extends FannieWebService
                                             OR p.brand LIKE ?
                                             OR u.description LIKE ?
                                             OR u.brand LIKE ?
+                                           GROUP BY p.upc,
+                                            p.description
                                            ORDER BY p.description');
                     $term = '%' . $args->search . '%';
                     $res = $dbc->execute($prep, array($term, $term, $term, $term));
@@ -75,7 +77,8 @@ class FannieAutoComplete extends FannieWebService
                         SELECT p.upc,
                             p.upc AS description
                         FROM products AS p
-                        WHERE p.upc LIKE ?');
+                        WHERE p.upc LIKE ?
+                        GROUP BY p.upc');
                     $res = $dbc->execute($prep, array('%'.$args->search . '%'));
                 }
                 while ($res && $row = $dbc->fetch_row($res)) {

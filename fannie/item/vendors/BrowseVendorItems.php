@@ -254,6 +254,7 @@ class BrowseVendorItems extends FanniePage
         $model->cost($vinfo['cost']);
         $model->default_vendor_id($vid);
         $model->brand($vinfo['brand']);
+        $model->store_id(1);
         $model->save();
 
         $xInsQ = $dbc->prepare_statement("INSERT INTO prodExtra (upc,manufacturer,distributor,cost,margin,variable_pricing,location,

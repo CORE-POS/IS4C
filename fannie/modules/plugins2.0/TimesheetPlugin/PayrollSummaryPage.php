@@ -7,10 +7,12 @@ if (!class_exists('FannieAPI')) {
 class PayrollSummaryPage extends FanniePage {
     public $page_set = 'Plugin :: TimesheetPlugin';
 
-    public function preprocess(){
+    public function preprocess()
+    {
         $this->header = 'Timeclock - Payroll Summary';
         $this->title = 'Fannie - Administration Module';
-        return True;
+
+        return true;
     }
 
     function javascript_content(){
@@ -34,33 +36,34 @@ class PayrollSummaryPage extends FanniePage {
     }
 
 
-    function body_content(){
+    function body_content()
+    {
         global $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
         $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 
         include ('./includes/header.html');
         $submitted = FormLib::get_form_value('submitted','');
         $periodID = FormLib::get_form_value('period','');
-        if (!empty($submitted) && is_numeric($period)) { // If submitted.
+        if (!empty($submitted) && is_numeric($periodID)) { // If submitted.
             $periodID = $_POST['period'];
-            $query = $ts_db->prepare_statement("SELECT ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2),
+            $query = $ts_db->prepare_statement("
+            SELECT ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2),
                 t.emp_no,
-                e.RealFirstName,
+                e.FirstName,
                 date_format(p.periodStart, '%M %D, %Y'),
                 date_format(p.periodEnd, '%M %D, %Y'),
                 e.card_no,
                 e.LastName
             FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
-                INNER JOIN {$FANNIE_OP_DB}.employees AS e
-                ON (t.emp_no = e.emp_no)
-                INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
-                ON (t.periodID = p.periodID)
+                INNER JOIN {$FANNIE_OP_DB}.employees AS e ON (t.emp_no = e.emp_no)
+                INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p ON (t.periodID = p.periodID)
             WHERE t.periodID = ?
                 AND t.area NOT IN (13, 14)
             GROUP BY t.emp_no
-            ORDER BY e.RealFirstName ASC");
+            ORDER BY e.FirstName ASC");
 
             $result = $ts_db->exec_statement($query,array($periodID));
+            var_dump($ts_db->error());
 
             $periodQ = $ts_db->prepare_statement("SELECT periodStart, periodEnd 
                 FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
@@ -286,13 +289,12 @@ class PayrollSummaryPage extends FanniePage {
             else {
                 echo '<p>There is no timesheet available for that pay period.</p>';
             }
-        } 
-        else {
+        } else {
             $query = $ts_db->prepare_statement("SELECT FirstName, emp_no FROM "
                 .$FANNIE_OP_DB.$ts_db->sep()."employees 
                 WHERE EmpActive=1 ORDER BY FirstName ASC");
             $result = $ts_db->exec_statement($query);
-            echo '<form action="'.$_SERVER['PHP_SELF'].'" method="POST">';
+            echo '<form action="'.$_SERVER['PHP_SELF'].'" method="get">';
             $currentQ = $ts_db->prepare_statement("SELECT periodID-1 FROM 
                 {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
                 WHERE ".$ts_db->now()." BETWEEN periodStart AND periodEnd");
@@ -305,7 +307,9 @@ class PayrollSummaryPage extends FanniePage {
                 WHERE periodStart < ".$ts_db->now());
             $result = $ts_db->exec_statement($query);
 
-            echo '<p>Pay Period: <select name="period">
+            echo '<div class="form-group">
+                <label>Pay Period</label>
+                <select class="form-control" name="period">
                 <option>Please select a payperiod to view.</option>';
 
             while ($row = $ts_db->fetch_array($result)) {
@@ -313,10 +317,12 @@ class PayrollSummaryPage extends FanniePage {
                 if ($row[2] == $ID) { echo ' SELECTED';}
                 echo ">$row[0] - $row[1]</option>";
             }
-            echo '</select></p>';
+            echo '</select></div>';
 
-            echo '<button name="submit" type="submit">Submit</button>
+            echo '<div class="form-group">';
+            echo '<button name="submit" class="btn btn-default" type="submit">Submit</button>
                 <input type="hidden" name="submitted" value="TRUE" />
+                </div>
                 </form>';
         }
     }

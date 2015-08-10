@@ -70,7 +70,20 @@ class AutoLoader extends LibraryClass
             if (!is_array($map)) {
                 return;
             }
-        } else if (!isset($map[$name])) {
+        } elseif (!isset($map[$name]) && strpos($name, '\\') > 0) {
+            $pieces = explode('\\', $name);
+            if (count($pieces) > 2 && $pieces[0] == 'COREPOS' && $pieces[1] == 'common') {
+                $s = DIRECTORY_SEPARATOR;
+                $path = dirname(__FILE__) . $s . '..' . $s . '..' . $s . '..' . $s . 'common' . $s;
+                for ($i=2; $i<count($pieces)-1; $i++) {
+                    $path .= $pieces[$i] . $s;
+                }
+                $path .= $pieces[count($pieces)-1] . '.php';
+                if (file_exists($path)) {
+                    $map[$name] = $path;
+                }
+            }
+        } elseif (!isset($map[$name])) {
             // class is unknown
             // rebuild map to see if the definition
             // file has been added
@@ -310,6 +323,11 @@ else {
     }
 }
 
+// add composer classes if present
+if (file_exists(dirname(__FILE__) . '/../../../vendor/autoload.php')) {
+    include(dirname(__FILE__) . '/../../../vendor/autoload.php');
+}
+
 /** 
   Internationalization 
   setlocale() probably always exists
@@ -323,5 +341,14 @@ if (function_exists('setlocale') && defined('LC_MESSAGES') && CoreLocal::get('lo
         bindtextdomain('pos-nf', realpath(dirname(__FILE__).'/../locale'));
         textdomain('pos-nf');
     }
+}
+
+/**
+  Add placeholder gettext function if
+  the module is not enabled. Translations
+  won't work but pages won't crash either
+*/
+if (!function_exists('gettext')) {
+    function _($str) { return $str; }
 }
 

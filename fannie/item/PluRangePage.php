@@ -81,6 +81,7 @@ class PluRangePage extends FannieRESTfulPage
         for ($i=0; $i<$this->number; $i++) {
             $upc = BarcodeLib::padUPC($this->start + $i);
             $model->upc($upc);
+            $model->store_id(1);
             $model->description($desc . ' ' . ($i+1));
             $model->save();
         }

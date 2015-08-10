@@ -204,54 +204,12 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
             onclick="location=\'ViewPurchaseOrders.php?' . $init . '\'; return false;">All Orders</button>';
         $ret .= '</div>';
 
-        $departments = $dbc->tableDefinition('departments');
-        $codingQ = 'SELECT d.salesCode, SUM(o.receivedTotalCost) as rtc
-                    FROM PurchaseOrderItems AS o
-                        LEFT JOIN products AS p ON o.internalUPC=p.upc ';
-        if (isset($departments['salesCode'])) {
-            $codingQ .= ' LEFT JOIN departments AS d ON p.department=d.dept_no ';
-        } else if ($dbc->tableExists('deptSalesCodes')) {
-            $codingQ .= ' LEFT JOIN deptSalesCodes AS d ON p.department=d.dept_ID ';
-        }
-        $codingQ .= 'WHERE o.orderID=?
-                    GROUP BY d.salesCode';
-        $codingP = $dbc->prepare($codingQ);
-        $codingR = $dbc->execute($codingP, array($this->id));
-        $codings = array();
-        while ($codingW = $dbc->fetch_row($codingR)) {
-            if ($codingW['rtc'] == 0 && empty($codingW['salesCode'])) {
-                continue;
-            }
-            if (empty($codingW['salesCode'])) {
-                $codingW['salesCode'] = 'n/a';
-            }
-            $coding[$codingW['salesCode']] = $codingW['rtc'];
-        }
-        $na_details = '';
-        if (isset($coding['n/a'])) {
-            $guesses = $order->guessAccounts();
-            foreach ($guesses as $code => $total) {
-                if (!isset($coding[$code])) {
-                    $coding[$code] = 0;
-                }
-                $coding[$code] += $total;
-            }
-            $coding['n/a'] = $guesses['n/a'];
-            if ($coding['n/a'] == 0) {
-                unset($coding['n/a']);
-            }
-        }
-        $ret .= '<br />';
-
         $ret .= '<div><div style="float:left;">';
         $ret .= '<table class="table table-bordered"><tr><th colspan="2">Coding(s)</th>';
         $ret .= '<td><b>PO#</b>: '.$order->vendorOrderID().'</td>';
         $ret .= '<td><b>Invoice#</b>: '.$order->vendorInvoiceID().'</td>';
         $ret .= '</tr>';
-        foreach ($coding as $code => $total) {
-            $ret .= sprintf('<tr><td>%s</td><td>%.2f</td><td colspan="2">%s</td></tr>',
-                        $code, $total, $na_details);
-        }
+        $ret .= '{{CODING}}';
         $ret .= '</table>';
         $ret .= '</div><div style="float:left;">';
         if (!$order->placed()) {
@@ -268,9 +226,10 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 
         $model = new PurchaseOrderItemsModel($dbc);
         $model->orderID($this->id);
+        $codings = array();
 
         $ret .= '<table class="table tablesorter"><thead>';
-        $ret .= '<tr><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
+        $ret .= '<tr><th>Coding</th><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
             <th>Unit Size</th><th>Units/Case</th><th>Cases</th>
             <th>Est. Cost</th><th>&nbsp;</th><th>Received</th>
             <th>Rec. Qty</th><th>Rec. Cost</th></tr></thead><tbody>';
@@ -281,11 +240,22 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
             } elseif ($obj->receivedQty() < $obj->quantity()) {
                 $css = 'class="warning"';
             }
-            $ret .= sprintf('<tr %s><td>%s</td><td>%s</td><td>%s</td><td>%s</td>
+            if ($obj->salesCode() == '') {
+                $code = $obj->guessCode();
+                $obj->salesCode($code);
+                $obj->save();
+            }
+            $coding = (int)$obj->salesCode();
+            if (!isset($codings[$coding])) {
+                $codings[$coding] = 0.0;
+            }
+            $codings[$coding] += $obj->receivedTotalCost();
+            $ret .= sprintf('<tr %s><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>
                     <td>%s</td><td>%s</td><td>%d</td><td>%.2f</td>
                     <td>&nbsp;</td><td>%s</td><td>%d</td><td>%.2f</td>
                     </tr>',
                     $css,
+                    $obj->salesCode(),
                     $obj->sku(),
                     $obj->internalUPC(),
                     $obj->brand(),
@@ -299,6 +269,13 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
             );
         }
         $ret .= '</tbody></table>';
+
+        $coding_rows = '';
+        foreach ($codings as $coding => $ttl) {
+            $coding_rows .= sprintf('<tr><td>%d</td><td>%.2f</td></tr>',
+                $coding, $ttl);
+        }
+        $ret = str_replace('{{CODING}}', $coding_rows, $ret);
 
         $this->add_script('js/view.js');
         $this->add_script('../src/javascript/tablesorter/jquery.tablesorter.min.js');

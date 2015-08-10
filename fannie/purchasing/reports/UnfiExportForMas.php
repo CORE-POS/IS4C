@@ -76,22 +76,37 @@ class UnfiExportForMas extends FannieReportPage
         $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $departments = $dbc->tableDefinition('departments');
-        $codingQ = 'SELECT o.orderID, d.salesCode, i.vendorInvoiceID, 
-                    SUM(o.receivedTotalCost) as rtc,
-                    MAX(o.receivedDate) AS rdate
-                    FROM PurchaseOrderItems AS o
-                    LEFT JOIN PurchaseOrder as i ON o.orderID=i.orderID
-                    LEFT JOIN products AS p ON o.internalUPC=p.upc ';
-        if (isset($departments['salesCode'])) {
-            $codingQ .= ' LEFT JOIN departments AS d ON p.department=d.dept_no ';
-        } else if ($dbc->tableExists('deptSalesCodes')) {
-            $codingQ .= ' LEFT JOIN deptSalesCodes AS d ON p.department=d.dept_ID ';
+        $mustCodeP = $dbc->prepare('
+            SELECT i.orderID,
+                i.sku
+            FROM PurchaseOrderItems AS i
+            WHERE i.receivedDate BETWEEN ? AND ?
+                AND (i.salesCode IS NULL OR i.salesCode=0)
+        ');
+        $codeR = $dbc->execute($mustCodeP, array($date1 . ' 00:00:00', $date2 . ' 23:59:59'));
+        $model = new PurchaseOrderItemsModel($dbc);
+        while ($w = $dbc->fetchRow($codeR)) {
+            $model->orderID($w['orderID']);
+            $model->sku($w['sku']);
+            if ($model->load()) {
+                $code = $model->guessCode();
+                $model->salesCode($code);
+                $model->save();
+            }
         }
-        $codingQ .= 'WHERE i.vendorID=? AND i.userID=0
-                    AND o.receivedDate BETWEEN ? AND ?
-                    GROUP BY o.orderID, d.salesCode, i.vendorInvoiceID
-                    ORDER BY rdate, i.vendorInvoiceID, d.salesCode';
+
+        $codingQ = 'SELECT o.orderID, 
+                        o.salesCode, 
+                        i.vendorInvoiceID, 
+                        SUM(o.receivedTotalCost) as rtc,
+                        MAX(o.receivedDate) AS rdate
+                    FROM PurchaseOrderItems AS o
+                        LEFT JOIN PurchaseOrder as i ON o.orderID=i.orderID 
+                    WHERE i.vendorID=? 
+                        AND i.userID=0
+                        AND o.receivedDate BETWEEN ? AND ?
+                    GROUP BY o.orderID, o.salesCode, i.vendorInvoiceID
+                    ORDER BY rdate, i.vendorInvoiceID, o.salesCode';
         $codingP = $dbc->prepare($codingQ);
 
         $report = array();
@@ -112,7 +127,7 @@ class UnfiExportForMas extends FannieReportPage
             }
             $record = array(
                 'UNFI',
-                $codingW['vendorInvoiceID'],
+                '<a href="../ViewPurchaseOrders.php?id=' . $codingW['orderID'] . '">' . $codingW['vendorInvoiceID'] . '</a>',
                 $codingW['rdate'],
                 0.00,
                 sprintf('%.2f', $codingW['rtc']),
@@ -131,46 +146,9 @@ class UnfiExportForMas extends FannieReportPage
         $po = new PurchaseOrderModel($dbc);
         foreach ($orders as $id => $data) {
             $invTTL = 0;
-            $has_na = false;
             for ($i=0; $i<count($data); $i++) {
                 $row = $data[$i];
                 $invTTL += $row[4];
-                if ($row[5] == 'n/a') {
-                    $has_na = $i;
-                }
-            }
-
-            if ($has_na !== false) {
-                $po->orderID($id);
-                $po->load();
-                $guesses = $po->guessAccounts();
-                foreach ($guesses as $code => $total) {
-                    $found = false;
-                    if ($code != 'n/a') {
-                        $code = '5' . substr($code, 1);
-                    }
-                    for ($i=0; $i<count($data); $i++) {
-                        $row = $data[$i];
-                        if ($row[5] == $code && $code == 'n/a') {
-                            $orders[$id][$i][4] = $total;
-                            $found = true;
-                            break;
-                        } elseif ($row[5] == $code) {
-                            $orders[$id][$i][4] += $total;
-                            $found = true;
-                            break;
-                        }
-                    }
-                    if (!$found) {
-                        $new = $data[0];
-                        $new[5] = '5' . substr($code, 1);
-                        $new[4] = $total;
-                        $orders[$id][] = $new;
-                    }
-                }
-                if ($guesses['n/a'] == 0) {
-                    array_splice($orders[$id], $has_na, 1);
-                }
             }
 
             foreach ($orders[$id] as $row) {
@@ -179,7 +157,7 @@ class UnfiExportForMas extends FannieReportPage
             }
         }
 
-    /*
+        /*
         for ($i=0; $i<count($report); $i++) {
             $inv = $report[$i][1];
             $report[$i][3] = sprintf('%.2f', $invoice_sums[$inv]);

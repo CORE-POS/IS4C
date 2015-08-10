@@ -257,7 +257,7 @@ HTML;
     <div class="panel-heading">Delete</div>
     <div class="panel-body">
         <div class="form-group">
-            <a href="?method=delete&id={{id}}&upc={{upc}}&confirm=1" class="btn btn-danger">
+            <a href="?_method=delete&id={{id}}&upc={{upc}}&confirm=1" class="btn btn-danger">
                 {{ICON}} Remove Tag from Queue
             </a>
         </div>

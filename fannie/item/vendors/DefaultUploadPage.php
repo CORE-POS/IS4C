@@ -305,9 +305,10 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             if ($_SESSION['vUploadChangeCosts']) {
                 $pm->reset();
                 $pm->upc($upc);
-                if ($pm->load()) {
-                    $pm->cost($reg_unit);
-                    $pm->save();
+                $pm->default_vendor_id($VENDOR_ID);
+                foreach ($pm->find('store_id') as $obj) {
+                    $obj->cost($reg_unit);
+                    $obj->save();
                 }
             }
         }

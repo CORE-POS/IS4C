@@ -55,9 +55,16 @@ class EpScaleLib
     */
     static public function getItemLine($item_info)
     {
-        if ($item_info['RecordType'] == 'ChangeOneItem') {
+        if ($item_info['RecordType'] == 'WriteOneItem') {
             return self::getAddItemLine($item_info);
         } else {
+            $line = self::getAddItemLine($item_info);
+            return 'CCOSPIC' . substr($line, 7);
+            /**
+              Docs say you don't have to send all fields with
+              a change but it throws weird errors if I just send
+              the changed fields.
+            */
             return self::getUpdateItemLine($item_info);
         }
 
@@ -68,7 +75,7 @@ class EpScaleLib
     {
         $line = 'CCOSPIA' . chr(253);
         $line .= 'PNO' . $item_info['PLU'] . chr(253);
-        $line .= 'UPC' . '2' . str_pad($item_info['PLU'],4,'0',STR_PAD_LEFT) . '000000' . chr(253);
+        $line .= 'UPC' . '002' . str_pad($item_info['PLU'],4,'0',STR_PAD_LEFT) . '000000' . chr(253);
         $line .= 'DN1' . (isset($item_info['Description']) ? $item_info['Description'] : '') . chr(253);
         $line .= 'DS1' . '0' . chr(253);
         $line .= 'DN2' . chr(253);
@@ -87,7 +94,7 @@ class EpScaleLib
         }
         $line .= 'BCO' . '0' . chr(253);
         $line .= 'WTA' . '0' . chr(253);
-        $line .= 'UWT' . (isset($item_info['Tare']) ? floor(100*$item_info['Tare']) : '0') . chr(253);
+        $line .= 'UTA' . (isset($item_info['Tare']) ? floor(1000*$item_info['Tare']) : '0') . chr(253);
         $line .= 'SLI' . (isset($item_info['ShelfLife']) ? $item_info['ShelfLife'] : '0') . chr(253);
         $line .= 'SLT' . '0' . chr(253);
         $line .= 'EBY' . '0' . chr(253);
@@ -118,7 +125,7 @@ class EpScaleLib
         $line .= 'UF5' . chr(253);
         $line .= 'UF6' . chr(253);
         $line .= 'UF7' . chr(253);
-        $line .= 'UF8' . chr(253);
+        $line .= 'UF8' . '1' . chr(253);
         $line .= 'PTN' . '1' . chr(253);
 
         return $line;
@@ -132,6 +139,7 @@ class EpScaleLib
                 switch ($key) {
                     case 'PLU':
                         $line .= 'PNO' . $item_info[$key] . chr(253);
+                        $line .= 'UPC' . '002' . str_pad($item_info[$key],4,'0',STR_PAD_LEFT) . '000000' . chr(253);
                         break;
                     case 'Description':
                         $line .= 'DN1' . $item_info[$key] . chr(253);
@@ -203,9 +211,21 @@ class EpScaleLib
         }
         $scale_model = new \ServiceScalesModel(\FannieDB::get($config->get('OP_DB')));
         $i = 0;
+        $depts = array();
         foreach ($selected_scales as $scale) {
             $scale_model->reset();
             $scale_model->host($scale['host']);
+            $matches = $scale_model->find();
+            if (count($matches) > 0) {
+                $scale_model = $matches[0];
+            }
+            // batches run per-department rather than per-scale
+            // so duplicates can be skipped
+            if (in_array($scale_model->epDeptNo(), $depts)) {
+                continue;
+            } else {
+                $depts[] = $scale_model->epDeptNo();
+            }
 
             $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_writeItem_' . $i . '.dat';
             $fp = fopen($file_name, 'w');
@@ -229,6 +249,8 @@ class EpScaleLib
                     $et_line .= 'SAD' . $scale_model->epScaleAddress() . chr(253);
                     $et_line .= 'PNO' . $item['PLU'] . chr(253);
                     $et_line .= 'INO' . $item['PLU'] . chr(253);
+                    $item['ExpandedText'] = str_replace("\r", '', $item['ExpandedText']);
+                    $item['ExpandedText'] = str_replace("\n", '<br>', $item['ExpandedText']);
                     $et_line .= 'ITE' . $item['ExpandedText'] . chr(253);
                     $et_line .= self::$NL;
                     fwrite($fp, $et_line);

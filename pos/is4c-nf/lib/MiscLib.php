@@ -113,7 +113,7 @@ static public function pingport($host, $dbms)
     $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
     socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
     socket_set_block($sock);
-    $test = socket_connect($sock,$host,$port);
+    $test = @socket_connect($sock,$host,$port);
     socket_close($sock);
 
     return ($test ? 1 : 0);
@@ -317,6 +317,15 @@ static public function getAllIPs()
 
 static public function getNumbers($string)
 {
+    if (empty($string)) {
+        return array(-999999);
+    } elseif (is_array($string)) {
+        $ret = array();
+        foreach ($string as $s) {
+            $ret[] = (int)$s;
+        }
+        return $ret;
+    }
     $pieces = preg_split('/[^\d]+/', $string, 0, PREG_SPLIT_NO_EMPTY);
     for ($i=0; $i<count($pieces); $i++) {
         $pieces[$i] = (int)$pieces[$i];

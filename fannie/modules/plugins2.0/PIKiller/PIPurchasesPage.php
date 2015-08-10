@@ -68,7 +68,7 @@ class PIPurchasesPage extends PIKillerPage {
             ORDER BY yt DESC, mt DESC,
             dt DESC";
         $args = array($this->id, $this->__models['start'].' 00:00:00', $this->__models['end'].' 23:59:59');
-        if ($my == date('Ym') && substr($table, -5) != '.dlog') {
+        if ($my == date('Ym') && substr($table, -5) != '.dlog' && substr($table, -8) != '.dlog_15') {
             // current month. tack on today's transactions
             $today = "SELECT month(tdate) as mt,day(tdate) as dt,year(tdate) as yt,trans_num,
                 sum(case when trans_type='T' then -total else 0 end) as tenderTotal,

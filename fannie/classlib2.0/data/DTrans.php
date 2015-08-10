@@ -220,10 +220,15 @@ class DTrans
             $table .= ($conf->get('SERVER_DBMS') == 'mssql') ? '.dbo.' : '.';
             $table .= 'products';
         }
+        $store_id = $conf->get('STORE_ID');
+        $store_condition = '';
+        if ($store_id) {
+            $store_condition = ' AND ' . $product_alias . '.store_id=' . ((int)$store_id); 
+        }
 
         return ' ' . self::normalizeJoin($join_type) . ' JOIN ' . $table 
                 . ' AS ' . $product_alias
-                . ' ON ' . $product_alias . '.upc = ' . $dlog_alias . '.upc ';
+                . ' ON ' . $product_alias . '.upc = ' . $dlog_alias . '.upc ' . $store_condition;
     }
 
     private static function normalizeJoin($join_type)

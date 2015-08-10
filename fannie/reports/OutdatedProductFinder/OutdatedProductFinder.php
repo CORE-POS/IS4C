@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class SaleItemsByDate extends FannieReportPage 
+class OutdatedProductFinder extends FanniePage
 {
     public $description = '[Scan Tools] Finds products not sold in over 12 months, marks them as not-in-use';
     public $report_set = 'Scan Tools';
@@ -37,11 +37,8 @@ class SaleItemsByDate extends FannieReportPage
     protected $title = "Fannie : Outdated Product Finder";
     protected $header = "Outdated Product Finder";
 
-    public function fetch_report_data()
+    public function body_content()
     {        
-	$item = array();
-        
-        
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $upc = array();
@@ -59,27 +56,36 @@ class SaleItemsByDate extends FannieReportPage
             $upc[] = $row['upc'];
         }
         print count($upc) . " items found that are in use and have not been sold in over 1 year.<br><br>";
-        
-        // Change found items to 'not-in-use'
-        for($i=0; $i<count($upc); $i++){
-            $query = "UPDATE is4c_op.products
-                    SET inUse = '0'
-                    WHERE upc = $upc[$i];
+
+        // CORE shortand for isset($_GET['apply']) || isset($_POST['apply'])
+        if (FormLib::get('apply')) {
+            // Change found items to 'not-in-use'
+            for($i=0; $i<count($upc); $i++){
+                $query = "UPDATE is4c_op.products
+                        SET inUse = '0'
+                        WHERE upc = $upc[$i];
+                        ";
+                $dbc->query($query);
+            }
+            
+            // Check to see if the script made changes
+            $query = "SELECT upc, last_sold 
+                    FROM is4c_op.products 
+                    WHERE last_sold < '2014-07-23 00:00:00' and inUse = '1'
+                    GROUP BY upc;
                     ";
+            $result = $dbc->query($query);
+            while ($row = $dbc->fetch_row($result)) {
+                $check[] = $row['upc'];
+            }
+            print count($check) . " there are now items found that are in use and have not been sold in over 1 year.<br>";
+            print "If this number is greater than zero, this script did not work<br>";
+        } else {
+            print '<p>
+                <a href="OutdatedProductFinder.php?apply=1"
+                    class="btn btn-default">Mark ' . count($upc) . ' Items Not In Use</a>
+                </p>';
         }
-        
-        // Check to see if the script made changes
-        $query = "SELECT upc, last_sold 
-                FROM is4c_op.products 
-                WHERE last_sold < '2014-07-23 00:00:00' and inUse = '1'
-                GROUP BY upc;
-                ";
-        $result = $dbc->query($query);
-        while ($row = $dbc->fetch_row($result)) {
-            $check[] = $row['upc'];
-        }
-        print count($check) . " there are now items found that are in use and have not been sold in over 1 year.<br>";
-        print "If this number is greater than zero, this script did not work<br>";
     }
 }
 

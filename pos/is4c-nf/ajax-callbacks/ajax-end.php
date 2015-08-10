@@ -80,7 +80,7 @@ if (strlen($receiptType) > 0) {
     }
     $PRINT_OBJ = new $print_class();
 
-    $email = CoreState::getCustomerPref('email_receipt');
+    $email = trim(CoreState::getCustomerPref('email_receipt'));
     $customerEmail = filter_var($email, FILTER_VALIDATE_EMAIL);
     $doEmail = ($customerEmail !== false) ? true : false;
     
@@ -94,6 +94,9 @@ if (strlen($receiptType) > 0) {
         CoreLocal::set("autoReprint",0);
         $receiptContent[] = ReceiptLib::printReceipt($receiptType, $receiptNum, true);
     }
+    // use same email class for sending the receipt
+    // as was used to generate the receipt
+    $email_class = ReceiptLib::emailReceiptMod();
 
     if ($transFinished) {
         CoreLocal::set("End",0);
@@ -127,7 +130,7 @@ if (strlen($receiptType) > 0) {
         $receiptContent = array();
     }
 
-    $EMAIL_OBJ = new EmailPrintHandler();
+    $EMAIL_OBJ = new $email_class();
     foreach($receiptContent as $receipt) {
         if(is_array($receipt)) {
             if (!empty($receipt['print'])) {

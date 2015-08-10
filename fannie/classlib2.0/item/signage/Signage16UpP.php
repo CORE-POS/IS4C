@@ -53,7 +53,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
         $count = 0;
         $sign = 0;
         $width = 53.975;
-        $height = 69.85;
+        $height = 69.35;
         $top = 15;
         $left = 5.175;
         $effective_width = $width - (2*$left);
@@ -72,11 +72,13 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
                     $price = sprintf('$%.2f', $price);
                 }
                 $price .= ' /lb.';
+            } elseif (isset($item['signMultiplier'])) {
+                $price = $this->formatPrice($item['normal_price'], $item['signMultiplier']);
             } else {
                 $price = $this->formatPrice($item['normal_price']);
             }
 
-            $pdf->SetXY($left + ($width*$column), $top + ($row*$height));
+            $pdf->SetXY($left + ($width*$column), $top + ($row*$height)+6);
             $pdf->SetFont($this->font, 'B', $this->SMALL_FONT);
             $font_shrink = 0;
             while (true) {
@@ -90,7 +92,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
                     if ($font_shrink >= $this->SMALL_FONT) {
                         break;
                     }
-                    $pdf->SetFontSize($this->MED_FONT - $font_shrink);
+                    $pdf->SetFontSize($this->SMALL_FONT - $font_shrink);
                     $pdf->SetXY($left + ($width*$column), $y);
                 } else {
                     break;
@@ -135,8 +137,10 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
             $pdf->SetX($left + ($width*$column));
             $pdf->SetFont($this->alt_font, '', $this->SMALLER_FONT);
-            $item['size'] = strtolower($item['size']);
-            if (substr($item['size'], -1) != '.') {
+            $item['size'] = trim(strtolower($item['size']));
+            if ($item['size'] == '0' || $item['size'] == '00' || $item['size'] == '') {
+                $item['size'] = '';
+            } elseif (substr($item['size'], -1) != '.') {
                 $item['size'] .= '.'; // end abbreviation w/ period
                 $item['size'] = str_replace('fz.', 'fl oz.', $item['size']);
             }
@@ -155,9 +159,13 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
             if ($item['startDate'] != '' && $item['endDate'] != '') {
                 // intl would be nice
-                $datestr = date('M d', strtotime($item['startDate']))
-                    . chr(0x96) // en dash in cp1252
-                    . date('M d', strtotime($item['endDate']));
+                if ($item['startDate'] == 'While supplies last') {
+                    $datestr = $item['startDate'];
+                } else {
+                    $datestr = date('M d', strtotime($item['startDate']))
+                        . chr(0x96) // en dash in cp1252
+                        . date('M d', strtotime($item['endDate']));
+                }
                 $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 10));
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $pdf->Cell($effective_width, 6, strtoupper($datestr), 0, 1, 'R');

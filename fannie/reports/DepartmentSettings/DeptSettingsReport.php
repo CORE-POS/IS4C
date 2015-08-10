@@ -32,7 +32,7 @@ class DeptSettingsReport extends FannieReportPage
     public $themed = true;
     public $report_set = 'Operational Data';
 
-    protected $report_headers = array('Dept #', 'Dept Name', 'Sales Code', 'Margin', 'Tax', 'FS');
+    protected $report_headers = array('Dept #', 'Dept Name', 'Super', 'Sales Code', 'Margin', 'Tax', 'FS');
     protected $title = "Fannie : Department Settings";
     protected $header = "Department Settings";
     protected $required_fields = array('submit');
@@ -62,23 +62,24 @@ class DeptSettingsReport extends FannieReportPage
         $args = array();
         if ($super == 1){
             $superID = FormLib::get('superdept');
-            $join = "LEFT JOIN superdepts AS s ON d.dept_no=s.dept_ID";
+            $join = "LEFT JOIN superdepts AS s ON d.dept_no=s.dept_ID
+                LEFT JOIN superDeptNames AS m ON s.superID=m.superID ";
             $where = "s.superID = ?";
             $args[] = $superID;
-        }
-        else {
+        } else {
             $d1 = FormLib::get('dept1');
             $d2 = FormLib::get('dept2');
-            $join = "";
+            $join = " LEFT JOIN MasterSuperDepts AS m ON d.dept_no=m.dept_ID";
             $where = "d.dept_no BETWEEN ? AND ?";
             $args = array($d1,$d2);
         }
 
         $query = $dbc->prepare_statement("SELECT d.dept_no,d.dept_name,d.salesCode,d.margin,
             CASE WHEN d.dept_tax=0 THEN 'NoTax' ELSE t.description END as tax,
-            CASE WHEN d.dept_fs=1 THEN 'Yes' ELSE 'No' END as fs
-            FROM departments AS d LEFT JOIN taxrates AS t
-            ON d.dept_tax = t.id 
+            CASE WHEN d.dept_fs=1 THEN 'Yes' ELSE 'No' END as fs,
+            m.super_name
+            FROM departments AS d 
+                LEFT JOIN taxrates AS t ON d.dept_tax = t.id 
             $join
             WHERE $where
             ORDER BY d.dept_no");
@@ -88,11 +89,16 @@ class DeptSettingsReport extends FannieReportPage
             $record = array(
                     $row[0],
                     (isset($_REQUEST['excel']))?$row[1]:"<a href=\"{$FANNIE_URL}item/departments/DepartmentEditor.php?did=$row[0]\">$row[1]</a>",
+                    $row['super_name'],
                     $row[2],
                     sprintf('%.2f%%',$row[3]*100),
                     $row[4],
                     $row[5]
             );
+            if (empty($row['super_name'])) {
+                $record['meta'] = FannieReportPage::META_COLOR;
+                $record['meta_background'] = '#ff9999';
+            }
             $data[] = $record;
         }
 

@@ -50,7 +50,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             background:#ccffcc;
         }
         tr.red td.sub {
-            background:#ff6677;
+            background:#F7BABA;
         }
         tr.white td.sub {
             background:#ffffff;
@@ -166,7 +166,7 @@ function saveprice(upc){
     var dstr = "upc="+upc+"&vendorID="+vid+"&queueID="+qid+"&batchID="+bid;
     $.ajax({
         url: 'batchAjax.php',
-        data: dstr+'&action=newPrice&price='+srp,
+        data: dstr+'&action=newPrice&price='+srp+'&batchID='+bid,
         cache: false,
         success: function(data){}
     });

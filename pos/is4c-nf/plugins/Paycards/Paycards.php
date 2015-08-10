@@ -23,7 +23,7 @@
 
 class Paycards extends Plugin {
 
-    public $description = 'Plugin for integrated payment cards';
+    public $plugin_description = 'Plugin for integrated payment cards';
 
     public $plugin_settings = array(
         'CCintegrate' => array(

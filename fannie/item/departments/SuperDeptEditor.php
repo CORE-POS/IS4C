@@ -30,6 +30,9 @@ class SuperDeptEditor extends FanniePage {
     protected $title = "Fannie : Manage Super Departments";
     protected $header = "Manage Super Departments";
 
+    protected $must_authenticate = true;
+    protected $auth_classes = array('departments', 'admin');
+
     public $description = '[Superdepartment Editor] manges POS super departments.';
     public $themed = true;
 
@@ -121,7 +124,15 @@ class SuperDeptEditor extends FanniePage {
                 ORDER BY dept_no');
         $result = $dbc->exec_statement($prep,array($id));
         $ret = array();
+        $superP = $dbc->prepare('
+            SELECT dept_ID
+            FROM superdepts
+            WHERE dept_ID=?');
         while ($row = $dbc->fetch_row($result)) {
+            $superR = $dbc->execute($superP, array($row['dept_no']));
+            if ($dbc->numRows($superR) == 0) {
+                $row['dept_name'] = '*' . $row['dept_name'];
+            }
             $ret[$row['dept_no']] = $row['dept_name'];
         }
 
@@ -190,6 +201,8 @@ class SuperDeptEditor extends FanniePage {
             $firstEmail = $model->email_address();
         }
 
+        $deptRange = $dbc->getRow('SELECT MIN(dept_no) AS min, MAX(dept_no) AS max FROM departments');
+
         ob_start();
         ?>
         <div id="alertarea"></div>
@@ -249,6 +262,9 @@ class SuperDeptEditor extends FanniePage {
         <p>
             <button type="submit" value="Save" onclick="saveData(); return false;"
                 class="btn btn-default">Save</button>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <a class="btn btn-default"
+            href="../../reports/DepartmentSettings/DeptSettingsReport.php?dept1=<?php echo $deptRange['min']; ?>&dept2=<?php echo $deptRange['max']; ?>&submit=by_dr">View All Departments' Primary Super Department</a>
         </p>
         <?php
         $this->add_script('super.js');

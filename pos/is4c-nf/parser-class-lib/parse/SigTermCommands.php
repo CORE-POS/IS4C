@@ -141,12 +141,22 @@ class SigTermCommands extends Parser
                     if (CoreLocal::get('PaycardsOfferCashBack') == 1) {
                         CoreLocal::set('ccTermState','cashback');
                         if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
-                            UdpComm::udpSend('termCashBack');
+                            if (CoreLocal::get('runningtotal') >= 0) {
+                                UdpComm::udpSend('termCashBack');
+                            } else { // skip ahead to PIN entry on refunds
+                                CoreLocal::set('ccTermState','cashback');
+                                UdpComm::udpSend('termGetPin');
+                            }
                         }
                     } elseif (CoreLocal::get('PaycardsOfferCashBack') == 2 && CoreLocal::get('isMember') == 1) {
                         CoreLocal::set('ccTermState','cashback');
                         if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
-                            UdpComm::udpSend('termCashBack');
+                            if (CoreLocal::get('runningtotal') >= 0) {
+                                UdpComm::udpSend('termCashBack');
+                            } else { // skip ahead to PIN entry on refunds
+                                CoreLocal::set('ccTermState','cashback');
+                                UdpComm::udpSend('termGetPin');
+                            }
                         }
                     } else {
                         CoreLocal::set('ccTermState','pin');
@@ -165,7 +175,12 @@ class SigTermCommands extends Parser
                     if (CoreLocal::get('PaycardsOfferCashBack') == 1) {
                         CoreLocal::set('ccTermState','cashback');
                         if (CoreLocal::get('PaycardsStateChange') == 'coordinated') {
-                            UdpComm::udpSend('termCashBack');
+                            if (CoreLocal::get('runningtotal') >= 0) {
+                                UdpComm::udpSend('termCashBack');
+                            } else { // skip ahead to PIN entry on refunds
+                                CoreLocal::set('ccTermState','cashback');
+                                UdpComm::udpSend('termGetPin');
+                            }
                         }
                     } else {
                         CoreLocal::set('ccTermState','pin');

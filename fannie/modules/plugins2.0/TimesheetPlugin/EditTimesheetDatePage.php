@@ -30,8 +30,7 @@ class EditTimesheetDatePage extends FanniePage {
         $periodID = FormLib::get_form_value('periodID','');
         if (empty($submitted) && empty($emp_no)){
             $this->errors[] = 'You have found this page mistakenly.';
-        }
-        elseif (isset($_POST['submitted'])) { // If the form has been submitted.
+        } elseif (isset($_POST['submitted'])) { // If the form has been submitted.
             if ($_POST['submit'] == 'delete') {
                 $query = $ts_db->prepare_statement("DELETE 
                     FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet 
@@ -43,8 +42,7 @@ class EditTimesheetDatePage extends FanniePage {
                 else {
                     $this->errors[] = 'The day could not be removed, please try again later.';
                 }
-            } 
-            elseif ($_POST['submit'] == 'submit') {
+            } elseif ($_POST['submit'] == 'submit') {
 
                 // Validate the data.
                 $entrycount = 0;
@@ -123,8 +121,7 @@ class EditTimesheetDatePage extends FanniePage {
         
                 } 
             }
-        }
-        else if (!empty($periodID)){
+        } else if (!empty($periodID)){
             // Make sure we're in a valid pay period.       
             $query = $ts_db->prepare_statement("SELECT DATEDIFF(CURDATE(), DATE(periodEnd)) 
                 FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
@@ -161,36 +158,41 @@ class EditTimesheetDatePage extends FanniePage {
     function body_content(){
         global $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
         $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
-        include ('./includes/header.html');
         if ($this->display_func == 'ts_error')
             return $this->error_content();
         elseif ($this->display_func == 'ts_delete_msg')
             return $this->delete_msg();
 
+        include ('./includes/header.html');
+
         $emp_no = FormLib::get_form_value('emp_no','');
         $date = FormLib::get_form_value('date','');
         $periodID = FormLib::get_form_value('periodID','');
 
-        $query = $ts_db->prepare_statement("SELECT CONCAT(FirstName,' ',LastName) 
-                FROM {$FANNIE_OP_DB}.employees where emp_no=?");
-        $result = $ts_db->exec_statement($query,array($emp_no));
-        // echo $query;
-        list($name) = $ts_db->fetch_row($result);
+        $employee = new TimesheetEmployeesModel($ts_db);
+        $employee->timesheetEmployeeID($emp_no);
+        $employee->load();
+        $name = $employee->firstName() . ' ' . $employee->lastName();
+
         echo "<form action='".$_SERVER['PHP_SELF']."' method='POST'>
             <input type='hidden' name='emp_no' value='$emp_no' />
             <input type='hidden' name='date' value='$date' />
             <input type='hidden' name='submitted' value='TRUE' />
-            <p align='center'><button name='submit' type='submit' value='delete'>Remove this day from my timesheet.</button></p>
+            <p align='center'>
+                <button class=\"btn btn-default\" name='submit' type='submit' value='delete'>Remove this day from my timesheet.</button>
+            </p>
             </form>";
 
         echo "<form action='".$_SERVER['PHP_SELF']."' method='POST'>";
-        echo "<table border=0 cellpadding=4><tr><td><p>Name: <strong>$name</strong></p></td><td><p>Date: <strong>". substr($date, 0, 4) . "-" . substr($date, 5, 2) . "-" . substr($date, 8, 2) . "</strong></p></td></tr>
+        echo "<table class=\"table table-bordered\"><tr><td><p>Name: <strong>$name</strong></p></td><td><p>Date: <strong>". substr($date, 0, 4) . "-" . substr($date, 5, 2) . "-" . substr($date, 8, 2) . "</strong></p></td></tr>
             <input type='hidden' name='emp_no' value='$emp_no' />
             <input type='hidden' name='periodID' value='$periodID' />               
             <input type='hidden' name='date' value='$date' />";
 
         echo "<tr><td align='right'><b>Total Hours</b></td><td align='center'><strong>Labor Category</strong></td>
             <!--<td><strong>Remove</strong></td>--></tr>\n";
+
+        $max = 10; // Max number of entries.
 
         for ($i = 1; $i <= $max; $i++) {
             $inc = $i - 1;
@@ -211,12 +213,14 @@ class EditTimesheetDatePage extends FanniePage {
                 $ID = "insert";
             }
 
-            echo "<tr><td align='right'><input type='text' name='hours" . $i . "' value='$hours' size=6></input></td>";
+            echo "<tr><td align='right'><input 
+                class=\"form-control price-field\" type='text' name='hours" . $i . "' value='$hours' size=6></input></td>";
             $query = $ts_db->prepare_statement("SELECT IF(NiceName='', ShiftName, NiceName), ShiftID 
                 FROM " . $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'] . ".shifts 
                 WHERE visible=true ORDER BY ShiftOrder ASC");
             $result = $ts_db->exec_statement($query);
-            echo '<td><select name="area' . $i . '" id="area' . $i . '"><option>Please select an area of work.</option>';
+            echo '<td><select name="area' . $i . '" id="area' . $i . '"
+                class="form-control"><option>Please select an area of work.</option>';
             while ($row = $ts_db->fetch_row($result)) {
                 echo "<option id =\"$i$row[1]\" value=\"$row[1]\" ";
                 if ($row[1] == $area) echo "SELECTED";
@@ -226,7 +230,8 @@ class EditTimesheetDatePage extends FanniePage {
             echo "</tr>\n";
 
         }
-        echo '<tr><td colspan=2 align="center"><button name="submit" type="submit" value="submit"';
+        echo '<tr><td colspan=2 align="center">
+            <button name="submit" class="btn btn-default" type="submit" value="submit"';
         // echo "onclick='confirm('Do you really want to DELETE hours?')' ";
         echo'>Submit</button>
             <input type="hidden" name="submitted" value="TRUE" /></td></tr>';
