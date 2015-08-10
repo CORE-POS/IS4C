@@ -232,7 +232,6 @@ class MemberSummaryModel extends CoreWarehouseModel
                 longlightAverageItems=?,
                 longlightTotalVisits=?
             WHERE card_no=?');
-        $basicR = $dbc->execute($basicP, $oldlight_args);
         $basicR = $dbc->execute($basicP, $long_args);
         while ($long = $dbc->fetchRow($basicR)) {
             $dbc->execute($upP, array(
