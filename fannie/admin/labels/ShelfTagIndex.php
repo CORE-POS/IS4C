@@ -102,12 +102,6 @@ function goToPage(the_id){
         <?php
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        /* Was:
-        $query = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts
-            GROUP BY superID,super_name
-            ORDER BY superID");
-        */
-        // 5May13 Change SELECT so #-of-labels can be displayed. */
         $query = $dbc->prepare("
             SELECT s.shelfTagQueueID, 
                 s.description, 
@@ -129,7 +123,6 @@ function goToPage(the_id){
         $zeroID = $dbc->query('SELECT upc FROM shelftags WHERE id=0');
         array_unshift($rows, array(0,'Default',$dbc->numRows($zeroID)));
 
-
         foreach($rows as $row){
             printf("<tr>
             <td>%s barcodes/shelftags</td>
@@ -137,8 +130,9 @@ function goToPage(the_id){
             <td><a href=\"\" onclick=\"goToPage('%d');return false;\">Print</a></td>
             <td><a href=\"DeleteShelfTags.php?id=%d\">Clear</a></td>
             <td><a href=\"EditShelfTags.php?id=%d\">" . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</td>
+            <td><a href=\"SignFromSearch.php?queueID=%d\">Signs</a></td>
             </tr>",
-            $row[1],$row[2],$row[0],$row[0],$row[0]);
+            $row[1],$row[2],$row[0],$row[0],$row[0],$row[0]);
         }
         ?>
         </table>

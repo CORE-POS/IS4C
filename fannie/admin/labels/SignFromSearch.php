@@ -44,7 +44,22 @@ class SignFromSearch extends FannieRESTfulPage
        $this->__routes[] = 'post<u>'; 
        $this->__routes[] = 'post<batch>'; 
        $this->__routes[] = 'get<batch>'; 
+       $this->__routes[] = 'get<queueID>'; 
        return parent::preprocess();
+    }
+
+    public function get_queueID_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $tags = new ShelftagsModel($dbc);
+        $tags->id($this->queueID);
+        $this->u = array();
+        foreach ($tags->find() as $tag) {
+            $this->u[] = $tag->upc();
+        }
+
+        return $this->post_u_handler();
     }
 
     function post_u_handler()
@@ -199,6 +214,11 @@ class SignFromSearch extends FannieRESTfulPage
     }
 
     function post_batch_view()
+    {
+        return $this->post_u_view();
+    }
+
+    public function get_queueID_view()
     {
         return $this->post_u_view();
     }
