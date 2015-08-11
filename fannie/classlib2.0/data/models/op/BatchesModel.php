@@ -254,10 +254,10 @@ those same items revert to normal pricing.
         $has_limit = (isset($b_def['transLimit']) && isset($p_def['special_limit'])) ? true : false;
 
         $batchP = $this->connection->prepare('
-            SELECT b.discounttype,
+            SELECT b.discountType,
                 CASE WHEN ' . $this->connection->curdate() . ' BETWEEN b.startDate AND b.endDate
                 THEN 1 ELSE 0 END AS current
-            FROM batches
+            FROM batches AS b
             WHERE batchID=?');
         $self = $this->connection->getRow($batchP, array($id));
         if ($self == false) {
