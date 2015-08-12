@@ -253,6 +253,7 @@ function saveprice(upc){
         $costSQL = Margin::adjustedCostSQL('v.cost', 'b.discountRate', 'b.shippingMarkup');
         $marginSQL = Margin::toMarginSQL($costSQL, 'p.normal_price');
         $p_def = $dbc->tableDefinition('products');
+        $srpSQL = Margin::toPriceSQL($costSQL, 'CASE WHEN s.margin IS NULL OR s.margin=0 THEN d.margin ELSE s.margin END');
 
         $query = "SELECT p.upc,
             p.description,
@@ -264,11 +265,15 @@ function saveprice(upc){
             " . Margin::toMarginSQL($costSQL, 'v.srp') . " AS desired_margin,
             " . $costSQL . " AS adjusted_cost,
             v.srp,
+            " . $srpSQL . " AS rawSRP,
             v.vendorDept,
-            x.variable_pricing
+            x.variable_pricing,
+            CASE WHEN s.margin IS NULL OR s.margin=0 THEN d.margin ELSE s.margin END AS margin
             FROM products AS p 
                 INNER JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 INNER JOIN vendors as b ON v.vendorID=b.vendorID
+                LEFT JOIN departments AS d ON p.department=d.dept_no
+                LEFT JOIN vendorDepartments AS s ON v.vendorDept=s.deptID AND v.vendorID=s.vendorID
                 LEFT JOIN prodExtra AS x on p.upc=x.upc ";
         $args = array($vendorID);
         if ($superID != 99){
@@ -296,13 +301,13 @@ function saveprice(upc){
 
         $ret .= "<table class=\"table table-bordered small\">";
         $ret .= "<tr><td colspan=6>&nbsp;</td><th colspan=2>Current</th>
-            <th colspan=2>Vendor</th></tr>";
+            <th colspan=3>Vendor</th></tr>";
         $ret .= "<tr><th>UPC</th><th>Our Description</th>
             <th>Base Cost</th>
             <th>Shipping</th>
             <th>Discount%</th>
             <th>Adj. Cost</th>
-            <th>Price</th><th>Margin</th><th>SRP</th>
+            <th>Price</th><th>Margin</th><th>Raw</th><th>SRP</th>
             <th>Margin</th><th>Cat</th><th>Var</th>
             <th>Batch</th></tr>";
         while ($row = $dbc->fetch_row($result)) {
@@ -330,6 +335,7 @@ function saveprice(upc){
                 <td class=\"sub adj-cost\">%.2f</td>
                 <td class=\"sub price\">%.2f</td>
                 <td class=\"sub cmargin\">%.2f%%</td>
+                <td class=\"sub raw-srp\">%.2f</td>
                 <td onclick=\"reprice('%s');\" class=\"sub srp\">%.2f</td>
                 <td class=\"sub dmargin\">%.2f%%</td>
                 <td class=\"sub\">%d</td>
@@ -357,6 +363,7 @@ function saveprice(upc){
                 $row['adjusted_cost'],
                 $row['normal_price'],
                 100*$row['current_margin'],
+                $row['rawSRP'],
                 $row['upc'],
                 $row['srp'],
                 100*$row['desired_margin'],
