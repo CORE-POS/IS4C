@@ -152,7 +152,7 @@ class PriceReduction extends FannieReportPage
                 
                 $uMarg = $row['uMarg'];
                 $dMarg = $row['dMarg'];
-                if($uMarg < 0.01) { 
+                if($uMarg == NULL) { 
                     $deptMarg[] = $dMarg;
                 } else {
                     $deptMarg[] = $uMarg;
