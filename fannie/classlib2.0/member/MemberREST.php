@@ -698,22 +698,22 @@ class MemberREST
       @param $limit [int, default=0] optional result set size limit
       @return [array] of account structures
     */
-    public static function search($json, $limit=0)
+    public static function search($json, $limit=0, $minimal=false)
     {
         $config = \FannieConfig::factory();
         $dbc = \FannieDB::get($config->get('OP_DB'));
 
-        if ($dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
-            return self::searchAccount($dbc, $json, $limit);
+        if ($config->get('CUST_SCHEMA') == 1 && $dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
+            return self::searchAccount($dbc, $json, $limit, $minimal);
         } else {
-            return self::searchCustdata($dbc, $json, $limit);
+            return self::searchCustdata($dbc, $json, $limit, $minimal);
         }
     }
 
     /**
       Search using newer tables
     */
-    private static function searchAccount($dbc, $json, $limit=0)
+    private static function searchAccount($dbc, $json, $limit=0, $minimal=false)
     {
         $query = '
             SELECT a.cardNo
@@ -845,10 +845,12 @@ class MemberREST
     /**
       Search using older tables
     */
-    private static function searchCustdata($dbc, $json, $limit=0)
+    private static function searchCustdata($dbc, $json, $limit=0, $minimal=false)
     {
         $query = '
-            SELECT c.CardNo
+            SELECT c.CardNo,
+                c.FirstName,
+                c.LastName
             FROM custdata AS c
                 LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
                 LEFT JOIN memDates AS d ON c.CardNo=d.card_no
@@ -971,15 +973,30 @@ class MemberREST
             return array();
         }
 
-        $query .= ' GROUP BY c.CardNo';
+        if (!$minimal) {
+            $query .= ' GROUP BY c.CardNo';
+        }
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $params);
         $ret = array();
         while ($w = $dbc->fetchRow($res)) {
             // this is not efficient
-            $ret[] = self::get($w['CardNo']);
-            if ($limit > 0 && count($ret) >= $limit) {
-                break;
+            if ($minimal) {
+                $ret[] = array(
+                    'cardNo' => $w['CardNo'],
+                    'customers' => array(
+                        array(
+                            'cardNo' => $w['CardNo'],
+                            'firstName' => $w['FirstName'],
+                            'lastName' => $w['LastName'],
+                        ),
+                    ),
+                );
+            } else {
+                $ret[] = self::get($w['CardNo']);
+                if ($limit > 0 && count($ret) >= $limit) {
+                    break;
+                }
             }
         }
 
