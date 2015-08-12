@@ -42,6 +42,7 @@ class ShelftagsModel extends BasicModel
     'vendor' => array('type'=>'VARCHAR(50)'),
     'pricePerUnit' => array('type'=>'VARCHAR(50)'),
     'count' => array('type'=>'TINYINT', 'default'=>1),
+    'shelftagID' => array('type'=>'INT', 'increment'=>true, 'index'=>true),
     );
 
     public function doc()
@@ -50,13 +51,15 @@ class ShelftagsModel extends BasicModel
 Use:
 Data for generating shelf tag PDFs. id is used 
 to segment sets into different PDF documents.
-An id maps to a buyer at WFC, but doesn\'t have to.
+An id maps to a named ShelfTagQueue
 
 Size relates to an indivdual product.
 Units relates to a case. So a case of beer has 24
 units, each with a size of 12 oz.
 
-Count is used to print multiples of the same tag
+Count is used to print multiples of the same tag.
+ShelftagID is used solely to track the order tags are
+added so they can be printed in that sequence.
         ';
     }
 
@@ -465,6 +468,43 @@ Count is used to print multiples of the same tag
                 }
             }
             $this->instance["count"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function shelftagID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["shelftagID"])) {
+                return $this->instance["shelftagID"];
+            } else if (isset($this->columns["shelftagID"]["default"])) {
+                return $this->columns["shelftagID"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'shelftagID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["shelftagID"]) || $this->instance["shelftagID"] != func_get_args(0)) {
+                if (!isset($this->columns["shelftagID"]["ignore_updates"]) || $this->columns["shelftagID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["shelftagID"] = func_get_arg(0);
         }
         return $this;
     }

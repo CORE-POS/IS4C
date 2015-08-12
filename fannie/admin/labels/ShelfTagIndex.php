@@ -61,6 +61,8 @@ function goToPage(the_id){
     var pdf = sel.options[sel.selectedIndex].text;
     url += '&layout='+pdf;
 
+    url += '&sort='+$('#tag-sort').val();
+
     /*window.top.location = url;*/
     /* 5May13 Eric Lee As popup instead of replacing the select window. */
     tagwindow=window.open (url, "Shelftags", "location=0,status=1,scrollbars=1,width=800,height=1100");
@@ -75,7 +77,7 @@ function goToPage(the_id){
         global $FANNIE_URL, $FANNIE_OP_DB, $FANNIE_DEFAULT_PDF;
         ob_start();
         ?>
-        <div class="col-sm-6">
+        <div class="col-sm-8">
         
         <ul class="nav nav-tabs" role="tablist">
             <li class="active"><a href="ShelfTagIndex.php">Regular shelf tags</a></li>
@@ -84,8 +86,9 @@ function goToPage(the_id){
         <p>
         <div class="form-group form-inline">
             <label>Offset</label>: 
-            <input type="number" class="form-control" id=offset value=0 />
+            <input type="number" class="price-field form-control" id=offset value=0 />
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <label>Layout</label>: 
         <select id=layoutselector class="form-control">
         <?php
         foreach($this->layouts as $l){
@@ -96,6 +99,13 @@ function goToPage(the_id){
         }
         ?>
         </select>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <label>Sort</label>: 
+            <select id="tag-sort" class="form-control">
+                <option>Department</option>
+                <option>Alphabetically</option>
+                <option>Order Entered</option>
+            </select>
         </div>
         </p>
         <table class="table">
@@ -138,7 +148,7 @@ function goToPage(the_id){
         </table>
         </div>
 
-        <div class="col-sm-4">
+        <div class="col-sm-3">
         <a href="CreateTagsByDept.php">Create Tags By Department</a>
         <br />
         <a href="CreateTagsByManu.php">Create Tags By Brand</a>
