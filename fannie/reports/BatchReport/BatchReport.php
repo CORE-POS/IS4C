@@ -274,7 +274,7 @@ class BatchReport extends FannieReportPage
             $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
             $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
             $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
-            $ret[] = '<form action="BatchReport.php" method="get">';
+            $ret[] = '<p><form action="BatchReport.php" method="get">';
             $ret[] = "<span style=\"color:black; display:inline;\">From: 
                     <input type=\"text\" name=\"date1\" size=\"10\" value=\"$bStart\" id=\"date1\" />
                     to: 
@@ -285,7 +285,7 @@ class BatchReport extends FannieReportPage
             foreach($batchID as $bID) {
                 $ret[] = sprintf('<input type="hidden" name="batchID[]" value="%d" />', $bID);
             }
-            $ret[] = '</form>';
+            $ret[] = '</form></p>';
         } else {
             $ret[] = "<span style=\"color:black\">From: $bStart to: $bEnd</span>";
         }

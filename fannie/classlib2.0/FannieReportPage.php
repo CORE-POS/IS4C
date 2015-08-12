@@ -671,7 +671,7 @@ class FannieReportPage extends FanniePage
                     $ret .= '</div>';
                 }
                 if ($this->sortable || $this->no_sort_but_style) {
-                    $ret .= '<table class="mySortableTable tablesorter">';
+                    $ret .= '<table class="mySortableTable tablesorter tablesorter-bootstrap">';
                 } else {
                     $ret .= '<table class="mySortableTable" cellspacing="0" 
                         cellpadding="4" border="1">' . "\n";
