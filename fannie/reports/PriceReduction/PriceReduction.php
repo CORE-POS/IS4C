@@ -90,8 +90,8 @@ class PriceReduction extends FannieReportPage
             $query .= " AND (P.department >= 240 AND P.department <= 250) ";
         }
             
-        $quwey .= " GROUP BY P.upc 
-        ORDER BY P.modified
+        $query .= " GROUP BY P.upc 
+                ORDER BY P.modified
                 ;";
         $result = $dbc->query($query);
         while ($row = $dbc->fetch_row($result)) {
