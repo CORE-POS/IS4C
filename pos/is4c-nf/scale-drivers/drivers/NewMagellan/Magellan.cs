@@ -93,11 +93,15 @@ public class Magellan : DelegateForm
         FinishInit();
 
         #if CORE_RABBIT
-        rabbit_factory = new ConnectionFactory();
-        rabbit_factory.HostName = "localhost";
-        rabbit_con = rabbit_factory.CreateConnection();
-        rabbit_channel = rabbit_con.CreateModel();
-        rabbit_channel.QueueDeclare("core-pos", false, false, false, null);
+        try {
+            rabbit_factory = new ConnectionFactory();
+            rabbit_factory.HostName = "localhost";
+            rabbit_con = rabbit_factory.CreateConnection();
+            rabbit_channel = rabbit_con.CreateModel();
+            rabbit_channel.QueueDeclare("core-pos", false, false, false, null);
+        } catch (Exception) {
+            mq_available = false;
+        }
         #endif
     }
 

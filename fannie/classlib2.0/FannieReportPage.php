@@ -792,6 +792,16 @@ class FannieReportPage extends FanniePage
                         $this->add_onload_command("\$.tablesorter.themes.bootstrap['header'] += ' table-condensed small';");
                         $this->add_onload_command("\$('.mySortableTable').tablesorter({sortList: $sort, theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
                     }
+                } elseif ($this->new_tablesorter) {
+                    /**
+                      New bootstrap-themed tablesorter requires more setup to style correctly
+                      even when sorting isn't used. Simply including a CSS file is not sufficient.
+                    */
+                    $this->add_onload_command("\$.tablesorter.themes.bootstrap['active'] = 'info';");
+                    $this->add_onload_command("\$.tablesorter.themes.bootstrap['table'] += ' tablesorter-core table-condensed small';");
+                    $this->add_onload_command("\$.tablesorter.themes.bootstrap['header'] += ' table-condensed small';");
+                    $this->add_onload_command("\$('.mySortableTable thead th').data('sorter', false);\n");
+                    $this->add_onload_command("\$('.mySortableTable').tablesorter({theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
                 }
                 break;
             case 'csv':

@@ -70,7 +70,7 @@
                 <td>Price maintenance page for IS4C/Scales</td>
             </tr>
             <tr>
-                <td><a href=/git/fannie/item/deleteItem.php>Delete item</a>&nbsp;<img align=bottom src="../images/locked.gif"></td>
+                <td><a href=/git/fannie/item/DeleteItemPage.php>Delete item</a>&nbsp;<img align=bottom src="../images/locked.gif"></td>
                 <td></td>
                 <td>Delete an item immediately at the till. <font color=red><b>USE WITH CAUTION</b></font></td>
             </tr>

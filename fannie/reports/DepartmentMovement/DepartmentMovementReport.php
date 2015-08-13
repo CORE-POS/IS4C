@@ -37,6 +37,8 @@ class DepartmentMovementReport extends FannieReportPage
     public $report_set = 'Movement Reports';
     public $themed = true;
 
+    protected $new_tablesorter = true;
+
     /**
       Lots of options on this report.
     */

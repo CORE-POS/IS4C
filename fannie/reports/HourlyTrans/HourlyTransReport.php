@@ -39,6 +39,7 @@ class HourlyTransReport extends FannieReportPage
 
     protected $sortable = false;
     protected $no_sort_but_style = true;
+    protected $new_tablesorter = true;
 
     public function preprocess()
     {

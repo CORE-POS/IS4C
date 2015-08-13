@@ -32,7 +32,7 @@ class PriceReduction extends FannieReportPage
     public $report_set = 'Reports';
     public $themed = true;
 
-    protected $report_headers = array('UPC', 'Description', 'Cost', 'Price', 'Margin Goal', 'actMarg', '+/- Marg', 'SRP', 'RoundSRP', '+/-:Price');
+    protected $report_headers = array('UPC', 'Description', 'Movement (Daily)', 'Cost', 'Price', 'Margin Goal', 'actMarg', '+/- Marg', 'SRP', 'RoundSRP', '+/-:Price');
     protected $sort_direction = 1;
     protected $title = "Fannie : Price Reduction Report";
     protected $header = "Price Reduction Report";
@@ -66,11 +66,10 @@ class PriceReduction extends FannieReportPage
         // Create List of Items
         $query = "SELECT P.upc, P.description, P.cost, P.normal_price, P.department, 
                 P.modified, V.vendorDept, V.vendorID, D.margin as uMarg, D.vendorID, 
-                D.deptID, S.margin as dMarg, sum(L.quantity)
+                D.deptID, S.margin as dMarg, P.auto_par
                 FROM is4c_op.products as P
                 LEFT JOIN vendorItems as V ON P.upc = V.upc
                 LEFT JOIN vendorDepartments as D ON (D.vendorID = V.vendorID) and (D.deptID = V.vendorDept) 
-                LEFT JOIN is4c_trans.dlog_90_view as L ON (L.upc = V.upc)
                 LEFT JOIN departments as S ON (P.department = S.dept_no)
                 WHERE P.inUse = 1 and P.price_rule_id = 0 
                     AND P.cost <> 0
@@ -86,6 +85,7 @@ class PriceReduction extends FannieReportPage
                 $cost[] = $row['cost'];
                 $price[] = $row['normal_price'];
                 $dept[] = $row['department'];
+                $movement[] = $row['auto_par'];
                 $uMarg = $row['uMarg'];
                 $dMarg = $row['dMarg'];
                 if($uMarg == NULL) { 
@@ -101,6 +101,7 @@ class PriceReduction extends FannieReportPage
                 $cost[] = $row['cost'];
                 $price[] = $row['normal_price'];
                 $dept[] = $row['department'];
+                $movement[] = $row['auto_par'];
                 
                 $uMarg = $row['uMarg'];
                 $dMarg = $row['dMarg'];
@@ -117,6 +118,7 @@ class PriceReduction extends FannieReportPage
                 $cost[] = $row['cost'];
                 $price[] = $row['normal_price'];
                 $dept[] = $row['department'];
+                $movement[] = $row['auto_par'];
                 
                 $uMarg = $row['uMarg'];
                 $dMarg = $row['dMarg'];
@@ -133,6 +135,7 @@ class PriceReduction extends FannieReportPage
                 $cost[] = $row['cost'];
                 $price[] = $row['normal_price'];
                 $dept[] = $row['department'];
+                $movement[] = $row['auto_par'];
                 
                 $uMarg = $row['uMarg'];
                 $dMarg = $row['dMarg'];
@@ -149,6 +152,7 @@ class PriceReduction extends FannieReportPage
                 $cost[] = $row['cost'];
                 $price[] = $row['normal_price'];
                 $dept[] = $row['department'];
+                $movement[] = $row['auto_par'];
                 
                 $uMarg = $row['uMarg'];
                 $dMarg = $row['dMarg'];
@@ -183,6 +187,7 @@ class PriceReduction extends FannieReportPage
                 $item[] = array(
                     $upc[$i],
                     $desc[$i],
+                    sprintf('%.2f', $movement[$i]),
                     $cost[$i],
                     $price[$i],
                     sprintf('%.3f%%', $deptMarg[$i]*100),
