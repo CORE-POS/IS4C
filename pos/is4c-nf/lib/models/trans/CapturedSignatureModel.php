@@ -31,7 +31,6 @@ class CapturedSignatureModel extends BasicModel
     protected $preferred_db = 'trans';
 
     protected $columns = array(
-    'capturedSignatureID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
     'tdate' => array('type'=>'DATETIME', 'index'=>true),
     'emp_no' => array('type'=>'INT'),
     'register_no' => array('type'=>'INT', 'index'=>true),
@@ -56,21 +55,6 @@ to the server.
     }
 
     /* START ACCESSOR FUNCTIONS */
-
-    public function capturedSignatureID()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["capturedSignatureID"])) {
-                return $this->instance["capturedSignatureID"];
-            } elseif(isset($this->columns["capturedSignatureID"]["default"])) {
-                return $this->columns["capturedSignatureID"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["capturedSignatureID"] = func_get_arg(0);
-        }
-    }
 
     public function tdate()
     {
