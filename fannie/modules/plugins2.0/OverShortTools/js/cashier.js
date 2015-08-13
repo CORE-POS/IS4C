@@ -107,3 +107,17 @@ function saveChecks(){
 	ret = ret.substring(0,ret.length - 1);
 	return ret;
 }
+
+function sumCashCounter()
+{
+    var entry = $('#cash-counter').val();
+    var regexp = /[0-9\.]+/g;
+    var numbers = entry.match(regexp);
+    var sum = 0.0;
+    for (var i=0; i<numbers.length; i++) {
+        sum += Number(numbers[i]);
+    }
+    if (sum > 0) {
+        $('#countCA').val(sum);
+    }
+}

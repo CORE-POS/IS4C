@@ -135,7 +135,7 @@ class OverShortCashierPage extends FanniePage {
         $ret .= "<input type=\"hidden\" class=\"tenderCode\" value=\"CK\" />";
         $ret .= "<form onsubmit=\"save(); return false;\">";
         $ret .= "<table class=\"table\">";
-        $ret .= "<tr class=color><th>Cash</th><td>POS</td><td>Count</td><td>O/S</td>";
+        $ret .= "<tr class=color><th>Cash</th><td>POS</td><td>Count</td><td>O/S</td><td>Cash Counter</td>";
         $ret .= "<td>&nbsp;</td>";
         $ret .= "<th>Checks</th><td>POS</td><td>Count</td><td>O/S</td><td>List checks</td></tr>";
 
@@ -154,6 +154,8 @@ class OverShortCashierPage extends FanniePage {
         $countTotal += $counts['CA'];
         $osTotal += $os;
 
+        $ret .= "<td rowspan=7><textarea rows=11 cols=7 id=cash-counter 
+            class=\"form-control\" onchange=\"sumCashCounter();\"></textarea></td>";
         $ret .= "<td>&nbsp;</td>";
 
         $ret .= "<td>&nbsp;</td>";
