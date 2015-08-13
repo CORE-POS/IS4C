@@ -414,6 +414,8 @@ class ItemEditorPage extends FanniePage
                     $authorized = true;
                 }
             }
+        } elseif (substr($upc, 0, 3) == '002' && $this->config->get('COOP_ID') == 'WFC_Duluth') {
+            $authorized = true;
         }
 
         // remove action so form cannot be submitted by pressing enter
@@ -469,7 +471,7 @@ class ItemEditorPage extends FanniePage
                 $this->add_css_file($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
                 if (!$isNew) {
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-                    $ret .= '<a href="deleteItem.php?submit=submit&upc='.$upc.'" class="btn btn-danger btn-sm">Delete this item</a>';
+                    $ret .= '<a href="DeleteItemPage.php?id='.$upc.'" class="btn btn-danger btn-sm">Delete this item</a>';
 
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                     $ret .= '<label class="badge">History</label> <span class="btn-group">';
