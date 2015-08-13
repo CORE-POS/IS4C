@@ -68,105 +68,46 @@ class PriceReduction extends FannieReportPage
                 P.modified, V.vendorDept, V.vendorID, D.margin as uMarg, D.vendorID, 
                 D.deptID, S.margin as dMarg, P.auto_par
                 FROM is4c_op.products as P
-                LEFT JOIN vendorItems as V ON P.upc = V.upc
-                LEFT JOIN vendorDepartments as D ON (D.vendorID = V.vendorID) and (D.deptID = V.vendorDept) 
+                LEFT JOIN vendorItems as V ON P.upc = V.upc AND P.default_vendor_id = V.vendorID
+                LEFT JOIN vendorDepartments as D ON (V.vendorID = D.vendorID) AND (D.deptID = V.vendorDept) 
                 LEFT JOIN departments as S ON (P.department = S.dept_no)
-                WHERE P.inUse = 1 and P.price_rule_id = 0 
-                    AND P.cost <> 0
-                GROUP BY P.upc 
-                ORDER BY P.modified
+                WHERE P.inUse = 1 AND P.price_rule_id = 0
+                    AND P.cost <> 0 ";
+                    
+        if ($_POST['dept'] == 1) {
+            $query .= " AND (P.department >= 1 AND P.department <= 25) OR (P.department >= 239 AND P.department <= 259) ";
+        }
+        if ($_POST['dept'] == 2) {
+            $query .= " AND (P.department >= 26 AND P.department <= 59) ";
+        }
+        if ($_POST['dept'] == 3 {
+            $query .= " AND (P.department >= 151 AND P.department <= 191) ";
+        }
+        if ($_POST['dept'] == 4 {
+            $query .= " AND (P.department >= 86 AND P.department <= 128) ";
+        }
+        if ($_POST['dept'] == 5 {
+            $query .= " AND (P.department >= 240 AND P.department <= 250) ";
+        }
+            
+        $quwey .= " GROUP BY P.upc 
+        ORDER BY P.modified
                 ;";
         $result = $dbc->query($query);
         while ($row = $dbc->fetch_row($result)) {
-        if ($_POST['dept'] == 1) {
-            if ( ($row['department'] >= 1 && $row['department'] <= 25) || ($row['department'] >= 239 && $row['department'] <= 259) ) {
-                $upc[] = $row['upc'];
-                $desc[] = $row['description'];
-                $cost[] = $row['cost'];
-                $price[] = $row['normal_price'];
-                $dept[] = $row['department'];
-                $movement[] = $row['auto_par'];
-                $uMarg = $row['uMarg'];
-                $dMarg = $row['dMarg'];
-                if($uMarg == NULL) { 
-                    $deptMarg[] = $dMarg;
-                } else {
-                    $deptMarg[] = $uMarg;
-                }
+            $upc[] = $row['upc'];
+            $desc[] = $row['description'];
+            $cost[] = $row['cost'];
+            $price[] = $row['normal_price'];
+            $dept[] = $row['department'];
+            $movement[] = $row['auto_par'];
+            $uMarg = $row['uMarg'];
+            $dMarg = $row['dMarg'];
+            if($uMarg == NULL) { 
+                $deptMarg[] = $dMarg;
+            } else {
+                $deptMarg[] = $uMarg;
             }
-        } else if ($_POST['dept'] == 2) {
-            if ($row['department'] >= 1 && $row['department'] <= 25) {
-                $upc[] = $row['upc'];
-                $desc[] = $row['description'];
-                $cost[] = $row['cost'];
-                $price[] = $row['normal_price'];
-                $dept[] = $row['department'];
-                $movement[] = $row['auto_par'];
-                
-                $uMarg = $row['uMarg'];
-                $dMarg = $row['dMarg'];
-                if($uMarg == NULL) { 
-                    $deptMarg[] = $dMarg;
-                } else {
-                    $deptMarg[] = $uMarg;
-                }
-            } 
-        } else if ($_POST['dept'] == 3) {
-            if ($row['department'] >= 151 && $row['department'] <= 191) {
-                $upc[] = $row['upc'];
-                $desc[] = $row['description'];
-                $cost[] = $row['cost'];
-                $price[] = $row['normal_price'];
-                $dept[] = $row['department'];
-                $movement[] = $row['auto_par'];
-                
-                $uMarg = $row['uMarg'];
-                $dMarg = $row['dMarg'];
-                if($uMarg == NULL) { 
-                    $deptMarg[] = $dMarg;
-                } else {
-                    $deptMarg[] = $uMarg;
-                }
-            }
-        } else if ($_POST['dept'] == 4) {
-            if ($row['department'] >= 86 && $row['department'] <= 128) {
-                $upc[] = $row['upc'];
-                $desc[] = $row['description'];
-                $cost[] = $row['cost'];
-                $price[] = $row['normal_price'];
-                $dept[] = $row['department'];
-                $movement[] = $row['auto_par'];
-                
-                $uMarg = $row['uMarg'];
-                $dMarg = $row['dMarg'];
-                if($uMarg == NULL) { 
-                    $deptMarg[] = $dMarg;
-                } else {
-                    $deptMarg[] = $uMarg;
-                }
-            }
-        } else if ($_POST['dept'] == 5) {
-            if ($row['department'] >= 240 && $row['department'] <= 250) {
-                $upc[] = $row['upc'];
-                $desc[] = $row['description'];
-                $cost[] = $row['cost'];
-                $price[] = $row['normal_price'];
-                $dept[] = $row['department'];
-                $movement[] = $row['auto_par'];
-                
-                $uMarg = $row['uMarg'];
-                $dMarg = $row['dMarg'];
-                if($uMarg == NULL) { 
-                    $deptMarg[] = $dMarg;
-                } else {
-                    $deptMarg[] = $uMarg;
-                }
-            }
-        }
-        
-            
-            
-
         }
         echo count($upc) . " items found<br>";
 
