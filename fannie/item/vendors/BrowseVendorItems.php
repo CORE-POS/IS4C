@@ -269,15 +269,15 @@ class BrowseVendorItems extends FanniePage
             $tag->id($tags);
             $tag->upc($upc);
             $info = $model->getTagData();
-            $model->normal_price($info['normal_price']);
-            $model->description($info['description']);
-            $model->brand($info['brand']);
-            $model->vendor($info['vendor']);
-            $model->sku($info['sku']);
-            $model->size($info['size']);
-            $model->units($info['units']);
-            $model->pricePerUnit($info['pricePerUnit']);
-            $model->save();
+            $tag->normal_price($info['normal_price']);
+            $tag->description($info['description']);
+            $tag->brand($info['brand']);
+            $tag->vendor($info['vendor']);
+            $tag->sku($info['sku']);
+            $tag->size($info['size']);
+            $tag->units($info['units']);
+            $tag->pricePerUnit($info['pricePerUnit']);
+            $tag->save();
         }
 
         echo "Item added";
