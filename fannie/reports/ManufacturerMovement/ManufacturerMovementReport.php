@@ -34,6 +34,8 @@ class ManufacturerMovementReport extends FannieReportPage
     public $report_set = 'Movement Reports';
     public $themed = true;
 
+    protected $new_tablesorter = true;
+
     public function preprocess()
     {
         $this->title = _("Fannie") . " : " . _("Manufacturer Movement Report");

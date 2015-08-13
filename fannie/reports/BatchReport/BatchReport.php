@@ -37,6 +37,7 @@ class BatchReport extends FannieReportPage
     public $description = '[Batch Report] lists sales for items in a sales batch (or group of sales batches).';
     public $themed = true;
     public $report_set = 'Batches';
+    protected $new_tablesorter = true;
 
     function fetch_report_data()
     {
@@ -271,9 +272,11 @@ class BatchReport extends FannieReportPage
         }
         $ret[] = '<br /><span style="font-size:150%;">'.$bName.'</span>';
         if ($this->report_format == 'html') {
-            $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
-            $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
-            $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
+            if (!$this->new_tablesorter) {
+                $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+                $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
+                $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
+            }
             $ret[] = '<p><form action="BatchReport.php" method="get">';
             $ret[] = "<span style=\"color:black; display:inline;\">From: 
                     <input type=\"text\" name=\"date1\" size=\"10\" value=\"$bStart\" id=\"date1\" />

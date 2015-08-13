@@ -38,6 +38,8 @@ class ProductMovementModular extends FannieReportPage
     public $report_set = 'Movement Reports';
     public $themed = true;
 
+    protected $new_tablesorter = true;
+
     function preprocess()
     {
         $ret = parent::preprocess();

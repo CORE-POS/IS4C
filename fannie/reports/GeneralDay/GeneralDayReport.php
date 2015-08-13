@@ -33,6 +33,7 @@ class GeneralDayReport extends FannieReportPage
         equity sales for the day.'; 
     public $report_set = 'Sales Reports';
     public $themed = true;
+    protected $new_tablesorter = true;
 
     protected $title = "Fannie : General Day Report";
     protected $header = "General Day Report";
