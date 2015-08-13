@@ -37,6 +37,7 @@ class ObfWeeklyReport extends FannieReportPage
     public $themed = true;
 
     protected $required_fields = array('weekID');
+    protected $new_tablesorter = false;
 
     protected $report_headers = array(
         array('', 'Last Year', 'Plan Goal', '% Store', 'Trend', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),

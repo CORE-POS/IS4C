@@ -132,6 +132,7 @@ class FannieSignage
             $ids = substr($ids, 0, strlen($ids)-1);
             $b_def = $dbc->tableDefinition('batchType');
             $l_def = $dbc->tableDefinition('batchList');
+            $u_def = $dbc->tableDefinition('productUser');
             $query = 'SELECT l.upc,
                         l.salePrice AS normal_price,
                         CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
@@ -155,6 +156,11 @@ class FannieSignage
                 $query .= 'l.signMultiplier,';
             } else {
                 $query .= '1 AS signMultiplier,';
+            }
+            if (isset($u_def['signCount'])) {
+                $query .= 'u.signCount,';
+            } else {
+                $query .= '1 AS signCount,';
             }
             $query .= ' o.name AS originName,
                         o.shortName AS originShortName,
@@ -281,6 +287,12 @@ class FannieSignage
                          ORDER BY p.department, p.upc';
             }
 
+            $u_def = $dbc->tableDefinition('productUser');
+            if (isset($u_def['signCount'])) {
+                $query = str_replace('p.upc,', 'p.upc, u.signCount,', $query);
+            } else {
+                $query = str_replace('p.upc,', 'p.upc, 1 AS signCount,', $query);
+            }
         }
 
         $data = array();
@@ -323,7 +335,12 @@ class FannieSignage
                 }
             }
 
-            $data[] = $row;
+            if (!isset($row['signCount']) || $row['signCount'] < 0) {
+                $row['signCount'] = 1;
+            }
+            for ($i=0; $i<$row['signCount']; $i++) {
+                $data[] = $row;
+            }
         }
 
         return $data;

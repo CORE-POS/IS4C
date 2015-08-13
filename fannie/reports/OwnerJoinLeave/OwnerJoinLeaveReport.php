@@ -36,6 +36,8 @@ class OwnerJoinLeaveReport extends FannieReportPage
     protected $header = "Ownership Status Report";
     protected $required_fields = array('date1', 'date2');
 
+    protected $new_tablesorter = false;
+
     protected $report_headers = array(
         array('Ownership Report', null, null, null, null),
         array('Total Equity', null, null, null, null),

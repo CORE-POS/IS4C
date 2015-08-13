@@ -39,6 +39,7 @@ class ProductUserModel extends BasicModel
     'long_text' => array('type'=>'TEXT'),
     'enableOnline' => array('type'=>'TINYINT'),
     'soldOut' => array('type'=>'TINYINT', 'default'=>0),
+    'signCount' => array('type'=>'TINYINT', 'default'=>1),
     );
 
     public function doc()
@@ -347,6 +348,43 @@ online webstore
                 }
             }
             $this->instance["soldOut"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function signCount()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["signCount"])) {
+                return $this->instance["signCount"];
+            } else if (isset($this->columns["signCount"]["default"])) {
+                return $this->columns["signCount"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'signCount',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["signCount"]) || $this->instance["signCount"] != func_get_args(0)) {
+                if (!isset($this->columns["signCount"]["ignore_updates"]) || $this->columns["signCount"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["signCount"] = func_get_arg(0);
         }
         return $this;
     }

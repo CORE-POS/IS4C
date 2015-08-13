@@ -99,6 +99,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
                 tempCapPrices as t
                 INNER JOIN products AS p on t.upc = p.upc
                 LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
+            WHERE inUse=1
             ORDER BY s.super_name,t.upc
         ");
         $result = $dbc->exec_statement($query);

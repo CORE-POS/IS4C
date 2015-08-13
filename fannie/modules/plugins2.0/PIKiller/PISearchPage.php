@@ -59,7 +59,7 @@ class PISearchPage extends PIKillerPage {
             }
 
             $json = array('idCardUPC' => BarcodeLib::padUPC($this->id));
-            $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json);
+            $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json, 0, true);
             foreach ($accounts as $a) {
                 header('Location: PIMemberPage.php?id='.$a['cardNo']);
                 return false;
@@ -73,7 +73,7 @@ class PISearchPage extends PIKillerPage {
                     ),
                 ),
             );
-            $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json, 250);
+            $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json, 250, true);
             if (count($accounts) == 1) {
                 header('Location: PIMemberPage.php?id='.$accounts[0]['cardNo']);
                 return false;

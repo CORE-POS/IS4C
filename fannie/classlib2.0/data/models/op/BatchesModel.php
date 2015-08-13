@@ -253,6 +253,26 @@ those same items revert to normal pricing.
         $p_def = $this->connection->tableDefinition('products');
         $has_limit = (isset($b_def['transLimit']) && isset($p_def['special_limit'])) ? true : false;
 
+        $batchP = $this->connection->prepare('
+            SELECT b.discountType,
+                CASE WHEN ' . $this->connection->curdate() . ' BETWEEN b.startDate AND b.endDate
+                THEN 1 ELSE 0 END AS current
+            FROM batches AS b
+            WHERE batchID=?');
+        $self = $this->connection->getRow($batchP, array($id));
+        if ($self == false) {
+            // cannot find batch. do not change products
+            return false;
+        }
+        if ($self['discounttype'] == 0) {
+            // price change batch. nothing to stop.
+            return true;
+        }
+        if ($self['current'] == 0) {
+            // batch is not currently running. nothing to stop.
+            return true;
+        }
+
         // unsale regular items
         $unsaleQ = "
             UPDATE products AS p 
