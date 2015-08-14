@@ -198,7 +198,7 @@ class ItemStatusPage extends FannieRESTfulPage
             $dept->dept_no(), $dept->dept_name(),
             $sub->subdept_no(), $sub->subdept_name());
         
-        $ret .= '<p> Tags in this queue: ' . $tags . ';</p> ';
+        $ret .= '<p> Tags in this queue: ' . $tags . '</p> ';
 
         $ret .= '<p><form class="form-inline" method="get">';
         $tags = new ShelftagsModel($dbc);
