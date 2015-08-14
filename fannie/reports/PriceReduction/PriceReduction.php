@@ -76,23 +76,19 @@ class PriceReduction extends FannieReportPage
                     
         if ($_POST['dept'] == 1) {
             $query .= " AND (P.department >= 1 AND P.department <= 25) OR (P.department >= 239 AND P.department <= 259) ";
-        }
-        if ($_POST['dept'] == 2) {
+        } else if ($_POST['dept'] == 2) {
             $query .= " AND (P.department >= 26 AND P.department <= 59) ";
-        }
-        if ($_POST['dept'] == 3 {
+        } else if ($_POST['dept'] == 3) {
             $query .= " AND (P.department >= 151 AND P.department <= 191) ";
-        }
-        if ($_POST['dept'] == 4 {
+        } else if ($_POST['dept'] == 4) {
             $query .= " AND (P.department >= 86 AND P.department <= 128) ";
-        }
-        if ($_POST['dept'] == 5 {
+        } else if ($_POST['dept'] == 5) {
             $query .= " AND (P.department >= 240 AND P.department <= 250) ";
         }
             
         $query .= " GROUP BY P.upc 
                 ORDER BY P.modified
-                ;";
+                ; ";
         $result = $dbc->query($query);
         while ($row = $dbc->fetch_row($result)) {
             $upc[] = $row['upc'];
