@@ -819,7 +819,7 @@ class EditBatchPage extends FannieRESTfulPage
             $saleHeader = "New price";
         }
 
-        $fetchArgs = array($id);
+        $fetchArgs = array();
         $fetchQ = "
             SELECT b.upc,
                 CASE 
@@ -849,6 +849,7 @@ class EditBatchPage extends FannieRESTfulPage
                 LEFT JOIN superDeptNames AS m ON y.section=m.superID
             WHERE b.batchID = ? 
             $orderby";
+        $fetchArgs[] = $id;
         if ($dbc->dbms_name() == "mssql") {
             $fetchQ = "select b.upc,
                     case when l.likecode is null then p.description
