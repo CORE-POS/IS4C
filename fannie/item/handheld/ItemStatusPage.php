@@ -185,7 +185,7 @@ class ItemStatusPage extends FannieRESTfulPage
             WHERE s.id=?');
         $shelftagsR = $dbc->execute($shelftagsP, $master);
         while ($shelftagsW = $dbc->fetch_row($shelftagsR)) {
-            $tags = $shelftagsW['c']
+            $tags = $shelftagsW['c'];
         }
 
         $dept = new DepartmentsModel($dbc);
