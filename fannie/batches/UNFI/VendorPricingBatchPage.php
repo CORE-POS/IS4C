@@ -315,7 +315,7 @@ function saveprice(upc){
             if (isset($batchUPCs[$row['upc']])) {
                 $bg = 'selection';
             } elseif ($row['variable_pricing'] == 0) {
-                $bg = ($row['normal_price']<$row['srp'])?'red':'green';
+                $bg = ($row['normal_price']<$row['rawSRP'])?'red':'green';
             }
             if (isset($batchUPCs[$row['upc']])) {
                 $icon = '<span class="glyphicon glyphicon-minus-sign"
