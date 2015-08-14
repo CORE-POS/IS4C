@@ -91,7 +91,7 @@ class AutoParsTask extends FannieTask
                 $sum += (isset($days[$i]) ? $days[$i] : 0);
                 $count++;
             }
-            $avg = $sum/$count;
+            $avg = ($count == 0) ? 0 : $sum/$count;
             $dbc->execute($prodP, array($avg, $upc));
         }
     }
