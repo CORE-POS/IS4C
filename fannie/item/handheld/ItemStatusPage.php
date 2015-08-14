@@ -178,6 +178,15 @@ class ItemStatusPage extends FannieRESTfulPage
             }
         }
         $ret .= '</p>';
+        
+        $shelftagsP = $dbc->prepare('
+            SELECT count(s.upc) as c
+            FROM shelftags as s
+            WHERE s.id=?');
+        $shelftagsR = $dbc->execute($shelftagsP, $master);
+        while ($shelftagsW = $dbc->fetch_row($shelftagsR)) {
+            $tags = $shelftagsW['c'];
+        }
 
         $dept = new DepartmentsModel($dbc);
         $dept->dept_no($product->department());
@@ -188,6 +197,8 @@ class ItemStatusPage extends FannieRESTfulPage
         $ret .= sprintf('<p><strong>Dept</strong>: %d %s, <strong>SubDept</strong>: %d %s</p>',
             $dept->dept_no(), $dept->dept_name(),
             $sub->subdept_no(), $sub->subdept_name());
+        
+        $ret .= '<p> Tags in this queue: ' . $tags . '</p> ';
 
         $ret .= '<p><form class="form-inline" method="get">';
         $tags = new ShelftagsModel($dbc);
