@@ -299,16 +299,16 @@ class VendorIndexPage extends FanniePage {
         }
         $ret .= '<p>';
         if ($num == 0) {
-            $ret .= "<a href=\"VendorDepartmentEditor.php?vid=$id\">This vendor's items are not yet arranged into departments</a>";
+            $ret .= "<a href=\"VendorDepartmentEditor.php?vid=$id\">This vendor's items are not yet arranged into subcategories</a>";
             $ret .= '<p />';
-            $ret .= "<a href=\"VendorDepartmentUploadPage.php?vid=$id\">Upload Department List</a>";
+            $ret .= "<a href=\"VendorDepartmentUploadPage.php?vid=$id\">Upload Subcategory List</a>";
         } else {
             $ret .= "This vendor's items are divided into ";
-            $ret .= $num." departments";
+            $ret .= $num." subcategories";
             $ret .= "<br />";
             $ret .= "<a href=\"VendorDepartmentEditor.php?vid=$id\">View or Edit vendor-specific margin(s)</a>";
             $ret .= '<p />';
-            $ret .= "<a href=\"VendorDepartmentUploadPage.php?vid=$id\">Upload Department List</a>";
+            $ret .= "<a href=\"VendorDepartmentUploadPage.php?vid=$id\">Upload Subcategory List</a>";
         }
         $ret .= '</p>';
         $ret .= '
@@ -481,12 +481,35 @@ class VendorIndexPage extends FanniePage {
             one vendor and/or may be availalbe in more than one case
             size. Keeping vendor catalogs up to date with accurate 
             costs helps manage retail pricing and margin.</p>
+            <p>There are two fairly distinct paths to managing vendor
+            catalogs. The best approach will differ depending what kind
+            of information is available for a given vendor. The first
+            approach begins with building a full vendor catalog. This
+            is more practical if the catalog is available in a digital
+            format. <em>Upload vendor catalog</em> is used to import
+            all the catalog data. From there <em>Browse vendor catalog</em>
+            can be used to add catalog items to the store\'s own products.
+            </p>
+            <p>The second approach begins with the store\'s own products
+            and builds a minimal vendor catalog to match. This is more
+            practical when a digital catalog is not available. <em>Add existing
+            items to catalog</em> will create vendor catalog entries from
+            the store\'s existing products that are assigned to this vendor.
+            <em>Edit vendor catalog</em> can then adjust these catalog 
+            entries as needed. While <em>Edit vendor catalog</em> can technically
+            be used with catalog imported from digital files, this is a
+            waste of time if catalogs are imported on a regular basis. Each
+            subsequent import will end up overwriting all manual edits.
+            Similarly, you can <em>Browse vendor catalog</em> with catalogs
+            that were built from the store\'s existing products but there
+            won\'t be any items that can be added to products.
+            </p>
             <p>PLU/SKU mapping is for resolving situations where the
             store and the vendor use different UPCs. This is often
             the case with items sold in bulk using a PLU.</p>
-            <p>Vendor Departments are optional. If the vendor\'s
-            catalog is divided into vendor-specific departments,
-            custom margin targeets can be set for those sets of
+            <p>Vendor Subcategories are optional. If the vendor\'s
+            catalog is divided into vendor-specific subcategories,
+            custom margin targets can be set for those sets of
             items.</p>
             <p>Contact Info and Delivery Schedule are wholly optional.
             Jot down whatever is useful.</p>';

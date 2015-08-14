@@ -4,7 +4,7 @@ function catchange(){
 
 	$('#contentarea').html('');
 	if (did == ""){
-		$('#brandselect').html("<option value=\"\">Select a department first...</option>");
+		$('#brandselect').html("<option value=\"\">Select a subcategory first...</option>");
 	} else {
 		$.ajax({
 			url: 'BrowseVendorItems.php',

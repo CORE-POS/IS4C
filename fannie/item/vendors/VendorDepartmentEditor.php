@@ -33,7 +33,7 @@ class VendorDepartmentEditor extends FanniePage {
     protected $must_authenticate = true;
     protected $auth_classes = array('pricechange');
 
-    public $description = '[Vendor Departments] manages vendor-specific departments or categories.
+    public $description = '[Vendor Subcategories] manages vendor-specific subcategories.
     These are distinct from POS departments.';
     public $themed = true;
 
@@ -137,7 +137,7 @@ class VendorDepartmentEditor extends FanniePage {
                 \COREPOS\Fannie\API\lib\FannieUI::deleteIcon());
             $json['row'] = $new_row;
         } else {
-            $json['error'] = 'Error creating new department';
+            $json['error'] = 'Error creating new subcategory';
         }
     
         return $json;
@@ -155,7 +155,7 @@ class VendorDepartmentEditor extends FanniePage {
         ?>
         <div id="alert-area"></div>
         <div id="newdeptdiv">
-        <a href="" onclick="$('#newform').show();$('#newno').focus(); return false;">New vendor department</a>
+        <a href="" onclick="$('#newform').show();$('#newno').focus(); return false;">New vendor subcategory</a>
         <div id="newform" class="collapse">
             <div class="form-group">
                 <label>No.</label>
@@ -164,7 +164,7 @@ class VendorDepartmentEditor extends FanniePage {
                 <input type=text id=newname class="form-control" />
             </div>
             <button onclick="newdept();return false;" type=submit 
-                class="btn btn-default">Add department</button>
+                class="btn btn-default">Add subcategory</button>
             &nbsp;&nbsp;&nbsp;
             <a href="" onclick="$('#newform').hide(); return false;">Cancel</a>
         </div>
@@ -191,7 +191,7 @@ class VendorDepartmentEditor extends FanniePage {
         $v->load();
         $name = $v->vendorName();
 
-        $ret = "<strong>Departments in $name</strong><br />";
+        $ret = "<strong>Subcategories in $name</strong><br />";
         $ret .= "<table class=\"table\">"; 
         $ret .= "<tr><th>No.</th><th>Name</th><th>Margin</th><th>POS Dept#</th>
             <th>&nbsp;</th><th>&nbsp;</th></tr>";
@@ -244,16 +244,16 @@ class VendorDepartmentEditor extends FanniePage {
     public function helpContent()
     {
         return '<p>
-            Vendor departments are distinct from POS\' department
-            hierarchy. The primary purpose for categorizing vendor
-            items into vendor-specific departments is that specialize
-            margin targets can be assigned to each vendor department.
+            Vendor subcategories are distinct from POS\' department
+            hierarchy. The primary purpose for dividing vendor
+            items into vendor-specific subcategories is that specialize
+            margin targets can be assigned to each vendor subcategory.
             </p>
             <p>
             To simply set a vendor-specific margin, create a single
-            vendor department containing all the vendor\'s items.
+            vendor subcategory containing all the vendor\'s items.
             Depending how entries were created, this should be
-            vendor department #0 or #1.
+            vendor subcategory #0 or #1.
             </p>';
     }
 }

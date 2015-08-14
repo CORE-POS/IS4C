@@ -28,11 +28,11 @@ if (!class_exists('FannieAPI')) {
 
 class VendorDepartmentUploadPage extends \COREPOS\Fannie\API\FannieUploadPage 
 {
-    public $title = "Fannie - Load Vendor Departments";
-    public $header = "Upload Vendor departments";
+    public $title = "Fannie - Load Vendor Subcategories";
+    public $header = "Upload Vendor subcategories";
     public $themed = true;
 
-    public $description = '[Vendor Departments Import] loads names and numbers of vendor departments
+    public $description = '[Vendor Subcategories Import] loads names and numbers of vendor subcategories
     via spreadsheet.';
 
     protected $must_authenticate = true;
@@ -41,13 +41,13 @@ class VendorDepartmentUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     protected $preview_opts = array(
         'deptID' => array(
             'name' => 'deptID',
-            'display_name' => 'Department Number *',
+            'display_name' => 'Subcategory Number *',
             'default' => 0,
             'required' => true
         ),
         'name' => array(
             'name' => 'name',
-            'display_name' => 'Department Name',
+            'display_name' => 'Subcategory Name',
             'default' => 1,
             'required' => false
         ),

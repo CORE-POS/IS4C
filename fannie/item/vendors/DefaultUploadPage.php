@@ -107,7 +107,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         ),
         'vDept' => array(
             'name' => 'vDept',
-            'display_name' => 'Vendor Department',
+            'display_name' => 'Vendor Subcategory',
             'default' => 11,
             'required' => false
         ),
@@ -416,7 +416,32 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     public function helpContent()
     {
         return '
+        <p>Importing a vendor catalog replaces the existing catalog with data from
+        a spreadsheet. The minimum required fields (columns) are:
+            <ul>
+                <li>SKU (the vendor\'s item number or other unique identifer)</li>
+                <li>UPC</li>
+                <li>Description</li>
+                <li>Unit Cost (Reg) <strong>or</strong> both Case Cost (Reg) and Case Qty</li>
+            </ul>
+        </p>
         <p>
+        If the vendor does not have SKUs, simply making a duplicate of the UPC column and using
+        the same value for both is probably the easiest approach. The cost stored in vendor catalogs
+        should always be unit cost. If the spreadsheet only contains case costs it must also have
+        a case quantity column so the unit cost can be calculated (as case cost divided by case quantity).
+        </p>
+        <p>
+        The following additional fields (columns) are optional:
+            <ul>
+                <li>Brand. If omitted, the vendor\'s name will go into the brand field.</li>
+                <li>Unit Size. If omitted, the field will remain blank.</li>
+                <li>Unit Cost (sale) <strong>or</strong> Case Cost (sale). This is used to store a temporary,
+                    promotional cost. Again case cost must be used in conjunction with case quantity.</li>
+                <li>Vendor subcategory. If omitted, all items will be assigned subcategory number one.</li>
+            </ul>
+        </p>
+        <p><strong>General import tips</strong>
             <ul>
                 <li>Only CSV files are supported. This works most reliably for large data sets.</li>
                 <li>Maximum file size is usually 2MB. CSV files may be zipped to reduce
