@@ -298,6 +298,8 @@ class VendorIndexPage extends FanniePage {
             $num = $row[0];
         }
         $ret .= '<p>';
+        $ret .= "<a href=\"../../batches/UNFI/\">Vendor Price Batch Tools</a>";
+        $ret .= "</p><p>";
         if ($num == 0) {
             $ret .= "<a href=\"VendorDepartmentEditor.php?vid=$id\">This vendor's items are not yet arranged into subcategories</a>";
             $ret .= '<p />';
