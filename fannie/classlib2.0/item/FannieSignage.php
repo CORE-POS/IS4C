@@ -454,10 +454,10 @@ class FannieSignage
         $ret .= '<thead>';
         $ret .= '<tr>
             <th>UPC</th><th>Brand</th><th>Description</th><th>Price</th><th>Origin</th>
-            <th><label>Exclude
+            <td><label>Exclude
                 <input type="checkbox" onchange="$(\'.exclude-checkbox\').prop(\'checked\', $(this).prop(\'checked\'));" />
                 </label>
-            </th>
+            </td>
             </tr>';
         $ret .= '</thead><tbody>';
         $data = $this->loadItems();
