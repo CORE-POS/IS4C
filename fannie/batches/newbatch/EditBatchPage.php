@@ -277,7 +277,7 @@ class EditBatchPage extends FannieRESTfulPage
         $delQ = $dbc->prepare_statement("DELETE FROM batchBarcodes where batchID=?");
         $dbc->exec_statement($delQ,array($bid));
         
-        $selQ = $dbc->prepare_statement("
+        $selQ = "
             SELECT l.upc,
                 p.description,
                 l.salePrice, 
@@ -294,10 +294,15 @@ class EditBatchPage extends FannieRESTfulPage
                 left join prodExtra as x on l.upc=x.upc
                 left join vendorItems as v on l.upc=v.upc AND p.default_vendor_id=v.vendorID
                 left join vendors as z on p.default_vendor_id=z.vendorID
-            where batchID=? 
-                AND p.store_id=1 
-            ORDER BY l.upc");
-        $selR = $dbc->exec_statement($selQ,array($bid));
+            WHERE batchID=? ";
+        $args = array($bid);
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $selQ .= " AND p.store_id=? ";
+            $args[] = $this->config->get('STORE_ID');
+        }
+        $selQ .= " ORDER BY l.upc";
+        $selP = $dbc->prepare($selQ);
+        $selR = $dbc->execute($selP, $args);
         $upc = "";
         $insP = $dbc->prepare_statement("INSERT INTO batchBarcodes
             (upc,description,normal_price,brand,sku,size,units,vendor,batchID)
@@ -814,6 +819,7 @@ class EditBatchPage extends FannieRESTfulPage
             $saleHeader = "New price";
         }
 
+        $fetchArgs = array($id);
         $fetchQ = "
             SELECT b.upc,
                 CASE 
@@ -831,7 +837,12 @@ class EditBatchPage extends FannieRESTfulPage
                 y.shelf,
                 p.brand
             FROM batchList AS b 
-                LEFT JOIN products AS p ON b.upc = p.upc AND p.store_id=1
+                LEFT JOIN products AS p ON b.upc = p.upc ";
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $fetchQ .= " AND p.store_id=? ";
+            $fetchArgs[] = $this->config->get('STORE_ID');
+        }
+        $fetchQ .= "
                 LEFT JOIN likeCodes AS l ON b.upc = CONCAT('LC',CONVERT(l.likeCode,CHAR))
                 LEFT JOIN batchCutPaste AS c ON b.upc=c.upc AND b.batchID=c.batchID
                 LEFT JOIN prodPhysicalLocation AS y ON b.upc=y.upc
@@ -863,7 +874,7 @@ class EditBatchPage extends FannieRESTfulPage
         }
 
         $fetchP = $dbc->prepare_statement($fetchQ);
-        $fetchR = $dbc->exec_statement($fetchP,array($id));
+        $fetchR = $dbc->exec_statement($fetchP, $fetchArgs);
 
         $overlapP = $dbc->prepare('
             SELECT b.batchID,
@@ -979,15 +990,22 @@ class EditBatchPage extends FannieRESTfulPage
         }
         $ret .= "</tr>";
 
-        $likeP = $dbc->prepare("
+        $likeQ = "
             SELECT p.upc,
                 p.description,
                 p.normal_price
             FROM products AS p 
                 INNER JOIN upcLike AS u ON p.upc=u.upc
-            WHERE u.likeCode = ? 
-                AND store_id=1
-            ORDER BY p.upc DESC");
+            WHERE 1=1 ";
+        $likeArgs = array();
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $fetchQ .= " AND p.store_id=? ";
+            $likeArgs[] = $this->config->get('STORE_ID');
+        }
+        $likeQ .= " 
+                AND u.likeCode=?
+            ORDER BY p.upc DESC";
+        $likeP = $dbc->prepare($likeQ);
         
         $colors = array('#ffffff','#ffffcc');
         $c = 0;
@@ -1075,7 +1093,7 @@ class EditBatchPage extends FannieRESTfulPage
             $ret .= "</tr>";
             if (substr($fetchW['upc'], 0, 2) == "LC") {
                 $likecode = rtrim(substr($fetchW['upc'],2));
-                $likeR = $dbc->execute($likeP, array($likecode));
+                $likeR = $dbc->execute($likeP, array_merge($likeArgs, array($likecode)));
                 while ($likeW = $dbc->fetch_row($likeR)) {
                     $ret .= '<tr class="collapse lc-item-' . $likecode . '">';
                     $ret .= "<td><a href=\"{$FANNIE_URL}item/ItemEditorPage.php?searchupc={$likeW['upc']}\" 

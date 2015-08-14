@@ -743,7 +743,12 @@ HTML;
             }
         }
         $nav_tabs .= '</ul>';
-        $ret = str_replace('{{nav_tabs}}', $nav_tabs, $ret);
+        // only show the store tabs in HQ mode
+        if (FannieConfig::config('STORE_MODE') == 'HQ') {
+            $ret = str_replace('{{nav_tabs}}', $nav_tabs, $ret);
+        } else {
+            $ret = str_replace('{{nav_tabs}}', '', $ret);
+        }
 
         $ret .= <<<HTML
 <div id="newVendorDialog" title="Create new Vendor" class="collapse">

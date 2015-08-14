@@ -222,7 +222,7 @@ class DTrans
         }
         $store_id = $conf->get('STORE_ID');
         $store_condition = '';
-        if ($store_id) {
+        if ($conf->get('STORE_MODE') == 'HQ') {
             $store_condition = ' AND ' . $product_alias . '.store_id=' . ((int)$store_id); 
         }
 
