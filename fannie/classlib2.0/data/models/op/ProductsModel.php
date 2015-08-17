@@ -62,7 +62,7 @@ class ProductsModel extends BasicModel
     'scaleprice'=>array('type'=>'MONEY'),
     'mixmatchcode'=>array('type'=>'VARCHAR(13)'),
     'modified'=>array('type'=>'DATETIME','ignore_updates'=>true),
-    'advertised'=>array('type'=>'TINYINT'),
+    'batchID'=>array('type'=>'INT', 'default'=>0, 'replaces'=>'advertised'),
     'tareweight'=>array('type'=>'DOUBLE'),
     'discount'=>array('type'=>'SMALLINT'),
     'discounttype'=>array('type'=>'TINYINT'),
@@ -1281,13 +1281,13 @@ it won\'t *do* anything.
         return $this;
     }
 
-    public function advertised()
+    public function batchID()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["advertised"])) {
-                return $this->instance["advertised"];
-            } else if (isset($this->columns["advertised"]["default"])) {
-                return $this->columns["advertised"]["default"];
+            if(isset($this->instance["batchID"])) {
+                return $this->instance["batchID"];
+            } else if (isset($this->columns["batchID"]["default"])) {
+                return $this->columns["batchID"]["default"];
             } else {
                 return null;
             }
@@ -1298,7 +1298,7 @@ it won\'t *do* anything.
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'advertised',
+                'left' => 'batchID',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -1308,12 +1308,49 @@ it won\'t *do* anything.
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["advertised"]) || $this->instance["advertised"] != func_get_args(0)) {
-                if (!isset($this->columns["advertised"]["ignore_updates"]) || $this->columns["advertised"]["ignore_updates"] == false) {
+            if (!isset($this->instance["batchID"]) || $this->instance["batchID"] != func_get_args(0)) {
+                if (!isset($this->columns["batchID"]["ignore_updates"]) || $this->columns["batchID"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["advertised"] = func_get_arg(0);
+            $this->instance["batchID"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function advertised()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["batchID"])) {
+                return $this->instance["batchID"];
+            } else if (isset($this->columns["batchID"]["default"])) {
+                return $this->columns["batchID"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'batchID',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["batchID"]) || $this->instance["batchID"] != func_get_args(0)) {
+                if (!isset($this->columns["batchID"]["ignore_updates"]) || $this->columns["batchID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["batchID"] = func_get_arg(0);
         }
         return $this;
     }

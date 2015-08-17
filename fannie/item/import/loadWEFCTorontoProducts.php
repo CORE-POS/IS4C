@@ -390,7 +390,6 @@ vary based on whose code you're running
         $end_date="'1900-01-01'";   // %s
         //4
         $scaleprice=0;  // %.2f
-        $advertised=0; // %d
         //5         
         $discounttype=0;// %d
         $tareweight=0;  // %.2f
@@ -880,12 +879,12 @@ vary based on whose code you're running
         1       $insQ = sprintf("INSERT INTO products (upc, description, normal_price, 
         2           pricemethod, groupprice, quantity, special_price, specialpricemethod, 
         3           specialgroupprice, specialquantity, start_date, end_date, department, 
-        4           size, tax, foodstamp, scale, scaleprice, mixmatchcode, modified, advertised, 
+        4           size, tax, foodstamp, scale, scaleprice, mixmatchcode, modified, 
         5           tareweight, discount, discounttype, unitofmeasure, wicable, qttyEnforced, 
         6           idEnforced, cost, inUse, numflag, subdept, deposit)
         1           VALUES (%s, %s, %.2f,
         2           %d, %.2f, %d, .0, 0,
-        3           .0, 0, '1900-01-01', '1900-01-01', %d,
+        3           .0, 0, '1900-01-01', '1900-01-01', 
         4           %s, %d, %d, %d, .0, %s, %s, 0,
         5           .0, %d, 0, %s, 0, %d,
         6           0, %.2f, %d, 0, 0, .0, %d)",
@@ -899,7 +898,7 @@ vary based on whose code you're running
     1           upc, description, normal_price, 
     2               pricemethod, groupprice, quantity, $special_price=0; $specialpricemethod=0; 
     3               $specialgroupprice=0; $specialquantity=0; $start_date="'1900-01-01'"; $end_date="'1900-01-01'"; department, 
-    4               size, tax, foodstamp, scale, $scaleprice=0; mixmatchcode, modified, $advertised=0; 
+    4               size, tax, foodstamp, scale, $scaleprice=0; mixmatchcode, modified, 
     5               $tareweight=0; discount, $discounttype=0; unitofmeasure, $wicable=0; qttyEnforced, 
     6               $idEnforced=0; cost, inUse, $numflag=0; $subdept=0; $deposit=0)
         );
@@ -916,7 +915,6 @@ vary based on whose code you're running
     $end_date="'1900-01-01'";   // %s
     //4
     $scaleprice=0;  // %.2f
-    $advertised=0; // %d
     //5         
     $tareweight=0;  // %.2f
     $discounttype=0;// %d
@@ -931,19 +929,19 @@ vary based on whose code you're running
                 $insQ = sprintf("INSERT INTO products (upc, description, normal_price, 
                     pricemethod, groupprice, quantity, special_price, specialpricemethod, 
                     specialgroupprice, specialquantity, start_date, end_date, department, 
-                    size, tax, foodstamp, scale, scaleprice, mixmatchcode, modified, advertised, 
+                    size, tax, foodstamp, scale, scaleprice, mixmatchcode, modified, 
                     tareweight, discount, discounttype, unitofmeasure, wicable, qttyEnforced, 
                     idEnforced, cost, inUse, numflag, subdept, deposit)
                     VALUES (%s, %s, %.2f,
                     %d, %.2f, %d, %.2f, %d,
                     %.2f, %d, %s, %s, %d,
-                    %s, %d, %d, %d, %.2f, %s, %s, %d,
+                    %s, %d, %d, %d, %.2f, %s, %s, 
                     %.2f, %d, %d, %s, %d, %d,
                     %d, %.2f, %d, %d, %d, %.2f)",
                     $dbc->escape($upc), $dbc->escape($description), $normal_price,
                     $pricemethod, $groupprice, $quantity, $special_price, $specialpricemethod,
                     $specialgroupprice, $specialquantity, $start_date, $end_date, $department,
-                    $dbc->escape($unitsize), $tax, $fs, $scale, $scaleprice, $dbc->escape($mixmatchcode), $dbc->now(), $advertised,
+                    $dbc->escape($unitsize), $tax, $fs, $scale, $scaleprice, $dbc->escape($mixmatchcode), $dbc->now(), 
                     $tareweight, $discount, $discounttype, $dbc->escape($unitofmeasure), $wicable, $qttyEnforced,
                     $idEnforced, $cost, $inUse, $numflag, $subdept, $deposit);
 
@@ -951,7 +949,7 @@ vary based on whose code you're running
                 $insQ = sprintf("INSERT INTO products (upc, description, normal_price, 
                     pricemethod, groupprice, quantity, special_price, specialpricemethod, 
                     specialgroupprice, specialquantity, start_date, end_date, department, 
-                    size, tax, foodstamp, scale, scaleprice, mixmatchcode, modified, advertised, 
+                    size, tax, foodstamp, scale, scaleprice, mixmatchcode, modified, 
                     tareweight, discount, discounttype, unitofmeasure, wicable, qttyEnforced, 
                     idEnforced, cost, inUse, numflag, subdept, deposit)
                     VALUES (%s, %s, %.2f,
@@ -976,7 +974,6 @@ vary based on whose code you're running
     $scaleprice=0;  // %.2f
     $dbc->escape($mixmatchcode),
     $dbc->now(),
-    $advertised=0; // %d
     5               
     $tareweight=0;  // %.2f
     $discount,
