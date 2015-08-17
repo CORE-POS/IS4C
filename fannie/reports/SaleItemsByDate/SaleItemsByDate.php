@@ -94,8 +94,9 @@ class SaleItemsByDate extends FannieReportPage
 
         //procure description of items based on 'upc's, and return their descriptions, organized by department and brand 
         for ($i = 0; $i < count($upc); $i++){
-            $query = "SELECT p.upc, u.brand, u.description, p.size from products as p
+            $query = "SELECT p.upc, u.brand, u.description, v.size from products as p
                     LEFT JOIN productUser as u ON p.upc=u.upc
+                    LEFT JOIN vendorItems as v ON v.upc=p.upc
                     WHERE p.upc = '$upc[$i]' order by 'brand';"; 
             $result = $dbc->query($query);
                 while ($row = $dbc->fetch_row($result)) {
