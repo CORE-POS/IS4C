@@ -44,6 +44,8 @@ class VotenetReport extends FannieReportPage
                 AND c.Type='PC'
                 AND c.memType IN (1,3)
                 AND c.LastName <> 'NEW MEMBER'
+                AND c.LastName <> 'NEW WEB MEMBER'
+                AND c.LastName <> ''
             ORDER BY c.CardNo
         ";
         $r = $dbc->query($q);
