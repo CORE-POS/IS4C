@@ -40,6 +40,7 @@ class TendersModel extends BasicModel
     'MaxAmount'    => array('type'=>'MONEY','default'=>1000.00),
     'MaxRefund'    => array('type'=>'MONEY','default'=>1000.00),
     'TenderModule' => array('type'=>'VARCHAR(50)', 'default'=>"'TenderModule'"),
+    'SalesCode' => array('type'=>'INT'),
     );
 
     public function doc()
@@ -420,6 +421,43 @@ TenderType and TenderID are mostly ignored.
                 }
             }
             $this->instance["TenderModule"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function SalesCode()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["SalesCode"])) {
+                return $this->instance["SalesCode"];
+            } else if (isset($this->columns["SalesCode"]["default"])) {
+                return $this->columns["SalesCode"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'SalesCode',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["SalesCode"]) || $this->instance["SalesCode"] != func_get_args(0)) {
+                if (!isset($this->columns["SalesCode"]["ignore_updates"]) || $this->columns["SalesCode"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["SalesCode"] = func_get_arg(0);
         }
         return $this;
     }

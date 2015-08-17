@@ -38,6 +38,7 @@ class MemtypeModel extends BasicModel
     'discount' => array('type'=>'SMALLINT'),
     'staff' => array('type'=>'TINYINT'),
     'ssi' => array('type'=>'TINYINT'),
+    'salesCode' => array('type'=>'INT'),
     );
 
     public function doc()
@@ -340,6 +341,43 @@ memtype.
                 }
             }
             $this->instance["ssi"] = func_get_arg(0);
+        }
+        return $this;
+    }
+
+    public function salesCode()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["salesCode"])) {
+                return $this->instance["salesCode"];
+            } else if (isset($this->columns["salesCode"]["default"])) {
+                return $this->columns["salesCode"]["default"];
+            } else {
+                return null;
+            }
+        } else if (func_num_args() > 1) {
+            $value = func_get_arg(0);
+            $op = $this->validateOp(func_get_arg(1));
+            if ($op === false) {
+                throw new Exception('Invalid operator: ' . func_get_arg(1));
+            }
+            $filter = array(
+                'left' => 'salesCode',
+                'right' => $value,
+                'op' => $op,
+                'rightIsLiteral' => false,
+            );
+            if (func_num_args() > 2 && func_get_arg(2) === true) {
+                $filter['rightIsLiteral'] = true;
+            }
+            $this->filters[] = $filter;
+        } else {
+            if (!isset($this->instance["salesCode"]) || $this->instance["salesCode"] != func_get_args(0)) {
+                if (!isset($this->columns["salesCode"]["ignore_updates"]) || $this->columns["salesCode"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["salesCode"] = func_get_arg(0);
         }
         return $this;
     }

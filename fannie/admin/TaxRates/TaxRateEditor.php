@@ -33,22 +33,27 @@ class TaxRateEditor extends FanniePage {
     public $description = '[Tax Rates] defines applicable sales tax rates.';
     public $themed = true;
 
-    function preprocess(){
+    function preprocess()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        if (FormLib::get_form_value('sub',False) !== False){
+        if (FormLib::get_form_value('sub', false) !== false) {
             $desc = FormLib::get_form_value('desc',array());
             $rate = FormLib::get_form_value('rate',array());
+            $account = FormLib::get_form_value('account',array());
             $id = 1;
             $trun = $dbc->prepare_statement("TRUNCATE TABLE taxrates");
             $dbc->exec_statement($trun);
-            $p = $dbc->prepare_statement("INSERT INTO taxrates (id,rate,description)
-                VALUES (?,?,?)");
+            $model = new TaxRatesModel($dbc);
             for ($j=0;$j<count($desc);$j++){
                 if (empty($desc[$j]) || empty($rate[$j])) continue;
                 if (FormLib::get_form_value('del'.$j) !== '') continue;
 
-                $saved = $dbc->exec_statement($p, array($id,$rate[$j],$desc[$j]));
+                $model->id($id);
+                $model->rate($rate[$j]);
+                $model->description($desc[$j]);
+                $model->salesCode($account[$j]);
+                $saved = $model->save();
                 if ($saved) {
                     $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', 'Saved {$desc[$j]}');");
                 } else {
@@ -58,36 +63,35 @@ class TaxRateEditor extends FanniePage {
             }
         }
 
-        return True;
+        return true;
     }
 
     function body_content()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $taxQ = $dbc->prepare_statement("SELECT id,rate,description 
-                FROM taxrates ORDER BY id");
-        $taxR = $dbc->exec_statement($taxQ);
+        $model = new TaxRatesModel($dbc);
 
         $ret = '<div id="alert-area"></div>';
         $ret .= '<form action="TaxRateEditor.php" method="post">';
         $ret .= '<table class="table">';
-        $ret .= '<tr><th>Description</th><th>Rate</th><th>Delete</th></tr>';
-        $ret .= '<tr><td>NoTax</th><td>0.00</td><td>&nbsp;</td></tr>';
-        $i=0;
-        while($taxW = $dbc->fetch_row($taxR)){
+        $ret .= '<tr><th>Description</th><th>Rate</th><th>Account #</th><th>Delete</th></tr>';
+        $ret .= '<tr><td>NoTax</th><td>0.00</td><td colspan="2">&nbsp;</td></tr>';
+        foreach ($model->find('id') as $tax) {
             $ret .= sprintf('
                 <tr>
                     <td><input type="text" name="desc[]" value="%s" class="form-control" /></td>
                     <td><input type="text" name="rate[]" value="%f" class="form-control" /></td>
+                    <td><input type="text" name="account[]" value="%s" class="form-control" /></td>
                     <td><input type="checkbox" name="del%d" /></td>
                 </tr>',
-                $taxW['description'],$taxW['rate'],$i);
-            $i++;
+                $tax->description(), $tax->rate(), $tax->salesCode(), $tax->id()
+            );
         }
         $ret .= '<tr>
             <td><input type="text" name="desc[]" class="form-control" /></td>
             <td><input type="text" name="rate[]" class="form-control" /></td>
+            <td><input type="text" name="account[]" class="form-control" /></td>
             <td>NEW</td></tr>';
         $ret .= "</table>";
         $ret .= '<p><button type="submit" value="1" name="sub"
@@ -107,7 +111,12 @@ class TaxRateEditor extends FanniePage {
             sales tax as well as city sales tax that applies to
             taxable items, the <em>effective</em> rate is both
             rates added together.
-            </p>';
+            </p>
+            <p>
+            The account number field is provided for mapping sales
+            tax collected to chart of accounts numbers.
+            </p> 
+            ';
     }
 }
 

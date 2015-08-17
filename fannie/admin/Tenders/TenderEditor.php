@@ -210,6 +210,30 @@ function saveRLimit(val,t_id){
         }   
     });
 }
+function saveSalesCode(val, t_id){
+    var elem = $(this);
+    var orig = this.defaultValue;
+    $.ajax({url:'ajax.php',
+        cache:false,
+        data: 'saveSalesCode='+val+'&id='+t_id,
+        success: function(data){
+            var timeout=1500;
+            if (data == "") {
+                data = 'Saved!';
+            } else {
+                elem.val(orig);
+                timeout = 3000;
+            }
+            elem.popover({
+                html: true,
+                content: data,
+                placement: 'auto bottom'
+            });
+            elem.popover('show');
+            setTimeout(function(){elem.popover('destroy') }, timeout);
+        }   
+    });
+}
 function addTender(){
     $.ajax({url:'ajax.php',
         cache: false,
@@ -250,6 +274,8 @@ function addTender(){
                 an amount outside that range results in a warning.</li>
                 <li><em>Refund Limit</em> is a soft limit on the maximum allowed refund.
                 Attempting to refund a larger amount results in a warning.</li>
+                <li><em>Account #</em> is provided for accounting purposes. The value here
+                will appear as a chart of accounts number in reports of tender activity.</li>
             </ul>';
     }
 }

@@ -88,8 +88,15 @@ elseif(FormLib::get_form_value('saveRLimit',False) !== False){
         $model->MaxRefund($limit);
         $model->save();
     }
-}
-elseif(FormLib::get_form_value('newTender',False) !== False){
+} elseif (FormLib::get_form_value('saveSalesCode',False) !== false) {
+    $code = FormLib::get_form_value('saveSalesCode');
+    if (!is_numeric($code)) {
+        echo "Error: account # must be a number";
+    } else {
+        $model->SalesCode($code);
+        $model->save();
+    }
+} elseif(FormLib::get_form_value('newTender',False) !== False){
     $newID=1;
     $idQ = $dbc->prepare_statement("SELECT MAX(TenderID) FROM tenders");
     $idR = $dbc->exec_statement($idQ);
@@ -118,7 +125,7 @@ function getTenderTable(){
     $ret = '<table class="table">
         <tr><th>Code</th><th>Name</th><th>Change Type</th>
         <th>Change Msg</th><th>Min</th><th>Max</th>
-        <th>Refund Limit</th></tr>';
+        <th>Refund Limit</th><th>Account #</th></tr>';
 
     foreach($model->find('TenderID') as $row){
         $ret .= sprintf('<tr>
@@ -151,6 +158,9 @@ function getTenderTable(){
                 class="form-control price-field"
                 onchange="saveRLimit.call(this, this.value,%d);" />
             </div></td>
+            <td><input size="10" value="%s"
+                class="form-control"
+                onchange="saveSalesCode.call(this, this.value, %d);" /></td>
             </tr>',
             $row->TenderCode(),$row->TenderID(),
             $row->TenderName(),$row->TenderID(),
@@ -158,7 +168,8 @@ function getTenderTable(){
             $row->ChangeMessage(),$row->TenderID(),
             $row->MinAmount(),$row->TenderID(),
             $row->MaxAmount(),$row->TenderID(),
-            $row->MaxRefund(),$row->TenderID()
+            $row->MaxRefund(),$row->TenderID(),
+            $row->SalesCode(),$row->TenderID()
         );
     }
     $ret .= "</table>";
