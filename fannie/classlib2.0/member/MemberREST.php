@@ -253,6 +253,7 @@ class MemberREST
                 }
                 $customers->migrateAccount($id);
                 $customers->reset();
+                $customers->cardNo($id);
             }
             foreach ($customers->find() as $c) {
                 for ($i=0; $i<count($ret['customers']); $i++) {
