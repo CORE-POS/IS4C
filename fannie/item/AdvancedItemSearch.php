@@ -522,7 +522,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
             }
         }
 
-        if (count($items) > 2500) {
+        if (count($items) > 5000) {
             echo 'Too many results';
             return false;
         }
@@ -605,7 +605,10 @@ function getResults() {
         success: function(data) {
             $('.progress').hide();
             $('#resultArea').html(data);
-            $('.search-table').tablesorter({headers: { 0: { sorter:false } } });
+            // don't run sorting JS on very large result sets
+            if ($('.upcCheckBox').length < 2500) {
+                $('.search-table').tablesorter({headers: { 0: { sorter:false } } });
+            }
         }
     });
 }
