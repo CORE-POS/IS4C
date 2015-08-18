@@ -243,7 +243,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $vendor->vendorID($order->vendorID());
         $vendor->load();
 
-        $ret = '<div class="form-inline">';
+        $ret = '<p><div class="form-inline">';
         $ret .= '<b>Vendor</b>: '.$vendor->vendorName();
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<b>Created</b>: '.$order->creationDate();
@@ -272,16 +272,16 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $init = ($order->placed() ? 'init=placed' : 'init=pending');
         $ret .= '<button type="button" class="btn btn-default" 
             onclick="location=\'ViewPurchaseOrders.php?' . $init . '\'; return false;">All Orders</button>';
-        $ret .= '</div>';
+        $ret .= '</div></p>';
 
-        $ret .= '<div><div style="float:left;">';
+        $ret .= '<div class="row"><div class="col-sm-6">';
         $ret .= '<table class="table table-bordered"><tr><th colspan="2">Coding(s)</th>';
         $ret .= '<td><b>PO#</b>: '.$order->vendorOrderID().'</td>';
         $ret .= '<td><b>Invoice#</b>: '.$order->vendorInvoiceID().'</td>';
         $ret .= '</tr>';
         $ret .= '{{CODING}}';
         $ret .= '</table>';
-        $ret .= '</div><div style="float:left;">';
+        $ret .= '</div><div class="col-sm-6">';
         if (!$order->placed()) {
             $ret .= '<button class="btn btn-default"
                 onclick="location=\'EditOnePurchaseOrder.php?id=' . $order->vendorID() . '\'; return false;">Add Items</button>';
@@ -298,7 +298,6 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
                 href="ViewPurchaseOrders.php?id=' . $this->id . '&recode=1">Alter Codings</a>';
         }
         $ret .= '</div></div>';
-        $ret .= '<div style="clear:left;"></div>';
 
         $model = new PurchaseOrderItemsModel($dbc);
         $model->orderID($this->id);
@@ -326,14 +325,15 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
                 $codings[$coding] = 0.0;
             }
             $codings[$coding] += $obj->receivedTotalCost();
-            $ret .= sprintf('<tr %s><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>
+            $ret .= sprintf('<tr %s><td>%d</td><td>%s</td>
+                    <td><a href="../item/ItemEditorPage.php?searchupc=%s">%s</a></td><td>%s</td><td>%s</td>
                     <td>%s</td><td>%s</td><td>%d</td><td>%.2f</td>
                     <td>&nbsp;</td><td>%s</td><td>%d</td><td>%.2f</td>
                     </tr>',
                     $css,
                     $obj->salesCode(),
                     $obj->sku(),
-                    $obj->internalUPC(),
+                    $obj->internalUPC(), $obj->internalUPC(),
                     $obj->brand(),
                     $obj->description(),
                     $obj->unitSize(), $obj->caseSize(),
