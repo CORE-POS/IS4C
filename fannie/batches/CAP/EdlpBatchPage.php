@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 class EdlpBatchPage extends FannieRESTfulPage
 {
     public $title = "Fannie - NCG EDLP Batch";
-    public $header = "Upload NCG EDLP Batch";
+    public $header = "Create NCG EDLP Batch";
 
     public $description = '[NCG EDLP Batch] creates a price change
     batch for all items that have a maximum pricing rule attached.';
