@@ -179,6 +179,7 @@ class ItemMarginModule extends ItemModule
                     */
                     $rule->reviewDate(FormLib::get('rule-review-date'));
                     $rule->details(FormLib::get('rule-details'));
+                    $rule->priceRuleTypeID(FormLib::get('price-rule-type'));
                     if ($old_rule > 1) {
                         $rule->priceRuleID($old_rule);
                         $prod->price_rule_id($old_rule); // just in case
