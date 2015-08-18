@@ -38,11 +38,18 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 
     private $show_all = true;
 
-    function preprocess(){
+    function preprocess()
+    {
         $this->__routes[] = 'get<pending>';
         $this->__routes[] = 'get<placed>';
         $this->__routes[] = 'post<id><setPlaced>';
         $this->__routes[] = 'get<id><export>';
+        $this->__routes[] = 'get<id><receive>';
+        $this->__routes[] = 'get<id><sku>';
+        $this->__routes[] = 'get<id><recode>';
+        $this->__routes[] = 'post<id><sku><recode>';
+        $this->__routes[] = 'post<id><sku><qty><cost>';
+        $this->__routes[] = 'post<id><sku><upc><brand><description><orderQty><orderCost><receiveQty><receiveCost>';
         if (FormLib::get_form_value('all') === '0')
             $this->show_all = false;
         return parent::preprocess();
@@ -160,6 +167,69 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         return false;
     }
 
+    public function post_id_sku_recode_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $model = new PurchaseOrderItemsModel($dbc);
+        $model->orderID($this->id);
+
+        for ($i=0; $i<count($this->sku); $i++) {
+            if (!isset($this->recode[$i])) {
+                continue;
+            }
+            $model->sku($this->sku[$i]);
+            $model->salesCode($this->recode[$i]);
+            $model->save();
+        }
+
+        return $_SERVER['PHP_SELF'] . '?id=' . $this->id;
+    }
+
+    public function get_id_recode_view()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $model = new PurchaseOrderItemsModel($dbc);
+        $model->orderID($this->id);
+
+        $ret = '<form method="post" action="' . $_SERVER['PHP_SELF'] . '">
+            <input type="hidden" name="id" value="' . $this->id . '" />
+            <table class="table table-striped">
+            <tr>
+                <td><input type="text" placeholder="Change All" class="form-control" 
+                    onchange="if (this.value != \'\') { $(\'.recode-sku\').val(this.value); }" /></td>
+                <th>SKU</th>
+                <th>UPC</th>
+                <th>Brand</th>
+                <th>Description</th>
+            </tr>';
+        foreach ($model->find() as $item) {
+            $ret .= sprintf('<tr>
+                <td><input class="form-control recode-sku" type="text" 
+                    name="recode[]" value="%s" required /></td>
+                <td>%s<input type="hidden" name="sku[]" value="%s" /></td>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%s</td>
+                </tr>',
+                $item->salesCode(),
+                $item->sku(), $item->sku(),
+                $item->internalUPC(),
+                $item->brand(),
+                $item->description()
+            );
+        }
+        $ret .= '</table>
+            <p><button type="submit" class="btn btn-default">Save Codings</button>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="ViewPurchaseOrders.php?id=' . $this->id . '" class="btn btn-default">Back to Order</a>
+            </p>
+        </form>';
+
+        return $ret;
+    }
+
     function get_id_view()
     {
         $dbc = $this->connection;
@@ -220,6 +290,12 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         } else {
             $ret .= '<a class="btn btn-default"
                 href="ManualPurchaseOrderPage.php?id=' . $order->vendorID() . '&adjust=' . $this->id . '">Edit Order</a>';
+            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+            $ret .= '<a class="btn btn-default"
+                href="ViewPurchaseOrders.php?id=' . $this->id . '&receive=1">Receive Order</a>';
+            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+            $ret .= '<a class="btn btn-default"
+                href="ViewPurchaseOrders.php?id=' . $this->id . '&recode=1">Alter Codings</a>';
         }
         $ret .= '</div></div>';
         $ret .= '<div style="clear:left;"></div>';
@@ -282,6 +358,179 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
 
         return $ret;
+    }
+
+    /**
+      Receiving interface for processing enter recieved costs and quantities
+      on an order
+    */
+    public function get_id_receive_view()
+    {
+        $this->add_script('js/view.js');
+        $ret = '
+            <p>Receiving order #<a href="ViewPurchaseOrders.php?id=' . $this->id . '">' . $this->id . '</a></p>
+            <p><div class="form-inline">
+                <form onsubmit="receiveSKU(); return false;" id="receive-form">
+                <label>SKU</label>
+                <input type="text" name="sku" id="sku-in" class="form-control" />
+                <input type="hidden" name="id" value="' . $this->id . '" />
+                <button type="submit" class="btn btn-default">Continue</button>
+                </form>
+            </div></p>
+            <div id="item-area">
+            </div>';
+        $this->addOnloadCommand("\$('#sku-in').focus();\n");
+
+        return $ret;
+    }
+
+    /**
+      Receiving AJAX callback. For items that were in
+      the purchase order, just save the received quantity and cost
+    */
+    public function post_id_sku_qty_cost_handler()
+    {
+        $dbc = $this->connection;
+        $model = new PurchaseOrderItemsModel($dbc);
+        $model->orderID($this->id);
+        $model->sku($this->sku);
+        $model->receivedQty($this->qty);
+        $model->receivedTotalCost($this->cost);
+        if ($model->receivedDate() === null) {
+            $model->receivedDate(date('Y-m-d H:i:s'));
+        }
+        $model->save();
+
+        return false;
+    }
+
+    /**
+      Receiving AJAX callback. For items that were NOT in
+      the purchase order, create a whole record for the
+      item that showed up. 
+    */
+    public function post_id_sku_upc_brand_description_orderQty_orderCost_receiveQty_receiveCost_handler()
+    {
+        $dbc = $this->connection;
+        $model = new PurchaseOrderItemsModel($dbc);
+        $model->orderID($this->id);
+        $model->sku($this->sku);
+        $model->internalUPC(BarcodeLib::padUPC($this->upc));
+        $model->brand($this->brand);
+        $model->description($this->description);
+        $model->quantity($this->orderQty);
+        $model->unitCost($this->orderCost);
+        $model->caseSize(1);
+        $model->receivedQty($this->receiveQty);
+        $model->receivedTotalCost($this->receiveCost);
+        $model->receivedDate(date('Y-m-d H:i:s'));
+        $model->save();
+
+        return false;
+    }
+
+    /**
+      Receiving AJAX callback.
+      Lookup item in the order and display form fields
+      to enter required info 
+    */
+    public function get_id_sku_handler()
+    {
+        $dbc = $this->connection;
+        $model = new PurchaseOrderItemsModel($dbc);
+        $model->orderID($this->id);
+        $model->sku($this->sku);
+        // lookup by SKU but if nothing is found
+        // try using the value as a UPC instead
+        $found = false;
+        if ($model->load()) {
+            $found = true;
+        } else {
+            $model->reset();
+            $model->orderID($this->id);
+            $model->internalUPC(BarcodeLib::padUPC($this->sku));
+            $matches = $model->find();
+            if (count($matches) == 1) {
+                $model = $matches[0];
+                $found = true;
+            }
+        }
+        
+        // item not in order. need all fields to add it.
+        if (!$found) {
+            echo '<div class="alert alert-danger">SKU not found in order</div>';
+            echo '<form onsubmit="saveReceive(); return false;">';
+            echo '<table class="table table-bordered">';
+            echo '<tr><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
+                <th>Qty Ordered</th><th>Cost (est)</th><th>Qty Received</th><th>Cost Received</th></tr>';
+            $order = new PurchaseOrderModel($dbc);
+            $order->orderID($this->id);
+            $order->load();
+            $item = new VendorItemsModel($dbc);
+            $item->vendorID($order->vendorID());
+            $item->sku($this->sku);
+            $item->load();
+            printf('<tr>
+                <td>%s<input type="hidden" name="sku" value="%s" /></td>
+                <td><input type="text" class="form-control" name="upc" value="%s" /></td>
+                <td><input type="text" class="form-control" name="brand" value="%s" /></td>
+                <td><input type="text" class="form-control" name="description" value="%s" /></td>
+                <td><input type="text" class="form-control" name="orderQty" value="%s" /></td>
+                <td><input type="text" class="form-control" name="orderCost" value="%.2f" /></td>
+                <td><input type="text" class="form-control" name="receiveQty" value="%s" /></td>
+                <td><input type="text" class="form-control" name="receiveCost" value="%.2f" /></td>
+                <td><button type="submit" class="btn btn-default">Add New Item</button><input type="hidden" name="id" value="%d" /></td>
+                </tr>',
+                $this->sku, $this->sku,
+                $item->upc(),
+                $item->brand(),
+                $item->description(),
+                1,
+                $item->cost() * $item->units(),
+                0,
+                0,
+                $this->id
+            );
+            echo '</table>';
+            echo '</form>';
+        } else {
+            // item in order. just need received qty and cost
+            echo '<form onsubmit="saveReceive(); return false;">';
+            echo '<table class="table table-bordered">';
+            echo '<tr><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
+                <th>Qty Ordered</th><th>Cost (est)</th><th>Qty Received</th><th>Cost Received</th></tr>';
+            if ($model->receivedQty() === null) {
+                $model->receivedQty($model->quantity());
+            }
+            if ($model->receivedTotalCost() === null) {
+                $model->receivedTotalCost($model->quantity()*$model->unitCost()*$model->caseSize());
+            }
+            printf('<tr>
+                <td>%s<input type="hidden" name="sku" value="%s" /></td>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%.2f</td>
+                <td><input type="text" class="form-control" name="qty" value="%s" /></td>
+                <td><input type="text" class="form-control" name="cost" value="%.2f" /></td>
+                <td><button type="submit" class="btn btn-default">Save</button><input type="hidden" name="id" value="%d" /></td>
+                </tr>',
+                $this->sku, $this->sku,
+                $model->internalUPC(),
+                $model->brand(),
+                $model->description(),
+                $model->quantity(),
+                $model->quantity() * $model->unitCost() * $model->caseSize(),
+                $model->receivedQty(),
+                $model->receivedTotalCost(),
+                $this->id
+            );
+            echo '</table>';
+            echo '</form>';
+        }
+
+        return false;
     }
 
     public function get_view()
@@ -356,9 +605,19 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 
     public function helpContent()
     {
-        if (isset($this->id)) {
+        if (isset($this->receive)) {
+            return '<p>Receive an order. First enter a SKU (or UPC) to see
+            the quantities that were ordered. Then enter the actual quantities
+            received as well as costs. If a received item was <b>not</b> on the
+            original order, you will be prompted to provide additional information
+            so the item can be added to the order.</p>';
+        } elseif (isset($this->id)) {
             return '<p>Details of a Purchase Order. Coding(s) are driven by POS department
-            <em>Sales Codes</em>. Export outputs the order data in various formats.';
+            <em>Sales Codes</em>. Export outputs the order data in various formats.
+            Edit Order loads the order line-items into an editing interface where adjustments
+            to all fields can be made. Receive Order is used to resolve a purchase order
+            with actual quantities received.
+            </p>';
         } else {
             return '<p>Click the date link to view a particular purchase order. Use
                 the dropdowns to filter the list. The distinction between <em>All Orders</em>
