@@ -82,13 +82,13 @@ function smartToggle()
             <?php } ?>
         </td>
         <td>
-        <div style="font-size:28px;margin-bottom:5px;" class="primaryColor"
-            data-toggle="collapse" data-target=".navbar-default"
-            onclick="smartToggle();">
+        <div style="font-size:28px;margin-bottom:5px;" class="primaryColor">
+        <a href="<?php echo $path; ?>">
         <?php echo $BACKEND_NAME; ?>
         <?php if (isset($FANNIE_CUSTOM_TITLE) && !empty($FANNIE_CUSTOM_TITLE)) {
             echo ' - ' . $FANNIE_CUSTOM_TITLE;
         } ?>
+        </a>
         </div>
         <!-- this span is for detecting bootstrap screensize -->
         <span class="device-xs visible-xs"></span>
