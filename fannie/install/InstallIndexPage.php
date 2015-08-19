@@ -512,6 +512,12 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         <?php
         echo installTextField('FANNIE_COOP_ID', $FANNIE_COOP_ID);
         ?>
+        <br />Home Page (URL)
+        <br />Normally the item editor is displayed by default but another page or site can
+        be designated instead.
+        <?php
+        echo installTextField('FANNIE_HOME_PAGE', $FANNIE_HOME_PAGE, 'item/ItemEditorPage.php');
+        ?>
 
         <hr />
         <h4 class="install">Locale</h4>
