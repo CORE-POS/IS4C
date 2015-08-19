@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
-class QMDisplay extends NoInputPage {
+class QMDisplay extends NoInputCorePage 
+{
 
     private $offset;
     private $plugin_url;

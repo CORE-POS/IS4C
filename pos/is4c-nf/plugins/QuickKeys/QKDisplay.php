@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
-class QKDisplay extends NoInputPage 
+class QKDisplay extends NoInputCorePage 
 {
     private $offset;
     private $plugin_url;

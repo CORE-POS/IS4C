@@ -23,7 +23,7 @@
 
 /** 
 
- @class BasicPage
+ @class BasicCorePage
   
    This is the base class for all display scripts
 
@@ -34,7 +34,7 @@
 
  */
 
-class BasicPage2 extends \COREPOS\common\ui\CorePage
+class BasicCorePage extends \COREPOS\common\ui\CorePage
 {
     /**
       Relative URL for POS root directory
@@ -458,7 +458,7 @@ class BasicPage2 extends \COREPOS\common\ui\CorePage
   includes are necessary. AutoLoader will include
   other classes as needed. 
 
-  body_content() draws the page. Methods from BasicPage
+  body_content() draws the page. Methods from BasicCorePage
   provide the standard input box at the top and footer
   at the bottom. DisplayLib::boxMsg() is a utility function that
   puts the 'Hello World' message in a standard message

@@ -21,21 +21,21 @@
 
 *********************************************************************************/
 
-/** @class InputPage
+/** @class InputCorePage
 
     This class automatically adds the input header
     and the footer. Any display script using this
     class will POST form input to itself as that
-    is the default action inherited from BasicPage.
+    is the default action inherited from BasicCorePage.
  */
 
-class NoInputPage2 extends BasicPage2 
+class InputCorePage extends BasicCorePage 
 {
     public function getHeader()
     {
         $ret = parent::getHeader();
         ob_start();
-        $this->noinput_header();
+        $this->input_header();
         $ret .= ob_get_clean();
         $ret .= DisplayLib::printheaderb();
 
@@ -50,7 +50,6 @@ class NoInputPage2 extends BasicPage2
             . "</div>\n";
         ob_start();
         $this->scale_box();
-        $this->scanner_scale_polling(false);
         $ret .= ob_get_clean();
 
         return $ret;

@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
-class paycardSuccess extends BasicPage {
+class paycardSuccess extends BasicCorePage 
+{
 
     private $bmp_path;
 

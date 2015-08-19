@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class nslogin extends NoInputPage 
+class nslogin extends NoInputCorePage 
 {
 
     private $color;

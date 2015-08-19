@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
-class PriceCheckPage extends NoInputPage 
+class PriceCheckPage extends NoInputCorePage 
 {
 
     private $upc;

@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class PriceOverride extends NoInputPage {
+class PriceOverride extends NoInputCorePage {
 
     var $description;
     var $price;

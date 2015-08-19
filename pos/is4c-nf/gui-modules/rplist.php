@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class rplist extends NoInputPage 
+class rplist extends NoInputCorePage 
 {
 
     function preprocess()

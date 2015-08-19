@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
-class PaycardEmvMenu extends NoInputPage 
+class PaycardEmvMenu extends NoInputCorePage 
 {
     private $menu = array(
         'CC' => 'Credit',

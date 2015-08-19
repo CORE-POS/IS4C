@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class login3 extends BasicPage {
+class login3 extends BasicCorePage 
+{
 
     var $color;
     var $img;

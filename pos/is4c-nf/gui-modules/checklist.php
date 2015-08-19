@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class checklist extends NoInputPage {
+class checklist extends NoInputCorePage 
+{
 
     /**
       Input processing function

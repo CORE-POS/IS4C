@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class tenderlist extends NoInputPage {
+class tenderlist extends NoInputCorePage 
+{
 
     /**
       Input processing function

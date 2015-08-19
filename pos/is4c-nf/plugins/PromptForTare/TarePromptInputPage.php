@@ -35,10 +35,10 @@
  * page or True to go to pos2.php.
  */
 
-//include '../gui-class-lib/NoInputPage.php';
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
-class TarePromptInputPage extends NoInputPage {
+class TarePromptInputPage extends NoInputCorePage 
+{
 
     private $request_header = '';
     private $request_msg = '';

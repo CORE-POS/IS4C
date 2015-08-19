@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class mgrlogin extends NoInputPage {
+class mgrlogin extends NoInputCorePage 
+{
 
     function preprocess(){
         if (isset($_REQUEST['input'])){
