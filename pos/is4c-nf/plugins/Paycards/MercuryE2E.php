@@ -965,7 +965,7 @@ class MercuryE2E extends BasicCCModule
 
                 $isCredit = (CoreLocal::get('CacheCardType') == 'CREDIT' || CoreLocal::get('CacheCardType') == '') ? true : false;
                 $needSig = (CoreLocal::get('paycard_amount') > CoreLocal::get('CCSigLimit') || CoreLocal::get('paycard_amount') < 0) ? true : false;
-                if ($isCredit && $needSig) {
+                if (($isCredit || CoreLocal::get('EmvSignature') === true) && $needSig) {
                     CoreLocal::set("boxMsg",
                             "<b>$appr_type</b>
                             <font size=-1>
@@ -1742,6 +1742,7 @@ class MercuryE2E extends BasicCCModule
     */
     public function handleResponseDataCap($xml)
     {
+        $rawXml = $xml;
         $xml = new xmlData($xml);
         $cashierNo = CoreLocal::get("CashierNo");
         $laneNo = CoreLocal::get("laneno");
@@ -1815,6 +1816,12 @@ class MercuryE2E extends BasicCCModule
             $issuer = 'NCG';
             $ebtbalance = $xml->get_first('Balance');
             CoreLocal::set('GiftBalance', $ebtbalance);
+        }
+
+        if ($xml->get_first('TranCode') == 'EMVSale' && strpos($rawXml, 'x____') !== false) {
+            CoreLocal::set('EmvSignature', true);
+        } else {
+            CoreLocal::set('EmvSignature', false);
         }
 
         // put normalized value in validResponse column
@@ -2145,9 +2152,12 @@ class MercuryE2E extends BasicCCModule
     private function getTermID()
     {
         if (CoreLocal::get("training") == 1) {
-            //return '337234005'; // emv
-            return '118725340908147'; // newer
-            return "395347308=E2ETKN"; // old
+            if (CoreLocal::get('CacheCardType') == 'EMV') {
+                return '337234005'; // emv
+            } else {
+                return '118725340908147'; // newer
+            }
+            //return "395347308=E2ETKN"; // old test ID
         } else {
             return CoreLocal::get('MercuryE2ETerminalID');
         }
