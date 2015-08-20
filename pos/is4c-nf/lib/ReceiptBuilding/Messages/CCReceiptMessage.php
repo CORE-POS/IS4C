@@ -108,7 +108,7 @@ class CCReceiptMessage extends ReceiptMessage {
         
         while ($row = $db->fetch_array($result)) {
             $slip .= ReceiptLib::centerString("................................................")."\n";
-            $emvR = $dbc->execute($empP, array(date('Ymd'), $emp, $reg, $trans, $row['transID']));
+            $emvR = $db->execute($emvP, array(date('Ymd'), $emp, $reg, $trans, $row['transID']));
             if ($emvR && $db->numRows($emvR)) {
                 $emvW = $db->fetchRow($emvR);
                 $slip .= $emvW['content'];
