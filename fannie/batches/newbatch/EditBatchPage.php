@@ -294,7 +294,7 @@ class EditBatchPage extends FannieRESTfulPage
                 left join prodExtra as x on l.upc=x.upc
                 left join vendorItems as v on l.upc=v.upc AND p.default_vendor_id=v.vendorID
                 left join vendors as z on p.default_vendor_id=z.vendorID
-            WHERE batchID=? ";
+            WHERE l.batchID=? ";
         $args = array($bid);
         if ($this->config->get('STORE_MODE') == 'HQ') {
             $selQ .= " AND p.store_id=? ";
