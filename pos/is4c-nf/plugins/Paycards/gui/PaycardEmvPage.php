@@ -123,8 +123,7 @@ function emvSubmit()
         success: function(resp) {
             // POST result to PHP page in POS to
             // process the result.
-            console.log('success');
-            console.log(resp);
+            $('div.baseHeight').html('Finishing transaction');
             var f = $('<form id="js-form"></form>');
             f.append($('<input type="hidden" name="xml-resp" />').val(resp));
             $('body').append(f);
@@ -133,8 +132,7 @@ function emvSubmit()
         error: function(resp) {
             // display error to user?
             // go to dedicated error page?
-            console.log('error');
-            console.log(resp);
+            $('div.baseHeight').html('Finishing transaction');
             var f = $('<form id="js-form"></form>');
             f.append($('<input type="hidden" name="xml-resp" />').val(resp));
             $('body').append(f);

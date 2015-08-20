@@ -114,11 +114,26 @@ class CCReceiptMessage extends ReceiptMessage {
                 $lines = explode("\n", $emvW['content']);
                 for ($i=0; $i<count($lines); $i++) {
                     if (isset($lines[$i+1]) && (strlen($lines[$i]) + strlen($lines[$i+1])) < 56) {
-                        $spacer = 56 - strlen($lines[$i]) - strlen($lines[$i+1]);
-                        $slip .= $lines[$i] . str_repeat(' ', $spacer) . $lines[$i+1] . "\n";
-                        $i++;
+                        // don't columnize the amount lines
+                        if (strstr($lines[$i], 'AMOUNT') || strstr($lines[$i+1], 'AMOUNT')) {
+                            $slip .= ReceiptLib::centerString($lines[$i]) . "\n";
+                        } elseif (strstr($lines[$i], 'TOTAL') || strstr($lines[$i+1], 'TOTAL')) {
+                            $slip .= ReceiptLib::centerString($lines[$i]) . "\n";
+                        }  else {
+                            $spacer = 56 - strlen($lines[$i]) - strlen($lines[$i+1]);
+                            $slip .= $lines[$i] . str_repeat(' ', $spacer) . $lines[$i+1] . "\n";
+                            $i++;
+                        }
                     } else {
-                        $slip .= $lines[$i] . "\n";
+                        if (strstr($line, 'x___')) {
+                            if ($sigSlip) {
+                                $slip .= "\n\n\n";
+                            } else {
+                                $i++;
+                                continue;
+                            }
+                        }
+                        $slip .= ReceiptLib::centerString($lines[$i]) . "\n";
                     }
                 }
                 if ($sigSlip) {
