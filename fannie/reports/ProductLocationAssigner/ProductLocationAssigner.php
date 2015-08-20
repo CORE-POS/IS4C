@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class OutdatedProductFinder extends FanniePage
+class ProductLocationAssigner extends FanniePage
 {
     public $description = '[Scan Tools] assigns FloorSectionID to items without';
     public $report_set = 'Scan Tools';
@@ -156,6 +156,9 @@ class OutdatedProductFinder extends FanniePage
                 $floorSectionID[] = 12;
             }
         }
+	if(mysql_errno()!=0) {
+		echo ":" . mysql_error();
+	}
         
         for($i=0; $i<count($upc); $i++) {
             $floorsectionP = $dbc->prepare("
@@ -164,7 +167,15 @@ class OutdatedProductFinder extends FanniePage
                 WHERE upc=?;");
             $floorsectionR = $dbc->execute($floorsectionP, $floorSectionID[$i], $upc[$i]);
         }
-       
+
+	if(mysql_errno()!=0) {
+		echo count($upc) . " item locations have been updated.";
+	} else if(mysql_errno()>0) {
+		echo mysql_error();
+	} else {
+		echo "There were no items found missing floor locations.";
+	}       
+	return 0;
     }
 }
 
