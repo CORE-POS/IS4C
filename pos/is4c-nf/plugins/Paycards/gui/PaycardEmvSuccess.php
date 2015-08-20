@@ -263,7 +263,7 @@ class PaycardEmvSuccess extends BasicCorePage
         $rp_type = '';
         if (isset($_REQUEST['receipt']) && strlen($_REQUEST['receipt']) > 0) {
             $rp_type = $_REQUEST['receipt'];
-            $this->add_onload_command("submitWraper('RP');\n");
+            $this->add_onload_command("submitWrapper('RP');\n");
         } elseif (CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_GIFT) {
             if( CoreLocal::get("paycard_mode") == PaycardLib::PAYCARD_MODE_BALANCE) {
                 $rp_type = "gcBalSlip";
