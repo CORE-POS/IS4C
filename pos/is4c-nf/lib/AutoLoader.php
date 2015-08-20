@@ -282,7 +282,6 @@ class AutoLoader extends LibraryClass
             'log',
             'NewMagellan',
             'test',
-            'unit-tests',
         );
 
         $dh = opendir($path);
