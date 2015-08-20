@@ -156,9 +156,9 @@ class ProductLocationAssigner extends FanniePage
                 $floorSectionID[] = 12;
             }
         }
-	if(mysql_errno()!=0) {
-		echo ":" . mysql_error();
-	}
+        if ($dbc->error()) {
+            echo ":" . $dbc->error();
+        }
         
         for($i=0; $i<count($upc); $i++) {
             $floorsectionP = $dbc->prepare("
@@ -168,14 +168,15 @@ class ProductLocationAssigner extends FanniePage
             $floorsectionR = $dbc->execute($floorsectionP, $floorSectionID[$i], $upc[$i]);
         }
 
-	if(mysql_errno()!=0) {
-		echo count($upc) . " item locations have been updated.";
-	} else if(mysql_errno()>0) {
-		echo mysql_error();
-	} else {
-		echo "There were no items found missing floor locations.";
-	}       
-	return 0;
+        if ($dbc->error()) {
+            echo $dbc->error();
+        } elseif (count($upc) > 0) {
+            echo count($upc) . " item locations have been updated.";
+        } else {
+            echo "There were no items found missing floor locations.";
+        }       
+
+        return 0;
     }
 }
 
