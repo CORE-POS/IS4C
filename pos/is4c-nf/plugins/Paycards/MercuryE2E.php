@@ -1369,11 +1369,17 @@ class MercuryE2E extends BasicCCModule
             <CollectData>CardholderName</CollectData>
             <Memo>CORE POS 1.0.0 EMVX</Memo>
             <PartialAuth>Allow</PartialAuth>';
+            if ($prompt) {
+                $msgXml .= '
+                    <Account>
+                        <AcctNo>Prompt</AcctNo>
+                    </Account>';
+            }
         } else {
             $msgXml .= '
             <Memo>CORE POS 1.0.0 PDCX</Memo>
             <Account>
-                <AcctNo>SecureDevice</AcctNo>
+                <AcctNo>' . ($prompt ? 'Prompt' : 'SecureDevice') . '</AcctNo>
             </Account>
             <TranType>' . $tran_type . '</TranType>';
             if ($card_type) {
@@ -1400,11 +1406,6 @@ class MercuryE2E extends BasicCCModule
         $msgXml .= '
             </Transaction>
             </TStream>';
-
-        if ($prompt) {
-            $msgXml = str_replace('<AcctNo>SecureDevice</AcctNo>',
-                '<AcctNo>Prompt</AcctNo>', $msgXml);
-        }
 
         return $msgXml;
     }
