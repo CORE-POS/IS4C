@@ -270,13 +270,28 @@ class AutoLoader extends LibraryClass
         if(!is_dir($path)) {
             return $map;
         }
+        
+        // skip searching these directories
+        // to improve overall performance
+        $exclude = array(
+            'css',
+            'graphics',
+            'gui-modules',
+            'install',
+            'js',
+            'locale',
+            'log',
+            'NewMagellan',
+            'test',
+            'unit-tests',
+        );
 
         $dh = opendir($path);
         while($dh && ($file=readdir($dh)) !== false) {
             if ($file[0] == ".") continue;
 
             $fullname = realpath($path."/".$file);
-            if (is_dir($fullname) && $file != "gui-modules") {
+            if (is_dir($fullname) && !in_array($file, $exclude)) {
                 self::recursiveLoader($fullname, $map);
             } else if (substr($file,-4) == '.php') {
                 $class = substr($file,0,strlen($file)-4);
