@@ -256,11 +256,15 @@ class PaycardEmvSuccess extends BasicCorePage
         </div>
         <?php
         echo "<div id=\"footer\">";
+        Database::getsubtotals(); // in case of partial approval shows remainder due
         echo DisplayLib::printfooter();
         echo "</div>";
 
         $rp_type = '';
-        if( CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_GIFT) {
+        if (isset($_REQUEST['receipt']) && strlen($_REQUEST['receipt']) > 0) {
+            $rp_type = $_REQUEST['receipt'];
+            $this->add_onload_command("submitWraper('RP');\n");
+        } elseif (CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_GIFT) {
             if( CoreLocal::get("paycard_mode") == PaycardLib::PAYCARD_MODE_BALANCE) {
                 $rp_type = "gcBalSlip";
             } else {
@@ -270,9 +274,6 @@ class PaycardEmvSuccess extends BasicCorePage
             $rp_type = "ccSlip";
         } elseif( CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_ENCRYPTED) {
             $rp_type = "ccSlip";
-        } elseif (isset($_REQUEST['receipt']) && strlen($_REQUEST['receipt']) > 0) {
-            $rp_type = $_REQUEST['receipt'];
-            $this->add_onload_command("submitWraper('RP');\n");
         }
         printf("<input type=\"hidden\" id=\"rp_type\" value=\"%s\" />",$rp_type);
     }
