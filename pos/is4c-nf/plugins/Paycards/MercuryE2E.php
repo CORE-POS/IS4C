@@ -1823,10 +1823,32 @@ class MercuryE2E extends BasicCCModule
             CoreLocal::set('GiftBalance', $ebtbalance);
         }
 
-        if ($xml->get_first('TranCode') == 'EMVSale' && strpos($rawXml, 'x____') !== false) {
+        $dbc = Database::tDataConnect();
+
+        if (substr($xml->get_first('TranCode'), 0, 3) == 'EMV' && strpos($rawXml, 'x____') !== false) {
             CoreLocal::set('EmvSignature', true);
         } else {
             CoreLocal::set('EmvSignature', false);
+        }
+        if (substr($xml->get_first('TranCode'), 0, 3) == 'EMV') {
+            $i = 1;
+            $printData = '';
+            while ($i < 100) {
+                $line = $xml->get_first('Line' . $i);
+                if ($line === false) {
+                    break;
+                }
+                $printData .= $line . "\n";
+                $i++;
+            }
+            if (strlen($printData) > 0) {
+                $printP = $dbc->prepare('
+                    INSERT INTO EmvReceipt
+                        (dateID, tdate, empNo, registerNo, transNo, transID, content)
+                    VALUES 
+                        (?, ?, ?, ?, ?, ?, ?)');
+                $dbc->execute($printP, array(date('Ymd'), date('Y-m-d H:i:s'), $cashierNo, $laneNo, $transNo, $transID, $printData));
+            }
         }
 
         // put normalized value in validResponse column
@@ -1872,7 +1894,6 @@ class MercuryE2E extends BasicCCModule
             $xml->get_first('ACQREFDATA'),
             CoreLocal::get('LastEmvPcId')
         );
-        $dbc = Database::tDataConnect();
         $finishQ = $dbc->prepare_statement($finishQ);
         $dbc->exec_statement($finishQ, $args);
 

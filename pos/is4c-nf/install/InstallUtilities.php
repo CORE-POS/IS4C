@@ -1207,6 +1207,7 @@ class InstallUtilities extends LibraryClass
             'EfsnetTokensModel',
             'PaycardTransactionsModel',
             'CapturedSignatureModel',
+            'EmvReceiptModel',
             // placeholder,
             '__LTT__',
             // Views
