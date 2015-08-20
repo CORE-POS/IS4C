@@ -1319,6 +1319,7 @@ class MercuryE2E extends BasicCCModule
                 $amount = CoreLocal::get('amtdue');
             }
         }
+        $manual = ($prompt ? 1 : 0);
 
         $dbc = Database::tDataConnect();
         $insP = $dbc->prepare('
@@ -1328,11 +1329,11 @@ class MercuryE2E extends BasicCCModule
             seconds, commErr, httpCode)
             VALUES
             (?, ?, ?, ?, ?, \'MercuryE2E\',
-            ?, ?, ?, ?, ?, 0, ?,
+            ?, ?, ?, ?, ?, ?, ?,
             0, 0, 200)');
         $args = array(
             date('Ymd'), $cashierNo, $registerNo, $transNo, $transID,
-            $refNum, $live, $tran_type, $tran_code, abs($amount), date('Y-m-d H:i:s')
+            $refNum, $live, $tran_type, $tran_code, abs($amount), $manual, date('Y-m-d H:i:s')
         );
         $insR = $dbc->execute($insP, $args);
         if ($insR === false) {
