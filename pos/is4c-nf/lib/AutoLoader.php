@@ -277,7 +277,6 @@ class AutoLoader extends LibraryClass
             'css',
             'graphics',
             'gui-modules',
-            'install',
             'js',
             'locale',
             'log',
