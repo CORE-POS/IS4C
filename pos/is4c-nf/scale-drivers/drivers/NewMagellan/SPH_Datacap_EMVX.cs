@@ -286,6 +286,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         string xml="<?xml version=\"1.0\"?>"
             + "<TStream>"
             + "<Transaction>"
+            + "<HostOrIP>127.0.0.1</HostOrIP>"
             + "<MerchantID>MerchantID</MerchantID>"
             + "<TranCode>EMVPadReset</TranCode>"
             + "<SecureDevice>" + SecureDeviceToEmvType(this.device_identifier) + "</SecureDevice>"
