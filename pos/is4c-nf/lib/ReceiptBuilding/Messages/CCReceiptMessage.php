@@ -125,7 +125,7 @@ class CCReceiptMessage extends ReceiptMessage {
                             $i++;
                         }
                     } else {
-                        if (strstr($line, 'x___')) {
+                        if (strstr($lines[$i], 'x___')) {
                             if ($sigSlip) {
                                 $slip .= "\n\n\n";
                             } else {
