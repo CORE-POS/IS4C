@@ -1838,10 +1838,15 @@ class MercuryE2E extends BasicCCModule
                 if ($line === false) {
                     break;
                 }
-                if (isset($line[0]) && $line[0] == '.') {
+                $line = trim($line);
+                if ($line === '.') {
+                    // skip blank
+                } elseif (isset($line[0]) && $line[0] == '.') {
                     $line = substr($line, 1);
+                    $printData .= $line . "\n";
+                } else {
+                    $printData .= $line . "\n";
                 }
-                $printData .= $line . "\n";
                 $i++;
             }
             if (strlen($printData) > 0) {

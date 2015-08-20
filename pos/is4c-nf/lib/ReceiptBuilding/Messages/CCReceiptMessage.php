@@ -111,7 +111,16 @@ class CCReceiptMessage extends ReceiptMessage {
             $emvR = $db->execute($emvP, array(date('Ymd'), $emp, $reg, $trans, $row['transID']));
             if ($emvR && $db->numRows($emvR)) {
                 $emvW = $db->fetchRow($emvR);
-                $slip .= $emvW['content'];
+                $lines = explode("\n", $emvW['content']);
+                for ($i=0; $i<count($lines); $i++) {
+                    if (isset($lines[$i+1]) && (strlen($lines[$i]) + strlen($lines[$i+1])) < 56) {
+                        $spacer = 56 - strlen($lines[$i]) - strlen($lines[$i+1]);
+                        $slip .= $lines[$i] . str_repeat(' ', $spacer) . $lines[$i+1] . "\n";
+                        $i++;
+                    } else {
+                        $slip .= $lines[$i] . "\n";
+                    }
+                }
                 if ($sigSlip) {
                     $slip .= "\n" . ReceiptLib::centerString(_('(Merchant Copy)')) . "\n";
                 } else {
