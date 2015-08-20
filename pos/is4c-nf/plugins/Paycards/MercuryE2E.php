@@ -991,7 +991,7 @@ class MercuryE2E extends BasicCCModule
                 $v = new Void();
                 $v->voidid(CoreLocal::get("paycard_id"), array());
                 // advanced ID to the void line
-                CoreLocal::set('paycard_id', CoreLocal::get('LastID'));
+                CoreLocal::set('paycard_id', CoreLocal::get('paycard_id')+1);
                 CoreLocal::set("boxMsg","<b>Voided</b>
                                            <p><font size=-1>[enter] to continue
                                            <br>\"rp\" to reprint slip</font>"

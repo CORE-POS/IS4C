@@ -62,6 +62,9 @@ class PaycardEmvBalance extends PaycardProcessPage
                 CoreLocal::set("strEntered","");
                 CoreLocal::set("strRemembered","");
                 CoreLocal::set("msgrepeat",0);
+                if ($json['receipt']) {
+                    $json['main_frame'] .= '?receipt=' . $json['receipt'];
+                }
             } else {
                 CoreLocal::set("msgrepeat",0);
                 $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
