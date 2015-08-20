@@ -140,7 +140,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
         );
         if ($this->config->COOP_ID == 'WFC_Duluth') {
             $ts = strtotime($args[0]);
-            if (mktime(0, 0, 0, 7, 1, date('Y',$ts)) < $ts) {
+            if (mktime(0, 0, 0, 7, 1, date('Y',$ts)) <= $ts) {
                 $ts = mktime(0, 0, 0, 7, 1, date('Y', $ts));
             } else {
                 $ts = mktime(0, 0, 0, 7, 1, date('Y', $ts)-1);
