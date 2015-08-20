@@ -84,6 +84,9 @@ class PaycardEmvPage extends PaycardProcessPage
                 $json = $e2e->cleanup($json);
                 CoreLocal::set("strRemembered","");
                 CoreLocal::set("msgrepeat",0);
+                if ($receipt) {
+                    $json['main_frame'] .= '?receipt=' . $json['receipt'];
+                }
             } else {
                 CoreLocal::set("msgrepeat",0);
                 $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';

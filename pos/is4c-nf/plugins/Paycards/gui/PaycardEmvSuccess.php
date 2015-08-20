@@ -263,16 +263,16 @@ class PaycardEmvSuccess extends BasicCorePage
         if( CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_GIFT) {
             if( CoreLocal::get("paycard_mode") == PaycardLib::PAYCARD_MODE_BALANCE) {
                 $rp_type = "gcBalSlip";
-            } 
-            else {
+            } else {
                 $rp_type ="gcSlip";
             }
-        } 
-        else if( CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_CREDIT) {
+        } elseif( CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_CREDIT) {
             $rp_type = "ccSlip";
-        }
-        else if( CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_ENCRYPTED) {
+        } elseif( CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_ENCRYPTED) {
             $rp_type = "ccSlip";
+        } elseif (isset($_REQUEST['receipt']) && strlen($_REQUEST['receipt']) > 0) {
+            $rp_type = $_REQUEST['receipt'];
+            $this->add_onload_command("submitWraper('RP');\n");
         }
         printf("<input type=\"hidden\" id=\"rp_type\" value=\"%s\" />",$rp_type);
     }
