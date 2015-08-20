@@ -1528,7 +1528,7 @@ class MercuryE2E extends BasicCCModule
             </Amount>
             <RecordNo>RecordNumberRequested</RecordNo>
             <Frequency>OneTime</Frequency>';
-        if ($type == 'EMV') { // add EMV specific fields
+        if ($tran_type == 'EMV') { // add EMV specific fields
             $msgXml .= '
             <HostOrIP>' . '127.0.0.1' . '</HostOrIP>
             <SequenceNo>{{SequenceNo}}</SequenceNo>
