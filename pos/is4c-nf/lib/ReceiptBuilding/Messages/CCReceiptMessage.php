@@ -112,6 +112,11 @@ class CCReceiptMessage extends ReceiptMessage {
             if ($emvR && $db->numRows($emvR)) {
                 $emvW = $db->fetchRow($emvR);
                 $slip .= $emvW['content'];
+                if ($sigSlip) {
+                    $slip .= "\n" . ReceiptLib::centerString(_('(Merchant Copy)')) . "\n";
+                } else {
+                    $slip .= "\n" . ReceiptLib::centerString(_('(Customer Copy)')) . "\n";
+                }
             } else {
                 $trantype = $row['tranType'];  
                 if ($row['amount'] < 0) {
