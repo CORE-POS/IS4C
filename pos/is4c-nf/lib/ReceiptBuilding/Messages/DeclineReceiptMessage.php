@@ -1,0 +1,117 @@
+<?php
+/*******************************************************************************
+
+    Copyright 2013 Whole Foods Co-op
+
+    This file is part of IT CORE.
+
+    IT CORE is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    IT CORE is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    in the file license.txt along with IT CORE; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+*********************************************************************************/
+
+/**
+  @class DeclineReceiptMessage
+*/
+class DeclineReceiptMessage extends ReceiptMessage 
+{
+
+    public function select_condition()
+    {
+        return '0';
+    }
+
+    /**
+      Generate the message
+      @param $val the value returned by the object's select_condition()
+      @param $ref a transaction reference (emp-lane-trans)
+      @param $reprint boolean
+      @return [string] message to print on receipt
+    */
+    public function message($val, $ref, $reprint=false)
+    {
+        return '';
+    }
+
+    /**
+      Print message as its own receipt
+      @param $ref a transaction reference (emp-lane-trans)
+      @param $reprint boolean
+      @return [string] message to print 
+    */
+    public function standalone_receipt($ref, $reprint=false)
+    {
+        $date = ReceiptLib::build_time(time());
+        list($emp,$reg,$trans) = explode('-', $ref);
+        $sort = 'asc';
+
+        $db = Database::tDataConnect();
+
+        $emvP = $db->prepare('
+            SELECT content
+            FROM EmvReceipt
+            WHERE dateID=?
+                AND empNo=?
+                AND registerNo=?
+                AND transNo=?
+                AND transID=?
+            ORDER BY tdate DESC
+        ');
+        $emvR = $db->execute($emvP, array(date('Ymd'), $emp, $reg, $trans, CoreLocal::get('paycard_id')));
+        
+        while ($emvW = $db->fetchRow($emvR)) {
+            $slip .= ReceiptLib::centerString("................................................")."\n";
+            $lines = explode("\n", $emvW['content']);
+            for ($i=0; $i<count($lines); $i++) {
+                if (isset($lines[$i+1]) && (strlen($lines[$i]) + strlen($lines[$i+1])) < 56) {
+                    // don't columnize the amount lines
+                    if (strstr($lines[$i], 'AMOUNT') || strstr($lines[$i+1], 'AMOUNT')) {
+                        $slip .= ReceiptLib::centerString($lines[$i]) . "\n";
+                    } elseif (strstr($lines[$i], 'TOTAL') || strstr($lines[$i+1], 'TOTAL')) {
+                        $slip .= ReceiptLib::centerString($lines[$i]) . "\n";
+                    }  else {
+                        $spacer = 56 - strlen($lines[$i]) - strlen($lines[$i+1]);
+                        $slip .= $lines[$i] . str_repeat(' ', $spacer) . $lines[$i+1] . "\n";
+                        $i++;
+                    }
+                } else {
+                    if (strstr($lines[$i], 'x___')) {
+                        if ($sigSlip) {
+                            $slip .= "\n\n\n";
+                        } else {
+                            $i++;
+                            continue;
+                        }
+                    }
+                    $slip .= ReceiptLib::centerString($lines[$i]) . "\n";
+                }
+            }
+            $slip .= "\n" . ReceiptLib::centerString(_('(Customer Copy)')) . "\n";
+
+            break;
+        }
+
+        return $slip;
+    }
+
+    /**
+      Message can be printed independently from a regular    
+      receipt. Pass this string to ajax-end.php as URL
+      parameter receiptType to print the standalone receipt.
+    */
+    public $standalone_receipt_type = 'ccDecline';
+
+}
+
+?>

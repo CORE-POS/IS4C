@@ -972,6 +972,9 @@ class MercuryE2E extends BasicCCModule
                 $appr_type = 'Approved';
                 if (CoreLocal::get('paycard_partial')){
                     $appr_type = 'Partial Approval';
+                } elseif (CoreLocal::get('paycard_amount') == 0) {
+                    $appr_type = 'Declined';
+                    $json['receipt'] = 'ccDecline';
                 }
                 CoreLocal::set('paycard_partial', false);
 
@@ -1008,7 +1011,7 @@ class MercuryE2E extends BasicCCModule
                                            <p><font size=-1>[enter] to continue
                                            <br>\"rp\" to reprint slip</font>"
                 );
-                break;    
+                break;
         }
 
         return $json;
@@ -1948,7 +1951,8 @@ class MercuryE2E extends BasicCCModule
                     TransRecord::addcomment("");
                     CoreLocal::set('boxMsg', sprintf('Card Balance: $%.2f', $ebtbalance));
                 } elseif (substr($xml->get_first('TranCode'), 0, 3) == 'EMV') {
-                    TransRecord::addtender('Credit', 'CC', 0); 
+                    CoreLocal::set('paycard_amount', 0);
+                    return PaycardLib::PAYCARD_ERR_OK;
                 }
                 UdpComm::udpSend('termReset');
                 CoreLocal::set('ccTermState','swipe');
