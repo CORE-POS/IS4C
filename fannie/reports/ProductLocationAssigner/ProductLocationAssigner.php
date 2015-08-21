@@ -165,7 +165,7 @@ class ProductLocationAssigner extends FanniePage
                 UPDATE prodPhysicalLocation
                 SET floorSectionID=?
                 WHERE upc=?;");
-            $floorsectionR = $dbc->execute($floorsectionP, $floorSectionID[$i], $upc[$i]);
+            $floorsectionR = $dbc->execute($floorsectionP, array($floorSectionID[$i], $upc[$i]));
         }
 
         if ($dbc->error()) {
