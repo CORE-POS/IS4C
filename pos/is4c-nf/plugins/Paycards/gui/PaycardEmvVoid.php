@@ -32,6 +32,7 @@ class PaycardEmvVoid extends PaycardProcessPage
 
     function preprocess()
     {
+        $this->hide_input(true);
         $dbc = Database::tDataConnect();
         $q = '
             SELECT MAX(paycardTransactionID) 

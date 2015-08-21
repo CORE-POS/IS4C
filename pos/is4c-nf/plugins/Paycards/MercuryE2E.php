@@ -1862,12 +1862,16 @@ class MercuryE2E extends BasicCCModule
                 $i++;
             }
             if (strlen($printData) > 0) {
+                $receiptID = $transID;
+                if (CoreLocal::get('paycard_mode') == PaycardLib::PAYCARD_MODE_VOID) {
+                    $receiptID++;
+                }
                 $printP = $dbc->prepare('
                     INSERT INTO EmvReceipt
                         (dateID, tdate, empNo, registerNo, transNo, transID, content)
                     VALUES 
                         (?, ?, ?, ?, ?, ?, ?)');
-                $dbc->execute($printP, array(date('Ymd'), date('Y-m-d H:i:s'), $cashierNo, $laneNo, $transNo, $transID, $printData));
+                $dbc->execute($printP, array(date('Ymd'), date('Y-m-d H:i:s'), $cashierNo, $laneNo, $transNo, $receiptID, $printData));
             }
         }
 
