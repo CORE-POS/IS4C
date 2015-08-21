@@ -70,6 +70,7 @@ class DeclineReceiptMessage extends ReceiptMessage
         ');
         $emvR = $db->execute($emvP, array(date('Ymd'), $emp, $reg, $trans, CoreLocal::get('paycard_id')));
         
+        $slip = '';
         while ($emvW = $db->fetchRow($emvR)) {
             $slip .= ReceiptLib::centerString("................................................")."\n";
             $lines = explode("\n", $emvW['content']);
