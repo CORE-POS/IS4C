@@ -47,7 +47,7 @@ class ProductLocationAssigner extends FanniePage
                 FROM products AS p
                 LEFT JOIN prodPhysicalLocation AS l ON l.upc=p.upc
                 LEFT JOIN departments as d ON d.dept_no=p.department
-                WHERE l.floorSectionID = 'NULL' and p.inUse > 0
+                WHERE l.floorSectionID IS NULL and p.inUse > 0
                 ;";
         $result = $dbc->query($query);
         while ($row = $dbc->fetch_row($result)) {
@@ -160,12 +160,19 @@ class ProductLocationAssigner extends FanniePage
             echo ":" . $dbc->error();
         }
         
+        $floorsectionP = $dbc->prepare("
+            UPDATE prodPhysicalLocation
+            SET floorSectionID=?
+            WHERE upc=?;");
+        $existsP = $dbc->prepare('SELECT upc FROM prodPhysicalLocation WHERE upc=?');
+        $addP = $dbc->prepare('INSERT INTO prodPhysicalLocation (upc, floorSectionID) VALUES (?, ?)');
         for($i=0; $i<count($upc); $i++) {
-            $floorsectionP = $dbc->prepare("
-                UPDATE prodPhysicalLocation
-                SET floorSectionID=?
-                WHERE upc=?;");
-            $floorsectionR = $dbc->execute($floorsectionP, array($floorSectionID[$i], $upc[$i]));
+            $exists = $dbc->execute($existsP, array($upc[$i]));
+            if ($exists && $dbc->numRows($exists) > 0) {
+                $floorsectionR = $dbc->execute($floorsectionP, array($floorSectionID[$i], $upc[$i]));
+            } else {
+                $floorsectionR = $dbc->execute($addP, array($upc[$i], $floorSectionID[$i]));
+            }
         }
 
         if ($dbc->error()) {
