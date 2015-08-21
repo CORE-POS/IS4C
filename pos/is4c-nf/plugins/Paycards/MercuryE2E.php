@@ -1947,6 +1947,8 @@ class MercuryE2E extends BasicCCModule
                     // charge the card for a less amount. 
                     TransRecord::addcomment("");
                     CoreLocal::set('boxMsg', sprintf('Card Balance: $%.2f', $ebtbalance));
+                } elseif (substr($xml->get_first('TranCode'), 0, 3) == 'EMV') {
+                    TransRecord::addtender('Credit', 'CC', 0); 
                 }
                 UdpComm::udpSend('termReset');
                 CoreLocal::set('ccTermState','swipe');
