@@ -453,7 +453,7 @@ class PdfPrintHandler extends PrintHandler
     function writeLine($text)
     {
         if (is_object($this->instance)) {
-            $this->instance->MultiCell(0, $this->$line_height, $text, '', $this->align);
+            $this->instance->MultiCell(0, $this->line_height, $text, '', $this->align);
             $this->instance->Output('receipt.pdf', 'F');
         }
     }
