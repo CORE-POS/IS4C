@@ -137,7 +137,8 @@ class CCReceiptMessage extends ReceiptMessage {
                     }
                 }
                 if ($sigSlip) {
-                    $slip .= "\n" . ReceiptLib::centerString(_('(Merchant Copy)')) . "\n";
+                    $slip .= "\n" . $emp . '-' . $reg . '-' . $trans . '-' . "\n";
+                    $slip .= ReceiptLib::centerString(_('(Merchant Copy)')) . "\n";
                 } else {
                     $slip .= "\n" . ReceiptLib::centerString(_('(Customer Copy)')) . "\n";
                 }
