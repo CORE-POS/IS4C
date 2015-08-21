@@ -46,6 +46,10 @@ class PaycardEmvMenu extends NoInputCorePage
                     $json = $parser->parse('DATACAPDC');
                     $this->change_page($json['main_frame']);
                     return false;
+                case 'EMV':
+                    $json = $parser->parse('DATACAPEMV');
+                    $this->change_page($json['main_frame']);
+                    return false;
                 case 'EF':
                     $json = $parser->parse('DATACAPEF');
                     $this->change_page($json['main_frame']);
@@ -120,6 +124,13 @@ class PaycardEmvMenu extends NoInputCorePage
     function body_content() 
     {
         $stem = MiscLib::baseURL() . 'graphics/';
+        if (CoreLocal::get('PaycardsDatacapMode') == 1) {
+            $this->menu = array(
+                'EMV' => 'EMV Credit/Debit',
+                'EBT' => 'EBT',
+                'GIFT' => 'Gift',
+            );
+        }
         ?>
         <div class="baseHeight">
         <div class="centeredDisplay colored rounded">

@@ -899,6 +899,18 @@ class MercuryE2E extends BasicCCModule
                         CoreLocal::set("fntlflag",0);
                         Database::setglobalvalue("FntlFlag", 0);
                         break;
+                    case 'EMV':
+                        $args = array(CoreLocal::get('PaycardsTenderCodeEmv'));
+                        $found = $db->execute($lookup, $args);
+                        if ($found == false || $db->num_rows($found) == 0) {
+                            $tender_code = 'CC';
+                            $tender_description = 'Credit';
+                        } else {
+                            $row = $db->fetch_row($found);
+                            $tender_code = $row['TenderCode'];
+                            $tender_description = $row['TenderName'];
+                        }
+                        break;
                     case 'CREDIT':
                     default:
                         $args = array(CoreLocal::get('PaycardsTenderCodeCredit'));
