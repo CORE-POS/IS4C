@@ -261,6 +261,25 @@ if (extension_loaded('mssql'))
        on the "Necessities" tab.</i>
 </p>
 <hr />
+<h4 class="install">Read-only Database Server(s)</h4>
+<p class="ichunk" style="margin:0.0em 0em 0.4em 0em;">
+Specify one or more database servers that can be used strictly
+for read operations. If more than one database is listed, read-only
+queries will be load-balanced across them.
+<?php
+if (!isset($FANNIE_READONLY_JSON)) {
+    $FANNIE_READONLY_JSON = json_encode(array(array(
+        'host' => $FANNIE_SERVER,
+        'type' => $FANNIE_SERVER_DBMS,
+        'user' => $FANNIE_SERVER_USER,
+        'pw' => $FANNIE_SERVER_PW,
+    )));
+}
+?>
+<textarea rows="10" cols="30" name="FANNIE_READONLY_JSON" class="form-control">
+<?php echo \COREPOS\Fannie\API\lib\FannieUI::prettyJSON($FANNIE_READONLY_JSON); ?>
+</textarea>
+<hr />
 <p>
 <button type=submit name="saveButton" value="Save" class="btn btn-default">Save</button>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
