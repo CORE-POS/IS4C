@@ -906,7 +906,6 @@ class FannieReportPage extends FanniePage
         $tag = $header ? 'th' : 'td';
 
         if (($meta & self::META_BOLD) != 0) {
-            $ret = "</tbody>\n<tbody>\n" . $ret;
             $tag = 'th';
         }
         if (($meta & self::META_BLANK) != 0) {
