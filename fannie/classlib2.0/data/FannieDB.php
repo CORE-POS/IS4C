@@ -106,12 +106,13 @@ class FannieDB
     {
         if (self::$read_only === null) {
             $config = FannieConfig::factory();
-            $json = json_decode($FANNIE_READONLY_JSON);
+            $json = json_decode($config->get('READONLY_JSON'), true);
             if (!is_array($json)) {
                 return self::get($db_name);
             }
 
-            $pick = array_rand($json);    
+            $key = mt_rand(0, count($json)-1);
+            $pick = $json[$key];
             if (!isset($pick['host']) || !isset($pick['type']) || !isset($pick['user']) || !isset($pick['pw'])) {
                 return self::get($db_name);
             }

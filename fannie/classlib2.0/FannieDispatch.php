@@ -104,16 +104,22 @@ class FannieDispatch
             $user = 'n/a';
         }
 
-        $model = new UsageStatsModel($dbc);
-        $model->tdate(date('Y-m-d H:i:s'));
-        $model->pageName(basename($_SERVER['PHP_SELF']));
+        $prep = $dbc->prepare(
+            'INSERT INTO usageStats
+                (tdate, pageName, referrer, userHash, ipHash)
+             VALUES
+                (?, ?, ?, ?, ?)');
+        $args = array(
+            date('Y-m-d H:i:s'),
+            basename($_SERVER['PHP_SELF']),
+        );
         $referrer = isset($_SERVER['HTTP_REFERER']) ? basename($_SERVER['HTTP_REFERER']) : 'n/a';
-        $model->referrer($referrer);
-        $model->userHash(sha1($user));
+        $args[] = $referrer;
+        $args[] = sha1($user);
         $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'n/a';
-        $model->ipHash(sha1($ip));
-        
-        return $model->save();
+        $args[] = sha1($ip);
+
+        return $dbc->execute($prep, $args);
     }
 
     static public function i18n()

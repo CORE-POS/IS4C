@@ -121,6 +121,11 @@ class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
             // capture POST of input field
             installTextField('FANNIE_STORE_ID', $FANNIE_STORE_ID, 1);
             installSelectField('FANNIE_STORE_MODE', $FANNIE_STORE_MODE, array('STORE'=>'Single Store', 'HQ'=>'HQ'),'STORE');
+            if (FormLib::get('FANNIE_READONLY_JSON', false) !== false) {
+                // decode and re-encode to squash whitespace
+                $FANNIE_READONLY_JSON = json_encode(json_decode(FormLib::get('FANNIE_READONLY_JSON')));
+                confset('FANNIE_READONLY_JSON', "'$FANNIE_READONLY_JSON'");
+            }
             header('Location: InstallStoresPage.php');
             return false;
         }
@@ -275,6 +280,7 @@ if (!isset($FANNIE_READONLY_JSON)) {
         'pw' => $FANNIE_SERVER_PW,
     )));
 }
+confset('FANNIE_READONLY_JSON', "'$FANNIE_READONLY_JSON'");
 ?>
 <textarea rows="10" cols="30" name="FANNIE_READONLY_JSON" class="form-control">
 <?php echo \COREPOS\Fannie\API\lib\FannieUI::prettyJSON($FANNIE_READONLY_JSON); ?>
