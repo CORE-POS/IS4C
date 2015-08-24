@@ -274,7 +274,7 @@ class ItemMarginModule extends ItemModule
                 $actual_margin);
             $srp = $this->getSRP($cost, $desired_margin/100.0);
             $ret .= sprintf("Suggested price: \$%.2f ",$srp);
-            $ret .= sprintf("(<a href=\"\" onclick=\"\$('#price').val(%.2f); updateMarginMod(); return false;\">Use this price</a>)",$srp);
+            $ret .= sprintf("(<a href=\"\" onclick=\"\$('.price-input').val(%.2f); \$('.price-input:visible').trigger('change'); return false;\">Use this price</a>)",$srp);
         }
 
         return $ret;
