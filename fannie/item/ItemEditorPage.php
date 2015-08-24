@@ -309,6 +309,9 @@ class ItemEditorPage extends FanniePage
         $actualUPC = '';
         $new = false;
         if ($num == 0) {
+            if (strlen($upc) > 13) {
+                $upc = ltrim($upc, '0');
+            }
             $actualUPC = BarcodeLib::padUPC($upc);
             $new = true;
             $this->mode = 'new'; // mode drives appropriate help text
