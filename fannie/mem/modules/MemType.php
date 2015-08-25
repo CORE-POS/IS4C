@@ -117,7 +117,7 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
         // Default values for custdata fields that depend on Member Type.
         $json = array(
             'cardNo' => $memNum,
-            'memberStatus' => 'Reg',
+            'memberStatus' => 'REG',
             'customerTypeID' => $mtype,
             'customers' => array(
                 array(
@@ -134,6 +134,8 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
                 $json['customers'][0]['customerID'] = $c['customerID'];
             }
         }
+        $account['customerTypeID'] = $mtype;
+        $account['memberStatus'] = 'REG';
 
         // Get any special values for this Member Type.
         $mt = $dbc->tableDefinition('memtype');
@@ -146,6 +148,7 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
         if ($dbc->num_rows($r) > 0){
             $w = $dbc->fetch_row($r);
             $json['memberStatus'] = $w['custdataType'];
+            $account['memberStatus'] = $w['custdataType'];
             $json['customers'][0]['discount'] = $w['discount'];
             $json['customers'][0]['staff'] = $w['staff'];
             $json['customers'][0]['lowIncomeBenefits'] = $w['ssi'];
@@ -156,6 +159,9 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
         if ($resp['errors'] > 0) {
             return "Error: problem saving Member Type<br />";
         } else {
+            // update current account object so subsequent save
+            // operations don't overwrite changes
+            self::setAccount($account);
             return "";
         }
     }
