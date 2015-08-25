@@ -31,7 +31,7 @@ class BatchReport extends FannieReportPage
     protected $header = "Select batch(es)";
     protected $title = "Fannie :: Batch Report";
     protected $report_cache = 'none';
-    protected $report_headers = array('UPC','Description','$','Qty');
+    protected $report_headers = array('UPC','Description','$','Qty','Location');
     protected $required_fields = array('batchID');
 
     public $description = '[Batch Report] lists sales for items in a sales batch (or group of sales batches).';
@@ -102,10 +102,14 @@ class BatchReport extends FannieReportPage
         $salesBatchQ ="
             SELECT d.upc, 
                 p.description, 
+                l.floorSectionID,
+                f.name AS location,
                 SUM(d.total) AS sales, "
                 . DTrans::sumQuantity('d') . " AS quantity 
             FROM $dlog AS d "
                 . DTrans::joinProducts('d', 'p', 'INNER') . "
+            LEFT JOIN prodPhysicalLocation AS l ON l.upc=p.upc
+            LEFT JOIN FloorSections as f ON f.floorSectionID=l.floorSectionID
             WHERE d.tdate BETWEEN ? AND ?
                 AND d.upc IN ($in_sql)
             GROUP BY d.upc, 
@@ -128,6 +132,7 @@ class BatchReport extends FannieReportPage
             $record[] = $row['description'];
             $record[] = $row['sales'];
             $record[] = $row['quantity'];
+            $record[] = $row['location'];
             $ret[] = $record;
         }
         return $ret;
