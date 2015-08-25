@@ -132,7 +132,7 @@ class BatchReport extends FannieReportPage
             $record[] = $row['description'];
             $record[] = $row['sales'];
             $record[] = $row['quantity'];
-            $record[] = $row['location'];
+            $record[] = $row['location'] === null ? '' : $row['location'];
             $ret[] = $record;
         }
         return $ret;
