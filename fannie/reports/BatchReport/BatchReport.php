@@ -102,12 +102,14 @@ class BatchReport extends FannieReportPage
         $salesBatchQ ="
             SELECT d.upc, 
                 p.description, 
-                l.floorSectionID AS location,
+                l.floorSectionID,
+                f.name AS location,
                 SUM(d.total) AS sales, "
                 . DTrans::sumQuantity('d') . " AS quantity 
             FROM $dlog AS d "
                 . DTrans::joinProducts('d', 'p', 'INNER') . "
-            LEFT JOIN  prodPhysicalLocation AS l ON l.upc=p.upc
+            LEFT JOIN prodPhysicalLocation AS l ON l.upc=p.upc
+            LEFT JOIN FloorSections as f ON f.floorSectionID=l.floorSectionID
             WHERE d.tdate BETWEEN ? AND ?
                 AND d.upc IN ($in_sql)
             GROUP BY d.upc, 
