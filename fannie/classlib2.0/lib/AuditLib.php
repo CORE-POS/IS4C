@@ -42,7 +42,7 @@ class AuditLib
     public static function itemUpdate($upc, $likecode=false)
     {
         $conf = \FannieConfig::factory();
-        $dbc = \FannieDB::get($conf->get('OP_DB'));
+        $dbc = \FannieDB::getReadOnly($conf->get('OP_DB'));
 
         $product = new \ProductsModel($dbc);
         $product->upc($upc);
@@ -92,7 +92,7 @@ class AuditLib
     static public function batchNotification($batchID, $upc, $type, $is_likecode=false)
     {
         $conf = \FannieConfig::factory();
-        $dbc = \FannieDB::get($conf->get('OP_DB'));
+        $dbc = \FannieDB::getReadOnly($conf->get('OP_DB'));
 
         $lc = '';
         $desc = '';
@@ -198,7 +198,7 @@ class AuditLib
     public static function getAddresses($dept)
     {
         $conf = \FannieConfig::factory();
-        $dbc = \FannieDB::get($conf->get('OP_DB'));
+        $dbc = \FannieDB::getReadOnly($conf->get('OP_DB'));
         
         $query = 'SELECT superID from superdepts WHERE dept_ID=? GROUP BY superID';
         $prep = $dbc->prepare($query);

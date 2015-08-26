@@ -26,10 +26,6 @@
 
 */
 
-if (!class_exists('FannieDB')) {
-    include(dirname(__FILE__).'/../../FannieDB.php');
-}
-
 class MeminfoModel extends BasicModel 
 {
 

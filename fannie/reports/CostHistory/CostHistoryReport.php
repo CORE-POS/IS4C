@@ -100,7 +100,8 @@ class CostHistoryReport extends FannieReportPage
 
         $q = "";
         $args = array();
-        $sql = FannieDB::get($FANNIE_OP_DB);
+        $sql = $this->connection;
+        $sql->selectDB($this->config->get('OP_DB'));
         $type = FormLib::get('type');
         if ($type === '') { // not set
             $q = "
@@ -207,8 +208,8 @@ class CostHistoryReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $sql = FannieDB::get($FANNIE_OP_DB);
+        $sql = $this->connection;
+        $sql->selectDB($this->config->get('OP_DB'));
 
         $deptsQ = $sql->prepare_statement("select dept_no,dept_name from departments order by dept_no");
         $deptsR = $sql->exec_statement($deptsQ);

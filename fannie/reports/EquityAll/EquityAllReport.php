@@ -39,14 +39,13 @@ class EquityAllReport extends FannieReportPage
 
     public function readinessCheck()
     {
-        global $FANNIE_TRANS_DB;
-        return $this->tableExistsReadinessCheck($FANNIE_TRANS_DB, 'equity_live_balance');
+        return $this->tableExistsReadinessCheck($this->config->get('TRANS_DB'), 'equity_live_balance');
     }
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $type_restrict = "c.Type IN ('PC')";
         if (FormLib::get('memtypes', 1) == 2) {
@@ -68,7 +67,7 @@ class EquityAllReport extends FannieReportPage
 
         $q = "SELECT $num as memnum,c.LastName,c.FirstName,n.payments,m.end_date
             FROM custdata AS c LEFT JOIN "
-            . $FANNIE_TRANS_DB . $dbc->sep() . $table . " as n ON
+            . $this->config->get('TRANS_DB') . $dbc->sep() . $table . " as n ON
             $num=c.CardNo AND c.personNum=1
             LEFT JOIN memDates as m ON $num=m.card_no
             WHERE $type_restrict AND $equity_restrict
@@ -81,7 +80,7 @@ class EquityAllReport extends FannieReportPage
         while($w = $dbc->fetch_row($r)) {
             $record = array();
             if (FormLib::get('excel') === '') {
-                $record[] = sprintf('<a href="%s%d">%d</a>',$FANNIE_URL."reports/Equity/index.php?memNum=",$w['memnum'],$w['memnum']);
+                $record[] = sprintf('<a href="%s%d">%d</a>',$this->config->get('URL')."reports/Equity/index.php?memNum=",$w['memnum'],$w['memnum']);
             } else {
                 $record[] = $w['memnum'];
             }

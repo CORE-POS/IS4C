@@ -26,9 +26,6 @@
 
 */
 
-if (!class_exists('FannieDB')) {
-    include(dirname(__FILE__).'/../../FannieDB.php');
-}
 if (!class_exists('BarcodeLib')) {
     include(dirname(__FILE__).'/../../../lib/BarcodeLib.php');
 }

@@ -41,7 +41,8 @@ class BatchReport extends FannieReportPage
 
     function fetch_report_data()
     {
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $bStart = FormLib::get_form_value('date1','');
         $bEnd = FormLib::get_form_value('date2','');
         $model = new BatchesModel($dbc);
@@ -155,7 +156,8 @@ class BatchReport extends FannieReportPage
 
     function form_content()
     {
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $filter1 = FormLib::get('btype','');
         $filter2 = FormLib::get('owner','');
@@ -246,7 +248,8 @@ class BatchReport extends FannieReportPage
     function report_description_content()
     {
         $FANNIE_URL = $this->config->get('URL');
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $ret = array();
         $bStart = FormLib::get('date1','');
         $bEnd = FormLib::get('date2','');

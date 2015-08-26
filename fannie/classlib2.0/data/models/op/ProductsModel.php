@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-if (!class_exists('FannieDB')) {
-    include(dirname(__FILE__).'/../../FannieDB.php');
-}
 if (!class_exists('ProdUpdateModel')) {
     include(dirname(__FILE__).'/ProdUpdateModel.php');
 }

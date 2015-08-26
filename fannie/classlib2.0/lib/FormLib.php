@@ -180,7 +180,7 @@ class FormLib
     public static function storePicker($field_name='store')
     {
         $op_db = FannieConfig::config('OP_DB');
-        $dbc = FannieDB::get($op_db, $previous);
+        $dbc = FannieDB::getReadOnly($op_db, $previous);
 
         $stores = new StoresModel($dbc);
         $current = FormLib::get($field_name, 0);
@@ -243,7 +243,7 @@ class FormLib
     */
     public static function standardItemFields()
     {
-        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $dbc = FannieDB::getReadOnly(FannieConfig::config('OP_DB'));
         ob_start();
         ?>
         <div class="col-sm-5">
@@ -359,7 +359,7 @@ class FormLib
         /**
           Precalculate options for superdept and dept selects
         */
-        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $dbc = FannieDB::getReadOnly(FannieConfig::config('OP_DB'));
         $superR = $dbc->query('SELECT superID, super_name FROM superDeptNames');
         $super_opts = '';
         while ($w = $dbc->fetchRow($superR)) {
@@ -536,7 +536,7 @@ HTML;
     static public function standardItemFromWhere()
     {
         $op_db = FannieConfig::config('OP_DB');
-        $dbc = FannieDB::get($op_db);
+        $dbc = FannieDB::getReadOnly($op_db);
         $start_date = self::getDate('date1', date('Y-m-d'));
         $end_date = self::getDate('date2', date('Y-m-d'));
         $dlog = DTransactionsModel::selectDlog($start_date, $end_date);

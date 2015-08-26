@@ -44,7 +44,8 @@ class DepartmentMovementReport extends FannieReportPage
     */
     function fetch_report_data()
     {
-        $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $date1 = FormLib::getDate('date1',date('Y-m-d'));
         $date2 = FormLib::getDate('date2',date('Y-m-d'));
         $deptStart = FormLib::get_form_value('deptStart','');

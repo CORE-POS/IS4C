@@ -59,8 +59,8 @@ class NonMovementReport extends FannieReportPage {
             exit;
         } elseif (FormLib::get('deactivate') !== '') {
             $upc = BarcodeLib::padUPC(FormLib::get('deactivate'));
-            $this->connection->selectDB($this->config->OP_DB);
-            $model = new ProductsModel($this->connection);
+            $dbc = FannieDB::get($FANNIE_OP_DB);
+            $model = new ProductsModel($dbc);
             $model->upc($upc);
             $model->store_id(1);
             $model->inUse(0);

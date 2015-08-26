@@ -50,7 +50,8 @@ class GeneralDayReport extends FannieReportPage
     {
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB, $FANNIE_EQUITY_DEPARTMENTS,
             $FANNIE_COOP_ID;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $d1 = FormLib::get_form_value('date1',date('Y-m-d'));
         $dates = array($d1.' 00:00:00',$d1.' 23:59:59');
         $data = array();

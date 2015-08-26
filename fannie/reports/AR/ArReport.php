@@ -52,8 +52,8 @@ class ArReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_TRANS_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
         $q = $dbc->prepare_statement("select charges,trans_num,payments,
                 year(tdate),month(tdate),day(tdate)
                 from ar_history AS s 
@@ -68,7 +68,7 @@ class ArReport extends FannieReportPage
                 $record[] = $w[1];
             } else {
                 $record[] = sprintf('<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?year=%d&month=%d&day=%d&receipt=%s">%s</a>',
-                        $FANNIE_URL,$w[3],$w[4],$w[5],$w[1],$w[1]);
+                        $this->config->get('URL'),$w[3],$w[4],$w[5],$w[1],$w[1]);
             }
             $record[] = sprintf('%.2f', ($w[0] != 0 ? $w[0] : $w[2]));
             $record[] = $w[0] != 0 ? 'Charge' : 'Payment';

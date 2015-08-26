@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 class OutdatedProductFinder extends FanniePage
 {
-    public $description = '[Scan Tools] Finds products not sold in over 12 months, marks them as not-in-use';
+    public $description = '[Outdated Products] Finds products not sold in over 12 months, marks them as not-in-use';
     public $report_set = 'Scan Tools';
     public $themed = true;
 
@@ -43,12 +43,12 @@ class OutdatedProductFinder extends FanniePage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $upc = array();
         $check = array();
-        $datetime = "2015-07-24 00:00:00";
+        $datetime = date('Y-m-d', strtotime('1 year ago'));
    
         // Find Items not in use in past 12 months
         $query = "SELECT upc, last_sold 
-                FROM is4c_op.products 
-                WHERE last_sold < '2014-07-23 00:00:00' and inUse = '1'
+                FROM products 
+                WHERE last_sold < '{$datetime}' and inUse =1
                 GROUP BY upc;
                 ";
         $result = $dbc->query($query);
@@ -60,18 +60,18 @@ class OutdatedProductFinder extends FanniePage
         // CORE shortand for isset($_GET['apply']) || isset($_POST['apply'])
         if (FormLib::get('apply')) {
             // Change found items to 'not-in-use'
-            for($i=0; $i<count($upc); $i++){
-                $query = "UPDATE is4c_op.products
-                        SET inUse = '0'
-                        WHERE upc = $upc[$i];
-                        ";
-                $dbc->query($query);
+            $prep = $dbc->prepare('
+                UPDATE products
+                SET inUse=0
+                WHERE upc=?');
+            for ($i=0; $i<count($upc); $i++) {
+                $dbc->execute($prep, array($upc[$i]));
             }
             
             // Check to see if the script made changes
             $query = "SELECT upc, last_sold 
-                    FROM is4c_op.products 
-                    WHERE last_sold < '2014-07-23 00:00:00' and inUse = '1'
+                    FROM products 
+                    WHERE last_sold < '{$datetime}' and inUse = 1
                     GROUP BY upc;
                     ";
             $result = $dbc->query($query);

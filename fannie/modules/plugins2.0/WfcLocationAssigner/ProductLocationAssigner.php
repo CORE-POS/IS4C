@@ -21,14 +21,14 @@
 
 *********************************************************************************/
 
-include(dirname(__FILE__) . '/../../config.php');
+include(dirname(__FILE__) . '/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
 class ProductLocationAssigner extends FanniePage
 {
-    public $description = '[Scan Tools] assigns FloorSectionID to items without';
+    public $description = '[Location Assigner] assigns FloorSectionID to items without';
     public $report_set = 'Scan Tools';
     public $themed = true;
 

@@ -40,8 +40,9 @@ class DDDReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $FANNIE_TRANS_DB = $this->config->get('TRANS_DB');
         $date1 = FormLib::get_form_value('date1');
         $date2 = FormLib::get_form_value('date2');
 

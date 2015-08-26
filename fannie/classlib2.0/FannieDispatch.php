@@ -183,6 +183,9 @@ class FannieDispatch
                 $obj = new $class();
                 $obj->setConfig($config);
                 $obj->setLogger($logger);
+                if (is_a($obj, 'FannieReportPage')) {
+                    $dbc = FannieDB::getReadOnly($op_db);
+                }
                 $obj->setConnection($dbc);
                 $obj->draw_page();
             } else {
