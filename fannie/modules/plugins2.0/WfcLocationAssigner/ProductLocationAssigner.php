@@ -36,8 +36,9 @@ class ProductLocationAssigner extends FanniePage
     protected $header = "Product Location Assign";
 
     public function body_content()
-    {        
+    {
         global $FANNIE_OP_DB, $FANNIE_URL;
+        ob_start();
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $upc = array();
         $floorSectionID = array();
@@ -183,7 +184,7 @@ class ProductLocationAssigner extends FanniePage
             echo "There were no items found missing floor locations.";
         }       
 
-        return 0;
+        return ob_get_clean();
     }
 }
 
