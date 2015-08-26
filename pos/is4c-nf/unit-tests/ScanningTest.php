@@ -683,6 +683,29 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $record['regPrice'] = -1.00;
         lttLib::verifyRecord(3, $record, $this);
 
+        /**
+          TEST 6: dept qty minimum, discountType %D 
+        */
+        lttLib::clear();
+        $upc = new UPC();
+        $upc->parse('0000000001009');
+        $upc->parse('0000000001011');
+
+        $hc = new HouseCoupon();
+        $hc->handle('0049999900006', array());
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0049999900006';
+        $record['description'] = 'DEPTQTY';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = 'IC';
+        $record['trans_status'] = 'C';
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = -0.75;
+        $record['total'] = -0.75;
+        $record['regPrice'] = -0.75;
+        lttLib::verifyRecord(3, $record, $this);
+
         lttLib::clear();
     }
 

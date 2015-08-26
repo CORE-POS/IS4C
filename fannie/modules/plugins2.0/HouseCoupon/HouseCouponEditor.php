@@ -367,6 +367,8 @@ class HouseCouponEditor extends FanniePage
         $mts = array(
             'Q'=>'Quantity (at least)',
             'Q+'=>'Quantity (more than)',
+            'C'=>'Department (at least qty)',
+            'C+'=>'Department (more than qty)',
             'D'=>'Department (at least $)',
             'D+'=>'Department (more than $)',
             'M'=>'Mixed (Item+Item)',
@@ -419,9 +421,10 @@ class HouseCouponEditor extends FanniePage
             class=\"form-control\" /></div>
             </div>";
 
-        $ret .= "<br /><button type=submit name=submit_save value=Save class=\"btn btn-default\">Save</button>";
-        $ret .= ' | <button type="button" value="Back" class="btn btn-default" 
-            onclick="location=\'HouseCouponEditor.php\';return false;">Back</button>';
+        $ret .= "<br /><button type=submit name=submit_save value=Save class=\"btn btn-default btn-core\">
+            Save Settings</button>";
+        $ret .= ' <button type="button" value="Back" class="btn btn-default btn-reset" 
+            onclick="location=\'HouseCouponEditor.php\';return false;">Back to List of Coupons</button>';
 
         $ret .= "<hr />";
         $ret .= '<div class="container-fluid">';
@@ -430,7 +433,7 @@ class HouseCouponEditor extends FanniePage
             $ret .= '<label class="control-label">Add UPC</label>
                 <input type=text class="form-control add-item-field" name=new_upc /> ';
         } 
-        if ($mType == "D" || $mType == "D+" || $dType == '%D' || $mType == 'MX') {
+        if ($mType == "D" || $mType == "D+" || $mType == 'C' || $mType == 'C+' || $dType == '%D' || $mType == 'MX') {
             $ret .= '
                 <label class="control-label">Add Dept</label>
                 <select class="form-control add-item-field" name=new_dept>
@@ -505,7 +508,7 @@ class HouseCouponEditor extends FanniePage
                     LEFT JOIN products AS p ON p.upc=h.upc AND h.type='DISCOUNT'
                     LEFT JOIN departments AS d ON h.upc=d.dept_no AND h.type='QUALIFIER'
                 WHERE h.coupID=?";
-        } elseif ($hc->minType() == "D" || $hc->minType() == "D+" || $hc->discountType() == '%D') {
+        } elseif ($hc->minType() == "D" || $hc->minType() == "D+" || $hc->minType() == 'C' || $hc->minType() == 'C+' || $hc->discountType() == '%D') {
             $query = '
                 SELECT h.upc,
                     d.dept_name AS description,
