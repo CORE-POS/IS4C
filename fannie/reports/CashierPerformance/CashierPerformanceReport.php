@@ -186,8 +186,8 @@ class CashierPerformanceReport extends FannieReportPage
         <label for="excel">Excel</label>
     </div>
     <p>
-        <button type=submit class="btn btn-default">Submit</button>
-        <button type=reset class="btn btn-default">Start Over</button>
+        <button type=submit class="btn btn-default btn-submit">Submit</button>
+        <button type=reset class="btn btn-default btn-reset">Start Over</button>
     </p>
 </div>
 <div class="col-sm-4">

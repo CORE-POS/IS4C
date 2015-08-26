@@ -248,9 +248,8 @@ class MemberEditor extends FanniePage {
             $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         }
         $ret .= '<button type="submit" name="saveBtn" value="Save" 
-            class="btn btn-default">Save</button>';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<button type="reset" class="btn btn-default">Reset Form</button>';
+            class="btn btn-default btn-core">Save</button>';
+        $ret .= '<button type="reset" class="btn btn-default btn-reset">Reset Form</button>';
         $ret .= '</p>';
         $ret .= '</form>';
 

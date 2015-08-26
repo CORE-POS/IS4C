@@ -84,8 +84,8 @@ class CashierRecordsReport extends FannieReportPage
     <input type=text id=date2 name=date2 class="form-control date-field" />
     </div>
     <p>
-    <button type=submit name=submit class="btn btn-default">Submit</button>
-    <button type=reset name=reset class="btn btn-default">Start Over</button>
+    <button type=submit name=submit class="btn btn-default btn-core">Submit</button>
+    <button type=reset name=reset class="btn btn-default btn-reset">Start Over</button>
     </p>
 </div>
 <div class="col-sm-4">

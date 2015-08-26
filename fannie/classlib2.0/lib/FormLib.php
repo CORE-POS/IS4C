@@ -225,8 +225,8 @@ class FormLib
     <?php echo self::standardDateFields(); ?>
 </div>
 <p>
-    <button type="submit" class="btn btn-default">Submit</button>
-    <button type="reset" class="btn btn-default"
+    <button type="submit" class="btn btn-default btn-core">Submit</button>
+    <button type="reset" class="btn btn-default btn-reset"
         onclick="$('#super-id').val('').trigger('change');">Start Over</button>
 </p>
         <?php

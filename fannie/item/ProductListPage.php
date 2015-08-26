@@ -788,8 +788,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             </label>
         </div>
         <p> 
-            <button type=submit name=submit class="btn btn-default">Submit</button>
-            <button type=reset id="reset-btn" class="btn btn-default"
+            <button type=submit name=submit class="btn btn-default btn-core">Submit</button>
+            <button type=reset id="reset-btn" class="btn btn-default btn-reset"
                 onclick="$('#super-id').val('').trigger('change');">Start Over</button>
         </p>
         </form>

@@ -198,8 +198,8 @@ class UnfiExportForMas extends FannieReportPage
         </select>
     </div>
     <p>
-        <button type="submit" class="btn btn-default">Submit</button>
-        <button type="reset" class="btn btn-default">Start Over</button>
+        <button type="submit" class="btn btn-default btn-core">Submit</button>
+        <button type="reset" class="btn btn-default btn-reset">Start Over</button>
     </p>
 </div>
 <div class="col-sm-5">

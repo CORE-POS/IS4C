@@ -1033,9 +1033,8 @@ function chainSuper(superID)
 
         $ret .= '</tr></table>';
         
-        $ret .= '<button type="submit" class="btn btn-default">Find Items</button>';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<button type="reset" class="btn btn-default">Clear Settings</button>';
+        $ret .= '<button type="submit" class="btn btn-default btn-core">Find Items</button>';
+        $ret .= '<button type="reset" class="btn btn-default btn-reset">Clear Settings</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<span id="selection-counter"></span>';
         $ret .= '</form>';
