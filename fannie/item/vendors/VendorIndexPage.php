@@ -386,7 +386,7 @@ class VendorIndexPage extends FanniePage {
         $ret .= '<div class="form-group">
             <label for="vcNotes" class="control-label col-sm-1">Ordering Notes</label>
             <div class="col-sm-10">
-            <textarea class="form-control" rows="5" id="vcNotes">' . $model->notes() . '</textarea>
+            <textarea class="form-control" rows="5" name="notes" id="vcNotes">' . $model->notes() . '</textarea>
             </div>
             </div>';
         $ret .= '<button type="submit" class="btn btn-default">Save Vendor Contact Info</button>';
