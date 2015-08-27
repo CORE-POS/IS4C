@@ -180,7 +180,7 @@ class FormLib
     public static function storePicker($field_name='store')
     {
         $op_db = FannieConfig::config('OP_DB');
-        $dbc = FannieDB::getReadOnly($op_db, $previous);
+        $dbc = FannieDB::getReadOnly($op_db);
 
         $stores = new StoresModel($dbc);
         $current = FormLib::get($field_name, 0);
@@ -196,11 +196,6 @@ class FormLib
             $labels[$store->storeID()] = $store->description();
         }
         $ret .= '</select>';
-
-        // restore previous selected database
-        if ($previous != $op_db) {
-            FannieDB::get($previous);
-        }
 
         return array(
             'html' => $ret,
