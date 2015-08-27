@@ -1000,7 +1000,7 @@ class EditBatchPage extends FannieRESTfulPage
             WHERE 1=1 ";
         $likeArgs = array();
         if ($this->config->get('STORE_MODE') == 'HQ') {
-            $fetchQ .= " AND p.store_id=? ";
+            $likeQ .= " AND p.store_id=? ";
             $likeArgs[] = $this->config->get('STORE_ID');
         }
         $likeQ .= " 
