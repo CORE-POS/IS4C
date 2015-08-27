@@ -880,9 +880,9 @@ function fetch_data($date1,$date2){
         GROUP BY 
         YEAR(tdate),MONTH(tdate),DAY(tdate),
         trans_type,
-        CASE WHEN department = 991 then '991' when department=992 then '992' else convert(s.SalesCode,char) end
+        CASE WHEN department = 991 then '991' when department=992 then '992' else convert(t.salesCode,char) end
         ORDER BY
-        CASE WHEN department = 991 then '991' when department=992 then '992' else convert(s.SalesCode,char) end");
+        CASE WHEN department = 991 then '991' when department=992 then '992' else convert(t.salesCode,char) end");
     $salesR = $sql->execute($salesP, $date_args);
     $preTS = 0;
     while($salesW = $sql->fetch_row($salesR)){
