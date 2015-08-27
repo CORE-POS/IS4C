@@ -60,7 +60,7 @@ class MembersReport extends FannieReportPage
         $saveW = array();
         $data = array();
         while ($w = $dbc->fetch_row($r)) {
-            if ($w['CardNo'] != $saveW['CardNo']){
+            if (count($saveW) == 0 || $w['CardNo'] != $saveW['CardNo']){
                 if (count($saveW) > 0) {
                     $data[] = $this->formatRow($saveW);
                 }
