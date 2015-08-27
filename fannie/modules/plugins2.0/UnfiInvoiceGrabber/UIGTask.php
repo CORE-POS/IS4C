@@ -218,7 +218,9 @@ class UIGTask extends FannieTask
             $inputs[$matches[1][$i]] = $matches[2][$i];
         }
         // I think only this one needs to be decoded
-        $inputs['claims'] = json_decode(htmlspecialchars_decode($inputs['claims']));
+        if (isset($inputs['claims'])) {
+            $inputs['claims'] = json_decode(htmlspecialchars_decode($inputs['claims']));
+        }
 
         $check = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? and userID=0
                             AND creationDate=? AND placedDate=?');
