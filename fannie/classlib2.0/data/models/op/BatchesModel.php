@@ -264,7 +264,7 @@ those same items revert to normal pricing.
             // cannot find batch. do not change products
             return false;
         }
-        if ($self['discounttype'] == 0) {
+        if ($self['discountType'] == 0) {
             // price change batch. nothing to stop.
             return true;
         }
