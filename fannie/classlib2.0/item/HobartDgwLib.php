@@ -500,6 +500,7 @@ class HobartDgwLib
         socket_set_option($s, SOL_SOCKET, SO_RCVTIMEO, array('sec'=>2, 'usec'=>0));
         socket_set_option($s, SOL_SOCKET, SO_SNDTIMEO, array('sec'=>2, 'usec'=>0));
         if (socket_connect($s, $host, $port)) {
+            socket_shutdown($s);
             socket_close($s);
             return true;
         } else {
