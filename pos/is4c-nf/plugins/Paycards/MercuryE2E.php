@@ -1763,7 +1763,8 @@ class MercuryE2E extends BasicCCModule
     public function handleResponseDataCap($xml)
     {
         $rawXml = $xml;
-        $xml = new xmlData($xml);
+
+        $xml = new BetterXmlData($xml);
         $cashierNo = CoreLocal::get("CashierNo");
         $laneNo = CoreLocal::get("laneno");
         $transNo = CoreLocal::get("transno");
@@ -1772,8 +1773,9 @@ class MercuryE2E extends BasicCCModule
         // actually matches
         $refNum = $this->refnum($transID);
 
-        $validResponse = ($xml->isValid()) ? 1 : 0;
-        $responseCode = $xml->get("CMDSTATUS");
+        $validResponse = 1;
+        $responseCode = $xml->query('/RStream/CmdResponse/CmdStatus');
+        $resultMsg = $responseCode;
         if ($responseCode) {
             // map response status to 0/1/2 for compatibility
             if ($responseCode == "Approved") {
@@ -1786,18 +1788,17 @@ class MercuryE2E extends BasicCCModule
         } else {
             $validResponse = -3;
         }
-        $resultCode = $xml->get("DSIXRETURNCODE");
-        $resultMsg = $xml->get_first("CMDSTATUS");
+        $resultCode = $xml->query('/RStream/CmdResponse/DSIXReturnCode');
+        $apprNumber = $xml->query('/RStream/TranResponse/AuthCode');
         $rMsg = $resultMsg;
         if ($resultMsg) {
             $rMsg = $resultMsg;
-            $aNum = $xml->get("AUTHCODE");
             if ($responseCode == 1) { // approved
-                if ($aNum) {
-                    $rMsg .= ' '.$aNum;
+                if ($apprNumber) {
+                    $rMsg .= ' ' . $apprNumber;
                 }
             } else {
-                $processor_text = $xml->get_first('TEXTRESPONSE');
+                $processor_text = $xml->query('/RStream/CmdResponse/TextResponse');
                 if ($processor_text) {
                     $rMsg = $processor_text;
                 }
@@ -1806,64 +1807,47 @@ class MercuryE2E extends BasicCCModule
                 $rMsg = substr($rMsg,0,100);
             }
         }
-        $xTransID = $xml->get("REFNO");
+        $xTransID = $xml->query('/RStream/TranResponse/RefNo');
         if ($xTransID) {
             $xTransID = substr($xTransID, 0, 12);
         } else {
             $validResponse = -3;
         }
-        $apprNumber = $xml->get("AUTHCODE");
-        $pan = $xml->get_first('AcctNo');
+        $pan = $xml->query('/RStream/TranResponse/AcctNo');
         if (strlen($pan) > 4) {
             $pan = '************' . substr($pan, -4);
         }
-        $name = 'Cardholder';
-        if ($xml->get_first('CardholderName')) {
-            $name = $xml->get_first('CardholderName');
-        }
+        $resp_name = $xml->query('/RStream/TranResponse/CardholderName');
+        $name = $resp_name ? $resp_name : 'Cardholder';
 
-        $issuer = $xml->get('CardType');
+        $issuer = $xml->query('/RStream/TranResponse/CardType');
+        $resp_balance = $xml->query('/RStream/TranResponse/Balance');
         $ebtbalance = 0;
-        if ($issuer == 'Foodstamp' && $xml->get_first('Balance')) {
+        if ($issuer == 'Foodstamp' && $resp_balance !== false) {
             $issuer = 'EBT';
-            CoreLocal::set('EbtFsBalance', $xml->get_first('Balance'));
-            $ebtbalance = $xml->get_first('Balance');
-        } elseif ($issuer == 'Cash' && $xml->get_first('Balance')) {
+            CoreLocal::set('EbtFsBalance', $resp_balance);
+            $ebtbalance = $resp_balance;
+        } elseif ($issuer == 'Cash' && $resp_balance !== false) {
             $issuer = 'EBT';
-            CoreLocal::set('EbtCaBalance', $xml->get_first('Balance'));
-            $ebtbalance = $xml->get_first('Balance');
-        } elseif ($xml->get_first('TranType') == 'PrePaid' && $xml->get_first('Balance')) {
+            CoreLocal::set('EbtCaBalance', $resp_balance);
+            $ebtbalance = $resp_balance;
+        } elseif ($xml->query('/RStream/TranResponse/TranType') == 'PrePaid' && $resp_balance !== false) {
             $issuer = 'NCG';
-            $ebtbalance = $xml->get_first('Balance');
-            CoreLocal::set('GiftBalance', $ebtbalance);
+            $ebtbalance = $resp_balance;
+            CoreLocal::set('GiftBalance', $resp_balance);
         }
 
         $dbc = Database::tDataConnect();
 
-        if (substr($xml->get_first('TranCode'), 0, 3) == 'EMV' && strpos($rawXml, 'x____') !== false) {
+        $tran_code = $xml->query('/RStream/TranResponse/TranCode');
+        if (substr($tran_code, 0, 3) == 'EMV' && strpos($rawXml, 'x____') !== false) {
             CoreLocal::set('EmvSignature', true);
         } else {
             CoreLocal::set('EmvSignature', false);
         }
-        if (substr($xml->get_first('TranCode'), 0, 3) == 'EMV') {
+        if (substr($tran_code, 0, 3) == 'EMV') {
             $i = 1;
-            $printData = '';
-            while ($i < 100) {
-                $line = $xml->get_first('Line' . $i);
-                if ($line === false) {
-                    break;
-                }
-                $line = trim($line);
-                if ($line === '.') {
-                    // skip blank
-                } elseif (isset($line[0]) && $line[0] == '.') {
-                    $line = substr($line, 1);
-                    $printData .= $line . "\n";
-                } else {
-                    $printData .= $line . "\n";
-                }
-                $i++;
-            }
+            $printData = $xml->query('/RStream/PrintData/*', false);
             if (strlen($printData) > 0) {
                 $receiptID = $transID;
                 if (CoreLocal::get('paycard_mode') == PaycardLib::PAYCARD_MODE_VOID) {
@@ -1916,9 +1900,9 @@ class MercuryE2E extends BasicCCModule
             $rMsg,
             $xTransID,
             $ebtbalance,
-            $xml->get_first('RECORDNO'),
-            $xml->get_first('PROCESSDATA'),
-            $xml->get_first('ACQREFDATA'),
+            $xml->query('/RStream/TranResponse/RecordNo'),
+            $xml->query('/RStream/TranResponse/ProcessData'),
+            $xml->query('/RStream/TranResponse/AcqRefData'),
             CoreLocal::get('LastEmvPcId')
         );
         $finishQ = $dbc->prepare_statement($finishQ);
@@ -1926,7 +1910,7 @@ class MercuryE2E extends BasicCCModule
 
         /** handle partial auth **/
         if ($responseCode == 1) {
-            $amt = $xml->get_first("AUTHORIZE");
+            $amt = $xml->query('/RStream/TranResponse/Amount/Authorize');
             if ($amt != abs(CoreLocal::get("paycard_amount"))) {
                 $upQ = sprintf('UPDATE PaycardTransactions
                                 SET amount=%.2f
@@ -1940,7 +1924,7 @@ class MercuryE2E extends BasicCCModule
             }
         }
 
-        switch (strtoupper($xml->get_first("CMDSTATUS"))) {
+        switch (strtoupper($xml->query('/RStream/CmdResponse/CmdStatus'))) {
             case 'APPROVED':
                 return PaycardLib::PAYCARD_ERR_OK;
             case 'DECLINED':
@@ -1950,7 +1934,7 @@ class MercuryE2E extends BasicCCModule
                     // charge the card for a less amount. 
                     TransRecord::addcomment("");
                     CoreLocal::set('boxMsg', sprintf('Card Balance: $%.2f', $ebtbalance));
-                } elseif (substr($xml->get_first('TranCode'), 0, 3) == 'EMV') {
+                } elseif (substr($tran_code, 0, 3) == 'EMV') {
                     CoreLocal::set('paycard_amount', 0);
                     return PaycardLib::PAYCARD_ERR_OK;
                 }
@@ -1959,9 +1943,9 @@ class MercuryE2E extends BasicCCModule
                 // intentional fallthrough
             case 'ERROR':
                 CoreLocal::set("boxMsg","");
-                $texts = $xml->get_first("TEXTRESPONSE");
+                $texts = $xml->query('/RStream/CmdResponse/TextResponse');
                 CoreLocal::set("boxMsg","Error: $texts");
-                $dsix = $xml->get_first('DSIXReturnCode');
+                $dsix = $xml->query('/RStream/CmdResponse/DSIXReturnCode');
                 if ($dsix == '001007' || $dsix == '003007' || $dsix == '003010') {
                     /* These error codes indicate a potential connectivity
                      * error mid-transaction. Do not add a comment record to
