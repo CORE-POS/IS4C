@@ -83,7 +83,7 @@ class RecentSalesReport extends FannieReportPage
         return $ret;
     }
 
-    protected function defaultDescriptionContent()
+    protected function defaultDescriptionContent($datefields=array())
     {
         return array(); // override
     }
