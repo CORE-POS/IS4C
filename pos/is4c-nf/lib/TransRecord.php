@@ -665,6 +665,7 @@ static public function addhousecoupon($strupc, $intdepartment, $dbltotal, $descr
         'unitPrice' => $dbltotal,
         'total' => $dbltotal,
         'regPrice' => $dbltotal,
+        'discountable' => 1,
     ));
 }
 
