@@ -588,6 +588,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $record['unitPrice'] = -2.39;
         $record['total'] = -2.39;
         $record['regPrice'] = -2.39;
+        $record['discountable'] = 1;
         lttLib::verifyRecord(3, $record, $this);
 
         /**
@@ -611,6 +612,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $record['unitPrice'] = -0.75;
         $record['total'] = -0.75;
         $record['regPrice'] = -0.75;
+        $record['discountable'] = 1;
         lttLib::verifyRecord(3, $record, $this);
 
         /**
@@ -634,6 +636,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $record['unitPrice'] = -5.00;
         $record['total'] = -5.00;
         $record['regPrice'] = -5.00;
+        $record['discountable'] = 1;
         lttLib::verifyRecord(3, $record, $this);
 
         /**
@@ -658,6 +661,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $record['unitPrice'] = -1.00;
         $record['total'] = -1.00;
         $record['regPrice'] = -1.00;
+        $record['discountable'] = 1;
         lttLib::verifyRecord(3, $record, $this);
 
         /**
@@ -681,6 +685,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $record['unitPrice'] = -1.00;
         $record['total'] = -1.00;
         $record['regPrice'] = -1.00;
+        $record['discountable'] = 1;
         lttLib::verifyRecord(3, $record, $this);
 
         /**
@@ -704,6 +709,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $record['unitPrice'] = -0.75;
         $record['total'] = -0.75;
         $record['regPrice'] = -0.75;
+        $record['discountable'] = 1;
         lttLib::verifyRecord(3, $record, $this);
 
         lttLib::clear();
