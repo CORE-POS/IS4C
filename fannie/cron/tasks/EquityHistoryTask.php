@@ -167,6 +167,108 @@ Deprecates nightly.equity.php.';
                 }
             }
         }
+
+        /**
+          Update payment plan accounts based on 
+          current payment history 
+        */
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $date = new MemdatesModel($dbc);
+        $plan = new EquityPaymentPlansModel($dbc);
+        $plans = array();
+        foreach ($plan->find() as $p) {
+            $plans[$p->equityPaymentPlanID()] = $p;
+        }
+        $accounts = new EquityPaymentPlanAccountsModel($dbc);
+        $balP = $dbc->prepare('
+            SELECT payments,
+                mostRecent
+            FROM ' . $this->config->get('OP_DB') . $dbc->sep() . 'equity_history_sum
+            WHERE card_no=?');
+        $historyP = $dbc->prepare('
+            SELECT stockPurchase,
+                tdate
+            FROM ' . $this->config->get('OP_DB') . $dbc->sep() . 'stockpurchases
+            WHERE card_no=?
+            ORDER BY tdate');
+        foreach ($accounts->find() as $account) {
+            if (!isset($plans[$account->equityPaymentPlanID()])) {
+                // undefined plan
+                continue;
+            }
+            $myplan = $plans[$account->equityPaymentPlanID()];
+            $bal = $dbc->getRow($balP, array($account->cardNo()));
+            if ($bal['payments'] >= $myplan->finalBalance()) {
+                // account is now paid in full
+                $account->lastPaymentDate($bal['mostRecent']);
+                $account->nextPaymentDate(null);
+                $account->nextPaymentAmount(0);
+                $account->save();
+            } else {
+                /**
+                  Payment plans are really structured into tiers. For a $20 increment, $100 total
+                  plan the tiers are at $20, $40, $60, and $80. I'm not assuming any rigid 
+                  enforcement of payment amounts (i.e., someone may make a payment that isn't
+                  exactly $20). So after the current tier is established, I go through
+                  the whole history to figure out when the tier was reached and track
+                  any progress toward tier.
+                */
+                $payment_number = 1;
+                for ($i=$myplan->initalPayment(); $i<=$bal['payments']; $i+= $myplan->recurringPayment()) {
+                    $payment_number++;
+                }
+                $last_threshold_reached = $myplan->initialPayment() + (($payment_number-1)*$myplan->recurringPayment());
+                $last_payment = 0;
+                $last_date = null;
+                $next_payment = $myplan->recurringPayment();
+                $sum = 0;
+                $reached = false;
+                $historyR = $dbc->execute($historyP, array($myplan->cardNo()));
+                while ($historyW = $dbc->fetchRow($historyR)) {
+                    $sum += $historyW['stockPurchase'];
+                    if (!$reached && $sum >= $last_threshold_reached) {
+                        $last_date = $historyW['tdate'];
+                        $last_payment = $historyW['stockPurchase'];
+                        $reached = true;
+                        $next_payment -= ($last_threshold_reached-$sum);
+                    } elseif ($reached) {
+                        $next_payment -= $historyW['stockPurchase'];
+                    }
+                }
+
+                $account->lastPaymentDate($last_date);
+                $account->lastPaymentAmount($last_payment);
+                $account->nextPaymentAmount($next_payment);
+
+                // finally, figure out the next payment due date
+                $basis_date = $last_date;
+                if ($myplan->dueDateBasis() == 0) {
+                    $date->card_no($account->CardNo());
+                    $date->load();
+                    $basis_date = $date->start_date();
+                }
+
+                $magnitude = substr($myplan->billingCycle(), 0, strlen($myplan->billingCycle())-1);
+                $frequency = strtoupper(substr($myplan->billingCyle(), -1));
+                $ts = strtotime($basis_date);
+                switch ($frequency) {
+                    case 'W':
+                        $magnitude *= 7;
+                        // intentional fall through
+                    case 'D':
+                        $account->nextPaymentDate(date('Y-m-d', strtotime(0,0,0,date('n',$ts),date('j',$ts)+$magnitude,date('Y',$ts))));
+                        break;
+                    case 'M':
+                        $account->nextPaymentDate(date('Y-m-d', strtotime(0,0,0,date('n',$ts)+$magnitude,date('j',$ts),date('Y',$ts))));
+                        break;
+                    case 'Y':
+                        $account->nextPaymentDate(date('Y-m-d', strtotime(0,0,0,date('n',$ts),date('j',$ts),date('Y',$ts)+$magnitude)));
+                        break;
+                }
+
+                $account->save();
+            }
+        }
     }
 }
 

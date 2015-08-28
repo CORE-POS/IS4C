@@ -1505,8 +1505,14 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
             return '';
         }
         $id_col = $this->unique[0];
+        // use first non-ID column for the label
         $label_col = array_keys($this->columns);
-        $label_col = $label_col[1];
+        foreach ($label_col as $col) {
+            if ($col != $id_col) {
+                $label_col = $col;
+                break;
+            }
+        }
         $ret = '';
         foreach ($this->find($label_col) as $obj) {
             $ret .= sprintf('<option %s value="%d">%s</option>',
