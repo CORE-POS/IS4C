@@ -106,9 +106,9 @@ class CoopDealsMergePage extends FannieRESTfulPage
         $upcomingP = $dbc->prepare('
             SELECT batchName
             FROM batchList AS l
-                INNER JOIN batches AS b
+                INNER JOIN batches AS b ON l.batchID=b.batchID
             WHERE l.upc=?
-                AND b.endDate > ' . $dbc->now()
+                AND b.startDate > ' . $dbc->now()
         );
 
         $allR = $dbc->query('

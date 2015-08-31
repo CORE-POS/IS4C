@@ -102,9 +102,9 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $skuP = $dbc->prepare_statement('
             SELECT s.upc 
             FROM vendorSKUtoPLU AS s
-                INNER JOIN vendors AS v ON s.vendorID=v.vendorID
-            WHERE s.sku=?
-                AND v.vendorName LIKE \'%UNFI%\'');
+                INNER JOIN products AS p ON s.vendorID=p.default_vendor_id AND s.upc=p.upc
+            WHERE s.sku=?'
+        );
         $insP = $dbc->prepare_statement('INSERT INTO tempCapPrices VALUES (?,?,?,?)');
         foreach($linedata as $data) {
             if (!is_array($data)) continue;
@@ -123,12 +123,13 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 if ($dbc->num_rows($look2)) {
                     $w = $dbc->fetch_row($look2);
                     $upc = $w['upc'];
-                }
-                $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
-                $look3 = $dbc->exec_statement($skuP, array($sku));
-                if ($dbc->num_rows($look3)) {
-                    $w = $dbc->fetch_row($look3);
-                    $upc = $w['upc'];
+                } else {
+                    $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
+                    $look3 = $dbc->exec_statement($skuP, array($sku));
+                    if ($dbc->num_rows($look3)) {
+                        $w = $dbc->fetch_row($look3);
+                        $upc = $w['upc'];
+                    }
                 }
             }
             $mult = 1;
