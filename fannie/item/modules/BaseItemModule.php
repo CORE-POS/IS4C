@@ -1101,6 +1101,18 @@ HTML;
             $sku = FormLib::get('vendorSKU');
             if (empty($sku)) {
                 $sku = $upc;
+            } else {
+                /**
+                  If a SKU is provided, update any
+                  old record that used the UPC as a
+                  placeholder SKU.
+                */
+                $fixSkuP = $dbc->prepare('
+                    UPDATE vendorItems
+                    SET sku=?
+                    WHERE sku=?
+                        AND vendorID=?');
+                $dbc->execute($fixSkuP, array($sku, $upc, $vendorID));
             }
             $vitem->sku($sku);
             $vitem->size($model->size());
