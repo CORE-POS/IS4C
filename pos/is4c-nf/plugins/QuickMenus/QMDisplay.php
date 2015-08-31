@@ -68,10 +68,15 @@ class QMDisplay extends NoInputCorePage
             if ($_REQUEST["clear"] == 0) {
                 $value = $_REQUEST['ddQKselect'];
 
-                $output = CoreLocal::get("qmInput").$value;
-                CoreLocal::set("msgrepeat",1);
-                CoreLocal::set("strRemembered",$output);
-                CoreLocal::set("currentid",CoreLocal::get("qmCurrentId"));
+                if ($value === '') {
+                    CoreLocal::set("msgrepeat",0);
+                    CoreLocal::set("strRemembered",'');
+                } else {
+                    $output = CoreLocal::get("qmInput").$value;
+                    CoreLocal::set("msgrepeat",1);
+                    CoreLocal::set("strRemembered",$output);
+                    CoreLocal::set("currentid",CoreLocal::get("qmCurrentId"));
+                }
                 if (!FormLib::validateToken() && is_numeric($value)) {
                     CoreLocal::set("msgrepeat",0);
                 }
