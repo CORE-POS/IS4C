@@ -95,6 +95,11 @@ class UnfiExportForMas extends FannieReportPage
             }
         }
 
+        $accounting = $this->config->get('ACCOUNTING_MODULE');
+        if (!class_exists($accounting)) {
+            $accounting = '\COREPOS\Fannie\API\item\Accounting';
+        }
+
         $codingQ = 'SELECT o.orderID, 
                         o.salesCode, 
                         i.vendorInvoiceID, 
@@ -119,10 +124,8 @@ class UnfiExportForMas extends FannieReportPage
                 // skip zero lines (tote charges)
                 continue;
             }
-            $code = $codingW['salesCode'];
-            if (substr($code,0,1) == "4") {
-                $code = '5'.substr($code, 1);
-            } else if (empty($code) && $this->report_format == 'html') {
+            $code = $accounting::toPurchaseCode($codingW['salesCode']);
+            if (empty($code) && $this->report_format == 'html') {
                 $code = 'n/a';
             }
             $record = array(

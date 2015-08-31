@@ -204,6 +204,10 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
                 <th>Brand</th>
                 <th>Description</th>
             </tr>';
+        $accounting = $this->config->get('ACCOUNTING_MODULE');
+        if (!class_exists($accounting)) {
+            $accounting = '\COREPOS\Fannie\API\item\Accounting';
+        }
         foreach ($model->find() as $item) {
             $ret .= sprintf('<tr>
                 <td><input class="form-control recode-sku" type="text" 
@@ -213,7 +217,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
                 <td>%s</td>
                 <td>%s</td>
                 </tr>',
-                $item->salesCode(),
+                $accounting::toPurchaseCode($item->salesCode()),
                 $item->sku(), $item->sku(),
                 $item->internalUPC(),
                 $item->brand(),
@@ -302,6 +306,10 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $model = new PurchaseOrderItemsModel($dbc);
         $model->orderID($this->id);
         $codings = array();
+        $accounting = $this->config->get('ACCOUNTING_MODULE');
+        if (!class_exists($accounting)) {
+            $accounting = '\COREPOS\Fannie\API\item\Accounting';
+        }
 
         $ret .= '<table class="table tablesorter"><thead>';
         $ret .= '<tr><th>Coding</th><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
@@ -321,6 +329,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
                 $obj->save();
             }
             $coding = (int)$obj->salesCode();
+            $coding = $accounting::toPurchaseCode($coding);
             if (!isset($codings[$coding])) {
                 $codings[$coding] = 0.0;
             }
@@ -331,7 +340,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
                     <td>&nbsp;</td><td>%s</td><td>%d</td><td>%.2f</td>
                     </tr>',
                     $css,
-                    $obj->salesCode(),
+                    $accounting::toPurchaseCode($obj->salesCode()),
                     $obj->sku(),
                     $obj->internalUPC(), $obj->internalUPC(),
                     $obj->brand(),

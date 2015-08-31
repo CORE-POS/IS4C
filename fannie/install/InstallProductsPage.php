@@ -273,7 +273,12 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
         echo installSelectField('FANNIE_DEFAULT_SIGNAGE', $FANNIE_DEFAULT_SIGNAGE, $mods);
         ?>
-
+        <label>Default Account Coding</label>
+        <?php
+        $mods = array('\COREPOS\Fannie\API\item\Accounting', '\COREPOS\Fannie\API\item\StandardAccounting');
+        $mods = array_merge($mods, FannieAPI::listModules('\COREPOS\Fannie\API\item\Accounting'));
+        echo installSelectField('FANNIE_ACCOUNTING_MODULE', $FANNIE_ACCOUNTING_MODULE, $mods);
+        ?>
         <hr />
         <h4 class="install">Service Scale Integration</h4>
         <p class='ichunk' style="margin:0.4em 0em 0.4em 0em;"><b>Data Gate Weigh directory</b>
