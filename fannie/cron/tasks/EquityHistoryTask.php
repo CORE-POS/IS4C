@@ -173,7 +173,7 @@ Deprecates nightly.equity.php.';
           current payment history 
         */
         $dbc->selectDB($this->config->get('OP_DB'));
-        $date = new MemdatesModel($dbc);
+        $date = new MemDatesModel($dbc);
         $plan = new EquityPaymentPlansModel($dbc);
         $plans = array();
         foreach ($plan->find() as $p) {
