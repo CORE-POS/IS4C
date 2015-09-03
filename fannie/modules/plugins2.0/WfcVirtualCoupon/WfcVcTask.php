@@ -41,6 +41,7 @@ class WfcVcTask extends FannieTask
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $last_year = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j'), date('Y')-1));
+        $last_year = '2014-06-01';
         $dlog_ly = DTransactionsModel::selectDlog($last_year, date('Y-m-d'));
         $accessQ = 'SELECT card_no
                     FROM ' . $dlog_ly . '
@@ -65,14 +66,17 @@ class WfcVcTask extends FannieTask
         }
 
         $redo = $dbc->prepare('UPDATE custdata 
-                               SET memType=CASE WHEN memType=3 THEN 3 ELSE 5 END
+                               SET memType=5,
+                                Discount=10
                                WHERE Type=\'PC\' 
-                                AND memType NOT IN (5,6)
+                                AND memType=1
                                 AND CardNo IN (' . $in . ')');
         $dbc->execute($redo, $mems);
         $undo = $dbc->prepare('UPDATE custdata 
-                               SET memType=5
-                               WHERE memType IN (1) 
+                               SET memType=1,
+                                Discount=0
+                               WHERE Type=\'PC\'
+                                AND memType IN (5)
                                 AND CardNo NOT IN (' . $in . ')');
         $dbc->execute($undo, $mems);
 

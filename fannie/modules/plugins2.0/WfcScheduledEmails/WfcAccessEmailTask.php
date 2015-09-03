@@ -41,6 +41,7 @@ class WfcAccessEmailTask extends FannieTask
         $dbc = FannieDB::get($settings['ScheduledEmailDB']);
 
         $last_year = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j'), date('Y')-1));
+        $last_year = '2014-06-01';
         $dlog_ly = DTransactionsModel::selectDlog($last_year, date('Y-m-d'));
         $accessQ = 'SELECT card_no,
                         MAX(tdate) AS renewed
@@ -48,6 +49,7 @@ class WfcAccessEmailTask extends FannieTask
                     WHERE trans_type=\'I\'
                         AND upc=\'ACCESS\'
                         AND tdate >= ?
+                        AND memType <> 3
                     GROUP BY card_no
                     HAVING SUM(quantity) > 0
                     ORDER BY renewed';
@@ -71,7 +73,7 @@ class WfcAccessEmailTask extends FannieTask
             $sendDate = date('Y-m-d', mktime(0,0,0,date('n',$ts)+11, date('j',$ts), date('Y',$ts)));
             if (strtotime($sendDate) < time()) {
                 // don't queue into the past
-                continue;
+                //continue;
             }
             $fn = $dbc->getValue($fnP, array($w['card_no']));
             $json = array(
