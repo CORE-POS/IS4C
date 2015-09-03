@@ -201,7 +201,7 @@ class ItemEditorPage extends FanniePage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $upc = FormLib::get_form_value('searchupc');
+        $upc = trim(FormLib::get_form_value('searchupc'));
         $numType = FormLib::get_form_value('ntype','UPC');
         $inUseFlag = FormLib::get('inUse', false);
         $store_id = $this->config->get('STORE_ID');
@@ -486,6 +486,10 @@ class ItemEditorPage extends FanniePage
 
                     $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
                         href="'.$FANNIE_URL.'reports/RecentSales/?upc='.$upc.'" title="Sales History">Sales</a>';
+
+                    $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
+                        href="'.$FANNIE_URL.'reports/ItemBatches/ItemBatchesReport.php?upc='.$upc.'" 
+                        title="Batch History">Batches</a>';
 
                     $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
                         href="'.$FANNIE_URL.'reports/ItemOrderHistory/ItemOrderHistoryReport.php?upc='.$upc.'" 
