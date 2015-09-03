@@ -29,7 +29,9 @@ if (!class_exists('FannieAPI')) {
 class CalendarDeletePage extends FannieRESTfulPage 
 {
     protected $must_authenticate = true;
-    protected $auth_classes = 'admin';
+    protected $auth_classes = array('admin');
+    protected $header = 'Delete Calendars';
+    protected $title = 'Delete Calendars';
 
     public $page_set = 'Plugin :: Calendar';
     public $discoverable = false;
@@ -79,3 +81,6 @@ class CalendarDeletePage extends FannieRESTfulPage
     }
 
 }
+
+FannieDispatch::conditionalExec();
+

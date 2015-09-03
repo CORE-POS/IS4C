@@ -32,11 +32,6 @@ class FanniePage extends \COREPOS\common\ui\CorePage
     */
     public $themed = true;
 
-    /**
-      Page has been updated to support themeing
-    */
-    public $themed = false;
-
     /** force users to login immediately */
     protected $must_authenticate = false;
     /** name of the logged in user (or False is no one is logged in) */
