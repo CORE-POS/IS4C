@@ -3,14 +3,14 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -26,13 +26,14 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class ImportPurchaseOrder extends FannieUploadPage 
+class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     protected $title = "Fannie - Purchase Order";
     protected $header = "Upload Purchase Order / Invoice";
 
     public $description = '[Purchase Order Import] loads a vendor purchase order / invoice 
     from a spreadsheet.';
+    public $themed = true;
 
     protected $preview_opts = array(
         'sku' => array(
@@ -131,7 +132,7 @@ class ImportPurchaseOrder extends FannieUploadPage
         $orderID = $order->save();
 
         $item = new PurchaseOrderItemsModel($dbc);
-        $info = new VendorItems($dbc);
+        $info = new VendorItemsModel($dbc);
 
         $ret = '';
         foreach ($linedata as $line) {
@@ -147,21 +148,21 @@ class ImportPurchaseOrder extends FannieUploadPage
                 continue;
             }
 
-            $unitQty = isset($line[$uQtyCol]) ? $line[$uQtyCol] : 0;
-            $caseQty = isset($line[$cQtyCol]) ? $line[$cQtyCol] : 0;
+            $unitQty = $uQtyCol !== false && isset($line[$uQtyCol]) ? $line[$uQtyCol] : 0;
+            $caseQty = $cQtyCol !== false && isset($line[$cQtyCol]) ? $line[$cQtyCol] : 0;
             if ($unitQty == 0 && $caseQty == 0) {
-                $ret .= "<i>Omitting item {$sku}. Quantity is zero</i><br />";
+                // no qty specified. 
                 continue;
             }
 
-            $unitSize = isset($line[$uSizeCol]) ? $line[$uSizeCol] : 0;
-            $caseSize = isset($line[$cSizeCol]) ? $line[$cSizeCol] : 0;
-            $brand = isset($line[$brandCol]) ? $line[$brandCol] : '';
-            $desc = isset($line[$descCol]) ? $line[$descCol] : '';
+            $unitSize = $uSizeCol !== false && isset($line[$uSizeCol]) ? $line[$uSizeCol] : 0;
+            $caseSize = $cSizeCol !== false && isset($line[$cSizeCol]) ? $line[$cSizeCol] : 0;
+            $brand = $brandCol !== '' && isset($line[$brandCol]) ? $line[$brandCol] : '';
+            $desc = $descCol !== false && isset($line[$descCol]) ? $line[$descCol] : '';
             $upc = '';
-            if (isset($line[$upcCol])) {
+            if ($upcCol !== false && isset($line[$upcCol])) {
                 $upc = BarcodeLib::padUPC($line[$upcCol]);
-            } else if (isset($line[$upccCol])) {
+            } elseif ($upccCol !== false && isset($line[$upccCol])) {
                 $upc = BarcodeLib::padUPC($line[$upccCol]);
                 $upc = '0' . substr($upc, 0, 12);
             }
@@ -173,7 +174,7 @@ class ImportPurchaseOrder extends FannieUploadPage
                 if ($brand === '') {
                     $brand = $info->brand();
                 }
-                if ($desc === '') {
+                 if ($desc === '') {
                     $desc = $info->description();
                 }
                 if ($unitSize === 0) {
@@ -192,14 +193,14 @@ class ImportPurchaseOrder extends FannieUploadPage
                 } else {
                     $caseQty = $unitQty / $caseSize;
                 }
-            } else if ($caseQty != 0 && $unitQty == 0) {
+            } elseif ($caseQty != 0 && $unitQty == 0) {
                 if ($caseSize == 0) {
                     $unitQty = $caseQty;
                     $caseSize = 1;
                 } else {
                     $unitQty = $caseQty * $caseSize;
                 }
-            } else if ($caseQty != 0 && $unitQty != 0) {
+            } elseif ($caseQty != 0 && $unitQty != 0) {
                 if ($caseSize == 0) {
                     $caseSize = $caseQty / $unitQty;
                 }
@@ -234,9 +235,9 @@ class ImportPurchaseOrder extends FannieUploadPage
             $item->save();
         }
 
-        $ret .= "Import Complete";
+        $ret .= "<p>Import Complete";
         $ret .= '<br />';
-        $ret .= '<a href="ViewPurchaseOrders.php?id=' . $orderID . '">View Order</a>';
+        $ret .= '<a href="' . $this->config->get('URL') . 'purchasing/ViewPurchaseOrders.php?id=' . $orderID . '">View Order</a></p>';
         $this->results = $ret;
 
         return true;
@@ -253,13 +254,13 @@ class ImportPurchaseOrder extends FannieUploadPage
         $vendor = new VendorsModel($dbc);
         $vendor->vendorID(FormLib::get('vendorID'));
         $vendor->load();
-        $ret = sprintf("<b>Batch Type: %s <input type=hidden value=%d name=vendorID /><br />",
+        $ret = sprintf("<b>Batch Type</b>: %s <input type=hidden value=%d name=vendorID /><br />",
             $vendor->vendorName(),FormLib::get_form_value('vendorID'));
-        $ret .= sprintf("<b>PO/Inv#: %s <input type=hidden value=\"%s\" name=identifier /><br />",
+        $ret .= sprintf("<b>PO/Inv#</b>: %s <input type=hidden value=\"%s\" name=identifier /><br />",
             FormLib::get_form_value('identifier'),FormLib::get_form_value('identifier'));
-        $ret .= sprintf("<b>Order Date: %s <input type=hidden value=\"%s\" name=orderDate /><br />",
+        $ret .= sprintf("<b>Order Date</b>: %s <input type=hidden value=\"%s\" name=orderDate /><br />",
             FormLib::get_form_value('orderDate'),FormLib::get_form_value('orderDate'));
-        $ret .= sprintf("<b>Recv'd Date: %s <input type=hidden value=\"%s\" name=recvDate /><br />",
+        $ret .= sprintf("<b>Recv'd Date</b>: %s <input type=hidden value=\"%s\" name=recvDate /><br />",
             FormLib::get_form_value('recvDate'),FormLib::get_form_value('recvDate'));
 
         return $ret;
@@ -286,32 +287,35 @@ class ImportPurchaseOrder extends FannieUploadPage
         $vendors = new VendorsModel($dbc);
         ob_start();
         ?>
-        <form enctype="multipart/form-data" action="ImportPurchaseOrder.php" id="FannieUploadForm" method="post">
-        <table cellspacing=4 cellpadding=4>
-        <tr><th>Vendor</th>
-        <td><select name=vendorID>
-        <?php foreach($vendors->find('vendorName') as $v) printf("<option value=%d>%s</option>",$v->vendorID(), $v->vendorName()); ?>
-        </select></td>
-        <th>Order Date</th><td><input type=text size=10 name=orderDate id="orderDate" /></td></tr>
-        <tr><th>PO#/Invoice#</th><td><input type=text size=15 name=identifier /></td>
-        <th>Recv'd Date</th><td><input type=text size=10 name=recvDate id="recvDate" /></td></tr>
-        <tr><td colspan=4>
-        <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
-        Filename: <input type="file" id="FannieUploadFile" name="FannieUploadFile" />
-        </td></tr>
-        <tr>
-        <td colspan=2>
-        <input type="submit" value="Upload File" />
-        </td>
-        <td colspan=2>
-        <input type="submit" onclick="location='PurchasingIndexPage.php'; return false;" value="Home" />
-        </td>
-        </tr>
-        </table>
-        </form>
+        <form enctype="multipart/form-data" class="form-horizontal" action="ImportPurchaseOrder.php" id="FannieUploadForm" method="post">
+        <div class="form-group col-sm-6">
+            <label class="control-label col-sm-3">Vendor</label>
+            <div class="col-sm-9"><select name=vendorID class="form-control">
+            <?php foreach($vendors->find('vendorName') as $v) printf("<option value=%d>%s</option>",$v->vendorID(), $v->vendorName()); ?>
+                </select></div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="control-label col-sm-3">Order Date</label>
+            <div class="col-sm-9"><input type="text" class="form-control date-field" name="orderDate" id="orderDate" /></div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="control-label col-sm-3">PO#/Invoice#</label>
+            <div class="col-sm-9"><input type="text" class="form-control" name="identifier" /></div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="control-label col-sm-3">Recv'd Date</label>
+            <div class="col-sm-9"><input type="text" class="form-control date-field" name="recvDate" id="recvDate" /></div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="control-label col-sm-3">Filename</label>
+            <div class="col-sm-9"><input type="file" class="form-control" name="FannieUploadFile" id="FannieUploadFile" /></div>
+        </div>
+        <div class="form-group col-sm-6">
+            <button type="submit" class="btn btn-default">Upload File</button>
+            <button type="button" class="btn btn-default" 
+                onclick="location='PurchasingIndexPage.php'; return false;">Home</button>
+        </div>
         <?php
-        $this->add_onload_command("\$('#orderDate').datepicker();");
-        $this->add_onload_command("\$('#recvDate').datepicker();");
 
         return ob_get_clean();
     }

@@ -6,31 +6,31 @@ if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php")
 include('../../db.php');
 
 $numbers = array("zero","one","two","three","four","five","six","seven",
-		"eight","nine","ten","eleven","twelve","thirteen","fourteen",
-		"fifteen","sixteen","seventeen","eighteen","nineteen","twenty");
+        "eight","nine","ten","eleven","twelve","thirteen","fourteen",
+        "fifteen","sixteen","seventeen","eighteen","nineteen","twenty");
 
 $cards = "(";
 $args = array();
 foreach($_POST["cardno"] as $c){
-	$cards .= "?,";
+    $cards .= "?,";
     $args[] = $c;
 }
 $cards = rtrim($cards,",");
 $cards .= ")";
 
 $selAddQ = $sql->prepare("SELECT m.card_no,c.FirstName,c.LastName,
-		m.street,'',m.city,m.state,
-		m.zip,n.payments,
-		d.end_date
-		FROM meminfo AS m LEFT JOIN
-		custdata AS c ON m.card_no=c.CardNo
-		AND c.personNum=1 LEFT JOIN
-		is4c_trans.equity_live_balance AS n
-		on m.card_no = n.memnum
-		LEFT JOIN memDates AS d ON
-		m.card_no=d.card_no
-		WHERE CardNo IN $cards
-		ORDER BY m.card_no");
+        m.street,'',m.city,m.state,
+        m.zip,n.payments,
+        d.end_date
+        FROM meminfo AS m LEFT JOIN
+        custdata AS c ON m.card_no=c.CardNo
+        AND c.personNum=1 LEFT JOIN
+        is4c_trans.equity_live_balance AS n
+        on m.card_no = n.memnum
+        LEFT JOIN memDates AS d ON
+        m.card_no=d.card_no
+        WHERE CardNo IN $cards
+        ORDER BY m.card_no");
 $selAddR = $sql->execute($selAddQ, $args);
 
 $today = date("F j, Y");
@@ -66,15 +66,15 @@ while($selAddW = $sql->fetch_row($selAddR)){
    $pdf->Ln(5);
 
    if (strstr($selAddW[3],"\n") === False){
-	$pdf->Cell(80,10,$selAddW[3],0);
-	$pdf->Ln(5);
+    $pdf->Cell(80,10,$selAddW[3],0);
+    $pdf->Ln(5);
    }
    else {
-	$pts = explode("\n",$selAddW[3]);
-	$pdf->Cell(80,10,$pts[0],0);
-	$pdf->Ln(5);
-	$pdf->Cell(80,10,$pts[1],0);
-	$pdf->Ln(5);
+    $pts = explode("\n",$selAddW[3]);
+    $pdf->Cell(80,10,$pts[0],0);
+    $pdf->Ln(5);
+    $pdf->Cell(80,10,$pts[1],0);
+    $pdf->Ln(5);
    }
    $pdf->Cell(90,10,$selAddW[5] . ', ' . $selAddW[6] . '   ' . $selAddW[7],0);
    $pdf->Ln(10);

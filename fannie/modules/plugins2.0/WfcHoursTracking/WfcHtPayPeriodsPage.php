@@ -38,6 +38,7 @@ class WfcHtPayPeriodsPage extends FanniePage
 
     public $page_set = 'Plugin :: WFC Hours Tracking';
     public $description = '[Pay Periods] shows all pay periods.';
+    public $themed = true;
 
     public function css_content()
     {
@@ -101,7 +102,7 @@ class WfcHtPayPeriodsPage extends FanniePage
             $otherdir = "asc";
         }
 
-        $ret = "<select onchange=\"top.location='{$_SERVER['PHP_SELF']}?id='+this.value;\">";
+        $ret = "<select class=\"form-control\" onchange=\"top.location='{$_SERVER['PHP_SELF']}?id='+this.value;\">";
         $ppQ = "select periodID,dateStr from PayPeriods order by periodID desc";
         $ppR = $db->query($ppQ);
         while ($ppW = $db->fetch_row($ppR)) {
@@ -116,7 +117,7 @@ class WfcHtPayPeriodsPage extends FanniePage
         }
         $ret .= "</select>";
 
-        $ret .= "<table cellspacing=0 cellpadding=4 border=1>";
+        $ret .= "<table class=\"table\">";
         $ret .= "<tr>";
         if ($order == "e.name")
             $ret .= "<th><a href={$_SERVER['PHP_SELF']}?id=$ppID&order=name&dir=$otherdir>Name</a></th>";

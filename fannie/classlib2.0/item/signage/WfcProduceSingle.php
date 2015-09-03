@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,20 +21,30 @@
 
 *********************************************************************************/
 
-class WfcProduceSingle extends FannieSignage 
+namespace COREPOS\Fannie\API\item\signage {
+
+class WfcProduceSingle extends \COREPOS\Fannie\API\item\FannieSignage 
 {
 
     protected $BIG_FONT = 64;
     protected $MED_FONT = 24;
     protected $SMALL_FONT = 14;
 
+    protected $font = 'Arial';
+    protected $alt_font = 'Arial';
+
     public function drawPDF()
     {
-        $pdf = new FPDF('L', 'mm', 'Letter');
+        $pdf = new \FPDF('L', 'mm', 'Letter');
         $pdf->SetMargins(3.175, 3.175, 3.175);
         $pdf->SetAutoPageBreak(false);
-        $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
-        $pdf->SetFont('Gill', '', 16);
+        if (\COREPOS\Fannie\API\FanniePlugin::isEnabled('CoopDealsSigns')) {
+            $this->font = 'Gill';
+            $this->alt_font = 'GillBook';
+            define('FPDF_FONTPATH', dirname(__FILE__) . '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+            $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+        }
+        $pdf->SetFont($this->font, '', 16);
 
         $data = $this->loadItems();
         $width = 136.52;
@@ -88,5 +98,11 @@ class WfcProduceSingle extends FannieSignage
 
         $pdf->Output('WfcProdSingle.pdf', 'I');
     }
+}
+
+}
+
+namespace {
+    class WfcProduceSingle extends \COREPOS\Fannie\API\item\signage\WfcProduceSingle {}
 }
 

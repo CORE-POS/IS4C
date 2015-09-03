@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -30,6 +30,7 @@ class SuspensionHistoryReport extends FannieReportPage
 {
     public $description = '[Suspension History] lists when a membership was deactivated &amp; reactivated.';
     public $report_set = 'Membership';
+    public $themed = true;
 
     protected $title = "Fannie : Suspension History";
     protected $header = "Suspension History";
@@ -76,11 +77,23 @@ class SuspensionHistoryReport extends FannieReportPage
 
     public function form_content()
     {
+        $this->add_onload_command('$(\'#memNum\').focus()');
         return '<form method="get" action="SuspensionHistoryReport.php">
-            <b>Member #</b> <input type="text" name="memNum" value="" size="6" />
-            <br /><br />
-            <input type="submit" value="Get Report" />
+            <label>Member #</label>
+            <input type="text" name="memNum" required 
+                class="form-control" id="memNum" />
+            <p>
+            <button type="submit" class="btn btn-default">Get Report</button> 
+            </p>
             </form>';
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Lists all changes to a membership\'s
+            active/inactive status.
+            </p>';
     }
 }
 

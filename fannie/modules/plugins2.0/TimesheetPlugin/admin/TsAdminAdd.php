@@ -1,8 +1,11 @@
 <?php
-require_once(dirname(__FILE__).'/../../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__).'/../../../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class TsAdminAdd extends FanniePage {
+    public $page_set = 'Plugin :: TimesheetPlugin';
     protected $header = 'Timesheet Management';
     protected $title = 'Fannie - Administration Module';
 
@@ -163,7 +166,9 @@ class TsAdminAdd extends FanniePage {
             
         ob_start();
         echo '<form action="' . $_SERVER['PHP_SELF'] . '" method="GET"><input type="hidden" name="function" value="add" />
-            <p>Name: <select name="emp_no">
+            <div class="row container">
+            <div class="form-group form-inline">
+            Name: <select name="emp_no" class="form-control">
             <option value="error">Who are You?</option>' . "\n";
     
         $query = $ts_db->prepare_statement("SELECT FirstName, emp_no FROM ".
@@ -172,29 +177,33 @@ class TsAdminAdd extends FanniePage {
         while ($row = $ts_db->fetch_array($result)) {
             echo "<option value=\"$row[1]\">$row[0]</option>\n";
         }
-        echo '</select></p>
-        <p>Month: <select name="month">';
+        echo '</select></div></div>
+            <div class="row container">
+            <div class="form-group form-inline">
+        Month: <select name="month" class="form-control">';
         foreach ($months AS $value => $key) {
             echo "<option value=\"$value\"";
             if (date('m')==$value) echo ' SELECTED';
             echo ">$key</option>\n";
         }
         echo '</select>
-            Date: <select name="date">';
+            Date: <select name="date" class="form-control">';
         for ($i = 1; $i <= 31; $i++) {
             $i = str_pad($i, 2, 0, STR_PAD_LEFT);
             echo "<option value=\"$i\"";
             if (date('d') == $i) echo ' SELECTED';
             echo ">$i</option>\n";
         }
-        echo '</select> Year: <select name="year">';
+        echo '</select> Year: <select name="year" class="form-control">';
         for($y = date('Y'); $y > 1999; $y--)
             echo '<option>'.$y.'</option>';
         echo '</select>';
         echo '<br />(Today is ';
         echo date('l\, F jS, Y');
-        echo ')</p>';
-        echo '<p>Lunch? <select name="lunch">
+        echo ')</div></div>';
+        echo '<div class="container row">
+            <div class="form-group form-inline">
+            Lunch? <select name="lunch" class="form-control">
                     <option value="00:00:00">None</option>
                     <option value="00:15:00">15 Minutes</option>
                     <option value="00:30:00">30 Minutes</option>
@@ -204,38 +213,48 @@ class TsAdminAdd extends FanniePage {
                     <option value="01:30:00">1 Hour, 30 Minutes</option>
                     <option value="01:45:00">1 Hour, 45 Minutes</option>
                     <option value="02:00:00">2 Hours</option>
-            </select></p>';
+            </select></div>
+        </div>';
 
         // echo "<p>Please use enter times in (HH:MM) format. For example 8:45, 12:30, etc.</p>";
-        echo "<table><tr><th>Time In</th><th>Time Out</th><th>Area Worked</th></tr>\n";
+        echo "<table class=\"table table-bordered\">
+            <tr><th>Time In</th><th>Time Out</th><th>Area Worked</th></tr>\n";
+        $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
         $query = $ts_db->prepare_statement("SELECT * FROM shifts 
             WHERE ShiftID NOT IN (0, 13) ORDER BY ShiftID ASC");
+        var_dump($ts_db->tableExists('shifts'));
         for ($i = 1; $i <= $this->max; $i++) {
             $result = $ts_db->exec_statement($query);
             
             echo '<tr>
-                <th><input type="text" name="in' . $i . '" size="5" maxlength="5">
-                <select name="inmeridian' . $i . '">
+                <td class="form-inline">
+                    <input type="text" name="in' . $i . '" size="5" 
+                    class="form-control price-field" maxlength="5">
+                <select class="form-control" name="inmeridian' . $i . '">
                     <option value="AM">AM</option>
                     <option value="PM">PM</option>
                 </select>
-                </th>
-                <th><input type="text" name="out' . $i . '" size="5" maxlength="5">
-                <select name="outmeridian' . $i . '">
+                </td>
+                <td class="form-inline">
+                    <input type="text" name="out' . $i . '" size="5" 
+                    class="form-control price-field" maxlength="5">
+                <select name="outmeridian' . $i . '" class="form-control">
                     <option value="AM">AM</option>
                     <option value="PM" SELECTED>PM</option>
                 </select>
-                </th>
-                <th><select name="area' . $i . '">
+                </td>
+                <td><select class="form-control" name="area' . $i . '">
                 <option>Please select an area of work.</option>';
             while ($row = $ts_db->fetch_row($result)) {
                 echo "<option value=\"$row[1]\">$row[0]</option>";
             }
-            echo "</select></th></tr>\n";
+            echo "</select></td></tr>\n";
         }
         echo '</table>
-            <button name="submit" type="submit">Submit</button>
+            <p>
+            <button class="btn btn-default" name="submit" type="submit">Submit</button>
             <input type="hidden" name="submitted" value="TRUE" />
+            </p>
             </form>';
 
         return ob_get_clean();

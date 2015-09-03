@@ -1,8 +1,3 @@
 config.php.bak
 auth/shadowread/shadowread
-src/javascript/linea
-vendor
-src/javascript/require*
-src/javascript/bootstrap/
-src/javascript/bootstrap-default/
-src/javascript/jquery/
+src/javascript/composer-components/

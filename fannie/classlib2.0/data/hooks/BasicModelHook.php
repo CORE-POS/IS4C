@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+namespace COREPOS\Fannie\API\data\hooks {
 
 /**
   @class BasicModelHook
@@ -58,5 +60,11 @@ class BasicModelHook
     {
 
     }
+}
+
+}
+
+namespace {
+    class BasicModelHook extends \COREPOS\Fannie\API\data\hooks\BasicModelHook {}
 }
 

@@ -37,6 +37,14 @@ class DisableCouponModel extends BasicModel
     'reason' => array('type'=>'text')
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Manually disable a specific manufacturer coupon UPC
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function upc()

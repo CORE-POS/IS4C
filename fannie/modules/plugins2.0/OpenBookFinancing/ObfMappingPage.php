@@ -36,6 +36,7 @@ class ObfMappingPage extends FannieRESTfulPage
     public $page_set = 'Plugin :: Open Book Financing';
     public $description = '[Department Mapping] associates POS sales departments with
     OBF labor categories.';
+    public $themed = true;
 
     public function preprocess()
     {
@@ -111,15 +112,14 @@ class ObfMappingPage extends FannieRESTfulPage
             $sdepts[$row['superID']] = $row['super_name'];
         }
 
-        $ret = '<div>';
-        $ret .= '<div style="float:left;">';
+        $ret = '<div class="col-sm-5">';
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret .= '<table class="table">';
         $ret .= '<tr>
                  </tr>';
         foreach($model->find() as $cat) {
             $ret .= '<tr><th colspan="2">' . $cat->name() . '</th>
-                    <td><img alt="delete" src="' . $FANNIE_URL . 'src/img/buttons/trash.png" />
+                    <td>' . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon('Check box for row to delete') . '
                     </td></tr>';
             $map->obfCategoryID($cat->obfCategoryID());
             foreach($map->find() as $obj) {
@@ -127,7 +127,10 @@ class ObfMappingPage extends FannieRESTfulPage
                                 <input type="hidden" name="id[]" value="%d" />
                                 <input type="hidden" name="superID[]" value="%d" />
                                 <td>%s</td>
-                                <td><input type="text" name="growth[]" size="6" value="%.3f" />%%</td>
+                                <td><div class="input-group">
+                                    <input type="text" name="growth[]" class="form-control" required value="%.3f" />
+                                    <span class="input-group-addon">%%</span>
+                                </div></td>
                                 <td><input type="checkbox" name="delete[]" value="%d:%d" /></td>
                                 </tr>',
                                 $obj->obfCategoryID(),
@@ -140,29 +143,30 @@ class ObfMappingPage extends FannieRESTfulPage
             }
         }
         $ret .= '</table>';
-        $ret .= '<input type="submit" value="Save Mapping" />';
+        $ret .= '<p><button type="submit" class="btn btn-default">Save Mapping</button></p>';
         $ret .= '</form>';
         $ret .= '</div>';
-        $ret .= '<div style="float:left; margin-left: 50px;">';
-        $ret .= '<fieldset>';
-        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
-        $ret .= 'Add <select name="add">';
+        $ret .= '<div class="col-sm-5">';
+        $ret .= '<div class="panel panel-default"><div class="panel-body">';
+        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">
+                    <div class="form-group form-inline">';
+        $ret .= '<label>Add</label> <select name="add" class="form-control">';
         foreach ($sdepts as $id => $name) {
             $ret .= sprintf('<option value="%d">%s</option>', $id, $name);
         }
         $ret .= '</select>';
-        $ret .= ' to <select name="cat">';
+        $ret .= ' <label>to</label> <select name="cat" class="form-control">';
         foreach ($model->find() as $cat) {
             $ret .= sprintf('<option value="%d">%s</option>', $cat->obfCategoryID(), $cat->name());
         }
-        $ret .= '</select>';
-        $ret .= '<br /><br />';
-        $ret .= '<input type="submit" value="Add New Mapping" />';
+        $ret .= '</select></div>';
+        $ret .= '<p><button type="submit" class="btn btn-default">Add New Mapping</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<button onclick="location=\'ObfIndexPage.php\';return false;">Home</button>';
+        $ret .= '<button type="button" class="btn btn-default"
+                onclick="location=\'ObfIndexPage.php\';return false;">Home</button></p>';
         $ret .= '</form>';
-        $ret .= '</fieldset>';
-        $ret .= '<i>Note: percentages are sales growth targets for categories</i>';
+        $ret .= '</div>';
+        $ret .= '<div class="panel-footer">Note: percentages are sales growth targets for categories</div>';
         $ret .= '</div>';
         $ret .= '</div>';
 

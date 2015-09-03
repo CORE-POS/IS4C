@@ -24,9 +24,9 @@
 class ECheckPlugin extends Plugin 
 {
 
-	public $plugin_description = 'Handle echecks and paper checks with one tender key';
+    public $plugin_description = 'Handle echecks and paper checks with one tender key';
 
-	public $plugin_settings = array(
+    public $plugin_settings = array(
         'EcpElectronicTender' => array(
         'label' => 'ECheck Tender Code',
         'description' => 'Underlying tender type for electronic checks',
@@ -37,7 +37,7 @@ class ECheckPlugin extends Plugin
         'description' => 'Underlying tender type for paper checks',
         'default'=> 'CK',
         ),
-	);
+    );
 
 }
 

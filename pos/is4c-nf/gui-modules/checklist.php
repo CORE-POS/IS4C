@@ -23,92 +23,92 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class checklist extends NoInputPage {
+class checklist extends NoInputCorePage 
+{
 
-	/**
-	  Input processing function
-	*/
-	function preprocess(){
-		global $CORE_LOCAL;
-
-		// a selection was made
-		if (isset($_REQUEST['search'])){
-			$entered = strtoupper($_REQUEST['search']);
-
-			if ($entered == "" || $entered == "CL"){
-				// should be empty string
-				// javascript causes this input if the
-				// user presses CL{enter}
-				// Redirect to main screen
-				$CORE_LOCAL->set("tenderTotal","0");	
-				$this->change_page($this->page_url."gui-modules/pos2.php");
-				return False;
-			}
-
-			if (!empty($entered)){ 
-				// built department input string and set it
-				// to be the next POS entry
-				// Redirect to main screen
-				$input = $CORE_LOCAL->get("tenderTotal")."CQ".$entered;
-				$CORE_LOCAL->set("msgrepeat",1);
-				$CORE_LOCAL->set("strRemembered",$input);
-				$this->change_page($this->page_url."gui-modules/pos2.php");
-				return False;
-			}
-		}
-		return True;
-	} // END preprocess() FUNCTION
-
-	/**
-	  Pretty standard javascript for
-	  catching CL typed in a select box
-	*/
-	function head_content()
+    /**
+      Input processing function
+    */
+    function preprocess()
     {
-		?>
+        // a selection was made
+        if (isset($_REQUEST['search'])){
+            $entered = strtoupper($_REQUEST['search']);
+
+            if ($entered == "" || $entered == "CL"){
+                // should be empty string
+                // javascript causes this input if the
+                // user presses CL{enter}
+                // Redirect to main screen
+                CoreLocal::set("tenderTotal","0");    
+                $this->change_page($this->page_url."gui-modules/pos2.php");
+                return False;
+            }
+
+            if (!empty($entered)){ 
+                // built department input string and set it
+                // to be the next POS entry
+                // Redirect to main screen
+                $input = CoreLocal::get("tenderTotal")."CQ".$entered;
+                CoreLocal::set("msgrepeat",1);
+                CoreLocal::set("strRemembered",$input);
+                $this->change_page($this->page_url."gui-modules/pos2.php");
+                return False;
+            }
+        }
+        return True;
+    } // END preprocess() FUNCTION
+
+    /**
+      Pretty standard javascript for
+      catching CL typed in a select box
+    */
+    function head_content()
+    {
+        ?>
         <script type="text/javascript" src="../js/selectSubmit.js"></script>
-		<?php
-	} // END head() FUNCTION
+        <?php
+    } // END head() FUNCTION
 
-	/**
-	  Build a <select> form that submits
-	  back to this script
-	*/
-	function body_content(){
-		global $CORE_LOCAL;
-		$db = Database::pDataConnect();
-		$q = "SELECT TenderCode,TenderName FROM tenders WHERE TenderName LIKE '%check%' ORDER BY TenderName";
-		$r = $db->query($q);
+    /**
+      Build a <select> form that submits
+      back to this script
+    */
+    function body_content()
+    {
+        $db = Database::pDataConnect();
+        $q = "SELECT TenderCode,TenderName FROM tenders WHERE TenderName LIKE '%check%' ORDER BY TenderName";
+        $r = $db->query($q);
 
-		echo "<div class=\"baseHeight\">"
-			."<div class=\"listbox\">"
-			."<form name=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\""
-			." id=\"selectform\">"
-			."<select name=\"search\" id=\"search\" "
-			."size=\"15\" onblur=\"\$('#search').focus();\">";
+        echo "<div class=\"baseHeight\">"
+            ."<div class=\"listbox\">"
+            ."<form name=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\""
+            ." id=\"selectform\">"
+            ."<select name=\"search\" id=\"search\" "
+            ."size=\"15\" onblur=\"\$('#search').focus();\">";
 
-		$selected = "selected";
-		while($row = $db->fetch_row($r)){
-			echo "<option value='".$row["TenderCode"]."' ".$selected.">";
-			echo $row['TenderName'];
-			echo '</option>';
-			$selected = "";
-		}
-		echo "</select>"
-			."</form>"
-			."</div>"
-			."<div class=\"listboxText coloredText centerOffset\">"
-			."[Clear] to Cancel</div>"
-			."<div class=\"clear\"></div>";
-		echo "</div>";
+        $selected = "selected";
+        while($row = $db->fetch_row($r)){
+            echo "<option value='".$row["TenderCode"]."' ".$selected.">";
+            echo $row['TenderName'];
+            echo '</option>';
+            $selected = "";
+        }
+        echo "</select>"
+            ."</form>"
+            ."</div>"
+            ."<div class=\"listboxText coloredText centerOffset\">"
+            ."[Clear] to Cancel</div>"
+            ."<div class=\"clear\"></div>";
+        echo "</div>";
 
         $this->add_onload_command("selectSubmit('#search', '#selectform')\n");
-		$this->add_onload_command("\$('#search').focus();\n");
-	} // END body_content() FUNCTION
+        $this->add_onload_command("\$('#search').focus();\n");
+    } // END body_content() FUNCTION
 
 }
 
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-	new checklist();
+    new checklist();
 
 ?>

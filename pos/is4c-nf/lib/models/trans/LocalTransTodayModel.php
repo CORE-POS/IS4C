@@ -45,16 +45,27 @@ class LocalTransTodayModel extends LocalTransModel
         $this->columns['emp_no']['index'] = true;
     }
 
+    public function doc()
+    {
+        return '
+Use:
+Contains today\'s transactions. 
+Truncating this table
+daily will yield better performance on some actions
+that reference the current day\'s info - for example,
+reprinting receipts.
+        ';
+    }
+
     /**
       localtranstoday used to be a view; recreate
       it as a table if needed.
     */
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False)
     { 
-        global $CORE_LOCAL;
-        if ($db_name == $CORE_LOCAL->get('pDatabase')) {
+        if ($db_name == CoreLocal::get('pDatabase')) {
             $this->connection = Database::pDataConnect();
-        } else if ($db_name == $CORE_LOCAL->get('tDatabase')) {
+        } else if ($db_name == CoreLocal::get('tDatabase')) {
             $this->connection = Database::tDataConnect();
         } else {
             echo "Error: Unknown database ($db_name)";

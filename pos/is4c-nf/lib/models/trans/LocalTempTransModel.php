@@ -38,8 +38,21 @@ class LocalTempTransModel extends LocalTransModel
     public function __construct($con)
     {
         $this->columns['trans_id']['increment'] = true;
+        $this->columns['trans_id']['index'] = true;
 
         parent::__construct($con);
+    }
+
+    public function doc()
+    {
+        return '
+Use:
+Stores current transaction data. See 
+dtransactions for detailed information on
+the columns. The only notable difference
+is this table has an automatically incremented
+trans_id column.
+        ';
     }
 
     /* START ACCESSOR FUNCTIONS */

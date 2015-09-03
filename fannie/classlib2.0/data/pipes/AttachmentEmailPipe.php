@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+namespace COREPOS\Fannie\API\data\pipes {
 
 if (!class_exists('NewMemberEmailPipe')) {
     include_once(dirname(__FILE__).'/NewMemberEmailPipe.php');
@@ -114,10 +116,17 @@ class AttachmentEmailPipe extends NewMemberEmailPipe
 
 }
 
+}
+
+namespace {
+class AttachmentEmailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe {}
+
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
-    $obj = new AttachmentEmailPipe();
+    $obj = new \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe();
     $message = file_get_contents("php://stdin");
     if (!empty($message)) {
         $obj->processMail($message);
     }
 } 
+
+}

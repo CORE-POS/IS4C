@@ -52,8 +52,12 @@ echo '
     border-color: ' . $pc . ';
 }
 .primaryBackground, .MemFormTable th {
-    background-color: ' . $pc . ';
+    background-color: ' . $pc . ' !important;
     /*background-color: #FF5800;*/
+}
+.btn-core {
+    border-color: ' . $pc . ';
+    border-width: 3px;
 }
 
 .secondaryColor, #css_menu_root {

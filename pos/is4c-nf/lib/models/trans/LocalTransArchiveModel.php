@@ -33,6 +33,17 @@ class LocalTransArchiveModel extends LocalTransModel
 
     protected $name = "localtransarchive";
 
+    public function doc()
+    {
+        return '
+Use:
+Lane side storage of transactions older than what\'s
+in localtrans. This could probably go away entirely.
+By the data is removed from localtrans it should be
+safely archived on the server side anyway.
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
     /* END ACCESSOR FUNCTIONS */
 }

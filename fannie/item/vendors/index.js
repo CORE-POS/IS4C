@@ -30,9 +30,9 @@ function vendorchange(){
 
 	if (vID == 'new'){
 		var content = "<b>New vendor name</b>: ";
-		content += "<input type=text id=\"newname\" />";
+		content += "<input class=\"form-control\" type=text id=\"newname\" />";
 		content += "<p />";
-		content += "<input type=submit value=\"Create vendor\" ";
+		content += "<input type=submit value=\"Create vendor\" class=\"btn btn-default\" ";
 		content += "onclick=\"newvendor(); return false;\" />";
 		$('#contentarea').html(content);
 		return;
@@ -115,20 +115,58 @@ function editVC(vendorID){
 }
 
 function saveVC(vendorID){
-	var dataStr = 'vendorID='+vendorID;
-	dataStr += '&phone='+$('#vcPhoneEdit').val();
-	dataStr += '&fax='+$('#vcFaxEdit').val();
-	dataStr += '&email='+$('#vcEmailEdit').val();
-	dataStr += '&website='+$('#vcWebsiteEdit').val();
-	dataStr += '&notes='+$('#vcNotesEdit').val();
-	dataStr += '&action=saveContactInfo';
+    var dataStr = $('#vcForm').serialize() + '&vendorID=' + vendorID + '&action=saveContactInfo';
 
 	$.ajax({
 		url: 'VendorIndexPage.php',
 		method: 'post',
 		data: dataStr,
+        dataType: 'json',
 		success: function(resp){
-			$('#contentarea').html(resp);
+            var elem = $('<div></div>');
+            elem.addClass('alert');
+            elem.addClass('alert-dismissable');
+            if (resp.error) {
+                elem.addClass('alert-danger');
+            } else {
+                elem.addClass('alert-success');
+            }
+            var btn = $('<button type="button" class="close" data-dismiss="alert"></button>');
+            btn.append('<span aria-hidden="true">&times;</span><span class="sr-only">Close</span>');
+            elem.append(btn);
+            elem.append(resp.msg);
+            $('.form-alerts').append(elem);
 		}
 	});
 }
+
+function saveShipping(s)
+{
+    var dstr = 'action=saveShipping&id='+$('#vendorselect').val()+'&shipping='+s;
+	$.ajax({
+		url: 'VendorIndexPage.php',
+		method: 'post',
+		data: dstr,
+        dataType: 'json',
+		success: function(resp) {
+            var elem = $('#vc-shipping');
+            showBootstrapPopover(elem, 0, resp.error);
+        }
+    });
+}
+
+function saveDiscountRate(s)
+{
+    var dstr = 'action=saveDiscountRate&id='+$('#vendorselect').val()+'&rate='+s;
+	$.ajax({
+		url: 'VendorIndexPage.php',
+		method: 'post',
+		data: dstr,
+        dataType: 'json',
+		success: function(resp) {
+            var elem = $('#vc-discount');
+            showBootstrapPopover(elem, 0, resp.error);
+        }
+    });
+}
+

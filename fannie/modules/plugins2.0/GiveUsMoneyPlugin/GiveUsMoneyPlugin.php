@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class GiveUsMoneyPlugin extends FanniePlugin 
+class GiveUsMoneyPlugin extends \COREPOS\Fannie\API\FanniePlugin 
 {
     public $plugin_settings = array(
     'GiveUsMoneyDB' => array('default'=>'GiveUsMoneyDB','label'=>'Database',
@@ -67,8 +67,10 @@ class GiveUsMoneyPlugin extends FanniePlugin
             if (!class_exists($model_class)) {
                 include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
             }
-            $instance = new $model_class($dbc);
-            $instance->create();        
+            if (!$dbc->tableExists($t)) {
+                $instance = new $model_class($dbc);
+                $instance->create();
+            }
         }
 
         $settings = new GumSettingsModel($dbc);

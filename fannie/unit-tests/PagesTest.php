@@ -8,9 +8,17 @@ class PagesTest extends PHPUnit_Framework_TestCase
     public function testReports()
     {
         $reports = FannieAPI::listModules('FannieReportPage', true);
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $op_db = $config->get('OP_DB');
+        $dbc = FannieDB::get($op_db);
 
-        foreach($reports as $report_class) {
+        foreach ($reports as $report_class) {
             $obj = new $report_class();
+            $obj->setConfig($config);
+            $obj->setLogger($logger);
+            $dbc->selectDB($op_db);
+            $obj->setConnection($dbc);
 
             $pre = $obj->preprocess();
             $this->assertInternalType('boolean',$pre);
@@ -23,9 +31,17 @@ class PagesTest extends PHPUnit_Framework_TestCase
     public function testPages()
     {
         $pages = FannieAPI::listModules('FanniePage', true);
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $op_db = $config->get('OP_DB');
+        $dbc = FannieDB::get($op_db);
 
         foreach($pages as $page_class) {
             $obj = new $page_class();
+            $obj->setConfig($config);
+            $obj->setLogger($logger);
+            $dbc->selectDB($op_db);
+            $obj->setConnection($dbc);
             if ($page_class == 'WfcHtViewSalaryPage') continue; // header/redirect problem
 
             ob_start();
@@ -35,6 +51,8 @@ class PagesTest extends PHPUnit_Framework_TestCase
 
             $auth = $obj->checkAuth();
             $this->assertInternalType('boolean',$pre);
+
+            $obj->unitTest($this);
         }
     }
 }

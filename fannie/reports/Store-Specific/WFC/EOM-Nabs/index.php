@@ -51,7 +51,7 @@ if (!isset($_GET["excel"]))
     echo "<a href=index.php?excel=xls&monthMinus=$monthMinus>Save to Excel</a>";
 echo "<p />";
 
-$output = DataCache::getFile('monthly');
+$output = \COREPOS\Fannie\API\data\DataCache::getFile('monthly');
 if (!$output){
     ob_start();
 
@@ -153,7 +153,7 @@ if (!$output){
     }
 
     $output = ob_get_contents();
-    DataCache::putFile('monthly', $output);
+    \COREPOS\Fannie\API\data\DataCache::putFile('monthly', $output);
     ob_end_clean();
 }
 

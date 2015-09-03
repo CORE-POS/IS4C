@@ -21,7 +21,9 @@
 
 *********************************************************************************/
 
-if (!isset($CORE_LOCAL)) include_once(dirname(__FILE__).'/LocalStorage/conf.php');
+if (!defined('CONF_LOADED')) {
+    include_once(dirname(__FILE__).'/LocalStorage/conf.php');
+}
 
 /**
   @class LibraryClass
@@ -42,73 +44,90 @@ class LibraryClass {
 class AutoLoader extends LibraryClass 
 {
 
-	/**
-	  Autoload class by name
-	  @param $name class name
-	*/
-	static public function loadClass($name)
+    /**
+      Autoload class by name
+      @param $name class name
+    */
+    static public function loadClass($name)
     {
-		global $CORE_LOCAL;
-		$map = $CORE_LOCAL->get("ClassLookup");
-		if (!is_array($map)) {
-            return;
+        global $CORE_LOCAL;
+        $map = CoreLocal::get("ClassLookup");
+        if (!is_array($map)) {
+            // attempt to build map before giving up
+            self::loadMap();
+            $map = CoreLocal::get("ClassLookup");
+            if (!is_array($map)) {
+                return;
+            }
         }
 
-		if (isset($map[$name]) && !file_exists($map[$name])) {
-			// file is missing. 
-			// rebuild map to see if the class is
-			// gone or the file just moved
-			self::loadMap();
-			$map = $CORE_LOCAL->get("ClassLookup");
-			if (!is_array($map)) {
+        if (isset($map[$name]) && !file_exists($map[$name])) {
+            // file is missing. 
+            // rebuild map to see if the class is
+            // gone or the file just moved
+            self::loadMap();
+            $map = CoreLocal::get("ClassLookup");
+            if (!is_array($map)) {
                 return;
             }
-		} else if (!isset($map[$name])) {
-			// class is unknown
-			// rebuild map to see if the definition
-			// file has been added
-			self::loadMap();
-			$map = $CORE_LOCAL->get("ClassLookup");
-			if (!is_array($map)) {
+        } elseif (!isset($map[$name]) && strpos($name, '\\') > 0) {
+            $pieces = explode('\\', $name);
+            if (count($pieces) > 2 && $pieces[0] == 'COREPOS' && $pieces[1] == 'common') {
+                $s = DIRECTORY_SEPARATOR;
+                $path = dirname(__FILE__) . $s . '..' . $s . '..' . $s . '..' . $s . 'common' . $s;
+                for ($i=2; $i<count($pieces)-1; $i++) {
+                    $path .= $pieces[$i] . $s;
+                }
+                $path .= $pieces[count($pieces)-1] . '.php';
+                if (file_exists($path)) {
+                    $map[$name] = $path;
+                }
+            }
+        } elseif (!isset($map[$name])) {
+            // class is unknown
+            // rebuild map to see if the definition
+            // file has been added
+            self::loadMap();
+            $map = CoreLocal::get("ClassLookup");
+            if (!is_array($map)) {
                 return;
             }
-		}
+        }
 
-		if (isset($map[$name]) && !class_exists($name,false)
-		   && file_exists($map[$name])) {
+        if (isset($map[$name]) && !class_exists($name,false)
+           && file_exists($map[$name])) {
 
-			include_once($map[$name]);
-		}
-	}
+            include_once($map[$name]);
+        }
+    }
 
-	/**
-	  Map available classes. Class names should
-	  match filenames for lookups to work.
-	*/
-	static public function loadMap()
+    /**
+      Map available classes. Class names should
+      match filenames for lookups to work.
+    */
+    static public function loadMap()
     {
-		global $CORE_LOCAL;
-		$class_map = array();
-		$search_path = realpath(dirname(__FILE__).'/../');
-		self::recursiveLoader($search_path, $class_map);
-		$CORE_LOCAL->set("ClassLookup",$class_map);
-	}
+        $class_map = array();
+        $search_path = realpath(dirname(__FILE__).'/../');
+        self::recursiveLoader($search_path, $class_map);
+        CoreLocal::set("ClassLookup",$class_map);
+    }
 
-	/**
-	  Get a list of available modules with the
-	  given base class
-	  @param $base_class string class name
-	  @param $include_base whether base class should be included
-		in the return value
-	  @return an array of class names
-	*/
-	static public function listModules($base_class, $include_base=False)
+    /**
+      Get a list of available modules with the
+      given base class
+      @param $base_class string class name
+      @param $include_base whether base class should be included
+        in the return value
+      @return an array of class names
+    */
+    static public function listModules($base_class, $include_base=False)
     {
-		$ret = array();
-		
-		// lookup plugin modules, then standard modules
-		$map = Plugin::pluginMap();
-		switch($base_class){
+        $ret = array();
+        
+        // lookup plugin modules, then standard modules
+        $map = Plugin::pluginMap();
+        switch($base_class){
             case 'DiscountType':
                 $path = realpath(dirname(__FILE__).'/Scanning/DiscountTypes');
                 $map = Plugin::pluginMap($path,$map);
@@ -165,6 +184,10 @@ class AutoLoader extends LibraryClass
                 $path = realpath(dirname(__FILE__).'/ReceiptBuilding/ReceiptTag');
                 $map = Plugin::pluginMap($path,$map);
                 break;
+            case 'DefaultReceiptSavings':
+                $path = realpath(dirname(__FILE__).'/ReceiptBuilding/ReceiptSavings');
+                $map = Plugin::pluginMap($path,$map);
+                break;
             case 'ReceiptMessage':
                 $path = realpath(dirname(__FILE__).'/ReceiptBuilding/Messages');
                 $map = Plugin::pluginMap($path,$map);
@@ -202,83 +225,143 @@ class AutoLoader extends LibraryClass
             case 'ItemNotFound':
                 $map['ItemNotFound'] = realpath(dirname(__FILE__) . '/ItemNotFound.php');
                 break;
-		}
-
-		foreach($map as $name => $file) {
-
-			// matched base class
-			if ($name === $base_class) {
-				if ($include_base) $ret[] = $name;
-				continue;
-			}
-
-			ob_start();
-			if (!class_exists($name)) { 
-				ob_end_clean();
-				continue;
-			}
-
-			if (strstr($file,'plugins')) {
-				$parent = Plugin::memberOf($file);
-				if ($parent && Plugin::isEnabled($parent) && is_subclass_of($name,$base_class)) {
-					$ret[] = $name;
-				} else if ($base_class=="Plugin" && is_subclass_of($name,$base_class)) {
-					$ret[] = $name;
-                }
-			} else {
-				if (is_subclass_of($name,$base_class)) {
-					$ret[] = $name;
-                }
-			}
-			ob_end_clean();
-		}
-
-		return $ret;
-	}
-
-	/**
-	  Helper function to walk through file structure
-	  @param $path starting path
-	  @param $map array of class name => file
-	  @return $map (by reference)
-	*/
-	static private function recursiveLoader($path,&$map=array())
-    {
-		if(!is_dir($path)) {
-            return $map;
         }
 
-		$dh = opendir($path);
-		while($dh && ($file=readdir($dh)) !== false) {
-			if ($file[0] == ".") continue;
+        foreach($map as $name => $file) {
 
-			$fullname = realpath($path."/".$file);
-			if (is_dir($fullname) && $file != "gui-modules") {
-				self::recursiveLoader($fullname, $map);
-			} else if (substr($file,-4) == '.php') {
-				$class = substr($file,0,strlen($file)-4);
-				$map[$class] = $fullname;
-			}
-		}
-		closedir($dh);
-	}
+            // matched base class
+            if ($name === $base_class) {
+                if ($include_base) $ret[] = $name;
+                continue;
+            }
 
+            ob_start();
+            if (!class_exists($name)) { 
+                ob_end_clean();
+                continue;
+            }
+
+            if (strstr($file,'plugins')) {
+                $parent = Plugin::memberOf($file);
+                if ($parent && Plugin::isEnabled($parent) && is_subclass_of($name,$base_class)) {
+                    $ret[] = $name;
+                } else if ($base_class=="Plugin" && is_subclass_of($name,$base_class)) {
+                    $ret[] = $name;
+                }
+            } else {
+                if (is_subclass_of($name,$base_class)) {
+                    $ret[] = $name;
+                }
+            }
+            ob_end_clean();
+        }
+
+        return $ret;
+    }
+
+    /**
+      Helper function to walk through file structure
+      @param $path starting path
+      @param $map array of class name => file
+      @return $map (by reference)
+    */
+    static private function recursiveLoader($path,&$map=array())
+    {
+        if(!is_dir($path)) {
+            return $map;
+        }
+        
+        // skip searching these directories
+        // to improve overall performance
+        $exclude = array(
+            'css',
+            'graphics',
+            'gui-modules',
+            'js',
+            'locale',
+            'log',
+            'NewMagellan',
+            'test',
+        );
+
+        $dh = opendir($path);
+        while($dh && ($file=readdir($dh)) !== false) {
+            if ($file[0] == ".") continue;
+
+            $fullname = realpath($path."/".$file);
+            if (is_dir($fullname) && !in_array($file, $exclude)) {
+                self::recursiveLoader($fullname, $map);
+            } else if (substr($file,-4) == '.php') {
+                $class = substr($file,0,strlen($file)-4);
+                $map[$class] = $fullname;
+            }
+        }
+        closedir($dh);
+    }
+
+    /**
+      Use a dedicated dispatch function to launch
+      page classes.
+      @param $redirect [boolean, default true]
+        go to login page if an error occurs
+      
+      This method checks for the session variable
+      CashierNo as a general indicator that the current
+      session has been properly initialized
+    */
+    public static function dispatch($redirect=true)
+    {
+        $bt = debug_backtrace();
+        if (count($bt) == 1) {
+            $page = basename($_SERVER['PHP_SELF']);
+            $class = substr($page,0,strlen($page)-4);
+            if (CoreLocal::get('CashierNo') !== '' && $class != 'index' && class_exists($class)) {
+                $page = new $class();
+            } elseif ($redirect) {
+                $url = MiscLib::baseURL();
+                header('Location: ' . $url . 'login.php');
+            } else {
+                trigger_error('Missing class '.$class, E_USER_NOTICE);
+            }
+        }
+    }
 }
 
 if (function_exists('spl_autoload_register')){
-	spl_autoload_register(array('AutoLoader','loadClass'));
+    spl_autoload_register(array('AutoLoader','loadClass'));
 }
 else {
-	function __autoload($name){
-		AutoLoader::loadClass($name);
-	}
+    function __autoload($name){
+        AutoLoader::loadClass($name);
+    }
 }
 
-/** internationalization */
-/*
-setlocale(LC_MESSAGES, "en_US.UTF-8");
-bindtextdomain("pos-nf",realpath(dirname(__FILE__).'/../locale'));
-bind_textdomain_codeset("pos-nf","UTF-8");
-textdomain("pos-nf");
- */
+// add composer classes if present
+if (file_exists(dirname(__FILE__) . '/../../../vendor/autoload.php')) {
+    include(dirname(__FILE__) . '/../../../vendor/autoload.php');
+}
+
+/** 
+  Internationalization 
+  setlocale() probably always exists
+  but the gettext functions may or may not
+  be available
+*/
+if (function_exists('setlocale') && defined('LC_MESSAGES') && CoreLocal::get('locale') !== '') {
+    setlocale(LC_MESSAGES, CoreLocal::get('locale') . '.utf8');
+    putenv('LC_MESSAGES=' . CoreLocal::get('locale') . '.utf8');
+    if (function_exists('bindtextdomain')) {
+        bindtextdomain('pos-nf', realpath(dirname(__FILE__).'/../locale'));
+        textdomain('pos-nf');
+    }
+}
+
+/**
+  Add placeholder gettext function if
+  the module is not enabled. Translations
+  won't work but pages won't crash either
+*/
+if (!function_exists('gettext')) {
+    function _($str) { return $str; }
+}
 

@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,10 +26,11 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class UnfiUploadPage extends FannieUploadPage {
+class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     public $title = "Fannie - UNFI Prices";
     public $header = "Upload UNFI price file";
+    public $themed = true;
 
     public $description = '[UNFI Catalog Import] specialized vendor import tool. Column choices
     default to UNFI price file layout.';
@@ -94,13 +95,20 @@ class UnfiUploadPage extends FannieUploadPage {
             'display_name' => 'UNFI Category # *',
             'default' => 5,
             'required' => True
-        )
+        ),
+        'flags' => array(
+            'name' => 'flags',
+            'display_name' => 'Flags',
+            'default' => 20,
+            'required' => false
+        ),
     );
 
     protected $use_splits = false;
     protected $use_js = true;
 
-    function process_file($linedata){
+    function process_file($linedata)
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $idP = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
@@ -109,7 +117,8 @@ class UnfiUploadPage extends FannieUploadPage {
             $this->error_details = 'Cannot find vendor';
             return False;
         }
-        $VENDOR_ID = array_pop($dbc->fetch_row($idR));
+        $idW = $dbc->fetchRow($idR);
+        $VENDOR_ID = $idW['vendorID'];
 
         $SKU = $this->get_column_index('sku');
         $BRAND = $this->get_column_index('brand');
@@ -121,6 +130,7 @@ class UnfiUploadPage extends FannieUploadPage {
         $REG_COST = $this->get_column_index('cost');
         $NET_COST = $this->get_column_index('saleCost');
         $SRP = $this->get_column_index('srp');
+        $FLAGS = $this->get_column_index('flags');
 
         // PLU items have different internal UPCs
         // map vendor SKUs to the internal PLUs
@@ -132,27 +142,48 @@ class UnfiUploadPage extends FannieUploadPage {
         }
 
         $extraP = $dbc->prepare_statement("update prodExtra set cost=? where upc=?");
-        $itemP = $dbc->prepare_statement("INSERT INTO vendorItems 
-                    (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
-                    VALUES (?,?,?,?,?,?,?,?,?)");
-        $vi_def = $dbc->table_definition('vendorItems');
-        if (isset($vi_def['saleCost'])) {
-            $itemP = $dbc->prepare_statement("INSERT INTO vendorItems 
-                        (brand,sku,size,upc,units,cost,description,vendorDept,vendorID,saleCost)
-                        VALUES (?,?,?,?,?,?,?,?,?,?)");
+        $prodP = $dbc->prepare('
+            UPDATE products
+            SET cost=?,
+                numflag= numflag | ? | ?,
+                modified=' . $dbc->now() . '
+            WHERE upc=?');
+        $itemP = $dbc->prepare("
+            INSERT INTO vendorItems (
+                brand, 
+                sku,
+                size,
+                upc,
+                units,
+                cost,
+                description,
+                vendorDept,
+                vendorID,
+                saleCost,
+                modified,
+                srp
+            ) VALUES (
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?
+            )");
+        $srpP = false;
+        if ($dbc->tableExists('vendorSRPs')) {
+            $srpP = $dbc->prepare_statement("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
         }
-        /** deprecating unfi_* structures 22Jan14
-        $uuP = $dbc->prepare_statement("INSERT INTO unfi_order 
-                    (unfi_sku,brand,item_desc,pack,pack_size,upcc,cat,wholesale,vd_cost,wfc_srp) 
-                    VALUES (?,?,?,?,?,?,?,?,?,?)");
-        */
-        $srpP = $dbc->prepare_statement("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
+        $updated_upcs = array();
+        $rounder = new \COREPOS\Fannie\API\item\PriceRounder();
 
-        /** deprecating unfi_* structures 22Jan14
-        $dupeP = $dbc->prepare_statement("SELECT upcc FROM unfi_order WHERE upcc=?");
-        */
-
-        foreach($linedata as $data){
+        foreach($linedata as $data) {
             if (!is_array($data)) continue;
 
             if (!isset($data[$UPC])) continue;
@@ -164,12 +195,21 @@ class UnfiUploadPage extends FannieUploadPage {
             $description = $data[$DESCRIPTION];
             $qty = $data[$QTY];
             $size = ($SIZE1 !== false) ? $data[$SIZE1] : '';
+            $prodInfo = ($FLAGS !== false) ? $data[$FLAGS] : '';
+            $flag = 0;
             $upc = substr($data[$UPC],0,13);
             // zeroes isn't a real item, skip it
             if ($upc == "0000000000000")
                 continue;
             if (isset($SKU_TO_PLU_MAP[$sku])) {
                 $upc = $SKU_TO_PLU_MAP[$sku];
+                if (substr($size, -1) == '#' && substr($upc, 0, 3) == '002') {
+                    $qty = trim($size, '# ');
+                    $size = '#';
+                } elseif (substr($size, -2) == 'LB' && substr($upc, 0, 3) == '002') {
+                    $qty = trim($size, 'LB ');
+                    $size = 'LB';
+                }
             }
             $category = $data[$CATEGORY];
             $reg = trim($data[$REG_COST]);
@@ -182,12 +222,6 @@ class UnfiUploadPage extends FannieUploadPage {
             // can't process items w/o price (usually promos/samples anyway)
             if (empty($reg) or empty($srp))
                 continue;
-
-            /** deprecating unfi_* structures 22Jan14
-            // don't repeat items
-            $dupeR = $dbc->exec_statement($dupeP,array($upc));
-            if ($dbc->num_rows($dupeR) > 0) continue;
-            */
 
             // syntax fixes. kill apostrophes in text fields,
             // trim $ off amounts as well as commas for the
@@ -210,39 +244,56 @@ class UnfiUploadPage extends FannieUploadPage {
             // this will catch the 'label' line in the first CSV split
             // since the splits get returned in file system order,
             // we can't be certain *when* that chunk will come up
-            if (!is_numeric($reg) or !is_numeric($srp))
+            if (!is_numeric($reg) or !is_numeric($srp)) {
                 continue;
+            }
+
+            $srp = $rounder->round($srp);
+
+            // set organic flag on OG1 (100%) or OG2 (95%)
+            $organic_flag = 0;
+            if (strstr($prodInfo, 'OG2') || strstr($prodInfo, 'OG1')) {
+                $organic_flag = 17;
+            }
+            // set gluten-free flag on g
+            $gf_flag = 0;
+            if (strstr($prodInfo, 'g')) {
+                $gf_flag = 18;
+            }
 
             // need unit cost, not case cost
             $reg_unit = $reg / $qty;
             $net_unit = $net / $qty;
 
-            // set cost in $PRICEFILE_COST_TABLE
             $dbc->exec_statement($extraP, array($reg_unit,$upc));
-            ProductsModel::update($upc, array('cost'=>$reg_unit), True);
-            // end $PRICEFILE_COST_TABLE cost tracking
+            $dbc->exec_statement($prodP, array($reg_unit,$organic_flag,$gf_flag,$upc));
+            $updated_upcs[] = $upc;
 
-            $args = array($brand,($sku===False?'':$sku),($size===False?'':$size),
-                    $upc,$qty,$reg_unit,$description,$category,$VENDOR_ID);
-            if (isset($vi_def['saleCost'])) {
-                $args[] = $net_unit;
+            $args = array(
+                $brand, 
+                $sku === false ? '' : $sku, 
+                $size === false ? '' : $size,
+                $upc,
+                $qty,
+                $reg_unit,
+                $description,
+                $category,
+                $VENDOR_ID,
+                $net_unit,
+                date('Y-m-d H:i:s'),
+                $srp
+            );
+            $dbc->execute($itemP,$args);
+
+            if ($srpP) {
+                $dbc->exec_statement($srpP,array($VENDOR_ID,$upc,$srp));
             }
-            $dbc->exec_statement($itemP,$args);
-
-            /** deprecating unfi_* structures 22Jan14
-            // unfi_order is what the UNFI price change page builds on,
-            // that's why it's being populated here
-            // it's just a table containing all items in the current order
-            $args = array(($sku===False?'':$sku),$brand,$description,$qty,
-                    ($size===False?'':$size),$upc,$category,$reg,
-                    $reg,$srp);
-            $dbc->exec_statement($uuP,$args);
-            */
-
-            $dbc->exec_statement($srpP,array($VENDOR_ID,$upc,$srp));
         }
 
-        return True;
+        $updateModel = new ProdUpdateModel($dbc);
+        $updateModel->logManyUpdates($updated_upcs, ProdUpdateModel::UPDATE_EDIT);
+
+        return true;
     }
 
     /* clear tables before processing */
@@ -256,14 +307,11 @@ class UnfiUploadPage extends FannieUploadPage {
             $this->error_details = 'Cannot find vendor';
             return False;
         }
-        $VENDOR_ID = array_pop($dbc->fetch_row($idR));
+        $idW = $dbc->fetchRow($idR);
+        $VENDOR_ID = $idW['vendorID'];
 
         $viP = $dbc->prepare_statement("DELETE FROM vendorItems WHERE vendorID=?");
         $vsP = $dbc->prepare_statement("DELETE FROM vendorSRPs WHERE vendorID=?");
-        /** deprecating unfi_* structures 22Jan14
-        $uoP = $dbc->prepare_statement("TRUNCATE TABLE unfi_order");
-        $dbc->exec_statement($uoP);
-        */
         $dbc->exec_statement($viP,array($VENDOR_ID));
         $dbc->exec_statement($vsP,array($VENDOR_ID));
     }
@@ -276,63 +324,8 @@ class UnfiUploadPage extends FannieUploadPage {
     function results_content(){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $ret = "Price data import complete<p />";
-        $ret .= '<a href="'.$_SERVER['PHP_SELF'].'">Upload Another</a>';
-
-        /** Changed 22Jan14
-            PLU substitution by SKU happens during import
-            This is more consistent in updating all instances
-            of a given item UPC
-        if ($dbc->table_exists("vendorSKUtoPLU")){
-
-            $idP = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
-            $idR = $dbc->exec_statement($idP);
-            $VENDOR_ID=0;
-            if ($dbc->num_rows($idR) > 0)
-                $VENDOR_ID = array_pop($dbc->fetch_row($idR));
-
-            $pluQ1 = $dbc->prepare_statement("UPDATE unfi_order AS u
-                INNER JOIN vendorSKUtoPLU AS p
-                ON u.unfi_sku = p.sku
-                SET u.upcc = p.upc
-                WHERE p.vendorID=?");
-            $pluQ2 = $dbc->prepare_statement("UPDATE vendorItems AS u
-                INNER JOIN vendorSKUtoPLU AS p
-                ON u.sku = p.sku
-                SET u.upc = p.upc
-                WHERE u.vendorID=?");
-            $pluQ3 = $dbc->prepare_statement("UPDATE prodExtra AS x
-                INNER JOIN vendorSKUtoPLU AS p
-                ON x.upc=p.upc
-                INNER JOIN unfi_order AS u
-                ON u.unfi_sku=p.sku
-                SET x.cost = u.vd_cost / u.pack
-                WHERE p.vendorID=?");
-            $args = array($VENDOR_ID);
-            $args2 = array($VENDOR_ID); // kludge
-            if ($FANNIE_SERVER_DBMS == "MSSQL"){
-                $pluQ1 = $dbc->prepare_statement("UPDATE unfi_order SET upcc = p.wfc_plu
-                    FROM unfi_order AS u RIGHT JOIN
-                    UnfiToPLU AS p ON u.unfi_sku = p.unfi_sku
-                    WHERE u.unfi_sku IS NOT NULL");
-                $pluQ2 = $dbc->prepare_statement("UPDATE vendorItems SET upc = p.wfc_plu
-                    FROM vendorItems AS u RIGHT JOIN
-                    UnfiToPLU AS p ON u.sku = p.unfi_sku
-                    WHERE u.sku IS NOT NULL
-                    AND u.vendorID=?");
-                $pluQ3 = $dbc->prepare_statement("UPDATE prodExtra
-                    SET cost = u.vd_cost / u.pack
-                    FROM UnfiToPLU AS p LEFT JOIN
-                    unfi_order AS u ON p.unfi_sku = u.unfi_sku
-                    LEFT JOIN prodExtra AS x
-                    ON p.wfc_plu = x.upc");
-                $args = array();
-            }
-            $dbc->exec_statement($pluQ1,$args);
-            $dbc->exec_statement($pluQ2,$args2);
-            $dbc->exec_statement($pluQ3,$args);
-        }
-        */
+        $ret = "<p>Price data import complete</p>";
+        $ret .= '<p><a href="'.$_SERVER['PHP_SELF'].'">Upload Another</a></p>';
 
         return $ret;
     }

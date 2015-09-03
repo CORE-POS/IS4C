@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -31,6 +31,7 @@ class ItemFlags extends FanniePage {
     private $msgs;
 
     public $description = '[Item Flags] are extra fields that can be associated with an item.';
+    public $themed = true;
 
     function preprocess(){
         global $FANNIE_OP_DB;
@@ -59,14 +60,19 @@ class ItemFlags extends FanniePage {
                     $db->exec_statement($insP,array($bit_number,$desc));    
                 }
             }
-        }
-        elseif (FormLib::get_form_value('updateBtn') !== ''){
+        } elseif (FormLib::get_form_value('updateBtn') !== '') {
             $ids = FormLib::get_form_value('mask',array());
             $descs = FormLib::get_form_value('desc',array());
-            $upP = $db->prepare_statement("UPDATE prodFlags SET description=? WHERE bit_number=?");
+            $active = FormLib::get('active', array());
+            $upP = $db->prepare_statement("
+                UPDATE prodFlags 
+                SET description=?,
+                    active=?
+                WHERE bit_number=?");
             for($i=0;$i<count($ids);$i++){
                 if (isset($descs[$i]) && !empty($descs[$i])){
-                    $db->exec_statement($upP,array($descs[$i],$ids[$i]));   
+                    $a = in_array($ids[$i], $active) ? 1 : 0;
+                    $db->exec_statement($upP,array($descs[$i],$a,$ids[$i]));   
                 }
             }
         }
@@ -84,7 +90,8 @@ class ItemFlags extends FanniePage {
         return True;
     }
 
-    function body_content(){
+    function body_content()
+    {
         global $FANNIE_OP_DB;
         global $FANNIE_COOP_ID;
         // If there were errors in preprocess().
@@ -95,45 +102,86 @@ class ItemFlags extends FanniePage {
         }
         echo '<form action="'.$_SERVER['PHP_SELF'].'" method="post">';
         $db = FannieDB::get($FANNIE_OP_DB);
-        if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID = 'WEFC_Toronto' ) {
-            $q = $db->prepare_statement("SELECT bit_number,description FROM prodFlags ORDER BY bit_number");
+        if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' ) {
+            $q = $db->prepare_statement("SELECT bit_number,description,active FROM prodFlags ORDER BY bit_number");
             $excelCols = array('','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ');
         } else {
-            $q = $db->prepare_statement("SELECT bit_number,description FROM prodFlags ORDER BY description");
+            $q = $db->prepare_statement("SELECT bit_number,description,active FROM prodFlags ORDER BY description");
         }
         $r = $db->exec_statement($q);
-        echo '<b>Current Flags</b>:<br />';
-        echo '<table cellpadding="4" cellspacing="0" border="1">';
-        while($w = $db->fetch_row($r)){
-            if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID = 'WEFC_Toronto' ) {
-                printf('<tr><td>%d. %s <input type="text" name="desc[]" value="%s" />
+        echo '<div class="row">
+            <div class="col-sm-6">';
+        echo '<table class="table form-horizontal">';
+        echo '<tr>
+            <th>Current Flags</th>
+            <th>Enabled</th>
+            <th><span class="glyphicon glyphicon-trash"></span></th>
+            </tr>';
+        while ($w = $db->fetch_row($r)) {
+            if (isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' ) {
+                printf('<tr><td>%d. %s <input type="text" name="desc[]" 
+                    class="form-control" value="%s" />
                     <input type="hidden" name="mask[]" value="%d" /></td>
+                    <td><input type="checkbox" name="active[]" value="%d"
+                        %s /></td>
                     <td><input type="checkbox" name="del[]" value="%d" /></td>
                     </tr>',
-                    $w['bit_number'],($w['bit_number'] <= count($excelCols))?$excelCols[$w['bit_number']]:'',$w['description'],$w['bit_number'],$w['bit_number']
+                    $w['bit_number'],
+                    ($w['bit_number'] <= count($excelCols))?$excelCols[$w['bit_number']]:'',
+                    $w['description'],
+                    $w['bit_number'],
+                    $w['bit_number'],
+                    ($w['active'] ? 'checked' : ''),
+                    $w['bit_number']
                 );
             } else {
-                printf('<tr><td><input type="text" name="desc[]" value="%s" />
+                printf('<tr><td><input type="text" name="desc[]" value="%s" 
+                    class="form-control" />
                     <input type="hidden" name="mask[]" value="%d" /></td>
+                    <td><input type="checkbox" name="active[]" value="%d"
+                        %s /></td>
                     <td><input type="checkbox" name="del[]" value="%d" /></td>
                     </tr>',
-                    $w['description'],$w['bit_number'],$w['bit_number']
+                    $w['description'],$w['bit_number'],
+                    $w['bit_number'],
+                    ($w['active'] ? 'checked' : ''),
+                    $w['bit_number']
                 );
             }
         }
         echo '</table>';
-        echo '<input type="submit" name="updateBtn" value="Update Descriptions" /> | ';
-        echo '<input type="submit" name="delBtn" value="Delete Selected" /> ';
+        echo '<p>';
+        echo '<button type="submit" name="updateBtn" value="1" 
+                class="btn btn-default">Update Selected</button> | ';
+        echo '<button type="submit" name="delBtn" value="1" 
+                class="btn btn-default">Delete Selected</button> ';
+        echo '</p>';
         echo '</form>';
-        echo '<hr />';
-        echo '<form action="'.$_SERVER['PHP_SELF'].'" method="post">';
-        echo '<b>New</b>: <input type="text" name="new" /> ';
-        echo '<input type="submit" name="addBtn" value="Add New Flag" />';
+        echo '</div>
+            <div class="col-sm-4 panel panel-default">
+            <div class="panel-body">';
+        echo '<form action="'.$_SERVER['PHP_SELF'].'" method="post"
+                class="form-inline">';
+        echo '<label>New</label>: <input type="text" name="new" class="form-control" /> ';
+        echo '<button type="submit" name="addBtn" value="1"
+                class="btn btn-default">Add New Flag</button>';
+        echo '</div>'; // end panel-body
+        echo '</div>'; // end col-sm-4
+        echo '</div>'; // end row
         echo '</form>';
+    }
+
+    public function helpContent()
+    {
+        return '<p>Product Flags are custom attributes that can
+            be attached to products. Each flag is a yes/no setting.
+            Most systems should support at least 30 flags. Flags
+            can add new settings that are not built-in such as
+            gluten-free or organic.</p>';
     }
 
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

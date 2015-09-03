@@ -37,7 +37,27 @@ class EfsnetTokensModel extends BasicModel
     'token' => array('type'=>'VARCHAR(100)', 'primary_key'=>true),
     'processData' => array('type'=>'VARCHAR(255)'),
     'acqRefData' => array('type'=>'VARCHAR(255)'),
-	);
+    );
+
+    public function doc()
+    {
+        return '
+Use:
+This table logs tokens used for modifying
+later transactions.
+
+expireDay is when(ish) the token is no longer valid
+
+refNum maps to efsnetRequest & efsnetResponse
+records
+
+token is the actual token
+
+processData and acqRefData are additional
+values needed in addition to the token for
+certain kinds of modifying transactions
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 

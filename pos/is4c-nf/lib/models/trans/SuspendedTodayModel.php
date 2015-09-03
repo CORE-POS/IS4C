@@ -39,6 +39,20 @@ class SuspendedTodayModel extends LocalTransModel
     public function save(){ return false; }
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False){ return 0; }
 
+    public function doc()
+    {
+        return '
+Use:
+This view omits all entries in suspended
+that aren\'t from the current day. Resuming
+a transaction from a previous day wouldn\'t
+necessarily cause problems, but "stale"
+suspended transactions that never get resumed
+could eventually make the list of available
+transactions unwieldy.
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
     /* END ACCESSOR FUNCTIONS */
 }

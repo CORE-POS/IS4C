@@ -65,14 +65,14 @@ class WfcVcTask extends FannieTask
         }
 
         $redo = $dbc->prepare('UPDATE custdata 
-                               SET memType=CASE WHEN memType=3 THEN 6 ELSE 5 END
+                               SET memType=CASE WHEN memType=3 THEN 3 ELSE 5 END
                                WHERE Type=\'PC\' 
                                 AND memType NOT IN (5,6)
                                 AND CardNo IN (' . $in . ')');
         $dbc->execute($redo, $mems);
         $undo = $dbc->prepare('UPDATE custdata 
-                               SET memType=CASE WHEN memType=6 THEN 3 ELSE 1 END
-                               WHERE memType IN (5,6) 
+                               SET memType=5
+                               WHERE memType IN (1) 
                                 AND CardNo NOT IN (' . $in . ')');
         $dbc->execute($undo, $mems);
 
@@ -91,7 +91,6 @@ class WfcVcTask extends FannieTask
         $dbc->query('UPDATE custdata AS c SET memCoupons=0, blueLine=' . $default_blueline);
         // grant coupon to all members
         $dbc->query("UPDATE custdata AS c SET memCoupons=1 WHERE Type='PC'");
-        $dbc->query("UPDATE custdata AS c SET memCoupons=2 WHERE Type='PC' AND memType IN (5,6)");
 
         // lookup OB usage in the last month
         $usageP = $dbc->prepare("SELECT card_no 
@@ -108,23 +107,6 @@ class WfcVcTask extends FannieTask
         while($usageW = $dbc->fetch_row($usageR)) {
             $dbc->execute($removeP, array($usageW['card_no']));
             $no_ob[$usageW['card_no']] = true;
-        }
-
-        // lookup access usage in the last month
-        $usageP = $dbc->prepare("SELECT card_no 
-                                FROM $dlog
-                                WHERE upc='0049999900002'
-                                    AND tdate BETWEEN ? AND ?
-                                GROUP BY card_no
-                                HAVING SUM(total) <> 0");
-        $usageR = $dbc->execute($usageP, array($start . ' 00:00:00', $end . ' 23:59:59'));
-        $no_ac = array();
-
-        // remove coupon from members that have used it
-        $removeP = $dbc->prepare('UPDATE custdata AS c SET memCoupons=memCoupons-1 WHERE CardNo=? AND memType IN (5,6)');
-        while($usageW = $dbc->fetch_row($usageR)) {
-            $dbc->execute($removeP, array($usageW['card_no']));
-            $no_ac[$usageW['card_no']] = true;
         }
 
         $coupon_blueline = $dbc->concat(
@@ -144,39 +126,6 @@ class WfcVcTask extends FannieTask
                         ''
         );
         $dbc->query("UPDATE custdata AS c SET blueLine=$coupon_blueline WHERE Type='PC' AND memCoupons = 0");
-
-        // more detail needed for access members
-        $both_blueline = $dbc->concat(
-                        $dbc->convert('CardNo', 'CHAR'),
-                        "' '",
-                        'LastName',
-                        "' Coup(OB AC)'",
-                        ''
-        );
-        $ob_blueline = $dbc->concat(
-                        $dbc->convert('CardNo', 'CHAR'),
-                        "' '",
-                        'LastName',
-                        "' Coup(OB)'",
-                        ''
-        );
-        $ac_blueline = $dbc->concat(
-                        $dbc->convert('CardNo', 'CHAR'),
-                        "' '",
-                        'LastName',
-                        "' Coup(AC)'",
-                        ''
-        );
-        $accessR = $dbc->query("SELECT CardNo FROM custdata WHERE memType IN (5,6) AND personNum=1 AND memCoupons > 0");
-        while($accessW = $dbc->fetch_row($accessR)) {
-            if (isset($no_ob[$accessW['CardNo']]) && !isset($no_ac[$accessW['CardNo']])) {
-                $dbc->query("UPDATE custdata SET blueLine=$ac_blueline WHERE CardNo=" . $accessW['CardNo']);
-            } else if (!isset($no_ob[$accessW['CardNo']]) && isset($no_ac[$accessW['CardNo']])) {
-                $dbc->query("UPDATE custdata SET blueLine=$ob_blueline WHERE CardNo=" . $accessW['CardNo']);
-            } else {
-                $dbc->query("UPDATE custdata SET blueLine=$both_blueline WHERE CardNo=" . $accessW['CardNo']);
-            }
-        }
     }
 }
 

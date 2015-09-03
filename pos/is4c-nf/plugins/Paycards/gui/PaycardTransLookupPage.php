@@ -23,13 +23,11 @@
 
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
-class PaycardTransLookupPage extends BasicPage 
+class PaycardTransLookupPage extends BasicCorePage 
 {
 
-	function preprocess()
+    function preprocess()
     {
-		global $CORE_LOCAL;
-
         if (isset($_REQUEST['doLookup'])) {
             $ref = $_REQUEST['id'];
             $local = $_REQUEST['local'];
@@ -37,7 +35,7 @@ class PaycardTransLookupPage extends BasicPage
 
             $obj = null;
             $resp = array();
-            foreach($CORE_LOCAL->get('RegisteredPaycardClasses') as $rpc) {
+            foreach(CoreLocal::get('RegisteredPaycardClasses') as $rpc) {
                 $obj = new $rpc();
                 if ($obj->myRefNum($ref)) {
                     break;
@@ -63,14 +61,13 @@ class PaycardTransLookupPage extends BasicPage
             return false;
         }
 
-		return true;
-	}
+        return true;
+    }
 
-	function body_content()
+    function body_content()
     {
-		global $CORE_LOCAL;
-		$this->input_header('onsubmit="lookupFormCallback();return false;"');
-		echo '<div class="baseHeight">';
+        $this->input_header('onsubmit="lookupFormCallback();return false;"');
+        echo '<div class="baseHeight">';
         $id = $_REQUEST['id'];
         $local = false;
         if (substr($id, 0, 2) == '_l') {
@@ -83,18 +80,18 @@ class PaycardTransLookupPage extends BasicPage
             $msg = 'Verifying transaction';
         }
         echo DisplayLib::boxMsg($msg . '<br />Please wait', '', true);
-		echo '</div>'; // baseHeight
+        echo '</div>'; // baseHeight
 
         printf('<input type="hidden" id="refNum" value="%s" />', $id);
         printf('<input type="hidden" id="local" value="%d" />', ($local) ? 1 : 0);
         printf('<input type="hidden" id="lookupMode" value="%s" />', $mode);
 
-		echo "<div id=\"footer\">";
-		echo DisplayLib::printfooter();
-		echo "</div>\n";
+        echo "<div id=\"footer\">";
+        echo DisplayLib::printfooter();
+        echo "</div>\n";
 
         $this->add_onload_command('performLookup();');
-	}
+    }
 
     function head_content()
     {
@@ -139,4 +136,4 @@ function lookupFormCallback()
 }
 
 if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-	new PaycardTransLookupPage();
+    new PaycardTransLookupPage();

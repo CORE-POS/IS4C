@@ -11,7 +11,7 @@ $batchID = 1;
 $batchID = $_GET['batchID'];
 
 $batchInfoQ = "SELECT batchName,convert(varchar,startDate,101) as startDate,
-	convert(varchar,endDate,101) as endDate FROM batches where batchID = $batchID";
+    convert(varchar,endDate,101) as endDate FROM batches where batchID = $batchID";
 $batchInfoR = $sql->query($batchInfoQ);
 
 

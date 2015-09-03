@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\lib {
+
 class FannieHelp {
 
     /**
@@ -32,9 +34,8 @@ class FannieHelp {
     */
     static public function toolTip($text, $doc_link=False, $tag='span')
     {
-        global $FANNIE_URL;
         $id = '_fhtt'.rand(0, 999999);
-        $img = $FANNIE_URL.'src/img/buttons/help16.png';
+        $img = \FannieConfig::factory()->get('URL') . 'src/img/buttons/help16.png';
 
         $text = preg_replace('/\s\s+/',' ',$text);
 
@@ -64,5 +65,11 @@ class FannieHelp {
         }
     }
 
+}
+
+}
+
+namespace {
+    class FannieHelp extends \COREPOS\Fannie\API\lib\FannieHelp {}
 }
 

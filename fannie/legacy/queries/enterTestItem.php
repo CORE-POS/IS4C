@@ -47,16 +47,16 @@ $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
 
 $price = trim($price);
 if (!is_numeric($price))
-	$price = 0;
+    $price = 0;
 
 if(!isset($tax)){
-	$tax = 0;
-}	
+    $tax = 0;
+}    
 if(!isset($FS)){
-	$FS = 0;
+    $FS = 0;
 }
 if(!isset($Scale)){
-	$Scale = 0;
+    $Scale = 0;
 }
 
 if(empty($likeCode)){
@@ -93,7 +93,7 @@ if ($sql->num_rows($taxfsR) == 1){
   $tax = $taxfsRow[0];
   $FS = $taxfsRow[1];
   if ($taxfsRow[3] == 0)
-	$NoDisc = 0;
+    $NoDisc = 0;
 }
 
 /* if the user isn't validated but is logged in, then
@@ -120,19 +120,19 @@ elseif ($auditedUser){
     audit($deptSub,$auditedUser,$upc,$descript,$price,$tax,$FS,$Scale,$NoDisc);
 }
 if (!$validatedUser && !$auditedUser && substr($upc,0,3) != "002"){
-	echo "Please ";
-	echo "<a href=/auth/ui/loginform.php?redirect=/queries/productTest.php?upc=$upc>";
-	echo "login</a> to add new items";
-	return;
+    echo "Please ";
+    echo "<a href=/auth/ui/loginform.php?redirect=/queries/productTest.php?upc=$upc>";
+    echo "login</a> to add new items";
+    return;
 }
 
 $descript = str_replace("'","",$descript);
 $descript = str_replace("\"","",$descript);
 $descript = $sql->escape($descript);
 if (empty($manufacturer))
-	$manufacturer = '';
+    $manufacturer = '';
 if (empty($distributor))
-	$distributor = '';
+    $distributor = '';
 $manufacturer = preg_replace("/\\\'/","",$manufacturer);
 $distributor = preg_replace("/\\\'/","",$distributor);
 // lookup vendorID by name
@@ -192,15 +192,15 @@ $model->pushToLanes();
 $checkQ = $sql->prepare("select * from prodExtra where upc=?");
 $checkR = $sql->execute($checkQ, array($upc));
 if ($sql->num_rows($checkR) == 0){
-	$extraQ = $sql->prepare("insert into prodExtra values (?,?,?,0,0,0,'','',0,'')");
-	$extraR = $sql->execute($extraQ, array($upc, $distributor, $manufacturer));
+    $extraQ = $sql->prepare("insert into prodExtra values (?,?,?,0,0,0,'','',0,'')");
+    $extraR = $sql->execute($extraQ, array($upc, $distributor, $manufacturer));
 }
 
 if(isset($likeCode) && $likeCode > 0){
-	$delLikeCode = $sql->prepare("DELETE FROM upcLike WHERE upc = ?");
-	$insLikeCode = $sql->prepare("INSERT INTO upcLike VALUES(?,?)");
-	$delLikeCodeR = $sql->execute($delLikeCode, array($upc));
-	$insLikeCodeR = $sql->execute($insLikeCode, array($upc, $likeCode));
+    $delLikeCode = $sql->prepare("DELETE FROM upcLike WHERE upc = ?");
+    $insLikeCode = $sql->prepare("INSERT INTO upcLike VALUES(?,?)");
+    $delLikeCodeR = $sql->execute($delLikeCode, array($upc));
+    $insLikeCodeR = $sql->execute($insLikeCode, array($upc, $likeCode));
 }
 
 $query1 = $sql->prepare("SELECT * FROM products WHERE upc = ?");
@@ -209,9 +209,9 @@ $row = $sql->fetch_array($result1);
 //echo '<br>'.$query1;
 
 if (isset($_REQUEST['shelftag'])){
-	printf("<script type=\"text/javascript\">
-		shelftag('%s');
-		</script>",$upc);
+    printf("<script type=\"text/javascript\">
+        shelftag('%s');
+        </script>",$upc);
 }
 
 echo "<table>";
@@ -225,9 +225,9 @@ echo "<table>";
         //$dept=$row[12];
         $query2 = $sql->prepare("SELECT * FROM departments where dept_no = ?");
         $result2 = $sql->execute($query2, array($dept));
-	$num = $sql->num_rows($result2);
-	$row2 = $sql->fetch_array($result2);
-	echo "<td>";
+    $num = $sql->num_rows($result2);
+    $row2 = $sql->fetch_array($result2);
+    echo "<td>";
         echo $dept.' ' . $row2['dept_name'];
         echo " </td>";  
         echo "<td align=center>";
@@ -236,14 +236,14 @@ echo "<table>";
                 echo " checked";
         }
         echo " value=1><br>Deli<input type=radio name = tax value=2";
-		if($row[14]==2){
-			echo " checked";
-		}
-	echo "><br>";
-	echo "No Tax<input type=radio name=tax value=0";
-		if($row[14]==0){
-			echo " checked";
-		}
+        if($row[14]==2){
+            echo " checked";
+        }
+    echo "><br>";
+    echo "No Tax<input type=radio name=tax value=0";
+        if($row[14]==0){
+            echo " checked";
+        }
         echo "></td><td align=center><input type=checkbox name=FS";     
         if($row[15]==1){
                 echo " checked";
@@ -259,10 +259,10 @@ echo "<table>";
         //echo "I am here.";
         echo "<form action=productTest.php method=post>";
         echo "<input name=upc type=text id=upc> Enter <select name=ntype>
-		<option>UPC</option>
-		<option>SKU</option>
-		<option>Brand Prefix</option>
-		</select> here<br>";
+        <option>UPC</option>
+        <option>SKU</option>
+        <option>Brand Prefix</option>
+        </select> here<br>";
         echo "<input name=submit type=submit value=submit>";
         echo "</form>";
 ?>

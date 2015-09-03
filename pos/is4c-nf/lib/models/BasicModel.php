@@ -185,6 +185,29 @@ class BasicModel
     }
 
     /**
+      Create structure only if it does not exist
+      @param $db_name [string] database name
+      @return [keyed array]
+        db => database name
+        struct => table/view name
+        error => [int] error code
+        details => error details
+    */
+    public function createIfNeeded($db_name)
+    {
+        $this->fq_name = $db_name . $this->connection->sep() . $this->name;
+        $ret = array('db'=>$db_name,'struct'=>$this->name,'error'=>0,'details'=>'');
+        if (!$this->create()) {
+            $ret['error'] = 1;
+            $ret['details'] = $this->connection->error($db_name);
+            $reflect = new ReflectionClass($this);
+            $ret['query'] = $reflect->getName() . '::create()';
+        }
+
+        return $ret;
+    }
+
+    /**
       Populate instance with database values
       Requires a uniqueness constraint. Assign
       those columns before calling load().
@@ -499,8 +522,6 @@ class BasicModel
     */
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False)
     {
-        global $CORE_LOCAL;
-
         if ($mode != BasicModel::NORMALIZE_MODE_CHECK && $mode != BasicModel::NORMALIZE_MODE_APPLY) {
             echo "Error: Unknown mode ($mode)\n";
             return false;
@@ -515,13 +536,29 @@ class BasicModel
         /**
 
         */
-        if ($db_name == $CORE_LOCAL->get('pDatabase')) {
+        if ($db_name == CoreLocal::get('pDatabase')) {
             $this->connection = Database::pDataConnect();
-        } else if ($db_name == $CORE_LOCAL->get('tDatabase')) {
+        } else if ($db_name == CoreLocal::get('tDatabase')) {
             $this->connection = Database::tDataConnect();
         } else {
-            echo "Error: Unknown database ($db_name)";
-            return false;
+            /**
+              Allow for db other than main ones, e.g. for a plugin.
+              Force a new connection to avoid messing with the
+              one maintained by the Database class
+            */
+            $this->connection = new SQLManager(
+                $CORE_LOCAL->get("localhost"),
+                $CORE_LOCAL->get("DBMS"),
+                $db_name,
+                $CORE_LOCAL->get("localUser"),
+                $CORE_LOCAL->get("localPass"),
+                false,
+                true
+            );
+            if ($this->connection->isConnected($db_name)) {
+                echo "Error: Unknown database ($db_name)";
+                return false;
+            }
         }
 
         if (!$this->connection->table_exists($this->name)) {
@@ -611,7 +648,7 @@ class BasicModel
                             $sql .= ' NOT NULL AUTO_INCREMENT';
                         }
                     }
-                    $sql .= ' BEFORE '.$this->connection->identifier_escape($their_col);
+                    $sql .= ' FIRST';
                     if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
                         // increment must be indexed
                         $index = 'INDEX';
@@ -699,6 +736,40 @@ class BasicModel
         return 0;
 
     // normalize()
+    }
+
+    /**
+      Return information about the table/view
+      this model deals with
+    */
+    public function doc()
+    {
+        return 'This model has yet to be documented';
+    }
+
+    public function columnsDoc()
+    {
+        $ret = str_pad('Name', 25, ' ') . '|' . str_pad('Type', 15, ' ') . '|Info' . "\n";
+        $ret .= str_repeat('-', 25) . '|' . str_repeat('-', 15) . '|' . str_repeat('-', 10) . "\n";
+        foreach ($this->columns as $name => $info) {
+            $ret .= str_pad($name, 25, ' ') . '|';
+            $ret .= str_pad($info['type'], 15, ' ') . '|';
+            if (isset($info['primary_key'])) {
+                $ret .= 'PK ';
+            }
+            if (isset($info['index'])) {
+                $ret .= 'Indexed ';
+            }
+            if (isset($info['increment'])) {
+                $ret .= 'Increment ';
+            }
+            if (isset($info['default'])) {
+                $ret .= 'Default=' . $info['default'];
+            }
+            $ret .= "\n";
+        }
+
+        return $ret;
     }
 
     /**
@@ -799,7 +870,8 @@ class $name extends BasicModel\n");
         fwrite($fp,"\n");
         fwrite($fp,"    protected \$name = \"".substr($name,0,strlen($name)-5)."\";\n");
         fwrite($fp,"\n");
-        fwrite($fp,"    protected \$columns = array(\n\t);\n");
+        fwrite($fp,"    protected \$columns = array(\n");
+        fwrite($fp,"    );\n");
         fwrite($fp,"\n");
         fwrite($fp,"    /* START ACCESSOR FUNCTIONS */\n");
         fwrite($fp,"    /* END ACCESSOR FUNCTIONS */\n");
@@ -810,6 +882,10 @@ class $name extends BasicModel\n");
     // newModel()
     }
 
+    /**
+      Interface method
+      Should eventually inherit from \COREPOS\common\BasicModel
+    */
     public function getModels()
     {
         /**
@@ -841,6 +917,34 @@ class $name extends BasicModel\n");
 
         return $models;
     }
+
+    /**
+      Interface method
+      Should eventually inherit from \COREPOS\common\BasicModel
+    */
+    public function setConnectionByName($db_name)
+    {
+        if ($db_name == CoreLocal::get('pDatabase')) {
+            $this->connection = Database::pDataConnect();
+        } else if ($db_name == CoreLocal::get('tDatabase')) {
+            $this->connection = Database::tDataConnect();
+        } else {
+            /**
+              Allow for db other than main ones, e.g. for a plugin.
+              Force a new connection to avoid messing with the
+              one maintained by the Database class
+            */
+            $this->connection = new SQLManager(
+                $CORE_LOCAL->get("localhost"),
+                $CORE_LOCAL->get("DBMS"),
+                $db_name,
+                $CORE_LOCAL->get("localUser"),
+                $CORE_LOCAL->get("localPass"),
+                false,
+                true
+            );
+        }
+    }
 }
 
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
@@ -848,6 +952,51 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
     include_once(dirname(__FILE__).'/../AutoLoader.php');
     AutoLoader::loadMap();
     $obj = new BasicModel(null);
+
+    if ($argc > 2 && $argv[1] == '--doc') {
+        array_shift($argv);
+        array_shift($argv);
+        $tables = array();
+        foreach ($argv as $file) {
+            if (!file_exists($file)) {
+                continue;
+            }
+            if (!substr($file, -4) == 'php') {
+                continue;
+            }
+            $class = pathinfo($file, PATHINFO_FILENAME);
+            if (!class_exists($class)) { // nested / cross-linked includes
+                include($file);
+                if (!class_exists($class)) {
+                    continue;
+                }
+            }
+            $obj = new $class(null);
+            if (!is_a($obj, 'BasicModel')) {
+                continue;
+            }
+
+            $table = $obj->getName();
+            $doc = '### ' . $table . "\n";
+            if (is_a($obj, 'ViewModel')) {
+                $doc .= '**View**' . "\n\n";
+            }
+            $doc .= $obj->columnsDoc();
+            $doc .= $obj->doc();
+
+            $tables[$table] = $doc;
+        }
+        ksort($tables);
+        foreach ($tables as $t => $doc) {
+            echo '* [' . $t . '](#' . strtolower($t) . ')' . "\n";
+        }
+        echo "\n";
+        foreach ($tables as $t => $doc) {
+            echo $doc;
+            echo "\n";
+        }
+        exit;
+    }
 
     /* Argument signatures, to php, where BasicModel.php is the first:
    * 2 args: Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
@@ -858,6 +1007,7 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         echo "Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
         echo "Create new Model: php BasicModel.php --new <Model Name>\n";
         echo "Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename>\n";
+        echo "Generate markdown documentation: php BasicModel.php --doc <Model Filename(s)>\n";
         exit;
     }
 

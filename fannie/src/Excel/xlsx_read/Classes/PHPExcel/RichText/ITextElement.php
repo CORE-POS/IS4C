@@ -19,7 +19,7 @@
  * @category   PHPExcel
  * @package    PHPExcel_RichText
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
- * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
+ * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt    LGPL
  * @version    1.7.8, 2012-10-12
  */
 
@@ -33,32 +33,32 @@
  */
 interface PHPExcel_RichText_ITextElement
 {
-	/**
-	 * Get text
-	 *
-	 * @return string	Text
-	 */
-	public function getText();
+    /**
+     * Get text
+     *
+     * @return string    Text
+     */
+    public function getText();
 
-	/**
-	 * Set text
-	 *
-	 * @param 	$pText string	Text
-	 * @return PHPExcel_RichText_ITextElement
-	 */
-	public function setText($pText = '');
+    /**
+     * Set text
+     *
+     * @param     $pText string    Text
+     * @return PHPExcel_RichText_ITextElement
+     */
+    public function setText($pText = '');
 
-	/**
-	 * Get font
-	 *
-	 * @return PHPExcel_Style_Font
-	 */
-	public function getFont();
+    /**
+     * Get font
+     *
+     * @return PHPExcel_Style_Font
+     */
+    public function getFont();
 
-	/**
-	 * Get hash code
-	 *
-	 * @return string	Hash code
-	 */
-	public function getHashCode();
+    /**
+     * Get hash code
+     *
+     * @return string    Hash code
+     */
+    public function getHashCode();
 }

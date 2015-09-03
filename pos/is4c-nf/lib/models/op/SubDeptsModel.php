@@ -33,8 +33,19 @@ class SubDeptsModel extends BasicModel
     protected $columns = array(
     'subdept_no' => array('type'=>'SMALLINT', 'primary_key'=>true),
     'subdept_name' => array('type'=>'VARCHAR(30)', 'index'=>true),
-    'dept_ID' => array('type'=>'SMALLINT'),
-	);
+    'dept_ID' => array('type'=>'SMALLINT', 'primary_key'=>true),
+    );
+
+    public function doc()
+    {
+        return '
+Use:
+A department may contain multiple subdepartments.
+In most implementations I\'ve seen, invidual products
+can be tagged with a subdepartment, but that
+setting doesn\'t go into the final transaction log
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 

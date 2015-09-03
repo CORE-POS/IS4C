@@ -22,59 +22,59 @@
 *********************************************************************************/
 
 class CaseDiscount extends PreParser {
-	
-	function check($str){
-		// force quantity == 1
-		if (strstr($str,"CT") && !strstr($str,"*")) {
+    
+    function check($str){
+        // force quantity == 1
+        if (strstr($str,"CT") && !strstr($str,"*")) {
             $split = explode('CT', $str);
             if (is_numeric($split[0]) && strlen($split[0] > 1) && strlen($split[1] > 1)) {
                 return true;
             }
         }
 
-		return false;
-	}
+        return false;
+    }
 
-	function parse($str){
-		global $CORE_LOCAL;
-		$split = explode("CT", $str);
-		$remainder = "";
-		if (is_numeric($split[0]) && strlen($split[0] > 1) && strlen($split[1] > 1)){
-			if ($split[0] != 5 && $split[0] != 10){
-				$remainder = "cdinvalid";
-				$CORE_LOCAL->set("casediscount",$split[0]);
-			}
-			elseif ($CORE_LOCAL->get("isStaff") == 1)
-				$remainder = "cdStaffNA";
-			elseif ($CORE_LOCAL->get("SSI") == 1)
-				$remainder = "cdSSINA";
-			elseif ($CORE_LOCAL->get("isMember") == 1){
-				$CORE_LOCAL->set("casediscount",10);
-				$remainder = $split[1];
-			}
-			elseif ($CORE_LOCAL->get("isMember") != 1){
-				$CORE_LOCAL->set("casediscount",5);
-				$remainder = $split[1];
-			}
-		}	
-		return $remainder;	
-	}
+    function parse($str)
+    {
+        $split = explode("CT", $str);
+        $remainder = "";
+        if (is_numeric($split[0]) && strlen($split[0] > 1) && strlen($split[1] > 1)){
+            if ($split[0] != 5 && $split[0] != 10){
+                $remainder = "cdinvalid";
+                CoreLocal::set("casediscount",$split[0]);
+            }
+            elseif (CoreLocal::get("isStaff") == 1)
+                $remainder = "cdStaffNA";
+            elseif (CoreLocal::get("SSI") == 1)
+                $remainder = "cdSSINA";
+            elseif (CoreLocal::get("isMember") == 1){
+                CoreLocal::set("casediscount",10);
+                $remainder = $split[1];
+            }
+            elseif (CoreLocal::get("isMember") != 1){
+                CoreLocal::set("casediscount",5);
+                $remainder = $split[1];
+            }
+        }    
+        return $remainder;    
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td><i>discount</i>CT<i>item</i></td>
-				<td>Sets case discount <i>discount</i>
-				for the item. <i>Discount</i> should be a
-				number, <i>item</i> can be any valid ring
-				(e.g., UPC or open-ring to a department).
-				</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td><i>discount</i>CT<i>item</i></td>
+                <td>Sets case discount <i>discount</i>
+                for the item. <i>Discount</i> should be a
+                number, <i>item</i> can be any valid ring
+                (e.g., UPC or open-ring to a department).
+                </td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

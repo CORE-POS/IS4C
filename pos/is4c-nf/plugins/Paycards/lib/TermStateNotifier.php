@@ -34,16 +34,14 @@ class TermStateNotifier extends Notifier
     */
     public function draw()
     {
-        global $CORE_LOCAL;
-
-        if ($CORE_LOCAL->get('PaycardsCashierFacing') == '1') {
+        if (CoreLocal::get('PaycardsCashierFacing') == '1') {
             return '';
         }
 
         // style box to look like a little screen
         $ret = '<div style="background:#ccc;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
         $rdy = '<div style="background:#0c0;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
-        switch($CORE_LOCAL->get('ccTermState')) {
+        switch(CoreLocal::get('ccTermState')) {
             case 'swipe':
                 return $ret.'Slide<br />Card</div>';
                 break;

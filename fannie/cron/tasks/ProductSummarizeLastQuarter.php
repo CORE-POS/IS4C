@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -41,7 +41,7 @@ last thirteen weeks';
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB;
 
-        $today = mktime();
+        $today = strtotime('today');
         $this_monday = $today;
         while(date('N', $this_monday) != 1) {
             $this_monday = mktime(0, 0, 0, date('n', $this_monday), date('j', $this_monday) - 1, date('Y', $this_monday));
@@ -49,7 +49,7 @@ last thirteen weeks';
         $last_monday = mktime(0, 0, 0, date('n', $this_monday), date('j', $this_monday) - 7, date('Y', $this_monday));
 
         $dbc = FannieDB::get($FANNIE_ARCHIVE_DB);
-        echo $this->cronMsg('Determining applicable weeks');
+        $this->cronMsg('Determining applicable weeks', FannieLogger::INFO);
         $dbc->query('TRUNCATE TABLE weeksLastQuarter');
         $ins = $dbc->prepare('INSERT INTO weeksLastQuarter (weekLastQuarterID, weekStart, weekEnd) VALUES (?, ?, ?)');
 
@@ -89,7 +89,7 @@ last thirteen weeks';
         $dbc->query('TRUNCATE TABLE productWeeklyLastQuarter');
         foreach($weeks as $weekID => $limits) {
             $upcs = array();
-            echo $this->cronMsg('Processing week #'.$weekID);
+            $this->cronMsg('Processing week #'.$weekID, FannieLogger::INFO);
             $dlog = DTransactionsModel::selectDlog(date('Y-m-d', $limits[0]), date('Y-m-d', $limits[1]));
             $dataP = $dbc->prepare("SELECT d.upc, SUM(total) as ttl, "
                                 . DTrans::sumQuantity('d') . " as qty,
@@ -148,7 +148,7 @@ last thirteen weeks';
         } // end loop on weeks
 
         // now do weighted averages
-        echo $this->cronMsg('Calculating weighted averages');
+        $this->cronMsg('Calculating weighted averages', FannieLogger::INFO);
         $dbc->query('TRUNCATE TABLE productSummaryLastQuarter');
         $dbc->query('INSERT INTO productSummaryLastQuarter
                    (upc, qtyThisWeek, totalThisWeek, qtyLastQuarter,

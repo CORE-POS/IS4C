@@ -26,7 +26,7 @@ refreshSession();
 //  End -->
 </script>
 <script type="text/javascript"
-	src="/git/fannie/src/javascript/jquery.js">
+    src="/git/fannie/src/javascript/jquery.js">
 </script>
 <?php
 echo "<script language=JavaScript>";

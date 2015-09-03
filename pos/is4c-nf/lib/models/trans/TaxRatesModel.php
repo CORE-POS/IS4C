@@ -35,7 +35,15 @@ class TaxRatesModel extends BasicModel
     'id' => array('type'=>'INT', 'primary_key'=>true),
     'rate' => array('type'=>'FLOAT'),
     'description' => array('type'=>'VARCHAR(50)'),
-	);
+    );
+
+    public function doc()
+    {
+        return '
+Use:
+Local tax rates
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 

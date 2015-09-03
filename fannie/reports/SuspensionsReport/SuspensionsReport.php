@@ -3,14 +3,14 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -38,6 +38,7 @@ class SuspensionsReport extends FannieReportPage
 
     public $description = '[Suspensions] lists all members made inactive during a given date range';
     public $report_set = 'Membership';
+    public $themed = true;
 
     function fetch_report_data()
     {
@@ -51,17 +52,8 @@ class SuspensionsReport extends FannieReportPage
         $query = 'SELECT s.cardno as card_no,
                     s.type as sus_type,
                     s.suspDate,
-                    r.textStr,
-                    c.LastName,
-                    c.FirstName,
-                    m.street,
-                    m.city,
-                    m.state,
-                    m.zip,
-                    m.phone
+                    r.textStr
                   FROM suspensions AS s
-                    LEFT JOIN custdata AS c ON s.cardno=c.CardNo AND c.personNum=1
-                    LEFT JOIN meminfo AS m ON s.cardno=m.card_no
                     LEFT JOIN reasoncodes AS r ON s.reasoncode & r.mask <> 0
                   WHERE s.suspDate BETWEEN ? AND ?';
         if ($code != 0) {
@@ -79,6 +71,16 @@ class SuspensionsReport extends FannieReportPage
             $row = $dbc->fetch_row($res);
             if ($row['card_no'] != $record[0] && $record[0] != 0) {
                 $record[3] = substr($record[3], 0, strlen($record[3])-2);
+                $account = \COREPOS\Fannie\API\member\MemberREST::get($record[0]);
+                $record[6] = $account['addressFirstLine'];
+                $record[7] = $account['city'];
+                $record[8] = $account['state'];
+                $record[9] = $account['zip'];
+                foreach ($account['customers'] as $customer) {
+                    $record[4] = $customer['lastName'];
+                    $record[5] = $customer['firstName'];
+                    $record[10] = $customer['phone'];
+                }
                 $data[] = $record;
                 $record = array(0,1,2,'',4,5,6,7,8,9,10);
             }
@@ -86,17 +88,20 @@ class SuspensionsReport extends FannieReportPage
             $record[1] = $row['sus_type'] == 'I' ? 'INACTIVE' : 'TERMED';
             $record[2] = $row['suspDate'];
             $record[3] .= $row['textStr'] . ', ';
-            $record[4] = $row['LastName'];
-            $record[5] = $row['FirstName'];
-            $record[6] = $row['street'];
-            $record[7] = $row['city'];
-            $record[8] = $row['state'];
-            $record[9] = $row['zip'];
-            $record[10] = $row['phone'];
 
             $last_row = ($i == $num-1) ? true : false;
             if ($last_row) {
                 $record[3] = substr($record[3], 0, strlen($record[3])-2);
+                $account = \COREPOS\Fannie\API\member\MemberREST::get($record[0]);
+                $record[6] = $account['addressFirstLine'];
+                $record[7] = $account['city'];
+                $record[8] = $account['state'];
+                $record[9] = $account['zip'];
+                foreach ($account['customers'] as $customer) {
+                    $record[4] = $customer['lastName'];
+                    $record[5] = $customer['firstName'];
+                    $record[10] = $customer['phone'];
+                }
                 $data[] = $record;
             }
         }
@@ -130,13 +135,11 @@ class SuspensionsReport extends FannieReportPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $codes = new ReasoncodesModel($dbc);
 ?>
-<div id=main>   
 <form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr> 
-            <th>Reason</th>
-            <td>
-            <select name="reason">
+<div class="col-sm-4">
+    <div class="form-group"> 
+        <label>Reason</label>
+        <select name="reason" class="form-control">
             <option value="0">Any Reason</option>
             <?php foreach($codes->find() as $obj) {
                 printf('<option value="%d">%s</option>',
@@ -144,39 +147,42 @@ class SuspensionsReport extends FannieReportPage
                         $obj->textStr()
                 );
             } ?>
-            </select>
-            </td>
-            <td>
-            <input type="checkbox" name="excel" id="excel" value="xls" />
-            <label for="excel">Excel</label>
-            </td>   
-        </tr>
-        <tr>
-            <th>Date Start</th>
-            <td>    
-                       <input type=text size=14 id=date1 name=date1 />
-            </td>
-            <td rowspan="3">
-            <?php echo FormLib::date_range_picker(); ?>
-            </td>
-        </tr>
-        <tr>
-            <th>End</th>
-            <td>
-                        <input type=text size=14 id=date2 name=date2 />
-               </td>
-
-        </tr>
-        <tr>
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-        </tr>
-    </table>
-</form>
+        </select>
+    </div>
+    <div class="form-group"> 
+        <label>Date Start</label>
+        <input type=text id=date1 name=date1 required
+            class="form-control date-field" />
+    </div>
+    <div class="form-group"> 
+        <label>Date End</label>
+        <input type=text id=date2 name=date2 required
+            class="form-control date-field" />
+    </div>
+    <div class="form-group"> 
+        <input type="checkbox" name="excel" id="excel" value="xls" />
+        <label for="excel">Excel</label>
+    </div>
+    <div class="form-group"> 
+        <button type=submit name=submit value="Submit"
+            class="btn btn-default">Submit</button>
+        <button type=reset name=reset value="Start Over"
+            class="btn btn-default">Start Over</button>
+    </div>
 </div>
+<div class="col-sm-4">
+    <?php echo FormLib::date_range_picker(); ?>
+</div>
+</form>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            List members whose status was changed to
+            inactive during the given date range.
+            </p>';
     }
 }
 

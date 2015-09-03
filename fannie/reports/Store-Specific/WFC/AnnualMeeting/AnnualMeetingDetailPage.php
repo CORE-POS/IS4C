@@ -8,63 +8,6 @@ class AnnualMeetingDetailPage extends FannieRESTfulPage {
     protected $header = "Annual Meeting Registration";
     protected $title = "Annual Meeting Registration";
 
-/*
-else if (isset($_REQUEST['memnum'])){
-    if (!empty($_REQUEST['memnum'])){
-        $q1 = sprintf("SELECT CardNo FROM custdata WHERE CardNo=%d",$_REQUEST['memnum']);
-        $r1 = $dbc->query($q1);
-        $cn = -1;
-        if ($dbc->num_rows($r1) == 0){
-            $upc = str_pad($_REQUEST['memnum'],13,'0',STR_PAD_LEFT);
-            $q2 = sprintf("SELECT card_no membercards WHERE upc=%s",$dbc->escape($upc));
-            $r2 = $dbc->query($q2);
-            if ($dbc->num_rows($r2)==0){
-                echo 'Account not found<br /><br />';
-                echo '<input type="submit" 
-                    onclick="location=\'index.php\';return false;"
-                    value="Go Back" />';
-            }
-            else
-                $cn = array_pop($dbc->fetch_row($r2));
-        }
-        else
-            $cn = array_pop($dbc->fetch_row($r1));
-        if ($cn != -1)
-            showForm($cn);
-    }
-    else if (!empty($_REQUEST['ln'])){
-        $q1 = sprintf("SELECT CardNo,LastName,FirstName FROM custdata WHERE LastName LIKE %s",
-            $dbc->escape($_REQUEST['ln'].'%'));
-        if (!empty($_REQUEST['fn']))
-            $q1 .= sprintf(" AND FirstName LIKE %s",$dbc->escape($_REQUEST['fn'].'%'));
-        $r1 = $dbc->query($q1);
-        if ($dbc->num_rows($r1) == 1){
-            showForm(array_pop($dbc->fetch_row($r1)));
-        }
-        else if ($dbc->num_rows($r1) == 0){
-            $q2 = sprintf("SELECT CardNo,LastName,FirstName FROM custdata WHERE LastName LIKE %s",
-                $dbc->escape('%'.$_REQUEST['ln'].'%'));
-            if (!empty($_REQUEST['fn']))
-                $q2 .= sprintf(" AND FirstName LIKE %s",$dbc->escape('%'.$_REQUEST['fn'].'%'));
-            $r2 = $dbc->query($q2);
-            if ($dbc->num_rows($r2) == 1){
-                showForm(array_pop($dbc->fetch_row($r2)));
-            }
-            else if ($dbc->num_rows($r2) == 0){
-                echo 'Account not found<br /><br />';
-                echo '<input type="submit" 
-                    onclick="location=\'index.php\';return false;"
-                    value="Go Back" />';
-            }
-            else
-                multipleMatches($r2);
-        }
-        else
-            multipleMatches($r1);
-    }
-}
-*/
-
     function get_id_handler(){
         global $FANNIE_TRANS_DB, $FANNIE_OP_DB, $dbc;
         $fannie = FannieDB::get($FANNIE_OP_DB);
@@ -142,17 +85,16 @@ else if (isset($_REQUEST['memnum'])){
         $fannieDB = FannieDB::get($FANNIE_OP_DB);
         // POS registrations from today
         $hereQ = "SELECT MIN(tdate) AS tdate,d.card_no,".
-            $fannieDB->concat('c.FirstName',' ','c.LastName','')." as name,
+            $fannieDB->concat('c.FirstName',"' '",'c.LastName','')." as name,
             m.phone, m.email_1 as email,
             SUM(CASE WHEN charflag IN ('M','V','S') THEN quantity ELSE 0 END)-1 as guest_count,
             SUM(CASE WHEN charflag IN ('K') THEN quantity ELSE 0 END) as child_count,
             SUM(CASE WHEN charflag = 'M' THEN quantity ELSE 0 END) as chicken,
             SUM(CASE WHEN charflag = 'V' THEN quantity ELSE 0 END) as veg,
-            SUM(CASE WHEN charflag = 'S' THEN quantity ELSE 0 END) as vegan,
             'pos' AS source
             FROM ".$FANNIE_TRANS_DB.$fannieDB->sep()."dlog AS d
             LEFT JOIN custdata AS c ON c.CardNo=d.card_no AND c.personNum=1
-            LEFT JOIN meminfo AS m ON d.card_no=c.card_no
+            LEFT JOIN meminfo AS m ON d.card_no=m.card_no
             WHERE upc IN ('0000000001041','0000000001042')
             AND d.card_no = ?
             ORDER BY MIN(tdate)";
@@ -176,7 +118,6 @@ else if (isset($_REQUEST['memnum'])){
             phone,guest_count,child_count,
             SUM(CASE WHEN m.subtype=1 THEN 1 ELSE 0 END) as chicken,
             SUM(CASE WHEN m.subtype=2 THEN 1 ELSE 0 END) as veg,
-            SUM(CASE WHEN m.subtype=3 THEN 1 ELSE 0 END) as vegan,
             'website' AS source
             FROM registrations AS r LEFT JOIN
             regMeals AS m ON r.card_no=m.card_no
@@ -197,12 +138,12 @@ else if (isset($_REQUEST['memnum'])){
                 value="Go Back" />';
         }
         
-        $ret = '<table><tr><th>Date</th><th>Chicken</th><th>Veg</th><th>Vegan</th><th>Kids</th><th>Source</th></tr>';
+        $ret = '<table><tr><th>Date</th><th>Chicken</th><th>Veg</th><th>Kids</th><th>Source</th></tr>';
         foreach($records as $r){
             $ret .= sprintf('<tr><td>%s</td><td>%d</td><td>%d</td>
-                    <td>%d</td><td>%d</td><td>%s</td></tr>',
+                    <td>%d</td><td>%s</td></tr>',
                     $r['tdate'], $r['chicken'], $r['veg'],
-                    $r['vegan'], $r['child_count'], $r['source']
+                    $r['child_count'], $r['source']
             );
         }
         $ret .= '</table>';

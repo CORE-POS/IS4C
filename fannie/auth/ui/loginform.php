@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -21,7 +21,6 @@
 
 *********************************************************************************/
 
-include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once(dirname(__FILE__) . '/../../classlib2.0/FannieAPI.php');
 }
@@ -34,7 +33,17 @@ class FannieAuthLoginPage extends FannieRESTfulPage
     protected $title = 'Fannie : Auth';
     protected $header = 'Fannie : Auth';
 
-    public $themed = false;
+    public $themed = true;
+
+    /**
+     * Force authenticate requirement off
+     * to avoid a redirect loop
+     */
+    public function __construct()
+    {
+        parent::__construct();
+        $this->must_authenticate = false;
+    }
 
     public function preprocess()
     {
@@ -64,17 +73,16 @@ class FannieAuthLoginPage extends FannieRESTfulPage
     */
     public function post_name_password_handler()
     {
-        global $FANNIE_AUTH_LDAP, $FANNIE_AUTH_SHADOW;
         $name = FormLib::get('name');
         $password = FormLib::get('password');
         $login = login($name,$password);
         $redirect = FormLib::get('redirect', 'menu.php');
 
-        if (!$login && $FANNIE_AUTH_LDAP) {
+        if (!$login && FannieConfig::config('AUTH_LDAP', false)) {
             $login = ldap_login($name,$password);
         }
 
-        if (!$login && $FANNIE_AUTH_SHADOW) {
+        if (!$login && FannieConfig::config('AUTH_SHADOW', false)) {
             $login = shadow_login($name,$password);
         }
 

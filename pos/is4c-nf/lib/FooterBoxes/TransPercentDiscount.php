@@ -30,19 +30,17 @@ class TransPercentDiscount extends FooterBox
 
     public function header_content()
     {
-        global $CORE_LOCAL;
-        if ($CORE_LOCAL->get("percentDiscount") == 0) {
+        if (CoreLocal::get("percentDiscount") == 0) {
             return _("% Discount");
         } else {
-            return $CORE_LOCAL->get("percentDiscount")._("% Discount");
+            return CoreLocal::get("percentDiscount")._("% Discount");
         }
     }
 
     public function display_content()
     {
-        global $CORE_LOCAL;
-        if ($CORE_LOCAL->get("percentDiscount") != 0 ) {
-            return number_format($CORE_LOCAL->get("transDiscount"), 2);
+        if (CoreLocal::get("percentDiscount") != 0 ) {
+            return number_format(CoreLocal::get("transDiscount"), 2);
         } else {
             return "n/a";
         }

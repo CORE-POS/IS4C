@@ -28,39 +28,39 @@ if (isset($_GET['dept1']) || isset($_GET['upc']) || isset($_GET['manufacturer'])
   $args = array();
   if (!isset($_GET['type'])){
     $q = "select upc,description,price,modified from prodUpdate
-   	  where upc = ?
-	  order by upc,modified desc";
+         where upc = ?
+      order by upc,modified desc";
       $args = array($upc);
   }
   else if ($_GET['type'] == 'upc'){
     $q = "select upc,description,price,modified from prodUpdate
-   	  where upc = ? and modified between
-	  ? AND ?
-	  order by upc,modified";
+         where upc = ? and modified between
+      ? AND ?
+      order by upc,modified";
       $args = array($upc, $start_date, $end_date);
   }
   else if ($_GET['type'] == 'department'){
     $q = "select upc,description,price,modified from prodUpdate
-  	  where department between ? and ? and modified 
-	  between ? AND ?
-	  order by upc, modified";
+        where department between ? and ? and modified 
+      between ? AND ?
+      order by upc, modified";
       $args = array($dept1, $dept2, $start_date, $end_date);
     unset($_GET['upc']);
   }
   else {
     if ($mtype == 'upc'){
       $q = "select upc,description,price,modified from prodUpdate
-   	  where upc like ? and modified
-	  between ? AND ?
-	  order by upc,modified";
+         where upc like ? and modified
+      between ? AND ?
+      order by upc,modified";
       $args = array('%'.$manu.'%', $start_date, $end_date);
     }
     else {
       $q = "select p.upc,p.description,p.price,p.modified
-	    from prodUpdate as p left join prodExtra as x
-	    on p.upc = x.upc where x.manufacturer=? and
-	    modified between ? AND ?
-	    order by p.upc,p.modified";
+        from prodUpdate as p left join prodExtra as x
+        on p.upc = x.upc where x.manufacturer=? and
+        modified between ? AND ?
+        order by p.upc,p.modified";
       $args = array($manu, $start_date, $end_date);
     }
     unset($_GET['upc']);
@@ -83,38 +83,38 @@ if (isset($_GET['dept1']) || isset($_GET['upc']) || isset($_GET['manufacturer'])
   $currQ = $sql->prepare("select price from products where upc=?");
   while ($row = $sql->fetch_array($r)){
     if ($prevUPC != $row['upc']){
-	if ($prevUPC != ''){
-	  echo "<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>";
-	  echo "<td>&nbsp;</td><td>&nbsp;</td></tr>";
-	  $prevPrice = '';
+    if ($prevUPC != ''){
+      echo "<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>";
+      echo "<td>&nbsp;</td><td>&nbsp;</td></tr>";
+      $prevPrice = '';
         }
-	if (!isset($_GET['upc'])){
-	  $currR = $sql->execute($currQ, array($row['upc']));
-	  $currW = $sql->fetch_array($currR);
-	  $currentPrice = $currW[0];
+    if (!isset($_GET['upc'])){
+      $currR = $sql->execute($currQ, array($row['upc']));
+      $currW = $sql->fetch_array($currR);
+      $currentPrice = $currW[0];
         }
-	/*
-	echo "<tr>";
-	echo "<td><a href=/queries/productTest.php?upc=$row[0]>$row[0]</td>";
-	echo "<td>$row[1]</td>";
-	echo "<td>$row[2]</td><td>$row[3]</td>";
-	if (!isset($_GET['upc']))
-  	  echo "<td>$currentPrice</td>";
-	echo "</tr>";
+    /*
+    echo "<tr>";
+    echo "<td><a href=/queries/productTest.php?upc=$row[0]>$row[0]</td>";
+    echo "<td>$row[1]</td>";
+    echo "<td>$row[2]</td><td>$row[3]</td>";
+    if (!isset($_GET['upc']))
+        echo "<td>$currentPrice</td>";
+    echo "</tr>";
         */
     }
     else {
-	/* eat rows where price didn't change */
-	if ($prow["price"] != $row['price']){
-	  echo "<tr>";
-	  echo "<td><a href=/queries/productTest.php?upc=$prow[0]>$prow[0]</td>";
-	  echo "<td>$prow[1]</td>";
-	  echo "<td>$prow[2]</td><td>$prow[3]</td>";
-	  if (!isset($_GET['upc']))
-	    echo "<td>$currentPrice</td>";
-	  echo "</tr>";
-	  $lastprice = $row['price'];
-	}
+    /* eat rows where price didn't change */
+    if ($prow["price"] != $row['price']){
+      echo "<tr>";
+      echo "<td><a href=/queries/productTest.php?upc=$prow[0]>$prow[0]</td>";
+      echo "<td>$prow[1]</td>";
+      echo "<td>$prow[2]</td><td>$prow[3]</td>";
+      if (!isset($_GET['upc']))
+        echo "<td>$currentPrice</td>";
+      echo "</tr>";
+      $lastprice = $row['price'];
+    }
     }
     $prevUPC = $row['upc'];
     $prow = $row;
@@ -134,27 +134,27 @@ else {
 <head>
 <script type=text/javascript>
 function showUPC(){
-	document.getElementById('upcfields').style.display='block';
-	document.getElementById('departmentfields').style.display='none';
-	document.getElementById('manufacturerfields').style.display='none';
+    document.getElementById('upcfields').style.display='block';
+    document.getElementById('departmentfields').style.display='none';
+    document.getElementById('manufacturerfields').style.display='none';
 }
 function showDept(){
-	document.getElementById('upcfields').style.display='none';
-	document.getElementById('departmentfields').style.display='block';
-	document.getElementById('manufacturerfields').style.display='none';
+    document.getElementById('upcfields').style.display='none';
+    document.getElementById('departmentfields').style.display='block';
+    document.getElementById('manufacturerfields').style.display='none';
 }
 function showManu(){
-	document.getElementById('upcfields').style.display='none';
-	document.getElementById('departmentfields').style.display='none';
-	document.getElementById('manufacturerfields').style.display='block';
+    document.getElementById('upcfields').style.display='none';
+    document.getElementById('departmentfields').style.display='none';
+    document.getElementById('manufacturerfields').style.display='block';
 }
 </script>
 <style type=text/css>
 #departmentfields{
-	display:none;
+    display:none;
 }
 #manufacturerfields{
-	display:none;
+    display:none;
 }
 </style>
 </head>

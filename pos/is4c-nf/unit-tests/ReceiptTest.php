@@ -5,10 +5,10 @@
  */
 class ReceiptTest extends PHPUnit_Framework_TestCase
 {
-	/**
-	  Check methods for getting available PreParser and Parser modules
-	*/
-	public function testMessages()
+    /**
+      Check methods for getting available PreParser and Parser modules
+    */
+    public function testMessages()
     {
         $mods = AutoLoader::listModules('ReceiptMessage');
         $db = Database::tDataConnect();
@@ -31,9 +31,9 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
             $receipt = $obj->standalone_receipt('1-1-1', false);
             $this->assertInternalType('string', $receipt);
         }
-	}
+    }
 
-	public function testCustMessages()
+    public function testCustMessages()
     {
         $mods = AutoLoader::listModules('CustomerReceiptMessage');
 
@@ -41,11 +41,16 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
             $obj = new $class();
 
             $output = $obj->message('SAMPLE INPUT STRING');
-            $this->assertInternalType('string', $output);
+            if (is_array($output)) {
+                $this->assertArrayHasKey('print', $output);
+                $this->assertArrayHasKey('any', $output);
+            } else {
+                $this->assertInternalType('string', $output);
+            }
         }
     }
 
-	public function testDataFetch()
+    public function testDataFetch()
     {
         $mods = AutoLoader::listModules('DefaultReceiptDataFetch');
 
@@ -82,7 +87,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
     /** accumulate records for later tests */
     private $record_sets = array();
 
-	public function testFilter()
+    public function testFilter()
     {
         $mods = AutoLoader::listModules('DefaultReceiptFilter');
 

@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -20,6 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+namespace COREPOS\Fannie\API\lib {
 
 /**
   @class AuditLib
@@ -39,10 +41,10 @@ class AuditLib
     */
     public static function itemUpdate($upc, $likecode=false)
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $conf = \FannieConfig::factory();
+        $dbc = \FannieDB::getReadOnly($conf->get('OP_DB'));
 
-        $product = new ProductsModel($dbc);
+        $product = new \ProductsModel($dbc);
         $product->upc($upc);
         $product->load();
         $desc = $product->description();
@@ -67,9 +69,10 @@ class AuditLib
         }
         $message .= "\n";
         $message .= "Adjust this item?\n";
-        $message .= "http://{$_SERVER['SERVER_NAME']}/{$FANNIE_URL}item/ItemEditorPage.php?searchupc=$upc\n";
+        $url = $conf->get('URL');
+        $message .= "http://{$_SERVER['SERVER_NAME']}/{$url}item/ItemEditorPage.php?searchupc=$upc\n";
         $message .= "\n";
-        $username = FannieAuth::checkLogin();
+        $username = \FannieAuth::checkLogin();
         if (!$username) {
             $username = 'unknown';
         }
@@ -88,8 +91,8 @@ class AuditLib
 
     static public function batchNotification($batchID, $upc, $type, $is_likecode=false)
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $conf = \FannieConfig::factory();
+        $dbc = \FannieDB::getReadOnly($conf->get('OP_DB'));
 
         $lc = '';
         $desc = '';
@@ -118,7 +121,7 @@ class AuditLib
             $desc = $infoW['likeCodeDesc'];
             $dept = $infoW['department'];
         } else {
-            $product = new ProductsModel($dbc);
+            $product = new \ProductsModel($dbc);
             $product->upc($upc);
             $product->load();
             $desc = $product->description();
@@ -131,11 +134,11 @@ class AuditLib
             return false;
         }
 
-        $batch = new BatchesModel($dbc);
+        $batch = new \BatchesModel($dbc);
         $batch->batchID($batchID);
         $batch->load();
 
-        $batchList = new BatchListModel($dbc);
+        $batchList = new \BatchListModel($dbc);
         $batchList->upc($upc);
         $batchList->batchID($batchID);
         $batchList->load();
@@ -167,10 +170,14 @@ class AuditLib
         }
 
         $message .= "\n";
-        $message .= "Go to the batch page:\n";
-        $message .= "http://{$_SERVER['SERVER_NAME']}{$FANNIE_URL}batches/newbatch/\n";
+        $message .= "View this batch:\n";
+        $url = $conf->get('URL');
+        $message .= "http://{$_SERVER['SERVER_NAME']}{$url}batches/newbatch/EditBatchPage.php?id={$batchID}\n";
         $message .= "\n";
-        $username = FannieAuth::checkLogin();
+        $message .= "View this item:\n";
+        $message .= "http://{$_SERVER['SERVER_NAME']}/{$url}item/ItemEditorPage.php?searchupc=$upc\n";
+        $message .= "\n";
+        $username = \FannieAuth::checkLogin();
         if (!$username) {
             $username = 'unknown';
         }
@@ -190,21 +197,21 @@ class AuditLib
     */
     public static function getAddresses($dept)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $conf = \FannieConfig::factory();
+        $dbc = \FannieDB::getReadOnly($conf->get('OP_DB'));
         
         $query = 'SELECT superID from superdepts WHERE dept_ID=? GROUP BY superID';
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, array($dept));
         $emails = '';
         while($row = $dbc->fetch_row($res)) {
-            $model = new SuperDeptEmailsModel($dbc);
+            $model = new \SuperDeptEmailsModel($dbc);
             $model->superID($row['superID']);
             if (!$model->load()) {
                 continue;
             }
             $addr = $model->emailAddress();
-            if (!strstr($emails, $addr)) {
+            if ($addr && !strstr($emails, $addr)) {
                 if ($emails !== '') {
                     $emails .= ', ';
                 }
@@ -214,5 +221,11 @@ class AuditLib
 
         return ($emails === '') ? false : $emails;
     }
+}
+
+}
+
+namespace {
+    class AuditLib extends \COREPOS\Fannie\API\lib\AuditLib {}
 }
 

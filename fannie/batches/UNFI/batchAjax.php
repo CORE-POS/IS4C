@@ -3,14 +3,14 @@
 
     Copyright 2010 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -37,35 +37,73 @@ switch($action){
 case 'addVarPricing':
     $prep = $dbc->prepare_statement("UPDATE prodExtra SET variable_pricing=1 WHERE upc=?");
     $dbc->exec_statement($prep,array($upc));
+    $prod = new ProductsModel($dbc);
+    $prod->upc($upc);
+    foreach ($prod->find('store_id') as $p) {
+        // make sure another rule isn't overwritten with a generic one
+        if ($p->price_rule_id() == 0) {
+            $p->price_rule_id(1);
+        }
+        $p->save();
+    }
     break;
 case 'delVarPricing':
     $prep = $dbc->prepare_statement("UPDATE prodExtra SET variable_pricing=0 WHERE upc=?");
     $dbc->exec_statement($prep,array($upc));
+    $ruleProd = new ProductsModel($dbc);
+    $prod = new ProductsModel($dbc);
+    $prod->upc($upc);
+    foreach ($prod->find('store_id') as $p) {
+        $ruleID = 0;
+        // remove the rule but save its ID
+        if ($p->price_rule_id() != 0) {
+            $ruleID = $p->price_rule_id();
+            $p->price_rule_id(0);
+        }
+        $p->save();
+        // make sure no other item is using the same
+        // rule before deleting it
+        if ($ruleID > 1) {
+            $ruleProd->reset();
+            $ruleProd->price_rule_id($ruleID);
+            if (count($ruleProd->find()) == 0) {
+                // no products are using this rule
+                $rule = new PriceRulesModel($dbc);
+                $rule->priceRuleID($ruleID);
+                $rule->delete();
+            }
+        }
+    }
     break;
 case 'newPrice':
     $vid = FormLib::get_form_value('vendorID');
     $bid = FormLib::get_form_value('batchID');
-    $sid = FormLib::get_form_value('superID',0);
+    $sid = FormLib::get_form_value('queueID',0);
     if ($sid == 99) $sid = 0;
     $price = FormLib::get_form_value('price',0);
-    $sP = $dbc->prepare_statement("UPDATE vendorSRPs SET srp=? WHERE upc=? AND vendorID=?");
-    $dbc->exec_statement($sP,array($price,$upc,$vid));
-    $model = new BatchListModel($dbc);
-    $model->batchID($bid);
-    $model->upc($upc);
-    $model->salePrice($price);
-    $model->save();
-    $tag = new ShelftagsModel($tag);
-    $tag->id($sid);
-    $tag->upc($upc);
-    $tag->normal_price($price);
-    $tag->save();
+    $viP = $dbc->prepare('
+        UPDATE vendorItems
+        SET srp=?,
+            modified=' . $dbc->now() . '
+        WHERE upc=?
+            AND vendorID=?');
+    $dbc->execute($viP, array($price,$upc,$vid));
+    $batchP = $dbc->prepare('
+        UPDATE batchList
+        SET salePrice=?
+        WHERE batchID=?
+            AND upc=?');
+    $dbc->execute($batchP, array($price, $bid, $upc));
+    if ($dbc->tableExists('vendorSRPs')) {
+        $sP = $dbc->prepare_statement("UPDATE vendorSRPs SET srp=? WHERE upc=? AND vendorID=?");
+        $dbc->exec_statement($sP,array($price,$upc,$vid));
+    }
     echo "New Price Applied";
     break;
 case 'batchAdd':
     $vid = FormLib::get_form_value('vendorID');
     $bid = FormLib::get_form_value('batchID');
-    $sid = FormLib::get_form_value('superID',0);
+    $sid = FormLib::get_form_value('queueID',0);
     if ($sid == 99) $sid = 0;
     $price = FormLib::get_form_value('price',0);
 
@@ -77,13 +115,9 @@ case 'batchAdd':
     $model->quantity(0);
     $model->save();
 
-    /* get shelftag info */
-    $infoQ = $dbc->prepare_statement("SELECT p.description,v.brand,v.sku,v.size,v.units,b.vendorName
-        FROM products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc AND
-        v.vendorID=? LEFT JOIN vendors AS b ON v.vendorID=b.vendorID
-        WHERE p.upc=?");
-    $info = $dbc->fetch_row($dbc->exec_statement($infoQ,array($vid,$upc)));
-    $ppo = PriceLib::pricePerUnit($price,$info['size']);
+    $product = new ProductsModel($dbc);
+    $product->upc($upc);
+    $info = $product->getTagData($price);
     
     /* create a shelftag */
     $tag = new ShelftagsModel($dbc);
@@ -95,15 +129,15 @@ case 'batchAdd':
     $tag->sku($info['sku']);
     $tag->size($info['size']);
     $tag->units($info['units']);
-    $tag->vendor($info['vendorName']);
-    $tag->pricePerUnit($ppo);
+    $tag->vendor($info['vendor']);
+    $tag->pricePerUnit($info['pricePerUnit']);
     $tag->save();
 
     break;
 case 'batchDel':
     $vid = FormLib::get_form_value('vendorID');
     $bid = FormLib::get_form_value('batchID');
-    $sid = FormLib::get_form_value('superID',0);
+    $sid = FormLib::get_form_value('queueID',0);
     if ($sid == 99) $sid = 0;
 
     $model = new BatchListModel($dbc);

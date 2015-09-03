@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -95,8 +95,7 @@ function updateProductAllLanes($upc){
 /* Functions like the above with table_name as a parameter. */
 
 function addAllLanes($upc, $table_name){
-    global $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
-    $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
+    global $laneupdate_sql, $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
 
     $server_table_def = $laneupdate_sql->table_definition("{$table_name}",$FANNIE_OP_DB);
     if (count($server_table_def) == 0)
@@ -133,6 +132,10 @@ function addAllLanes($upc, $table_name){
             $selQ = $laneupdate_sql->add_select_limit($selQ, 1, $FANNIE_OP_DB);
             $ins = rtrim($ins,",").")";
 
+/* test
+$tok = $laneupdate_sql->transfer($FANNIE_OP_DB,$selQ,$FANNIE_LANES[$i]['op'],$ins);
+$laneupdate_sql->logger("tok: $tok");
+*/
             $laneupdate_sql->transfer($FANNIE_OP_DB,$selQ,$FANNIE_LANES[$i]['op'],$ins);
         }
     }

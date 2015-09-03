@@ -18,9 +18,9 @@ function allLanes($upc){
   for ($i = 0; $i < count($lanes); $i++){
     $currentLane = $lanes[$i];
     if (substr($currentLane,0,3) == "POS")
-	$currentLane = "129.103.2.1".substr($currentLane,-1);
+    $currentLane = "129.103.2.1".substr($currentLane,-1);
     $sql = new SQLManager($currentLane,$types[$i],$dbs[$i],$users[$i],$pws[$i]);
-	//continue;
+    //continue;
     $prep = $sql->prepare($queryItem);
     $resultItem = $sql->execute($prep, $args);
     $num = $sql->num_rows($resultItem);
@@ -31,7 +31,7 @@ function allLanes($upc){
     else if ($num > 1){
       echo "Item <font color='red'>$upc</font> found multiple times on Lane ".($i+1)."<br />";
       while ($rowItem = $sql->fetch_array($resultItem)){
-	echo "{$rowItem['upc']} {$rowItem['description']}<br />";
+    echo "{$rowItem['upc']} {$rowItem['description']}<br />";
       }
     }
     else {
@@ -39,7 +39,7 @@ function allLanes($upc){
       echo "Item <font color='red'>$upc</font> on Lane ".($i+1)."<br />";
       echo "Price: {$rowItem['normal_price']}";
       if ($rowItem['special_price'] <> 0){
-	echo "&nbsp;&nbsp;&nbsp;&nbsp;<font color=green>ON SALE: {$rowItem['special_price']}</font>";
+    echo "&nbsp;&nbsp;&nbsp;&nbsp;<font color=green>ON SALE: {$rowItem['special_price']}</font>";
       }
       echo "<br />";
     }

@@ -29,21 +29,21 @@
 class TotalReceiptFormat extends DefaultReceiptFormat 
 {
 
-	/**
-	  Formatting function
-	  @param $row a single receipt record
-	  @return a formatted string
-	*/
-	public function format($row)
+    /**
+      Formatting function
+      @param $row a single receipt record
+      @return a formatted string
+    */
+    public function format($row)
     {
-		switch($row['upc']) {
+        switch($row['upc']) {
             case 'TOTAL':
                 $this->is_bold = true;
-                return $this->align($row['upc'],$row['total']);	
+                return $this->align($row['upc'],$row['total']);    
                 break;
             case 'SUBTOTAL':
             case 'TAX':
-                return $this->align($row['upc'],$row['total']);	
+                return $this->align($row['upc'],$row['total']);    
                 break;
             case 'DISCOUNT':
                 $text = sprintf("** %d%% Discount Applied **",$row['percentDiscount']);
@@ -54,17 +54,17 @@ class TotalReceiptFormat extends DefaultReceiptFormat
                                 STR_PAD_LEFT);
                 return $text.$amount;
                 break;
-		}
-	}
+        }
+    }
 
-	private function align($text, $amount)
+    private function align($text, $amount)
     {
-		$amount = sprintf('%.2f',$amount);
+        $amount = sprintf('%.2f',$amount);
 
-		$ret = str_pad($text,44,' ',STR_PAD_LEFT);
-		$ret .= str_pad($amount,8,' ',STR_PAD_LEFT);
+        $ret = str_pad($text,44,' ',STR_PAD_LEFT);
+        $ret .= str_pad($amount,8,' ',STR_PAD_LEFT);
 
-		return $ret;
-	}
+        return $ret;
+    }
 }
 

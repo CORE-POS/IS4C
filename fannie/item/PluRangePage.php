@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ class PluRangePage extends FannieRESTfulPage
     protected $title = 'PLU Range';
     private $start_plu = '';
     public $description = '[PLU Range] finds a range of consecutive unused PLU numbers.';
+    public $themed = true;
 
     public function preprocess()
     {
@@ -80,6 +81,7 @@ class PluRangePage extends FannieRESTfulPage
         for ($i=0; $i<$this->number; $i++) {
             $upc = BarcodeLib::padUPC($this->start + $i);
             $model->upc($upc);
+            $model->store_id(1);
             $model->description($desc . ' ' . ($i+1));
             $model->save();
         }
@@ -158,23 +160,27 @@ class PluRangePage extends FannieRESTfulPage
     public function get_length_number_view()
     {
         global $FANNIE_OP_DB;
-        $ret .= 'Open range found starting at ' . $this->start_plu; 
+        $ret = '<div class="well">Open range found starting at ' . $this->start_plu . '</div>'; 
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
         $ret .= '<input type="hidden" name="start" value="' . $this->start_plu . '" />';
         $ret .= '<input type="hidden" name="number" value="' . $this->number . '" />';
-        $ret .= '<table>';
-        $ret .= '<tr><th>Placeholder Desc.</th><td><input type="text" name="description" /></td></tr>';
-        $ret .= '<tr><th>Department</th><td><select name="department">';
+        $ret .= '<div class="form-group">
+            <label>Placeholder Desc.</label>
+            <input type="text" name="description" class="form-control" required />
+            </div>';
+        $ret .= '<div class="form-group">
+            <label>Department</label>
+            <select name="department" class="form-control">';
         $depts = new DepartmentsModel(FannieDB::get($FANNIE_OP_DB));
-        foreach($depts->find('dept_no') as $dept) {
+        foreach ($depts->find('dept_no') as $dept) {
             $ret .= sprintf('<option value="%d">%d %s</option>',
                                 $dept->dept_no(),
                                 $dept->dept_no(),
                                 $dept->dept_name());
         }
-        $ret .= '</td></tr>';
-        $ret .= '<tr><td colspan="2"><input type="submit" value="Reserve PLUs" /></td></tr>';
-        $ret .= '</table></form>';
+        $ret .= '</select></div>';
+        $ret .= '<p><button type="submit" class="btn btn-default">Reserve PLUs</button></p>';
+        $ret .= '</form>';
 
         return $ret;
     }
@@ -184,19 +190,33 @@ class PluRangePage extends FannieRESTfulPage
         // Produce ranges as of 19May14
         // 3000 through 4999
         // 93000 through 949999
-        $ret = 'Find open PLU range';
+        $ret = '<div class="well">Find open PLU range</div>';
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="get">';
-        $ret .= '<table>';
-        $ret .= '<tr><th>PLU Length</th>';
-        $ret .= '<td><input type="text" name="length" size="4" value="4" /></td>';
-        $ret .= '</tr><tr>';
-        $ret .= '<th># needed</th>';
-        $ret .= '<td><input type="text" name="number" size="4" value="1" /></td>';
-        $ret .= '</tr><tr>';
-        $ret .= '<td colspan="2"><input type="submit" name="Find PLUs" /></td>';
-        $ret .= '</tr></table></form>';
+        $ret .= '<div class="form-group">';
+        $ret .= '<label>PLU Length</label>';
+        $ret .= '<input type="number" name="length" class="form-control" 
+                    required value="4" />';
+        $ret .= '</div>';
+        $ret .= '<div class="form-group">';
+        $ret .= '<label># needed</label>';
+        $ret .= '<input type="number" name="number" class="form-control" 
+                    required value="1" />';
+        $ret .= '</div>';
+        $ret .= '<p><button type="submit" class="btn btn-default">Find PLUs</button></p>';
+        $ret .= '</form>';
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Find a block of available PLU numbers. The PLU length 
+            is the number of digits in the PLU. The number needed
+            refers to how many are needed. Setting number needed to
+            three will attempt to find three <em>consecutive</em>
+            PLU numbers that are not in use.
+            </p>';
     }
 
 }

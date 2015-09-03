@@ -23,28 +23,28 @@
 
 class MiscLoggingParser extends Parser {
 
-	private $valid = array(
-		'PLU'
-	);
+    private $valid = array(
+        'PLU'
+    );
 
-	function check($str){
-		if (in_array(strtoupper($str), $this->valid))
-			return True;
-		else
-			return False;
-	}
+    function check($str){
+        if (in_array(strtoupper($str), $this->valid))
+            return True;
+        else
+            return False;
+    }
 
-	function parse($str){
-		global $CORE_LOCAL;
-		$ret = $this->default_json();
-		switch(strtoupper($str)){
-		case 'PLU':
-			TransRecord::add_log_record(array('upc'=>'PLU','description'=>'MISKEY'));
-			$CORE_LOCAL->set('plainmsg','PLU logged');
-			$ret['main_frame'] = MiscLib::base_url().'gui-modules/pos2.php';
-			$ret['udpmsg'] = 'goodBeep';
-			break;
-		}
-		return $ret;	
-	}
+    function parse($str)
+    {
+        $ret = $this->default_json();
+        switch(strtoupper($str)){
+        case 'PLU':
+            TransRecord::add_log_record(array('upc'=>'PLU','description'=>'MISKEY'));
+            CoreLocal::set('plainmsg','PLU logged');
+            $ret['main_frame'] = MiscLib::base_url().'gui-modules/pos2.php';
+            $ret['udpmsg'] = 'goodBeep';
+            break;
+        }
+        return $ret;    
+    }
 }

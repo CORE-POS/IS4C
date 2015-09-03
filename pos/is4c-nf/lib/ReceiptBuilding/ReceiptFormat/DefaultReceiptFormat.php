@@ -29,28 +29,28 @@
 */
 class DefaultReceiptFormat 
 {
-	
-	/*
-	  boolean. 
-	*/
-	public $is_bold;
+    
+    /*
+      boolean. 
+    */
+    public $is_bold;
 
-	/**
-	  constructor. disables bolding by default
-	*/
-	public function DefaultReceiptFormat()
+    /**
+      constructor. disables bolding by default
+    */
+    public function DefaultReceiptFormat()
     {
-		$is_bold = False;
-	}
+        $is_bold = False;
+    }
 
-	/**
-	  Formatting function
-	  @param $row a single receipt record
-	  @return a formatted string
-	*/
-	public function format($row)
+    /**
+      Formatting function
+      @param $row a single receipt record
+      @return a formatted string
+    */
+    public function format($row)
     {
-		return "";
-	}
+        return "";
+    }
 }
 

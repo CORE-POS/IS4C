@@ -39,19 +39,21 @@ class ArOverpayAction  extends TotalAction
     */
     public function apply()
     {
-        global $CORE_LOCAL;
-		$temp = PrehLib::chargeOk();
-		if ($CORE_LOCAL->get("balance") < $CORE_LOCAL->get("memChargeTotal") && $CORE_LOCAL->get("memChargeTotal") > 0) {
-			if ($CORE_LOCAL->get('msgrepeat') == 0) {
-				$CORE_LOCAL->set("boxMsg",sprintf("<b>A/R Imbalance</b><br />
-					Total AR payments $%.2f exceeds AR balance %.2f<br />
-					<font size=-1>[enter] to continue, [clear] to cancel</font>",
-					$CORE_LOCAL->get("memChargeTotal"),
-					$CORE_LOCAL->get("balance")));
-				$CORE_LOCAL->set("strEntered","TL");
-				return MiscLib::baseURL()."gui-modules/boxMsg2.php?quiet=1";
-			}
-		}
+        $temp = PrehLib::chargeOk();
+        if (CoreLocal::get("balance") < CoreLocal::get("memChargeTotal") && CoreLocal::get("memChargeTotal") > 0) {
+            if (CoreLocal::get('msgrepeat') == 0) {
+                CoreLocal::set("boxMsg",sprintf("<b>A/R Imbalance</b><br />
+                    Total AR payments $%.2f exceeds AR balance %.2f<br />",
+                    CoreLocal::get("memChargeTotal"),
+                    CoreLocal::get("balance")));
+                CoreLocal::set('boxMsgButtons', array(
+                    'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                ));
+                CoreLocal::set("strEntered","TL");
+                return MiscLib::baseURL()."gui-modules/boxMsg2.php?quiet=1";
+            }
+        }
 
         return true;
     }

@@ -35,6 +35,7 @@ class ObfCategoriesPage extends FannieRESTfulPage
 
     public $page_set = 'Plugin :: Open Book Financing';
     public $description = '[Categories] sets up labor category divisions.';
+    public $themed = true;
 
     public function post_id_handler()
     {
@@ -43,17 +44,34 @@ class ObfCategoriesPage extends FannieRESTfulPage
         $model = new ObfCategoriesModel($dbc);
 
         $ids = FormLib::get('id', array());
+        $names = FormLib::get('cat', array());
         $sales = FormLib::get('hasSales', array());
         $labor = FormLib::get('labor', array());
         $hours = FormLib::get('hours', array());
+        $splh = FormLib::get('splh', array());
         for ($i=0; $i<count($ids); $i++) {
             $model->reset();
             $model->obfCategoryID($ids[$i]);
+            $model->name($names[$i]);
             $model->hasSales( in_array($ids[$i], $sales) ? 1 : 0 );
             $model->laborTarget($labor[$i] / 100.00);
             $model->hoursTarget($hours[$i]);
+            $model->salesPerLaborHourTarget($splh[$i]);
             $model->save();
         }
+        
+        header('Location: ' . $_SERVER['PHP_SELF']);
+
+        return false;
+    }
+
+    public function put_handler()
+    {
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $model = new ObfCategoriesModel($dbc);
+        $model->name('New Category');
+        $model->save();
         
         header('Location: ' . $_SERVER['PHP_SELF']);
 
@@ -67,34 +85,42 @@ class ObfCategoriesPage extends FannieRESTfulPage
 
         $model = new ObfCategoriesModel($dbc);
 
-        $ret = '<button onclick="location=\'ObfIndexPage.php\';return false;">Home</button>
-                <br /><br />';
+        $ret = '<p><button class="btn btn-default"
+                onclick="location=\'ObfIndexPage.php\';return false;">Home</button>
+                </p>';
 
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret .= '<table class="table">';
         $ret .= '<tr>
                     <th>Name</th>
                     <th>Has Sales</th>
                     <th>Labor Goal</th>
                     <th>Allocated Hours</th>
+                    <th>SPLH Goal</th>
                  </tr>';
         foreach($model->find() as $cat) {
             $ret .= sprintf('<tr>
                             <input type="hidden" name="id[]" value="%d" />
-                            <td>%s</td>
+                            <td><input type="text" name="cat[]" class="form-control" required value="%s" /></td>
                             <td><input type="checkbox" name="hasSales[]" value="%d" %s /></td>
-                            <td><input type="text" size="5" name="labor[]" value="%.2f" />%%</td>
-                            <td><input type="text" size="5" name="hours[]" value="%d" /></td>
+                            <td><div class="input-group">
+                                <input type="text" class="form-control" required name="labor[]" value="%.2f" />
+                                <span class="input-group-addon">%%</span>
+                            </div></td>
+                            <td><input type="number" class="form-control" required name="hours[]" value="%d" /></td>
+                            <td><input type="number" class="form-control" required name="splh[]" value="%.2f" /></td>
                             </tr>',
                             $cat->obfCategoryID(),
                             $cat->name(),
                             $cat->obfCategoryID(), ($cat->hasSales() == 1 ? 'checked' : ''),
                             $cat->laborTarget()*100,
-                            $cat->hoursTarget()
+                            $cat->hoursTarget(),
+                            $cat->salesPerLaborHourTarget()
             );
         }
         $ret .= '</table>';
-        $ret .= '<input type="submit" value="Save" />';
+        $ret .= '<p><button type="submit" class="btn btn-default">Save</button>
+                <a href="' . $_SERVER['PHP_SELF'] . '?_method=put" class="btn btn-default">Add Category</a></p>';
         $ret .= '</form>';
 
         return $ret;

@@ -21,12 +21,13 @@
 
 *********************************************************************************/
 
-if (!class_exists('FannieAPI'))
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include(dirname(__FILE__) . '/classlib2.0/FannieAPI.php');
+}
 
 /**
 */
-class ShelfAudit extends FanniePlugin {
+class ShelfAudit extends \COREPOS\Fannie\API\FanniePlugin {
 
     /**
       Desired settings. These are automatically exposed

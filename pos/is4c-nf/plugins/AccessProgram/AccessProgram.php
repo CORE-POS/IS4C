@@ -23,15 +23,15 @@
 
 class AccessProgram extends Plugin {
 
-	public $plugin_settings = array(
+    public $plugin_settings = array(
         'AccessQuickMenu' => array('default'=>'', 'label'=>'Quick Menu #',
             'description' => 'Save list of applicable programs in a
             quick menu using the QuickMenus plugin'),
         'ServerOpDB' => array('default'=>'core_op', 'label'=>'Contact Info DB',
             'description' => 'Name of server-side DB with contact information'),
-	);
+    );
 
-	public $plugin_description = 'WFC plugin for tracking member with an access
+    public $plugin_description = 'WFC plugin for tracking member with an access
 (low income) discount';
 
 }

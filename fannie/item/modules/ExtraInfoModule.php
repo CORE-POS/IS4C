@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
-
 class ExtraInfoModule extends ItemModule 
 {
 
@@ -30,12 +28,13 @@ class ExtraInfoModule extends ItemModule
     {
         $upc = BarcodeLib::padUPC($upc);
 
-        $ret = '<fieldset id="ExtraInfoFieldset">';
-        $ret .=  "<legend onclick=\"\$('#ExtraInfoFieldsetContent').toggle();\">
-                <a href=\"\" onclick=\"return false;\">Extra Info</a>
-                </legend>";
-        $css = ($expand_mode == 1) ? '' : 'display:none;';
-        $ret .= '<div id="ExtraInfoFieldsetContent" style="' . $css . '">';
+        $ret = '<div id="ExtraInfoFieldset" class="panel panel-default">';
+        $ret .=  "<div class=\"panel-heading\">
+                <a href=\"\" onclick=\"\$('#ExtraInfoFieldsetContent').toggle();return false;\">
+               Extra Info
+                </a></div>";
+        $css = ($expand_mode == 1) ? '' : ' collapse';
+        $ret .= '<div id="ExtraInfoFieldsetContent" class="panel-body' . $css . '">';
 
         $info = array('cost'=>0.00,'deposit'=>0,'local'=>0,'inUse'=>1,'modified'=>'Unknown','idEnforced'=>0);
         $dbc = $this->db();
@@ -46,23 +45,22 @@ class ExtraInfoModule extends ItemModule
         }
 
         $local_opts = array(0=>'No');
-        $p = $dbc->prepare_statement('SELECT originID,shortName FROM originName WHERE local=1 ORDER BY originID');
-        $r = $dbc->exec_statement($p);
-        while($w = $dbc->fetch_row($r)) {
-            $local_opts[$w['originID']] = $w['shortName'];  
-        }
-        if (count($local_opts) == 0) {
+        $origin = new OriginsModel($dbc);
+        $local_opts = array_merge($local_opts, $origin->getLocalOrigins());
+        if (count($local_opts) == 1) {
             $local_opts[1] = 'Yes'; // generic local if no origins defined
         }
 
-        $localSelect = '<select name="local">';
+        $localSelect = '<select name="local" id="local-origin-id" class="form-control"
+            onchange="$(\'#prod-local\').val(this.value);">';
         foreach($local_opts as $id => $val) {
             $localSelect .= sprintf('<option value="%d" %s>%s</option>',
                 $id, ($id == $info['local']?'selected':''), $val);
         }
         $localSelect .= '</select>';
 
-        $ageSelect = '<select name="idReq">';
+        $ageSelect = '<select name="idReq" id="idReq" class="form-control"
+            onchange="$(\'#id-enforced\').val(this.value);">';
         $ages = array('n/a'=>0, 18=>18, 21=>21);
         foreach($ages as $label => $age) {
             $ageSelect .= sprintf('<option %s value="%d">%s</option>',
@@ -71,23 +69,27 @@ class ExtraInfoModule extends ItemModule
         }
         $ageSelect .= '</select>';
         
-        $ret .= "<table style=\"margin-top:5px;margin-bottom:5px;\" border=1 cellpadding=5 cellspacing=0 width='100%'><tr>";
-        $ret .= '<tr><th>Deposit'.FannieHelp::ToolTip('PLU/UPC of linked deposit item').'</th>
+        $ret .= "<table class=\"table table-bordered\" width='100%'><tr>";
+        $ret .= '<tr><th>Deposit'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('PLU/UPC of linked deposit item').'</th>
             <th>Age Req.</th>
             <th>Local</th>
-            <th>In Use'.FannieHelp::ToolTip('Uncheck to temporarily disable').'</th></tr>';
+            <th>In Use'.\COREPOS\Fannie\API\lib\FannieHelp::ToolTip('Uncheck to temporarily disable').'</th></tr>';
         $ret .= sprintf('<tr>
-                <td align="center"><input type="text" size="5" value="%d" name="deposit" /></td>
+                <td align="center"><input type="text" class="form-control" value="%d" name="deposit" 
+                    id="deposit" onchange="$(\'#deposit-upc\').val(this.value);" /></td>
                 <td align="center">%s</td>
                 <td align="center">%s</td>
-                <td align="center"><input type="checkbox" name="inUse" value="1" %s /></td></tr>',
+                <td align="center">
+                    <input type="checkbox" id="extra-in-use-checkbox" name="inUse" value="1" %s 
+                        onchange="$(\'#in-use-checkbox\').prop(\'checked\', $(this).prop(\'checked\'));" />
+                </td></tr>',
                 $info['deposit'],
                 $ageSelect,$localSelect,
                 ($info['inUse']==1 ? 'checked': '')
         );
         $ret .= '</table>
                 </div>
-                </fieldset>';
+                </div>';
 
         return $ret;
     }
@@ -104,6 +106,7 @@ class ExtraInfoModule extends ItemModule
 
         $pm = new ProductsModel($dbc);
         $pm->upc($upc);
+        $pm->store_id(1);
         $pm->deposit($deposit);
         $pm->local($local);
         $pm->inUse($inUse);

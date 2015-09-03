@@ -34,12 +34,14 @@ class MemStatusAdminLogin
 
     public static function adminLoginCallback($success)
     {
-        global $CORE_LOCAL;
         if ($success) {
-            $CORE_LOCAL->set('strRemembered', '');
-            $CORE_LOCAL->set("isMember", 1);
-            $CORE_LOCAL->set("memType", 1);
-            $CORE_LOCAL->set("boxMsg", "Member Status Toggled!");
+            CoreLocal::set('strRemembered', '');
+            CoreLocal::set("isMember", 1);
+            CoreLocal::set("memType", 1);
+            CoreLocal::set("boxMsg", "Member Status Toggled!");
+            CoreLocal::set('boxMsgButtons', array(
+                'Dismiss [clear]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+            ));
 
             return MiscLib::baseURL().'gui-modules/boxMsg2.php';
         } else {

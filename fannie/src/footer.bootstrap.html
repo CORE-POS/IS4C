@@ -1,13 +1,10 @@
         </div>
     </div>
-<div>
-		<div style="float:right;"> 
-			<!--Copyleft &#0169; 2009, <a href="http://www.designslife.com" style="font-size:12px;color:AAAAAA">designslife</a>. All Rights Reserved.-->
-		</div>
+<div class="hidden-print">
 		<div style="float:left; margin-right: 50px;">
 <?php
 if($FANNIE_AUTH_ENABLED){
-	if (!function_exists("checkLogin")) include($FANNIE_ROOT.'auth/login.php');
+	if (!function_exists("checkLogin")) include(dirname(__FILE__) . '/../auth/login.php');
 	$name = checkLogin();
 	if (!$name){
 		echo "You are not logged in.";
@@ -27,9 +24,12 @@ if (file_exists($version_file) && is_readable($version_file)) {
     echo '<div id="fannieVersion">Current version: ' . $version . '</div>';
 }
 ?>
-<a href="<?php echo $FANNIE_URL; ?>admin/SiteMap.php">Site Map</a>
+            <a href="<?php echo $FANNIE_URL; ?>admin/SiteMap.php">Site Map</a>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="<?php echo $FANNIE_URL; ?>admin/SiteSearch.php">Search</a>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="<?php echo $FANNIE_URL; ?>">Home</a>
+            <div class="small">Page drawn in <?php echo round(microtime(true)-$START_TIMESTAMP, 3); ?> seconds</div>
 		</div>
 </div>
 </div>
-</body>
-</html>

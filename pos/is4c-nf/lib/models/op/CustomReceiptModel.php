@@ -34,7 +34,29 @@ class CustomReceiptModel extends BasicModel
     'text' => array('type'=>'VARCHAR(80)'),
     'seq' => array('type'=>'INT', 'primary_key'=>true),
     'type' => array('type'=>'VARCHAR(20)', 'primary_key'=>true),
-	);
+    );
+
+    public function doc()
+    {
+        return '
+Use:
+This table contains strings of text
+that originally lived in the lane\'s 
+ini.php. At first it was only used
+for receipt headers and footers, hence
+the name. Submit a patch if you want
+a saner name.
+
+Current valid types are:
+* receiptHeader
+* receiptFooter
+* ckEndorse
+* welcomeMsg
+* farewellMsg
+* trainingMsg
+* chargeSlip
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 

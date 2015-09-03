@@ -36,17 +36,28 @@ function save_open_event() {
             url: 'CalendarAjax.php',
             type: 'get',
             data: getArgs,
-            success: function(){
+            success: function(resp){
+                if (temp.length == 3 && /^\d+$/.test(resp)) {
+                    var datestr = temp[1];
+                    var uid = temp[2];
+                    $('#event_'+datestr+"_"+uid).attr('id', 'event_'+resp);
+                    $('#event_'+resp).attr('onclick', 'edit_event(event, '+resp+')');
+                }
             }
         });
     });
 }
 
-function edit_event(event_id) {
+function doNothing(event) {
+    event.stopPropagation();
+}
+
+function edit_event(event, event_id) {
     // this event is already being edited
     if ($('#openevent_'+event_id).length > 0) {
         return;
     }
+    event.stopPropagation();
     
     save_open_event();
 
@@ -54,11 +65,12 @@ function edit_event(event_id) {
 	content = content.replace(/<br>/g,"\n");
 
 	var area = "<textarea class=\"openevent\" rows=\"2\" cols=\"17\" ";
-	area += "id=\"openevent_"+event_id+"\">";
+	area += "id=\"openevent_"+event_id+"\" onclick=\"doNothing(event);\">";
 	area += content;
 	area += "</textarea>";
     
     $('#event_'+event_id).html(area);
+    $('#event_'+event_id+' .openevent').focus();
 }
 
 function add_event(datestr, uid) {
@@ -74,6 +86,7 @@ function add_event(datestr, uid) {
 	area += "</textarea>";
 
     $('#event_'+datestr+'_'+uid).html(area);
+    $('#event_'+datestr+'_'+uid+' .openevent').focus();
 }
 
 /**
@@ -161,6 +174,19 @@ function makeNewCal(doCreate){
 	content += "Create a new calendar</a>";
 	document.getElementById('indexCreateNew').innerHTML=content;
 }
+function createSubscription(uid, name, url)
+{
+    var dataStr = 'action=createSubscription&uid='+uid;
+    dataStr += '&name='+encodeURIComponent(name);
+    dataStr += '&url='+encodeURIComponent(url);
+    $.ajax({
+        url: 'CalendarAjax.php',
+        data: dataStr,
+        success: function(resp){
+            location.reload();
+        }
+    });
+}
 
 // ************************************************************************
 // Display: prefs functions
@@ -203,7 +229,11 @@ function savePrefs(calID){
 		if (i < opts.length-1) writers += ",";
 	}
 
-	phpSend('savePrefs&calID='+calID+'&name='+name+'&viewers='+viewers+'&writers='+writers);
+	var dataStr = 'savePrefs&calID='+calID+'&name='+name+'&viewers='+viewers+'&writers='+writers;
+    if ($('#sub-url').length) {
+        dataStr += '&url='+$('#sub-url').val();
+    }
+    phpSend(dataStr);
 }
 
 // ************************************************************************

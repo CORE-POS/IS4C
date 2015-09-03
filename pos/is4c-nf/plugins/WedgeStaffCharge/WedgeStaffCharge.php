@@ -23,38 +23,38 @@
 
 class WedgeStaffCharge extends Plugin {
 
-	public $plugin_description = 'Legacy staff charge functionality that does not
-				belong in main code base';
+    public $plugin_description = 'Legacy staff charge functionality that does not
+                belong in main code base';
 
-	public function plugin_enable(){
-		// create database structures
-		$db = Database::pDataConnect();
-		if (!$db->table_exists('chargecode')){
-			$chargeCodeQ = "CREATE TABLE chargecode (
-				staffID varchar(4),
-				chargecode varchar(6))";
-			$db->query($chargeCodeQ);
-		}
-		if (!$db->table_exists('chargecodeview')){
-			$ccView = "CREATE VIEW chargecodeview AS
-				SELECT c.staffID, c.chargecode, d.blueLine
-				FROM chargecode AS c, custdata AS d
-				WHERE c.staffID = d.CardNo";
-			$db->query($ccView);
-		}
-	}
+    public function plugin_enable(){
+        // create database structures
+        $db = Database::pDataConnect();
+        if (!$db->table_exists('chargecode')){
+            $chargeCodeQ = "CREATE TABLE chargecode (
+                staffID varchar(4),
+                chargecode varchar(6))";
+            $db->query($chargeCodeQ);
+        }
+        if (!$db->table_exists('chargecodeview')){
+            $ccView = "CREATE VIEW chargecodeview AS
+                SELECT c.staffID, c.chargecode, d.blueLine
+                FROM chargecode AS c, custdata AS d
+                WHERE c.staffID = d.CardNo";
+            $db->query($ccView);
+        }
+    }
 
-	public function plugin_disable(){
-		$db = Database::pDataConnect();
-		// always remove view
-		if ($db->table_exists('chargecodeview')){
-			$db->query('DROP VIEW chargecodeview');
-		}
-		// only remove table if it's empty
-		if ($db->table_exists('chargecode')){
-			$chk = $db->query('SELECT staffID FROM chargecode');
-			if ($db->num_rows($chk) == 0)
-				$db->query('DROP TABLE chargecode');
-		}
-	}
+    public function plugin_disable(){
+        $db = Database::pDataConnect();
+        // always remove view
+        if ($db->table_exists('chargecodeview')){
+            $db->query('DROP VIEW chargecodeview');
+        }
+        // only remove table if it's empty
+        if ($db->table_exists('chargecode')){
+            $chk = $db->query('SELECT staffID FROM chargecode');
+            if ($db->num_rows($chk) == 0)
+                $db->query('DROP TABLE chargecode');
+        }
+    }
 }

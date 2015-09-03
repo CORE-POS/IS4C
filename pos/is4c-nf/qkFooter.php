@@ -31,36 +31,36 @@ if ($CORE_LOCAL->get("gui-scale") == "no")
 <link rel="stylesheet" type="text/css" href="/css/pos.css">
 <script type="text/javascript">
 function trySubmit(inputstr){
-	if (window.top.input.document.forms[0]){
-		var cur = window.top.input.document.forms[0].reginput.value;
-		window.top.input.document.forms[0].reginput.value=cur+inputstr;
-		window.top.input.document.forms[0].submit();
-	}
+    if (window.top.input.document.forms[0]){
+        var cur = window.top.input.document.forms[0].reginput.value;
+        window.top.input.document.forms[0].reginput.value=cur+inputstr;
+        window.top.input.document.forms[0].submit();
+    }
 }
 </script>
 </head>
 <body style="background: none;">
 <div style="text-align: center;">
 <input type="submit" value="Items"
-	class="quick_button"
-	style="margin: 0 10px 0 0;"
-	onclick="trySubmit('QK0');" />
+    class="quick_button"
+    style="margin: 0 10px 0 0;"
+    onclick="trySubmit('QK0');" />
 <input type="submit" value="Total"
-	class="quick_button"
-	style="margin: 0 10px 0 0;"
-	onclick="trySubmit('QK4');" />
+    class="quick_button"
+    style="margin: 0 10px 0 0;"
+    onclick="trySubmit('QK4');" />
 <input type="submit" value="Tender"
-	class="quick_button"
-	style="margin: 0 10px 0 0;"
-	onclick="trySubmit('QK2');" />
+    class="quick_button"
+    style="margin: 0 10px 0 0;"
+    onclick="trySubmit('QK2');" />
 <input type="submit" value="Member"
-	class="quick_button"
-	style="margin: 0 10px 0 0;"
-	onclick="trySubmit('QK5');" />
+    class="quick_button"
+    style="margin: 0 10px 0 0;"
+    onclick="trySubmit('QK5');" />
 <input type="submit" value="Misc"
-	class="quick_button"
-	style="margin: 0 10px 0 0;"
-	onclick="trySubmit('QK6');" />
+    class="quick_button"
+    style="margin: 0 10px 0 0;"
+    onclick="trySubmit('QK6');" />
 </div>
 </body>
 </html>

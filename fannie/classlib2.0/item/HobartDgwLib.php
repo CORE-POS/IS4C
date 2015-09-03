@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+namespace COREPOS\Fannie\API\item {
 
 class HobartDgwLib 
 {
@@ -109,7 +111,7 @@ class HobartDgwLib
     */
     static public function writeItemsToScales($items, $scales=array())
     {
-        include(dirname(__FILE__).'/../../config.php');
+        $config = \FannieConfig::factory(); 
         if (!isset($items[0])) {
             $items = array($items);
         }
@@ -138,10 +140,13 @@ class HobartDgwLib
         $header_line .= "\r\n";
 
         $file_prefix = self::sessionKey();
-        $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csv_output');
+        $output_dir = $config->get('DGW_DIRECTORY');
+        if ($output_dir == '') {
+            return false;
+        }
         $selected_scales = $scales;
         if (!is_array($scales) || count($selected_scales) == 0) {
-            $selected_scales = $FANNIE_SCALES;
+            $selected_scales = $config->get('SCALES');
         }
         $i = 0;
         foreach ($selected_scales as $scale) {
@@ -158,7 +163,7 @@ class HobartDgwLib
 
             // move to DGW; cleanup the file in the case of failure
             if (!rename($file_name, $output_dir . '/' . basename($file_name))) {
-                unlink($file_name);
+                //unlink($file_name);
             }
 
             $et_file = sys_get_temp_dir() . '/' . $file_prefix . '_exText' . $i . '.csv';
@@ -187,7 +192,7 @@ class HobartDgwLib
             } else {
                 // move to DGW dir
                 if (!rename($et_file, $output_dir . '/' . basename($et_file))) {
-                    unlink($et_file);
+                    //unlink($et_file);
                 }
             }
 
@@ -200,18 +205,26 @@ class HobartDgwLib
       @param $items [string] four digit PLU 
         or [array] of [string] 4 digit PLUs
     */
-    static public function deleteItemsFromScales($items)
+    static public function deleteItemsFromScales($items, $scales=array())
     {
-        include(dirname(__FILE__).'/../../config.php');
+        $config = \FannieConfig::factory(); 
 
         if (!is_array($items)) {
             $items = array($items);
         }
 
+        $selected_scales = $scales;
+        if (!is_array($scales) || count($selected_scales) == 0) {
+            $selected_scales = $config->get('SCALES');
+        }
+
         $file_prefix = self::sessionKey();
-        $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csv_output');
+        $output_dir = $config->get('DGW_DIRECTORY');
+        if ($output_dir == '') {
+            return false;
+        }
         $i = 0;
-        foreach($FANNIE_SCALES as $scale) {
+        foreach ($selected_scales as $scale) {
             $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteItem_' . $i . '.csv';
             $et_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteText_' . $i . '.csv';
             $fp = fopen($file_name, 'w');
@@ -259,11 +272,10 @@ class HobartDgwLib
     */
     static public function readItemsFromFile($filename)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
 
-        $product = new ProductsModel($dbc);
-        $scaleItem = new ScaleItemsModel($dbc);
+        $product = new \ProductsModel($dbc);
+        $scaleItem = new \ScaleItemsModel($dbc);
         
         $fp = fopen($filename, 'r');
         // detect column indexes via header line
@@ -353,11 +365,10 @@ class HobartDgwLib
     */
     static public function readTextsFromFile($filename)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
 
-        $product = new ProductsModel($dbc);
-        $scaleItem = new ScaleItems($dbc);
+        $product = new \ProductsModel($dbc);
+        $scaleItem = new \ScaleItems($dbc);
 
         $number_index = -1;
         $text_index = -1;
@@ -404,6 +415,62 @@ class HobartDgwLib
         return $item_count;
     }
 
+    /**
+      Get attributes for a given label number
+      @param $label_number [integer]
+      @return keyed array
+        - align => vertical or horizontal
+        - fixed_weight => boolean
+        - graphics => boolean
+    */
+    static public function labelToAttributes($label_number)
+    {
+        $ret = array(
+            'align' => 'vertical',
+            'fixed_weight' => false,
+            'graphics' => false,
+        );
+        switch ($label_number) {
+            case 23:
+                $ret['fixed_weight'] = true;
+                break;
+            case 53:
+                $ret['graphics'] = true;
+                break;
+            case 63:
+                $ret['fixed_weight'] = true;
+                $ret['align'] = 'horizontal';
+                break;
+            case 103:
+                break;
+            case 113:
+                $ret['align'] = 'horizontal';
+                break;
+        }
+
+        return $ret;
+    }
+
+    /**
+      Get appropriate label number for given attributes
+      @param $align [string] vertical or horizontal
+      @param $fixed_weight [boolean, default false]
+      @param $graphics [boolean, default false]
+      @return [integer] label number
+    */
+    static public function attributesToLabel($align, $fixed_weight=false, $graphics=false)
+    {
+        if ($graphics) {
+            return 53;
+        }
+
+        if ($align == 'horizontal') {
+            return ($fixed_weight) ? 63 : 133;
+        } else {
+            return ($fixed_weight) ? 23 : 103;
+        }
+    }
+
     static private function scalePluToUpc($plu)
     {
         // convert PLU to UPC
@@ -426,5 +493,25 @@ class HobartDgwLib
 
         return $session_key;
     }
+
+    static public function scaleOnline($host, $port=6000)
+    {
+        $s = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        socket_set_option($s, SOL_SOCKET, SO_RCVTIMEO, array('sec'=>2, 'usec'=>0));
+        socket_set_option($s, SOL_SOCKET, SO_SNDTIMEO, array('sec'=>2, 'usec'=>0));
+        if (socket_connect($s, $host, $port)) {
+            socket_shutdown($s);
+            socket_close($s);
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+}
+
+namespace {
+    class HobartDgwLib extends \COREPOS\Fannie\API\item\HobartDgwLib {}
 }
 

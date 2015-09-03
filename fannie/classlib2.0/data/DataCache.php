@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+namespace COREPOS\Fannie\API\data {
 
 /**
   @class DataCache
@@ -44,6 +46,7 @@ class DataCache
         $hash = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : $_SERVER['PHP_SELF'];
         $hash = str_replace("&excel=xls", "", $hash);
         $hash = str_replace("&excel=csv", "", $hash);
+        $hash = str_replace("&no-cache=1", "", $hash);
         $hash = md5($hash);
 
         return $hash;
@@ -63,8 +66,8 @@ class DataCache
     */
     static public function check($key=false)
     {
-        global $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_ARCHIVE_DB, $current_db);
+        $FANNIE_ARCHIVE_DB = \FannieConfig::factory()->get('ARCHIVE_DB');
+        $dbc = \FannieDB::get($FANNIE_ARCHIVE_DB, $current_db);
         $table = $FANNIE_ARCHIVE_DB.$dbc->sep()."reportDataCache";
         $hash = $key ? $key : self::genKey();
         $query = $dbc->prepare_statement("SELECT report_data FROM $table WHERE
@@ -72,7 +75,7 @@ class DataCache
         $result = $dbc->exec_statement($query,array($hash));
         if (!empty($current_db)) {
             // restore selected database
-            $dbc = FannieDB::get($current_db);
+            $dbc = \FannieDB::get($current_db);
         }
         if ($dbc->num_rows($result) > 0) {
             $ret = $dbc->fetch_row($result);
@@ -96,10 +99,10 @@ class DataCache
 
       See check() for details
     */
-    static public function freshen($data, $ttl='day', $key)
+    static public function freshen($data, $ttl='day', $key=false)
     {
-        global $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_ARCHIVE_DB, $current_db);
+        $FANNIE_ARCHIVE_DB = \FannieConfig::factory()->get('ARCHIVE_DB');
+        $dbc = \FannieDB::get($FANNIE_ARCHIVE_DB, $current_db);
         if ($ttl != 'day' && $ttl != 'month') {
             return false;
         }
@@ -127,7 +130,7 @@ class DataCache
 
         if (!empty($current_db)) {
             // restore selected database
-            $dbc = FannieDB::get($current_db);
+            $dbc = \FannieDB::get($current_db);
         }
 
         return $ret;
@@ -220,3 +223,8 @@ class DataCache
     }
 }
 
+}
+
+namespace {
+    class DataCache extends \COREPOS\Fannie\API\data\DataCache {}
+}

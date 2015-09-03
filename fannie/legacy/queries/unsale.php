@@ -33,7 +33,7 @@ else {
   // containing the upc
   $batchIDQ = $sql->prepare("select b.batchID from batches as b, batchList as l where
                b.batchID = l.batchID and l.upc = ? and b.discountType = ?
-	       AND ".$sql->now()." BETWEEN b.startDate and b.endDate");
+           AND ".$sql->now()." BETWEEN b.startDate and b.endDate");
   $batchIDR = $sql->execute($batchIDQ, array($upc, $discounttype));
 
   // if there isn't a batch putting that item on sale, then

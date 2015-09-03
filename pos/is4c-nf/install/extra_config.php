@@ -4,6 +4,7 @@
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 include('../ini.php');
+CoreState::loadParams();
 include('InstallUtilities.php');
 ?>
 <head>
@@ -13,7 +14,7 @@ include('InstallUtilities.php');
 </head>
 <body>
 <?php include('tabs.php'); ?>
-<div id="wrapper">	
+<div id="wrapper">    
 <h2>IT CORE Lane Installation: Additional Configuration (Extras)</h2>
 
 <div class="alert"><?php InstallUtilities::checkWritable('../ini.php', False, 'PHP'); ?></div>
@@ -40,13 +41,12 @@ include('InstallUtilities.php');
     </td>
 </tr>
 <tr>
-    <td><label><b>Discount Module</b></label></td>
+    <td></td>
     <td> 
-    <?php
-    $mods = AutoLoader::listModules('DiscountModule',True);
-    echo InstallUtilities::installSelectField('DiscountModule', $mods, 'DiscountModule');
-    ?>
-    <span class='noteTxt'>Calculates actual discount amount</span>
+    <?php echo InstallUtilities::installCheckBoxField('NonStackingDiscounts', 'Only One Discount Applies', 0); ?>
+    <span class='noteTxt'>If a customer is eligible for a 5% discount and a 10% discount and
+    only one applies, then the customer will get a 10% discount. Otherwise they stack and
+    the total discount is 15%.</span>
     </td>
 </tr>
 <tr>
@@ -126,22 +126,22 @@ include('InstallUtilities.php');
 ?>
 <tr><td><b>Printer port</b>:
 </td><td><?php
-// If values entered on the form are being saved, set CORE_LOCAL
+// If values entered on the form are being saved, set session variable
 //  and flag type of port choice: "other" or not.
 if (isset($_REQUEST['PPORT'])) {
     if ($_REQUEST['PPORT'] == 'other' &&
         isset($_REQUEST['otherpport']) &&
         $_REQUEST['otherpport'] != '') {
-        $CORE_LOCAL->set('printerPort',trim($_REQUEST['otherpport']));
+        CoreLocal::set('printerPort',trim($_REQUEST['otherpport']));
         $otherpport = True;
         $otherpportValue = trim($_REQUEST['otherpport']);
     } else {
-        $CORE_LOCAL->set('printerPort',$_REQUEST['PPORT']);
+        CoreLocal::set('printerPort',$_REQUEST['PPORT']);
         $otherpport = False;
         $otherpportValue = "";
     }
 } else {
-    $pport = $CORE_LOCAL->get('printerPort');
+    $pport = CoreLocal::get('printerPort');
     if (isset($pport) && $pport !== False && $pport != "") {
         $pports = array("/dev/lp0","/dev/usb/lp0","LPT1:","fakereceipt.txt");
         if (in_array($pport,$pports)) {
@@ -158,17 +158,17 @@ if (isset($_REQUEST['PPORT'])) {
 }
 ?>
 <input type="radio" name=PPORT value="/dev/lp0" id="div-lp0"
-    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="/dev/lp0")
+    <?php if (!$otherpport && CoreLocal::get('printerPort')=="/dev/lp0")
             echo "checked";
     ?> /><label for="div-lp0">/dev/lp0 (*nix)</label><br />
 <input type="radio" name=PPORT value="/dev/usb/lp0" id="div-usb-lp0"
-    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="/dev/usb/lp0")
+    <?php if (!$otherpport && CoreLocal::get('printerPort')=="/dev/usb/lp0")
             echo "checked"; ?> /><label for="div-usb-lp0">/dev/usb/lp0 (*nix)</label><br />
 <input type="radio" name=PPORT value="LPT1:" id="lpt1-"
-    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="LPT1:")
+    <?php if (!$otherpport && CoreLocal::get('printerPort')=="LPT1:")
                 echo "checked"; ?> /><label for="lpt1-">LPT1: (windows)</label><br />
 <input type="radio" name=PPORT value="fakereceipt.txt" id="fakercpt"
-    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="fakereceipt.txt")
+    <?php if (!$otherpport && CoreLocal::get('printerPort')=="fakereceipt.txt")
                 echo "checked";
     ?> /><label for="fakercpt">fakereceipt.txt</label><br />
 <input type="radio" name=PPORT value="other"
@@ -176,13 +176,13 @@ if (isset($_REQUEST['PPORT'])) {
                 echo "checked";
 ?> /> <input type=text name="otherpport"
     value="<?php echo "$otherpportValue"; ?>"><br />
-<span class='noteTxt' style="top:-110px;"> <?php printf("<p>Current value: <span class='pre'>%s</span></p>",$CORE_LOCAL->get('printerPort')); ?>
+<span class='noteTxt' style="top:-110px;"> <?php printf("<p>Current value: <span class='pre'>%s</span></p>",CoreLocal::get('printerPort')); ?>
 Path to the printer. Select from common values, or enter a custom path.
 Some ubuntu distros might put your USB printer at /dev/usblp0</span>
 </td></tr>
 <?php
 // Write to database.
-InstallUtilities::paramSave('printerPort',$CORE_LOCAL->get('printerPort'));
+InstallUtilities::paramSave('printerPort',CoreLocal::get('printerPort'));
 ?>
 
 <tr>
@@ -224,15 +224,15 @@ InstallUtilities::paramSave('printerPort',$CORE_LOCAL->get('printerPort'));
     <p>The name of your scale driver. Known good values include "ssd" and "NewMagellan".</p>
     <?php
     // try to initialize scale driver
-    if ($CORE_LOCAL->get("scaleDriver") != ""){
-        $classname = $CORE_LOCAL->get("scaleDriver");
+    if (CoreLocal::get("scaleDriver") != ""){
+        $classname = CoreLocal::get("scaleDriver");
         if (!file_exists('../scale-drivers/php-wrappers/'.$classname.'.php'))
             echo "<br /><i>Warning: PHP driver file not found</i>";
         else {
             if (!class_exists($classname))
                 include('../scale-drivers/php-wrappers/'.$classname.'.php');
             $instance = new $classname();
-            @$instance->SavePortConfiguration($CORE_LOCAL->get("scalePort"));
+            @$instance->SavePortConfiguration(CoreLocal::get("scalePort"));
             @$abs_path = substr($_SERVER['SCRIPT_FILENAME'],0,
                     strlen($_SERVER['SCRIPT_FILENAME'])-strlen('install/extra_config.php')-1);
             @$instance->SaveDirectoryConfiguration($abs_path);
@@ -271,31 +271,31 @@ InstallUtilities::paramSave('printerPort',$CORE_LOCAL->get('printerPort'));
 <?php
 $footer_mods = array();
 // get current settings
-$current_mods = $CORE_LOCAL->get("FooterModules");
+$current_mods = CoreLocal::get("FooterModules");
 // replace w/ form post if needed
 // fill in defaults if missing
 if (isset($_REQUEST['FOOTER_MODS'])) $current_mods = $_REQUEST['FOOTER_MODS'];
 elseif(!is_array($current_mods) || count($current_mods) != 5){
-	$current_mods = array(
-	'SavedOrCouldHave',
-	'TransPercentDiscount',
-	'MemSales',
-	'EveryoneSales',
-	'MultiTotal'
-	);
+    $current_mods = array(
+    'SavedOrCouldHave',
+    'TransPercentDiscount',
+    'MemSales',
+    'EveryoneSales',
+    'MultiTotal'
+    );
 }
 $footer_mods = AutoLoader::listModules('FooterBox');
 for($i=0;$i<5;$i++){
-	echo '<select name="FOOTER_MODS[]">';
-	foreach($footer_mods as $fm){
-		printf('<option %s>%s</option>',
-			($current_mods[$i]==$fm?'selected':''),$fm);
-	}
-	echo '</select><br />';
+    echo '<select name="FOOTER_MODS[]">';
+    foreach($footer_mods as $fm){
+        printf('<option %s>%s</option>',
+            ($current_mods[$i]==$fm?'selected':''),$fm);
+    }
+    echo '</select><br />';
 }
 $saveStr = "array(";
 foreach($current_mods as $m)
-	$saveStr .= "'".$m."',";
+    $saveStr .= "'".$m."',";
 $saveStr = rtrim($saveStr,",").")";
 InstallUtilities::paramSave('FooterModules',$current_mods);
 ?>
@@ -363,6 +363,10 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
     <td colspan=2 class="tblHeader"><h3>Tender Settings</h3></td>
 </tr>
 <tr>
+    <td><b>Tender min/max limits</b>: </td>
+    <td><?php echo InstallUtilities::installSelectField('TenderHardMinMax', array(1=>'Absolute Limit',0=>'Warning Only'), 0); ?></td>
+</tr>
+<tr>
     <td><b>Allow members to write checks over purchase amount</b>: </td>
     <td><?php echo InstallUtilities::installSelectField('cashOverLimit', array(1=>'Yes',0=>'No'), 0); ?></td>
 </tr>
@@ -392,37 +396,77 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
 <tr><td>
 <b>Tender Mapping</b>:<br />
 <p>Map custom tenders to IS4Cs expected tenders Tender Rpt. column: Include the checked tenders 
-	in the Tender Report (available via Mgrs. Menu [MG])</p></td><td>
+    in the Tender Report (available via Mgrs. Menu [MG])</p></td><td>
 <?php
-$settings = $CORE_LOCAL->get("TenderMap");
+$settings = CoreLocal::get("TenderMap");
+$db = Database::pDataConnect();
+$tender_table = $db->table_definition('tenders');
+/**
+  Load tender map from database if
+  the schema supports it
+*/
+if (isset($tender_table['TenderModule'])) {
+    $model = new TendersModel($db);
+    $settings = $model->getMap();
+}
 if (!is_array($settings)) $settings = array();
 if (isset($_REQUEST['TenderMapping'])){
-	$saveStr = "array(";
-	$settings = array();
-	foreach($_REQUEST['TenderMapping'] as $tm){
-		if($tm=="") continue;
-		list($code,$mod) = explode(":",$tm);
-		$settings[$code] = $mod;
-		$saveStr .= "'".$code."'=>'".$mod."',";
-	}
-	$saveStr = rtrim($saveStr,",").")";
-	InstallUtilities::paramSave('TenderMap',$settings);
+    $settings = array();
+    foreach ($_REQUEST['TenderMapping'] as $tm) {
+        if ($tm=="") {
+            continue;
+        }
+        list($code, $mod) = explode(":", $tm);
+        $settings[$code] = $mod;
+    }
+    if (!isset($tender_table['TenderModule'])) {
+        InstallUtilities::paramSave('TenderMap',$settings);
+    } else {
+        /**
+          Save posted mapping to database
+          First update the records where a non-default
+          module is specified, then set everything
+          else to default
+        */
+        $not_default_sql = '';
+        $not_default_args = array();
+        $saveP = $db->prepare('
+            UPDATE tenders
+            SET TenderModule=?
+            WHERE TenderCode=?');
+        foreach ($settings as $code => $module) {
+            $db->execute($saveP, array($module, $code));
+            $not_default_sql .= '?,';
+            $not_default_args[] = $code;
+        }
+        if (count($not_default_args) > 0) {
+            $not_default_sql = substr($not_default_sql, 0, strlen($not_default_sql)-1);
+            $defaultP = $db->prepare('
+                UPDATE tenders
+                SET TenderModule=\'TenderModule\'
+                WHERE TenderCode NOT IN (' . $not_default_sql . ')');
+            $db->execute($defaultP, $not_default_args);
+        } else {
+            $db->query("UPDATE tenders SET TenderModule='TenderModule'");
+        }
+        CoreLocal::set('TenderMap', $settings);
+    }
 }
 $mods = AutoLoader::listModules('TenderModule');
 //  Tender Report: Desired tenders column
-$settings2 = $CORE_LOCAL->get("TRDesiredTenders");
+$settings2 = CoreLocal::get("TRDesiredTenders");
 if (!is_array($settings2)) $settings2 = array();
 if (isset($_REQUEST['TR_LIST'])){
-	$saveStr2 = "array(";
-	$settings2 = array();
-	foreach($_REQUEST['TR_LIST'] as $dt){
-		if($dt=="") continue;
-		list($code2,$name2) = explode(":",$dt);
-		$settings2[$code2] = $name2;
-		$saveStr2 .= "'".$code2."'=>'".addslashes($name2)."',";
-	}
-	$saveStr2 = rtrim($saveStr2,",").")";
-	InstallUtilities::paramSave('TRDesiredTenders',$settings2);
+    $saveStr2 = "array(";
+    $settings2 = array();
+    foreach($_REQUEST['TR_LIST'] as $dt){
+        if($dt=="") continue;
+        list($code2,$name2) = explode(":",$dt);
+        $settings2[$code2] = $name2;
+        $saveStr2 .= "'".$code2."'=>'".addslashes($name2)."',";
+    }
+    $saveStr2 = rtrim($saveStr2,",").")";
+    InstallUtilities::paramSave('TRDesiredTenders',$settings2);
 } //end TR desired tenders
 $db = Database::pDataConnect();
 $res = $db->query("SELECT TenderCode, TenderName FROM tenders ORDER BY TenderName");
@@ -431,20 +475,20 @@ $res = $db->query("SELECT TenderCode, TenderName FROM tenders ORDER BY TenderNam
 <?php
 echo "<thead><tr><th>Tender Name</th><th>Map To</th><th>Tender Rpt</th></tr></thead><tbody>\n";
 while($row = $db->fetch_row($res)){
-	printf('<tr><td>%s (%s)</td>',$row['TenderName'],$row['TenderCode']);
-	echo '<td><select name="TenderMapping[]">';
-	echo '<option value="">default</option>';
-	foreach($mods as $m){
-		printf('<option value="%s:%s" %s>%s</option>',
-			$row['TenderCode'],$m,
-			(isset($settings[$row['TenderCode']])&&$settings[$row['TenderCode']]==$m)?'selected':'',
-			$m);	
-	}
-	echo '</select></td>';
-	echo "<td><input type=checkbox name=\"TR_LIST[]\" ";
-	echo 'value="'.$row['TenderCode'].':'.$row['TenderName'].'"';
-	if (array_key_exists($row['TenderCode'], $settings2)) echo " CHECKED";
-	echo "></td></tr></tbody>";
+    printf('<tr><td>%s (%s)</td>',$row['TenderName'],$row['TenderCode']);
+    echo '<td><select name="TenderMapping[]">';
+    echo '<option value="">default</option>';
+    foreach($mods as $m){
+        printf('<option value="%s:%s" %s>%s</option>',
+            $row['TenderCode'],$m,
+            (isset($settings[$row['TenderCode']])&&$settings[$row['TenderCode']]==$m)?'selected':'',
+            $m);    
+    }
+    echo '</select></td>';
+    echo "<td><input type=checkbox name=\"TR_LIST[]\" ";
+    echo 'value="'.$row['TenderCode'].':'.$row['TenderName'].'"';
+    if (array_key_exists($row['TenderCode'], $settings2)) echo " CHECKED";
+    echo "></td></tr></tbody>";
 }
 ?>
 </table>
@@ -462,6 +506,6 @@ while($row = $db->fetch_row($res)){
 </td></tr>
 </table>
 </form>
-</div> <!--	wrapper -->
+</div> <!--    wrapper -->
 </body>
 </html>

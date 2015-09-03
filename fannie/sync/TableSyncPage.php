@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -40,6 +40,7 @@ class TableSyncPage extends FanniePage {
 
     protected $title = "Fannie : Sync Data";
     protected $header = "Syncing data";
+    public $themed = true;
 
     private $errors = array();
     private $results = '';
@@ -52,18 +53,19 @@ class TableSyncPage extends FanniePage {
         if ($table === '' && $othertable !== '')
             $table = $othertable;
 
-        if (empty($table)){
+        if (empty($table)) {
             $this->errors[] = "Error: no table was specified";
-            return True;
-        }
-        elseif (ereg("[^A-Za-z0-9_]",$table)){
+
+            return true;
+        } elseif (preg_match('/[^A-Za-z0-9_]/', $table)){
             $this->errors[] = "Error: \"$table\" contains illegal characters";
-            return True;
+
+            return true;
         }
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $this->results = "<p style='font-family:Arial; font-size:1.0em;'>Syncing table $table <ul>";
+        $this->results = "<p>Syncing table $table <ul>";
 
         if (file_exists("special/$table.php")){
             ob_start();
@@ -105,7 +107,7 @@ class TableSyncPage extends FanniePage {
     function body_content(){
         $ret = '';
         if (count($this->errors) > 0){
-            $ret .= '<blockquote style="border: solid 1px red; padding: 4px;"><ul>';    
+            $ret .= '<blockquote><ul>';
             foreach($this->errors as $e)
                 $ret .= '<li>'.$e.'</li>';  
             $ret .= '</ul><a href="SyncIndexPage.php">Try Again</a></blockquote>';

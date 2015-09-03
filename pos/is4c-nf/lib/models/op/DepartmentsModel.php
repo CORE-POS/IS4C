@@ -49,6 +49,51 @@ class DepartmentsModel extends BasicModel
     'memberOnly' => array('type'=>'SMALLINT', 'default'=>0),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Departments are the primary level of granularity
+for products. Each product may belong to one department,
+and when items are rung up the department setting
+is what\'s saved in the transaction log
+
+dept_no and dept_name identify a department
+
+dept_tax,dept_fs, and dept_discount indicate whether
+items in that department are taxable, foodstampable,
+and discountable (respectively). Mostly these affect
+open rings at the register, although WFC also uses
+them to speed up new item entry.
+
+dept_limit and dept_minimum are the highest and lowest
+sales allowed in the department. These also affect open
+rings. The prompt presented if limits are exceeded is
+ONLY a warning, not a full stop.
+
+margin is desired margin for products in the department.
+It can be used for calculating retail pricing based
+on costs. By convention, values are less than one.
+A value of 0.35 means 35% margin. This value has
+no meaning on the lane.
+
+salesCode is yet another way of categorizing items.
+It is typically used for chart of account numbers.
+Often the financial accounting side of the business
+wants to look at sales figures differently than
+the operational side of the business. It\'s an organizational
+and reporting field with no meaning on the lane.
+
+memberOnly restricts sales based on customer membership
+status. Values 0 through 99 are reserved. 100 and above
+may be used for custom settings. Currently defined values:
+    0 => No restrictions
+    1 => Active members only (custdata.Type = \'PC\')
+    2 => Active members only but cashier can override
+    3 => Any custdata account *except* the default non-member account
+        ';
+    }
+
     protected function hookAddColumnmargin()
     {
         if ($this->connection->table_exists('deptMargin')) {

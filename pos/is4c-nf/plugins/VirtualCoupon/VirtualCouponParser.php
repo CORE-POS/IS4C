@@ -22,42 +22,45 @@
 *********************************************************************************/
 
 class VirtualCouponParser extends Parser {
-	
-	function check($str){
-		if ($str == "VC"){
-			return True;
-		}
-		return False;
-	}
+    
+    function check($str){
+        if ($str == "VC"){
+            return True;
+        }
+        return False;
+    }
 
-	function parse($str){
-		global $CORE_LOCAL;
-		$ret = $this->default_json();
+    function parse($str)
+    {
+        $ret = $this->default_json();
 
-		if ($CORE_LOCAL->get("memberID") == 0){
-			$ret['output'] = DisplayLib::boxMsg(_("No member selected")."<br />".
-						_("Apply member number first"));
-		}
-		else {
-			$plugin_info = new VirtualCoupon();
-			$ret['main_frame'] = $plugin_info->plugin_url().'/VirtCoupDisplay.php';
-		}
-		return $ret;
-	}
+        if (CoreLocal::get("memberID") == 0){
+            $ret['output'] = DisplayLib::boxMsg(
+                _("Apply member number first"),
+                _('No member selected'),
+                false,
+                array_merge(array('Member Search [ID]' => 'parseWrapper(\'ID\');'), DisplayLib::standardClearButton())
+            );
+        } else {
+            $plugin_info = new VirtualCoupon();
+            $ret['main_frame'] = $plugin_info->plugin_url().'/VirtCoupDisplay.php';
+        }
+        return $ret;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>VC</td>
-				<td>
-				View virtual coupons for the current member
-				</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>VC</td>
+                <td>
+                View virtual coupons for the current member
+                </td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

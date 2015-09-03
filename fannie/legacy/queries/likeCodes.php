@@ -3,27 +3,27 @@
 include('../db.php');
 
 if (isset($_GET['action'])){
-	$out = $_GET['action']."`";
-	switch($_GET['action']){
-	case 'getitems':
-		$lc = $_GET['lc'];
-		$out .= "<table cellspacing=2 cellpadding=2>";
-		$out .= "<tr><th>UPC</th><th>description</th>";
-		$q = $sql->prepare("select p.upc,p.description from products as p, upcLike as u where p.upc = u.upc and u.likeCode = ? order by p.description");
-		$r = $sql->execute($q, array($lc));
-		while ($w = $sql->fetch_array($r)){
-			$out .= "<tr>";
-			$out .=  "<td><a href=productTest.php?upc=$w[0]>$w[0]</td>";
-			$out .=  "<td>$w[1]</td>";
-			$out .=  "</tr>";
-		}
-		$out .= "</table>";
-		break;
+    $out = $_GET['action']."`";
+    switch($_GET['action']){
+    case 'getitems':
+        $lc = $_GET['lc'];
+        $out .= "<table cellspacing=2 cellpadding=2>";
+        $out .= "<tr><th>UPC</th><th>description</th>";
+        $q = $sql->prepare("select p.upc,p.description from products as p, upcLike as u where p.upc = u.upc and u.likeCode = ? order by p.description");
+        $r = $sql->execute($q, array($lc));
+        while ($w = $sql->fetch_array($r)){
+            $out .= "<tr>";
+            $out .=  "<td><a href=productTest.php?upc=$w[0]>$w[0]</td>";
+            $out .=  "<td>$w[1]</td>";
+            $out .=  "</tr>";
+        }
+        $out .= "</table>";
+        break;
 
-	}
-	
-	echo $out;
-	return;
+    }
+    
+    echo $out;
+    return;
 }
 
 ?>
@@ -32,14 +32,14 @@ if (isset($_GET['action'])){
 <head>
 <style type=text/css>
 #items {
-	float: left;
-	padding-left: 10px;
+    float: left;
+    padding-left: 10px;
 }
 #codetable {
-	float: left;
+    float: left;
 }
 a {
-	color: #0000ff;
+    color: #0000ff;
 }
 </style>
 <script type=text/javascript>
@@ -77,13 +77,13 @@ function handleResponse() {
         var response = http.responseText;
         var array = response.split('`');
         switch(array[0]){
-	case 'getitems':
-		document.getElementById('items').innerHTML = array[1];
-		scroll(0,0);
-		break;
-	default:
-		alert(response);
-	}
+    case 'getitems':
+        document.getElementById('items').innerHTML = array[1];
+        scroll(0,0);
+        break;
+    default:
+        alert(response);
+    }
     }
 }
 

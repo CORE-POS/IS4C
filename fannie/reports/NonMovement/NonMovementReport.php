@@ -3,14 +3,14 @@
 
     Copyright 2012 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -35,6 +35,9 @@ class NonMovementReport extends FannieReportPage {
 
     public $description = '[Non-Movement] shows items in a department or group of departments that have no sales over a given date range. This is mostly for finding discontinued or mis-entered products.';
     public $report_set = 'Movement Reports';
+    public $themed = true;
+
+    protected $report_headers = array('UPC', 'Brand', 'Description', 'Dept#', 'Department', '', '');
 
     function preprocess()
     {
@@ -49,10 +52,21 @@ class NonMovementReport extends FannieReportPage {
             $dbc = FannieDB::get($FANNIE_OP_DB);
             $model = new ProductsModel($dbc);
             $model->upc($upc);
+            $model->store_id(1);
             $model->delete();
 
             echo 'Deleted';
             exit;
+        } elseif (FormLib::get('deactivate') !== '') {
+            $upc = BarcodeLib::padUPC(FormLib::get('deactivate'));
+            $dbc = FannieDB::get($FANNIE_OP_DB);
+            $model = new ProductsModel($dbc);
+            $model->upc($upc);
+            $model->store_id(1);
+            $model->inUse(0);
+            $model->save();
+
+            echo 'Deactivated';
         }
 
         $ret = parent::preprocess();
@@ -73,29 +87,70 @@ class NonMovementReport extends FannieReportPage {
         $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
         $dept1 = FormLib::get_form_value('deptStart',0);
         $dept2 = FormLib::get_form_value('deptEnd',0);
+        $deptMulti = FormLib::get('departments', array());
 
         $tempName = "TempNoMove";
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
-        $sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
         $tempQ = $dbc->prepare_statement("CREATE TABLE $tempName (upc varchar(13))");
         $dbc->exec_statement($tempQ);
 
-        $insQ = $dbc->prepare_statement("INSERT INTO $tempName
+        $insQ = $dbc->prepare("
+            INSERT INTO $tempName
             SELECT d.upc FROM $dlog AS d
             WHERE 
-            d.tdate BETWEEN ? AND ?
+                d.tdate BETWEEN ? AND ?
+                AND d.trans_type='I'
             GROUP BY d.upc");
-        $dbc->exec_statement($insQ,array($date1.' 00:00:00',$date2.' 23:59:59'));
+        $dbc->exec_statement($insQ, array($date1.' 00:00:00',$date2.' 23:59:59'));
 
-        $query = $dbc->prepare_statement("SELECT p.upc,p.description,d.dept_no,
-            d.dept_name FROM products AS p LEFT JOIN
-            departments AS d ON p.department=d.dept_no
-            WHERE p.upc NOT IN (select upc FROM $tempName)
-            AND p.department
-            BETWEEN ? AND ?
-            ORDER BY p.upc");
-        $result = $dbc->exec_statement($query,array($dept1,$dept2));
+        $where = ' 1=1 ';
+        $buyer = FormLib::get('super');
+        $args = array();
+        if ($buyer !== '') {
+            if ($buyer == -2) {
+                $where .= ' AND s.superID != 0 ';
+            } elseif ($buyer != -1) {
+                $where .= ' AND s.superID=? ';
+                $args[] = $buyer;
+            }
+        }
+        if ($buyer != -1) {
+            if (count($deptMulti) > 0) {
+                $where .= ' AND p.department IN (';
+                foreach ($deptMulti as $d) {
+                    $where .= '?,';
+                    $args[] = $d;
+                }
+                $where = substr($where, 0, strlen($where)-1) . ')';
+            } else {
+                $where .= ' AND p.department BETWEEN ? AND ? ';
+                $args[] = $dept1;
+                $args[] = $dept2;
+            }
+        }
+
+        $query = "
+            SELECT p.upc,
+                p.brand,
+                p.description,
+                d.dept_no,
+                d.dept_name 
+            FROM products AS p 
+                LEFT JOIN departments AS d ON p.department=d.dept_no ";
+        if ($buyer !== '' && $buyer > -1) {
+            $query .= 'LEFT JOIN superdepts AS s ON p.department=s.dept_ID ';
+        } elseif ($buyer !== '' && $buyer == -2) {
+            $query .= 'LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID ';
+        }
+        $query .= " WHERE p.upc NOT IN (
+                SELECT upc FROM $tempName
+                )
+                AND $where
+                AND p.inUse=1
+            ORDER BY p.upc";
+        $prep = $dbc->prepare($query);
+        $result = $dbc->exec_statement($prep,$args);
 
         /**
           Simple report
@@ -109,13 +164,21 @@ class NonMovementReport extends FannieReportPage {
             $record[] = $row[1];
             $record[] = $row[2];
             $record[] = $row[3];
+            $record[] = $row[4];
+            if ($this->report_format == 'html') {
+                $record[] = sprintf('<a href="" id="del%s"
+                        onclick="backgroundDeactivate(\'%s\');return false;">
+                        Deactivate this item</a>',$row[0],$row[0]);
+            } else {
+                $record[] = '';
+            }
             if ($this->report_format == 'html'){
                 $record[] = sprintf('<a href="" id="del%s"
                         onclick="backgroundDelete(\'%s\',\'%s\');return false;">
                         Delete this item</a>',$row[0],$row[0],$row[1]);
-            }
-            else
+            } else {
                 $record[] = '';
+            }
             $ret[] = $record;
         }
 
@@ -134,75 +197,56 @@ class NonMovementReport extends FannieReportPage {
         while ($deptsW = $dbc->fetch_array($deptsR))
             $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
 ?>
-<div id=main>   
-<form method = "get" action="NonMovementReport.php">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr> 
-            <td> <p><b>Department Start</b></p>
-            <p><b>End</b></p></td>
-            <td> <p>
-            <select onchange="$('#deptStart').val(this.value)">
-            <?php echo $deptsList ?>
-            </select>
-            <input type=text name=deptStart id=deptStart size=5 value=1 />
-            </p>
-            <p>
-            <select onchange="$('#deptEnd').val(this.value)">
-            <?php echo $deptsList ?>
-            </select>
-            <input type=text name=deptEnd id=deptEnd size=5 value=1 />
-            </p></td>
-
-             <td>
-            <p><b>Date Start</b> </p>
-                 <p><b>End</b></p>
-               </td>
-                    <td>
-                     <p>
-                       <input type=text size=25 id=date1 name=date1 />
-                       </p>
-                       <p>
-                        <input type=text size=25 id=date2 name=date2 />
-                 </p>
-               </td>
-
-        </tr>
-        <tr> 
-            <th>
-            <label for="excel">Excel</label>
-            </th>
-            <td>
-            <input type=checkbox name=excel value=xls id="excel" />
-            </td>
-            </td>
-            <td rowspan=3 colspan=2>
-            <?php echo FormLib::date_range_picker(); ?>                         
-            </td>
-        </tr>
-        <tr>
-            <th>
-            <label for="netted">Netted</label>
-            </th>
-            <td>
-            <input type=checkbox name=netted id="netted" />
-            </td>
-        </tr>
-
-        <tr> 
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-        </tr>
-    </table>
+<form method="get" action="NonMovementReport.php" class="form-horizontal">
+    <div class="col-sm-6">
+        <?php echo FormLib::standardDepartmentFields(); ?>
+        <div class="form-group">
+            <label class="control-label col-sm-4">
+                Excel
+                <input type=checkbox name=excel value=xls id="excel" />
+            </label>
+            <label class="control-label col-sm-4">
+                Netted
+                <input type=checkbox name=netted id="netted" />
+            </label>
+        </div>
+        <div class="form-group">
+            <button type=submit name=submit value="Submit" class="btn btn-default btn-core">Submit</button>
+            <button type=reset name=reset class="btn btn-default btn-reset"
+                onclick="$('#super-id').val('').trigger('change');">Start Over</button>
+        </div>
+    </div>
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Start Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date1 name=date1 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">End Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date2 name=date2 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <?php echo FormLib::date_range_picker(); ?>                            
+        </div>
+    </div>
 </form>
-</div>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
+    }
+
+    public function helpContent()
+    {
+        return '<p>This report finds items that have not sold
+            during the date range. It also provides an option
+            to delete items.</p>
+            <p><em>Netted</em> means total sales is not zero.
+            This would exclude items that are rung in then
+            voided.</p>';
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

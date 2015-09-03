@@ -1,20 +1,18 @@
-# English translations for is package.
-# Copyright (C) 2012 THE is'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the is package.
-# Andy Theuninck <andy@wholefoods.coop>, 2012.
+# Base strings for POS
+# Copyright (C) 2015
+# This file is distributed under the same license as the POS package.
+# Andy Theuninck <andy@gohanman.com> 2015
 #
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: is 4c-nf\n"
+"Project-Id-Version: 1.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-06-28 15:31-0500\n"
-"PO-Revision-Date: 2012-06-28 12:42-0500\n"
-"Last-Translator: Andy Theuninck <andy@wholefoods.coop>\n"
-"Language-Team: English\n"
+"POT-Creation-Date: 2015-03-23 11:46-0500\n"
+"PO-Revision-Date: 2015-03-23 11:46-0500\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: lib/PrehLib.php:322 parser-class-lib/parse/SimpleTender.php:49
 #: parser-class-lib/parse/SimpleTender.php:70

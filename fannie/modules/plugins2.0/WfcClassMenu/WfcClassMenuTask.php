@@ -32,8 +32,7 @@ class WfcClassMenuTask extends FannieTask
 {
     public $name = 'WFC Class Menu Task';
 
-    public $description = 'Tracks usage of WFC virtual coupon and updates custdata.blueLine
-    to indicate whether the coupon is available. Replaces older script "nightly.memcoupon.php".';
+    public $description = 'Build custom menu for buying class registrations.';
 
     public function run()
     {
@@ -41,14 +40,24 @@ class WfcClassMenuTask extends FannieTask
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $dbc->query('DELETE FROM QuickLookups WHERE lookupSet=708 AND sequence < 32766');
-        $dbc->query('INSERT QuickLookups (lookupSet, label, action, sequence) 
+        $r = $dbc->query('
                     SELECT 708, u.description, p.upc, TO_DAYS(expires)-(1970*365) 
                     FROM products AS p 
                         INNER JOIN productUser AS u ON p.upc=u.upc 
                         LEFT JOIN productExpires AS e ON p.upc=e.upc 
-                    WHERE p.department=708 AND CURDATE() <= e.expires');
+                    WHERE p.department=708 AND CURDATE() <= e.expires
+                    ORDER BY u.description');
+        $insP = $dbc->prepare('
+            INSERT INTO QuickLookups
+            (lookupSet, label, action, sequence)
+            VALUES (?, ?, ?, ?)');
+        $seq = 0;
+        while ($w = $dbc->fetchRow($r)) {
+            $dbc->execute($insP, array(708, $w['description'], $w['upc'], $seq)); 
+            $seq++;
+        }
 
-        SyncLanes::pushTable('QuickLookups');
+        $success = \COREPOS\Fannie\API\data\SyncLanes::pushTable('QuickLookups');
     }
 }
 

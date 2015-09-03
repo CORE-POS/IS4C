@@ -29,17 +29,17 @@
 class TenderReceiptFormat extends DefaultReceiptFormat 
 {
 
-	/**
-	  Formatting function
-	  @param $row a single receipt record
-	  @return a formatted string
-	*/
-	public function format($row)
+    /**
+      Formatting function
+      @param $row a single receipt record
+      @return a formatted string
+    */
+    public function format($row)
     {
-		$ret = str_pad($row['description'],44,' ',STR_PAD_LEFT);
-		$ret .= str_pad(sprintf('%.2f',-1*$row['total']),8,' ',STR_PAD_LEFT);
+        $ret = str_pad($row['description'],44,' ',STR_PAD_LEFT);
+        $ret .= str_pad(sprintf('%.2f',-1*$row['total']),8,' ',STR_PAD_LEFT);
 
-		return $ret;
-	}
+        return $ret;
+    }
 }
 

@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class UnfiInvoiceGrabber extends FanniePlugin 
+class UnfiInvoiceGrabber extends \COREPOS\Fannie\API\FanniePlugin 
 {
     public $plugin_settings = array(
     'UnfiInvoiceUser' => array('default'=>'','label'=>'Username',

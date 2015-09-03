@@ -3,14 +3,14 @@
 
     Copyright 2005,2009 Whole Foods Community Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -192,14 +192,11 @@ if ($validatedUser){
   $uid = $validatedUID;
 }
 elseif ($auditedUser){
-  $auditedUID = getUID($auditedUser);
-  $uid = $auditedUID;
-  include('audit.php');
 /* 2el. Notify dept manager of the new values.  */
   if (!empty($likeCode))
-    audit($sID,$auditedUser,$upc,$descript,$price,$tax,$FS,$Scale,$NoDisc,$likeCode);
+    \COREPOS\Fannie\API\lib\AuditLib::itemUpdate($upc, $likeCode);
   else
-    audit($sID,$auditedUser,$upc,$descript,$price,$tax,$FS,$Scale,$NoDisc);
+    \COREPOS\Fannie\API\lib\AuditLib::itemUpdate($upc);
 }
 
 /* 2. Insert or update per-coop products data  */
@@ -492,6 +489,13 @@ elseif (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] == -1){
  * The page contains form elements but there is no submit for the them.
  * The record-select input is also displayed in a proper form with a submit.
 */
+
+$deptQ = "SELECT dept_no, dept_name FROM departments ORDER BY dept_no";
+$deptR = $dbc->query($deptQ);
+$row = $dbc->fetch_array($deptR);
+$firstDeptNo = $row['dept_no'];
+$firstDeptName = $row['dept_name'];
+
 $query1 = "SELECT upc,description,normal_price,department,subdept,
         foodstamp,scale,qttyEnforced,discount,inUse,deposit
          FROM products WHERE upc = '$upc'";
@@ -503,7 +507,7 @@ echo "<table border=0>";
         echo "</tr><tr><td><b>Description</b></td><td>{$row['description']}</td>";
         echo "<td><b>Price</b></td><td>\${$row['normal_price']}</td></tr></table>";
         echo "<table border=0><tr>";
-        echo "<th>Dept<th>subDept<th>FS<th>Scale<th>QtyFrc<th>NoDisc<th>inUse<th>deposit</b>";
+        echo "<th>Dept<th>Sub-Dept<th>FS<th>Scale<th>QtyFrc<th>NoDisc<th>inUse<th>deposit</b>";
         echo "</tr>";
         echo "<tr>";
         $dept=$row['department'];
@@ -528,7 +532,7 @@ echo "<table border=0>";
         echo $dept . ' ' .  $row2['dept_name'];
         echo " </td>";
 
-        echo "<td>";
+        echo "<td style='text-align:center;'>";
         echo $subdept . ' ' .  $row2a['subdept_name'];
         echo " </td>";
 
@@ -554,6 +558,11 @@ echo "<table border=0>";
                 }
         echo "></td><td align=center><input type=text value=\"".$row["deposit"]."\" name=deposit size='5'";
         echo "></td></tr>";
+ 
+        if ($dept == $firstDeptNo) {
+            echo "<tr><td colspan=99 style='color:red;'>This item is coded for the default " .
+                "department: {$firstDeptName}. Did you intend that?</td></tr>";
+        }
 
     echo "</table>";
         echo "<hr>";

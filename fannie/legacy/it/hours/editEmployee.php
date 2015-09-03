@@ -6,8 +6,8 @@ exit;
 /*
 require($FANNIE_ROOT.'auth/login.php');
 if (!validateUserQuiet('edit_employees')){
-	header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/it/hours/editEmployee.php?id=".$_GET["id"]);
-	return;
+    header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/it/hours/editEmployee.php?id=".$_GET["id"]);
+    return;
 }
 
 require('db.php');
@@ -15,8 +15,8 @@ $db = hours_dbconnect();
 
 $empID = $_GET["id"];
 if (!is_numeric($empID)){
-	echo "<b>Error: no employee ID specified</b>";
-	return;
+    echo "<b>Error: no employee ID specified</b>";
+    return;
 }
 
 echo "<html><head><title>Edit</title>";
@@ -37,10 +37,10 @@ $deptsR = $db->query($deptsQ);
 echo "<select name=dept>";
 echo "<option value=\"\"></option>";
 while ($deptsW = $db->fetch_row($deptsR)){
-	if ($deptsW[1] == $fetchW[2])
-		echo "<option value=$deptsW[1] selected>$deptsW[0]</option>";
-	else
-		echo "<option value=$deptsW[1]>$deptsW[0]</option>";
+    if ($deptsW[1] == $fetchW[2])
+        echo "<option value=$deptsW[1] selected>$deptsW[0]</option>";
+    else
+        echo "<option value=$deptsW[1]>$deptsW[0]</option>";
 }
 echo "</select>";
 echo "</td></tr>";

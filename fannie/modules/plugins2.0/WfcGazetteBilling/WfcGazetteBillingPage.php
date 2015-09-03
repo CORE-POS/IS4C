@@ -1,47 +1,50 @@
 <?php
 include(dirname(__FILE__).'/../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
-$EMP_NO = 1001;
-$LANE_NO = 30;
+class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
-$BILLING_MEMBER = array(
-    "1/20B/W" => 45.00, 
-    "1/15B/W" => 60.00,
-    "1/10B/W" => 90.00,
-    "1/5B/W" => 187.50,
-    "1/ 5B/W" => 187.50,
-    "1/2B/W" => 412.50,
-    "1/ 2B/W" => 412.50,
-    "1/20FULL" => 63.75,
-    "1/15FULL" => 75.00,
-    "1/10FULL"  => 112.50,
-    "0.1FULL"  => 112.50,
-    "1/5FULL" => 225,
-    "1/ 5FULL" => 225,
-    "1/2FULL" => 562.50,
-    "1/ 2FULL" => 562.50
-);
+    private $BILLING_MEMBER = array(
+        "1/20B/W" => 45.00, 
+        "1/15B/W" => 60.00,
+        "1/10B/W" => 90.00,
+        "1/5B/W" => 187.50,
+        "1/ 5B/W" => 187.50,
+        "1/2B/W" => 412.50,
+        "1/ 2B/W" => 412.50,
+        "1/20FULL" => 63.75,
+        "1/15FULL" => 75.00,
+        "1/10FULL"  => 112.50,
+        "0.1FULL"  => 112.50,
+        "1/5FULL" => 225,
+        "1/ 5FULL" => 225,
+        "1/2FULL" => 562.50,
+        "1/ 2FULL" => 562.50
+    );
 
-$BILLING_NONMEMBER = array(
-    "1/20B/W" => 60,
-    "1/20B/W" => 60,
-    "1/15B/W" => 80,
-    "1/10B/W" => 120,
-    "1/5B/W" => 250,
-    "1/ 5B/W" => 250,
-    "1/2B/W" => 550,
-    "1/ 2B/W" => 550,
-    "1/20FULL" => 85,
-    "1/15FULL" => 100,
-    "1/10FULL"  => 150,
-    "1/5FULL" => 300,
-    "1/ 5FULL" => 300,
-    "1/2FULL" => 750,
-    "1/ 2FULL" => 750
-);
+    private $BILLING_NONMEMBER = array(
+        "1/20B/W" => 60,
+        "1/20B/W" => 60,
+        "1/15B/W" => 80,
+        "1/10B/W" => 120,
+        "1/5B/W" => 250,
+        "1/ 5B/W" => 250,
+        "1/2B/W" => 550,
+        "1/ 2B/W" => 550,
+        "1/20FULL" => 85,
+        "1/15FULL" => 100,
+        "1/10FULL"  => 150,
+        "1/5FULL" => 300,
+        "1/ 5FULL" => 300,
+        "1/2FULL" => 750,
+        "1/ 2FULL" => 750
+    );
 
-class WfcGazetteBillingPage extends FannieUploadPage {
+    public $page_set = 'Plugin :: WfcGazetteBilling';
+    public $description = '[Import Billing Data] to generate AR transactions with appropriate balances.';
+    public $themed = true;
 
     protected $preview_opts = array(
         'phone' => array(
@@ -89,10 +92,12 @@ class WfcGazetteBillingPage extends FannieUploadPage {
     }
 
     function post_charges(){
-        global $FANNIE_TRANS_DB, $EMP_NO, $LANE_NO;
+        global $FANNIE_TRANS_DB;
+        $EMP_NO = $this->config->get('EMP_NO');
+        $LANE_NO = $this->config->get('REGISTER_NO');
         $ret = "<b>Date</b>: ".date("m/d/Y")."<br />
             <i>Summary of charges</i><br />
-            <table cellspacing=0 cellpadding=3 border=1>
+            <table class=\"table\">
             <tr><th>Account</th><th>Charge</th><th>Receipt #</th></tr>";
         $sql = FannieDB::get($FANNIE_TRANS_DB); 
         $dRecord = DTrans::$DEFAULTS;
@@ -159,12 +164,18 @@ class WfcGazetteBillingPage extends FannieUploadPage {
             $ret .= sprintf("<tr><td>%d</td><td>$%.2f</td><td>%s</td></tr>",
                 $cardno,$amt,$EMP_NO."-".$LANE_NO."-".$t_no);
         }
+
+        $ret .= '</table>';
+
         return $ret;
     }
 
     private $output_html = '';
-    function process_file($linedata){
-        global $BILLING_MEMBER, $BILLING_NONMEMBER, $FANNIE_OP_DB;
+    function process_file($linedata)
+    {
+        global $FANNIE_OP_DB;
+        $BILLING_MEMBER = $this->BILLING_MEMBER;
+        $BILLING_NONMEMBER = $this->BILLING_NONMEMBER;
         $PHONE = $this->get_column_index('phone');
         $CONTACT = $this->get_column_index('name');
         $SIZE = $this->get_column_index('size');
@@ -172,7 +183,7 @@ class WfcGazetteBillingPage extends FannieUploadPage {
         $MEMBER = $this->get_column_index('card_no');
 
         $ret = "<b>Gazette Billing Preview</b><br />
-            <table cellspacing=0 cellpadding=3 border=1><tr>
+            <table class=\"table\"><tr>
             <th>#</th><th>Name</th><th>Type</th><th>Cost</th>
             </tr>
             <form action=WfcGazetteBillingPage.php method=post>";
@@ -192,6 +203,7 @@ class WfcGazetteBillingPage extends FannieUploadPage {
             AND c.lastname like ? and
             (m.phone=? OR m.email_1=? OR m.email_2=?)");
         $greydoffin=0;
+        $warnings = '';
         foreach($linedata as $data){
 
             if (!isset($data[$PHONE])) continue;
@@ -215,6 +227,11 @@ class WfcGazetteBillingPage extends FannieUploadPage {
                     $ph = '218-348-4557';
                 elseif(strstr($cn,'BREWHOUSE'))
                     $ph = '218-726-1392';
+                elseif (strstr($cn, 'ENDION')) {
+                    $ph = '218-623-1872';
+                } elseif (strstr($cn, 'GIFT CARDS')) {
+                    $ph = '218.623.1872';
+                }
             }
 
             $desc = "($sz, ".($clr=="FULL" ? "color" : "b&w");
@@ -227,31 +244,37 @@ class WfcGazetteBillingPage extends FannieUploadPage {
                 $searchR = $sql->exec_statement($altSearchQ, array($tmp[0].'%', $ph, $ph, $ph));
             }
 
-            if (strstr($cn, 'GREY DOFFIN')){
+            if (strstr($cn, 'GREY DOFFIN') && strstr(strtoupper($cn),'FURNITURE')) {
                 $searchP = $sql->prepare_statement('SELECT CardNo as card_no, LastName
                         FROM custdata WHERE CardNo=? AND personNum=1');
-                $args = array( ($greydoffin==0) ? 6880 : 13366 );
-                $searchR = $sql->exec_statement($searchP, $args);
-                $greydoffin++;
+                $searchR = $sql->exec_statement($searchP, array(13366));
+            } else if (strstr($cn, 'GREY DOFFIN')) {
+                $searchP = $sql->prepare_statement('SELECT CardNo as card_no, LastName
+                        FROM custdata WHERE CardNo=? AND personNum=1');
+                $searchR = $sql->exec_statement($searchP, array(6880));
             }
             
             if ($sql->num_rows($searchR) == 0){
-                $ret .= sprintf("<i>Warning: no membership found for %s (%s)<br />",
+                $warning .= sprintf("<i>Warning: no membership found for %s (%s)<br />",
                     $data[$CONTACT],$ph);
             }
             elseif ($sql->num_rows($searchR) > 1){
-                $ret .= sprintf("<i>Warning: multiple memberships found for %s (%s)<br />",
+                $warning .= sprintf("<i>Warning: multiple memberships found for %s (%s)<br />",
                     $data[$CONTACT],$ph);
             }
             elseif (!isset($BILLING_NONMEMBER[$sz.$clr])){
-                $ret .= sprintf('<i>Warning: size/color "%s" unknown<br />',
+                $warning .= sprintf('<i>Warning: size/color "%s" unknown<br />',
                         $sz.$clr);
             }
             else {
                     $row = $sql->fetch_row($searchR);
                     $ret .= sprintf("<tr><td>%d</td><td>%s</td>
-                    <td>%s %s (%s)</td><td><input type=text 
-                    size=5 name=billable%d value=%.2f /></td></tr>
+                    <td>%s %s (%s)</td>
+                    <td><div class=\"input-group\">
+                        <span class=\"input-group-addon\">\$</span>
+                        <input type=text class=\"form-control\" name=billable%d 
+                            required value=%.2f />
+                    </div></td></tr>
                     <input type=hidden name=desc%d value=\"%s\" />
                     <input type=hidden name=cardnos[] value=%d />",
                     $row[0],$row[1],$sz,
@@ -266,10 +289,15 @@ class WfcGazetteBillingPage extends FannieUploadPage {
             }
         }
         $ret .= "</table>";
-        $ret .= "<input type=submit value=\"Charge Accounts\" />";
+        $ret .= '<p><button type=submit class="btn btn-default">Charge Accounts</button></p>';
         $ret .= "</form>";
         $this->output_html = $ret;
-        return True;
+
+        if (!empty($warning)) {
+            $this->output_html = '<div class="alert alert-warning">' . $warning . '</div>' . $this->output_html;
+        }
+
+        return true;
     }
 
     function decimal_to_fraction($num){
@@ -292,7 +320,7 @@ class WfcGazetteBillingPage extends FannieUploadPage {
     }
 
     function form_content(){
-        return 'Upload billing spreadsheet';
+        return '<p>Upload billing spreadsheet</p>';
     }
 }
 

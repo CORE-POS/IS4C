@@ -41,6 +41,21 @@ class EmployeesModel extends BasicModel
     'birthdate'=>array('type'=>'DATETIME')
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Table of cashiers. emp_no identifies
+a cashier uniquely. CashierPassword and
+AdminPassword are numeric passcodes used
+pretty interchangably (should probably match).
+EmpActive toggles whether an account can
+actually log in. frontendsecurity is used
+to restrict certain actions at the register
+based on security level.
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function emp_no()

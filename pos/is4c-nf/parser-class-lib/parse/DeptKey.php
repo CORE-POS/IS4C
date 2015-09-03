@@ -23,85 +23,90 @@
 
 class DeptKey extends Parser 
 {
-	public function check($str)
+    public function check($str)
     {
-		if (strstr($str,"DP") && strlen($str) > 3 &&
-		    substr($str,0,2) != "VD") {
-			return true;
+        if (strstr($str,"DP") && strlen($str) > 3 &&
+            substr($str,0,2) != "VD") {
+            return true;
         }
 
-		return false;
-	}
+        return false;
+    }
 
-	public function parse($str)
+    public function parse($str)
     {
-		global $CORE_LOCAL;
-		$my_url = MiscLib::base_url();
+        $my_url = MiscLib::base_url();
 
-		$split = explode("DP",$str);
-		$dept = $split[1];
-		$amt = $split[0];
+        $split = explode("DP",$str);
+        $dept = $split[1];
+        $amt = $split[0];
         if (strstr($amt, '.')) {
             $amt = round($amt * 100);
         }
-		$ret = $this->default_json();
+        $ret = $this->default_json();
 
-		/**
-		  This "if" is the new addition to trigger the
-		  department select screen
-		*/
-		if (empty($split[1])) {
-			// no department specified, just amount followed by DP
-			
-			// maintain refund if needed
-			if ($CORE_LOCAL->get("refund")) {
-				$amt = "RF" . $amt;
+        /**
+          This "if" is the new addition to trigger the
+          department select screen
+        */
+        if (empty($split[1])) {
+            // no department specified, just amount followed by DP
+            
+            // maintain refund if needed
+            if (CoreLocal::get("refund")) {
+                $amt = "RF" . $amt;
             }
 
-			// save entered amount
-			$CORE_LOCAL->set("departmentAmount",$amt);
+            // save entered amount
+            CoreLocal::set("departmentAmount",$amt);
 
-			// go to the department select screen
-			$ret['main_frame'] = $my_url.'gui-modules/deptlist.php';
-		} else if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == "") {
-			if ($CORE_LOCAL->get("SecurityRefund") > 20) {
-				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=RefundAdminLogin";
-			} else {
-				$ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
+            // go to the department select screen
+            $ret['main_frame'] = $my_url.'gui-modules/deptlist.php';
+        } else if (CoreLocal::get("refund")==1 && CoreLocal::get("refundComment") == "") {
+            if (CoreLocal::get("SecurityRefund") > 20) {
+                $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=RefundAdminLogin";
+            } else {
+                $ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
             }
-			$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
-		}
-
-		/* apply any appropriate special dept modules */
-		$deptmods = $CORE_LOCAL->get('SpecialDeptMap');
-		$index = (int)($dept/10);
-		if (is_array($deptmods) && isset($deptmods[$index])) {
-			foreach($deptmods[$index] as $mod) {
-				$obj = new $mod();
-				$ret = $obj->handle($dept,$amt/100,$ret);
-			}
-		}
-		
-		if (!$ret['main_frame']) {
-			$ret = PrehLib::deptkey($amt, $dept, $ret);
+            CoreLocal::set("refundComment",CoreLocal::get("strEntered"));
         }
 
-		return $ret;
-	}
+        /* apply any appropriate special dept modules */
+        $deptmods = CoreLocal::get('SpecialDeptMap');
+        $db = Database::pDataConnect();
+        if (!is_array($deptmods) && $db->table_exists('SpecialDeptMap')) {
+            $model = new SpecialDeptMapModel($db);
+            $deptmods = $model->buildMap();
+            CoreLocal::set('SpecialDeptMap', $deptmods);
+        }
+        $index = (int)($dept/10);
+        if (is_array($deptmods) && isset($deptmods[$index])) {
+            foreach($deptmods[$index] as $mod) {
+                $obj = new $mod();
+                $ret = $obj->handle($dept,$amt/100,$ret);
+            }
+        }
+        
+        if (!$ret['main_frame']) {
+            $ret = PrehLib::deptkey($amt, $dept, $ret);
+        }
 
-	public function doc()
+        return $ret;
+    }
+
+    public function doc()
     {
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td><i>amount</i>DP<i>department</i>0</td>
-				<td>Ring up <i>amount</i> to the specified
-				<i>department</i>. The trailing zero is
-				necessary for historical purposes</td>
-			</tr>
-			</table>";
-	}
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td><i>amount</i>DP<i>department</i>0</td>
+                <td>Ring up <i>amount</i> to the specified
+                <i>department</i>. The trailing zero is
+                necessary for historical purposes</td>
+            </tr>
+            </table>";
+    }
 }
 

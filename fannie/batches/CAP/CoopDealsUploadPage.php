@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,12 +26,14 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class CoopDealsUploadPage extends FannieUploadPage {
+class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage 
+{
     public $title = "Fannie - Co+op Deals sales";
     public $header = "Upload Co+op Deals file";
 
     public $description = '[Co+op Deals Import] loads sales information from Co+op Deals pricing spreadsheets.
     This data can be used to create sales batches.';
+    public $themed = true;
 
     protected $preview_opts = array(
         'upc' => array(
@@ -63,7 +65,13 @@ class CoopDealsUploadPage extends FannieUploadPage {
             'display_name' => 'Sub',
             'default' => 6,
             'required' => False
-        )
+        ),
+        'mult' => array(
+            'name' => 'mult',
+            'display_name' => 'Line Notes',
+            'default' => 13,
+            'required' => false,
+        ),
     );
 
     function process_file($linedata){
@@ -73,7 +81,13 @@ class CoopDealsUploadPage extends FannieUploadPage {
             $drop = $dbc->prepare_statement("DROP TABLE tempCapPrices");
             $dbc->exec_statement($drop);
         }
-        $create = $dbc->prepare_statement("CREATE TABLE tempCapPrices (upc varchar(13), price decimal(10,2), abtpr varchar(3))");
+        $create = $dbc->prepare_statement("
+            CREATE TABLE tempCapPrices (
+                upc varchar(13), 
+                price decimal(10,2), 
+                abtpr varchar(3), 
+                multiplier INT DEFAULT 1
+            )");
         $dbc->exec_statement($create);
 
         $SUB = $this->get_column_index('sub');
@@ -81,13 +95,18 @@ class CoopDealsUploadPage extends FannieUploadPage {
         $SKU = $this->get_column_index('sku');
         $PRICE = $this->get_column_index('price');
         $ABT = $this->get_column_index('abt');
+        $MULT = $this->get_column_index('mult');
 
         $rm_checks = (FormLib::get_form_value('rm_cds') != '') ? True : False;
-        $do_skus = $dbc->table_exists("UnfiToPlu");
-        $upcP = $dbc->prepare_statement('SELECT upc FROM products WHERE upc=?');
-        $skuP = $dbc->prepare_statement('SELECT wfc_plu FROM UnfiToPlu WHERE upc=?');
-        $insP = $dbc->prepare_statement('INSERT INTO tempCapPrices VALUES (?,?,?)');
-        foreach($linedata as $data){
+        $upcP = $dbc->prepare_statement('SELECT upc FROM products WHERE upc=? AND inUse=1');
+        $skuP = $dbc->prepare_statement('
+            SELECT s.upc 
+            FROM vendorSKUtoPLU AS s
+                INNER JOIN products AS p ON s.vendorID=p.default_vendor_id AND s.upc=p.upc
+            WHERE s.sku=?'
+        );
+        $insP = $dbc->prepare_statement('INSERT INTO tempCapPrices VALUES (?,?,?,?)');
+        foreach($linedata as $data) {
             if (!is_array($data)) continue;
             if (count($data) < 14) continue;
 
@@ -98,16 +117,27 @@ class CoopDealsUploadPage extends FannieUploadPage {
             $upc = BarcodeLib::padUPC($upc);
 
             $lookup = $dbc->exec_statement($upcP, array($upc));
-            if ($dbc->num_rows($lookup) == 0){
-                if ($SUB === False) continue;
-                if ($SKU === False) continue;
-                if ($data[$SUB] != "BULK") continue;
-                if ($data[$SKU] == "direct") continue;
-                if (!$do_skus) continue;
+            if ($dbc->num_rows($lookup) == 0) {
                 $sku = $data[$SKU];
                 $look2 = $dbc->exec_statement($skuP, array($sku));
-                if ($dbc->num_rows($look2) == 0) continue;
-                $upc = array_pop($dbc->fetch_row($look2));
+                if ($dbc->num_rows($look2)) {
+                    $w = $dbc->fetch_row($look2);
+                    $upc = $w['upc'];
+                } else {
+                    $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
+                    $look3 = $dbc->exec_statement($skuP, array($sku));
+                    if ($dbc->num_rows($look3)) {
+                        $w = $dbc->fetch_row($look3);
+                        $upc = $w['upc'];
+                    }
+                }
+            }
+            $mult = 1;
+            if ($MULT !== false) {
+                $line_notes = $data[$MULT];
+                if (preg_match('/(\d+)\/\$(\d+)/', $line_notes, $matches)) {
+                    $mult = $matches[1];
+                }
             }
 
             $price = trim($data[$PRICE],"\$");
@@ -119,7 +149,7 @@ class CoopDealsUploadPage extends FannieUploadPage {
             if (strstr($data[$ABT],"TPR"))
                 $abt[] = "TPR";
             foreach($abt as $type){
-                $dbc->exec_statement($insP,array($upc,$price,$type));
+                $dbc->exec_statement($insP,array($upc,$price,$type,$mult));
             }
         }
 
@@ -127,10 +157,10 @@ class CoopDealsUploadPage extends FannieUploadPage {
     }
 
     function form_content(){
-        return '<p>Upload a CSV or Excel (XLS, not XLSX) file containing Co+op Deals
+        return '<div class="well">Upload a CSV or Excel (XLS, not XLSX) file containing Co+op Deals
             Sale information. The file needs to contain UPCs, sale prices,
             and a column indicating A, B, or TPR (or some combination of the
-            three).</p>';
+            three).</div>';
     }
 
     function preview_content(){
@@ -138,9 +168,16 @@ class CoopDealsUploadPage extends FannieUploadPage {
     }
 
     function results_content(){
-        $ret = "Sales data import complete<p />";
-        $ret .= "<a href=\"CoopDealsReviewPage.php\">Review data &amp; set up sales</a>";
+        $ret = "<p>Sales data import complete</p>";
+        $ret .= "<p><a href=\"CoopDealsReviewPage.php\">Review data &amp; set up sales</a></p>";
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Default column selections correspond to the
+            tab/worksheet that lists all A, B, and TPR items</p>'
+            . parent::helpContent();
     }
 }
 

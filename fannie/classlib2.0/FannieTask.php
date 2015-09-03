@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,6 +40,8 @@ class FannieTask
         'weekday' => '*',
     );
 
+    public $schedulable = true;
+
     protected $error_threshold  = 99;
 
     const TASK_NO_ERROR         = 0;
@@ -49,9 +51,36 @@ class FannieTask
     const TASK_LARGE_ERROR      = 4;
     const TASK_WORST_ERROR      = 5;
 
+    protected $config = null;
+
+    protected $logger = null;
+
+    protected $options = array();
+    protected $arguments = array();
+
     public function setThreshold($t)
     {
         $this->error_threshold = $t;
+    }
+
+    public function setConfig(FannieConfig $fc)
+    {
+        $this->config = $fc;
+    }
+
+    public function setLogger(FannieLogger $fl)
+    {
+        $this->logger = $fl;
+    }
+
+    public function setOptions($o)
+    {
+        $this->options = $o;
+    }
+
+    public function setArguments($a)
+    {
+        $this->arguments = $a;
     }
 
     /**
@@ -63,23 +92,81 @@ class FannieTask
     }
 
     /**
-      Format message with date information
-      and task's class name
+      Write message to log and if necessary raise it to stderr
+      to trigger an email
       @param $str message string
-      @param $severity [optional, default zero] message importance
-      @return formatted string
+      @param $severity [optional, default 6/info] message importance
+      @return empty string
     */
-    public function cronMsg($str, $severity=0)
+    public function cronMsg($str, $severity=6)
     {
         $info = new ReflectionClass($this);
         $msg = date('r').': '.$info->getName().': '.$str."\n";
 
+        $this->logger->log($severity, $info->getName() . ': ' . $str); 
+
         // raise message into stderr
-        if ($severity >= $this->error_threshold) {
+        if ($severity <= $this->error_threshold) {
             file_put_contents('php://stderr', $msg, FILE_APPEND);
         }
 
-        return $msg;
+        return '';
+    }
+
+    /**
+      getopt style parsing. not fully posix compliant.
+      @param $argv [array] of options and arguments
+      @return [array]
+        - options [array] of option names and values
+        - arguments [array] of non-option arguments
+
+      Example:
+      php FannieTask.php SomeTask -v --verbose -h 1 --host=1 something else
+
+      lazyGetOpt returns
+        - options
+          "-v" => true
+          "--verbose" => true
+          "-h" => 1
+          "--host" => 1
+        - arguments
+          0 => "something"
+          1 => "else"
+    */
+    public function lazyGetOpt($argv)
+    {
+        $options = array();
+        $nonopt = array();
+
+        for ($i=0; $i<count($argv); $i++) {
+            $arg = $argv[$i];
+            if (preg_match('/^(--\w+)=(.+)$/', $arg, $long)) {
+                $options[$long[1]] = $long[2];
+            } elseif (preg_match('/^--\w+$/', $arg)) {
+                if ($i+1 < count($argv) && substr($argv[$i+1],0,1) != '-') {
+                    $options[$arg] = $argv[$i+1];
+                    $i++;
+                } else {
+                    $options[$arg] = true;
+                }
+            } elseif (preg_match('/^(-\w)=.+$/', $arg, $short)) {
+                $options[$short[1]] = $short[2];
+            } elseif (preg_match('/^-\w$/', $arg)) {
+                if ($i+1 < count($argv) && substr($argv[$i+1],0,1) != '-') {
+                    $options[$arg] = $argv[$i+1];
+                    $i++;
+                } else {
+                    $options[$arg] = true;
+                }
+            } else {
+                $nonopt[] = $arg;
+            }
+        }
+
+        return array(
+            'options' => $options,
+            'arguments' => $nonopt,
+        );
     }
 }
 
@@ -92,6 +179,11 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
 
     include(dirname(__FILE__).'/../config.php');
     include(dirname(__FILE__).'/FannieAPI.php');
+
+    $config = FannieConfig::factory();
+    $logger = new FannieLogger();
+    FannieDispatch::setLogger($logger);
+    FannieDispatch::setErrorHandlers();
 
     // prepopulate autoloader
     $preload = FannieAPI::listModules('FannieTask');
@@ -108,10 +200,24 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         exit;
     }
 
-    if (isset($FANNIE_TASK_THRESHOLD) && is_numeric($FANNIE_TASK_THRESHOLD)) {
-        $obj->setThreshold($FANNIE_TASK_THRESHOLD);
+    if (is_numeric($config->get('TASK_THRESHOLD'))) {
+        $obj->setThreshold($config->get('TASK_THRESHOLD'));
+    }
+    $obj->setConfig($config);
+    $obj->setLogger($logger);
+
+    /**
+      Parse & set extra options and arguments
+    */
+    if ($argc > 2) {
+        $remainder = array_slice($argv, 2);
+        $parsed = $obj->lazyGetOpt($remainder);
+        $obj->setOptions($parsed['options']);
+        $obj->setArguments($parsed['arguments']);
     }
 
+    $logger->info('Starting task: ' . $class);
     $obj->run();
+    $logger->info('Finished task: ' . $class);
 }
 

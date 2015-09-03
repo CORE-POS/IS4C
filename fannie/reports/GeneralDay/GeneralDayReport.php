@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -32,6 +32,8 @@ class GeneralDayReport extends FannieReportPage
         (should net to zero). Also listed are transaction count &amp; size information by member type and
         equity sales for the day.'; 
     public $report_set = 'Sales Reports';
+    public $themed = true;
+    protected $new_tablesorter = true;
 
     protected $title = "Fannie : General Day Report";
     protected $header = "General Day Report";
@@ -48,7 +50,8 @@ class GeneralDayReport extends FannieReportPage
     {
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB, $FANNIE_EQUITY_DEPARTMENTS,
             $FANNIE_COOP_ID;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $d1 = FormLib::get_form_value('date1',date('Y-m-d'));
         $dates = array($d1.' 00:00:00',$d1.' 23:59:59');
         $data = array();
@@ -91,10 +94,54 @@ class GeneralDayReport extends FannieReportPage
                 WHERE d.tdate BETWEEN ? AND ?
                     AND d.department <> 0 AND d.trans_type <> 'T'{$shrinkageUsers}
                 GROUP BY m.super_name ORDER BY m.super_name");
-        $salesR = $dbc->exec_statement($salesQ,$dates);
+        $salesQ = '';
+        switch (FormLib::get('sales-by')) {
+            case 'Department':
+                $salesQ = '
+                    SELECT t.dept_name AS category,
+                        SUM(d.quantity) AS qty,
+                        SUM(d.total) AS total
+                    FROM ' . $dlog . ' AS d
+                        LEFT JOIN departments AS t ON d.department=t.dept_no
+                    WHERE d.department <> 0
+                        AND d.trans_type <> \'T\' ' . $shrinkageUsers . '
+                        AND d.tdate BETWEEN ? AND ?
+                    GROUP BY t.dept_name
+                    ORDER BY t.dept_name'; 
+                break;
+            case 'Sales Code':
+                $salesQ = '
+                    SELECT t.salesCode AS category,
+                        SUM(d.quantity) AS qty,
+                        SUM(d.total) AS total
+                    FROM ' . $dlog . ' AS d
+                        LEFT JOIN departments AS t ON d.department=t.dept_no
+                    WHERE d.department <> 0
+                        AND d.trans_type <> \'T\' ' . $shrinkageUsers . '
+                        AND d.tdate BETWEEN ? AND ?
+                    GROUP BY t.salesCode
+                    ORDER BY t.salesCode'; 
+                break;
+            case 'Super Department':
+            default:
+                $salesQ = '
+                    SELECT m.super_name AS category,
+                        SUM(d.quantity) AS qty,
+                        SUM(d.total) AS total
+                    FROM ' . $dlog . ' AS d
+                        LEFT JOIN MasterSuperDepts AS m ON d.department=m.dept_ID
+                    WHERE d.department <> 0
+                        AND d.trans_type <> \'T\' ' . $shrinkageUsers . '
+                        AND d.tdate BETWEEN ? AND ?
+                    GROUP BY m.super_name
+                    ORDER BY m.super_name';
+                break;
+        }
+        $salesP = $dbc->prepare($salesQ);
+        $salesR = $dbc->exec_statement($salesP,$dates);
         $report = array();
         while($salesW = $dbc->fetch_row($salesR)){
-            $record = array($salesW['super_name'],
+            $record = array($salesW['category'],
                     sprintf('%.2f',$salesW['qty']),
                     sprintf('%.2f',$salesW['total']));
             $report[] = $record;
@@ -286,20 +333,55 @@ class GeneralDayReport extends FannieReportPage
         $start = date('Y-m-d',strtotime('yesterday'));
         ?>
         <form action=GeneralDayReport.php method=get>
-        <table cellspacing=4 cellpadding=4>
-        <tr>
-        <th>Date</th>
-        <td><input type=text id=date1 name=date1 /></td>
-        </tr><tr>
-        <td>Excel <input type=checkbox name=excel /></td>
-        <td><input type=submit name=submit value="Submit" /></td>
-        </tr>
-        </table>
+        <div class="form-group">
+            <label>
+                Date
+                (<a href="../GeneralRange/">Range of Dates</a>)
+            </label>
+            <input type=text id=date1 name=date1 
+                class="form-control date-field" required />
+        </div>
+        <div class="form-group">
+            <label>List Sales By</label>
+            <select name="sales-by" class="form-control">
+                <option>Super Department</option>
+                <option>Department</option>
+                <option>Sales Code</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Excel <input type=checkbox name=excel /></label>
+        </div>
+        <p>
+        <button type=submit name=submit value="Submit"
+            class="btn btn-default">Submit</button>
+        </p>
         </form>
         <?php
-        $this->add_onload_command("\$('#date1').datepicker();\n");
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            This report lists the four major categories of transaction
+            information for a given day: tenders, sales, discounts, and
+            taxes.
+            </p>
+            <p>
+            Tenders are payments given by customers such as cash or
+            credit cards. Sales are items sold to customers. Discounts
+            are percentage discounts associated with an entire
+            transaction instead of individual items. Taxes are sales
+            tax collected.
+            </p>
+            <p>
+            Tenders should equal sales minus discounts plus taxes.
+            </p>
+            <p>
+            Equity and transaction statistics are provided as generally
+            useful information.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec(false);

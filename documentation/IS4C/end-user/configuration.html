@@ -4,15 +4,12 @@
 </head>
 <body>
 	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
-	updated as of: August 20, 2012<br />
+	updated as of: October 30, 2014<br />
 	last author: Andy Theuninck
 	</div>
 The installation script for IS4C also servers as a configuration
-page. It's broken into three sections (links at the top):
-<i>Necessities</i>, which is the bare minimum to get a lane up and running,
-<i>Additional Configuration</i>, which deals with per-store
-customizations and peripheral configuration, and <i>Sample Data</i>,
-which populates part of the database for quick testing.
+page. It's broken into several sections with tabs along the top.
+<i>Necessities</i>, which is the bare minimum to get a lane up and running.
 <h3>Necessities</h3>
 <ul>
 <li><i>ini.php</i> status. This file is IS4C's configuration. It must be writable
@@ -32,18 +29,65 @@ automatically create any missing databases, tables, and views.</li>
 connection. Again the install script will create missing databases, tables, and views.
 If you skip this configuration, the lane will operate in standalone mode. For testing
 purposes, that's probably fine. Note: it is highly recommended that the server
-<b>database name</b> differ from the lane database names. The default is is4c_op.</li>
+<b>database name</b> differ from the lane database names. The default is core_trans.</li>
 <li><i>Taxes</i> is for sales tax rates. Bear in mind that a given item can only have
 one tax rate. If, for example, you have a state sales tax of 5% and a city sales tax
 of 3%, you may need to enter tax rates of 3%, 5%, <b>and</b> 8%, depending on how
 the rates overlap.</li>
-<h3>Additional Configuration</h3>
-These options are all labeled pretty clearly on the install page.
+</ul>
+<h3>Extras</h3>
+Extras is a bit of a catch-all. It contains settings related to hardware, membership,
+the lane user interface, and tenders.
+<h3>Receipt</h3>
+Receipt contains settings for printing and formatting receipts. Using the modular receipt
+is highly recommended as it provides the most flexibility for store-specific
+customizations.
+<h3>Scanning</h3>
+Scanning contains settings related to handling UPCs as well as departments that have
+special significance.
+<h3>Security</h3>
+Security controls what functionality requires a manager password.
+<h3>Debug</h3>
+Debug has some information about logging and a couple developer settings.
+<h3>DB Updates</h3>
+DB Updates is exactly what it sounds like. Schema changes can be applied from
+this page.
 <h3>Sample Data</h3>
 This page lets you load employees, customers (custdata), products, and departments.
 Customers and products are the only items strictly necessary to get going.
 There is a training login number, 9999, built into IS4C. Departments don't actually
 have to exist at the register unless you're doing open rings. 
-</ul> 
+<h2>Behind the scenes - Where is this stuff stored?</h2>
+By default, a small number of settings are saved in <em>ini.php</em>. Everyting else is
+stored in a database table named <em>parameters</em> on the lane. This table is in the
+operational database (default name <em>opdata</em>). The following settings are always
+stored in ini.php and only in ini.php:
+<ol>
+    <li>Lane Number</li>
+    <li>Store Number</li>
+    <li>Lane Database Host</li>
+    <li>Lane Database Type</li>
+    <li>Lane Database User Name</li>
+    <li>Lane Database Password</li>
+    <li>Lane Database Operational DB</li>
+    <li>Lane Database Transaction DB</li>
+    <li>Special Department modules (on the Scanning tab)</li>
+</ol>
+The first eight settings are required to connect to the database and access the
+paramters table. The other has a convoluted structure that cannot currently be
+stored in the database.
+<p />
+When the lane loads, it reads settings in this order:
+<ol>
+    <li>ini.php</li>
+    <li>parameters table records with lane_id zero</li>
+    <li>parameters table records where lane_id matches that specific lane</li>
+</ol>
+All settings can be stored in ini.php if preferred, however if the setting is
+stored in both ini.php and the parameters table with <em>different</em> values
+lane behavior can be unpredictable as the differing values periodically overwrite
+one another. The web-based configuration pages will attempt
+to update settings that are present in ini.php. The Necessities tab will also
+attempt to detect any discrepancies between ini.php and the parameters table.
 </body>
 </html>

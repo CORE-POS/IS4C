@@ -3,7 +3,7 @@
 
     Copyright 2010,2013 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,6 +32,10 @@ class MemArTransferTool extends FanniePage {
     protected $header='Transfer A/R';
 
     public $description = '[Transfer AR] moves an AR payment from one member to another.';
+    public $themed = true;
+
+    protected $must_authenticate = true;
+    protected $auth_classes =  array('editmembers');
 
     private $errors = '';
     private $mode = 'init';
@@ -66,13 +70,13 @@ class MemArTransferTool extends FanniePage {
         }
 
         if (empty($FANNIE_AR_DEPARTMENTS)){
-            $this->errors .= "<em>Error: no AR departments found</em>";
+            $this->errors .= '<div class="alert alert-danger">Error: no AR departments found</div>';
             return True;
         }
 
         $ret = preg_match_all("/[0-9]+/",$FANNIE_AR_DEPARTMENTS,$depts);
         if ($ret == 0){
-            $this->errors .= "<em>Error: can't read AR department definition</em>";
+            $this->errors .= '<div class="alert alert-danger">Error: can\'t read AR department definitions</div>';
             return True;
         }
         $temp_depts = array_pop($depts);
@@ -89,7 +93,8 @@ class MemArTransferTool extends FanniePage {
         $q = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments WHERE dept_no IN $dlist");
         $r = $dbc->exec_statement($q,$dArgs);
         if ($dbc->num_rows($r) == 0){
-            return "<em>Error: equity department(s) don't exist</em>";
+            $this->errors .= '<div class="alert alert-danger">Error: department(s) don\'t exist.</div>';
+            return true;
         }
 
         $this->depts = array();
@@ -111,56 +116,57 @@ class MemArTransferTool extends FanniePage {
             $this->cn2 = FormLib::get_form_value('memTo');
 
             if (!isset($this->depts[$this->dept])){
-                $this->errors .= "<em>Error: AR department doesn't exist</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: AR department doesn't exist</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
             if (!is_numeric($this->amount)){
-                $this->errors .= "<em>Error: amount given (".$this->amount.") isn't a number</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: amount given (".$this->amount.") isn't a number</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
             if (!is_numeric($this->cn1)){
-                $this->errors .= "<em>Error: member given (".$this->cn1.") isn't a number</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: member given (".$this->cn1.") isn't a number</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
             if (!is_numeric($this->cn2)){
-                $this->errors .= "<em>Error: member given (".$this->cn2.") isn't a number</em>"
+                $this->errors .= "<div class=\"alert alert-danger\">Error: member given (".$this->cn2.") isn't a number</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
 
-            //EL From# as dummy for fix.
-            if ($this->cn1 > 0) {
-            $q = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE CardNo=? AND personNum=1");
-            $r = $dbc->exec_statement($q,array($this->cn1));
-            if ($dbc->num_rows($r) == 0){
-                $this->errors .= "<em>Error: no such member: ".$this->cn1."</em>"
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($this->cn1);
+            if ($account == false) {
+                $this->errors .= "<div class=\"alert alert-success\">Error: no such member: ".$this->cn1."</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
-            $row = $dbc->fetch_row($r);
-            $this->name1 = $row[0].' '.$row[1];
-            } else {
-                $this->name1 = "Account Adjustment";
+            foreach ($account['customers'] as $c) {
+                if ($c['accountHolder']) {
+                    $this->name1 = $c['firstName'] . ' ' . $c['lastName'];
+                    break;
+                }
             }
 
-            $q = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE CardNo=? AND personNum=1");
-            $r = $dbc->exec_statement($q,array($this->cn2));
-            if ($dbc->num_rows($r) == 0){
-                $this->errors .= "<em>Error: no such member: ".$this->cn2."</em>"
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($this->cn2);
+            if ($account == false) {
+                $this->errors .= "<div class=\"alert alert-success\">Error: no such member: ".$this->cn2."</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
                 return True;
             }
-            $row = $dbc->fetch_row($r);
-            $this->name2 = $row[0].' '.$row[1];
+            foreach ($account['customers'] as $c) {
+                if ($c['accountHolder']) {
+                    $this->name2 = $c['firstName'] . ' ' . $c['lastName'];
+                    break;
+                }
+            }
         }
 
         return True;
@@ -181,18 +187,25 @@ class MemArTransferTool extends FanniePage {
 
         $ret = "<form action=\"MemArTransferTool.php\" method=\"post\">";
         $ret .= "<b>Confirm transfer</b>";
-        $ret .= "<p style=\"font-size:120%\">";
+        $ret .= "<div class=\"alert alert-info\">";
         $ret .= sprintf("\$%.2f %s will be moved from %d (%s) to %d (%s)",
             $this->amount,$this->depts[$this->dept],
             $this->cn1,$this->name1,$this->cn2,$this->name2);
-        $ret .= "</p><p>";
+        $ret .= "</div><p>";
+        $ret .= sprintf('<div class="form-group">
+            <label>Comment</label>
+            <input type="text" class="form-control" 
+                name="correction-comment" value="AR XFER %d TO %d" />
+            </div>',
+            $this->cn1, $this->cn2);
         $ret .= "<input type=\"hidden\" name=\"dept\" value=\"{$this->dept}\" />";
         $ret .= "<input type=\"hidden\" name=\"amount\" value=\"{$this->amount}\" />";
         $ret .= "<input type=\"hidden\" name=\"memFrom\" value=\"{$this->cn1}\" />";
         $ret .= "<input type=\"hidden\" name=\"memTo\" value=\"{$this->cn2}\" />";
-        $ret .= "<input type=\"submit\" name=\"submit2\" value=\"Confirm\" />";
+        $ret .= "<button type=\"submit\" name=\"submit2\" value=\"Confirm\" 
+                    class=\"btn btn-default\">Confirm</button>";
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-        $ret .= "<input type=\"submit\" value=\"Back\" onclick=\"back(); return false;\" />";
+        $ret .= "<input type=\"submit\" name=\"submit2\" value=\"Confirm\" />";
         $ret .= "</form>";
         
         return $ret;
@@ -203,29 +216,54 @@ class MemArTransferTool extends FanniePage {
         if (!empty($this->errors)) return $this->errors;
 
         $ret = '';
+
+        $trans_no = DTrans::getTransNo($this->connection, $this->CORRECTION_CASHIER, $this->CORRECTION_LANE);
+        $params = array(
+            'card_no' => $this->cn1,
+            'register_no' => $this->CORRECTION_LANE,
+            'emp_no' => $this->CORRECTION_CASHIER,
+        );
+        DTrans::addOpenRing($this->connection, $this->CORRECTION_DEPT, $this->amount, $trans_no, $params);
+        DTrans::addOpenRing($this->connection, $this->dept, -1*$this->amount, $trans_no, $params);
         
-        // Only do the From for a real customer.
-        if ($this->cn1 > 0) {
-        $dtrans = array();
-        $dtrans['trans_no'] = $this->getTransNo($this->CORRECTION_CASHIER,$this->CORRECTION_LANE);
-        $dtrans['trans_id'] = 1;
-        $this->doInsert($dtrans,$this->amount,$this->CORRECTION_DEPT,$this->cn1);
-
-        $dtrans['trans_id']++;
-        $this->doInsert($dtrans,-1*$this->amount,$this->dept,$this->cn1);
-
-        $ret .= sprintf("Receipt #1: %s",$this->CORRECTION_CASHIER.'-'.$this->CORRECTION_LANE.'-'.$dtrans['trans_no']);
+        $comment = FormLib::get('correction-comment');
+        if (!empty($comment)) {
+            $params = array(
+                'description' => $comment,
+                'trans_type' => 'C',
+                'trans_subtype' => 'CM',
+                'card_no' => $this->cn1,
+                'register_no' => $this->CORRECTION_LANE,
+                'emp_no' => $this->CORRECTION_CASHIER,
+            );
+            DTrans::addItem($this->connection, $trans_no, $params);
         }
 
-        $dtrans['trans_no'] = $this->getTransNo($this->CORRECTION_CASHIER,$this->CORRECTION_LANE);
-        $dtrans['trans_id'] = 1;
-        $this->doInsert($dtrans,$this->amount,$this->dept,$this->cn2);
+        $ret .= sprintf("Receipt #1: %s",$this->CORRECTION_CASHIER.'-'.$this->CORRECTION_LANE.'-'.$trans_no);
 
-        $dtrans['trans_id']++;
-        $this->doInsert($dtrans,-1*$this->amount,$this->CORRECTION_DEPT,$this->cn2);
+        $trans_no = DTrans::getTransNo($this->connection, $this->CORRECTION_CASHIER, $this->CORRECTION_LANE);
+        $params = array(
+            'card_no' => $this->cn2,
+            'register_no' => $this->CORRECTION_LANE,
+            'emp_no' => $this->CORRECTION_CASHIER,
+        );
+        DTrans::addOpenRing($this->connection, $this->dept, $this->amount, $trans_no, $params);
+        DTrans::addOpenRing($this->connection, $this->CORRECTION_DEPT, -1*$this->amount, $trans_no, $params);
+
+        if (!empty($comment)) {
+            $params = array(
+                'description' => $comment,
+                'trans_type' => 'C',
+                'trans_subtype' => 'CM',
+                'card_no' => $this->cn2,
+                'register_no' => $this->CORRECTION_LANE,
+                'emp_no' => $this->CORRECTION_CASHIER,
+            );
+            DTrans::addItem($this->connection, $trans_no, $params);
+        }
 
         $ret .= "<br /><br />";
-        $ret .= sprintf("Receipt #2: %s",$this->CORRECTION_CASHIER.'-'.$this->CORRECTION_LANE.'-'.$dtrans['trans_no']);
+        $ret .= sprintf("Receipt #2: %s",$this->CORRECTION_CASHIER.'-'.$this->CORRECTION_LANE.'-'.$trans_no);
 
         return $ret;
     }
@@ -234,122 +272,54 @@ class MemArTransferTool extends FanniePage {
 
         if (!empty($this->errors)) return $this->errors;
 
-        $ret = "<form action=\"MemArTransferTool.php\" method=\"post\">";
-        $ret .= "<p style=\"font-size:120%\">";
-        $ret .= "Transfer $<input type=\"text\" name=\"amount\" size=\"5\" /> ";
-        $ret .= "<select name=\"dept\">";
-        foreach($this->depts as $k=>$v)
-            $ret .= "<option value=\"$k\">$v</option>";
-        $ret .= "</select>";
-$ret .= "<br />If adjusting to remove an amount from the account, prefix it with '-'";
-        $ret .= "</p><p style=\"font-size:120%;\">";
-        $memNum = FormLib::get_form_value('memIN');
-        $ret .= "From member #<input type=\"text\" name=\"memFrom\" size=\"5\" value=\"$memNum\" /> ";
-        $ret .= "to member #<input type=\"text\" name=\"memTo\" size=\"5\" />";
-$ret .= "<br />If adjusting, use 'From member' 0";
-        $ret .= "</p><p>";
-        $ret .= "<input type=\"hidden\" name=\"type\" value=\"equity_transfer\" />";
-        $ret .= "<input type=\"submit\" name=\"submit1\" value=\"Submit\" />";
-        $ret .= "</p>";
-        $ret .= "</form>";
+        ob_start();
+        ?>
+        <form action="MemArTransferTool.php" method="post">
+        <div class="container">
+        <div class="row form-group form-inline">
+            <label>Transfer</label>
+            <div class="input-group">
+                <span class="input-group-addon">$</span>
+                <input type="text" name="amount" class="form-control"
+                    required />
+            </div>
+            <select name="dept" class="form-control">
+            <?php
+            foreach($this->depts as $k=>$v)
+                echo "<option value=\"$k\">$v</option>";
+            ?>
+            </select>
+        </div>
+        <p>If adjusting to remove an amount from the account, prefix it with '-'</p>
+        <?php $memNum = FormLib::get_form_value('memIN') ?>
+        <div class="row form-group form-inline">
+            <label>From member #</label>
+            <input type="number" name="memFrom" class="form-control" required
+                value="<?php echo $memNum; ?>" />
+            <label>To member #</label>
+            <input type="number" name="memTo" class="form-control" required />
+        </div>
+        <input type="hidden" name="type" value="equity_transfer" />
+        <p>
+            <button type="submit" name="submit1" value="Submit"
+                class="btn btn-default">Submit</button>
+        </p>
+        </div>
+        </form>
+        <?php
 
-        return $ret;
+        return ob_get_clean();
     }
 
-    function getTransNo($emp,$register){
-        global $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
-        $q = $dbc->prepare_statement("SELECT max(trans_no) FROM dtransactions WHERE register_no=? AND emp_no=?");
-        $r = $dbc->exec_statement($q,array($register,$emp));
-        $n = array_pop($dbc->fetch_row($r));
-        return (empty($n)?1:$n+1);  
-    }
-
-    function doInsert($dtrans,$amount,$department,$cardno){
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
-        $OP = $FANNIE_OP_DB.$dbc->sep();
-
-        $defaults = array(
-            'register_no'=>$this->CORRECTION_LANE,
-            'emp_no'=>$this->CORRECTION_CASHIER,
-            'trans_no'=>$dtrans['trans_no'],
-            'upc'=>'',
-            'description'=>'',
-            'trans_type'=>'D',
-            'trans_subtype'=>'',
-            'trans_status'=>'',
-            'department'=>'',
-            'quantity'=>1,
-            'scale'=>0,
-            'cost'=>0,
-            'unitPrice'=>'',
-            'total'=>'',
-            'regPrice'=>'',
-            'tax'=>0,
-            'foodstamp'=>0,
-            'discount'=>0,
-            'memDiscount'=>0,
-            'discountable'=>0,
-            'discounttype'=>0,
-            'voided'=>0,
-            'percentDiscount'=>0,
-            'ItemQtty'=>1,
-            'volDiscType'=>0,
-            'volume'=>0,
-            'volSpecial'=>0,
-            'mixMatch'=>'',
-            'matched'=>0,
-            'memType'=>'',
-            'staff'=>'',
-            'numflag'=>0,
-            'charflag'=>'',
-            'card_no'=>'',
-            'trans_id'=>$dtrans['trans_id']
-        );
-
-        $defaults['department'] = $department;
-        $defaults['card_no'] = $cardno;
-        $defaults['unitPrice'] = $amount;
-        $defaults['regPrice'] = $amount;
-        $defaults['total'] = $amount;
-        if ($amount < 0){
-            $defaults['trans_status'] = 'R';
-            $defaults['quantity'] = -1;
-        }
-        $defaults['upc'] = abs($amount).'DP'.$department;
-
-        if (isset($this->depts[$department]))
-            $defaults['description'] = $this->depts[$department];
-        else {
-            $nameP = $dbc->prepare_statement("SELECT dept_name FROM {$OP}departments WHERE dept_no=?");
-            $nameR = $dbc->exec_statement($nameP,$department);
-            if ($dbc->num_rows($nameR) == 0) {
-                $defaults['description'] = 'CORRECTIONS';
-            } else {
-                $nameW = $dbc->fetch_row($nameR);
-                $defaults['description'] = $nameW['dept_name'];
-            }
-        }
-
-        $q = $dbc->prepare_statement("SELECT memType,Staff FROM {$OP}custdata WHERE CardNo=?");
-        $r = $dbc->exec_statement($q,array($cardno));
-        $w = $dbc->fetch_row($r);
-        $defaults['memType'] = $w[0];
-        $defaults['staff'] = $w[1];
-
-        $columns = 'datetime,';
-        $values = $dbc->now().',';
-        $args = array();
-        foreach($defaults as $k=>$v){
-            $columns .= $k.',';
-            $values .= '?,';
-            $args[] = $v;
-        }
-        $columns = substr($columns,0,strlen($columns)-1);
-        $values = substr($values,0,strlen($values)-1);
-        $prep = $dbc->prepare_statement("INSERT INTO dtransactions ($columns) VALUES ($values)");
-        $dbc->exec_statement($prep, $args);
+    public function helpContent()
+    {
+        return '<p>
+            Transfer an AR payment from one member account
+            to another. Since an AR payment <em>reduces</em>
+            a member\'s balance, moving $20 from Alice to Bob
+            will <em>increase</em> Alice\'s balance by $20 and
+            <em>decrease</em> Bob\'s balance by $20.
+            </p>';
     }
 }
 

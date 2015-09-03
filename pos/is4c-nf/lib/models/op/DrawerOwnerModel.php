@@ -33,7 +33,16 @@ class DrawerOwnerModel extends BasicModel
     protected $columns = array(
     'drawer_no' => array('type'=>'SMALLINT', 'primary_key'=>true),
     'emp_no' => array('type'=>'SMALLINT'),
-	);
+    );
+
+    public function doc()
+    {
+        return '
+Use:
+Manage assignments when more than one
+cash drawer is present.
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 

@@ -23,87 +23,90 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class nslogin extends NoInputPage 
+class nslogin extends NoInputCorePage 
 {
 
-	private $color;
-	private $heading;
-	private $msg;
+    private $color;
+    private $heading;
+    private $msg;
 
-	function preprocess()
+    function preprocess()
     {
-        global $CORE_LOCAL;
-		$this->color ="coloredArea";
-		$this->heading = _("enter password");
-		$this->msg = _("confirm no sales");
+        $this->color ="coloredArea";
+        $this->heading = _("enter password");
+        $this->msg = _("confirm no sales");
 
-		if (isset($_REQUEST['reginput']) || isset($_REQUEST['userPassword'])) {
+        if (isset($_REQUEST['reginput']) || isset($_REQUEST['userPassword'])) {
 
-			$passwd = '';
-			if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])) {
-				$passwd = $_REQUEST['reginput'];
-			} elseif (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword'])) {
-				$passwd = $_REQUEST['userPassword'];
+            $passwd = '';
+            if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])) {
+                $passwd = $_REQUEST['reginput'];
+            } elseif (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword'])) {
+                $passwd = $_REQUEST['userPassword'];
             }
 
-			if (strtoupper($passwd) == "CL") {
-				$this->change_page($this->page_url."gui-modules/pos2.php");
-				return False;
-			} elseif (Authenticate::checkPassword($passwd)) {
+            if (strtoupper($passwd) == "CL") {
+                $this->change_page($this->page_url."gui-modules/pos2.php");
+                return False;
+            } elseif (Authenticate::checkPassword($passwd)) {
                 ReceiptLib::drawerKick();
-                if ($CORE_LOCAL->get('LoudLogins') == 1) {
-                    UdpComm::udpSend('goodBeep');
-                }
-				$this->change_page($this->page_url."gui-modules/pos2.php");
-				return false;
-			} else {
-				$this->color ="errorColoredArea";
-				$this->heading = _("re-enter password");
-				$this->msg = _("invalid password");
-
-                if ($CORE_LOCAL->get('LoudLogins') == 1) {
+                if (CoreLocal::get('LoudLogins') == 1) {
                     UdpComm::udpSend('twoPairs');
                 }
-			}
-		}
+                $this->change_page($this->page_url."gui-modules/pos2.php");
+                return false;
+            } else {
+                $this->color ="errorColoredArea";
+                $this->heading = _("re-enter password");
+                $this->msg = _("invalid password");
 
-		return true;
-	}
+                if (CoreLocal::get('LoudLogins') == 1) {
+                    UdpComm::udpSend('errorBeep');
+                }
+            }
+        } else {
+            // beep on initial page load
+            if (CoreLocal::get('LoudLogins') == 1) {
+                UdpComm::udpSend('twoPairs');
+            }
+        }
 
-	function head_content()
+        return true;
+    }
+
+    function head_content()
     {
-		$this->default_parsewrapper_js('reginput','nsform');
-		$this->scanner_scale_polling(true);
-	}
+        $this->default_parsewrapper_js('reginput','nsform');
+        $this->scanner_scale_polling(true);
+    }
 
-	function body_content()
+    function body_content()
     {
-		global $CORE_LOCAL;
-		?>
-		<div class="baseHeight">
-		<div class="<?php echo $this->color; ?> centeredDisplay">
-		<span class="larger">
-		<?php echo $this->heading ?>
-		</span><br />
-		<form name="form" id="nsform" method="post" autocomplete="off" 
-			action="<?php echo $_SERVER['PHP_SELF']; ?>">
-		<input type="password" name="userPassword" tabindex="0" 
-			onblur="$('#userPassword').focus();" id="userPassword" />
-		<input type="hidden" id="reginput" name="reginput" value="" />
-		</form>
-		<p>
-		<?php echo $this->msg ?>
-		</p>
-		</div>
-		</div>
-		<?php
-		$this->add_onload_command("\$('#userPassword').focus();\n");
-	} // END true_body() FUNCTION
+        ?>
+        <div class="baseHeight">
+        <div class="<?php echo $this->color; ?> centeredDisplay">
+        <span class="larger">
+        <?php echo $this->heading ?>
+        </span><br />
+        <form name="form" id="nsform" method="post" autocomplete="off" 
+            action="<?php echo $_SERVER['PHP_SELF']; ?>">
+        <input type="password" name="userPassword" tabindex="0" 
+            onblur="$('#userPassword').focus();" id="userPassword" />
+        <input type="hidden" id="reginput" name="reginput" value="" />
+        </form>
+        <p>
+        <?php echo $this->msg ?>
+        </p>
+        </div>
+        </div>
+        <?php
+        $this->add_onload_command("\$('#userPassword').focus();\n");
+    } // END true_body() FUNCTION
 
 }
 
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-	new nslogin();
+    new nslogin();
 }
 
 ?>

@@ -21,7 +21,7 @@
  * @category   PHPExcel
  * @package    PHPExcel_Shared
  * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
- * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
+ * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt    LGPL
  * @version    1.7.8, 2012-10-12
  */
 
@@ -35,17 +35,17 @@
  */
 class PHPExcel_Shared_PasswordHasher
 {
-	/**
-	 * Create a password hash from a given string.
-	 *
-	 * This method is based on the algorithm provided by
-	 * Daniel Rentz of OpenOffice and the PEAR package
-	 * Spreadsheet_Excel_Writer by Xavier Noguer <xnoguer@rezebra.com>.
-	 *
-	 * @param 	string	$pPassword	Password to hash
-	 * @return 	string				Hashed password
-	 */
-	public static function hashPassword($pPassword = '') {
+    /**
+     * Create a password hash from a given string.
+     *
+     * This method is based on the algorithm provided by
+     * Daniel Rentz of OpenOffice and the PEAR package
+     * Spreadsheet_Excel_Writer by Xavier Noguer <xnoguer@rezebra.com>.
+     *
+     * @param     string    $pPassword    Password to hash
+     * @return     string                Hashed password
+     */
+    public static function hashPassword($pPassword = '') {
         $password = 0x0000;
         $i        = 1;       // char position
 
@@ -63,5 +63,5 @@ class PHPExcel_Shared_PasswordHasher
         $password ^= 0xCE4B;
 
         return(strtoupper(dechex($password)));
-	}
+    }
 }

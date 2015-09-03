@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -32,6 +32,7 @@ class PurchasingSearchPage extends FannieRESTfulPage {
     protected $title = 'Purchase Orders';
 
     public $description = '[Search Purchase Orders] finds orders/invoices containing a given item.';
+    public $themed = true;
 
     protected $must_authenticate = true;
 
@@ -64,7 +65,7 @@ class PurchasingSearchPage extends FannieRESTfulPage {
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
 
-        $ret = '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret = '<table class="table">';
         $ret .= '<tr><th>Date</th><th>Invoice</th><th>Vendor</th>
                 <th>UPC</th><th>SKU</th><th>Brand</th><th>Desc</th>
                 <th>Qty</th></tr>';
@@ -73,7 +74,7 @@ class PurchasingSearchPage extends FannieRESTfulPage {
                             <td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
                             <td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
                             <td>%s</td>
-                            <td>%s</td>
+                            <td><a href="../item/ItemEditorPage.php?searchupc=%s">%s</a></td>
                             <td>%s</td>
                             <td>%s</td>
                             <td>%s</td>
@@ -82,7 +83,7 @@ class PurchasingSearchPage extends FannieRESTfulPage {
                             $row['orderID'], date('Y-m-d', strtotime($row['placedDate'])),
                             $row['orderID'], $row['vendorInvoiceID'],
                             $row['vendorName'],
-                            $row['internalUPC'],
+                            $row['internalUPC'], $row['internalUPC'],
                             $row['sku'],
                             $row['brand'],
                             $row['description'],
@@ -96,25 +97,47 @@ class PurchasingSearchPage extends FannieRESTfulPage {
 
     public function get_view()
     {
-        $ret = '<form action="PurchasingSearchPage.php" method="get">';
-        $ret .= '<table>';
-        $ret .= '<tr><th>UPC or SKU</th><td><input type="text" name="id" /></td>';
-        $ret .= '<td rowspan="3">' . FormLib::dateRangePicker() . '</td></tr>';
-        $ret .= '<tr><th>Start Date</th><td><input type="text" size="10" 
-            id="date1" name="date1" /></td></tr>';
-        $ret .= '<tr><th>End Date</th><td><input type="text" size="10" 
-            id="date2" name="date2" /></td></tr>';
-        $ret .= '<tr><td><input type="submit" value="Search" /></td>';
-        $ret .= '<td colspan="2">Omit dates to search all orders
+        $ret = '<form class="form-horizontal" action="PurchasingSearchPage.php" method="get">';
+        $ret .= '<div class="row">';
+        $ret .= '<div class="col-sm-6">';
+
+        $ret .= '<div class="form-group">';
+        $ret .= '<label for="upcsku" class="col-sm-3 control-label">UPC or SKU</label>';
+        $ret .= '<div class="col-sm-9"><input class="form-control" type="text" id="upcsku" name="id" /></div>';
+        $ret .= '</div>';
+
+        $ret .= '<div class="form-group">';
+        $ret .= '<label for="date1" class="col-sm-3 control-label">Start Date</label>';
+        $ret .= '<div class="col-sm-9"><input class="form-control date-field" type="text" id="date1" name="date1" /></div>';
+        $ret .= '</div>';
+
+        $ret .= '<div class="form-group">';
+        $ret .= '<label for="date2" class="col-sm-3 control-label">End Date</label>';
+        $ret .= '<div class="col-sm-9"><input class="form-control date-field" type="text" id="date2" name="date2" /></div>';
+        $ret .= '</div>';
+
+        $ret .= '</div>';
+
+        $ret .= '<div class="col-sm-4 pull-left">';
+        $ret .= FormLib::dateRangePicker();
+        $ret .= '</div>';
+
+        $ret .= '</div>';
+        $ret .= '<p><button type="submit" class="btn btn-default">Search</button>';
+        $ret .= ' Omit dates to search all orders
                 (<a href="" onclick="$(\'#date1\').val(\'\');$(\'#date2\').val(\'\');return false;">Clear
-                Dates</a>)</td></tr>';
-        $ret .= '</table>';
+                Dates</a>)</p>';
         $ret .= '</form>';
 
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
+        $this->add_onload_command("\$('.form-control:first').focus();\n");
 
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Enter a UPC or SKU to find orders containing that
+            item. Omit the dates to search all known orders.</p>';
     }
 }
 

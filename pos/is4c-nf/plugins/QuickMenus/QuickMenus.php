@@ -23,20 +23,20 @@
 
 class QuickMenus extends Plugin {
 
-	public $plugin_settings = array(
-	);
+    public $plugin_settings = array(
+    );
 
-	public $plugin_description = 'A plugin for building menus. Menus are defined in numbered
-				      PHP files within the plugin. Type "QM" followed by the menu
-				      number to launch that menu. QuickMenus render options as a
-				      scrolling list.';
+    public $plugin_description = 'A plugin for building menus. Menus are defined in numbered
+                      PHP files within the plugin. Type "QM" followed by the menu
+                      number to launch that menu. QuickMenus render options as a
+                      scrolling list.';
 
-	public function plugin_enable(){
+    public function plugin_enable(){
 
-	}
+    }
 
-	public function plugin_disable(){
+    public function plugin_disable(){
 
-	}
+    }
 
 }

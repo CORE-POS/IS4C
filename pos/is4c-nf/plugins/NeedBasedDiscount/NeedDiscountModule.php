@@ -21,16 +21,17 @@
 
 *********************************************************************************/
 
-class NeedDiscountModule extends DiscountModule {
-	function calculate(){
-		global $CORE_LOCAL;
-		$discount = parent::calculate();
-		if ($CORE_LOCAL->get('NeedDiscountFlag')===1){
-			$extra = 0.05 * $CORE_LOCAL->get('discountableTotal');
-			$discount = MiscLib::truncate2($discount + $extra);
-		}
-		return $discount;
-	}
+class NeedDiscountModule extends DiscountModule 
+{
+    public function calculate($discountable_total=0)
+    {
+        $discount = parent::calculate();
+        if (CoreLocal::get('NeedDiscountFlag')===1){
+            $extra = 0.05 * CoreLocal::get('discountableTotal');
+            $discount = MiscLib::truncate2($discount + $extra);
+        }
+
+        return $discount;
+    }
 }
 
-?>

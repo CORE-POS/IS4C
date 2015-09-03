@@ -23,22 +23,21 @@
 
 class EndOfShift extends Parser 
 {
-	function check($str)
+    function check($str)
     {
-		if ($str == "ES") {
-			return true;
+        if ($str == "ES") {
+            return true;
         }
 
-		return false;
-	}
+        return false;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-        global $CORE_LOCAL;
-		$json = $this->default_json();
+        $json = $this->default_json();
 
-        $CORE_LOCAL->set("memberID", $CORE_LOCAL->get('defaultNonMem'));
-        $CORE_LOCAL->set("memMsg","End of Shift");
+        CoreLocal::set("memberID", CoreLocal::get('defaultNonMem'));
+        CoreLocal::set("memMsg","End of Shift");
         TransRecord::addRecord(array(
             'upc' => 'ENDOFSHIFT',
             'description' => 'End of Shift',
@@ -50,24 +49,24 @@ class EndOfShift extends Parser
             $json['main_frame'] = $chk;
             return $json;
         }
-        $CORE_LOCAL->set("runningtotal",$CORE_LOCAL->get("amtdue"));
+        CoreLocal::set("runningtotal",CoreLocal::get("amtdue"));
 
-        return PrehLib::tender("CA", $CORE_LOCAL->get("runningtotal") * 100);
-	}
+        return PrehLib::tender("CA", CoreLocal::get("runningtotal") * 100);
+    }
 
-	function doc()
+    function doc()
     {
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>ES</td>
-				<td>Runs an end of shift, whatever
-				that is. Wedge function I think.</td>
-			</tr>
-			</table>";
-	}
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>ES</td>
+                <td>Runs an end of shift, whatever
+                that is. Wedge function I think.</td>
+            </tr>
+            </table>";
+    }
 
 }
 

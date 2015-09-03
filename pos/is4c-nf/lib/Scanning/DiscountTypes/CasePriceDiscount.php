@@ -26,7 +26,6 @@ class CasePriceDiscount extends DiscountType
 
     public function priceInfo($row,$quantity=1)
     {
-        global $CORE_LOCAL;
         if (is_array($this->savedInfo)) {
             return $this->savedInfo;
         }
@@ -38,11 +37,11 @@ class CasePriceDiscount extends DiscountType
         $ret['discount'] = 0;
         $ret['memDiscount'] = 0;
 
-        if ($CORE_LOCAL->get("casediscount") > 0 && $CORE_LOCAL->get("casediscount") <= 100) {
-            $casediscount = (100 - $CORE_LOCAL->get("casediscount"))/100;
+        if (CoreLocal::get("casediscount") > 0 && CoreLocal::get("casediscount") <= 100) {
+            $casediscount = (100 - CoreLocal::get("casediscount"))/100;
             $ret['unitPrice'] = MiscLib::truncate2($casediscount * $ret['unitPrice']);
             $ret['regPrice'] = $ret['unitPrice'];
-            $CORE_LOCAL->set("casediscount",0);
+            CoreLocal::set("casediscount",0);
         }
         
 

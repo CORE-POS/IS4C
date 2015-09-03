@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API {
+
 /**
   FanniePlugin class
 
@@ -47,14 +49,6 @@ class FanniePlugin
 
     public $plugin_description = 'This author didn\'t provide anything. Shame!';
 
-    /**
-      @deprecated
-      Temporary compat for function normalization
-    */
-    public function plugin_enable()
-    {
-        $this->pluginEnable();
-    }
 
     /**
       Callback. Triggered when plugin is enabled
@@ -68,9 +62,9 @@ class FanniePlugin
       @deprecated
       Temporary compat for function normalization
     */
-    public function plugin_disable()
+    public function plugin_enable()
     {
-        $this->pluginDisable();
+        $this->pluginEnable();
     }
 
     /**
@@ -85,9 +79,9 @@ class FanniePlugin
       @deprecated
       Temporary compat for function normalization
     */
-    public function setting_change()
+    public function plugin_disable()
     {
-        $this->settingChange();
+        $this->pluginDisable();
     }
 
     /**
@@ -102,9 +96,9 @@ class FanniePlugin
       @deprecated
       Temporary compat for function normalization
     */
-    public function plugin_url()
+    public function setting_change()
     {
-        return $this->pluginUrl();
+        $this->settingChange();
     }
 
     /**
@@ -112,10 +106,29 @@ class FanniePlugin
     */
     public function pluginUrl()
     {
-        global $FANNIE_URL;
-        $info = new ReflectionClass($this);
+        $url = \FannieConfig::factory()->get('URL');
+        $info = new \ReflectionClass($this);
 
-        return $FANNIE_URL.'modules/plugins2.0/'.basename(dirname($info->getFileName()));
+        return $url . 'modules/plugins2.0/'.basename(dirname($info->getFileName()));
+    }
+
+    /**
+      @deprecated
+      Temporary compat for function normalization
+    */
+    public function plugin_url()
+    {
+        return $this->pluginUrl();
+    }
+
+    /**
+      Get filesystem path for the plugin's directory
+    */
+    public function pluginDir()
+    {
+        $info = new \ReflectionClass($this);
+
+        return dirname($info->getFileName());
     }
 
     /**
@@ -125,25 +138,6 @@ class FanniePlugin
     public function plugin_dir()
     {
         return $this->pluginDir();
-    }
-
-    /**
-      Get filesystem path for the plugin's directory
-    */
-    public function pluginDir()
-    {
-        $info = new ReflectionClass($this);
-
-        return dirname($info->getFileName());
-    }
-
-    /**
-      @deprecated
-      Temporary compat for function normalization
-    */
-    public function plugin_db_struct($db, $struct_name, $db_name="")
-    {
-        return $this->pluginDbStruct($db, $struct_name, $db_name);
     }
 
     public function pluginDbStruct($db, $struct_name, $db_name="")
@@ -169,6 +163,15 @@ class FanniePlugin
         }
     }
     
+    /**
+      @deprecated
+      Temporary compat for function normalization
+    */
+    public function plugin_db_struct($db, $struct_name, $db_name="")
+    {
+        return $this->pluginDbStruct($db, $struct_name, $db_name);
+    }
+
     /**
       Find the plugin containing a given file
       @param $file string filename
@@ -203,12 +206,12 @@ class FanniePlugin
     */
     public static function isEnabled($plugin)
     {
-        global $FANNIE_PLUGIN_LIST;
-        if (!is_array($FANNIE_PLUGIN_LIST)) {
+        $plugin_list = \FannieConfig::factory()->get('PLUGIN_LIST');
+        if (!is_array($plugin_list)) {
             return false;
         }
 
-        return (in_array($plugin, $FANNIE_PLUGIN_LIST)) ? true : false;
+        return (in_array($plugin, $plugin_list)) ? true : false;
     }
 
     /**
@@ -235,5 +238,11 @@ class FanniePlugin
 
         return $in;
     }
+}
+
+}
+
+namespace {
+    class FanniePlugin extends \COREPOS\Fannie\API\FanniePlugin {}
 }
 

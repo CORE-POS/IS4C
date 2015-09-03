@@ -30,20 +30,20 @@
 */
 class CustomerReceiptMessage {
 
-	/**
-	  Create or modify the message
-	  @param $str the contents of custReceiptMessage.msg_text
-	  @return [string] message to print on receipt
+    /**
+      Create or modify the message
+      @param $str the contents of custReceiptMessage.msg_text
+      @return [string] message to print on receipt
 
-	  This method provides an opportunity to alter the 
-	  message specified in the database.
+      This method provides an opportunity to alter the 
+      message specified in the database.
 
-	  It's not necessary to modify the message at all or even
-	  to provide a modifier_module in custReceiptMessage.
-	*/
-	function message($str){
-		return $str;
-	}
+      It's not necessary to modify the message at all or even
+      to provide a modifier_module in custReceiptMessage.
+    */
+    function message($str){
+        return $str;
+    }
 }
 
 ?>

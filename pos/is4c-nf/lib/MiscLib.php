@@ -36,16 +36,16 @@ class MiscLib extends LibraryClass
 */
 static public function baseURL($check_file="css/pos.css")
 {
-	$ret = "";
-	$cutoff = 0;
-	while($cutoff < 20 && !file_exists($ret.$check_file)) {
-		$ret .= "../";
-		$cutoff++;
-	}
-	if ($cutoff >= 20) {
+    $ret = "";
+    $cutoff = 0;
+    while($cutoff < 20 && !file_exists($ret.$check_file)) {
+        $ret .= "../";
+        $cutoff++;
+    }
+    if ($cutoff >= 20) {
         return false;
-	} else {
-        return $ret;	
+    } else {
+        return $ret;    
     }
 }
 
@@ -69,13 +69,13 @@ static public function nullwrap($num, $char=false)
 
     if ($char && ($num === '' || $num === null)) {
         return '';
-	} else if (!$num) {
-		 return 0;
-	} else if (!is_numeric($num) && strlen($num) < 1) {
-		return ' ';
-	} else {
-		return $num;
-	}
+    } else if (!$num) {
+         return 0;
+    } else if (!is_numeric($num) && strlen($num) < 1) {
+        return ' ';
+    } else {
+        return $num;
+    }
 }
 
 /**
@@ -89,7 +89,7 @@ static public function truncate2($num)
         $num = 0;
     }
 
-	return number_format($num, 2);
+    return number_format($num, 2);
 }
 
 /**
@@ -106,17 +106,17 @@ static public function truncate2($num)
 */
 static public function pingport($host, $dbms)
 {
-	$port = strstr($dbms,'mysql') ? 3306 : 1433;	
-	if (strstr($host,":")) {
-		list($host,$port) = explode(":",$host);
+    $port = strstr($dbms,'mysql') ? 3306 : 1433;    
+    if (strstr($host,":")) {
+        list($host,$port) = explode(":",$host);
     }
-	$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-	socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
-	socket_set_block($sock);
-	$test = socket_connect($sock,$host,$port);
-	socket_close($sock);
+    $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+    socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
+    socket_set_block($sock);
+    $test = @socket_connect($sock,$host,$port);
+    socket_close($sock);
 
-	return ($test ? 1 : 0);
+    return ($test ? 1 : 0);
 }
 
 /**
@@ -127,12 +127,12 @@ static public function pingport($host, $dbms)
 */
 static public function win32() 
 {
-	$winos = 0;
-	if (strtoupper(substr(PHP_OS, 0, 3)) == "WIN") {
+    $winos = 0;
+    if (strtoupper(substr(PHP_OS, 0, 3)) == "WIN") {
         $winos = 1;
     }
 
-	return $winos;
+    return $winos;
 }
 
 /**
@@ -140,19 +140,18 @@ static public function win32()
   @return An ScaleDriverWrapper object
   
   The driver is chosen via "scaleDriver"
-  in $CORE_LOCAL. If the object cannot be 
+  in session. If the object cannot be 
   found this returns zero
 */
 static public function scaleObject()
 {
-	global $CORE_LOCAL;
-	$scaleDriver = $CORE_LOCAL->get("scaleDriver");
-	$sd = 0;
-	if ($scaleDriver != ""){
-		$sd = new $scaleDriver();
-	}
+    $scaleDriver = CoreLocal::get("scaleDriver");
+    $sd = 0;
+    if ($scaleDriver != ""){
+        $sd = new $scaleDriver();
+    }
 
-	return $sd;
+    return $sd;
 }
 
 /**
@@ -160,21 +159,20 @@ static public function scaleObject()
   @return An ScaleDriverWrapper object
   
   The driver is chosen via "termDriver"
-  in $CORE_LOCAL. If the object cannot be 
+  in session. If the object cannot be 
   found this returns zero.
 
   Signature capture support is very alpha.
 */
 static public function sigTermObject()
 {
-	global $CORE_LOCAL;
-	$termDriver = $CORE_LOCAL->get("termDriver");
-	$st = 0;
-	if ($termDriver != "") {
-		$st = new $termDriver();
-	}
+    $termDriver = CoreLocal::get("termDriver");
+    $st = 0;
+    if ($termDriver != "") {
+        $st = new $termDriver();
+    }
 
-	return $st;
+    return $st;
 }
 
 /**
@@ -182,10 +180,9 @@ static public function sigTermObject()
 */
 static public function goodBeep() 
 {
-	global $CORE_LOCAL;
-	$sd = self::scaleObject();
-	if (is_object($sd)) {
-		$sd->WriteToScale("goodBeep");
+    $sd = self::scaleObject();
+    if (is_object($sd)) {
+        $sd->WriteToScale("goodBeep");
     }
 }
 
@@ -194,10 +191,9 @@ static public function goodBeep()
 */
 static public function rePoll() 
 {
-	global $CORE_LOCAL;
-	$sd = self::scaleObject();
-	if (is_object($sd)) {
-		$sd->WriteToScale("rePoll");
+    $sd = self::scaleObject();
+    if (is_object($sd)) {
+        $sd->WriteToScale("rePoll");
     }
 }
 
@@ -206,10 +202,9 @@ static public function rePoll()
 */
 static public function errorBeep() 
 {
-	global $CORE_LOCAL;
-	$sd = self::scaleObject();
-	if (is_object($sd)) {
-		$sd->WriteToScale("errorBeep");
+    $sd = self::scaleObject();
+    if (is_object($sd)) {
+        $sd->WriteToScale("errorBeep");
     }
 }
 
@@ -218,10 +213,9 @@ static public function errorBeep()
 */
 static public function twoPairs() 
 {
-	global $CORE_LOCAL;
-	$sd = self::scaleObject();
-	if (is_object($sd)) {
-		$sd->WriteToScale("twoPairs");
+    $sd = self::scaleObject();
+    if (is_object($sd)) {
+        $sd->WriteToScale("twoPairs");
     }
 }
 
@@ -230,7 +224,7 @@ static public function twoPairs()
   to determine all available IP addresses
   @return [array] of [string] IP addresses
 */
-function getAllIPs()
+static public function getAllIPs()
 {
     /**
       First: use OS utilities to check IP(s)
@@ -319,6 +313,25 @@ function getAllIPs()
     }
 
     return $ret;
+}
+
+static public function getNumbers($string)
+{
+    if (empty($string)) {
+        return array(-999999);
+    } elseif (is_array($string)) {
+        $ret = array();
+        foreach ($string as $s) {
+            $ret[] = (int)$s;
+        }
+        return $ret;
+    }
+    $pieces = preg_split('/[^\d]+/', $string, 0, PREG_SPLIT_NO_EMPTY);
+    for ($i=0; $i<count($pieces); $i++) {
+        $pieces[$i] = (int)$pieces[$i];
+    }
+
+    return $pieces;
 }
 
 } // end class MiscLib

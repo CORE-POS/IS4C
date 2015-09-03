@@ -3,14 +3,14 @@
 
     Copyright 2011 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -31,7 +31,7 @@ include_once('../classlib2.0/FannieAPI.php');
     @class InstallStoresPage
     Class for the Stores install and config options
 */
-class InstallStoresPage extends InstallPage {
+class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie: Store Settings';
     protected $header = 'Fannie: Store Settings';
@@ -39,6 +39,7 @@ class InstallStoresPage extends InstallPage {
     public $description = "
     Class for the Stores install and config options page.
     ";
+    public $themed = true;
 
     // This replaces the __construct() in the parent.
     public function __construct() {
@@ -60,7 +61,7 @@ class InstallStoresPage extends InstallPage {
 
     public function preprocess()
     {
-        global $FANNIE_OP_DB;
+        global $FANNIE_OP_DB, $FANNIE_STORE_MODE, $FANNIE_STORE_ID;
         $model = new StoresModel(FannieDB::get($FANNIE_OP_DB));
         $posted = false;
 
@@ -117,6 +118,14 @@ class InstallStoresPage extends InstallPage {
         // redirect to self so refreshing the page
         // doesn't repeat HTML POST
         if ($posted) {
+            // capture POST of input field
+            installTextField('FANNIE_STORE_ID', $FANNIE_STORE_ID, 1);
+            installSelectField('FANNIE_STORE_MODE', $FANNIE_STORE_MODE, array('STORE'=>'Single Store', 'HQ'=>'HQ'),'STORE');
+            if (FormLib::get('FANNIE_READONLY_JSON', false) !== false) {
+                // decode and re-encode to squash whitespace
+                $FANNIE_READONLY_JSON = json_encode(json_decode(FormLib::get('FANNIE_READONLY_JSON')));
+                confset('FANNIE_READONLY_JSON', "'$FANNIE_READONLY_JSON'");
+            }
             header('Location: InstallStoresPage.php');
             return false;
         }
@@ -139,21 +148,27 @@ class InstallStoresPage extends InstallPage {
 
     public function body_content()
     {
-        global $FANNIE_OP_DB, $FANNIE_SERVER;
+        include(dirname(__FILE__) . '/../config.php');
         ob_start();
 
         echo showInstallTabs('Stores');
         ?>
 
 <form action=InstallStoresPage.php method=post>
-<h1 class="install"><?php echo $this->header; ?></h1>
+<h1 class="install">
+    <?php 
+    if (!$this->themed) {
+        echo "<h1 class='install'>{$this->header}</h1>";
+    }
+    ?>
+</h1>
 <p class="ichunk">Revised 23Apr2014</p>
 <?php
 if (is_writable('../config.php')){
-    echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+    echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
 }
 else {
-    echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+    echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
 }
 ?>
 <hr />
@@ -170,9 +185,11 @@ if (count($myself) == 0) {
 } else if (count($myself) > 1) {
     echo '<i>Warning: more than one entry for store host: ' . $FANNIE_SERVER . '</i><br />';
 } else {
-    echo '<i>This store is #' . $myself[0]->storeID() . '</i><br />';
+    echo '<i>This store is #' . installTextField('FANNIE_STORE_ID', $FANNIE_STORE_ID, $myself[0]->storeID()) . '</i><br />';
 }
 $model->reset();
+echo '<label>Mode</label>';
+echo installSelectField('FANNIE_STORE_MODE', $FANNIE_STORE_MODE, array('STORE'=>'Single Store', 'HQ'=>'HQ'),'STORE');
 
 $supportedTypes = array('none'=>'');
 if (extension_loaded('pdo') && extension_loaded('pdo_mysql'))
@@ -184,7 +201,7 @@ if (extension_loaded('mysql'))
 if (extension_loaded('mssql'))
     $supportedTypes['MSSQL'] = 'MSSQL';
 ?>
-<table cellspacing="0" cellpadding="4" border="1">
+<table class="table">
 <tr>
     <th>Store #</th><th>Description</th><th>DB Host</th>
     <th>Driver</th><th>Username</th><th>Password</th>
@@ -197,24 +214,24 @@ if (extension_loaded('mssql'))
 <?php foreach($model->find('storeID') as $store) {
     printf('<tr %s>
             <td>%d<input type="hidden" name="storeID[]" value="%d" /></td>
-            <td><input type="text" name="storeName[]" value="%s" /></td>
-            <td><input type="text" name="storeHost[]" value="%s" /></td>',
-            ($store->dbHost() == $FANNIE_SERVER ? 'class="highlight"' : ''),
+            <td><input type="text" class="form-control" name="storeName[]" value="%s" /></td>
+            <td><input type="text" class="form-control" name="storeHost[]" value="%s" /></td>',
+            ($store->dbHost() == $FANNIE_SERVER ? 'class="info"' : ''),
             $store->storeID(), $store->storeID(),
             $store->description(),
             $store->dbHost()
     );
-    echo '<td><select name="storeDriver[]">';
+    echo '<td><select name="storeDriver[]" class="form-control">';
     foreach($supportedTypes as $key => $label) {
         printf('<option %s value="%s">%s</option>',
             ($store->dbDriver() == $key ? 'selected' : ''),
             $key, $label);
     }
     echo '</select></td>';
-    printf('<td><input type="text" size="10" name="storeUser[]" value="%s" /></td>
-            <td><input type="password" size="10" name="storePass[]" value="%s" /></td>
-            <td><input type="text" size="10" name="storeOp[]" value="%s" /></td>
-            <td><input type="text" size="10" name="storeTrans[]" value="%s" /></td>
+    printf('<td><input type="text" class="form-control" name="storeUser[]" value="%s" /></td>
+            <td><input type="password" class="form-control" name="storePass[]" value="%s" /></td>
+            <td><input type="text" class="form-control" name="storeOp[]" value="%s" /></td>
+            <td><input type="text" class="form-control" name="storeTrans[]" value="%s" /></td>
             <td><input type="checkbox" name="storePush[]" value="%d" %s /></td>
             <td><input type="checkbox" name="storePull[]" value="%d" %s /></td>
             <td><input type="checkbox" name="storeDelete[]" value="%d" /></td>
@@ -249,9 +266,31 @@ if (extension_loaded('mssql'))
        on the "Necessities" tab.</i>
 </p>
 <hr />
-<input type=submit name="saveButton" value="Save" />
+<h4 class="install">Read-only Database Server(s)</h4>
+<p class="ichunk" style="margin:0.0em 0em 0.4em 0em;">
+Specify one or more database servers that can be used strictly
+for read operations. If more than one database is listed, read-only
+queries will be load-balanced across them.
+<?php
+if (!isset($FANNIE_READONLY_JSON)) {
+    $FANNIE_READONLY_JSON = json_encode(array(array(
+        'host' => $FANNIE_SERVER,
+        'type' => $FANNIE_SERVER_DBMS,
+        'user' => $FANNIE_SERVER_USER,
+        'pw' => $FANNIE_SERVER_PW,
+    )));
+}
+confset('FANNIE_READONLY_JSON', "'$FANNIE_READONLY_JSON'");
+?>
+<textarea rows="10" cols="30" name="FANNIE_READONLY_JSON" class="form-control">
+<?php echo \COREPOS\Fannie\API\lib\FannieUI::prettyJSON($FANNIE_READONLY_JSON); ?>
+</textarea>
+<hr />
+<p>
+<button type=submit name="saveButton" value="Save" class="btn btn-default">Save</button>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type=submit name="addButton" value="Add Another Store" />
+<button type=submit name="addButton" value="Add Another Store" class="btn btn-default">Add Another Store</button>
+</p>
 </form>
 
 <?php

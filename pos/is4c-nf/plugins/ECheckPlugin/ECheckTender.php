@@ -35,38 +35,45 @@ class ECheckTender extends TenderModule
     */
     public function errorCheck()
     {
-        global $CORE_LOCAL;
-        if ( $CORE_LOCAL->get("isMember") != 0 && (($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > $CORE_LOCAL->get("dollarOver")) && ($CORE_LOCAL->get("cashOverLimit") == 1)) {
-            return DisplayLib::boxMsg(_("member check tender cannot exceed total purchase by over $").$CORE_LOCAL->get("dollarOver"));
-        } else if( $CORE_LOCAL->get("store")=="wfc" && $CORE_LOCAL->get("isMember") != 0 && ($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > 0) { 
+        $clearButton = array('OK [clear]' => 'parseWrapper(\'CL\');');
+        if ( CoreLocal::get("isMember") != 0 && (($this->amount - CoreLocal::get("amtdue") - 0.005) > CoreLocal::get("dollarOver")) && (CoreLocal::get("cashOverLimit") == 1)) {
+            return DisplayLib::boxMsg(
+                _("member check tender cannot exceed total purchase by over $") . CoreLocal::get("dollarOver"),
+                '',
+                false,
+                $clearButton
+            );
+        } else if( CoreLocal::get("store")=="wfc" && CoreLocal::get("isMember") != 0 && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
             // This should really be a separate tender 
             // module for store-specific behavior
             $db = Database::pDataConnect();
             $q = sprintf("SELECT card_no FROM custReceiptMessage
                 WHERE card_no=%d AND modifier_module='WfcEquityMessage'",
-                $CORE_LOCAL->get('memberID'));
+                CoreLocal::get('memberID'));
             $r = $db->query($q);
             if ($db->num_rows($r) > 0) {
-                return DisplayLib::xboxMsg(_('member check tender cannot exceed total 
-                                    purchase if equity is owed'));
+                return DisplayLib::xboxMsg(
+                    _('member check tender cannot exceed total purchase if equity is owed'),
+                    $clearButton
+                );
             }
 
             // multi use
-            if ($CORE_LOCAL->get('standalone')==0) {
+            if (CoreLocal::get('standalone')==0) {
                 $chkQ = "select trans_num from dlog 
                     where trans_type='T' and trans_subtype in ('CA','CK') 
-                    and card_no=".((int)$CORE_LOCAL->get('memberID'))."
+                    and card_no=".((int)CoreLocal::get('memberID'))."
                     group by trans_num 
                     having sum(case when trans_subtype='CK' then total else 0 end) < 0 
                     and sum(Case when trans_subtype='CA' then total else 0 end) > 0";
                 $db = Database::mDataConnect();
                 $chkR = $db->query($chkQ);
                 if ($db->num_rows($chkR) > 0) {
-                    return DisplayLib::xboxMsg(_('already used check over benefit today'));
+                    return DisplayLib::xboxMsg(_('already used check over benefit today'), $clearButton);
                 }
             }
-        } else if( $CORE_LOCAL->get("isMember") == 0  && ($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > 0) { 
-            return DisplayLib::xboxMsg(_('non-member check tender cannot exceed total purchase'));
+        } else if( CoreLocal::get("isMember") == 0  && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
+            return DisplayLib::xboxMsg(_('non-member check tender cannot exceed total purchase'), $clearButton);
         }
 
         return true;
@@ -78,31 +85,29 @@ class ECheckTender extends TenderModule
     */
     public function preReqCheck()
     {
-        global $CORE_LOCAL;
-
         /**
           First prompt: choose check type
         */
-        if ($CORE_LOCAL->get('msgrepeat') == 0) {
-            $CORE_LOCAL->set('strEntered', ($this->amount*100) . $this->tender_code);
-            $CORE_LOCAL->set('lastRepeat', 'echeckVerifyType');
+        if (CoreLocal::get('msgrepeat') == 0) {
+            CoreLocal::set('strEntered', ($this->amount*100) . $this->tender_code);
+            CoreLocal::set('lastRepeat', 'echeckVerifyType');
             $plugin_info = new ECheckPlugin();
             return $plugin_info->plugin_url() . '/ECheckVerifyPage.php?amount='.$this->amount;;
-        } else if ($CORE_LOCAL->get('msgrepeat') == 1 && $CORE_LOCAL->get('lastRepeat') == 'echeckVerifyType') {
-            $CORE_LOCAL->set('msgrepeat', 0);
-            $CORE_LOCAL->set('lastRepeat', '');
+        } else if (CoreLocal::get('msgrepeat') == 1 && CoreLocal::get('lastRepeat') == 'echeckVerifyType') {
+            CoreLocal::set('msgrepeat', 0);
+            CoreLocal::set('lastRepeat', '');
         }
 
         /**
           If paper check, endorsing prompt
         */
-        if ($this->tender_code == 'CK' && $CORE_LOCAL->get('enableFranking') == 1) {
-            if ($CORE_LOCAL->get('msgrepeat') == 0) {
-                $CORE_LOCAL->set('lastRepeat', 'echeckEndorse');
+        if ($this->tender_code == 'CK' && CoreLocal::get('enableFranking') == 1) {
+            if (CoreLocal::get('msgrepeat') == 0) {
+                CoreLocal::set('lastRepeat', 'echeckEndorse');
                 return $this->endorsing();
-            } else if ($CORE_LOCAL->get('msgrepeat') == 1 && $CORE_LOCAL->get('lastRepeat') == 'echeckEndorse') {
-                $CORE_LOCAL->set('msgrepeat', 0);
-                $CORE_LOCAL->set('lastRepeat', '');
+            } else if (CoreLocal::get('msgrepeat') == 1 && CoreLocal::get('lastRepeat') == 'echeckEndorse') {
+                CoreLocal::set('msgrepeat', 0);
+                CoreLocal::set('lastRepeat', '');
             }
         }
 
@@ -115,11 +120,9 @@ class ECheckTender extends TenderModule
     */
     protected function endorsing()
     {
-        global $CORE_LOCAL;
-
-        $ref = trim($CORE_LOCAL->get("CashierNo"))."-"
-            .trim($CORE_LOCAL->get("laneno"))."-"
-            .trim($CORE_LOCAL->get("transno"));
+        $ref = trim(CoreLocal::get("CashierNo"))."-"
+            .trim(CoreLocal::get("laneno"))."-"
+            .trim(CoreLocal::get("transno"));
 
         if ($this->amount === False) {
             $this->amount = $this->defaultTotal();
@@ -129,15 +132,15 @@ class ECheckTender extends TenderModule
             ' for $'.sprintf('%.2f',$this->amount).
             "<br />"._("press enter to endorse");
         $msg .= "<p><font size='-1'>"._("clear to cancel")."</font></p>";
-        if ($CORE_LOCAL->get("LastEquityReference") == $ref) {
+        if (CoreLocal::get("LastEquityReference") == $ref) {
             $msg .= "<div style=\"background:#993300;color:#ffffff;
                 margin:3px;padding: 3px;\">
                 There was an equity sale on this transaction. Did it get
                 endorsed yet?</div>";
         }
 
-        $CORE_LOCAL->set("boxMsg",$msg);
-        $CORE_LOCAL->set('strEntered', (100*$this->amount).$this->tender_code);
+        CoreLocal::set("boxMsg",$msg);
+        CoreLocal::set('strEntered', (100*$this->amount).$this->tender_code);
 
         return MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$this->amount;
     }

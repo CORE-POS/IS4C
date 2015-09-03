@@ -33,6 +33,15 @@ class SuspendedModel extends LocalTransModel
 
     protected $name = "suspended";
 
+    public function doc()
+    {
+        return '
+Use:
+Local table for suspending transactions if
+server connection is temporarily unavailable
+        ';
+    }
+
     /* START ACCESSOR FUNCTIONS */
     /* END ACCESSOR FUNCTIONS */
 }

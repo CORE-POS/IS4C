@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -29,6 +29,8 @@ if (!class_exists('FannieAPI')) {
 class SalePerformanceReport extends FannieReportPage
 {
     public $description = '[Batch Performance] lists weekly sales totals for a batch.';
+    public $themed = true;
+    public $report_set = 'Batches';
 
     protected $title = "Fannie : Sale Performance";
     protected $header = "Sale Performance";
@@ -61,12 +63,14 @@ class SalePerformanceReport extends FannieReportPage
             return "Error: Invalid month";
         }
 
-        $ret = "<br /><form action=\"SalePerformanceReport.php\" method=\"get\">
-                <input type=submit value=\"Get Report\" />";
+        $ret = "<form action=\"SalePerformanceReport.php\" method=\"get\">
+                <p>
+                <button type=submit class=\"btn btn-default\">Get Report</button>
+                </p>";
         $ret .= sprintf("<input type=hidden name=month value=%d />
                 <input type=hidden name=year value=%d />",
                 $m,$y);
-        $ret .= "<table class=\"tablesorter\" cellspacing=0 cellpadding=4 border=1>";
+        $ret .= "<table class=\"table\">";
         $ret .= "<tr><th>&nbsp;</th><th>Batch</th><th>Start</th><th>End</th></tr>";
         $q = $dbc->prepare_statement("SELECT batchID,batchName,startDate,endDate FROM
                                 batches WHERE discounttype <> 0 AND (
@@ -77,13 +81,20 @@ class SalePerformanceReport extends FannieReportPage
         while($w = $dbc->fetch_row($r)) {
             list($start, $time) = explode(' ',$w[2], 2);
             list($end, $time) = explode(' ',$w[3], 2);
-            $ret .= sprintf("<tr><td><input type=checkbox name=ids[] value=%d /></td>
-                    <td>%s</td><td>%s</td><td>%s</td>
+            $ret .= sprintf("<tr>
+                    <td><input type=checkbox name=ids[] value=%d id=\"batch-checkbox-%d\" /></td>
+                    <td><label for=\"batch-checkbox-%d\">%s</label></td>
+                    <td>%s</td><td>%s</td>
                     <input type=hidden name=bnames[] value=\"%s\" /></tr>",
-                    $w[0],$w[1],$start,$end,$w[1]." (".$start." ".$end.")");
+                    $w['batchID'],$w['batchID'],
+                    $w['batchID'], $w['batchName'],
+                    $start,$end,
+                    $w['batchName']." (".$start." ".$end.")");
         }
-        $ret .= "</table><br />
-            <input type=submit value=\"Get Report\" />
+        $ret .= "</table>
+                <p>
+                <button type=submit class=\"btn btn-default\">Get Report</button>
+                </p>
             </form>";
 
         return $ret;
@@ -162,8 +173,9 @@ function lookupSales(){
     {
         ob_start();
         ?>
-<div id="#myform">
-<select id="smonth">
+<div id="#myform" class="form-group form-inline">
+<form onsubmit="lookupSales(); return false;">
+<select id="smonth" class="form-control">
 <?php 
 for ($i=1;$i<=12;$i++) {
     printf("<option %s value=%d>%s</option>",
@@ -173,16 +185,28 @@ for ($i=1;$i<=12;$i++) {
 ?>
 </select>
 
-<input type="text" size="4" id="syear" value="<?php echo date("Y"); ?>" />
+<input type="number" class="form-control" id="syear" 
+    placeholder="Year" required value="<?php echo date("Y"); ?>" />
 
-<input type="submit" value="Lookup Sales" onclick="lookupSales();" />
+<button type="submit" class="btn btn-default">Lookup Sales</button>
+</form>
 </div>
-<div id="result"></div>
+<div id="result" class="row col-sm-6"></div>
 
         <?php
         $this->add_onload_command('lookupSales();');
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            List weekly sales totals for a given sale (promotion)
+            batch or batches. Only one month of batches is listed
+            at a time. Use the month, year, and Lookup Sales to
+            show batches from different months.
+            </p>';
     }
 
 }

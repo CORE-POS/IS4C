@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -52,8 +52,6 @@ function login($name,$password){
     return false;
   }
   if ($password == "") return false;
-
-  table_check();
 
   $sql = dbconnect();
   $gatherQ = $sql->prepare_statement("select password,salt from Users where name=?");
@@ -105,17 +103,18 @@ function shadow_login($name,$passwd){
  * 
  * Tested against openldap 2.3.27
  */
-function ldap_login($name,$passwd){
-    global $FANNIE_LDAP_SERVER, $FANNIE_LDAP_PORT, $FANNIE_LDAP_DN, $FANNIE_LDAP_SEARCH_FIELD, $FANNIE_LDAP_UID_FIELD, $FANNIE_LDAP_RN_FIELD;
+function ldap_login($name,$passwd)
+{
+    $config = FannieConfig::factory();
     if (!isAlphanumeric($name))
         return false;
     if ($passwd == "") return false;
 
-    $conn = ldap_connect($FANNIE_LDAP_SERVER,$FANNIE_LDAP_PORT);
+    $conn = ldap_connect($config->get('LDAP_SERVER'), $config->get('LDAP_PORT'));
     if (!$conn) return false;
 
-    $search_result = ldap_search($conn,$FANNIE_LDAP_DN,
-                     $FANNIE_LDAP_SEARCH_FIELD."=".$name);
+    $search_result = ldap_search($conn,$config->get('LDAP_DN'),
+                     $config->get('LDAP_SEARCH_FIELD')."=".$name);
     if (!$search_result) return false;
 
     $ldap_info = ldap_get_entries($conn,$search_result);
@@ -126,14 +125,15 @@ function ldap_login($name,$passwd){
     }
 
     $user_dn = $ldap_info[0]["dn"];
-    $uid = $ldap_info[0][$FANNIE_LDAP_UID_FIELD][0];
-    $fullname = $ldap_info[0][$FANNIE_LDAP_RN_FIELD][0];
+    $uid = $ldap_info[0][$config->get('LDAP_UID_FIELD')][0];
+    $fullname = $ldap_info[0][$config->get('LDAP_RN_FIELD')][0];
 
     if (ldap_bind($conn,$user_dn,$passwd)){
         syncUserLDAP($name,$uid,$fullname); 
         doLogin($name);
         return true;
-    }   
+    }
+
     return false;
 }
 
@@ -166,7 +166,7 @@ function logout(){
         $upR = $sql->exec_statement($upP,array($name));
     }
 
-    setcookie('session_data','',time()+(60*600),'/');
+    setcookie('session_data','',0,'/');
     return true;
 }
 
@@ -188,7 +188,6 @@ function createLogin($name,$password){
   }
 
   if (init_check())
-    table_check();
 
     // 10Nov12 EL Add FANNIE_AUTH_ENABLED test per intent in first-user call from auth.php.
     if ( $FANNIE_AUTH_ENABLED ) {
@@ -280,6 +279,9 @@ function checkLogin(){
     Could enforce expired, optionally
   */
   $sql = dbconnect();
+  if (!$sql->isConnected()) {
+      return false;
+  }
   $checkQ = $sql->prepare_statement("select * from Users AS u LEFT JOIN
             userSessions AS s ON u.uid=s.uid where u.name=? 
             and s.session_id=?");
@@ -297,7 +299,7 @@ function showUsers(){
     return false;
   }
   echo "Displaying current users";
-  echo "<table cellspacing=2 cellpadding=2 border=1>";
+  echo "<table class=\"table\">";
   echo "<tr><th>Name</th><th>User ID</th></tr>";
   $sql = dbconnect();
   $usersQ = $sql->prepare_statement("select name,uid from Users order by name");
@@ -432,7 +434,7 @@ function refreshSession(){
   return true;
   if (!isset($_COOKIE['session_data']))
     return false;
-  setcookie('session_data',$_COOKIE['session_data'],time()+(60*600),'/');
+  setcookie('session_data',$_COOKIE['session_data'],0,'/');
   return true;
 }
 

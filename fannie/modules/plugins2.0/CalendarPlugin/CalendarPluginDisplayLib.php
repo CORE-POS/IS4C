@@ -22,23 +22,30 @@
 *********************************************************************************/
 
 
-if(!class_exists("CalendarPluginDB")) include(dirname(__FILE__).'/CalendarPluginDB.php');
-include_once(dirname(__FILE__).'/CalendarPluginPermissions.php');
+if (!class_exists("CalendarPluginDB")) {
+    include(dirname(__FILE__).'/CalendarPluginDB.php');
+}
+if (!class_exists("CalendarPluginPermissions")) {
+    include_once(dirname(__FILE__).'/CalendarPluginPermissions.php');
+}
 
-$DAY_NAMES = array(
-    array("Sunday","Sun"),
-    array("Monday","Mon"),
-    array("Tuesday","Tue"),
-    array("Wednesday","Wed"),
-    array("Thursday","Thu"),
-    array("Friday","Fri"),
-    array("Saturday","Sat")
-);
+class CalendarPluginDisplayLib 
+{
 
-class CalendarPluginDisplayLib {
+    private static $DAY_NAME_MAPPING = array(
+        array("Sunday","Sun"),
+        array("Monday","Mon"),
+        array("Tuesday","Tue"),
+        array("Wednesday","Wed"),
+        array("Thursday","Thu"),
+        array("Friday","Fri"),
+        array("Saturday","Sat")
+    );
 
-    public static function monthView($id,$month,$year,$uid){
-        global $DAY_NAMES, $FANNIE_OP_DB;
+    public static function monthView($id,$month,$year,$uid)
+    {
+        global $FANNIE_OP_DB;
+        $DAY_NAMES = self::$DAY_NAME_MAPPING;
 
         $EDIT = CalendarPluginPermissions::can_write($uid,$id);
         $OWNER = CalendarPluginPermissions::is_owner($uid,$id);
@@ -67,12 +74,19 @@ class CalendarPluginDisplayLib {
         $calendarModel->load();
         $name = $calendarModel->name();
 
+        if ($calendarModel->calendarSubscriptionID()) {
+            $OWNER = false;
+            $EDIT = false;
+        }
+
         $startTS = mktime(0,0,0,$month,1,$year);
 
         $prevTS = mktime(0,0,0,$month-1,1,$year);
         $nextTS = mktime(0,0,0,$month+1,1,$year);
 
-        $ret = "<body onload=\"setTimeout('monthview_refresher()',60000)\">";
+        $ret = '<!doctype html>';
+        $ret .= '<html><head><title>Calendar</title></head>';
+        $ret .= "<body onload=\"setTimeout('monthview_refresher()',5*60*1000)\">";
         $ret .= "<input type=\"hidden\" id=\"calendarID\" value=\"$id\" />";
         $ret .= "<input type=\"hidden\" id=\"uid\" value=\"$uid\" />";
 
@@ -124,12 +138,12 @@ class CalendarPluginDisplayLib {
                     $datebox .= sprintf("<div class=\"%s\" ",$classes[$c]);
                     $c = ($c+1)%2;
                     if (($EDIT && $uid==$dat['uid']) || $OWNER){
-                        $datebox .= " onclick=\"edit_event({$dat['eventID']})\" ";
+                        $datebox .= " onclick=\"edit_event(event, {$dat['eventID']})\" ";
                         $datebox .= " ondblclick=\"save_open_event()\" ";
                     }
                     if ($dat['uid'] == $uid) {
                         $found = true;
-                        $default_action = "edit_event({$dat['eventID']})";
+                        $default_action = "edit_event(event, {$dat['eventID']})";
                     }
                     $datebox .= " id=\"event_".$dat['eventID']."\"";
                     $datebox .= sprintf(" title=\"%s\"",($dat['real_name']==""?"Unknown":$dat['real_name']));
@@ -181,12 +195,12 @@ class CalendarPluginDisplayLib {
                             $datebox .= sprintf("<div class=\"%s\" ",$classes[$c]);
                             $c = ($c+1)%2;
                             if (($EDIT && $uid==$dat['uid']) || $OWNER){
-                                $datebox .= " onclick=\"edit_event({$dat['eventID']})\" ";
+                                $datebox .= " onclick=\"edit_event(event, {$dat['eventID']})\" ";
                                 $datebox .= " ondblclick=\"save_open_event()\" ";
                             }
                             if ($dat['uid'] == $uid) {
                                 $found = true;
-                                $default_action = "edit_event({$dat['eventID']})";
+                                $default_action = "edit_event(event, {$dat['eventID']})";
                             }
                             $datebox .= " id=\"event_".$dat['eventID']."\"";
                             $datebox .= sprintf(" title=\"%s\"",($dat['real_name']==""?"Unknown":$dat['real_name']));
@@ -227,10 +241,25 @@ class CalendarPluginDisplayLib {
 
         $ret .= "<div style=\"text-align:center;\">\n";
         $ret .= "<a href=?view=index>Back to list of calendars</a>";
+        // recheck; owernship is overriden on subscriptions to avoid editing
+        $OWNER = CalendarPluginPermissions::is_owner($uid,$id);
         if ($OWNER) {
             $ret .= " || <a href=?view=prefs&calID=$id>Settings for this calendar</a>\n";
         }
+        if ($calendarModel->calendarSubscriptionID()) {
+            $sub = new CalendarSubscriptionsModel($sql);
+            $sub->calendarSubscriptionID($calendarModel->calendarSubscriptionID());
+            $sub->load();
+            $ret .= sprintf(' || <a href="%s">Subscription URL</a>', $sub->url());
+        } else {
+            $token = sha1($calendarModel->calendarID() . 'FannieCalendar' . $calendarModel->name());
+            $ret .= sprintf(' || <a href="webcal://%s%smodules/plugins2.0/CalendarPlugin/CalendarFeed.php?id=%d&token=%s">Feed URL</a>',
+                                $_SERVER['HTTP_HOST'], $FANNIE_URL, $id, $token);
+            $ret .= sprintf(' || <a href="CalendarFeed.php?id=%d&token=%s&export=1">Export URL</a>',
+                            $id, $token);
+        }
         $ret .= "</div>\n";
+        $ret .= '</body></html>';
             
         return $ret;
     }
@@ -350,7 +379,8 @@ class CalendarPluginDisplayLib {
         return $ret;
     }
 
-    public static function indexView($uid){
+    public static function indexView($uid)
+    {
         global $FANNIE_URL;
         $yours = CalendarPluginPermissions::get_own_calendars($uid);
         $theirs = CalendarPluginPermissions::get_other_calendars($uid);             
@@ -359,12 +389,15 @@ class CalendarPluginDisplayLib {
         $ret .= "<div class=indexTitle>Your Calendars</div>";
         $ret .= "<div id=yours>";
         foreach($yours as $k=>$v){
-            $ret .= "<p class=\"index\"><a href=\"?calID=$k&view=week\">$v</a></p>";
+            $ret .= "<p class=\"index\"><a href=\"?calID=$k&view=month\">$v</a></p>";
         }
         $ret .= "</div>";
         $ret .= "<p class=\"index\" id=\"indexCreateNew\">";
         $ret .= "<a href=\"\" onclick=\"newCalendar('$uid');return false;\">";
         $ret .= "Create a new calendar</a></p>";
+        $ret .= '<p class="index">
+            <a href="" id="add-subscription" onclick="return false;">Create new subscription</a>
+            </p>';
         $ret .= "<p class=\"index\" id=\"indexAttendedEvent\">";
         $ret .= "<a href=\"CalendarAttendedEventPage.php\">";
         $ret .= "Create an attended event</a></p>";
@@ -372,7 +405,7 @@ class CalendarPluginDisplayLib {
         $ret .= "<div class=indexTitle>Other Calendars</div>";
         $ret .= "<div id=theirs>";
         foreach($theirs as $k=>$v){
-            $ret .= "<p class=\"index\"><a href=\"?calID=$k&view=week\">$v</a></p>";
+            $ret .= "<p class=\"index\"><a href=\"?calID=$k&view=month\">$v</a></p>";
         }
         $ret .= "</div>";
 
@@ -382,6 +415,60 @@ class CalendarPluginDisplayLib {
         $ret .= "</div>";
         $url = $FANNIE_URL."auth/ui/loginform.php?logout=yes";
         $ret .= "<p><a href=\"$url\">Logout</a></p>";
+
+        $ret .= '<div id="subscription-dialog" style="display:none;">
+            <p>Subscribe to Calendar Feed</p>
+            <fieldset>
+                <p>
+                <label for="subscription-name">Name</label>
+                <input type="text" class="text ui-widget-content ui-corner-all" id="subscription-name" />
+                </p><p>
+                <label for="subscription-url">URL</label>
+                <input type="text" class="text ui-widget-content ui-corner-all" id="subscription-url" />
+                </p>
+            </fieldset>
+            </div>';
+        $ret .= '<script type="text/javascript">
+            function initSubscriptionDialog()
+            {
+                var dialog;
+                function addSubscription()
+                {
+                    var name = $("#subscription-name").val();
+                    var url = $("#subscription-url").val();
+                    if (name == "") {
+                        alert("Name is required");
+                        return;
+                    }
+                    if (url == "") {
+                        alert("URL is required");
+                        return;
+                    }
+                    dialog.dialog("close");
+                    // in javascript/calendar.js
+                    createSubscription('. $uid . ', name, url); 
+                }
+                dialog = $("#subscription-dialog").dialog({
+                     autoOpen: false,
+                     height: 300,
+                     width: 350,
+                     modal: true,
+                     buttons: {
+                         "Subscribe": addSubscription,
+                         "Cancel": function(){
+                             dialog.dialog("close");
+                         }
+                     },
+                     close: function(){
+                         $("#subscription-name").val("");
+                         $("#subscription-url").val("");
+                     }
+                 });
+                 $("#add-subscription").click(function(){
+                     dialog.dialog("open");
+                 });
+            }
+            </script>';
 
         return $ret;
     }
@@ -478,7 +565,8 @@ class CalendarPluginDisplayLib {
         return $ret;
     }
 
-    public static function prefsView($calID,$uid){
+    public static function prefsView($calID,$uid)
+    {
         global $FANNIE_OP_DB;
         if (!CalendarPluginPermissions::is_owner($uid,$calID)){
             return "<h2>Either something goofed up or you aren't allowed to change
@@ -486,18 +574,19 @@ class CalendarPluginDisplayLib {
         }
 
         $db = CalendarPluginDB::get();
-        $name = array_pop(
-            $db->fetch_row(
-                $db->exec_statement(
-                    $db->prepare_statement('SELECT name FROM calendars
-                                WHERE calendarID=?'),
-                    array($calID)
-                )
-            )
-        );
+        $calendar = new CalendarsModel($db);
+        $calendar->calendarID($calID);
+        $calendar->load();
+        $name = $calendar->name();
 
         $ret = "<body>";
         $ret .= "<p>Name: <input type=text size=15 id=prefName value=\"$name\" />";
+        if ($calendar->calendarSubscriptionID()) {
+            $sub = new CalendarSubscriptionsModel($db);
+            $sub->calendarSubscriptionID($calendar->calendarSubscriptionID());
+            $sub->load();
+            $ret .= '</p><p>URL: <input type="text" size="50" id="sub-url" value="' . $sub->url() . '" />';
+        }
         $ret .= "</p><hr />";
 
         $userP = $db->prepare_statement("SELECT uid,real_name,name FROM "

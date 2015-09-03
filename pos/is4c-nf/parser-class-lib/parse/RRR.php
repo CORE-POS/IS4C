@@ -21,64 +21,71 @@
 
 *********************************************************************************/
 
-class RRR extends Parser {
-	function check($str){
-		if ($str == "RRR" || substr($str,-4)=="*RRR"){
-			return True;
-		}
-		return False;
-	}
+class RRR extends Parser 
+{
+    function check($str)
+    {
+        if ($str == "RRR" || substr($str,-4)=="*RRR") {
+            return true;
+        }
 
-	function parse($str){
-		global $CORE_LOCAL;
-		$ret = $this->default_json();
-		$qty = 1;
-		if ($str != "RRR"){
-			$split = explode("*",$str);
-			if (!is_numeric($split[0])) return True;
-			$qty = $split[0];
-		}
-		$this->add($qty);
+        return false;
+    }
 
-		$ret['output'] = DisplayLib::lastpage();
-		$ret['udpmsg'] = 'goodBeep';
+    function parse($str)
+    {
+        $ret = $this->default_json();
+        $qty = 1;
+        if ($str != "RRR") {
+            $split = explode("*",$str);
+            if (!is_numeric($split[0])) {
+                return true;
+            }
+            $qty = $split[0];
+        }
+        $no_trans = CoreLocal::get('LastID') == 0 ? true : false;
+        $this->add($qty);
 
-		Database::getsubtotals();
-		if ($CORE_LOCAL->get("runningTotal") == 0) {
+        $ret['output'] = DisplayLib::lastpage();
+        $ret['udpmsg'] = 'goodBeep';
+
+        Database::getsubtotals();
+        if ($no_trans && CoreLocal::get("runningTotal") == 0) {
             TransRecord::finalizeTransaction(true);
-		}
+        }
 
-		return $ret;
-	}
+        return $ret;
+    }
 
-	// gross misuse of field!
-	// quantity is getting shoved into the volume special
-	// column so that basket-size stats aren't skewed
-	function add($qty) {
+    // gross misuse of field!
+    // quantity is getting shoved into the volume special
+    // column so that basket-size stats aren't skewed
+    function add($qty) 
+    {
         TransRecord::addRecord(array(
             'upc' => 'RRR',
             'description' => $qty . ' RRR DONATED',
             'trans_type' => 'I',
             'VolSpecial' => $qty,
         ));
-	}
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>RRR</td>
-				<td>Add donated RRR card punch</td>
-			</tr>
-			<tr>
-				<td><i>number</i>*RRR</td>
-				<td>Add multiple donated punches</td>
-			</tr>
-			</table>";
-	}
+    function doc()
+    {
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>RRR</td>
+                <td>Add donated RRR card punch</td>
+            </tr>
+            <tr>
+                <td><i>number</i>*RRR</td>
+                <td>Add multiple donated punches</td>
+            </tr>
+            </table>";
+    }
 
 }
 
-?>

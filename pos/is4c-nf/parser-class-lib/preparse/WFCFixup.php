@@ -22,18 +22,18 @@
 *********************************************************************************/
 
 class WFCFixup extends PreParser {
-	var $remainder;
-	
-	function check($str){
-		global $CORE_LOCAL;
+    var $remainder;
+    
+    function check($str)
+    {
         $as_upc = str_pad($str, 13, '0', STR_PAD_LEFT);
-		if (substr($str,-3) == "QK9"){
-			$this->remainder = str_replace("QK9","QM9",$str);
-			return True;
-		} else if (substr($str,-4) == "QK10"){
-			$this->remainder = str_replace("QK10","QM10",$str);
-			return True;
-		} else if (strstr($str, '59070000087') || strstr($str, '59070000087') || strstr($str, '59070000087')) {
+        if (substr($str,-3) == "QK9"){
+            $this->remainder = str_replace("QK9","QM9",$str);
+            return True;
+        } else if (substr($str,-4) == "QK10"){
+            $this->remainder = str_replace("QK10","QM10",$str);
+            return True;
+        } else if (strstr($str, '59070000087') || strstr($str, '59070000087') || strstr($str, '59070000087')) {
             // stupid Herb Pharm coupon. Expires 30Apr14
             $this->remainder = '59070099287';
             return true;
@@ -45,33 +45,39 @@ class WFCFixup extends PreParser {
             // re-write WFC access coupon as houseCoupon UPC
             $this->remainder = '0049999900002';
             return true;
-        } else if (($as_upc == '0000000001112' || $as_upc == '0000000001113') && $CORE_LOCAL->get('msgrepeat') == 0) {
+        } else if (($as_upc == '0000000001112' || $as_upc == '0000000001113') && CoreLocal::get('msgrepeat') == 0) {
             $this->remainder = 'QM708';
             return true;
+        } elseif (preg_match('/(\d+)\*0*1112/', $str, $matches) && CoreLocal::get('msgrepeat') == 0) {
+            $this->remainder = $matches[1] . '*QM708';
+            return true;
+        } elseif (preg_match('/(\d+)\*0*1113/', $str, $matches) && CoreLocal::get('msgrepeat') == 0) {
+            $this->remainder = $matches[1] . '*QM708';
+            return true;
         }
-		return False;
-	}
+        return False;
+    }
 
-	function parse($str){
-		return $this->remainder;
-	}
+    function parse($str){
+        return $this->remainder;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td><i>discount</i>DI<i>item</i></td>
-				<td>Set a percent discount <i>discount</i>
-				for just one item <i>item</i></td>
-			</tr>
-			<tr>
-				<td><i>discount</i>PD<i>item</i></td>
-				<td>Same as DI above</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td><i>discount</i>DI<i>item</i></td>
+                <td>Set a percent discount <i>discount</i>
+                for just one item <i>item</i></td>
+            </tr>
+            <tr>
+                <td><i>discount</i>PD<i>item</i></td>
+                <td>Same as DI above</td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

@@ -22,6 +22,8 @@
 *********************************************************************************/
 //session_start();
 include('../../../config.php');
+if (!class_exists('FannieAPI'))
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
 
@@ -45,7 +47,7 @@ if($getBatchIDW[0] < $batchID){
 }
 
 ?>
-	<FRAMESET rows='40,*' frameborder='0'>
-	    <FRAME src=''>
+    <FRAMESET rows='40,*' frameborder='0'>
+        <FRAME src=''>
         <FRAME src='batches.php?batchID=<?php echo $batchID; ?>' name='items' border='0' scrolling='yes'>
-	</FRAMESET>
+    </FRAMESET>

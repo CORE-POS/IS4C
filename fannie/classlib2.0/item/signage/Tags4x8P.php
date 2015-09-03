@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,20 +21,24 @@
 
 *********************************************************************************/
 
-class Tags4x8P extends FannieSignage 
+namespace COREPOS\Fannie\API\item\signage {
+
+class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage 
 {
     protected $BIG_FONT = 18;
     protected $MED_FONT = 14;
     protected $SMALL_FONT = 10;
 
+    protected $font = 'Arial';
+    protected $alt_font = 'Arial';
+
     public function drawPDF()
     {
-        $pdf = new FPDF('P', 'mm', 'Letter');
-        $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+        $pdf = new \FPDF('P', 'mm', 'Letter');
 
         $width = 52; // tag width in mm
         $height = 31; // tag height in mm
-        $left = 5; // left margin
+        $left = 5.5; // left margin
         $top = 15; // top margin
         $pdf->SetTopMargin($top);  //Set top margin of the page
         $pdf->SetLeftMargin($left);  //Set left margin of the page
@@ -50,7 +54,7 @@ class Tags4x8P extends FannieSignage
             // extract & format data
             $price = $item['normal_price'];
             $desc = strtoupper(substr($item['posDescription'],0,27));
-            $brand = ucwords(strtolower(substr($item['brand'],0,13)));
+            $brand = strtoupper(substr($item['brand'],0,13));
             $pak = $item['units'];
             $size = $item['units'] . "-" . $item['size'];
             $sku = $item['sku'];
@@ -73,10 +77,11 @@ class Tags4x8P extends FannieSignage
                 'align' => 'L',
                 'suffix' => date('  n/j/y'),
                 'fontsize' => 8,
+                'font' => $this->font,
             );
             $pdf = $this->drawBarcode($upc, $pdf, $x + 7, $y + 4, $args);
 
-            $pdf->SetFont('Gill', '', 8);
+            $pdf->SetFont($this->font, '', 8);
 
             $pdf->SetXY($x,$y+12);
             $pdf->Cell($width,4,$desc,0,1,'L');
@@ -96,7 +101,7 @@ class Tags4x8P extends FannieSignage
             }
 
             $pdf->SetXY($x, $y+16);
-            $pdf->SetFont('Arial','B',24);  //change font size
+            $pdf->SetFont($this->font,'B',24);  //change font size
             $pdf->Cell($width-5,8,$price,0,0,'R');
 
             // move right by tag width
@@ -107,5 +112,11 @@ class Tags4x8P extends FannieSignage
 
         $pdf->Output('Tags4x8P.pdf', 'I');
     }
+}
+
+}
+
+namespace {
+    class Tags4x8P extends \COREPOS\Fannie\API\item\signage\Tags4x8P {}
 }
 

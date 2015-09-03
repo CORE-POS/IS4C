@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -30,6 +30,7 @@ class ArReport extends FannieReportPage
 {
     public $description = '[AR/Store Charge] lists all AR/Store Charge transactions for a given member';
     public $report_set = 'Membership';
+    public $themed = true;
 
     protected $report_headers = array('Date', 'Receipt', 'Amount', 'Type');
     protected $sort_direction = 1;
@@ -51,8 +52,8 @@ class ArReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_TRANS_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
         $q = $dbc->prepare_statement("select charges,trans_num,payments,
                 year(tdate),month(tdate),day(tdate)
                 from ar_history AS s 
@@ -67,7 +68,7 @@ class ArReport extends FannieReportPage
                 $record[] = $w[1];
             } else {
                 $record[] = sprintf('<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?year=%d&month=%d&day=%d&receipt=%s">%s</a>',
-                        $FANNIE_URL,$w[3],$w[4],$w[5],$w[1],$w[1]);
+                        $this->config->get('URL'),$w[3],$w[4],$w[5],$w[1],$w[1]);
             }
             $record[] = sprintf('%.2f', ($w[0] != 0 ? $w[0] : $w[2]));
             $record[] = $w[0] != 0 ? 'Charge' : 'Payment';
@@ -79,11 +80,23 @@ class ArReport extends FannieReportPage
 
     public function form_content()
     {
+        $this->add_onload_command('$(\'#memNum\').focus()');
         return '<form method="get" action="ArReport.php">
-            <b>Member #</b> <input type="text" name="memNum" value="" size="6" />
-            <br /><br />
-            <input type="submit" value="Get Report" />
+            <label>Member #</label>
+            <input type="text" name="memNum" value="" class="form-control"
+                required id="memNum" />
+            <p>
+            <button type="submit" class="btn btn-default">Get Report</button>
+            </p>
             </form>';
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            View all Accounts Receivable (AR) activity for a given member.
+            Enter the desired member number.
+            </p>';
     }
 
 }

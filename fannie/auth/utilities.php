@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -37,11 +37,10 @@ the database easier
 */
 function dbconnect()
 {
-    include(dirname(__FILE__).'/../config.php');
     if (!class_exists("FannieAPI")){
         include(dirname(__FILE__).'/../classlib2.0/FannieAPI.php');
     }
-    $dbc = FannieDB::get($FANNIE_OP_DB);
+    $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
 
     return $dbc;
 }
@@ -124,24 +123,23 @@ function getNumAdmins(){
     return $num;
 }
 
-function getGID($group){
-    // 11Nov12 EL Bring in config for SERVER_DBMS test.
-    include(dirname(__FILE__)."/../config.php");
+function getGID($group)
+{
+    if (!isAlphaNumeric($group)) {
+        return false;
+    }
+    $sql = dbconnect();
 
-  if (!isAlphaNumeric($group))
-    return false;
-  $sql = dbconnect();
+    $gidQ = "select gid from userGroups where name=?";
+    $gidQ = $sql->add_select_limit($gidQ,1); 
+    $gidP = $sql->prepare_statement($gidQ);
+    $gidR = $sql->exec_statement($gidP,array($group));
 
-  $gidQ = "select gid from userGroups where name=?";
-  $gidQ = $sql->add_select_limit($gidQ,1); 
-  $gidP = $sql->prepare_statement($gidQ);
-  $gidR = $sql->exec_statement($gidP,array($group));
+    if ($sql->num_rows($gidR) == 0)
+        return false;
 
-  if ($sql->num_rows($gidR) == 0)
-    return false;
-
-  $row = $sql->fetch_array($gidR);
-  return $row[0];
+    $row = $sql->fetch_array($gidR);
+    return $row[0];
 }
 
 function genSessID(){
@@ -189,7 +187,7 @@ function doLogin($name){
     $session_data = array("name"=>$name,"session_id"=>$session_id);
     $cookie_data = serialize($session_data);
 
-    setcookie('session_data',base64_encode($cookie_data),time()+(60*600),'/');
+    setcookie('session_data',base64_encode($cookie_data),0,'/');
 }
 
 function syncUserShadow($name){
@@ -230,74 +228,12 @@ function syncUserLDAP($name,$uid,$fullname){
     }
 }
 
-function auth_enabled(){
-    global $FANNIE_AUTH_ENABLED;
-    if (!isset($FANNIE_AUTH_ENABLED)){
-        include(dirname(__FILE__)."/../config.php");
-        return $FANNIE_AUTH_ENABLED;
+function auth_enabled()
+{
+    if (!class_exists('FannieConfig')) {
+        include(dirname(__FILE__) . '/../classlib2.0/FannieConfig.php');
     }
-    else
-        return $FANNIE_AUTH_ENABLED;
+
+    return FannieConfig::config('AUTH_ENABLED', false);
 }
 
-function table_check(){
-    $sql = dbconnect();
-    if (!$sql->table_exists('Users')){
-        $p = $sql->prepare_statement("CREATE TABLE Users (
-            name varchar(50),
-            password varchar(50),
-            salt varchar(10),
-            uid varchar(4),
-            session_id varchar(50),
-            real_name varchar(75),
-            PRIMARY KEY (name)
-            )");
-        $sql->exec_statement($p);
-    }
-    if (!$sql->table_exists('userPrivs')){
-        $p = $sql->prepare_statement("CREATE TABLE userPrivs (
-            uid varchar(4),
-            auth_class varchar(50),
-            sub_start varchar(50),
-            sub_end varchar(50)
-            )");
-        $sql->exec_statement($p);
-    }
-    if (!$sql->table_exists('userKnownPrivs')){
-        $p = $sql->prepare_statement("CREATE TABLE userKnownPrivs (
-            auth_class varchar(50),
-            notes text,
-            PRIMARY KEY (auth_class)
-            )");
-        $sql->exec_statement($p);
-    }
-    if (!$sql->table_exists('userGroups')){
-        $p = $sql->prepare_statement("CREATE TABLE userGroups (
-            gid int,
-            name varchar(50),
-            username varchar(50)
-            )");
-        $sql->exec_statement($p);
-    }
-    if (!$sql->table_exists('userGroupPrivs')){
-        $p = $sql->prepare_statement("CREATE TABLE userGroupPrivs (
-            gid int,
-            auth varchar(50),
-            sub_start varchar(50),
-            sub_end varchar(50)
-            )");
-        $sql->exec_statement($p);
-    }
-    if (!$sql->table_exists('userSessions')){
-        $p = $sql->prepare_statement("CREATE TABLE userSessions (
-            uid varchar(4),
-            session_id varchar(50),
-            ip varchar(45),
-            expires datetime,
-            PRIMARY KEY (uid,session_id)
-            )");
-        $sql->exec_statement($p);
-    }
-}
-
-?>

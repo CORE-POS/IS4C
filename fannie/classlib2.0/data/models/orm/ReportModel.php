@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ class ReportModel extends BasicModel
     public function pushToLanes(){}
     public function deleteFromLanes(){}
 
-    public function find($sort='')
+    public function find($sort='', $reverse=false)
     {
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {

@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class SPINS extends FanniePlugin 
+class SPINS extends \COREPOS\Fannie\API\FanniePlugin 
 {
     public $plugin_settings = array(
     'SpinsFtpUser' => array('default'=>'', 'label'=>'FTP Username',

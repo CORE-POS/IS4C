@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -219,7 +219,7 @@ function showGroups(){
   $fetchQ = $sql->prepare_statement("select distinct gid, name from userGroups order by name");
   $fetchR = $sql->exec_statement($fetchQ);
 
-  echo "<table cellspacing=2 cellpadding=2 border=1>";
+  echo "<table class=\"table\">";
   echo "<tr><th>Group ID</th><th>Group Name</th></tr>";
   while ($row=$sql->fetch_array($fetchR)){
     echo "<tr><td>$row[0]</td><td>$row[1]</td></tr>";
@@ -255,7 +255,7 @@ function detailGroup($group){
   $usersR = $sql->exec_statement($usersQ,array($group));
   
   $gid = 0;
-  echo "<table cellspacing=2 cellpadding=2 border=1>";
+  echo "<table class=\"table\">";
   echo "<tr><th>Users</th></tr>";
   while ($row = $sql->fetch_array($usersR)){
     $gid = $row[0];
@@ -265,7 +265,7 @@ function detailGroup($group){
 
   $authsQ = $sql->prepare_statement("select auth,sub_start,sub_end from userGroupPrivs where gid=? order by auth");
   $authsR = $sql->exec_statement($authsQ,array($gid));
-  echo "<table cellspacing=2 cellpadding=2 border=1>";
+  echo "<table class=\"table\">";
   echo "<tr><th>Authorization Class</th><th>Subclass start</th><th>Subclass End</th></tr>";
   while ($row = $sql->fetch_array($authsR)){
     echo "<tr><td>$row[0]</td><td>$row[1]</td><td>$row[2]</td></tr>";

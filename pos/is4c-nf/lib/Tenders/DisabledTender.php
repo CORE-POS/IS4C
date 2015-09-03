@@ -32,7 +32,10 @@ class DisabledTender extends TenderModule
 {
     public function errorCheck()
     {
-        return DisplayLib::xboxMsg($this->name_string." "._("tender disabled"));
+        return DisplayLib::xboxMsg(
+            $this->name_string." "._("tender disabled"),
+            DisplayLib::standardClearButton()
+        );
     }
 }
 

@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -26,10 +26,13 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class BasketLimitedReport extends FannieReportPage {
+class BasketLimitedReport extends FannieReportPage 
+{
 
     public $description = '[Small Basket Report] lists sales for transactions containing a limited
     number of items - i.e., what do people buy when they\'re only purchasing one or two things?';
+    public $themed = true;
+    public $report_set = 'Transaction Reports';
 
     protected $report_headers = array('UPC', 'Description', '# Trans', 'Qty', '$');
     protected $sort_column = 2;
@@ -101,50 +104,59 @@ class BasketLimitedReport extends FannieReportPage {
     {
         ob_start();
 ?>
-<div id=main>
-<form method ="get" action="BasketLimitedReport.php">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr> 
-            <td> 
-                <p><b>Size Limit (Qty)</b></p>
-                <p><b>Excel</b></p>
-            </td>
-            <td>
-                <p>
-                <input type=text name=qty id=qty value="1"  />
-                </p>
-                <p>
-                <input type=checkbox name=excel id=excel /> 
-                </p>
-            </td>
-            <td>
-                <p><b>Date Start</b> </p>
-                <p><b>End</b></p>
-            </td>
-            <td>
-                <p>
-                <input type=text id=date1 name=date1 />
-                </p>
-                <p>
-                <input type=text id=date2 name=date2 />
-                </p>
-            </td>
-        </tr>
-        <tr>
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-            <td colspan="2" rowspan="2">
-                <?php echo FormLib::date_range_picker(); ?>
-            </td>
-        </tr>
-    </table>
-</form>
+<form method="get" action="BasketLimitedReport.php" class="form-horizontal">
+<div class="col-sm-5">
+    <div class="form-group">
+        <label class="control-label col-sm-4">Size Limit (Qty)</label>
+        <div class="col-sm-8">
+            <input type=text name=qty id=qty value="1" 
+                class="form-control" required />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-sm-4">Start Date</label>
+        <div class="col-sm-8">
+            <input type=text id=date1 name=date1 
+                class="form-control date-field" required />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-sm-4">End Date</label>
+        <div class="col-sm-8">
+            <input type=text id=date2 name=date2 
+                class="form-control date-field" required />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-8">
+            <input type="checkbox" name="excel" value="xls" />
+            Excel
+        </label>
+    </div>
+    <p>
+        <button class="btn btn-default btn-core" type="submit">Submit</button>
+        <button class="btn btn-default btn-reset" type="reset">Start Over</button>
+    </p>
 </div>
+<div class="col-sm-5">
+    <div class="form-group">
+        <?php echo FormLib::date_range_picker(); ?>
+    </div>
+</div>
+</form>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            This report shows per-item sales for transactions
+            containing a specific number of items or fewer.
+            Canonically, if customers are buying just a single item,
+            which item(s) are they buying most often?
+            </p>';
     }
 }
 

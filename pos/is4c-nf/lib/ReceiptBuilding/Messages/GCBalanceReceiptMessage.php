@@ -26,54 +26,53 @@
 */
 class GCBalanceReceiptMessage extends ReceiptMessage {
 
-	public function select_condition(){
-		return '0';
-	}
+    public function select_condition(){
+        return '0';
+    }
 
-	public function message($val, $ref, $reprint=False){
-		return '';
-	}
+    public function message($val, $ref, $reprint=False){
+        return '';
+    }
 
-	/**
-	  Message can be printed independently from a regular	
-	  receipt. Pass this string to ajax-end.php as URL
-	  parameter receiptType to print the standalone receipt.
-	*/
-	public $standalone_receipt_type = 'gcBalSlip';
+    /**
+      Message can be printed independently from a regular    
+      receipt. Pass this string to ajax-end.php as URL
+      parameter receiptType to print the standalone receipt.
+    */
+    public $standalone_receipt_type = 'gcBalSlip';
 
-	/**
-	  Print message as its own receipt
-	  @param $ref a transaction reference (emp-lane-trans)
-	  @param $reprint boolean
-	  @return [string] message to print 
-	*/
-	public function standalone_receipt($ref, $reprint=False){
-		global $CORE_LOCAL;
-
-		// balance inquiries are not logged and have no meaning in a reprint,
-		// so we can assume that it just happened now and all data is still in session vars
-		$tempArr = $CORE_LOCAL->get("paycard_response");
+    /**
+      Print message as its own receipt
+      @param $ref a transaction reference (emp-lane-trans)
+      @param $reprint boolean
+      @return [string] message to print 
+    */
+    public function standalone_receipt($ref, $reprint=False)
+    {
+        // balance inquiries are not logged and have no meaning in a reprint,
+        // so we can assume that it just happened now and all data is still in session vars
+        $tempArr = CoreLocal::get("paycard_response");
         if (!is_array($tempArr) || !isset($tempArr['Balance'])) {
             return '';
         }
-		$bal = "$".number_format($tempArr["Balance"],2);
-		$pan = $CORE_LOCAL->get("paycard_PAN"); // no need to mask gift card numbers
-		$slip = ReceiptLib::normalFont()
-				.ReceiptLib::centerString(".................................................")."\n"
-				.ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip1"))."\n"		// store name 
-				.ReceiptLib::centerString($CORE_LOCAL->get("chargeSlip3").", ".$CORE_LOCAL->get("chargeSlip4"))."\n"  // address
-				.ReceiptLib::centerString($CORE_LOCAL->get("receiptHeader2"))."\n"	// phone
-				."\n"
-				."Gift Card Balance\n"
-				."Card: ".$pan."\n"
-				."Date: ".date('m/d/y h:i a')."\n"
-				.ReceiptLib::boldFont()  // change to bold font for the total
-				."Balance: ".$bal."\n"
-				.ReceiptLib::normalFont()
-				.ReceiptLib::centerString(".................................................")."\n"
-				."\n";
-		return $slip;
-	}
+        $bal = "$".number_format($tempArr["Balance"],2);
+        $pan = CoreLocal::get("paycard_PAN"); // no need to mask gift card numbers
+        $slip = ReceiptLib::normalFont()
+                .ReceiptLib::centerString(".................................................")."\n";
+        for ($i=1; $i<= CoreLocal::get('chargeSlipCount'); $i++) {
+            $slip .= ReceiptLib::centerString(CoreLocal::get("chargeSlip" . $i))."\n";
+        }
+        $slip .= "\n"
+                ."Gift Card Balance\n"
+                ."Card: ".$pan."\n"
+                ."Date: ".date('m/d/y h:i a')."\n"
+                .ReceiptLib::boldFont()  // change to bold font for the total
+                ."Balance: ".$bal."\n"
+                .ReceiptLib::normalFont()
+                .ReceiptLib::centerString(".................................................")."\n"
+                ."\n";
+        return $slip;
+    }
 }
 
 ?>

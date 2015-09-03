@@ -23,52 +23,51 @@
 
 class DonationKey extends Parser 
 {
-	function check($str)
+    function check($str)
     {
-		if ($str == "RU" || substr($str,-2)=="RU") {
-			return true;
+        if ($str == "RU" || substr($str,-2)=="RU") {
+            return true;
         } else {
             return false;
         }
-	}
+    }
 
-	function parse($str)
+    function parse($str)
     {
-		global $CORE_LOCAL;
-        $dept = $CORE_LOCAL->get('roundUpDept');
+        $dept = CoreLocal::get('roundUpDept');
         if ($dept === '') {
             $dept = 701;
         }
 
-		$ret = $this->default_json();
-		if ($str == "RU") {
-			Database::getsubtotals();
-			$ttl = $CORE_LOCAL->get("amtdue");	
-			$next = ceil($ttl);
-			$amt = sprintf('%.2f',(($ttl == $next) ? 1.00 : ($next - $ttl)));
-			$ret = PrehLib::deptkey($amt*100, $dept.'0', $ret);
-		} else {
-			$amt = substr($str,0,strlen($str)-2);
-			$ret = PrehLib::deptkey($amt, $dept.'0', $ret);
-		}
+        $ret = $this->default_json();
+        if ($str == "RU") {
+            Database::getsubtotals();
+            $ttl = CoreLocal::get("amtdue");    
+            $next = ceil($ttl);
+            $amt = sprintf('%.2f',(($ttl == $next) ? 1.00 : ($next - $ttl)));
+            $ret = PrehLib::deptkey($amt*100, $dept.'0', $ret);
+        } else {
+            $amt = substr($str,0,strlen($str)-2);
+            $ret = PrehLib::deptkey($amt, $dept.'0', $ret);
+        }
 
-		return $ret;
-	}
+        return $ret;
+    }
 
-	function doc()
+    function doc()
     {
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>DONATE</td>
-				<td>
-				Round transaction up to next dollar
-				with open ring to donation department.
-				</td>
-			</tr>
-			</table>";
-	}
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>DONATE</td>
+                <td>
+                Round transaction up to next dollar
+                with open ring to donation department.
+                </td>
+            </tr>
+            </table>";
+    }
 }
 

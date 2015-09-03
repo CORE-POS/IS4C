@@ -21,42 +21,57 @@
 
 *********************************************************************************/
 
-class Refund extends PreParser {
-	
-	function check($str){
-		if (substr($str,0,2) == "RF")
-			return True;
-		elseif (substr($str,-2) == "RF")
-			return True;
-		return False;
-	}
+class Refund extends PreParser 
+{
+    
+    function check($str)
+    {
+        // ignore comments; they may have all sorts of
+        // random character cominations
+        if (substr($str, 0, 2) == "CM") {
+            return false;
+        }
 
-	function parse($str){
-		global $CORE_LOCAL;
-		$remainder = "";
-		if (substr($str,0,2) == "RF")
-			$remainder = substr($str,2);
-		else
-			$remainder = substr($str,0,-2);
-		$CORE_LOCAL->set("refund",1);
-		return $remainder;
-	}
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>RF<i>ringable</i>
-				OR <i>ringable</i>RF
-				</td>
-				<td>Refund the specified item(s). <i>Ringable
-				</i> can be a single UPC, an open-department
-				ring, or a multiple using *</td>
-			</tr>
-			</table>";
-	}
+        if (strstr($str, 'RF')) {
+            // void and refund cannot combine
+            if (strstr($str, 'VD')) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    function parse($str)
+    {
+        $remainder = "";
+        $parts = explode('RF', $str, 2);
+        foreach ($parts as $p) {
+            $remainder .= $p;
+        }
+        CoreLocal::set("refund",1);
+
+        return $remainder;
+    }
+
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>RF<i>ringable</i>
+                OR <i>ringable</i>RF
+                </td>
+                <td>Refund the specified item(s). <i>Ringable
+                </i> can be a single UPC, an open-department
+                ring, or a multiple using *</td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>
