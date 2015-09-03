@@ -67,8 +67,16 @@ class PIMemberPage extends PIKillerPage {
         $this->title = 'Member '.$this->card_no;
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        if ($this->id == 0) {
+            echo 'Invalid ID';
+            return false;
+        }
 
         $this->account = \COREPOS\Fannie\API\member\MemberREST::get($this->id);
+        if ($this->account === false) {
+            echo 'Invalid ID';
+            return false;
+        }
         foreach ($this->account['customers'] as $c) {
             if ($c['accountHolder']) {
                 $this->primary_customer = $c;
@@ -94,7 +102,7 @@ class PIMemberPage extends PIKillerPage {
         $this->__models['ar'] = $this->get_model($dbc, 'ArLiveBalanceModel',
                     array('card_no'=>$this->card_no));
 
-        return True;
+        return true;
     }
 
     protected function post_id_handler()
