@@ -55,36 +55,12 @@ functionality built in**.
     public function coupID()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["coupID"])) {
-                return $this->instance["coupID"];
-            } else if (isset($this->columns["coupID"]["default"])) {
-                return $this->columns["coupID"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('coupID');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'coupID',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('coupID', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["coupID"]) || $this->instance["coupID"] != func_get_args(0)) {
-                if (!isset($this->columns["coupID"]["ignore_updates"]) || $this->columns["coupID"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["coupID"] = func_get_arg(0);
+            $this->setColumn('coupID', func_get_arg(0));
         }
         return $this;
     }
@@ -92,36 +68,12 @@ functionality built in**.
     public function description()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["description"])) {
-                return $this->instance["description"];
-            } else if (isset($this->columns["description"]["default"])) {
-                return $this->columns["description"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('description');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'description',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('description', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["description"]) || $this->instance["description"] != func_get_args(0)) {
-                if (!isset($this->columns["description"]["ignore_updates"]) || $this->columns["description"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["description"] = func_get_arg(0);
+            $this->setColumn('description', func_get_arg(0));
         }
         return $this;
     }

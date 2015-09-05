@@ -1281,6 +1281,41 @@ class BasicModel
         return $ret;
     }
 
+    public function getColumn($col)
+    {
+        if (isset($this->instance[$col])) {
+            return $this->instance[$col];
+        } elseif (isset($this->columns[$col]) && isset($this->columns[$col]['default'])) {
+            return $this->columns[$col]['default'];
+        } else {
+            return null;
+        }
+    }
+
+    public function setColumn($col, $val)
+    {
+        if (!isset($this->instance[$col]) || $this->instance[$col] != $val) {
+            if (!isset($this->columns[$col]['ignore_updates']) || $this->columns[$col]['ignore_updates'] == false) {
+                $this->record_changed = true;
+            }
+        }
+        $this->instance[$col] = $val;
+    }
+
+    public function filterColumn($col, $val, $op, $literal=false)
+    {
+        $valid_op = $this->validateOp($op);
+        if ($valid_op === false) {
+            throw new Exception('Invalid operator: ' . $op);
+        }
+        $this->filters[] = array(
+            'left' => $col,
+            'right' => $val,
+            'op' => $valid_op,
+            'rightIsLiteral' => $literal,
+        );
+    }
+
     /**
       Rewrite the given file to create accessor
       functions for all of its columns
@@ -1335,36 +1370,12 @@ class BasicModel
             fwrite($fp,"    public function ".$method_name."()\n");
             fwrite($fp,"    {\n");
             fwrite($fp,"        if(func_num_args() == 0) {\n");
-            fwrite($fp,'            if(isset($this->instance["'.$name.'"])) {'."\n");
-            fwrite($fp,'                return $this->instance["'.$name.'"];'."\n");
-            fwrite($fp,'            } else if (isset($this->columns["'.$name.'"]["default"])) {'."\n");
-            fwrite($fp,'                return $this->columns["'.$name.'"]["default"];'."\n");
-            fwrite($fp,"            } else {\n");
-            fwrite($fp,"                return null;\n");
-            fwrite($fp,"            }\n");
+            fwrite($fp,'            return $this->getColumn(\'' . $name . '\');' . "\n");
             fwrite($fp,"        } else if (func_num_args() > 1) {\n");
-            fwrite($fp,'            $value = func_get_arg(0);'."\n");
-            fwrite($fp,'            $op = $this->validateOp(func_get_arg(1));'."\n");
-            fwrite($fp,'            if ($op === false) {'."\n");
-            fwrite($fp,'                throw new Exception(\'Invalid operator: \' . func_get_arg(1));'."\n");
-            fwrite($fp,"            }\n");
-            fwrite($fp,'            $filter = array('."\n");
-            fwrite($fp,'                \'left\' => \''.$name.'\','."\n");
-            fwrite($fp,'                \'right\' => $value,'."\n");
-            fwrite($fp,'                \'op\' => $op,'."\n");
-            fwrite($fp,'                \'rightIsLiteral\' => false,'."\n");
-            fwrite($fp,"            );\n");
-            fwrite($fp,'            if (func_num_args() > 2 && func_get_arg(2) === true) {'."\n");
-            fwrite($fp,'                $filter[\'rightIsLiteral\'] = true;'."\n");
-            fwrite($fp,"            }\n");
-            fwrite($fp,'            $this->filters[] = $filter;'."\n");
+            fwrite($fp,'            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;'."\n");
+            fwrite($fp,'            $this->filterColumn(\'' . $name . '\', func_get_arg(0), func_get_arg(1), $literal);' . "\n");
             fwrite($fp,"        } else {\n");
-            fwrite($fp,'            if (!isset($this->instance["'.$name.'"]) || $this->instance["'.$name.'"] != func_get_args(0)) {'."\n");
-            fwrite($fp,'                if (!isset($this->columns["'.$name.'"]["ignore_updates"]) || $this->columns["'.$name.'"]["ignore_updates"] == false) {'."\n");
-            fwrite($fp,'                    $this->record_changed = true;'."\n");
-            fwrite($fp,"                }\n");
-            fwrite($fp,"            }\n");
-            fwrite($fp,'            $this->instance["'.$name.'"] = func_get_arg(0);'."\n");
+            fwrite($fp,'            $this->setColumn(\'' . $name . '\', func_get_arg(0));' . "\n");
             fwrite($fp,"        }\n");
             fwrite($fp,'        return $this;'."\n");
             fwrite($fp,"    }\n");
