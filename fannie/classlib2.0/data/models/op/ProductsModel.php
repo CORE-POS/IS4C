@@ -430,36 +430,12 @@ it won\'t *do* anything.
     public function upc()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["upc"])) {
-                return $this->instance["upc"];
-            } else if (isset($this->columns["upc"]["default"])) {
-                return $this->columns["upc"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('upc');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'upc',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('upc', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["upc"]) || $this->instance["upc"] != func_get_args(0)) {
-                if (!isset($this->columns["upc"]["ignore_updates"]) || $this->columns["upc"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["upc"] = func_get_arg(0);
+            $this->setColumn('upc', func_get_arg(0));
         }
         return $this;
     }
@@ -467,36 +443,12 @@ it won\'t *do* anything.
     public function description()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["description"])) {
-                return $this->instance["description"];
-            } else if (isset($this->columns["description"]["default"])) {
-                return $this->columns["description"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('description');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'description',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('description', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["description"]) || $this->instance["description"] != func_get_args(0)) {
-                if (!isset($this->columns["description"]["ignore_updates"]) || $this->columns["description"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["description"] = func_get_arg(0);
+            $this->setColumn('description', func_get_arg(0));
         }
         return $this;
     }
@@ -504,36 +456,12 @@ it won\'t *do* anything.
     public function brand()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["brand"])) {
-                return $this->instance["brand"];
-            } else if (isset($this->columns["brand"]["default"])) {
-                return $this->columns["brand"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('brand');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'brand',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('brand', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["brand"]) || $this->instance["brand"] != func_get_args(0)) {
-                if (!isset($this->columns["brand"]["ignore_updates"]) || $this->columns["brand"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["brand"] = func_get_arg(0);
+            $this->setColumn('brand', func_get_arg(0));
         }
         return $this;
     }
@@ -541,36 +469,12 @@ it won\'t *do* anything.
     public function formatted_name()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["formatted_name"])) {
-                return $this->instance["formatted_name"];
-            } else if (isset($this->columns["formatted_name"]["default"])) {
-                return $this->columns["formatted_name"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('formatted_name');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'formatted_name',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('formatted_name', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["formatted_name"]) || $this->instance["formatted_name"] != func_get_args(0)) {
-                if (!isset($this->columns["formatted_name"]["ignore_updates"]) || $this->columns["formatted_name"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["formatted_name"] = func_get_arg(0);
+            $this->setColumn('formatted_name', func_get_arg(0));
         }
         return $this;
     }
@@ -578,36 +482,12 @@ it won\'t *do* anything.
     public function normal_price()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["normal_price"])) {
-                return $this->instance["normal_price"];
-            } else if (isset($this->columns["normal_price"]["default"])) {
-                return $this->columns["normal_price"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('normal_price');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'normal_price',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('normal_price', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["normal_price"]) || $this->instance["normal_price"] != func_get_args(0)) {
-                if (!isset($this->columns["normal_price"]["ignore_updates"]) || $this->columns["normal_price"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["normal_price"] = func_get_arg(0);
+            $this->setColumn('normal_price', func_get_arg(0));
         }
         return $this;
     }
@@ -615,36 +495,12 @@ it won\'t *do* anything.
     public function pricemethod()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["pricemethod"])) {
-                return $this->instance["pricemethod"];
-            } else if (isset($this->columns["pricemethod"]["default"])) {
-                return $this->columns["pricemethod"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('pricemethod');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'pricemethod',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('pricemethod', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["pricemethod"]) || $this->instance["pricemethod"] != func_get_args(0)) {
-                if (!isset($this->columns["pricemethod"]["ignore_updates"]) || $this->columns["pricemethod"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["pricemethod"] = func_get_arg(0);
+            $this->setColumn('pricemethod', func_get_arg(0));
         }
         return $this;
     }
@@ -652,36 +508,12 @@ it won\'t *do* anything.
     public function groupprice()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["groupprice"])) {
-                return $this->instance["groupprice"];
-            } else if (isset($this->columns["groupprice"]["default"])) {
-                return $this->columns["groupprice"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('groupprice');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'groupprice',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('groupprice', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["groupprice"]) || $this->instance["groupprice"] != func_get_args(0)) {
-                if (!isset($this->columns["groupprice"]["ignore_updates"]) || $this->columns["groupprice"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["groupprice"] = func_get_arg(0);
+            $this->setColumn('groupprice', func_get_arg(0));
         }
         return $this;
     }
@@ -689,36 +521,12 @@ it won\'t *do* anything.
     public function quantity()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["quantity"])) {
-                return $this->instance["quantity"];
-            } else if (isset($this->columns["quantity"]["default"])) {
-                return $this->columns["quantity"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('quantity');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'quantity',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('quantity', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["quantity"]) || $this->instance["quantity"] != func_get_args(0)) {
-                if (!isset($this->columns["quantity"]["ignore_updates"]) || $this->columns["quantity"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["quantity"] = func_get_arg(0);
+            $this->setColumn('quantity', func_get_arg(0));
         }
         return $this;
     }
@@ -726,36 +534,12 @@ it won\'t *do* anything.
     public function special_price()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["special_price"])) {
-                return $this->instance["special_price"];
-            } else if (isset($this->columns["special_price"]["default"])) {
-                return $this->columns["special_price"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('special_price');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'special_price',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('special_price', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["special_price"]) || $this->instance["special_price"] != func_get_args(0)) {
-                if (!isset($this->columns["special_price"]["ignore_updates"]) || $this->columns["special_price"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["special_price"] = func_get_arg(0);
+            $this->setColumn('special_price', func_get_arg(0));
         }
         return $this;
     }
@@ -763,36 +547,12 @@ it won\'t *do* anything.
     public function specialpricemethod()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["specialpricemethod"])) {
-                return $this->instance["specialpricemethod"];
-            } else if (isset($this->columns["specialpricemethod"]["default"])) {
-                return $this->columns["specialpricemethod"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('specialpricemethod');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'specialpricemethod',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('specialpricemethod', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["specialpricemethod"]) || $this->instance["specialpricemethod"] != func_get_args(0)) {
-                if (!isset($this->columns["specialpricemethod"]["ignore_updates"]) || $this->columns["specialpricemethod"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["specialpricemethod"] = func_get_arg(0);
+            $this->setColumn('specialpricemethod', func_get_arg(0));
         }
         return $this;
     }
@@ -800,36 +560,12 @@ it won\'t *do* anything.
     public function specialgroupprice()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["specialgroupprice"])) {
-                return $this->instance["specialgroupprice"];
-            } else if (isset($this->columns["specialgroupprice"]["default"])) {
-                return $this->columns["specialgroupprice"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('specialgroupprice');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'specialgroupprice',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('specialgroupprice', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["specialgroupprice"]) || $this->instance["specialgroupprice"] != func_get_args(0)) {
-                if (!isset($this->columns["specialgroupprice"]["ignore_updates"]) || $this->columns["specialgroupprice"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["specialgroupprice"] = func_get_arg(0);
+            $this->setColumn('specialgroupprice', func_get_arg(0));
         }
         return $this;
     }
@@ -837,36 +573,12 @@ it won\'t *do* anything.
     public function specialquantity()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["specialquantity"])) {
-                return $this->instance["specialquantity"];
-            } else if (isset($this->columns["specialquantity"]["default"])) {
-                return $this->columns["specialquantity"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('specialquantity');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'specialquantity',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('specialquantity', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["specialquantity"]) || $this->instance["specialquantity"] != func_get_args(0)) {
-                if (!isset($this->columns["specialquantity"]["ignore_updates"]) || $this->columns["specialquantity"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["specialquantity"] = func_get_arg(0);
+            $this->setColumn('specialquantity', func_get_arg(0));
         }
         return $this;
     }
@@ -874,36 +586,12 @@ it won\'t *do* anything.
     public function special_limit()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["special_limit"])) {
-                return $this->instance["special_limit"];
-            } else if (isset($this->columns["special_limit"]["default"])) {
-                return $this->columns["special_limit"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('special_limit');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'special_limit',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('special_limit', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["special_limit"]) || $this->instance["special_limit"] != func_get_args(0)) {
-                if (!isset($this->columns["special_limit"]["ignore_updates"]) || $this->columns["special_limit"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["special_limit"] = func_get_arg(0);
+            $this->setColumn('special_limit', func_get_arg(0));
         }
         return $this;
     }
@@ -911,36 +599,12 @@ it won\'t *do* anything.
     public function start_date()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["start_date"])) {
-                return $this->instance["start_date"];
-            } else if (isset($this->columns["start_date"]["default"])) {
-                return $this->columns["start_date"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('start_date');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'start_date',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('start_date', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["start_date"]) || $this->instance["start_date"] != func_get_args(0)) {
-                if (!isset($this->columns["start_date"]["ignore_updates"]) || $this->columns["start_date"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["start_date"] = func_get_arg(0);
+            $this->setColumn('start_date', func_get_arg(0));
         }
         return $this;
     }
@@ -948,36 +612,12 @@ it won\'t *do* anything.
     public function end_date()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["end_date"])) {
-                return $this->instance["end_date"];
-            } else if (isset($this->columns["end_date"]["default"])) {
-                return $this->columns["end_date"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('end_date');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'end_date',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('end_date', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["end_date"]) || $this->instance["end_date"] != func_get_args(0)) {
-                if (!isset($this->columns["end_date"]["ignore_updates"]) || $this->columns["end_date"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["end_date"] = func_get_arg(0);
+            $this->setColumn('end_date', func_get_arg(0));
         }
         return $this;
     }
@@ -985,36 +625,12 @@ it won\'t *do* anything.
     public function department()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["department"])) {
-                return $this->instance["department"];
-            } else if (isset($this->columns["department"]["default"])) {
-                return $this->columns["department"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('department');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'department',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('department', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["department"]) || $this->instance["department"] != func_get_args(0)) {
-                if (!isset($this->columns["department"]["ignore_updates"]) || $this->columns["department"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["department"] = func_get_arg(0);
+            $this->setColumn('department', func_get_arg(0));
         }
         return $this;
     }
@@ -1022,36 +638,12 @@ it won\'t *do* anything.
     public function size()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["size"])) {
-                return $this->instance["size"];
-            } else if (isset($this->columns["size"]["default"])) {
-                return $this->columns["size"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('size');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'size',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('size', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["size"]) || $this->instance["size"] != func_get_args(0)) {
-                if (!isset($this->columns["size"]["ignore_updates"]) || $this->columns["size"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["size"] = func_get_arg(0);
+            $this->setColumn('size', func_get_arg(0));
         }
         return $this;
     }
@@ -1059,36 +651,12 @@ it won\'t *do* anything.
     public function tax()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["tax"])) {
-                return $this->instance["tax"];
-            } else if (isset($this->columns["tax"]["default"])) {
-                return $this->columns["tax"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('tax');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'tax',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('tax', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["tax"]) || $this->instance["tax"] != func_get_args(0)) {
-                if (!isset($this->columns["tax"]["ignore_updates"]) || $this->columns["tax"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["tax"] = func_get_arg(0);
+            $this->setColumn('tax', func_get_arg(0));
         }
         return $this;
     }
@@ -1096,36 +664,12 @@ it won\'t *do* anything.
     public function foodstamp()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["foodstamp"])) {
-                return $this->instance["foodstamp"];
-            } else if (isset($this->columns["foodstamp"]["default"])) {
-                return $this->columns["foodstamp"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('foodstamp');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'foodstamp',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('foodstamp', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["foodstamp"]) || $this->instance["foodstamp"] != func_get_args(0)) {
-                if (!isset($this->columns["foodstamp"]["ignore_updates"]) || $this->columns["foodstamp"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["foodstamp"] = func_get_arg(0);
+            $this->setColumn('foodstamp', func_get_arg(0));
         }
         return $this;
     }
@@ -1133,36 +677,12 @@ it won\'t *do* anything.
     public function scale()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["scale"])) {
-                return $this->instance["scale"];
-            } else if (isset($this->columns["scale"]["default"])) {
-                return $this->columns["scale"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('scale');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'scale',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('scale', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["scale"]) || $this->instance["scale"] != func_get_args(0)) {
-                if (!isset($this->columns["scale"]["ignore_updates"]) || $this->columns["scale"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["scale"] = func_get_arg(0);
+            $this->setColumn('scale', func_get_arg(0));
         }
         return $this;
     }
@@ -1170,36 +690,12 @@ it won\'t *do* anything.
     public function scaleprice()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["scaleprice"])) {
-                return $this->instance["scaleprice"];
-            } else if (isset($this->columns["scaleprice"]["default"])) {
-                return $this->columns["scaleprice"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('scaleprice');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'scaleprice',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('scaleprice', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["scaleprice"]) || $this->instance["scaleprice"] != func_get_args(0)) {
-                if (!isset($this->columns["scaleprice"]["ignore_updates"]) || $this->columns["scaleprice"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["scaleprice"] = func_get_arg(0);
+            $this->setColumn('scaleprice', func_get_arg(0));
         }
         return $this;
     }
@@ -1207,36 +703,12 @@ it won\'t *do* anything.
     public function mixmatchcode()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["mixmatchcode"])) {
-                return $this->instance["mixmatchcode"];
-            } else if (isset($this->columns["mixmatchcode"]["default"])) {
-                return $this->columns["mixmatchcode"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('mixmatchcode');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'mixmatchcode',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('mixmatchcode', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["mixmatchcode"]) || $this->instance["mixmatchcode"] != func_get_args(0)) {
-                if (!isset($this->columns["mixmatchcode"]["ignore_updates"]) || $this->columns["mixmatchcode"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["mixmatchcode"] = func_get_arg(0);
+            $this->setColumn('mixmatchcode', func_get_arg(0));
         }
         return $this;
     }
@@ -1244,36 +716,12 @@ it won\'t *do* anything.
     public function modified()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["modified"])) {
-                return $this->instance["modified"];
-            } else if (isset($this->columns["modified"]["default"])) {
-                return $this->columns["modified"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('modified');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'modified',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('modified', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["modified"]) || $this->instance["modified"] != func_get_args(0)) {
-                if (!isset($this->columns["modified"]["ignore_updates"]) || $this->columns["modified"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["modified"] = func_get_arg(0);
+            $this->setColumn('modified', func_get_arg(0));
         }
         return $this;
     }
@@ -1281,36 +729,12 @@ it won\'t *do* anything.
     public function batchID()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["batchID"])) {
-                return $this->instance["batchID"];
-            } else if (isset($this->columns["batchID"]["default"])) {
-                return $this->columns["batchID"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('batchID');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'batchID',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('batchID', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["batchID"]) || $this->instance["batchID"] != func_get_args(0)) {
-                if (!isset($this->columns["batchID"]["ignore_updates"]) || $this->columns["batchID"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["batchID"] = func_get_arg(0);
+            $this->setColumn('batchID', func_get_arg(0));
         }
         return $this;
     }
@@ -1318,36 +742,12 @@ it won\'t *do* anything.
     public function advertised()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["batchID"])) {
-                return $this->instance["batchID"];
-            } else if (isset($this->columns["batchID"]["default"])) {
-                return $this->columns["batchID"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('batchID');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'batchID',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('batchID', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["batchID"]) || $this->instance["batchID"] != func_get_args(0)) {
-                if (!isset($this->columns["batchID"]["ignore_updates"]) || $this->columns["batchID"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["batchID"] = func_get_arg(0);
+            $this->setColumn('batchID', func_get_arg(0));
         }
         return $this;
     }
@@ -1355,36 +755,12 @@ it won\'t *do* anything.
     public function tareweight()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["tareweight"])) {
-                return $this->instance["tareweight"];
-            } else if (isset($this->columns["tareweight"]["default"])) {
-                return $this->columns["tareweight"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('tareweight');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'tareweight',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('tareweight', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["tareweight"]) || $this->instance["tareweight"] != func_get_args(0)) {
-                if (!isset($this->columns["tareweight"]["ignore_updates"]) || $this->columns["tareweight"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["tareweight"] = func_get_arg(0);
+            $this->setColumn('tareweight', func_get_arg(0));
         }
         return $this;
     }
@@ -1392,36 +768,12 @@ it won\'t *do* anything.
     public function discount()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["discount"])) {
-                return $this->instance["discount"];
-            } else if (isset($this->columns["discount"]["default"])) {
-                return $this->columns["discount"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('discount');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'discount',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('discount', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["discount"]) || $this->instance["discount"] != func_get_args(0)) {
-                if (!isset($this->columns["discount"]["ignore_updates"]) || $this->columns["discount"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["discount"] = func_get_arg(0);
+            $this->setColumn('discount', func_get_arg(0));
         }
         return $this;
     }
@@ -1429,36 +781,12 @@ it won\'t *do* anything.
     public function discounttype()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["discounttype"])) {
-                return $this->instance["discounttype"];
-            } else if (isset($this->columns["discounttype"]["default"])) {
-                return $this->columns["discounttype"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('discounttype');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'discounttype',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('discounttype', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["discounttype"]) || $this->instance["discounttype"] != func_get_args(0)) {
-                if (!isset($this->columns["discounttype"]["ignore_updates"]) || $this->columns["discounttype"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["discounttype"] = func_get_arg(0);
+            $this->setColumn('discounttype', func_get_arg(0));
         }
         return $this;
     }
@@ -1466,36 +794,12 @@ it won\'t *do* anything.
     public function line_item_discountable()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["line_item_discountable"])) {
-                return $this->instance["line_item_discountable"];
-            } else if (isset($this->columns["line_item_discountable"]["default"])) {
-                return $this->columns["line_item_discountable"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('line_item_discountable');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'line_item_discountable',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('line_item_discountable', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["line_item_discountable"]) || $this->instance["line_item_discountable"] != func_get_args(0)) {
-                if (!isset($this->columns["line_item_discountable"]["ignore_updates"]) || $this->columns["line_item_discountable"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["line_item_discountable"] = func_get_arg(0);
+            $this->setColumn('line_item_discountable', func_get_arg(0));
         }
         return $this;
     }
@@ -1503,36 +807,12 @@ it won\'t *do* anything.
     public function unitofmeasure()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["unitofmeasure"])) {
-                return $this->instance["unitofmeasure"];
-            } else if (isset($this->columns["unitofmeasure"]["default"])) {
-                return $this->columns["unitofmeasure"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('unitofmeasure');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'unitofmeasure',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('unitofmeasure', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["unitofmeasure"]) || $this->instance["unitofmeasure"] != func_get_args(0)) {
-                if (!isset($this->columns["unitofmeasure"]["ignore_updates"]) || $this->columns["unitofmeasure"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["unitofmeasure"] = func_get_arg(0);
+            $this->setColumn('unitofmeasure', func_get_arg(0));
         }
         return $this;
     }
@@ -1540,36 +820,12 @@ it won\'t *do* anything.
     public function wicable()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["wicable"])) {
-                return $this->instance["wicable"];
-            } else if (isset($this->columns["wicable"]["default"])) {
-                return $this->columns["wicable"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('wicable');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'wicable',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('wicable', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["wicable"]) || $this->instance["wicable"] != func_get_args(0)) {
-                if (!isset($this->columns["wicable"]["ignore_updates"]) || $this->columns["wicable"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["wicable"] = func_get_arg(0);
+            $this->setColumn('wicable', func_get_arg(0));
         }
         return $this;
     }
@@ -1577,36 +833,12 @@ it won\'t *do* anything.
     public function qttyEnforced()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["qttyEnforced"])) {
-                return $this->instance["qttyEnforced"];
-            } else if (isset($this->columns["qttyEnforced"]["default"])) {
-                return $this->columns["qttyEnforced"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('qttyEnforced');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'qttyEnforced',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('qttyEnforced', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["qttyEnforced"]) || $this->instance["qttyEnforced"] != func_get_args(0)) {
-                if (!isset($this->columns["qttyEnforced"]["ignore_updates"]) || $this->columns["qttyEnforced"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["qttyEnforced"] = func_get_arg(0);
+            $this->setColumn('qttyEnforced', func_get_arg(0));
         }
         return $this;
     }
@@ -1614,36 +846,12 @@ it won\'t *do* anything.
     public function idEnforced()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["idEnforced"])) {
-                return $this->instance["idEnforced"];
-            } else if (isset($this->columns["idEnforced"]["default"])) {
-                return $this->columns["idEnforced"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('idEnforced');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'idEnforced',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('idEnforced', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["idEnforced"]) || $this->instance["idEnforced"] != func_get_args(0)) {
-                if (!isset($this->columns["idEnforced"]["ignore_updates"]) || $this->columns["idEnforced"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["idEnforced"] = func_get_arg(0);
+            $this->setColumn('idEnforced', func_get_arg(0));
         }
         return $this;
     }
@@ -1651,36 +859,12 @@ it won\'t *do* anything.
     public function cost()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["cost"])) {
-                return $this->instance["cost"];
-            } else if (isset($this->columns["cost"]["default"])) {
-                return $this->columns["cost"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('cost');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'cost',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('cost', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["cost"]) || $this->instance["cost"] != func_get_args(0)) {
-                if (!isset($this->columns["cost"]["ignore_updates"]) || $this->columns["cost"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["cost"] = func_get_arg(0);
+            $this->setColumn('cost', func_get_arg(0));
         }
         return $this;
     }
@@ -1688,36 +872,12 @@ it won\'t *do* anything.
     public function inUse()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["inUse"])) {
-                return $this->instance["inUse"];
-            } else if (isset($this->columns["inUse"]["default"])) {
-                return $this->columns["inUse"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('inUse');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'inUse',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('inUse', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["inUse"]) || $this->instance["inUse"] != func_get_args(0)) {
-                if (!isset($this->columns["inUse"]["ignore_updates"]) || $this->columns["inUse"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["inUse"] = func_get_arg(0);
+            $this->setColumn('inUse', func_get_arg(0));
         }
         return $this;
     }
@@ -1725,36 +885,12 @@ it won\'t *do* anything.
     public function numflag()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["numflag"])) {
-                return $this->instance["numflag"];
-            } else if (isset($this->columns["numflag"]["default"])) {
-                return $this->columns["numflag"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('numflag');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'numflag',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('numflag', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["numflag"]) || $this->instance["numflag"] != func_get_args(0)) {
-                if (!isset($this->columns["numflag"]["ignore_updates"]) || $this->columns["numflag"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["numflag"] = func_get_arg(0);
+            $this->setColumn('numflag', func_get_arg(0));
         }
         return $this;
     }
@@ -1762,36 +898,12 @@ it won\'t *do* anything.
     public function subdept()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["subdept"])) {
-                return $this->instance["subdept"];
-            } else if (isset($this->columns["subdept"]["default"])) {
-                return $this->columns["subdept"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('subdept');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'subdept',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('subdept', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["subdept"]) || $this->instance["subdept"] != func_get_args(0)) {
-                if (!isset($this->columns["subdept"]["ignore_updates"]) || $this->columns["subdept"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["subdept"] = func_get_arg(0);
+            $this->setColumn('subdept', func_get_arg(0));
         }
         return $this;
     }
@@ -1799,36 +911,12 @@ it won\'t *do* anything.
     public function deposit()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["deposit"])) {
-                return $this->instance["deposit"];
-            } else if (isset($this->columns["deposit"]["default"])) {
-                return $this->columns["deposit"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('deposit');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'deposit',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('deposit', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["deposit"]) || $this->instance["deposit"] != func_get_args(0)) {
-                if (!isset($this->columns["deposit"]["ignore_updates"]) || $this->columns["deposit"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["deposit"] = func_get_arg(0);
+            $this->setColumn('deposit', func_get_arg(0));
         }
         return $this;
     }
@@ -1836,36 +924,12 @@ it won\'t *do* anything.
     public function local()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["local"])) {
-                return $this->instance["local"];
-            } else if (isset($this->columns["local"]["default"])) {
-                return $this->columns["local"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('local');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'local',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('local', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["local"]) || $this->instance["local"] != func_get_args(0)) {
-                if (!isset($this->columns["local"]["ignore_updates"]) || $this->columns["local"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["local"] = func_get_arg(0);
+            $this->setColumn('local', func_get_arg(0));
         }
         return $this;
     }
@@ -1873,36 +937,12 @@ it won\'t *do* anything.
     public function store_id()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["store_id"])) {
-                return $this->instance["store_id"];
-            } else if (isset($this->columns["store_id"]["default"])) {
-                return $this->columns["store_id"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('store_id');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'store_id',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('store_id', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["store_id"]) || $this->instance["store_id"] != func_get_args(0)) {
-                if (!isset($this->columns["store_id"]["ignore_updates"]) || $this->columns["store_id"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["store_id"] = func_get_arg(0);
+            $this->setColumn('store_id', func_get_arg(0));
         }
         return $this;
     }
@@ -1910,36 +950,12 @@ it won\'t *do* anything.
     public function default_vendor_id()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["default_vendor_id"])) {
-                return $this->instance["default_vendor_id"];
-            } else if (isset($this->columns["default_vendor_id"]["default"])) {
-                return $this->columns["default_vendor_id"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('default_vendor_id');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'default_vendor_id',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('default_vendor_id', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["default_vendor_id"]) || $this->instance["default_vendor_id"] != func_get_args(0)) {
-                if (!isset($this->columns["default_vendor_id"]["ignore_updates"]) || $this->columns["default_vendor_id"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["default_vendor_id"] = func_get_arg(0);
+            $this->setColumn('default_vendor_id', func_get_arg(0));
         }
         return $this;
     }
@@ -1947,36 +963,12 @@ it won\'t *do* anything.
     public function current_origin_id()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["current_origin_id"])) {
-                return $this->instance["current_origin_id"];
-            } else if (isset($this->columns["current_origin_id"]["default"])) {
-                return $this->columns["current_origin_id"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('current_origin_id');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'current_origin_id',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('current_origin_id', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["current_origin_id"]) || $this->instance["current_origin_id"] != func_get_args(0)) {
-                if (!isset($this->columns["current_origin_id"]["ignore_updates"]) || $this->columns["current_origin_id"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["current_origin_id"] = func_get_arg(0);
+            $this->setColumn('current_origin_id', func_get_arg(0));
         }
         return $this;
     }
@@ -1984,36 +976,12 @@ it won\'t *do* anything.
     public function auto_par()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["auto_par"])) {
-                return $this->instance["auto_par"];
-            } else if (isset($this->columns["auto_par"]["default"])) {
-                return $this->columns["auto_par"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('auto_par');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'auto_par',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('auto_par', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["auto_par"]) || $this->instance["auto_par"] != func_get_args(0)) {
-                if (!isset($this->columns["auto_par"]["ignore_updates"]) || $this->columns["auto_par"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["auto_par"] = func_get_arg(0);
+            $this->setColumn('auto_par', func_get_arg(0));
         }
         return $this;
     }
@@ -2021,36 +989,12 @@ it won\'t *do* anything.
     public function price_rule_id()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["price_rule_id"])) {
-                return $this->instance["price_rule_id"];
-            } else if (isset($this->columns["price_rule_id"]["default"])) {
-                return $this->columns["price_rule_id"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('price_rule_id');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'price_rule_id',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('price_rule_id', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["price_rule_id"]) || $this->instance["price_rule_id"] != func_get_args(0)) {
-                if (!isset($this->columns["price_rule_id"]["ignore_updates"]) || $this->columns["price_rule_id"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["price_rule_id"] = func_get_arg(0);
+            $this->setColumn('price_rule_id', func_get_arg(0));
         }
         return $this;
     }
@@ -2058,36 +1002,12 @@ it won\'t *do* anything.
     public function last_sold()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["last_sold"])) {
-                return $this->instance["last_sold"];
-            } else if (isset($this->columns["last_sold"]["default"])) {
-                return $this->columns["last_sold"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('last_sold');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'last_sold',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('last_sold', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["last_sold"]) || $this->instance["last_sold"] != func_get_args(0)) {
-                if (!isset($this->columns["last_sold"]["ignore_updates"]) || $this->columns["last_sold"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["last_sold"] = func_get_arg(0);
+            $this->setColumn('last_sold', func_get_arg(0));
         }
         return $this;
     }
@@ -2095,36 +1015,12 @@ it won\'t *do* anything.
     public function id()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["id"])) {
-                return $this->instance["id"];
-            } else if (isset($this->columns["id"]["default"])) {
-                return $this->columns["id"]["default"];
-            } else {
-                return null;
-            }
+            return $this->getColumn('id');
         } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'id',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
+            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
+            $this->filterColumn('id', func_get_arg(0), func_get_arg(1), $literal);
         } else {
-            if (!isset($this->instance["id"]) || $this->instance["id"] != func_get_args(0)) {
-                if (!isset($this->columns["id"]["ignore_updates"]) || $this->columns["id"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["id"] = func_get_arg(0);
+            $this->setColumn('id', func_get_arg(0));
         }
         return $this;
     }
