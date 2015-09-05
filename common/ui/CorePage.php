@@ -94,12 +94,12 @@ class CorePage
       Toggle using menus
       @param $menus boolean
     */
-    public function hasMenus($menus)
+    protected function hasMenus($menus)
     {
         $this->window_dressing = ($menus) ? true : false;
     }
 
-    public function has_menus($menus)
+    protected function has_menus($menus)
     {
         $this->hasMenus($menus);
     }
@@ -113,7 +113,7 @@ class CorePage
       to add functionality.
       @return none
     */
-    public function preFlight()
+    protected function preFlight()
     {
     }
 
@@ -126,7 +126,7 @@ class CorePage
       the script exits.
       @return none
     */
-    public function postFlight()
+    protected function postFlight()
     {
     }
 
@@ -134,12 +134,12 @@ class CorePage
       Get the standard header
       @return An HTML string
     */
-    public function getHeader()
+    protected function getHeader()
     {
         return '<!doctype html><html>';
     }
 
-    public function get_header()
+    protected function get_header()
     {
         return $this->getHeader();
     }
@@ -148,12 +148,12 @@ class CorePage
       Get the standard footer
       @return An HTML string
     */
-    public function getFooter()
+    protected function getFooter()
     {
         return '</html>';
     }
 
-    public function get_footer()
+    protected function get_footer()
     {
         return $this->getFooter();
     }
@@ -209,7 +209,7 @@ class CorePage
       @param $file_url the script URL
       @param $type the script type
     */
-    public function addScript($file_url, $type='text/javascript')
+    protected function addScript($file_url, $type='text/javascript')
     {
         $this->scripts[$file_url] = $type;
     }
@@ -223,17 +223,17 @@ class CorePage
         $this->scripts = $new;
     }
 
-    public function add_script($file_url,$type="text/javascript")
+    protected function add_script($file_url,$type="text/javascript")
     {
         $this->addScript($file_url, $type);
     }
 
-    public function add_css_file($file_url)
+    protected function add_css_file($file_url)
     {
         $this->css_files[] = $file_url;
     }
 
-    public function addCssFile($file_url)
+    protected function addCssFile($file_url)
     {
         $this->add_css_file($file_url);
     }
@@ -254,12 +254,12 @@ class CorePage
     /**
       Queue javascript commands to run on page load
     */
-    public function add_onload_command($str)
+    protected function add_onload_command($str)
     {
         $this->onload_commands[] = $str;    
     }
 
-    public function addOnloadCommand($str)
+    protected function addOnloadCommand($str)
     {
         $this->add_onload_command($str);
     }
@@ -282,7 +282,7 @@ class CorePage
       @param $table [string] table name
       @return [boolean]
     */
-    public function tableExistsReadinessCheck($database, $table)
+    protected function tableExistsReadinessCheck($database, $table)
     {
         $url = $this->config->get('URL');
         $dbc = $this->connection;
@@ -307,7 +307,7 @@ class CorePage
       @param $column [string] column name
       @return [boolean]
     */
-    public function tableHasColumnReadinessCheck($database, $table, $column)
+    protected function tableHasColumnReadinessCheck($database, $table, $column)
     {
         $url = $this->config->get('URL');
         if ($this->tableExistsReadinessCheck($database, $table) === false) {

@@ -21,6 +21,23 @@ class WhiteSpaceTest extends \PHPUnit_Framework_TestCase
             ),
         );
         $count = 0;
+        $search = $this->searchMethod($ignore, $count);
+
+        $top = realpath(dirname(__FILE__) . '/../../');
+        $phpfiles = $search($top);
+
+        foreach ($phpfiles as $file) {
+            $content = file_get_contents($file);
+            $tabs = preg_match('/\\t/', $content);
+            $returns = preg_match('/\\r/', $content);
+            $this->assertEquals(0, $tabs, $file . ' contains tabs');
+            $this->assertEquals(0, $returns, $file . ' contains carriage returns');
+        }
+    }
+
+    // super lazy refactor
+    private function searchMethod($ignore, $count)
+    {
         $search = function($path) use (&$search, $ignore, $count) {
             if (is_file($path) && substr($path,-4) == '.php' && !in_array(basename($path), $ignore['files'])) {
                 return array($path);
@@ -43,16 +60,7 @@ class WhiteSpaceTest extends \PHPUnit_Framework_TestCase
             }
         };
 
-        $top = realpath(dirname(__FILE__) . '/../../');
-        $phpfiles = $search($top);
-
-        foreach ($phpfiles as $file) {
-            $content = file_get_contents($file);
-            $tabs = preg_match('/\\t/', $content);
-            $returns = preg_match('/\\r/', $content);
-            $this->assertEquals(0, $tabs, $file . ' contains tabs');
-            $this->assertEquals(0, $returns, $file . ' contains carriage returns');
-        }
+        return $search;
     }
 }
 

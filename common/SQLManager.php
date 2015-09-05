@@ -98,25 +98,25 @@ class SQLManager
 
         $conn = ADONewConnection($type);
         $conn->SetFetchMode(ADODB_FETCH_BOTH);
-        $ok = false;
+        $connected = false;
         if (isset($this->connections[$database]) || $new) {
-            $ok = $conn->NConnect($server,$username,$password,$database);
+            $connected = $conn->NConnect($server,$username,$password,$database);
         } else {
             if ($persistent) {
-                $ok = $conn->PConnect($server,$username,$password,$database);
+                $connected = $conn->PConnect($server,$username,$password,$database);
             } else {
-                $ok = $conn->Connect($server,$username,$password,$database);
+                $connected = $conn->Connect($server,$username,$password,$database);
             }
         }
         $this->connections[$database] = $conn;
 
         $this->last_connection_error = false;
-        if (!$ok) {
+        if (!$connected) {
             $this->last_connect_error = $conn->ErrorMsg();
             $conn = ADONewConnection($type);
             $conn->SetFetchMode(ADODB_FETCH_BOTH);
-            $ok = $conn->Connect($server,$username,$password);
-            if ($ok) {
+            $connected = $conn->Connect($server,$username,$password);
+            if ($connected) {
                 $this->last_connection_error = false;
                 $stillok = $conn->Execute("CREATE DATABASE $database");
                 if (!$stillok) {
@@ -247,10 +247,10 @@ class SQLManager
         }
 
         /** toggle test_mode off while checking database connection **/
-        $tm = $this->test_mode;
+        $current_tm = $this->test_mode;
         $this->test_mode = false;
         $current_db = $this->defaultDatabase($which_connection);
-        $this->test_mode = $tm;
+        $this->test_mode = $current_tm;
         if ($current_db === false) {
             // no connection; cannot switch database
             return false;
@@ -274,33 +274,36 @@ class SQLManager
             $this->test_mode = false;
         }
 
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
+        $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
         $con = $this->connections[$which_connection];
 
-        $ok = (!is_object($con)) ? false : $con->Execute($query_text,$params);
-        if (!$ok) {
-
-            if (is_array($query_text)) {
-                $query_text = $query_text[0];
-            }
-
-            $errorMsg = $this->error($which_connection);
-            $logMsg = 'Failed Query on ' . $_SERVER['PHP_SELF'] . "\n"
-                    . $query_text . "\n";
-            if (is_array($params)) {
-                $logMsg .= 'Parameters: ' . implode("\n", $params);
-            }
-            $logMsg .= $errorMsg . "\n";
-            $this->logger($logMsg);
+        $result = (!is_object($con)) ? false : $con->Execute($query_text,$params);
+        if (!$result) {
+            $this->logger($this->failedQueryMsg($query_text, $params, $which_connection));
 
             if ($this->throw_on_fail) {
                 throw new \Exception($errorMsg);
             }
         }
 
-        return $ok;
+        return $result;
+    }
+
+    protected function failedQueryMsg($query_text, $params, $which_connection)
+    {
+        if (is_array($query_text)) {
+            $query_text = $query_text[0];
+        }
+
+        $errorMsg = $this->error($which_connection);
+        $logMsg = 'Failed Query on ' . $_SERVER['PHP_SELF'] . "\n"
+                . $query_text . "\n";
+        if (is_array($params)) {
+            $logMsg .= 'Parameters: ' . implode("\n", $params);
+        }
+        $logMsg .= $errorMsg . "\n";
+
+        return $logMsg;
     }
 
     /**
@@ -921,11 +924,6 @@ class SQLManager
 
         $num_fields = $this->num_fields($result,$source_db);
 
-        $unquoted = array("money"=>1,"real"=>1,"numeric"=>1,
-            "float4"=>1,"float8"=>1,"bit"=>1);
-        $strings = array("varchar"=>1,"nvarchar"=>1,"string"=>1,
-            "char"=>1, 'var_string'=>1);
-        $dates = array("datetime"=>1);
         $prep = $insert_query . ' VALUES(';
         $arg_sets = array();
         $big_query = $insert_query . ' VALUES ';
@@ -937,16 +935,7 @@ class SQLManager
             $args = array();
             for ($i=0; $i<$num_fields; $i++) {
                 $type = strtolower($this->fieldType($result,$i,$source_db));
-                if ($row[$i] == "" && strstr(strtoupper($type),"INT")) {
-                    $row[$i] = 0;    
-                } elseif ($row[$i] == "" && isset($unquoted[$type])) {
-                    $row[$i] = 0;
-                }
-                if (isset($dates[$type])) {
-                    $row[$i] = $this->cleanDateTime($row[$i]);
-                } elseif (isset($strings[$type])) {
-                    $row[$i] = str_replace("'","''",$row[$i]);
-                }
+                $row[$i] = $this->sanitizeValue($row[$i], $type);
                 $args[] = $row[$i];
                 if (count($arg_sets) == 0) {
                     $prep .= '?,';
@@ -991,6 +980,28 @@ class SQLManager
         }
 
         return $ret;
+    }
+
+    private function sanitizeValue($val, $type)
+    {
+        $unquoted = array("money"=>1,"real"=>1,"numeric"=>1,
+            "float4"=>1,"float8"=>1,"bit"=>1);
+        $strings = array("varchar"=>1,"nvarchar"=>1,"string"=>1,
+            "char"=>1, 'var_string'=>1);
+        $dates = array("datetime"=>1);
+
+        if ($val == "" && strstr(strtoupper($type),"INT")) {
+            $val = 0;    
+        } elseif ($val == "" && isset($unquoted[$type])) {
+            $val = 0;    
+        }
+        if (isset($dates[$type])) {
+            $val = $this->cleanDateTime($val);
+        } elseif (isset($strings[$type])) {
+            $val = str_replace("'","''",$val);
+        }
+
+        return $val;
     }
 
     /**
@@ -1101,56 +1112,19 @@ class SQLManager
 
       This is a utility method to support transfer()
     */
-    public function cleanDateTime($str)
+    protected function cleanDateTime($str)
     {
         $stdFmt = "/(\d\d\d\d)-(\d\d)-(\d\d) (\d+?):(\d\d):(\d\d)/";
         if (preg_match($stdFmt,$str,$group)) {
             return $str;    
         }
 
-        $msqlFmt = "/(\w\w\w) (\d\d) (\d\d\d\d) (\d+?):(\d\d)(\w)M/";
-
-        $months = array(
-            "jan"=>"01",
-            "feb"=>"02",
-            "mar"=>"03",
-            "apr"=>"04",
-            "may"=>"05",
-            "jun"=>"06",
-            "jul"=>"07",
-            "aug"=>"08",
-            "sep"=>"09",
-            "oct"=>"10",
-            "nov"=>"11",
-            "dec"=>"12"
-        );
-
-        $info = array(
-            "month" => 1,
-            "day" => 1,
-            "year" => 1900,
-            "hour" => 0,
-            "min" => 0
-        );
-        
-        if (preg_match($msqlFmt,$str,$group)) {
-            $info["month"] = $months[strtolower($group[1])];
-            $info["day"] = $group[2];
-            $info["year"] = $group[3];
-            $info["hour"] = $group[4];
-            $info["min"] = $group[5];
-            if ($group[6] == "P") {
-                $info["hour"] = ($info["hour"] + 12) % 24;
-            }
+        $timestamp = strtotime($str);
+        if ($timestamp === false) {
+            return $str;
+        } else {
+            return date('Y-m-d H:i:s', $timestamp);
         }
-
-        $ret = $info["year"]."-";
-        $ret .= str_pad($info["month"],2,"0",STR_PAD_LEFT)."-";
-        $ret .= str_pad($info["day"],2,"0",STR_PAD_LEFT)." ";
-        $ret .= str_pad($info["hour"],2,"0",STR_PAD_LEFT).":";
-        $ret .= str_pad($info["min"],2,"0",STR_PAD_LEFT);
-
-        return $ret;
     }
 
     /** 
@@ -1222,9 +1196,7 @@ class SQLManager
     */
     public function getViewDefinition($view_name, $which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
+        $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
 
         if (!$this->isView($view_name, $which_connection)) {
             return false;
@@ -1343,56 +1315,59 @@ class SQLManager
     */
     public function detailedDefinition($table_name,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
+        $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
         $conn = $this->connections[$which_connection];
         $cols = $conn->MetaColumns($table_name);
 
         $return = array();
         if (is_array($cols)) {
             foreach($cols as $c) {
-                $info = array();
-                $type = strtoupper($c->type);
-                if (property_exists($c, 'max_length') && $c->max_length != -1 && substr($type, -3) != 'INT') {
-                    if (property_exists($c, 'scale') && $c->scale) {
-                        $type .= '(' . $c->max_length . ',' . $c->scale . ')';
-                    } else {
-                        $type .= '(' . $c->max_length . ')';
-                    }
-                }
-                if (property_exists($c, 'unsigned') && $c->unsigned) {
-                    $type .= ' UNSIGNED';
-                }
-                $info['type'] = $type;
-                if (property_exists($c, 'auto_increment') && $c->auto_increment) {
-                    $info['increment'] = true;
-                } else if (property_exists($c, 'auto_increment') && !$c->auto_increment) {
-                    $info['increment'] = false;
-                } else {
-                    $info['increment'] = null;
-                }
-                if (property_exists($c, 'primary_key') && $c->primary_key) {
-                    $info['primary_key'] = true;
-                } else if (property_exists($c, 'primary_key') && !$c->primary_key) {
-                    $info['primary_key'] = false;
-                } else {
-                    $info['primary_key'] = null;
-                }
-
-                if (property_exists($c, 'default_value') && $c->default_value !== 'NULL' && $c->default_value !== null) {
-                    $info['default'] = $c->default_value;
-                } else {
-                    $info['default'] = null;
-                }
-
-                $return[$c->name] = $info;
+                $return[$c->name] = $this->columnToArray($c);
             }
 
             return $return;
         }
 
         return false;
+    }
+
+    private function columnToArray($col)
+    {
+        $info = array();
+        $type = strtoupper($col->type);
+        if (property_exists($col, 'max_length') && $col->max_length != -1 && substr($type, -3) != 'INT') {
+            if (property_exists($col, 'scale') && $col->scale) {
+                $type .= '(' . $col->max_length . ',' . $col->scale . ')';
+            } else {
+                $type .= '(' . $col->max_length . ')';
+            }
+        }
+        if (property_exists($col, 'unsigned') && $col->unsigned) {
+            $type .= ' UNSIGNED';
+        }
+        $info['type'] = $type;
+        if (property_exists($col, 'auto_increment') && $col->auto_increment) {
+            $info['increment'] = true;
+        } else if (property_exists($col, 'auto_increment') && !$col->auto_increment) {
+            $info['increment'] = false;
+        } else {
+            $info['increment'] = null;
+        }
+        if (property_exists($col, 'primary_key') && $col->primary_key) {
+            $info['primary_key'] = true;
+        } else if (property_exists($col, 'primary_key') && !$col->primary_key) {
+            $info['primary_key'] = false;
+        } else {
+            $info['primary_key'] = null;
+        }
+
+        if (property_exists($col, 'default_value') && $col->default_value !== 'NULL' && $col->default_value !== null) {
+            $info['default'] = $col->default_value;
+        } else {
+            $info['default'] = null;
+        }
+
+        return $info;
     }
 
     /**
@@ -1631,9 +1606,7 @@ class SQLManager
      */
     public function smartInsert($table_name,$values,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
+        $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
 
         $t_def = $this->tableDefinition($table_name, $which_connection);
         if ($t_def === false) {
@@ -1643,12 +1616,11 @@ class SQLManager
         $cols = "(";
         $vals = "(";
         $args = array();
-        foreach($values as $k=>$v) {
+        foreach ($values as $k=>$v) {
             if (isset($t_def[$k])) {
-                $col_name = $k;
                 $vals .= '?,';
                 $args[] = $v;
-                $cols .= $this->identifierEscape($col_name, $which_connection) . ',';
+                $cols .= $this->identifierEscape($k, $which_connection) . ',';
             } else {
                 // implication: column isn't in the table
             }
@@ -1687,9 +1659,7 @@ class SQLManager
      */
     public function smartUpdate($table_name,$values,$where_clause,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
+        $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
 
         $t_def = $this->tableDefinition($table_name, $which_connection);
         if ($t_def === false) {
@@ -1700,8 +1670,7 @@ class SQLManager
         $args = array();
         foreach($values as $k=>$v) {
             if (isset($t_def[$k])) {
-                $col_name = $k;
-                $sets .= $this->identifierEscape($col_name) . ' = ?,';
+                $sets .= $this->identifierEscape($k) . ' = ?,';
                 $args[] = $v;
             } else {
                 // implication: column isn't in the table
@@ -1890,10 +1859,10 @@ class SQLManager
 
             return true;
         } elseif (is_string($this->QUERY_LOG)) {
-            $fp = @fopen($this->QUERY_LOG, 'a');
-            if ($fp) {
-                fwrite($fp, date('r') . ': ' . $str);
-                fclose($fp);
+            $fptr = @fopen($this->QUERY_LOG, 'a');
+            if ($fptr) {
+                fwrite($fptr, date('r') . ': ' . $str);
+                fclose($fptr);
 
                 return true;
             } else {
