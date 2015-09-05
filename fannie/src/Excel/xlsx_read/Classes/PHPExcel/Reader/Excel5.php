@@ -80,83 +80,83 @@ class PHPExcel_Reader_Excel5 implements PHPExcel_Reader_IReader
     // ParseXL definitions
     const XLS_BIFF8                        = 0x0600;
     const XLS_BIFF7                        = 0x0500;
-    const XLS_WorkbookGlobals            = 0x0005;
-    const XLS_Worksheet                    = 0x0010;
+    const XLS_WORKBOOKGLOBALS            = 0x0005;
+    const XLS_WORKSHEET                    = 0x0010;
 
     // record identifiers
-    const XLS_Type_FORMULA                = 0x0006;
-    const XLS_Type_EOF                    = 0x000a;
-    const XLS_Type_PROTECT                = 0x0012;
-    const XLS_Type_OBJECTPROTECT        = 0x0063;
-    const XLS_Type_SCENPROTECT            = 0x00dd;
-    const XLS_Type_PASSWORD                = 0x0013;
-    const XLS_Type_HEADER                = 0x0014;
-    const XLS_Type_FOOTER                = 0x0015;
-    const XLS_Type_EXTERNSHEET            = 0x0017;
-    const XLS_Type_DEFINEDNAME            = 0x0018;
-    const XLS_Type_VERTICALPAGEBREAKS    = 0x001a;
-    const XLS_Type_HORIZONTALPAGEBREAKS    = 0x001b;
-    const XLS_Type_NOTE                    = 0x001c;
-    const XLS_Type_SELECTION            = 0x001d;
-    const XLS_Type_DATEMODE                = 0x0022;
-    const XLS_Type_EXTERNNAME            = 0x0023;
-    const XLS_Type_LEFTMARGIN            = 0x0026;
-    const XLS_Type_RIGHTMARGIN            = 0x0027;
-    const XLS_Type_TOPMARGIN            = 0x0028;
-    const XLS_Type_BOTTOMMARGIN            = 0x0029;
-    const XLS_Type_PRINTGRIDLINES        = 0x002b;
-    const XLS_Type_FILEPASS                = 0x002f;
-    const XLS_Type_FONT                    = 0x0031;
-    const XLS_Type_CONTINUE                = 0x003c;
-    const XLS_Type_PANE                    = 0x0041;
-    const XLS_Type_CODEPAGE                = 0x0042;
-    const XLS_Type_DEFCOLWIDTH             = 0x0055;
-    const XLS_Type_OBJ                    = 0x005d;
-    const XLS_Type_COLINFO                = 0x007d;
-    const XLS_Type_IMDATA                = 0x007f;
-    const XLS_Type_SHEETPR                = 0x0081;
-    const XLS_Type_HCENTER                = 0x0083;
-    const XLS_Type_VCENTER                = 0x0084;
-    const XLS_Type_SHEET                = 0x0085;
-    const XLS_Type_PALETTE                = 0x0092;
-    const XLS_Type_SCL                    = 0x00a0;
-    const XLS_Type_PAGESETUP            = 0x00a1;
-    const XLS_Type_MULRK                = 0x00bd;
-    const XLS_Type_MULBLANK                = 0x00be;
-    const XLS_Type_DBCELL                = 0x00d7;
-    const XLS_Type_XF                    = 0x00e0;
-    const XLS_Type_MERGEDCELLS            = 0x00e5;
-    const XLS_Type_MSODRAWINGGROUP        = 0x00eb;
-    const XLS_Type_MSODRAWING            = 0x00ec;
-    const XLS_Type_SST                    = 0x00fc;
-    const XLS_Type_LABELSST                = 0x00fd;
-    const XLS_Type_EXTSST                = 0x00ff;
-    const XLS_Type_EXTERNALBOOK            = 0x01ae;
-    const XLS_Type_DATAVALIDATIONS        = 0x01b2;
-    const XLS_Type_TXO                    = 0x01b6;
-    const XLS_Type_HYPERLINK            = 0x01b8;
-    const XLS_Type_DATAVALIDATION        = 0x01be;
-    const XLS_Type_DIMENSION            = 0x0200;
-    const XLS_Type_BLANK                = 0x0201;
-    const XLS_Type_NUMBER                = 0x0203;
-    const XLS_Type_LABEL                = 0x0204;
-    const XLS_Type_BOOLERR                = 0x0205;
-    const XLS_Type_STRING                = 0x0207;
-    const XLS_Type_ROW                    = 0x0208;
-    const XLS_Type_INDEX                = 0x020b;
-    const XLS_Type_ARRAY                = 0x0221;
-    const XLS_Type_DEFAULTROWHEIGHT     = 0x0225;
-    const XLS_Type_WINDOW2                = 0x023e;
-    const XLS_Type_RK                    = 0x027e;
-    const XLS_Type_STYLE                = 0x0293;
-    const XLS_Type_FORMAT                = 0x041e;
-    const XLS_Type_SHAREDFMLA            = 0x04bc;
-    const XLS_Type_BOF                    = 0x0809;
-    const XLS_Type_SHEETPROTECTION        = 0x0867;
-    const XLS_Type_RANGEPROTECTION        = 0x0868;
-    const XLS_Type_SHEETLAYOUT            = 0x0862;
-    const XLS_Type_XFEXT                = 0x087d;
-    const XLS_Type_UNKNOWN                = 0xffff;
+    const XLS_TYPE_FORMULA                = 0x0006;
+    const XLS_TYPE_EOF                    = 0x000a;
+    const XLS_TYPE_PROTECT                = 0x0012;
+    const XLS_TYPE_OBJECTPROTECT        = 0x0063;
+    const XLS_TYPE_SCENPROTECT            = 0x00dd;
+    const XLS_TYPE_PASSWORD                = 0x0013;
+    const XLS_TYPE_HEADER                = 0x0014;
+    const XLS_TYPE_FOOTER                = 0x0015;
+    const XLS_TYPE_EXTERNSHEET            = 0x0017;
+    const XLS_TYPE_DEFINEDNAME            = 0x0018;
+    const XLS_TYPE_VERTICALPAGEBREAKS    = 0x001a;
+    const XLS_TYPE_HORIZONTALPAGEBREAKS    = 0x001b;
+    const XLS_TYPE_NOTE                    = 0x001c;
+    const XLS_TYPE_SELECTION            = 0x001d;
+    const XLS_TYPE_DATEMODE                = 0x0022;
+    const XLS_TYPE_EXTERNNAME            = 0x0023;
+    const XLS_TYPE_LEFTMARGIN            = 0x0026;
+    const XLS_TYPE_RIGHTMARGIN            = 0x0027;
+    const XLS_TYPE_TOPMARGIN            = 0x0028;
+    const XLS_TYPE_BOTTOMMARGIN            = 0x0029;
+    const XLS_TYPE_PRINTGRIDLINES        = 0x002b;
+    const XLS_TYPE_FILEPASS                = 0x002f;
+    const XLS_TYPE_FONT                    = 0x0031;
+    const XLS_TYPE_CONTINUE                = 0x003c;
+    const XLS_TYPE_PANE                    = 0x0041;
+    const XLS_TYPE_CODEPAGE                = 0x0042;
+    const XLS_TYPE_DEFCOLWIDTH             = 0x0055;
+    const XLS_TYPE_OBJ                    = 0x005d;
+    const XLS_TYPE_COLINFO                = 0x007d;
+    const XLS_TYPE_IMDATA                = 0x007f;
+    const XLS_TYPE_SHEETPR                = 0x0081;
+    const XLS_TYPE_HCENTER                = 0x0083;
+    const XLS_TYPE_VCENTER                = 0x0084;
+    const XLS_TYPE_SHEET                = 0x0085;
+    const XLS_TYPE_PALETTE                = 0x0092;
+    const XLS_TYPE_SCL                    = 0x00a0;
+    const XLS_TYPE_PAGESETUP            = 0x00a1;
+    const XLS_TYPE_MULRK                = 0x00bd;
+    const XLS_TYPE_MULBLANK                = 0x00be;
+    const XLS_TYPE_DBCELL                = 0x00d7;
+    const XLS_TYPE_XF                    = 0x00e0;
+    const XLS_TYPE_MERGEDCELLS            = 0x00e5;
+    const XLS_TYPE_MSODRAWINGGROUP        = 0x00eb;
+    const XLS_TYPE_MSODRAWING            = 0x00ec;
+    const XLS_TYPE_SST                    = 0x00fc;
+    const XLS_TYPE_LABELSST                = 0x00fd;
+    const XLS_TYPE_EXTSST                = 0x00ff;
+    const XLS_TYPE_EXTERNALBOOK            = 0x01ae;
+    const XLS_TYPE_DATAVALIDATIONS        = 0x01b2;
+    const XLS_TYPE_TXO                    = 0x01b6;
+    const XLS_TYPE_HYPERLINK            = 0x01b8;
+    const XLS_TYPE_DATAVALIDATION        = 0x01be;
+    const XLS_TYPE_DIMENSION            = 0x0200;
+    const XLS_TYPE_BLANK                = 0x0201;
+    const XLS_TYPE_NUMBER                = 0x0203;
+    const XLS_TYPE_LABEL                = 0x0204;
+    const XLS_TYPE_BOOLERR                = 0x0205;
+    const XLS_TYPE_STRING                = 0x0207;
+    const XLS_TYPE_ROW                    = 0x0208;
+    const XLS_TYPE_INDEX                = 0x020b;
+    const XLS_TYPE_ARRAY                = 0x0221;
+    const XLS_TYPE_DEFAULTROWHEIGHT     = 0x0225;
+    const XLS_TYPE_WINDOW2                = 0x023e;
+    const XLS_TYPE_RK                    = 0x027e;
+    const XLS_TYPE_STYLE                = 0x0293;
+    const XLS_TYPE_FORMAT                = 0x041e;
+    const XLS_TYPE_SHAREDFMLA            = 0x04bc;
+    const XLS_TYPE_BOF                    = 0x0809;
+    const XLS_TYPE_SHEETPROTECTION        = 0x0867;
+    const XLS_TYPE_RANGEPROTECTION        = 0x0868;
+    const XLS_TYPE_SHEETLAYOUT            = 0x0862;
+    const XLS_TYPE_XFEXT                = 0x087d;
+    const XLS_TYPE_UNKNOWN                = 0xffff;
 
 
     /**
@@ -562,9 +562,9 @@ class PHPExcel_Reader_Excel5 implements PHPExcel_Reader_IReader
             $code = self::_GetInt2d($this->_data, $this->_pos);
 
             switch ($code) {
-                case self::XLS_Type_BOF:    $this->_readBof();        break;
-                case self::XLS_Type_SHEET:    $this->_readSheet();    break;
-                case self::XLS_Type_EOF:    $this->_readDefault();    break 2;
+                case self::XLS_TYPE_BOF:    $this->_readBof();        break;
+                case self::XLS_TYPE_SHEET:    $this->_readSheet();    break;
+                case self::XLS_TYPE_EOF:    $this->_readDefault();    break 2;
                 default:                    $this->_readDefault();    break;
             }
         }
@@ -612,9 +612,9 @@ class PHPExcel_Reader_Excel5 implements PHPExcel_Reader_IReader
             $code = self::_GetInt2d($this->_data, $this->_pos);
 
             switch ($code) {
-                case self::XLS_Type_BOF:        $this->_readBof();        break;
-                case self::XLS_Type_SHEET:      $this->_readSheet();      break;
-                case self::XLS_Type_EOF:        $this->_readDefault();    break 2;
+                case self::XLS_TYPE_BOF:        $this->_readBof();        break;
+                case self::XLS_TYPE_SHEET:      $this->_readSheet();      break;
+                case self::XLS_TYPE_EOF:        $this->_readDefault();    break 2;
                 default:                        $this->_readDefault();    break;
             }
         }
@@ -642,12 +642,12 @@ class PHPExcel_Reader_Excel5 implements PHPExcel_Reader_IReader
                 $code = self::_GetInt2d($this->_data, $this->_pos);
 
                 switch ($code) {
-                    case self::XLS_Type_RK:
-                    case self::XLS_Type_LABELSST:
-                    case self::XLS_Type_NUMBER:
-                    case self::XLS_Type_FORMULA:
-                    case self::XLS_Type_BOOLERR:
-                    case self::XLS_Type_LABEL:
+                    case self::XLS_TYPE_RK:
+                    case self::XLS_TYPE_LABELSST:
+                    case self::XLS_TYPE_NUMBER:
+                    case self::XLS_TYPE_FORMULA:
+                    case self::XLS_TYPE_BOOLERR:
+                    case self::XLS_TYPE_LABEL:
                         $length = self::_GetInt2d($this->_data, $this->_pos + 2);
                         $recordData = substr($this->_data, $this->_pos + 4, $length);
 
@@ -660,8 +660,8 @@ class PHPExcel_Reader_Excel5 implements PHPExcel_Reader_IReader
                         $tmpInfo['totalRows'] = max($tmpInfo['totalRows'], $rowIndex);
                         $tmpInfo['lastColumnIndex'] = max($tmpInfo['lastColumnIndex'], $columnIndex);
                         break;
-                    case self::XLS_Type_BOF:      $this->_readBof();          break;
-                    case self::XLS_Type_EOF:      $this->_readDefault();      break 2;
+                    case self::XLS_TYPE_BOF:      $this->_readBof();          break;
+                    case self::XLS_TYPE_EOF:      $this->_readDefault();      break 2;
                     default:                      $this->_readDefault();      break;
                 }
             }
@@ -726,24 +726,24 @@ class PHPExcel_Reader_Excel5 implements PHPExcel_Reader_IReader
             $code = self::_GetInt2d($this->_data, $this->_pos);
 
             switch ($code) {
-                case self::XLS_Type_BOF:            $this->_readBof();                break;
-                case self::XLS_Type_FILEPASS:        $this->_readFilepass();            break;
-                case self::XLS_Type_CODEPAGE:        $this->_readCodepage();            break;
-                case self::XLS_Type_DATEMODE:        $this->_readDateMode();            break;
-                case self::XLS_Type_FONT:            $this->_readFont();                break;
-                case self::XLS_Type_FORMAT:            $this->_readFormat();            break;
-                case self::XLS_Type_XF:                $this->_readXf();                break;
-                case self::XLS_Type_XFEXT:            $this->_readXfExt();            break;
-                case self::XLS_Type_STYLE:            $this->_readStyle();            break;
-                case self::XLS_Type_PALETTE:        $this->_readPalette();            break;
-                case self::XLS_Type_SHEET:            $this->_readSheet();            break;
-                case self::XLS_Type_EXTERNALBOOK:    $this->_readExternalBook();        break;
-                case self::XLS_Type_EXTERNNAME:        $this->_readExternName();        break;
-                case self::XLS_Type_EXTERNSHEET:    $this->_readExternSheet();        break;
-                case self::XLS_Type_DEFINEDNAME:    $this->_readDefinedName();        break;
-                case self::XLS_Type_MSODRAWINGGROUP:    $this->_readMsoDrawingGroup();    break;
-                case self::XLS_Type_SST:            $this->_readSst();                break;
-                case self::XLS_Type_EOF:            $this->_readDefault();            break 2;
+                case self::XLS_TYPE_BOF:            $this->_readBof();                break;
+                case self::XLS_TYPE_FILEPASS:        $this->_readFilepass();            break;
+                case self::XLS_TYPE_CODEPAGE:        $this->_readCodepage();            break;
+                case self::XLS_TYPE_DATEMODE:        $this->_readDateMode();            break;
+                case self::XLS_TYPE_FONT:            $this->_readFont();                break;
+                case self::XLS_TYPE_FORMAT:            $this->_readFormat();            break;
+                case self::XLS_TYPE_XF:                $this->_readXf();                break;
+                case self::XLS_TYPE_XFEXT:            $this->_readXfExt();            break;
+                case self::XLS_TYPE_STYLE:            $this->_readStyle();            break;
+                case self::XLS_TYPE_PALETTE:        $this->_readPalette();            break;
+                case self::XLS_TYPE_SHEET:            $this->_readSheet();            break;
+                case self::XLS_TYPE_EXTERNALBOOK:    $this->_readExternalBook();        break;
+                case self::XLS_TYPE_EXTERNNAME:        $this->_readExternName();        break;
+                case self::XLS_TYPE_EXTERNSHEET:    $this->_readExternSheet();        break;
+                case self::XLS_TYPE_DEFINEDNAME:    $this->_readDefinedName();        break;
+                case self::XLS_TYPE_MSODRAWINGGROUP:    $this->_readMsoDrawingGroup();    break;
+                case self::XLS_TYPE_SST:            $this->_readSst();                break;
+                case self::XLS_TYPE_EOF:            $this->_readDefault();            break 2;
                 default:                            $this->_readDefault();            break;
             }
         }
@@ -866,58 +866,58 @@ class PHPExcel_Reader_Excel5 implements PHPExcel_Reader_IReader
                 $code = self::_GetInt2d($this->_data, $this->_pos);
 
                 switch ($code) {
-                    case self::XLS_Type_BOF:                    $this->_readBof();                        break;
-                    case self::XLS_Type_PRINTGRIDLINES:            $this->_readPrintGridlines();            break;
-                    case self::XLS_Type_DEFAULTROWHEIGHT:        $this->_readDefaultRowHeight();            break;
-                    case self::XLS_Type_SHEETPR:                $this->_readSheetPr();                    break;
-                    case self::XLS_Type_HORIZONTALPAGEBREAKS:    $this->_readHorizontalPageBreaks();        break;
-                    case self::XLS_Type_VERTICALPAGEBREAKS:        $this->_readVerticalPageBreaks();        break;
-                    case self::XLS_Type_HEADER:                    $this->_readHeader();                    break;
-                    case self::XLS_Type_FOOTER:                    $this->_readFooter();                    break;
-                    case self::XLS_Type_HCENTER:                $this->_readHcenter();                    break;
-                    case self::XLS_Type_VCENTER:                $this->_readVcenter();                    break;
-                    case self::XLS_Type_LEFTMARGIN:                $this->_readLeftMargin();                break;
-                    case self::XLS_Type_RIGHTMARGIN:            $this->_readRightMargin();                break;
-                    case self::XLS_Type_TOPMARGIN:                $this->_readTopMargin();                break;
-                    case self::XLS_Type_BOTTOMMARGIN:            $this->_readBottomMargin();                break;
-                    case self::XLS_Type_PAGESETUP:                $this->_readPageSetup();                break;
-                    case self::XLS_Type_PROTECT:                $this->_readProtect();                    break;
-                    case self::XLS_Type_SCENPROTECT:            $this->_readScenProtect();                break;
-                    case self::XLS_Type_OBJECTPROTECT:            $this->_readObjectProtect();            break;
-                    case self::XLS_Type_PASSWORD:                $this->_readPassword();                    break;
-                    case self::XLS_Type_DEFCOLWIDTH:            $this->_readDefColWidth();                break;
-                    case self::XLS_Type_COLINFO:                $this->_readColInfo();                    break;
-                    case self::XLS_Type_DIMENSION:                $this->_readDefault();                    break;
-                    case self::XLS_Type_ROW:                    $this->_readRow();                        break;
-                    case self::XLS_Type_DBCELL:                    $this->_readDefault();                    break;
-                    case self::XLS_Type_RK:                        $this->_readRk();                        break;
-                    case self::XLS_Type_LABELSST:                $this->_readLabelSst();                    break;
-                    case self::XLS_Type_MULRK:                    $this->_readMulRk();                    break;
-                    case self::XLS_Type_NUMBER:                    $this->_readNumber();                    break;
-                    case self::XLS_Type_FORMULA:                $this->_readFormula();                    break;
-                    case self::XLS_Type_SHAREDFMLA:                $this->_readSharedFmla();                break;
-                    case self::XLS_Type_BOOLERR:                $this->_readBoolErr();                    break;
-                    case self::XLS_Type_MULBLANK:                $this->_readMulBlank();                    break;
-                    case self::XLS_Type_LABEL:                    $this->_readLabel();                    break;
-                    case self::XLS_Type_BLANK:                    $this->_readBlank();                    break;
-                    case self::XLS_Type_MSODRAWING:                $this->_readMsoDrawing();                break;
-                    case self::XLS_Type_OBJ:                    $this->_readObj();                        break;
-                    case self::XLS_Type_WINDOW2:                $this->_readWindow2();                    break;
-                    case self::XLS_Type_SCL:                    $this->_readScl();                        break;
-                    case self::XLS_Type_PANE:                    $this->_readPane();                        break;
-                    case self::XLS_Type_SELECTION:                $this->_readSelection();                break;
-                    case self::XLS_Type_MERGEDCELLS:            $this->_readMergedCells();                break;
-                    case self::XLS_Type_HYPERLINK:                $this->_readHyperLink();                break;
-                    case self::XLS_Type_DATAVALIDATIONS:        $this->_readDataValidations();            break;
-                    case self::XLS_Type_DATAVALIDATION:            $this->_readDataValidation();            break;
-                    case self::XLS_Type_SHEETLAYOUT:            $this->_readSheetLayout();                break;
-                    case self::XLS_Type_SHEETPROTECTION:        $this->_readSheetProtection();            break;
-                    case self::XLS_Type_RANGEPROTECTION:        $this->_readRangeProtection();            break;
-                    case self::XLS_Type_NOTE:                    $this->_readNote();                        break;
-                    //case self::XLS_Type_IMDATA:                $this->_readImData();                    break;
-                    case self::XLS_Type_TXO:                    $this->_readTextObject();                break;
-                    case self::XLS_Type_CONTINUE:                $this->_readContinue();                    break;
-                    case self::XLS_Type_EOF:                    $this->_readDefault();                    break 2;
+                    case self::XLS_TYPE_BOF:                    $this->_readBof();                        break;
+                    case self::XLS_TYPE_PRINTGRIDLINES:            $this->_readPrintGridlines();            break;
+                    case self::XLS_TYPE_DEFAULTROWHEIGHT:        $this->_readDefaultRowHeight();            break;
+                    case self::XLS_TYPE_SHEETPR:                $this->_readSheetPr();                    break;
+                    case self::XLS_TYPE_HORIZONTALPAGEBREAKS:    $this->_readHorizontalPageBreaks();        break;
+                    case self::XLS_TYPE_VERTICALPAGEBREAKS:        $this->_readVerticalPageBreaks();        break;
+                    case self::XLS_TYPE_HEADER:                    $this->_readHeader();                    break;
+                    case self::XLS_TYPE_FOOTER:                    $this->_readFooter();                    break;
+                    case self::XLS_TYPE_HCENTER:                $this->_readHcenter();                    break;
+                    case self::XLS_TYPE_VCENTER:                $this->_readVcenter();                    break;
+                    case self::XLS_TYPE_LEFTMARGIN:                $this->_readLeftMargin();                break;
+                    case self::XLS_TYPE_RIGHTMARGIN:            $this->_readRightMargin();                break;
+                    case self::XLS_TYPE_TOPMARGIN:                $this->_readTopMargin();                break;
+                    case self::XLS_TYPE_BOTTOMMARGIN:            $this->_readBottomMargin();                break;
+                    case self::XLS_TYPE_PAGESETUP:                $this->_readPageSetup();                break;
+                    case self::XLS_TYPE_PROTECT:                $this->_readProtect();                    break;
+                    case self::XLS_TYPE_SCENPROTECT:            $this->_readScenProtect();                break;
+                    case self::XLS_TYPE_OBJECTPROTECT:            $this->_readObjectProtect();            break;
+                    case self::XLS_TYPE_PASSWORD:                $this->_readPassword();                    break;
+                    case self::XLS_TYPE_DEFCOLWIDTH:            $this->_readDefColWidth();                break;
+                    case self::XLS_TYPE_COLINFO:                $this->_readColInfo();                    break;
+                    case self::XLS_TYPE_DIMENSION:                $this->_readDefault();                    break;
+                    case self::XLS_TYPE_ROW:                    $this->_readRow();                        break;
+                    case self::XLS_TYPE_DBCELL:                    $this->_readDefault();                    break;
+                    case self::XLS_TYPE_RK:                        $this->_readRk();                        break;
+                    case self::XLS_TYPE_LABELSST:                $this->_readLabelSst();                    break;
+                    case self::XLS_TYPE_MULRK:                    $this->_readMulRk();                    break;
+                    case self::XLS_TYPE_NUMBER:                    $this->_readNumber();                    break;
+                    case self::XLS_TYPE_FORMULA:                $this->_readFormula();                    break;
+                    case self::XLS_TYPE_SHAREDFMLA:                $this->_readSharedFmla();                break;
+                    case self::XLS_TYPE_BOOLERR:                $this->_readBoolErr();                    break;
+                    case self::XLS_TYPE_MULBLANK:                $this->_readMulBlank();                    break;
+                    case self::XLS_TYPE_LABEL:                    $this->_readLabel();                    break;
+                    case self::XLS_TYPE_BLANK:                    $this->_readBlank();                    break;
+                    case self::XLS_TYPE_MSODRAWING:                $this->_readMsoDrawing();                break;
+                    case self::XLS_TYPE_OBJ:                    $this->_readObj();                        break;
+                    case self::XLS_TYPE_WINDOW2:                $this->_readWindow2();                    break;
+                    case self::XLS_TYPE_SCL:                    $this->_readScl();                        break;
+                    case self::XLS_TYPE_PANE:                    $this->_readPane();                        break;
+                    case self::XLS_TYPE_SELECTION:                $this->_readSelection();                break;
+                    case self::XLS_TYPE_MERGEDCELLS:            $this->_readMergedCells();                break;
+                    case self::XLS_TYPE_HYPERLINK:                $this->_readHyperLink();                break;
+                    case self::XLS_TYPE_DATAVALIDATIONS:        $this->_readDataValidations();            break;
+                    case self::XLS_TYPE_DATAVALIDATION:            $this->_readDataValidation();            break;
+                    case self::XLS_TYPE_SHEETLAYOUT:            $this->_readSheetLayout();                break;
+                    case self::XLS_TYPE_SHEETPROTECTION:        $this->_readSheetProtection();            break;
+                    case self::XLS_TYPE_RANGEPROTECTION:        $this->_readRangeProtection();            break;
+                    case self::XLS_TYPE_NOTE:                    $this->_readNote();                        break;
+                    //case self::XLS_TYPE_IMDATA:                $this->_readImData();                    break;
+                    case self::XLS_TYPE_TXO:                    $this->_readTextObject();                break;
+                    case self::XLS_TYPE_CONTINUE:                $this->_readContinue();                    break;
+                    case self::XLS_TYPE_EOF:                    $this->_readDefault();                    break 2;
                     default:                                    $this->_readDefault();                    break;
                 }
 
@@ -1645,7 +1645,7 @@ class PHPExcel_Reader_Excel5 implements PHPExcel_Reader_IReader
         $substreamType = self::_GetInt2d($recordData, 2);
 
         switch ($substreamType) {
-            case self::XLS_WorkbookGlobals:
+            case self::XLS_WORKBOOKGLOBALS:
                 $version = self::_GetInt2d($recordData, 0);
                 if (($version != self::XLS_BIFF8) && ($version != self::XLS_BIFF7)) {
                     throw new Exception('Cannot read this Excel file. Version is too old.');
@@ -1653,7 +1653,7 @@ class PHPExcel_Reader_Excel5 implements PHPExcel_Reader_IReader
                 $this->_version = $version;
                 break;
 
-            case self::XLS_Worksheet:
+            case self::XLS_WORKSHEET:
                 // do not use this version information for anything
                 // it is unreliable (OpenOffice doc, 5.8), use only version information from the global stream
                 break;
@@ -1664,7 +1664,7 @@ class PHPExcel_Reader_Excel5 implements PHPExcel_Reader_IReader
                 do {
                     $code = self::_GetInt2d($this->_data, $this->_pos);
                     $this->_readDefault();
-                } while ($code != self::XLS_Type_EOF && $this->_pos < $this->_dataSize);
+                } while ($code != self::XLS_TYPE_EOF && $this->_pos < $this->_dataSize);
                 break;
         }
     }
@@ -3726,7 +3726,7 @@ class PHPExcel_Reader_Excel5 implements PHPExcel_Reader_IReader
 
                 // read possible SHAREDFMLA record
                 $code = self::_GetInt2d($this->_data, $this->_pos);
-                if ($code == self::XLS_Type_SHAREDFMLA) {
+                if ($code == self::XLS_TYPE_SHAREDFMLA) {
                     $this->_readSharedFmla();
                 }
 
@@ -4996,7 +4996,7 @@ class PHPExcel_Reader_Excel5 implements PHPExcel_Reader_IReader
             $this->_pos += 4 + $length;
             $nextIdentifier = self::_GetInt2d($this->_data, $this->_pos);
         }
-        while ($nextIdentifier == self::XLS_Type_CONTINUE);
+        while ($nextIdentifier == self::XLS_TYPE_CONTINUE);
 
         $splicedData = array(
             'recordData' => $data,
