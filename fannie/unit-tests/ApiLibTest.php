@@ -57,7 +57,7 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('2000-01-01', $val);
 
         $val = FormLib::getDate('someKey', '1/1/2000', 'n/j/Y');
-        $this->assertEquals('2/2/2000', $val);
+        $this->assertEquals('1/1/2000', $val);
     }
 
 }
