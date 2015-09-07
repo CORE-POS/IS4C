@@ -41,22 +41,12 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
 
     public function testFormLib()
     {
-        $keys = array_keys($_GET);
-        foreach ($keys as $k) {
-            unset($_GET[$k]);
-        }
-        $keys = array_keys($_POST);
-        foreach ($keys as $k) {
-            unset($_POST[$k]);
-        }
-
         $val = FormLib::get('someKey');
         $this->assertEquals('', $val);
 
         $val = FormLib::get('someKey', 'someVal');
         $this->assertEquals('someVal', $val);
 
-        $_GET['someKey'] = 'otherVal';
         $val = FormLib::get('otherVal', 'someVal');
         $this->assertEquals('someVal', $val);
 
@@ -65,10 +55,6 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
 
         $val = FormLib::getDate('someKey', '2000-01-01');
         $this->assertEquals('2000-01-01', $val);
-
-        $_GET['someKey'] = '2000-02-02';
-        $val = FormLib::getDate('someKey', '2000-01-01');
-        $this->assertEquals('2000-02-02', $val);
 
         $val = FormLib::getDate('someKey', '1/1/2000', 'n/j/Y');
         $this->assertEquals('2/2/2000', $val);
