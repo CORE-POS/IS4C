@@ -39,9 +39,9 @@ class TenderEditor extends FanniePage
     public $description = '[Tenders] creates and updates tender types.';
     public $themed = true;
 
-    function javascript_content(){
-        ob_start();
-        ?>
+    function javascript_content()
+    {
+        return <<<JAVASCRIPT
 function saveCode(val,t_id){
     var elem = $(this);
     var orig = this.defaultValue;
@@ -243,8 +243,7 @@ function addTender(){
         }
     });
 }
-        <?php
-        return ob_get_clean();
+JAVASCRIPT;
     }
 
     function body_content()
@@ -282,4 +281,3 @@ function addTender(){
 
 FannieDispatch::conditionalExec(false);
 
-?>

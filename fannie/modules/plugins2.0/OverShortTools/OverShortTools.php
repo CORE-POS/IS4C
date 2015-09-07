@@ -48,7 +48,7 @@ class OverShortTools extends \COREPOS\Fannie\API\FanniePlugin {
     public $plugin_description = 'Plugin for comparing tender totals counted by cashiers 
             to totals from the POS transactions database.';
 
-    public function setting_change(){
+    public function settingChange(){
         global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
         $db_name = $FANNIE_PLUGIN_SETTINGS['OverShortDatabase'];
@@ -77,4 +77,3 @@ class OverShortTools extends \COREPOS\Fannie\API\FanniePlugin {
     public static $EXCLUDE_TENDERS = array('MA', 'RR');
 }
 
-?>

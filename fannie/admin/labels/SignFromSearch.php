@@ -101,7 +101,7 @@ class SignFromSearch extends FannieRESTfulPage
             $this->signage_obj->saveItems();
             echo '<html><head></head>
                   <body onload="document.forms[0].submit();">
-                  <form method="post" action="' . $_SERVER['PHP_SELF'] . '">';
+                  <form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">';
             foreach ($this->upcs as $u) {
                 printf('<input type="hidden" name="u[]" value="%s" />', $u);
             }
@@ -164,7 +164,7 @@ class SignFromSearch extends FannieRESTfulPage
             $this->signage_obj->saveItems();
             echo '<html><head></head>
                   <body onload="document.forms[0].submit();">
-                  <form method="post" action="' . $_SERVER['PHP_SELF'] . '">';
+                  <form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">';
             foreach ($this->batch as $b) {
                 printf('<input type="hidden" name="batch[]" value="%d" />', $b);
             }
@@ -226,7 +226,7 @@ class SignFromSearch extends FannieRESTfulPage
     function post_u_view()
     {
         $ret = '';
-        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post" id="signform">';
+        $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post" id="signform">';
         $mods = FannieAPI::listModules('FannieSignage');
         $others = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
         foreach ($others as $o) {
@@ -313,7 +313,7 @@ class SignFromSearch extends FannieRESTfulPage
         $batchR = $dbc->execute($batchP, array($today, $today, $today));
 
         $ret = '<b>Select batch(es)</b>:'; 
-        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+        $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">';
         $ret .= '<select name="batch[]" multiple size="15">';
         while ($batchW = $dbc->fetch_row($batchR)) {
             $ret .= sprintf('<option value="%d">%s (%s - %s)</option>',
@@ -346,4 +346,3 @@ class SignFromSearch extends FannieRESTfulPage
 
 FannieDispatch::conditionalExec(false);
 
-?>

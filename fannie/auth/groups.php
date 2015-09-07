@@ -273,5 +273,3 @@ function detailGroup($group){
   echo "</table>";
 }
 
-
-?>

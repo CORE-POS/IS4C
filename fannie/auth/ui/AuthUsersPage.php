@@ -84,7 +84,7 @@ class AuthUsersPage extends FannieRESTfulPage
     public function delete_id_handler()
     {
         deleteLogin($this->id);
-        header('Location: ' . $_SERVER['PHP_SELF']);
+        header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
 
         return false;
     }
@@ -92,7 +92,7 @@ class AuthUsersPage extends FannieRESTfulPage
     public function delete_id_authClass_handler()
     {
         deleteAuth($this->id, $this->authClass);
-        header('Location: ' . $_SERVER['PHP_SELF']);
+        header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
 
         return false;
     }
@@ -106,7 +106,7 @@ class AuthUsersPage extends FannieRESTfulPage
 
         $created = createLogin($this->name, $this->pass1);
         if ($created) {
-            header('Location: ' . $_SERVER['PHP_SELF']);
+            header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
             return false;
         } else {
             $this->add_onload_command("showBootstrapAlert('form', 'danger', 'Error creating users');\n");
@@ -117,7 +117,7 @@ class AuthUsersPage extends FannieRESTfulPage
     public function post_id_authClass_start_end_handler()
     {
         addAuth($this->id, $this->authClass, $this->start, $this->end);
-        header('Location: ' . $_SERVER['PHP_SELF']);
+        header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
 
         return false;
     }
@@ -154,7 +154,7 @@ class AuthUsersPage extends FannieRESTfulPage
 
     public function get_new_view()
     {
-        $ret = '<form method="post" action="' . $_SERVER['PHP_SELF'] . '">
+        $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">
             <div class="form-group">
                 <label>Username</label>
                 <input type="text" name="name" required class="form-control" />
@@ -183,7 +183,7 @@ class AuthUsersPage extends FannieRESTfulPage
 
     private function user_form($hidden, $verb)
     {
-        $ret = '<form method="get" action="' . $_SERVER['PHP_SELF'] . '">
+        $ret = '<form method="get" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">
             <label>Username</label>
             <select name="id" class="form-control">';
         foreach (getUserList() as $uid => $name) {
@@ -207,7 +207,7 @@ class AuthUsersPage extends FannieRESTfulPage
 
     public function get_newAuth_view()
     {
-        $ret = '<form method="post" action="' . $_SERVER['PHP_SELF'] . '">
+        $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">
             <label>Username</label>
             <select name="id" class="form-control">';
         foreach (getUserList() as $uid => $name) {
@@ -235,7 +235,7 @@ class AuthUsersPage extends FannieRESTfulPage
 
     public function get_removeAuth_view()
     {
-        $ret = '<form method="post" action="' . $_SERVER['PHP_SELF'] . '">
+        $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">
             <input type="hidden" name="_method" value="delete" />
             <label>Username</label>
             <select name="id" class="form-control">';
@@ -263,12 +263,12 @@ class AuthUsersPage extends FannieRESTfulPage
         ob_start();
         echo '<div class="row container" id="btn-bar">';
         echo '<a class="btn btn-default" href="AuthIndexPage.php">Menu</a> ';
-        echo '<a class="btn btn-default" href="' . $_SERVER['PHP_SELF'] . '?new=1">Add User</a> ';
-        echo '<a class="btn btn-default" href="' . $_SERVER['PHP_SELF'] . '?detail=1">View User</a> ';
-        echo '<a class="btn btn-default" href="' . $_SERVER['PHP_SELF'] . '?remove=1">Delete User</a> ';
-        echo '<a class="btn btn-default" href="' . $_SERVER['PHP_SELF'] . '?newAuth=1">Add Auth</a> ';
-        echo '<a class="btn btn-default" href="' . $_SERVER['PHP_SELF'] . '?removeAuth=1">Delete Auth</a> ';
-        echo '<a class="btn btn-default" href="' . $_SERVER['PHP_SELF'] . '?reset=1">Reset Password</a> ';
+        echo '<a class="btn btn-default" href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?new=1">Add User</a> ';
+        echo '<a class="btn btn-default" href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?detail=1">View User</a> ';
+        echo '<a class="btn btn-default" href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?remove=1">Delete User</a> ';
+        echo '<a class="btn btn-default" href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?newAuth=1">Add Auth</a> ';
+        echo '<a class="btn btn-default" href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?removeAuth=1">Delete Auth</a> ';
+        echo '<a class="btn btn-default" href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?reset=1">Reset Password</a> ';
         echo '</div>';
         showUsers();
 

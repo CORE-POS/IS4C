@@ -33,13 +33,14 @@ class CreateTagsByManu extends FanniePage {
     public $description = '[Brand Shelf Tags] generates a set of shelf tags for brand or UPC prefix.';
     public $themed = true;
 
-    function preprocess(){
+    function preprocess()
+    {
         global $FANNIE_OP_DB;
 
         $this->title = _("Fannie") . ' : ' . _("Manufacturer Shelf Tags");
         $this->header = _("Manufacturer Shelf Tags");
 
-        if (FormLib::get_form_value('manufacturer',False) !== False){
+        if (FormLib::get_form_value('manufacturer',False) !== false) {
             $manu = FormLib::get_form_value('manufacturer');
             $pageID = FormLib::get_form_value('sID',0);
             $cond = "";
@@ -48,43 +49,37 @@ class CreateTagsByManu extends FanniePage {
             else
                 $cond = " p.brand LIKE ? ";
             $dbc = FannieDB::get($FANNIE_OP_DB);
-            $q = $dbc->prepare_statement("
+            $prodP = $dbc->prepare_statement("
                 SELECT
                     p.upc
                 FROM
                     products AS p
                 WHERE $cond
             ");
-            $r = $dbc->exec_statement($q,array('%'.$manu.'%'));
+            $prodR = $dbc->exec_statement($prodP, array('%'.$manu.'%'));
             $tag = new ShelftagsModel($dbc);
             $product = new ProductsModel($dbc);
-            while($w = $dbc->fetch_row($r)){
-                $product->upc($w['upc']);
+            while ($prodW = $dbc->fetch_row($prodR)) {
+                $product->upc($prodW['upc']);
                 $info = $product->getTagData();
                 $tag->id($pageID);
-                $tag->upc($w['upc']);
-                $tag->description($info['description']);
-                $tag->normal_price($info['normal_price']);
-                $tag->brand($info['brand']);
-                $tag->sku($info['sku']);
-                $tag->size($info['size']);
-                $tag->units($info['units']);
-                $tag->vendor($info['vendor']);
-                $tag->pricePerUnit($info['pricePerUnit']);
+                $tag->upc($prodW['upc']);
+                $tag->setData($info);
                 $tag->save();
             }
             $this->msgs = '<em>Created tags for manufacturer</em>
                     <br /><a href="ShelfTagIndex.php">Home</a>';
         }
-        return True;
+
+        return true;
     }
 
     function body_content(){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $qm = new ShelfTagQueuesModel($dbc);
-        $deptSubList = $qm->toOptions();
+        $qmodel = new ShelfTagQueuesModel($dbc);
+        $deptSubList = $qmodel->toOptions();
 
         $ret = '';
         if (!empty($this->msgs)){
@@ -125,6 +120,5 @@ class CreateTagsByManu extends FanniePage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

@@ -127,7 +127,10 @@ class FannieRESTfulPage extends FanniePage
         try {
             $this->__method = $this->form->_method;
         } catch (Exception $ex) {
-            $this->__method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'get';
+            $this->__method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
+            if ($this->__method === null) {
+                $this->__method = 'get';
+            }
         }
         $this->__method = strtolower($this->__method);
 

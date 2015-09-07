@@ -42,8 +42,8 @@ class AddCashierPage extends FanniePage
         global $FANNIE_OP_DB;
         if (FormLib::get_form_value('fname') !== '')
         {
-            $fn = FormLib::get_form_value('fname');
-            $ln = FormLib::get_form_value('lname');
+            $fname = FormLib::get_form_value('fname');
+            $lname = FormLib::get_form_value('lname');
             $fes = FormLib::get_form_value('fes');
             $dob = FormLib::get_form_value('birthdate');
 
@@ -68,8 +68,8 @@ class AddCashierPage extends FanniePage
             $employee->emp_no($emp_no);
             $employee->CashierPassword($passwd);
             $employee->AdminPassword($passwd);
-            $employee->FirstName($fn);
-            $employee->LastName($ln);
+            $employee->FirstName($fname);
+            $employee->LastName($lname);
             $employee->JobTitle('');
             $employee->EmpActive(1);
             $employee->frontendsecurity($fes);
@@ -93,7 +93,7 @@ class AddCashierPage extends FanniePage
             }
 
             $message = sprintf("Cashier Created<br />Name:%s<br />Emp#:%d<br />Password:%d",
-                $fn.' '.$ln,$emp_no,$passwd);
+                $fname.' '.$lname,$emp_no,$passwd);
             $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', '$message');\n");
         }
 
@@ -168,4 +168,3 @@ class AddCashierPage extends FanniePage
 
 FannieDispatch::conditionalExec();
 
-?>

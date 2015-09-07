@@ -49,7 +49,7 @@ class CoreWarehouse extends \COREPOS\Fannie\API\FanniePlugin {
         pre-aggregated data.';
 
 
-    public function setting_change(){
+    public function settingChange(){
         global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
         $db_name = $FANNIE_PLUGIN_SETTINGS['WarehouseDatabase'];

@@ -59,15 +59,6 @@ class FanniePlugin
     }
 
     /**
-      @deprecated
-      Temporary compat for function normalization
-    */
-    public function plugin_enable()
-    {
-        $this->pluginEnable();
-    }
-
-    /**
       Callback. Triggered when plugin is disabled
     */
     public function pluginDisable()
@@ -76,29 +67,11 @@ class FanniePlugin
     }
 
     /**
-      @deprecated
-      Temporary compat for function normalization
-    */
-    public function plugin_disable()
-    {
-        $this->pluginDisable();
-    }
-
-    /**
       Callback. Triggered when a setting is modified
     */
     public function settingChange()
     {
 
-    }
-
-    /**
-      @deprecated
-      Temporary compat for function normalization
-    */
-    public function setting_change()
-    {
-        $this->settingChange();
     }
 
     /**
@@ -113,15 +86,6 @@ class FanniePlugin
     }
 
     /**
-      @deprecated
-      Temporary compat for function normalization
-    */
-    public function plugin_url()
-    {
-        return $this->pluginUrl();
-    }
-
-    /**
       Get filesystem path for the plugin's directory
     */
     public function pluginDir()
@@ -131,22 +95,13 @@ class FanniePlugin
         return dirname($info->getFileName());
     }
 
-    /**
-      @deprecated
-      Temporary compat for function normalization
-    */
-    public function plugin_dir()
-    {
-        return $this->pluginDir();
-    }
-
     public function pluginDbStruct($db, $struct_name, $db_name="")
     {
         if ($db->table_exists($struct_name)) {
             return true;
         }
 
-        $dir = $this->plugin_dir();
+        $dir = $this->pluginDir();
         if (!file_exists($dir.'/sql/'.$struct_name.'.php')) {
             return 'No create file for: '.$struct_name;
         }
@@ -163,15 +118,6 @@ class FanniePlugin
         }
     }
     
-    /**
-      @deprecated
-      Temporary compat for function normalization
-    */
-    public function plugin_db_struct($db, $struct_name, $db_name="")
-    {
-        return $this->pluginDbStruct($db, $struct_name, $db_name);
-    }
-
     /**
       Find the plugin containing a given file
       @param $file string filename
@@ -219,24 +165,22 @@ class FanniePlugin
       @param $path starting directory
       @return array of class name => full file name
     */
-    public static function pluginMap($path="",$in=array())
+    public static function pluginMap($path="",$carry=array())
     {
-        if ($path=="") {
+        if ($path == '') {
             $path = realpath(dirname(__FILE__).'/../modules/plugins2.0');
         }
-        $dh = opendir($path);
-        while ( ($file = readdir($dh)) !== False) {
-            if ($file[0] == ".") continue;
-            if (is_dir($path."/".$file)) {
-                $in = self::pluginMap(realpath($path.'/'.$file),$in);
-            }
-            if (substr($file,-4)==".php" && $file != "Plugin.php") {
-                $in[substr($file,0,strlen($file)-4)] = realpath($path.'/'.$file);
+        $dir = opendir($path);
+        while (($file = readdir($dir)) !== false) {
+            if ($file[0] != '.' && $file != 'noauto' && is_dir($path."/".$file)) {
+                $carry = self::pluginMap(realpath($path.'/'.$file),$carry);
+            } elseif (substr($file,-4)==".php") {
+                $carry[substr($file,0,strlen($file)-4)] = realpath($path.'/'.$file);
             }
         }
-        closedir($dh);
+        closedir($dir);
 
-        return $in;
+        return $carry;
     }
 }
 

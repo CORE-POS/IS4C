@@ -46,7 +46,7 @@ class ShelfAudit extends \COREPOS\Fannie\API\FanniePlugin {
 
     public $plugin_description = 'Plugin for scanning items on hand';
 
-    public function setting_change()
+    public function settingChange()
     {
         global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 

@@ -94,7 +94,7 @@ class FannieDispatch
             return false;
         }
 
-        if (!$dbc || !isset($dbc->connections[$op_db]) || $dbc->connections[$op_db] == false) {
+        if (!$dbc || !isset($dbc->connections[$op_db]) || $dbc->connections[$op_db] === false) {
             // database unavailable
             return false;
         }
@@ -111,13 +111,14 @@ class FannieDispatch
                 (?, ?, ?, ?, ?)');
         $args = array(
             date('Y-m-d H:i:s'),
-            basename($_SERVER['PHP_SELF']),
+            basename(filter_input(INPUT_SERVER, 'PHP_SELF')),
         );
         $referrer = isset($_SERVER['HTTP_REFERER']) ? basename($_SERVER['HTTP_REFERER']) : 'n/a';
-        $args[] = $referrer;
+        $referrer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
+        $args[] = $referrer === null ? 'n/a' : basename($referrer);
         $args[] = sha1($user);
-        $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'n/a';
-        $args[] = sha1($ip);
+        $ip_addr = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+        $args[] = sha1($ip_addr);
 
         return $dbc->execute($prep, $args);
     }
@@ -153,9 +154,9 @@ class FannieDispatch
     */
     static public function conditionalExec($custom_errors=true)
     {
-        $bt = debug_backtrace();
+        $frames = debug_backtrace();
         // conditionalExec() is the only function on the stack
-        if (count($bt) == 1) {
+        if (count($frames) == 1) {
             $config = FannieConfig::factory();
             $logger = new FannieLogger();
             if ($config->get('SYSLOG_SERVER')) {
@@ -177,7 +178,7 @@ class FannieDispatch
             self::logUsage($dbc, $op_db);
 
             // draw current page
-            $page = basename($_SERVER['PHP_SELF']);
+            $page = basename(filter_input(INPUT_SERVER, 'PHP_SELF'));
             $class = substr($page,0,strlen($page)-4);
             if ($class != 'index' && class_exists($class)) {
                 $obj = new $class();

@@ -461,7 +461,7 @@ class FannieReportPage extends FanniePage
     */
     protected function checkDataCache()
     {
-        if (isset($_REQUEST['no-cache']) && $_REQUEST['no-cache'] === '1') {
+        if (isset($_GET['no-cache']) && $_GET['no-cache'] === '1') {
             return false;
         }
         $archive_db = $this->config->get('ARCHIVE_DB');
@@ -470,7 +470,7 @@ class FannieReportPage extends FanniePage
             return False;
         }
         $table = $archive_db . $dbc->sep() . "reportDataCache";
-        $hash = $_SERVER['REQUEST_URI'];
+        $hash = filter_input(INPUT_SERVER, 'REQUEST_URI');
         $hash = str_replace("&excel=xls","",$hash);
         $hash = str_replace("&excel=csv","",$hash);
         $hash = md5($hash);
@@ -500,7 +500,7 @@ class FannieReportPage extends FanniePage
             return false;
         }
         $table = $archive_db . $dbc->sep() . "reportDataCache";
-        $hash = $_SERVER['REQUEST_URI'];
+        $hash = filter_input(INPUT_SERVER, 'REQUEST_URI');
         $hash = str_replace("excel=xls","",$hash);
         $hash = str_replace("excel=csv","",$hash);
         $hash = str_replace("no-cache=1","",$hash);
@@ -649,18 +649,19 @@ class FannieReportPage extends FanniePage
                             $pear = false;
                         }
                     }
+                    $uri = filter_input(INPUT_SERVER, 'REQUEST_URI');
                     if ($pear) {
                         $ret .= sprintf('<a href="%s%sexcel=xls">Download Excel</a>
                             &nbsp;&nbsp;&nbsp;&nbsp;',
-                            $_SERVER['REQUEST_URI'],
-                            (strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&')
+                            $uri,
+                            (strstr($uri, '?') === false ? '?' : '&')
                         );
                     }
                     $ret .= sprintf('<a href="%s%sexcel=csv">Download CSV</a>
                         &nbsp;&nbsp;&nbsp;&nbsp;
                         <a href="javascript:history.back();">Back</a>',
-                        $_SERVER['REQUEST_URI'],
-                        (strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&')
+                        $uri,
+                        (strstr($uri, '?') === false ? '?' : '&')
                     );
                     foreach ($this->defaultDescriptionContent() as $line) {
                         $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
@@ -1162,8 +1163,8 @@ class FannieReportPage extends FanniePage
             }
 
             if ($this->readinessCheck() !== false) {
-                $fn = $this->content_function;
-                echo $this->$fn();
+                $func = $this->content_function;
+                echo $this->$func();
             } else {
                 echo $this->errorContent();
             }
