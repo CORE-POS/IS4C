@@ -35,7 +35,24 @@ class FormLib
     */
     public static function getFormValue($name, $default='')
     {
-        return (isset($_REQUEST[$name])) ? $_REQUEST[$name] : $default;
+        $val = filter_input(INPUT_GET, $name, FILTER_CALLBACK, array('options'=>array('FormLib', 'filterCallback')));
+        if ($val === null) {
+            $val = filter_input(INPUT_POST, $name, FILTER_CALLBACK, array('options'=>array('FormLib', 'filterCallback')));
+        }
+        if ($val === null) {
+            $val = $default;
+        }
+
+        return $val;
+    }
+
+    /**
+      Using callback style filtering so the form retrieval
+      message can return both strings and arrays of strings.
+    */
+    private static function filterCallback($item)
+    {
+        return filter_var($item, FILTER_SANITIZE_STRING);
     }
 
     public static function get_form_value($name, $default='')
