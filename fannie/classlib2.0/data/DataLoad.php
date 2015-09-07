@@ -149,7 +149,7 @@ class DataLoad
 
     private static function loadLinesFromCsv($table, $file, $sql)
     {
-        $fptr = fopen($filename, 'r');
+        $fptr = fopen($file, 'r');
         $stmt = false;
         $ret = true;
         while (!feof($fptr)) {
