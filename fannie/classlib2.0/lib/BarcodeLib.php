@@ -95,9 +95,9 @@ class BarcodeLib
         $sum = 0;
         for ($i=0; $i<strlen($upc); $i++) {
             if ($i % 2 == 0) {
-                $sum += 3 * $upc[$i];
+                $sum += 3 * ((int)$upc[$i]);
             } else {
-                $sum += $upc[$i];
+                $sum += (int)$upc[$i];
             }
         }
 
@@ -123,13 +123,13 @@ class BarcodeLib
     static public function EAN13CheckDigit($str)
     {
         $ean = str_pad($str,12,'0',STR_PAD_LEFT);
-        return $ean . self::calculateVariableCheckDigit($ean);
+        return $ean . self::getCheckDigit($ean);
     }
 
     public static function UPCACheckDigit($str)
     {
         $upc = str_pad($str,11,'0',STR_PAD_LEFT);
-        return $upc . self::calculateVariableCheckDigit($upc);
+        return $upc . self::getCheckDigit($upc);
     }
 
     public static function normalize13($str)
