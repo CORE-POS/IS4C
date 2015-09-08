@@ -20,8 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-header('Location: ../OpenBookFinancingV2/ObfIndexPageV2.php');
-return;
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
@@ -32,6 +30,12 @@ if (!class_exists('FannieAPI')) {
 */
 class ObfIndexPage extends FannieRESTfulPage 
 {
+    public function preprocess()
+    {
+        header('Location: ../OpenBookFinancingV2/ObfIndexPageV2.php');
+        return false;
+    }
+
     protected $title = 'OBF: Menu';
     protected $header = 'OBF: Menu';
 
