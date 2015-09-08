@@ -70,7 +70,8 @@ class AuditLib
         $message .= "\n";
         $message .= "Adjust this item?\n";
         $url = $conf->get('URL');
-        $message .= "http://{$_SERVER['SERVER_NAME']}/{$url}item/ItemEditorPage.php?searchupc=$upc\n";
+        $server_name = filter_input(INPUT_SERVER, 'SERVER_NAME');
+        $message .= "http://{$server_name}/{$url}item/ItemEditorPage.php?searchupc=$upc\n";
         $message .= "\n";
         $username = \FannieAuth::checkLogin();
         if (!$username) {
@@ -79,12 +80,12 @@ class AuditLib
         $message .= "This change was made by user $username\n";
 
         $from = "From: automail\r\n";
-        $to = self::getAddresses($product->department());
-        if ($to === false) {
+        $to_addr = self::getAddresses($product->department());
+        if ($to_addr === false) {
             // no one set to receive notices
             return false;
         }
-        mail($to, $subject, $message, $from);
+        mail($to_addr, $subject, $message, $from);
 
         return true;
     }
@@ -94,14 +95,14 @@ class AuditLib
         $conf = \FannieConfig::factory();
         $dbc = \FannieDB::getReadOnly($conf->get('OP_DB'));
 
-        $lc = '';
+        $likecode = '';
         $desc = '';
         $dept = 0;
         if ($is_likecode) {
             if (substr($upc, 0, 2) == 'LC') {
-                $lc = substr($upc, 2); 
+                $likecode = substr($upc, 2); 
             } else {
-                $lc = $upc;
+                $likecode = $upc;
             }
             // upc is a like code. find the description
             // and a valid upc (hence inner join)
@@ -112,7 +113,7 @@ class AuditLib
                         LEFT JOIN likeCodes AS l ON u.likeCode=l.likeCode
                       WHERE u.likeCode=?';
             $infoP = $dbc->prepare($infoQ);
-            $infoR = $dbc->execute($infoP, array($lc));
+            $infoR = $dbc->execute($infoP, array($likecode));
             if ($dbc->num_rows($infoR) == 0) {
                 // invalid like code
                 return false;
@@ -128,8 +129,8 @@ class AuditLib
             $dept = $product->department();
         }
 
-        $to = self::getAddresses($dept);
-        if ($to === false) {
+        $to_addr = self::getAddresses($dept);
+        if ($to_addr === false) {
             // no one set to receive notices
             return false;
         }
@@ -147,7 +148,7 @@ class AuditLib
 
         $message = "Batch " . $batch->batchName() . " has been changed\n";
         if ($is_likecode) {
-            $message .= 'Like code ' . $lc . '(' . $desc . ') ';
+            $message .= 'Like code ' . $likecode . '(' . $desc . ') ';
         } else {
             $message .= 'Item '. $upc . '(' . $desc . ') ';
         }
@@ -172,10 +173,11 @@ class AuditLib
         $message .= "\n";
         $message .= "View this batch:\n";
         $url = $conf->get('URL');
-        $message .= "http://{$_SERVER['SERVER_NAME']}{$url}batches/newbatch/EditBatchPage.php?id={$batchID}\n";
+        $server_name = filter_input(INPUT_SERVER, 'SERVER_NAME');
+        $message .= "http://{$server_name}{$url}batches/newbatch/EditBatchPage.php?id={$batchID}\n";
         $message .= "\n";
         $message .= "View this item:\n";
-        $message .= "http://{$_SERVER['SERVER_NAME']}/{$url}item/ItemEditorPage.php?searchupc=$upc\n";
+        $message .= "http://{$server_name}/{$url}item/ItemEditorPage.php?searchupc=$upc\n";
         $message .= "\n";
         $username = \FannieAuth::checkLogin();
         if (!$username) {
@@ -184,7 +186,7 @@ class AuditLib
         $message .= "This change was made by user $username\n";
 
         $from = "From: automail\r\n";
-        mail($to, $subject, $message, $from);
+        mail($to_addr, $subject, $message, $from);
 
         return true;
     }
@@ -204,7 +206,7 @@ class AuditLib
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, array($dept));
         $emails = '';
-        while($row = $dbc->fetch_row($res)) {
+        while ($row = $dbc->fetch_row($res)) {
             $model = new \SuperDeptEmailsModel($dbc);
             $model->superID($row['superID']);
             if (!$model->load()) {

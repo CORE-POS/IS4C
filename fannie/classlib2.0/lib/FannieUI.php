@@ -83,12 +83,10 @@ class FannieUI
                 $outOfQuotes = !$outOfQuotes;
             // If this character is the end of an element, 
             // output a new line and indent the next line.
-            } else if (($char == '}' || $char == ']') && $outOfQuotes) {
+            } elseif (($char == '}' || $char == ']') && $outOfQuotes) {
                 $result .= $newLine;
                 $pos--;
-                for ($j=0; $j<$pos; $j++) {
-                    $result .= $indentStr;
-                }
+                $result .= str_repeat($indentStr, $pos);
             }
 
             // Add the character to the result string.
@@ -99,12 +97,9 @@ class FannieUI
             if (($char == ',' || $char == '{' || $char == '[') && $outOfQuotes) {
                 $result .= $newLine;
                 if ($char == '{' || $char == '[') {
-                    $pos ++;
+                    $pos++;
                 }
-
-                for ($j = 0; $j < $pos; $j++) {
-                    $result .= $indentStr;
-                }
+                $result .= str_repeat($indentStr, $pos);
             }
 
             $prevChar = $char;

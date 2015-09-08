@@ -42,9 +42,9 @@ class AttachmentEmailPipe extends NewMemberEmailPipe
             echo "Attachments: " . count($pieces['attachments']) . "\n";
             foreach($pieces['attachments'] as $a) {
                 echo "File: {$a['name']}\n";
-                $fp = fopen('./' . $a['name'], 'w');
-                fwrite($fp, $a['content']);
-                fclose($fp);
+                $fptr = fopen('./' . $a['name'], 'w');
+                fwrite($fptr, $a['content']);
+                fclose($fptr);
             }
         }
     }
@@ -66,13 +66,13 @@ class AttachmentEmailPipe extends NewMemberEmailPipe
         $parts = explode("--{$boundary}", $body);
         $attachments = array();
         $actual_body = '';
-        foreach($parts as $part) {
+        foreach ($parts as $part) {
             $part = ltrim($part, "\r\n");
             if (empty($part)) continue;
             $info = $this->parseEmail($part);
-            if (count($info['headers']) == 0) continue;
-
-            if (!isset($info['headers']['Content-Type'])) continue;
+            if (count($info['headers']) == 0 || !isset($info['headers']['Content-Type'])) {
+                continue;
+            }
 
             $mime = preg_match('/(.+\/.+);\s*/', $info['headers']['Content-Type'], $matches);
             if ($mime != 1) continue;
@@ -83,28 +83,20 @@ class AttachmentEmailPipe extends NewMemberEmailPipe
             } else {
                 $attachment = trim($info['body']);
 
-                $fn = time();
+                $filename = time();
                 if (isset($info['headers']['Content-Disposition'])) {
                     if (preg_match('/filename="(.+)"/', $info['headers']['Content-Disposition'], $matches)) {
-                        $fn = $matches[1]; 
+                        $filename = $matches[1]; 
                     }
                 }
 
                 if (!isset($info['headers']['Content-Transfer-Encoding'])) {
                     $info['headers']['Content-Transfer-Encoding'] = 'none';
                 }
-                $decoded = '';
-                switch($info['headers']['Content-Transfer-Encoding']) {
-                    case 'base64':
-                        $decoded = base64_decode($attachment);
-                        break;
-                    default:
-                        $decoded = $attachment;
-                        break;
-                }
+                $decoded = $this->decodeAttachment($attachment, $info['headers']['Content-Transfer-Encoding']);
                 
                 $attachments[] = array(
-                    'name' => $fn,
+                    'name' => $filename,
                     'type' => $mime,
                     'content' => $decoded, 
                 );
@@ -114,6 +106,16 @@ class AttachmentEmailPipe extends NewMemberEmailPipe
         return array('body'=>$actual_body, 'attachments'=>$attachments);
     }
 
+
+    protected function decodeAttachment($attachment, $encoding)
+    {
+        switch ($encoding) {
+            case 'base64':
+                return base64_decode($attachment);
+            default:
+                return $attachment;
+        }
+    }
 }
 
 }
