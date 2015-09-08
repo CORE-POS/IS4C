@@ -113,7 +113,8 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
     $dblunitPrice = str_replace(",", "", $dblunitPrice);
     $dblunitPrice = number_format($dblunitPrice, 2, '.', '');
 
-    if (CoreLocal::get("refund") == 1) {
+    // do not clear refund flag when adding an informational log record
+    if ($strtransType != 'L' && CoreLocal::get("refund") == 1) {
         $dblquantity = (-1 * $dblquantity);
         $dbltotal = (-1 * $dbltotal);
         $dbldiscount = (-1 * $dbldiscount);
