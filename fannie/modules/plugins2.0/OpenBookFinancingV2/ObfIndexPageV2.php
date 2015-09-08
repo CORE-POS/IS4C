@@ -20,8 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-header('Location: ../OpenBookFinancingV2/ObfIndexPageV2.php');
-return;
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
@@ -30,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class ObfIndexPage extends FannieRESTfulPage 
+class ObfIndexPageV2 extends FannieRESTfulPage 
 {
     protected $title = 'OBF: Menu';
     protected $header = 'OBF: Menu';
@@ -42,11 +40,11 @@ class ObfIndexPage extends FannieRESTfulPage
     public function get_view()
     {
         return '<ul>
-            <li><a href="ObfWeeklyReport.php">View Weekly Reports</a></li>
-            <li><a href="ObfQuarterEntryPage.php">Enter Quarterly Sales and Labor Plan</a></li>
-            <li><a href="ObfWeekEntryPage.php">Enter Weekly Labor and Forecast Data</a></li>
-            <li><a href="ObfCategoriesPage.php">Manage OBF Categories</a></li>
-            <li><a href="ObfMappingPage.php">Map OBF Categories to POS</a></li>
+            <li><a href="ObfWeeklyReportV2.php">View Weekly Reports</a></li>
+            <li><a href="ObfQuarterEntryPageV2.php">Enter Quarterly Sales and Labor Plan</a></li>
+            <li><a href="ObfWeekEntryPageV2.php">Enter Weekly Labor and Forecast Data</a></li>
+            <li><a href="ObfCategoriesPageV2.php">Manage OBF Categories</a></li>
+            <li><a href="ObfMappingPageV2.php">Map OBF Categories to POS</a></li>
             </ul>';
     }
 }

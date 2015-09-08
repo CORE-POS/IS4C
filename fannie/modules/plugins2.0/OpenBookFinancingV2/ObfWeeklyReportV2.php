@@ -20,15 +20,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-header('Location: ../OpenBookFinancingV2/ObfWeeklyReportV2.php');
-return;
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class ObfWeeklyReport extends FannieReportPage
+class ObfWeeklyReportV2 extends FannieReportPage
 {
     protected $header = 'OBF: Weekly Report';
     protected $title = 'OBF: Weekly Report';
@@ -40,8 +38,12 @@ class ObfWeeklyReport extends FannieReportPage
 
     protected $required_fields = array('weekID');
     protected $new_tablesorter = false;
+    protected $sortable = false;
+    protected $no_sort_but_style = true;
 
     protected $report_headers = array(
+        array('', 'Last Year', 'Plan Goal', '% Store', 'Trend', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
+        array('', 'Last Year', 'Plan Goal', '% Store', 'Trend', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
         array('', 'Last Year', 'Plan Goal', '% Store', 'Trend', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
         array('', 'Last Year', 'Plan Goal', '% Store', 'Trend', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
         array('', 'Last Year', 'Plan Goal', '% Store', 'Trend', 'Actual', '% Growth', '% Store', 'Current O/U', 'Long-Term O/U'),
@@ -51,12 +53,13 @@ class ObfWeeklyReport extends FannieReportPage
         array('', 'Current Year', 'Last Year', '', '', '', '', '', '', ''),
     );
 
+
     public function report_description_content()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
         
-        $week = new ObfWeeksModel($dbc);
+        $week = new ObfWeeksModelV2($dbc);
         $week->obfWeekID(FormLib::get('weekID'));
         $week->load();
         $start_ts = strtotime($week->startDate());
@@ -68,9 +71,9 @@ class ObfWeeklyReport extends FannieReportPage
     public function fetch_report_data()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
         
-        $week = new ObfWeeksModel($dbc);
+        $week = new ObfWeeksModelV2($dbc);
         $week->obfWeekID(FormLib::get('weekID'));
         $week->load();
 
@@ -82,15 +85,16 @@ class ObfWeeklyReport extends FannieReportPage
             '#CDB49B',
             '#99C299',
             '#CDB49B',
-            '#6685C2',
-            '#FF4D4D',
             '#99C299',
-            '#C299EB',
-            '#FFB280',
-            '#FFFF66',
+            '#CDB49B',
+            '#99C299',
+            '#CDB49B',
+            '#99C299',
+            '#CDB49B',
+            '#99C299',
         );
         
-        $labor = new ObfLaborModel($dbc);
+        $labor = new ObfLaborModelV2($dbc);
         $labor->obfWeekID($week->obfWeekID());
         
         /**
@@ -140,11 +144,11 @@ class ObfWeeklyReport extends FannieReportPage
           Sales information is cached to avoid expensive
           aggregate queries
         */
-        $sales = new ObfSalesCacheModel($dbc);
+        $sales = new ObfSalesCacheModelV2($dbc);
         $sales->obfWeekID($week->obfWeekID());
         $sales->actualSales(0, '>');
         $num_cached = $sales->find();
-        if (count($num_cached) == 0) {
+        if (count($num_cached) == 0 || true) {
             $sales->reset();
             $sales->obfWeekID($week->obfWeekID());
             /**
@@ -228,51 +232,63 @@ class ObfWeeklyReport extends FannieReportPage
                 if ($future) {
                     $sales->actualSales(0);
                 }
-                $sales->growthTarget($week->growthTarget());
+                $labor = new ObfLaborModelV2($dbc);
+                $labor->obfWeekID($week->obfWeekID());
+                $labor->obfCategoryID($w['id']);
+                foreach ($labor->find() as $l) {
+                    $sales->growthTarget($l->growthTarget());
+                }
                 $sales->save();
             }
             
-            /**
-              Now lookup year-over-year info
-              Since it examines a whole month rather than a single
-              week, we'll take the average and then extend
-              that out to seven days
-            */
-            $sales->reset();
-            $sales->obfWeekID($week->obfWeekID());
-            $args = array(date('Y-m-d 00:00:00', $start_ly), date('Y-m-d 23:59:59', $end_ly));
-            $num_days = (float)date('t', $start_ly);
+            if (count($num_cached) == 0) {
+                /**
+                  Now lookup year-over-year info
+                  Since it examines a whole month rather than a single
+                  week, we'll take the average and then extend
+                  that out to seven days
+                */
+                $sales->reset();
+                $sales->obfWeekID($week->obfWeekID());
+                $args = array(date('Y-m-d 00:00:00', $start_ly), date('Y-m-d 23:59:59', $end_ly));
+                $num_days = (float)date('t', $start_ly);
 
-            /**
-              Transactions last year, pro-rated
-            */
-            $trans2Q = str_replace('__table__', $dlog2, $transQ);
-            $transP = $dbc->prepare($trans2Q);
-            $transR = $dbc->execute($transP, $args);
-            if ($transR) {
-                $month_trans = $dbc->num_rows($transR);
-                $avg_trans = ($month_trans / $num_days) * 7;
-                $sales->lastYearTransactions($avg_trans);
-            } else {
-                $sales->lastYearTransactions(0);
-            }
-
-            /**
-              Sales last year, pro-rated
-            */
-            $twoQ = str_replace('__table__', $dlog2, $salesQ);
-            $twoP = $dbc->prepare($twoQ);
-            $twoR = $dbc->execute($twoP, $args);
-            while ($w = $dbc->fetch_row($twoR)) {
-                $sales->obfCategoryID($w['id']);
-                $sales->superID($w['superID']);
-                $avg_sales = ($w['sales'] / $num_days) * 7;
-                $sales->lastYearSales($avg_sales);
-                if ($future) {
-                    $sales->actualSales(0);
-                    $sales->growthTarget($week->growthTarget());
+                /**
+                  Transactions last year, pro-rated
+                */
+                $trans2Q = str_replace('__table__', $dlog2, $transQ);
+                $transP = $dbc->prepare($trans2Q);
+                $transR = $dbc->execute($transP, $args);
+                if ($transR) {
+                    $month_trans = $dbc->num_rows($transR);
+                    $avg_trans = ($month_trans / $num_days) * 7;
+                    $sales->lastYearTransactions($avg_trans);
+                } else {
+                    $sales->lastYearTransactions(0);
                 }
-                $sales->save();
+
+                /**
+                  Sales last year, pro-rated
+                */
+                $twoQ = str_replace('__table__', $dlog2, $salesQ);
+                $twoP = $dbc->prepare($twoQ);
+                $twoR = $dbc->execute($twoP, $args);
+                while ($w = $dbc->fetch_row($twoR)) {
+                    $sales->obfCategoryID($w['id']);
+                    $sales->superID($w['superID']);
+                    $avg_sales = ($w['sales'] / $num_days) * 7;
+                    $sales->lastYearSales($avg_sales);
+                    if ($future) {
+                        $sales->actualSales(0);
+                        $labor = new ObfLaborModelV2($dbc);
+                        $labor->obfWeekID($week->obfWeekID());
+                        $labor->obfCategoryID($w['id']);
+                        foreach ($labor->find() as $l) {
+                            $sales->growthTarget($l->growthTarget());
+                        }
+                    }
+                    $sales->save();
+                }
             }
         }
 
@@ -346,20 +362,8 @@ class ObfWeeklyReport extends FannieReportPage
         $total_hours->quarterActual = 0.0;
         $total_hours->quarterProjected = 0.0;
 
-        /**
-          Information about wages. Fields are the same
-          as hours.
-        */
-        $total_wages = new stdClass();
-        $total_wages->actual = 0.0;
-        $total_wages->projected = 0.0;
-        $total_wages->trend = 0.0;
-        $total_wages->quarterActual = 0.0;
-        $total_wages->quarterProjected = 0.0;
-
         $qtd_sales_ou = 0;
         $qtd_hours_ou = 0;
-        $qtd_wages_ou = 0;
 
         /**
           Look up sales for the week in a given category
@@ -463,7 +467,7 @@ class ObfWeeklyReport extends FannieReportPage
           Examine OBF Categories that have sales. These will include
           both sales and labor information
         */
-        $categories = new ObfCategoriesModel($dbc);
+        $categories = new ObfCategoriesModelV2($dbc);
         $categories->hasSales(1);
         foreach ($categories->find('name') as $category) {
             $data[] = array($category->name(), '', '', '', '', '', '', '', '', '',
@@ -620,44 +624,8 @@ class ObfWeeklyReport extends FannieReportPage
             $total_hours->actual += $labor->hours();
             $qtd_hours_ou += ($quarter['hours'] - $qt_proj_hours);
 
-            $data[] = array(
-                'Wages',
-                '',
-                number_format($proj_wages, 0),
-                '',
-                number_format($trend_wages, 0),
-                number_format($labor->wages(), 0),
-                sprintf('%.2f%%', $this->percentGrowth($labor->wages(), $proj_wages)),
-                '',
-                number_format($labor->wages() - $proj_wages, 0),
-                number_format($quarter['wages'] - $qt_proj_labor, 0),
-                'meta' => FannieReportPage::META_COLOR,
-                'meta_background' => $colors[0],
-                'meta_foreground' => 'black',
-            );
-            $total_wages->actual += $labor->wages();
-            $total_wages->quarterActual += $quarter['wages'];
-            $qtd_wages_ou += ($quarter['wages'] - $qt_proj_labor);
-            $total_wages->projected += $proj_wages;
             $total_hours->projected += $proj_hours;
-            $total_wages->trend += $trend_wages;
             $total_hours->trend += $trend_hours;
-
-            $data[] = array(
-                '% of Sales',
-                '',
-                sprintf('%.2f%%', $proj_wages / $dept_proj * 100),
-                '',
-                sprintf('%.2f%%', $trend_wages / $dept_trend * 100),
-                sprintf('%.2f%%', $sum[0] == 0 ? 0 : $labor->wages() / $sum[0] * 100),
-                sprintf('%.2f%%', $this->percentGrowth(($sum[0] == 0 ? 0 : $labor->wages()/$sum[0]*100), ($proj_wages/$dept_proj*100))),
-                '',
-                '',
-                '',
-                'meta' => FannieReportPage::META_COLOR,
-                'meta_background' => $colors[0],
-                'meta_foreground' => 'black',
-            );
 
             $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($qtd_dept_sales)/($quarter['hours']);
             $quarter_proj_sph = ($qtd_dept_plan)/($qt_proj_hours);
@@ -707,8 +675,9 @@ class ObfWeeklyReport extends FannieReportPage
           Examine OBF Categories without sales. These will include
           only labor information
         */
-        $cat = new ObfCategoriesModel($dbc);
+        $cat = new ObfCategoriesModelV2($dbc);
         $cat->hasSales(0);
+        $cat->name('Admin', '<>');
         foreach ($cat->find('name') as $c) {
             $data[] = array($c->name(), '', '', '', '', '', '', '', '', '',
                         'meta' => FannieReportPage::META_BOLD | FannieReportPage::META_COLOR,
@@ -760,40 +729,6 @@ class ObfWeeklyReport extends FannieReportPage
             );
             $qtd_hours_ou += ($quarter['hours'] - $qt_proj_hours);
 
-            $data[] = array(
-                'Wages',
-                '',
-                number_format($proj_wages, 0),
-                '',
-                number_format($trend_wages, 0),
-                number_format($labor->wages(), 0),
-                '',
-                '',
-                number_format($labor->wages() - $proj_wages, 0),
-                number_format($quarter['wages'] - $qt_proj_labor, 0),
-                'meta' => FannieReportPage::META_COLOR,
-                'meta_background' => $colors[0],
-                'meta_foreground' => 'black',
-            );
-            $total_wages->quarterActual += $quarter['wages'];
-            $qtd_wages_ou += ($quarter['wages'] - $qt_proj_labor);
-
-            $data[] = array(
-                '% of Sales',
-                '',
-                sprintf('%.2f%%', $proj_wages / $total_sales->projected * 100),
-                '',
-                sprintf('%.2f%%', $trend_wages / $total_sales->trend * 100),
-                sprintf('%.2f%%', $total_sales->thisYear == 0 ? 0.00 : $labor->wages() / $total_sales->thisYear * 100),
-                '',
-                '',
-                '',
-                '',
-                'meta' => FannieReportPage::META_COLOR,
-                'meta_background' => $colors[0],
-                'meta_foreground' => 'black',
-            );
-
             $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($total_sales->quarterActual)/($quarter['hours']);
             $quarter_proj_sph = ($total_sales->quarterProjected)/($qt_proj_hours);
             $data[] = array(
@@ -815,10 +750,7 @@ class ObfWeeklyReport extends FannieReportPage
             $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
 
             $total_hours->actual += $labor->hours();
-            $total_wages->actual += $labor->wages();
-            $total_wages->projected += $proj_wages;
             $total_hours->projected += $proj_hours;
-            $total_wages->trend += $trend_wages;
             $total_hours->trend += $trend_hours;
 
             if (count($colors) > 1) {
@@ -861,72 +793,6 @@ class ObfWeeklyReport extends FannieReportPage
             '',
             number_format($total_hours->actual - $total_hours->projected, 0),
             number_format($qtd_hours_ou, 0),
-            'meta' => FannieReportPage::META_COLOR,
-            'meta_background' => $colors[0],
-            'meta_foreground' => 'black',
-        );
-
-        $data[] = array(
-            'Wages',
-            '',
-            number_format($total_wages->projected, 0),
-            '',
-            number_format($total_wages->trend, 0),
-            number_format($total_wages->actual, 0),
-            '',
-            '',
-            number_format($total_wages->actual - $total_wages->projected, 0),
-            number_format($qtd_wages_ou, 0),
-            'meta' => FannieReportPage::META_COLOR,
-            'meta_background' => $colors[0],
-            'meta_foreground' => 'black',
-        );
-
-        $data[] = array(
-            'Wages as % of Sales',
-            '',
-            sprintf('%.2f%%', $total_wages->projected / $total_sales->projected * 100),
-            '',
-            sprintf('%.2f%%', $total_wages->trend / $total_sales->trend * 100),
-            sprintf('%.2f%%', $total_sales->thisYear == 0 ? 0 : $total_wages->actual / $total_sales->thisYear * 100),
-            '',
-            '',
-            '',
-            '',
-            'meta' => FannieReportPage::META_COLOR,
-            'meta_background' => $colors[0],
-            'meta_foreground' => 'black',
-        );
-
-        $p_est = 0.32;
-        $data[] = array(
-            'Other Personnel Cost (est)',
-            '',
-            number_format($total_wages->projected * $p_est, 0),
-            '',
-            number_format($total_wages->trend * $p_est, 0),
-            number_format($total_wages->actual * $p_est, 0),
-            '',
-            '',
-            number_format(($total_wages->actual - $total_wages->projected) * $p_est, 0),
-            number_format($qtd_wages_ou * $p_est, 0),
-            'meta' => FannieReportPage::META_COLOR,
-            'meta_background' => $colors[0],
-            'meta_foreground' => 'black',
-        );
-
-        $p_est += 1.0;
-        $data[] = array(
-            'Total Personnel Cost (est)',
-            '',
-            number_format($total_wages->projected * $p_est, 0),
-            '',
-            number_format($total_wages->trend * $p_est, 0),
-            number_format($total_wages->actual * $p_est, 0),
-            '',
-            '',
-            number_format(($total_wages->actual - $total_wages->projected) * $p_est, 0),
-            number_format($qtd_wages_ou * $p_est, 0),
             'meta' => FannieReportPage::META_COLOR,
             'meta_background' => $colors[0],
             'meta_foreground' => 'black',
@@ -987,6 +853,132 @@ class ObfWeeklyReport extends FannieReportPage
         if (count($colors) > 1) {
             array_shift($colors);
         }
+
+        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
+        $cat = new ObfCategoriesModelV2($dbc);
+        $cat->hasSales(0);
+        $cat->name('Admin');
+        foreach ($cat->find('name') as $c) {
+            $data[] = array($c->name(), '', '', '', '', '', '', '', '', '',
+                        'meta' => FannieReportPage::META_BOLD | FannieReportPage::META_COLOR,
+                        'meta_background' => $colors[0],
+                        'meta_foreground' => 'black',
+            );
+            $labor->obfCategoryID($c->obfCategoryID());
+            $labor->load();
+
+            $quarter = $dbc->execute($quarterLaborP, 
+                array($week->obfLaborQuarterID(), $labor->obfCategoryID(), date('Y-m-d 00:00:00', $end_ts))
+            );
+            if ($dbc->num_rows($quarter) == 0) {
+                $quarter = array('hours'=>0, 'wages'=>0, 'laborTarget'=>0, 'hoursTarget'=>0);
+            } else {
+                $quarter = $dbc->fetch_row($quarter);
+            }
+            $qt_average_wage = $quarter['hours'] == 0 ? 0 : $quarter['wages'] / ((float)$quarter['hours']);
+            $qt_proj_hours = $total_sales->quarterProjected / $c->salesPerLaborHourTarget();
+            $qt_proj_labor = $qt_proj_hours * $qt_average_wage;
+            $total_hours->quarterActual += $quarter['hours'];
+            $total_hours->quarterProjected += $qt_proj_hours;
+
+            $average_wage = 0;
+            if ($labor->hours() != 0) {
+                $average_wage = $labor->wages() / ((float)$labor->hours());
+            }
+            // use SPLH instead of pre-allocated
+            $proj_hours = $total_sales->projected / $c->salesPerLaborHourTarget();
+            $proj_wages = $proj_hours * $average_wage;
+
+            $trend_hours = $total_sales->trend / $c->salesPerLaborHourTarget();
+            $trend_wages = $trend_hours * $average_wage;
+
+            $data[] = array(
+                'Hours',
+                '',
+                number_format($proj_hours, 0),
+                '',
+                number_format($trend_hours, 0),
+                number_format($labor->hours(), 0),
+                '',
+                '',
+                number_format($labor->hours() - $proj_hours, 0),
+                number_format($quarter['hours'] - $qt_proj_hours, 0),
+                'meta' => FannieReportPage::META_COLOR,
+                'meta_background' => $colors[0],
+                'meta_foreground' => 'black',
+            );
+            $qtd_hours_ou += ($quarter['hours'] - $qt_proj_hours);
+
+            $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($total_sales->quarterActual)/($quarter['hours']);
+            $quarter_proj_sph = ($total_sales->quarterProjected)/($qt_proj_hours);
+            $data[] = array(
+                'Sales per Hour',
+                '',
+                sprintf('%.2f', $total_sales->projected / $proj_hours),
+                '',
+                sprintf('%.2f', $total_sales->trend / $trend_hours),
+                number_format($labor->hours() == 0 ? 0 : $total_sales->thisYear / $labor->hours(), 2),
+                '',
+                '',
+                number_format(($labor->hours() == 0 ? 0 : $total_sales->thisYear/$labor->hours()) - ($total_sales->projected / $proj_hours), 2),
+                number_format($quarter_actual_sph - $quarter_proj_sph, 2),
+                'meta' => FannieReportPage::META_COLOR,
+                'meta_background' => $colors[0],
+                'meta_foreground' => 'black',
+            );
+
+            $total_hours->actual += $labor->hours();
+            $total_hours->projected += $proj_hours;
+            $total_hours->trend += $trend_hours;
+
+            if (count($colors) > 1) {
+                array_shift($colors);
+            }
+        }
+
+        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
+        /**
+           Organization totals section
+        */
+        $data[] = array('Total Organization', '', '', '', '', '', '', '', '', '',
+                        'meta' => FannieReportPage::META_BOLD | FannieReportPage::META_COLOR,
+                        'meta_background' => $colors[0],
+                        'meta_foreground' => 'black',
+        );
+
+        $data[] = array(
+            'Hours',
+            '',
+            number_format($total_hours->projected, 0),
+            '',
+            number_format($total_hours->trend, 0),
+            number_format($total_hours->actual, 0),
+            '',
+            '',
+            number_format($total_hours->actual - $total_hours->projected, 0),
+            number_format($qtd_hours_ou, 0),
+            'meta' => FannieReportPage::META_COLOR,
+            'meta_background' => $colors[0],
+            'meta_foreground' => 'black',
+        );
+
+        $quarter_actual_sph = $total_hours->quarterActual == 0 ? 0 : ($total_sales->quarterActual)/($total_hours->quarterActual);
+        $quarter_proj_sph = ($total_sales->quarterProjected)/($total_hours->quarterProjected);
+        $data[] = array(
+            'Sales per Hour',
+            '',
+            sprintf('%.2f', $total_sales->projected / $total_hours->projected),
+            '',
+            sprintf('%.2f', $total_sales->trend / $total_hours->trend),
+            number_format($total_hours->actual == 0 ? 0 : $total_sales->thisYear / $total_hours->actual, 2),
+            '',
+            '',
+            number_format(($total_hours->actual == 0 ? 0 : $total_sales->thisYear/$total_hours->actual) - ($total_sales->projected/$total_hours->projected), 2),
+            number_format($quarter_actual_sph - $quarter_proj_sph, 2),
+            'meta' => FannieReportPage::META_COLOR,
+            'meta_background' => $colors[0],
+            'meta_foreground' => 'black',
+        );
 
         $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
 
@@ -1092,13 +1084,13 @@ class ObfWeeklyReport extends FannieReportPage
     public function form_content()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
 
         $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="get">';
         $ret .= '<div class="form-group form-inline">
             <label>Week Starting</label>: 
             <select class="form-control" name="weekID">';
-        $model = new ObfWeeksModel($dbc);
+        $model = new ObfWeeksModelV2($dbc);
         foreach ($model->find('startDate', true) as $week) {
             $ret .= sprintf('<option value="%d">%s</option>',
                             $week->obfWeekID(),
@@ -1112,7 +1104,7 @@ class ObfWeeklyReport extends FannieReportPage
         $ret .= '</div>';
         $ret .= '</form>';
         $ret .= '<p><button class="btn btn-default"
-                onclick="location=\'ObfIndexPage.php\';return false;">Home</button>
+                onclick="location=\'ObfIndexPageV2.php\';return false;">Home</button>
                 </p>';
 
         return $ret;

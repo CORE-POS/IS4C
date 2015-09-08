@@ -28,20 +28,20 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class OpenBookFinancing extends \COREPOS\Fannie\API\FanniePlugin 
+class OpenBookFinancingV2 extends \COREPOS\Fannie\API\FanniePlugin 
 {
     public $plugin_settings = array(
-    'ObfDatabase' => array('default'=>'OpenBookFinancing','label'=>'Database',
+    'ObfDatabaseV2' => array('default'=>'OpenBookFinancingV2','label'=>'Database',
             'description'=>'Database for storing OBF info'),
     );
 
-    public $plugin_description = 'WFC Plugin for weekly Open Book Financing. Deprecated. See OpenBookFinancingV2.';
+    public $plugin_description = 'WFC Plugin for weekly Open Book Financing';
 
-    public function settingChange()
+    public function setting_change()
     {
         global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
-        $db_name = $FANNIE_PLUGIN_SETTINGS['ObfDatabase'];
+        $db_name = $FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2'];
         if (empty($db_name)) return;
 
         // Creates the database if it doesn't already exist.
@@ -57,7 +57,7 @@ class OpenBookFinancing extends \COREPOS\Fannie\API\FanniePlugin
         );
 
         foreach($tables as $t){
-            $model_class = $t.'Model';
+            $model_class = $t.'ModelV2';
             if (!class_exists($model_class))
                 include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
             $instance = new $model_class($dbc);

@@ -20,8 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-header('Location: ../OpenBookFinancingV2/ObfWeekEntryPageV2.php');
-return;
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
@@ -30,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class ObfWeekEntryPage extends FannieRESTfulPage 
+class ObfWeekEntryPageV2 extends FannieRESTfulPage 
 {
     protected $title = 'OBF: Weeks';
     protected $header = 'OBF: Weeks';
@@ -90,7 +88,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
     public function post_handler()
     {
         global $FANNIE_PLUGIN_SETTINGS;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
 
         $date1 = FormLib::get('date1');
         $date2 = FormLib::get('date2');
@@ -98,7 +96,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $end_ts = strtotime($date1);
         $prev_ts = strtotime($date2);
 
-        $model = new ObfWeeksModel($dbc);
+        $model = new ObfWeeksModelV2($dbc);
         $model->startDate(date('Y-m-d', mktime(0, 0, 0, date('n', $end_ts), date('j', $end_ts)-6, date('Y', $end_ts))));
         $model->endDate(date('Y-m-d', $end_ts));
         $exists = $model->find();
@@ -121,7 +119,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
     public function post_id_handler()
     {
         global $FANNIE_PLUGIN_SETTINGS;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
 
         $date1 = FormLib::get('date1');
         $date2 = FormLib::get('date2');
@@ -129,7 +127,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $end_ts = strtotime($date1);
         $prev_ts = strtotime($date2);
 
-        $model = new ObfWeeksModel($dbc);
+        $model = new ObfWeeksModelV2($dbc);
         $model->obfWeekID($this->id);
         $model->startDate(date('Y-m-d', mktime(0, 0, 0, date('n', $end_ts), date('j', $end_ts)-6, date('Y', $end_ts))));
         $model->endDate(date('Y-m-d', $end_ts));
@@ -144,10 +142,10 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $wages = FormLib::get('wages', array());
         $weeks = FormLib::get('weekID', array());
         $cats = FormLib::get('catID', array());
-        $goals = FormLib::get('labor', array());
-        $alloc = FormLib::get('alloc', array());
+        $goals = FormLib::get('lgrowth', array());
+        $splh = FormLib::get('lsplh', array());
         $sales = FormLib::get('sales', array());
-        $model = new ObfLaborModel($dbc);
+        $model = new ObfLaborModelV2($dbc);
         for($i=0;$i<count($cats);$i++) {
             $model->reset();
             $model->obfCategoryID($cats[$i]);
@@ -157,8 +155,8 @@ class ObfWeekEntryPage extends FannieRESTfulPage
             $model->obfWeekID($weeks[$i]);
             $model->hours( isset($hours[$i]) ? $hours[$i] : 0 );
             $model->wages( isset($wages[$i]) ? $wages[$i] : 0 );
-            $model->laborTarget( isset($goals[$i]) ? $goals[$i] / 100.00 : 0 );
-            $model->hoursTarget( isset($alloc[$i]) ? $alloc[$i] : 0 );
+            $model->growthTarget( isset($goals[$i]) ? $goals[$i] / 100.00 : 0 );
+            $model->splhTarget( isset($splh[$i]) ? $splh[$i] : 0 );
             $model->forecastSales(sprintf('%d', isset($sales[$i]) ? $sales[$i] : 0));
             $model->save();
         }
@@ -174,8 +172,8 @@ class ObfWeekEntryPage extends FannieRESTfulPage
     {
         global $FANNIE_PLUGIN_SETTINGS;
         if ($this->id != 0) {
-            $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
-            $this->weekModel = new ObfWeeksModel($dbc);
+            $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
+            $this->weekModel = new ObfWeeksModelV2($dbc);
             $this->weekModel->obfWeekID($this->id);
             $this->weekModel->load();
         }
@@ -186,11 +184,11 @@ class ObfWeekEntryPage extends FannieRESTfulPage
     public function get_view()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
 
-        $model = new ObfWeeksModel($dbc);
+        $model = new ObfWeeksModelV2($dbc);
         if (!is_object($this->weekModel)) {
-            $this->weekModel = new ObfWeeksModel($dbc);
+            $this->weekModel = new ObfWeeksModelV2($dbc);
             $quarterID = '';
             $laborID = '';
             foreach ($this->weekModel->find('endDate', true) as $w) {
@@ -217,7 +215,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
                 <lablel>Week Ending</label>: ' . $select
                 . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
                 . '<button type="button" class="btn btn-default"
-                    onclick="location=\'ObfIndexPage.php\';return false;">Home</button>'
+                    onclick="location=\'ObfIndexPageV2.php\';return false;">Home</button>'
                 . '</div>';
 
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
@@ -248,7 +246,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
                     value="' . sprintf('%.2f', $this->weekModel->growthTarget() * 100) . '" />
                 <span class="input-group-addon">%</span></div></td>';
         $ret .= '<td><select name="quarter" class="form-control">';
-        $quarters = new ObfQuartersModel($dbc);
+        $quarters = new ObfQuartersModelV2($dbc);
         foreach ($quarters->find('obfQuarterID', true) as $q) {
             $ret .= sprintf('<option %s value="%d">%s %s</option>',
                         ($q->obfQuarterID() == $this->weekModel->obfQuarterID() ? 'selected' : ''),
@@ -256,7 +254,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         }
         $ret .= '</select></td>';
         $ret .= '<td><select name="labor-quarter" class="form-control">';
-        $quarters = new ObfQuartersModel($dbc);
+        $quarters = new ObfQuartersModelV2($dbc);
         foreach ($quarters->find('obfQuarterID', true) as $q) {
             $ret .= sprintf('<option %s value="%d">%s %s</option>',
                         ($q->obfQuarterID() == $this->weekModel->obfLaborQuarterID() ? 'selected' : ''),
@@ -274,22 +272,19 @@ class ObfWeekEntryPage extends FannieRESTfulPage
             $ret .= '<hr />';
             $ret .= '<table class="table">';
             $ret .= '<tr><th>Group</th><th>Hours</th><th>Wages</th>
-                    <th>Labor Goal</th><th>Allocated Hours</th><th>Sales Forecast</th></tr>';
-            $categories = new ObfCategoriesModel($dbc);
-            $labor = new ObfLaborModel($dbc);
+                    <th>Growth Goal</th><th>SPLH Goal</th><th>Sales Forecast</th></tr>';
+            $categories = new ObfCategoriesModelV2($dbc);
+            $labor = new ObfLaborModelV2($dbc);
             foreach($categories->find() as $obj) {
                 $labor->reset();
                 $labor->obfWeekID($this->weekModel->obfWeekID());
                 $labor->obfCategoryID($obj->obfCategoryID());
                 $labor->load();
-                if ($labor->laborTarget() == 0) {
-                    $labor->laborTarget($obj->laborTarget());
+                if ($labor->growthTarget() == 0) {
+                    $labor->growthTarget($obj->growthTarget());
                 }
-                if ($labor->averageWage() == 0) {
-                    $labor->averageWage($obj->averageWage());
-                }
-                if ($labor->hoursTarget() == 0) {
-                    $labor->hoursTarget($obj->hoursTarget());
+                if ($labor->splhTarget() == 0) {
+                    $labor->splhTarget($obj->salesPerLaborHourTarget());
                 }
                 $ret .= sprintf('<tr>
                             <td>%s</td>
@@ -299,10 +294,10 @@ class ObfWeekEntryPage extends FannieRESTfulPage
                                 <input type="text" class="form-control" name="wages[]" value="%.2f" />
                             </div></td>
                             <td><div class="input-group">
-                                <input type="text" class="form-control" name="labor[]" value="%.2f" />
+                                <input type="text" class="form-control" name="lgrowth[]" value="%.2f" />
                                 <span class="input-group-addon">%%</span>
                             </div></td>
-                            <td><input type="text" class="form-control" name="alloc[]" value="%d" /></td>
+                            <td><input type="text" class="form-control" name="lsplh[]" value="%d" /></td>
                             <td><div class="input-group">
                                 <span class="input-group-addon">$</span>
                                 <input type="text" class="form-control" name="sales[]" %s value="%s" />
@@ -313,8 +308,8 @@ class ObfWeekEntryPage extends FannieRESTfulPage
                             $obj->name(),
                             $labor->hours(),
                             $labor->wages(),
-                            $labor->laborTarget() * 100,
-                            $labor->hoursTarget(),
+                            $labor->growthTarget() * 100,
+                            $labor->splhTarget(),
                             ($obj->hasSales() ? '' : 'disabled'),
                             ($obj->hasSales() ? round($labor->forecastSales()) : 'n/a'),
                             $labor->obfWeekID(),

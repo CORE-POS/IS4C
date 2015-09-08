@@ -20,8 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-header('Location: ../OpenBookFinancingV2/ObfQuarterEntryPageV2.php');
-return;
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
@@ -30,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class ObfQuarterEntryPage extends FannieRESTfulPage 
+class ObfQuarterEntryPageV2 extends FannieRESTfulPage 
 {
     protected $title = 'OBF: Quarters';
     protected $header = 'OBF: Quarters';
@@ -56,9 +54,9 @@ class ObfQuarterEntryPage extends FannieRESTfulPage
     public function post_id_handler()
     {
         global $FANNIE_PLUGIN_SETTINGS;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
 
-        $model = new ObfQuartersModel($dbc);
+        $model = new ObfQuartersModelV2($dbc);
         if ($this->id !== '') {
             $model->obfWeekID($this->id);
         }
@@ -83,8 +81,8 @@ class ObfQuarterEntryPage extends FannieRESTfulPage
     {
         global $FANNIE_PLUGIN_SETTINGS;
         if ($this->id != 0) {
-            $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
-            $this->currentModel = new ObfQuartersModel($dbc);
+            $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
+            $this->currentModel = new ObfQuartersModelV2($dbc);
             $this->currentModel->obfQuarterID($this->id);
             $this->currentModel->load();
         }
@@ -97,11 +95,11 @@ class ObfQuarterEntryPage extends FannieRESTfulPage
     public function get_view()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
 
-        $model = new ObfQuartersModel($dbc);
+        $model = new ObfQuartersModelV2($dbc);
         if (!is_object($this->currentModel)) {
-            $this->currentModel = new ObfQuartersModel($dbc);
+            $this->currentModel = new ObfQuartersModelV2($dbc);
         }
         $select = '<select name="id" class="form-control" 
                     onchange="location=\'' . $_SERVER['PHP_SELF'] . '?id=\' + this.value;">';
@@ -118,7 +116,7 @@ class ObfQuarterEntryPage extends FannieRESTfulPage
                 <label>Quarter</label>: ' . $select 
                 . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
                 . '<button type="button" class="btn btn-default"
-                    onclick="location=\'ObfIndexPage.php\';return false;">Home</button>'
+                    onclick="location=\'ObfIndexPageV2.php\';return false;">Home</button>'
                 . '</div>';
 
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';

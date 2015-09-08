@@ -20,8 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-header('Location: ../OpenBookFinancingV2/ObfMappingPageV2.php');
-return;
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
@@ -30,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class ObfMappingPage extends FannieRESTfulPage 
+class ObfMappingPageV2 extends FannieRESTfulPage 
 {
     protected $title = 'OBF: Department Mapping';
     protected $header = 'OBF: Department Mapping';
@@ -51,9 +49,9 @@ class ObfMappingPage extends FannieRESTfulPage
     public function post_add_cat_handler()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
 
-        $map = new ObfCategorySuperDeptMapModel($dbc);
+        $map = new ObfCategorySuperDeptMapModelV2($dbc);
         $map->obfCategoryID($this->cat);
         $map->superID($this->add);
         $map->save();
@@ -67,9 +65,9 @@ class ObfMappingPage extends FannieRESTfulPage
     public function post_id_superID_growth_handler()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
 
-        $map = new ObfCategorySuperDeptMapModel($dbc);
+        $map = new ObfCategorySuperDeptMapModelV2($dbc);
         for ($i=0; $i<count($this->id); $i++) {
             if (!isset($this->superID[$i])) {
                 continue;
@@ -98,12 +96,12 @@ class ObfMappingPage extends FannieRESTfulPage
     public function get_view()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL, $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
 
-        $model = new ObfCategoriesModel($dbc);
+        $model = new ObfCategoriesModelV2($dbc);
         $model->hasSales(1);
 
-        $map = new ObfCategorySuperDeptMapModel($dbc);
+        $map = new ObfCategorySuperDeptMapModelV2($dbc);
 
         $supers = 'SELECT s.superID, s.super_name
                    FROM ' . $FANNIE_OP_DB . $dbc->sep() . 'superDeptNames AS s
@@ -165,7 +163,7 @@ class ObfMappingPage extends FannieRESTfulPage
         $ret .= '<p><button type="submit" class="btn btn-default">Add New Mapping</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<button type="button" class="btn btn-default"
-                onclick="location=\'ObfIndexPage.php\';return false;">Home</button></p>';
+                onclick="location=\'ObfIndexPageV2.php\';return false;">Home</button></p>';
         $ret .= '</form>';
         $ret .= '</div>';
         $ret .= '<div class="panel-footer">Note: percentages are sales growth targets for categories</div>';

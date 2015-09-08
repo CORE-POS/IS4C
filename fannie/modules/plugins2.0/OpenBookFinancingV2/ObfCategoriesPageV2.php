@@ -20,8 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-header('Location: ../OpenBookFinancingV2/ObfCategoriesPageV2.php');
-return;
 
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
@@ -30,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class ObfCategoriesPage extends FannieRESTfulPage 
+class ObfCategoriesPageV2 extends FannieRESTfulPage 
 {
     protected $title = 'OBF: Categories';
     protected $header = 'OBF: Categories';
@@ -42,13 +40,13 @@ class ObfCategoriesPage extends FannieRESTfulPage
     public function post_id_handler()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
-        $model = new ObfCategoriesModel($dbc);
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
+        $model = new ObfCategoriesModelV2($dbc);
 
         $ids = FormLib::get('id', array());
         $names = FormLib::get('cat', array());
         $sales = FormLib::get('hasSales', array());
-        $labor = FormLib::get('labor', array());
+        $growth = FormLib::get('growth', array());
         $hours = FormLib::get('hours', array());
         $splh = FormLib::get('splh', array());
         for ($i=0; $i<count($ids); $i++) {
@@ -56,8 +54,7 @@ class ObfCategoriesPage extends FannieRESTfulPage
             $model->obfCategoryID($ids[$i]);
             $model->name($names[$i]);
             $model->hasSales( in_array($ids[$i], $sales) ? 1 : 0 );
-            $model->laborTarget($labor[$i] / 100.00);
-            $model->hoursTarget($hours[$i]);
+            $model->growthTarget($growth[$i] / 100.00);
             $model->salesPerLaborHourTarget($splh[$i]);
             $model->save();
         }
@@ -70,8 +67,8 @@ class ObfCategoriesPage extends FannieRESTfulPage
     public function put_handler()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
-        $model = new ObfCategoriesModel($dbc);
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
+        $model = new ObfCategoriesModelV2($dbc);
         $model->name('New Category');
         $model->save();
         
@@ -83,12 +80,12 @@ class ObfCategoriesPage extends FannieRESTfulPage
     public function get_view()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
 
-        $model = new ObfCategoriesModel($dbc);
+        $model = new ObfCategoriesModelV2($dbc);
 
         $ret = '<p><button class="btn btn-default"
-                onclick="location=\'ObfIndexPage.php\';return false;">Home</button>
+                onclick="location=\'ObfIndexPageV2.php\';return false;">Home</button>
                 </p>';
 
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
@@ -96,8 +93,7 @@ class ObfCategoriesPage extends FannieRESTfulPage
         $ret .= '<tr>
                     <th>Name</th>
                     <th>Has Sales</th>
-                    <th>Labor Goal</th>
-                    <th>Allocated Hours</th>
+                    <th>Sales Growth Goal</th>
                     <th>SPLH Goal</th>
                  </tr>';
         foreach($model->find() as $cat) {
@@ -106,17 +102,15 @@ class ObfCategoriesPage extends FannieRESTfulPage
                             <td><input type="text" name="cat[]" class="form-control" required value="%s" /></td>
                             <td><input type="checkbox" name="hasSales[]" value="%d" %s /></td>
                             <td><div class="input-group">
-                                <input type="text" class="form-control" required name="labor[]" value="%.2f" />
+                                <input type="text" class="form-control" required name="growth[]" value="%.2f" />
                                 <span class="input-group-addon">%%</span>
                             </div></td>
-                            <td><input type="number" class="form-control" required name="hours[]" value="%d" /></td>
                             <td><input type="number" class="form-control" required name="splh[]" value="%.2f" /></td>
                             </tr>',
                             $cat->obfCategoryID(),
                             $cat->name(),
                             $cat->obfCategoryID(), ($cat->hasSales() == 1 ? 'checked' : ''),
-                            $cat->laborTarget()*100,
-                            $cat->hoursTarget(),
+                            $cat->growthTarget() * 100,
                             $cat->salesPerLaborHourTarget()
             );
         }
