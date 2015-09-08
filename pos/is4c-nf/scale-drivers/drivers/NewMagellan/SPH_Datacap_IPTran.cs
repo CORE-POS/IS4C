@@ -384,6 +384,8 @@ public class SPH_Datacap_IPTran : SerialPortHandler
             case "VX805XPI":
             case "VX805XPI_MERCURY_E2E":
                 return "EMV_VX805_MERCURY";
+            case "ONTRAN";
+                return "ONTRAN";
             default:
                 return "EMV_" + device;
         }
