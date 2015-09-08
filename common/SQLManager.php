@@ -1150,6 +1150,9 @@ class SQLManager
         }
 
         $conn = $this->connections[$which_connection];
+        if (!is_object($conn)) {
+            return false;
+        }
         $cols = $conn->MetaColumns($table_name);
         if ($cols === false) {
             return false;
