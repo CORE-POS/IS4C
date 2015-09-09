@@ -51,10 +51,8 @@ class DeleteItemPage extends FannieRESTfulPage
 
         $model = new ProductsModel($dbc);
         $model->upc($upc);
-        $stores = new StoresModel($dbc);
-        foreach ($stores->find() as $s) {
-            $model->store_id($s->storeID());
-            $model->delete();
+        foreach ($model->find('store_id') as $obj) {
+            $obj->delete();
         }
 
         if (substr($upc, 0, 3) == '002') {
