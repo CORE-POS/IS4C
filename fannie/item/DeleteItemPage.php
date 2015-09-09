@@ -32,6 +32,7 @@ class DeleteItemPage extends FannieRESTfulPage
     protected $title = 'Delete Item';
 
     public $description = '[Delete item] removes an item from the system.';
+    public $has_unit_tests = true;
 
     protected $must_authenticate = true;
     protected $auth_classes = array('delete_items');
@@ -113,6 +114,32 @@ class DeleteItemPage extends FannieRESTfulPage
 </div>
 </form>
 HTML;
+    }
+
+    /**
+      Delete test requires sample product
+      data loaded successfully.
+    */
+    public function unitTest($phpunit)
+    {
+        $get = $this->get_view();
+        $phpunit->assertNotEquals(0, strlen($get));
+
+        $this->id = '0978097646766';
+        $get_id = $this->get_id_view();
+        $phpunit->assertNotEquals(0, strlen($get_id));
+
+        $this->connection->selectDB($this->config->get('OP_DB'));
+
+        $res = $this->connection->query('SELECT * FROM products WHERE upc=\'' . $this->id . '\'');
+        $phpunit->assertNotEquals(0, $this->connection->numRows($res));
+
+        $this->confirm = 1;
+        $get_id_confirm = $this->get_id_confirm_view();
+        $phpunit->assertNotEquals(0, strlen($get_id_confirm_view));
+
+        $res = $this->connection->query('SELECT * FROM products WHERE upc=\'' . $this->id . '\'');
+        $phpunit->assertEquals(0, $this->connection->numRows($res));
     }
 }
 

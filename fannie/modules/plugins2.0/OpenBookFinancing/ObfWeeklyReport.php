@@ -30,7 +30,9 @@ class ObfWeeklyReport extends FannieReportPage
 {
     public function preprocess()
     {
-        header('Location: ../OpenBookFinancingV2/ObfWeeklyReportV2.php');
+        if (!headers_sent()) {
+            header('Location: ../OpenBookFinancingV2/ObfWeeklyReportV2.php');
+        }
         return false;
     }
 

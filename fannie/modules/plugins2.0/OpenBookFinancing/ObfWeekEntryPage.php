@@ -32,7 +32,9 @@ class ObfWeekEntryPage extends FannieRESTfulPage
 {
     public function preprocess()
     {
-        header('Location: ../OpenBookFinancingV2/ObfWeekEntryPageV2.php');
+        if (!headers_sent()) {
+            header('Location: ../OpenBookFinancingV2/ObfWeekEntryPageV2.php');
+        }
         return false;
     }
 

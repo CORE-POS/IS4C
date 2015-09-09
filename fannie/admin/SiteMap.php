@@ -43,13 +43,11 @@ class SiteMap extends FannieRESTfulPage
         global $FANNIE_ROOT, $FANNIE_URL;
         $pages = FannieAPI::listModules('FanniePage');
         $sets = array();
-        $theme_stats = array(
+        $help = array(
             'done' => 0,
             'total' => 0,
-            'plugin' => 0,
-            'plugin_done' => 0,
         );
-        $help = array(
+        $test_stats = array(
             'done' => 0,
             'total' => 0,
         );
@@ -66,18 +64,7 @@ class SiteMap extends FannieRESTfulPage
             $sets[$obj->page_set][$p] = array(
                'url' => $url,
                'info' => $obj->description, 
-               'themed' => $obj->themed ? 'alert-success' : 'alert-danger',
             );
-            $theme_stats['total']++;
-            if ($obj->themed) {
-                $theme_stats['done']++;
-            }
-            if (strstr($obj->page_set, 'Plugin')) {
-                $theme_stats['plugin']++;
-                if ($obj->themed) {
-                    $theme_stats['plugin_done']++;
-                }
-            }
             $help['total']++;
             if ($obj->helpContent() && substr($obj->helpContent(),0,17) != '<!-- need doc -->') {
                 $help['done']++;
@@ -85,16 +72,21 @@ class SiteMap extends FannieRESTfulPage
             } else {
                 $sets[$obj->page_set][$p]['help'] = 'alert-danger';
             }
+            $test_stats['total']++;
+            if ($obj->has_unit_tests) {
+                $test_stats['done']++;
+                $sets[$obj->page_set][$p]['test'] = 'alert-success';
+            } else {
+                $sets[$obj->page_set][$p]['test'] = 'alert-danger';
+            }
         }
 
         $ret = '';
         $ret .= '<div class="alert alert-info">';
-        $ret .= sprintf('New UI completion percent: <strong>%.2f%%</strong><br />', 
-            ((float)$theme_stats['done']) / $theme_stats['total'] * 100);
-        $ret .= sprintf('Excluding plugins: <strong>%.2f%%</strong><br />', 
-            ((float)($theme_stats['done']-$theme_stats['plugin_done'])) / ($theme_stats['total'] - $theme_stats['plugin']) * 100);
         $ret .= sprintf('New UI help content percent: <strong>%.2f%%</strong><br />', 
             ((float)$help['done']) / $help['total'] * 100);
+        $ret .= sprintf('Unit test coverage for pages: <strong>%.2f%%</strong><br />', 
+            ((float)$test_stats['done']) / $test_stats['total'] * 100);
         $ret .= '</div>';
 
         $keys = array_keys($sets);
@@ -112,10 +104,14 @@ class SiteMap extends FannieRESTfulPage
                 if ($linked === $description) {
                     $linked .= ' (<a href="' . $url . '">Link</a>)';
                 }
-                $ret .= sprintf('<li>%s <span class="%s">Themed</span> <span class="%s">Help</span></li>',
+                $ret .= sprintf('<li>%s 
+                    <span class="%s">Help</span>
+                    <span class="%s">Tested</span>
+                    </li>',
                     $linked,
-                    $sets[$set_name][$page_key]['themed'],
-                    $sets[$set_name][$page_key]['help']);
+                    $sets[$set_name][$page_key]['help'],
+                    $sets[$set_name][$page_key]['test']
+                );
             }
             $ret .= '</ul>';
             $ret .= '</li>';

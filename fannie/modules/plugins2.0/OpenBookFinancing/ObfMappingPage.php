@@ -40,7 +40,9 @@ class ObfMappingPage extends FannieRESTfulPage
 
     public function preprocess()
     {
-        header('Location: ../OpenBookFinancingV2/ObfMappingPageV2.php');
+        if (!headers_sent()) {
+            header('Location: ../OpenBookFinancingV2/ObfMappingPageV2.php');
+        }
         return false;
         $this->__routes[] = 'post<id><superID><growth>';
         $this->__routes[] = 'post<add><cat>';

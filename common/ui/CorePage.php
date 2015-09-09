@@ -42,6 +42,7 @@ class CorePage
     public $page_set = 'Misc';
     public $doc_link = '';
     protected $window_dressing = true;
+    public $has_unit_tests = false;
 
     /**
       Instance of DB connection object
