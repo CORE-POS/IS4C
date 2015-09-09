@@ -22,17 +22,17 @@
 *********************************************************************************/
 
 class WFCFixup extends PreParser {
-	var $remainder;
-	
-	function check($str)
+    var $remainder;
+    
+    function check($str)
     {
         $as_upc = str_pad($str, 13, '0', STR_PAD_LEFT);
-		if (substr($str,-3) == "QK9"){
-			$this->remainder = str_replace("QK9","QM9",$str);
-			return True;
-		} else if (substr($str,-4) == "QK10"){
-			$this->remainder = str_replace("QK10","QM10",$str);
-			return True;
+        if (substr($str,-3) == "QK9"){
+            $this->remainder = str_replace("QK9","QM9",$str);
+            return True;
+        } else if (substr($str,-4) == "QK10"){
+            $this->remainder = str_replace("QK10","QM10",$str);
+            return True;
         } else if ($str == 'MA' || $str == 'OB') {
             // re-write old WFC quarterly coupon as houseCoupon UPC
             $this->remainder = '0049999900001';
@@ -50,29 +50,29 @@ class WFCFixup extends PreParser {
             $this->remainder = '0049999900048';
             return true;
         }
-		return False;
-	}
+        return False;
+    }
 
-	function parse($str){
-		return $this->remainder;
-	}
+    function parse($str){
+        return $this->remainder;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td><i>discount</i>DI<i>item</i></td>
-				<td>Set a percent discount <i>discount</i>
-				for just one item <i>item</i></td>
-			</tr>
-			<tr>
-				<td><i>discount</i>PD<i>item</i></td>
-				<td>Same as DI above</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td><i>discount</i>DI<i>item</i></td>
+                <td>Set a percent discount <i>discount</i>
+                for just one item <i>item</i></td>
+            </tr>
+            <tr>
+                <td><i>discount</i>PD<i>item</i></td>
+                <td>Same as DI above</td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>
