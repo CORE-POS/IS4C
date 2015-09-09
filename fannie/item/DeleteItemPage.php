@@ -136,7 +136,7 @@ HTML;
 
         $this->confirm = 1;
         $get_id_confirm = $this->get_id_confirm_view();
-        $phpunit->assertNotEquals(0, strlen($get_id_confirm_view));
+        $phpunit->assertNotEquals(0, strlen($get_id_confirm));
 
         $res = $this->connection->query('SELECT * FROM products WHERE upc=\'' . $this->id . '\'');
         $phpunit->assertEquals(0, $this->connection->numRows($res));
