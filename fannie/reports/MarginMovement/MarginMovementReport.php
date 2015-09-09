@@ -187,7 +187,7 @@ class MarginMovementReport extends FannieReportPage
 
     public function form_content()
     {
-        $form = FormLib::dateAndDepartmentForm($d_list, $s_list);
+        $form = FormLib::dateAndDepartmentForm();
 
         /** add one extra field **/
         $checkbox = '<div class=col-sm-5>'
