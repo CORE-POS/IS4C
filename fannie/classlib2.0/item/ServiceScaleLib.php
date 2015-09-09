@@ -142,7 +142,7 @@ class ServiceScaleLib
     static private function getSingletonModel()
     {
         if (self::$model === null) {
-            $model = new \ServiceScalesModel(\FannieDB::get($config->get('OP_DB')));
+            $model = new \ServiceScalesModel(\FannieDB::get(\FannieConfig::config('OP_DB')));
         }
 
         return $model;
