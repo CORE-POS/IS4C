@@ -86,6 +86,7 @@ class ScheduledEmailSendTask extends FannieTask
             }
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $this->cronMsg('Member does not have valid email address: ' . $row['cardNo']);
+                $dbc->execute($failP, array('no email address', $row['scheduledEmailQueueID']));
                 continue;
             }
             $data = json_decode($row['templateData'], true);
@@ -98,6 +99,9 @@ class ScheduledEmailSendTask extends FannieTask
 
             if (self::sendEmail($template, $email, $data)) {
                 $dbc->execute($sentP, array($email, $row['scheduledEmailQueueID']));
+                if ($row['scheduledEmailTemplateID'] == 3) {
+                    break;
+                }
             } else {
                 $dbc->execute($failP, array('error sending', $row['scheduledEmailQueueID']));
             }
@@ -125,6 +129,7 @@ class ScheduledEmailSendTask extends FannieTask
         $mail->FromName = $settings['ScheduledEmailFromName'];
         $mail->addReplyTo($settings['ScheduledEmailReplyTo']);
         $mail->addAddress($address);
+        $mail->addBCC('andy@wholefoods.coop');
         $mail->Subject = $template->subject();
         if ($template->hasHTML()) {
             $mail->isHTML(true);
