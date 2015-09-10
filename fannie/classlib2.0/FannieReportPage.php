@@ -960,8 +960,7 @@ class FannieReportPage extends FanniePage
                 $row[$i] = '&nbsp;';
             } elseif (is_numeric($row[$i]) && strlen($row[$i]) == 13) {
                 // auto-link UPCs to edit tool
-                $row[$i] = sprintf('<a target="_new%s" href="%sitem/itemMaint.php?upc=%s">%s</a>',
-                    $row[$i],$url,$row[$i],$row[$i]);
+                $row[$i] = \COREPOS\Fannie\API\lib\FannieUI::itemEditorLink($row[$i]);
             } else if (!$header && !$date && preg_match('/^\d\d\d\d-\d\d-\d\d$/', $row[$i])) {
                 // cell contains a date column
                 $date = $row[$i];
