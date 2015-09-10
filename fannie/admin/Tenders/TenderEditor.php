@@ -137,7 +137,7 @@ class TenderEditor extends FannieRESTfulPage
             echo "Error: Refund limit must be a number";
         } else {
             $model = $this->getTenderModel($this->id);
-            $model->RefundLimit($this->saveRLimit);
+            $model->MaxRefund($this->saveRLimit);
             $model->save();
         }
 
@@ -538,7 +538,7 @@ JAVASCRIPT;
         $this->saveRLimit = 25;
         $phpunit->assertInternalType('bool', $this->post_id_saveRLimit_handler());
         $model->load();
-        $phpunit->assertEquals(25, $model->RefundLimit());
+        $phpunit->assertEquals(25, $model->MaxRefund());
 
         $this->saveSalesCode = 2500;
         $phpunit->assertInternalType('bool', $this->post_id_saveSalesCode_handler());
