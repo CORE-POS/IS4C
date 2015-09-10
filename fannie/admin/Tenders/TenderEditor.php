@@ -169,7 +169,7 @@ class TenderEditor extends FannieRESTfulPage
             if (!empty($idW[0])) $newID = $idW[0] + 1;
         }
 
-        $model->reset();
+        $model = new TendersModel($dbc);
         $model->TenderID($newID);
         $model->TenderName('NEW TENDER');
         $model->TenderType('CA');
