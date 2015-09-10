@@ -521,7 +521,7 @@ function noEnter(e) {
         $form->startDate = date('Y-m-d');
         $form->endDate = date('Y-m-d');
         $form->batchName = 'Test BatchFromSearch';
-        $form->batchType = 1;
+        $form->batchType = 3; // price change batch means tags get created
         $form->batchOwner = 'IT';
         $form->price = array(1.99);
         $form->tagset = 1;
