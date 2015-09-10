@@ -130,7 +130,7 @@ messages from POS?',
                 'EMV' => 1,
                 'Credit/Debit' => 0,
                 'EMV (en-ca)' => 2,
-                'EMV (en-fr)' => 3,
+                'EMV (fr-ca)' => 3,
                 )
         ),
         'PaycardsDatacapLanHost' => array(
