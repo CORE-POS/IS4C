@@ -1379,8 +1379,12 @@ class MercuryE2E extends BasicCCModule
             <RecordNo>RecordNumberRequested</RecordNo>
             <Frequency>OneTime</Frequency>';
         if ($type == 'EMV') { // add EMV specific fields
+            $dc_host = CoreLocal::get('PaycardsDatacapLanHost');
+            if (empty($dc_host)) {
+                $dc_host = '127.0.0.1';
+            }
             $msgXml .= '
-            <HostOrIP>' . '127.0.0.1' . '</HostOrIP>
+            <HostOrIP>' . $dc_host . '</HostOrIP>
             <SequenceNo>{{SequenceNo}}</SequenceNo>
             <CollectData>CardholderName</CollectData>
             <Memo>CORE POS 1.0.0 EMVX</Memo>
@@ -1390,6 +1394,11 @@ class MercuryE2E extends BasicCCModule
                     <Account>
                         <AcctNo>Prompt</AcctNo>
                     </Account>';
+            }
+            if (CoreLocal::get('PaycardsDatacapMode') == 2) {
+                $msgXml .= '<MerchantLanguage>English</MerchantLanguage>';
+            } elseif (CoreLocal::get('PaycardsDatacapMode') == 3) {
+                $msgXml .= '<MerchantLanguage>French</MerchantLanguage>';
             }
         } else {
             $msgXml .= '
@@ -1548,12 +1557,21 @@ class MercuryE2E extends BasicCCModule
             <RecordNo>RecordNumberRequested</RecordNo>
             <Frequency>OneTime</Frequency>';
         if ($tran_type == 'EMV') { // add EMV specific fields
+            $dc_host = CoreLocal::get('PaycardsDatacapLanHost');
+            if (empty($dc_host)) {
+                $dc_host = '127.0.0.1';
+            }
             $msgXml .= '
-            <HostOrIP>' . '127.0.0.1' . '</HostOrIP>
+            <HostOrIP>' . $dc_host . '</HostOrIP>
             <SequenceNo>{{SequenceNo}}</SequenceNo>
             <CollectData>CardholderName</CollectData>
             <Memo>CORE POS 1.0.0 EMVX</Memo>
             <PartialAuth>Allow</PartialAuth>';
+            if (CoreLocal::get('PaycardsDatacapMode') == 2) {
+                $msgXml .= '<MerchantLanguage>English</MerchantLanguage>';
+            } elseif (CoreLocal::get('PaycardsDatacapMode') == 3) {
+                $msgXml .= '<MerchantLanguage>French</MerchantLanguage>';
+            }
         } else { // add non-EMV fields
             $msgXml .= '
             <Memo>CORE POS 1.0.0 PDCX</Memo>
@@ -2189,7 +2207,7 @@ class MercuryE2E extends BasicCCModule
       Return real or testing ID depending on
       whether training mode is on
     */
-    private function getTermID()
+    public function getTermID()
     {
         if (CoreLocal::get("training") == 1) {
             if (CoreLocal::get('CacheCardType') == 'EMV') {

@@ -128,8 +128,15 @@ messages from POS?',
             'default' => 0,
             'options' => array(
                 'EMV' => 1,
-                'Credit/Debit' => 0
+                'Credit/Debit' => 0,
+                'EMV (en-ca)' => 2,
+                'EMV (en-fr)' => 3,
                 )
+        ),
+        'PaycardsDatacapLanHost' => array(
+            'label' => 'LAN Datacap Server',
+            'description' => 'Datacap server on the local network (only required for EMV)',
+            'default' => '127.0.0.1',
         ),
         'PaycardsBlockExceptions' => array(
             'label' => 'Blocking Exceptions',

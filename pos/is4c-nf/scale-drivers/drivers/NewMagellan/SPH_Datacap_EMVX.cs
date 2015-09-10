@@ -218,7 +218,14 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         */
         xml = xml.Trim(new char[]{'"'});
         xml = xml.Replace("{{SequenceNo}}", SequenceNo());
-        xml = xml.Replace("{{SecureDevice}}", SecureDeviceToEmvType(this.device_identifier));
+        if (IsCanadianDeviceType(this.device_identifier)) {
+            // tag name is different in this case;
+            // replace placeholder then the open/close tags
+            xml = xml.Replace("{{SecureDevice}}", this.device_identifier);
+            xml = xml.Replace("SecureDevice", "PadType");
+        } else {
+            xml = xml.Replace("{{SecureDevice}}", SecureDeviceToEmvType(this.device_identifier));
+        }
         xml = xml.Replace("{{ComPort}}", com_port);
         if (this.verbose_mode > 0) {
             Console.WriteLine(xml);
@@ -375,6 +382,18 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 return "EMV_" + device;
         }
 
+    }
+
+    protected bool IsCanadianDeviceType(string device)
+    {
+        switch (device) {
+            case "Paymentech1":
+            case "Global1":
+            case "Moneris1":
+                return true;
+            default:
+                return false;
+        }
     }
 }
 

@@ -38,6 +38,9 @@ class PaycardEmvMenu extends NoInputCorePage
         if (isset($_REQUEST["selectlist"])) {
             $parser = new PaycardDatacapParser();
             switch ($_REQUEST['selectlist']) {
+                case 'CAADMIN':
+                    $this->change_page('PaycardEmvCaAdmin.php');
+                    return false;
                 case 'CC':
                     $json = $parser->parse('DATACAPCC');
                     $this->change_page($json['main_frame']);
@@ -129,6 +132,11 @@ class PaycardEmvMenu extends NoInputCorePage
                 'EMV' => 'EMV Credit/Debit',
                 'EBT' => 'EBT',
                 'GIFT' => 'Gift',
+            );
+        } elseif (CoreLocal::get('PaycardsDatacapMode') == 2 || CoreLocal::get('PaycardsDatacapMode') == 3) {
+            $this->menu = array(
+                'EMV' => 'EMV Credit/Debit',
+                'CAADMIN' => 'Admin Functions',
             );
         }
         ?>
