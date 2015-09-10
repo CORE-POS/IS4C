@@ -496,7 +496,9 @@ JAVASCRIPT;
         $phpunit->assertNotEquals(0, strlen($get));
 
         $this->newTender = 1;
+        ob_start(); // handler is noisy
         $this->post_newTender_handler();
+        ob_end_clean();
         $model = $this->getTenderModel(false);
         $model->TenderName('NEW TENDER');
         $phpunit->assertNotEquals(0, count($model->find()));

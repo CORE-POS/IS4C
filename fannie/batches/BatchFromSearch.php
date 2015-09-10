@@ -509,7 +509,9 @@ function noEnter(e) {
         $form->upc = $this->u;
         $form->preferredVendor = 0;
         $this->setForm($form);
-        $json = $this->post_redoSRPs_handler();
+        ob_start();
+        $this->post_redoSRPs_handler();
+        $json = ob_get_clean();
         $arr = json_decode($json, true);
         $phpunit->assertInternalType('array', $arr);
         $phpunit->assertEquals(1, count($arr));
