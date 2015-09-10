@@ -144,7 +144,7 @@ class TaxRateEditor extends FannieRESTfulPage
         $form->rate = array('0.05');
         $form->account = array('101');
         $this->setForm($form);
-        $post = $this->post_view();
+        $post = $this->post_handler();
         $phpunit->assertInternalType('bool', $post);
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
@@ -157,7 +157,7 @@ class TaxRateEditor extends FannieRESTfulPage
 
         $form->rate = array('0.15');
         $this->setForm($form);
-        $post = $this->post_view();
+        $post = $this->post_handler();
         $rate->reset();
         $rate->id(1);
         $phpunit->assertEquals(true, $rate->load());
@@ -165,7 +165,7 @@ class TaxRateEditor extends FannieRESTfulPage
 
         $form->del = array(1);
         $this->setForm($form);
-        $post = $this->post_view();
+        $post = $this->post_handler();
         $rate->reset();
         $rate->id(1);
         $phpunit->assertEquals(false, $rate->load());
