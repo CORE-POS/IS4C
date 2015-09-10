@@ -178,7 +178,7 @@ class TenderEditor extends FannieRESTfulPage
         $model->MaxRefund(0);
         $model->save();
         
-        echo getTenderTable();
+        echo $this->getTenderTable();
 
         return false;
     }
