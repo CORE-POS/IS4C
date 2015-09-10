@@ -199,7 +199,7 @@ class AddCashierPage extends FannieRESTfulPage
         $this->fname = 'cashier';
         $this->fes = 20;
         $this->birthdate = date('Y-m-d');
-        $phpunit->assertInternalType('bool', $this->post_fname_lname_fes_birthdate_handler());
+        $this->post_fname_lname_fes_birthdate_handler();
 
         $this->connection->selectDB($this->config->get('OP_DB'));
         $emp = new EmployeesModel($this->connection);
