@@ -540,7 +540,7 @@ function noEnter(e) {
 
         $tag = new ShelftagsModel($dbc);
         $tag->id(1);
-        $tag->upc($this->form[0]);
+        $tag->upc($this->u[0]);
         $phpunit->assertEquals(true, $tag->load());
     }
 }
