@@ -225,7 +225,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $args[] = $vendorID;
             $args[] = $vendorID;
             if (!strstr($from, 'vendorItems')) {
-                $from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc ';
+                $from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID = p.default_vendor_id ';
+                /* May at some point want to support this less restrictive selection.
+                 * $from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc ';
+                 */
             }
 
             if (FormLib::get('vendorSale')) {
