@@ -84,8 +84,26 @@ class CoopDealsMergePage extends FannieRESTfulPage
 
     public function get_view()
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+
+        $set = FormLib::get('deal-set');
+        $optsR = $dbc->query('
+            SELECT dealSet
+            FROM CoopDealsItems
+            GROUP BY dealSet
+            ORDER BY MAX(coopDealsItemID) DESC');
+        $deal_opts = '';
+        while ($optsW = $dbc->fetchRow($optsR)) {
+            if ($set === '') {
+                $set = $optsW['dealSet'];
+            }
+            $deal_opts .= sprintf('<option %s>%s</option>',
+                ($set == $optsW['dealSet'] ? 'selected' : ''),
+                $optsW['dealSet']
+            );
+        }
+
         $query = $dbc->prepare_statement("
             SELECT
                 t.upc,
@@ -96,19 +114,21 @@ class CoopDealsMergePage extends FannieRESTfulPage
                 t.abtpr as subbatch,
                 multiplier
             FROM
-                tempCapPrices as t
+                CoopDealsItems as t
                 INNER JOIN products AS p on t.upc = p.upc
                 LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
-            WHERE inUse=1
+            WHERE p.inUse=1
+                AND t.price < p.normal_price
+                AND t.dealSet=?
             ORDER BY s.super_name,t.upc
         ");
-        $result = $dbc->exec_statement($query);
+        $result = $dbc->exec_statement($query, array($set));
         $upcomingP = $dbc->prepare('
             SELECT batchName
             FROM batchList AS l
                 INNER JOIN batches AS b ON l.batchID=b.batchID
             WHERE l.upc=?
-                AND b.startDate > ' . $dbc->now()
+                AND b.endDate > ' . $dbc->now()
         );
 
         $allR = $dbc->query('
@@ -123,6 +143,13 @@ class CoopDealsMergePage extends FannieRESTfulPage
         }
 
         $ret = "<form action=CoopDealsMergePage.php method=post>
+        <div class=\"form-group\">
+            <label>Month</label>
+            <select name=\"deal-set\" class=\"form-control\" 
+                onchange=\"location='?deal-set='+this.value;\">
+            " . $deal_opts . "
+            </select>
+        </div>
         <table class=\"table table-bordered table-striped tablesorter tablesorter-core small\">
         <thead>
         <tr><th>UPC</th><th>Brand</th><th>Desc</th><th>Sale Price</th>
@@ -143,7 +170,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
                         <td><input type="hidden" name="price[]" value="%.2f"/>%.2f</td>
                         <td><select class="form-control input-sm" name="batchID[]">
                             <option value="">Select batch...</option>',
-                        $row['upc'], $row['upc'],
+                        $row['upc'], \COREPOS\Fannie\API\lib\FannieUI::itemEditorLink($row['upc']),
                         $row['multiplier'],
                         $row['brand'],
                         $row['description'],

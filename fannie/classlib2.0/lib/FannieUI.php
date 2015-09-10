@@ -107,6 +107,12 @@ class FannieUI
 
         return $result;
     }
+
+    public static function itemEditorLink($upc)
+    {
+        return sprintf('<a href="%sitem/ItemEditorPage.php?searchupc=%s">%s</a>',
+            \FannieConfig::config('URL'), $upc, $upc);
+    }
 }
 
 }
