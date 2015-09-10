@@ -33,7 +33,7 @@ class BadScanTool extends FannieRESTfulPage
 
     public $description = '[Bad Scan Tool] shows information about UPCs that were scanned
     at the lanes but not found in POS.';
-    public $themed = true;
+    public $has_unit_tests = true;
 
     private $date_restrict = 1;
 
@@ -268,6 +268,18 @@ function showMultiple() {
             that were scanned at least twice. The <strong>All</strong>
             view lists every single unknown UPC.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $get = $this->get_view();
+        $phpunit->assertNotEquals(0, strlen($get));
+
+        $get = $this->get_lastquarter_view();
+        $phpunit->assertNotEquals(0, strlen($get));
+
+        $get = $this->get_today_view();
+        $phpunit->assertNotEquals(0, strlen($get));
     }
 }
 

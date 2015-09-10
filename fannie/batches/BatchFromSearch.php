@@ -37,7 +37,7 @@ class BatchFromSearch extends FannieRESTfulPage
 
     public $description = '[Batch From Search] takes a set of advanced search results and
     creates a sale or price change batch. Must be accessed via Advanced Search.';
-    public $themed = true;
+    public $has_unit_tests = true;
 
     private $upcs = array();
 
@@ -53,15 +53,15 @@ class BatchFromSearch extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $type = FormLib::get('batchType');
-        $name = FormLib::get('batchName');
-        $startdate = FormLib::get('startDate');
-        $enddate = FormLib::get('endDate');
-        $owner = FormLib::get('batchOwner');
+        $type = $this->form->batchType;
+        $name = $this->form->batchName;
+        $startdate = $this->form->startDate;
+        $enddate = $this->form->endDate;
+        $owner = $this->form->batchOwner;
         $priority = 0;
 
-        $upcs = FormLib::get('upc', array());
-        $prices = FormLib::get('price', array());
+        $upcs = $this->form->upc;
+        $prices = $this->form->price;
 
         $infoQ = $dbc->prepare_statement("select discType from batchType where batchTypeID=?");
         $infoR = $dbc->exec_statement($infoQ,array($type));
@@ -116,9 +116,9 @@ class BatchFromSearch extends FannieRESTfulPage
           If tags were requested and it's price change batch, make them
           Lookup vendor info for each item then add a shelftag record
         */
-        $tagset = FormLib::get('tagset');
+        $tagset = $this->form->tagset;
         if ($discounttype == 0 && $tagset !== '') {
-            $vendorID = FormLib::get('preferredVendor', 0);
+            $vendorID = $this->form->preferredVendor;
             $tag = new ShelftagsModel($dbc);
             $product = new ProductsModel($dbc);
             for($i=0; $i<count($upcs);$i++) {
@@ -140,16 +140,15 @@ class BatchFromSearch extends FannieRESTfulPage
             }
         }
 
-        header('Location: newbatch/BatchManagementTool.php?startAt=' . $id);
-        return false;
+        return 'Location: newbatch/BatchManagementTool.php?startAt=' . $id;
     }
 
     function post_redoSRPs_handler()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $upcs = FormLib::get('upc', array());
-        $vendorID = FormLib::get('preferredVendor', 0);
+        $upcs = $this->form->upc;
+        $vendorID = $this->form->preferredVendor;
 
         for ($i=0; $i<count($upcs); $i++) {
             $upcs[$i] = BarcodeLib::padUPC($upcs[$i]);
@@ -492,6 +491,55 @@ function noEnter(e) {
             New shelftags are allocated and the Tags dropdown
             controls which set they land in.
             </p>';
+    }
+
+    /**
+      Create a one-item sale. Requires sample data
+      for item, batch types
+    */
+    public function unitTest($phpunit)
+    {
+        $this->u = array('0001878777132'); //14.99
+        $this->post_u_handler();
+        $phpunit->assertEquals(1, count($this->upcs));
+        $post = $this->post_u_view();
+        $phpunit->assertNotEquals(0, strlen($post));
+
+        $form = new \COREPOS\common\mvc\ValueContainer();
+        $form->upc = $this->u;
+        $form->preferredVendor = 0;
+        $this->setForm($form);
+        $json = $this->post_redoSRPs_handler();
+        $arr = json_decode($json, true);
+        $phpunit->assertInternalType('array', $arr);
+        $phpunit->assertEquals(1, count($arr));
+        $phpunit->assertEquals($this->u[0], $arr[0]['upc']);
+        $phpunit->assertEquals(0, $arr[0]['srp']);
+
+        $form->startDate = date('Y-m-d');
+        $form->endDate = date('Y-m-d');
+        $form->batchName = 'Test BatchFromSearch';
+        $form->batchType = 1;
+        $form->batchOwner = 'IT';
+        $form->price = array(1.99);
+        $form->tagset = 1;
+        $this->setForm($form);
+        $this->post_createBatch_handler();
+
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $batch = new BatchesModel($dbc);
+        $batch->batchName('Test BatchFromSearch');
+        $phpunit->assertEquals(1, count($batch->find()));
+        $sale = new BatchListModel($dbc);
+        $sale->upc($this->u[0]);
+        $sale->salePrice(1.99);
+        $phpunit->assertEquals(1, count($sale->find()));
+
+        $tag = new ShelftagsModel($dbc);
+        $tag->id(1);
+        $tag->upc($this->form[0]);
+        $phpunit->assertEquals(true, $tag->load());
     }
 }
 
