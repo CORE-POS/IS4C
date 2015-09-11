@@ -73,7 +73,7 @@ class WfcAccessEmailTask extends FannieTask
             $sendDate = date('Y-m-d', mktime(0,0,0,date('n',$ts)+11, date('j',$ts), date('Y',$ts)));
             if (strtotime($sendDate) < time()) {
                 // don't queue into the past
-                //continue;
+                continue;
             }
             $fn = $dbc->getValue($fnP, array($w['card_no']));
             $json = array(
