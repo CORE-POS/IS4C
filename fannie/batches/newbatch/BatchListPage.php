@@ -543,7 +543,7 @@ class BatchListPage extends FannieRESTfulPage
 
         $modes = array('pending', 'current', 'historical', 'all');
         foreach ($modes as $m) {
-            $get = $this->batchListDisplay('', $mode, rand(0, 50));
+            $get = $this->batchListDisplay('', $m, rand(0, 50));
             $phpunit->assertNotEquals(0, strlen($get));
             $get = $this->batchListDisplay('IT', $mode, rand(0, 50));
             $phpunit->assertNotEquals(0, strlen($get));
