@@ -51,10 +51,7 @@ class AddCashierPage extends FannieRESTfulPage
             
         $passwd = $this->genPassword($dbc);
 
-        $idQ = $dbc->prepare_statement("SELECT max(emp_no)+1 FROM employees WHERE emp_no < 1000");
-        $idR = $dbc->exec_statement($idQ);
-        $idW = $dbc->fetchRow($idR);
-        $emp_no = is_array($idW) ? $idW[0]+1 : 1;
+        $emp_no = $this->nextEmpNo($dbc);
 
         $employee = new EmployeesModel($dbc);
         $employee->emp_no($emp_no);
@@ -80,6 +77,23 @@ class AddCashierPage extends FannieRESTfulPage
             $this->fname.' '.$this->lname,$emp_no,$passwd);
 
         return '?flash=' . base64_encode($message);
+    }
+
+    private function nextEmpNo($dbc)
+    {
+        $idQ = $dbc->prepare("
+            SELECT MAX(emp_no) AS max
+            FROM employees 
+            WHERE emp_no < 1000
+        ");
+        $idR = $dbc->execute($idQ);
+        $idW = $dbc->fetchRow($idR);
+        if ($idW && $idW['max'] !== null) {
+            return $idW['max']+1;
+        } else {
+            return 1;
+        }
+
     }
 
     private function genPassword($dbc)
