@@ -32,7 +32,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
     protected $title = 'Advanced Search';
 
     public $description = '[Advanced Search] is a tool to look up items with lots of search options.';
-    public $themed = true;
+    public $has_unit_tests = true;
 
     /**
       List of search methods. Search methods

@@ -195,64 +195,6 @@ class BatchListPage extends FannieRESTfulPage
         return false;
     }
 
-    /** ajax responses 
-     * $out is the output sent back
-     * by convention, the request name ($_GET['action'])
-     * is prepended to all output so the javascript receiver
-     * can handle responses differently as needed.
-     * a backtick separates request name from data
-     */
-    function ajax_response($action)
-    {
-        global $FANNIE_SERVER_DBMS, $FANNIE_URL;
-        $out = '';
-        $dbc = $this->con;
-        // prepend request name & backtick
-        $out = $action."`";
-        // switch on request name
-        switch ($action){
-        case 'newBatch':
-            $type = FormLib::get_form_value('type',0);
-            $name = FormLib::get_form_value('name','');
-            $startdate = FormLib::get_form_value('startdate',date('Y-m-d'))." 00:00:00";
-            $enddate = FormLib::get_form_value('enddate',date('Y-m-d'))." 23:59:59";
-            $owner = FormLib::get_form_value('owner','');
-            $priority = FormLib::get_form_value('priority',0);
-            
-            $infoQ = $dbc->prepare_statement("select discType from batchType where batchTypeID=?");
-            $infoR = $dbc->exec_statement($infoQ,array($type));
-            $discounttype = 1; // if no match, assuming sale is probably safer
-                               // than assuming price change
-            if ($infoR && ($infoW = $dbc->fetch_row($infoR))) {
-                $discounttype = $infoW['discType'];
-            }
-            
-            $b = new BatchesModel($dbc);
-            $b->startDate($startdate);
-            $b->endDate($enddate);
-            $b->batchName($name);
-            $b->batchType($type);
-            $b->discounttype($discounttype);
-            $b->priority($priority);
-            $b->owner($owner);
-            $id = $b->save();
-            
-            if ($dbc->tableExists('batchowner')) {
-                $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
-                $insR = $dbc->exec_statement($insQ,array($id,$owner));
-            }
-            
-            $out = $this->batchListDisplay();
-            break;
-        default:
-            $out .= 'bad request';
-            break;
-        }
-        
-        print $out;
-        return;
-    }
-
     /* input functions
      * functions for generating content that goes in the
      * inputarea div
@@ -540,7 +482,74 @@ class BatchListPage extends FannieRESTfulPage
             <p>An item may only be in one active sale batch.</p>
             ';
     }
+
+    /**
+      Create, update, and delete a batch
+      Try each mode with and without an owner filter
+    */
+    public function unitTest($phpunit)
+    {
+        $get = $this->get_view();
+        $phpunit->assertNotEquals(0, strlen($get));
+
+        $this->connection->selectDB($this->config->get('OP_DB'));
+        $model = new BatchesModel($this->connection);
+
+        $this->newType = 1;
+        $this->newName = 'Test BatchListPage';
+        $this->newStart = date('Y-m-d 00:00:00');
+        $this->newEnd = date('Y-m-d 00:00:00');
+        $this->newOwner = 'IT';
+        ob_start();
+        $this->post_newType_newName_newStart_newEnd_newOwner_handler();
+        ob_end_clean();
+        $model->batchName = $this->newName;
+        $matches = $model->find();
+        $phpunit->assertEquals(1, count($matches));
+        $model->reset();
+        $model->batchID($matches[0]->batchID());
+        $phpunit->assertEquals(true, $model->load());
+        $phpunit->assertEquals($this->newType, $model->batchType());
+        $phpunit->assertEquals($this->newName, $model->batchName());
+        $phpunit->assertEquals($this->newStart, $model->startDate());
+        $phpunit->assertEquals($this->newEnd, $model->endDate());
+        $phpunit->assertEquals($this->newOwner, $model->owner());
+
+        $this->id = $model->batchID();
+        $this->batchName = 'Change BatchListPage';
+        $this->batchType = 2;
+        $this->startDate = date('Y-m-d 00:00:00', strtotime('yesterday'));
+        $this->endDate = $this->startDate;
+        $this->owner = 'Admin';
+        ob_start();
+        $this->post_id_batchName_batchType_startDate_endDate_owner_handler();
+        ob_end_clean();
+        $model->reset();
+        $model->batchID($this->id);
+        $phpunit->assertEquals(true, $model->load());
+        $phpunit->assertEquals($this->batchType, $model->batchType());
+        $phpunit->assertEquals($this->batchName, $model->batchName());
+        $phpunit->assertEquals($this->startDate, $model->startDate());
+        $phpunit->assertEquals($this->endDate, $model->endDate());
+        $phpunit->assertEquals($this->owner, $model->owner());
+
+        $this->delete = 1;
+        ob_start();
+        $this->post_delete_id_handler();
+        ob_end_clean();
+        $model->reset();
+        $model->batchID($this->id); 
+        $phpunit->assertEquals(false, $model->load());
+
+        $modes = array('pending', 'current', 'historical', 'all');
+        foreach ($modes as $m) {
+            $get = $this->batchListDisplay('', $mode, rand(0, 50));
+            $phpunit->assertNotEquals(0, strlen($get));
+            $get = $this->batchListDisplay('IT', $mode, rand(0, 50));
+            $phpunit->assertNotEquals(0, strlen($get));
+        }
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
