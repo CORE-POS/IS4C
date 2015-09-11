@@ -39,7 +39,7 @@ class BatchListPage extends FannieRESTfulPage
 
     public $description = '[Sales Batches] is the primary tool for creating, editing, and managing 
     sale and price change batches.';
-    public $themed = true;
+    public $has_unit_tests = true;
 
     private $audited = 1;
     private $con = null;
@@ -503,7 +503,7 @@ class BatchListPage extends FannieRESTfulPage
         ob_start();
         $this->post_newType_newName_newStart_newEnd_newOwner_handler();
         ob_end_clean();
-        $model->batchName = $this->newName;
+        $model->batchName($this->newName);
         $matches = $model->find();
         $phpunit->assertEquals(1, count($matches));
         $model->reset();
