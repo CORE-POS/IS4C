@@ -1526,6 +1526,7 @@ function chainSuper(superID)
         // sample data
         $form->u = array('0001707710532', '0001707710332', '001707712132');
         $items = $this->runFilterMethods($items, $form);
+        var_dump(array_keys($items));
         $phpunit->assertInternalType('array', $items);
         $phpunit->assertEquals(3, count($items));
     }
