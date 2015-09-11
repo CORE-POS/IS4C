@@ -1524,7 +1524,7 @@ function chainSuper(superID)
         // easiest filter to trigger is the saved items
         // sales or movement would require substantially more
         // sample data
-        $form->u = array('0001707710532', '0001707710332', '001707712132');
+        $form->u = array('0001707710532', '0001707710332', '0001707712132');
         $items = $this->runFilterMethods($items, $form);
         var_dump(array_keys($items));
         $phpunit->assertInternalType('array', $items);
