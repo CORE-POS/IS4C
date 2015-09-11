@@ -31,8 +31,8 @@ class CoopDealsMergePage extends FannieRESTfulPage
     protected $title = "Fannie - CAP sales";
     protected $header = "Review Data";
 
-    public $description = '[Co+op Deals Review] lists the currently load Co+op Deals data
-    and can create sales batches from that data.';
+    public $description = '[Co+op Deals Merge] lists items in the Co+op Deals data
+    that are not part of a current or future sales batch.';
     public $themed = true;
 
     protected $auth_classes = array('batches');

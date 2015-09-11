@@ -31,7 +31,7 @@ class BatchIndexPage extends FanniePage
     protected $header = 'Sales Batches';
 
     public $description = '[Batch Menu] lists various batch related pages.';
-    public $has_unit_tets = true;
+    public $has_unit_tests = true;
 
     function bodyContent()
     {
