@@ -72,7 +72,7 @@ class FanniePlugin extends \COREPOS\common\CorePlugin
       @param $file string filename
       @return plugin name or boolean False
     */
-    public static function memberOf($file)
+    public static function memberOf($file, $exclude='plugins')
     {
         return parent::memberOf($file, 'plugins2.0');
     }
