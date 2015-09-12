@@ -358,23 +358,9 @@ class SQLManager
 
     public function identifierEscape($str,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                return '`'.$str.'`';
-            case 'mssql':
-                return '['.$str.']';
-            case 'pgsql':
-            case 'sqlite3':
-                return '"'.$str.'"';
-        }
-
-        return $str;
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->identifierEscape($str);
     }
 
     public function identifier_escape($str,$which_connection='')
@@ -579,22 +565,9 @@ class SQLManager
     */
     public function datediff($date1,$date2,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                return "datediff($date1,$date2)";
-            case 'mssql':
-                return "datediff(dd,$date2,$date1)";
-            case 'pgsql':
-                return "extract(day from ($date2 - $date1))";
-            case 'sqlite3':
-                return "CAST( (JULIANDAY($date1) - JULIANDAY($date2)) AS INT)";
-        }
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->datediff($date1, $date2);
     }
 
     /**
@@ -2035,6 +2008,41 @@ class SQLManager
         $this->structure_cache[$which_connection] = array();
 
         return true;
+    }
+
+    /**
+      Adapters provide bits of rDBMS-specific SQL
+      that aren't covered by ADOdb. This method 
+      caches adapters on creation.
+    */
+    protected $adapters = array();
+    protected function getAdapter($type)
+    {
+        if (isset($adapters[$type])) {
+            return $adapters[$type];
+        }
+        switch ($type)
+        {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo_mysql':
+            case 'pdo':
+                $adapters[$type] = new sql\MysqlAdapter();
+                break;
+            case 'mssql':
+                $adapters[$type] = new sql\MssqlAdapter();
+                break;
+            case 'pgsql':
+                $adapters[$type] = new sql\PgsqlAdapter();
+                break;
+            case 'sqlite3':
+                $adapters[$type] = new sql\SqliteAdapter();
+                break;
+            default:
+                throw new \Exception('Unknown database type: ' . $type);
+        }
+
+        return $adapters[$type];
     }
 }
 
