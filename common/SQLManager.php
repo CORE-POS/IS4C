@@ -1231,7 +1231,7 @@ class SQLManager
     {
         $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
         $adapter = $this->getAdapter($this->connectionType($which_connection));
-        return $adapter->addSelectLimit($Query, $int_limit);
+        return $adapter->addSelectLimit($query, $int_limit);
     }
 
     public function add_select_limit($query,$int_limit,$which_connection='')
