@@ -147,7 +147,7 @@ class CorePlugin
         while (($file = readdir($dir)) !== false) {
             if ($file[0] != '.' && $file != 'noauto' && is_dir($path."/".$file)) {
                 $carry = self::pluginMap(realpath($path.'/'.$file),$carry);
-            } elseif (substr($file,-4)==".php" && !in_array($file, $unmapped_files)) {
+            } elseif (substr($file,-4)==".php" && !in_array($file, self::$unmapped_files)) {
                 $carry[substr($file,0,strlen($file)-4)] = realpath($path.'/'.$file);
             }
         }
