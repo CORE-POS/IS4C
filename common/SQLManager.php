@@ -663,10 +663,9 @@ class SQLManager
     */
     public function concat()
     {
-        $adapter = $this->getAdapter($this->connectionType($which_connection));
         $args = func_get_args();
-        $ret = "";
         $which_connection = array_pop($args);
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
         return $adapter->concat($args);
     }
 
