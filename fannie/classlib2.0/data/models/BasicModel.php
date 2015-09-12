@@ -1316,6 +1316,22 @@ class BasicModel
         );
     }
 
+    public function __call($name, $arguments)
+    {
+        if (!isset($this->columns[$name])) {
+            throw new Exception('Invalid accessor: ' . $name);
+        }
+
+        if (count($arguments) == 0) {
+            return $this->getColumn($name);
+        } elseif (count($arguments) == 1) {
+            $this->setColumn($name, $arguments[0]);
+        } else {
+            $literal = isset($arguments[2]) && $arguments[2] === true ? true : false;
+            $this->filterColumn($name, $arguments[0], $arguments[1], $literal);
+        }
+    }
+
     /**
       Rewrite the given file to create accessor
       functions for all of its columns
