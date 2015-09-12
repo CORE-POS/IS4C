@@ -23,7 +23,7 @@
 
 namespace COREPOS\common;
 
-class CommonPlugin 
+class CorePlugin 
 {
     /**
       Desired settings. These are automatically exposed
