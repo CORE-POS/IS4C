@@ -30,9 +30,18 @@ class SqliteAdapter implements DialectAdapter
         return '"' . $str . '"';
     }
 
-    public function getViewDefinition($view_name)
+    public function getViewDefinition($view_name, $dbc, $db_name)
     {
-
+        $result = $dbc->query("SELECT sql FROM sqlite_master
+                WHERE type IN ('view') AND name='$view_name'",
+                $db_name);
+        $ret = false;
+        if ($dbc->numRows($result) > 0) {
+            $row = $dbc->fetchRow($result);
+            $ret = $row['sql'];
+        }
+        $dbc->end_query($result, $db_name);
+        return $ret;
     }
 
     public function defaultDatabase()

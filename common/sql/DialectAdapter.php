@@ -26,7 +26,7 @@ namespace COREPOS\common\sql;
 interface DialectAdapter
 {
     public function identifierEscape($str);
-    public function getViewDefinition($view_name);
+    public function getViewDefinition($view_name, $dbc, $db_name);
     public function defaultDatabase();
     public function temporaryTable($name, $source_table);
     public function sep();
@@ -42,6 +42,6 @@ interface DialectAdapter
     public function dayofweek($field);
     public function convert($expr, $type);
     public function locate($substr, $str);
-    public function concat();
+    public function concat($expressions);
 }
 

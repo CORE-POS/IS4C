@@ -30,9 +30,15 @@ class MssqlAdapter implements DialectAdapter
         return '[' . $str . ']';
     }
 
-    public function getViewDefinition($view_name)
+    public function getViewDefinition($view_name, $dbc, $db_name)
     {
-
+        $result = $dbc->query("SELECT OBJECT_DEFINITION(OBJECT_ID('$view_name'))", $db_name);
+        if ($dbc->numRows($result) > 0) {
+            $row = $dbc->fetchRow($result);
+            return $row[0];
+        } else {
+            return false;
+        }
     }
 
     public function defaultDatabase()

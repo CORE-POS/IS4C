@@ -30,9 +30,24 @@ class PgsqlAdapter implements DialectAdapter
         return '"' . $str . '"';
     }
 
-    public function getViewDefinition($view_name)
+    public function getViewDefinition($view_name, $dbc, $db_name)
     {
-
+        $result = $dbc->query("SELECT oid FROM pg_class
+                WHERE relname LIKE '$view_name'",
+                $db_name);
+        if ($dbc->numRows($result) > 0) {
+            $row = $dbc->fetchRow($result);
+            $defQ = sprintf('SELECT pg_get_viewdef(%d)', $row['oid']);
+            $defR = $dbc->query($defQ, $db_name);
+            if ($dbc->numRows($defR) > 0) {
+                $def = $dbc->fetchRow($defR);
+                return $def[0];
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     public function defaultDatabase()

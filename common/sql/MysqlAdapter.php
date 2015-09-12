@@ -30,9 +30,15 @@ class MysqlAdapter implements DialectAdapter
         return '`' . $str . '`';
     }
 
-    public function getViewDefinition($view_name)
+    public function getViewDefinition($view_name, $dbc, $db_name)
     {
-
+        $result = $dbc->query("SHOW CREATE VIEW " . $this->identifierEscape($view_name, $which_connection), $db_name);
+        if ($dbc->numRows($result) > 0) {
+            $row = $dbc->fetchRow($result);
+            return $row[1];
+        } else {
+            return false;
+        }
     }
 
     public function defaultDatabase()
@@ -115,7 +121,7 @@ class MysqlAdapter implements DialectAdapter
         return "LOCATE($substr,$str)";
     }
 
-    public function concat()
+    public function concat($expressions)
     {
         $ret = 'CONCAT(';
         foreach ($expressions as $e) {
