@@ -30,13 +30,5 @@ class QuickMenus extends Plugin {
                       PHP files within the plugin. Type "QM" followed by the menu
                       number to launch that menu. QuickMenus render options as a
                       scrolling list.';
-
-    public function plugin_enable(){
-
-    }
-
-    public function plugin_disable(){
-
-    }
-
 }
+

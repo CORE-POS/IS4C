@@ -112,7 +112,7 @@ class paycardSuccess extends BasicCorePage
             } else if ($mode == PaycardLib::PAYCARD_MODE_AUTH && $input == "VD" 
                 && (CoreLocal::get('CacheCardType') == 'CREDIT' || CoreLocal::get('CacheCardType') == '')){
                 $plugin_info = new Paycards();
-                $this->change_page($plugin_info->plugin_url()."/gui/paycardboxMsgVoid.php");
+                $this->change_page($plugin_info->pluginUrl()."/gui/paycardboxMsgVoid.php");
                 return False;
             }
         }

@@ -26,7 +26,7 @@ class WedgeStaffCharge extends Plugin {
     public $plugin_description = 'Legacy staff charge functionality that does not
                 belong in main code base';
 
-    public function plugin_enable(){
+    public function pluginEnable(){
         // create database structures
         $db = Database::pDataConnect();
         if (!$db->table_exists('chargecode')){
@@ -44,7 +44,7 @@ class WedgeStaffCharge extends Plugin {
         }
     }
 
-    public function plugin_disable(){
+    public function pluginDisable(){
         $db = Database::pDataConnect();
         // always remove view
         if ($db->table_exists('chargecodeview')){
@@ -58,3 +58,4 @@ class WedgeStaffCharge extends Plugin {
         }
     }
 }
+

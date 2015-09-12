@@ -99,7 +99,7 @@ class PaycardProcessPage extends BasicCorePage
         ?>
         <script type="text/javascript">
         function paycard_submitWrapper(){
-            $.ajax({url: '<?php echo $plugin_info->plugin_url(); ?>/ajax/ajax-paycard-auth.php',
+            $.ajax({url: '<?php echo $plugin_info->pluginUrl(); ?>/ajax/ajax-paycard-auth.php',
                 cache: false,
                 type: 'post',
                 dataType: 'json',
@@ -122,7 +122,7 @@ class PaycardProcessPage extends BasicCorePage
                         location = destination;
                 },
                 error: function(){
-                    location = '<?php echo $plugin_info->plugin_url(); ?>/gui/paycardboxMsgAuth.php';
+                    location = '<?php echo $plugin_info->pluginUrl(); ?>/gui/paycardboxMsgAuth.php';
                 }
             });
             paycard_processingDisplay();

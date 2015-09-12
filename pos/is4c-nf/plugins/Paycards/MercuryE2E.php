@@ -141,7 +141,7 @@ class MercuryE2E extends BasicCCModule
                 }
                 CoreLocal::set("paycard_id",CoreLocal::get("LastID")+1); // kind of a hack to anticipate it this way..
                 $plugin_info = new Paycards();
-                $json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgAuth.php';
+                $json['main_frame'] = $plugin_info->pluginUrl().'/gui/paycardboxMsgAuth.php';
                 $json['output'] = '';
 
                 return $json;
@@ -411,7 +411,7 @@ class MercuryE2E extends BasicCCModule
         // display FEC code box
         CoreLocal::set("inputMasked",1);
         $plugin_info = new Paycards();
-        $json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgVoid.php';
+        $json['main_frame'] = $plugin_info->pluginUrl().'/gui/paycardboxMsgVoid.php';
 
         return $json;
     }
@@ -2487,7 +2487,7 @@ class MercuryE2E extends BasicCCModule
             'cancel_dest' => MiscLib::base_url() . 'gui-modules/pos2.php',
         );
         $info = new Paycards();
-        $url_stem = $info->plugin_url();
+        $url_stem = $info->pluginUrl();
 
         $xml_resp = $this->desoapify('CTranDetailResponse', $curl_result['response']);
         $xml = new xmlData($xml_resp);

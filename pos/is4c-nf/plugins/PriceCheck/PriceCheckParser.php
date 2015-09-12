@@ -33,7 +33,7 @@ class PriceCheckParser extends Parser {
     function parse($str){
         $ret = $this->default_json();
         $plugin_info = new PriceCheck();
-        $ret['main_frame'] = $plugin_info->plugin_url().'/PriceCheckPage.php';
+        $ret['main_frame'] = $plugin_info->pluginUrl().'/PriceCheckPage.php';
         if (strlen($str)>2)
             $ret['main_frame'] .= "?upc=".substr($str,2);
         return $ret;

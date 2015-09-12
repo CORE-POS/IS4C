@@ -107,7 +107,7 @@ class AuthorizeDotNet extends BasicCCModule {
             CoreLocal::set("paycard_amount",CoreLocal::get("amtdue"));
             CoreLocal::set("paycard_id",CoreLocal::get("LastID")+1); // kind of a hack to anticipate it this way..
             $plugin_info = new Paycards();
-            $json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgAuth.php';
+            $json['main_frame'] = $plugin_info->pluginUrl().'/gui/paycardboxMsgAuth.php';
             return $json;
             break;
         } // switch mode
@@ -256,7 +256,7 @@ class AuthorizeDotNet extends BasicCCModule {
     
         // display FEC code box
         $plugin_info = new Paycards();
-        $json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgVoid.php';
+        $json['main_frame'] = $plugin_info->pluginUrl().'/gui/paycardboxMsgVoid.php';
         return $json;
     }
 

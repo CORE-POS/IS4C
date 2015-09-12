@@ -200,17 +200,10 @@ messages from POS?',
         ),
     );
 
-    public function plugin_enable(){
-
-    }
-
-    public function plugin_disable(){
-
-    }
-
     public function plugin_transaction_reset()
     {
         CoreLocal::set('paycardTendered', false);
     }
 
 }
+

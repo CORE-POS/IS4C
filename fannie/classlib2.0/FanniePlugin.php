@@ -31,49 +31,8 @@ namespace COREPOS\Fannie\API {
   provides meta-information about the plugin like settings
   and enable/disable hooks
 */
-class FanniePlugin 
+class FanniePlugin extends \COREPOS\common\CorePlugin
 {
-
-    /**
-      Desired settings. These are automatically exposed
-      on the 'Plugins' area of the install page and
-      written to ini.php
-    */
-    public $plugin_settings = array(
-    'example1' => array('default'=>'','label'=>'Setting #1',
-            'description'=>'Text goes here'),
-    'example2' => array('default'=>1,
-            'options'=>array('Yes'=>1,'No'=>0)
-        )
-    );
-
-    public $plugin_description = 'This author didn\'t provide anything. Shame!';
-
-
-    /**
-      Callback. Triggered when plugin is enabled
-    */
-    public function pluginEnable()
-    {
-
-    }
-
-    /**
-      Callback. Triggered when plugin is disabled
-    */
-    public function pluginDisable()
-    {
-
-    }
-
-    /**
-      Callback. Triggered when a setting is modified
-    */
-    public function settingChange()
-    {
-
-    }
-
     /**
       Get a URL for the plugin's directory    
     */
@@ -82,17 +41,7 @@ class FanniePlugin
         $url = \FannieConfig::factory()->get('URL');
         $info = new \ReflectionClass($this);
 
-        return $url . 'modules/plugins2.0/'.basename(dirname($info->getFileName()));
-    }
-
-    /**
-      Get filesystem path for the plugin's directory
-    */
-    public function pluginDir()
-    {
-        $info = new \ReflectionClass($this);
-
-        return dirname($info->getFileName());
+        return $url . 'modules/plugins2.0/' . basename(dirname($info->getFileName()));
     }
 
     public function pluginDbStruct($db, $struct_name, $db_name="")
@@ -125,62 +74,22 @@ class FanniePlugin
     */
     public static function memberOf($file)
     {
-        $file = realpath($file);
-        $sep = '/';
-        if (strstr($file,'/')) {
-            $sep = '/';
-        } elseif (strstr($file,'\\')) {
-            $sep = '\\';
-        } else {
-            return false;
-        }
-
-        $dirs = explode($sep, $file);
-        for($i=0;$i<count($dirs);$i++) {
-            if ($dirs[$i] == "plugins2.0" && isset($dirs[$i+1])) {
-                return $dirs[$i+1];
-            }
-        }
-
-        return false;
+        return parent::memberOf($file, 'plugins2.0');
     }
 
-    /**
-      Check whether a given plugin is enabled
-      @param $plugin string plugin name
-      @return True or False
-    */
-    public static function isEnabled($plugin)
+    protected static function getPluginList()
     {
         $plugin_list = \FannieConfig::factory()->get('PLUGIN_LIST');
-        if (!is_array($plugin_list)) {
-            return false;
+        if (is_array($plugin_list)) {
+            return $plugin_list;
+        } else {
+            return array();
         }
-
-        return (in_array($plugin, $plugin_list)) ? true : false;
     }
 
-    /**
-      Find potential class files in a given directory
-      @param $path starting directory
-      @return array of class name => full file name
-    */
-    public static function pluginMap($path="",$carry=array())
+    protected static function defaultSearchDir()
     {
-        if ($path == '') {
-            $path = realpath(dirname(__FILE__).'/../modules/plugins2.0');
-        }
-        $dir = opendir($path);
-        while (($file = readdir($dir)) !== false) {
-            if ($file[0] != '.' && $file != 'noauto' && is_dir($path."/".$file)) {
-                $carry = self::pluginMap(realpath($path.'/'.$file),$carry);
-            } elseif (substr($file,-4)==".php") {
-                $carry[substr($file,0,strlen($file)-4)] = realpath($path.'/'.$file);
-            }
-        }
-        closedir($dir);
-
-        return $carry;
+        return realpath(dirname(__FILE__).'/../modules/plugins2.0');
     }
 }
 

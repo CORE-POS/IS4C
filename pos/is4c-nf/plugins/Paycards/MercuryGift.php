@@ -140,7 +140,7 @@ class MercuryGift extends BasicCCModule
                 CoreLocal::set("paycard_amount",CoreLocal::get("amtdue"));
                 CoreLocal::set("paycard_id",CoreLocal::get("LastID")+1); // kind of a hack to anticipate it this way..
                 $plugin_info = new Paycards();
-                $json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgAuth.php';
+                $json['main_frame'] = $plugin_info->pluginUrl().'/gui/paycardboxMsgAuth.php';
 
                 return $json;
             case PaycardLib::PAYCARD_MODE_ACTIVATE:
@@ -148,12 +148,12 @@ class MercuryGift extends BasicCCModule
                 CoreLocal::set("paycard_amount",0);
                 CoreLocal::set("paycard_id",CoreLocal::get("LastID")+1); // kind of a hack to anticipate it this way..
                 $plugin_info = new Paycards();
-                $json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgGift.php';
+                $json['main_frame'] = $plugin_info->pluginUrl().'/gui/paycardboxMsgGift.php';
 
                 return $json;
             case PaycardLib::PAYCARD_MODE_BALANCE:
                 $plugin_info = new Paycards();
-                $json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgBalance.php';
+                $json['main_frame'] = $plugin_info->pluginUrl().'/gui/paycardboxMsgBalance.php';
 
                 return $json;
         } // switch mode
@@ -463,7 +463,7 @@ class MercuryGift extends BasicCCModule
     
         // display FEC code box
         $plugin_info = new Paycards();
-        $json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgVoid.php';
+        $json['main_frame'] = $plugin_info->pluginUrl().'/gui/paycardboxMsgVoid.php';
 
         return $json;
     }
