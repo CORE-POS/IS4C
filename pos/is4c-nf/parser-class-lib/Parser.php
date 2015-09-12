@@ -143,25 +143,26 @@ class Parser {
       Scan the parse directory for module files.
       Return an array of available modules.
     */
-    static public function get_parse_chain(){
-
-        $set = AutoLoader::ListModules('Parser');
+    static public function get_parse_chain($type='Parser')
+    {
+        $set = AutoLoader::ListModules($type);
         $set = array_reverse($set);
 
         $parse_chain = array();
         $first = "";
-        foreach($set as $classname){    
+        foreach ($set as $classname) {
             $instance = new $classname();
             if ($instance->isLast()){
                 array_push($parse_chain,$classname);
-            }
-            elseif ($instance->isFirst())
+            } elseif ($instance->isFirst()) {
                 $first = $classname;
-            else
+            } else {
                 array_unshift($parse_chain,$classname);
+            }
         }
-        if ($first != "")
+        if ($first != '') {
             array_unshift($parse_chain,$first);
+        }
 
         return $parse_chain;
     }
@@ -183,5 +184,3 @@ class Parser {
   file does not exist in the gui-modules directory.
 */
 
-
-?>

@@ -137,22 +137,38 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
       (or both) but $action should have one or the
       other attributes
     */
-    protected function input_header($action="")
+    protected function input_header($action='')
+    {
+        if (empty($action)) {
+            $action = "action=\"". filter_input(INPUT_SERVER, 'PHP_SELF') ."\"";
+        }
+        $inputType = "text";
+        if ($this->mask_input) {
+            $inputType = "password";
+        }
+        $form = '
+        <div class="inputform ' . (CoreLocal::get("training")==1?'training':'') . '">
+            <form name="form" id="formlocal" method="post" autocomplete="off"
+                ' . $action . '
+            <input name="reginput" value="" onblur="$(\'#reginput\').focus();"
+                type="' . $inputType . '" id="reginput"  />
+            </form>
+        </div>';
+
+        echo str_replace('{{FORM}}', $form, $this->commonHeader());
+    }
+
+    protected function commonHeader()
     {
         $my_url = $this->page_url;
-        if (empty($action))
-            $action = "action=\"".$_SERVER['PHP_SELF']."\"";
-
         $this->add_onload_command("betterDate();\n\$('#reginput').focus();");
         
-        $inputType = "text";
-        if ($this->mask_input)
-            $inputType = "password";
         // this needs to be configurable; just fixing
         // a giant PHP warning for the moment
         $time = strftime("%m/%d/%y %I:%M %p", time());
 
         CoreLocal::set("repeatable",0);
+        ob_start();
         ?>
         <script type="text/javascript">
         function betterDate() {
@@ -181,13 +197,7 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
         }
         </script>
         <div id="inputArea">
-            <div class="inputform <?php echo (CoreLocal::get("training")==1?'training':''); ?>">
-                <form name="form" id="formlocal" method="post" autocomplete="off"
-                    <?php echo $action; ?> >
-                <input name="reginput" value="" onblur="$('#reginput').focus();"
-                    type="<?php echo $inputType; ?>" id="reginput"  />
-                </form>
-            </div>
+            {{FORM}}
             <div class="notices coloredText <?php echo (CoreLocal::get("training")==1?'training':''); ?>">
             <?php
             if (CoreLocal::get("training") == 1) {
@@ -231,6 +241,8 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
         </div>
         <div id="inputAreaEnd"></div>
         <?php
+
+        return ob_get_clean();
     }
 
     /**
@@ -239,75 +251,11 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
     */
     protected function noinput_header()
     {
-        $my_url = $this->page_url;
-        $this->add_onload_command("betterDate();\n");
-        
-        $time = strftime("%m/%d/%y %I:%M %p", time());
-
-        CoreLocal::set("repeatable",0);
-        ?>
-        <script type="text/javascript">
-        function betterDate() {
-            var myNow = new Date();
-            var ampm = 'AM';
-            var hour = myNow.getHours();
-            var minute = myNow.getMinutes();
-            if (hour >= 12){
-                ampm = 'PM';
-                hour = hour - 12;
-            }
-            if (hour == 0) hour = 12;
-
-            var year = myNow.getYear() % 100;
-            var month = myNow.getMonth()+1;
-            var day = myNow.getDate();
-            if (year < 10) year = '0'+year;
-            if (month < 10) month = '0'+month;
-            if (day < 10) day ='0'+day;
-            if (minute < 10) minute = '0'+minute;
-
-            var timeStr = month+'/'+day+'/'+year+' ';
-            timeStr += hour+':'+minute+' '+ampm;
-            $('#timeSpan').html(timeStr);
-            setTimeout(betterDate,20000);
-        }
-        </script>
-        <div id="inputArea">
+        $form = '
             <div class="inputform">
             &nbsp;
-            </div>
-            <div class="notices coloredText">
-            <?php    
-            if (CoreLocal::get("training") == 1) {
-                echo "<span class=\"text\">"._("training")." </span>"
-                     ."<img alt=\"training\" src='{$my_url}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
-            }
-            elseif (CoreLocal::get("standalone") == 0) {
-                echo "<img alt=\"online\" src='{$my_url}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
-            }
-            else {
-                echo "<span class=\"text\">stand alone</span>"
-                     ."<img alt=\"standalone\" src='{$my_url}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
-            }
-            if (CoreLocal::get("CCintegrate") == 1 && CoreLocal::get("training") == 0) {
-               if (CoreLocal::get("CachePanEncBlock")=="")
-                   echo "<img alt=\"cc mode\" src='{$my_url}graphics/ccIn.gif'>&nbsp;";
-               else
-                   echo "<img alt=\"cc available\" src='{$my_url}graphics/ccInLit.gif'>&nbsp;";
-            } elseif (CoreLocal::get("CCintegrate") == 1 && CoreLocal::get("training") == 1) {
-               if (CoreLocal::get("CachePanEncBlock")=="")
-                   echo "<img alt=\"cc test mode\" src='{$my_url}graphics/ccTest.gif'>&nbsp;";
-               else
-                   echo "<img alt=\"cc available (test)\" src='{$my_url}graphics/ccTestLit.gif'>&nbsp;";
-            }
-
-            echo "<span id=\"timeSpan\" class=\"time\">".$time."</span>\n";
-            ?>
-
-            </div>
-        </div>
-        <div id="inputAreaEnd"></div>
-        <?php
+            </div>';
+        echo str_replace('{{FORM}}', $form, $this->commonHeader());
     }
 
     /**

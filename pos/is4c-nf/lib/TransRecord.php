@@ -699,16 +699,16 @@ static public function additemdiscount($intdepartment, $dbltotal)
 static public function addTare($dbltare) 
 {
     CoreLocal::set("tare",$dbltare/100);
-    $rf = CoreLocal::get("refund");
-    $rc = CoreLocal::get("refundComment");
+    $refund = CoreLocal::get("refund");
+    $rComment = CoreLocal::get("refundComment");
     self::addRecord(array(
         'description' => '** Tare Weight ' . CoreLocal::get('tare') . ' **',
         'trans_type' => '0',
         'trans_status' => 'D',
         'voided' => 6,
     ));
-    CoreLocal::set("refund",$rf);
-    CoreLocal::set("refundComment",$rc);
+    CoreLocal::set("refund",$refund);
+    CoreLocal::set("refundComment",$rComment);
 }
 
 /**
