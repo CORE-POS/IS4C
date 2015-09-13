@@ -7,3 +7,4 @@ languages:
 # exclude_paths:
 - "common/adodb5/*"
 - "fannie/src/javascript/*"
+- "fannie/src/fpdf/font/*"

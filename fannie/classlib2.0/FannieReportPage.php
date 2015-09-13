@@ -221,9 +221,12 @@ class FannieReportPage extends FanniePage
                                 <option>CoreWarehouse</option>
                             </select>
                         </div>';
-                foreach ($source->additionalFields($reflector->getName()) as $field) {
-                    $source_select .= '<div class="form-group">' . $field->toHTML() . '</div>';
-                }
+                $source_select = array_reduce($source->additionalFields($reflector->getName()),
+                    function ($field, $carry) {
+                        return $carry . '<div class="form-group">' . $field->toHTML() . '</div>';
+                    },
+                    $source_select
+                );
                 $source_select .= '</div>';
                 $source_select = preg_replace('/\s\s+/', '', $source_select);
                 $this->addOnloadCommand("\$('#primary-content form').prepend('$source_select');\n");
@@ -321,18 +324,26 @@ class FannieReportPage extends FanniePage
                         $xlsdata[] = $headers1;
                     }
                     $report_data = $this->xlsMeta($report_data);
-                    foreach($report_data as $line) {
-                        $xlsdata[] = $line;
-                    }
+                    $xlsdata = array_reduce($report_data, 
+                        function($line, $carry) {
+                            $carry[] = $line;
+                            return $carry;
+                        },
+                        $xlsdata
+                    );
                     if (!empty($footers)) {
                         // A single footer row
                         if (!is_array($footers[0])) {
                             $xlsdata[] = $footers;
                         // More than one footer row
                         } else {
-                            foreach ($footers as $footer) {
-                                $xlsdata[] = $footer;
-                            }
+                            $xlsdata = array_reduce($footers, 
+                                function($footer, $carry) {
+                                    $carry[] = $footer;
+                                    return $carry;
+                                },
+                                $xlsdata
+                            );
                         }
                     }
                     $xlsdata[] = array('');
@@ -663,12 +674,18 @@ class FannieReportPage extends FanniePage
                         $uri,
                         (strstr($uri, '?') === false ? '?' : '&')
                     );
-                    foreach ($this->defaultDescriptionContent() as $line) {
-                        $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
-                    }
-                    foreach ($this->report_description_content() as $line) {
-                        $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
-                    }
+                    $ret = array_reduce($this->defaultDescriptionContent(),
+                        function ($line, $carry) {
+                            return $carry . (substr($line,0,1)=='<'?'':'<br />').$line;
+                        },
+                        $ret
+                    );
+                    $ret = array_reduce($this->report_description_content(),
+                        function ($line, $carry) {
+                            return $carry . (substr($line,0,1)=='<'?'':'<br />').$line;
+                        },
+                        $ret
+                    );
                     $ret .= '</div>';
                 }
                 if ($this->sortable || $this->no_sort_but_style) {
@@ -761,9 +778,12 @@ class FannieReportPage extends FanniePage
         switch(strtolower($format)) {
             case 'html':
                 $ret .= '</table>';
-                foreach($this->report_end_content() as $line) {
-                    $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
-                }
+                $ret = array_reduce($this->report_end_content(),
+                    function ($line, $carry) {
+                        return $carry . (substr($line,0,1)=='<'?'':'<br />').$line;
+                    },
+                    $ret
+                );
                 if (!$this->no_jquery && !$this->new_tablesorter) {
                     if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
                         // windows has trouble with symlinks
@@ -836,20 +856,36 @@ class FannieReportPage extends FanniePage
                         array_push($xlsdata,$footers);
                     // More than one footer row
                     } else {
-                        foreach ($footers as $footer) {
-                            array_push($xlsdata,$footer);
-                        }
+                        $xlsdata = array_reduce($footers, 
+                            function($footer, $carry) {
+                                $carry[] = $footer;
+                                return $carry;
+                            },
+                            $xlsdata
+                        );
                     }
                 }
-                foreach ($this->report_end_content() as $line) {
-                    array_push($xlsdata, array(strip_tags($line)));
-                }
-                foreach ($this->defaultDescriptionContent() as $line) {
-                    array_unshift($xlsdata,array(strip_tags($line)));
-                }
-                foreach ($this->report_description_content() as $line) {
-                    array_unshift($xlsdata,array(strip_tags($line)));
-                }
+                $xlsdata = array_reduce($this->report_end_content(), 
+                    function($line, $carry) {
+                        $carry[] = strip_tags($line);
+                        return $carry;
+                    },
+                    $xlsdata
+                );
+                $xlsdata = array_reduce($this->defaultDescriptionContent(), 
+                    function($line, $carry) {
+                        $carry[] = strip_tags($line);
+                        return $carry;
+                    },
+                    $xlsdata
+                );
+                $xlsdata = array_reduce($this->report_description_content(), 
+                    function($line, $carry) {
+                        $carry[] = strip_tags($line);
+                        return $carry;
+                    },
+                    $xlsdata
+                );
                 if (!function_exists('ArrayToXls')) {
                     include_once(dirname(__FILE__) . '/../src/ReportConvert/ArrayToXls.php');
                 }
@@ -911,12 +947,9 @@ class FannieReportPage extends FanniePage
         }
         if (($meta & self::META_BLANK) != 0) {
             $ret = "</tbody>\n<tbody>\n\t<tr>\n";
-            $row = array();
             $header1 = $this->select_headers(False);
             // just using headers as a column count
-            foreach ($header1 as $h) {
-                $row[] = null;
-            }
+            $row = array_map(function ($item) { return null; }, $header1);
         }
         $color_styles = '';
         if (($meta & self::META_COLOR) != 0) {
@@ -933,10 +966,8 @@ class FannieReportPage extends FanniePage
             $ret = "</tbody>\n<tbody>\n\t<tr>\n";
             $tag = 'th';
             $row = array();
-            $header1 = $this->select_headers(True);
-            foreach($header1 as $h) {
-                $row[] = $h;
-            }
+            $header1 = $this->select_headers(true);
+            $row = array_filter($header1, function ($item) { return true; });
         }
 
         $date = false;
@@ -1023,19 +1054,13 @@ class FannieReportPage extends FanniePage
             unset($row['meta']);
         }
         if (($meta & self::META_BLANK) != 0) {
-            $row = array();
             $header1 = $this->select_headers(False);
             // just using headers as a column count
-            foreach($header1 as $h) {
-                $row[] = null;
-            }
+            $row = array_map(function ($val) { return null; }, $header1);
         }
         if (($meta & self::META_REPEAT_HEADERS) != 0) {
-            $row = array();
             $header1 = $this->select_headers(True);
-            foreach($header1 as $h) {
-                $row[] = strip_tags($h);
-            }
+            $row = array_map(function ($val) { return strip_tags($val); }, $header1);
         }
         $ret = "";
         foreach($row as $item) {
@@ -1085,16 +1110,11 @@ class FannieReportPage extends FanniePage
                 $row = array();
                 $header1 = $this->select_headers(False);
                 // just using headers as a column count
-                foreach($header1 as $h) {
-                    $row[] = null;
-                }
+                $row = array_map(function($i){ return null; }, $header1);
             }
             if (($meta & self::META_REPEAT_HEADERS) != 0) {
-                $row = array();
                 $header1 = $this->select_headers(True);
-                foreach($header1 as $h) {
-                    $row[] = strip_tags($h);
-                }
+                $row = array_map(function($i){ return strip_tags($i); }, $header1);
             }
             $fixup[] = $row;
         }
@@ -1204,11 +1224,13 @@ class FannieReportPage extends FanniePage
                     echo '</style>';
                 }
 
-                foreach($this->css_files as $css_url) {
-                    printf('<link rel="stylesheet" type="text/css" href="%s">',
-                        $css_url);
-                    echo "\n";
-                }
+                echo array_reduce($this->css_files,
+                    function ($css_url, $carry) {
+                        return $carry . sprintf('<link rel="stylesheet" type="text/css" href="%s">' . "\n",
+                                        $css_url);
+                    },
+                    ''
+                );
             }
 
             if ($this->window_dressing || $this->report_format == 'html') {

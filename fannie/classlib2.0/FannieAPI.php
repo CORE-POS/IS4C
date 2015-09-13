@@ -264,9 +264,10 @@ class FannieAPI
         };
 
         $files = array();
-        foreach($directories as $dir) {
-            $files = array_merge($files, $search($dir));
-        }
+        $files = array_reduce($directories,
+            function ($dir, $carry) use ($search) { return array_merge($carry, $search($dir)); },
+            array()
+        );
 
         $ret = array();
         foreach($files as $file) {

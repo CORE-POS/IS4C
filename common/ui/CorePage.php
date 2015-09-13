@@ -376,17 +376,18 @@ class CorePage
                 echo '<script type="text/javascript">';
                 echo $js_content;
                 echo "\n\$(document).ready(function(){\n";
-                foreach($this->onload_commands as $oc)
-                    echo $oc."\n";
+                echo array_reduce($this->onload_commands, function($oc, $carry) { return $carry . $oc . "\n"; }, '');
                 echo "});\n";
                 echo '</script>';
             }
-
-            foreach($this->css_files as $css_url) {
-                printf('<link rel="stylesheet" type="text/css" href="%s">',
-                    $css_url);
-                echo "\n";
-            }
+            
+            echo array_reduce($this->css_files,
+                function ($css_url, $carry) {
+                    return $carry . sprintf('<link rel="stylesheet" type="text/css" href="%s">' . "\n",
+                                    $css_url);
+                },
+                ''
+            );
             
             $page_css = $this->css_content();
             if (!empty($page_css)) {
