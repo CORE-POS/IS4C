@@ -1077,6 +1077,7 @@ class SQLManager
             $return = array_reduce($cols,
                 function ($c, $carry) {
                     if (is_object($c)) {
+                        var_dump($c);
                         $carry[$c->name] = $c->type;
                     }
                     return $carry;
