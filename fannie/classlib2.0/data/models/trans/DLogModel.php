@@ -54,6 +54,7 @@ class DLogModel extends DTransactionsModel
 
     public function create()
     {
+        var_dump('hello');
         ob_start();
         $this->normalizeLog($this->name, 'dtransactions', BasicModel::NORMALIZE_MODE_APPLY);
         var_dump(ob_get_clean());
