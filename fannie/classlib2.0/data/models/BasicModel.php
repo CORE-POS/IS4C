@@ -333,7 +333,6 @@ class BasicModel
     {
         $this->fq_name = $db_name . $this->connection->sep() . $this->name;
         $ret = array('db'=>$db_name,'struct'=>$this->name,'error'=>0,'error_msg'=>'');
-        var_Dump($this->fq_name);
         if (!$this->create()) {
             $ret['error'] = 3;
             $ret['error_msg'] = $this->connection->error($db_name);

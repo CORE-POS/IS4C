@@ -805,13 +805,11 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'MemChargeBalanceModel', // requires ar_live_balance,
             'HouseCouponThisMonthModel', // requires dlog_90_view
         );
-        var_dump($models);
         foreach ($models as $class) {
             $obj = new $class($con);
             if (method_exists($obj, 'addExtraDB')) {
                 $obj->addExtraDB($op_db_name);
             }
-            var_dump($class);
             $ret[] = $obj->createIfNeeded($trans_db_name);
         }
 
