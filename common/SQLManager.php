@@ -1074,17 +1074,14 @@ class SQLManager
         $cols = $conn->MetaColumns($table_name);
 
         if (is_array($cols)) {
-            var_dump('PRE');
-            var_dump($cols);
             $return = array_reduce($cols,
                 function ($c, $carry) {
+                    var_dump($c);
                     $carry[$c->name] = $c->type;
                     return $carry;
                 },
                 array()
             );
-            var_dump('POST');
-            var_dump($return);
             return $return;
         }
 
