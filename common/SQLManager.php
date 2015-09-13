@@ -1018,7 +1018,6 @@ class SQLManager
 
         $conn = $this->connections[$which_connection];
         $views = $conn->MetaTables('VIEW');
-        $lc_views = array();
         $lc_name = strtolower($table_name);
         $lc_views = array_map(function($view) { return strtolower($view); }, $views);
 
