@@ -376,13 +376,13 @@ class CorePage
                 echo '<script type="text/javascript">';
                 echo $js_content;
                 echo "\n\$(document).ready(function(){\n";
-                echo array_reduce($this->onload_commands, function($oc, $carry) { return $carry . $oc . "\n"; }, '');
+                echo array_reduce($this->onload_commands, function($carry, $oc) { return $carry . $oc . "\n"; }, '');
                 echo "});\n";
                 echo '</script>';
             }
             
             echo array_reduce($this->css_files,
-                function ($css_url, $carry) {
+                function ($carry, $css_url) {
                     return $carry . sprintf('<link rel="stylesheet" type="text/css" href="%s">' . "\n",
                                     $css_url);
                 },

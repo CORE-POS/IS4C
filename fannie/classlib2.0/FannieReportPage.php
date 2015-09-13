@@ -222,7 +222,7 @@ class FannieReportPage extends FanniePage
                             </select>
                         </div>';
                 $source_select = array_reduce($source->additionalFields($reflector->getName()),
-                    function ($field, $carry) {
+                    function ($carry, $field) {
                         return $carry . '<div class="form-group">' . $field->toHTML() . '</div>';
                     },
                     $source_select
@@ -325,7 +325,7 @@ class FannieReportPage extends FanniePage
                     }
                     $report_data = $this->xlsMeta($report_data);
                     $xlsdata = array_reduce($report_data, 
-                        function($line, $carry) {
+                        function($carry, $line) {
                             $carry[] = $line;
                             return $carry;
                         },
@@ -338,7 +338,7 @@ class FannieReportPage extends FanniePage
                         // More than one footer row
                         } else {
                             $xlsdata = array_reduce($footers, 
-                                function($footer, $carry) {
+                                function($carry, $footer) {
                                     $carry[] = $footer;
                                     return $carry;
                                 },
@@ -675,13 +675,13 @@ class FannieReportPage extends FanniePage
                         (strstr($uri, '?') === false ? '?' : '&')
                     );
                     $ret = array_reduce($this->defaultDescriptionContent(),
-                        function ($line, $carry) {
+                        function ($carry, $line) {
                             return $carry . (substr($line,0,1)=='<'?'':'<br />').$line;
                         },
                         $ret
                     );
                     $ret = array_reduce($this->report_description_content(),
-                        function ($line, $carry) {
+                        function ($carry, $line) {
                             return $carry . (substr($line,0,1)=='<'?'':'<br />').$line;
                         },
                         $ret
@@ -779,7 +779,7 @@ class FannieReportPage extends FanniePage
             case 'html':
                 $ret .= '</table>';
                 $ret = array_reduce($this->report_end_content(),
-                    function ($line, $carry) {
+                    function ($carry, $line) {
                         return $carry . (substr($line,0,1)=='<'?'':'<br />').$line;
                     },
                     $ret
@@ -857,7 +857,7 @@ class FannieReportPage extends FanniePage
                     // More than one footer row
                     } else {
                         $xlsdata = array_reduce($footers, 
-                            function($footer, $carry) {
+                            function($carry, $footer) {
                                 $carry[] = $footer;
                                 return $carry;
                             },
@@ -866,21 +866,21 @@ class FannieReportPage extends FanniePage
                     }
                 }
                 $xlsdata = array_reduce($this->report_end_content(), 
-                    function($line, $carry) {
+                    function($carry, $line) {
                         $carry[] = strip_tags($line);
                         return $carry;
                     },
                     $xlsdata
                 );
                 $xlsdata = array_reduce($this->defaultDescriptionContent(), 
-                    function($line, $carry) {
+                    function($carry, $line) {
                         $carry[] = strip_tags($line);
                         return $carry;
                     },
                     $xlsdata
                 );
                 $xlsdata = array_reduce($this->report_description_content(), 
-                    function($line, $carry) {
+                    function($carry, $line) {
                         $carry[] = strip_tags($line);
                         return $carry;
                     },
@@ -1225,7 +1225,7 @@ class FannieReportPage extends FanniePage
                 }
 
                 echo array_reduce($this->css_files,
-                    function ($css_url, $carry) {
+                    function ($carry, $css_url) {
                         return $carry . sprintf('<link rel="stylesheet" type="text/css" href="%s">' . "\n",
                                         $css_url);
                     },

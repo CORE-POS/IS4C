@@ -719,7 +719,7 @@ class BasicModel
 
         $sql .= ' SET '.$sets.' WHERE '.$where;
         $all_args = array_reduce($where_args,
-            function ($item, $carry) { return $carry[] = $item; },
+            function ($carry, $item) { return $carry[] = $item; },
             $set_args
         );
         $prep = $this->connection->prepare_statement($sql);
@@ -1226,7 +1226,7 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
         $label_col = array_keys($this->columns);
         $label_col = $label_col[1];
         $ret = array_reduce($this->find($label_col), 
-            function ($obj, $ret) use ($selected) {
+            function ($ret, $obj) use ($selected) {
                 return $ret . sprintf('<option %s value="%d">%s</option>',
                         $selected == $obj->$id_col() ? 'selected' : '',
                         $obj->$id_col(),
@@ -1419,7 +1419,7 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
     {
         $tables = array();
         $tables = array_reduce($files,
-            function ($file, $carry) {
+            function ($carry, $file) {
                 if (!file_exists($file)) {
                     return $carry;
                 }
@@ -1453,14 +1453,14 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
         );
         ksort($tables);
         echo array_reduce(array_keys($table),
-            function ($item, $carry) {
+            function ($carry, $item) {
                 return $carry . '* [' . $item . '](#' . strtolower($item) . ')' . "\n";
             },
             ''
         );
         echo "\n";
         echo array_reduce($tables,
-            function ($item, $carry) {
+            function ($carry, $item) {
                 return $doc . "\n";
             },
             ''

@@ -129,7 +129,7 @@ class PgsqlAdapter implements DialectAdapter
 
     public function concat($expressions)
     {
-        $ret = array_reduce($expressions, function($e, $carry) { return $carry . $e . '||'; }, '');
+        $ret = array_reduce($expressions, function($carry, $e) { return $carry . $e . '||'; }, '');
         
         return substr($ret, 0, strlen($ret)-1);
     }
