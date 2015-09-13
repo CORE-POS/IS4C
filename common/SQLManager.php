@@ -1074,6 +1074,8 @@ class SQLManager
         $cols = $conn->MetaColumns($table_name);
 
         if (is_array($cols)) {
+            var_dump($cols);
+            echo "BASIC STRUCT\n";
             $return = array_reduce($cols,
                 function ($c, $carry) {
                     if (is_object($c)) {
