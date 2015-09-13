@@ -810,6 +810,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             if (method_exists($obj, 'addExtraDB')) {
                 $obj->addExtraDB($op_db_name);
             }
+            var_dump($class);
             $ret[] = $obj->createIfNeeded($trans_db_name);
         }
 
