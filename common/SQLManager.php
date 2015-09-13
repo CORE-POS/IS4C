@@ -1073,16 +1073,16 @@ class SQLManager
         $conn = $this->connections[$which_connection];
         $cols = $conn->MetaColumns($table_name);
 
-        $return = array();
         if (is_array($cols)) {
+            var_dump($cols);
             $return = array_reduce($cols,
                 function ($c, $carry) {
-                    var_dump($c);
                     $carry[$c->name] = $c->type;
                     return $carry;
                 },
                 array()
             );
+            var_dump($return);
             return $return;
         }
 
