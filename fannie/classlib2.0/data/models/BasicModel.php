@@ -1319,7 +1319,15 @@ class BasicModel
     public function __call($name, $arguments)
     {
         if (!isset($this->columns[$name])) {
-            throw new Exception('Invalid accessor: ' . $name);
+            foreach ($this->columns as $col => $info) {
+                if (isset($info['replaces']) && $info['replaces'] == $name) {
+                    $name = $col;
+                    break;
+                }
+            }
+            if (!isset($this->columns[$name])) {
+                throw new Exception('Invalid accessor: ' . $name);
+            }
         }
 
         if (count($arguments) == 0) {
