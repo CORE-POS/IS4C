@@ -161,6 +161,7 @@
     <CleanFiles Include="Bitmap.dll" />
     <CleanFiles Include="ParallelLayer.dll" />
     <CleanFiles Include="USBLayer.dll" />
+    <CleanFiles Include="UDPMsgBox.dll" />
     <CleanFiles Include="SPH.dll" />
     <CleanFiles Include="HidSharp.dll" />
     <CleanFiles Include="Newtonsoft.Json.dll" />
