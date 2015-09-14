@@ -30,13 +30,5 @@ class AllItemProdUserSearch extends Plugin {
         just PLU items
         and use table ProductUser.description when it is available.
         This plugin has priority over standard modules that do similar things.';
-
-    public function plugin_enable(){
-
-    }
-
-    public function plugin_disable(){
-
-    }
-
 }
+

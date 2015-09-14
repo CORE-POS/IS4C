@@ -59,7 +59,7 @@ class QuickKeyLauncher extends Parser
             CoreLocal::set("qkCurrentId",CoreLocal::get("currentid"));
 
             $plugin_info = new QuickKeys();
-            $ret['main_frame'] = $plugin_info->plugin_url().'/QKDisplay.php';
+            $ret['main_frame'] = $plugin_info->pluginUrl().'/QKDisplay.php';
         } else {
             $tmp = explode('QO', $str);
             $num = $tmp[1]; 

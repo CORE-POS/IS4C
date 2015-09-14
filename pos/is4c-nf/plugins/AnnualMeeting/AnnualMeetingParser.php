@@ -64,7 +64,7 @@ class AnnualMeetingParser extends Parser {
             }
             CoreLocal::set('qmNumber', $opts);
             $plugin_info = new QuickMenus();
-            $ret['main_frame'] = $plugin_info->plugin_url().'/QMDisplay.php';
+            $ret['main_frame'] = $plugin_info->pluginUrl().'/QMDisplay.php';
             return $ret;
         }
         else {

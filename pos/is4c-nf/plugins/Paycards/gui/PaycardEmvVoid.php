@@ -73,7 +73,7 @@ class PaycardEmvVoid extends PaycardProcessPage
             $e2e = new MercuryE2E();
             $json = array();
             $plugin_info = new Paycards();
-            $json['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvSuccess.php';
+            $json['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvSuccess.php';
             $json['receipt'] = false;
             $success = $e2e->handleResponseDataCap($xml);
             if ($success === PaycardLib::PAYCARD_ERR_OK) {

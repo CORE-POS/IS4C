@@ -154,11 +154,15 @@ class BasicModel
     {
         $this->connection = $con;
         if (empty($this->unique)) {
-            foreach($this->columns as $name=>$definition) {
-                if (isset($definition['primary_key']) && $definition['primary_key']) {
-                    $this->unique[] = $name;
+            $this->unique = array_filter($this->columns,
+                function ($definition) {
+                    if (isset($definition['primary_key']) && $definition['primary_key']) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 }
-            }
+            );
         }
 
         // fully-qualified name detectetion not working right now...
@@ -714,10 +718,10 @@ class BasicModel
         $sets = substr($sets,0,strlen($sets)-1);
 
         $sql .= ' SET '.$sets.' WHERE '.$where;
-        $all_args = $set_args;
-        foreach($where_args as $arg) {
-            $all_args[] = $arg;
-        }
+        $all_args = array_reduce($where_args,
+            function ($carry, $item) { return $carry[] = $item; },
+            $set_args
+        );
         $prep = $this->connection->prepare_statement($sql);
         $result = $this->connection->exec_statement($prep, $all_args);
 
@@ -768,11 +772,15 @@ class BasicModel
         $recase_columns = array_merge($array, $this->normalizeRename($db_name, $mode));
         $recase_columns = array_merge($array, $this->normalizeColumnAttributes($db_name, $mode));
 
-        foreach ($this->columns as $col_name => $defintion) {
-            if (!in_array($col_name,array_keys($current))) {
-                $new_columns[] = $col_name;
+        $new_columns = array_filter(array_keys($this->columns),
+            function ($col_name) use ($current) {
+                if (!in_array($col_name,array_keys($current))) {
+                    return true;
+                } else {
+                    return false;
+                }
             }
-        }
+        );
         foreach($current as $col_name => $type) {
             if (!in_array($col_name,array_keys($this->columns)) && !in_array(strtolower($col_name), $lowercase_this)) {
                 $unknown[] = $col_name;
@@ -886,10 +894,9 @@ class BasicModel
             $lowercase_current[] = strtolower($col_name);
             $casemap[strtolower($col_name)] = $col_name;
         }
-        $lowercase_this = array();
-        foreach($this->columns as $col_name => $definition) {
-            $lowercase_this[] = strtolower($col_name);
-        }
+        $lowercase_this = array_map(function ($item) {
+            return strtolower($item);
+        }, array_keys($this->columns));
 
         $recase_columns = array();
         foreach ($this->columns as $col_name => $defintion) {
@@ -1218,14 +1225,16 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
         $id_col = $this->unique[0];
         $label_col = array_keys($this->columns);
         $label_col = $label_col[1];
-        $ret = '';
-        foreach ($this->find($label_col) as $obj) {
-            $ret .= sprintf('<option %s value="%d">%s</option>',
-                    $selected == $obj->$id_col() ? 'selected' : '',
-                    $obj->$id_col(),
-                    $obj->$label_col()
-            );
-        }
+        $ret = array_reduce($this->find($label_col), 
+            function ($ret, $obj) use ($selected) {
+                return $ret . sprintf('<option %s value="%d">%s</option>',
+                        $selected == $obj->$id_col() ? 'selected' : '',
+                        $obj->$id_col(),
+                        $obj->$label_col()
+                );
+            }, 
+            ''
+        );
 
         return $ret;
     }
@@ -1409,44 +1418,53 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
     protected function printMarkdown($files)
     {
         $tables = array();
-        foreach ($files as $file) {
-            if (!file_exists($file)) {
-                continue;
-            }
-            if (!substr($file, -4) == 'php') {
-                continue;
-            }
-            $class = pathinfo($file, PATHINFO_FILENAME);
-            if (!class_exists($class)) { // nested / cross-linked includes
-                include($file);
-                if (!class_exists($class)) {
-                    continue;
+        $tables = array_reduce($files,
+            function ($carry, $file) {
+                if (!file_exists($file)) {
+                    return $carry;
                 }
-            }
-            $obj = new $class(null);
-            if (!is_a($obj, 'BasicModel')) {
-                continue;
-            }
+                if (!substr($file, -4) == 'php') {
+                    return $carry;
+                }
+                $class = pathinfo($file, PATHINFO_FILENAME);
+                if (!class_exists($class)) { // nested / cross-linked includes
+                    include($file);
+                    if (!class_exists($class)) {
+                        return $carry;
+                    }
+                }
+                $obj = new $class(null);
+                if (!is_a($obj, 'BasicModel')) {
+                    return $carry;
+                }
 
-            $table = $obj->getName();
-            $doc = '### ' . $table . "\n";
-            if (is_a($obj, 'ViewModel')) {
-                $doc .= '**View**' . "\n\n";
-            }
-            $doc .= $obj->columnsDoc();
-            $doc .= $obj->doc();
+                $table = $obj->getName();
+                $doc = '### ' . $table . "\n";
+                if (is_a($obj, 'ViewModel')) {
+                    $doc .= '**View**' . "\n\n";
+                }
+                $doc .= $obj->columnsDoc();
+                $doc .= $obj->doc();
+                $carry[$table] = $doc;
 
-            $tables[$table] = $doc;
-        }
+                return $carry;
+            },
+            array()
+        );
         ksort($tables);
-        foreach ($tables as $t => $doc) {
-            echo '* [' . $t . '](#' . strtolower($t) . ')' . "\n";
-        }
+        echo array_reduce(array_keys($table),
+            function ($carry, $item) {
+                return $carry . '* [' . $item . '](#' . strtolower($item) . ')' . "\n";
+            },
+            ''
+        );
         echo "\n";
-        foreach ($tables as $t => $doc) {
-            echo $doc;
-            echo "\n";
-        }
+        echo array_reduce($tables,
+            function ($carry, $item) {
+                return $doc . "\n";
+            },
+            ''
+        ); 
     }
 }
 

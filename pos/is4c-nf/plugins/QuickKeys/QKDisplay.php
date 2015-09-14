@@ -94,7 +94,7 @@ class QKDisplay extends NoInputCorePage
     function preprocess()
     {
         $plugin_info = new QuickKeys();
-        $this->plugin_url = $plugin_info->plugin_url().'/';
+        $this->plugin_url = $plugin_info->pluginUrl().'/';
 
         $this->offset = isset($_REQUEST['offset'])?$_REQUEST['offset']:0;
 

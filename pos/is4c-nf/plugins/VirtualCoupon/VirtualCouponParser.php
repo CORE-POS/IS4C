@@ -43,7 +43,7 @@ class VirtualCouponParser extends Parser {
             );
         } else {
             $plugin_info = new VirtualCoupon();
-            $ret['main_frame'] = $plugin_info->plugin_url().'/VirtCoupDisplay.php';
+            $ret['main_frame'] = $plugin_info->pluginUrl().'/VirtCoupDisplay.php';
         }
         return $ret;
     }

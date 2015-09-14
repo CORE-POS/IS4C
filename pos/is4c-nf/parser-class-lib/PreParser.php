@@ -109,28 +109,10 @@ class PreParser {
       Scan the preparse directory for module files.
       Return an array of available modules.
     */
-    static public function get_preparse_chain(){
-
-        $set = AutoLoader::ListModules('PreParser');
-        $set = array_reverse($set);
-
-        $preparse_chain = array();
-        $first = "";
-        foreach($set as $classname){
-            $instance = new $classname();
-            if ($instance->isLast())
-                array_push($preparse_chain,$classname);
-            elseif ($instance->isFirst())
-                $first = $classname;
-            else
-                array_unshift($preparse_chain,$classname);
-        }
-        if ($first != "")
-            array_unshift($preparse_chain,$first);
-
-        return $preparse_chain;
+    static public function get_preparse_chain()
+    {
+        return Parser::get_parse_chain('PreParser');
     }
 
 }
 
-?>
