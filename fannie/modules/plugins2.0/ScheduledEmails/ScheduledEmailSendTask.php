@@ -62,7 +62,8 @@ class ScheduledEmailSendTask extends FannieTask
                 templateData
             FROM ScheduledEmailQueue
             WHERE sent=0
-                AND sendDate <= ' . $dbc->now();
+                AND sendDate <= ' . $dbc->now() . '
+            ORDER BY scheduledEmailTemplateID';
         $result = $dbc->query($query);
         $template = new ScheduledEmailTemplatesModel($dbc);
         while ($row = $dbc->fetchRow($result)) {
@@ -99,9 +100,6 @@ class ScheduledEmailSendTask extends FannieTask
 
             if (self::sendEmail($template, $email, $data)) {
                 $dbc->execute($sentP, array($email, $row['scheduledEmailQueueID']));
-                if ($row['scheduledEmailTemplateID'] == 3) {
-                    break;
-                }
             } else {
                 $dbc->execute($failP, array('error sending', $row['scheduledEmailQueueID']));
             }
@@ -129,7 +127,6 @@ class ScheduledEmailSendTask extends FannieTask
         $mail->FromName = $settings['ScheduledEmailFromName'];
         $mail->addReplyTo($settings['ScheduledEmailReplyTo']);
         $mail->addAddress($address);
-        $mail->addBCC('andy@wholefoods.coop');
         $mail->Subject = $template->subject();
         if ($template->hasHTML()) {
             $mail->isHTML(true);
