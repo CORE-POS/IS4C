@@ -21,24 +21,38 @@
 
 *********************************************************************************/
 
-class InactiveMemLookup extends Plugin {
+class InactiveMemLookup extends Plugin 
+{
 
-	public $plugin_description = "Show members with inactive status in searches. The account
-		remains inactive and the transaction can be assigned to the default non-member
-		account. This distinguishes between \"no search results\" and \"there is an account
-		but it cannot be used\".";
+    public $plugin_description = "Show members with inactive status in searches. The account
+        remains inactive and the transaction can be assigned to the default non-member
+        account. This distinguishes between \"no search results\" and \"there is an account
+        but it cannot be used\".";
 
-	public $plugin_settings = array(
-		'InactiveMemUsage' => array(
-		'label' => 'Usage',
-		'description' => 'What number to assign to transactions',
-		'default' => 1,
-		'options' => array(
-			'Default non-member' => 1,
-			'The inactive member' => 0
-			)
-		)
-	);
+    public $plugin_settings = array(
+        'InactiveMemUsage' => array(
+        'label' => 'Usage',
+        'description' => 'What number to assign to transactions',
+        'default' => 1,
+        'options' => array(
+            'Default non-member' => 1,
+            'The inactive member' => 0
+            )
+        ),
+        'InactiveMemApproval' => array(
+        'label' => 'Approval',
+        'description' => 'Require manager approval on transactions',
+        'default' => 0,
+        'options' => array(
+            'Yes' => 1,
+            'No' => 0
+            )
+        )
+    );
+
+    public function plugin_transaction_reset()
+    {
+        CoreLocal::set('InactiveMemList', array());
+    }
 }
 
-?>

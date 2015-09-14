@@ -50,9 +50,9 @@ if (isset($_POST['Yes'])){
   $extraR = $sql->execute($extraQ, array($upc));
 
   if (isset($_POST["scale_delete"]) && $_POST["scale_delete"] == "on"){
-	$plu = substr($upc,3,4);
-	include("hobartcsv/parse.php");
-	deleteitem($plu);
+    $plu = substr($upc,3,4);
+    include("hobartcsv/parse.php");
+    deleteitem($plu);
   }
 
   echo "<script language=JavaScript>";
@@ -97,8 +97,8 @@ else {
     echo "<input type=hidden name=description value=$desc>";
   }
   if (substr($upc,0,3) == "002"){
-	echo "<input type=checkbox name=scale_delete />";
-	echo "Delete from the scales, too";
+    echo "<input type=checkbox name=scale_delete />";
+    echo "Delete from the scales, too";
   }
 
   echo "</form>";

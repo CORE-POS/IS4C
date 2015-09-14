@@ -3,14 +3,14 @@
 
     Copyright 2009,2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -28,12 +28,15 @@ if (!class_exists('FannieAPI')) {
 
 class CoopDealsReviewPage extends FanniePage 
 {
-
     protected $title = "Fannie - CAP sales";
     protected $header = "Review Data";
 
     public $description = '[Co+op Deals Review] lists the currently load Co+op Deals data
     and can create sales batches from that data.';
+    public $themed = true;
+
+    protected $auth_classes = array('batches');
+    protected $must_authenticate = true;
     
     private $mode = 'form';
 
@@ -76,7 +79,8 @@ class CoopDealsReviewPage extends FanniePage
         }
         $saleItemsP = $dbc->prepare_statement("
             SELECT t.upc,
-                t.price,"
+                t.price,
+                t.multiplier,"
                 . $dbc->concat(
                     ($superdept_grouping ? $superdept_grouping : "''"),
                     ($superdept_grouping ? "' '" : "''"),
@@ -87,12 +91,10 @@ class CoopDealsReviewPage extends FanniePage
             FROM tempCapPrices as t
                 INNER JOIN products AS p on t.upc = p.upc
                 LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
+            WHERE p.inUse=1
             ORDER BY s.super_name, t.upc
         ");
         $saleItemsR = $dbc->exec_statement($saleItemsP);
-        define("UPC_COL",0);
-        define("PRICE_COL",1);
-        define("BATCHNAME_COL",2);
 
         $batchP = $dbc->prepare_statement('
             INSERT INTO batches (
@@ -112,12 +114,12 @@ class CoopDealsReviewPage extends FanniePage
         $list->quantity(0);
 
         while ($row = $dbc->fetch_row($saleItemsR)) {
-            if (!isset($batchIDs[$row[BATCHNAME_COL]])) {
-                $args = array($row[BATCHNAME_COL] . ' ' . $naming, 1, 1);
-                if (substr($row[BATCHNAME_COL],-2) == " A"){
+            if (!isset($batchIDs[$row['batch']])) {
+                $args = array($row['batch'] . ' ' . $naming, 1, 1);
+                if (substr($row['batch'],-2) == " A"){
                     $args[] = $start;
                     $args[] = $end;
-                } else if (substr($row[BATCHNAME_COL],-2) == " B") {
+                } else if (substr($row['batch'],-2) == " B") {
                     $args[] = $b_start;
                     $args[] = $b_end;
                 } else {
@@ -127,18 +129,23 @@ class CoopDealsReviewPage extends FanniePage
     
                 $dbc->exec_statement($batchP,$args);
                 $bID = $dbc->insert_id();
-                $batchIDs[$row[BATCHNAME_COL]] = $bID;
-            }
-            $id = $batchIDs[$row[BATCHNAME_COL]];
+                $batchIDs[$row['batch']] = $bID;
 
-            $list->upc($row[UPC_COL]);
+                if ($this->config->get('STORE_MODE') === 'HQ') {
+                    StoreBatchMapModel::initBatch($bID);
+                }
+            }
+            $id = $batchIDs[$row['batch']];
+
+            $list->upc($row['upc']);
             $list->batchID($id);
-            $list->salePrice(sprintf("%.2f",$row[PRICE_COL]));
+            $list->salePrice(sprintf("%.2f",$row['price']));
+            $list->signMultiplier($row['multiplier']);
             $list->save();
         }
 
-        $ret = "New sales batches have been created!<p />";
-        $ret .= "<a href=\"../newbatch/\">View batches</a>";    
+        $ret = "<p>New sales batches have been created!</p>";
+        $ret .= "<p><a href=\"../newbatch/\">View batches</a></p>";
 
         return $ret;
     }
@@ -150,6 +157,7 @@ class CoopDealsReviewPage extends FanniePage
         $query = $dbc->prepare_statement("
             SELECT
                 t.upc,
+                p.brand,
                 p.description,
                 t.price,
                 CASE WHEN s.super_name IS NULL THEN 'sale' ELSE s.super_name END as batch,
@@ -163,49 +171,82 @@ class CoopDealsReviewPage extends FanniePage
         $result = $dbc->exec_statement($query);
 
         $ret = "<form action=CoopDealsReviewPage.php method=post>
-        <table cellpadding=4 cellspacing=0 border=1>
-        <tr><th>UPC</th><th>Desc</th><th>Sale Price</th><th>Batch</th></tr>\n";
+        <table class=\"table table-bordered table-striped tablesorter tablesorter-core small\">
+        <thead>
+        <tr><th>UPC</th><th>Brand</th><th>Desc</th><th>Sale Price</th>
+        <th>New Batch Name</th></tr>\n
+        </thead><tbody>";
         while ($row = $dbc->fetch_row($result)) {
             $ret .= sprintf('<tr>
+                        <td>%s</td>
                         <td>%s</td>
                         <td>%s</td>
                         <td>%.2f</td>
                         <td><span class="superNameSpan">%s </span>Co-op Deals %s</td>
                         </tr>' . "\n",
                         $row['upc'],
+                        $row['brand'],
                         $row['description'],
                         $row['price'],
                         $row['batch'],
-                        $row['subbatch']);
+                        $row['subbatch']
+                        );
         }
         $ret .= <<<html
+        </tbody>
         </table><p />
-        <table cellpadding=4 cellspacing=0><tr>
-        <td><b>A Start</b></td><td><input type=text name=start id=start /></td>
-        </tr><tr>
-        <td><b>A End</b></td><td><input type=text name=end id=end /></td>
-        </tr><tr>
-        <td><b>B Start</b></td><td><input type=text name=bstart id=bstart /></td>
-        </tr><tr>
-        <td><b>B End</b></td><td><input type=text name=bend id=bend /></td>
-        </tr><tr>
-        <td><b>Month</b></td><td><input type=text name=naming /></td>
-        </tr></table>
-        <label>
-            <input type="checkbox" name="group_by_superdepts" checked="true" 
-                onchange="$('.superNameSpan').toggle(); " />
-            Group sale batches by Superdepartment
-         </label><br />
-        <input type=submit value="Create Batch(es)" />
+        <div class="row form-horizontal form-group">
+            <label class="col-sm-2 control-label">A Start</label>
+            <div class="col-sm-4">
+                <input type="text" name="start" id="start" class="form-control date-field" />
+            </div>
+            <label class="col-sm-2 control-label">B Start</label>
+            <div class="col-sm-4">
+                <input type="text" name="bstart" id="bstart" class="form-control date-field" />
+            </div>
+        </div>
+        <div class="row form-horizontal form-group">
+            <label class="col-sm-2 control-label">A End</label>
+            <div class="col-sm-4">
+                <input type="text" name="end" id="end" class="form-control date-field" />
+            </div>
+            <label class="col-sm-2 control-label">B End</label>
+            <div class="col-sm-4">
+                <input type="text" name="bend" id="bend" class="form-control date-field" />
+            </div>
+        </div>
+        <div class="row form-horizontal form-group">
+            <label class="col-sm-2 control-label">Month</label>
+            <div class="col-sm-4">
+                <input type="text" name="naming" class="form-control" />
+            </div>
+            <label class="col-sm-6">
+                <input type="checkbox" name="group_by_superdepts" checked="true" 
+                    onchange="$('.superNameSpan').toggle(); " />
+                Group sale batches by Superdepartment
+            </label>
+        </div>
+        <p>    
+            <button type=submit class="btn btn-default">Create Batch(es)</button>
+            <a href="CoopDealsMergePage.php" class="pull-right btn btn-default">Merge New Items into Existing Batch(es)</a>
+        </p>
         </form>
 html;
 
-        $this->add_onload_command("\$('#start').datepicker();\n");
-        $this->add_onload_command("\$('#end').datepicker();\n");
-        $this->add_onload_command("\$('#bstart').datepicker();\n");
-        $this->add_onload_command("\$('#bend').datepicker();\n");
-
         return $ret;
+    }
+    
+    public function helpContent()
+    {
+        return '<p>This tool creates A, B, and TPR batches. The TPR batches will
+            start on <em>A Start</em> and end on <em>B End</em>. The Month field
+            is used in batch names. For example, if Month is <em>January</em>, 
+            batches will have names like <em>Co+op Deals January A</em>.</p>
+            <p><em>Group sale batches by superdepartment</em> means create 
+            separate sales batches for each appicable superdepartment rather
+            than having a single A batch, single B batch, and single TPR
+            batch.</p>
+            ';
     }
 }
 

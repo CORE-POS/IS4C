@@ -1,10 +1,10 @@
 <?php
 include('../../../config.php');
 
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
-include('../../db.php');
 if (!class_exists('FannieAPI'))
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+include('../../db.php');
 
 $UNFI_ALL_QUERY = "
     select p.upc,
@@ -15,81 +15,121 @@ $UNFI_ALL_QUERY = "
     v.cost * v.units as vd_cost,
     p.normal_price,
     v.sku as unfi_sku,
-    s.srp as wfc_srp,
+    v.srp as wfc_srp,
     v.vendorDept as cat,
     p.department,
     CASE WHEN p.normal_price = 0 THEN 0 ELSE
         CONVERT((p.normal_price - v.cost)/p.normal_price,decimal(10,2)) 
     END as our_margin,
-    CONVERT((s.srp- v.cost)/ s.srp,decimal(10,2))
+    CONVERT((v.srp- v.cost)/ v.srp,decimal(10,2))
     as unfi_margin,
-    case when s.srp > p.normal_price then 1 else 0 END as diff,
+    case when v.srp > p.normal_price then 1 else 0 END as diff,
     x.cost AS cost,
-    x.variable_pricing
+    p.price_rule_id AS variable_pricing
     from vendorItems AS v
     INNER JOIN products as p ON v.upc=p.upc
     LEFT JOIN prodExtra AS x ON p.upc=x.upc
-    LEFT JOIN vendorSRPs AS s ON v.vendorID=s.vendorID AND v.upc=s.upc
     where 
-    v.vendorID=1";
+    v.vendorID=1
+    AND p.store_id=1";
 
 if (isset($_GET['action'])){
-	$out = $_GET['action']."`";
-	switch($_GET['action']){
-	case 'savePrice':
-		$upc = $_GET['upc'];
-		$price = $_GET['price'];
+    $out = $_GET['action']."`";
+    switch($_GET['action']){
+    case 'savePrice':
+        $upc = $_GET['upc'];
+        $price = $_GET['price'];
 
         $model = new ProductsModel($sql);
         $model->upc($upc);
         $model->normal_price($price);
+        $model->store_id(1);
         $model->save();
         $model->pushToLanes();
 
-		$out .= $upc."`";
+        $out .= $upc."`";
 
-		$prep = $sql->prepare($UNFI_ALL_QUERY . ' AND p.upc = ?');
-		$result = $sql->execute($prep, array($upc));
-		$row = $sql->fetch_array($result);
-		
-		$pupc = $row[0];
-		$uupc = $row['upcc'];
-		$pdesc = $row['description'];
-		$udesc = $row['item_desc'];
-		$pprice = $row['normal_price'];
-		$uprice = $row['wfc_srp'];
-		$cat = $row['cat'];
-		$ourMarg = (100 * (float)$row['our_margin'])."%";
-		$unMarg = (100 * (float)$row['unfi_margin'])."%";
-		$dept = $row['department'];
-		$diff = $row['diff'];
-		$cost = $row['cost'];
+        $prep = $sql->prepare($UNFI_ALL_QUERY . ' AND p.upc = ?');
+        $result = $sql->execute($prep, array($upc));
+        $row = $sql->fetch_array($result);
+        
+        $pupc = $row[0];
+        $uupc = $row['upcc'];
+        $pdesc = $row['description'];
+        $udesc = $row['item_desc'];
+        $pprice = $row['normal_price'];
+        $uprice = $row['wfc_srp'];
+        $cat = $row['cat'];
+        $ourMarg = (100 * (float)$row['our_margin'])."%";
+        $unMarg = (100 * (float)$row['unfi_margin'])."%";
+        $dept = $row['department'];
+        $diff = $row['diff'];
+        $cost = $row['cost'];
 
-		if($diff==1){
-		 $bg = "ff6677";
-		 $sort = 1;
-		}else{
-		 $bg = "#ccffcc";
-		 $sort = 0;
-		}
-		$out .=  "<td bgcolor=$bg><a href=\"http://key/queries/productTest.php?upc=$pupc\" target=\"__unfi_pc\">$pupc</td><td bgcolor=$bg>$pdesc</td><td bgcolor=$bg>$cost</td><td bgcolor=$bg id=pricefield$pupc>$pprice</td>";
-		$out .=  "<td bgcolor=$bg>$ourMarg</td><td bgcolor=$bg><a href=\"\" onclick=\"editUnfiPrice('$upc'); return false;\">$uprice</a></td><td bgcolor=$bg>$unMarg</td><td bgcolor=$bg>$cat</td><td bgcolor=$bg>$sort</td><td bgcolor=$bg><input type=checkbox name=pricechange[] id=\"check$pupc\" value=$pupc><label for=\"check$pupc\">UNFI</label>";
-		break;
-	case 'saveUnfiPrice':
-		$upc = $_GET['upc'];
-		$price = $_GET['price'];
-		$upQ = $sql->prepare("update vendorSRPs set srp=? where vendorID=1 AND upc=?");
-		$upR = $sql->execute($upQ, array($price, $upc));
-		break;
-	case 'toggleVariable':
-		$upc = $_GET['upc'];
-		$val = ($_GET['toggle'] == "true") ? 1 : 0;
-		$upQ = $sql->prepare("update prodExtra set variable_pricing=? where upc=?");
-		$upR = $sql->execute($upQ, array($val, $upc));
-		break;
-	}
-	echo $out;
-	return;
+        if($diff==1){
+         $bg = "ff6677";
+         $sort = 1;
+        }else{
+         $bg = "#ccffcc";
+         $sort = 0;
+        }
+        $out .=  "<td bgcolor=$bg><a href=\"http://key/queries/productTest.php?upc=$pupc\" target=\"__unfi_pc\">$pupc</td><td bgcolor=$bg>$pdesc</td><td bgcolor=$bg>$cost</td><td bgcolor=$bg id=pricefield$pupc>$pprice</td>";
+        $out .=  "<td bgcolor=$bg>$ourMarg</td><td bgcolor=$bg><a href=\"\" onclick=\"editUnfiPrice('$upc'); return false;\">$uprice</a></td><td bgcolor=$bg>$unMarg</td><td bgcolor=$bg>$cat</td><td bgcolor=$bg>$sort</td><td bgcolor=$bg><input type=checkbox name=pricechange[] id=\"check$pupc\" value=$pupc><label for=\"check$pupc\">UNFI</label>";
+        break;
+    case 'saveUnfiPrice':
+        $upc = $_GET['upc'];
+        $price = $_GET['price'];
+        $upQ = $sql->prepare("update vendorItems set srp=?,modified=".$sql->now()." where vendorID=1 AND upc=?");
+        $upR = $sql->execute($upQ, array($price, $upc));
+        if ($sql->tableExists('vendorSRPs')) {
+            $upQ = $sql->prepare("update vendorSRPs set srp=? where vendorID=1 AND upc=?");
+            $upR = $sql->execute($upQ, array($price, $upc));
+        }
+        break;
+    case 'toggleVariable':
+        $upc = $_GET['upc'];
+        $val = ($_GET['toggle'] == "true") ? 1 : 0;
+        $upQ = $sql->prepare("update prodExtra set variable_pricing=? where upc=?");
+        $upR = $sql->execute($upQ, array($val, $upc));
+        if ($val == 1) {
+            $prod = new ProductsModel($sql);
+            $prod->upc($upc);
+            $prod->store_id(1);
+            $prod->load();
+            // make sure another rule isn't overwritten with a generic one
+            if ($prod->price_rule_id() == 0) {
+                $prod->price_rule_id(1);
+            }
+            $prod->save();
+        } else {
+            $prod = new ProductsModel($sql);
+            $prod->upc($upc);
+            $prod->store_id(1);
+            $prod->load();
+            $ruleID = 0;
+            // remove the rule but save its ID
+            if ($prod->price_rule_id() != 0) {
+                $ruleID = $prod->price_rule_id();
+                $prod->price_rule_id(0);
+            }
+            $prod->save();
+            // make sure no other item is using the same
+            // rule before deleting it
+            if ($ruleID > 1) {
+                $prod->reset();
+                $prod->price_rule_id($ruleID);
+                if (count($prod->find()) == 0) {
+                    // no products are using this rule
+                    $rule = new PriceRulesModel($sql);
+                    $rule->priceRuleID($ruleID);
+                    $rule->delete();
+                }
+            }
+        }
+        break;
+    }
+    echo $out;
+    return;
 }
 
 //Get buyID from index form. Set to 99 (all buyers) if not set.
@@ -106,7 +146,7 @@ $filter = isset($_REQUEST['filter'])?$_REQUEST['filter']:'';
 /** deprecating unfi_* tables
 $unfi_table = "unfi_diff";
 if ($filter == "Yes")
-	$unfi_table = "unfi_all";
+    $unfi_table = "unfi_all";
 */
 
 //echo $buyID . "<br>";
@@ -120,7 +160,7 @@ else {
 <html><head>
 <style type=text/css>
 a {
-	color: blue;
+    color: blue;
 }
 </style>
 <script src="price_compare.js" type="text/javascript"></script>
@@ -133,7 +173,7 @@ echo "<a href=price_compare.php?excel=1&buyer=$buyID&filter=$filter>Dump to Exce
 
 //Connect to mysql server
 
-$mysql = new SQLManager('mysql.wfco-op.store','MYSQL','IS4C','is4c','is4c');
+$mysql = new SQLManager('localhost','MYSQL','IS4C','root','is4c');
 
 $getCatQ = "SELECT unfi_cat FROM unfi_cat";
 $getCatArgs = array();
@@ -218,7 +258,7 @@ $strCat = $strCat . ")";
         WHERE cat IN$strCat order by $sort,department,u.upc");
    */
    if ($filter != 'Yes')
-       $UNFI_ALL_QUERY .= ' AND p.normal_price <> s.srp ';
+       $UNFI_ALL_QUERY .= ' AND p.normal_price <> v.srp ';
    $prep = $sql->prepare($UNFI_ALL_QUERY . " AND v.vendorDept IN $strCat ORDER BY $sort, p.department, p.upc");
    $result = $sql->execute($prep, $cat_args);
 
@@ -248,8 +288,8 @@ $strCat = $strCat . ")";
       echo  "<td bgcolor=$bg><a href=\"/queries/productTest.php?upc=$pupc\" target=\"__unfi_pc\">$pupc</td><td bgcolor=$bg>$pdesc</td><td bgcolor=$bg>$cost</td><td bgcolor=$bg id=pricefield$pupc>$pprice</td>";
       echo  "<td bgcolor=$bg>$ourMarg</td><td id=unfiprice$pupc bgcolor=$bg><a href=\"\" onclick=\"editUnfiPrice('$pupc'); return false;\">$uprice</a></td><td bgcolor=$bg>$unMarg</td><td bgcolor=$bg>$cat</td><td bgcolor=$bg>$sort</td>";
       echo "<td bgcolor=$bg><input type=checkbox id=var$pupc ";
-      if ($var == 1)
-	echo "checked ";
+      if ($var != 0)
+    echo "checked ";
       echo "onclick=\"toggleVariable('$pupc');\" /></td>";
       echo "<td bgcolor=$bg><input type=checkbox name=pricechange[] id=\"check$pupc\" value=$pupc><label for=\"check$pupc\">UNFI</label>";
       echo "</tr>";

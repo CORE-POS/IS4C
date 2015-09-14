@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class StaffArPayrollDeduction extends FanniePlugin 
+class StaffArPayrollDeduction extends \COREPOS\Fannie\API\FanniePlugin 
 {
     public $plugin_settings = array(
     'StaffArPayrollDB' => array('default'=>'StaffArPayrollDB','label'=>'Database',
@@ -42,7 +42,7 @@ class StaffArPayrollDeduction extends FanniePlugin
 
     public $plugin_description = 'Plugin for scheduling automated AR payments';
 
-    public function setting_change() {
+    public function settingChange() {
         global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
         $db_name = $FANNIE_PLUGIN_SETTINGS['StaffArPayrollDB'];

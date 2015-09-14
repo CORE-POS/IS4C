@@ -2,6 +2,7 @@
 
 unittest="phpunit --bootstrap bootstrap.php"
 
+$unittest InstallTest.php
 $unittest BaseLibsTest.php
 $unittest FooterBoxesTest.php
 $unittest KickersTest.php

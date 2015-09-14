@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,51 +21,97 @@
 
 *********************************************************************************/
 
-if (!class_exists('FannieAPI'))
+if (!class_exists('FannieAPI')) {
     include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
+}
 
 class ProdUserModule extends ItemModule 
 {
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
-        global $FANNIE_URL;
+        $FANNIE_URL = FannieConfig::config('URL');
         $upc = BarcodeLib::padUPC($upc);
 
-        $ret = '<fieldset id="ProdUserFieldset">';
-        $ret .=  "<legend onclick=\"\$('#ProdUserFieldsetContent').toggle();\">
-                <a href=\"\" onclick=\"return false;\">Longform Info</a>
-                </legend>";
-        $css = ($expand_mode == 1) ? '' : 'display:none;';
-        $ret .= '<div id="ProdUserFieldsetContent" style="' . $css . '">';
+        $ret = '<div id="ProdUserFieldset" class="panel panel-default">';
+        $ret .=  "<div class=\"panel-heading\">
+                <a href=\"\" onclick=\"\$('#ProdUserFieldsetContent').toggle();return false;\">
+                Sign/Web Info</a>
+                </div>";
+        $css = ($expand_mode == 1) ? '' : ' collapse';
+        $ret .= '<div id="ProdUserFieldsetContent" class="panel-body' . $css . '">';
 
         $dbc = $this->db();
         $model = new ProductUserModel($dbc);
         $model->upc($upc);
         $model->load();
 
+        $loc = new ProdPhysicalLocationModel($dbc);
+        $loc->upc($upc);
+        $loc->load();
+
+        $sections = new FloorSectionsModel($dbc);
+
         $prod = new ProductsModel($dbc);
         $prod->upc($upc);
         $prod->load();
 
-        $ret .= '<div style="float:left;">';
-        $ret .= '<table>';
-        $ret .= '<tr>';
-        $ret .= '<th>Brand</th>';
-        $ret .= '<td><input type="text" size="45" id="lf_brand" name="lf_brand" value="' . $model->brand() . '" /></td>';
-        $ret .= '<td><a href="" onclick="createSign(); return false;">Make Sign</a></td>';
-        $ret .= '</tr>';
-        $ret .= '<tr>';
-        $ret .= '<th>Desc.</th>';
-        $ret .= '<td><input type="text" size="45" name="lf_desc" value="' . $model->description() . '" /></td>';
-        $ret .= '</tr>';
+        $ret .= '<div class="col-sm-6">';
+        $ret .= '<div class="row form-group">'
+                . '<label class="col-sm-1">Brand</label> '
+                . '<div class="col-sm-8">'
+                . '<input type="text" class="form-control" id="lf_brand" name="lf_brand" value="' . $model->brand() . '" />'
+                . '</div>'
+                . '<div class="col-sm-3">'
+                . ' <a href="" onclick="createSign(); return false;">Make Sign</a>'
+                . '</div>'
+                . '</div>';
+        $ret .= '<div class="row form-group">'
+                . '<label class="col-sm-1">Desc.</label> '
+                . '<div class="col-sm-8">'
+                . '<textarea class="form-control" rows="2" id="lf_desc" name="lf_desc">'
+                . $model->description()
+                . '</textarea>'
+                . '</div>'
+                . '</div>';
 
-        $otherOriginBlock = '<tr><td>&nbsp;</td><td><select name=otherOrigin[]><option value=0>n/a</option>';
+        $ret .= '<div class="row form-group">'
+                . '<label class="small col-sm-1">Sign Ct.</label> '
+                . '<div class="col-sm-8">'
+                . '<input type="number" class="form-control price-field"
+                    name="sign-count" value="' . $model->signCount() . '" />'
+                . '</div>'
+                . '</div>';
 
-        $ret .= '<tr>';
-        $ret .= '<th><a href="' . $FANNIE_URL . 'item/origins/OriginEditor.php">Origin</a></th>';
-        $ret .= '<td><select name="origin">';
-        $ret .= '<option value="0">n/a</option>';
+        $ret .= '<div class="row form-group">
+                    <label tile="Location on the floor" class="col-sm-1">Loc.</label>
+                    <div class="col-sm-8">
+                        <select name="floor-id" class="form-control">
+                            <option value="0">n/a</option>';
+        foreach ($sections->find('name') as $section) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                    ($loc->floorSectionID() == $section->floorSectionID() ? 'selected' : ''),
+                    $section->floorSectionID(), $section->name()
+            );
+        }
+        $ret .= '</select>
+                </div>
+                <div class="col-sm-3 text-left">
+                    <a href="mapping/FloorSectionsPage.php" target="_blank">Add more</a>
+                </div>
+                </div>';
+
+
+        $otherOriginBlock = '<div class=row>
+                <div class=col-sm-1 />
+                <div class=col-sm-8>
+            <select name=otherOrigin[] class=form-control><option value=0>n/a</option>';
+
+        $ret .= '<div class="row form-group">'
+                . '<label class="col-sm-1"><a href="' . $FANNIE_URL . 'item/origins/OriginEditor.php">Origin</a></label>'
+                . '<div class="col-sm-8">'
+                . ' <select name="origin" class="form-control">'
+                . '<option value="0">n/a</option>';
         $origins = new OriginsModel($dbc);
         $origins->local(0);
         foreach ($origins->find('name') as $o) {
@@ -75,38 +121,39 @@ class ProdUserModule extends ItemModule
             $otherOriginBlock .= sprintf('<option value=%d>%s</option>',
                                             $o->originID(), $o->name());
         }
-        $ret .= '</select>';
+        $ret .= '</select></div>';
+        $otherOriginBlock .= '</div></div>';
+        $ret .= '<div class="col-sm-3 text-left">';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;<a href="" 
                 onclick="$(\'#originsBeforeMe\').before(\'' . $otherOriginBlock . '\'); return false;">Add more</a>';
-        $ret .= '</td></tr>';
+        $ret .= '</div></div>';
 
         $mapP = 'SELECT originID FROM ProductOriginsMap WHERE upc=? AND originID <> ?';
         $mapR = $dbc->execute($mapP, array($upc, $prod->current_origin_id()));
         while ($mapW = $dbc->fetch_row($mapR)) {
-            $ret .= '<tr><td>&nbsp;</td><td><select name="otherOrigin[]"><option value="0">n/a</option>';
+            $ret .= '<div class="form-group form-inline">
+                <select name="otherOrigin[]" class="form-control"><option value="0">n/a</option>';
             foreach ($origins->find('name') as $o) {
                 $ret .= sprintf('<option %s value="%d">%s</option>',
                             $mapW['originID'] == $o->originID() ? 'selected' : '',
                             $o->originID(), $o->name());
             }
-            $ret .= '</select></td></tr>';
+            $ret .= '</select></div>';
         }
+        $ret .= '<div id="originsBeforeMe"></div>';
+        $ret .= '</div>';
 
-        $ret .= '<tr id="originsBeforeMe"><th colspan="2">Ad Text</th></tr>';
-        $ret .= '<tr><td colspan="3"><textarea name="lf_text"
+        $ret .= '<div class="col-sm-6">';
+        $ret .= '<div class="form-group"><label>Ad Text</label></div>';
+        $ret .= '<div class="form-group">
+                <textarea name="lf_text" class="form-control"
                     rows="8" cols="45">' 
                     . str_replace('<br />', "\n", $model->long_text()) 
-                    . '</textarea></td></tr>';
-        $ret .= '</table>';
-        $ret .= '</div>';
-        if (is_file(dirname(__FILE__) . '/../images/done/' . $model->photo())) {
-            $ret .= '<div style="float:left;">';
-            $ret .= '<img width="150px" src="' . $FANNIE_URL . 'item/images/done/' . $model->photo() . '" />';
-            $ret .= '</div>';
-        }
+                    . '</textarea></div>';
 
         $ret .= '</div>';
-        $ret .= '</fieldset>';
+        $ret .= '</div>';
+        $ret .= '</div>';
 
         return $ret;
     }
@@ -117,19 +164,30 @@ class ProdUserModule extends ItemModule
         $brand = FormLib::get('lf_brand');
         $desc = FormLib::get('lf_desc');
         $origin = FormLib::get('origin', 0);
+        $floorID = FormLib::get('floor-id', 0);
         $text = FormLib::get('lf_text');
         $text = str_replace("\r", '', $text);
         $text = str_replace("\n", '<br />', $text);
         // strip non-ASCII (word copy/paste artifacts)
         $text = preg_replace("/[^\x01-\x7F]/","", $text); 
+        $signs = FormLib::get('sign-count', 1);
+        if ($signs < 1) {
+            $signs = 1;
+        }
 
         $dbc = $this->db();
+
+        $loc = new ProdPhysicalLocationModel($dbc);
+        $loc->upc($upc);
+        $loc->floorSectionID($floorID);
+        $loc->save();
 
         $model = new ProductUserModel($dbc);
         $model->upc($upc);
         $model->brand($brand);
         $model->description($desc);
         $model->long_text($text);
+        $model->signCount($signs);
 
         $multiOrigin = FormLib::get('otherOrigin', array());
         $originMap = array();
@@ -165,8 +223,10 @@ class ProdUserModule extends ItemModule
         }
 
         $prod = new ProductsModel($dbc);
+        $stores = new StoresModel($dbc);
         foreach ($items as $item) {
             $prod->upc($item);
+            $prod->store_id(1);
             $prod->current_origin_id($origin);
             $prod->save();
 
@@ -181,7 +241,7 @@ class ProdUserModule extends ItemModule
 
     public function getFormJavascript($upc)
     {
-        global $FANNIE_URL;
+        $FANNIE_URL = FannieConfig::config('URL');
         ob_start();
         ?>
         function createSign()
@@ -204,7 +264,7 @@ class ProdUserModule extends ItemModule
 
     public function summaryRows($upc)
     {
-        global $FANNIE_URL;
+        $FANNIE_URL = FannieConfig::config('URL');
         $form = sprintf('<form id="newSignForm" method="post" action="%sadmin/labels/SignFromSearch.php">
                         <input type="hidden" name="u[]" value="%s" />
                         </form>', $FANNIE_URL, $upc);

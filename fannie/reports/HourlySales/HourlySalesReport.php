@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -30,6 +30,7 @@ class HourlySalesReport extends FannieReportPage
 {
     public $description = '[Hourly Sales] lists sales per hour over a given date range.';
     public $report_set = 'Sales Reports';
+    public $themed = true;
 
     protected $title = "Fannie : Hourly Sales Report";
     protected $header = "Hourly Sales";
@@ -38,6 +39,7 @@ class HourlySalesReport extends FannieReportPage
 
     protected $sortable = false;
     protected $no_sort_but_style = true;
+    protected $new_tablesorter = true;
 
     public function preprocess()
     {
@@ -56,6 +58,7 @@ class HourlySalesReport extends FannieReportPage
     {
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
+        $deptMulti = FormLib::get('departments', array());
         $weekday = FormLib::get('weekday', 0);
         $buyer = FormLib::get('buyer', '');
     
@@ -64,6 +67,8 @@ class HourlySalesReport extends FannieReportPage
             $ret[] = 'Department '.$deptStart.' to '.$deptEnd;
         } else if ($buyer == -1) {
             $ret[] = 'All Super Departments';
+        } else if ($buyer == -2) {
+            $ret[] = 'All Retail Super Departments';
         } else {
             $ret[] = 'Super Department '.$buyer;
         }
@@ -102,13 +107,14 @@ class HourlySalesReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_COOP_ID;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $date1 = FormLib::get('date1', date('Y-m-d'));
         $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
+        $deptMulti = FormLib::get('departments', array());
         $weekday = FormLib::get('weekday', 0);
     
         $buyer = FormLib::get('buyer', '');
@@ -118,14 +124,26 @@ class HourlySalesReport extends FannieReportPage
         $args = array($date1.' 00:00:00', $date2.' 23:59:59');
         $where = ' 1=1 ';
         if ($buyer !== '') {
-            if ($buyer != -1) {
-                $where = ' s.superID=? ';
+            if ($buyer == -2) {
+                $where .= ' AND s.superID != 0 ';
+            } elseif ($buyer != -1) {
+                $where .= ' AND s.superID=? ';
                 $args[] = $buyer;
             }
-        } else {
-            $where = ' d.department BETWEEN ? AND ? ';
-            $args[] = $deptStart;
-            $args[] = $deptEnd;
+        }
+        if ($buyer != -1) {
+            if (count($deptMulti) > 0) {
+                $where .= ' AND d.department IN (';
+                foreach ($deptMulti as $d) {
+                    $where .= '?,';
+                    $args[] = $d;
+                }
+                $where = substr($where, 0, strlen($where)-1) . ')';
+            } else {
+                $where .= ' AND d.department BETWEEN ? AND ? ';
+                $args[] = $deptStart;
+                $args[] = $deptEnd;
+            }
         }
 
         $date_selector = 'year(tdate), month(tdate), day(tdate)';
@@ -147,13 +165,16 @@ class HourlySalesReport extends FannieReportPage
                     sum(d.total) AS ttl, avg(d.total) as avg
                   FROM $dlog AS d ";
         // join only needed with specific buyer
+        // or all retail
         if ($buyer !== '' && $buyer > -1) {
             $query .= 'LEFT JOIN superdepts AS s ON d.department=s.dept_ID ';
+        } elseif ($buyer !== '' && $buyer == -2) {
+            $query .= 'LEFT JOIN MasterSuperDepts AS s ON d.department=s.dept_ID ';
         }
         $query .= "WHERE d.trans_type IN ('I','D')
                     AND d.tdate BETWEEN ? AND ?
                     AND $where ";
-        if ($FANNIE_COOP_ID == 'WFC_Duluth') {
+        if ($this->config->get('COOP_ID') == 'WFC_Duluth') {
             $query .= ' AND d.department NOT IN (993, 998, 703) ';
         }
         $query .= " GROUP BY $date_selector, $hour
@@ -284,7 +305,7 @@ function showGraph(i) {
 
     var xdata = Array();
     $('td.reportColumn0').each(function(){
-        var hour = $(this).html().substring(0,2);
+        var hour = $(this).html().trim().substring(0,2);
         if (hour.charAt(0) == '0') {
             hour = hour.charAt(1);
         }
@@ -315,102 +336,72 @@ function showGraph(i) {
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
-        $deptsR = $dbc->exec_statement($deptsQ);
-        $deptsList = "";
-
-        $deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames
-                WHERE superID <> 0 
-                ORDER BY superID");
-        $deptSubR = $dbc->exec_statement($deptSubQ);
-
-        $deptSubList = "";
-        while($deptSubW = $dbc->fetch_array($deptSubR)) {
-            $deptSubList .=" <option value=$deptSubW[0]>$deptSubW[1]</option>";
-        }
-        while ($deptsW = $dbc->fetch_array($deptsR)) {
-            $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
-        }
-
         ob_start();
         ?>
-<script type="text/javascript">
-function swap(src,dst){
-    var val = document.getElementById(src).value;
-    document.getElementById(dst).value = val;
-}
-</script>
-<div id=main>   
-<form method = "get" action="HourlySalesReport.php">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr>
-            <td><b>Select Buyer/Dept</b></td>
-            <td><select id=buyer name=buyer>
-               <option value=""></option>
-               <?php echo $deptSubList; ?>
-               <option value=-1 selected>All</option>
-               </select>
-            </td>
-            <td><b>Send to Excel</b></td>
-            <td><input type=checkbox name=excel id=excel value=1></td>
-        </tr>
-        <tr>
-            <td colspan=5><i>Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
-            To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'</i></td>
-        </tr>
-        <tr> 
-            <td> <p><b>Department Start</b></p>
-            <p><b>End</b></p></td>
-            <td> <p>
-            <select id=deptStartSel onchange="swap('deptStartSel','deptStart');">
-            <?php echo $deptsList ?>
-            </select>
-            <input type=text name=deptStart id=deptStart size=5 value=1 />
-            </p>
-            <p>
-            <select id=deptEndSel onchange="swap('deptEndSel','deptEnd');">
-            <?php echo $deptsList ?>
-            </select>
-            <input type=text name=deptEnd id=deptEnd size=5 value=1 />
-            </p></td>
-
-             <td>
-            <p><b>Date Start</b> </p>
-                 <p><b>End</b></p>
-               </td>
-                    <td>
-                     <p>
-                       <input type=text id=date1 name=date1 />
-                       </p>
-                       <p>
-                        <input type=text id=date2 name=date2 />
-                 </p>
-               </td>
-
-        </tr>
-        <tr> 
-             <td colspan="2"><input type=checkbox name=weekday value=1>Group by weekday?</td>
-            <td colspan="2" rowspan="2">
-                <?php echo FormLib::date_range_picker(); ?>
-            </td>
-        </tr>
-        <tr>
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-        </tr>
-    </table>
+<form method="get" class="form-horizontal">
+<div class="row">
+    <div class="col-sm-6">
+        <?php echo FormLib::standardDepartmentFields('buyer'); ?>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">
+                Group by weekday?
+                <input type=checkbox name=weekday value=1>
+            </label>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">Save to Excel
+                <input type=checkbox name=excel id=excel value=1>
+            </label>
+            <label class="col-sm-4 control-label">Store</label>
+            <div class="col-sm-4">
+                <?php $ret=FormLib::storePicker();echo $ret['html']; ?>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Start Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date1 name=date1 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">End Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date2 name=date2 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <?php echo FormLib::date_range_picker(); ?>                            
+        </div>
+    </div>
+</div>
+    <p>
+        <button type=submit name=submit value="Submit" class="btn btn-default btn-core">Submit</button>
+        <button type=reset name=reset class="btn btn-default btn-reset"
+            onclick="$('#super-id').val('').trigger('change');">Start Over</button>
+    </p>
 </form>
         <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
+        $this->addOnloadCommand("\$('#subdepts').closest('.form-group').hide();");
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>This report shows hourly sales over a range of dates.
+            The rows are always hours. The columns are either calendar
+            dates or named weekdays (e.g., Monday, Tuesday) if grouping
+            by week day.</p>
+            <p>If a <em>Buyer/Dept</em> option is used, the result will
+            be sales from that super department. Otherwise, the result
+            will be sales from the specified department range. Note there
+            are a couple special options in the <em>Buyer/Dept</em> list:
+            <em>All</em> is simply all sales and <em>All Retail</em> is
+            everything except for super department #0 (zero).</p>';
     }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

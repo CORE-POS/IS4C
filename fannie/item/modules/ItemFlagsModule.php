@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,69 +21,100 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/data/models/ProductsModel.php');
+class ItemFlagsModule extends ItemModule 
+{
 
-class ItemFlagsModule extends ItemModule {
+    public function width()
+    {
+        return self::META_WIDTH_FULL;
+    }
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
         $upc = BarcodeLib::padUPC($upc);
 
-        $ret = '<fieldset id="ItemFlagsFieldset">';
-        $ret .=  "<legend onclick=\"\$('#ItemFlagsFieldsetContent').toggle();\">
-                <a href=\"\" onclick=\"return false;\">Flags</a>
-                </legend>";
-        $css = ($expand_mode == 1) ? '' : 'display:none;';
-        $ret .= '<div id="ItemFlagsFieldsetContent" style="' . $css . '">';
-        
+        $ret = '';
+        $ret = '<div id="ItemFlagsFieldset" class="panel panel-default">';
+        $ret .=  "<div class=\"panel-heading\">
+                <a href=\"\" onclick=\"\$('#ItemFlagsContents').toggle();return false;\">
+                Flags
+                </a></div>";
+        $css = ($expand_mode == 1) ? '' : ' collapse';
+        $ret .= '<div id="ItemFlagsContents" class="panel-body' . $css . '">';
+        // class="col-lg-1" works pretty well with META_WIDTH_HALF
+        $ret .= '<div id="ItemFlagsTable" class="col-sm-5">';
+
         $dbc = $this->db();
-        $q = "SELECT f.description,
-            f.bit_number,
-            (1<<(f.bit_number-1)) & p.numflag AS flagIsSet
-            FROM products AS p, prodFlags AS f
-            WHERE p.upc=?";
+        $q = "
+            SELECT f.description,
+                f.bit_number,
+                (1<<(f.bit_number-1)) & p.numflag AS flagIsSet
+            FROM products AS p, 
+                prodFlags AS f
+            WHERE p.upc=?
+                AND f.active=1";
         $p = $dbc->prepare_statement($q);
         $r = $dbc->exec_statement($p,array($upc));
         
         if ($dbc->num_rows($r) == 0){
             // item does not exist
-            $p = $dbc->prepare_statement('SELECT f.description,f.bit_number,0 AS flagIsSet
-                    FROM prodFlags AS f');
+            $p = $dbc->prepare_statement('
+                SELECT f.description,
+                    f.bit_number,
+                    0 AS flagIsSet
+                FROM prodFlags AS f
+                WHERE f.active=1');
             $r = $dbc->exec_statement($p);
         }
 
-
-        $ret .= '<table>';
+        $tableStyle = " style='border-spacing:5px; border-collapse: separate;'";
+        $ret .= "<table{$tableStyle}>";
         $i=0;
         while($w = $dbc->fetch_row($r)){
             if ($i==0) $ret .= '<tr>';
             if ($i != 0 && $i % 2 == 0) $ret .= '</tr><tr>';
-            $ret .= sprintf('<td><input type="checkbox" name="flags[]" value="%d" %s /></td>
-                <td>%s</td>',$w['bit_number'],
+            $ret .= sprintf('<td><input type="checkbox" id="item-flag-%d" name="flags[]" value="%d" %s /></td>
+                <td><label for="item-flag-%d">%s</label></td>',$i, $w['bit_number'],
                 ($w['flagIsSet']==0 ? '' : 'checked'),
+                $i,
                 $w['description']
             );
             $i++;
         }
         $ret .= '</tr></table>';
 
-        $ret .= '</div>';
-        $ret .= '</fieldset>';
+        $ret .= '</div>' . '<!-- /#ItemFlagsTable -->';
+        $ret .= '</div>' . '<!-- /#ItemFlagsContents -->';
+        $ret .= '</div>' . '<!-- /#ItemFlagsFieldset -->';
+
         return $ret;
     }
 
-    function SaveFormData($upc){
-        $flags = FormLib::get_form_value('flags',array());
-        if (!is_array($flags)) return False;
+    public function saveFormData($upc)
+    {
+        try {
+            $flags = $this->form->flags;
+        } catch (Exception $ex) {
+            $flags = array();
+        }
+        if (!is_array($flags)) {
+            return false;
+        }
         $numflag = 0;   
-        foreach($flags as $f){
-            if ($f != (int)$f) continue;
+        foreach ($flags as $f) {
+            if ($f != (int)$f) {
+                continue;
+            }
             $numflag = $numflag | (1 << ($f-1));
         }
-        return ProductsModel::update($upc,array('numflag'=>$numflag),True);
+        $dbc = $this->connection;
+        $model = new ProductsModel($dbc);
+        $model->upc($upc);
+        $model->store_id(1);
+        $model->numflag($numflag);
+        $saved = $model->save();
+
+        return $saved ? true : false;
     }
 }
 
-?>

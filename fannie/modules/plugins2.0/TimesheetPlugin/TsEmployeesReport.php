@@ -1,8 +1,11 @@
 <?php
-require_once(dirname(__FILE__).'/../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__).'/../../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class TsEmployeesReport extends FanniePage {
+    public $page_set = 'Plugin :: TimesheetPlugin';
 
     function preprocess(){
         $this->header = "Timeclock - Employees Report";
@@ -18,7 +21,7 @@ class TsEmployeesReport extends FanniePage {
         //  FULL TIME: Number of hours per week
         $ft = 40;
 
-        echo "<form action='".$_SERVER['PHP_SELF']."' method=GET>";
+        echo "<form action='".$_SERVER['PHP_SELF']."' method=GET class=\"form-horizontal\">";
 
         $currentQ = $ts_db->prepare_statement("SELECT periodID 
             FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
@@ -32,7 +35,10 @@ class TsEmployeesReport extends FanniePage {
             WHERE periodStart < ".$ts_db->now()." ORDER BY periodID DESC");
         $result = $ts_db->exec_statement($query);
 
-        echo '<p>Starting Pay Period: <select name="period">
+        echo '<div class="row form-group">
+            <label class="col-sm-2">Starting Pay Period</label>
+            <div class="col-sm-5">
+            <select class="form-control" name="period">
             <option>Please select a starting pay period.</option>';
 
         while ($row = $ts_db->fetch_array($result)) {
@@ -41,8 +47,11 @@ class TsEmployeesReport extends FanniePage {
             echo ">(" . $row['periodStart'] . " - " . $row['periodEnd'] . ")</option>";
         }
 
-        echo "</select><br />";
-        echo '<p>Ending Pay Period: <select name="end">
+        echo "</select></div></div>";
+        echo '<div class="row form-group">
+            <label class="col-sm-2">Ending Pay Period</label>
+            <div class="col-sm-5">
+            <select class="form-control" name="end">
             <option value=0>Please select an ending pay period.</option>';
         $result = $ts_db->exec_statement($query);
         while ($row = $ts_db->fetch_array($result)) {
@@ -50,15 +59,18 @@ class TsEmployeesReport extends FanniePage {
             if ($row['periodID'] == $ID) { echo ' SELECTED';}
             echo ">(" . $row['periodStart'] . " - " . $row['periodEnd'] . ")</option>";
         }
-        echo '</select><button value="run" name="run">Run</button></p></form>';
+        echo '</select></div></div>
+            <p>
+                <button class="btn btn-default" value="run" name="run">Run</button>
+            </p>
+            </form>';
         if (FormLib::get_form_value('run') == 'run') {
             $periodID = FormLib::get_form_value('period',0);
             $end = FormLib::get_form_value('end',$periodID);
             if ($end == 0) $end = $periodID;
     
-            $namesq = $ts_db->prepare_statement("SELECT e.emp_no, e.FirstName, e.LastName, e.pay_rate, JobTitle 
-                FROM employees e WHERE e.empActive = 1 ORDER BY e.LastName");
-            $namesr = $ts_db->exec_statement($namesq);
+            $employees = new TimesheetEmployeesModel($ts_db);
+            $employees->active(1);
             $areasq = $ts_db->prepare_statement("SELECT ShiftName, ShiftID 
                 FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".shifts 
                 WHERE visible = 1 AND ShiftID <> 31 ORDER BY ShiftOrder");
@@ -98,9 +110,9 @@ class TsEmployeesReport extends FanniePage {
             echo "<br />";
     
 
-            echo "<table border='1' cellpadding='5' cellspacing=0><thead>\n<tr><th>Name</th><th>Wage</th>";
-            while ($areas = $ts_db->fetch_array($areasr)) {
-                echo "<div id='vth'><th>" . substr($areas[0],0,6) . "</th></div>";  // -- TODO vertical align th, static col width
+            echo "<table class=\"table table-bordered table-striped\"><thead>\n<tr><th>Name</th><th>Wage</th>";
+            foreach ($shiftInfo as $sID => $sName) {
+                echo "<div id='vth'><th>" . substr($sName,0,6) . "</th></div>";  // -- TODO vertical align th, static col width
             }
             echo "</th><th>OT</th><th>PTO used</th><th>PTO new</th><th>Total</th></tr></thead>\n<tbody>\n";
             $PTOnew = array();
@@ -137,13 +149,13 @@ class TsEmployeesReport extends FanniePage {
                 $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet 
                 WHERE periodID >= ? AND periodID <= ?
                 AND area <> 31 AND emp_no = ?");
-            while ($row = $ts_db->fetch_row($namesr)) {
-                $emp_no = $row['emp_no'];
+            foreach ($employees->find('lastName') as $employee) {
+                $emp_no = $employee->timesheetEmployeeID();
         
-                $totalr = $ts_db->exec_statement($totalP,array($periodID,$end,$row['emp_no']));
+                $totalr = $ts_db->exec_statement($totalP,array($periodID,$end,$emp_no));
                 $total = $ts_db->fetch_row($totalr);
                 $color = ($total[0] > (80 * $periodct)) ? "FF0000" : "000000";
-                echo "<tr><td>".ucwords($row['FirstName'])." - " . ucwords(substr($row['FirstName'],0,1)) . ucwords(substr($row['LastName'],0,1)) . "</td><td align='right'>$" . $row['pay_rate'] . "</td>";
+                echo "<tr><td>".ucwords($employee->firstName())." - " . ucwords(substr($employee->firstName(),0,1)) . ucwords(substr($employee->lastName(),0,1)) . "</td><td align='right'>$" . $employee->wage() . "</td>";
                 $total0 = (!$total[0]) ? 0 : number_format($total[0],2);
                 //
                 //  LABOR DEPARTMENT TOTALS
@@ -193,7 +205,7 @@ class TsEmployeesReport extends FanniePage {
                 //  PTO CALC
                 $nonPTOtotalr = $ts_db->exec_statement($nonPTOtotalP,array($periodID,$end,$emp_no));
                 $nonPTOtotal = $ts_db->fetch_row($nonPTOtotalr);
-                $ptoAcc = ($row['JobTitle'] == 'STAFF') ? $nonPTOtotal[0] * 0.075 : 0;
+                $ptoAcc = ($employee->primaryShiftID()) ? $nonPTOtotal[0] * 0.075 : 0;
                 echo "<td align='right'>" . number_format($ptoAcc,2) . "</td>";
                 $PTOnew[] = $ptoAcc;
         

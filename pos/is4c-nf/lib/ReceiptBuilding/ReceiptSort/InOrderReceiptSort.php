@@ -29,12 +29,12 @@
 class InOrderReceiptSort extends DefaultReceiptSort 
 {
 
-	/**
-	  Sorting function
-	  @param $rowset an array of records
-	  @return an array of records
-	*/
-	public function sort($rowset)
+    /**
+      Sorting function
+      @param $rowset an array of records
+      @return an array of records
+    */
+    public function sort($rowset)
     {
         $nontenders = array();
         $tenders = array();
@@ -54,8 +54,8 @@ class InOrderReceiptSort extends DefaultReceiptSort
             $returnset[] = $row;
         }
 
-		return $returnset;
-	}
+        return $returnset;
+    }
 
-}	
+}    
 

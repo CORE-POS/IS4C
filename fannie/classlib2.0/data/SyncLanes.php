@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+namespace COREPOS\Fannie\API\data {
 
 /**
   @class SyncLanes
@@ -57,7 +59,10 @@ class SyncLanes
     */
     static public function pushTable($table,$db='op',$truncate=self::TRUNCATE_DESTINATION)
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_LANES;
+        $config = \FannieConfig::factory();
+        $op_db = $config->get('OP_DB');
+        $trans_db = $config->get('TRANS_DB');
+        $lanes = $config->get('LANES');
 
         $ret = array('sending'=>True,'messages'=>'');
 
@@ -70,9 +75,9 @@ class SyncLanes
             $ret['sending'] = False;
             $ret['messages'] = 'Error: No table given';
             return $ret;
-        } elseif (ereg("[^A-Za-z0-9_]",$table)) {
+        } elseif (!preg_match('/^[A-Za-z0-9_]+$/',$table)) {
             $ret['sending'] = False;
-            $ret['messages'] = 'Error: Illegal table name: '.$table;
+            $ret['messages'] = 'Error: Illegal table name: \'' . $table . '\'';
             return $ret;
         }
 
@@ -93,10 +98,10 @@ class SyncLanes
             /* use the transfer option in SQLManager
             *   to copy records onto each lane
             */
-            $server_db = $db=='op' ? $FANNIE_OP_DB : $FANNIE_TRANS_DB;
-            $dbc = FannieDB::get( $server_db );
+            $server_db = $db=='op' ? $op_db : $trans_db;
+            $dbc = \FannieDB::get( $server_db );
             $laneNumber=1;
-            foreach($FANNIE_LANES as $lane) {
+            foreach($lanes as $lane) {
                 $dbc->add_connection($lane['host'],$lane['type'],
                     $lane[$db],$lane['user'],$lane['pw']);
                 if ($dbc->connections[$lane[$db]]) {
@@ -144,7 +149,10 @@ class SyncLanes
     */
     static public function pullTable($table,$db='trans',$truncate=self::TRUNCATE_SOURCE)
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_LANES;
+        $config = \FannieConfig::factory();
+        $op_db = $config->get('OP_DB');
+        $trans_db = $config->get('TRANS_DB');
+        $lanes = $config->get('LANES');
 
         $ret = array('sending'=>True,'messages'=>'');
 
@@ -157,7 +165,7 @@ class SyncLanes
             $ret['sending'] = False;
             $ret['messages'] = 'Error: No table given';
             return $ret;
-        } elseif (ereg("[^A-Za-z0-9_]",$table)) {
+        } elseif (!preg_match('/^[A-Za-z0-9_]$/',$table)) {
             $ret['sending'] = False;
             $ret['messages'] = 'Error: Illegal table name: '.$table;
             return $ret;
@@ -165,13 +173,13 @@ class SyncLanes
 
         // use the transfer option in SQLManager to copy
         // records from each lane
-        $server_db = $db=='op' ? $FANNIE_OP_DB : $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get( $server_db );
+        $server_db = $db=='op' ? $op_db : $trans_db;
+        $dbc = \FannieDB::get( $server_db );
         if ($truncate & self::TRUNCATE_DESTINATION) {
             $dbc->query("TRUNCATE TABLE $table",$server_db);
         }
         $laneNumber=1;
-        foreach($FANNIE_LANES as $lane) {
+        foreach($lanes as $lane) {
             $dbc->add_connection($lane['host'],$lane['type'],
                 $lane[$db],$lane['user'],$lane['pw']);
             if ($dbc->connections[$lane[$db]]) {
@@ -201,5 +209,11 @@ class SyncLanes
     {
         return self::pullTable($table, $db, $truncate);
     }
+}
+
+}
+
+namespace {
+    class SyncLanes extends \COREPOS\Fannie\API\data\SyncLanes {}
 }
 

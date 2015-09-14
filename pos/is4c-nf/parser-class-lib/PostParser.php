@@ -31,45 +31,45 @@
 class PostParser 
 {
 
-	/**
+    /**
       Re-write the output value
-	  @param [keyed array] Parser output value
-	  @return [keyed array] Parser output value
+      @param [keyed array] Parser output value
+      @return [keyed array] Parser output value
 
-	  The output array has the following keys:
-	   - main_frame If set, change page to this URL
-	   - output HTML output to be displayed
-	   - target Javascript selector string describing which
-	     element should contain the output
-	   - redraw_footer True or False. Set to True if
-	     totals have changed.
-	   - receipt False or string type. Print a receipt with
-	     the given type.
+      The output array has the following keys:
+       - main_frame If set, change page to this URL
+       - output HTML output to be displayed
+       - target Javascript selector string describing which
+         element should contain the output
+       - redraw_footer True or False. Set to True if
+         totals have changed.
+       - receipt False or string type. Print a receipt with
+         the given type.
        - trans_num string current transaction identifier
-	   - scale Update the scale display and session variables
-	   - udpmsg False or string. Send a message to hardware
-	     device(s)
-	   - retry False or string. Try the input again shortly.
-	*/
-	public function parse($json)
+       - scale Update the scale display and session variables
+       - udpmsg False or string. Send a message to hardware
+         device(s)
+       - retry False or string. Try the input again shortly.
+    */
+    public function parse($json)
     {
         return $json;
-	}
+    }
 
-	/**
-	  Gather postparse modules
-	  @return array of PostParser class names
+    /**
+      Gather postparse modules
+      @return array of PostParser class names
 
-	  Scan the parse directory for module files.
-	  Return an array of available modules.
-	*/
-	static public function getPostParseChain()
+      Scan the parse directory for module files.
+      Return an array of available modules.
+    */
+    static public function getPostParseChain()
     {
-		$set = AutoLoader::ListModules('PostParser');
-		$set = array_reverse($set);
+        $set = AutoLoader::ListModules('PostParser');
+        $set = array_reverse($set);
 
-		return $set;
-	}
+        return $set;
+    }
 
 }
 

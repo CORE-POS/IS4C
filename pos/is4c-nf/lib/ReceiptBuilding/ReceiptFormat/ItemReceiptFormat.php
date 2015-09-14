@@ -29,81 +29,88 @@
 class ItemReceiptFormat extends DefaultReceiptFormat 
 {
 
-	/**
-	  Formatting function
-	  @param $row a single receipt record
-	  @return a formatted string
-	*/
-	public function format($row)
+    /**
+      Formatting function
+      @param $row a single receipt record
+      @return a formatted string
+    */
+    public function format($row)
     {
-		if ($row['trans_type'] == 'D') {
-			// department open ring; not much to format
-			return $this->align($row['description'],'',$row['total'],$this->flags($row));
-		} else if ($row['trans_status'] == 'D') {
-			// a "YOU SAVED" line
-			$description = strtolower($row['description']);
-			$description = str_replace("**"," >",$description);
-			return $description;
-		} else if ($row['trans_status'] == 'M') {
-			// member special line
+        if ($row['trans_type'] == 'D') {
+            // department open ring; not much to format
+            return $this->align($row['description'],'',$row['total'],$this->flags($row));
+        } else if ($row['trans_status'] == 'D') {
+            // a "YOU SAVED" line
+            $description = strtolower($row['description']);
+            if (strstr($description, '**')) {
+                $description = ' >' . trim($description, '*') . '< ';
+            }
+            return $description;
+        } else if ($row['trans_status'] == 'M') {
+            // member special line
             return $this->align($row['description'], 'Owner Special', $row['total'], '');
-		} else {
-			// an item record
+        } else {
+            // an item record
 
-			$comment = "";
-			if ($row['charflag']=='SO') {
-				// intentional. special orders can have weird
-				// quantity fields
-				$comment = "";
-			} elseif (isset($row['scale']) && $row['scale'] != 0 && $row['quantity'] != 0) {
-				$comment = sprintf('%.2f @ %.2f',$row['quantity'],$row['unitPrice']);
-			} else if (abs($row['ItemQtty']>1)) {
-				$comment = sprintf('%d @ %.2f',$row['quantity'],$row['total']/$row['quantity']);
-			} else if ($row['matched'] > 0) {
-				$comment = 'w/ vol adj';
-			}
+            $comment = "";
+            if ($row['charflag']=='SO') {
+                // intentional. special orders can have weird
+                // quantity fields
+                $comment = "";
+            } elseif (isset($row['scale']) && $row['scale'] != 0 && $row['quantity'] != 0) {
+                $comment = sprintf('%.2f @ %.2f',$row['quantity'],$row['unitPrice']);
+            } else if (abs($row['ItemQtty']>1)) {
+                $comment = sprintf('%d @ %.2f',$row['quantity'],$row['total']/$row['quantity']);
+            } else if ($row['matched'] > 0) {
+                $comment = 'w/ vol adj';
+            }
 
-			if ($row['numflag'] > 0) $row['description'] .= '*';
+            /**
+              Identify local items on receipt if displaying a local total
+            */
+            if ($row['numflag'] > 0 && CoreLocal::get('ReceiptLocalMode') != 'omit') {
+                $row['description'] .= '*';
+            }
 
-			return $this->align($row['description'],$comment,$row['total'],$this->flags($row));
-		}
-	}
+            return $this->align($row['description'],$comment,$row['total'],$this->flags($row));
+        }
+    }
 
-	/**
-	  Determine flags for a row
-	*/
-	private function flags($row)
+    /**
+      Determine flags for a row
+    */
+    private function flags($row)
     {
-		if ($row['trans_status']=='V') {
+        if ($row['trans_status']=='V') {
             return 'VD';
-		} elseif ($row['trans_status']=='R') {
+        } elseif ($row['trans_status']=='R') {
             return 'RF';
-		} else {
-			$flags = '';
-			if($row['tax'] != 0) {
-				$flags .= 'T';
+        } else {
+            $flags = '';
+            if($row['tax'] != 0) {
+                $flags .= 'T';
             }
-			if($row['foodstamp'] != 0) {
-				$flags .= 'F';
+            if($row['foodstamp'] != 0) {
+                $flags .= 'F';
             }
-			return $flags;
-		}
-	}
+            return $flags;
+        }
+    }
 
-	/**
-	  Pad fields into a standard width and alignment
-	*/
-	private function align($description, $comment, $amount, $flags="")
+    /**
+      Pad fields into a standard width and alignment
+    */
+    private function align($description, $comment, $amount, $flags="")
     {
-		$amount = sprintf('%.2f',$amount);
-		if ($amount=="0.00") $amount="";
+        $amount = sprintf('%.2f',$amount);
+        if ($amount=="0.00") $amount="";
 
-		$ret = str_pad($description,30,' ',STR_PAD_RIGHT);
-		$ret .= str_pad($comment,14,' ',STR_PAD_RIGHT);
-		$ret .= str_pad($amount,8,' ',STR_PAD_LEFT);
-		$ret .= str_pad($flags,4,' ',STR_PAD_LEFT);
-		
-		return $ret;
-	}
+        $ret = str_pad($description,30,' ',STR_PAD_RIGHT);
+        $ret .= str_pad($comment,14,' ',STR_PAD_RIGHT);
+        $ret .= str_pad($amount,8,' ',STR_PAD_LEFT);
+        $ret .= str_pad($flags,4,' ',STR_PAD_LEFT);
+        
+        return $ret;
+    }
 }
 

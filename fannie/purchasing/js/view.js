@@ -10,6 +10,7 @@ function fetchOrders(){
 		type: 'get',
 		success: function(data){
 			$('#ordersDiv').html(data);
+            $('.tablesorter').tablesorter([[0, 1]]);
 		}
 	});
 }
@@ -62,3 +63,36 @@ function deleteOrder(orderID)
         });
     }
 }
+
+function receiveSKU()
+{
+    var dstr = $('#receive-form').serialize();
+    $.ajax({
+        type: 'get',
+        data: dstr,
+        success: function(resp) {
+            $('#item-area').html(resp);
+            if ($('#item-area input').length > 0) {
+                $('#item-area input[type!=hidden]:first').focus();
+                $('#sku-in').val('');
+            } else {
+                $('#sku-in').focus();
+            }
+        }
+    });
+}
+
+function saveReceive()
+{
+    var dstr = $('#item-area :input').serialize();
+    console.log(dstr);
+    $.ajax({
+        type: 'post',
+        data: dstr,
+        success: function (resp) {
+            $('#item-area').html('');
+            $('#sku-in').focus();
+        }
+    });
+}
+

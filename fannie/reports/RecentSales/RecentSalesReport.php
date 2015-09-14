@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -36,12 +36,13 @@ if (!class_exists('FannieAPI')) {
 class RecentSalesReport extends FannieReportPage
 {
     public $description = '[Recent Sales] lists sales for an item in recent days/weeks/months.';
+    public $themed = true;
 
     protected $header = 'Recent Sales';
     protected $title = 'Fannie : Recent Sales';
 
     protected $report_headers = array('', 'Qty', '$');
-    protected $report_cache = 'day';
+    protected $report_cache = 'none';
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
@@ -57,10 +58,9 @@ class RecentSalesReport extends FannieReportPage
                 $this->report_headers[0] = 'Like Code #'.$this->lc;
                 $this->required_fields = array('likecode');
             } else {
-                $this->report_headers[0] = $this->upc;
+                $this->report_headers[0] = 'UPC #' . $this->upc;
                 $this->required_fields = array('upc');
             }
-
             parent::preprocess();
         }
 
@@ -74,13 +74,18 @@ class RecentSalesReport extends FannieReportPage
         $prod = new ProductsModel($dbc);
         $prod->upc(BarcodeLib::padUPC(FormLib::get('upc')));
         $prod->load();
-        $ret = array('Recent Sales For ' . $prod->upc() . ' ' . $prod->description());
+        $ret = array('Recent Sales For ' . $prod->upc() . ' ' . $prod->description() . '<br />');
         if ($this->report_format == 'html') {
-            $ret[] = sprintf('<a href="../ItemLastQuarter/ItemLastQuarterReport.php?upc=%s">Weekly Sales Details</a>', $prod->upc());
+            $ret[] = sprintf('<a href="../ItemLastQuarter/ItemLastQuarterReport.php?upc=%s">Weekly Sales Details</a> | ', $prod->upc());
             $ret[] = sprintf('<a href="../ItemOrderHistory/ItemOrderHistoryReport.php?upc=%s">Recent Order History</a>', $prod->upc());
         }
 
         return $ret;
+    }
+
+    protected function defaultDescriptionContent($datefields=array())
+    {
+        return array(); // override
     }
 
     public function fetch_report_data()
@@ -93,7 +98,7 @@ class RecentSalesReport extends FannieReportPage
         $dates['Yesterday'] = array(date("Y-m-d",$stamp), date('Y-m-d', $stamp));
         $stamp = mktime(0,0,0,date("n",$stamp),date("j",$stamp)-1,date("Y",$stamp));
         $dates['2 Days Ago'] = array(date("Y-m-d",$stamp), date('Y-m-d', $stamp));
-        $stamp = mktime(0,0,0,date("n",$stamp),date("j",$stamp)-1,date("Y",$stamp));
+        $stamp = mktime(0,0,0,date("n",$stamp),date("j",$stamp)-2,date("Y",$stamp));
         $dates['3 Days Ago'] = array(date("Y-m-d",$stamp), date('Y-m-d', $stamp));
 
         $dates['This Week'] = array(date("Y-m-d",strtotime("monday this week")),
@@ -121,6 +126,7 @@ class RecentSalesReport extends FannieReportPage
             $q .= ' LEFT JOIN upcLike AS u ON d.upc=u.upc ';
         }
         $q .= "WHERE $where
+            AND tdate < " . $dbc->curdate() . "
             AND tdate BETWEEN ? AND ?";
         $p = $dbc->prepare_statement($q);
         
@@ -143,10 +149,31 @@ class RecentSalesReport extends FannieReportPage
 
     public function form_content() 
     {
+        $this->add_onload_command('$(\'#upc-field\').focus();');
         return '<form action="RecentSalesReport.php" method="get">
-                <b>UPC</b> <input type="text" name="upc" />
-                <input type="submit" value="Submit" />
+                <div class="form-group form-inline">
+                <label>UPC</label>
+                <input type="text" name="upc" id="upc-field" class="form-control" />
+                </div>
+                <p>
+                <button type="submit" class="btn btn-default">Submit</button>
+                </p>
                 </form>';
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            List sales for an item on:
+            <ul>
+                <li>Each of the last three days</li>
+                <li>The current and previous week</li>
+                <li>The current and previous month</li>
+            </ul>
+            This report is rarely used directly. More often
+            it is integrated into other tools to provide
+            a quick snapshot of sale information.
+            </p>';
     }
 }
 

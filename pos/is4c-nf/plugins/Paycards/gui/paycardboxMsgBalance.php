@@ -25,45 +25,45 @@ include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class paycardboxMsgBalance extends PaycardProcessPage {
 
-	function preprocess(){
-		global $CORE_LOCAL;
-		// check for posts before drawing anything, so we can redirect
-		if( isset($_REQUEST['reginput'])) {
-			$input = strtoupper(trim($_REQUEST['reginput']));
-			// CL always exits
-			if( $input == "CL") {
-				$CORE_LOCAL->set("msgrepeat",0);
-				$CORE_LOCAL->set("toggletax",0);
-				$CORE_LOCAL->set("togglefoodstamp",0);
-				PaycardLib::paycard_reset();
-				$this->change_page($this->page_url."gui-modules/pos2.php");
-				return False;
-			}
-	
-			// when checking balance, no input is confirmation to proceed
-			if( $input == "") {
-				$this->add_onload_command("paycard_submitWrapper();");
-				$this->action = "onsubmit=\"return false;\"";
-			}
-			// any other input is unrecognized, display prompt again
-		} // post?
-		return True;
-	}
+    function preprocess()
+    {
+        // check for posts before drawing anything, so we can redirect
+        if( isset($_REQUEST['reginput'])) {
+            $input = strtoupper(trim($_REQUEST['reginput']));
+            // CL always exits
+            if( $input == "CL") {
+                CoreLocal::set("msgrepeat",0);
+                CoreLocal::set("toggletax",0);
+                CoreLocal::set("togglefoodstamp",0);
+                PaycardLib::paycard_reset();
+                $this->change_page($this->page_url."gui-modules/pos2.php");
+                return False;
+            }
+    
+            // when checking balance, no input is confirmation to proceed
+            if( $input == "") {
+                $this->add_onload_command("paycard_submitWrapper();");
+                $this->action = "onsubmit=\"return false;\"";
+            }
+            // any other input is unrecognized, display prompt again
+        } // post?
+        return True;
+    }
 
-	function body_content(){
-		global $CORE_LOCAL;
-		?>
-		<div class="baseHeight">
-		<?php
-		echo PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_GIFT,"Check Card Balance?",
-			"If you proceed, you <b>cannot void</b> any previous action on this card!",
-			"[enter] to continue<br>[clear] to cancel");
-		$CORE_LOCAL->set("msgrepeat",2);
-		?>
-		</div>
-		<?php
-	}
+    function body_content()
+    {
+        ?>
+        <div class="baseHeight">
+        <?php
+        echo PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_GIFT,"Check Card Balance?",
+            "If you proceed, you <b>cannot void</b> any previous action on this card!",
+            "[enter] to continue<br>[clear] to cancel");
+        CoreLocal::set("msgrepeat",2);
+        ?>
+        </div>
+        <?php
+    }
 }
 
 if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-	new paycardboxMsgBalance();
+    new paycardboxMsgBalance();

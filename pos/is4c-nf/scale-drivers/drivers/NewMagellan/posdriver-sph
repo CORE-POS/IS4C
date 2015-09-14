@@ -13,10 +13,13 @@
 #
 # chkconfig: - 80 20
 # description: runs pos.exe scale driver as a daemon
-# IMPORTANT: change path in start() to correct driver location!
+# IMPORTANT: $DRIVER to include correct path
 
 # --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #
+#  6May2015 AT Revised to be less Red Hat specific
+#              Added status option. Seems to manage PID file
+#              and process status correctly.
 #  2Nov2012 EL Add LSB header, needed to start at boot.
 #              Also needs: update-rc.d podriver-sph defaults
 # 26Oct2012 Eric Lee Change path to driver.
@@ -24,52 +27,62 @@
 
 # --MAIN - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# This doesn't exist in Ubuntu 10.04 at least in this location.
-. /etc/rc.d/init.d/functions
+if [[ -f /lib/lsb/init-functions ]]; then
+    . /lib/lsb/init-functions
+elif [[ -f /etc/init.d/functions ]]; then
+    . /etc/rc.d/init.d/functions
+    function start_daemon() {
+        daemon $*
+    }
+fi
 
 NAME=posdriver-sph
+DRIVER="/var/www/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan/pos.exe"
+MONO=/usr/bin/mono
+RUNDIR="/var/run/$NAME"
+OPTS="-v"
 
-mkdir -p /var/run/posdriver-sph
+mkdir -p $RUNDIR
 
 start(){
 	echo "Starting $NAME"
-	if [ ! -f /var/run/posdriver-sph/pos.pid ]; then
-		echo "here"
-		cd /var/www/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan
-		# 18Oct13 EL This cd looks fishy to me. /var/www/html doesn't exist.
-		#cd /var/www/html/git/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan
-		#old?cd /usr/share/it-core/is4c-nf/scale-drivers/drivers/NewMagellan
-		mono pos.exe &> /var/run/posdriver-sph/pos.log &
-		echo $! > /var/run/posdriver-sph/pos.pid
-		RETVAL=$?
-		if [ $RETVAL = 0 ]; then
-			success;
-		else
-			failure;
-		fi
-	else
-		echo "$NAME is already running"
-		failure;
-	fi
+    if [[ -f "$RUNDIR/pos.pid" && -d "/proc/`cat ${RUNDIR}/pos.pid`" ]]; then
+        echo "Already running!";
+        log_failure_msg;
+    else 
+        nohup $MONO $DRIVER $OPTS &> "$RUNDIR/pos.log" & 
+        MYPID=$!
+        echo $MYPID > "$RUNDIR/pos.pid"
+        RETVAL=$?
+        if [ $RETVAL = 0 ]; then
+            log_success_msg;
+        else
+            log_failure_msg;
+        fi
+    fi
 	echo
 }
 
 stop(){
-	echo "Stoping $NAME"
-	if [ -f /var/run/posdriver-sph/pos.pid ]; then
-		MYPID=`cat /var/run/posdriver-sph/pos.pid`
-		kill $MYPID
-		RETVAL=$?
-		if [ $RETVAL = 0 ]; then
-			rm /var/run/posdriver-sph/pos.pid
-			success;
-		else
-			failure;
-		fi
-	else
-		echo "$NAME is not running"
-	fi
+	echo "Stopping $NAME"
+    killproc -p "$RUNDIR/pos.pid" $MONO
+    RETVAL=$?
+    if [ $RETVAL = 0 ]; then
+        log_success_msg;
+    else
+        log_failure_msg;
+    fi
 	echo
+}
+
+status(){
+    if [[ -f "$RUNDIR/pos.pid" && -d "/proc/`cat ${RUNDIR}/pos.pid`" ]]; then
+        echo "$NAME is running"
+    elif [ -f "$RUNDIR/pos.pid" ]; then
+        echo "$NAME may have crashed"
+    else 
+        echo "$NAME is stopped"
+    fi
 }
 
 case "$1" in
@@ -83,8 +96,11 @@ case "$1" in
 		stop
 		start
 		;;	
+    status)
+        status
+        ;;
 	*)
-		echo $"Usage: $NAME {start|stop|restart}"
+		echo $"Usage: $NAME {start|stop|restart|status}"
 		exit 1
 esac
 

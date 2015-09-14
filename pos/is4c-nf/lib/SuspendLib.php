@@ -36,40 +36,38 @@ class SuspendLib extends LibraryClass
 */
 static public function suspendorder() 
 {
-	global $CORE_LOCAL;
-
-	$query_a = "select emp_no, trans_no from localtemptrans";
-	$db_a = Database::tDataConnect();
-	$result_a = $db_a->query($query_a);
-	$row_a = $db_a->fetch_array($result_a);
-	$cashier_no = substr("000".$row_a["emp_no"], -2);
-	$trans_no = substr("0000".$row_a["trans_no"], -4);
+    $query_a = "select emp_no, trans_no from localtemptrans";
+    $db_a = Database::tDataConnect();
+    $result_a = $db_a->query($query_a);
+    $row_a = $db_a->fetch_array($result_a);
+    $cashier_no = substr("000".$row_a["emp_no"], -2);
+    $trans_no = substr("0000".$row_a["trans_no"], -4);
     $trans_num = ReceiptLib::receiptNumber();
 
-	if ($CORE_LOCAL->get("standalone") == 0) {
-		$db_a->add_connection($CORE_LOCAL->get("mServer"),$CORE_LOCAL->get("mDBMS"),
-			$CORE_LOCAL->get("mDatabase"),$CORE_LOCAL->get("mUser"),$CORE_LOCAL->get("mPass"));
-		$cols = Database::getMatchingColumns($db_a,"localtemptrans","suspended");
-		$db_a->transfer($CORE_LOCAL->get("tDatabase"),"select {$cols} from localtemptrans",
-			$CORE_LOCAL->get("mDatabase"),"insert into suspended ($cols)");
-		$db_a->close($CORE_LOCAL->get("mDatabase"),True);
-	} else { 
-		$query = "insert into suspended select * from localtemptrans";
-		$result = $db_a->query($query);
-	}
+    if (CoreLocal::get("standalone") == 0) {
+        $db_a->add_connection(CoreLocal::get("mServer"),CoreLocal::get("mDBMS"),
+            CoreLocal::get("mDatabase"),CoreLocal::get("mUser"),CoreLocal::get("mPass"),false,true);
+        $cols = Database::getMatchingColumns($db_a,"localtemptrans","suspended");
+        $db_a->transfer(CoreLocal::get("tDatabase"),"select {$cols} from localtemptrans",
+            CoreLocal::get("mDatabase"),"insert into suspended ($cols)");
+        $db_a->close(CoreLocal::get("mDatabase"),True);
+    } else { 
+        $query = "insert into suspended select * from localtemptrans";
+        $result = $db_a->query($query);
+    }
 
-	/* ensure the cancel happens */
-	$cancelR = $db_a->query("UPDATE localtemptrans SET trans_status='X',charflag='S'");
+    /* ensure the cancel happens */
+    $cancelR = $db_a->query("UPDATE localtemptrans SET trans_status='X',charflag='S'");
     TransRecord::finalizeTransaction(true);
 
-	$CORE_LOCAL->set("plainmsg",_("transaction suspended"));
-	$recall_line = $CORE_LOCAL->get("standalone")." ".$CORE_LOCAL->get("laneno")." ".$cashier_no." ".$trans_no;
+    CoreLocal::set("plainmsg",_("transaction suspended"));
+    $recall_line = CoreLocal::get("standalone")." ".CoreLocal::get("laneno")." ".$cashier_no." ".$trans_no;
     /**
       If the transaction is marked as complete but somehow did not
       actually finish, this will prevent the suspended receipt from
       adding tax/discount lines to the transaction
     */
-    $CORE_LOCAL->set('End', 0);
+    CoreLocal::set('End', 0);
 
     return $trans_num;
 }
@@ -85,26 +83,24 @@ static public function suspendorder()
 */
 static public function checksuspended() 
 {
-	global $CORE_LOCAL;
-
-	$db_a = Database::tDataConnect();
-	$query_local = "SELECT upc 
+    $db_a = Database::tDataConnect();
+    $query_local = "SELECT upc 
                     FROM suspended
                     WHERE datetime >= " . date("'Y-m-d 00:00:00'");
-		
-	$result = "";
-	if ($CORE_LOCAL->get("standalone") == 1) {
-		$result = $db_a->query($query_local);
-	} else {
-		$db_a = Database::mDataConnect();
-		$result = $db_a->query($query_local);
-	}
+        
+    $result = "";
+    if (CoreLocal::get("standalone") == 1) {
+        $result = $db_a->query($query_local);
+    } else {
+        $db_a = Database::mDataConnect();
+        $result = $db_a->query($query_local);
+    }
 
-	$num_rows = $db_a->num_rows($result);
+    $num_rows = $db_a->num_rows($result);
 
-	if ($num_rows == 0) {
+    if ($num_rows == 0) {
         return 0;
-	} else {
+    } else {
         return 1;
     }
 }

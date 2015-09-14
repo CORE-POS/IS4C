@@ -116,34 +116,34 @@ class TestMatrix {
     */
     print "<p>Testing access methods...</p>";
 
-	$B = new Matrix($avals);
-	if($B->getRowDimension() == $rows)
-	  $this->try_success("getRowDimension...");
-	else
-	  $errorCount = $this->try_failure($errorCount, "getRowDimension...");
+    $B = new Matrix($avals);
+    if($B->getRowDimension() == $rows)
+      $this->try_success("getRowDimension...");
+    else
+      $errorCount = $this->try_failure($errorCount, "getRowDimension...");
 
-	if($B->getColumnDimension() == $cols)
-	  $this->try_success("getColumnDimension...");
-	else
-	  $errorCount = $this->try_failure($errorCount, "getColumnDimension...");
+    if($B->getColumnDimension() == $cols)
+      $this->try_success("getColumnDimension...");
+    else
+      $errorCount = $this->try_failure($errorCount, "getColumnDimension...");
 
-	$barray = $B->getArray();
-	if($this->checkArrays($barray, $avals))
-	  $this->try_success("getArray...");
-	else
-	  $errorCount = $this->try_failure($errorCount, "getArray...");
+    $barray = $B->getArray();
+    if($this->checkArrays($barray, $avals))
+      $this->try_success("getArray...");
+    else
+      $errorCount = $this->try_failure($errorCount, "getArray...");
 
-	$bpacked = $B->getColumnPackedCopy();
-	if($this->checkArrays($bpacked, $columnwise))
-	  $this->try_success("getColumnPackedCopy...");
-	else
-	  $errorCount = $this->try_failure($errorCount, "getColumnPackedCopy...");
+    $bpacked = $B->getColumnPackedCopy();
+    if($this->checkArrays($bpacked, $columnwise))
+      $this->try_success("getColumnPackedCopy...");
+    else
+      $errorCount = $this->try_failure($errorCount, "getColumnPackedCopy...");
 
-	$bpacked = $B->getRowPackedCopy();
-	if($this->checkArrays($bpacked, $rowwise))
-	  $this->try_success("getRowPackedCopy...");
-	else
-	  $errorCount = $this->try_failure($errorCount, "getRowPackedCopy...");
+    $bpacked = $B->getRowPackedCopy();
+    if($this->checkArrays($bpacked, $rowwise))
+      $this->try_success("getRowPackedCopy...");
+    else
+      $errorCount = $this->try_failure($errorCount, "getRowPackedCopy...");
 
     /**
     * Array-like methods:
@@ -309,7 +309,7 @@ class TestMatrix {
     else
       $errorCount = $this->try_failure($errorCount,"EigenvalueDecomposition (nonsymmetric)...","incorrect nonsymmetric Eigenvalue decomposition calculation");
 
-	print("<b>{$errorCount} total errors</b>.");
+    print("<b>{$errorCount} total errors</b>.");
   }
 
   /**

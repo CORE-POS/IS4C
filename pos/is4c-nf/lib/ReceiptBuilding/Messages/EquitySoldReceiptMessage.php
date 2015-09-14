@@ -26,25 +26,25 @@
 */
 class EquitySoldReceiptMessage extends ReceiptMessage {
 
-	public function select_condition(){
-		return "SUM(CASE WHEN department=991 THEN total ELSE 0 END)";
-	}
+    public function select_condition(){
+        return "SUM(CASE WHEN department=991 THEN total ELSE 0 END)";
+    }
 
-	public function message($val, $ref, $reprint=False){
-		global $CORE_LOCAL;
-		if ($val <= 0) return '';
+    public function message($val, $ref, $reprint=False)
+    {
+        if ($val <= 0) return '';
 
-		$slip = ReceiptLib::centerString("................................................")."\n\n";
-		$slip .= ReceiptLib::biggerFont("Class B Equity Purchase")."\n\n";
-		$slip .= ReceiptLib::biggerFont(sprintf('Amount: $%.2f',$val))."\n";
-		$slip .= "\n";
-		$slip .= "Proof of purchase for owner equity\n";
-		$slip .= "Please retain receipt for your records\n\n";
-		$slip .= ReceiptLib::centerString("................................................")."\n\n";
+        $slip = ReceiptLib::centerString("................................................")."\n\n";
+        $slip .= ReceiptLib::biggerFont("Class B Equity Purchase")."\n\n";
+        $slip .= ReceiptLib::biggerFont(sprintf('Amount: $%.2f',$val))."\n";
+        $slip .= "\n";
+        $slip .= "Proof of purchase for owner equity\n";
+        $slip .= "Please retain receipt for your records\n\n";
+        $slip .= ReceiptLib::centerString("................................................")."\n\n";
 
-		$CORE_LOCAL->set("equityNoticeAmt",$val);
+        CoreLocal::set("equityNoticeAmt",$val);
 
-		return $slip;
-	}
+        return $slip;
+    }
 }
 ?>

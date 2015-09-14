@@ -21,65 +21,93 @@
 
 *********************************************************************************/
 
-class ClubCard extends Parser {
-	function check($str){
-		if ($str == "50JC"){
-			return True;
-		}
-		return False;
-	}
+class ClubCard extends Parser 
+{
+    function check($str)
+    {
+        if ($str == "50JC") {
+            return true;
+        }
+        return false;
+    }
 
-	function parse($str){
-		global $CORE_LOCAL;
-		$query = "select upc,description,VolSpecial,quantity,
-			total,discount,memDiscount,discountable,
-			unitPrice,scale,foodstamp,voided,discounttype,
-			trans_type,trans_status,department,regPrice,
-			tax,volume,volDiscType
-			from localtemptrans where 
-			trans_id = " . $CORE_LOCAL->get("currentid");	
-		$connection = Database::tDataConnect();
-		$result = $connection->query($query);
-		$num_rows = $connection->num_rows($result);
+    function parse($str)
+    {
+        $ret = $this->default_json();
+        $query = "select upc,description,VolSpecial,quantity,
+            total,discount,memDiscount,discountable,
+            unitPrice,scale,foodstamp,voided,discounttype,
+            trans_type,trans_status,department,regPrice,
+            tax,volume,volDiscType
+            from localtemptrans where 
+            trans_id = " . CoreLocal::get("currentid");    
+        $connection = Database::tDataConnect();
+        $result = $connection->query($query);
+        $num_rows = $connection->num_rows($result);
 
-		if ($num_rows > 0) {
-			$row = $connection->fetch_array($result);
-			$strUPC = $row["upc"];
-			$strDescription = $row["description"];
-			$dblVolSpecial = $row["VolSpecial"];			
-			$dblquantity = -0.5 * $row["quantity"];
+        if ($num_rows > 0) {
+            $row = $connection->fetch_array($result);
+            $strUPC = $row["upc"];
+            $strDescription = $row["description"];
+            $dblVolSpecial = $row["VolSpecial"];            
+            $dblquantity = -0.5 * $row["quantity"];
 
-			$dblTotal = MiscLib::truncate2(-1 * 0.5 * $row["total"]); 		// invoked truncate2 rounding function to fix half-penny errors apbw 3/7/05
+            $dblTotal = MiscLib::truncate2(-1 * 0.5 * $row["total"]);         // invoked truncate2 rounding function to fix half-penny errors apbw 3/7/05
 
-			$strCardNo = $CORE_LOCAL->get("memberID");
-			$dblDiscount = $row["discount"];
-			$dblmemDiscount = $row["memDiscount"];
-			$intDiscountable = $row["discountable"];
-			$dblUnitPrice = $row["unitPrice"];
-			$intScale = MiscLib::nullwrap($row["scale"]);
+            $strCardNo = CoreLocal::get("memberID");
+            $dblDiscount = $row["discount"];
+            $dblmemDiscount = $row["memDiscount"];
+            $intDiscountable = $row["discountable"];
+            $dblUnitPrice = $row["unitPrice"];
+            $intScale = MiscLib::nullwrap($row["scale"]);
 
-			if ($row["foodstamp"] <> 0) {
-				$intFoodStamp = 1;
-			} else {
-				$intFoodStamp = 0;
-			}
+            if ($row["foodstamp"] <> 0) {
+                $intFoodStamp = 1;
+            } else {
+                $intFoodStamp = 0;
+            }
 
-			$intdiscounttype = MiscLib::nullwrap($row["discounttype"]);
+            $intdiscounttype = MiscLib::nullwrap($row["discounttype"]);
 
-			if ($row["voided"] == 20) {
-				DisplayLib::boxMsg(_("Discount already taken"));
-			} elseif ($row["trans_type"] == "T" or $row["trans_status"] == "D" or $row["trans_status"] == "V" or $row["trans_status"] == "C") {
-				DisplayLib::boxMsg("Item cannot be discounted");
-			} elseif (strncasecmp($strDescription, "Club Card", 9) == 0 ) {		//----- edited by abpw 2/15/05 -----
-				DisplayLib::boxMsg(_("Item cannot be discounted"));
-			} elseif ($CORE_LOCAL->get("tenderTotal") < 0 and $intFoodStamp == 1 and (-1 * $dblTotal) > $CORE_LOCAL->get("fsEligible")) {
-				DisplayLib::boxMsg(_("Item already paid for"));
-			} elseif ($CORE_LOCAL->get("tenderTotal") < 0 and (-1 * $dblTotal) > ($CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal"))) {
-				DisplayLib::boxMsg(_("Item already paid for"));
-			} 
-			else {
-				// --- added partial item desc to club card description - apbw 2/15/05 --- 
-				TransRecord::addRecord(array(
+            if ($row["voided"] == 20) {
+                $ret['output'] = DisplayLib::boxMsg(
+                    _("Discount already taken"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+            } elseif ($row["trans_type"] == "T" or $row["trans_status"] == "D" or $row["trans_status"] == "V" or $row["trans_status"] == "C") {
+                $ret['output'] = DisplayLib::boxMsg(
+                    _("Item cannot be discounted"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+            } elseif (strncasecmp($strDescription, "Club Card", 9) == 0 ) {        //----- edited by abpw 2/15/05 -----
+                $ret['output'] = DisplayLib::boxMsg(
+                    _("Item cannot be discounted"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+            } elseif (CoreLocal::get("tenderTotal") < 0 and $intFoodStamp == 1 and (-1 * $dblTotal) > CoreLocal::get("fsEligible")) {
+                $ret['output'] = DisplayLib::boxMsg(
+                    _("Item already paid for"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+            } elseif (CoreLocal::get("tenderTotal") < 0 and (-1 * $dblTotal) > (CoreLocal::get("runningTotal") - CoreLocal::get("taxTotal"))) {
+                $ret['output'] = DisplayLib::boxMsg(
+                    _("Item already paid for"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+            } 
+            else {
+                // --- added partial item desc to club card description - apbw 2/15/05 --- 
+                TransRecord::addRecord(array(
                     'upc' => $strUPC, 
                     'description' => "Club Card: " . substr($strDescription, 0, 19), 
                     'trans_type' => "I", 
@@ -102,31 +130,31 @@ class ClubCard extends Parser {
                     'VolSpecial' => $dblVolSpecial,
                 ));
 
-				$update = "update localtemptrans set voided = 20 where trans_id = " . $CORE_LOCAL->get("currentid");
-				$connection = Database::tDataConnect();
-				$connection->query($update);
+                $update = "update localtemptrans set voided = 20 where trans_id = " . CoreLocal::get("currentid");
+                $connection = Database::tDataConnect();
+                $connection->query($update);
 
-				$CORE_LOCAL->set("TTLflag",0);
-				$CORE_LOCAL->set("TTLRequested",0);
+                CoreLocal::set("TTLflag",0);
+                CoreLocal::set("TTLRequested",0);
 
-				DisplayLib::lastpage();
-			}
-		}	
-		return False;
-	}
+                $ret['output'] = DisplayLib::lastpage();
+            }
+        }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>50JC</td>
-				<td>Some kind of card special. I don't
-				actually use this one myself</td>
-			</tr>
-			</table>";
-	}
+        return $ret;
+    }
+
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>50JC</td>
+                <td>Some kind of card special. I don't
+                actually use this one myself</td>
+            </tr>
+            </table>";
+    }
 }
 
-?>

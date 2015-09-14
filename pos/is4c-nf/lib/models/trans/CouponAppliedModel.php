@@ -36,7 +36,18 @@ class CouponAppliedModel extends BasicModel
     'trans_no' => array('type'=>'INT', 'primary_key'=>true),
     'quantity' => array('type'=>'FLOAT'),
     'trans_id' => array('type'=>'INT', 'primary_key'=>true),
-	);
+    );
+
+    public function doc()
+    {
+        return '
+Use:
+Track which items have had coupons applied
+to them. This is primarily to deal with
+"free" coupons that can apply to multiple,
+differently-priced items ina single transaction.
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 

@@ -32,104 +32,104 @@
 */
 class PreParser {
 
-	/**
-	  Check whether the module handles this input
-	  @param $str The input string
-	  @return 
-	   - True The module handles this input.
-	     The parse method() will be called next.
-	   - False The module does not handle this input.
-	     The parse method() will not be called and
-	     processing will proceed to the next Parser module.
+    /**
+      Check whether the module handles this input
+      @param $str The input string
+      @return 
+       - True The module handles this input.
+         The parse method() will be called next.
+       - False The module does not handle this input.
+         The parse method() will not be called and
+         processing will proceed to the next Parser module.
 
-	*/
-	function check($str){
-	
-	}
+    */
+    function check($str){
+    
+    }
 
-	/**
-	  Deal with the input
-	  @param $str The input string
-	  @return mixed
+    /**
+      Deal with the input
+      @param $str The input string
+      @return mixed
 
-	  Preparse modules should return a string. This
-	  value will replace the input string for remaining
-	  parsing.
+      Preparse modules should return a string. This
+      value will replace the input string for remaining
+      parsing.
 
-	*/
-	function parse($str){
+    */
+    function parse($str){
 
-	}
+    }
 
-	/**
-	  Make this module last
-	  @return True or False
+    /**
+      Make this module last
+      @return True or False
 
-	  Modules are not run in any guaranteed order.
-	  Return True will force this module to be last.
+      Modules are not run in any guaranteed order.
+      Return True will force this module to be last.
 
-	  BE VERY VERY CAREFUL IF YOU OVERRIDE THIS.
-	  Quantity is the last preparse module and
-	  DefaultTender is the last parse module. Making
-	  your own module last will break one of these
-	  and probably make a mess.
-	*/
-	function isLast(){
-		return False;
-	}
+      BE VERY VERY CAREFUL IF YOU OVERRIDE THIS.
+      Quantity is the last preparse module and
+      DefaultTender is the last parse module. Making
+      your own module last will break one of these
+      and probably make a mess.
+    */
+    function isLast(){
+        return False;
+    }
 
-	/**
-	  Make this module first
-	  @return True or False
+    /**
+      Make this module first
+      @return True or False
 
-	  Modules are not run in any guaranteed order.
-	  Return True will force this module to be first
-	  (or nearly first if multiple modules override
-	  this method)
-	*/
-	function isFirst(){
-		return False;
-	}
+      Modules are not run in any guaranteed order.
+      Return True will force this module to be first
+      (or nearly first if multiple modules override
+      this method)
+    */
+    function isFirst(){
+        return False;
+    }
 
-	/**
-	  Display documentation
-	  @return A string describing the module
-	
-	  Ideally you should note what your module it does
-	  and what the input format is.
-	*/
-	function doc(){
-		return "Developer didn't document this module very well";
-	}
+    /**
+      Display documentation
+      @return A string describing the module
+    
+      Ideally you should note what your module it does
+      and what the input format is.
+    */
+    function doc(){
+        return "Developer didn't document this module very well";
+    }
 
-	/**
-	  Gather preparse modules
-	  @return array of Parser class names
+    /**
+      Gather preparse modules
+      @return array of Parser class names
 
-	  Scan the preparse directory for module files.
-	  Return an array of available modules.
-	*/
-	static public function get_preparse_chain(){
+      Scan the preparse directory for module files.
+      Return an array of available modules.
+    */
+    static public function get_preparse_chain(){
 
-		$set = AutoLoader::ListModules('PreParser');
-		$set = array_reverse($set);
+        $set = AutoLoader::ListModules('PreParser');
+        $set = array_reverse($set);
 
-		$preparse_chain = array();
-		$first = "";
-		foreach($set as $classname){
-			$instance = new $classname();
-			if ($instance->isLast())
-				array_push($preparse_chain,$classname);
-			elseif ($instance->isFirst())
-				$first = $classname;
-			else
-				array_unshift($preparse_chain,$classname);
-		}
-		if ($first != "")
-			array_unshift($preparse_chain,$first);
+        $preparse_chain = array();
+        $first = "";
+        foreach($set as $classname){
+            $instance = new $classname();
+            if ($instance->isLast())
+                array_push($preparse_chain,$classname);
+            elseif ($instance->isFirst())
+                $first = $classname;
+            else
+                array_unshift($preparse_chain,$classname);
+        }
+        if ($first != "")
+            array_unshift($preparse_chain,$first);
 
-		return $preparse_chain;
-	}
+        return $preparse_chain;
+    }
 
 }
 

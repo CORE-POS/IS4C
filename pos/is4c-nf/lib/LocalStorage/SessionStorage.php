@@ -69,5 +69,10 @@ class SessionStorage extends LocalStorage
         }
         $this->debug($key,$val);
     }
+
+    public function iteratorKeys()
+    {
+        return array_merge(parent::iteratorKeys(), array_keys($_SESSION));
+    }
 }
 

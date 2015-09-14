@@ -23,19 +23,19 @@
 
 class WfcMadCouponParser extends Parser {
 
-	function check($str){
-		if ($str == "MA")
-			return True;
-		return False;
-	}
+    function check($str){
+        if ($str == "MA")
+            return True;
+        return False;
+    }
 
-	function parse($str){
-		global $CORE_LOCAL;
-		Database::getsubtotals();
-		$amt = $CORE_LOCAL->get('runningTotal') - $CORE_LOCAL->get('transDiscount');
-		$madCoup = number_format($amt * 0.05, 2);
-		if ($madCoup > 2.50) $madCoup = 2.50;
-		TransRecord::addRecord(array(
+    function parse($str)
+    {
+        Database::getsubtotals();
+        $amt = CoreLocal::get('runningTotal') - CoreLocal::get('transDiscount');
+        $madCoup = number_format($amt * 0.05, 2);
+        if ($madCoup > 2.50) $madCoup = 2.50;
+        TransRecord::addRecord(array(
             'upc' => "MAD Coupon", 
             'description' => "Member Appreciation Coupon", 
             'trans_type' => "I", 
@@ -43,29 +43,29 @@ class WfcMadCouponParser extends Parser {
             'trans_status' => "C", 
             'quantity' => 1, 
             'ItemQtty' => 1, 
-			'unitPrice' => -1*$madCoup,
-			'total' => -1*$madCoup,
-			'regPrice' => -1*$madCoup,
+            'unitPrice' => -1*$madCoup,
+            'total' => -1*$madCoup,
+            'regPrice' => -1*$madCoup,
             'voided' => 17,
         ));
-		$ret = $this->default_json();
-		$ret['output'] = DisplayLib::lastpage();
-		$ret['redraw_footer'] = true;
-		return $ret;
-	}
+        $ret = $this->default_json();
+        $ret['output'] = DisplayLib::lastpage();
+        $ret['redraw_footer'] = true;
+        return $ret;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>MA</td>
-				<td>Add quarterly member coupon
-				(WFC specific)</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>MA</td>
+                <td>Add quarterly member coupon
+                (WFC specific)</td>
+            </tr>
+            </table>";
+    }
 
 }
 

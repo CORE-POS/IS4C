@@ -14,22 +14,22 @@ $memID = $memNum;
 <head>
 </head>
 <body 
-	bgcolor="#66CC99" 
-	leftmargin="0" topmargin="0" 
-	marginwidth="0" marginheight="0" 
-	onload="MM_preloadImages(
-		'../images/memOver.gif',
-		'../images/memUp.gif',
-		'../images/repUp.gif',
-		'../images/itemsDown.gif',
-		'../images/itemsOver.gif',
-		'../images/itemsUp.gif',
-		'../images/refUp.gif',
-		'../images/refDown.gif',
-		'../images/refOver.gif',
-		'../images/repDown.gif',
-		'../images/repOver.gif'
-	)"
+    bgcolor="#66CC99" 
+    leftmargin="0" topmargin="0" 
+    marginwidth="0" marginheight="0" 
+    onload="MM_preloadImages(
+        '../images/memOver.gif',
+        '../images/memUp.gif',
+        '../images/repUp.gif',
+        '../images/itemsDown.gif',
+        '../images/itemsOver.gif',
+        '../images/itemsUp.gif',
+        '../images/refUp.gif',
+        '../images/refDown.gif',
+        '../images/refOver.gif',
+        '../images/repDown.gif',
+        '../images/repOver.gif'
+    )"
 >
 
 <table width="660" height="111" border="0" cellpadding="0" cellspacing="0" bgcolor="#66cc99">
@@ -52,10 +52,10 @@ $memID = $memNum;
 $q = $sql->prepare("select username,note,stamp from memberNotes where cardno=? order by stamp desc");
 $r = $sql->execute($q, array($memNum));
 while($w = $sql->fetch_array($r)){
-	$text = stripslashes($w[1]);
-	if (empty($text)) continue;
-	echo "<b>$w[2] - note added by $w[0]</b><br />";
-	echo "$text<br /><hr />";
+    $text = stripslashes($w[1]);
+    if (empty($text)) continue;
+    echo "<b>$w[2] - note added by $w[0]</b><br />";
+    echo "$text<br /><hr />";
 }
 
 ?>

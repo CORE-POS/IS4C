@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -29,6 +29,8 @@ if (!class_exists('FannieAPI')) {
 class CouponsReport extends FannieReportPage {
 
     public $description = '[Manufacturer Coupons] lists coupons totals by UPC for a given date range.';
+    public $themed = true;
+    public $report_set = 'Tenders';
 
     protected $title = "Fannie : Coupons Report";
     protected $header = "Coupons Report";
@@ -49,8 +51,8 @@ class CouponsReport extends FannieReportPage {
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $d1 = FormLib::get('date1', date('Y-m-d'));
         $d2 = FormLib::get('date2', date('Y-m-d'));
@@ -97,27 +99,41 @@ class CouponsReport extends FannieReportPage {
         ob_start();
         ?>
 <form action=CouponsReport.php method=get>
-<table cellspacing=4 cellpadding=4>
-<tr>
-<th>Start Date</th>
-<td><input type=text id="date1" name=date1 value="<?php echo $lastMonday; ?>" /></td>
-<td rowspan="3">
+<div class="col-sm-4">
+<div class="form-group">
+    <label>Start Date</label>
+    <input type=text id="date1" name=date1 
+        class="form-control date-field" value="<?php echo $lastMonday; ?>" />
+</div>
+<div class="form-group">
+    <label>End Date</label>
+    <input type=text id="date2" name=date2 
+        class="form-control date-field" value="<?php echo $lastSunday; ?>" />
+</div>
+<div class="form-group">
+    <label>
+        Excel <input type=checkbox name=excel value="xls" />
+    </label>
+    <button type=submit name=submit value="Submit" 
+        class="btn btn-default">Submit</button>
+</div>
+</div>
+<div class="col-sm-4">
 <?php echo FormLib::date_range_picker(); ?>
-</td>
-</tr><tr>
-<th>End Date</th>
-<td><input type=text id="date2" name=date2 value="<?php echo $lastSunday; ?>" /></td>
-</tr><tr>
-<td>Excel <input type=checkbox name=excel value="xls" /></td>
-<td><input type=submit name=submit value="Submit" /></td>
-</tr>
-</table>
+</div>
 </form>
         <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
 
         return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            List usage of manufacturer coupons by UPC for
+            a given date range. Can be faster than counting
+            paper coupons if redemption agency accepts counts
+            </p>';
     }
 
 }

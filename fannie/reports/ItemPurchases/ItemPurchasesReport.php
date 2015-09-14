@@ -3,14 +3,14 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -36,6 +36,8 @@ class ItemPurchasesReport extends FannieReportPage
     protected $report_cache = 'day';
 
     public $description = '[Item Purchases] lists each transaction containing a particular item';
+    public $themed = true;
+    public $report_set = 'Transaction Reports';
 
     function fetch_report_data()
     {
@@ -54,13 +56,15 @@ class ItemPurchasesReport extends FannieReportPage
                             DAY(tdate) AS day
                         FROM ' . $dlog . ' AS d
                         WHERE upc=?
+                            AND d.tdate BETWEEN ? AND ?
                         GROUP BY register_no, emp_no, trans_no,
                             YEAR(tdate),
                             MONTH(tdate),
                             DAY(tdate)
                         HAVING SUM(total) <> 0';
         $lookupP = $dbc->prepare($lookupTrans);
-        $lookupR = $dbc->execute($lookupP, array($upc));
+        $lookupR = $dbc->execute($lookupP, 
+            array($upc, $date1 . ' 00:00:00', $date2 . ' 23:59:59'));
 
         $data = array();
         // get trans-specific info
@@ -120,45 +124,41 @@ class ItemPurchasesReport extends FannieReportPage
     
     function form_content(){
 ?>
-<div id=main>   
-<form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr> 
-            <th>UPC</th>
-            <td>
-            <input type=text name=upc size=14 id=upc  />
-            </td>
-            <td>
-            <input type="checkbox" name="excel" id="excel" value="xls" />
-            <label for="excel">Excel</label>
-            </td>   
-        </tr>
-        <tr>
-            <th>Date Start</th>
-            <td>    
-                       <input type=text size=14 id=date1 name=date1 />
-            </td>
-            <td rowspan="3">
-            <?php echo FormLib::date_range_picker(); ?>
-            </td>
-        </tr>
-        <tr>
-            <th>End</th>
-            <td>
-                        <input type=text size=14 id=date2 name=date2 />
-               </td>
-
-        </tr>
-        <tr>
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-        </tr>
-    </table>
-</form>
+<form method="get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+<div class="col-sm-5">
+    <div class="form-group">
+        <label>UPC</label>
+        <input type="text" name="upc" id="upc-field" 
+            required class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Start Date</label>
+        <input type=text id=date1 name=date1 
+            class="form-control date-field" required />
+    </div>
+    <div class="form-group">
+        <label>End Date</label>
+        <input type=text id=date2 name=date2 
+            class="form-control date-field" required />
+    </div>
+    <p>
+        <button type=submit class="btn btn-default btn-core">Submit</button>
+        <button type=reset class="btn btn-default btn-reset">Start Over</button>
+    </p>
 </div>
+<div class="col-sm-5">
+    <?php echo FormLib::date_range_picker(); ?>
+</div>
+</form>
 <?php
-        $this->add_onload_command("\$('#date1').datepicker({dateFormat:'yy-mm-dd'});\n");
-        $this->add_onload_command("\$('#date2').datepicker({dateFormat:'yy-mm-dd'});\n");
+        $this->add_onload_command('$(\'#upc-field\').focus();');
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Lists every transaction containing a particular item.
+            </p>';
     }
 }
 

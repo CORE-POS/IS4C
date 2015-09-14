@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,16 +21,27 @@
 
 *********************************************************************************/
 
-class HalfTags4x8P extends FannieSignage 
+namespace COREPOS\Fannie\API\item\signage {
+
+class HalfTags4x8P extends \COREPOS\Fannie\API\item\FannieSignage 
 {
     protected $BIG_FONT = 18;
     protected $MED_FONT = 14;
     protected $SMALL_FONT = 10;
 
+    protected $font = 'Arial';
+    protected $alt_font = 'Arial';
+
     public function drawPDF()
     {
-        $pdf = new FPDF('P', 'mm', 'Letter');
-        $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+        $pdf = new \FPDF('P', 'mm', 'Letter');
+        if (\COREPOS\Fannie\API\FanniePlugin::isEnabled('CoopDealsSigns')) {
+            $this->font = 'Gill';
+            $this->alt_font = 'GillBook';
+            define('FPDF_FONTPATH', dirname(__FILE__) . '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+            $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+            $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
+        }
 
         $width = 52; // tag width in mm
         $height = 31; // tag height in mm
@@ -68,7 +79,7 @@ class HalfTags4x8P extends FannieSignage
             }
 
 
-            $pdf->SetFont('Gill', '', 8);
+            $pdf->SetFont($this->font, '', 8);
 
             $pdf->SetXY($x,$y);
             // try normal wordwrap
@@ -87,7 +98,7 @@ class HalfTags4x8P extends FannieSignage
             $pdf->SetX($x);
             $pdf->Cell($width/2,3,date('n/j/y ') . $size,0,1,'L');
 
-            $pdf->SetFont('Arial','B',18); //change font for price
+            $pdf->SetFont($this->font,'B',18); //change font for price
             $pdf->SetX($x);
             $pdf->Cell($width/2,8,$price,0,1,'L');
 
@@ -96,6 +107,7 @@ class HalfTags4x8P extends FannieSignage
                 'align' => 'L',
                 'fontsize' => 8,
                 'width' => 0.23,
+                'font' => $this->font,
             );
             $b_y = $pdf->GetY();
             $pdf = $this->drawBarcode($upc, $pdf, $x, $b_y, $args);
@@ -108,5 +120,11 @@ class HalfTags4x8P extends FannieSignage
 
         $pdf->Output('Tags4x8P.pdf', 'I');
     }
+}
+
+}
+
+namespace {
+    class HalfTags4x8P extends \COREPOS\Fannie\API\item\signage\HalfTags4x8P {}
 }
 

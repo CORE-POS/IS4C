@@ -48,17 +48,21 @@ class InstallUtilities extends LibraryClass
         $failure = ($optional) ? 'blue' : 'red';
         $status = ($optional) ? 'Optional' : 'Warning';
 
-        if (!file_exists($filename) && !$optional && is_writable($filename)) {
+        if (!file_exists($filename) && !$optional) {
             $fp = fopen($filename,'w');
-            if ($template !== False) {
-                switch($template) {
-                    case 'PHP':
-                        fwrite($fp,"<?php\n");
-                        fwrite($fp,"?>\n");
-                        break;
+            if ($fp) {
+                if ($template !== False) {
+                    switch($template) {
+                        case 'PHP':
+                            fwrite($fp,"<?php\n");
+                            break;
+                        case 'JSON':
+                            fwrite($fp, CoreLocal::convertIniPhpToJson());
+                            break;
+                    }
                 }
+                fclose($fp);
             }
-            fclose($fp);
         }
 
         if (!file_exists($filename)) {
@@ -79,7 +83,7 @@ class InstallUtilities extends LibraryClass
     }
 
     /**
-      Save entry to ini.php or ini-local.php
+      Save entry to config file(s)
       @param $key string key
       @param $value string value
       @param $prefer_local use ini-local if it exists
@@ -89,16 +93,47 @@ class InstallUtilities extends LibraryClass
       PHP code. For example, a PHP string should include
       single or double quote delimiters in $value.
     */
-    static public function confsave($key,$value,$prefer_local=False)
+    static public function confsave($key, $value, $prefer_local=false)
     {
-        global $CORE_LOCAL;
         // lane #0 is the server config editor
         // no ini.php file to write values to
-        if ($CORE_LOCAL->get('laneno') == 0) {
+        if (CoreLocal::get('laneno') == 0) {
             return null;
         }
 
+        $ini_php = dirname(__FILE__) . '/../ini.php';
+        $ini_json = dirname(__FILE__) . '/../ini.json';
+        $save_php = null;
+        $save_json = null;
+        if (file_exists($ini_php)) {
+            $save_php = self::phpConfSave($key, $value, $prefer_local);
+        }
+        if (file_exists($ini_json)) {
+            $save_json = self::jsonConfSave($key, $value);
+        }
 
+        if ($save_php === false || $save_json === false) {
+            // error occurred saving
+            return false;
+        } elseif ($save_php === null || $save_json === null) {
+            // neither config file found
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+      Save entry to ini.php or ini-local.php.
+      This is called by confsave() if ini.php exists.
+      Should not be called directly
+      @param $key string key
+      @param $value string value
+      @param $prefer_local use ini-local if it exists
+      @return boolean success
+    */
+    static private function phpConfSave($key, $value, $prefer_local=false)
+    {
         /*
         Attempt to update settings in both ini.php and ini-local.php.
         If found in both, return False if (and only if) ini-local.php
@@ -133,13 +168,13 @@ class InstallUtilities extends LibraryClass
         }
 
         $new_global = preg_replace($orig_setting, $new_setting, $orig_global,
-					-1, $found_global);
+                    -1, $found_global);
         $new_local = preg_replace($orig_setting, $new_setting, $orig_local,
                         -1, $found_local);
         if ($found_global) {
             preg_match($orig_setting, $orig_global, $matches);
             if ($matches[1] === $value.', True') {// found with exact same value
-                $written_global = True;	// no need to bother rewriting it
+                $written_global = True;    // no need to bother rewriting it
             } elseif ($writeable_global) {
                 $written_global = file_put_contents($path_global, $new_global);
             }
@@ -148,17 +183,17 @@ class InstallUtilities extends LibraryClass
         if ($found_local) {
             preg_match($orig_setting, $orig_local, $matches);
             if ($matches[1] === $value.', True') {// found with exact same value
-                $written_local = True;	// no need to bother rewriting it
+                $written_local = True;    // no need to bother rewriting it
             } elseif ($writeable_local) {
                 $written_local = file_put_contents($path_local, $new_local);
             }
         }
 
         if ($found_local && !$written_local) {
-            return false;	// ini-local.php is overriding ini.php with bad data!
+            return false;    // ini-local.php is overriding ini.php with bad data!
         }
         if ($written_global || $written_local) {
-            return true;	// successfully written somewhere relevant
+            return true;    // successfully written somewhere relevant
         }
 
         if (!$found_global && !$found_local) {
@@ -171,23 +206,154 @@ class InstallUtilities extends LibraryClass
         if ($append_path === $path_global) {
             $new_global = preg_replace("|(\?>)?\s*$|", $new_setting.'?>', $orig_global,
                             1, $found_global);
+            // make sure new setting isn't right up against
+            // the opening php tag
+            if (preg_match('/^<\?php[^\s]/', $new_global)) {
+                $new_global = preg_replace('/^<\?php/', "<?php\n", $new_global);
+            }
             $added_global = file_put_contents($append_path, $new_global);
         } else {
             $new_local = preg_replace("|(\?>)?\s*$|", $new_setting.'?>', $orig_local,
                             1, $found_local);
+            if (preg_match('/^<\?php[^\s]/', $new_local)) {
+                $new_local = preg_replace('/^<\?php/', "<?php\n", $new_local);
+            }
             $added_local = file_put_contents($append_path, $new_local);
         }
         if ($added_global || $added_local){
-            return true;	// successfully appended somewhere relevant
+            return true;    // successfully appended somewhere relevant
         }
 
-        return false;	// didn't manage to write anywhere!
+        return false;    // didn't manage to write anywhere!
+    }
+
+    /**
+      Save entry to ini.json
+      This is called by confsave() if ini.json exists.
+      Should not be called directly
+      @param $key string key
+      @param $value string value
+      @return boolean success
+    */
+    static private function jsonConfSave($key, $value)
+    {
+        $ini_json = dirname(__FILE__) . '/../ini.json';
+        if (!is_writable($ini_json)) {
+            return false;
+        }
+
+        $json = json_decode(file_get_contents($ini_json), true);
+        if (!is_array($json)) {
+            if (trim(file_get_contents($ini_json)) === '') {
+                $json = array();
+            } else {
+                return false;
+            }
+        }
+
+        /**
+          ini.php expects string delimiters. Take them
+          off if present.
+        */
+        if (strlen($value) >= 2 && substr($value, 0, 1) == "'" && substr($value, -1) == "'") {
+            $value = substr($value, 1, strlen($value)-2);
+        }
+
+        $json[$key] = $value;
+        $saved = file_put_contents($ini_json, JsonLib::prettyJSON(json_encode($json)));
+
+        return ($saved === false) ? false : true;
+    }
+
+    /**
+      Remove a value from config file(s)
+      @param $key string key
+      @param $local boolean optional default false
+        remove from ini-local.php if applicable
+      @return boolean success
+    */
+    static public function confRemove($key, $local=false)
+    {
+        $ini_php = dirname(__FILE__) . '/../ini.php';
+        $ini_json = dirname(__FILE__) . '/../ini.json';
+        $save_php = null;
+        $save_json = null;
+        if (file_exists($ini_php)) {
+            $save_php = self::phpConfRemove($key, $local);
+        }
+        if (file_exists($ini_json)) {
+            $save_json = self::jsonConfRemove($key);
+        }
+        
+        if ($save_php === false || $save_json === false) {
+            // error occurred saving
+            return false;
+        } elseif ($save_php === null || $save_json === null) {
+            // neither config file found
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+      Remove a value from ini.php or ini-local.php
+      Called by confRemove() if ini.php exists.
+      Should not be called directly.
+      @param $key string key
+      @param $local boolean optional default false
+        remove from ini-local.php if applicable
+      @return boolean success
+    */
+    static private function phpConfRemove($key, $local=false)
+    {
+        $path_global = dirname(__FILE__) . '/../ini.php';
+        $path_local = dirname(__FILE__) .  '/../ini-local.php';
+        $ret = false;
+
+        $orig_setting = '|\$CORE_LOCAL->set\([\'"]'.$key.'[\'"],\s*(.+)\);[\r\n]|';
+        $current_conf = ($local) ? file_get_contents($path_local) : file_get_contents($path_global);
+        if (preg_match($orig_setting, $current_conf) == 1) {
+            $removed = preg_replace($orig_setting, '', $current_conf);
+            $ret = file_put_contents($local ? $path_local : $path_global, $removed);
+        }
+
+        return ($ret === false) ? false : true;
+    }
+
+    /**
+      Remove a value from ini.json
+      Called by confRemove() if ini.json exists.
+      Should not be called directly.
+      @param $key string key
+      @return boolean success
+    */
+    static private function jsonConfRemove($key)
+    {
+        $ini_json = dirname(__FILE__) . '/../ini.json';
+        if (!is_writable($ini_json)) {
+            return false;
+        }
+
+        $json = json_decode(file_get_contents($ini_json), true);
+        if (!is_array($json)) {
+            return false;
+        }
+
+        unset($json[$key]);
+        $saved = file_put_contents($ini_json, JsonLib::prettyJSON(json_encode($json)));
+
+        return ($saved === false) ? false : true;
     }
 
     static public function confExists($key, $local=False)
     {
         $path_global = '../ini.php';
         $path_local = '../ini-local.php';
+
+        if (!file_exists($local ? $path_local : $path_global)) {
+            return false;
+        }
 
         $orig_setting = '|\$CORE_LOCAL->set\([\'"]'.$key.'[\'"],\s*(.+)\);[\r\n]|';
         $current_conf = ($local) ? file_get_contents($path_local) : file_get_contents($path_global);
@@ -204,12 +370,12 @@ class InstallUtilities extends LibraryClass
     */
     static public function paramSave($key, $value) 
     {
-        global $CORE_LOCAL;
-        $sql = self::dbTestConnect($CORE_LOCAL->get('localhost'),
-                $CORE_LOCAL->get('DBMS'),
-                $CORE_LOCAL->get('pDatabase'),
-                $CORE_LOCAL->get('localUser'),
-                $CORE_LOCAL->get('localPass'));
+        $sql = self::dbTestConnect(
+                CoreLocal::get('localhost'),
+                CoreLocal::get('DBMS'),
+                CoreLocal::get('pDatabase'),
+                CoreLocal::get('localUser'),
+                CoreLocal::get('localPass'));
 
         $save_as_array = 0;
         if (is_array($value) && count($value) > 0 && isset($value[0])) {
@@ -234,18 +400,19 @@ class InstallUtilities extends LibraryClass
             $save_as_array = 1;
         }
 
+        $saved = false;
         if ($sql !== false) {
             $prep = $sql->prepare_statement('SELECT param_value FROM parameters
                                         WHERE param_key=? AND lane_id=?');
-            $exists = $sql->exec_statement($prep, array($key, $CORE_LOCAL->get('laneno')));
+            $exists = $sql->exec_statement($prep, array($key, CoreLocal::get('laneno')));
             if ($sql->num_rows($exists)) {
                 $prep = $sql->prepare_statement('UPDATE parameters SET param_value=?,
                                         is_array=? WHERE param_key=? AND lane_id=?');
-                $sql->exec_statement($prep, array($value, $save_as_array, $key, $CORE_LOCAL->get('laneno')));
+                $saved = $sql->exec_statement($prep, array($value, $save_as_array, $key, CoreLocal::get('laneno')));
             } else {
                 $prep = $sql->prepare_statement('INSERT INTO parameters (store_id, lane_id, param_key,
                                         param_value, is_array) VALUES (0, ?, ?, ?, ?)');
-                $sql->exec_statement($prep, array($CORE_LOCAL->get('laneno'), $key, $value, $save_as_array));
+                $saved = $sql->exec_statement($prep, array(CoreLocal::get('laneno'), $key, $value, $save_as_array));
             }
         }
 
@@ -275,16 +442,26 @@ class InstallUtilities extends LibraryClass
 
             self::confsave($key, $value);
         }
+
+        return ($saved) ? true : false;
     }
 
-    static public function loadSampleData($sql, $table)
+    /**
+      Load sample data into the table
+      @param $sql [SQLManager object] connected to database
+      @param $table [string] table name
+      @param $quiet [boolean, default false] suppress output
+      @return [boolean] success
+    */
+    static public function loadSampleData($sql, $table, $quiet=false)
     {
         $success = true; 
         $loaded = 0;
+        ob_start();
         echo "Loading `$table` ";
-        if (file_exists("data/$table.sql")) {
+        if (file_exists(dirname(__FILE__) . "/data/$table.sql")) {
             echo "from data/$table.sql<br>\n";
-            $fp = fopen("data/$table.sql","r");
+            $fp = fopen(dirname(__FILE__) . "/data/$table.sql","r");
             while($line = fgets($fp)) {
                 $query = "INSERT INTO $table VALUES $line";
                 $try = $sql->query("INSERT INTO $table VALUES $line");
@@ -305,10 +482,34 @@ class InstallUtilities extends LibraryClass
             fclose($fp);
             echo ($success? ' success!' : "<br>\n'$table' load " . ($loaded? 'partial success;' : 'failed;'))
                 . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
-        } else if (file_exists("data/$table.csv")) {
+        } else if (file_exists(dirname(__FILE__) . "/data/$table.csv")) {
             echo "from data/$table.csv ";
-            $path = realpath("data/$table.csv");
-            $query = "LOAD DATA LOCAL INFILE
+            $LOCAL = 'LOCAL';
+            if (CoreLocal::get('localhost') == '127.0.0.1' || CoreLocal::get('localhost') == 'localhost') {
+                $LOCAL = '';
+            }
+            $path = realpath(dirname(__FILE__) . "/data/$table.csv");
+            /**
+              Handle symlinks on windows by checking if the first line
+              of the file contains the name of another CSV file.
+            */
+            if (MiscLib::win32()) {
+                $fp = fopen($path, 'r');
+                $first_line = trim(fgets($fp));
+                if (substr($first_line, -4) == '.csv') {
+                    $path = realpath(substr($first_line, 3));
+                    if (!file_exists($path)) {
+                        if (!$quiet) {
+                            echo 'File not found: ' . $path . '<br />';
+                            echo ob_end_clean();
+                        }
+                        return false;
+                    }
+                }
+                fclose($fp);
+                $path = str_replace('\\', '/', $path);
+            }
+            $query = "LOAD DATA $LOCAL INFILE
                     '$path'
                     INTO TABLE $table
                     FIELDS TERMINATED BY ','
@@ -330,7 +531,7 @@ class InstallUtilities extends LibraryClass
                 echo "succeeded!<br>\n";
             } else {
                 echo "line-by-line<br>\n";
-                $fp = fopen("data/$table.csv",'r');
+                $fp = fopen($path, 'r');
                 $stmt = false;
                 while(!feof($fp)) {
                     $line = fgetcsv($fp);
@@ -376,6 +577,13 @@ class InstallUtilities extends LibraryClass
         } else {
             echo "<br><span style='color:red;'>Table data not found in either {$table}.sql or {$table}.csv</span><br>\n";
         }
+
+        $verbose = ob_get_clean();
+        if (!$quiet) {
+            echo $verbose;
+        }
+
+        return $success;
     }
 
     static public function dbTestConnect($host,$type,$db,$user,$pw)
@@ -392,7 +600,7 @@ class InstallUtilities extends LibraryClass
             ob_end_clean();
         } catch(Exception $ex) {}
 
-        if ($sql === false || $sql->connections[$db] === false) {
+        if ($sql === false || $sql->isConnected($db) === false) {
             return false;
         } else {
             return $sql;
@@ -434,6 +642,7 @@ class InstallUtilities extends LibraryClass
         if (!file_exists($fn)) {
             $errors[] = array(
                 'struct'=>$table_name,
+                'error' => 1,
                 'query'=>'n/a',
                 'details'=>'Missing file: '.$fn,
                 'important'=>True
@@ -445,6 +654,7 @@ class InstallUtilities extends LibraryClass
         if (!isset($CREATE["$stddb.$table_name"])) {
             $errors[] = array(
                 'struct'=>$table_name,
+                'error' => 1,
                 'query'=>'n/a',
                 'details'=>'No valid $CREATE in: '.$fn,
                 'important'=>True
@@ -461,11 +671,18 @@ class InstallUtilities extends LibraryClass
             $queries = array($queries);
         }
 
-        foreach($queries as $query) {
+        $error = array(
+            'struct' => $struct_name,
+            'error' => 0,
+            'query' => '',
+            'details' => '',
+        );
+        foreach ($queries as $query) {
             ob_start();
             $try = @$sql->query($query);
             ob_end_clean();
             if ($try === false){
+                $error['query'] .= $query . '; ';
                 if (stristr($query, "DROP ") && stristr($query,"VIEW ")) {
                     /* suppress unimportant errors
                     $errors[] = array(
@@ -475,26 +692,23 @@ class InstallUtilities extends LibraryClass
                     );
                     */
                 } else {
-                    $errors[] = array(
-                    'struct'=>$struct_name,
-                    'query'=>$query,
-                    'details'=>$sql->error(),
-                    'important'=>True
-                    );
+                    $error['error'] = 1;
+                    $error['details'] = $sql->error() . '; ';
+                    $error['important'] = true;
                 }
             }
         }
+        $errors[] = $error;
 
         return $errors;
     }
 
     public static function normalizeDbName($name)
     {
-        global $CORE_LOCAL;
         if ($name == 'op') {
-            return $CORE_LOCAL->get('pDatabase');
+            return CoreLocal::get('pDatabase');
         } else if ($name == 'trans') {
-            return $CORE_LOCAL->get('tDatabase');
+            return CoreLocal::get('tDatabase');
         } else {
             return false;
         }
@@ -512,10 +726,9 @@ class InstallUtilities extends LibraryClass
 
       @return [string] html input field
     */
-    static public function installTextField($name, $default_value='', $storage=self::EITHER_SETTING, $quoted=true, $attributes=array())
+    static public function installTextField($name, $default_value='', $storage=self::EITHER_SETTING, $quoted=true, $attributes=array(), $area=false)
     {
-        global $CORE_LOCAL;
-        $current_value = $CORE_LOCAL->get($name);
+        $current_value = CoreLocal::get($name);
         if ($current_value === '') {
             $current_value = $default_value;
         }
@@ -561,7 +774,7 @@ class InstallUtilities extends LibraryClass
             }
         }
 
-        $CORE_LOCAL->set($name, $current_value);
+        CoreLocal::set($name, $current_value);
         if ($storage == self::INI_SETTING) {
             if (is_array($current_value)) {
                 $out_value = 'array(' . implode(',', $current_value) . ')';
@@ -587,18 +800,29 @@ class InstallUtilities extends LibraryClass
             $attributes['title'] = 'Stored in opdata.parameters';
         }
 
-        $ret = sprintf('<input name="%s" value="%s"',
-            $name, $current_value);
-        if (!isset($attributes['type'])) {
-            $attributes['type'] = 'text';
-        }
-        foreach ($attributes as $name => $value) {
-            if ($name == 'name' || $name == 'value') {
-                continue;
+        if ($area) {
+            $ret = sprintf('<textarea name="%s"', $name);
+            foreach ($attributes as $attr => $value) {
+                if ($attr == 'name') {
+                    continue;
+                }
+                $ret .= ' ' . $attr . '="' . $value . '"';
             }
-            $ret .= ' ' . $name . '="' . $value . '"';
+            $ret .= '>' . $current_value . '</textarea>';
+        } else {
+            $ret = sprintf('<input name="%s" value="%s"',
+                $name, $current_value);
+            if (!isset($attributes['type'])) {
+                $attributes['type'] = 'text';
+            }
+            foreach ($attributes as $name => $value) {
+                if ($name == 'name' || $name == 'value') {
+                    continue;
+                }
+                $ret .= ' ' . $name . '="' . $value . '"';
+            }
+            $ret .= " />\n";
         }
-        $ret .= " />\n";
 
         return $ret;
     }
@@ -621,8 +845,7 @@ class InstallUtilities extends LibraryClass
     */
     static public function installSelectField($name, $options, $default_value='', $storage=self::EITHER_SETTING, $quoted=true, $attributes=array())
     {
-        global $CORE_LOCAL;
-        $current_value = $CORE_LOCAL->get($name);
+        $current_value = CoreLocal::get($name);
         if ($current_value === '') {
             $current_value = $default_value;
         }
@@ -663,7 +886,7 @@ class InstallUtilities extends LibraryClass
             $current_value = $default_value;
         }
         
-        $CORE_LOCAL->set($name, $current_value);
+        CoreLocal::set($name, $current_value);
         if ($storage == self::INI_SETTING) {
             if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value !== 'false')) {
                 self::confsave($name, "'" . $current_value . "'");
@@ -718,8 +941,7 @@ class InstallUtilities extends LibraryClass
 
     static public function installCheckboxField($name, $label, $default_value=0, $storage=self::EITHER_SETTING, $choices=array(0, 1))
     {
-        global $CORE_LOCAL;
-        $current_value = $CORE_LOCAL->get($name);
+        $current_value = CoreLocal::get($name);
         if ($current_value === '') {
             $current_value = $default_value;
         }
@@ -739,7 +961,7 @@ class InstallUtilities extends LibraryClass
             $current_value = $choices[0];
         }
 
-        $CORE_LOCAL->set($name, $current_value);
+        CoreLocal::set($name, $current_value);
         if ($storage == self::INI_SETTING) {
             if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value !== 'false')) {
                 self::confsave($name, "'" . $current_value . "'");
@@ -850,6 +1072,1913 @@ class InstallUtilities extends LibraryClass
         foreach ($wrong as $key => $value) {
             self::paramSave($key, $value);
         }
+    }
+
+    /**
+      Create opdata tables and views
+      @param $db [SQLManager] database connection
+      @param $name [string] database name
+      @return [array] of error messages
+    */
+    public static function createOpDBs($db, $name)
+    {
+        $errors = array();
+
+        if (CoreLocal::get('laneno') == 0) {
+            $errors[] = array(
+                'struct' => 'No structures created for lane #0',
+                'query' => 'None',
+                'details' => 'Zero is reserved for server',
+            );
+
+            return $errors;
+        }
+
+        $models = array(
+            'AutoCouponsModel',
+            'CouponCodesModel',
+            'CustdataModel',
+            'CustomerNotificationsModel',
+            'CustPreferencesModel',
+            'CustReceiptMessageModel',
+            'CustomReceiptModel',
+            'DateRestrictModel',
+            'DepartmentsModel',
+            'DisableCouponModel',
+            'DrawerOwnerModel',
+            'EmployeesModel',
+            'GlobalValuesModel',
+            'HouseCouponsModel',
+            'HouseCouponItemsModel',
+            'HouseVirtualCouponsModel',
+            'IgnoredBarcodesModel',
+            'MasterSuperDeptsModel',
+            'MemberCardsModel',
+            'MemtypeModel',
+            'ParametersModel',
+            'ProductsModel',
+            'ShrinkReasonsModel',
+            'SpecialDeptMapModel',
+            'SubDeptsModel',
+            'TendersModel',
+            'UnpaidArTodayModel',
+            // depends on custdata
+            'MemberCardsViewModel',
+        );
+        foreach ($models as $class) {
+            $obj = new $class($db);
+            $errors[] = $obj->createIfNeeded($name);
+        }
+        
+        $sample_data = array(
+            'couponcodes',
+            'globalvalues',
+            'parameters',
+            'tenders',
+        );
+
+        foreach ($sample_data as $table) {
+            $chk = $db->query('SELECT * FROM ' . $table, $name);
+            if (!$db->fetch_row($chk)){
+                $loaded = self::loadSampleData($db, $table, true);
+                if (!$loaded) {
+                    $errors[] = array(
+                        'struct' => $table,
+                        'query' => 'None',
+                        'details' => 'Failed loading sample data',
+                    );
+                }
+            } else {
+                $db->end_query($chk);
+            }
+        }
+
+        $chk = $db->query('SELECT drawer_no FROM drawerowner', $name);
+        if ($db->num_rows($chk) == 0){
+            $db->query('INSERT INTO drawerowner (drawer_no) VALUES (1)', $name);
+            $db->query('INSERT INTO drawerowner (drawer_no) VALUES (2)', $name);
+        }
+
+        CoreState::loadParams();
+        
+        return $errors;
+    }
+
+    /**
+      Create translog tables and views
+      @param $db [SQLManager] database connection
+      @param $name [string] database name
+      @return [array] of error messages
+    */
+    public static function createTransDBs($db, $name)
+    {
+        $errors = array();
+        $type = $db->dbms_name();
+
+        if (CoreLocal::get('laneno') == 0) {
+            $errors[] = array(
+                'struct' => 'No structures created for lane #0',
+                'query' => 'None',
+                'details' => 'Zero is reserved for server',
+            );
+
+            return $errors;
+        }
+
+        /* lttsummary, lttsubtotals, and subtotals
+         * always get rebuilt to account for tax rate
+         * changes */
+        if (!function_exists('buildLTTViews')) {
+            include(dirname(__FILE__) . '/buildLTTViews.php');
+        }
+
+        $models = array(
+            'DTransactionsModel',
+            'LocalTransModel',
+            'LocalTransArchiveModel',
+            'LocalTransTodayModel',
+            'LocalTempTransModel',
+            'SuspendedModel',
+            'TaxRatesModel',
+            'CouponAppliedModel',
+            'EfsnetRequestModel',
+            'EfsnetRequestModModel',
+            'EfsnetResponseModel',
+            'EfsnetTokensModel',
+            'PaycardTransactionsModel',
+            'CapturedSignatureModel',
+            'EmvReceiptModel',
+            // placeholder,
+            '__LTT__',
+            // Views
+            'CcReceiptViewModel',
+            'MemDiscountAddModel',
+            'MemDiscountRemoveModel',
+            'StaffDiscountAddModel',
+            'StaffDiscountRemoveModel',
+            'ScreenDisplayModel',
+            'TaxViewModel',
+        );
+        foreach ($models as $class) {
+            if ($class == '__LTT__') {
+                $errors = buildLTTViews($db,$type,$errors);
+                continue;
+            }
+            $obj = new $class($db);
+            $errors[] = $obj->createIfNeeded($name);
+        }
+        
+        /**
+          Not using models for receipt views. Hopefully many of these
+          can go away as deprecated.
+        */
+        $lttR = "CREATE view ltt_receipt as 
+            select
+            l.description as description,
+            case 
+                when voided = 5 
+                    then 'Discount'
+                when trans_status = 'M'
+                    then 'Mbr special'
+                when trans_status = 'S'
+                    then 'Staff special'
+                when unitPrice = 0.01
+                    then ''
+                when scale <> 0 and quantity <> 0 
+                    then ".$db->concat('quantity', "' @ '", 'unitPrice','')."
+                when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+                    then ".$db->concat('volume', "' / '", 'unitPrice','')."
+                when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+                    then ".$db->concat('quantity', "' @ '", 'volume', "' /'", 'unitPrice','')."
+                when abs(itemQtty) > 1 and discounttype = 3
+                    then ".$db->concat('ItemQtty', "' / '", 'unitPrice','')."
+                when abs(itemQtty) > 1
+                    then ".$db->concat('quantity', "' @ '", 'unitPrice','')."
+                when matched > 0
+                    then '1 w/ vol adj'
+                else ''
+            end
+            as comment,
+            total,
+            case 
+                when trans_status = 'V' 
+                    then 'VD'
+                when trans_status = 'R'
+                    then 'RF'
+                when tax = 1 and foodstamp <> 0
+                    then 'TF'
+                when tax = 1 and foodstamp = 0
+                    then 'T' 
+                when tax = 0 and foodstamp <> 0
+                    then 'F'
+                WHEN (tax > 1 and foodstamp <> 0)
+                    THEN ".$db->concat('SUBSTR(t.description,1,1)',"'F'",'')."
+                WHEN (tax > 1 and foodstamp = 0)
+                    THEN SUBSTR(t.description,1,1)
+                when tax = 0 and foodstamp = 0
+                    then '' 
+            end
+            as Status,
+            trans_type,
+            unitPrice,
+            voided,
+            CASE 
+                WHEN upc = 'DISCOUNT' THEN (
+                SELECT MAX(trans_id) FROM localtemptrans WHERE voided=3
+                )-1
+                WHEN trans_type = 'T' THEN trans_id+99999    
+                ELSE trans_id
+            END AS trans_id
+            from localtemptrans as l
+            left join taxrates as t
+            on l.tax = t.id
+            where voided <> 5 and UPC <> 'TAX'
+            AND trans_type <> 'L'";
+        if($type == 'mssql'){
+            $lttR = "CREATE view ltt_receipt as 
+                select
+                l.description,
+                case 
+                    when voided = 5 
+                        then 'Discount'
+                    when trans_status = 'M'
+                        then 'Mbr special'
+                    when trans_status = 'S'
+                        then 'Staff special'
+                    when unitPrice = 0.01
+                        then ''
+                    when scale <> 0 and quantity <> 0 
+                        then quantity+ ' @ '+ unitPrice
+                    when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+                        then volume+ ' /'+ unitPrice
+                    when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+                        then Quantity+ ' @ '+Volume+ ' /'+ unitPrice
+                    when abs(itemQtty) > 1 and discounttype = 3
+                        then ItemQtty+ ' /'+ UnitPrice
+                    when abs(itemQtty) > 1
+                        then quantity+' @ '+unitPrice
+                    when matched > 0
+                        then '1 w/ vol adj'
+                    else ''
+                end
+                as comment,
+                total,
+                case 
+                    when trans_status = 'V' 
+                        then 'VD'
+                    when trans_status = 'R'
+                        then 'RF'
+                    when tax = 1 and foodstamp <> 0
+                        then 'TF'
+                    when tax = 1 and foodstamp = 0
+                        then 'T' 
+                    WHEN (tax > 1 and foodstamp <> 0)
+                        THEN LEFT(t.description,1)+'F'
+                    WHEN (tax > 1 and foodstamp = 0)
+                        THEN LEFT(t.description,1)
+                    when tax = 0 and foodstamp <> 0
+                        then 'F'
+                    when tax = 0 and foodstamp = 0
+                        then '' 
+                end
+                as Status,
+                trans_type,
+                unitPrice,
+                trans_id
+                CASE 
+                    WHEN upc = 'DISCOUNT' THEN (
+                    SELECT MAX(trans_id) FROM localtemptrans WHERE voided=3
+                    )-1
+                    WHEN trans_type = 'T' THEN trans_id+99999    
+                    ELSE trans_id
+                END AS trans_id
+                from localtemptrans as l
+                left join taxrates as t
+                on l.tax = t.id
+                where voided <> 5 and UPC <> 'TAX'
+                AND trans_type <> 'L'
+                order by trans_id";
+        }
+        self::dbStructureModify($db,'ltt_receipt','DROP VIEW ltt_receipt',$errors);
+        if(!$db->table_exists('ltt_receipt',$name)){
+            self::dbStructureModify($db,'ltt_receipt',$lttR,$errors);
+        }
+
+        $rV = "CREATE view receipt as
+            select
+            case 
+                when trans_type = 'T'
+                    then     ".$db->concat( "SUBSTR(".$db->concat('UPPER(TRIM(description))','space(44)','').", 1, 44)" 
+                        , "right(".$db->concat( 'space(8)', 'FORMAT(-1 * total, 2)','').", 8)" 
+                        , "right(".$db->concat( 'space(4)', 'status','').", 4)",'')."
+                when voided = 3 
+                    then     ".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
+                        , 'space(9)'
+                        , "'TOTAL'"
+                        , 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)','')."
+                when voided = 2
+                    then     description
+                when voided = 4
+                    then     description
+                when voided = 6
+                    then     description
+                when voided = 7 or voided = 17
+                    then     ".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
+                        , 'space(14)'
+                        , 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)'
+                        , 'right('.$db->concat( 'space(4)', 'status','').', 4)','')."
+                else
+                    ".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
+                    , "' '" 
+                    , "SUBSTR(".$db->concat('comment', 'space(13)','').", 1, 13)"
+                    , 'right('.$db->concat('space(8)', 'FORMAT(total, 2)','').', 8)'
+                    , 'right('.$db->concat('space(4)', 'status','').', 4)','')."
+            end
+            as linetoprint
+            from ltt_receipt
+            order by trans_id";
+        if($type == 'mssql'){
+            $rV = "CREATE  view receipt as
+            select top 100 percent
+            case 
+                when trans_type = 'T'
+                    then     right((space(44) + upper(rtrim(Description))), 44) 
+                        + right((space(8) + convert(varchar, (-1 * Total))), 8) 
+                        + right((space(4) + status), 4)
+                when voided = 3 
+                    then     left(Description + space(30), 30) 
+                        + space(9) 
+                        + 'TOTAL' 
+                        + right(space(8) + convert(varchar, UnitPrice), 8)
+                when voided = 2
+                    then     description
+                when voided = 4
+                    then     description
+                when voided = 6
+                    then     description
+                when voided = 7 or voided = 17
+                    then     left(Description + space(30), 30) 
+                        + space(14) 
+                        + right(space(8) + convert(varchar, UnitPrice), 8) 
+                        + right(space(4) + status, 4)
+                when sequence < 1000
+                    then     description
+                else
+                    left(Description + space(30), 30)
+                    + ' ' 
+                    + left(Comment + space(13), 13) 
+                    + right(space(8) + convert(varchar, Total), 8) 
+                    + right(space(4) + status, 4)
+            end
+            as linetoprint,
+            sequence
+            from ltt_receipt
+            order by sequence";
+        }
+        elseif($type == 'pdolite'){
+            $rV = str_replace('right(','str_right(',$rV);
+            $rV = str_replace('FORMAT(','ROUND(',$rV);
+        }
+
+        if(!$db->table_exists('receipt',$name)){
+            self::dbStructureModify($db,'receipt',$rV,$errors);
+        }
+
+        $rplttR = "CREATE view rp_ltt_receipt as 
+            select
+            register_no,
+            emp_no,
+            trans_no,
+            l.description as description,
+            case 
+                when voided = 5 
+                    then 'Discount'
+                when trans_status = 'M'
+                    then 'Mbr special'
+                when trans_status = 'S'
+                    then 'Staff special'
+                when unitPrice = 0.01
+                    then ''
+                when scale <> 0 and quantity <> 0 
+                    then ".$db->concat('quantity', "' @ '", 'unitPrice','')."
+                when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+                    then ".$db->concat('volume', "' / '", 'unitPrice','')."
+                when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+                    then ".$db->concat('quantity', "' @ '", 'volume', "' /'", 'unitPrice','')."
+                when abs(itemQtty) > 1 and discounttype = 3
+                    then ".$db->concat('ItemQtty', "' / '", 'unitPrice','')."
+                when abs(itemQtty) > 1
+                    then ".$db->concat('quantity', "' @ '", 'unitPrice','')."
+                when matched > 0
+                    then '1 w/ vol adj'
+                else ''
+            end
+            as comment,
+            total,
+            case 
+                when trans_status = 'V' 
+                    then 'VD'
+                when trans_status = 'R'
+                    then 'RF'
+                WHEN (tax = 1 and foodstamp <> 0)
+                    THEN 'TF'
+                WHEN (tax = 1 and foodstamp = 0)
+                    THEN 'T' 
+                WHEN (tax > 1 and foodstamp <> 0)
+                    THEN ".$db->concat('SUBSTR(t.description,1,1)',"'F'",'')."
+                WHEN (tax > 1 and foodstamp = 0)
+                    THEN SUBSTR(t.description,1,1)
+                when tax = 0 and foodstamp <> 0
+                    then 'F'
+                when tax = 0 and foodstamp = 0
+                    then '' 
+            end
+            as Status,
+            trans_type,
+            unitPrice,
+            voided,
+            trans_id
+            from localtranstoday as l
+            left join taxrates as t
+            on l.tax = t.id
+            where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+            AND trans_type <> 'L'
+            AND datetime >= CURRENT_DATE
+            order by emp_no, trans_no, trans_id";
+        if($type == 'mssql'){
+            $rplttR = "CREATE view rp_ltt_receipt as 
+                select
+                register_no,
+                emp_no,
+                trans_no,
+                description,
+                case 
+                    when voided = 5 
+                        then 'Discount'
+                    when trans_status = 'M'
+                        then 'Mbr special'
+                    when trans_status = 'S'
+                        then 'Staff special'
+                    when unitPrice = 0.01
+                        then ''
+                    when scale <> 0 and quantity <> 0 
+                        then quantity+ ' @ '+ unitPrice
+                    when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+                        then volume+ ' /'+ unitPrice
+                    when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+                        then Quantity+ ' @ '+ Volume+ ' /'+ unitPrice
+                    when abs(itemQtty) > 1 and discounttype = 3
+                        then ItemQtty+' /'+ UnitPrice
+                    when abs(itemQtty) > 1
+                        then quantity+ ' @ '+ unitPrice
+                    when matched > 0
+                        then '1 w/ vol adj'
+                    else ''
+                end
+                as comment,
+                total,
+                case 
+                    when trans_status = 'V' 
+                        then 'VD'
+                    when trans_status = 'R'
+                        then 'RF'
+                    WHEN (tax = 1 and foodstamp <> 0)
+                        THEN 'TF'
+                    WHEN (tax = 1 and foodstamp = 0)
+                        THEN 'T' 
+                    WHEN (tax > 1 and foodstamp <> 0)
+                        THEN LEFT(t.description,1)+'F'
+                    WHEN (tax > 1 and foodstamp = 0)
+                        THEN LEFT(t.description,1)
+                    when tax = 0 and foodstamp <> 0
+                        then 'F'
+                    when tax = 0 and foodstamp = 0
+                        then '' 
+                end
+                as Status,
+                trans_type,
+                unitPrice,
+                voided,
+                trans_id
+                from localtranstoday as l
+                left join taxrates as t
+                on l.tax = t.id
+                where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+                AND trans_type <> 'L'
+                AND datetime >= CURRENT_DATE
+                order by emp_no, trans_no, trans_id";
+        }
+        self::dbStructureModify($db,'rp_ltt_receipt','DROP VIEW rp_ltt_receipt',$errors);
+        if(!$db->table_exists('rp_ltt_receipt',$name)){
+            self::dbStructureModify($db,'rp_ltt_receipt',$rplttR,$errors);
+        }
+
+        $rprV = "CREATE view rp_receipt  as
+            select
+            register_no,
+            emp_no,
+            trans_no,
+            case 
+                when trans_type = 'T'
+                    then     ".$db->concat( "SUBSTR(".$db->concat('UPPER(TRIM(description))','space(44)','').", 1, 44)" 
+                        , "right(".$db->concat( 'space(8)', 'FORMAT(-1 * total, 2)','').", 8)" 
+                        , "right(".$db->concat( 'space(4)', 'status','').", 4)",'')."
+                when voided = 3 
+                    then     ".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
+                        , 'space(9)'
+                        , "'TOTAL'"
+                        , 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)','')."
+                when voided = 2
+                    then     description
+                when voided = 4
+                    then     description
+                when voided = 6
+                    then     description
+                when voided = 7 or voided = 17
+                    then     ".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
+                        , 'space(14)'
+                        , 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)'
+                        , 'right('.$db->concat( 'space(4)', 'status','').', 4)','')."
+                else
+                    ".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
+                    , "' '" 
+                    , "SUBSTR(".$db->concat('comment', 'space(13)','').", 1, 13)"
+                    , 'right('.$db->concat('space(8)', 'FORMAT(total, 2)','').', 8)'
+                    , 'right('.$db->concat('space(4)', 'status','').', 4)','')."
+            end
+            as linetoprint,
+            trans_id
+            from rp_ltt_receipt";
+        if($type == 'mssql'){
+            $rprV = "CREATE view rp_receipt  as
+            select
+            register_no,
+            emp_no,
+            trans_no,
+            case 
+                when trans_type = 'T'
+                    then     right((space(44) + upper(rtrim(Description))), 44) 
+                        + right((space(8) + convert(varchar, (-1 * Total))), 8) 
+                        + right((space(4) + status), 4)
+                when voided = 3 
+                    then     left(Description + space(30), 30) 
+                        + space(9) 
+                        + 'TOTAL' 
+                        + right(space(8) + convert(varchar, UnitPrice), 8)
+                when voided = 2
+                    then     description
+                when voided = 4
+                    then     description
+                when voided = 6
+                    then     description
+                when voided = 7 or voided = 17
+                    then     left(Description + space(30), 30) 
+                        + space(14) 
+                        + right(space(8) + convert(varchar, UnitPrice), 8) 
+                        + right(space(4) + status, 4)
+                else
+                    left(Description + space(30), 30)
+                    + ' ' 
+                    + left(Comment + space(13), 13) 
+                    + right(space(8) + convert(varchar, Total), 8) 
+                    + right(space(4) + status, 4)
+            end
+            as linetoprint,
+            trans_id
+            from rp_ltt_receipt";
+        }
+        elseif($type == 'pdolite'){
+            $rprV = str_replace('right(','str_right(',$rprV);
+            $rprV = str_replace('FORMAT(','ROUND(',$rprV);
+        }
+        if(!$db->table_exists('rp_receipt',$name)){
+            self::dbStructureModify($db,'rp_receipt',$rprV,$errors);
+        }
+
+        /* Lookup database collation
+          For reasons that make zero sense, when creating views
+          in the travis-ci test database, MySQL *sometimes* uses
+          a collation other than the default when casting numbers
+          to strings. This then results in weird collation errors.
+          Looking up the local DB server setting ensures that CORE
+          still abides by local preferences when explicitly requesting
+          a specific collation. None of this should be necessary
+          but finding the bug or undocumented "feature" of MySQL 
+          causing this is a waste of time.
+        */
+        $mysql_collation = $db->query('SELECT @@collation_database', $name);
+        $mysql_collation = $db->fetch_row($mysql_collation);
+        $mysql_collation = $mysql_collation[0];
+
+
+        $lttG = "CREATE  view ltt_grouped as
+        select     upc,description,trans_type,trans_subtype,sum(itemQtty)as itemqtty,
+            discounttype,volume,
+            trans_status,
+            case when voided=1 then 0 else voided end as voided,
+            department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
+            scale,
+            sum(unitprice) as unitprice, 
+            CAST(sum(total) AS decimal(10,2)) as total,
+            sum(regPrice) as regPrice,tax,foodstamp,charflag,
+            case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
+        from localtemptrans
+        where description not like '** YOU SAVED %' and trans_status = 'M'
+        group by upc,description,trans_type,trans_subtype,discounttype,volume,
+            trans_status,
+            department,scale,case when voided=1 then 0 else voided end,
+            matched,tax,foodstamp,charflag,
+            case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end
+
+        union all
+
+        select     upc,case when numflag=1 then ".$db->concat('description',"'*'",'')." else description end as description,
+            trans_type,trans_subtype,sum(itemQtty)as itemqtty,discounttype,volume,
+            trans_status,
+            case when voided=1 then 0 else voided end as voided,
+            department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
+            scale,unitprice,CAST(sum(total) AS decimal(10,2)) as total,regPrice,tax,foodstamp,charflag,
+            case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
+        from localtemptrans
+        where description not like '** YOU SAVED %' and trans_status !='M'
+        AND trans_type <> 'L'
+        group by upc,description,trans_type,trans_subtype,discounttype,volume,
+            trans_status,
+            department,scale,case when voided=1 then 0 else voided end,
+            unitprice,regPrice,matched,tax,foodstamp,charflag,
+            case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end
+
+        union all
+
+        select     upc,
+            case when discounttype=1 then
+            ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE ' . $mysql_collation,"'  <'",'')."
+            when discounttype=2 then
+            ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE ' . $mysql_collation,"'  Member Special <'",'')."
+            end as description,
+            trans_type,'0' as trans_subtype,0 as itemQtty,discounttype,volume,
+            'D' as trans_status,
+            2 as voided,
+            department,0 as quantity,matched,min(trans_id)+1 as trans_id,
+            scale,0 as unitprice,
+            0 as total,
+            0 as regPrice,0 as tax,0 as foodstamp,charflag,
+            case when trans_status='d' or scale=1 then trans_id else scale end as grouper
+        from localtemptrans
+        where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
+        AND trans_type <> 'L'
+        group by upc,description,trans_type,trans_subtype,discounttype,volume,
+            department,scale,matched,
+            case when trans_status='d' or scale=1 then trans_id else scale end
+        having CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2))<>0";
+        if($type == 'mssql'){
+            $lttG = "CREATE   view ltt_grouped as
+            select     upc,description,trans_type,trans_subtype,sum(itemQtty)as itemqtty,
+                discounttype,volume,
+                trans_status,
+                case when voided=1 then 0 else voided end as voided,
+                department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
+                scale,
+                sum(unitprice) as unitprice, 
+                sum(total) as total,
+                sum(regPrice) as regPrice,tax,foodstamp,charflag,
+                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
+            from localtemptrans
+            where description not like '** YOU SAVED %' and trans_status = 'M'
+            group by upc,description,trans_type,trans_subtype,discounttype,volume,
+                trans_status,
+                department,scale,case when voided=1 then 0 else voided end,
+                matched,tax,foodstamp,charflag,
+                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end
+
+            union all
+
+            select     upc,case when numflag=1 then description+'*' else description end as description,
+                trans_type,trans_subtype,sum(itemQtty)as itemqtty,discounttype,volume,
+                trans_status,
+                case when voided=1 then 0 else voided end as voided,
+                department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
+                scale,unitprice,sum(total) as total,regPrice,tax,foodstamp,charflag,
+                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
+            from localtemptrans
+            where description not like '** YOU SAVED %' and trans_status !='M'
+            AND trans_type <> 'L'
+            group by upc,description,trans_type,trans_subtype,discounttype,volume,
+                trans_status,
+                department,scale,case when voided=1 then 0 else voided end,
+                unitprice,regPrice,matched,tax,foodstamp,charflag,
+                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end
+
+            union all
+
+            select     upc,
+                case when discounttype=1 then
+                ' > you saved $'+convert(varchar(20),convert(money,sum(quantity*regprice-quantity*unitprice)))+'  <'
+                when discounttype=2 then
+                ' > you saved $'+convert(varchar(20),convert(money,sum(quantity*regprice-quantity*unitprice)))+'  Member Special <'
+                end as description,
+                trans_type,'0' as trans_subtype,0 as itemQtty,discounttype,volume,
+                'D' as trans_status,
+                2 as voided,
+                department,0 as quantity,matched,min(trans_id)+1 as trans_id,
+                scale,0 as unitprice,
+                0 as total,
+                0 as regPrice,0 as tax,0 as foodstamp,charflag,
+                case when trans_status='d' or scale=1 then trans_id else scale end as grouper
+            from localtemptrans
+            where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
+            AND trans_type <> 'L'
+            group by upc,description,trans_type,trans_subtype,discounttype,volume,
+                department,scale,matched,
+                case when trans_status='d' or scale=1 then trans_id else scale end
+            having convert(money,sum(quantity*regprice-quantity*unitprice))<>0";
+        }
+        self::dbStructureModify($db,'ltt_grouped','DROP VIEW ltt_grouped',$errors);
+        if(!$db->table_exists('ltt_grouped',$name)){
+            self::dbStructureModify($db,'ltt_grouped',$lttG,$errors);
+        }
+
+        $lttreorderG = "CREATE   view ltt_receipt_reorder_g as
+        select 
+        l.description as description,
+        case 
+            when voided = 5 
+                then 'Discount'
+            when trans_status = 'M'
+                then 'Mbr special'
+            when trans_status = 'S'
+                then 'Staff special'
+            when unitPrice = 0.01
+                then ''
+            when charflag = 'SO'
+                then ''
+            when scale <> 0 and quantity <> 0 
+                then ".$db->concat('CAST(quantity AS char)',"' @ '",'CAST(unitPrice AS char)','')."
+            when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+                then ".$db->concat('CAST(volume AS char)',"' / '",'CAST(unitPrice AS char)','')."
+            when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+                then ".$db->concat('CAST(quantity AS char)',"' @ '",'CAST(volume AS char)',"' /'",'CAST(unitPrice AS char)','')."
+            when abs(itemQtty) > 1 and discounttype = 3
+                then ".$db->concat('CAST(ItemQtty AS char)',"' / '",'CAST(unitPrice AS char)','')."
+            when abs(itemQtty) > 1
+                then ".$db->concat('CAST(quantity AS char)',"' @ '",'CAST(unitPrice AS char)','')."
+            when matched > 0
+                then '1 w/ vol adj'
+            else ''
+        end
+        as comment,
+        total,
+        case 
+            when trans_status = 'V' 
+                then 'VD'
+            when trans_status = 'R'
+                then 'RF'
+            when tax = 1 and foodstamp <> 0
+                then 'TF'
+            when tax = 1 and foodstamp = 0
+                then 'T' 
+            WHEN (tax > 1 and foodstamp <> 0)
+                THEN ".$db->concat('SUBSTR(t.description,1,1)',"'F'",'')."
+            WHEN (tax > 1 and foodstamp = 0)
+                THEN SUBSTR(t.description,1,1)
+            when tax = 0 and foodstamp <> 0
+                then 'F'
+            when tax = 0 and foodstamp = 0
+                then '' 
+        end
+        as status,
+        case when trans_subtype='CM' or voided in (10,17)
+            then 'CM' else trans_type
+        end
+        as trans_type,
+        unitPrice,
+        voided,
+        trans_id + 1000 as sequence,
+        department,
+        upc,
+        trans_subtype
+        from ltt_grouped as l
+        left join taxrates as t
+        on l.tax = t.id
+        where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+        AND trans_type <> 'L'
+        and not (trans_status='M' and total=CAST('0.00' AS decimal(10,2)))
+
+        union all
+
+        select
+        '  ' as description,
+        ' ' as comment,
+        0 as total,
+        ' ' as Status,
+        ' ' as trans_type,
+        0 as unitPrice,
+        0 as voided,
+        999 as sequence,
+        '' as department,
+        '' as upc,
+        '' as trans_subtype";
+
+        if($type == 'mssql'){
+            $lttreorderG = "CREATE view ltt_receipt_reorder_g as
+            select top 100 percent
+            l.description,
+            case 
+                when voided = 5 
+                    then 'Discount'
+                when trans_status = 'M'
+                    then 'Mbr special'
+                when trans_status = 'S'
+                    then 'Staff special'
+                when unitPrice = 0.01
+                    then ''
+                when scale <> 0 and quantity <> 0 
+                    then convert(varchar, quantity) + ' @ ' + convert(varchar, unitPrice)
+                when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+                    then convert(varchar, volume) + ' /' + convert(varchar, unitPrice)
+                when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+                    then convert(varchar, Quantity) + ' @ ' + convert(varchar, Volume) + ' /' + convert(varchar, unitPrice)
+                when abs(itemQtty) > 1 and discounttype = 3
+                    then convert(varchar,ItemQtty) + ' /' + convert(varchar, UnitPrice)
+                when abs(itemQtty) > 1
+                    then convert(varchar, quantity) + ' @ ' + convert(varchar, unitPrice)    
+                when matched > 0
+                    then '1 w/ vol adj'
+                else ''
+            end
+            as comment,
+            total,
+            case 
+                when trans_status = 'V' 
+                    then 'VD'
+                when trans_status = 'R'
+                    then 'RF'
+                WHEN (tax = 1 and foodstamp <> 0)
+                    THEN 'TF'
+                WHEN (tax = 1 and foodstamp = 0)
+                    THEN 'T' 
+                WHEN (tax > 1 and foodstamp <> 0)
+                    THEN LEFT(t.description,1)+'F'
+                WHEN (tax > 1 and foodstamp = 0)
+                    THEN LEFT(t.description,1)
+                when tax = 0 and foodstamp <> 0
+                    then 'F'
+                when tax = 0 and foodstamp = 0
+                    then '' 
+            end
+            as Status,
+            case when trans_subtype='CM' or voided in (10,17)
+                then 'CM' else trans_type
+            end
+            as trans_type,
+            unitPrice,
+            voided,
+            trans_id + 1000 as sequence,
+            department,
+            upc,
+            trans_subtype
+            from ltt_grouped as l
+            left join taxrates as t
+            on l.tax = t.id
+            where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+            AND trans_type <> 'L'
+            and not (trans_status='M' and total=convert(money,'0.00'))
+
+            union all
+
+            select
+            '  ' as description,
+            ' ' as comment,
+            0 as total,
+            ' ' as Status,
+            ' ' as trans_type,
+            0 as unitPrice,
+            0 as voided,
+            999 as sequence,
+            '' as department,
+            '' as upc,
+            '' as trans_subtype";
+        }
+        self::dbStructureModify($db,'ltt_receipt_reorder_g','DROP VIEW ltt_receipt_reorder_g',$errors);
+        if(!$db->table_exists('ltt_receipt_reorder_g',$name)){
+            self::dbStructureModify($db,'ltt_receipt_reorder_g',$lttreorderG,$errors);
+        }
+
+        $reorderG = "CREATE   view receipt_reorder_g as
+            select 
+            case 
+                when trans_type = 'T' 
+                    then     
+                        case when trans_subtype = 'CP' and upc<>'0'
+                        then    ".$db->concat(
+                            "SUBSTR(".$db->concat('description','space(30)','').",1,30)",
+                            "' '",
+                            "SUBSTR(".$db->concat('comment','space(12)','').",1,12)",
+                            "right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
+                            "right(".$db->concat('space(4)','status','').",4)",'')." 
+                        else     ".$db->concat( 
+                            "right(".$db->concat('space(44)','upper(description)','').",44)", 
+                            "right(".$db->concat('space(8)','CAST((-1*total) AS char)','').",8)",
+                            "right(".$db->concat('space(4)','status','').",4)",'')." 
+                        end 
+                when voided = 3 
+                    then     ".$db->concat( 
+                        "SUBSTR(".$db->concat('description','space(30)','').",1,30)",
+                        "space(9)", 
+                        "'TOTAL'", 
+                        "right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",'')."
+                when voided = 2
+                    then     description
+                when voided = 4
+                    then     description
+                when voided = 6
+                    then     description
+                when voided = 7 or voided = 17
+                    then     ".$db->concat(
+                        "SUBSTR(".$db->concat('description','space(30)','').",1,30)",
+                        "space(14)", 
+                        "right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",
+                        "right(".$db->concat('space(4)','status','').",4)",'')." 
+                when sequence < 1000
+                    then     description
+                else
+                    ".$db->concat(
+                        "SUBSTR(".$db->concat('description','space(30)','').",1,30)",
+                        "' '",
+                        "SUBSTR(".$db->concat('comment','space(12)','').",1,12)",
+                        "right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
+                        "right(".$db->concat('space(4)','status','').",4)",'')." 
+                end as linetoprint,
+            sequence,
+            department,
+            super_name as dept_name,
+            trans_type,
+            upc
+            from ltt_receipt_reorder_g r
+            left outer join ".CoreLocal::get('pDatabase').".MasterSuperDepts d on r.department=d.dept_ID
+            where r.total<>0 or r.unitPrice=0
+            order by sequence";
+        
+        if($type == 'mssql'){
+            $reorderG = "CREATE view receipt_reorder_g as
+            select top 100 percent
+            case 
+                when trans_type = 'T' 
+                    then     
+                        case when trans_subtype = 'CP' and upc<>'0'
+                        then    left(Description + space(30), 30)
+                            + ' ' 
+                            + left(Comment + space(12), 12) 
+                            + right(space(8) + convert(varchar, Total), 8) 
+                            + right(space(4) + status, 4) 
+                        else     right((space(44) + upper(rtrim(Description))), 44) 
+                            + right((space(8) + convert(varchar, (-1 * Total))), 8) 
+                            + right((space(4) + status), 4) 
+                        end 
+                when voided = 3 
+                    then     left(Description + space(30), 30) 
+                        + space(9) 
+                        + 'TOTAL' 
+                        + right(space(8) + convert(varchar, UnitPrice), 8)
+                when voided = 2
+                    then     description
+                when voided = 4
+                    then     description
+                when voided = 6
+                    then     description
+                when voided = 7 or voided = 17
+                    then     left(Description + space(30), 30) 
+                        + space(14) 
+                        + right(space(8) + convert(varchar, UnitPrice), 8) 
+                        + right(space(4) + status, 4)
+                when sequence < 1000
+                    then     description
+                else
+                    left(Description + space(30), 30)
+                    + ' ' 
+                    + left(Comment + space(12), 12) 
+                    + right(space(8) + convert(varchar, Total), 8) 
+                    + right(space(4) + status, 4)
+                end
+                as linetoprint,
+                sequence,
+                department,
+                dept_name,
+                trans_type,
+                upc
+                from ltt_receipt_reorder_g r
+                left outer join ".CoreLocal::get('pDatabase')."dbo.MasterSuperDepts
+                       d on r.department=d.dept_ID
+                where r.total<>0 or r.unitprice=0
+                order by sequence";
+        }
+        elseif($type == 'pdolite'){
+            $reorderG = str_replace('right(','str_right(',$reorderG);
+        }
+        if(!$db->table_exists('receipt_reorder_g',$name)){
+            self::dbStructureModify($db,'receipt_reorder_g',$reorderG,$errors);
+        }
+
+
+        $unionsG = "CREATE view receipt_reorder_unions_g as
+        select linetoprint,
+        sequence,dept_name,1 as ordered,upc
+        from receipt_reorder_g
+        where (department<>0 or trans_type IN ('CM','I'))
+        and linetoprint not like 'member discount%'
+
+        union all
+
+        select replace(replace(replace(r1.linetoprint,'** T',' = t'),' **',' = '),'W','w') as linetoprint,
+        r1.sequence,r2.dept_name,1 as ordered,r2.upc
+        from receipt_reorder_g as r1 join receipt_reorder_g as r2 on r1.sequence+1=r2.sequence
+        where r1.linetoprint like '** T%' and r2.dept_name is not null and r1.linetoprint<>'** Tare Weight 0 **'
+
+        union all
+
+        select
+        ".$db->concat(
+        "SUBSTR(".$db->concat("'** '","trim(CAST(percentDiscount AS char))","'% Discount Applied **'",'space(30)','').",1,30)",
+        "' '", 
+        "space(13)",
+        "right(".$db->concat('space(8)',"CAST((-1*transDiscount) AS char)",'').",8)",
+        "space(4)",'')." as linetoprint,
+        0 as sequence,null as dept_name,2 as ordered,
+        '' as upc
+        from subtotals
+        where percentDiscount<>0
+
+        union all
+
+        select linetoprint,sequence,null as dept_name,2 as ordered,upc
+        from receipt_reorder_g
+        where linetoprint like 'member discount%'
+
+        union all
+
+        select 
+        ".$db->concat(
+        "right(".$db->concat('space(44)',"'SUBTOTAL'",'').",44)",
+        "right(".$db->concat('space(8)',"CAST(round(l.runningTotal-s.taxTotal-l.tenderTotal,2) AS char)",'').",8)",
+        "space(4)",'')." as linetoprint,1 as sequence,null as dept_name,3 as ordered,'' as upc
+        from lttsummary as l, subtotals as s
+
+        union all
+
+        select 
+        ".$db->concat(
+        "right(".$db->concat('space(44)',"'TAX'",'').",44)",
+        "right(".$db->concat('space(8)',"CAST(round(taxTotal,2) AS char)",'').",8)", 
+        "space(4)",'')." as linetoprint,
+        2 as sequence,null as dept_name,3 as ordered,'' as upc
+        from subtotals
+
+        union all
+
+        select 
+        ".$db->concat(
+        "right(".$db->concat('space(44)',"'TOTAL'",'').",44)",
+        "right(".$db->concat('space(8)',"CAST(runningTotal-tenderTotal AS char)",'').",8)", 
+        "space(4)",'')." as linetoprint,3 as sequence,null as dept_name,3 as ordered,'' as upc
+        from lttsummary
+
+        union all
+
+        select linetoprint,sequence,dept_name,4 as ordered,upc
+        from receipt_reorder_g
+        where (trans_type='T' and department = 0)
+        or (department = 0 and trans_type NOT IN ('CM','I')
+        and linetoprint NOT LIKE '** %'
+        and linetoprint NOT LIKE 'Subtotal%') 
+
+        union all
+
+        select 
+        ".$db->concat(
+        "right(".$db->concat('space(44)',"'CURRENT AMOUNT DUE'",'').",44)",
+        "right(".$db->concat('space(8)',"CAST(runningTotal-transDiscount AS char)",'').",8)", 
+        "space(4)",'')." as linetoprint,
+        5 as sequence,
+        null as dept_name,
+        5 as ordered,'' as upc
+        from subtotals where runningTotal <> 0 ";
+
+        if($type == 'mssql'){
+            $unionsG = "CREATE view receipt_reorder_unions_g as
+            select linetoprint,
+            sequence,dept_name,1 as ordered,upc
+            from receipt_reorder_g
+            where (department<>0 or trans_type IN ('CM','I'))
+            and linetoprint not like 'member discount%'
+
+            union all
+
+            select replace(replace(replace(r1.linetoprint,'** T',' = T'),' **',' = '),'W','w') as linetoprint,
+            r1.[sequence],r2.dept_name,1 as ordered,r2.upc
+            from receipt_reorder_g r1 join receipt_reorder_g r2 on r1.[sequence]+1=r2.[sequence]
+            where r1.linetoprint like '** T%' and r2.dept_name is not null and r1.linetoprint<>'** Tare Weight 0 **'
+
+            union all
+
+            select
+            left('** '+rtrim(convert(char,percentdiscount))+'% Discount Applied **' + space(30), 30)
+            + ' ' 
+            + left('' + space(13), 13) 
+            + right(space(8) + convert(varchar, (-1*transDiscount)), 8) 
+            + right(space(4) + '', 4),
+            0 as sequence,null as dept_name,2 as ordered,
+            '' as upc
+            from subtotals
+            where percentdiscount<>0
+
+            union all
+
+            select linetoprint,sequence,null as dept_name,2 as ordered,upc
+            from receipt_reorder_g
+            where linetoprint like 'member discount%'
+
+            union all
+
+            select 
+            right((space(44) + upper(rtrim('SUBTOTAL'))), 44) 
+            + right((space(8) + convert(varchar,round(l.runningTotal-s.taxTotal-l.tenderTotal,2))),8)
+            + right((space(4) + ''), 4) as linetoprint,1 as sequence,null as dept_name,3 as ordered,'' as upc
+            from lttsummary as l, subtotals as s
+
+            union all
+
+            select 
+            right((space(44) + upper(rtrim('TAX'))), 44) 
+            + right((space(8) + convert(varchar,round(taxtotal,2))), 8) 
+            + right((space(4) + ''), 4) as linetoprint,
+            2 as sequence,null as dept_name,3 as ordered,'' as upc
+            from subtotals
+
+            union all
+
+            select 
+            right((space(44) + upper(rtrim('TOTAL'))), 44) 
+            + right((space(8) +convert(varchar,runningtotal-tendertotal)),8)
+            + right((space(4) + ''), 4) as linetoprint,3 as sequence,null as dept_name,3 as ordered,'' as upc
+            from lttsummary
+
+            union all
+
+            select linetoprint,sequence,dept_name,4 as ordered,upc
+            from receipt_reorder_g
+            where (trans_type='T' and department = 0)
+            or (department = 0 and trans_type NOT IN ('CM','I') and linetoprint like '%Coupon%')
+
+            union all
+
+            select 
+            right((space(44) + upper(rtrim('Current Amount Due'))), 44) 
+            +right((space(8) + convert(varchar,subtotal)),8)
+            + right((space(4) + ''), 4) as linetoprint,
+            5 as sequence,
+            null as dept_name,
+            5 as ordered,'' as upc
+            from subtotals where runningtotal <> 0 ";
+        }
+        elseif($type == 'pdolite'){
+            $unionsG = str_replace('right(','str_right(',$unionsG);
+        }
+        self::dbStructureModify($db,'receipt_reorder_unions_g','DROP VIEW receipt_reorder_unions_g',$errors);
+        if(!$db->table_exists('receipt_reorder_unions_g',$name)){
+            self::dbStructureModify($db,'receipt_reorder_unions_g',$unionsG,$errors);
+        }
+
+        $rplttG = "CREATE     view rp_ltt_grouped as
+            select     register_no,emp_no,trans_no,card_no,
+                upc,description,trans_type,trans_subtype,sum(itemQtty)as itemqtty,
+                discounttype,volume,
+                trans_status,
+                case when voided=1 then 0 else voided end as voided,
+                department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
+                scale,
+                sum(unitprice) as unitprice, 
+                CAST(sum(total) AS decimal(10,2)) as total,
+                sum(regPrice) as regPrice,tax,foodstamp,
+                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
+            from localtranstoday
+            where description not like '** YOU SAVED %' and trans_status = 'M'
+            AND datetime >= CURRENT_DATE
+            group by register_no,emp_no,trans_no,card_no,
+                upc,description,trans_type,trans_subtype,discounttype,volume,
+                trans_status,
+                department,scale,case when voided=1 then 0 else voided end,
+                matched,tax,foodstamp,
+                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end
+
+            union all
+
+            select     register_no,emp_no,trans_no,card_no,
+                upc,case when numflag=1 then ".$db->concat('description',"'*'",'')." else description end as description,
+                trans_type,trans_subtype,sum(itemQtty)as itemqtty,discounttype,volume,
+                trans_status,
+                case when voided=1 then 0 else voided end as voided,
+                department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
+                scale,unitprice,CAST(sum(total) AS decimal(10,2)) as total,regPrice,tax,foodstamp,
+                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
+            from localtranstoday
+            where description not like '** YOU SAVED %' and trans_status !='M'
+            AND datetime >= CURRENT_DATE
+            AND trans_type <> 'L'
+            group by register_no,emp_no,trans_no,card_no,
+                upc,description,trans_type,trans_subtype,discounttype,volume,
+                trans_status,
+                department,scale,case when voided=1 then 0 else voided end,
+                unitprice,regPrice,matched,tax,foodstamp,
+                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end
+
+            union all
+
+            select     register_no,emp_no,trans_no,card_no,
+                upc,
+                case when discounttype=1 then
+                ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE ' . $mysql_collation,"'  <'",'')."
+                when discounttype=2 then
+                ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE ' . $mysql_collation,"'  Member Special <'",'')."
+                end as description,
+                trans_type,'0' as trans_subtype,0 as itemQtty,discounttype,volume,
+                'D' as trans_status,
+                2 as voided,
+                department,0 as quantity,matched,min(trans_id)+1 as trans_id,
+                scale,0 as unitprice,
+                0 as total,
+                0 as regPrice,0 as tax,0 as foodstamp,
+                case when trans_status='d' or scale=1 then trans_id else scale end as grouper
+            from localtranstoday
+            where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
+            AND datetime >= CURRENT_DATE
+            AND trans_type <> 'L'
+            group by register_no,emp_no,trans_no,card_no,
+                upc,description,trans_type,trans_subtype,discounttype,volume,
+                department,scale,matched,
+                case when trans_status='d' or scale=1 then trans_id else scale end
+            having CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2))<>0";
+        if($type == 'mssql'){
+            $rplttG = "CREATE      view rp_ltt_grouped as
+            select     register_no,emp_no,trans_no,card_no,
+                upc,description,trans_type,trans_subtype,sum(itemQtty)as itemqtty,
+                discounttype,volume,
+                trans_status,
+                case when voided=1 then 0 else voided end as voided,
+                department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
+                scale,
+                sum(unitprice) as unitprice, 
+                sum(total) as total,
+                sum(regPrice) as regPrice,tax,foodstamp,
+                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
+            from localtranstoday
+            where description not like '** YOU SAVED %' and trans_status = 'M'
+            AND datetime >= CURRENT_DATE
+            group by register_no,emp_no,trans_no,card_no,
+                upc,description,trans_type,trans_subtype,discounttype,volume,
+                trans_status,
+                department,scale,case when voided=1 then 0 else voided end,
+                matched,tax,foodstamp,
+                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end
+
+            union all
+
+            select     register_no,emp_no,trans_no,card_no,
+                upc,case when numflag=1 then description+'*' else description end as description,
+                trans_type,trans_subtype,sum(itemQtty)as itemqtty,discounttype,volume,
+                trans_status,
+                case when voided=1 then 0 else voided end as voided,
+                department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
+                scale,unitprice,sum(total) as total,regPrice,tax,foodstamp,
+                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
+            from localtranstoday
+            where description not like '** YOU SAVED %' and trans_status !='M'
+            AND datetime >= CURRENT_DATE
+            AND trans_type <> 'L'
+            group by register_no,emp_no,trans_no,card_no,
+                upc,description,trans_type,trans_subtype,discounttype,volume,
+                trans_status,
+                department,scale,case when voided=1 then 0 else voided end,
+                unitprice,regPrice,matched,tax,foodstamp,
+                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end
+
+            union all
+
+            select     register_no,emp_no,trans_no,card_no,
+                upc,
+                case when discounttype=1 then
+                ' > YOU SAVED $'+convert(varchar(20),convert(money,sum(quantity*regprice-quantity*unitprice)))+'  <'
+                when discounttype=2 then
+                ' > YOU SAVED $'+convert(varchar(20),convert(money,sum(quantity*regprice-quantity*unitprice)))+'  Member Special <'
+                end as description,
+                trans_type,'0' as trans_subtype,0 as itemQtty,discounttype,volume,
+                'D' as trans_status,
+                2 as voided,
+                department,0 as quantity,matched,min(trans_id)+1 as trans_id,
+                scale,0 as unitprice,
+                0 as total,
+                0 as regPrice,0 as tax,0 as foodstamp,
+                case when trans_status='d' or scale=1 then trans_id else scale end as grouper
+            from localtranstoday
+            where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
+            AND datetime >= CURRENT_DATE
+            AND trans_type <> 'L'
+            group by register_no,emp_no,trans_no,card_no,
+                upc,description,trans_type,trans_subtype,discounttype,volume,
+                department,scale,matched,
+                case when trans_status='d' or scale=1 then trans_id else scale end
+            having convert(money,sum(quantity*regprice-quantity*unitprice))<>0";
+        }    
+        self::dbStructureModify($db,'rp_ltt_grouped','DROP VIEW rp_ltt_grouped',$errors);
+        if(!$db->table_exists('rp_ltt_grouped',$name)){
+            self::dbStructureModify($db,'rp_ltt_grouped',$rplttG,$errors);
+        }
+
+        $rpreorderG = "CREATE    view rp_ltt_receipt_reorder_g as
+            select 
+            register_no,emp_no,trans_no,card_no,
+            l.description as description,
+            case 
+                when voided = 5 
+                    then 'Discount'
+                when trans_status = 'M'
+                    then 'Mbr special'
+                when trans_status = 'S'
+                    then 'Staff special'
+                when unitPrice = 0.01
+                    then ''
+                when scale <> 0 and quantity <> 0 
+                    then ".$db->concat('CAST(quantity AS char)',"' @ '",'CAST(unitPrice AS char)','')."
+                when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+                    then ".$db->concat('CAST(volume AS char)',"' / '",'CAST(unitPrice AS char)','')."
+                when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+                    then ".$db->concat('CAST(quantity AS char)',"' @ '",'CAST(volume AS char)',"' /'",'CAST(unitPrice AS char)','')."
+                when abs(itemQtty) > 1 and discounttype = 3
+                    then ".$db->concat('CAST(ItemQtty AS char)',"' / '",'CAST(unitPrice AS char)','')."
+                when abs(itemQtty) > 1
+                    then ".$db->concat('CAST(quantity AS char)',"' @ '",'CAST(unitPrice AS char)','')."
+                when matched > 0
+                    then '1 w/ vol adj'
+                else ''
+            end
+            as comment,
+            total,
+            case 
+                when trans_status = 'V' 
+                    then 'VD'
+                when trans_status = 'R'
+                    then 'RF'
+                WHEN (tax = 1 and foodstamp <> 0)
+                    THEN 'TF'
+                WHEN (tax = 1 and foodstamp = 0)
+                    THEN 'T' 
+                WHEN (tax > 1 and foodstamp <> 0)
+                    THEN ".$db->concat('SUBSTR(t.description,1,1)',"'F'",'')."
+                WHEN (tax > 1 and foodstamp = 0)
+                    THEN SUBSTR(t.description,1,1)
+                when tax = 0 and foodstamp <> 0
+                    then 'F'
+                when tax = 0 and foodstamp = 0
+                    then '' 
+            end
+            as status,
+            trans_type,
+            unitPrice,
+            voided,
+            trans_id + 1000 as sequence,
+            department,
+            upc,
+            trans_subtype
+            from rp_ltt_grouped as l
+            left join taxrates as t
+            on l.tax=t.id
+            where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+            AND trans_type <> 'L'
+            and not (trans_status='M' and total=CAST('0.00' AS decimal))
+
+            union all
+
+            select
+            0 as register_no, 0 as emp_no,0 as trans_no,0 as card_no,
+            '  ' as description,
+            ' ' as comment,
+            0 as total,
+            ' ' as Status,
+            ' ' as trans_type,
+            0 as unitPrice,
+            0 as voided,
+            999 as sequence,
+            '' as department,
+            '' as upc,
+            '' as trans_subtype";
+        if($type == 'mssql'){
+            $rpreorderG = "CREATE     view rp_ltt_receipt_reorder_g as
+            select top 100 percent
+            register_no,emp_no,trans_no,card_no,
+            l.description,
+            case 
+                when voided = 5 
+                    then 'Discount'
+                when trans_status = 'M'
+                    then 'Mbr special'
+                when trans_status = 'S'
+                    then 'Staff special'
+                when unitPrice = 0.01
+                    then ''
+                when scale <> 0 and quantity <> 0 
+                    then convert(varchar, quantity) + ' @ ' + convert(varchar, unitPrice)
+                when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+                    then convert(varchar, volume) + ' /' + convert(varchar, unitPrice)
+                when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+                    then convert(varchar, Quantity) + ' @ ' + convert(varchar, Volume) + ' /' + convert(varchar, unitPrice)
+                when abs(itemQtty) > 1 and discounttype = 3
+                    then convert(varchar,ItemQtty) + ' /' + convert(varchar, UnitPrice)
+                when abs(itemQtty) > 1
+                    then convert(varchar, quantity) + ' @ ' + convert(varchar, unitPrice)    
+                when matched > 0
+                    then '1 w/ vol adj'
+                else ''
+            end
+            as comment,
+            total,
+            case 
+                when trans_status = 'V' 
+                    then 'VD'
+                when trans_status = 'R'
+                    then 'RF'
+                WHEN (tax = 1 and foodstamp <> 0)
+                    THEN 'TF'
+                WHEN (tax = 1 and foodstamp = 0)
+                    THEN 'T' 
+                WHEN (tax > 1 and foodstamp <> 0)
+                    THEN LEFT(t.description,1)+'F'
+                WHEN (tax > 1 and foodstamp = 0)
+                    THEN LEFT(t.description,1)
+                when tax = 0 and foodstamp <> 0
+                    then 'F'
+                when tax = 0 and foodstamp = 0
+                    then '' 
+            end
+            as Status,
+            trans_type,
+            unitPrice,
+            voided,
+            trans_id + 1000 as sequence,
+            department,
+            upc,
+            trans_subtype
+            from rp_ltt_grouped as l
+            left join taxrates as t
+            on l.tax=t.id
+            where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+            AND trans_type <> 'L'
+            and not (trans_status='M' and total=convert(money,'0.00'))
+
+            union all
+
+            select
+            0 as register_no, 0 as emp_no,0 as trans_no,0 as card_no,
+            '  ' as description,
+            ' ' as comment,
+            0 as total,
+            ' ' as Status,
+            ' ' as trans_type,
+            0 as unitPrice,
+            0 as voided,
+            999 as sequence,
+            '' as department,
+            '' as upc,
+            '' as trans_subtype";
+        }    
+        self::dbStructureModify($db,'rp_ltt_receipt_reorder_g','DROP VIEW rp_ltt_receipt_reorder_g',$errors);
+        if(!$db->table_exists("rp_ltt_receipt_reorder_g",$name)){
+            self::dbStructureModify($db,'rp_ltt_receipt_reorder_g',$rpreorderG,$errors);
+        }
+        
+        $rpG = "CREATE    view rp_receipt_reorder_g as
+            select 
+            register_no,emp_no,trans_no,card_no,
+            case 
+                when trans_type = 'T' 
+                    then     
+                        case when trans_subtype = 'CP' and upc<>'0'
+                        then    ".$db->concat(
+                            "SUBSTR(".$db->concat('description','space(30)','').",1,30)",
+                            "' '",
+                            "SUBSTR(".$db->concat('comment','space(12)','').",1,12)",
+                            "right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
+                            "right(".$db->concat('space(4)','status','').",4)",'')." 
+                        else     ".$db->concat( 
+                            "right(".$db->concat('space(44)','upper(description)','').",44)", 
+                            "right(".$db->concat('space(8)','CAST((-1*total) AS char)','').",8)",
+                            "right(".$db->concat('space(4)','status','').",4)",'')." 
+                        end 
+                when voided = 3 
+                    then     ".$db->concat( 
+                        "SUBSTR(".$db->concat('description','space(30)','').",1,30)",
+                        "space(9)", 
+                        "'TOTAL'", 
+                        "right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",'')."
+                when voided = 2
+                    then     description
+                when voided = 4
+                    then     description
+                when voided = 6
+                    then     description
+                when voided = 7 or voided = 17
+                    then     ".$db->concat(
+                        "SUBSTR(".$db->concat('description','space(30)','').",1,30)",
+                        "space(14)", 
+                        "right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",
+                        "right(".$db->concat('space(4)','status','').",4)",'')." 
+                when sequence < 1000
+                    then     description
+                else
+                    ".$db->concat(
+                        "SUBSTR(".$db->concat('description','space(30)','').",1,30)",
+                        "' '",
+                        "SUBSTR(".$db->concat('comment','space(12)','').",1,12)",
+                        "right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
+                        "right(".$db->concat('space(4)','status','').",4)",'')." 
+            end
+            as linetoprint,
+            sequence,
+            department,
+            super_name as dept_name,
+            case when trans_subtype='CM' or voided in (10,17)
+                then 'CM' else trans_type
+            end
+            as trans_type,
+            upc
+
+            from rp_ltt_receipt_reorder_g r
+            left outer join ".CoreLocal::get('pDatabase').".MasterSuperDepts d 
+            on r.department=d.dept_ID
+            where r.total<>0 or r.unitPrice=0
+            order by register_no,emp_no,trans_no,card_no,sequence";
+        if($type == 'mssql'){
+            $rpG = "CREATE     view rp_receipt_reorder_g as
+            select top 100 percent
+            register_no,emp_no,trans_no,card_no,
+            case 
+                when trans_type = 'T' 
+                    then     
+                        case when trans_subtype = 'CP' and upc<>'0'
+                        then    left(Description + space(30), 30)
+                            + ' ' 
+                            + left(Comment + space(12), 12) 
+                            + right(space(8) + convert(varchar, Total), 8) 
+                            + right(space(4) + status, 4) 
+                        else     right((space(44) + upper(rtrim(Description))), 44) 
+                            + right((space(8) + convert(varchar, (-1 * Total))), 8) 
+                            + right((space(4) + status), 4) 
+                        end 
+                when voided = 3 
+                    then     left(Description + space(30), 30) 
+                        + space(9) 
+                        + 'TOTAL' 
+                        + right(space(8) + convert(varchar, UnitPrice), 8)
+                when voided = 2
+                    then     description
+                when voided = 4
+                    then     description
+                when voided = 6
+                    then     description
+                when voided = 7 or voided = 17
+                    then     left(Description + space(30), 30) 
+                        + space(14) 
+                        + right(space(8) + convert(varchar, UnitPrice), 8) 
+                        + right(space(4) + status, 4)
+                when sequence < 1000
+                    then     description
+                else
+                    left(Description + space(30), 30)
+                    + ' ' 
+                    + left(Comment + space(12), 12) 
+                    + right(space(8) + convert(varchar, Total), 8) 
+                    + right(space(4) + status, 4)
+            end
+            as linetoprint,
+            sequence,
+            department,
+            dept_name,
+            case when trans_subtype='CM' or voided in (10,17)
+                then 'CM' else trans_type
+            end
+            as trans_type,
+            upc
+
+            from rp_ltt_receipt_reorder_g r
+            left outer join ".CoreLocal::get('pDatabase').".dbo.MasterSuperDepts d 
+            on r.department=d.dept_ID
+            where r.total<>0 or r.unitprice=0
+            order by register_no,emp_no,trans_no,card_no,sequence";
+        }
+        elseif($type == 'pdolite'){
+            $rpG = str_replace('right(','str_right(',$rpG);
+        }
+        if(!$db->table_exists('rp_receipt_reorder_g',$name)){
+            self::dbStructureModify($db,'rp_receipt_reorder_g',$rpG,$errors);
+        }
+
+        $rpunionsG = "CREATE     view rp_receipt_reorder_unions_g as
+            select linetoprint,
+            emp_no,register_no,trans_no,
+            sequence,dept_name,1 as ordered,upc
+            from rp_receipt_reorder_g
+            where (department<>0 or trans_type='CM')
+            and linetoprint not like 'member discount%'
+
+            union all
+
+            select replace(replace(r1.linetoprint,'** T',' = T'),' **',' = ') as linetoprint,
+            r1.emp_no,r1.register_no,r1.trans_no,
+            r1.sequence,r2.dept_name,1 as ordered,r2.upc
+            from rp_receipt_reorder_g r1 join rp_receipt_reorder_g r2 on r1.sequence+1=r2.sequence
+            and r1.register_no=r2.register_no and r1.emp_no=r2.emp_no and r1.trans_no=r2.trans_no
+            where r1.linetoprint like '** T%' and r2.dept_name is not null and r1.linetoprint<>'** Tare Weight 0 **'
+
+            union all
+
+            select
+            ".$db->concat(
+            "SUBSTR(".$db->concat("'** '","trim(CAST(percentDiscount AS char))","'% Discount Applied **'",'space(30)','').",1,30)",
+            "' '", 
+            "space(13)",
+            "right(".$db->concat('space(8)',"CAST((-1*transDiscount) AS char)",'').",8)",
+            "space(4)",'')." as linetoprint,
+            emp_no,register_no,trans_no,
+            0 as sequence,null as dept_name,2 as ordered,
+            '' as upc
+            from rp_subtotals
+            where percentDiscount<>0
+
+            union all
+
+            select linetoprint,
+            emp_no,register_no,trans_no,
+            sequence,null as dept_name,2 as ordered,upc
+            from rp_receipt_reorder_g
+            where linetoprint like 'member discount%'
+
+            union all
+
+            select 
+            ".$db->concat(
+            "right(".$db->concat('space(44)',"'SUBTOTAL'",'').",44)",
+            "right(".$db->concat('space(8)',"CAST(round(l.runningTotal-s.taxTotal-l.tenderTotal,2) AS char)",'').",8)",
+            'space(4)','')." as linetoprint,
+            l.emp_no,l.register_no,l.trans_no,
+            1 as sequence,null as dept_name,3 as ordered,'' as upc
+            from rp_lttsummary as l, rp_subtotals as s
+            WHERE l.emp_no = s.emp_no and
+            l.register_no = s.register_no and
+            l.trans_no = s.trans_no
+
+            union all
+
+            select 
+            ".$db->concat(
+            "right(".$db->concat('space(44)',"'TAX'",'').",44)",
+            "right(".$db->concat('space(8)',"CAST(round(taxTotal,2) AS char)",'').",8)", 
+            "space(4)",'')." as linetoprint,
+            emp_no,register_no,trans_no,
+            2 as sequence,null as dept_name,3 as ordered,'' as upc
+            from rp_subtotals
+
+            union all
+
+            select 
+            ".$db->concat(
+            "right(".$db->concat('space(44)',"'TOTAL'",'').",44)",
+            "right(".$db->concat('space(8)',"CAST(runningTotal-tenderTotal AS char)",'').",8)", 
+            'space(4)','')." as linetoprint,
+            emp_no,register_no,trans_no,
+            3 as sequence,null as dept_name,3 as ordered,'' as upc
+            from rp_lttsummary
+
+            union all
+
+            select linetoprint,
+            emp_no,register_no,trans_no,
+            sequence,dept_name,4 as ordered,upc
+            from rp_receipt_reorder_g
+            where (trans_type='T' and department = 0)
+            or (department = 0 and linetoprint like '%Coupon%')
+
+            union all
+
+            select 
+            ".$db->concat(
+            "right(".$db->concat('space(44)',"'CURRENT AMOUNT DUE'",'').",44)",
+            "right(".$db->concat('space(8)',"CAST(runningTotal-transDiscount AS char)",'').",8)", 
+            "space(4)",'')." as linetoprint,
+            emp_no,register_no,trans_no,
+            5 as sequence,
+            null as dept_name,
+            5 as ordered,'' as upc
+            from rp_subtotals where runningTotal <> 0 ";
+        if($type == 'mssql'){
+            $rpunionsG = "CREATE view rp_receipt_reorder_unions_g as
+            select linetoprint,
+            emp_no,register_no,trans_no,
+            sequence,dept_name,1 as ordered,upc
+            from rp_receipt_reorder_g
+            where (department<>0 or trans_type='CM')
+            and linetoprint not like 'member discount%'
+
+            union all
+
+            select replace(replace(r1.linetoprint,'** T',' = T'),' **',' = ') as linetoprint,
+            r1.emp_no,r1.register_no,r1.trans_no,
+            r1.[sequence],r2.dept_name,1 as ordered,r2.upc
+            from rp_receipt_reorder_g r1 join rp_receipt_reorder_g r2 on r1.[sequence]+1=r2.[sequence]
+            and r1.emp_no=r2.emp_no and r1.register_no=r2.register_no and r1.trans_no=r2.trans_no
+            where r1.linetoprint like '** T%' and r2.dept_name is not null and r1.linetoprint<>'** Tare Weight 0 **'
+
+            union all
+
+            select
+            left('** '+rtrim(convert(char,percentdiscount))+'% Discount Applied **' + space(30), 30)
+            + ' ' 
+            + left('' + space(13), 13) 
+            + right(space(8) + convert(varchar, (-1*transDiscount)), 8) 
+            + right(space(4) + '', 4),
+            emp_no,register_no,trans_no,
+            0 as sequence,null as dept_name,2 as ordered,
+            '' as upc
+            from rp_subtotals
+            where percentdiscount<>0
+
+            union all
+
+            select linetoprint,
+            emp_no,register_no,trans_no,
+            sequence,null as dept_name,2 as ordered,upc
+            from rp_receipt_reorder_g
+            where linetoprint like 'member discount%'
+
+            union all
+
+            select 
+            right((space(44) + upper(rtrim('SUBTOTAL'))), 44) 
+            + right((space(8) + convert(varchar,l.runningTotal-s.taxTotal-l.tenderTotal)),8)
+            + right((space(4) + ''), 4) as linetoprint,
+            l.emp_no,l.register_no,l.trans_no,
+            1 as sequence,null as dept_name,3 as ordered,'' as upc
+            from rp_lttsummary as l, rp_subtotals as s
+            WHERE l.emp_no = s.emp_no and
+            l.register_no = s.register_no and
+            l.trans_no = s.trans_no
+
+            union all
+
+            select 
+            right((space(44) + upper(rtrim('TAX'))), 44) 
+            + right((space(8) + convert(varchar,taxtotal)), 8) 
+            + right((space(4) + ''), 4) as linetoprint,
+            emp_no,register_no,trans_no,
+            2 as sequence,null as dept_name,3 as ordered,'' as upc
+            from rp_subtotals
+
+            union all
+
+            select 
+            right((space(44) + upper(rtrim('TOTAL'))), 44) 
+            + right((space(8) +convert(varchar,runningtotal-tendertotal)),8)
+            + right((space(4) + ''), 4) as linetoprint,
+            emp_no,register_no,trans_no,
+            3 as sequence,null as dept_name,3 as ordered,'' as upc
+            from rp_lttsummary
+
+            union all
+
+            select linetoprint,
+            emp_no,register_no,trans_no,
+            sequence,dept_name,4 as ordered,upc
+            from rp_receipt_reorder_g
+            where (trans_type='T' and department = 0)
+            or (department = 0 and linetoprint like '%Coupon%')
+
+            union all
+
+            select 
+            right((space(44) + upper(rtrim('Current Amount Due'))), 44) 
+            +right((space(8) + convert(varchar,subtotal)),8)
+            + right((space(4) + ''), 4) as linetoprint,
+            emp_no,register_no,trans_no,
+            5 as sequence,
+            null as dept_name,
+            5 as ordered,'' as upc
+            from rp_subtotals where runningtotal <> 0"; 
+        }
+        elseif($type == 'pdolite'){
+            $rpunionsG = str_replace('right(','str_right(',$rpunionsG);
+        }
+        if(!$db->table_exists('rp_receipt_reorder_unions_g',$name)){
+            self::dbStructureModify($db,'rp_receipt_reorder_unions_g',$rpunionsG,$errors);
+        }
+
+        return $errors;
+    }
+
+    public static function createMinServer($db, $name)
+    {
+        $errors = array();
+        $type = $db->dbms_name();
+        if (CoreLocal::get('laneno') == 0) {
+            $errors[] = array(
+                'struct' => 'No structures created for lane #0',
+                'query' => 'None',
+                'details' => 'Zero is reserved for server',
+            );
+
+            return $errors;
+        }
+
+        $models = array(
+            'DTransactionsModel',
+            'SuspendedModel',
+            'EfsnetRequestModel',
+            'EfsnetRequestModModel',
+            'EfsnetResponseModel',
+            'EfsnetTokensModel',
+            'PaycardTransactionsModel',
+            'CapturedSignatureModel',
+            // Views
+            'CcReceiptViewModel',
+        );
+        foreach ($models as $class) {
+            $obj = new $class($db);
+            $errors[] = $obj->createIfNeeded($name);
+        }
+
+        $dlogQ = "CREATE VIEW dlog AS
+            SELECT datetime AS tdate,
+                register_no,
+                emp_no,
+                trans_no,
+                upc,
+                CASE 
+                    WHEN trans_subtype IN ('CP','IC') OR upc LIKE '%000000052' THEN 'T' 
+                    WHEN upc = 'DISCOUNT' THEN 'S' 
+                    ELSE trans_type 
+                END AS trans_type,
+                CASE 
+                    WHEN upc = 'MAD Coupon' THEN 'MA' 
+                    WHEN upc LIKE '%00000000052' THEN 'RR' 
+                    ELSE trans_subtype 
+                END AS trans_subtype,
+                trans_status,
+                department,
+                quantity,
+                unitPrice,
+                total,
+                tax,
+                foodstamp,
+                ItemQtty,
+                memType,
+                staff,
+                numflag,
+                charflag,
+                card_no,
+                trans_id, "
+                . $db->concat(
+                    $db->convert('emp_no','char'),"'-'",
+                    $db->convert('register_no','char'),"'-'",
+                    $db->convert('trans_no','char'),
+                    '') . " AS trans_num
+            FROM dtransactions
+            WHERE trans_status NOT IN ('D','X','Z')
+                AND emp_no <> 9999 
+                AND register_no <> 99";
+        if (!$db->table_exists("dlog",$name)) {
+            $errors = InstallUtilities::dbStructureModify($db,'dlog',$dlogQ,$errors);
+        }
+
+        $ttG = "
+            CREATE VIEW TenderTapeGeneric AS
+            SELECT tdate, 
+                emp_no, 
+                register_no,
+                trans_no,
+                CASE 
+                    WHEN trans_subtype = 'CP' AND upc LIKE '%MAD%' THEN ''
+                    WHEN trans_subtype IN ('EF','EC','TA') THEN 'EF'
+                    ELSE trans_subtype
+                END AS trans_subtype,
+                CASE 
+                    WHEN trans_subtype = 'ca' THEN
+                        CASE WHEN total >= 0 THEN total ELSE 0 END
+                    ELSE -1 * total
+            END AS tender
+            FROM dlog
+            WHERE tdate >= " . $db->curdate() . "
+                AND trans_subtype NOT IN ('0','')";
+        if (!$db->table_exists("TenderTapeGeneric",$name)) {
+            InstallUtilities::dbStructureModify($db,'TenderTapeGeneric',$ttG,$errors);
+        }
+
+        return $errors;
     }
 }
 

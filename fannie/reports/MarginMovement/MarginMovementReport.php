@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -30,6 +30,7 @@ class MarginMovementReport extends FannieReportPage
 {
     public $description = '[Margin Movement] lists item movement with margin information.';
     public $report_set = 'Movement Reports';
+    public $themed = true;
 
     protected $title = "Fannie : Margin Movement Report";
     protected $header = "Margin Movement Report";
@@ -37,7 +38,7 @@ class MarginMovementReport extends FannieReportPage
     protected $sort_column = 5;
     protected $sort_direction = 1;
 
-    protected $report_headers = array('UPC', 'Desc', 'Dept#', 'Dept', 'Cost', 'Sales', 'Margin', 'Markup', 'Contrib');
+    protected $report_headers = array('UPC', 'Brand', 'Desc', 'Dept#', 'Dept', 'Cost', 'Sales', 'Margin', 'Markup', 'Contrib');
     protected $required_fields = array('date1', 'date2');
 
     public function report_description_content()
@@ -72,6 +73,7 @@ class MarginMovementReport extends FannieReportPage
         $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
+        $deptMulti = FormLib::get('departments', array());
         $include_sales = FormLib::get('includeSales', 0);
     
         $buyer = FormLib::get('buyer', '');
@@ -81,19 +83,32 @@ class MarginMovementReport extends FannieReportPage
         $args = array($date1.' 00:00:00', $date2.' 23:59:59');
         $where = ' 1=1 ';
         if ($buyer !== '') {
-            if ($buyer != -1) {
-                $where = ' s.superID=? ';
+            if ($buyer == -2) {
+                $where .= ' AND s.superID != 0 ';
+            } elseif ($buyer != -1) {
+                $where .= ' AND s.superID=? ';
                 $args[] = $buyer;
             }
-        } else {
-            $where = ' d.department BETWEEN ? AND ? ';
-            $args[] = $deptStart;
-            $args[] = $deptEnd;
+        }
+        if ($buyer != -1) {
+            if (count($deptMulti) > 0) {
+                $where .= ' AND d.department IN (';
+                foreach ($deptMulti as $d) {
+                    $where .= '?,';
+                    $args[] = $d;
+                }
+                $where = substr($where, 0, strlen($where)-1) . ')';
+            } else {
+                $where .= ' AND d.department BETWEEN ? AND ? ';
+                $args[] = $deptStart;
+                $args[] = $deptEnd;
+            }
         }
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
         $query = "SELECT d.upc,
+                    p.brand,
                     p.description,
                     d.department,
                     t.dept_name,
@@ -106,6 +121,8 @@ class MarginMovementReport extends FannieReportPage
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {
             $query .= 'LEFT JOIN superdepts AS s ON d.department=s.dept_ID ';
+        } elseif ($buyer !== '' && $buyer == -2) {
+            $query .= 'LEFT JOIN MasterSuperDepts AS s ON d.department=s.dept_ID ';
         }
         $query .= "WHERE tdate BETWEEN ? AND ?
             AND $where
@@ -123,16 +140,17 @@ class MarginMovementReport extends FannieReportPage
         $sum_total = 0.0;
         $sum_cost = 0.0;
         while($row = $dbc->fetch_row($result)) {
-            $margin = ($row['total'] - $row['cost']) / $row['total'] * 100;
+            $margin = $row['total'] == 0 ? 0 : ($row['total'] - $row['cost']) / $row['total'] * 100;
             $record = array(
                 $row['upc'],
+                $row['brand'],
                 $row['description'],
                 $row['department'],
                 $row['dept_name'],
                 sprintf('%.2f', $row['cost']),
                 sprintf('%.2f', $row['total']),
                 sprintf('%.2f', $margin),
-                sprintf('%.2f', ($row['total'] - $row['cost']) / $row['qty']),
+                sprintf('%.2f', $row['qty'] == 0 ? 0 : ($row['total'] - $row['cost']) / $row['qty']),
             );
 
             $sum_total += $row['total'];
@@ -160,108 +178,34 @@ class MarginMovementReport extends FannieReportPage
         $sum_cost = 0.0;
         $sum_ttl = 0.0;
         foreach($data as $row) {
-            $sum_cost += $row[4];
-            $sum_ttl += $row[5];
+            $sum_cost += $row[5];
+            $sum_ttl += $row[6];
         }
 
-        return array('Totals', null, null, null, sprintf('%.2f',$sum_cost), sprintf('%.2f',$sum_ttl), '', null, null);
+        return array('Totals', null, null, null, null, sprintf('%.2f',$sum_cost), sprintf('%.2f',$sum_ttl), '', null, null);
     }
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $form = FormLib::dateAndDepartmentForm();
 
-        $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
-        $deptsR = $dbc->exec_statement($deptsQ);
-        $deptsList = "";
+        /** add one extra field **/
+        $checkbox = '<div class=col-sm-5>'
+            . '<label><input type=checkbox name=includeSales value=1 />'
+            . ' Include Sale Items</label>'
+            . '</div>';
+        $this->add_onload_command("\$('#date-dept-form-left-col').after('$checkbox');\n");
 
-        $deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames
-                WHERE superID <> 0 
-                ORDER BY superID");
-        $deptSubR = $dbc->exec_statement($deptSubQ);
+        return $form;
+    }
 
-        $deptSubList = "";
-        while($deptSubW = $dbc->fetch_array($deptSubR)) {
-            $deptSubList .=" <option value=$deptSubW[0]>$deptSubW[1]</option>";
-        }
-        while ($deptsW = $dbc->fetch_array($deptsR)) {
-            $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
-        }
-
-        ob_start();
-        ?>
-<script type="text/javascript">
-function swap(src,dst){
-    var val = document.getElementById(src).value;
-    document.getElementById(dst).value = val;
-}
-</script>
-<div id=main>   
-<form method = "get" action="MarginMovementReport.php">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr>
-            <td><b>Select Buyer/Dept</b></td>
-            <td><select id=buyer name=buyer>
-               <option value=""></option>
-               <?php echo $deptSubList; ?>
-               <option value=-1 >All</option>
-               </select>
-            </td>
-            <td><b>Send to Excel</b></td>
-            <td><input type=checkbox name=excel id=excel value=1></td>
-        </tr>
-        <tr>
-            <td colspan=5><i>Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
-            To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'</i></td>
-        </tr>
-        <tr> 
-            <td> <p><b>Department Start</b></p>
-            <p><b>End</b></p></td>
-            <td> <p>
-            <select id=deptStartSel onchange="swap('deptStartSel','deptStart');">
-            <?php echo $deptsList ?>
-            </select>
-            <input type=text name=deptStart id=deptStart size=5 value=1 />
-            </p>
-            <p>
-            <select id=deptEndSel onchange="swap('deptEndSel','deptEnd');">
-            <?php echo $deptsList ?>
-            </select>
-            <input type=text name=deptEnd id=deptEnd size=5 value=1 />
-            </p></td>
-
-             <td>
-            <p><b>Date Start</b> </p>
-                 <p><b>End</b></p>
-               </td>
-                    <td>
-                     <p>
-                       <input type=text id=date1 name=date1 />
-                       </p>
-                       <p>
-                        <input type=text id=date2 name=date2 />
-                 </p>
-               </td>
-
-        </tr>
-        <tr> 
-             <td colspan="2"><input type=checkbox name=includeSales value=1>Include Sale Items</td>
-            <td colspan="2" rowspan="2">
-                <?php echo FormLib::date_range_picker(); ?>
-            </td>
-        </tr>
-        <tr>
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-        </tr>
-    </table>
-</form>
-        <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
-
-        return ob_get_clean();
+    public function helpContent()
+    {
+        return '<p>
+            This movement report includes total costs as well as
+            sales and calculates both margin and contribution to
+            margin.
+            </p>';
     }
 }
 

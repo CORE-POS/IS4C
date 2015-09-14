@@ -26,24 +26,24 @@
 */
 class StoreCreditIssuedReceiptMessage extends ReceiptMessage{
 
-	public function select_condition(){
-		return "SUM(CASE WHEN trans_type='T' AND trans_subtype='SC' THEN total ELSE 0 END)";
-	}
+    public function select_condition(){
+        return "SUM(CASE WHEN trans_type='T' AND trans_subtype='SC' THEN total ELSE 0 END)";
+    }
 
-	public function message($val, $ref, $reprint=False){
-		global $CORE_LOCAL;
-		if ($val <= 0) return '';
+    public function message($val, $ref, $reprint=False)
+    {
+        if ($val <= 0) return '';
         
         $slip = '';
-        if ($reprint || $CORE_LOCAL->get('autoReprint') == 0) {
+        if ($reprint || CoreLocal::get('autoReprint') == 0) {
 
             $slip .= ReceiptLib::centerString("................................................")."\n\n";
             $slip .= ReceiptLib::centerString("( C U S T O M E R   C O P Y )")."\n";
             $slip .= ReceiptLib::biggerFont("Store credit issued")."\n\n";
             $slip .= ReceiptLib::biggerFont(sprintf("Amount \$%.2f",$val))."\n\n";
 
-            if ( $CORE_LOCAL->get("fname") != "" && $CORE_LOCAL->get("lname") != ""){
-                $slip .= "Name: ".$CORE_LOCAL->get("fname")." ".$CORE_LOCAL->get("lname")."\n\n";
+            if ( CoreLocal::get("fname") != "" && CoreLocal::get("lname") != ""){
+                $slip .= "Name: ".CoreLocal::get("fname")." ".CoreLocal::get("lname")."\n\n";
             } else {
                 $slip .= "Name: ____________________________________________\n\n";
             }
@@ -54,9 +54,9 @@ class StoreCreditIssuedReceiptMessage extends ReceiptMessage{
             $slip .= ReceiptLib::centerString("................................................")."\n";
         }
 
-		return $slip;
-	}
+        return $slip;
+    }
 
-	public $paper_only = True;
+    public $paper_only = True;
 }
 

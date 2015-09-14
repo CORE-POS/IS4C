@@ -3,14 +3,14 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -25,10 +25,12 @@ include('../config.php');
 include_once('../classlib2.0/FannieAPI.php');
 include('util.php');
 
-class InstallThemePage extends InstallPage
+class InstallThemePage extends \COREPOS\Fannie\API\InstallPage
 {
     protected $title = 'Fannie: Theme Settings';
     protected $header = 'Fannie: Theme Settings';
+
+    public $themed = true;
 
     public function __construct()
     {
@@ -57,16 +59,22 @@ class InstallThemePage extends InstallPage
         ?>
 
         <form action="InstallThemePage.php" method="post">
-        <h1 class="install"><?php echo $this->header; ?></h1>
+        <h1 class="install">
+            <?php 
+            if (!$this->themed) {
+                echo "<h1 class='install'>{$this->header}</h1>";
+            }
+            ?>
+        </h1>
         <?php
         if (is_writable('../config.php')) {
-            echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
+            echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
         } else {
-            echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+            echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
         }
 
         echo '<h4 class="install">Colors</h4>';
-        echo '<table id="colorsConfTable">'; 
+        echo '<table class="table" id="colorsConfTable">'; 
 
         echo '<tr><td>Background Color</td>'
             . '<td>' . installTextField('FANNIE_CSS_BG_COLOR', $FANNIE_CSS_BG_COLOR, '#FFFFFF') . '</td>'
@@ -96,7 +104,10 @@ class InstallThemePage extends InstallPage
 
         echo '<h4 class="install">Other</h4>';
 
-        echo '<table id="otherConfTable">'; 
+        echo '<table id="otherConfTable" class="table">'; 
+
+        echo '<tr><td>Backend Name</td>'
+            . '<td>' . installTextField('FANNIE_BACKEND_NAME', $FANNIE_BACKEND_NAME, 'Fannie') . '</td>';
 
         echo '<tr><td>Custom Title</td>'
             . '<td>' . installTextField('FANNIE_CUSTOM_TITLE', $FANNIE_CUSTOM_TITLE, '') . '</td>';
@@ -122,7 +133,9 @@ class InstallThemePage extends InstallPage
 
         echo '</table>';
         echo '<hr />
-            <input type=submit value="Update" />
+            <p>
+                <button type="submit" name="psubmit" value="1" class="btn btn-default">Save Configuration</button>
+            </p>
             </form>';
 
         return ob_get_clean();

@@ -39,6 +39,11 @@ class LocalTransTodayViewModel extends LocalTransModel
     public function save(){ return false; }
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False){ return 0; }
 
+    public function doc()
+    {
+        return '';
+    }
+
     /* START ACCESSOR FUNCTIONS */
     /* END ACCESSOR FUNCTIONS */
 }

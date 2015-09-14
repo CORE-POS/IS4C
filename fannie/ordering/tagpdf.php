@@ -3,14 +3,14 @@
 
     Copyright 2010 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -51,6 +51,7 @@ if (isset($_REQUEST['toids'])){
         WHERE trans_id=? AND order_id=?");
     $idP = $dbc->prepare_statement("SELECT trans_id FROM {$TRANS}PendingSpecialOrder WHERE
         trans_id > 0 AND order_id=? ORDER BY trans_id");
+    $signage = new FannieSignage(array());
     foreach($_REQUEST['toids'] as $toid){
         if ($count % 4 == 0){ 
             $pdf->AddPage();
@@ -131,7 +132,7 @@ if (isset($_REQUEST['toids'])){
         
         $upc = "454".str_pad($oid,6,'0',STR_PAD_LEFT).str_pad($tid,2,'0',STR_PAD_LEFT);
 
-        $pdf = FannieSignage::drawBarcode($upc, $pdf, $x+30, $y+95, array('height'=>14,'fontsize'=>8));
+        $pdf = $signage->drawBarcode($upc, $pdf, $x+30, $y+95, array('height'=>14,'fontsize'=>8));
 
         $count++;
     }

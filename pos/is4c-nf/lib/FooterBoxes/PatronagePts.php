@@ -23,21 +23,23 @@
 
 class PatronagePts extends FooterBox {
 
-	public $header_css_class = 'coloredText';
-	public $display_css = "font-weight:bold;font-size:110%;";
-	public $display_css_class = 'lightestColorText';
+    public $header_css_class = 'coloredText';
+    public $display_css = "font-weight:bold;font-size:110%;";
+    public $display_css_class = 'lightestColorText';
 
-	function header_content(){
-		return _("Patronage Pts.");
-	}
+    function header_content()
+    {
+        return _("Patronage Pts.");
+    }
 
-	function display_content(){
-		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get("isMember") == 1)
-			return number_format($CORE_LOCAL->get("discountableTotal"), 2);
-		else
-			return "n/a";
-	}
+    function display_content()
+    {
+        if (CoreLocal::get("isMember") == 1) {
+            return number_format(CoreLocal::get("discountableTotal"), 2);
+        } else {
+            return "n/a";
+        }
+    }
 }
 
 ?>

@@ -3,14 +3,14 @@
 
     Copyright 2009,2010 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -40,9 +40,14 @@ class BatchManagementTool extends FanniePage
     protected $auth_classes = array('batches','batches_audited');
     protected $title = 'Sales Batches Tool';
     protected $header = 'Sales Batches Tool';
+    public $discoverable = false;
 
     public $description = '[Sales Batches] is the primary tool for creating, editing, and managing 
     sale and price change batches.';
+    // not really but for the sake of stats
+    // this just redirects to the replacement so it's
+    // effectively themed
+    public $themed = true;
 
     private $audited = 1;
     private $con = null;
@@ -51,6 +56,19 @@ class BatchManagementTool extends FanniePage
 
     function preprocess()
     {
+        /**
+          Bounce users to new page
+        */
+        $url = 'BatchListPage.php';
+        if (FormLib::get('startAt') !== '') {
+            $url = 'EditBatchPage.php?id=' . FormLib::get('startAt');
+        }
+        // restriction for unit testability
+        if (php_sapi_name() != 'cli') {
+            header('Location: ' . $url);
+        }
+        return false;
+
         global $FANNIE_OP_DB;
         // maintain user logins longer
         refreshSession();
@@ -754,8 +772,11 @@ class BatchManagementTool extends FanniePage
             }
 
             // push changed items to lanes
+            $model = new ProductsModel($dbc);
             foreach ($items as $item) {
-                updateProductAllLanes($item);
+                $model->upc($item);
+                $model->store_id($this->config->get('STORE_ID'));
+                $model->pushToLanes();
             }
             break;
         default:

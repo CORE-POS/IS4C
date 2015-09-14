@@ -25,8 +25,8 @@ ini_set('display_errors','Off');
 include_once(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 
 /*
-if ($CORE_LOCAL->get("testremote")==0)
-	Database::testremote(); 
+if (CoreLocal::get("testremote")==0)
+    Database::testremote(); 
 */
 
 echo 'Done';

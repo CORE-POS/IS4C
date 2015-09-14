@@ -35,7 +35,17 @@ class CustPreferencesModel extends BasicModel
     'card_no' => array('type' => 'INT', 'primary_key'=>true),
     'pref_key' => array('type' => 'VARCHAR(50)', 'primary_key'=>true),
     'pref_value' => array('type'=>'VARCHAR(100)'),
-	);
+    );
+
+    public function doc()
+    {
+        return '
+Use:
+Store customer-specific preferences
+This table supplements custdata and is
+available at the lanes.
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 

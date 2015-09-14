@@ -1,23 +1,70 @@
+================================
 COMPILATION
+================================
 
-1. Windows
-	Compilation on Windows requires
-	* .NET 2.0 Runtime
-	* .NET 2.0 SDK
-	The latter provides a special command line
-	with all the appropriate environment variables
-	set. Use that (or set them yourself) then
-	run make.bat
+NewMagellan can be build as a .NET 2.0 application or
+a .NET 4.0 application. The 4.0 version is recommended.
 
-2. Non-windows, e.g. Linux
-	Requires mono. Possibly:
-	 $ sudo apt-get mono-devel or
-	 $ sudo apt-get build-essential
-	Use the makefile:
-	 $ make clean
-	 $ make
+* Building the .NET 4.0 version
+    * Windows 7
+        * Install Windows SDK 7.1+
+        * Run the SDK command line program
+        * Navigate to this folder
+        * Type "msbuild"
+    * Windows 8
+        * Install Visual Studio Community or the Windows 7.1 SDK (as above)
+        * Type "Visual Studio Tools" into the start screen
+        * Pick on of the command prompts
+        * Navigate to this folder
+        * Type "msbuild"
+    * Non-Windows
+        * Install mono and related development packages,
+          e.g. mono-devel. If "dmcs --version" returns
+          3.2.8+, you're probably fine.
+        * Open a terminal and navigate to this folder
+        * Type "xbuild"
+        * To build with HidSharp, type "xbuild /target:Future"
+* Building the .NET 2.0 version
+    * Windows (any)
+        * Install the .NET 2.0 SDK
+        * Run the SDK command line program
+        * Navigate to this folder
+        * Type "make"
+        * Any errors relating to HidSharp can be ignored
+    * Non-Windows
+        * Install mono and related development packages,
+          e.g. mono-devel. If "gmcs --version" returns
+          something, you're probably fine.
+        * Open a terminal and navigate to this folder
+        * Type "make"
+        * If your gmcs version is 2+, you may be able
+          to get HidSharp support by typing "make future".
+          The development package for udev will be required.
 
+================================
+WHY ARE THERE TWO VERSIONS?
+================================
+NewMagellan is beginning to take advantage of 3rd party libraries.
+Some of these require a build environemnt less than a decade old.
+None of these 3rd party libraries are currently required. If that
+changes, the .NET 2.0 version will likely go away.
+
+* HidSharp
+    * This is a cross-platform abstraction layer for reading and
+      writing from HID-class USB devices. NewMagellan's own USB
+      implementation works OK on Windows but can be very buggy
+      in Linux.
+* Newtonsoft.Json
+    * This is a popular library for reading and writing JSON data.
+      Storing configuration data in a JSON format would let
+      NewMagellan and POS reference the same configuration file
+      rather than maintaining a separate ports.conf. Having a more
+      flexible configuration format would also allow more run-time
+      settings instead of compile-time settings.
+
+================================
 DESIGN NOTES
+================================
 
 Originally, this was similar to the original, VB magellan
 and used a WebBrowser object embedded in a windows form with
@@ -28,7 +75,70 @@ portions. Some naming conventions seem odd now that made sense
 in the original structure (e.g., DelegateForm is no longer a
 System.Windows.Forms.Form, nor does it contain any delegates).
 
-INSTALL NOTES
+================================
+WINDOWS INSTALL NOTES
+================================
+
+Indicate which ports, i.e. which peripheral devices are being monitored.
+Edit ports.conf and uncomment (remove the leading "#" from) and change,
+or add, as necessary the lines such as:
+# <name of port> <name of handler class>
+#	
+# typical linux config, scanner/scale
+COM1 SPH_Magellan_Scale
+
+But leave lines for devices you aren't using commented:
+# typical linux config, USB IDtech
+#USB SPH_SignAndPay_USB
+
+Once ports.conf is correct for the attached hardware,
+double-click pos.exe. A .bat file is included for running
+pos.exe automatically on start-up. Editing the filesystem path
+in the batch file may be necessary depending where POS is
+installed.
+
+================================
+DATACAP BUILD NOTES
+================================
+Datacap provides ActiveX controls for out-of-scope support
+on both regular (credit/debit/ebt) and EMV transactions. This
+is a windows-only solution. To build support for regular transactions,
+dsiPDCX must be installed. To build support for EMV transactions, both
+dsiPDCX and dsiEMVUS must be installed. Datacap provides click
+through installers for both. After installing the control(s) and likely
+rebooting, you need to build C# wrappers for the ActiveX controls.
+The build scripts do *not* do this for you. To build ActiveX wrappers,
+navigate to the NewMagellan directory and run:
+
+* aximp C:\Windows\DatacapControls\dsiPDCX.ocx
+* aximp C:\Windows\DatacapControls\dsiEMVX.ocx
+
+If successful, this will create files named DSIPDCXLib.dll, AxDSIPDCXLib.dll,
+DSIEMVXLib.dll, and AxDSIEMVXLib.dll.
+
+The most common cause of errors relates 64-bit OSes. The ActiveX controls are
+currently provided as 32-bit only. They will work on 64-bit Windows but you need
+to use the 32-bit version of aximp.exe. Exactly where that resides depends
+which build tools you're using. Something with x64 in the filesystem path is
+generally wrong. Something with x86 in the filesystem path is generally right.
+Usually there are only two aximp.exe files so if you can determine the bittedness
+of one the other can be established by process of elimination.
+
+If you get an error related to the control being unknown, you can try
+registering it manually. On 64-bit systems, run:
+
+* C:\Windows\SYSWOW64\regsvr32.exe C:\Windows\DatacapControls\dsiPDCX.ocx
+* C:\Windows\SYSWOW64\regsvr32.exe C:\Windows\DatacapControls\dsiEMVX.ocx
+
+On 32-bit systems, run:
+* C:\Windows\System32\regsvr32.exe C:\Windows\DatacapControls\dsiPDCX.ocx
+* C:\Windows\System32\regsvr32.exe C:\Windows\DatacapControls\dsiEMVX.ocx
+
+Yes, those directory names seem reversed but they're correct.
+
+================================
+LINUX INSTALL NOTES
+================================
 
 # Make sure the directory ss-output exists is writable by the driver and PHP:
 $ ls -l ss-output

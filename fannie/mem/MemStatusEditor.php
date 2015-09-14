@@ -3,7 +3,7 @@
 
     Copyright 2012 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,8 +28,9 @@ if (!class_exists('FannieAPI')) {
 class MemStatusEditor extends FanniePage {
     protected $header = "Customer Status";
     protected $title = "Fannie :: Customer Status";
-    protected $must_authenticate = True;
     public $description = '[Member Status] alters an account\'s active status.';
+    public $themed = true;
+    protected $must_authenticate = true;
     protected $auth_classes =  array('editmembers');
 
     private $cardno;
@@ -66,7 +67,7 @@ class MemStatusEditor extends FanniePage {
         global $FANNIE_OP_DB;
 
         if ($this->cardno === false) {
-            return '<i>Error - no member specified</i>';
+            return '<div class="alert alert-danger">Error - no member specified</div>';
         }
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -74,11 +75,8 @@ class MemStatusEditor extends FanniePage {
         $ret .=  '<form action="MemStatusEditor.php" method="post">';
         $ret .= sprintf('<input type="hidden" value="%d" name="memID" />',$this->cardno);
 
-        $model = new CustdataModel($dbc);
-        $model->CardNo($this->cardno);
-        $model->personNum(1);
-        $model->load();
-        $status_string = $model->Type();
+        $account = \COREPOS\Fannie\API\member\MemberREST::get($this->cardno);
+        $status_string = $account['activeStatus'];
 
         $reasonQ = $dbc->prepare_statement("SELECT textStr,mask,
             CASE WHEN cardno IS NULL THEN 0 ELSE 1 END as checked
@@ -86,21 +84,28 @@ class MemStatusEditor extends FanniePage {
             ON s.cardno=? AND r.mask & s.reasoncode <> 0
             ORDER BY mask");
         $reasonR = $dbc->exec_statement($reasonQ,array($this->cardno));
-        $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
-        $ret .= '<tr><td colspan="2">Mode <select name="type">';
+        $ret .= '<div class="form-group form-inline"><label>Mode</label> <select name="type" class="form-control">';
         $ret .= '<option value="INACT">Inactive</option>';
         $ret .= '<option value="TERM" '.($status_string=='TERM'?'selected':'').'>Terminated</option>';
-        $ret .= '</select></td></tr>';
+        $ret .= '</select></div>';
+        $ret .= '<div class="panel panel-default">';
+        $ret .= '<div class="panel-heading">Reasons(s)</div>
+                <div class="panel-body">';
         while($reasonW = $dbc->fetch_row($reasonR)) {
-            $ret .= sprintf('<tr><td><input type="checkbox" name="rcode[]" value="%d" %s</td>
-                <td>%s</td></tr>',
+            $ret .= sprintf('
+                <div class="form-group">
+                    <label><input type="checkbox" name="rcode[]" value="%d" %s />
+                        %s</label>
+                </div>',
                 $reasonW['mask'],
                 ($reasonW['checked']==1?'checked':''),
                 $reasonW['textStr']
             );
         }
-        $ret .= '</table><br />';
-        $ret .= '<input type="submit" value="Save" name="savebtn" />';
+        $ret .= '</div>'; // end panel-body
+        $ret .= '</div>'; // end panel
+        $ret .= '<p><button type="submit" value="1" name="savebtn"
+                    class="btn btn-default">Save</button></p>';
         $ret .= '</form>';
 
         return $ret;
@@ -110,6 +115,7 @@ class MemStatusEditor extends FanniePage {
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        $account = \COREPOS\Fannie\API\member\MemberREST::get($cardno);
 
         // fetch stored values
         $valQ = $dbc->prepare_statement("SELECT memtype1,memtype2,mailflag,discount,chargelimit
@@ -117,20 +123,16 @@ class MemStatusEditor extends FanniePage {
         $valR = $dbc->exec_statement($valQ,array($cardno));
         $valW = $dbc->fetch_row($valR);
 
-        // restore stored values
-        $model = new CustdataModel($dbc);
-        $model->CardNo($cardno);
-        foreach($model->find() as $obj) {
-            $obj->Type($valW['memtype2']);
-            $obj->memType($valW['memtype1']);
-            $obj->Discount($valW['discount']);
-            $obj->MemDiscountLimit($valW['chargelimit']);
-            $obj->ChargeLimit($valW['chargelimit']);
-            $obj->save();
+        $account['activeStatus'] = '';
+        $account['memberStatus'] = $valW['memtype2'];
+        $account['customerTypeID'] = $valW['memtype1'];
+        $account['chargeLimit'] = $valW['chargelimit'];
+        $account['contactAllowed'] = $valW['mailflag'];
+        for ($i=0; $i<count($account['customers']); $i++) {
+            $account['customers'][$i]['discount'] = $valW['discount'];
         }
 
-        $mailQ = $dbc->prepare_statement("UPDATE meminfo SET ads_OK=? WHERE card_no=?");
-        $mailR = $dbc->exec_statement($mailQ,array($valW['mailflag'],$cardno));
+        \COREPOS\Fannie\API\member\MemberREST::post($cardno, $account);
 
         // remove suspension and log action to history
         $delQ = $dbc->prepare_statement("DELETE FROM suspensions WHERE cardno=?");
@@ -147,6 +149,8 @@ class MemStatusEditor extends FanniePage {
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $account = \COREPOS\Fannie\API\member\MemberREST::get($cardno);
 
         $cas_model = new CustomerAccountSuspensionsModel($dbc);
         $cas_model->card_no($cardno);
@@ -193,35 +197,40 @@ class MemStatusEditor extends FanniePage {
                 $cas_model->reasonCode($reason);
                 $cas_model->username($this->current_user);
                 $cas_model->tdate(date('Y-m-d H:i:s'));
-                $model->suspensionTypeID($m_status);
+                $cas_model->suspensionTypeID($m_status);
 
-                $current_id = $model->save();
+                $current_id = $cas_model->save();
             }
 
         } else {
             // new suspension
             // get current values and save them in suspensions table
 
-            $model = new CustdataModel($dbc);
-            $model->CardNo($cardno);
-            $model->personNum(1);
-            $model->load();
-            $limit = $model->ChargeLimit();
-            if ($limit == 0) {
-                $limit = $model->MemDiscountLimit();
+            $discount = 0;
+            foreach ($account['customers'] as $c) {
+                if ($c['accountHolder']) {
+                    $discount = $c['discount'];
+                    break;
+                }
             }
 
-            $meminfo = new MeminfoModel($dbc);
-            $meminfo->card_no($cardno);
-            $meminfo->load();
-
             $now = date('Y-m-d H:i:s');
-            $insQ = $dbc->prepare_statement("INSERT INTO suspensions (cardno, type, memtype1,
-                memtype2, reason, suspDate, mailflag, discount, chargelimit,
-                reasoncode) VALUES (?,?,?,?,'',".$dbc->now().",?,?,?,?)");
-            $insR = $dbc->exec_statement($insQ,array($cardno, substr($type,0,1), 
-                    $model->memType(),$model->Type(), $meminfo->ads_OK(),
-                    $model->Discount(),$limit,$reason));
+            $insQ = $dbc->prepare(
+                "INSERT INTO suspensions 
+                (cardno, type, memtype1, memtype2, reason, suspDate, mailflag, discount, chargelimit, reasoncode) 
+                VALUES (?,?,?,?,'',".$dbc->now().",?,?,?,?)"
+            );
+            $insArgs = array(
+                $cardno,
+                substr($type, 0, 1),
+                $account['customerTypeID'],
+                $account['memberStatus'],
+                $account['contactAllowed'],
+                $discount,
+                $account['chargeLimit'],
+                $reason
+            );
+            $insR = $dbc->execute($insQ, $insArgs);
 
             // log action
             $username = $this->current_user;
@@ -229,35 +238,30 @@ class MemStatusEditor extends FanniePage {
                 post, cardno, reasoncode) VALUES (?,".$dbc->now().",'',?,?)");
             $histR = $dbc->exec_statement($histQ,array($username,$cardno,$reason));
 
-            $cas_model->savedType($model->Type());
-            $cas_model->savedMemType($model->memType());
-            $cas_model->savedDiscount($model->Discount());
-            $cas_model->savedChargeLimit($model->ChargeLimit());
-            $cas_model->savedMailFlag($meminfo->ads_OK());
+            $cas_model->savedType($account['memberStatus']);
+            $cas_model->savedMemType($account['customerTypeID']);
+            $cas_model->savedDiscount($discount);
+            $cas_model->savedChargeLimit($account['chargeLimit']);
+            $cas_model->savedMailFlag($account['contactAllowed']);
             $cas_model->suspensionTypeID( substr($type, 0, 1) == 'T' ? 2 : 1 );
             $cas_model->tdate(date('Y-m-d H:i:s'));
             $cas_model->username($this->current_user);
-            $cas_mode->reasonCode($reason);
+            $cas_model->reasonCode($reason);
             $cas_model->active(1);
             $current_id = $cas_model->save();
         }
 
-        // remove account privileges in custdata
-        $model = new CustdataModel($dbc);
-        $model->CardNo($cardno);
-        foreach($model->find() as $obj) {
-            $obj->Type($type);
-            $obj->memType(0);
-            $obj->Discount(0);
-            $obj->MemDiscountLimit(0);
-            $obj->ChargeLimit(0);
-            $obj->save();
+        /**
+          Clear privileges and save the account
+        */
+        $account['activeStatus'] = $type;
+        $account['customerTypeID'] = 0;
+        $account['chargeLimit'] = 0;
+        $account['contactAllowed'] = 0;
+        for ($i=0; $i<count($account['customers']); $i++) {
+            $account['customers'][$i]['discount'] = 0;
         }
-
-        $model = new MeminfoModel($dbc);
-        $model->card_no($cardno);
-        $model->ads_OK(0);
-        $model->save();
+        \COREPOS\Fannie\API\member\MemberREST::post($cardno, $account);
 
         // only one CustomerAccountSuspensions record should be active
         if ($current_id != 0) {
@@ -271,6 +275,21 @@ class MemStatusEditor extends FanniePage {
                 }
             }
         }
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Change a member\'s status to inactive or
+            terminated. Inactive accounts are considered
+            temporarily suspended but may be reactivated later.
+            Terminated accounts are permanently closed.
+            </p>
+            <p>
+            To deactivate a member, choose Inactive/Termed
+            and check one or more reasons. To reactivate an account,
+            simply clear all the reason checkboxes.
+            </p>';
     }
 }
 

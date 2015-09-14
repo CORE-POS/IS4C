@@ -44,15 +44,14 @@ class SimpleBackupTask extends FannieTask
 
     public function run()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB, $FANNIE_PLUGIN_SETTINGS,
-			$FANNIE_SERVER, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW;
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB, $FANNIE_PLUGIN_SETTINGS;
 
         $dbs = array($FANNIE_OP_DB,$FANNIE_TRANS_DB,$FANNIE_ARCHIVE_DB);
         foreach ($dbs as $db) {
             $path = realpath($FANNIE_PLUGIN_SETTINGS['SimpleBackupDir']);
             $dir = $path . "/" . $db;
             if (!is_dir($dir) && !mkdir($dir)) {
-                echo $this->cronMsg('Could not create backup directory: ' . $dir);
+                $this->cronMsg('Could not create backup directory: ' . $dir, FannieLogger::ERROR);
                 continue;
             }
 
@@ -71,7 +70,7 @@ class SimpleBackupTask extends FannieTask
 
             $cmd = realpath($FANNIE_PLUGIN_SETTINGS['SimpleBackupBinPath']."/mysqldump");
             if ($cmd === false) {
-                echo $this->cronMsg('Could not locate mysqldump program');
+                $this->cronMsg('Could not locate mysqldump program', FannieLogger::ERROR);
                 break; // no point in trying other databases
             }
             $cmd .= " -q --databases -h \"$FANNIE_SERVER\" -u \"$FANNIE_SERVER_USER\" -p\"$FANNIE_SERVER_PW\" \"$db\"";
@@ -80,7 +79,7 @@ class SimpleBackupTask extends FannieTask
 
             $gzip = realpath($FANNIE_PLUGIN_SETTINGS['SimpleBackupBinPath']."/mysqldump");
             if ($FANNIE_PLUGIN_SETTINGS['SimpleBackupGZ'] == 1 && $gzip !== false) {
-                // $cmd .= ' | ' . escapeshellcmd($gzip);
+                $cmd .= ' | ' . escapeshellcmd($gzip);
                 $outfile .= '.gz';
             }
 
@@ -88,9 +87,9 @@ class SimpleBackupTask extends FannieTask
             system($cmd);
 
             if (file_exists($outfile)) {
-                echo $this->cronMsg('Backup successful: ' . $outfile);
+                $this->cronMsg('Backup successful: ' . $outfile, FannieLogger::INFO);
             } else {
-                echo $this->cronMsg('Error creating backup: ' . $outfile);
+                $this->cronMsg('Error creating backup: ' . $outfile, FannieLogger::ERROR);
             }
         }
     }

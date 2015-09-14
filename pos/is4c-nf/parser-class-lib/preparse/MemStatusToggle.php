@@ -22,49 +22,49 @@
 *********************************************************************************/
 
 class MemStatusToggle extends PreParser {
-	var $tfd;
-	var $remainder;
+    var $tfd;
+    var $remainder;
 
-	function check($str){
-		global $CORE_LOCAL;
+    function check($str)
+    {
         // Andy: theory is this shortcircuits steering
         return false;
-		if (substr($str,0,4) == "MSTG"){
-			return True;
-		}
-		return False;	
-	}
+        if (substr($str,0,4) == "MSTG"){
+            return True;
+        }
+        return False;    
+    }
 
-	function parse($str){
-		global $CORE_LOCAL;
-		$remainder = "";
-		if (substr($str,0,4) == "MSTG"){
-			if ($CORE_LOCAL->get("memType") != 1 || $CORE_LOCAL->get("memType") != 2) {
-				$CORE_LOCAL->set("isMember", 1);
-				$CORE_LOCAL->set("memType", 1);
-				$CORE_LOCAL->set("boxMsg", "Member Status Toggled!");
-			} else {
-				$CORE_LOCAL->set("boxMsg", "Cannot UNset a member status");
-			}
-		}
-		return $remainder;	
-	}
+    function parse($str)
+    {
+        $remainder = "";
+        if (substr($str,0,4) == "MSTG"){
+            if (CoreLocal::get("memType") != 1 || CoreLocal::get("memType") != 2) {
+                CoreLocal::set("isMember", 1);
+                CoreLocal::set("memType", 1);
+                CoreLocal::set("boxMsg", "Member Status Toggled!");
+            } else {
+                CoreLocal::set("boxMsg", "Cannot UNset a member status");
+            }
+        }
+        return $remainder;    
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>MSTG<i>ENTER</i></td>
-				<td>Toggle membership status for <i>transaction</i>.
-				Will make inactive membership active for this transaction
-				only. Requires mgr. auth.
-				</td>
-			</tr>
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>MSTG<i>ENTER</i></td>
+                <td>Toggle membership status for <i>transaction</i>.
+                Will make inactive membership active for this transaction
+                only. Requires mgr. auth.
+                </td>
+            </tr>
 
-			</table>";
-	}
+            </table>";
+    }
 }
 
 ?>

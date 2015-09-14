@@ -3,14 +3,14 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -34,6 +34,7 @@ class SignFromSearch extends FannieRESTfulPage
 
     public $description = '[Signage] is a tool to create sale signs or shelf tags
     for a set of advanced search items. Must be accessed via Advanced Search.';
+    public $themed = true;
 
     protected $signage_mod;
     protected $signage_obj;
@@ -42,7 +43,23 @@ class SignFromSearch extends FannieRESTfulPage
     {
        $this->__routes[] = 'post<u>'; 
        $this->__routes[] = 'post<batch>'; 
+       $this->__routes[] = 'get<batch>'; 
+       $this->__routes[] = 'get<queueID>'; 
        return parent::preprocess();
+    }
+
+    public function get_queueID_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $tags = new ShelftagsModel($dbc);
+        $tags->id($this->queueID);
+        $this->u = array();
+        foreach ($tags->find() as $tag) {
+            $this->u[] = $tag->upc();
+        }
+
+        return $this->post_u_handler();
     }
 
     function post_u_handler()
@@ -84,7 +101,7 @@ class SignFromSearch extends FannieRESTfulPage
             $this->signage_obj->saveItems();
             echo '<html><head></head>
                   <body onload="document.forms[0].submit();">
-                  <form method="post" action="' . $_SERVER['PHP_SELF'] . '">';
+                  <form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">';
             foreach ($this->upcs as $u) {
                 printf('<input type="hidden" name="u[]" value="%s" />', $u);
             }
@@ -100,7 +117,7 @@ class SignFromSearch extends FannieRESTfulPage
                     $this->signage_obj->addOverride($upc[$i], 'brand', $brand[$i]);
                 }
                 if (isset($desc[$i])) {
-                    $this->signage_obj->addOverride($upc[$i], 'description', $desc[$i]);
+                    //$this->signage_obj->addOverride($upc[$i], 'description', $desc[$i]);
                 }
                 if (isset($origin[$i])) {
                     $this->signage_obj->addOverride($upc[$i], 'originName', $origin[$i]);
@@ -109,11 +126,19 @@ class SignFromSearch extends FannieRESTfulPage
         }
 
         if (FormLib::get('pdf') == 'Print') {
+            foreach (FormLib::get('exclude', array()) as $e) {
+                $this->signage_obj->addExclude($e);
+            }
             $this->signage_obj->drawPDF();
             return false;
         } else {
             return true;
         }
+    }
+
+    public function get_batch_handler()
+    {
+        return $this->post_batch_handler();
     }
 
     function post_batch_handler()
@@ -139,7 +164,7 @@ class SignFromSearch extends FannieRESTfulPage
             $this->signage_obj->saveItems();
             echo '<html><head></head>
                   <body onload="document.forms[0].submit();">
-                  <form method="post" action="' . $_SERVER['PHP_SELF'] . '">';
+                  <form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">';
             foreach ($this->batch as $b) {
                 printf('<input type="hidden" name="batch[]" value="%d" />', $b);
             }
@@ -148,6 +173,9 @@ class SignFromSearch extends FannieRESTfulPage
         }
         
         if (FormLib::get('pdf') == 'Print') {
+            foreach (FormLib::get('exclude', array()) as $e) {
+                $this->signage_obj->addExclude($e);
+            }
             $this->signage_obj->drawPDF();
             return false;
         } else {
@@ -166,8 +194,12 @@ class SignFromSearch extends FannieRESTfulPage
             $this->signage_mod = $mod;
             return true;
         } else {
-            $mods = FannieAPI::listModules('FannieSignage');
-            if (isset($mods[0])) {
+            $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
+            $default = $this->config->get('DEFAULT_SIGNAGE');
+            if (in_array($default, $mods)) {
+                $this->signage_mod = $default;
+                return true;
+            } elseif (isset($mods[0])) {
                 $this->signage_mod = $mods[0];
                 return true;
             } else {
@@ -176,7 +208,17 @@ class SignFromSearch extends FannieRESTfulPage
         }
     }
 
+    function get_batch_view()
+    {
+        return $this->post_batch_view();
+    }
+
     function post_batch_view()
+    {
+        return $this->post_u_view();
+    }
+
+    public function get_queueID_view()
     {
         return $this->post_u_view();
     }
@@ -184,12 +226,26 @@ class SignFromSearch extends FannieRESTfulPage
     function post_u_view()
     {
         $ret = '';
-        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post" id="signform">';
+        $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post" id="signform">';
         $mods = FannieAPI::listModules('FannieSignage');
-        $ret .= '<b>Layout</b>: <select name="signmod" onchange="$(\'#signform\').submit()">';
+        $others = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
+        foreach ($others as $o) {
+            if (!in_array($o, $mods)) {
+                $mods[] = $o;
+            }
+        }
+        sort($mods);
+        $ret .= '<div class="form-group form-inline">';
+        $ret .= '<label>Layout</label>: 
+            <select name="signmod" class="form-control" onchange="$(\'#signform\').submit()">';
         foreach ($mods as $m) {
-            $ret .= sprintf('<option %s>%s</option>',
-                    ($m == $this->signage_mod ? 'selected' : ''), $m);
+            $name = $m;
+            if (strstr($m, '\\')) {
+                $pts = explode('\\', $m);
+                $name = $pts[count($pts)-1];
+            }
+            $ret .= sprintf('<option %s value="%s">%s</option>',
+                    ($m == $this->signage_mod ? 'selected' : ''), $m, $name);
         }
         $ret .= '</select>';
         
@@ -200,7 +256,8 @@ class SignFromSearch extends FannieRESTfulPage
             $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
             $item_mode = FormLib::get('item_mode', 0);
             $modes = array('Current Retail', 'Upcoming Retail', 'Current Sale', 'Upcoming Sale');
-            $ret .= '<select name="item_mode" onchange="$(\'#signform\').submit()">';
+            $ret .= '<select name="item_mode" class="form-control"
+                onchange="$(\'#signform\').submit()">';
             foreach ($modes as $id => $label) {
                 $ret .= sprintf('<option %s value="%d">%s</option>',
                             ($id == $item_mode ? 'selected' : ''),
@@ -213,12 +270,15 @@ class SignFromSearch extends FannieRESTfulPage
             }
         }
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="submit" name="pdf" value="Print" />';
+        $ret .= '<button type="submit" name="pdf" value="Print" 
+                    class="btn btn-default">Print</button>';
+        $ret .= '</div>';
         $ret .= '<hr />';
 
         $ret .= $this->signage_obj->listItems();
 
-        $ret .= '<input type="submit" name="update" id="updateBtn" value="Save Text" />';
+        $ret .= '<p><button type="submit" name="update" id="updateBtn" value="Save Text"
+                    class="btn btn-default">Save Text</button></p>';
 
         $this->add_onload_command('$(".FannieSignageField").keydown(function(event) {
             if (event.which == 13) {
@@ -228,6 +288,8 @@ class SignFromSearch extends FannieRESTfulPage
         });');
 
         $ret .= '</form>';
+        $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter();");
 
         return $ret;
     }
@@ -251,7 +313,7 @@ class SignFromSearch extends FannieRESTfulPage
         $batchR = $dbc->execute($batchP, array($today, $today, $today));
 
         $ret = '<b>Select batch(es)</b>:'; 
-        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+        $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">';
         $ret .= '<select name="batch[]" multiple size="15">';
         while ($batchW = $dbc->fetch_row($batchR)) {
             $ret .= sprintf('<option value="%d">%s (%s - %s)</option>',
@@ -269,8 +331,18 @@ class SignFromSearch extends FannieRESTfulPage
         return $ret;
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            Create signs and/or tags. First select a layout
+            that controls how the tags look. Then select which
+            prices to use: current or upcoming, retail or sale/promo.
+            Text for each item can be overriden in the 
+            list of items below.
+            </p>';
+    }
+
 }
 
 FannieDispatch::conditionalExec(false);
 
-?>

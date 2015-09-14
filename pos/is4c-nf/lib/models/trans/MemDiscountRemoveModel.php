@@ -45,6 +45,9 @@ class MemDiscountRemoveModel extends LocalTransModel
     /* disabled because it's a view */
     public function create()
     { 
+        if ($this->connection->isView($this->name)) {
+            return true;
+        }
         $viewSQL = "CREATE view memdiscountremove as
             Select 
             max(datetime) as datetime, 
@@ -97,15 +100,26 @@ class MemDiscountRemoveModel extends LocalTransModel
         return ($try === false) ? false : true;
     }
 
+    public function doc()
+    {
+        return '
+Use:
+This view is the opposite of memdiscountadd.
+It calculates the reverse of all currently
+applied member discounts on items. These records
+are inserted into localtemptrans to remove
+member discounts if needed.
+        ';
+    }
+
     public function delete(){ return false; }
     public function save(){ return false; }
 
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False)
     {
-        global $CORE_LOCAL;
-        if ($db_name == $CORE_LOCAL->get('pDatabase')) {
+        if ($db_name == CoreLocal::get('pDatabase')) {
             $this->connection = Database::pDataConnect();
-        } else if ($db_name == $CORE_LOCAL->get('tDatabase')) {
+        } else if ($db_name == CoreLocal::get('tDatabase')) {
             $this->connection = Database::tDataConnect();
         } else {
             echo "Error: Unknown database ($db_name)";

@@ -20,20 +20,6 @@
 
 *********************************************************************************/
 
-/*************************************************************
- * SerialPortHandler
- *     Abstract class to manage a serial port in a separate
- * thread. Allows top-level app to interact with multiple, 
- * different serial devices through one class interface.
- * 
- * Provides Stop() and SetParent(DelegateBrowserForm) functions.
- *
- * Subclasses must implement Read() and PageLoaded(Uri).
- * Read() is the main polling loop, if reading serial data is
- * required. PageLoaded(Uri) is called on every WebBrowser
- * load event and provides the Url that was just loaded.
- *
-*************************************************************/
 using System;
 using System.IO;
 using System.IO.Ports;
@@ -46,79 +32,67 @@ namespace SPH {
 
 public class SPH_SignAndPay_USB : SerialPortHandler {
 
-    private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
+    protected static String MAGELLAN_OUTPUT_DIR = "ss-output/";
 
-    private USBWrapper usb_port;
-    private bool read_continues;
-    private byte[] long_buffer;
-    private int long_length;
-    private int long_pos;
-    private FileStream usb_fs;
-    private int usb_report_size;
+    protected USBWrapper usb_port;
+    protected bool read_continues;
+    protected byte[] long_buffer;
+    protected int long_length;
+    protected int long_pos;
+    protected Stream usb_fs;
+    protected int usb_report_size;
+    protected bool logo_available = false;
 
-    /** change screen states automatically
-        if false, screen only changes in response
-        to POS commands
-    */
-    private bool auto_state_change = true;
+    protected const int LCD_X_RES = 320;
+    protected const int LCD_Y_RES = 240;
 
-    private const int LCD_X_RES = 320;
-    private const int LCD_Y_RES = 240;
+    protected const int STATE_CHANGING_STATE = -1;
+    protected const int STATE_START_TRANSACTION = 1;
+    protected const int STATE_SELECT_CARD_TYPE = 2;
+    protected const int STATE_ENTER_PIN = 3;
+    protected const int STATE_WAIT_FOR_CASHIER = 4;
+    protected const int STATE_SELECT_EBT_TYPE = 5;
+    protected const int STATE_SELECT_CASHBACK = 6;
+    protected const int STATE_GET_SIGNATURE = 7;
+    protected const int STATE_MANUAL_PAN = 11;
+    protected const int STATE_MANUAL_EXP = 12;
+    protected const int STATE_MANUAL_CVV = 13;
 
-    private const int STATE_START_TRANSACTION = 1;
-    private const int STATE_SELECT_CARD_TYPE = 2;
-    private const int STATE_ENTER_PIN = 3;
-    private const int STATE_WAIT_FOR_CASHIER = 4;
-    private const int STATE_SELECT_EBT_TYPE = 5;
-    private const int STATE_SELECT_CASHBACK = 6;
-    private const int STATE_GET_SIGNATURE = 7;
-    private const int STATE_MANUAL_PAN = 11;
-    private const int STATE_MANUAL_EXP = 12;
-    private const int STATE_MANUAL_CVV = 13;
+    protected const int BUTTON_CREDIT = 5;
+    protected const int BUTTON_DEBIT = 6;
+    protected const int BUTTON_EBT = 7;
+    protected const int BUTTON_GIFT = 8;
+    protected const int BUTTON_EBT_FOOD = 9;
+    protected const int BUTTON_EBT_CASH = 10;
+    protected const int BUTTON_CB_000  = 0;
+    protected const int BUTTON_CB_OPT1  = 5;
+    protected const int BUTTON_CB_OPT2 = 10;
+    protected const int BUTTON_CB_OPT3 = 20;
+    protected const int BUTTON_CB_OPT4 = 30;
+    protected const int BUTTON_CB_OPT5 = 40;
+    protected const int BUTTON_SIG_ACCEPT = 1;
+    protected const int BUTTON_SIG_RESET = 2;
+    protected const int BUTTON_HARDWARE_BUTTON = 0xff;
 
-    private const int BUTTON_CREDIT = 5;
-    private const int BUTTON_DEBIT = 6;
-    private const int BUTTON_EBT = 7;
-    private const int BUTTON_GIFT = 8;
-    private const int BUTTON_EBT_FOOD = 9;
-    private const int BUTTON_EBT_CASH = 10;
-    private const int BUTTON_000  = 0;
-    private const int BUTTON_500  = 5;
-    private const int BUTTON_1000 = 10;
-    private const int BUTTON_2000 = 20;
-    private const int BUTTON_3000 = 30;
-    private const int BUTTON_4000 = 40;
-    private const int BUTTON_SIG_ACCEPT = 1;
-    private const int BUTTON_SIG_RESET = 2;
-    private const int BUTTON_HARDWARE_BUTTON = 0xff;
+    protected const int DEFAULT_WAIT_TIMEOUT = 1000;
+    protected const int FONT_SET = 4;
+    protected const int FONT_WIDTH = 16;
+    protected const int FONT_HEIGHT = 18;
+    protected string last_message = "";
 
-    private const int DEFAULT_WAIT_TIMEOUT = 1000;
-    private const int FONT_SET = 4;
-    private const int FONT_WIDTH = 16;
-    private const int FONT_HEIGHT = 18;
-    private string last_message = "";
+    protected string sig_message = "";
 
-    private string sig_message = "";
+    protected int current_state;
+    protected int ack_counter;
 
-    private int current_state;
-    private int ack_counter;
-    private Thread MonoReadThread;
+    protected bool type_include_fs = true;
 
-    /**
-      Does card type screen include foodstamp option
+    protected string usb_devicefile;
+    protected System.Object usb_lock;
+    protected AutoResetEvent ack_event;
 
-      The idea here is if you are *not* using auto_state_change,
-      the commands coming from POS can can dictate which screens
-      are displayed without recompiling the driver all the
-      time.
-    */
-    private bool type_include_fs = true;
-
-    private string usb_devicefile;
-    private System.Object usb_lock;
-    private AutoResetEvent ack_event;
-
-    public SPH_SignAndPay_USB(string p) : base(p){ 
+    public SPH_SignAndPay_USB(string p) : base(p)
+    { 
         read_continues = false;
         long_length = 0;
         long_pos = 0;
@@ -127,52 +101,61 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         usb_lock = new System.Object();
         ack_event = new AutoResetEvent(false);
         
-        #if MONO
-        usb_devicefile = p;
-        #else
         int vid = 0xacd;
         int pid = 0x2310;
         usb_devicefile = string.Format("{0}&{1}",vid,pid);
-        #endif
     }
 
-    private void GetHandle(){
+    protected virtual void GetHandle()
+    {
         usb_fs = null;
-        #if MONO
-        usb_port = new USBWrapper_Posix();
-        usb_report_size = 64;
-        #else
-        usb_port = new USBWrapper_Win32();
+        usb_port = new USBWrapper_HidSharp();
+        System.Console.WriteLine("  USB Layer: HidSharp");
         usb_report_size = 65;
-        #endif
-        while(usb_fs == null){
+        while (usb_fs == null) {
             usb_fs = usb_port.GetUSBHandle(usb_devicefile,usb_report_size);
-            if (usb_fs == null){
-                if (this.verbose_mode > 0)
+            if (usb_fs == null) {
+                if (this.verbose_mode > 0) {
                     System.Console.WriteLine("No device");
+                }
                 System.Threading.Thread.Sleep(5000);
-            }
-            else { 
-                if (this.verbose_mode > 0)
+            } else { 
+                if (this.verbose_mode > 0) {
                     System.Console.WriteLine("USB device found");
+                }
             }
         }
-
     }
 
-    public override void Read(){ 
+    public override void Read()
+    { 
+        System.Console.WriteLine("Loading Sign and Pay module");
+        System.Console.WriteLine("  Screen Control: POS");
+        System.Console.WriteLine("  Paycards Communication: Messages");
+        PushOutput("TERMAUTODISABLE");
+
         GetHandle();
         SendReport(BuildCommand(LcdSetBacklightTimeout(0)));
         SendReport(BuildCommand(EnableAudio()));
+        /**
+          Loading the logo is somewhat time consuming, so you may
+          want to change logo_available to true and recompile once
+          it's on the device. Otherwise it's loaded onto the device
+          each time the driver starts up
+
+          Logo is assumed to be 180x200. Max file size is 32KB.
+        */
+        if (!this.logo_available && File.Exists("logo.jpg")) {
+            SendReport(BuildCommand(LcdStoreImage(1, "logo.jpg")));
+            this.logo_available = true;
+        }
         SetStateStart();
-        #if MONO
-        MonoRead();
-        #else
+
         ReRead();
-        #endif
     }
 
-    private void RebootTerminal(){
+    protected virtual void RebootTerminal()
+    {
         try {
             SendReport(BuildCommand(ResetDevice()));
         }
@@ -203,14 +186,11 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         System.Threading.Thread.Sleep(DEFAULT_WAIT_TIMEOUT);
         GetHandle();
         SetStateStart();
-        #if MONO
-        //MonoRead();
-        #else
         ReRead();
-        #endif
     }
 
-    private void SetStateStart(){
+    protected void SetStateStart(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdStopCapture()));
         SendReport(BuildCommand(LcdClearSignature()));
         //SendReport(BuildCommand(LcdSetClipArea(0,0,1,1)));
@@ -224,12 +204,19 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdTextColor(0,0,0)));
         SendReport(BuildCommand(LcdTextBackgroundColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdTextBackgroundMode(false)));
-        SendReport(BuildCommand(LcdDrawText("Swipe Card",75,100)));
+        int x = 75;
+        int y = 100;
+        if (this.logo_available) {
+            SendReport(BuildCommand(LcdShowImage(1, 60, 0, 240, 200)));
+            y = 190;
+        }
+        SendReport(BuildCommand(LcdDrawText("Swipe Card", x, y)));
 
         current_state = STATE_START_TRANSACTION;
     }
 
-    private void SetStateReStart(){
+    protected void SetStateReStart(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdStopCapture()));
         SendReport(BuildCommand(PinpadCancelGetPIN()));
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
@@ -244,7 +231,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         current_state = STATE_START_TRANSACTION;
     }
 
-    private void SetStateCardType(){
+    protected void SetStateCardType(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
 
@@ -265,7 +253,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         current_state = STATE_SELECT_CARD_TYPE;
     }
 
-    private void SetStateEbtType(){
+    protected void SetStateEbtType(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
 
@@ -279,7 +268,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         current_state = STATE_SELECT_EBT_TYPE;
     }
 
-    private void SetStateCashBack(){
+    protected void SetStateCashBack(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
 
@@ -288,18 +278,19 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdSetClipArea(0,0,1,1)));
         SendReport(BuildCommand(LcdTextFont(3,12,14)));
         SendReport(BuildCommand(LcdDrawText("Select Cash Back",60,5)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_000,"None",5,40,95,130)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_500,"5.00",113,40,208,130)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_1000,"10.00",224,40,314,130)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_2000,"20.00",5,144,95,234)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_3000,"30.00",113,144,208,234)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_4000,"40.00",224,144,314,234)));
+        SendReport(BuildCommand(LcdCreateButton(BUTTON_CB_000,"None",5,40,95,130)));
+        SendReport(BuildCommand(LcdCreateButton(BUTTON_CB_OPT1,"5.00",113,40,208,130)));
+        SendReport(BuildCommand(LcdCreateButton(BUTTON_CB_OPT2,"10.00",224,40,314,130)));
+        SendReport(BuildCommand(LcdCreateButton(BUTTON_CB_OPT3,"20.00",5,144,95,234)));
+        SendReport(BuildCommand(LcdCreateButton(BUTTON_CB_OPT4,"30.00",113,144,208,234)));
+        SendReport(BuildCommand(LcdCreateButton(BUTTON_CB_OPT5,"40.00",224,144,314,234)));
         SendReport(BuildCommand(LcdStartCapture(4)));
 
         current_state = STATE_SELECT_CASHBACK;
     }
 
-    private void SetStateGetPin(){
+    protected void SetStateGetPin(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdStopCapture()));
         ack_counter = 0;
 
@@ -307,7 +298,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         current_state = STATE_ENTER_PIN;
     }
 
-    private void SetStateWaitForCashier(){
+    protected void SetStateWaitForCashier(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdStopCapture()));
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
@@ -316,12 +308,24 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdTextColor(0,0,0)));
         SendReport(BuildCommand(LcdTextBackgroundColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdTextBackgroundMode(false)));
-        SendReport(BuildCommand(LcdDrawText("wait for cashier",35,100)));
 
+        // if logo load NACKs the output is the same as if
+        // the users presses red X button. Change state early
+        // so logo load problem is not misinterpreted by 
+        // previous state handler
         current_state = STATE_WAIT_FOR_CASHIER;
+
+        int x = 25;
+        int y = 100;
+        if (this.logo_available) {
+            SendReport(BuildCommand(LcdShowImage(1, 60, 0, 240, 200)));
+            y = 190;
+        }
+        SendReport(BuildCommand(LcdDrawText("waiting for total", x, y)));
     }
 
-    private void SetStateApproved(){
+    protected void SetStateApproved(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdStopCapture()));
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
@@ -334,7 +338,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdDrawText("thank you",85,120)));
     }
 
-    private void SetStateGetSignature(){
+    protected void SetStateGetSignature(){
+        current_state = STATE_CHANGING_STATE;
         SendReport(BuildCommand(LcdStopCapture()));
         SendReport(BuildCommand(LcdClearSignature()));
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
@@ -344,44 +349,47 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdTextColor(0,0,0)));
 
         SendReport(BuildCommand(LcdDrawText(sig_message, 1, 1)));
-        SendReport(BuildCommand(LcdSetClipArea(5,28,310,140,true,new byte[]{0,0,0})));
-        SendReport(BuildCommand(LcdDrawText("please sign",100,146)));
-        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_RESET,"Clear",5,180,115,225, new byte[]{0x0,0x0,0x0}, new byte[]{0xee,0x0,0x0})));
-        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_ACCEPT,"Done",204,180,314,225, new byte[]{0x0,0x0,0x0}, new byte[]{0x0,0xbb,0x0})));
+        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_RESET,"Clear",5,28,115,73, new byte[]{0x0,0x0,0x0}, new byte[]{0xee,0x0,0x0})));
+        SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_ACCEPT,"Done",204,28,314,73, new byte[]{0x0,0x0,0x0}, new byte[]{0x0,0xbb,0x0})));
+        SendReport(BuildCommand(LcdTextFont(3,12,14)));
+        SendReport(BuildCommand(LcdDrawText("please sign",100,83)));
+        SendReport(BuildCommand(LcdSetClipArea(5,118,310,230,true,new byte[]{0,0,0})));
+        //SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_RESET,"Clear",5,180,115,225, new byte[]{0x0,0x0,0x0}, new byte[]{0xee,0x0,0x0})));
+        //SendReport(BuildCommand(LcdCreateColoredButton(BUTTON_SIG_ACCEPT,"Done",204,180,314,225, new byte[]{0x0,0x0,0x0}, new byte[]{0x0,0xbb,0x0})));
 
         SendReport(BuildCommand(LcdStartCapture(5)));
 
         current_state = STATE_GET_SIGNATURE;
     }
 
-    private void RemoveSignatureButtons(){
+    protected void RemoveSignatureButtons(){
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
-        SendReport(BuildCommand(LcdFillRectangle(0,145,LCD_X_RES-1,LCD_Y_RES-1)));
+        SendReport(BuildCommand(LcdFillRectangle(0,27,LCD_X_RES-1,115)));
         SendReport(BuildCommand(LcdTextFont(3,12,14)));
         SendReport(BuildCommand(LcdTextColor(0,0,0)));
-        SendReport(BuildCommand(LcdDrawText("approved - thank you",40,155)));
+        SendReport(BuildCommand(LcdDrawText("approved - thank you",40,83)));
     }
 
-    private void SetStateGetManualPan(){
+    protected void SetStateGetManualPan(){
         SendReport(BuildCommand(LcdStopCapture()));
         ack_counter = 0;
         SendReport(BuildCommand(ManualEntryPAN()));
         current_state = STATE_MANUAL_PAN;
     }
 
-    private void SetStateGetManualExp(){
+    protected void SetStateGetManualExp(){
         ack_counter = 0;
         SendReport(BuildCommand(ManualEntryExp()));
         current_state = STATE_MANUAL_EXP;
     }
 
-    private void SetStateGetManualCVV(){
+    protected void SetStateGetManualCVV(){
         ack_counter = 0;
         SendReport(BuildCommand(ManualEntryCVV()));
         current_state = STATE_MANUAL_CVV;
     }
 
-    private void HandleReadData(byte[] input){
+    protected void HandleReadData(byte[] input){
         int msg_sum = 0;
         if (usb_report_size == 64){
             byte[] temp_in = new byte[65];
@@ -505,15 +513,17 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
       Proper async version. Call ReRead at the end to
       start another async read.
     */
-    private void ReadCallback(IAsyncResult iar){
+    protected void ReadCallback(IAsyncResult iar){
         byte[] input = (byte[])iar.AsyncState;
         try {
             usb_fs.EndRead(iar);
             HandleReadData(input);        
-        }
-        catch (Exception ex){
-            if (this.verbose_mode > 0)
+        } catch (TimeoutException){
+        } catch (Exception ex){
+            if (this.verbose_mode > 0) {
+		System.Console.WriteLine("ReadCallback()");
                 System.Console.WriteLine(ex);
+	    }
         }
 
         ReRead();
@@ -528,24 +538,23 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
       during a blocking read. Waiting a second lets any
       subsequent writes complete without more blocking.
     */
-    private void MonoReadCallback(IAsyncResult iar){
-        byte[] input = (byte[])iar.AsyncState;
-        usb_fs.EndRead(iar);
-        HandleReadData(input);        
+    protected void MonoReadCallback(IAsyncResult iar){
         /* Revision: 7May13 - use locks instead
+        */
         try {
-            usb_fs.EndRead(iar);
+        byte[] input = (byte[])iar.AsyncState;
             HandleReadData(input);        
         }
         catch (Exception ex){
             if (this.verbose_mode > 0)
                 System.Console.WriteLine(ex);
             System.Threading.Thread.Sleep(DEFAULT_WAIT_TIMEOUT);
+        } finally {
+            usb_fs.EndRead(iar);
         }
-        */
     }
 
-    private void HandleDeviceMessage(byte[] msg){
+    protected virtual void HandleDeviceMessage(byte[] msg){
         if (this.verbose_mode > 0)
             System.Console.Write("DMSG: {0}: ",current_state);
 
@@ -562,13 +571,9 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                 SendReport(BuildCommand(DoBeep()));
                 if (msg[1] == BUTTON_CREDIT){
                     PushOutput("TERM:Credit");
-                    if (auto_state_change)
-                        SetStateWaitForCashier();
                 }
                 else if (msg[1] == BUTTON_DEBIT){
                     PushOutput("TERM:Debit");
-                    if (auto_state_change)
-                        SetStateCashBack();
                 }
                 else if (msg[1] == BUTTON_EBT){
                     // purposely autochanged. no message to pos
@@ -577,8 +582,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                 }
                 else if (msg[1] == BUTTON_GIFT){
                     PushOutput("TERM:Gift");
-                    if (auto_state_change)
-                        SetStateWaitForCashier();    
                 }
                 else if (msg[1] == BUTTON_HARDWARE_BUTTON && msg[3] == 0x43){
                     SetStateStart();
@@ -591,13 +594,9 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                 SendReport(BuildCommand(DoBeep()));
                 if (msg[1] == BUTTON_EBT_FOOD){
                     PushOutput("TERM:EbtFood");
-                    if (auto_state_change)
-                        SetStateGetPin();
                 }
                 else if (msg[1] == BUTTON_EBT_CASH){
                     PushOutput("TERM:EbtCash");
-                    if (auto_state_change)
-                        SetStateCashBack();
                 }
                 else if (msg[1] == BUTTON_HARDWARE_BUTTON && msg[3] == 0x43){
                     SetStateStart();
@@ -622,8 +621,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                     // request 0xFF as cash back
                     if (msg[1] != BUTTON_HARDWARE_BUTTON)
                         PushOutput("TERMCB:"+msg[1]);
-                    if (auto_state_change)
-                        SetStateGetPin();
                 }
             }
             break;
@@ -637,8 +634,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                 foreach(byte b in msg)
                     pinhex += ((char)b);
                 PushOutput("PINCACHE:"+pinhex);
-                if (auto_state_change)
-                    SetStateWaitForCashier();
             }
             break;
         case STATE_GET_SIGNATURE:
@@ -652,7 +647,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                     SendReport(BuildCommand(LcdGetBitmapSig()));
                 }
             }
-            else if (msg.Length > 1024){
+            else if (msg.Length > 2 && msg[0] == 0x42 && msg[1] == 0x4d){
                 BitmapOutput(msg);
                 sig_message = "";
             }
@@ -701,16 +696,12 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                 }
                 else {
                     PushOutput("PANCACHE:"+block);
-                    if (auto_state_change)
-                        SetStateCardType();
                 }
             }
             else if (msg.Length > 1){
                 if (this.verbose_mode > 0)
                     System.Console.WriteLine(msg.Length+" "+msg[0]+" "+msg[1]);
             }
-            break;
-        default:
             break;
         }
     }
@@ -721,7 +712,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
      * to the beginning and end. PHP-side software expects
      * this format
      */
-    private string FixupCardBlock(byte[] data){
+    protected string FixupCardBlock(byte[] data){
         // no track 2 means bad read
         if (data.Length < 3 || data[3] == 0) return "";
         string hex = BitConverter.ToString(data).Replace("-","");
@@ -734,7 +725,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         return hex;
     }
 
-    private void ReRead(){
+    protected void ReRead(){
         byte[] buf = new byte[usb_report_size];
         try {
             usb_fs.BeginRead(buf, 0, usb_report_size, new AsyncCallback(ReadCallback), buf);
@@ -753,7 +744,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
       eventually make the stack blow up as ReRead and
       ReadCallback calls build up one after the other.
     */
-    private void MonoRead(){
+    protected void MonoRead(){
         while(SPH_Running){
             byte[] buf = new byte[usb_report_size];
             try {
@@ -855,7 +846,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     /**
      * Wrap command in proper leading and ending bytes
      */
-    private byte[] BuildCommand(byte[] data){
+    protected byte[] BuildCommand(byte[] data){
         int size = data.Length + 6;
         if (data.Length > 0x8000) size++;
 
@@ -899,7 +890,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     /**
      * LRC type 1: sum of data bytes
      */
-    private byte LrcSum(byte[] data){
+    protected byte LrcSum(byte[] data){
         int lrc = 0;
         foreach(byte b in data)
             lrc = (lrc + b) & 0xff;
@@ -909,7 +900,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     /**
      * LRC type 2: xor of data bytes
      */
-    private byte LrcXor(byte[] data){
+    protected byte LrcXor(byte[] data){
         byte lrc = 0;
         foreach(byte b in data)
             lrc = (byte)(lrc ^ b);
@@ -919,7 +910,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     /**
      * Write to device in formatted reports
      */
-    private void SendReport(byte[] data){
+    protected void SendReport(byte[] data){
         if (this.verbose_mode > 0){
             System.Console.WriteLine("Full Report "+data.Length);
             for(int j=0;j<data.Length;j++){
@@ -954,7 +945,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
                 }
 
                 usb_fs.Write(report,0,usb_report_size);
-                System.Threading.Thread.Sleep(100);
 
                 for(int j=0;j<usb_report_size;j++) report[j] = 0;
                 size=0;
@@ -976,10 +966,10 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         }
 
         usb_fs.Write(report,0,usb_report_size);
-        ack_event.WaitOne(100, false);
+        System.Threading.Thread.Sleep(50);
     }
 
-    private void BitmapOutput(byte[] file){
+    protected void BitmapOutput(byte[] file){
         int ticks = Environment.TickCount;
         char sep = System.IO.Path.DirectorySeparatorChar;
         while(File.Exists(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks+".bmp"))
@@ -988,20 +978,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         PushOutput("TERMBMP"+ticks+".bmp");
     }
 
-    private void PushOutput(string s){
-        /*
-        int ticks = Environment.TickCount;
-        char sep = System.IO.Path.DirectorySeparatorChar;
-        while(File.Exists(MAGELLAN_OUTPUT_DIR+sep+ticks))
-            ticks++;
-
-        TextWriter sw = new StreamWriter(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks);
-        sw = TextWriter.Synchronized(sw);
-        sw.WriteLine(s);
-        sw.Close();
-        File.Move(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks,
-              MAGELLAN_OUTPUT_DIR+sep+ticks);
-        */
+    protected void PushOutput(string s)
+    {
         parent.MsgSend(s);
     }
 
@@ -1009,7 +987,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
      * Device Command Functions
      */
 
-    private byte[] LcdTextFont(int charset, int width, int height){
+    protected byte[] LcdTextFont(int charset, int width, int height){
         byte[] ret = new byte[9];
 
         // command head
@@ -1027,7 +1005,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         return ret;
     }
 
-    private byte[] LcdTextColor(int red, int green, int blue){
+    protected byte[] LcdTextColor(int red, int green, int blue){
         byte[] ret = new byte[6];
 
         // Command head
@@ -1042,7 +1020,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         return ret;
     }
 
-    private byte[] LcdTextBackgroundColor(int red, int green, int blue){
+    protected byte[] LcdTextBackgroundColor(int red, int green, int blue){
         byte[] ret = new byte[6];
 
         // Command head
@@ -1057,7 +1035,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         return ret;
     }
 
-    private byte[] LcdTextBackgroundMode(bool is_transparent){
+    protected byte[] LcdTextBackgroundMode(bool is_transparent){
         byte[] ret = new byte[4];
 
         // Command head
@@ -1070,7 +1048,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         return ret;
     }
 
-    private byte[] LcdDrawText(string text, int x, int y){
+    protected byte[] LcdDrawText(string text, int x, int y){
         byte[] ret = new byte[9 + text.Length];
 
         // Command head
@@ -1096,7 +1074,11 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         return ret;
     }
 
-    private byte[] LcdDrawTextInRectangle(string text, int x_top_left, int y_top_left,
+    /**
+      Implemented based on spec but not used
+      Commented out to avoid compliation warnings.
+      29Dec2014
+    protected byte[] LcdDrawTextInRectangle(string text, int x_top_left, int y_top_left,
             int x_bottom_right, int y_bottom_right){
 
         byte[] ret = new byte[13 + text.Length];
@@ -1129,8 +1111,9 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 
         return ret;
     }
+    */
 
-    private byte[] LcdFillColor(int red, int green, int blue){
+    protected byte[] LcdFillColor(int red, int green, int blue){
         byte[] ret = new byte[6];
 
         // Command head
@@ -1145,7 +1128,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         return ret;
     }
 
-    private byte[] LcdFillRectangle(int x_top_left, int y_top_left,
+    protected byte[] LcdFillRectangle(int x_top_left, int y_top_left,
             int x_bottom_right, int y_bottom_right){
         byte[] ret = new byte[11];
 
@@ -1174,7 +1157,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
      *    1=> 5 seconds, 2=> 10 seconds, etc
      *    0=> always on
      */
-    private byte[] LcdSetBacklightTimeout(int interval){
+    protected byte[] LcdSetBacklightTimeout(int interval){
         byte[] ret = new byte[5];
 
         // Command head
@@ -1188,7 +1171,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         return ret;
     }
 
-    private byte[] LcdSetClipArea(int x_top_left, int y_top_left, int x_bottom_right, int y_bottom_right){
+    protected byte[] LcdSetClipArea(int x_top_left, int y_top_left, int x_bottom_right, int y_bottom_right){
         byte[] ret = new byte[15];
 
         // Command head
@@ -1218,7 +1201,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         return ret;
     }
 
-    private byte[] LcdSetClipArea(int x_top_left, int y_top_left, int x_bottom_right, int y_bottom_right, bool border, byte[] rgb){
+    protected byte[] LcdSetClipArea(int x_top_left, int y_top_left, int x_bottom_right, int y_bottom_right, bool border, byte[] rgb){
         byte[] ret = new byte[15];
 
         // Command head
@@ -1249,7 +1232,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     }
 
 
-    private byte[] LcdCreateButton(int id, string label, int x_top_left, int y_top_left,
+    protected byte[] LcdCreateButton(int id, string label, int x_top_left, int y_top_left,
             int x_bottom_right, int y_bottom_right){
 
         byte[] ret = new byte[16 + label.Length];
@@ -1287,7 +1270,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         return ret;
     }
 
-    private byte[] LcdCreateColoredButton(int id, string label, int x_top_left, int y_top_left,
+    protected byte[] LcdCreateColoredButton(int id, string label, int x_top_left, int y_top_left,
             int x_bottom_right, int y_bottom_right, byte[] foreground, byte[] background){
 
         byte[] ret = new byte[33 + label.Length];
@@ -1349,15 +1332,20 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         return ret;
     }
 
-    private byte[] LcdCalibrateTouch(){
+    /**
+      Implemented based on spec but not used
+      Commented out to avoid compliation warnings.
+      29Dec2014
+    protected byte[] LcdCalibrateTouch(){
         return new byte[3]{ 0x7a, 0x46, 0x1 };
     }
+    */
 
     /**
      * Mode 5 => buffered
      * Mode < 5 => streaming data
      */
-    private byte[] LcdStartCapture(int mode){
+    protected byte[] LcdStartCapture(int mode){
         byte[] ret = new byte[11];
 
         ret[0] = 0x7a;
@@ -1379,19 +1367,19 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         return ret;
     }
 
-    private byte[] LcdClearSignature(){
+    protected byte[] LcdClearSignature(){
         return new byte[3]{ 0x7a, 0x46, 0x19 };
     }
 
-    private byte[] LcdGetBitmapSig(){
+    protected byte[] LcdGetBitmapSig(){
         return new byte[3]{ 0x7a, 0x46, 0x23 };
     }
 
-    private byte[] LcdStopCapture(){
+    protected byte[] LcdStopCapture(){
         return new byte[3]{ 0x7a, 0x46, 0x1f };
     }
 
-    private byte[] PinpadGetPIN(){
+    protected byte[] PinpadGetPIN(){
         byte[] ret = new byte[112];
         int pos = 0;
 
@@ -1529,11 +1517,11 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         return ret;
     }
 
-    private byte[] PinpadCancelGetPIN(){
+    protected byte[] PinpadCancelGetPIN(){
         return new byte[3]{ 0x75, 0x46, 0x9 };
     }
 
-    private byte[] ManualEntryPAN(){
+    protected byte[] ManualEntryPAN(){
         byte[] ret = new byte[68];
 
         int pos = 0;
@@ -1628,7 +1616,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         return ret;
     }
 
-    private byte[] ManualEntryExp(){
+    protected byte[] ManualEntryExp(){
         byte[] ret = new byte[70];
 
         int pos = 0;
@@ -1723,7 +1711,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         return ret;
     }
 
-    private byte[] ManualEntryCVV(){
+    protected byte[] ManualEntryCVV(){
         byte[] ret = new byte[75];
 
         int pos = 0;
@@ -1818,20 +1806,99 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         return ret;
     }
 
-    private byte[] ResetDevice(){
+    protected byte[] ResetDevice(){
         return new byte[7]{0x78, 0x46, 0x0a, 0x49, 0x52, 0x46, 0x57};
     }
 
-    private byte[] EnableAudio(){
+    protected byte[] EnableAudio(){
         return new byte[4]{0x7b, 0x46, 0x1, 0x1};
     }
     
-    private byte[] DoBeep(){
+    protected byte[] DoBeep(){
         return new byte[7]{0x7b, 0x46, 0x02, 0xff, 0x0, 0xff, 0};
     }
 
+    protected byte[] GetSerialNumber(){
+        return new byte[3]{0x78, 0x46, 0x2};
+    }
+    
+    protected byte[] LcdStoreImage(int image_id, string file_name) {
+        string ext;
+        int type = 0;
+        try {
+            ext = Path.GetExtension(file_name);
+        } catch (Exception ex) {
+            if (this.verbose_mode > 0) {
+                System.Console.WriteLine(ex);
+            }
+            return GetSerialNumber(); // using as a no-op
+        }
+        if (ext.ToLower() != ".bmp" && ext.ToLower() != ".jpg" && ext.ToLower() != ".jpeg") {
+            if (this.verbose_mode > 0) {
+                System.Console.WriteLine("Image format " + ext + " not supported");
+            }
+            return GetSerialNumber(); // using as a no-op
+        }
+        if (!File.Exists(file_name)) {
+            if (this.verbose_mode > 0) {
+                System.Console.WriteLine("File not found: " + file_name);
+            }
+            return GetSerialNumber(); // using as a no-op
+        }
+
+        if (ext.ToLower() == ".bmp") {
+            type = 0x1;
+        } else {
+            type = 0x2;
+        }
+        
+        byte[] file_data = File.ReadAllBytes(file_name);
+        byte[] ret = new byte[7 + file_data.Length];
+
+        // Command head
+        ret[0] = 0x8a;
+        ret[1] = 0x46;
+        ret[2] = 0x70;
+
+        ret[3] = (byte)(image_id & 0xff);
+        ret[4] = (byte)( (image_id >> 8) & 0xff);
+
+        ret[5] = (byte)(type & 0xff);
+        ret[6] = (byte)( (type >> 8) & 0xff);
+
+
+        Array.Copy(file_data, 0, ret, 7, file_data.Length);
+
+        return ret;
+    }
+
+    protected byte[] LcdShowImage(int image_id, int x_top_left, int y_top_left, int x_bottom_right, int y_bottom_right){
+        byte[] ret = new byte[13];
+        // Command head
+        ret[0] = 0x8a;
+        ret[1] = 0x46;
+        ret[2] = 0x71;
+
+        ret[3] = (byte)(image_id & 0xff);
+        ret[4] = (byte)( (image_id >> 8) & 0xff);
+
+        ret[5] = (byte)(x_top_left & 0xff);
+        ret[6] = (byte)( (x_top_left >> 8) & 0xff);
+
+        ret[7] = (byte)(y_top_left & 0xff);
+        ret[8] = (byte)( (y_top_left >> 8) & 0xff);
+
+        ret[9] = (byte)(x_bottom_right & 0xff);
+        ret[10] = (byte)( (x_bottom_right >> 8) & 0xff);
+
+        ret[11] = (byte)(y_bottom_right & 0xff);
+        ret[12] = (byte)( (y_bottom_right >> 8) & 0xff);
+
+        return ret;
+    }
+
     /*
-    private byte[] GetAmount(){
+    protected byte[] GetAmount(){
         byte[] ret = new byte[];
         int pos = 0;
 

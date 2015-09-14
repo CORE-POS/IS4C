@@ -1,8 +1,11 @@
 <?php
-require_once(dirname(__FILE__).'/../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__).'/../../../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 class ViewsheetPage extends FanniePage {
+    public $page_set = 'Plugin :: TimesheetPlugin';
 
     protected $auth_classes = array('timesheet_access');
 
@@ -117,22 +120,21 @@ class ViewsheetPage extends FanniePage {
 
         $ft = 40;
 
-        $query = $ts_db->prepare_statement("SELECT ROUND(SUM(hours), 2),
-            date_format(t.tdate, '%a %b %D'),
-            t.emp_no,
-            e.FirstName,
-            date_format(p.periodStart, '%M %D, %Y'),
-            date_format(p.periodEnd, '%M %D, %Y'),
-            t.date
-                FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
-            INNER JOIN {$FANNIE_OP_DB}.employees AS e
-            ON (t.emp_no = e.emp_no)
-            INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
-            ON (t.periodID = p.periodID)
+        $query = $ts_db->prepare_statement("
+            SELECT ROUND(SUM(hours), 2),
+                date_format(t.tdate, '%a %b %D'),
+                t.emp_no,
+                e.firstName,
+                date_format(p.periodStart, '%M %D, %Y'),
+                date_format(p.periodEnd, '%M %D, %Y'),
+                t.tdate
+            FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+                INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.TimesheetEmployees AS e ON (t.emp_no = e.timesheetEmployeeID)
+                INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p ON (t.periodID = p.periodID)
                 WHERE t.emp_no = ?
-                AND t.area <> 31
-                AND t.periodID = ?
-                AND (t.vacation IS NULL OR t.vacation = 0)
+                    AND t.area <> 31
+                    AND t.periodID = ?
+                    AND (t.vacation IS NULL OR t.vacation = 0)
                 GROUP BY t.tdate");
 
         $periodQ = $ts_db->prepare_statement("SELECT periodStart, periodEnd FROM 
@@ -141,36 +143,42 @@ class ViewsheetPage extends FanniePage {
         $periodR = $ts_db->exec_statement($periodQ,array($periodID));
         list($periodStart, $periodEnd) = $ts_db->fetch_row($periodR);
 
-        $weekoneQ = $ts_db->prepare_statement("SELECT ROUND(SUM(hours), 2)
-                FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
-                INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
-                ON (p.periodID = t.periodID)
-                WHERE t.emp_no = ?
+        $weekoneQ = $ts_db->prepare_statement("
+            SELECT ROUND(SUM(hours), 2)
+            FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+                INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p ON (p.periodID = t.periodID)
+            WHERE t.emp_no = ?
                 AND t.periodID = ?
                 AND t.area <> 31
                 AND t.tdate >= DATE(p.periodStart)
                 AND t.tdate < DATE(date_add(p.periodStart, INTERVAL 7 day))");
         $weekoneR = $ts_db->exec_statement($weekoneQ,array($emp_no, $periodID));
 
-        $weektwoQ = $ts_db->prepare_statement("SELECT ROUND(SUM(hours), 2)
-                FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
-                INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
-                ON (p.periodID = t.periodID)
-                WHERE t.emp_no = ?
+        $weektwoQ = $ts_db->prepare_statement("
+            SELECT ROUND(SUM(hours), 2)
+            FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+                INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p ON (p.periodID = t.periodID)
+            WHERE t.emp_no = ?
                 AND t.periodID = ?
                 AND t.area <> 31
-                AND t.tdate >= DATE(date_add(p.periodStart, INTERVAL 7 day)) AND t.tdate <= DATE(p.periodEnd)");
+                AND t.tdate >= DATE(date_add(p.periodStart, INTERVAL 7 day)) 
+                AND t.tdate <= DATE(p.periodEnd)");
         $weektwoR = $ts_db->exec_statement($weektwoQ,array($emp_no, $periodID));
 
-        $vacationQ = "SELECT ROUND(hours, 2), ID
+        $vacationQ = "
+            SELECT ROUND(hours, 2), 
+                ID
             FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
             WHERE t.emp_no = $emp_no
-            AND t.periodID = $periodID
-            AND t.area = 31";
+                AND t.periodID = $periodID
+                AND t.area = 31";
 
-        $WageQ = $ts_db->prepare_statement("SELECT pay_rate FROM {$FANNIE_OP_DB}.employees WHERE emp_no = ?");
-
-        $WageR = $ts_db->exec_statement($WageQ, array($emp_no));
+        $employee = new TimesheetEmployeesModel($ts_db);
+        $employee->timesheetEmployeeID($emp_no);
+        $employee->load();
+        $Wage = $employee->wage();
+        if (is_null($Wage)) $Wage = 0; 
+        $name = $employee->firstName();
 
         list($weekone) = $ts_db->fetch_row($weekoneR);
         if (is_null($weekone)) $weekone = 0;
@@ -182,13 +190,6 @@ class ViewsheetPage extends FanniePage {
         if ($ts_db->num_rows($vacationR) != 0) 
             list($vacation, $vacationID) = $ts_db->fetch_row($vacationR);
 
-        list($Wage) = $ts_db->fetch_row($WageR);
-        if (is_null($Wage)) $Wage = 0; 
-
-        $nameQ = $ts_db->prepare_statement("SELECT firstName FROM {$FANNIE_OP_DB}.employees WHERE emp_no=?");
-        $nameR = $ts_db->exec_statement($nameQ,array($emp_no));
-        list($name) = $ts_db->fetch_row($nameR);
-
         /**
           I merged two sections a bit here rather than having separate
           sections for when $query finds rows and when it doesn't
@@ -199,11 +200,10 @@ class ViewsheetPage extends FanniePage {
             <span style='font-size:0.9em;'><a href='TsStaffMemReport.php?emp_no=$emp_no&period=$periodID&run=run'>View 
                 Staff Member Totals</a></span>
             </p>
-            <table cellpadding=\"4\">
+            <table class=\"table table-striped table-bordered\">
             <tr><th>Date</th><th>Total Hours Worked</th><th></th></tr>\n";
 
         $result = $ts_db->exec_statement($query,array($emp_no,$periodID));
-        
         $periodHours = 0.00;
         while ($row = $ts_db->fetch_array($result)) {
             if ($row[0] > 24) {
@@ -265,30 +265,36 @@ class ViewsheetPage extends FanniePage {
     function body_content(){
         global $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
         $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
-        include ('./includes/header.html');
 
         if ($this->display_func == 'ts_error')
             return $this->error_contents();
         elseif ($this->display_func == 'ts_show')
             return $this->show_sheet(FormLib::get_form_value('emp_no'),FormLib::get_form_value('period'));
 
-        echo "<body onLoad='putFocus(0,0);'>";
-        $query = $ts_db->prepare_statement("SELECT FirstName, LastName, emp_no 
-            FROM {$FANNIE_OP_DB}.employees where EmpActive=1 ORDER BY FirstName ASC");
-        $result = $ts_db->exec_statement($query);
+        include ('./includes/header.html');
         echo '<form action="'.$_SERVER['PHP_SELF'].'" method="POST">';
 
+        echo '<div class="form-group">';
         if ($_SESSION['logged_in'] == True) {
-            echo '<p>Name: <select name="emp_no">
+            echo '<label>Name</label><select name="emp_no" class="form-control">
                 <option>Select staff member</option>';
-            while ($row = $ts_db->fetch_array($result)) {
-                echo "<option value='".$row[2]."'>" . ucwords($row[0]) . " " . ucwords(substr($row[1],0,1)) . ".</option>\n";
+            $model = new TimesheetEmployeesModel($ts_db);
+            $model->active(1);
+            foreach ($model->find('firstName') as $obj) {
+                printf('<option value="%d">%s %s</option>',
+                    $obj->timesheetEmployeeID(),
+                    $obj->firstName(),
+                    substr($obj->lastName(), 0, 1)
+                );
             }
-            echo '</select></p>';
-        } 
-        else {
-            echo "<p>Employee Number*: <input type='text' name='emp_no' size=4 autocomplete='off' /></p>";
+            echo '</select>';
+        } else {
+            echo "<label>Employee Number*</label>
+                <input type='text' name='emp_no' size=4 
+                class=\"form-control\" autocomplete='off' />";
         }
+        echo '</div>';
+
         $currentQ = $ts_db->prepare_statement("SELECT periodID 
             FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
             WHERE ".$ts_db->now()." BETWEEN periodStart AND periodEnd");
@@ -301,7 +307,8 @@ class ViewsheetPage extends FanniePage {
             WHERE periodStart < ".$ts_db->now()." ORDER BY periodID DESC");
         $result = $ts_db->exec_statement($query);
 
-        echo '<p>Pay Period: <select name="period">
+        echo '<div class="form-group">';
+        echo '<label>Pay Period</label><select name="period" class="form-control">
             <option>Please select a payperiod to view.</option>';
 
         while ($row = $ts_db->fetch_array($result)) {
@@ -309,11 +316,12 @@ class ViewsheetPage extends FanniePage {
             if ($row[2] == $ID) { echo ' SELECTED';}
             echo ">($row[0] - $row[1])</option>";
         }
-        echo '</select></p>';
+        echo '</select></div>';
 
-        echo '<button name="submit" type="submit">Submit</button>
+        echo '<div class="form-group">';
+        echo '<button name="submit" type="submit" class="btn btn-default">Submit</button>
         <input type="hidden" name="submitted" value="TRUE" />
-        </form>';
+        </div></form>';
         if ($this->current_user){
             echo "<div class='log_btn'><a href='" . $FANNIE_URL . "auth/ui/loginform.php?logout=1'>logout</a></div>";
         } 

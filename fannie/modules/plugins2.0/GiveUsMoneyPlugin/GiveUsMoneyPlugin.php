@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 /**
 */
-class GiveUsMoneyPlugin extends FanniePlugin 
+class GiveUsMoneyPlugin extends \COREPOS\Fannie\API\FanniePlugin 
 {
     public $plugin_settings = array(
     'GiveUsMoneyDB' => array('default'=>'GiveUsMoneyDB','label'=>'Database',
@@ -38,7 +38,7 @@ class GiveUsMoneyPlugin extends FanniePlugin
     public $plugin_description = 'Plugin for mananging member loan/bond accounts
                                 and share-based, dividend earning equity.';
 
-    public function setting_change() {
+    public function settingChange() {
         global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
         $db_name = $FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB'];
@@ -67,8 +67,10 @@ class GiveUsMoneyPlugin extends FanniePlugin
             if (!class_exists($model_class)) {
                 include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
             }
-            $instance = new $model_class($dbc);
-            $instance->create();        
+            if (!$dbc->tableExists($t)) {
+                $instance = new $model_class($dbc);
+                $instance->create();
+            }
         }
 
         $settings = new GumSettingsModel($dbc);
@@ -334,7 +336,7 @@ class GiveUsMoneyPlugin extends FanniePlugin
         }
     }
 
-    public function plugin_enable()
+    public function pluginEnable()
     {
         FannieAuth::createClass('GiveUsMoney', 'Grants permission to use the GiveUsMoney plugin');
     }

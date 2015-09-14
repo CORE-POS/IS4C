@@ -12,9 +12,9 @@ include('header.html');
 
 $memID="";
 if(isset($_GET['memNum'])){
-	$memID = $_GET['memNum'];
+    $memID = $_GET['memNum'];
 }else{
-	$memID = $_POST['memNum'];
+    $memID = $_POST['memNum'];
 }
 $memNum = $memID;
 
@@ -23,9 +23,9 @@ $memNum = $memID;
 <head>
 </head>
 <body 
-	bgcolor="#66CC99" 
-	leftmargin="0" topmargin="0" 
-	marginwidth="0" marginheight="0" 
+    bgcolor="#66CC99" 
+    leftmargin="0" topmargin="0" 
+    marginwidth="0" marginheight="0" 
 >
 
 <table width="660" height="111" border="0" cellpadding="0" cellspacing="0" bgcolor="#66cc99">
@@ -55,9 +55,9 @@ $memNum = $memID;
 
 $memNum = $memID;
 if (!isset($_POST['submit']) && !isset($_GET['fixedaddress'])){
-	echo "&nbsp;&nbsp;&nbsp;Reason for suspending membership $memNum<br />";
-	echo "<form action=alterstatus.php method=post>";
-	echo "<input type=hidden name=memNum value=$memID>";
+    echo "&nbsp;&nbsp;&nbsp;Reason for suspending membership $memNum<br />";
+    echo "<form action=alterstatus.php method=post>";
+    echo "<input type=hidden name=memNum value=$memID>";
     $sus = new SuspensionsModel($sql);
     $sus->cardno($memNum);
     $sus->load();
@@ -67,61 +67,61 @@ if (!isset($_POST['submit']) && !isset($_GET['fixedaddress'])){
     $cust->personNum(1);
     $cust->load();
     $curType = $cust->Type();
-	$stats = array('INACT'=>'Inactive','TERM'=>'Termed','INACT2'=>'Term pending');
-	echo "<select name=status>";
-	foreach ($stats as $k=>$v){
-		echo "<option value=".$k;
-		if ($k == $curType) echo " selected";
-		echo ">".$v."</option>";
-	}
-	echo "</select>";
-	$query = "select textStr,mask from reasoncodes";
-	$result = $sql->query($query);
-	echo "<table>";
+    $stats = array('INACT'=>'Inactive','TERM'=>'Termed','INACT2'=>'Term pending');
+    echo "<select name=status>";
+    foreach ($stats as $k=>$v){
+        echo "<option value=".$k;
+        if ($k == $curType) echo " selected";
+        echo ">".$v."</option>";
+    }
+    echo "</select>";
+    $query = "select textStr,mask from reasoncodes";
+    $result = $sql->query($query);
+    echo "<table>";
     $i=1;
-	while($row = $sql->fetch_row($result)){
-	  echo "<tr><td><input id=\"checkbox$i\" type=checkbox name=reasoncodes[] value=$row[1]";
-	  if ($curReasonCode & ((int)$row[1])) echo " checked";
-	  echo " /></td><td><label for=\"checkbox$i\">$row[0]</label></td></tr>";
+    while($row = $sql->fetch_row($result)){
+      echo "<tr><td><input id=\"checkbox$i\" type=checkbox name=reasoncodes[] value=$row[1]";
+      if ($curReasonCode & ((int)$row[1])) echo " checked";
+      echo " /></td><td><label for=\"checkbox$i\">$row[0]</label></td></tr>";
       $i++;
-	}
-	echo "</table>";
-	echo "<input type=submit name=submit value=Update />";
-	echo "</form>";
+    }
+    echo "</table>";
+    echo "<input type=submit name=submit value=Update />";
+    echo "</form>";
 }
 else if (validateUserQuiet('editmembers')){
-	$memNum = $_POST["memNum"];
-	$codes = array();
-	if (isset($_POST["reasoncodes"]))
-		$codes = $_POST["reasoncodes"];
-	$status = $_POST["status"];
+    $memNum = $_POST["memNum"];
+    $codes = array();
+    if (isset($_POST["reasoncodes"]))
+        $codes = $_POST["reasoncodes"];
+    $status = $_POST["status"];
 
-	$reasonCode = 0;
-	foreach($codes as $c)
-		$reasonCode = $reasonCode | ((int)$c);
-	
-	alterReason($memNum,$reasonCode,$status);
+    $reasonCode = 0;
+    foreach($codes as $c)
+        $reasonCode = $reasonCode | ((int)$c);
+    
+    alterReason($memNum,$reasonCode,$status);
 
-	addressList($memNum);
+    addressList($memNum);
 
-	// FIRE ALL UPDATE
-	include('custUpdates.php');
-	updateCustomerAllLanes($memNum);
+    // FIRE ALL UPDATE
+    include('custUpdates.php');
+    updateCustomerAllLanes($memNum);
 
 }
 else if (validateUserQuiet('editmembers_csc') && isset($_GET['fixedaddress'])){
-	$curQ = "select reasoncode from suspensions where cardno=$memNum";
-	$curR = $sql->query($curQ);
-	$curCode = (int)(array_pop($sql->fetch_array($curR)));
+    $curQ = "select reasoncode from suspensions where cardno=$memNum";
+    $curR = $sql->query($curQ);
+    $curCode = (int)(array_pop($sql->fetch_array($curR)));
 
-	$newCode = $curCode & ~16;
-	alterReason($memNum,$newCode);
+    $newCode = $curCode & ~16;
+    alterReason($memNum,$newCode);
 
-	addressList($memNum);
+    addressList($memNum);
 
-	// FIRE ALL UPDATE
-	include('custUpdates.php');
-	updateCustomerAllLanes($memNum);
+    // FIRE ALL UPDATE
+    include('custUpdates.php');
+    updateCustomerAllLanes($memNum);
 }
 
 ?>

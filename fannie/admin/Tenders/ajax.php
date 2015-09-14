@@ -3,14 +3,14 @@
 
     Copyright 2010 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -88,8 +88,15 @@ elseif(FormLib::get_form_value('saveRLimit',False) !== False){
         $model->MaxRefund($limit);
         $model->save();
     }
-}
-elseif(FormLib::get_form_value('newTender',False) !== False){
+} elseif (FormLib::get_form_value('saveSalesCode',False) !== false) {
+    $code = FormLib::get_form_value('saveSalesCode');
+    if (!is_numeric($code)) {
+        echo "Error: account # must be a number";
+    } else {
+        $model->SalesCode($code);
+        $model->save();
+    }
+} elseif(FormLib::get_form_value('newTender',False) !== False){
     $newID=1;
     $idQ = $dbc->prepare_statement("SELECT MAX(TenderID) FROM tenders");
     $idR = $dbc->exec_statement($idQ);
@@ -115,27 +122,45 @@ function getTenderTable(){
     $dbc = FannieDB::get($FANNIE_OP_DB);
     $model = new TendersModel($dbc);
     
-    $ret = '<table cellpadding="4" cellspacing="0" border="1">
+    $ret = '<table class="table">
         <tr><th>Code</th><th>Name</th><th>Change Type</th>
         <th>Change Msg</th><th>Min</th><th>Max</th>
-        <th>Refund Limit</th></tr>';
+        <th>Refund Limit</th><th>Account #</th></tr>';
 
     foreach($model->find('TenderID') as $row){
         $ret .= sprintf('<tr>
             <td><input size="2" maxlength="2" value="%s"
-                onchange="saveCode(this.value,%d);" /></td>
+                class="form-control"
+                onchange="saveCode.call(this, this.value,%d);" /></td>
             <td><input size="10" maxlength="255" value="%s"
-                onchange="saveName(this.value,%d);" /></td>
+                class="form-control"
+                onchange="saveName.call(this, this.value,%d);" /></td>
             <td><input size="2" maxlength="2" value="%s"
-                onchange="saveType(this.value,%d);" /></td>
+                class="form-control"
+                onchange="saveType.call(this, this.value,%d);" /></td>
             <td><input size="10" maxlength="255" value="%s"
-                onchange="saveCMsg(this.value,%d);" /></td>
-            <td><input size="6" maxlength="10" value="%.2f"
-                onchange="saveMin(this.value,%d);" /></td>
-            <td><input size="6" maxlength="10" value="%.2f"
-                onchange="saveMax(this.value,%d);" /></td>
-            <td><input size="6" maxlength="10" value="%.2f"
-                onchange="saveRLimit(this.value,%d);" /></td>
+                class="form-control"
+                onchange="saveCMsg.call(this, this.value,%d);" /></td>
+            <td class="col-sm-1"><div class="input-group">
+                <span class="input-group-addon">$</span>
+                <input size="6" maxlength="10" value="%.2f"
+                class="form-control price-field"
+                onchange="saveMin.call(this, this.value,%d);" />
+            </div></td>
+            <td class="col-sm-1"><div class="input-group">
+                <span class="input-group-addon">$</span>
+                <input size="6" maxlength="10" value="%.2f"
+                class="form-control price-field"
+                onchange="saveMax.call(this, this.value,%d);" />
+            </div></td>
+            <td class="col-sm-1"><div class="input-group"><span class="input-group-addon">$</span>
+                <input size="6" maxlength="10" value="%.2f"
+                class="form-control price-field"
+                onchange="saveRLimit.call(this, this.value,%d);" />
+            </div></td>
+            <td><input size="10" value="%s"
+                class="form-control"
+                onchange="saveSalesCode.call(this, this.value, %d);" /></td>
             </tr>',
             $row->TenderCode(),$row->TenderID(),
             $row->TenderName(),$row->TenderID(),
@@ -143,14 +168,16 @@ function getTenderTable(){
             $row->ChangeMessage(),$row->TenderID(),
             $row->MinAmount(),$row->TenderID(),
             $row->MaxAmount(),$row->TenderID(),
-            $row->MaxRefund(),$row->TenderID()
+            $row->MaxRefund(),$row->TenderID(),
+            $row->SalesCode(),$row->TenderID()
         );
     }
     $ret .= "</table>";
-    $ret .= "<br /><br />";
-    $ret .= '<a href="" onclick="addTender();return false;">Add a new tender</a>';
+    $ret .= "<p>";
+    $ret .= '<button type="button" class="btn btn-default" onclick="addTender();return false;">Add a new tender</button>';
     $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-    $ret .= '<a href="DeleteTenderPage.php">Delete a tender</a>';
+    $ret .= '<button type="button" class="btn btn-default" onclick="location=\'DeleteTenderPage.php\';">Delete a tender</button>';
+    $ret .= '</p>';
     return $ret;
 }
 

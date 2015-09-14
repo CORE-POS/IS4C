@@ -327,7 +327,7 @@
         }
         else if ($v_size > 2) {
           PclZip::privErrorLog(PCLZIP_ERR_INVALID_PARAMETER,
-		                       "Invalid number / type of arguments");
+                               "Invalid number / type of arguments");
           return 0;
         }
       }
@@ -388,7 +388,7 @@
              ,PCLZIP_ATT_FILE_MTIME => 'optional'
              ,PCLZIP_ATT_FILE_CONTENT => 'optional'
              ,PCLZIP_ATT_FILE_COMMENT => 'optional'
-						);
+                        );
     foreach ($v_att_list as $v_entry) {
       $v_result = $this->privFileDescrParseAtt($v_entry,
                                                $v_filedescr_list[],
@@ -492,7 +492,7 @@
                                                    PCLZIP_OPT_TEMP_FILE_ON => 'optional',
                                                    PCLZIP_OPT_TEMP_FILE_OFF => 'optional'
                                                    //, PCLZIP_OPT_CRYPT => 'optional'
-												   ));
+                                                   ));
         if ($v_result != 1) {
           return 0;
         }
@@ -571,7 +571,7 @@
              ,PCLZIP_ATT_FILE_MTIME => 'optional'
              ,PCLZIP_ATT_FILE_CONTENT => 'optional'
              ,PCLZIP_ATT_FILE_COMMENT => 'optional'
-						);
+                        );
     foreach ($v_att_list as $v_entry) {
       $v_result = $this->privFileDescrParseAtt($v_entry,
                                                $v_filedescr_list[],
@@ -751,7 +751,7 @@
                                                    PCLZIP_OPT_TEMP_FILE_THRESHOLD => 'optional',
                                                    PCLZIP_OPT_TEMP_FILE_ON => 'optional',
                                                    PCLZIP_OPT_TEMP_FILE_OFF => 'optional'
-												    ));
+                                                    ));
         if ($v_result != 1) {
           return 0;
         }
@@ -805,7 +805,7 @@
     // ----- Call the extracting fct
     $p_list = array();
     $v_result = $this->privExtractByRule($p_list, $v_path, $v_remove_path,
-	                                     $v_remove_all_path, $v_options);
+                                         $v_remove_all_path, $v_options);
     if ($v_result < 1) {
       unset($p_list);
       return(0);
@@ -907,7 +907,7 @@
                                                    PCLZIP_OPT_TEMP_FILE_THRESHOLD => 'optional',
                                                    PCLZIP_OPT_TEMP_FILE_ON => 'optional',
                                                    PCLZIP_OPT_TEMP_FILE_OFF => 'optional'
-												   ));
+                                                   ));
         if ($v_result != 1) {
           return 0;
         }
@@ -1108,10 +1108,10 @@
     $v_prop['status'] = 'not_exist';
 
     // ----- Look if file exists
-    if (@is_file($this->zipname))
+    if (file_exists($this->zipname) && is_file($this->zipname))
     {
       // ----- Open the zip file
-      if (($this->zip_fd = @fopen($this->zipname, 'rb')) == 0)
+      if (($this->zip_fd = fopen($this->zipname, 'rb')) == 0)
       {
         $this->privSwapBackMagicQuotes();
         
@@ -1374,7 +1374,7 @@
   {
     $v_result = true;
 
-	// ----- Reset the file system cache
+    // ----- Reset the file system cache
     clearstatcache();
 
     // ----- Reset the error handler
@@ -1596,9 +1596,9 @@
           if (($i+1) >= $p_size) {
             // ----- Error log
             PclZip::privErrorLog(PCLZIP_ERR_MISSING_OPTION_VALUE,
-			                     "Missing parameter value for option '"
-								 .PclZipUtilOptionText($p_options_list[$i])
-								 ."'");
+                                 "Missing parameter value for option '"
+                                 .PclZipUtilOptionText($p_options_list[$i])
+                                 ."'");
 
             // ----- Return
             return PclZip::errorCode();
@@ -1611,9 +1611,9 @@
           else {
             // ----- Error log
             PclZip::privErrorLog(PCLZIP_ERR_INVALID_OPTION_VALUE,
-			                     "Wrong parameter value for option '"
-								 .PclZipUtilOptionText($p_options_list[$i])
-								 ."'");
+                                 "Wrong parameter value for option '"
+                                 .PclZipUtilOptionText($p_options_list[$i])
+                                 ."'");
 
             // ----- Return
             return PclZip::errorCode();
@@ -1779,8 +1779,8 @@
         default :
           // ----- Error log
           PclZip::privErrorLog(PCLZIP_ERR_INVALID_PARAMETER,
-		                       "Unknown parameter '"
-							   .$p_options_list[$i]."'");
+                               "Unknown parameter '"
+                               .$p_options_list[$i]."'");
 
           // ----- Return
           return PclZip::errorCode();
@@ -1954,7 +1954,7 @@
         default :
           // ----- Error log
           PclZip::privErrorLog(PCLZIP_ERR_INVALID_PARAMETER,
-		                           "Unknown parameter '".$v_key."'");
+                                   "Unknown parameter '".$v_key."'");
 
           // ----- Return
           return PclZip::errorCode();
@@ -2015,13 +2015,13 @@
       
       // ----- Look for real file or folder
       if (file_exists($v_descr['filename'])) {
-        if (@is_file($v_descr['filename'])) {
+        if (file_exists($v_descr['filename']) && is_file($v_descr['filename'])) {
           $v_descr['type'] = 'file';
         }
-        else if (@is_dir($v_descr['filename'])) {
+        else if (file_exists($v_descr['filename']) && is_dir($v_descr['filename'])) {
           $v_descr['type'] = 'folder';
         }
-        else if (@is_link($v_descr['filename'])) {
+        else if (file_exists($v_descr['filename']) && is_link($v_descr['filename'])) {
           // skip
           continue;
         }
@@ -2056,8 +2056,8 @@
         // ----- List of items in folder
         $v_dirlist_descr = array();
         $v_dirlist_nb = 0;
-        if ($v_folder_handler = @opendir($v_descr['filename'])) {
-          while (($v_item_handler = @readdir($v_folder_handler)) !== false) {
+        if ($v_folder_handler = opendir($v_descr['filename'])) {
+          while (($v_item_handler = readdir($v_folder_handler)) !== false) {
 
             // ----- Skip '.' and '..'
             if (($v_item_handler == '.') || ($v_item_handler == '..')) {
@@ -2083,7 +2083,7 @@
             $v_dirlist_nb++;
           }
           
-          @closedir($v_folder_handler);
+          closedir($v_folder_handler);
         }
         else {
           // TBC : unable to open folder in read mode
@@ -2194,13 +2194,13 @@
     }
 
     // ----- Go to beginning of File
-    @rewind($this->zip_fd);
+    rewind($this->zip_fd);
 
     // ----- Creates a temporay file
     $v_zip_temp_name = PCLZIP_TEMPORARY_DIR.uniqid('pclzip-').'.tmp';
 
     // ----- Open the temporary file in write mode
-    if (($v_zip_temp_fd = @fopen($v_zip_temp_name, 'wb')) == 0)
+    if (($v_zip_temp_fd = fopen($v_zip_temp_name, 'wb')) == 0)
     {
       $this->privCloseFd();
       $this->privSwapBackMagicQuotes();
@@ -2218,7 +2218,7 @@
     {
       $v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
       $v_buffer = fread($this->zip_fd, $v_read_size);
-      @fwrite($v_zip_temp_fd, $v_buffer, $v_read_size);
+      fwrite($v_zip_temp_fd, $v_buffer, $v_read_size);
       $v_size -= $v_read_size;
     }
 
@@ -2235,7 +2235,7 @@
     {
       fclose($v_zip_temp_fd);
       $this->privCloseFd();
-      @unlink($v_zip_temp_name);
+      unlink($v_zip_temp_name);
       $this->privSwapBackMagicQuotes();
 
       // ----- Return
@@ -2243,15 +2243,15 @@
     }
 
     // ----- Store the offset of the central dir
-    $v_offset = @ftell($this->zip_fd);
+    $v_offset = ftell($this->zip_fd);
 
     // ----- Copy the block of file headers from the old archive
     $v_size = $v_central_dir['size'];
     while ($v_size != 0)
     {
       $v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
-      $v_buffer = @fread($v_zip_temp_fd, $v_read_size);
-      @fwrite($this->zip_fd, $v_buffer, $v_read_size);
+      $v_buffer = fread($v_zip_temp_fd, $v_read_size);
+      fwrite($this->zip_fd, $v_buffer, $v_read_size);
       $v_size -= $v_read_size;
     }
 
@@ -2263,7 +2263,7 @@
         if (($v_result = $this->privWriteCentralFileHeader($v_header_list[$i])) != 1) {
           fclose($v_zip_temp_fd);
           $this->privCloseFd();
-          @unlink($v_zip_temp_name);
+          unlink($v_zip_temp_name);
           $this->privSwapBackMagicQuotes();
 
           // ----- Return
@@ -2289,7 +2289,7 @@
     }
 
     // ----- Calculate the size of the central header
-    $v_size = @ftell($this->zip_fd)-$v_offset;
+    $v_size = ftell($this->zip_fd)-$v_offset;
 
     // ----- Create the central dir footer
     if (($v_result = $this->privWriteCentralHeader($v_count+$v_central_dir['entries'], $v_size, $v_offset, $v_comment)) != 1)
@@ -2311,18 +2311,18 @@
     $this->privCloseFd();
 
     // ----- Close the temporary file
-    @fclose($v_zip_temp_fd);
+    fclose($v_zip_temp_fd);
 
     // ----- Magic quotes trick
     $this->privSwapBackMagicQuotes();
 
     // ----- Delete the zip file
     // TBC : I should test the result ...
-    @unlink($this->zipname);
+    unlink($this->zipname);
 
     // ----- Rename the temporary file
     // TBC : I should test the result ...
-    //@rename($v_zip_temp_name, $this->zipname);
+    //rename($v_zip_temp_name, $this->zipname);
     PclZipUtilRename($v_zip_temp_name, $this->zipname);
 
     // ----- Return
@@ -2350,7 +2350,7 @@
     }
 
     // ----- Open the zip file
-    if (($this->zip_fd = @fopen($this->zipname, $p_mode)) == 0)
+    if (($this->zip_fd = fopen($this->zipname, $p_mode)) == 0)
     {
       // ----- Error log
       PclZip::privErrorLog(PCLZIP_ERR_READ_OPEN_FAIL, 'Unable to open archive \''.$this->zipname.'\' in '.$p_mode.' mode');
@@ -2374,7 +2374,7 @@
     $v_result=1;
 
     if ($this->zip_fd != 0)
-      @fclose($this->zip_fd);
+      fclose($this->zip_fd);
     $this->zip_fd = 0;
 
     // ----- Return
@@ -2409,7 +2409,7 @@
     }
 
     // ----- Store the offset of the central dir
-    $v_offset = @ftell($this->zip_fd);
+    $v_offset = ftell($this->zip_fd);
 
     // ----- Create the Central Dir files header
     for ($i=0,$v_count=0; $i<sizeof($v_header_list); $i++)
@@ -2434,7 +2434,7 @@
     }
 
     // ----- Calculate the size of the central header
-    $v_size = @ftell($this->zip_fd)-$v_offset;
+    $v_size = ftell($this->zip_fd)-$v_offset;
 
     // ----- Create the central dir footer
     if (($v_result = $this->privWriteCentralHeader($v_count, $v_size, $v_offset, $v_comment)) != 1)
@@ -2664,19 +2664,19 @@
         else {
 
         // ----- Open the source file
-        if (($v_file = @fopen($p_filename, "rb")) == 0) {
+        if (($v_file = fopen($p_filename, "rb")) == 0) {
           PclZip::privErrorLog(PCLZIP_ERR_READ_OPEN_FAIL, "Unable to open file '$p_filename' in binary read mode");
           return PclZip::errorCode();
         }
 
         // ----- Read the file content
-        $v_content = @fread($v_file, $p_header['size']);
+        $v_content = fread($v_file, $p_header['size']);
 
         // ----- Close the file
-        @fclose($v_file);
+        fclose($v_file);
 
         // ----- Calculate the CRC
-        $p_header['crc'] = @crc32($v_content);
+        $p_header['crc'] = crc32($v_content);
         
         // ----- Look for no compression
         if ($p_options[PCLZIP_OPT_NO_COMPRESSION]) {
@@ -2688,7 +2688,7 @@
         // ----- Look for normal compression
         else {
           // ----- Compress the content
-          $v_content = @gzdeflate($v_content);
+          $v_content = gzdeflate($v_content);
 
           // ----- Set header parameters
           $p_header['compressed_size'] = strlen($v_content);
@@ -2697,12 +2697,12 @@
         
         // ----- Call the header generation
         if (($v_result = $this->privWriteFileHeader($p_header)) != 1) {
-          @fclose($v_file);
+          fclose($v_file);
           return $v_result;
         }
 
         // ----- Write the compressed (or not) content
-        @fwrite($this->zip_fd, $v_content, $p_header['compressed_size']);
+        fwrite($this->zip_fd, $v_content, $p_header['compressed_size']);
 
         }
 
@@ -2714,7 +2714,7 @@
         $v_content = $p_filedescr['content'];
 
         // ----- Calculate the CRC
-        $p_header['crc'] = @crc32($v_content);
+        $p_header['crc'] = crc32($v_content);
         
         // ----- Look for no compression
         if ($p_options[PCLZIP_OPT_NO_COMPRESSION]) {
@@ -2726,7 +2726,7 @@
         // ----- Look for normal compression
         else {
           // ----- Compress the content
-          $v_content = @gzdeflate($v_content);
+          $v_content = gzdeflate($v_content);
 
           // ----- Set header parameters
           $p_header['compressed_size'] = strlen($v_content);
@@ -2735,18 +2735,18 @@
         
         // ----- Call the header generation
         if (($v_result = $this->privWriteFileHeader($p_header)) != 1) {
-          @fclose($v_file);
+          fclose($v_file);
           return $v_result;
         }
 
         // ----- Write the compressed (or not) content
-        @fwrite($this->zip_fd, $v_content, $p_header['compressed_size']);
+        fwrite($this->zip_fd, $v_content, $p_header['compressed_size']);
       }
 
       // ----- Look for a directory
       else if ($p_filedescr['type'] == 'folder') {
         // ----- Look for directory last '/'
-        if (@substr($p_header['stored_filename'], -1) != '/') {
+        if (substr($p_header['stored_filename'], -1) != '/') {
           $p_header['stored_filename'] .= '/';
         }
 
@@ -2804,14 +2804,14 @@
 
 
     // ----- Open the source file
-    if (($v_file = @fopen($p_filename, "rb")) == 0) {
+    if (($v_file = fopen($p_filename, "rb")) == 0) {
       PclZip::privErrorLog(PCLZIP_ERR_READ_OPEN_FAIL, "Unable to open file '$p_filename' in binary read mode");
       return PclZip::errorCode();
     }
 
     // ----- Creates a compressed temporary file
     $v_gzip_temp_name = PCLZIP_TEMPORARY_DIR.uniqid('pclzip-').'.gz';
-    if (($v_file_compressed = @gzopen($v_gzip_temp_name, "wb")) == 0) {
+    if (($v_file_compressed = gzopen($v_gzip_temp_name, "wb")) == 0) {
       fclose($v_file);
       PclZip::privErrorLog(PCLZIP_ERR_WRITE_OPEN_FAIL, 'Unable to open temporary file \''.$v_gzip_temp_name.'\' in binary write mode');
       return PclZip::errorCode();
@@ -2821,15 +2821,15 @@
     $v_size = filesize($p_filename);
     while ($v_size != 0) {
       $v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
-      $v_buffer = @fread($v_file, $v_read_size);
+      $v_buffer = fread($v_file, $v_read_size);
       //$v_binary_data = pack('a'.$v_read_size, $v_buffer);
-      @gzputs($v_file_compressed, $v_buffer, $v_read_size);
+      gzputs($v_file_compressed, $v_buffer, $v_read_size);
       $v_size -= $v_read_size;
     }
 
     // ----- Close the file
-    @fclose($v_file);
-    @gzclose($v_file_compressed);
+    fclose($v_file);
+    gzclose($v_file_compressed);
 
     // ----- Check the minimum file size
     if (filesize($v_gzip_temp_name) < 18) {
@@ -2838,21 +2838,21 @@
     }
 
     // ----- Extract the compressed attributes
-    if (($v_file_compressed = @fopen($v_gzip_temp_name, "rb")) == 0) {
+    if (($v_file_compressed = fopen($v_gzip_temp_name, "rb")) == 0) {
       PclZip::privErrorLog(PCLZIP_ERR_READ_OPEN_FAIL, 'Unable to open temporary file \''.$v_gzip_temp_name.'\' in binary read mode');
       return PclZip::errorCode();
     }
 
     // ----- Read the gzip file header
-    $v_binary_data = @fread($v_file_compressed, 10);
+    $v_binary_data = fread($v_file_compressed, 10);
     $v_data_header = unpack('a1id1/a1id2/a1cm/a1flag/Vmtime/a1xfl/a1os', $v_binary_data);
 
     // ----- Check some parameters
     $v_data_header['os'] = bin2hex($v_data_header['os']);
 
     // ----- Read the gzip file footer
-    @fseek($v_file_compressed, filesize($v_gzip_temp_name)-8);
-    $v_binary_data = @fread($v_file_compressed, 8);
+    fseek($v_file_compressed, filesize($v_gzip_temp_name)-8);
+    $v_binary_data = fread($v_file_compressed, 8);
     $v_data_footer = unpack('Vcrc/Vcompressed_size', $v_binary_data);
 
     // ----- Set the attributes
@@ -2862,7 +2862,7 @@
     $p_header['compressed_size'] = filesize($v_gzip_temp_name)-18;
 
     // ----- Close the file
-    @fclose($v_file_compressed);
+    fclose($v_file_compressed);
 
     // ----- Call the header generation
     if (($v_result = $this->privWriteFileHeader($p_header)) != 1) {
@@ -2870,7 +2870,7 @@
     }
 
     // ----- Add the compressed data
-    if (($v_file_compressed = @fopen($v_gzip_temp_name, "rb")) == 0)
+    if (($v_file_compressed = fopen($v_gzip_temp_name, "rb")) == 0)
     {
       PclZip::privErrorLog(PCLZIP_ERR_READ_OPEN_FAIL, 'Unable to open temporary file \''.$v_gzip_temp_name.'\' in binary read mode');
       return PclZip::errorCode();
@@ -2882,17 +2882,17 @@
     while ($v_size != 0)
     {
       $v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
-      $v_buffer = @fread($v_file_compressed, $v_read_size);
+      $v_buffer = fread($v_file_compressed, $v_read_size);
       //$v_binary_data = pack('a'.$v_read_size, $v_buffer);
-      @fwrite($this->zip_fd, $v_buffer, $v_read_size);
+      fwrite($this->zip_fd, $v_buffer, $v_read_size);
       $v_size -= $v_read_size;
     }
 
     // ----- Close the file
-    @fclose($v_file_compressed);
+    fclose($v_file_compressed);
 
     // ----- Unlink the temporary file
-    @unlink($v_gzip_temp_name);
+    unlink($v_gzip_temp_name);
     
     // ----- Return
     return $v_result;
@@ -3033,12 +3033,12 @@
 
     // ----- Packed data
     $v_binary_data = pack("VvvvvvVVVvv", 0x04034b50,
-	                      $p_header['version_extracted'], $p_header['flag'],
+                          $p_header['version_extracted'], $p_header['flag'],
                           $p_header['compression'], $v_mtime, $v_mdate,
                           $p_header['crc'], $p_header['compressed_size'],
-						  $p_header['size'],
+                          $p_header['size'],
                           strlen($p_header['stored_filename']),
-						  $p_header['extra_len']);
+                          $p_header['extra_len']);
 
     // ----- Write the first 148 bytes of the header in the archive
     fputs($this->zip_fd, $v_binary_data, 30);
@@ -3080,14 +3080,14 @@
 
     // ----- Packed data
     $v_binary_data = pack("VvvvvvvVVVvvvvvVV", 0x02014b50,
-	                      $p_header['version'], $p_header['version_extracted'],
+                          $p_header['version'], $p_header['version_extracted'],
                           $p_header['flag'], $p_header['compression'],
-						  $v_mtime, $v_mdate, $p_header['crc'],
+                          $v_mtime, $v_mdate, $p_header['crc'],
                           $p_header['compressed_size'], $p_header['size'],
                           strlen($p_header['stored_filename']),
-						  $p_header['extra_len'], $p_header['comment_len'],
+                          $p_header['extra_len'], $p_header['comment_len'],
                           $p_header['disk'], $p_header['internal'],
-						  $p_header['external'], $p_header['offset']);
+                          $p_header['external'], $p_header['offset']);
 
     // ----- Write the 42 bytes of the header in the zip file
     fputs($this->zip_fd, $v_binary_data, 46);
@@ -3123,8 +3123,8 @@
 
     // ----- Packed data
     $v_binary_data = pack("VvvvvVVv", 0x06054b50, 0, 0, $p_nb_entries,
-	                      $p_nb_entries, $p_size,
-						  $p_offset, strlen($p_comment));
+                          $p_nb_entries, $p_size,
+                          $p_offset, strlen($p_comment));
 
     // ----- Write the 22 bytes of the header in the zip file
     fputs($this->zip_fd, $v_binary_data, 22);
@@ -3154,7 +3154,7 @@
     $this->privDisableMagicQuotes();
 
     // ----- Open the zip file
-    if (($this->zip_fd = @fopen($this->zipname, 'rb')) == 0)
+    if (($this->zip_fd = fopen($this->zipname, 'rb')) == 0)
     {
       // ----- Magic quotes trick
       $this->privSwapBackMagicQuotes();
@@ -3175,8 +3175,8 @@
     }
 
     // ----- Go to beginning of Central Dir
-    @rewind($this->zip_fd);
-    if (@fseek($this->zip_fd, $v_central_dir['offset']))
+    rewind($this->zip_fd);
+    if (fseek($this->zip_fd, $v_central_dir['offset']))
     {
       $this->privSwapBackMagicQuotes();
 
@@ -3281,9 +3281,9 @@
 
     // ----- Check the path
     if (   ($p_path == "")
-	    || (   (substr($p_path, 0, 1) != "/")
-		    && (substr($p_path, 0, 3) != "../")
-			&& (substr($p_path,1,2)!=":/")))
+        || (   (substr($p_path, 0, 1) != "/")
+            && (substr($p_path, 0, 3) != "../")
+            && (substr($p_path,1,2)!=":/")))
       $p_path = "./".$p_path;
 
     // ----- Reduce the path last (and duplicated) '/'
@@ -3330,8 +3330,8 @@
     {
 
       // ----- Read next Central dir entry
-      @rewind($this->zip_fd);
-      if (@fseek($this->zip_fd, $v_pos_entry))
+      rewind($this->zip_fd);
+      if (fseek($this->zip_fd, $v_pos_entry))
       {
         // ----- Close the zip file
         $this->privCloseFd();
@@ -3433,50 +3433,50 @@
           $v_extract = true;
       }
 
-	  // ----- Check compression method
-	  if (   ($v_extract)
-	      && (   ($v_header['compression'] != 8)
-		      && ($v_header['compression'] != 0))) {
+      // ----- Check compression method
+      if (   ($v_extract)
+          && (   ($v_header['compression'] != 8)
+              && ($v_header['compression'] != 0))) {
           $v_header['status'] = 'unsupported_compression';
 
           // ----- Look for PCLZIP_OPT_STOP_ON_ERROR
           if (   (isset($p_options[PCLZIP_OPT_STOP_ON_ERROR]))
-		      && ($p_options[PCLZIP_OPT_STOP_ON_ERROR]===true)) {
+              && ($p_options[PCLZIP_OPT_STOP_ON_ERROR]===true)) {
 
               $this->privSwapBackMagicQuotes();
               
               PclZip::privErrorLog(PCLZIP_ERR_UNSUPPORTED_COMPRESSION,
-			                       "Filename '".$v_header['stored_filename']."' is "
-				  	    	  	   ."compressed by an unsupported compression "
-				  	    	  	   ."method (".$v_header['compression'].") ");
+                                   "Filename '".$v_header['stored_filename']."' is "
+                                       ."compressed by an unsupported compression "
+                                       ."method (".$v_header['compression'].") ");
 
               return PclZip::errorCode();
-		  }
-	  }
-	  
-	  // ----- Check encrypted files
-	  if (($v_extract) && (($v_header['flag'] & 1) == 1)) {
+          }
+      }
+      
+      // ----- Check encrypted files
+      if (($v_extract) && (($v_header['flag'] & 1) == 1)) {
           $v_header['status'] = 'unsupported_encryption';
 
           // ----- Look for PCLZIP_OPT_STOP_ON_ERROR
           if (   (isset($p_options[PCLZIP_OPT_STOP_ON_ERROR]))
-		      && ($p_options[PCLZIP_OPT_STOP_ON_ERROR]===true)) {
+              && ($p_options[PCLZIP_OPT_STOP_ON_ERROR]===true)) {
 
               $this->privSwapBackMagicQuotes();
 
               PclZip::privErrorLog(PCLZIP_ERR_UNSUPPORTED_ENCRYPTION,
-			                       "Unsupported encryption for "
-				  	    	  	   ." filename '".$v_header['stored_filename']
-								   ."'");
+                                   "Unsupported encryption for "
+                                       ." filename '".$v_header['stored_filename']
+                                   ."'");
 
               return PclZip::errorCode();
-		  }
+          }
     }
 
       // ----- Look for real extraction
       if (($v_extract) && ($v_header['status'] != 'ok')) {
           $v_result = $this->privConvertHeader2FileInfo($v_header,
-		                                        $p_file_list[$v_nb_extracted++]);
+                                                $p_file_list[$v_nb_extracted++]);
           if ($v_result != 1) {
               $this->privCloseFd();
               $this->privSwapBackMagicQuotes();
@@ -3491,8 +3491,8 @@
       {
 
         // ----- Go to the file position
-        @rewind($this->zip_fd);
-        if (@fseek($this->zip_fd, $v_header['offset']))
+        rewind($this->zip_fd);
+        if (fseek($this->zip_fd, $v_header['offset']))
         {
           // ----- Close the zip file
           $this->privCloseFd();
@@ -3537,12 +3537,12 @@
           
           // ----- Look for user callback abort
           if ($v_result1 == 2) {
-          	break;
+              break;
           }
         }
         // ----- Look for extraction in standard output
         elseif (   (isset($p_options[PCLZIP_OPT_EXTRACT_IN_OUTPUT]))
-		        && ($p_options[PCLZIP_OPT_EXTRACT_IN_OUTPUT])) {
+                && ($p_options[PCLZIP_OPT_EXTRACT_IN_OUTPUT])) {
           // ----- Extracting the file in standard output
           $v_result1 = $this->privExtractFileInOutput($v_header, $p_options);
           if ($v_result1 < 1) {
@@ -3560,16 +3560,16 @@
 
           // ----- Look for user callback abort
           if ($v_result1 == 2) {
-          	break;
+              break;
           }
         }
         // ----- Look for normal extraction
         else {
           // ----- Extracting the file
           $v_result1 = $this->privExtractFile($v_header,
-		                                      $p_path, $p_remove_path,
-											  $p_remove_all_path,
-											  $p_options);
+                                              $p_path, $p_remove_path,
+                                              $p_remove_all_path,
+                                              $p_options);
           if ($v_result1 < 1) {
             $this->privCloseFd();
             $this->privSwapBackMagicQuotes();
@@ -3588,7 +3588,7 @@
 
           // ----- Look for user callback abort
           if ($v_result1 == 2) {
-          	break;
+              break;
           }
         }
       }
@@ -3679,8 +3679,8 @@
       if ($v_inclusion == 0) {
 
         PclZip::privErrorLog(PCLZIP_ERR_DIRECTORY_RESTRICTION,
-			                     "Filename '".$p_entry['filename']."' is "
-								 ."outside PCLZIP_OPT_EXTRACT_DIR_RESTRICTION");
+                                 "Filename '".$p_entry['filename']."' is "
+                                 ."outside PCLZIP_OPT_EXTRACT_DIR_RESTRICTION");
 
         return PclZip::errorCode();
       }
@@ -3708,7 +3708,7 @@
       if ($v_result == 2) {
         // ----- This status is internal and will be changed in 'skipped'
         $p_entry['status'] = "aborted";
-      	$v_result = PCLZIP_ERR_USER_ABORTED;
+          $v_result = PCLZIP_ERR_USER_ABORTED;
       }
 
       // ----- Update the informations
@@ -3735,14 +3735,14 @@
         // For historical reason first PclZip implementation does not stop
         // when this kind of error occurs.
         if (   (isset($p_options[PCLZIP_OPT_STOP_ON_ERROR]))
-		    && ($p_options[PCLZIP_OPT_STOP_ON_ERROR]===true)) {
+            && ($p_options[PCLZIP_OPT_STOP_ON_ERROR]===true)) {
 
             PclZip::privErrorLog(PCLZIP_ERR_ALREADY_A_DIRECTORY,
-			                     "Filename '".$p_entry['filename']."' is "
-								 ."already used by an existing directory");
+                                 "Filename '".$p_entry['filename']."' is "
+                                 ."already used by an existing directory");
 
             return PclZip::errorCode();
-		    }
+            }
       }
       // ----- Look if file is write protected
       else if (!is_writeable($p_entry['filename']))
@@ -3755,14 +3755,14 @@
         // For historical reason first PclZip implementation does not stop
         // when this kind of error occurs.
         if (   (isset($p_options[PCLZIP_OPT_STOP_ON_ERROR]))
-		    && ($p_options[PCLZIP_OPT_STOP_ON_ERROR]===true)) {
+            && ($p_options[PCLZIP_OPT_STOP_ON_ERROR]===true)) {
 
             PclZip::privErrorLog(PCLZIP_ERR_WRITE_OPEN_FAIL,
-			                     "Filename '".$p_entry['filename']."' exists "
-								 ."and is write protected");
+                                 "Filename '".$p_entry['filename']."' exists "
+                                 ."and is write protected");
 
             return PclZip::errorCode();
-		    }
+            }
       }
 
       // ----- Look if the extracted file is older
@@ -3770,24 +3770,24 @@
       {
         // ----- Change the file status
         if (   (isset($p_options[PCLZIP_OPT_REPLACE_NEWER]))
-		    && ($p_options[PCLZIP_OPT_REPLACE_NEWER]===true)) {
-	  	  }
-		    else {
+            && ($p_options[PCLZIP_OPT_REPLACE_NEWER]===true)) {
+            }
+            else {
             $p_entry['status'] = "newer_exist";
 
             // ----- Look for PCLZIP_OPT_STOP_ON_ERROR
             // For historical reason first PclZip implementation does not stop
             // when this kind of error occurs.
             if (   (isset($p_options[PCLZIP_OPT_STOP_ON_ERROR]))
-		        && ($p_options[PCLZIP_OPT_STOP_ON_ERROR]===true)) {
+                && ($p_options[PCLZIP_OPT_STOP_ON_ERROR]===true)) {
 
                 PclZip::privErrorLog(PCLZIP_ERR_WRITE_OPEN_FAIL,
-			             "Newer version of '".$p_entry['filename']."' exists "
-					    ."and option PCLZIP_OPT_REPLACE_NEWER is not selected");
+                         "Newer version of '".$p_entry['filename']."' exists "
+                        ."and option PCLZIP_OPT_REPLACE_NEWER is not selected");
 
                 return PclZip::errorCode();
-		      }
-		    }
+              }
+            }
       }
       else {
       }
@@ -3823,8 +3823,8 @@
         // ----- Look for not compressed file
         if ($p_entry['compression'] == 0) {
 
-    		  // ----- Opening destination file
-          if (($v_dest_file = @fopen($p_entry['filename'], 'wb')) == 0)
+              // ----- Opening destination file
+          if (($v_dest_file = fopen($p_entry['filename'], 'wb')) == 0)
           {
 
             // ----- Change the file status
@@ -3840,12 +3840,12 @@
           while ($v_size != 0)
           {
             $v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
-            $v_buffer = @fread($this->zip_fd, $v_read_size);
+            $v_buffer = fread($this->zip_fd, $v_read_size);
             /* Try to speed up the code
             $v_binary_data = pack('a'.$v_read_size, $v_buffer);
-            @fwrite($v_dest_file, $v_binary_data, $v_read_size);
+            fwrite($v_dest_file, $v_binary_data, $v_read_size);
             */
-            @fwrite($v_dest_file, $v_buffer, $v_read_size);            
+            fwrite($v_dest_file, $v_buffer, $v_read_size);            
             $v_size -= $v_read_size;
           }
 
@@ -3882,10 +3882,10 @@
 
           
             // ----- Read the compressed file in a buffer (one shot)
-            $v_buffer = @fread($this->zip_fd, $p_entry['compressed_size']);
+            $v_buffer = fread($this->zip_fd, $p_entry['compressed_size']);
             
             // ----- Decompress the file
-            $v_file_content = @gzinflate($v_buffer);
+            $v_file_content = gzinflate($v_buffer);
             unset($v_buffer);
             if ($v_file_content === FALSE) {
   
@@ -3897,7 +3897,7 @@
             }
             
             // ----- Opening destination file
-            if (($v_dest_file = @fopen($p_entry['filename'], 'wb')) == 0) {
+            if (($v_dest_file = fopen($p_entry['filename'], 'wb')) == 0) {
   
               // ----- Change the file status
               $p_entry['status'] = "write_error";
@@ -3906,33 +3906,33 @@
             }
   
             // ----- Write the uncompressed data
-            @fwrite($v_dest_file, $v_file_content, $p_entry['size']);
+            fwrite($v_dest_file, $v_file_content, $p_entry['size']);
             unset($v_file_content);
   
             // ----- Closing the destination file
-            @fclose($v_dest_file);
+            fclose($v_dest_file);
             
           }
 
           // ----- Change the file mtime
-          @touch($p_entry['filename'], $p_entry['mtime']);
+          touch($p_entry['filename'], $p_entry['mtime']);
         }
 
         // ----- Look for chmod option
         if (isset($p_options[PCLZIP_OPT_SET_CHMOD])) {
 
           // ----- Change the mode of the file
-          @chmod($p_entry['filename'], $p_options[PCLZIP_OPT_SET_CHMOD]);
+          chmod($p_entry['filename'], $p_options[PCLZIP_OPT_SET_CHMOD]);
         }
 
       }
     }
 
-  	// ----- Change abort status
-  	if ($p_entry['status'] == "aborted") {
+      // ----- Change abort status
+      if ($p_entry['status'] == "aborted") {
         $p_entry['status'] = "skipped";
-  	}
-	
+      }
+    
     // ----- Look for post-extract callback
     elseif (isset($p_options[PCLZIP_CB_POST_EXTRACT])) {
 
@@ -3948,7 +3948,7 @@
 
       // ----- Look for abort result
       if ($v_result == 2) {
-      	$v_result = PCLZIP_ERR_USER_ABORTED;
+          $v_result = PCLZIP_ERR_USER_ABORTED;
       }
     }
 
@@ -3969,7 +3969,7 @@
         
     // ----- Creates a temporary file
     $v_gzip_temp_name = PCLZIP_TEMPORARY_DIR.uniqid('pclzip-').'.gz';
-    if (($v_dest_file = @fopen($v_gzip_temp_name, "wb")) == 0) {
+    if (($v_dest_file = fopen($v_gzip_temp_name, "wb")) == 0) {
       fclose($v_file);
       PclZip::privErrorLog(PCLZIP_ERR_WRITE_OPEN_FAIL, 'Unable to open temporary file \''.$v_gzip_temp_name.'\' in binary write mode');
       return PclZip::errorCode();
@@ -3978,35 +3978,35 @@
 
     // ----- Write gz file format header
     $v_binary_data = pack('va1a1Va1a1', 0x8b1f, Chr($p_entry['compression']), Chr(0x00), time(), Chr(0x00), Chr(3));
-    @fwrite($v_dest_file, $v_binary_data, 10);
+    fwrite($v_dest_file, $v_binary_data, 10);
 
     // ----- Read the file by PCLZIP_READ_BLOCK_SIZE octets blocks
     $v_size = $p_entry['compressed_size'];
     while ($v_size != 0)
     {
       $v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
-      $v_buffer = @fread($this->zip_fd, $v_read_size);
+      $v_buffer = fread($this->zip_fd, $v_read_size);
       //$v_binary_data = pack('a'.$v_read_size, $v_buffer);
-      @fwrite($v_dest_file, $v_buffer, $v_read_size);
+      fwrite($v_dest_file, $v_buffer, $v_read_size);
       $v_size -= $v_read_size;
     }
 
     // ----- Write gz file format footer
     $v_binary_data = pack('VV', $p_entry['crc'], $p_entry['size']);
-    @fwrite($v_dest_file, $v_binary_data, 8);
+    fwrite($v_dest_file, $v_binary_data, 8);
 
     // ----- Close the temporary file
-    @fclose($v_dest_file);
+    fclose($v_dest_file);
 
     // ----- Opening destination file
-    if (($v_dest_file = @fopen($p_entry['filename'], 'wb')) == 0) {
+    if (($v_dest_file = fopen($p_entry['filename'], 'wb')) == 0) {
       $p_entry['status'] = "write_error";
       return $v_result;
     }
 
     // ----- Open the temporary gz file
-    if (($v_src_file = @gzopen($v_gzip_temp_name, 'rb')) == 0) {
-      @fclose($v_dest_file);
+    if (($v_src_file = gzopen($v_gzip_temp_name, 'rb')) == 0) {
+      fclose($v_dest_file);
       $p_entry['status'] = "read_error";
       PclZip::privErrorLog(PCLZIP_ERR_READ_OPEN_FAIL, 'Unable to open temporary file \''.$v_gzip_temp_name.'\' in binary read mode');
       return PclZip::errorCode();
@@ -4017,16 +4017,16 @@
     $v_size = $p_entry['size'];
     while ($v_size != 0) {
       $v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
-      $v_buffer = @gzread($v_src_file, $v_read_size);
+      $v_buffer = gzread($v_src_file, $v_read_size);
       //$v_binary_data = pack('a'.$v_read_size, $v_buffer);
-      @fwrite($v_dest_file, $v_buffer, $v_read_size);
+      fwrite($v_dest_file, $v_buffer, $v_read_size);
       $v_size -= $v_read_size;
     }
-    @fclose($v_dest_file);
-    @gzclose($v_src_file);
+    fclose($v_dest_file);
+    gzclose($v_src_file);
 
     // ----- Delete the temporary file
-    @unlink($v_gzip_temp_name);
+    unlink($v_gzip_temp_name);
     
     // ----- Return
     return $v_result;
@@ -4076,7 +4076,7 @@
       if ($v_result == 2) {
         // ----- This status is internal and will be changed in 'skipped'
         $p_entry['status'] = "aborted";
-      	$v_result = PCLZIP_ERR_USER_ABORTED;
+          $v_result = PCLZIP_ERR_USER_ABORTED;
       }
 
       // ----- Update the informations
@@ -4095,7 +4095,7 @@
         if ($p_entry['compressed_size'] == $p_entry['size']) {
 
           // ----- Read the file in a buffer (one shot)
-          $v_buffer = @fread($this->zip_fd, $p_entry['compressed_size']);
+          $v_buffer = fread($this->zip_fd, $p_entry['compressed_size']);
 
           // ----- Send the file to the output
           echo $v_buffer;
@@ -4104,7 +4104,7 @@
         else {
 
           // ----- Read the compressed file in a buffer (one shot)
-          $v_buffer = @fread($this->zip_fd, $p_entry['compressed_size']);
+          $v_buffer = fread($this->zip_fd, $p_entry['compressed_size']);
           
           // ----- Decompress the file
           $v_file_content = gzinflate($v_buffer);
@@ -4117,10 +4117,10 @@
       }
     }
 
-	// ----- Change abort status
-	if ($p_entry['status'] == "aborted") {
+    // ----- Change abort status
+    if ($p_entry['status'] == "aborted") {
       $p_entry['status'] = "skipped";
-	}
+    }
 
     // ----- Look for post-extract callback
     elseif (isset($p_options[PCLZIP_CB_POST_EXTRACT])) {
@@ -4137,7 +4137,7 @@
 
       // ----- Look for abort result
       if ($v_result == 2) {
-      	$v_result = PCLZIP_ERR_USER_ABORTED;
+          $v_result = PCLZIP_ERR_USER_ABORTED;
       }
     }
 
@@ -4191,7 +4191,7 @@
       if ($v_result == 2) {
         // ----- This status is internal and will be changed in 'skipped'
         $p_entry['status'] = "aborted";
-      	$v_result = PCLZIP_ERR_USER_ABORTED;
+          $v_result = PCLZIP_ERR_USER_ABORTED;
       }
 
       // ----- Update the informations
@@ -4210,15 +4210,15 @@
         if ($p_entry['compression'] == 0) {
   
           // ----- Reading the file
-          $p_string = @fread($this->zip_fd, $p_entry['compressed_size']);
+          $p_string = fread($this->zip_fd, $p_entry['compressed_size']);
         }
         else {
   
           // ----- Reading the file
-          $v_data = @fread($this->zip_fd, $p_entry['compressed_size']);
+          $v_data = fread($this->zip_fd, $p_entry['compressed_size']);
           
           // ----- Decompress the file
-          if (($p_string = @gzinflate($v_data)) === FALSE) {
+          if (($p_string = gzinflate($v_data)) === FALSE) {
               // TBC
           }
         }
@@ -4231,11 +4231,11 @@
       
     }
 
-  	// ----- Change abort status
-  	if ($p_entry['status'] == "aborted") {
+      // ----- Change abort status
+      if ($p_entry['status'] == "aborted") {
         $p_entry['status'] = "skipped";
-  	}
-	
+      }
+    
     // ----- Look for post-extract callback
     elseif (isset($p_options[PCLZIP_CB_POST_EXTRACT])) {
 
@@ -4259,7 +4259,7 @@
 
       // ----- Look for abort result
       if ($v_result == 2) {
-      	$v_result = PCLZIP_ERR_USER_ABORTED;
+          $v_result = PCLZIP_ERR_USER_ABORTED;
       }
     }
 
@@ -4279,7 +4279,7 @@
     $v_result=1;
 
     // ----- Read the 4 bytes signature
-    $v_binary_data = @fread($this->zip_fd, 4);
+    $v_binary_data = fread($this->zip_fd, 4);
     $v_data = unpack('Vid', $v_binary_data);
 
     // ----- Check signature
@@ -4348,7 +4348,7 @@
       $v_day = $p_header['mdate'] & 0x001F;
 
       // ----- Get UNIX date format
-      $p_header['mtime'] = @mktime($v_hour, $v_minute, $v_seconde, $v_month, $v_day, $v_year);
+      $p_header['mtime'] = mktime($v_hour, $v_minute, $v_seconde, $v_month, $v_day, $v_year);
 
     }
     else
@@ -4382,7 +4382,7 @@
     $v_result=1;
 
     // ----- Read the 4 bytes signature
-    $v_binary_data = @fread($this->zip_fd, 4);
+    $v_binary_data = fread($this->zip_fd, 4);
     $v_data = unpack('Vid', $v_binary_data);
 
     // ----- Check signature
@@ -4451,7 +4451,7 @@
       $v_day = $p_header['mdate'] & 0x001F;
 
       // ----- Get UNIX date format
-      $p_header['mtime'] = @mktime($v_hour, $v_minute, $v_seconde, $v_month, $v_day, $v_year);
+      $p_header['mtime'] = mktime($v_hour, $v_minute, $v_seconde, $v_month, $v_day, $v_year);
 
     }
     else
@@ -4489,27 +4489,27 @@
   {
     $v_result=1;
 
-  	// ----- Check the static values
-  	// TBC
-  	if ($p_local_header['filename'] != $p_central_header['filename']) {
-  	}
-  	if ($p_local_header['version_extracted'] != $p_central_header['version_extracted']) {
-  	}
-  	if ($p_local_header['flag'] != $p_central_header['flag']) {
-  	}
-  	if ($p_local_header['compression'] != $p_central_header['compression']) {
-  	}
-  	if ($p_local_header['mtime'] != $p_central_header['mtime']) {
-  	}
-  	if ($p_local_header['filename_len'] != $p_central_header['filename_len']) {
-  	}
+      // ----- Check the static values
+      // TBC
+      if ($p_local_header['filename'] != $p_central_header['filename']) {
+      }
+      if ($p_local_header['version_extracted'] != $p_central_header['version_extracted']) {
+      }
+      if ($p_local_header['flag'] != $p_central_header['flag']) {
+      }
+      if ($p_local_header['compression'] != $p_central_header['compression']) {
+      }
+      if ($p_local_header['mtime'] != $p_central_header['mtime']) {
+      }
+      if ($p_local_header['filename_len'] != $p_central_header['filename_len']) {
+      }
   
-  	// ----- Look for flag bit 3
-  	if (($p_local_header['flag'] & 8) == 8) {
+      // ----- Look for flag bit 3
+      if (($p_local_header['flag'] & 8) == 8) {
           $p_local_header['size'] = $p_central_header['size'];
           $p_local_header['compressed_size'] = $p_central_header['compressed_size'];
           $p_local_header['crc'] = $p_central_header['crc'];
-  	}
+      }
 
     // ----- Return
     return $v_result;
@@ -4528,8 +4528,8 @@
 
     // ----- Go to the end of the zip file
     $v_size = filesize($this->zipname);
-    @fseek($this->zip_fd, $v_size);
-    if (@ftell($this->zip_fd) != $v_size)
+    fseek($this->zip_fd, $v_size);
+    if (ftell($this->zip_fd) != $v_size)
     {
       // ----- Error log
       PclZip::privErrorLog(PCLZIP_ERR_BAD_FORMAT, 'Unable to go to the end of the archive \''.$this->zipname.'\'');
@@ -4542,8 +4542,8 @@
     // in this case the end of central dir is at 22 bytes of the file end
     $v_found = 0;
     if ($v_size > 26) {
-      @fseek($this->zip_fd, $v_size-22);
-      if (($v_pos = @ftell($this->zip_fd)) != ($v_size-22))
+      fseek($this->zip_fd, $v_size-22);
+      if (($v_pos = ftell($this->zip_fd)) != ($v_size-22))
       {
         // ----- Error log
         PclZip::privErrorLog(PCLZIP_ERR_BAD_FORMAT, 'Unable to seek back to the middle of the archive \''.$this->zipname.'\'');
@@ -4553,8 +4553,8 @@
       }
 
       // ----- Read for bytes
-      $v_binary_data = @fread($this->zip_fd, 4);
-      $v_data = @unpack('Vid', $v_binary_data);
+      $v_binary_data = fread($this->zip_fd, 4);
+      $v_data = unpack('Vid', $v_binary_data);
 
       // ----- Check signature
       if ($v_data['id'] == 0x06054b50) {
@@ -4569,8 +4569,8 @@
       $v_maximum_size = 65557; // 0xFFFF + 22;
       if ($v_maximum_size > $v_size)
         $v_maximum_size = $v_size;
-      @fseek($this->zip_fd, $v_size-$v_maximum_size);
-      if (@ftell($this->zip_fd) != ($v_size-$v_maximum_size))
+      fseek($this->zip_fd, $v_size-$v_maximum_size);
+      if (ftell($this->zip_fd) != ($v_size-$v_maximum_size))
       {
         // ----- Error log
         PclZip::privErrorLog(PCLZIP_ERR_BAD_FORMAT, 'Unable to seek back to the middle of the archive \''.$this->zipname.'\'');
@@ -4585,7 +4585,7 @@
       while ($v_pos < $v_size)
       {
         // ----- Read a byte
-        $v_byte = @fread($this->zip_fd, 1);
+        $v_byte = fread($this->zip_fd, 1);
 
         // -----  Add the byte
         //$v_bytes = ($v_bytes << 8) | Ord($v_byte);
@@ -4635,19 +4635,19 @@
     // ----- Check the global size
     if (($v_pos + $v_data['comment_size'] + 18) != $v_size) {
 
-	  // ----- Removed in release 2.2 see readme file
-	  // The check of the file size is a little too strict.
-	  // Some bugs where found when a zip is encrypted/decrypted with 'crypt'.
-	  // While decrypted, zip has training 0 bytes
-	  if (0) {
+      // ----- Removed in release 2.2 see readme file
+      // The check of the file size is a little too strict.
+      // Some bugs where found when a zip is encrypted/decrypted with 'crypt'.
+      // While decrypted, zip has training 0 bytes
+      if (0) {
       // ----- Error log
       PclZip::privErrorLog(PCLZIP_ERR_BAD_FORMAT,
-	                       'The central dir is not at the end of the archive.'
-						   .' Some trailing bytes exists after the archive.');
+                           'The central dir is not at the end of the archive.'
+                           .' Some trailing bytes exists after the archive.');
 
       // ----- Return
       return PclZip::errorCode();
-	  }
+      }
     }
 
     // ----- Get comment
@@ -4700,13 +4700,13 @@
     }
 
     // ----- Go to beginning of File
-    @rewind($this->zip_fd);
+    rewind($this->zip_fd);
 
     // ----- Scan all the files
     // ----- Start at beginning of Central Dir
     $v_pos_entry = $v_central_dir['offset'];
-    @rewind($this->zip_fd);
-    if (@fseek($this->zip_fd, $v_pos_entry))
+    rewind($this->zip_fd);
+    if (fseek($this->zip_fd, $v_pos_entry))
     {
       // ----- Close the zip file
       $this->privCloseFd();
@@ -4809,7 +4809,7 @@
           }
       }
       else {
-      	$v_found = true;
+          $v_found = true;
       }
 
       // ----- Look for deletion
@@ -4844,12 +4844,12 @@
         for ($i=0; $i<sizeof($v_header_list); $i++) {
 
             // ----- Calculate the position of the header
-            @rewind($this->zip_fd);
-            if (@fseek($this->zip_fd,  $v_header_list[$i]['offset'])) {
+            rewind($this->zip_fd);
+            if (fseek($this->zip_fd,  $v_header_list[$i]['offset'])) {
                 // ----- Close the zip file
                 $this->privCloseFd();
                 $v_temp_zip->privCloseFd();
-                @unlink($v_zip_temp_name);
+                unlink($v_zip_temp_name);
 
                 // ----- Error log
                 PclZip::privErrorLog(PCLZIP_ERR_INVALID_ARCHIVE_ZIP, 'Invalid archive size');
@@ -4864,7 +4864,7 @@
                 // ----- Close the zip file
                 $this->privCloseFd();
                 $v_temp_zip->privCloseFd();
-                @unlink($v_zip_temp_name);
+                unlink($v_zip_temp_name);
 
                 // ----- Return
                 return $v_result;
@@ -4872,7 +4872,7 @@
             
             // ----- Check that local file header is same as central file header
             if ($this->privCheckFileHeaders($v_local_header,
-			                                $v_header_list[$i]) != 1) {
+                                            $v_header_list[$i]) != 1) {
                 // TBC
             }
             unset($v_local_header);
@@ -4882,7 +4882,7 @@
                 // ----- Close the zip file
                 $this->privCloseFd();
                 $v_temp_zip->privCloseFd();
-                @unlink($v_zip_temp_name);
+                unlink($v_zip_temp_name);
 
                 // ----- Return
                 return $v_result;
@@ -4893,7 +4893,7 @@
                 // ----- Close the zip file
                 $this->privCloseFd();
                 $v_temp_zip->privCloseFd();
-                @unlink($v_zip_temp_name);
+                unlink($v_zip_temp_name);
 
                 // ----- Return
                 return $v_result;
@@ -4901,7 +4901,7 @@
         }
 
         // ----- Store the offset of the central dir
-        $v_offset = @ftell($v_temp_zip->zip_fd);
+        $v_offset = ftell($v_temp_zip->zip_fd);
 
         // ----- Re-Create the Central Dir files header
         for ($i=0; $i<sizeof($v_header_list); $i++) {
@@ -4909,7 +4909,7 @@
             if (($v_result = $v_temp_zip->privWriteCentralFileHeader($v_header_list[$i])) != 1) {
                 $v_temp_zip->privCloseFd();
                 $this->privCloseFd();
-                @unlink($v_zip_temp_name);
+                unlink($v_zip_temp_name);
 
                 // ----- Return
                 return $v_result;
@@ -4927,7 +4927,7 @@
         }
 
         // ----- Calculate the size of the central header
-        $v_size = @ftell($v_temp_zip->zip_fd)-$v_offset;
+        $v_size = ftell($v_temp_zip->zip_fd)-$v_offset;
 
         // ----- Create the central dir footer
         if (($v_result = $v_temp_zip->privWriteCentralHeader(sizeof($v_header_list), $v_size, $v_offset, $v_comment)) != 1) {
@@ -4935,7 +4935,7 @@
             unset($v_header_list);
             $v_temp_zip->privCloseFd();
             $this->privCloseFd();
-            @unlink($v_zip_temp_name);
+            unlink($v_zip_temp_name);
 
             // ----- Return
             return $v_result;
@@ -4947,11 +4947,11 @@
 
         // ----- Delete the zip file
         // TBC : I should test the result ...
-        @unlink($this->zipname);
+        unlink($this->zipname);
 
         // ----- Rename the temporary file
         // TBC : I should test the result ...
-        //@rename($v_zip_temp_name, $this->zipname);
+        //rename($v_zip_temp_name, $this->zipname);
         PclZipUtilRename($v_zip_temp_name, $this->zipname);
     
         // ----- Destroy the temporary archive
@@ -5023,7 +5023,7 @@
     }
 
     // ----- Create the directory
-    if (!@mkdir($p_dir, 0777))
+    if (!mkdir($p_dir, 0777))
     {
       // ----- Error log
       PclZip::privErrorLog(PCLZIP_ERR_DIR_CREATE_FAIL, "Unable to create directory '$p_dir'");
@@ -5086,7 +5086,7 @@
     }
 
     // ----- Go to beginning of File
-    @rewind($this->zip_fd);
+    rewind($this->zip_fd);
 
     // ----- Open the archive_to_add file
     if (($v_result=$p_archive_to_add->privOpenFd('rb')) != 1)
@@ -5108,13 +5108,13 @@
     }
 
     // ----- Go to beginning of File
-    @rewind($p_archive_to_add->zip_fd);
+    rewind($p_archive_to_add->zip_fd);
 
     // ----- Creates a temporay file
     $v_zip_temp_name = PCLZIP_TEMPORARY_DIR.uniqid('pclzip-').'.tmp';
 
     // ----- Open the temporary file in write mode
-    if (($v_zip_temp_fd = @fopen($v_zip_temp_name, 'wb')) == 0)
+    if (($v_zip_temp_fd = fopen($v_zip_temp_name, 'wb')) == 0)
     {
       $this->privCloseFd();
       $p_archive_to_add->privCloseFd();
@@ -5132,7 +5132,7 @@
     {
       $v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
       $v_buffer = fread($this->zip_fd, $v_read_size);
-      @fwrite($v_zip_temp_fd, $v_buffer, $v_read_size);
+      fwrite($v_zip_temp_fd, $v_buffer, $v_read_size);
       $v_size -= $v_read_size;
     }
 
@@ -5142,20 +5142,20 @@
     {
       $v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
       $v_buffer = fread($p_archive_to_add->zip_fd, $v_read_size);
-      @fwrite($v_zip_temp_fd, $v_buffer, $v_read_size);
+      fwrite($v_zip_temp_fd, $v_buffer, $v_read_size);
       $v_size -= $v_read_size;
     }
 
     // ----- Store the offset of the central dir
-    $v_offset = @ftell($v_zip_temp_fd);
+    $v_offset = ftell($v_zip_temp_fd);
 
     // ----- Copy the block of file headers from the old archive
     $v_size = $v_central_dir['size'];
     while ($v_size != 0)
     {
       $v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
-      $v_buffer = @fread($this->zip_fd, $v_read_size);
-      @fwrite($v_zip_temp_fd, $v_buffer, $v_read_size);
+      $v_buffer = fread($this->zip_fd, $v_read_size);
+      fwrite($v_zip_temp_fd, $v_buffer, $v_read_size);
       $v_size -= $v_read_size;
     }
 
@@ -5164,8 +5164,8 @@
     while ($v_size != 0)
     {
       $v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
-      $v_buffer = @fread($p_archive_to_add->zip_fd, $v_read_size);
-      @fwrite($v_zip_temp_fd, $v_buffer, $v_read_size);
+      $v_buffer = fread($p_archive_to_add->zip_fd, $v_read_size);
+      fwrite($v_zip_temp_fd, $v_buffer, $v_read_size);
       $v_size -= $v_read_size;
     }
 
@@ -5173,7 +5173,7 @@
     $v_comment = $v_central_dir['comment'].' '.$v_central_dir_to_add['comment'];
 
     // ----- Calculate the size of the (new) central header
-    $v_size = @ftell($v_zip_temp_fd)-$v_offset;
+    $v_size = ftell($v_zip_temp_fd)-$v_offset;
 
     // ----- Swap the file descriptor
     // Here is a trick : I swap the temporary fd with the zip fd, in order to use
@@ -5187,7 +5187,7 @@
     {
       $this->privCloseFd();
       $p_archive_to_add->privCloseFd();
-      @fclose($v_zip_temp_fd);
+      fclose($v_zip_temp_fd);
       $this->zip_fd = null;
 
       // ----- Reset the file list
@@ -5207,15 +5207,15 @@
     $p_archive_to_add->privCloseFd();
 
     // ----- Close the temporary file
-    @fclose($v_zip_temp_fd);
+    fclose($v_zip_temp_fd);
 
     // ----- Delete the zip file
     // TBC : I should test the result ...
-    @unlink($this->zipname);
+    unlink($this->zipname);
 
     // ----- Rename the temporary file
     // TBC : I should test the result ...
-    //@rename($v_zip_temp_name, $this->zipname);
+    //rename($v_zip_temp_name, $this->zipname);
     PclZipUtilRename($v_zip_temp_name, $this->zipname);
 
     // ----- Return
@@ -5252,7 +5252,7 @@
     }
 
     // ----- Open the temporary file in write mode
-    if (($v_zip_temp_fd = @fopen($p_archive_filename, 'rb')) == 0)
+    if (($v_zip_temp_fd = fopen($p_archive_filename, 'rb')) == 0)
     {
       $this->privCloseFd();
 
@@ -5269,7 +5269,7 @@
     {
       $v_read_size = ($v_size < PCLZIP_READ_BLOCK_SIZE ? $v_size : PCLZIP_READ_BLOCK_SIZE);
       $v_buffer = fread($v_zip_temp_fd, $v_read_size);
-      @fwrite($this->zip_fd, $v_buffer, $v_read_size);
+      fwrite($this->zip_fd, $v_buffer, $v_read_size);
       $v_size -= $v_read_size;
     }
 
@@ -5277,7 +5277,7 @@
     $this->privCloseFd();
 
     // ----- Close the temporary file
-    @fclose($v_zip_temp_fd);
+    fclose($v_zip_temp_fd);
 
     // ----- Return
     return $v_result;
@@ -5330,22 +5330,22 @@
 
     // ----- Look if function exists
     if (   (!function_exists("get_magic_quotes_runtime"))
-	    || (!function_exists("set_magic_quotes_runtime"))) {
+        || (!function_exists("set_magic_quotes_runtime"))) {
       return $v_result;
-	}
+    }
 
     // ----- Look if already done
     if ($this->magic_quotes_status != -1) {
       return $v_result;
-	}
+    }
 
-	// ----- Get and memorize the magic_quote value
-	$this->magic_quotes_status = @get_magic_quotes_runtime();
+    // ----- Get and memorize the magic_quote value
+    $this->magic_quotes_status = get_magic_quotes_runtime();
 
-	// ----- Disable magic_quotes
-	if ($this->magic_quotes_status == 1) {
-	  @set_magic_quotes_runtime(0);
-	}
+    // ----- Disable magic_quotes
+    if ($this->magic_quotes_status == 1) {
+      set_magic_quotes_runtime(0);
+    }
 
     // ----- Return
     return $v_result;
@@ -5364,19 +5364,19 @@
 
     // ----- Look if function exists
     if (   (!function_exists("get_magic_quotes_runtime"))
-	    || (!function_exists("set_magic_quotes_runtime"))) {
+        || (!function_exists("set_magic_quotes_runtime"))) {
       return $v_result;
-	}
+    }
 
     // ----- Look if something to do
     if ($this->magic_quotes_status != -1) {
       return $v_result;
-	}
+    }
 
-	// ----- Swap back magic_quotes
-	if ($this->magic_quotes_status == 1) {
-  	  @set_magic_quotes_runtime($this->magic_quotes_status);
-	}
+    // ----- Swap back magic_quotes
+    if ($this->magic_quotes_status == 1) {
+        set_magic_quotes_runtime($this->magic_quotes_status);
+    }
 
     // ----- Return
     return $v_result;
@@ -5411,37 +5411,37 @@
           // Should be the first $i=0, but no check is done
         }
         else if ($v_list[$i] == "..") {
-		  $v_skip++;
+          $v_skip++;
         }
         else if ($v_list[$i] == "") {
-		  // ----- First '/' i.e. root slash
-		  if ($i == 0) {
+          // ----- First '/' i.e. root slash
+          if ($i == 0) {
             $v_result = "/".$v_result;
-		    if ($v_skip > 0) {
-		        // ----- It is an invalid path, so the path is not modified
-		        // TBC
-		        $v_result = $p_dir;
+            if ($v_skip > 0) {
+                // ----- It is an invalid path, so the path is not modified
+                // TBC
+                $v_result = $p_dir;
                 $v_skip = 0;
-		    }
-		  }
-		  // ----- Last '/' i.e. indicates a directory
-		  else if ($i == (sizeof($v_list)-1)) {
+            }
+          }
+          // ----- Last '/' i.e. indicates a directory
+          else if ($i == (sizeof($v_list)-1)) {
             $v_result = $v_list[$i];
-		  }
-		  // ----- Double '/' inside the path
-		  else {
+          }
+          // ----- Double '/' inside the path
+          else {
             // ----- Ignore only the double '//' in path,
             // but not the first and last '/'
-		  }
+          }
         }
         else {
-		  // ----- Look for item to skip
-		  if ($v_skip > 0) {
-		    $v_skip--;
-		  }
-		  else {
+          // ----- Look for item to skip
+          if ($v_skip > 0) {
+            $v_skip--;
+          }
+          else {
             $v_result = $v_list[$i].($i!=(sizeof($v_list)-1)?"/".$v_result:"");
-		  }
+          }
         }
       }
       
@@ -5560,8 +5560,8 @@
       while ($p_size != 0)
       {
         $v_read_size = ($p_size < PCLZIP_READ_BLOCK_SIZE ? $p_size : PCLZIP_READ_BLOCK_SIZE);
-        $v_buffer = @fread($p_src, $v_read_size);
-        @fwrite($p_dest, $v_buffer, $v_read_size);
+        $v_buffer = fread($p_src, $v_read_size);
+        fwrite($p_dest, $v_buffer, $v_read_size);
         $p_size -= $v_read_size;
       }
     }
@@ -5570,8 +5570,8 @@
       while ($p_size != 0)
       {
         $v_read_size = ($p_size < PCLZIP_READ_BLOCK_SIZE ? $p_size : PCLZIP_READ_BLOCK_SIZE);
-        $v_buffer = @gzread($p_src, $v_read_size);
-        @fwrite($p_dest, $v_buffer, $v_read_size);
+        $v_buffer = gzread($p_src, $v_read_size);
+        fwrite($p_dest, $v_buffer, $v_read_size);
         $p_size -= $v_read_size;
       }
     }
@@ -5580,8 +5580,8 @@
       while ($p_size != 0)
       {
         $v_read_size = ($p_size < PCLZIP_READ_BLOCK_SIZE ? $p_size : PCLZIP_READ_BLOCK_SIZE);
-        $v_buffer = @fread($p_src, $v_read_size);
-        @gzwrite($p_dest, $v_buffer, $v_read_size);
+        $v_buffer = fread($p_src, $v_read_size);
+        gzwrite($p_dest, $v_buffer, $v_read_size);
         $p_size -= $v_read_size;
       }
     }
@@ -5590,8 +5590,8 @@
       while ($p_size != 0)
       {
         $v_read_size = ($p_size < PCLZIP_READ_BLOCK_SIZE ? $p_size : PCLZIP_READ_BLOCK_SIZE);
-        $v_buffer = @gzread($p_src, $v_read_size);
-        @gzwrite($p_dest, $v_buffer, $v_read_size);
+        $v_buffer = gzread($p_src, $v_read_size);
+        gzwrite($p_dest, $v_buffer, $v_read_size);
         $p_size -= $v_read_size;
       }
     }
@@ -5618,13 +5618,13 @@
     $v_result = 1;
 
     // ----- Try to rename the files
-    if (!@rename($p_src, $p_dest)) {
+    if (!rename($p_src, $p_dest)) {
 
       // ----- Try to copy & unlink the src
-      if (!@copy($p_src, $p_dest)) {
+      if (!copy($p_src, $p_dest)) {
         $v_result = 0;
       }
-      else if (!@unlink($p_src)) {
+      else if (!unlink($p_src)) {
         $v_result = 0;
       }
     }
@@ -5648,13 +5648,13 @@
     
     $v_list = get_defined_constants();
     for (reset($v_list); $v_key = key($v_list); next($v_list)) {
-	    $v_prefix = substr($v_key, 0, 10);
-	    if ((   ($v_prefix == 'PCLZIP_OPT')
+        $v_prefix = substr($v_key, 0, 10);
+        if ((   ($v_prefix == 'PCLZIP_OPT')
            || ($v_prefix == 'PCLZIP_CB_')
            || ($v_prefix == 'PCLZIP_ATT'))
-	        && ($v_list[$v_key] == $p_option)) {
+            && ($v_list[$v_key] == $p_option)) {
         return $v_key;
-	    }
+        }
     }
     
     $v_result = 'Unknown';

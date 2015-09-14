@@ -130,7 +130,7 @@ class GumTaxIdPage extends FannieRESTfulPage
         global $FANNIE_URL;
         $ret = '';
 
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret .= '<table class="table table-bordered">';
         $ret .= '<tr>';
         $ret .= '<th>Mem#</th><td>' . $this->id . '</td>';
         $ret .= '</tr><tr>';
@@ -151,17 +151,18 @@ class GumTaxIdPage extends FannieRESTfulPage
 
         $ret .= '<form autocomplete="off">';
         $ret .= '<input type="hidden" id="hidden_id" value="' . $this->id . '" />';
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+        $ret .= '<table class="table table-bordered">';
         $ret .= '<tr>';
         $ret .= '<th colspan="2" id="replaceInfoLine">Replace Current Value</th>';
         $ret .= '</tr><tr>';
         $ret .= '<th>New Value</th>';
-        $ret .= '<td><input type="text" class="autodash" id="newVal1" autocomplete="off" /></td>';
+        $ret .= '<td><input type="text" class="form-control autodash" id="newVal1" autocomplete="off" /></td>';
         $ret .= '</tr><tr>';
         $ret .= '<th>Re-type New Value</th>';
-        $ret .= '<td><input type="text" class="autodash" id="newVal2" autocomplete="off" /></td>';
+        $ret .= '<td><input type="text" class="form-control autodash" id="newVal2" autocomplete="off" /></td>';
         $ret .= '</tr>';
-        $ret .= '<tr><td colspan="2"><input type="button" onclick="doReplace(); return false;" value="Replace" /></td></tr>';
+        $ret .= '<tr><td colspan="2"><button type="button" class="btn btn-default" 
+            onclick="doReplace(); return false;" value="Replace">Replace</button></td></tr>';
         $ret .= '</table>';
         $ret .= '</form>';
 
@@ -169,8 +170,8 @@ class GumTaxIdPage extends FannieRESTfulPage
 
         $ret .= '<table>';
         $ret .= '<tr><th>Enter Key to View Current Value</th></tr>';
-        $ret .= '<tr><td><textarea id="keyarea" rows="10" cols="30"></textarea></td></tr>';
-        $ret .= '<tr><td><input type="button" onclick="viewInfo(); return false;" value="View" /></td></tr>';
+        $ret .= '<tr><td><textarea id="keyarea" class="form-control" rows="10" cols="30"></textarea></td></tr>';
+        $ret .= '<tr><td><button type="button" class="btn btn-default" onclick="viewInfo(); return false;" value="View">View</button></td></tr>';
         $ret .= '</table>';
 
         $ret .= '</div></div>';

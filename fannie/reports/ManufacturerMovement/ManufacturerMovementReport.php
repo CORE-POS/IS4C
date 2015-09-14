@@ -3,14 +3,14 @@
 
     Copyright 2012 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -32,6 +32,9 @@ class ManufacturerMovementReport extends FannieReportPage
 
     public $description = '[Brand Movement] lists sales for products from a specific brand over a given date range. Brand is given either by name or as a UPC prefix.';
     public $report_set = 'Movement Reports';
+    public $themed = true;
+
+    protected $new_tablesorter = true;
 
     public function preprocess()
     {
@@ -52,7 +55,6 @@ class ManufacturerMovementReport extends FannieReportPage
         $groupby = FormLib::get_form_value('groupby','upc');
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
-        $sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
         $type_condition = "p.brand LIKE ?";
         $args = array('%'.$manu.'%');
@@ -66,6 +68,7 @@ class ManufacturerMovementReport extends FannieReportPage
         case 'upc':
             $query = "
                 SELECT t.upc,
+                    p.brand,
                     p.description, "
                     . DTrans::sumQuantity('t') . " AS qty,
                     SUM(t.total) AS ttl,
@@ -73,7 +76,7 @@ class ManufacturerMovementReport extends FannieReportPage
                     d.dept_name,
                     s.superID
                 FROM $dlog AS t " 
-                    . DTrans::joinProducts('t', 'p')
+                    . DTrans::joinProducts('t', 'p', 'INNER')
                     . DTrans::joinDepartments('t', 'd') . "
                     LEFT JOIN MasterSuperDepts AS s ON d.dept_no = s.dept_ID
                 WHERE $type_condition
@@ -93,7 +96,7 @@ class ManufacturerMovementReport extends FannieReportPage
                     . DTrans::sumQuantity('t') . " AS qty,
                     SUM(t.total) AS ttl
                 FROM $dlog AS t "
-                    . DTrans::joinProducts('t', 'p') . "
+                    . DTrans::joinProducts('t', 'p', 'INNER') . "
                 WHERE $type_condition
                     AND t.tdate BETWEEN ? AND ?
                 GROUP BY YEAR(t.tdate),
@@ -111,7 +114,7 @@ class ManufacturerMovementReport extends FannieReportPage
                     SUM(t.total) AS ttl,
                     s.superID
                 FROM $dlog AS t "
-                    . DTrans::joinProducts('t', 'p')
+                    . DTrans::joinProducts('t', 'p', 'INNER')
                     . DTrans::joinDepartments('t', 'd') . "
                     LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
                 WHERE $type_condition
@@ -153,17 +156,17 @@ class ManufacturerMovementReport extends FannieReportPage
         }
 
         switch (count($data[0])) {
-            case 7:
-                $this->report_headers = array('UPC','Description','Qty','$',
+            case 8:
+                $this->report_headers = array('UPC','Brand','Description','Qty','$',
                     'Dept#','Department','Subdept');
                 $sumQty = 0.0;
                 $sumSales = 0.0;
                 foreach ($data as $row) {
-                    $sumQty += $row[2];
-                    $sumSales += $row[3];
+                    $sumQty += $row[3];
+                    $sumSales += $row[4];
                 }
 
-                return array('Total',null,$sumQty,$sumSales,'',null,null);
+                return array('Total',null,null,$sumQty,$sumSales,'',null,null);
 
             case 5:
                 $this->report_headers = array('Dept#','Department','Qty','$','Subdept');
@@ -191,59 +194,90 @@ class ManufacturerMovementReport extends FannieReportPage
 
     public function form_content()
     {
+        global $FANNIE_URL;
 ?>
-<div id=main>   
-<form method = "get" action="ManufacturerMovementReport.php">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr> 
-            <th><?php echo _("Manufacturer"); ?></th>
-            <td>
-            <input type=text name=manu id=manu  />
-            </td>
-            <th>Date Start</th>
-            <td>
-            <input type=text size=14 id=date1 name=date1 />
-            </td>
-        </tr>
-        <tr>
-            <th>Type</th>
-            <td>
-            <input type=radio name=type value=name id="rdoName" checked /><label for="rdoName">Name</label> 
-            <input type=radio name=type value=prefix id="rdoPre" /><label for="rdoPre">UPC Prefix</label>
-            </td>
-            <th>End</th>
-            <td>
-                <input type=text size=14 id=date2 name=date2 />
-            </td>
-        </tr>
-        <tr>
-        <td><b>Sum report by</b></td>
-        <td><select name=groupby>
-        <option value="upc">UPC</option>
-        <option value="date">Date</option>
-        <option value="dept">Department</option>
-        </select></td>
-        <td rowspan="2" colspan="2">
-        <?php echo FormLib::date_range_picker(); ?>
-        </td>
-        </tr>
-        <tr>
-        <td><input type=checkbox name=excel value=xls id="excel" /> 
-        <label for="excel">Excel</label></td>
-        </tr>
-        <tr>
-        <td> <input type=submit name=submit value="Submit"> </td>
-        <td> <input type=reset name=reset value="Start Over"> </td>
-        </tr>
-    </table>
+<form method="get" action="ManufacturerMovementReport.php" class="form-horizontal">
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label class="col-sm-4 control-label"><?php echo _("Manufacturer"); ?></label>
+            <div class="col-sm-8">
+                <input type=text name=manu id=manu class="form-control" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Type</label>
+            <div class="col-sm-8">
+                <label class="control-label">
+                    <input type=radio name=type value=name id="rdoName" checked class="radio-inline" /> Name
+                </label>
+                <label class="control-label">
+                    <input type=radio name=type value=prefix id="rdoPre" class="radio-inline" /> Prefix
+                </label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Sum report by</label>
+            <div class="col-sm-8">
+                <select name=groupby class="form-control">
+                    <option value="upc">UPC</option>
+                    <option value="date">Date</option>
+                    <option value="dept">Department</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">
+                <input type=checkbox name=excel value=xls id="excel" /> Excel
+            </label>
+        </div>
+        <div class="form-group">
+        <button type=submit name=submit value="Submit" class="btn btn-default btn-core">Submit</button>
+        <button type=reset name=reset class="btn btn-default btn-reset">Start Over</button>
+        </div>
+    </div>
+    <div class="col-sm-5">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Start Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date1 name=date1 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">End Date</label>
+            <div class="col-sm-8">
+                <input type=text id=date2 name=date2 class="form-control date-field" required />
+            </div>
+        </div>
+        <div class="form-group">
+            <?php echo FormLib::date_range_picker(); ?>                            
+        </div>
+    </div>
 </form>
-</div>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
+        $this->add_script($FANNIE_URL . 'item/autocomplete.js');
+        $ws = $FANNIE_URL . 'ws/';
+        $this->add_onload_command("bindAutoComplete('#manu', '$ws', 'brand');\n");
+        $this->add_onload_command('$(\'#manu\').focus();');
+    }
+
+    public function helpContent()
+    {
+        return '<p>Show sales for items from a given brand over a
+            date range. <em>Brand</em> can be specified as either
+            a name or a numeric UPC prefix. <em>Sum report by</em>
+            gives different report formats.
+            <ul>
+                <li><em>UPC</em> shows a row for each item. Sales totals
+                are for the entire date range.</li>
+                <li><em>Date</em> show a row for each days. Sales totals
+                are all sales in the brand that day.</li>
+                <li><em>Department</em> shows a row for each POS department.
+                Sales totals are all sales in that particular department
+                for the entire date range.</li>
+            </ul>';
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

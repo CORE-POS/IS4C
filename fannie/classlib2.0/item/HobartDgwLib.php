@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,29 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\Fannie\API\item {
+
 class HobartDgwLib 
 {
-    /* CSV fields for WriteOneItem & ChangeOneItem records
-       Required does not mean you *have to* specify a value,
-       but the default will be included if you omit that field.
-       Non-required fields won't be sent to the scale at all
-       unless specified by the caller
-    */
-    private static $WRITE_ITEM_FIELDS = array(
-        'RecordType' => array('name'=>'Record Type', 'required'=>true, 'default'=>'ChangeOneItem'),
-        'PLU' => array('name'=>'PLU Number', 'required'=>true, 'default'=>'0000'),
-        'Description' => array('name'=>'Item Description', 'required'=>false, 'default'=>'', 'quoted'=>true),
-        'ReportingClass' => array('name'=>'Reporting Class', 'required'=>true, 'default'=>'999999'),
-        'Label' => array('name'=>'Label Type 01', 'required'=>false, 'default'=>'53'),
-        'Tare' => array('name'=>'Tare 01', 'required'=>false, 'default'=>'0'),
-        'ShelfLife' => array('name'=>'Shelf Life', 'required'=>false, 'default'=>'0'),
-        'Price' => array('name'=>'Price', 'required'=>true, 'default'=>'0.00'),
-        'ByCount' => array('name'=>'By Count', 'required'=>false, 'default'=>'0'),
-        'Type' => array('name'=>'Item Type', 'required'=>true, 'default'=>'Random Weight'),
-        'NetWeight' => array('name'=>'Net Weight', 'required'=>false, 'default'=>'0'),
-        'Graphics' => array('name'=>'Graphics Number', 'required'=>false, 'default'=>'0'),
-    );
-
     /**
       Generate CSV line for a given item
       @param $item_info [keyed array] of value. Keys correspond to WRITE_ITEM_FIELDS
@@ -53,7 +34,7 @@ class HobartDgwLib
     {
         $line = '';
         // first write fields that are present
-        foreach(self::$WRITE_ITEM_FIELDS as $key => $field_info) {
+        foreach(ServiceScaleLib::$WRITE_ITEM_FIELDS as $key => $field_info) {
             if (isset($item_info[$key])) {
                 if (isset($field_info['quoted']) && $field_info['quoted']) {
                     $line .= '"' . $item_info[$key] . '",';
@@ -74,7 +55,7 @@ class HobartDgwLib
             }
         }
         // next write required fields that are not present
-        foreach(self::$WRITE_ITEM_FIELDS as $key => $field_info) {
+        foreach(ServiceScaleLib::$WRITE_ITEM_FIELDS as $key => $field_info) {
             if (!isset($item_info[$key]) && $field_info['required']) {
                 if (isset($field_info['quoted']) && $field_info['quoted']) {
                     $line .= '"' . $field_info['default'] . '",';
@@ -109,13 +90,13 @@ class HobartDgwLib
     */
     static public function writeItemsToScales($items, $scales=array())
     {
-        include(dirname(__FILE__).'/../../config.php');
+        $config = \FannieConfig::factory(); 
         if (!isset($items[0])) {
             $items = array($items);
         }
         $new_item = false;
         $header_line = '';
-        foreach (self::$WRITE_ITEM_FIELDS as $key => $field_info) {
+        foreach (ServiceScaleLib::$WRITE_ITEM_FIELDS as $key => $field_info) {
             if (isset($items[0][$key])) {
                 $header_line .= $field_info['name'] . ',';
                 if ($key == 'PLU') {
@@ -126,7 +107,7 @@ class HobartDgwLib
                 $new_item = true;
             }
         }
-        foreach(self::$WRITE_ITEM_FIELDS as $key => $field_info) {
+        foreach(ServiceScaleLib::$WRITE_ITEM_FIELDS as $key => $field_info) {
             if (!isset($items[0][$key]) && $field_info['required']) {
                 $header_line .= $field_info['name'] . ',';
                 if ($key == 'PLU') {
@@ -137,15 +118,18 @@ class HobartDgwLib
         $header_line = substr($header_line, 0, strlen($header_line)-1);
         $header_line .= "\r\n";
 
-        $file_prefix = self::sessionKey();
-        $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csv_output');
+        $file_prefix = ServiceScaleLib::sessionKey();
+        $output_dir = $config->get('DGW_DIRECTORY');
+        if ($output_dir == '') {
+            return false;
+        }
         $selected_scales = $scales;
         if (!is_array($scales) || count($selected_scales) == 0) {
-            $selected_scales = $FANNIE_SCALES;
+            $selected_scales = $config->get('SCALES');
         }
-        $i = 0;
+        $counter = 0;
         foreach ($selected_scales as $scale) {
-            $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_writeItem_' . $i . '.csv';
+            $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_writeItem_' . $counter . '.csv';
             $fp = fopen($file_name, 'w');
             fwrite($fp,"Record Type,Task Department,Task Destination,Task Destination Device,Task Destination Type\r\n");
             fwrite($fp, "ExecuteOneTask,{$scale['dept']},{$scale['host']},{$scale['type']},SCALE\r\n");
@@ -158,10 +142,10 @@ class HobartDgwLib
 
             // move to DGW; cleanup the file in the case of failure
             if (!rename($file_name, $output_dir . '/' . basename($file_name))) {
-                unlink($file_name);
+                //unlink($file_name);
             }
 
-            $et_file = sys_get_temp_dir() . '/' . $file_prefix . '_exText' . $i . '.csv';
+            $et_file = sys_get_temp_dir() . '/' . $file_prefix . '_exText' . $counter . '.csv';
             $fp = fopen($et_file, 'w');
             fwrite($fp,"Record Type,Task Department,Task Destination,Task Destination Device,Task Destination Type\r\n");
             fwrite($fp, "ExecuteOneTask,{$scale['dept']},{$scale['host']},{$scale['type']},SCALE\r\n");
@@ -187,11 +171,11 @@ class HobartDgwLib
             } else {
                 // move to DGW dir
                 if (!rename($et_file, $output_dir . '/' . basename($et_file))) {
-                    unlink($et_file);
+                    //unlink($et_file);
                 }
             }
 
-            $i++;
+            $counter++;
         }
     }
 
@@ -200,20 +184,28 @@ class HobartDgwLib
       @param $items [string] four digit PLU 
         or [array] of [string] 4 digit PLUs
     */
-    static public function deleteItemsFromScales($items)
+    static public function deleteItemsFromScales($items, $scales=array())
     {
-        include(dirname(__FILE__).'/../../config.php');
+        $config = \FannieConfig::factory(); 
 
         if (!is_array($items)) {
             $items = array($items);
         }
 
-        $file_prefix = self::sessionKey();
-        $output_dir = realpath(dirname(__FILE__) . '/../../item/hobartcsv/csv_output');
-        $i = 0;
-        foreach($FANNIE_SCALES as $scale) {
-            $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteItem_' . $i . '.csv';
-            $et_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteText_' . $i . '.csv';
+        $selected_scales = $scales;
+        if (!is_array($scales) || count($selected_scales) == 0) {
+            $selected_scales = $config->get('SCALES');
+        }
+
+        $file_prefix = ServiceScaleLib::sessionKey();
+        $output_dir = $config->get('DGW_DIRECTORY');
+        if ($output_dir == '') {
+            return false;
+        }
+        $counter = 0;
+        foreach ($selected_scales as $scale) {
+            $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteItem_' . $counter . '.csv';
+            $et_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteText_' . $counter . '.csv';
             $fp = fopen($file_name, 'w');
             $fp2 = fopen($et_name, 'w');
             fwrite($fp,"Record Type,Task Department,Task Destination,Task Destination Device,Task Destination Type\r\n");
@@ -247,7 +239,7 @@ class HobartDgwLib
                 unlink($et_name);
             }
 
-            $i++;
+            $counter++;
         }
     }
 
@@ -259,11 +251,10 @@ class HobartDgwLib
     */
     static public function readItemsFromFile($filename)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
 
-        $product = new ProductsModel($dbc);
-        $scaleItem = new ScaleItemsModel($dbc);
+        $product = new \ProductsModel($dbc);
+        $scaleItem = new \ScaleItemsModel($dbc);
         
         $fp = fopen($filename, 'r');
         // detect column indexes via header line
@@ -296,7 +287,7 @@ class HobartDgwLib
             }
 
             $plu = $line[$column_index['PLU Number']];
-            $upc = $this->scalePluToUpc($plu);
+            $upc = self::scalePluToUpc($plu);
 
             $product->reset();
             $product->upc($upc);
@@ -353,11 +344,10 @@ class HobartDgwLib
     */
     static public function readTextsFromFile($filename)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
 
-        $product = new ProductsModel($dbc);
-        $scaleItem = new ScaleItems($dbc);
+        $product = new \ProductsModel($dbc);
+        $scaleItem = new \ScaleItems($dbc);
 
         $number_index = -1;
         $text_index = -1;
@@ -382,7 +372,7 @@ class HobartDgwLib
         while(!feof($fp)) {
             $line = fgetcsv($fp);
             $plu = $line[$number_index];
-            $upc = $this->scalePluToUpc($plu);
+            $upc = self::scalePluToUpc($plu);
 
             $product->reset();
             $product->upc($upc);
@@ -415,16 +405,11 @@ class HobartDgwLib
 
         return $upc;
     }
+}
 
-    static private function sessionKey()
-    {
-        $session_key = '';
-        for ($i = 0; $i < 20; $i++) {
-            $num = rand(97,122);
-            $session_key = $session_key . chr($num);
-        }
+}
 
-        return $session_key;
-    }
+namespace {
+    class HobartDgwLib extends \COREPOS\Fannie\API\item\HobartDgwLib {}
 }
 

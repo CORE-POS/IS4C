@@ -21,13 +21,13 @@
 
 *********************************************************************************/
 
-global $FANNIE_ROOT;
-if (!class_exists('FannieAPI'))
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include(dirname(__FILE__) . '/classlib2.0/FannieAPI.php');
+}
 
 /**
 */
-class DeliInventory extends FanniePlugin {
+class DeliInventory extends \COREPOS\Fannie\API\FanniePlugin {
 
     /**
       Desired settings. These are automatically exposed
@@ -41,7 +41,7 @@ class DeliInventory extends FanniePlugin {
             a so-so web implemntation of a spreadsheet.';
 
 
-    public function setting_change(){
+    public function settingChange(){
         global $FANNIE_OP_DB;
 
         $dbc = FannieDB::get($FANNIE_OP_DB);

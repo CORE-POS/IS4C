@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -34,6 +34,7 @@ class CashierEditor extends FanniePage {
     protected $auth_classes = array('editcashiers');
 
     public $description = '[Edit Cashier] is for managing existing cashiers.';
+    public $themed = true;
 
     private $messages = '';
 
@@ -41,31 +42,55 @@ class CashierEditor extends FanniePage {
         global $FANNIE_OP_DB;
         $emp_no = FormLib::get_form_value('emp_no',0);
 
-        if (FormLib::get_form_value('fname') !== ''){
-            $fn = FormLib::get_form_value('fname');
-            $ln = FormLib::get_form_value('lname');
+        if (FormLib::get_form_value('fname') !== '') {
+            $fname = FormLib::get_form_value('fname');
+            $lname = FormLib::get_form_value('lname');
             $passwd = FormLib::get_form_value('passwd');
             $fes = FormLib::get_form_value('fes');
             $active = FormLib::get_form_value('active') !== '' ? 1 : 0;
+            $dob = FormLib::get_form_value('birthdate');
 
             $dbc = FannieDB::get($FANNIE_OP_DB);
             $employee = new EmployeesModel($dbc);
             $employee->emp_no($emp_no);
-            $employee->FirstName($fn);
-            $employee->LastName($ln);
+            $employee->FirstName($fname);
+            $employee->LastName($lname);
             $employee->CashierPassword($passwd);
             $employee->AdminPassword($passwd);
             $employee->frontendsecurity($fes);
             $employee->backendsecurity($fes);
             $employee->EmpActive($active);
-            $employee->save();
+            $employee->birthdate($dob);
+            $saved = $employee->save();
 
-            $this->messages = "Cashier Updated. <a href=ViewCashiersPage.php>Back to List of Cashiers</a>";
+            $map = new StoreEmployeeMapModel($dbc);
+            $map->empNo($emp_no);
+            $stores = FormLib::get('store', array());
+            foreach ($stores as $s) {
+                $map->storeID($s);
+                $map->save();
+            }
+            $map->reset();
+            $map->empNo($emp_no);
+            foreach ($map->find() as $obj) {
+                if (!in_array($obj->storeID(), $stores)) {
+                    $obj->delete();
+                }
+            }
+
+            if ($saved) {
+                $message = "Cashier Updated. <a href=ViewCashiersPage.php>Back to List of Cashiers</a>";
+                $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', '$message');\n");
+            } else {
+                $this->add_onload_command("showBootstrapAlert('#alert-area', 'danger', 'Error saving cashier');\n");
+            }
         }
-        return True;
+
+        return true;
     }
 
-    function body_content(){
+    function body_content()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $ret = '';
@@ -81,30 +106,84 @@ class CashierEditor extends FanniePage {
         $employee->emp_no($emp_no);
         $employee->load();
 
-        $ret .= "<form action=CashierEditor.php method=post>";
-        $ret .= "<table cellspacing=4 cellpadding=4>";
-        $ret .= "<tr><th>First Name</th><td><input type=text name=fname value=\"".$employee->FirstName()."\" /></td>";
-        $ret .= "<th>Last Name</th><td><input type=text name=lname value=\"".$employee->LastName()."\" /></td></tr>";
-        $ret .= "<tr><th>Password</th><td><input type=text name=passwd value=\"".$employee->CashierPassword()."\" /></td>";
-        $ret .= "<th>Privileges</th><td><select name=fes>";
-        if ($employee->frontendsecurity() <= 20){
-            $ret .= "<option value=20 selected>Regular</option>";
-            $ret .= "<option value=30>Manager</option>";
+        ob_start();
+        ?>
+        <div id="alert-area"></div>
+        <form action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>" method="post">
+        <div class="form-group">
+            <label>First Name</label>
+            <input type="text" name="fname" value="<?php echo $employee->FirstName(); ?>"
+                class="form-control" required />
+        </div>
+        <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" name="lname" value="<?php echo $employee->LastName(); ?>"
+                class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="text" name="passwd" value="<?php echo $employee->CashierPassword(); ?>"
+                class="form-control" required />
+        </div>
+        <div class="form-group">
+            <label>Privileges</label>
+            <select name="fes" class="form-control">
+            <option value="20" <?php echo $employee->frontendsecurity() <= 20 ? 'selected' : '' ?>>Regular</option>
+            <option value="30" <?php echo $employee->frontendsecurity() > 20 ? 'selected' : '' ?>>Manager</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Active
+                <input type="checkbox" name="active" class="checkbox-inline"
+                    <?php echo $employee->EmpActive()==1 ? 'checked' : ''; ?> />
+            </label>
+        </div>
+        <div class="form-group">
+            <label>Birthdate</label>
+            <input type="text" class="form-control date-field" name="birthdate" 
+                id="birth-date-field" value="<?php echo $employee->birthdate(); ?>"
+                placeholder="Optional; for stores selling age-restricted items" />
+        </div>
+        <?php
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            echo '<div class="form-group">';
+            $stores = new StoresModel($dbc);
+            $mapP = $dbc->prepare('SELECT storeID FROM StoreEmployeeMap WHERE storeID=? AND empNo=?');
+            foreach ($stores->find('storeID') as $s) {
+                $mapR = $dbc->execute($mapP, array($s->storeID(), $emp_no));
+                $checked = ($mapR && $dbc->numRows($mapR)) ? 'checked' : '';
+                printf('<label>
+                    <input type="checkbox" name="store[]" value="%d" %s />
+                    %s
+                    </label> | ',
+                    $s->storeID(),
+                    $checked, $s->description());
+            }
+            echo '</div>';
         }
-        else {
-            $ret .= "<option value=20>Regular</option>";
-            $ret .= "<option value=30 selected>Manager</option>";
-        }
-        $ret .= "</select></td></tr>";
-        $ret .= "<tr><th>Active</th><td><input type=checkbox name=active ".($employee->EmpActive()==1?'checked':'')." /></td>";
-        $ret .= "<td colspan=2><input type=submit value=Save /></td></tr>";
-        $ret .= "<input type=hidden name=emp_no value=$emp_no />";
-        $ret .= "</table></form>";
+        ?>
+        <p>
+            <button type="submit" class="btn btn-default">Save</button>
+            <button type="button" class="btn btn-default"
+                onclick="location='ViewCashiersPage.php';return false;">Back</button>
+        </p>
+        <input type="hidden" name="emp_no" value="<?php echo $emp_no; ?>" />
+        </form>
+        <?php
+        $this->add_onload_command("\$('input.form-control:first').focus();\n");
 
-        return $ret;
+        return ob_get_clean();
+    }
+
+    public function helpContent()
+    {
+        return '<p>Edit an existing cashier. <em>First Name</em> and <em>Password</em>
+            are required fields. Which operations require <em>Manager</em> privileges
+            depends on local lane configuration. Only <em>Active</em> cashiers are allowed
+            to log into lanes.</p>'
+            ;
     }
 }
 
 FannieDispatch::conditionalExec(false);
 
-?>

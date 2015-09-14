@@ -68,15 +68,16 @@ echo '<br>Report run ' . $today. ' for ' . $repDate."<br />";
 $dlog = DTransactionsModel::selectDlog($dstr);
 $OP = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_OP_DB.'.dbo.' : $FANNIE_OP_DB.'.';
 $TRANS = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_TRANS_DB.'.dbo.' : $FANNIE_TRANS_DB.'.';
-$ARCH = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_ARCHIVE_DB.'.dbo.' : $FANNIE_ARCHIVE_DB.'.';
+$WAREHOUSE = $FANNIE_PLUGIN_SETTINGS['WarehouseDatabase'] . ($FANNIE_SERVER_DBMS=='MSSQL' ? '.dbo.' : '.');
+$date_id = date('Ymd', strtotime($dstr));
 
 $tenderQ = $dbc->prepare_statement("SELECT t.TenderName,-sum(d.total) as total, d.quantity
-FROM {$ARCH}sumTendersByDay as d ,{$OP}tenders as t 
-WHERE d.tdate=?
-AND d.tender_code = t.TenderCode
+FROM {$WAREHOUSE}sumTendersByDay as d ,{$OP}tenders as t 
+WHERE d.date_id=?
+AND d.trans_subtype = t.TenderCode
 and d.total <> 0
 GROUP BY t.TenderName");
-$tenderR = $dbc->exec_statement($tenderQ,array($dstr));
+$tenderR = $dbc->exec_statement($tenderQ,array($date_id));
 $tenders = array("Cash"=>array(10120,0.0,0),
         "Check"=>array(10120,0.0,0),
         "Credit Card"=>array(10120,0.0,0),
@@ -106,14 +107,14 @@ echo tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Count"),
          array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),2);
 
 
-$pCodeQ = $dbc->prepare_statement("SELECT s.salesCode,-1*sum(l.total) as total,min(l.dept_ID) 
-FROM {$ARCH}sumDeptSalesByDay as l
-INNER JOIN {$OP}departments AS s ON l.dept_ID=s.dept_no
-WHERE l.tdate=?
-AND l.dept_ID < 600 AND l.dept_ID <> 0
+$pCodeQ = $dbc->prepare_statement("SELECT s.salesCode,-1*sum(l.total) as total,min(l.department) 
+FROM {$WAREHOUSE}sumDeptSalesByDay as l
+INNER JOIN {$OP}departments AS s ON l.department=s.dept_no
+WHERE l.date_id=?
+AND l.department < 600 AND l.department <> 0
 GROUP BY s.salesCode
 order by s.salesCode");
-$pCodeR = $dbc->exec_statement($pCodeQ,array($dstr));
+$pCodeR = $dbc->exec_statement($pCodeQ,array($date_id));
 $pCodes = array("41201"=>array(0.0),
         "41205"=>array(0.0),
         "41300"=>array(0.0),
@@ -154,10 +155,10 @@ echo tablify($pCodes,array(0,1),array("pCode","Sales"),
          array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY),1);
 
 $saleSumQ = $dbc->prepare_statement("SELECT -1*sum(l.total) as totalSales
-FROM {$ARCH}sumDeptSalesByDay as l
-WHERE l.tdate = ?
-AND l.dept_ID < 600 AND l.dept_ID <> 0");
-$saleSumR = $dbc->exec_statement($saleSumQ,array($dstr));
+FROM {$WAREHOUSE}sumDeptSalesByDay as l
+WHERE l.date_id = ?
+AND l.department < 600 AND l.department <> 0");
+$saleSumR = $dbc->exec_statement($saleSumQ,array($date_id));
 echo "<br /><b><u>Total Sales</u></b><br />";
 echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($saleSumR)));
 
@@ -190,14 +191,14 @@ echo "<br /><b>Voids</b>";
 echo tablify($voids,array(0,1,2),array("Original","Void","Total"),
          array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY),2);
 
-$otherQ = $dbc->prepare_statement("SELECT d.dept_ID,t.dept_name, -1*sum(total) as total 
-FROM {$ARCH}sumDeptSalesByDay as d left join departments as t ON d.dept_ID = t.dept_no
-WHERE d.tdate=?
-AND d.dept_ID > 300 
-and d.dept_ID <> 610
-and d.dept_ID not between 500 and 599
-GROUP BY d.dept_ID, t.dept_name order by d.dept_ID");
-$otherR = $dbc->exec_statement($otherQ,array($dstr));
+$otherQ = $dbc->prepare_statement("SELECT d.department,t.dept_name, -1*sum(total) as total 
+FROM {$WAREHOUSE}sumDeptSalesByDay as d left join departments as t ON d.department = t.dept_no
+WHERE d.date_id=?
+AND d.department > 300 
+and d.department <> 610
+and d.department not between 500 and 599
+GROUP BY d.department, t.dept_name order by d.department");
+$otherR = $dbc->exec_statement($otherQ,array($date_id));
 $others = array("600"=>array("64410","SUPPLIES",0.0),
         "604"=>array("&nbsp;","MISC PO",0.0),
         "700"=>array("63320","TOTES",0.0),
@@ -263,11 +264,11 @@ echo tablify($ar_rows,array(1,2,3,4,5),array("Account","MemNum","Description","A
     array(0,$ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT));
 
 $discQ = $dbc->prepare_statement("SELECT m.memDesc, -1*SUM(d.total) AS Discount,SUM(transCount)
-FROM {$ARCH}sumDiscountsByDay AS d INNER JOIN
+FROM {$WAREHOUSE}sumDiscountsByDay AS d INNER JOIN
       memTypeID m ON d.memType = m.memTypeID
-WHERE d.tdate=?
+WHERE d.date_id=?
 GROUP BY m.memDesc");
-$discR = $dbc->exec_statement($discQ,array($dstr));
+$discR = $dbc->exec_statement($discQ,array($date_id));
 $discounts = array("MAD Coupon"=>array(66600,$mad[0],$mad[1]),
            "Staff Member"=>array(61170,0.0,0),
            "Staff NonMem"=>array(61170,0.0,0),
@@ -315,10 +316,10 @@ echo "<br /><b><u>Actual Tax Collected</u></b><br />";
 echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($taxSumR)));
 
 $transQ = $dbc->prepare_statement("SELECT d.total,d.quantity,d.transCount,m.memdesc
-    FROM {$ARCH}sumMemTypeSalesByDay as d LEFT JOIN
+    FROM {$WAREHOUSE}sumMemTypeSalesByDay as d LEFT JOIN
     memTypeID as m ON m.memTypeID=d.memType
-    WHERE d.tdate=?");
-$transR = $dbc->exec_statement($transQ,array($dstr));
+    WHERE d.date_id=?");
+$transR = $dbc->exec_statement($transQ,array($date_id));
 $transinfo = array("Member"=>array(0,0.0,0.0,0.0,0.0),
            "Non Member"=>array(0,0.0,0.0,0.0,0.0),
            "Staff Member"=>array(0,0.0,0.0,0.0,0.0),

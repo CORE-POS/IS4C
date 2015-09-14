@@ -6,25 +6,25 @@ if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php")
 include('../../db.php');
 
 $numbers = array("zero","one","two","three","four","five","six","seven",
-		"eight","nine","ten","eleven","twelve","thirteen","fourteen",
-		"fifteen","sixteen","seventeen","eighteen","nineteen","twenty");
+        "eight","nine","ten","eleven","twelve","thirteen","fourteen",
+        "fifteen","sixteen","seventeen","eighteen","nineteen","twenty");
 
 $args = array();
 foreach($_REQUEST["cardno"] as $c){
-	$cards .= "?,";
+    $cards .= "?,";
     $args[] = $c;
 }
 $cards = rtrim($cards,",");
 $cards .= ")";
 
 $selAddQ = $sql->prepare("SELECT m.card_no,c.firstname,c.lastname,
-		m.street,'',m.city,m.state,
-		m.zip
-		FROM meminfo AS m LEFT JOIN
-		custdata AS c ON m.card_no=c.cardno
-		AND c.personnum=1
-		WHERE cardno IN $cards
-		ORDER BY m.card_no");
+        m.street,'',m.city,m.state,
+        m.zip
+        FROM meminfo AS m LEFT JOIN
+        custdata AS c ON m.card_no=c.cardno
+        AND c.personnum=1
+        WHERE cardno IN $cards
+        ORDER BY m.card_no");
 $selAddR = $sql->execute($selAddQ, $args);
 
 $today = date("F j, Y");
@@ -49,28 +49,28 @@ while($selAddW = $sql->fetch_row($selAddR)){
    $firstname = ucwords(strtolower($selAddW[1]));
    $lastname = ucwords(strtolower($selAddW[2]));
    $fullname = $firstname." ".$lastname;
-	/*
+    /*
    $equity = $selAddW[8];
    $classA = 20;
    $classB = $equity - 20;
    $remainingB = 100 - $equity;
    $endDate = $selAddW[9];
-	*/
+    */
 
    //Member address
    $pdf->Cell(10,10,trim($fullname),0);
    $pdf->Ln(5);
 
    if (strstr($selAddW[3],"\n") === False){
-	$pdf->Cell(80,10,$selAddW[3],0);
-	$pdf->Ln(5);
+    $pdf->Cell(80,10,$selAddW[3],0);
+    $pdf->Ln(5);
    }
    else {
-	$pts = explode("\n",$selAddW[3]);
-	$pdf->Cell(80,10,$pts[0],0);
-	$pdf->Ln(5);
-	$pdf->Cell(80,10,$pts[1],0);
-	$pdf->Ln(5);
+    $pts = explode("\n",$selAddW[3]);
+    $pdf->Cell(80,10,$pts[0],0);
+    $pdf->Ln(5);
+    $pdf->Cell(80,10,$pts[1],0);
+    $pdf->Ln(5);
    }
    $pdf->Cell(90,10,$selAddW[5] . ', ' . $selAddW[6] . '   ' . $selAddW[7],0);
    $pdf->Ln(15);

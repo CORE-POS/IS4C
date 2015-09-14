@@ -5,16 +5,16 @@
  */
 class SearchTest extends PHPUnit_Framework_TestCase
 {
-	public function testProductSearch()
+    public function testProductSearch()
     {
-		$mods = AutoLoader::ListModules('ProductSearch');
+        $mods = AutoLoader::ListModules('ProductSearch');
 
-		foreach($mods as $class){
-			$obj = new $class();
+        foreach($mods as $class){
+            $obj = new $class();
 
-			$this->assertInstanceOf('ProductSearch',$obj);
+            $this->assertInstanceOf('ProductSearch',$obj);
 
-			$this->assertInternalType('integer',$obj->result_size);
+            $this->assertInternalType('integer',$obj->result_size);
 
             $search_terms = array('0000000004011', 'BANANA');
 
@@ -30,16 +30,16 @@ class SearchTest extends PHPUnit_Framework_TestCase
                 }
             }
         }
-	}
+    }
 
     public function testMemberSearch()
     {
-		$mods = AutoLoader::ListModules('MemberLookup', true);
+        $mods = AutoLoader::ListModules('MemberLookup', true);
 
-		foreach($mods as $class){
+        foreach($mods as $class){
             $obj = new $class();
 
-			$this->assertInstanceOf('MemberLookup',$obj);
+            $this->assertInstanceOf('MemberLookup',$obj);
 
             $this->assertInternalType('boolean', $obj->handle_numbers());
             $this->assertInternalType('boolean', $obj->handle_text());

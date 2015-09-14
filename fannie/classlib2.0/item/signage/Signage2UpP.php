@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,15 +21,23 @@
 
 *********************************************************************************/
 
-class Signage2UpP extends FannieSignage 
+namespace COREPOS\Fannie\API\item\signage {
+
+class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage 
 {
+    protected $font = 'Arial';
+
     public function drawPDF()
     {
-        $pdf = new FPDF('P', 'mm', 'Letter');
+        $pdf = new \FPDF('P', 'mm', 'Letter');
         $pdf->SetMargins(6.35, 6.35, 6.35);
         $pdf->SetAutoPageBreak(false);
-        $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
-        $pdf->SetFont('Gill', '', 16);
+        if (\COREPOS\Fannie\API\FanniePlugin::isEnabled('CoopDealsSigns')) {
+            $this->font = 'Gill';
+            define('FPDF_FONTPATH', dirname(__FILE__) . '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+            $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+        }
+        $pdf->SetFont($this->font, '', 16);
 
         $data = $this->loadItems();
         $count = 0;
@@ -60,4 +68,11 @@ class Signage2UpP extends FannieSignage
         $pdf->Output('Signage4UpL.pdf', 'I');
     }
 }
+
+}
+
+namespace {
+    class Signage2UpP extends \COREPOS\Fannie\API\item\signage\Signage2UpP {}
+}
+
 

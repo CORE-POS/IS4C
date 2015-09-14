@@ -22,11 +22,11 @@
 
 /*************************************************************
  * SerialPortHandler
- * 	Abstract class to manage a serial port in a separate
+ *     Abstract class to manage a serial port in a separate
  * thread. Allows top-level app to interact with multiple, 
  * different serial devices through one class interface.
  * 
- * Provides Stop() and SetParent(DelegateBrowserForm) functions.
+ * Provides Stop() and SetParent(DelegateForm) functions.
  *
  * Subclasses must implement Read() and PageLoaded(Uri).
  * Read() is the main polling loop, if reading serial data is
@@ -42,31 +42,31 @@ using CustomForms;
 namespace SPH {
 
 public class SerialPortHandler {
-	public Thread SPH_Thread;
-	protected bool SPH_Running;
-	protected SerialPort sp;
-	protected CustomForms.DelegateForm parent;
-	protected string port;
-	protected int verbose_mode;
+    public Thread SPH_Thread;
+    protected bool SPH_Running;
+    protected SerialPort sp;
+    protected CustomForms.DelegateForm parent;
+    protected string port;
+    protected int verbose_mode;
 
-	public SerialPortHandler(string p){ 
-		this.SPH_Thread = new Thread(new ThreadStart(this.Read));	
-		this.SPH_Running = true;
-		this.port = p;
-		this.verbose_mode = 0;
-	}
-	
-	public void SetParent(DelegateForm p){ parent = p; }
-	public void SetVerbose(int v){ verbose_mode = v; }
+    public SerialPortHandler(string p){ 
+        this.SPH_Thread = new Thread(new ThreadStart(this.Read));    
+        this.SPH_Running = true;
+        this.port = p;
+        this.verbose_mode = 0;
+    }
+    
+    public void SetParent(DelegateForm p){ parent = p; }
+    public void SetVerbose(int v){ verbose_mode = v; }
 
-	public virtual void Read(){ }
-	public virtual void HandleMsg(string msg){ }
+    public virtual void Read(){ }
+    public virtual void HandleMsg(string msg){ }
 
-	public void Stop(){
-		SPH_Running = false;
-		SPH_Thread.Join();
-		System.Console.WriteLine("SPH Stopped");
-	}
+    public void Stop(){
+        SPH_Running = false;
+        SPH_Thread.Join();
+        System.Console.WriteLine("SPH Stopped");
+    }
 
 }
 

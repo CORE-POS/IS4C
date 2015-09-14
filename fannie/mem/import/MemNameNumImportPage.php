@@ -3,7 +3,7 @@
 
     Copyright 2011 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,10 +29,11 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class MemNameNumImportPage extends FannieUploadPage 
+class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage 
 {
     protected $title = "Fannie :: Member Tools";
     protected $header = "Import Member Names &amp; Numbers";
+    public $themed = true;
 
     public $description = '[Member Names and Numbers] loads member names and numbers. This is the
     starting point for importing existing member information. Member numbers need to be established
@@ -65,18 +66,17 @@ class MemNameNumImportPage extends FannieUploadPage
         )
     );
 
-
-    private $details = '';
+    private $stats = array('imported'=>0, 'errors'=>array());
     
     function process_file($linedata)
     {
-        global $FANNIE_OP_DB;
+        global $FANNIE_OP_DB, $FANNIE_NAMES_PER_MEM;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $mn_index = $this->get_column_index('memnum');
         $fn_index = $this->get_column_index('fn');
         $ln_index = $this->get_column_index('ln');
-        $t_index = $this->get_column_index('mtype');
+        $t_index = $this->get_column_index('memtype');
 
         $defaults_table = array();
         // get defaults directly from the memtype table if possible
@@ -95,11 +95,7 @@ class MemNameNumImportPage extends FannieUploadPage
             );
         }
 
-        // prepare statements
-        $perP = $dbc->prepare_statement("SELECT MAX(personNum) FROM custdata WHERE CardNo=?");
-        $dateP = $dbc->prepare_statement('INSERT INTO memDates (card_no) VALUES (?)');
-        $model = new CustdataModel($dbc);
-        foreach($linedata as $line) {
+        foreach ($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
             $cardno = $line[$mn_index];
@@ -107,13 +103,19 @@ class MemNameNumImportPage extends FannieUploadPage
                 continue; // skip bad record
             }
 
-            $model->reset();
-            $model->CardNo($cardno);
+            $json = array(
+                'cardNo' => $cardno,
+                'customerTypeID' => ($t_index !== false ? $line[$t_index] : 0),
+                'contactAllowed' => 1,
+                'chargeBalance' => 0,
+                'chargeLimit' => 0,
+                'customers' => array(),
+            );
+            $customer = array();
 
-            $model->LastName($line[$ln_index]);
-            $model->FirstName($line[$fn_index]);    
-            $model->blueLine($cardno.' '.$line[$ln_index]);
-            $model->memType(($t_index !== false) ? $line[$t_index] : 0);
+            $customer['firstName'] = $line[$fn_index];
+            $customer['lastName'] = $line[$ln_index];
+
             $type = "PC";
             $discount = 0;
             $staff = 0;
@@ -133,34 +135,30 @@ class MemNameNumImportPage extends FannieUploadPage
                 }
             }
 
-            $model->Type($type);
-            $model->Discount($discount);
-            $model->staff($staff);
-            $model->SSI($SSI);
+            $json['memberStatus'] = $type;
+            $customer['discount'] = $discount;
+            $customer['staff'] = $staff;
+            $customer['lowIncomeBenefits'] = $SSI;
 
             // determine person number
-            $perR = $dbc->exec_statement($perP,array($cardno));
-            $pn = 1;
-            if ($dbc->num_rows($perR) > 0) {
-                $row = $dbc->fetch_row($perR);
-                $pn = $row[0] + 1;
-            }
-            $model->personNum($pn);
-
-            $model->CashBack(0);
-            $model->Balance(0);
-            $model->memCoupons(0);
-        
-            $insR = $model->save();
-            if ($insR === false) {
-                $this->details .= "<b>Error importing member $cardno (".$line[$fn_index]." ".$line[$ln_index].")</b><br />";
+            if ($FANNIE_NAMES_PER_MEM == 1) {
+                $customer['accountHolder'] = 1;
             } else {
-                $this->details .= "Imported member $cardno (".$line[$fn_index]." ".$line[$ln_index].")<br />";
+                $account = \COREPOS\Fannie\API\member\MemberREST::get($cardno);
+                if ($account) {
+                    $customer['accountHolder'] = 0;
+                } else {
+                    $customer['accountHolder'] = 1;
+                }
             }
 
-            if ($pn == 1) {
-                MeminfoModel::update($cardno,array());
-                $dbc->exec_statement($dateP,array($cardno));
+            $json['customers'][] = $customer;
+        
+            $resp = \COREPOS\Fannie\API\member\MemberREST::post($cardno, $json);
+            if ($resp['errors'] > 0) {
+                $this->stats['errors'][] = "Error importing member $cardno ({$line[$fn_index]} {$line[$ln_index]})";
+            } else {
+                $this->stats['imported']++;
             }
         }
 
@@ -179,7 +177,18 @@ class MemNameNumImportPage extends FannieUploadPage
 
     function results_content()
     {
-        return $this->details .= 'Import completed successfully';
+        $ret = '
+            <p>Import Complete</p>
+            <div class="alert alert-success">' . $this->stats['imported'] . ' records imported</div>';
+        if ($this->stats['errors']) {
+            $ret .= '<div class="alert alert-error"><ul>';
+            foreach ($this->stats['errors'] as $error) {
+                $ret .= '<li>' . $error . '</li>';
+            }
+            $ret .= '</ul></div>';
+        }
+
+        return $ret;
     }
 }
 

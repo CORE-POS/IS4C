@@ -4,7 +4,7 @@
     Copyright 2013 Whole Foods Co-op
     Based on example code from Wedge Community Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,7 +23,9 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 /**
   @class SaScanningPage
@@ -35,6 +37,9 @@ class SaScanningPage extends FanniePage {
     public $page_set = 'Plugin :: Shelf Audit';
     public $description = '[Alt. Scanning] is an older interface for entering quantities
     on hand';
+    public $themed = true;
+    protected $header = '';
+    protected $title = 'ShelfAudit Old Scanning Page';
 
     private $status='';
     private $section=0;
@@ -46,7 +51,7 @@ class SaScanningPage extends FanniePage {
         /**
           Store session in browser section.
         */
-        if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli') {
+        if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli' && session_id() == '') {
             @session_start();
         }
         if (!isset($_SESSION['SaPluginSection']))

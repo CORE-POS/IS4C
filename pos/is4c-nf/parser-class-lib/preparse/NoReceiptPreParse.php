@@ -22,41 +22,41 @@
 *********************************************************************************/
 
 class NoReceiptPreParse extends PreParser {
-	var $remainder;
-	
-	function check($str){
-		if (substr($str,-2) == 'NR'){
-			$this->remainder = substr($str,0,strlen($str)-2);
-			return True;
-		}
-		elseif (substr($str,0,2) == "NR"){
-			$this->remainder = substr($str,2);
-			return True;
-		}
-		return False;
-	}
+    var $remainder;
+    
+    function check($str){
+        if (substr($str,-2) == 'NR'){
+            $this->remainder = substr($str,0,strlen($str)-2);
+            return True;
+        }
+        elseif (substr($str,0,2) == "NR"){
+            $this->remainder = substr($str,2);
+            return True;
+        }
+        return False;
+    }
 
-	function parse($str){
-		global $CORE_LOCAL;
-		$CORE_LOCAL->set('receiptToggle', 0);
-		return $this->remainder;
-	}
+    function parse($str)
+    {
+        CoreLocal::set('receiptToggle', 0);
+        return $this->remainder;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td><i>tender command</i>NR<i>item</i></td>
-				<td>Apply tender with receipt disabled</td>
-			</tr>
-			<tr>
-				<td>NR<i>tender command</i></td>
-				<td>Same as above</td>
-			</tr>
-			</table>";
-	}
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td><i>tender command</i>NR<i>item</i></td>
+                <td>Apply tender with receipt disabled</td>
+            </tr>
+            <tr>
+                <td>NR<i>tender command</i></td>
+                <td>Same as above</td>
+            </tr>
+            </table>";
+    }
 }
 
 ?>

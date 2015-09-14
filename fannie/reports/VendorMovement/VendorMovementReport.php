@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -30,6 +30,7 @@ class VendorMovementReport extends FannieReportPage
 {
     public $description = '[Vendor Movement] lists item sales for a particular vendor';
     public $report_set = 'Movement Reports';
+    public $themed = true;
 
     protected $title = "Fannie : Vendor Movement";
     protected $header = "Vendor Movement Report";
@@ -45,21 +46,21 @@ class VendorMovementReport extends FannieReportPage
         $groupby = FormLib::get_form_value('groupby','upc');
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
-        $sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
         $query = "";
         switch ($groupby) {
             case 'upc':
                 $query = "
                     SELECT t.upc,
+                        COALESCE(p.brand, x.manufacturer) AS brand,
                         p.description, "
                         . DTrans::sumQuantity('t') . " AS qty,
                         SUM(t.total) AS ttl,
                         d.dept_no,
                         d.dept_name,
-                        s.superID
+                        s.super_name
                     FROM $dlog AS t "
-                        . DTrans::joinProducts('t', 'p')
+                        . DTrans::joinProducts('t', 'p', 'INNER')
                         . DTrans::joinDepartments('t', 'd') . "
                         LEFT JOIN vendors AS v ON p.default_vendor_id = v.vendorID
                         LEFT JOIN prodExtra AS x ON p.upc=x.upc
@@ -67,10 +68,11 @@ class VendorMovementReport extends FannieReportPage
                     WHERE (v.vendorName LIKE ? OR x.distributor LIKE ?)
                         AND t.tdate BETWEEN ? AND ?
                     GROUP BY t.upc,
+                        COALESCE(p.brand, x.manufacturer),
                         p.description,
                         d.dept_no,
                         d.dept_name,
-                        s.superID
+                        s.super_name
                     ORDER BY SUM(t.total) DESC";
                 break;
             case 'date':
@@ -99,9 +101,9 @@ class VendorMovementReport extends FannieReportPage
                         d.dept_name, "
                         . DTrans::sumQuantity('t') . " AS qty,
                         SUM(t.total) AS ttl,
-                        s.superID
+                        s.super_name
                     FROM $dlog AS t "
-                        . DTrans::joinProducts('t', 'p')
+                        . DTrans::joinProducts('t', 'p', 'INNER')
                         . DTrans::joinDepartments('t', 'd') . "
                         LEFT JOIN vendors AS v ON p.default_vendor_id = v.vendorID
                         LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
@@ -110,7 +112,7 @@ class VendorMovementReport extends FannieReportPage
                         AND t.tdate BETWEEN ? AND ?
                     GROUP BY d.dept_no,
                         d.dept_name,
-                        s.superID
+                        s.super_name
                     ORDER BY SUM(t.total) DESC";
                 break;
         }
@@ -146,20 +148,20 @@ class VendorMovementReport extends FannieReportPage
         }
 
         switch (count($data[0])) {
-            case 7:
-                $this->report_headers = array('UPC','Description','Qty','$',
-                    'Dept#','Department','Subdept');
+            case 8:
+                $this->report_headers = array('UPC','Brand','Description','Qty','$',
+                    'Dept#','Department','Super');
                 $sumQty = 0.0;
                 $sumSales = 0.0;
                 foreach ($data as $row) {
-                    $sumQty += $row[2];
-                    $sumSales += $row[3];
+                    $sumQty += $row[3];
+                    $sumSales += $row[4];
                 }
 
-                return array('Total',null,$sumQty,$sumSales,null,null,null);
+                return array('Total',null,null,$sumQty,$sumSales,null,null,null);
 
             case 5:
-                $this->report_headers = array('Dept#','Department','Qty','$','Subdept');
+                $this->report_headers = array('Dept#','Department','Qty','$','Super');
                 $sumQty = 0.0;
                 $sumSales = 0.0;
                 foreach ($data as $row) {
@@ -184,50 +186,58 @@ class VendorMovementReport extends FannieReportPage
 
     public function form_content()
     {
+        $this->addScript('../../item/autocomplete.js');
 ?>
-<div id=main>   
 <form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr> 
-            <th>Vendor</th>
-            <td>
-            <input type=text name=vendor id=vendor  />
-            </td>
-            <th>Date Start</th>
-            <td>
-                <input type=text size=14 id=date1 name=date1 />
-            </td>
-        </tr>
-        <tr>
-            <th>Sum report by</th>
-            <td><select name=groupby>
+<div class="col-sm-5">
+    <div class="form-group">
+        <label>Vendor</label>
+        <input type=text name=vendor id=vendor 
+            class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Start Date</label>
+        <input type=text name=date1 id=date1 
+            class="form-control date-field" required />
+    </div>
+    <div class="form-group">
+        <label>End Date</label>
+        <input type=text name=date2 id=date2 
+            class="form-control date-field" required />
+    </div>
+    <div class="form-group">
+        <label>Sum report by</label>
+        <select name=groupby class="form-control">
             <option value="upc">UPC</option>
             <option value="date">Date</option>
             <option value="dept">Department</option>
-            </select></td>
-            <th>Date End</th>   
-            <td>
-            <input type=text size=14 id=date2 name=date2 />
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-            <input type=checkbox name=excel value=xls /> Excel 
-            </td>
-            <td colspan="2" rowspan="2">
-            <?php echo FormLib::date_range_picker(); ?>
-            </td>
-        </tr>
-        <tr>
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-        </tr>
-    </table>
-</form>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Excel
+            <input type="checkbox" name="excel" value="xls" />
+        </label>
+    </div>
+    <p>
+        <button type="submit" class="btn btn-default">Submit</button>
+    </p>
 </div>
+<div class="col-sm-5">
+    <?php echo FormLib::date_range_picker(); ?>
+</div>
+</form>
 <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
+        $auto_url = $this->config->URL . 'ws/';
+        $this->add_onload_command("bindAutoComplete('#vendor', '$auto_url', 'vendor');\n");
+        $this->add_onload_command('$(\'#vendor\').focus();');
+    }
+
+    public function helpContent()
+    {
+        return '<p>
+            Lists product movement for products from a given
+            vendor during the specified date range.
+            </p>';
     }
 }
 

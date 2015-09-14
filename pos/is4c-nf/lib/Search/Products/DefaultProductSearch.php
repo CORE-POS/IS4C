@@ -27,41 +27,45 @@
 */
 class DefaultProductSearch extends ProductSearch 
 {
-
-	public function search($str)
+    public function search($str)
     {
-		$ret = array();
-		$sql = Database::pDataConnect();
-        $safestr = $sql->escape($str);
+        $ret = array();
+        $sql = Database::pDataConnect();
+        $args = array('%' . $str . '%');
         $table = $sql->table_definition('products');
-        $string_search = "(description LIKE '%$safestr%')";
+        $string_search = "(description LIKE ?)";
         // new coluumns 16Apr14
         // search in products.brand and products.formatted_name
         // if those columns are available
         if (isset($table['brand']) && isset($table['formatted_name'])) {
             $string_search = "(
-                                description LIKE '%$safestr%'
-                                OR brand LIKE '%$safestr%'
-                                OR formatted_name LIKE '%$safestr%'
+                                description LIKE ?
+                                OR brand LIKE ?
+                                OR formatted_name LIKE ?
                               )";
+            $args = array(
+                '%' . $str . '%',
+                '%' . $str . '%',
+                '%' . $str . '%',
+            );
         }
-		$query = "SELECT upc, 
+        $query = "SELECT upc, 
                     description, 
                     normal_price, 
                     special_price,
-        			advertised, 
                     scale 
                   FROM products 
                   WHERE $string_search
                     AND upc LIKE '0000000%'
                     AND inUse=1
-			      ORDER BY description";
-		$result = $sql->query($query);
-		while($row = $sql->fetch_row($result)){
-			$ret[$row['upc']] = $row;
-		}
+                  ORDER BY description";
+        $prep = $sql->prepare($query);
+        $result = $sql->execute($prep, $args);
+        while ($row = $sql->fetch_row($result)) {
+            $ret[$row['upc']] = $row;
+        }
 
-		return $ret;
-	}
+        return $ret;
+    }
 }
 

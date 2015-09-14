@@ -29,12 +29,12 @@ if(isset($_POST['projDesc'])){
   
   $q = $sql->prepare("insert into project_parties values (?,?)");
   foreach ($mails as $m){
-  	$m = trim($m);
-  	if ($m != ''){
-		$r = $sql->execute($q, array($projID, $m));
-  	}	
+      $m = trim($m);
+      if ($m != ''){
+        $r = $sql->execute($q, array($projID, $m));
+      }    
   }
-  	
+      
   header("Location: project.php?projID=$projID");
 }
 else {
@@ -53,7 +53,7 @@ else {
   $emailR = $sql->execute($emailQ, array($projID));
   $emaillist = "";
   while ($emailW = $sql->fetch_array($emailR))
-	$emaillist .= $emailW[0].", ";
+    $emaillist .= $emailW[0].", ";
   $emaillist = substr($emaillist,0,strlen($emaillist)-2);
 ?>
 

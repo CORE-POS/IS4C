@@ -23,19 +23,19 @@
 
 class CashDrop extends Plugin {
 
-	public $plugin_settings = array(
-	'cashDropThreshold' => array(
-		'default' => '500',
-		'label' => 'Threshold',
-		'description' => 'Prompt for cashdrop when drawer has gained this much'
-		)
-	);
+    public $plugin_settings = array(
+    'cashDropThreshold' => array(
+        'default' => '500',
+        'label' => 'Threshold',
+        'description' => 'Prompt for cashdrop when drawer has gained this much'
+        )
+    );
 
-	public $plugin_description = 'Track cash in drawer. Trigger cash drop prompt when
-					amount surpasses threshold value';
+    public $plugin_description = 'Track cash in drawer. Trigger cash drop prompt when
+                    amount surpasses threshold value';
 
-	public function plugin_transaction_reset(){
-		global $CORE_LOCAL;
-		$CORE_LOCAL->set('cashDropWarned',False);
-	}
+    public function plugin_transaction_reset()
+    {
+        CoreLocal::set('cashDropWarned',False);
+    }
 }

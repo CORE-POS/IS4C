@@ -22,13 +22,18 @@
 *********************************************************************************/
 
 include_once(dirname(__FILE__).'/../../../config.php');
-if (!class_exists('FanniePage'))
+if (!class_exists('FanniePage')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-if (!class_exists('CalendarPlugin'))
+}
+if (!class_exists('CalendarPlugin')) {
     include(dirname(__FILE__).'/CalendarPlugin.php');
-if (!class_exists('FannieAuth'))
+}
+if (!class_exists('FannieAuth')) {
     include($FANNIE_ROOT.'classlib2.0/auth/FannieAuth.php');
-include_once(dirname(__FILE__).'/CalendarPluginDisplayLib.php');
+}
+if (!class_exists('CalendarPluginDisplayLib')) {
+    include_once(dirname(__FILE__).'/CalendarPluginDisplayLib.php');
+}
 
 class CalendarMainPage extends FanniePage {
 
@@ -37,6 +42,8 @@ class CalendarMainPage extends FanniePage {
 
     protected $must_authenticate = True;
     private $uid;
+
+    public $themed = true;
 
     function preprocess(){
         global $FANNIE_URL;
@@ -47,23 +54,30 @@ class CalendarMainPage extends FanniePage {
         $plugin = new CalendarPlugin(); 
         $this->add_script($FANNIE_URL . 'src/javascript/jquery.js');
         $this->add_script($FANNIE_URL . 'src/javascript/jquery-ui.js');
-        $this->add_script($plugin->plugin_url().'/javascript/calendar.js');
-        $this->add_script($plugin->plugin_url().'/javascript/ajax.js');
+        $this->add_script($plugin->pluginURL().'/javascript/calendar.js');
+        $this->add_script($plugin->pluginURL().'/javascript/ajax.js');
 
         $view = FormLib::get_form_value('view','index');
+        if (FormLib::get('calID') === '') {
+            $view = 'index';
+        }
         if ($view == 'month') 
             $this->window_dressing = False;
         else
             $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
 
         if (file_exists(dirname(__FILE__).'/css/'.$view.'.css'))
-            $this->add_css_file($plugin->plugin_url().'/css/'.$view.'.css');
+            $this->add_css_file($plugin->pluginURL().'/css/'.$view.'.css');
 
         return True;
     }
     
     function body_content(){
         $view = FormLib::get_form_value('view','index');
+        if (FormLib::get('calID') === '') {
+            $view = 'index';
+        }
+        ob_start();
         switch ($view){
         case 'month':
             $editable = True;
@@ -104,8 +118,11 @@ class CalendarMainPage extends FanniePage {
         case 'index':
         default:
             echo CalendarPluginDisplayLib::indexView($this->uid);
+            $this->addOnloadCommand("initSubscriptionDialog();\n");
             break;
         }
+
+        return ob_get_clean();
     }
 
 }

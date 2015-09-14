@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -50,7 +50,10 @@ class StoreSummaryReportAlt extends FannieReportPage {
     protected $required_fields = array('date1', 'date2');
 
     public $description = '[Store Summary Report] shows total sales, costs and taxes per department for a given date range in dollars as well as a percentage of store-wide sales and costs. It uses actual item cost if known and estimates cost from price and department margin if not; relies on department margins being accurate.';
+    public $discoverable = false; // this is a duplicate of StoreSummaryReport.php
+                                  // intended as a code comparison/example
     public $report_set = 'Sales Reports';
+    public $themed = true;
 
     function preprocess()
     {
@@ -373,7 +376,8 @@ class StoreSummaryReportAlt extends FannieReportPage {
     // calculate_footers()
     }
 
-    function form_content(){
+    function form_content()
+    {
         $lastMonday = "";
         $lastSunday = "";
 
@@ -387,31 +391,37 @@ class StoreSummaryReportAlt extends FannieReportPage {
         }
         ?>
         <form action=StoreSummaryReportAlt.php method=get>
-        <table cellspacing=4 cellpadding=4 border=0>
-        <tr>
-        <th>Start Date</th>
-        <td><input type=text id=date1 name=date1 value="<?php echo $lastMonday; ?>" /></td>
-        <td rowspan="2">
-        <?php echo FormLib::date_range_picker(); ?>
-        </td>
-        </tr><tr>
-        <th>End Date</th>
-        <td><input type=text id=date2 name=date2 value="<?php echo $lastSunday; ?>" /></td>
-        </tr><tr>
-        <td colspan=2><select name=dept>
-        <option value=0>Use department settings at time of sale</option>
-        <option value=1>Use current department settings</option>
-        </select></td>
-        </tr><tr>
-        <td colspan=2><!--Excel <input type=checkbox name=excel />
-        &nbsp; &nbsp; &nbsp; -->Sortable <input type=checkbox name=sortable />
-        &nbsp; &nbsp; &nbsp; <input type=submit name=submit value="Submit" /></td>
-        </tr>
-        </table>
+        <div class="col-sm-5">
+            <div class="form-group">
+                <label>Start Date</label>
+                <input type=text id=date1 name=date1 class="form-control date-field" 
+                    value="<?php echo $lastMonday; ?>" />
+            </div>
+            <div class="form-group">
+                <label>End Date</label>
+                <input type=text id=date2 name=date2 class="form-control date-field" 
+                    value="<?php echo $lastSunday; ?>" />
+            </div>
+            <div class="form-group">
+                <select name=dept class="form-control">
+                <option value=0>Use department settings at time of sale</option>
+                <option value=1>Use current department settings</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Sortable
+                    <input type="checkbox" name="sortable" />
+                </label>
+            </div>
+            <p>
+                <button type="submit" class="btn btn-default">Submit</button>
+            </p>
+        </div>
+        <div class="col-sm-5">
+            <?php echo FormLib::date_range_picker(); ?>
+        </div>
         </form>
         <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
 
     // form_content()
     }

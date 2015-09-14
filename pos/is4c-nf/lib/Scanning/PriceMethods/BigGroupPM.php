@@ -42,13 +42,12 @@ class BigGroupPM extends PriceMethod
 
     function addItem($row,$quantity,$priceObj)
     {
-        global $CORE_LOCAL;
         if ($quantity == 0) return false;
 
         $pricing = $priceObj->priceInfo($row,$quantity);
 
         // enforce limit on discounting sale items
-        $dsi = $CORE_LOCAL->get('DiscountableSaleItems');
+        $dsi = CoreLocal::get('DiscountableSaleItems');
         if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
             $row['discount'] = 0;
         }
@@ -105,6 +104,7 @@ class BigGroupPM extends PriceMethod
                 'upc' => $row['upc'],
                 'description' => $row['description'],
                 'trans_type' => 'I',
+                'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
                 'department' => $row['department'],
                 'quantity' => $quantity,
                 'unitPrice' => $pricing['unitPrice'],
@@ -134,6 +134,7 @@ class BigGroupPM extends PriceMethod
                 'upc' => $row['upc'],
                 'description' => $row['description'],
                 'trans_type' => 'I',
+                'trans_subtype' => (isset($row['trans_subtype'])) ? $row['trans_subtype'] : '',
                 'department' => $row['department'],
                 'quantity' => $quantity,
                 'unitPrice' => $pricing['unitPrice'],

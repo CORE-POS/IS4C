@@ -22,18 +22,24 @@
 *********************************************************************************/
 
 include_once(dirname(__FILE__).'/../../../config.php');
-if (!class_exists('FanniePage'))
+if (!class_exists('FanniePage')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-if (!class_exists('CalendarPlugin'))
+}
+if (!class_exists('CalendarPlugin')) {
     include(dirname(__FILE__).'/CalendarPlugin.php');
-if (!class_exists('CalendarPluginDB'))
+}
+if (!class_exists('CalendarPluginDB')) {
     include(dirname(__FILE__).'/CalendarPluginDB.php');
-if (!class_exists('PermissionsModel'))
+}
+if (!class_exists('PermissionsModel')) {
     include(dirname(__FILE__).'/models/PermissionsModel.php');
-if (!class_exists('CalendarsModel'))
+}
+if (!class_exists('CalendarsModel')) {
     include(dirname(__FILE__).'/models/CalendarsModel.php');
-if (!class_exists('MonthviewEventsModel'))
+}
+if (!class_exists('MonthviewEventsModel')) {
     include(dirname(__FILE__).'/models/MonthviewEventsModel.php');
+}
 
 class CalendarAttendedEventPage extends FannieRESTfulPage 
 {
@@ -42,6 +48,7 @@ class CalendarAttendedEventPage extends FannieRESTfulPage
 
     public $page_set = 'Plugin :: Calendar';
     public $description = '[Attended Event] is a calendar entry with an attendee list attached.';
+    public $themed = true;
 
     public function preprocess()
     {
@@ -75,7 +82,9 @@ class CalendarAttendedEventPage extends FannieRESTfulPage
         }
 
         $ret = '<form action="CalendarAttendedEventPage.php" method="post">';
-        $ret .= '<div style="margin:5px;"><b>Calendar</b>: <select name="calendarID">';
+        $ret .= '<div class"form-group">
+            <label>Calendar</label>: 
+            <select name="calendarID" class="form-control">';
         $cal = new CalendarsModel($dbc);
         foreach($calIDs as $id) {
             $cal->calendarID($id);
@@ -84,20 +93,25 @@ class CalendarAttendedEventPage extends FannieRESTfulPage
         }
         $ret .= '</select></div>';
 
-        $ret .= '<div style="margin:5px;"><b>Date</b>: 
-            <input type="text" size="10" id="datestr" name="datestr" /></div>';
-        $this->add_onload_command("\$('#datestr').datepicker();\n");
+        $ret .= '<div class="form-group">
+            <label>Date</label>: 
+            <input type="text" class="form-control date-field" id="datestr" 
+                required name="datestr" /></div>';
 
-        $ret .= '<div style="margin:5px;"><b>Max Attendees</b>: 
-            <input type="text" size="4" name="limit" /></div>';
+        $ret .= '<div class="form-group">
+            <label>Max Attendees</label>: 
+            <input type="number" class="form-control" required name="limit" />
+            </div>';
 
-        $ret .= '<div style="margin:5px;"><b>Event Description</b>:<br /> 
-                <textarea name="text" rows="10" cols="40"></textarea></div>';
+        $ret .= '<div class="form-group">
+                <label>Event Description</label>:
+                <textarea name="text" class="form-control"></textarea>
+                </div>';
 
-        $ret .= '<input type="submit" value="Create Event" />';
+        $ret .= '<p><button type="submit" class="btn btn-default">Create Event</button></p>';
         $ret .= '</form>';
 
-        $ret .= '<div style="margin-top:20px"><a href="CalendarMainPage.php">Home</a></div>';
+        $ret .= '<p><a class="btn btn-default" href="CalendarMainPage.php">Home</a></p>';
 
         return $ret;
     }

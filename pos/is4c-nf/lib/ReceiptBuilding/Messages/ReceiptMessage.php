@@ -27,64 +27,64 @@
 class ReceiptMessage 
 {
 
-	/**
-	  @return [string] SQL select statement
+    /**
+      @return [string] SQL select statement
 
-	  This statement will be slotted into a query
-	  like this:
-	  
-	  SELECT
-	  <ReceiptMessage1->select_condition()> as ReceiptMessage1,
-	  <ReceiptMessage2->select_condition()> as ReceiptMessage2,
-	  <ReceiptMessage3->select_condition()> as ReceiptMessage3
-	  FROM localtranstoday 
+      This statement will be slotted into a query
+      like this:
+      
+      SELECT
+      <ReceiptMessage1->select_condition()> as ReceiptMessage1,
+      <ReceiptMessage2->select_condition()> as ReceiptMessage2,
+      <ReceiptMessage3->select_condition()> as ReceiptMessage3
+      FROM localtranstoday 
 
-	  This query should return one row, so your select statement
-	  should use an aggregate (SUM, MAX, MIN, etc). If the message
-	  depends on certain conditions - sales in a specific department,
-	  a particular type of tender, etc - this should determine
-	  whether the message is needed. Having every message run
-	  its own separate queries checking for data can negatively
-	  impact performance.
-	*/
-	public function select_condition()
+      This query should return one row, so your select statement
+      should use an aggregate (SUM, MAX, MIN, etc). If the message
+      depends on certain conditions - sales in a specific department,
+      a particular type of tender, etc - this should determine
+      whether the message is needed. Having every message run
+      its own separate queries checking for data can negatively
+      impact performance.
+    */
+    public function select_condition()
     {
-		return '1';
-	}
+        return '1';
+    }
 
-	/**
-	  Generate the message
-	  @param $val the value returned by the object's select_condition()
-	  @param $ref a transaction reference (emp-lane-trans)
-	  @param $reprint boolean
-	  @return [string] message to print on receipt
-	*/
-	public function message($val, $ref, $reprint=false)
+    /**
+      Generate the message
+      @param $val the value returned by the object's select_condition()
+      @param $ref a transaction reference (emp-lane-trans)
+      @param $reprint boolean
+      @return [string] message to print on receipt
+    */
+    public function message($val, $ref, $reprint=false)
     {
-		return '';
-	}
+        return '';
+    }
 
-	/**
-	  This message has to be printed on paper
-	*/
-	public $paper_only = false;
+    /**
+      This message has to be printed on paper
+    */
+    public $paper_only = false;
 
-	/**
-	  Message can be printed independently from a regular	
-	  receipt. Pass this string to ajax-end.php as URL
-	  parameter receiptType to print the standalone receipt.
-	*/
-	public $standalone_receipt_type = '';
+    /**
+      Message can be printed independently from a regular    
+      receipt. Pass this string to ajax-end.php as URL
+      parameter receiptType to print the standalone receipt.
+    */
+    public $standalone_receipt_type = '';
 
-	/**
-	  Print message as its own receipt
-	  @param $ref a transaction reference (emp-lane-trans)
-	  @param $reprint boolean
-	  @return [string] message to print 
-	*/
-	public function standalone_receipt($ref, $reprint=false)
+    /**
+      Print message as its own receipt
+      @param $ref a transaction reference (emp-lane-trans)
+      @param $reprint boolean
+      @return [string] message to print 
+    */
+    public function standalone_receipt($ref, $reprint=false)
     {
-		return '';
-	}
+        return '';
+    }
 }
 

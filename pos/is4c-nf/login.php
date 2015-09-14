@@ -23,25 +23,32 @@
 
 if (!class_exists("AutoLoader")) include("lib/AutoLoader.php");
 
-$CORE_LOCAL->set("parse_chain",'');
-$CORE_LOCAL->set("preparse_chain",'');
-$CORE_LOCAL->set("postparse_chain",'');
+CoreLocal::set("parse_chain",'');
+CoreLocal::set("preparse_chain",'');
+CoreLocal::set("postparse_chain",'');
 
 AutoLoader::loadMap();
 
 CoreState::initiate_session();
 
-if ($CORE_LOCAL->get("SessionFirstRun") == "") {
-	$CORE_LOCAL->set("SessionFirstRun",1);
+if (CoreLocal::get("SessionFirstRun") == "") {
+    CoreLocal::set("SessionFirstRun",1);
 }
 
+CoreLocal::migrateSettings();
+
+if (MiscLib::pingport('127.0.0.1:15674', 'not a database')) {
+    CoreLocal::set('MQ', true);
+} else {
+    CoreLocal::set('MQ', false);
+}
 
 /**
   Go to login screen if no one is signed in
   Go to lock screen if someone is signed in
 */
 $my_url = MiscLib::base_url();
-if ($CORE_LOCAL->get('LoggedIn') == 0) {
+if (CoreLocal::get('LoggedIn') == 0) {
     header("Location: {$my_url}gui-modules/login2.php");
 } else {
     header("Location: {$my_url}gui-modules/login3.php");

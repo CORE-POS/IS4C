@@ -90,6 +90,7 @@ $tenderR = $dbc->exec_statement($tenderQ, $store_dates);
 $tenders = array("Cash"=>array(10120,0.0,0),
         "Check"=>array(10120,0.0,0),
         "Electronic Check"=>array(10120,0.0,0),
+        "Rebate Check"=>array(10120,0.0,0),
         "Credit Card"=>array(10120,0.0,0),
         "EBT CASH."=>array(10120,0.0,0),
         "EBT FS"=>array(10120,0.0,0),
@@ -118,6 +119,7 @@ echo tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Count"),
          array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),2);
 
 if ($store != 50) {
+    /*
     $stamp = strtotime($dstr);
     $creditQ = "SELECT 1 as num, 
             MAX(CASE WHEN q.mode IN ('retail_alone_credit','Credit_Return') THEN -amount ELSE amount END) as ttl,
@@ -155,6 +157,31 @@ if ($store != 50) {
     }
     echo '<br /><b>Integrated CC Supplement</b>';
     echo tablify($cTallies,array(0,1,2),array('Processor','Amount','Count'),
+        array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),1);
+    */
+    echo '<br /><a href="../../../Paycards/PcDailyReport.php?date='. $dstr . '">Integrated CC Supplement</a><br />';
+
+    $couponQ = "
+        SELECT SUM(-d.total) AS ttl,
+            COUNT(d.total) AS num,
+            CASE WHEN d.upc='PATREBDISC' THEN 'Rebate Check Discount' ELSE d.description END as name
+        FROM $dlog AS d
+        WHERE trans_type='T'
+            AND trans_subtype='IC'
+            AND d.tdate BETWEEN ? AND ?
+            AND " . DTrans::isStoreID($store, 'd') . "
+        GROUP BY
+            CASE WHEN d.upc='PATREBDISC' THEN 'Rebate Check Discount' ELSE d.description END
+        ORDER BY
+            CASE WHEN d.upc='PATREBDISC' THEN 'Rebate Check Discount' ELSE d.description END";
+    $couponP = $dbc->prepare($couponQ);
+    $couponR = $dbc->execute($couponP, $store_dates);
+    $coupons = array();
+    echo '<br /><b>InStore Coupon Supplement</b>';
+    while ($couponsW = $dbc->fetch_row($couponR)) {
+        $coupons[$couponsW['name']] = array($couponsW['ttl'], $couponsW['num']);
+    }
+    echo tablify($coupons, array(0,1,2), array('Name','Amount','Count'),
         array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),1);
 }
 
@@ -347,24 +374,34 @@ $diff = array_pop($dbc->fetch_row($checkR));
 $deliTax = 0.0325;
 $deliTax = 0.02775; 
 
-$stateTax = 0.0685;
+$stateTax = 0.06875;
 $cityTax = 0.01;
 $deliTax = 0.0225;
+$countyTax = 0.005;
 if (strtotime($repDate) >= strtotime('2008-07-01')) {
     $deliTax = 0.025;
-} elseif (strtotime($repDate) >= strtotime('2012-11-01')) {
-    $deliTax = 0.0325;
-} elseif (strtotime($repDate) >= strtotime('2013-06-01')) {
-    $deliTax = 0.02775; 
-} elseif (strtotime($repDate) >= strtotime('2014-08-01')) {
-    $deliTax = 0.0325;
+} 
+if (strtotime($repDate) >= strtotime('2012-11-01')) {
+    $deliTax = 0.0225;
+} 
+if (strtotime($repDate) >= strtotime('2013-06-01')) {
+    $deliTax = 0.01775; 
+} 
+if (strtotime($repDate) >= strtotime('2014-08-01')) {
+    $deliTax = 0.0225;
+} 
+if (strtotime($repDate) <= strtotime('2015-04-01')) {
+    $countyTax = 0;
 }
 
-$taxQ = $dbc->prepare_statement("SELECT (CASE WHEN d.tax = 1 THEN 'Non Deli Sales' ELSE 'Deli Sales' END) as type, sum(total) as taxable_sales,
-.01*(sum(CASE WHEN d.tax = 1 THEN total ELSE 0 END)) as city_tax_nonDeli,
-$deliTax*(sum(CASE WHEN d.tax = 2 THEN total ELSE 0 END)) as city_tax_Del, 
-.0685*(sum(total)) as state_tax,
-((.01*(sum(CASE WHEN d.tax = 1 THEN total ELSE 0 END))) + ($deliTax*(sum(CASE WHEN d.tax = 2 THEN total ELSE 0 END))) + (.0685*(sum(total)))) as total_tax 
+$taxQ = $dbc->prepare_statement("
+SELECT 
+    (CASE WHEN d.tax = 1 THEN 'Non Deli Sales' ELSE 'Deli Sales' END) as type, 
+    sum(total) as taxable_sales,
+    $cityTax*(sum(total)) as city_tax,
+    $deliTax*(sum(CASE WHEN d.tax = 2 THEN total ELSE 0 END)) as deli_tax,
+    $stateTax*(sum(total)) as state_tax,
+    $countyTax*(SUM(total)) AS county_tax
 FROM $dlog as d 
 WHERE d.tdate BETWEEN ? AND ?
 AND d.tax <> 0 
@@ -373,11 +410,27 @@ GROUP BY d.tax ORDER BY d.tax DESC");
 $taxR = $dbc->exec_statement($taxQ, $store_dates);
 $taxes = array();
 while($row = $dbc->fetch_row($taxR))
-    $taxes["$row[0]"] = array(-1*$row[1],-1*$row[2],-1*$row[3],-1*$row[4],-1*$row[5]);
+    $taxes["$row[0]"] = array(
+        -1*$row['taxable_sales'],
+        -1*$row['city_tax'],
+        -1*$row['deli_tax'],
+        -1*$row['county_tax'],
+        -1*$row['state_tax'],
+        -1*($row['city_tax']+$row['county_tax']+$row['state_tax']+$row['deli_tax'])
+    );
 echo "<br /><b>Sales Tax</b>";
-echo tablify($taxes,array(0,1,2,3,4,5),array("&nbsp;","Taxable Sales","City Tax","Deli Tax","State Tax","Total Tax"),
+echo tablify($taxes,array(0,1,2,3,4,5,6),
+    array(
+        "&nbsp;",
+        "Taxable Sales",
+        sprintf("City Tax (%.2f%%)", $cityTax*100),
+        sprintf("Deli Tax (%.2f%%)", $deliTax*100),
+        sprintf("County Tax (%.2f%%)", $countyTax*100),
+        sprintf("State Tax (%.3f%%)", $stateTax*100),
+        "Total Tax"
+    ),
     array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY,
-          $ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY));
+          $ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY));
 
 $taxSumQ = $dbc->prepare_statement("SELECT  -1*sum(total) as tax_collected
 FROM $dlog as d 

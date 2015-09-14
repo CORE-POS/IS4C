@@ -4,7 +4,7 @@
     Copyright 2013 Whole Foods Co-op
     Based on example code from Wedge Community Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,17 +23,20 @@
 *********************************************************************************/
 
 include(dirname(__FILE__).'/../../../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include_once(dirname(__FILE__) . '/../../../classlib2.0/FannieAPI.php');
+}
 
 /**
   @class SaScanningPage
 */
 class SaReportPage extends FanniePage {
 
-    protected $window_dressing = False;
-
     public $page_set = 'Plugin :: Shelf Audit';
     public $description = '[Quantity Report] lists the entered quantites on hand.';
+    public $themed = true;
+    protected $title = 'ShelfAudit Live Report';
+    protected $header = '';
 
     private $status = '';
     private $sql_actions = '';
@@ -123,13 +126,19 @@ class SaReportPage extends FanniePage {
             CASE WHEN d.dept_no IS NULL THEN \'n/a\' ELSE d.dept_no END as dept_no,
             CASE WHEN d.salesCode IS NULL THEN \'n/a\' ELSE d.salesCode END as salesCode,
 
+            CASE WHEN p.cost = 0 AND v.cost IS NOT NULL THEN v.cost ELSE p.cost END as cost,
+
             p.normal_price as normal_retail,
 
             CASE WHEN p.discounttype > 0 THEN p.special_price
             ELSE p.normal_price END AS actual_retail,
 
             CASE WHEN p.discounttype = 2 THEN \'M\'
-            ELSE \'\' END AS retailstatus
+            ELSE \'\' END AS retailstatus,
+
+            COALESCE(z.vendorName,b.vendorName,\'n/a\') AS vendor,
+
+            COALESCE(c.margin, d.margin, 0) AS margin
 
             FROM sa_inventory AS s LEFT JOIN '.
             $FANNIE_OP_DB.$dbc->sep().'products AS p
@@ -137,7 +146,15 @@ class SaReportPage extends FanniePage {
             $FANNIE_OP_DB.$dbc->sep().'departments AS d
             ON p.department=d.dept_no LEFT JOIN '.
             $FANNIE_OP_DB.$dbc->sep().'vendorItems AS v
-            ON s.upc=v.upc AND v.vendorID=1
+            ON s.upc=v.upc AND v.vendorID=1 LEFT JOIN '.
+            $FANNIE_OP_DB.$dbc->sep().'vendorItems AS a
+            ON p.upc=a.upc AND p.default_vendor_id=a.vendorID LEFT JOIN '.
+            $FANNIE_OP_DB.$dbc->sep().'vendors AS b
+            ON a.vendorID=b.vendorID LEFT JOIN '.
+            $FANNIE_OP_DB.$dbc->sep().'vendorDepartments AS c
+            ON a.vendorID=c.vendorID AND a.vendorDept=c.deptID LEFT JOIN '.
+            $FANNIE_OP_DB.$dbc->sep().'vendors AS z
+            ON p.default_vendor_id=z.vendorID
             WHERE clear!=1
             ORDER BY '.$order);
         $r=$dbc->exec_statement($q);
@@ -171,44 +188,29 @@ class SaReportPage extends FanniePage {
     function css_content(){
         ob_start();
         ?>
-body {
- width: 768px;
- margin: auto;
- font-family: Helvetica, sans, Arial, sans-serif;
- background-color: #F9F9F9;
-}
-
 #bdiv {
     width: 768px;
     margin: auto;
     text-align: center;
 }
 
-body p,
-body div {
- border: 1px solid #CfCfCf;
- background-color: #EFEFEF;
- line-height: 1.5;
- margin: 0px;
-}
-
-body table {
+body table.shelf-audit {
  font-size: small;
  text-align: center;
  border-collapse: collapse;
  width: 100%;
 }
 
-body table caption {
+body table.shelf-audit caption {
  font-family: sans-mono, Helvetica, sans, Arial, sans-serif;
  margin-top: 1em;
 }
 
-body table th {
+body table.shelf-audit th {
  border-bottom: 2px solid #090909;
 }
 
-table tr:hover {
+table.shelf-audit tr:hover {
  background-color:#CFCFCF;
 }
 
@@ -247,24 +249,52 @@ table tr:hover {
     }
 
     function csv_content(){
-        $ret = "UPC,Description,Account#,Dept#,\"Dept Name\",Qty,Normal Retail,Current Retail,Status,Total\r\n";
+        $ret = "UPC,Description,Vendor,Account#,Dept#,\"Dept Name\",Qty,Cost,Unit Cost Total,Normal Retail,Status,Normal Retail Total\r\n";
         $totals = array();
-        foreach($this->scans as $row){
-            $ret .= sprintf("%s,\"%s\",%s,%s,%s,%.2f,%.2f,%.2f,%s,%.2f\r\n",
-                $row['upc'],$row['description'],$row['salesCode'],$row['dept_no'],
-                $row['dept_name'],$row['quantity'],$row['normal_retail'],
-                $row['actual_retail'],
-                $row['retailstatus'],($row['quantity']*$row['normal_retail'])
+        $vendors = array();
+        foreach($this->scans as $row) {
+            if ($row['cost'] == 0 && $row['margin'] != 0) {
+                $row['cost'] = $row['normal_retail'] / ($row['margin'] * $row['normal_retail']);
+                $row['retailstatus'] .= '*';
+            }
+            $ret .= sprintf("%s,\"%s\",\"%s\",%s,%s,%s,%.2f,%.2f,%.2f,%.2f,%s,%.2f,\r\n",
+                $row['upc'],$row['description'],$row['vendor'],$row['salesCode'],$row['dept_no'],
+                $row['dept_name'],$row['quantity'],$row['cost'], ($row['quantity']*$row['cost']),
+                $row['normal_retail'],
+                $row['retailstatus'],
+                ($row['quantity']*$row['normal_retail'])
             );
             if (!isset($totals[$row['salesCode']]))
-                $totals[$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0);
+                $totals[$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0,'normalTtl'=>0.0,'costTtl'=>0.0);
             $totals[$row['salesCode']]['qty'] += $row['quantity'];
-            $totals[$row['salesCode']]['ttl'] += ($row['quantity']*$row['normal_retail']);
+            $totals[$row['salesCode']]['ttl'] += ($row['quantity']*$row['actual_retail']);
+            $totals[$row['salesCode']]['normalTtl'] += ($row['quantity']*$row['normal_retail']);
+            $totals[$row['salesCode']]['costTtl'] += ($row['quantity']*$row['cost']);
+            if ($row['vendor'] != 'UNFI') {
+                $row['vendor'] = 'Non-UNFI';
+            }
+            if (!isset($vendors[$row['vendor']])) {
+                $vendors[$row['vendor']] = array();
+            }
+            if (!isset($vendors[$row['vendor']][$row['salesCode']])) {
+                $vendors[$row['vendor']][$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0,'normalTtl'=>0.0,'costTtl'=>0.0);
+            }
+            $vendors[$row['vendor']][$row['salesCode']]['qty'] += $row['quantity'];
+            $vendors[$row['vendor']][$row['salesCode']]['ttl'] += ($row['quantity']*$row['actual_retail']);
+            $vendors[$row['vendor']][$row['salesCode']]['normalTtl'] += ($row['quantity']*$row['normal_retail']);
+            $vendors[$row['vendor']][$row['salesCode']]['costTtl'] += ($row['quantity']*$row['cost']);
         }
         $ret .= ",,,,,,,,\r\n";
         foreach($totals as $code => $info){
-            $ret .= sprintf("TOTAL,,%s,,,%.2f,,,%.2f\r\n",
-                    $code, $info['qty'], $info['ttl']);
+            $ret .= sprintf(",,TOTAL,%s,,,%.2f,,%.2f,,,%.2f,\r\n",
+                    $code, $info['qty'], $info['costTtl'], $info['normalTtl']);
+        }
+        $ret .= ",,,,,,,,\r\n";
+        foreach($vendors as $vendor => $sales) {
+            foreach ($sales as $code => $info) {
+                $ret .= sprintf(",,%s,%s,,,%.2f,,%.2f,,,%.2f,\r\n",
+                        $vendor,$code, $info['qty'], $info['costTtl'], $info['normalTtl']);
+            }
         }
         return $ret;
     }
@@ -272,10 +302,6 @@ table tr:hover {
     function body_content(){
         ob_start();
         ?>
-<html>
-    <head>
-    </head>
-    <body>
         <div id="bdiv">
             <p><a href="#" onclick="window.open('SaScanningPage.php','scan','width=320, height=200, location=no, menubar=no, status=no, toolbar=no, scrollbars=no, resizable=no');">Enter a new scan</a></p>
             <p><a href="SaHandheldPage.php">Alternate Scan Page</a></p>
@@ -292,6 +318,7 @@ table tr:hover {
         $table = '';
         $view = FormLib::get_form_value('view','dept');
         $counter = ($view == 'dept') ? 'd' : 's';
+        $counter_total = 0;
         foreach($this->scans as $row) {
             
             if (!isset($counter_number)) {
@@ -304,7 +331,7 @@ table tr:hover {
                 else { $caption='Section #'.$row['section']; }
                 
                 $table .= '
-        <table>
+        <table class="table shelf-audit">
             <caption>'.$caption.'</caption>
             <thead>
                 <tr>
@@ -312,10 +339,12 @@ table tr:hover {
                     <th>UPC</th>
                     <th>Description</th>
                     <th>Qty</th>
-                    <th>Each (Normal)</th>
-                    <th>Each (Current)</th>
+                    <th>Unit Cost</th>
+                    <th>Total Cost</th>
+                    <th>Retail (Normal)</th>
+                    <th>Retail (Current)</th>
                     <th>Sale</th>
-                    <th>Total</th>
+                    <th>Total Retail</th>
                     <th>Delete</th>
                 </tr>
             </thead>
@@ -325,11 +354,14 @@ table tr:hover {
                     <td id="col_b">'.$row['upc'].'</td>
                     <td id="col_c">'.$row['description'].'</td>
                     <td id="col_d" class="right">'.$row['quantity'].'</td>
+                    <td id="col_e" class="right">'.money_format('%.2n', $row['cost']).'</td>
+                    <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['cost'])).'</td>
                     <td id="col_e" class="right">'.money_format('%.2n', $row['normal_retail']).'</td>
-                    <td id="col_f" class="right">'.money_format('%.2n', $row['atual_retail']).'</td>
+                    <td id="col_f" class="right">'.money_format('%.2n', $row['actual_retail']).'</td>
                     <td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
                     <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['normal_retail'])).'</td>
-                    <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
+                    <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'">'
+                        . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</td>
                 </tr>';
             } else if ($counter_number!=$row['section'] && $counter_number!=$row['dept_no']) {
                 if ($counter=='d') { $counter_number=$row['dept_no']; }
@@ -348,7 +380,7 @@ table tr:hover {
                 </tr>
             </tfoot>
         </table>
-        <table>
+        <table class="table shelf-audit">
             <caption>'.$caption.'</caption>
             <thead>
                 <tr>
@@ -356,10 +388,12 @@ table tr:hover {
                     <th>UPC</th>
                     <th>Description</th>
                     <th>Qty</th>
-                    <th>Each (Normal)</th>
-                    <th>Each (Current)</th>
+                    <th>Unit Cost</th>
+                    <th>Total Cost</th>
+                    <th>Retail (Normal)</th>
+                    <th>Retail (Current)</th>
                     <th>Sale</th>
-                    <th>Total</th>
+                    <th>Total Retail</th>
                     <th>Delete</th>
                 </tr>
             </thead>
@@ -369,11 +403,14 @@ table tr:hover {
                     <td id="col_b">'.$row['upc'].'</td>
                     <td id="col_c">'.$row['description'].'</td>
                     <td id="col_d" class="right">'.$row['quantity'].'</td>
+                    <td id="col_e" class="right">'.money_format('%.2n', $row['cost']).'</td>
+                    <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['cost'])).'</td>
                     <td id="col_e" class="right">'.money_format('%.2n', $row['normal_retail']).'</td>
                     <td id="col_f" class="right">'.money_format('%.2n', $row['actual_retail']).'</td>
                     <td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
                     <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['normal_retail'])).'</td>
-                    <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
+                    <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'">'
+                        . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</td>
                 </tr>';
                 
                 $counter_total=$row['quantity']*$row['normal_retail'];
@@ -386,11 +423,14 @@ table tr:hover {
                     <td id="col_b">'.$row['upc'].'</td>
                     <td id="col_c">'.$row['description'].'</td>
                     <td id="col_d" class="right">'.$row['quantity'].'</td>
+                    <td id="col_e" class="right">'.money_format('%.2n', $row['cost']).'</td>
+                    <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['cost'])).'</td>
                     <td id="col_e" class="right">'.money_format('%.2n', $row['normal_retail']).'</td>
                     <td id="col_f" class="right">'.money_format('%.2n', $row['actual_retail']).'</td>
                     <td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
                     <td id="col_h" class="right">'.money_format('%!.2n', ($row['quantity']*$row['normal_retail'])).'</td>
-                    <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
+                    <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'">'
+                        . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</td>
                 </tr>';
             }
         }
@@ -405,14 +445,13 @@ table tr:hover {
                 </tr>
             </tfoot>
         </table>
+        </div>
 ';
         if (!empty($table))
             print_r($table);
         ?>
-        </div>
-        </body>
-        </html>
         <?php
+
         return ob_get_clean();
     }
 }

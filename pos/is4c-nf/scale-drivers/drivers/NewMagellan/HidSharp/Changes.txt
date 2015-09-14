@@ -1,0 +1,26 @@
+1.5 (May 18, 2013):
+  Added the DevicePath property to HidDevice.
+  This is useful for differentiating devices with the same VID, PID, etc.
+
+1.4.0.1 (April 21, 2013):
+  Added missing XML documentation file to the archive.
+  
+1.4 (April 20, 2013):
+  Documented the most important classes.
+  Fixed a problem with output reports on 64-bit Windows.
+  Fixed a timeout bug on Windows.
+  Parallelized device enumeration.
+  Reordered platform detection to prevent binary planting on Windows.
+
+1.3 (February 23, 2013):
+  Fixed Linux libudev reference to not require developer package symlinks.
+  
+1.2 (October 16, 2012):
+  Fixed MacOS support.
+
+1.1 (July 28, 2012):
+  Added experimental MacOS and Linux support.
+  Added experimental report descriptor parsing.
+  
+1.0 (August 28, 2010):
+  Initial release.

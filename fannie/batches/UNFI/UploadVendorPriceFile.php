@@ -3,14 +3,14 @@
 
     Copyright 2009,2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -31,19 +31,29 @@ class UploadVendorPriceFile extends FanniePage {
     protected $title = "Fannie - Upload Price File";
     protected $header = "Upload Price File";
 
-    public $description = '[Vendor Price File] loads or reloads catalog information from a spreadsheet.';
+    protected $auth_classes = array('batches');
+    protected $must_authenticate = true;
 
-    function body_content(){
-        global $FANNIE_URL, $FANNIE_OP_DB;
+    public $description = '[Vendor Price File] loads or reloads catalog information from a spreadsheet.';
+    public $themed = true;
+
+    function body_content()
+    {
+        global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $p = $dbc->prepare_statement('SELECT vendorID,vendorName FROM vendors ORDER BY vendorName');
         $r = $dbc->exec_statement($p);
-        $ret = '<b>Use the Default import tool</b>:<br /><ul>';
-        while($w = $dbc->fetch_row($r)){
-            $ret .= sprintf('<li><a href="%sitem/vendors/DefaultUploadPage.php?vid=%d">Upload %s Price File</a>',
-                $FANNIE_URL,$w['vendorID'],$w['vendorName']);
+        $ret = '<label>Use the Default import tool</label>'
+            . '<select id="vendor-id" class="form-control">';;
+       
+        while ($w = $dbc->fetch_row($r)) {
+            $ret .= sprintf('<option value="%d">%s</option>',
+                $w['vendorID'],$w['vendorName']);
         }
-        $ret .= '</ul>';
+        $ret .= '</select>';
+        $ret .= '<button type="button" class="btn btn-default"
+            onclick="location=\'../../item/vendors/DefaultUploadPage.php?vid=\'+$(\'#vendor-id\').val();
+            return false;">Upload Vendor File</button>';
         $ret .= '<hr />';
         $ret .= '<b>Use a Custom import tool</b>:<br /><ul>';
         $files = scandir('load-classes');
@@ -55,6 +65,15 @@ class UploadVendorPriceFile extends FanniePage {
         }
         $ret .= '</ul>';
         return $ret;
+    }
+
+    public function helpContent()
+    {
+        return '<p>Import a spreadsheet containing vendor items and costs.
+            The default tool works fine in many cases, but custom vendor-specific
+            importers can be added to tailor the interface to the spreadsheet
+            format or perform additional vendor-specific operations.</p>
+            ';
     }
 
 }

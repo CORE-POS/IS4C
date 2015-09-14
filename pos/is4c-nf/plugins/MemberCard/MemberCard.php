@@ -23,23 +23,23 @@
 
 class MemberCard extends Plugin {
 
-	public $plugin_settings = array(
-	'memberUpcPrefix' => array(
-		'default' => '',
-		'label' => 'UPC Prefix',
-		'description' => 'Barcode prefix for member cards (including leading zeroes)'
-		)
-	);
+    public $plugin_settings = array(
+    'memberUpcPrefix' => array(
+        'default' => '',
+        'label' => 'UPC Prefix',
+        'description' => 'Barcode prefix for member cards (including leading zeroes)'
+        )
+    );
 
-	public $plugin_description = 'Allows UPC based membercards. Set a prefix, load data into
-				      the memberCards table, then just scan barcodes to use.';
+    public $plugin_description = 'Allows UPC based membercards. Set a prefix, load data into
+                      the memberCards table, then just scan barcodes to use.';
 
-	public function plugin_enable(){
+    public function plugin_enable(){
 
-	}
+    }
 
-	public function plugin_disable(){
+    public function plugin_disable(){
 
-	}
+    }
 
 }

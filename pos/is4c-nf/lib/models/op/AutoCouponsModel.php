@@ -32,9 +32,16 @@ class AutoCouponsModel extends BasicModel
     protected $columns = array(
     'coupID' => array('type'=>'INT', 'primary_key'=>true),
     'description' => array('type'=>'VARCHAR(30)'),
-	);
+    );
 
     protected $preferred_db = 'op';
+
+    public function doc()
+    {
+        return '
+Apply coupons to transactions automatically
+        ';
+    }
 
     /* START ACCESSOR FUNCTIONS */
 

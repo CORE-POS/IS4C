@@ -3,7 +3,7 @@
 
     Copyright 2010 Whole Foods Co-op, Duluth, MN
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -50,8 +50,7 @@ $query = $dbc->prepare_statement("SELECT CardNo,
       LEFT JOIN memDates AS d
       ON c.CardNo=d.card_no
           WHERE 
-          memType IN (1,3)
-      AND c.Type='PC'
+      c.Type='PC'
           AND (end_date > ".$dbc->now()." 
         or end_date = '' 
         or end_date is null

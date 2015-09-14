@@ -1,6 +1,0 @@
-This is data gate weigh's input
-directory. If that's a separate
-machine, share the directory
-(windows file sharing) & mount it
-here via samba. Again, writable
-by apache.

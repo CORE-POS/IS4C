@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Community Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -32,8 +32,12 @@ class BatchFromSearch extends FannieRESTfulPage
     protected $header = 'Create Batch From Search Results';
     protected $title = 'Create Batch From Search Results';
 
+    protected $auth_classes = array('batches');
+    protected $must_authenticate = true;
+
     public $description = '[Batch From Search] takes a set of advanced search results and
     creates a sale or price change batch. Must be accessed via Advanced Search.';
+    public $themed = true;
 
     private $upcs = array();
 
@@ -84,6 +88,10 @@ class BatchFromSearch extends FannieRESTfulPage
         $b->owner($owner);
         $id = $b->save();
 
+        if ($this->config->get('STORE_MODE') === 'HQ') {
+            StoreBatchMapModel::initBatch($id);
+        }
+
         if ($dbc->tableExists('batchowner')) {
             $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
             $insR = $dbc->exec_statement($insQ,array($id,$owner));
@@ -97,6 +105,7 @@ class BatchFromSearch extends FannieRESTfulPage
             $bl->upc(BarcodeLib::padUPC($upc));
             $bl->batchID($id);
             $bl->salePrice($price);
+            $bl->groupSalePrice($price);
             $bl->active(0);
             $bl->pricemethod(0);
             $bl->quantity(0);
@@ -110,31 +119,13 @@ class BatchFromSearch extends FannieRESTfulPage
         $tagset = FormLib::get('tagset');
         if ($discounttype == 0 && $tagset !== '') {
             $vendorID = FormLib::get('preferredVendor', 0);
-            $lookup = $dbc->prepare('
-                SELECT p.description, 
-                    v.brand, 
-                    v.sku, 
-                    v.size, 
-                    v.units, 
-                    n.vendorName
-                FROM products AS p 
-                    LEFT JOIN vendorItems AS v ON p.upc=v.upc
-                    LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
-                WHERE p.upc=? 
-                ORDER BY CASE WHEN v.vendorID=? THEN -999 ELSE v.vendorID END'
-            );
             $tag = new ShelftagsModel($dbc);
+            $product = new ProductsModel($dbc);
             for($i=0; $i<count($upcs);$i++) {
                 $upc = $upcs[$i];
                 $price = isset($prices[$i]) ? $prices[$i] : 0.00;
-                $info = array('description'=>'', 'brand'=>'', 'sku'=>'', 'size'=>'', 'units'=>1,
-                            'vendorName'=>'');
-                $lookupR = $dbc->execute($lookup, array($upc, $vendorID));
-                if ($dbc->num_rows($lookupR) > 0) {
-                    $info = $dbc->fetch_row($lookupR);
-                }
-                $ppo = ($info['size'] !== '') ? PriceLib::pricePerUnit($price, $info['size']) : '';
-
+                $product->upc($upc);
+                $info = $product->getTagData($price);
                 $tag->id($tagset);
                 $tag->upc($upc);
                 $tag->description($info['description']);
@@ -143,8 +134,8 @@ class BatchFromSearch extends FannieRESTfulPage
                 $tag->sku($info['sku']);
                 $tag->size($info['size']);
                 $tag->units($info['units']);
-                $tag->vendor($info['vendorName']);
-                $tag->pricePerUnit($ppo);
+                $tag->vendor($info['vendor']);
+                $tag->pricePerUnit($info['pricePerUnit']);
                 $tag->save();
             }
         }
@@ -169,7 +160,7 @@ class BatchFromSearch extends FannieRESTfulPage
             SELECT p.upc,
                 CASE WHEN v.srp IS NULL THEN 0 ELSE v.srp END as newSRP
             FROM products AS p
-                LEFT JOIN vendorSRPs AS v ON p.upc=v.upc
+                LEFT JOIN vendorItems AS v ON p.upc=v.upc 
             WHERE p.upc IN (' . $params['in'] . ')
             ORDER BY p.upc,
                 CASE WHEN v.vendorID=? THEN -999 ELSE v.vendorID END';
@@ -207,7 +198,7 @@ class BatchFromSearch extends FannieRESTfulPage
         }
 
         if (empty($this->upcs)) {
-            echo 'Error: no valid data';
+            echo '<div class="alert alert-danger">Error: no valid data</div>';
             return false;
         } else {
             return true;
@@ -219,12 +210,13 @@ class BatchFromSearch extends FannieRESTfulPage
         global $FANNIE_OP_DB, $FANNIE_URL;
         $ret = '<form action="BatchFromSearch.php" method="post">';
 
-        $ret .= '<div style="line-height:2.3em;">';
+        $ret .= '<div class="form-group form-inline">';
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $types = $dbc->query('SELECT batchTypeID, typeDesc, discType FROM batchType');
         $discTypes = array();
-        $ret .= '<select name="batchType" id="batchType" onchange="discountTypeFixup()">';
+        $ret .= '<select name="batchType" id="batchType" class="form-control"
+            onchange="discountTypeFixup()">';
         while($row = $dbc->fetch_row($types)) {
             $ret .= sprintf('<option value="%d">%s</option>',
                             $row['batchTypeID'], $row['typeDesc']
@@ -239,35 +231,33 @@ class BatchFromSearch extends FannieRESTfulPage
         }
 
         $name = FannieAuth::checkLogin();
-        $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<b>Name</b>: ';
-        $ret .= '<input type="text" size="15" name="batchName" value="'
+        $ret .= '
+                <label>Name</label>: ';
+        $ret .= '<input type="text" class="form-control" name="batchName" value="'
                 . ($name ? $name : 'Batch') . ' '
                 . date('M j')
                 . '" />';
 
-        $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<b>Start</b>: <input type="text" size="12" id="startDate" value="'
-                . date('Y-m-d') . '" name="startDate" />';
-        $this->add_onload_command("\$('#startDate').datepicker();\n");
+        $ret .= '
+                <label>Start</label>: <input type="text" class="form-control date-field" id="startDate" value="'
+                . date('Y-m-d') . '" name="startDate" />
+                ';
 
-        $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<b>End</b>: <input type="text" size="12" id="endDate" value="'
-                . date('Y-m-d') . '" name="endDate" />';
-        $this->add_onload_command("\$('#endDate').datepicker();\n");
+        $ret .= '
+                <label>End</label>: <input type="text" class="form-control date-field" id="endDate" value="'
+                . date('Y-m-d') . '" name="endDate" />
+                </div>';
 
-        $ret .= '<br />';
         $owners = $dbc->query('SELECT super_name FROM MasterSuperDepts GROUP BY super_name ORDER BY super_name');
-        $ret .= '<b>Owner</b>: <select name="batchOwner" id="batchOwner"><option value=""></option>';
+        $ret .= '<div class="form-group form-inline">
+            <label>Owner</label>: <select name="batchOwner" class="form-control" id="batchOwner"><option value=""></option>';
         while($row = $dbc->fetch_row($owners)) {
             $ret .= '<option>' . $row['super_name'] . '</option>';
         }
-        $ret .= '<option>IT</option></select>';
-
-        $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="submit" name="createBatch" value="Create Batch" />';
-
-        $ret .= '</div>';
+        $ret .= '<option>IT</option></select>
+                <button type="submit" name="createBatch" value="1"
+                    class="btn btn-default">Create Batch</button>
+                </div>';
 
         $ret .= '<hr />';
 
@@ -275,26 +265,35 @@ class BatchFromSearch extends FannieRESTfulPage
         $query = 'SELECT p.upc, p.description, p.normal_price, m.superID,
                 MAX(CASE WHEN v.srp IS NULL THEN 0.00 ELSE v.srp END) as srp
                 FROM products AS p
-                LEFT JOIN vendorSRPs AS v ON p.upc=v.upc
-                LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+                    LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                    LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
                 WHERE p.upc IN ( ' . $info['in'] . ')
                 GROUP BY p.upc, p.description, p.normal_price, m.superID
                 ORDER BY p.upc';
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $info['args']);
 
-        $ret .= '<div id="saleTools">';
-        $ret .= '<b>Markdown</b>: <input type="text" id="mdPercent" size="4" value="10" onchange="markDown(this.value);" />%
-                <input type="submit" value="Go" onclick="markDown($(\'#mdPercent\').val()); return false" />';
+        $ret .= '<div id="saleTools" class="form-group form-inline">';
+        $ret .= '<label>Markdown</label>
+                <div class="input-group">
+                    <input type="text" id="mdPercent" class="form-control" value="10" onchange="markDown(this.value);" />
+                    <span class="input-group-addon">%</span>
+                </div>
+                <button type="submit" class="btn btn-default" onclick="markDown($(\'#mdPercent\').val()); return false">Go</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= 'or: $<input type="text" id="mdDollar" size="4" value="0.00" onchange="discount(this.value);" />
-                <input type="submit" value="Go" onclick="discount($(\'#mdDollar\').val()); return false" />';
+        $ret .= '<label>or</label>
+                <div class="input-group">
+                    <span class="input-group-addon">$</span>
+                    <input type="text" id="mdDollar" class="form-control" value="0.00" onchange="discount(this.value);" />
+                </div>
+                <button type="submit" class="btn btn-default" onclick="discount($(\'#mdDollar\').val()); return false">Go</button>';
         $ret .= '</div>';
 
-        $ret .= '<div id="priceChangeTools">';
-        $ret .= '<input type="submit" value="Use Vendor SRPs" onclick="useSRPs(); return false;" />';
+        $ret .= '<div id="priceChangeTools" class="form-group form-inline">';
+        $ret .= '<button type="submit" class="btn btn-default" onclick="useSRPs(); return false;">Use Vendor SRPs</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<select name="preferredVendor" onchange="reCalcSRPs();"><option value="0">Auto Choose Vendor</option>';
+        $ret .= '<select name="preferredVendor" class="form-control" onchange="reCalcSRPs();">
+            <option value="0">Auto Choose Vendor</option>';
         $vendors = new VendorsModel($dbc);
         foreach ($vendors->find('vendorName') as $vendor) {
             $ret .= sprintf('<option value="%d">%s</option>',
@@ -302,18 +301,20 @@ class BatchFromSearch extends FannieRESTfulPage
         }
         $ret .= '</select>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<b>Markup</b>: <input type="text" id="muPercent" size="4" value="10" onchange="markUp(this.value);" />%
-                <input type="submit" value="Go" onclick="markUp($(\'#muPercent\').val()); return false" />';
+        $ret .= '<label>Markup</label>
+                <div class="input-group">
+                    <input type="text" id="muPercent" class="form-control" value="10" onchange="markUp(this.value);" />
+                    <span class="input-group-addon">%</span>
+                </div>
+                <button type="submit" class="btn btn-default" onclick="markUp($(\'#muPercent\').val()); return false">Go</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<b>Tags</b>: <select name="tagset" id="tagset"><option value="">No Tags</option>';
-        $supers = $dbc->query('SELECT superID, super_name FROM MasterSuperDepts GROUP BY superID, super_name ORDER BY superID');
-        while($row = $dbc->fetch_row($supers)) {
-            $ret .= sprintf('<option value="%d">%s</option>', $row['superID'], $row['super_name']);
-        }
+        $ret .= '<label>Tags</label> <select name="tagset" class="form-control" id="tagset"><option value="">No Tags</option>';
+        $qm = new ShelfTagQueuesModel($dbc);
+        $ret .= $qm->toOptions();
         $ret .= '</select>';
         $ret .= '</div>';
 
-        $ret .= '<br /><table cellspacing="0" cellpadding="4" border="1">';
+        $ret .= '<table class="table">';
         $ret .= '<tr><th>UPC</th><th>Description</th><th>Retail</th>
                 <th id="newPriceHeader">Sale Price</th></tr>';
         $superDetect = array();
@@ -322,9 +323,11 @@ class BatchFromSearch extends FannieRESTfulPage
                             <td><input type="hidden" name="upc[]" class="itemUPC" value="%s" />%s</td>
                             <td>%s</td>
                             <td>$%.2f<input type="hidden" class="currentPrice" value="%.2f" /></td>
-                            <td>
-                                $<input type="text" size="5" name="price[]" class="itemPrice" value="0.00" />
+                            <td><div class="input-group">
+                                <span class="input-group-addon">$</span>
+                                <input type="text" name="price[]" class="itemPrice form-control" value="0.00" />
                                 <input type="hidden" class="itemSRP" value="%.2f" />
+                            </div>
                             </td>
                             </tr>',
                             $row['upc'], $row['upc'],
@@ -459,6 +462,37 @@ function noEnter(e) {
         return array('in'=>$str, 'args'=>$args);
     }
 
+    public function helpContent()
+    {
+        return '<p>
+            This tool creates a sale or price change batch
+            for a set of advanced search results. The top
+            fields control the batch type, name, dates, and
+            owner. The middle section contains different tools
+            for calculating prices depending on whether the
+            batch type selected is a sale or a price change.
+            <p>
+            For sales, two markdown options are available. The
+            percentage will create sale prices that are X% off
+            from the regular retial price. The dollar amount will
+            create sale prices that are $X.XX less than the
+            regular retial price.
+            </p>
+            <p>
+            Price changes include a larger list of options.
+            The Use Vendor SRPs button will calculate new
+            retail pricing based on vendor-specific margin
+            rules. The Auto Choose Vendor option will simply
+            use whichever vendor is assigned as the default
+            for a given product. Choosing a specific vendor instead
+            will use that vendor\'s pricing rules for all 
+            products in the list. The markup percentage is
+            an alternative to vendor-based pricing and will
+            create new prices that are X% above current retail.
+            New shelftags are allocated and the Tags dropdown
+            controls which set they land in.
+            </p>';
+    }
 }
 
 FannieDispatch::conditionalExec();

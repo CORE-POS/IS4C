@@ -16,29 +16,29 @@ require_once "../Matrix.php";
 * Pre-Conditions: the system is not underdetermined: sizeof($X) > $n+1
 */
 function polyfit($X, $Y, $n) {
-	for ($i = 0; $i < sizeof($X); ++$i)
-		for ($j = 0; $j <= $n; ++$j)
-			$A[$i][$j] = pow($X[$i], $j);
-	for ($i=0; $i < sizeof($Y); ++$i)
-		$B[$i] = array($Y[$i]);
-	$matrixA = new Matrix($A);
-	$matrixB = new Matrix($B);
-	$C = $matrixA->solve($matrixB);
-	return $C->getMatrix(0, $n, 0, 1);
+    for ($i = 0; $i < sizeof($X); ++$i)
+        for ($j = 0; $j <= $n; ++$j)
+            $A[$i][$j] = pow($X[$i], $j);
+    for ($i=0; $i < sizeof($Y); ++$i)
+        $B[$i] = array($Y[$i]);
+    $matrixA = new Matrix($A);
+    $matrixB = new Matrix($B);
+    $C = $matrixA->solve($matrixB);
+    return $C->getMatrix(0, $n, 0, 1);
 }
 
 function printpoly( $C = null ) {
-	for($i = $C->m - 1; $i >= 0; --$i) {
-		$r = $C->get($i, 0);
-		if ( abs($r) <= pow(10, -9) )
-			$r = 0;
-		if ($i == $C->m - 1)
-			echo $r . "x<sup>$i</sup>";
-		else if ($i < $C->m - 1)
-			echo " + " . $r . "x<sup>$i</sup>";
-		else if ($i == 0)
-			echo " + " . $r;
-	}
+    for($i = $C->m - 1; $i >= 0; --$i) {
+        $r = $C->get($i, 0);
+        if ( abs($r) <= pow(10, -9) )
+            $r = 0;
+        if ($i == $C->m - 1)
+            echo $r . "x<sup>$i</sup>";
+        else if ($i < $C->m - 1)
+            echo " + " . $r . "x<sup>$i</sup>";
+        else if ($i == 0)
+            echo " + " . $r;
+    }
 }
 
 $X = array(0,1,2,3,4,5);

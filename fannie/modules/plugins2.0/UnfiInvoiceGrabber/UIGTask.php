@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -60,7 +60,6 @@ class UIGTask extends FannieTask
         curl_setopt($ch, CURLOPT_COOKIEJAR, $cookies);
         $login_page = curl_exec($ch);
         curl_close($ch);
-        echo $this->cronMsg("Login (1/4)");
 
         /**
           Get hidden fields from login page
@@ -94,7 +93,6 @@ class UIGTask extends FannieTask
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $referer = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
         curl_close($ch);
-        echo $this->cronMsg("Login (2/4)");
 
         /**
           Find iframes in the resulting page
@@ -126,7 +124,6 @@ class UIGTask extends FannieTask
             curl_setopt($ch, CURLOPT_REFERER, $referer);
             $iframe = curl_exec($ch);
             curl_close($ch);
-            echo $this->cronMsg("Login (3/4)");
 
             preg_match_all($inputs_regex, $iframe, $matches);
             $post_data = '';
@@ -154,7 +151,6 @@ class UIGTask extends FannieTask
             $body = curl_exec($ch);
             $referer = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
             curl_close($ch);
-            echo $this->cronMsg("Login (4/4)");
         }
 
         /**
@@ -187,7 +183,6 @@ class UIGTask extends FannieTask
         curl_setopt($ch, CURLOPT_COOKIEJAR, $cookies);
         $invoice_page = curl_exec($ch);
         curl_close($ch);
-        echo $this->cronMsg("Getting available dates");
 
         // not sure if this is actually needed
         // browser ends up with this cookie
@@ -223,20 +218,21 @@ class UIGTask extends FannieTask
             $inputs[$matches[1][$i]] = $matches[2][$i];
         }
         // I think only this one needs to be decoded
-        $inputs['claims'] = json_decode(htmlspecialchars_decode($inputs['claims']));
+        if (isset($inputs['claims'])) {
+            $inputs['claims'] = json_decode(htmlspecialchars_decode($inputs['claims']));
+        }
 
         $check = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? and userID=0
                             AND creationDate=? AND placedDate=?');
+        $temp_dir = sys_get_temp_dir();
         foreach($dates as $date) {
             $good_date = date('Y-m-d', strtotime($date->Text));
             $doCheck = $dbc->execute($check, array(1, $good_date, $good_date));
             $diff = time() - strtotime($date->Text);
             $repeat = false;
             if ($dbc->num_rows($doCheck) > 0 && $diff > (3 * 24 * 60 * 60)) {
-                echo $this->cronMsg("Skipping " . $date->Text . " (already imported)");
                 continue;
             } else if ($dbc->num_rows($doCheck) > 0) {
-                echo $this->cronMsg("Redownloading " . $date->Text);
                 $repeat = true;
             }
 
@@ -294,8 +290,7 @@ class UIGTask extends FannieTask
             $response = json_decode($gen_report);
 
             if ($response) {
-                echo $this->cronMsg("Downloading " . $date->Text . "...");
-                $filename = str_replace('/','-',$date->Text).'.zip';
+                $filename = $temp_dir . '/' . str_replace('/','-',$date->Text).'.zip';
                 $fp = fopen($filename, 'w');
                 $ch = curl_init($response->d);
                 curl_setopt($ch, CURLOPT_FILE, $fp);
@@ -307,11 +302,11 @@ class UIGTask extends FannieTask
                 curl_close($ch);
                 fclose($fp);
 
-                echo $this->cronMsg("Importing invoices for " . $date->Text);
-                if (UIGLib::import($filename, $repeat) === true) {
+                $this->cronMsg("Importing invoices for " . $date->Text, FannieLogger::INFO);
+                if (UIGLib::import($filename, 1, $repeat) === true) {
                     unlink($filename);
                 } else {
-                    echo $this->cronMsg("ERROR: IMPORT FAILED!");
+                    $this->cronMsg("ERROR: IMPORT FAILED!", FannieLogger::ERROR);
                 }
             
                 // only download one day for now

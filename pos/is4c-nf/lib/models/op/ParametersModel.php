@@ -36,7 +36,20 @@ class ParametersModel extends BasicModel
     'param_key' => array('type'=>'VARCHAR(100)', 'primary_key'=>true),
     'param_value' => array('type'=>'VARCHAR(255)'),
     'is_array' => array('type'=>'TINYINT'),
-	);
+    );
+
+    public function doc()
+    {
+        return '
+Use:
+Partial replacement for ini.php.
+
+Values with store_id=0 (or NULL) and lane_id=0 (or NULL)
+are applied first, then values with the lane\'s own
+lane_id are applied second as local overrides. A similar
+precedent level based on store_id may be added at a later date.
+        ';
+    }
 
     /**
       Get the parameter's effective value by

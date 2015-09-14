@@ -4,7 +4,7 @@ if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php")
 include($FANNIE_ROOT.'src/Credentials/projects.wfc.php');
 
 if(isset($_POST['name'])){
-	
+    
   $name = $_POST['name'];
   $projID = $_POST['projID'];
   $mail = $_POST['mail'];

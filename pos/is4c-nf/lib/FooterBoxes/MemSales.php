@@ -35,9 +35,8 @@ class MemSales extends FooterBox
 
     public function display_content()
     {
-        global $CORE_LOCAL;
-        if ($CORE_LOCAL->get("isMember") == 1) {
-            return number_format($CORE_LOCAL->get("memSpecial"), 2);
+        if (CoreLocal::get("isMember") == 1) {
+            return number_format(CoreLocal::get("memSpecial"), 2);
         } else {
             return "n/a";
         }

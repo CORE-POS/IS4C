@@ -4,14 +4,18 @@ function deleteCat(num,name){
 		$.ajax({
 			url: 'VendorDepartmentEditor.php',
 			type: 'POST',
+            dataType: 'json',
 			timeout: 5000,
 			data: 'deptID='+num+'&vid='+vid+'&action=deleteCat',
 			error: function(){
-			alert('Error loading XML document');
+                showBootstrapAlert('#alert-area', 'danger', 'Network error deleting #' + num);
 			},
 			success: function(resp){
-				alert(resp);
-				top.location='VendorDepartmentEditor.php?vid='+vid;
+                if (resp.error) {
+                    showBootstrapAlert('#alert-area', 'danger', resp.error);
+                } else {
+                    $('#row-'+num).hide();
+                }
 			}
 		});
 	}
@@ -25,58 +29,78 @@ function newdept(){
 	$.ajax({
 		url: 'VendorDepartmentEditor.php',
 		type: 'POST',
+        dataType: 'json',
 		timeout: 5000,
 		data: 'deptID='+num+'&vid='+vid+'&name='+name+'&action=createCat',
 		error: function(){
-		alert('Error loading XML document');
+            showBootstrapAlert('#alert-area', 'danger', 'Network error creating department');
 		},
 		success: function(resp){
-			alert(resp);
-			if (resp == "Department created")
-				top.location='VendorDepartmentEditor.php?vid='+vid;
+            if (resp.error) {
+                showBootstrapAlert('#alert-area', 'danger', resp.error);
+            } else if (resp.row) {
+                $('.table').append(resp.row);
+                $('#newform').hide();
+                $('#newform :input').each(function(){
+                    $(this).val('');
+                });
+            } else {
+                showBootstrapAlert('#alert-area', 'danger', 'Error: invalid response from server');
+            }
 		}
 	});
 }
 
-function edit(did){
+function edit(did)
+{
 	var name = $('#nametd'+did).html();
 	var margin = $('#margintd'+did).html();
-	var path = $('#urlpath').val();
+	var pos = $('#posdepttd'+did).html();
 
-	$('#nametd'+did).html("<input id=in"+did+" type=text size=25 value=\""+name+"\" />");
-	$('#margintd'+did).html("<input id=im"+did+" type=text size=6 value=\""+margin+"\" />");
+	$('#nametd'+did).html("<input id=in"+did+" type=text class=\"form-control save-"+did+"\" value=\""+name+"\" />");
+	$('#margintd'+did).html("<input id=im"+did+" type=text class=\"form-control save-"+did+"\" value=\""+margin+"\" />");
+	$('#posdepttd'+did).html("<input id=ip"+did+" type=text class=\"form-control save-"+did+"\" value=\""+pos+"\" />");
 
-	var newbutton = "<a href=\"\" onclick=\"save("+did+"); return false;\">";
-	newbutton += "<img src=\""+path+"src/img/buttons/b_save.png\" ";
-	newbutton += "alt=\"Save\" border=0 /></a>";
-	$('#button'+did).html(newbutton);	
+    $('#button'+did+' .edit-link').hide();
+    $('#button'+did+' .save-link').show();
+    $('#im'+did).focus();
+    $('.save-'+did).keydown(function(event) {
+        if (event.which == 13) {
+            save(did);
+        }
+    });
 }
 
-function save(did){
+function save(did)
+{
 	var name = $('#in'+did).val();
 	var margin = $('#im'+did).val();
-	var path = $('#urlpath').val();
+	var pos = $('#ip'+did).val();
 	var vid = $('#vendorID').val();
 
 	$('#nametd'+did).html(name);
 	$('#margintd'+did).html(margin);
+	$('#posdepttd'+did).html(pos);
 
-	var newbutton = "<a href=\"\" onclick=\"edit("+did+"); return false;\">";
-	newbutton += "<img src=\""+path+"src/img/buttons/b_edit.png\" ";
-	newbutton += "alt=\"Edit\" border=0 /></a>";
-	$('#button'+did).html(newbutton);	
-	
+    $('#button'+did+' .edit-link').show();
+    $('#button'+did+' .save-link').hide();
+
 	name = encodeURIComponent(name);
 	$.ajax({
 		url: 'VendorDepartmentEditor.php',
 		type: 'POST',
+        dataType: 'json',
 		timeout: 5000,
-		data: 'deptID='+did+'&vid='+vid+'&name='+name+'&margin='+margin+'&action=updateCat',
+		data: 'deptID='+did+'&vid='+vid+'&name='+name+'&margin='+margin+'&pos='+pos+'&action=updateCat',
 		error: function(){
-		alert('Error loading XML document');
+            showBootstrapAlert('#alert-area', 'danger', 'Network error saving #' + did);
 		},
 		success: function(resp){
-			// do nothing
+            if (resp.error) {
+                showBootstrapAlert('#alert-area', 'danger', resp.error);
+            } else {
+                showBootstrapAlert('#alert-area', 'success', 'Saved #' + did);
+            }
 		}
 	});
 }

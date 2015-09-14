@@ -40,6 +40,22 @@ class MemtypeModel extends BasicModel
     'ssi' => array('type'=>'TINYINT'),
     );
 
+    public function doc()
+    {
+        return '
+Use:
+Housekeeping. If you want to sort people in
+custdata into more categories than just
+member/nonmember, use memtype.
+
+The custdataType, discount, staff, and ssi
+are the default values for custdata\'s
+Type, discount, staff, and ssi columns
+when creating a new record of a given
+memtype.
+        ';
+    }
+
     protected function hookAddColumnCustdataType()
     {
         if ($this->connection->table_exists('memdefaults')) {

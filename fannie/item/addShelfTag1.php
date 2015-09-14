@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -65,34 +65,25 @@ $shelftag->units($units);
 $shelftag->vendor($vendor);
 $shelftag->count($count);
 $insR = $shelftag->save();
-
-if ( $insR == False ) {
-echo "<html>
-<head>
-</head>
-<body>
-<p>Failed to create tag
-</p>
-</body>
-</html>";
-}
-else {
-echo "
+?>
+<!doctype html>
 <html>
-<head>
-<script type='text/javascript'>
-window.close();
-</script>
-</head>
-</html>";
+    <head>
+        <title>Add Shelf Tag</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap-default/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="../src/javascript/bootstrap-default/css/bootstrap-theme.min.css">
+        <script type="text/javascript" src="../src/javascript/jquery/jquery.min.js"></script>
+        <script type="text/javascript" src="../src/javascript/bootstrap/js/bootstrap.min.js"></script>
+    </head>
+<body>
+<?php
+if ($insR == false) {
+    echo '<div class="alert alert-danger">Error creating tag</div>';
+} else {
+    echo '<div class="alert alert-success">Created Tag</div>';
 }
 ?>
-<!--
-<html>
-<head>
-<script type='text/javascript'>
-window.close();
-</script>
-</head>
+</body>
 </html>
--->

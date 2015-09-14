@@ -23,56 +23,55 @@
 
 class MemberID extends Parser 
 {
-	function check($str)
+    function check($str)
     {
-		if (substr($str,-2) == "ID") {
-			return true;
+        if (substr($str,-2) == "ID") {
+            return true;
         }
 
-		return false;
-	}
+        return false;
+    }
 
-	function parse($str)
+    function parse($str)
     {
-        global $CORE_LOCAL;
-		if ($str == "0ID") {
+        if ($str == "0ID") {
             // Member zero clears member info from the transaction
-			PrehLib::clearMember();
-			$ret = array("main_frame"=>false,
-				"output"=>DisplayLib::lastpage(),
-				"target"=>".baseHeight",
-				"redraw_footer"=>true
-			);
-			return $ret;
-		} else if ($CORE_LOCAL->get('RestrictDefaultNonMem') == 1 && $str == ($CORE_LOCAL->get('defaultNonMem') . 'ID')) {
+            PrehLib::clearMember();
+            $ret = array("main_frame"=>false,
+                "output"=>DisplayLib::lastpage(),
+                "target"=>".baseHeight",
+                "redraw_footer"=>true
+            );
+            return $ret;
+        } else if (CoreLocal::get('RestrictDefaultNonMem') == 1 && $str == (CoreLocal::get('defaultNonMem') . 'ID')) {
             // PrehLib::ttl will automatically prompt for member if it
             // has not been entered; otherwise just total
             $ret = $this->default_json();
             $try = PrehLib::ttl();
             if ($try !== true) {
-                $ret['main_frame'] = $try.'?idSearch='.$CORE_LOCAL->get('defaultNonMem');
+                $ret['main_frame'] = $try.'?idSearch='.CoreLocal::get('defaultNonMem');
             } else {
                 $ret['output'] = DisplayLib::lastpage();
             }
             return $ret;
-		} else {
+        } else {
             // always re-apply other member numbers
-			$ret = PrehLib::memberID(substr($str,0,strlen($str)-2));
-			return $ret;
-		}
-	}
+            $ret = PrehLib::memberID(substr($str,0,strlen($str)-2));
+            return $ret;
+        }
+    }
 
-	function doc()
+    function doc()
     {
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td><i>number</i>ID</td>
-				<td>Set member <i>number</i></td>
-			</tr>
-			</table>";
-	}
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td><i>number</i>ID</td>
+                <td>Set member <i>number</i></td>
+            </tr>
+            </table>";
+    }
 }
 

@@ -3,14 +3,14 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -30,6 +30,8 @@ class NewItemsReport extends FannieReportPage
 {
     public $description = '[New Items] shows products recently added to POS. This is more
         approximate than definitive.';
+    public $themed = true;
+    public $report_set = 'Operational Data';
 
     protected $title = "Fannie : New Items Report";
     protected $header = "New Items Report";
@@ -64,6 +66,7 @@ class NewItemsReport extends FannieReportPage
         $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
+        $deptMulti = FormLib::get('departments', array());
     
         $buyer = FormLib::get('buyer', '');
 
@@ -72,14 +75,26 @@ class NewItemsReport extends FannieReportPage
         $args = array();
         $where = ' 1=1 ';
         if ($buyer !== '') {
-            if ($buyer != -1) {
-                $where = ' s.superID=? ';
+            if ($buyer == -2) {
+                $where .= ' AND s.superID != 0 ';
+            } elseif ($buyer != -1) {
+                $where .= ' AND s.superID=? ';
                 $args[] = $buyer;
             }
-        } else {
-            $where = ' t.department BETWEEN ? AND ? ';
-            $args[] = $deptStart;
-            $args[] = $deptEnd;
+        }
+        if ($buyer != -1) {
+            if (count($deptMulti) > 0) {
+                $where .= ' AND p.department IN (';
+                foreach ($deptMulti as $d) {
+                    $where .= '?,';
+                    $args[] = $d;
+                }
+                $where = substr($where, 0, strlen($where)-1) . ')';
+            } else {
+                $where .= ' AND p.department BETWEEN ? AND ? ';
+                $args[] = $deptStart;
+                $args[] = $deptEnd;
+            }
         }
         $args[] = $date1.' 00:00:00';
         $args[] = $date2.' 23:59:59';
@@ -91,6 +106,8 @@ class NewItemsReport extends FannieReportPage
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {
             $query .= 'LEFT JOIN superdepts AS s ON p.department=s.dept_ID ';
+        } elseif ($buyer !== '' && $buyer == -2) {
+            $query .= 'LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID ';
         }
         $query .= "WHERE $where
             GROUP BY p.upc,p.description,p.department, d.dept_name
@@ -118,99 +135,15 @@ class NewItemsReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        return FormLib::dateAndDepartmentForm();
+    }
 
-        $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
-        $deptsR = $dbc->exec_statement($deptsQ);
-        $deptsList = "";
-
-        $deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames
-                WHERE superID <> 0 
-                ORDER BY superID");
-        $deptSubR = $dbc->exec_statement($deptSubQ);
-
-        $deptSubList = "";
-        while($deptSubW = $dbc->fetch_array($deptSubR)) {
-            $deptSubList .=" <option value=$deptSubW[0]>$deptSubW[1]</option>";
-        }
-        while ($deptsW = $dbc->fetch_array($deptsR)) {
-            $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
-        }
-
-        ob_start();
-        ?>
-<script type="text/javascript">
-function swap(src,dst){
-    var val = document.getElementById(src).value;
-    document.getElementById(dst).value = val;
-}
-</script>
-<div id=main>   
-<form method = "get" action="NewItemsReport.php">
-    <table border="0" cellspacing="0" cellpadding="5">
-        <tr>
-            <td><b>Select Buyer/Dept</b></td>
-            <td><select id=buyer name=buyer>
-               <option value=""></option>
-               <?php echo $deptSubList; ?>
-               <option value=-1 >All</option>
-               </select>
-            </td>
-            <td><b>Send to Excel</b></td>
-            <td><input type=checkbox name=excel id=excel value=1></td>
-        </tr>
-        <tr>
-            <td colspan=5><i>Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
-            To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'</i></td>
-        </tr>
-        <tr> 
-            <td> <p><b>Department Start</b></p>
-            <p><b>End</b></p></td>
-            <td> <p>
-            <select id=deptStartSel onchange="swap('deptStartSel','deptStart');">
-            <?php echo $deptsList ?>
-            </select>
-            <input type=text name=deptStart id=deptStart size=5 value=1 />
-            </p>
-            <p>
-            <select id=deptEndSel onchange="swap('deptEndSel','deptEnd');">
-            <?php echo $deptsList ?>
-            </select>
-            <input type=text name=deptEnd id=deptEnd size=5 value=1 />
-            </p></td>
-
-             <td>
-            <p><b>Date Start</b> </p>
-                 <p><b>End</b></p>
-               </td>
-                    <td>
-                     <p>
-                       <input type=text id=date1 name=date1 />
-                       </p>
-                       <p>
-                        <input type=text id=date2 name=date2 />
-                 </p>
-               </td>
-
-        </tr>
-        <tr> 
-             <td colspan="2"> </td>
-            <td colspan="2" rowspan="2">
-                <?php echo FormLib::date_range_picker(); ?>
-            </td>
-        </tr>
-        <tr>
-            <td> <input type=submit name=submit value="Submit"> </td>
-            <td> <input type=reset name=reset value="Start Over"> </td>
-        </tr>
-    </table>
-</form>
-        <?php
-        $this->add_onload_command('$(\'#date1\').datepicker();');
-        $this->add_onload_command('$(\'#date2\').datepicker();');
-
-        return ob_get_clean();
+    public function helpContent()
+    {
+        return '<p>
+            List items that were added to POS
+            in the given date range.
+            </p>';
     }
 }
 

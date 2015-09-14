@@ -11,9 +11,9 @@ $username = validateUserQuiet('editmembers');
 if (!$username) $username = validateUserQuiet('editmembers_csc');
 
 if(isset($_GET['memNum'])){
-	$memID = $_GET['memNum'];
+    $memID = $_GET['memNum'];
 }else{
-	$memID = $_POST['memNum'];
+    $memID = $_POST['memNum'];
 }
 
 //$lName = $_POST['lastName'];
@@ -29,22 +29,22 @@ $auditQ = "insert custUpdate select now(),$uid,1,* from custdata where cardno=$m
 <head>
 </head>
 <body 
-	bgcolor="#66CC99" 
-	leftmargin="0" topmargin="0" 
-	marginwidth="0" marginheight="0" 
-	onload="MM_preloadImages(
-		'../images/memOver.gif',
-		'../images/memUp.gif',
-		'../images/repUp.gif',
-		'../images/itemsDown.gif',
-		'../images/itemsOver.gif',
-		'../images/itemsUp.gif',
-		'../images/refUp.gif',
-		'../images/refDown.gif',
-		'../images/refOver.gif',
-		'../images/repDown.gif',
-		'../images/repOver.gif'
-	)"
+    bgcolor="#66CC99" 
+    leftmargin="0" topmargin="0" 
+    marginwidth="0" marginheight="0" 
+    onload="MM_preloadImages(
+        '../images/memOver.gif',
+        '../images/memUp.gif',
+        '../images/repUp.gif',
+        '../images/itemsDown.gif',
+        '../images/itemsOver.gif',
+        '../images/itemsUp.gif',
+        '../images/refUp.gif',
+        '../images/refDown.gif',
+        '../images/refOver.gif',
+        '../images/repDown.gif',
+        '../images/repOver.gif'
+    )"
 >
 
 <table width="660" height="111" border="0" cellpadding="0" cellspacing="0" bgcolor="#66cc99">
@@ -54,19 +54,19 @@ $auditQ = "insert custUpdate select now(),$uid,1,* from custdata where cardno=$m
   --> </tr>
   <tr>
     <td colspan="11" bgcolor="#006633"><!--<a href="memGen.php">-->
-	<img src="../images/general.gif" width="72" height="16" border="0" />
+    <img src="../images/general.gif" width="72" height="16" border="0" />
     <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIEquityPage.php?id=<? echo $memID; ?>">
-		<img src="../images/equity.gif" width="72" height="16" border="0" />
-	</a>
+        <img src="../images/equity.gif" width="72" height="16" border="0" />
+    </a>
     <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIArPage.php?id=<? echo $memID; ?>">
-		<img src="../images/AR.gif" width="72" height="16" border="0" />
-	</a>
-	<a href="memControl.php?memID=<?php echo $memID ?>">
-		<img src="../images/control.gif" width="72" height="16" border="0" />
-	</a>
+        <img src="../images/AR.gif" width="72" height="16" border="0" />
+    </a>
+    <a href="memControl.php?memID=<?php echo $memID ?>">
+        <img src="../images/control.gif" width="72" height="16" border="0" />
+    </a>
     <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIPurchasesPage.php?id=<? echo $memID; ?>">
-		<img src="../images/detail.gif" width="72" height="16" border="0" />
-	</a>
+        <img src="../images/detail.gif" width="72" height="16" border="0" />
+    </a>
    </td>
   </tr>
   <tr>
@@ -89,7 +89,7 @@ $lName = str_replace("'","",$_POST['lName']);
 $blueline = $memNum . " " . $_POST['lName'];
 $bladd = "";
 if ($_POST['status'] == "ACTIVE"){
-	$bladd = " Coup(".$_POST['memcoupons'].")";
+    $bladd = " Coup(".$_POST['memcoupons'].")";
 }
 $blueline .= $bladd;
 $MI_FIELDS['street'] = $_POST['address1'] . (!empty($_POST['address2']) ? "\n".$_POST['address2'] : '');
@@ -103,10 +103,10 @@ $MI_FIELDS['ads_OK'] = $_POST['mailflag'];
 $fnames = $_POST["hfname"];
 $lnames = $_POST["hlname"];
 for($i=0;$i<count($fnames);$i++){
-	$fnames[$i] = str_replace("'","",$fnames[$i]);
+    $fnames[$i] = str_replace("'","",$fnames[$i]);
 }
 for($i=0;$i<count($lnames);$i++){
-	$lnames[$i] = str_replace("'","",$lnames[$i]);
+    $lnames[$i] = str_replace("'","",$lnames[$i]);
 }
 
 $cards = new MemberCardsModel($sql);
@@ -129,8 +129,8 @@ $cust->blueLine($blueline);
 $cust->save();
 
 for($i=0;$i<3;$i++){
-	if ($fnames[$i]=="''") $fnames[$i] = "";
-	if ($lnames[$i]=="''") $lnames[$i] = "";
+    if ($fnames[$i]=="''") $fnames[$i] = "";
+    if ($lnames[$i]=="''") $lnames[$i] = "";
 }
 
 $count = 2;
@@ -140,23 +140,32 @@ $cust->CardNo($memNum);
 $cust->personNum(1);
 $cust->load();
 for($i=0; $i<count($lnames); $i++) {
-	if (empty($lnames[$i]) && empty($fnames[$i])) continue;
+    if (empty($lnames[$i]) && empty($fnames[$i])) continue;
 
-	$cust->personNum($count);
-	$cust->FirstName($fnames[$i]);
-	$cust->LastName($lnames[$i]);
-	$cust->BlueLine( $cust->CardNo().' '.$cust->LastName() );
-	$cust->save(); // save next personNum
+    $cust->personNum($count);
+    $cust->FirstName($fnames[$i]);
+    $cust->LastName($lnames[$i]);
+    $cust->BlueLine( $cust->CardNo().' '.$cust->LastName() );
+    $cust->save(); // save next personNum
 
-	$count++;
+    $count++;
 }
 // remove names that were blank on the form
 for($i=$count;$i<5;$i++){
-	$cust->personNum($i);
-	$cust->delete();
+    $cust->personNum($i);
+    $cust->delete();
 }
 
-MeminfoModel::update($memNum, $MI_FIELDS);
+$meminfo = new MeminfoModel($sql);
+$meminfo->card_no($memNum);
+$meminfo->street($MI_FIELDS['street']);
+$meminfo->city($MI_FIELDS['city']);
+$meminfo->state($MI_FIELDS['state']);
+$meminfo->phone($MI_FIELDS['phone']);
+$meminfo->email_2($MI_FIELDS['email_2']);
+$meminfo->email_1($MI_FIELDS['email_1']);
+$meminfo->ads_OK($MI_FIELDS['ads_OK']);
+$meminfo->save();
 
 /* general note handling */
 $notetext = $_POST['notetext'];
@@ -165,8 +174,8 @@ $notetext = preg_replace("/\'/","''",$notetext);
 $checkQ = $sql->prepare("select * from memberNotes where note=? and cardno=?");
 $checkR = $sql->execute($checkQ, array($notetext, $memNum));
 if ($sql->num_rows($checkR) == 0){
-	$noteQ = $sql->prepare("insert into memberNotes (cardno, note, stamp, username) VALUES (?, ?, ".$sql->now().", ?)");
-	$noteR = $sql->execute($noteQ, array($memNum, $notetext, $username));
+    $noteQ = $sql->prepare("insert into memberNotes (cardno, note, stamp, username) VALUES (?, ?, ".$sql->now().", ?)");
+    $noteR = $sql->execute($noteQ, array($memNum, $notetext, $username));
 }
 
 // FIRE ALL UPDATE

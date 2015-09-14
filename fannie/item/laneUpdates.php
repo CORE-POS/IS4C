@@ -3,14 +3,14 @@
 
     Copyright 2009 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -21,13 +21,19 @@
 
 *********************************************************************************/
 
-if (!isset($FANNIE_ROOT))
-    require(dirname(__FILE__) . '/../config.php');
-if (!class_exists('SQLManager'))
-    require($FANNIE_ROOT.'src/SQLManager.php');
+if (!class_exists('FannieConfig')) {
+    require(dirname(__FILE__) . '/../classlib2.0/FannieConfig.php');
+}
+if (!class_exists('SQLManager')) {
+    require(dirname(__FILE__) . '/../src/SQLManager.php');
+}
 
-function addProductAllLanes($upc){
-    global $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+function addProductAllLanes($upc)
+{
+    $FANNIE_OP_DB = FannieConfig::config('OP_DB');
+    $FANNIE_LANES = FannieConfig::config('LANES');
+    $STORE_MODE = FannieConfig::config('STORE_MODE');
+    $STORE_ID = FannieConfig::config('STORE_ID');
     $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
 
     $server_table_def = $laneupdate_sql->table_definition('products',$FANNIE_OP_DB);
@@ -61,7 +67,11 @@ function addProductAllLanes($upc){
             $selQ .= $col.",";
             $ins .= $col.",";
         }
-        $selQ = rtrim($selQ,",")." FROM products WHERE upc='$upc' ORDER BY store_id DESC";
+        $selQ = rtrim($selQ,",")
+            . " FROM products WHERE upc='$upc' ";
+        if ($STORE_MODE == 'HQ') {
+            $selQ .= ' AND store_id=' . ((int)$STORE_ID);
+        }
         $selQ = $laneupdate_sql->add_select_limit($selQ, 1, $FANNIE_OP_DB);
         $ins = rtrim($ins,",").")";
 
@@ -69,8 +79,10 @@ function addProductAllLanes($upc){
     }
 }
 
-function deleteProductAllLanes($upc){
-    global $FANNIE_OP_DB, $FANNIE_LANES;
+function deleteProductAllLanes($upc)
+{
+    $FANNIE_OP_DB = FannieConfig::config('OP_DB');
+    $FANNIE_LANES = FannieConfig::config('LANES');
     $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
 
     for ($i = 0; $i < count($FANNIE_LANES); $i++){
@@ -86,9 +98,9 @@ function deleteProductAllLanes($upc){
     }
 }
 
-function updateProductAllLanes($upc){
+function updateProductAllLanes($upc)
+{
     deleteProductAllLanes($upc);
     addProductAllLanes($upc);
 }
 
-?>

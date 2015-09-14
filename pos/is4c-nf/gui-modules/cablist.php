@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class cablist extends NoInputPage 
+class cablist extends NoInputCorePage 
 {
 
     function head_content()
@@ -52,20 +52,24 @@ class cablist extends NoInputPage
         }
         </script> 
         <?php
-        $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
+        $this->add_onload_command("selectSubmit('#selectlist', '#selectform', false, true)\n");
         $this->add_onload_command("\$('#selectlist').focus();\n");
     }
     
     function body_content()
     {
-        global $CORE_LOCAL;
-
         $db = Database::pDataConnect();
-        $query = "SELECT frontendsecurity FROM employees WHERE emp_no=".$CORE_LOCAL->get("CashierNo");
-        $result = $db->query($query);
+        $query = "
+            SELECT frontendsecurity 
+            FROM employees 
+            WHERE emp_no=?";
+        $prep = $db->prepare($query);
+        $result = $db->execute($prep, array(CoreLocal::get('CashierNo')));
         $fes = 0;
-        if ($db->num_rows($result) > 0)
-            $fes = array_pop($db->fetch_row($result));
+        if ($db->num_rows($result) > 0) {
+            $row = $db->fetch_row($result);
+            $fes = $row['frontendsecurity'];
+        }
 
         /* if front end security >= 25, pull all
          * available receipts; other wise, just
@@ -79,7 +83,7 @@ class cablist extends NoInputPage
             having sum((case when trans_type='T' THEN -1*total ELSE 0 end)) >= 30
             order by register_no,emp_no,trans_no desc";
             $db = Database::tDataConnect();
-            if ($CORE_LOCAL->get("standalone") == 0) {
+            if (CoreLocal::get("standalone") == 0) {
                 $query = str_replace("localtranstoday","dtransactions",$query);
                 $db = Database::mDataConnect();
             }
@@ -88,15 +92,23 @@ class cablist extends NoInputPage
         } else {
             $db = Database::tDataConnect();
 
-            $query = "select emp_no, register_no, trans_no, sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
-            ."from localtranstoday where register_no = " . $CORE_LOCAL->get("laneno")
-            ." AND emp_no = " . $CORE_LOCAL->get("CashierNo")
-            ." AND datetime >= " . $db->curdate()
-            ." group by register_no, emp_no, trans_no
-            having sum((case when trans_type='T' THEN -1*total ELSE 0 end)) >= 30
-            order by trans_no desc";
-
-            $result = $db->query($query);
+            $query = "
+                SELECT emp_no, 
+                    register_no, 
+                    trans_no, 
+                    SUM((CASE WHEN trans_type = 'T' THEN -1 * total ELSE 0 END)) AS total 
+                FROM localtranstoday 
+                WHERE register_no = ?
+                    AND emp_no = ?
+                    AND datetime >= " . $db->curdate() . "
+                GROUP BY register_no, 
+                    emp_no, 
+                    trans_no
+                HAVING SUM((CASE WHEN trans_type='T' THEN -1*total ELSE 0 END)) >= 30
+                ORDER BY trans_no desc";
+            $args = array(CoreLocal::get('laneno'), CoreLocal::get('CashierNo'));
+            $prep = $db->prepare($query);
+            $result = $db->execute($prep, $args);
         }
 
         $num_rows = $db->num_rows($result);
@@ -105,7 +117,7 @@ class cablist extends NoInputPage
         <div class="baseHeight">
         <div class="listbox">
         <form id="selectform" name="selectform" onsubmit="return submitWrapper();">
-        <select name="selectlist" size="10" onblur="$('#selectlist').focus()"
+        <select name="selectlist" size="15" onblur="$('#selectlist').focus()"
             id="selectlist">
 
         <?php
@@ -124,11 +136,28 @@ class cablist extends NoInputPage
         ?>
 
         </select>
-        </form>
         </div>
+        <?php
+        if (CoreLocal::get('touchscreen')) {
+            echo '<div class="listbox listboxText">'
+                . DisplayLib::touchScreenScrollButtons('#selectlist')
+                . '</div>';
+        }
+        ?>
         <div class="listboxText coloredText centerOffset">
-        use arrow keys to navigate<br />[enter] to reprint receipt<br />[clear] to cancel
+        <?php echo _("use arrow keys to navigate"); ?><br />
+        <p>
+            <button type="submit" class="pos-button wide-button coloredArea">
+            Reprint <span class="smaller">[enter]</span>
+            </button>
+        </p>
+        <p>
+            <button type="submit" class="pos-button wide-button errorColoredArea"
+            onclick="$('#selectlist').append($('<option>').val(''));$('#selectlist').val('');">
+            Cancel <span class="smaller">[clear]</span>
+        </button></p>
         </div>
+        </form>
         <div class="clear"></div>
         </div>
 

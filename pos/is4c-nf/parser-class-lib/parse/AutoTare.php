@@ -21,52 +21,65 @@
 
 *********************************************************************************/
 
-class AutoTare extends Parser {
-	function check($str){
-		if (substr($str,-2) == "TW"){
-			$left = substr($str,0,strlen($str)-2);
-			if ($left == "" || is_numeric($left))
-				return True;
-		}
-		return False;
-	}
+class AutoTare extends Parser 
+{
+    function check($str)
+    {
+        if (substr($str,-2) == "TW") {
+            $left = substr($str,0,strlen($str)-2);
+            if ($left == "" || is_numeric($left)) {
+                return true;
+            }
+        }
 
-	function parse($str){
-		global $CORE_LOCAL;
-		$ret = $this->default_json();
+        return false;
+    }
 
-		$left = substr($str,0,strlen($str)-2);
-		if ($left == "")
-			$left = 1;	
+    function parse($str)
+    {
+        $ret = $this->default_json();
 
-		if (strlen($left) > 4)
-			$ret['output'] = DisplayLib::boxMsg(MiscLib::truncate2($left/100)." "._("tare not supported"));
-		elseif ($left/100 > $CORE_LOCAL->get("weight") && $CORE_LOCAL->get("weight") > 0) 
-			$ret['output'] = DisplayLib::boxMsg(_("Tare cannot be")."<br />"._("greater than item weight"));
-		else {
-			TransRecord::addTare($left);
-			$ret['output'] = DisplayLib::lastpage();
-		}
+        $left = substr($str,0,strlen($str)-2);
+        if ($left == "")
+            $left = 1;    
 
-		return $ret;
-	}
+        if (strlen($left) > 4) {
+            $ret['output'] = DisplayLib::boxMsg(
+                MiscLib::truncate2($left/100) . _(" tare not supported"),
+                _('Invalid Tare'),
+                false,
+                DisplayLib::standardClearButton()
+            );
+        } elseif ($left/100 > CoreLocal::get("weight") && CoreLocal::get("weight") > 0) {
+            $ret['output'] = DisplayLib::boxMsg(
+                _("Tare cannot be")."<br />"._("greater than item weight"),
+                _('Excess Tare'),
+                false,
+                DisplayLib::standardClearButton()
+            );
+        } else {
+            TransRecord::addTare($left);
+            $ret['output'] = DisplayLib::lastpage();
+        }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td><i>number</i>TW</td>
-				<td>Set tare weight to <i>number</i></td>
-			</tr>
-			<tr>
-				<td>TW</td>
-				<td>Set tare weight 1. Same as 1TW</td>
-			</tr>
-			</table>";
-	}
+        return $ret;
+    }
+
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td><i>number</i>TW</td>
+                <td>Set tare weight to <i>number</i></td>
+            </tr>
+            <tr>
+                <td>TW</td>
+                <td>Set tare weight 1. Same as 1TW</td>
+            </tr>
+            </table>";
+    }
 
 }
 
-?>

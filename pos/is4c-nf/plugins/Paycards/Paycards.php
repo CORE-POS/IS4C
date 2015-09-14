@@ -23,18 +23,18 @@
 
 class Paycards extends Plugin {
 
-	public $description = 'Plugin for integrated payment cards';
+    public $plugin_description = 'Plugin for integrated payment cards';
 
-	public $plugin_settings = array(
-		'CCintegrate' => array(
-		'label' => 'Live',
-		'description' => 'Enable live integrated transactions',
-		'default' => 1,
-		'options' => array(
-			'Yes' => 1,
-			'No' => 0
-			)
-		),
+    public $plugin_settings = array(
+        'CCintegrate' => array(
+        'label' => 'Live',
+        'description' => 'Enable live integrated transactions',
+        'default' => 1,
+        'options' => array(
+            'Yes' => 1,
+            'No' => 0
+            )
+        ),
         'RegisteredPaycardClasses' => array(
         'label' => 'Processor(s)',
         'description' => 'Which processors to use',
@@ -53,49 +53,55 @@ class Paycards extends Plugin {
         'description' => 'Unique ID for MC regs (1-3 characters, alphanumeric)',
         'default'=> '',
         ),
-		'PaycardsCashierFacing' => array(
-		'label' => 'Mode',
-		'description' => 'Who is swiping the card?',
-		'default' => 1,
-		'options' => array(
-			'Cashier' => 1,
-			'Customer' => 0
-			)
-		),
-		'PaycardsStateChange' => array(
-		'label' => 'Communication',
-		'description' => 'Should terminal switch screens 
+        'PaycardsCashierFacing' => array(
+        'label' => 'Mode',
+        'description' => 'Who is swiping the card?',
+        'default' => 1,
+        'options' => array(
+            'Cashier' => 1,
+            'Customer' => 0
+            )
+        ),
+        'PaycardsStateChange' => array(
+        'label' => 'Communication',
+        'description' => 'Should terminal switch screens 
 based on direct input or
 messages from POS?',
-		'default' => 'direct',
-		'options' => array(
-			'Direct Input' => 'direct',
-			'Messages' => 'coordinated' 
-			)
-		),
-		'PaycardsSigCapture' => array(
-		'label' => 'Signature Mode',
-		'description' => '',
-		'default' => 0,
-		'options' => array(
-			'Sign on termial' => 1,
-			'Sign paper slip' => 0
-			)
-		),
+        'default' => 'coordinated',
+        'options' => array(
+            'Messages' => 'coordinated',
+            'Direct Input' => 'direct',
+            )
+        ),
+        'PaycardsSigCapture' => array(
+        'label' => 'Signature Mode',
+        'description' => '',
+        'default' => 0,
+        'options' => array(
+            'Sign on termial' => 1,
+            'Sign paper slip' => 0
+            )
+        ),
         'CCSigLimit' => array(
         'label' => 'Signature Required Threshold',
         'description' => 'Require signatures on credit purchases above this amount',
         'default' => 0.00,
         ),
-		'PaycardsOfferCashBack' => array(
-		'label' => 'Offer Cashback',
-		'description' => 'Show cashback screen on terminal',
-		'default' => 1,
-		'options' => array(
-			'Yes' => 1,
-			'No' => 0
-			)
-		),
+        'PaycardsOfferCashBack' => array(
+        'label' => 'Offer Cashback',
+        'description' => 'Show cashback screen on terminal',
+        'default' => 1,
+        'options' => array(
+            'Yes' => 1,
+            'No' => 0,
+            'Member Only' => 2,
+            )
+        ),
+        'PaycardsTermCashBackLimit' => array(
+        'label' => 'Terminal CB Max',
+        'description' => 'Maximum cashback selectable on terminal (in $)',
+        'default' => 40,
+        ),
         'PaycardsAllowEBT' => array(
             'label' => 'Allow EBT',
             'description' => 'Show EBT option on terminal 
@@ -114,6 +120,15 @@ messages from POS?',
             'options' => array(
                 'Yes' => 1,
                 'No' => 0
+                )
+        ),
+        'PaycardsDatacapMode' => array(
+            'label' => 'Datacap Mode',
+            'description' => 'The Datacap driver has an EMV mode or a legacy credit/debit mode',
+            'default' => 0,
+            'options' => array(
+                'EMV' => 1,
+                'Credit/Debit' => 0
                 )
         ),
         'PaycardsBlockExceptions' => array(
@@ -140,6 +155,11 @@ messages from POS?',
             'label' => 'EBT Cash Tender Code',
             'description' => 'Two-letter tender code for EBT Cash transactions',
             'default' => 'EC',
+        ),
+        'PaycardsTenderCodeEbtEmv' => array(
+            'label' => 'EMV Tender Code',
+            'description' => 'Two-letter tender code for EMV transactions',
+            'default' => 'CC',
         ),
         'PaycardsTenderCodeVisa' => array(
             'label' => 'Visa-Specific Tender Code',
@@ -171,20 +191,19 @@ messages from POS?',
             'description' => 'Password for use with encrypted Mercury processing',
             'default' => '',
         ),
-	);
+    );
 
-	public function plugin_enable(){
+    public function plugin_enable(){
 
-	}
+    }
 
-	public function plugin_disable(){
+    public function plugin_disable(){
 
-	}
+    }
 
     public function plugin_transaction_reset()
     {
-        global $CORE_LOCAL;
-        $CORE_LOCAL->set('paycardTendered', false);
+        CoreLocal::set('paycardTendered', false);
     }
 
 }

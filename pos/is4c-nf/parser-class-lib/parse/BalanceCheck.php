@@ -21,37 +21,47 @@
 
 *********************************************************************************/
 
-class BalanceCheck extends Parser {
-	function check($str){
-		if ($str == "BQ")
-			return True;
-		return False;
-	}
+class BalanceCheck extends Parser 
+{
+    function check($str)
+    {
+        if ($str == "BQ") {
+            return true;
+        }
 
-	function parse($str){
-		global $CORE_LOCAL;
-		$ret = $this->default_json();
-		PrehLib::chargeOk();
-		$memChargeCommitted=$CORE_LOCAL->get("availBal") - $CORE_LOCAL->get("memChargeTotal");
-		$ret['output'] = DisplayLib::boxMsg(_("Member")." #". $CORE_LOCAL->get("memberID")."<br />".
-					_("Current AR balance is")." " . $CORE_LOCAL->get("balance") . "<br />".
-					_("Available AR balance is")." ".$CORE_LOCAL->get("availBal"). "</b>","",True);
-		return $ret;
-	}
+        return false;
+    }
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>BQ</td>
-				<td>Display store charge balance for
-				currently entered member</td>
-			</tr>
-			</table>";
-	}
+    function parse($str)
+    {
+        $ret = $this->default_json();
+        PrehLib::chargeOk();
+        $memChargeCommitted=CoreLocal::get("availBal") - CoreLocal::get("memChargeTotal");
+        $title = _('Member #') . CoreLocal::get('memberID');
+        $msg = _("Current AR balance is ") . CoreLocal::get("balance") . "<br />"
+             . _("Available AR balance is ") . CoreLocal::get("availBal");
+        $ret['output'] = DisplayLib::boxMsg(
+            $msg, 
+            $title, 
+            true, 
+            array_merge(array('Tender [Store Credit]' => 'parseWrapper(\'MI\');'), DisplayLib::standardClearButton())
+        );
+
+        return $ret;
+    }
+
+    function doc(){
+        return "<table cellspacing=0 cellpadding=3 border=1>
+            <tr>
+                <th>Input</th><th>Result</th>
+            </tr>
+            <tr>
+                <td>BQ</td>
+                <td>Display store charge balance for
+                currently entered member</td>
+            </tr>
+            </table>";
+    }
 
 }
 
-?>

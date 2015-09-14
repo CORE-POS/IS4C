@@ -27,3 +27,4 @@
 ('edit_employees','Related to employee hours worked and PTO tracking. WFC specific.')
 ('upload_hours_data','Related to WFC-specific tools to track employee hours worked and PTO.')
 ('apptracking','Related to a legacy WFC job application tracking system.')
+('departments','Credit, edit, and delete department hierarchy')

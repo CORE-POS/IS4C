@@ -3,14 +3,14 @@
 
     Copyright 2011 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of CORE-POS.
 
-    Fannie is free software; you can redistribute it and/or modify
+    CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -252,18 +252,5 @@ if (strlen($empty) > 2){
     $delQ = "DELETE FROM PendingSpecialOrder WHERE order_id IN $empty AND trans_id=0";
     $delR = $sql->query($delQ);
 }
-
-/* blueLine flagging disabled
-$q = "SELECT card_no,count(*) FROM PendingSpecialOrder as p LEFT JOIN
-    SpecialOrders AS s ON p.order_id=s.specialOrderID
-    WHERE s.statusFlag=5 AND trans_id > 0 
-    GROUP BY card_no";
-$r = $sql->query($q);
-while($w = $sql->fetch_row($r)){
-    $upQ = "UPDATE {$FANNIE_OP_DB}.custdata SET blueLine=CONCAT(blueLine, ' SO({$w[1]})')
-        WHERE CardNo={$w[0]}";
-    $upR = $sql->query($upQ);
-}
-*/
 
 ?>

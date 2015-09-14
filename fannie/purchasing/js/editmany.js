@@ -28,7 +28,7 @@ function oneResultForm(obj, resultNum){
 	if (resultNum > 0)
 		output += ' style="display:none;"';
 	output += '>';
-	output += '<table>';
+	output += '<table class="table">';
 	output += '<tr><td align="right">SKU</td>';
 	output += '<td id="srSKU'+resultNum+'">'+obj.sku+'</td></tr>';
 	output += '<tr>';
@@ -42,7 +42,7 @@ function oneResultForm(obj, resultNum){
 	output += ' Cases</td></tr>';	
 	output += '</table>';
 	output += '<input type="hidden" id="srVendorID'+resultNum+'" value="'+obj.vendorID+'" />';
-	output += '<input type="submit" value="Confirm" onclick="saveItem('+resultNum+');return false;" />';
+	output += '<button type="submit" class="btn btn-default" onclick="saveItem('+resultNum+');return false;">Confirm</button>';
 
 	output += '</div>';
 	return output;

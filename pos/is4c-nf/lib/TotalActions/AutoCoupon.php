@@ -37,8 +37,8 @@ class AutoCoupon extends TotalAction
     */
     public function apply()
     {
-        global $CORE_LOCAL;
         $db = Database::pDataConnect();
+        $repeat = CoreLocal::get('msgrepeat');
 
         $coupons = array();
         $hc_table = $db->table_definition('houseCoupons');
@@ -56,14 +56,14 @@ class AutoCoupon extends TotalAction
         }
 
         $hc = new HouseCoupon();
-        $prefix = $CORE_LOCAL->get('houseCouponPrefix');
+        $prefix = CoreLocal::get('houseCouponPrefix');
         if ($prefix == '') {
             $prefix = '00499999';
         }
 
         foreach($coupons as $id => $description) {
 
-            if ($hc->checkQualifications($id) !== true) {
+            if ($hc->checkQualifications($id, true) !== true) {
                 // member or transaction does not meet requirements
                 // for auto-coupon purposes, this isn't really an 
                 // error. no feedback necessary
@@ -76,7 +76,7 @@ class AutoCoupon extends TotalAction
             $upc = $prefix . str_pad($id, 5, '0', STR_PAD_LEFT);
             $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
             $current = $db->query('SELECT SUM(-total) AS ttl FROM '
-                           .$CORE_LOCAL->get('tDatabase') . $db->sep() . 'localtemptrans
+                           .CoreLocal::get('tDatabase') . $db->sep() . 'localtemptrans
                            WHERE upc=\'' . $upc . '\'');
             $val = 0;
             if ($db->num_rows($current) > 0) {
@@ -93,6 +93,8 @@ class AutoCoupon extends TotalAction
 
             TransRecord::addhousecoupon($upc, $add['department'], -1 * $next_val, $description);
         }
+
+        CoreLocal::set('msgrepeat', $repeat);
 
         return true;
     }

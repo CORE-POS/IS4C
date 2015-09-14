@@ -29,8 +29,7 @@ class FormLib extends LibraryClass
     */
     public static function clearTokens()
     {
-        global $CORE_LOCAL;
-        $CORE_LOCAL->set('crsfTokens', array());
+        CoreLocal::set('crsfTokens', array());
 
         return true;
     }
@@ -41,13 +40,12 @@ class FormLib extends LibraryClass
     */
     public static function setToken($token)
     {
-        global $CORE_LOCAL;
-        $tokens = $CORE_LOCAL->get('crsfTokens');
+        $tokens = CoreLocal::get('crsfTokens');
         if (!is_array($tokens)) {
             $tokens = array();
         }
         $tokens[$token] = time();
-        $CORE_LOCAL->set('crsfTokens', $tokens);
+        CoreLocal::set('crsfTokens', $tokens);
 
         return true;
     }
@@ -100,20 +98,19 @@ class FormLib extends LibraryClass
     */
     public static function validateToken($name='crsfToken')
     {
-        global $CORE_LOCAL;
         $my_token = self::get($name);
         if ($my_token === '') {
             return false;
         }
 
-        $tokens = $CORE_LOCAL->get('crsfTokens');
+        $tokens = CoreLocal::get('crsfTokens');
         if (!is_array($tokens)) {
             $tokens = array();
         }
         foreach (array_keys($tokens) as $valid_token) {
             if ($valid_token === $my_token) {
                 unset($tokens[$valid_token]);
-                $CORE_LOCAL->set('crsfTokens', $tokens);
+                CoreLocal::set('crsfTokens', $tokens);
 
                 return true;
             }

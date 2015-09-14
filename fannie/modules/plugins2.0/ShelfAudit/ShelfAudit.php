@@ -21,12 +21,13 @@
 
 *********************************************************************************/
 
-if (!class_exists('FannieAPI'))
-    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include(dirname(__FILE__) . '/classlib2.0/FannieAPI.php');
+}
 
 /**
 */
-class ShelfAudit extends FanniePlugin {
+class ShelfAudit extends \COREPOS\Fannie\API\FanniePlugin {
 
     /**
       Desired settings. These are automatically exposed
@@ -45,7 +46,7 @@ class ShelfAudit extends FanniePlugin {
 
     public $plugin_description = 'Plugin for scanning items on hand';
 
-    public function setting_change()
+    public function settingChange()
     {
         global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
