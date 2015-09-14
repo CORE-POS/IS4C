@@ -126,10 +126,7 @@ class SqliteAdapter implements DialectAdapter
 
     public function concat($expressions)
     {
-        $ret = '';
-        foreach ($expressions as $e) {
-            $ret .= $e . '||';
-        }
+        $ret = array_reduce($expressions, function($carry, $e) { return $carry . $e . '||'; }, '');
         
         return substr($ret, 0, strlen($ret)-1);
     }

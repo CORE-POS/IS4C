@@ -42,7 +42,6 @@ class VotenetReport extends FannieReportPage
                 LEFT JOIn meminfo AS m ON c.CardNo=m.card_no
             WHERE c.personNum=1
                 AND c.Type='PC'
-                AND c.memType IN (1,3)
                 AND c.LastName <> 'NEW MEMBER'
                 AND c.LastName <> 'NEW WEB MEMBER'
                 AND c.LastName <> ''

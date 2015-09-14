@@ -124,9 +124,7 @@ class MysqlAdapter implements DialectAdapter
     public function concat($expressions)
     {
         $ret = 'CONCAT(';
-        foreach ($expressions as $e) {
-            $ret .= $e . ',';
-        }
+        $ret = array_reduce($expressions, function($carry, $e) { return $carry . $e . ','; }, $ret);
         
         return substr($ret, 0, strlen($ret)-1) . ')';
     }

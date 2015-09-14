@@ -130,16 +130,17 @@ class FannieCRUDPage extends \FannieRESTfulPage
         for ($i=0; $i<count($this->id); $i++) {
             $obj->reset();
             $obj->$id_col($this->id[$i]); 
-            foreach ($columns as $col_name => $c) {
-                if ($col_name == $id_col) {
-                    continue;
-                }
-                $vals = \FormLib::get($col_name);
-                if (!is_array($vals) || !isset($vals[$i])) {
-                    continue;
-                }
-                $obj->$col_name($vals[$i]);
-            }
+            array_map(array_keys($columns),
+                function ($col_name) use ($id_col, $obj) {
+                    if ($col_name == $id_col) {
+                        return false;
+                    }
+                    $vals = \FormLib::get($col_name);
+                    if (!is_array($vals) || !isset($vals[$i])) {
+                        return false;
+                    }
+                    $obj->$col_name($vals[$i]);
+                });
             if (!$obj->save()) {
                 $errors++;
             }

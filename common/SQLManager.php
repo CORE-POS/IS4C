@@ -325,10 +325,13 @@ class SQLManager
     */
     public function queryAll($query_text)
     {
-        $ret = array();
-        foreach($this->connections as $db_name => $con) {
-            $ret[$db_name] = $this->query($query_text,$db_name);
-        }
+        $ret = array_reduce(array_keys($this->connections),
+            function ($carry, $db_name) {
+                $carry[$db_name] = $this->query($query_text,$db_name);
+                return $carry;
+            },
+            array()
+        );
 
         return $ret;
     }
@@ -1015,11 +1018,8 @@ class SQLManager
 
         $conn = $this->connections[$which_connection];
         $views = $conn->MetaTables('VIEW');
-        $lc_views = array();
         $lc_name = strtolower($table_name);
-        foreach ($views as $view) {
-            $lc_views[] = strtolower($view);
-        }
+        $lc_views = array_map(function($view) { return strtolower($view); }, $views);
 
         if (in_array($table_name, $views) || in_array($lc_name, $lc_views)) {
             return true;
@@ -1072,11 +1072,16 @@ class SQLManager
         $conn = $this->connections[$which_connection];
         $cols = $conn->MetaColumns($table_name);
 
-        $return = array();
         if (is_array($cols)) {
-            foreach($cols as $c) {
-                $return[$c->name] = $c->type;
-            }
+            $return = array_reduce($cols,
+                function ($carry, $c) {
+                    if (is_object($c)) {
+                        $carry[$c->name] = $c->type;
+                    }
+                    return $carry;
+                },
+                array()
+            );
             return $return;
         }
 
@@ -1630,12 +1635,11 @@ class SQLManager
             return array();
         }
 
-        $matches = array();
-        foreach($definition1 as $col_name => $info) {
-            if (isset($definition2[$col_name])) {
-                $matches[] = $col_name;
+        $matches = array_filter(array_keys($definition1),
+            function ($col_name) use ($definition2) {
+                return isset($definition2[$col_name]) ? true : false;
             }
-        }
+        );
 
         return $matches;
     }
@@ -1650,14 +1654,18 @@ class SQLManager
     */
     public function getMatchingColumns($table1, $which_connection1, $table2, $which_connection2)
     {
-        $ret = '';
         $def1 = $this->tableDefinition($table1, $which_connection1);
         $def2 = $this->tableDefinition($table2, $which_connection2);
-        foreach ($def1 as $column_name => $info) {
-            if (isset($def2[$column_name])) {
-                $ret .= $column_name . ',';
-            }
-        }
+        $ret = array_reduce(array_key($def1),
+            function ($carry, $column_name) use ($def2) {
+                if (isset($def2[$column_name])) {
+                    $carry .= $column_name . ',';
+                }
+                return $carry;
+            },
+            ''
+        );
+                
         if ($ret === '') {
             return false;
         } else {

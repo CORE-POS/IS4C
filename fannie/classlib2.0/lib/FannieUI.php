@@ -113,6 +113,13 @@ class FannieUI
         return sprintf('<a href="%sitem/ItemEditorPage.php?searchupc=%s">%s</a>',
             \FannieConfig::config('URL'), $upc, $upc);
     }
+
+    public static function receiptLink($date, $trans_num)
+    {
+        $date = date('Y-m-d', strtotime($date));
+        return sprintf('<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s">%s</a>',
+            \FannieConfig::config('URL'), $date, $trans_num, $trans_num);
+    }
 }
 
 }
