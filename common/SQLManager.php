@@ -325,7 +325,7 @@ class SQLManager
     */
     public function queryAll($query_text)
     {
-        $ret = array_reduce(array_key($this->connections),
+        $ret = array_reduce(array_keys($this->connections),
             function ($carry, $db_name) {
                 $carry[$db_name] = $this->query($query_text,$db_name);
                 return $carry;
