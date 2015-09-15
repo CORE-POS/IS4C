@@ -206,6 +206,9 @@ class AddCashierPage extends FannieRESTfulPage
 
     public function unitTest($phpunit)
     {
+        if (!class_exists('CashierTests')) {
+            include(dirname(__FILE__) . '/CashierTests.php');
+        }
         $tester = new CashiersTest($this->connection, $this->config, $this->logger);
         $tester->testAddCashier($this, $phpunit);
 
