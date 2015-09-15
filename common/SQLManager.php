@@ -110,6 +110,7 @@ class SQLManager
 
         $this->last_connection_error = false;
         if (!$connected) {
+            $this->last_connect_error = $conn->ErrorMsg();
             return $this->connectAndCreate($server, $type, $username, $password, $database);
         }
 
@@ -122,7 +123,6 @@ class SQLManager
     */
     private function connectAndCreate($server, $type, $username, $password, $database)
     {
-        $this->last_connect_error = $conn->ErrorMsg();
         $conn = ADONewConnection($type);
         $conn->SetFetchMode(ADODB_FETCH_BOTH);
         $connected = $conn->Connect($server,$username,$password);
