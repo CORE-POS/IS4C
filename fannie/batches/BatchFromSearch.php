@@ -63,7 +63,7 @@ class BatchFromSearch extends FannieRESTfulPage
         $upcs = $this->form->upc;
         $prices = $this->form->price;
 
-        $btype = new BatchtypeModel($dbc);
+        $btype = new BatchTypeModel($dbc);
         $btype->batchTypeID($type);
         if (!$btype->load()) {
             echo 'Invalid Batch Type ' . $type;
