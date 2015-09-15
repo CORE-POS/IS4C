@@ -1227,6 +1227,7 @@ class MemberREST
 
     private static function autoCompleteCustdata($dbc, $field, $val)
     {
+        $ret = array();
         switch (strtolower($field)) {
             case 'mfirstname':
                 $prep = $dbc->prepare('
