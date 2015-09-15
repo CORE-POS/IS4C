@@ -20,11 +20,11 @@ class CashierTests extends \COREPOS\Fannie\API\test\TestWrapper
 
         $this->connection->selectDB($this->config->get('OP_DB'));
         $emp = new EmployeesModel($this->connection);
-        $emp->FirstName($this->fname);
-        $emp->LastName($this->lname);
-        $emp->frontendsecurity($this->fes);
-        $emp->backendsecurity($this->fes);
-        $emp->birthdate($this->birthdate);
+        $emp->FirstName($form->fname);
+        $emp->LastName($form->lname);
+        $emp->frontendsecurity($form->fes);
+        $emp->backendsecurity($form->fes);
+        $emp->birthdate($form->birthdate);
         $phpunit->assertNotEquals(0, count($emp->find()));
     }
 }
