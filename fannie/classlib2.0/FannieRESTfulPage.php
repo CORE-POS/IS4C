@@ -227,7 +227,9 @@ class FannieRESTfulPage extends FanniePage
         } elseif ($ret === false) {
             return false;
         } elseif (is_string($ret)) {
-            header('Location: ' . $ret);
+            if (!headers_sent()) {
+                header('Location: ' . $ret);
+            }
             return false;
         } else {
             // dev error/bug?
