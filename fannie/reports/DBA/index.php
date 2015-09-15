@@ -83,10 +83,8 @@ if ($errors == "" && $query != ""){
         if (isset($_REQUEST['excel'])){
             $output = ob_get_contents();
             ob_end_clean();
-            include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
-            include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
-            $array = HtmlToArray($output);
-            $xls = ArrayToXls($array);
+            $array = \COREPOS\Fannie\API\data\DataConvert::htmlToArray($output);
+            $xls = \COREPOS\Fannie\API\data\DataConvert::arrayToXls($array);
             echo $xls;
         }
 

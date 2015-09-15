@@ -49,34 +49,5 @@ Apply coupons to transactions automatically
 functionality built in**.
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function coupID()
-    {
-        if(func_num_args() == 0) {
-            return $this->getColumn('coupID');
-        } else if (func_num_args() > 1) {
-            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
-            $this->filterColumn('coupID', func_get_arg(0), func_get_arg(1), $literal);
-        } else {
-            $this->setColumn('coupID', func_get_arg(0));
-        }
-        return $this;
-    }
-
-    public function description()
-    {
-        if(func_num_args() == 0) {
-            return $this->getColumn('description');
-        } else if (func_num_args() > 1) {
-            $literal = (func_num_args() > 2 && func_get_arg(2) === true) ? true : false;
-            $this->filterColumn('description', func_get_arg(0), func_get_arg(1), $literal);
-        } else {
-            $this->setColumn('description', func_get_arg(0));
-        }
-        return $this;
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

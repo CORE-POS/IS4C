@@ -101,36 +101,45 @@ class SQLManager
         $connected = false;
         if (isset($this->connections[$database]) || $new) {
             $connected = $conn->NConnect($server,$username,$password,$database);
+        } elseif ($persistent) {
+            $connected = $conn->PConnect($server,$username,$password,$database);
         } else {
-            if ($persistent) {
-                $connected = $conn->PConnect($server,$username,$password,$database);
-            } else {
-                $connected = $conn->Connect($server,$username,$password,$database);
-            }
+            $connected = $conn->Connect($server,$username,$password,$database);
         }
         $this->connections[$database] = $conn;
 
         $this->last_connection_error = false;
         if (!$connected) {
             $this->last_connect_error = $conn->ErrorMsg();
-            $conn = ADONewConnection($type);
-            $conn->SetFetchMode(ADODB_FETCH_BOTH);
-            $connected = $conn->Connect($server,$username,$password);
-            if ($connected) {
-                $this->last_connection_error = false;
-                $stillok = $conn->Execute("CREATE DATABASE $database");
-                if (!$stillok) {
-                    $this->last_connect_error = $conn->ErrorMsg();
-                    $this->connections[$database] = false;
-                    return false;
-                }
-                $conn->Execute("USE $database");
-                $this->connections[$database] = $conn;
-            } else {
+            return $this->connectAndCreate($server, $type, $username, $password, $database);
+        }
+
+        return true;
+    }
+
+    /**
+      Try connecting without specifying a database
+      and then creating the requested database
+    */
+    private function connectAndCreate($server, $type, $username, $password, $database)
+    {
+        $conn = ADONewConnection($type);
+        $conn->SetFetchMode(ADODB_FETCH_BOTH);
+        $connected = $conn->Connect($server,$username,$password);
+        if ($connected) {
+            $this->last_connection_error = false;
+            $stillok = $conn->Execute("CREATE DATABASE $database");
+            if (!$stillok) {
                 $this->last_connect_error = $conn->ErrorMsg();
                 $this->connections[$database] = false;
                 return false;
             }
+            $conn->Execute("USE $database");
+            $this->connections[$database] = $conn;
+        } else {
+            $this->last_connect_error = $conn->ErrorMsg();
+            $this->connections[$database] = false;
+            return false;
         }
 
         return true;
@@ -296,7 +305,7 @@ class SQLManager
         }
 
         $errorMsg = $this->error($which_connection);
-        $logMsg = 'Failed Query on ' . $_SERVER['PHP_SELF'] . "\n"
+        $logMsg = 'Failed Query on ' . filter_input(INPUT_SERVER, 'PHP_SELF') . "\n"
                 . $query_text . "\n";
         if (is_array($params)) {
             $logMsg .= 'Parameters: ' . implode("\n", $params);
@@ -780,19 +789,15 @@ class SQLManager
                 $type = strtolower($this->fieldType($result,$i,$source_db));
                 $row[$i] = $this->sanitizeValue($row[$i], $type);
                 $args[] = $row[$i];
-                if (count($arg_sets) == 0) {
-                    $prep .= '?,';
-                }
                 $big_args[] = $row[$i];
                 $big_values .= '?,';
-            }
-            if (count($arg_sets) == 0) {
-                $prep = substr($prep, 0, strlen($prep)-1) . ')';
             }
             $arg_sets[] = $args;
             $big_values = substr($big_values, 0, strlen($big_values)-1) . '),';
         }
         $big_values = substr($big_values, 0, strlen($big_values)-1);
+        $prep .= str_repeat('?,', count($arg_sets[0]));
+        $prep = substr($prep, 0, strlen($prep)-1) . ')';
 
         /**
           Sending all records as a single query for large
@@ -1119,35 +1124,34 @@ class SQLManager
         return false;
     }
 
+    private function columnBooleanProperty($col, $prop)
+    {
+        if (property_exists($col, $prop) && $col->$prop) {
+            return true;
+        } else if (property_exists($col, $prop) && !$col->$prop) {
+            return false;
+        } else {
+            return null;
+        }
+    }
+
     private function columnToArray($col)
     {
         $info = array();
         $type = strtoupper($col->type);
         if (property_exists($col, 'max_length') && $col->max_length != -1 && substr($type, -3) != 'INT') {
-            if (property_exists($col, 'scale') && $col->scale) {
+            if ($this->columnBooleanProperty($col, 'scale')) {
                 $type .= '(' . $col->max_length . ',' . $col->scale . ')';
             } else {
                 $type .= '(' . $col->max_length . ')';
             }
         }
-        if (property_exists($col, 'unsigned') && $col->unsigned) {
+        if ($this->columnBooleanProperty($col, 'unsigned')) {
             $type .= ' UNSIGNED';
         }
         $info['type'] = $type;
-        if (property_exists($col, 'auto_increment') && $col->auto_increment) {
-            $info['increment'] = true;
-        } else if (property_exists($col, 'auto_increment') && !$col->auto_increment) {
-            $info['increment'] = false;
-        } else {
-            $info['increment'] = null;
-        }
-        if (property_exists($col, 'primary_key') && $col->primary_key) {
-            $info['primary_key'] = true;
-        } else if (property_exists($col, 'primary_key') && !$col->primary_key) {
-            $info['primary_key'] = false;
-        } else {
-            $info['primary_key'] = null;
-        }
+        $info['increment'] = $this->columnBooleanProperty($col, 'auto_increment');
+        $info['primary_key'] = $this->columnBooleanProperty($col, 'primary_key');
 
         if (property_exists($col, 'default_value') && $col->default_value !== 'NULL' && $col->default_value !== null) {
             $info['default'] = $col->default_value;
@@ -1785,6 +1789,19 @@ class SQLManager
         }
 
         return $adapters[$type];
+    }
+
+    public function arrayToParams($arr) 
+    {
+        $str = '';
+        $args = array();
+        foreach($arr as $entry) {
+            $str .= '?,';
+            $args[] = $entry;
+        }
+        $str = substr($str, 0, strlen($str)-1);
+
+        return array('in'=>$str, 'args'=>$args);
     }
 }
 

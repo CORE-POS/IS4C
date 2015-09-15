@@ -886,10 +886,7 @@ class FannieReportPage extends FanniePage
                     },
                     $xlsdata
                 );
-                if (!function_exists('ArrayToXls')) {
-                    include_once(dirname(__FILE__) . '/../src/ReportConvert/ArrayToXls.php');
-                }
-                $ret = ArrayToXls($xlsdata);
+                $ret = \COREPOS\Fannie\API\data\DataConvert::arrayToXls($xlsdata);
                 header('Content-Type: application/ms-excel');
                 header('Content-Disposition: attachment; filename="'.$this->header.'.xls"');
                 break;

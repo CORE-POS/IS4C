@@ -268,7 +268,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
 
         $ret .= '</tr>';
 
-        $info = $this->arrayToParams($this->upcs);
+        $info = $dbc->arrayToParams($this->upcs);
         $query = 'SELECT p.upc, p.description, p.department, d.dept_name,
                     p.tax, p.foodstamp, p.discount, p.scale, p.local,
                     x.manufacturer, x.distributor
@@ -351,18 +351,6 @@ function updateAll(val, selector) {
 }
         <?php
         return ob_get_clean();
-    }
-
-    private function arrayToParams($arr) {
-        $str = '';
-        $args = array();
-        foreach($arr as $entry) {
-            $str .= '?,';
-            $args[] = $entry;
-        }
-        $str = substr($str, 0, strlen($str)-1);
-
-        return array('in'=>$str, 'args'=>$args);
     }
 
     public function helpContent()
