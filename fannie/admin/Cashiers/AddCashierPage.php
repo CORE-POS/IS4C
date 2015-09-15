@@ -206,10 +206,10 @@ class AddCashierPage extends FannieRESTfulPage
 
     public function unitTest($phpunit)
     {
-        if (!class_exists('CashierTests')) {
+        if (!class_exists('CashierTests', false)) {
             include(dirname(__FILE__) . '/CashierTests.php');
         }
-        $tester = new CashiersTest($this->connection, $this->config, $this->logger);
+        $tester = new CashierTests($this->connection, $this->config, $this->logger);
         $tester->testAddCashier($this, $phpunit);
 
         $map = new StoreEmployeeMapModel($this->connection);
