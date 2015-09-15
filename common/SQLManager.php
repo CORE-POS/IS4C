@@ -334,8 +334,9 @@ class SQLManager
     */
     public function queryAll($query_text)
     {
+        $ret = true;
         foreach ($this->connections as $db_name => $con) {
-            $carry[$db_name] = $this->query($query_text,$db_name);
+            $ret = $this->query($query_text,$db_name);
         }
 
         return $ret;
