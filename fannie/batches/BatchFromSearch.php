@@ -63,14 +63,13 @@ class BatchFromSearch extends FannieRESTfulPage
         $upcs = $this->form->upc;
         $prices = $this->form->price;
 
-        $infoQ = $dbc->prepare_statement("select discType from batchType where batchTypeID=?");
-        $infoR = $dbc->exec_statement($infoQ,array($type));
-        if ($dbc->num_rows($infoR) == 0) {
+        $btype = new BatchtypeModel($dbc);
+        $btype->batchTypeID($type);
+        if (!$btype->load()) {
             echo 'Invalid Batch Type ' . $type;
             return false;
         }
-        $infoW = $dbc->fetch_array($infoR);
-        $discounttype = $infoW['discType'];
+        $discounttype = $btype->discType();
 
         // make sure item data is present before creating batch
         if (!is_array($upcs) || !is_array($prices) || count($upcs) != count($prices) || count($upcs) == 0) {
@@ -78,38 +77,38 @@ class BatchFromSearch extends FannieRESTfulPage
             return false;
         }
 
-        $b = new BatchesModel($dbc);
-        $b->startDate($startdate);
-        $b->endDate($enddate);
-        $b->batchName($name);
-        $b->batchType($type);
-        $b->discounttype($discounttype);
-        $b->priority($priority);
-        $b->owner($owner);
-        $id = $b->save();
+        $batch = new BatchesModel($dbc);
+        $batch->startDate($startdate);
+        $batch->endDate($enddate);
+        $batch->batchName($name);
+        $batch->batchType($type);
+        $batch->discounttype($discounttype);
+        $batch->priority($priority);
+        $batch->owner($owner);
+        $batchID = $batch->save();
 
         if ($this->config->get('STORE_MODE') === 'HQ') {
-            StoreBatchMapModel::initBatch($id);
+            StoreBatchMapModel::initBatch($batchID);
         }
 
         if ($dbc->tableExists('batchowner')) {
             $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
-            $insR = $dbc->exec_statement($insQ,array($id,$owner));
+            $insR = $dbc->exec_statement($insQ,array($batchID,$owner));
         }
 
         // add items to batch
         for($i=0; $i<count($upcs); $i++) {
             $upc = $upcs[$i];
             $price = isset($prices[$i]) ? $prices[$i] : 0.00;
-            $bl = new BatchListModel($dbc);
-            $bl->upc(BarcodeLib::padUPC($upc));
-            $bl->batchID($id);
-            $bl->salePrice($price);
-            $bl->groupSalePrice($price);
-            $bl->active(0);
-            $bl->pricemethod(0);
-            $bl->quantity(0);
-            $bl->save();
+            $list = new BatchListModel($dbc);
+            $list->upc(BarcodeLib::padUPC($upc));
+            $list->batchID($batchID);
+            $list->salePrice($price);
+            $list->groupSalePrice($price);
+            $list->active(0);
+            $list->pricemethod(0);
+            $list->quantity(0);
+            $list->save();
         }
 
         /**
@@ -140,7 +139,7 @@ class BatchFromSearch extends FannieRESTfulPage
             }
         }
 
-        return 'Location: newbatch/BatchManagementTool.php?startAt=' . $id;
+        return 'Location: newbatch/BatchManagementTool.php?startAt=' . $batchID;
     }
 
     function post_redoSRPs_handler()
@@ -153,7 +152,7 @@ class BatchFromSearch extends FannieRESTfulPage
         for ($i=0; $i<count($upcs); $i++) {
             $upcs[$i] = BarcodeLib::padUPC($upcs[$i]);
         }
-        $params = $this->arrayToParams($upcs);
+        $params = $dbc->arrayToParams($upcs);
 
         $query = '
             SELECT p.upc,
@@ -207,6 +206,7 @@ class BatchFromSearch extends FannieRESTfulPage
     function post_u_view()
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
+        $this->addScript('from-search.js');
         $ret = '<form action="BatchFromSearch.php" method="post">';
 
         $ret .= '<div class="form-group form-inline">';
@@ -260,7 +260,7 @@ class BatchFromSearch extends FannieRESTfulPage
 
         $ret .= '<hr />';
 
-        $info = $this->arrayToParams($this->upcs);
+        $info = $dbc->arrayToParams($this->upcs);
         $query = 'SELECT p.upc, p.description, p.normal_price, m.superID,
                 MAX(CASE WHEN v.srp IS NULL THEN 0.00 ELSE v.srp END) as srp
                 FROM products AS p
@@ -308,8 +308,8 @@ class BatchFromSearch extends FannieRESTfulPage
                 <button type="submit" class="btn btn-default" onclick="markUp($(\'#muPercent\').val()); return false">Go</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<label>Tags</label> <select name="tagset" class="form-control" id="tagset"><option value="">No Tags</option>';
-        $qm = new ShelfTagQueuesModel($dbc);
-        $ret .= $qm->toOptions();
+        $queues = new ShelfTagQueuesModel($dbc);
+        $ret .= $queues->toOptions();
         $ret .= '</select>';
         $ret .= '</div>';
 
@@ -358,107 +358,6 @@ class BatchFromSearch extends FannieRESTfulPage
         $this->add_onload_command("\$('#muPercent').bind('keypress', noEnter);\n");
 
         return $ret;
-    }
-
-    function javascript_content()
-    {
-        ob_start();
-        ?>
-function discountTypeFixup() {
-    var bt_id = $('#batchType').val();
-    var dt_id = $('#discType'+bt_id).val();
-    if (dt_id == 0) {
-        $('#newPriceHeader').html('New Price');
-        $('#saleTools').hide();
-        $('#priceChangeTools').show();
-    } else {
-        $('#newPriceHeader').html('Sale Price');
-        $('#saleTools').show();
-        $('#priceChangeTools').hide();
-    }
-}
-function useSRPs() {
-    $('tr.batchItem').each(function(){
-        var srp = $(this).find('.itemSRP').val();
-        $(this).find('.itemPrice').val(fixupPrice(srp));
-    });
-}
-function reCalcSRPs() {
-    var info = $('form').serialize(); 
-    info += '&redoSRPs=1';
-    $.ajax({
-        type: 'post',
-        dataType: 'json',
-        data: info,
-        success: function(resp) {
-            for (var i=0; i<resp.length; i++) {
-                var item = resp[i];
-                $('tr.batchItem').each(function(){
-                    var upc = $(this).find('.itemUPC').val(); 
-                    if (upc == item.upc) {
-                        $(this).find('.itemSRP').val(item.srp);
-
-                        return false;
-                    }
-                });
-            }
-        }
-    });
-}
-function discount(amt) {
-    $('tr.batchItem').each(function(){
-        var price = $(this).find('.currentPrice').val();
-        price = price - amt;
-        $(this).find('.itemPrice').val(fixupPrice(price));
-    });
-}
-function markDown(amt) {
-    if (Math.abs(amt) >= 1) amt = amt / 100;
-    $('tr.batchItem').each(function(){
-        var price = $(this).find('.currentPrice').val();
-        price = price * (1 - amt);
-        $(this).find('.itemPrice').val(fixupPrice(price));
-    });
-}
-function markUp(amt) {
-    markDown(-1 * amt);
-}
-function fixupPrice(val) {
-    var bt_id = $('#batchType').val();
-    var dt_id = $('#discType'+bt_id).val();
-    val = Math.round(val*100);
-    if (dt_id == 0) {
-        while(lastDigit(val) != 5 && lastDigit(val) != 9)
-            val++;
-    } else {
-        while(lastDigit(val) != 9)
-            val++;
-    }
-    return val / 100;
-}
-function lastDigit(val) {
-    return val - (10 * Math.floor(val/10));
-}
-function noEnter(e) {
-    if (e.keyCode == 13) {
-        $(this).trigger('change');
-        return false;
-    }
-}
-        <?php
-        return ob_get_clean();
-    }
-
-    private function arrayToParams($arr) {
-        $str = '';
-        $args = array();
-        foreach($arr as $entry) {
-            $str .= '?,';
-            $args[] = $entry;
-        }
-        $str = substr($str, 0, strlen($str)-1);
-
-        return array('in'=>$str, 'args'=>$args);
     }
 
     public function helpContent()

@@ -40,23 +40,24 @@ class DataConvert
 
         /* convert tables to 2-d array */
         $ret = array();
-        $i = 0;
         foreach ($rows as $row) {
-            $ret[$i] = array();
-            foreach ($row->childNodes as $node) {
-                if (!property_exists($node,'tagName')) {
-                    continue;
+            $good_nodes = array_filter($row->childNodes, function($node) {
+                if (!property_exists($node,'tagName') || $node->tagName!='th' || $node->tagName!='td') {
+                    return false;
+                } else {
+                    return true;
                 }
+            });
+
+            $record = array_map(function ($node) {
                 $val = trim($node->nodeValue,chr(160).chr(194));
                 if ($node->tagName=="th") {
                     $val .= chr(0) . 'bold';
                 }
+                return $val;
+            }, $good_nodes);
 
-                if ($node->tagName=="th" || $node->tagName=="td") {
-                    $ret[$i][] = $val;
-                }
-            }
-            $i++;
+            $ret[] = $record;
         }
 
         /* prepend any other lines to the array */
@@ -88,13 +89,13 @@ class DataConvert
 
         foreach ($array as $row) {
             foreach ($row as $col) {
-                $r = "\"";
+                $item = "\"";
                 if ( ($pos = strpos($col,chr(0))) !== False) {
                     $col = substr($col,0,$pos);
                 }
-                $r .= str_replace("\"","",$col);
-                $r .= "\",";
-                $ret .= $r;
+                $item .= str_replace("\"","",$col);
+                $item .= "\",";
+                $ret .= $item;
             }
             $ret = rtrim($ret,",")."\r\n";
         }
@@ -111,8 +112,8 @@ class DataConvert
     {
         include_once(dirname(__FILE__) . '/../../src/Excel/xls_write/Spreadsheet_Excel_Writer/Writer.php');
 
-        $fn = tempnam(sys_get_temp_dir(),"xlstemp");
-        $workbook = new \Spreadsheet_Excel_Writer($fn);
+        $filename = tempnam(sys_get_temp_dir(),"xlstemp");
+        $workbook = new \Spreadsheet_Excel_Writer($filename);
         $worksheet =& $workbook->addWorksheet();
 
         $format_bold =& $workbook->addFormat();
@@ -135,8 +136,8 @@ class DataConvert
 
         $workbook->close();
 
-        $ret = file_get_contents($fn);
-        unlink($fn);
+        $ret = file_get_contents($filename);
+        unlink($filename);
 
         return $ret;
     }
@@ -190,8 +191,8 @@ class DataConvert
 
     private static function xlsWriteLabel($Row, $Col, $Value ) 
     {
-        $L = strlen($Value);
-        return pack("ssssss", 0x204, 8 + $L, $Row, $Col, 0x2bc, $L)
+        $len = strlen($Value);
+        return pack("ssssss", 0x204, 8 + $len, $Row, $Col, 0x2bc, $len)
             . $Value;
     }
 }

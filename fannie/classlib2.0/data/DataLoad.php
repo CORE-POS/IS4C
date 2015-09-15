@@ -58,7 +58,7 @@ class DataLoad
         $valid_range = array(count($table_def), count($table_def));
         $columns = array_keys($table_def);
         $last_column = array_pop($columns);
-        if ($table_def[$last_column]['increment'] == true) {
+        if ($table_def[$last_column]['increment'] === true) {
             $valid_range[0]--;
         }
 
@@ -68,9 +68,9 @@ class DataLoad
         } elseif (file_exists($search_dir . "/$table.csv")) {
             $filename = realpath($search_dir . "/$table.csv");
 
-            $fp = fopen($filename, 'r');
-            $first_line = fgetcsv($fp);
-            fclose($fp);
+            $fptr = fopen($filename, 'r');
+            $first_line = fgetcsv($fptr);
+            fclose($fptr);
             if (count($first_line) < $valid_range[0] || count($first_line) > $valid_range[1]) {
                 printf('Sample data for table %s has %d columns; should have between %d and %d columns', 
                         $table, count($first_line),

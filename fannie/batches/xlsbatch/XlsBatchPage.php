@@ -82,25 +82,25 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $dtQ = $dbc->prepare_statement("SELECT discType FROM batchType WHERE batchTypeID=?");
         $dtR = $dbc->execute($dtQ, array($btype));
         $dtW = $dbc->fetchRow($dtR);
-        $dt = is_array($dtW) ? $dtW[0] : 0;
+        $discountType = is_array($dtW) ? $dtW[0] : 0;
 
         $insQ = $dbc->prepare_statement("
             INSERT INTO batches 
             (startDate,endDate,batchName,batchType,discounttype,priority,owner)
             VALUES 
             (?,?,?,?,?,0,?)");
-        $args = array($date1,$date2,$bname,$btype,$dt,$owner);
+        $args = array($date1,$date2,$bname,$btype,$discountType,$owner);
         $insR = $dbc->exec_statement($insQ,$args);
-        $id = $dbc->insert_id();
+        $batchID = $dbc->insert_id();
 
         if ($this->config->get('STORE_MODE') === 'HQ') {
-            StoreBatchMapModel::initBatch($id);
+            StoreBatchMapModel::initBatch($batchID);
         }
 
         $upcChk = $dbc->prepare_statement("SELECT upc FROM products WHERE upc=?");
 
         $model = new BatchListModel($dbc);
-        $model->batchID($id);
+        $model->batchID($batchID);
         $model->pricemethod(0);
         $model->quantity(0);
         $model->active(0);
@@ -142,7 +142,7 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $ret .= '
         <p>
             Batch created
-            <a href="' . $this->config->URL . 'batches/newbatch/EditBatchPage.php?id=' . $id 
+            <a href="' . $this->config->URL . 'batches/newbatch/EditBatchPage.php?id=' . $batchID 
                 . '" class="btn btn-default">View Batch</a>
         </p>';
         $this->results = $ret;
@@ -266,4 +266,3 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
 FannieDispatch::conditionalExec(false);
 
-?>

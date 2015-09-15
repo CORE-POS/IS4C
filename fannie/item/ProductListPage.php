@@ -30,12 +30,6 @@ if (!function_exists('addProductAllLanes')) {
 }
 if (!function_exists('login'))
     include($FANNIE_ROOT.'auth/login.php');
-if (!function_exists('HtmlToArray')) {
-    include_once($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
-}
-if (!function_exists('ArrayToCsv')) {
-    include_once($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
-}
 
 class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool 
 {
@@ -679,8 +673,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         if ($this->excel){
             header('Content-Type: application/ms-excel');
             header('Content-Disposition: attachment; filename="itemList.csv"');
-            $array = HtmlToArray($ret);
-            $ret = ArrayToCsv($array);
+            $array = \COREPOS\Fannie\API\data\DataConvert::htmlToArray($ret);
+            $ret = \COREPOS\Fannie\API\data\DataConvert::arrayToCsv($array);
         } else {
             $this->add_script('../src/javascript/tablesorter/jquery.tablesorter.min.js');
             $this->add_onload_command("\$('.tablesorter').tablesorter();\n");

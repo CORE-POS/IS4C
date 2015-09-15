@@ -59,18 +59,18 @@ class FileData
     */
     public static function csvToArray($filename, $limit=0)
     {
-        $fp = fopen($filename,'r');
-        if (!$fp) {
+        $fptr = fopen($filename,'r');
+        if (!$fptr) {
             return array();
         }
         $ret = array();
-        while (!feof($fp)) {
-            $ret[] = fgetcsv($fp);
+        while (!feof($fptr)) {
+            $ret[] = fgetcsv($fptr);
             if ($limit != 0 && count($ret) >= $limit) {
                 break;
             }
         }
-        fclose($fp);
+        fclose($fptr);
 
         return $ret;
     }

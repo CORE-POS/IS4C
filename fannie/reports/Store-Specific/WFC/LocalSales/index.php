@@ -120,12 +120,10 @@ if (isset($_REQUEST['submit'])){
     echo '</table>';
 
     if (isset($_REQUEST['excel'])){
-        include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
-        include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
         $output = ob_get_contents();
         ob_end_clean();
-        $array = HtmlToArray($output);
-        $xls = ArrayToXls($array);
+        $array = \COREPOS\Fannie\API\data\DataConvert::htmlToArray($output);
+        $xls = \COREPOS\Fannie\API\data\DataConvert::arrayToXls($array);
         echo $xls;
     }
             

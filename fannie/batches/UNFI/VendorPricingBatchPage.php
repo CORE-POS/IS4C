@@ -63,120 +63,9 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         }';
     }
 
-    public function javascript_content()
-    {
-        ob_start();
-        ?>
-var vid = null;
-var bid = null;
-var sid = null;
-var qid = null;
-$(document).ready(function(){
-    vid = $('#vendorID').val();
-    bid = $('#batchID').val();
-    sid = $('#superID').val();
-    qid = $('#queueID').val();
-});
-function addToBatch(upc)
-{
-    var dstr = "upc="+upc+"&vendorID="+vid+"&queueID="+qid+"&batchID="+bid;
-    var price = $('#row'+upc).find('.srp').html();
-    $.ajax({
-        url: 'batchAjax.php',
-        data: dstr + '&action=batchAdd&price='+price,
-        success: function(data){
-            $('#row'+upc).attr('class','selection');
-            $('#row'+upc).find('.add-button').hide();
-            $('#row'+upc).find('.remove-button').show();
-        }
-    });
-}
-function removeFromBatch(upc)
-{
-    var dstr = "upc="+upc+"&vendorID="+vid+"&queueID="+qid+"&batchID="+bid;
-    $.ajax({
-        url: 'batchAjax.php',
-        data: dstr + '&action=batchDel',
-        success: function(data){
-            if ($('tr#row'+upc+' input.varp:checked').length > 0)
-                $('#row'+upc).attr('class','white');
-            else if ($('tr#row'+upc+' td.price').html() < $('tr#row'+upc+' td.srp').html())
-                $('#row'+upc).attr('class','red');
-            else
-                $('#row'+upc).attr('class','green');
-
-            $('#row'+upc).find('.add-button').show();
-            $('#row'+upc).find('.remove-button').hide();
-        }
-    });
-}
-function toggleV(upc){
-    var val = $('#row'+upc).find('.varp').prop('checked');
-    if (val){
-        $('#row'+upc).attr('class','white');
-        $.ajax({
-            url: 'batchAjax.php',
-            data: 'action=addVarPricing&upc='+upc,
-            success: function(data){
-
-            }
-        });
-    }
-    else {
-        var m1 = $('#row'+upc).find('.cmargin').html();
-        var m2 = $('#row'+upc).find('.dmargin').html();
-        if (m1 >= m2)
-            $('#row'+upc).attr('class','green');
-        else
-            $('#row'+upc).attr('class','red');
-        $.ajax({
-            url: 'batchAjax.php',
-            data: 'action=delVarPricing&upc='+upc,
-            success: function(data){
-
-            }
-        });
-    }
-}
-
-function reprice(upc){
-    if ($('#newprice'+upc).length > 0) return;
-
-    var elem = $('#row'+upc).find('.srp');
-    var srp = elem.html();
-
-    var content = "<div class=\"form-inline input-group\"><span class=\"input-group-addon\">$</span>";
-    content += "<input type=\"text\" id=\"newprice"+upc+"\" value=\""+srp+"\" class=\"form-control\" size=4 /></div>";
-    var content2 = "<button type=\"button\" onclick=\"saveprice('"+upc+"');\" class=\"btn btn-default\">Save</button>";
-    elem.html(content);
-    $('#row'+upc).find('.dmargin').html(content2);
-    $('#newprice'+upc).focus().select();
-}
-
-function saveprice(upc){
-    var srp = parseFloat($('#newprice'+upc).val());
-    var cost = parseFloat($('#row'+upc).find('.adj-cost').html());
-    var newmargin = (srp - cost) / srp;
-    newmargin *= 100;
-    newmargin = Math.round(newmargin*100)/100;
-
-    $('#row'+upc).find('.srp').html(srp);
-    $('#row'+upc).find('.dmargin').html(newmargin+'%');
-
-    var dstr = "upc="+upc+"&vendorID="+vid+"&queueID="+qid+"&batchID="+bid;
-    $.ajax({
-        url: 'batchAjax.php',
-        data: dstr+'&action=newPrice&price='+srp+'&batchID='+bid,
-        cache: false,
-        success: function(data){}
-    });
-}
-        <?php
-        return ob_get_clean();
-    }
-
     public function get_id_view()
     {
+        $this->addScript('pricing-batch.js');
         $dbc = $this->connection;
         $dbc->selectDB($this->config->OP_DB);
 
@@ -186,18 +75,18 @@ function saveprice(upc){
         $filter = FormLib::get_form_value('filter') == 'Yes' ? True : False;
 
         /* lookup vendor and superdept names to build a batch name */
-        $sn = "All";
+        $sname = "All";
         if ($superID != 99) {
-            $s = new SuperDeptNamesModel($dbc);
-            $s->superID($superID);
-            $s->load();
-            $sn = $s->super_name();
+            $smodel = new SuperDeptNamesModel($dbc);
+            $smodel->superID($superID);
+            $smodel->load();
+            $sname = $smodel->super_name();
         }
         $vendor = new VendorsModel($dbc);
         $vendor->vendorID($vendorID);
         $vendor->load();
 
-        $batchName = $sn." ".$vendor->vendorName()." PC ".date('m/d/y');
+        $batchName = $sname." ".$vendor->vendorName()." PC ".date('m/d/y');
 
         /* find a price change batch type */
         $types = new BatchTypeModel($dbc);
@@ -244,9 +133,9 @@ function saveprice(upc){
             $vendorID,$batchID,$queueID,$superID);
 
         $batchUPCs = array();
-        $bl = new BatchListModel($dbc);
-        $bl->batchID($batchID);
-        foreach ($bl->find() as $obj) {
+        $batchList = new BatchListModel($dbc);
+        $batchList->batchID($batchID);
+        foreach ($batchList->find() as $obj) {
             $batchUPCs[$obj->upc()] = true;
         }
 
@@ -311,11 +200,11 @@ function saveprice(upc){
             <th>Margin</th><th>Cat</th><th>Var</th>
             <th>Batch</th></tr>";
         while ($row = $dbc->fetch_row($result)) {
-            $bg = "white";
+            $background = "white";
             if (isset($batchUPCs[$row['upc']])) {
-                $bg = 'selection';
+                $background = 'selection';
             } elseif ($row['variable_pricing'] == 0) {
-                $bg = ($row['normal_price']<$row['rawSRP'])?'red':'green';
+                $background = ($row['normal_price']<$row['rawSRP'])?'red':'green';
             }
             if (isset($batchUPCs[$row['upc']])) {
                 $icon = '<span class="glyphicon glyphicon-minus-sign"
@@ -354,7 +243,7 @@ function saveprice(upc){
                 </td>
                 </tr>",
                 $row['upc'],
-                $bg,
+                $background,
                 $this->config->URL, $row['upc'], $row['upc'],
                 $row['description'],
                 $row['cost'],
@@ -384,22 +273,22 @@ function saveprice(upc){
         $dbc = $this->connection;
         $dbc->selectDB($this->config->OP_DB);
 
-        $p = $dbc->prepare("
+        $prep = $dbc->prepare("
             SELECT superID,
                 super_name 
             FROM MasterSuperDepts
             WHERE superID > 0
             GROUP BY superID,
                 super_name");
-        $res = $dbc->execute($p);
+        $res = $dbc->execute($prep);
         $opts = "<option value=99 selected>All</option>";
         while ($row = $dbc->fetch_row($res)) {
             $opts .= "<option value=$row[0]>$row[1]</option>";
         }
 
-        $v = new VendorsModel($dbc);
+        $vmodel = new VendorsModel($dbc);
         $vopts = "";
-        foreach ($v->find('vendorName') as $obj) {
+        foreach ($vmodel->find('vendorName') as $obj) {
             $vopts .= sprintf('<option value="%d">%s</option>',
                 $obj->vendorID(), $obj->vendorName());
         }
@@ -454,4 +343,3 @@ function saveprice(upc){
 
 FannieDispatch::conditionalExec();
 
-?>

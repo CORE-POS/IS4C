@@ -6,5 +6,6 @@ languages:
   Python: true
 exclude_paths:
 - "common/adodb5/*"
+- "documentation/doxy/*"
 - "fannie/src/javascript/*"
 - "fannie/src/fpdf/font/*"

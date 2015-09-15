@@ -124,7 +124,7 @@ class MercuryE2E extends BasicCCModule
             case PaycardLib::PAYCARD_MODE_AUTH:
                 // set initial variables
                 //Database::getsubtotals();
-                $e2e = $this->parseEncBlock(CoreLocal::get('paycard_PAN'));
+                $e2e = EncBlock::parseEncBlock(CoreLocal::get('paycard_PAN'));
                 if (empty($e2e['Block']) || empty($e2e['Key'])){
                     PaycardLib::paycard_reset();
                     $json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
@@ -843,125 +843,13 @@ class MercuryE2E extends BasicCCModule
                 if (CoreLocal::get('paycard_issuer') == 'American Express') {
                     $t_type = 'AX';
                 }
-
-                $tender_code = 'CC';
-                $tender_description = 'Credit Card';
-                $db = Database::pDataConnect();
-                $lookup = $db->prepare('SELECT TenderName,
-                                            TenderCode
-                                        FROM tenders
-                                        WHERE TenderCode = ?');
-                /**
-                  Lookup user-configured tender
-                  Failover to defaults if tender does not exist
-                  Since we already have an authorization at this point,
-                  adding a default tender record to the transaction
-                  is better than issuing an error message
-                */
-                switch ($type) {
-                    case 'DEBIT':
-                        $args = array(CoreLocal::get('PaycardsTenderCodeDebit'));
-                        $found = $db->execute($lookup, $args);
-                        if ($found == false || $db->num_rows($found) == 0) {
-                            $tender_code = 'DC';
-                            $tender_description = 'Debit Card';
-                        } else {
-                            $row = $db->fetch_row($found);
-                            $tender_code = $row['TenderCode'];
-                            $tender_description = $row['TenderName'];
-                        }
-                        break;
-                    case 'EBTCASH':
-                        $args = array(CoreLocal::get('PaycardsTenderCodeEbtCash'));
-                        $found = $db->execute($lookup, $args);
-                        if ($found == false || $db->num_rows($found) == 0) {
-                            $tender_code = 'EC';
-                            $tender_description = 'EBT Cash';
-                        } else {
-                            $row = $db->fetch_row($found);
-                            $tender_code = $row['TenderCode'];
-                            $tender_description = $row['TenderName'];
-                        }
-                        break;
-                    case 'EBTFOOD':
-                        $args = array(CoreLocal::get('PaycardsTenderCodeEbtFood'));
-                        $found = $db->execute($lookup, $args);
-                        if ($found == false || $db->num_rows($found) == 0) {
-                            $tender_code = 'EF';
-                            $tender_description = 'EBT Food';
-                        } else {
-                            $row = $db->fetch_row($found);
-                            $tender_code = $row['TenderCode'];
-                            $tender_description = $row['TenderName'];
-                        }
-                        // extra tax exemption steps
-                        TransRecord::addfsTaxExempt();
-                        CoreLocal::set("fntlflag",0);
-                        Database::setglobalvalue("FntlFlag", 0);
-                        break;
-                    case 'EMV':
-                        $args = array(CoreLocal::get('PaycardsTenderCodeEmv'));
-                        $found = $db->execute($lookup, $args);
-                        if ($found == false || $db->num_rows($found) == 0) {
-                            $tender_code = 'CC';
-                            $tender_description = 'Credit';
-                        } else {
-                            $row = $db->fetch_row($found);
-                            $tender_code = $row['TenderCode'];
-                            $tender_description = $row['TenderName'];
-                        }
-                        break;
-                    case 'CREDIT':
-                    default:
-                        $args = array(CoreLocal::get('PaycardsTenderCodeCredit'));
-                        $found = $db->execute($lookup, $args);
-                        if ($found == false || $db->num_rows($found) == 0) {
-                            $tender_code = 'CC';
-                            $tender_description = 'Credit Card';
-                        } else {
-                            $row = $db->fetch_row($found);
-                            $tender_code = $row['TenderCode'];
-                            $tender_description = $row['TenderName'];
-                        }
-                        break;
+                if ($type == 'EBTFOOD') {
+                    // extra tax exemption steps
+                    TransRecord::addfsTaxExempt();
+                    CoreLocal::set("fntlflag",0);
+                    Database::setglobalvalue("FntlFlag", 0);
                 }
-
-                /**
-                  Now look up card-issuer specific overrides, if any
-                */
-                if (CoreLocal::get('PaycardsTenderCodeVisa') && CoreLocal::get('paycard_issuer') == 'Visa') {
-                        $args = array(CoreLocal::get('PaycardsTenderCodeVisa'));
-                        $found = $db->execute($lookup, $args);
-                        if ($found && $db->num_rows($found) > 0) {
-                            $row = $db->fetch_row($found);
-                            $tender_code = $row['TenderCode'];
-                            $tender_description = $row['TenderName'];
-                        }
-                } elseif (CoreLocal::get('PaycardsTenderCodeMC') && CoreLocal::get('paycard_issuer') == 'MasterCard') {
-                        $args = array(CoreLocal::get('PaycardsTenderCodeMC'));
-                        $found = $db->execute($lookup, $args);
-                        if ($found && $db->num_rows($found) > 0) {
-                            $row = $db->fetch_row($found);
-                            $tender_code = $row['TenderCode'];
-                            $tender_description = $row['TenderName'];
-                        }
-                } elseif (CoreLocal::get('PaycardsTenderCodeDiscover') && CoreLocal::get('paycard_issuer') == 'Discover') {
-                        $args = array(CoreLocal::get('PaycardsTenderCodeDiscover'));
-                        $found = $db->execute($lookup, $args);
-                        if ($found && $db->num_rows($found) > 0) {
-                            $row = $db->fetch_row($found);
-                            $tender_code = $row['TenderCode'];
-                            $tender_description = $row['TenderName'];
-                        }
-                } elseif (CoreLocal::get('PaycardsTenderCodeAmex') && CoreLocal::get('paycard_issuer') == 'American Express') {
-                        $args = array(CoreLocal::get('PaycardsTenderCodeAmex'));
-                        $found = $db->execute($lookup, $args);
-                        if ($found && $db->num_rows($found) > 0) {
-                            $row = $db->fetch_row($found);
-                            $tender_code = $row['TenderCode'];
-                            $tender_description = $row['TenderName'];
-                        }
-                }
+                list($tender_code, $tender_description) = PaycardLib::getTenderInfo($type, CoreLocal::get('paycard_issuer'));
 
                 // if the transaction has a non-zero paycardTransactionID,
                 // include it in the tender line
@@ -1072,7 +960,6 @@ class MercuryE2E extends BasicCCModule
         $logged_mode = $type."_".$mode;
         $manual = (CoreLocal::get("paycard_keyed")===True ? 1 : 0);
         $refNum = $this->refnum($transID);
-        $this->last_ref_num = $refNum;
         $live = 1;
         if (CoreLocal::get("training") != 0 || CoreLocal::get("CashierNo") == 9999) {
             $live = 0;
@@ -1083,8 +970,8 @@ class MercuryE2E extends BasicCCModule
         if ($mcTerminalID === '') {
             $mcTerminalID = CoreLocal::get('laneno');
         }
-        $e2e = $this->parseEncBlock(CoreLocal::get("paycard_PAN"));
-        $pin = $this->parsePinBlock(CoreLocal::get("CachePinEncBlock"));
+        $e2e = EncBlock::parseEncBlock(CoreLocal::get("paycard_PAN"));
+        $pin = EncBlock::parsePinBlock(CoreLocal::get("CachePinEncBlock"));
         $cardIssuer = $e2e['Issuer'];
         CoreLocal::set('paycard_issuer',$e2e['Issuer']);
         $cardName = $e2e['Name'];
@@ -2233,211 +2120,6 @@ class MercuryE2E extends BasicCCModule
         } else {
             return CoreLocal::get('MercuryE2EPassword');
         }
-    }
-
-    /**
-      In theory parses output produced by MagTek and ID tech
-      devices (based on spec / examples)
-      @return array with keys
-       - Format is encrypt format
-       - Block is encryped PAN block
-       - Key is encrypted key
-       - Issuer is card issuer (Visa, MasterCard, etc)
-       - Last4 is last four PAN digits
-       - Name is cardholder name (if available)
-    */
-    private function parseEncBlock($str)
-    {
-        $ret = array(
-            'Format'=>'MagneSafe',
-            'Block'=>'',
-            'Key'=>'',
-            'Issuer'=>'Unknown',
-            'Last4'=>'XXXX',
-            'Name'=>'Cardholder'
-        );
-        if (strstr($str,"|")) {
-            /* magtek style block */
-            $parts = explode("|",$str);
-            $tr1 = False;
-            $tr2 = False;
-            if ($str[0] == "%") {
-                /* non-numbered format */
-                $ret['Block'] = $parts[3];
-                $ret['Key'] = $parts[9];
-                $tr1 = $parts[0];
-                $tr2 = $parts[1];
-            } else if ($str[0] == "1") {
-                /* numbered format */
-                foreach($parts as $p) {
-                    if (strlen($p) > 2 && substr($p,0,2)=="3~") {
-                        $ret['Block'] = substr($p,2);    
-                    } else if (strlen($p) > 3 && substr($p,0,3)=="11~") {
-                        $ret['Key'] = substr($p,3);    
-                    } else if (strlen($p) > 2 && substr($p,0,3)=="6~") {
-                        $tr1 = substr($p,2);
-                    } else if (strlen($p) > 2 && substr($p,0,3)=="7~") {
-                        $tr2 = substr($p,2);
-                    }
-                }
-            }
-
-            // extract info from masked tracks
-            if ($tr1 && $tr1[0] == "%") {
-                $split = explode("^",$tr1);
-                $pan = substr($split[0],1);
-                if (strlen($split[1]) <= 26) {
-                    $ret['Name'] = $split[1];
-                }
-                $ret['Last4'] = substr($pan,-4);
-                $ret['Issuer'] = PaycardLib::paycard_issuer($pan);
-            } else if($tr2 && $tr2[0] == ";") {
-                $tr2 = substr($tr2,1);
-                $pan = substr($tr2,0,strpos("="));
-                $ret['Last4'] = substr($pan,-4);
-                $ret['Issuer'] = PaycardLib::paycard_issuer($pan);
-            }
-        } else if (strlen($str)>2 && substr($str,0,2)=="02") {
-            /* IDtech style block */
-
-            // read track length from block
-            $track_length = array(
-                1 => hexdec(substr($str,10,2)),
-                2 => hexdec(substr($str,12,2)),
-                3 => hexdec(substr($str,14,2))
-            );
-
-            // skip to track data start point
-            $pos = 20;
-            // move through masked track data
-            foreach ($track_length as $num=>$kl) {
-                if ($num == 1 && $kl > 0) {
-                    // read name and masked PAN from track 1
-                    $caret = strpos($str,"5E",$pos);
-                    $pan = substr($str,$pos,$caret-$pos);
-                    $pan = substr($pan,4); // remove leading %*
-                    $caret2 = strpos($str,"5E",$caret+2);
-                    if ($caret2 < ($pos + ($kl*2))) { // still in track 1
-                        $name = substr($str,$caret+2,$caret2-$caret-2);
-                        $ret['Name'] = $this->dehexify($name);    
-                    }
-                    $pan = $this->dehexify($pan);
-                    $ret['Last4'] = substr($pan,-4);
-                    $ret['Issuer'] = PaycardLib::paycard_issuer(str_replace("*","0",$pan));
-                } else if ($num == 2 && $kl > 0) {
-                    $equal = strpos($str,"3D",$pos);
-                    $pan = substr($str,$pos,$equal-$pos);
-                    $pan = substr($pan,2); // remove leading ;
-                    $pan = $this->dehexify($pan);
-                    $ret['Last4'] = substr($pan,-4);
-                    $ret['Issuer'] = PaycardLib::paycard_issuer(str_replace("*",0,$pan));
-                }
-                $pos += $kl*2;
-            }
-
-            // mercury rejects track 1
-            if ($track_length[1] > 0) {
-                while($track_length[1] % 8 != 0) $track_length[1]++;
-                // cannot send back track 1
-                //$ret['Block'] = substr($str,$pos,$track_length[1]*2);
-                $pos += ($track_length[1]*2);
-            }
-
-            // read encrypted track 2
-            if ($track_length[2] > 0) {
-                while($track_length[2] % 8 != 0) $track_length[2]++;
-                $ret['Block'] = substr($str,$pos,$track_length[2]*2);
-                $pos += ($track_length[2]*2);
-            }
-
-            // move past hash 1 if present, hash 2 if present
-            if ($track_length[1] > 0) {
-                $pos += (20*2);
-            }
-            if ($track_length[2] > 0) {
-                $pos += (20*2);
-            }
-
-            // read key segment
-            $ret['Key'] = substr($str,$pos,20);
-        } elseif (strlen($str) > 4 && substr($str, 0, 4) == "23.0") {
-            // Ingenico style
-            $data = substr($str, 4);
-            $tracks = explode('@@', $data);
-            $track1 = false;
-            $track2 = false;
-            $track3 = $tracks[count($tracks)-1];
-            if ($tracks[0][0] == '%') {
-                $track1 = $tracks[0];
-            } elseif ($tracks[0][0] == ';') {
-                $track2 = $tracks[0];
-            }
-            if ($track2 === false && $tracks[1][0] == ';') {
-                $track2 = $tracks[1];
-            }
-
-            if ($track1 !== false) {
-                $pieces = explode('^', $track1);
-                $masked = ltrim($pieces[0], '%');
-                $ret['Issuer'] = PaycardLib::paycard_issuer($masked);
-                $ret['Last4'] = substr($masked, -4);
-                if (count($pieces) >= 3) {
-                    $ret['Name'] = $pieces[1];
-                }
-            } elseif ($track2 !== false) {
-                list($start, $end) = explode('=', $track2, 2);
-                $masked = ltrim($start, ';');
-                $ret['Issuer'] = PaycardLib::paycard_issuer($masked);
-                $ret['Last4'] = substr($masked, -4);
-            }
-
-            if (strstr($track3, ';')) {
-                list($e2e, $actual_track3) = explode(';', $track3, 2);
-                $track3 = $e2e;
-            }
-
-            $pieces = explode(':', $track3);
-            if (count($pieces) == 4) {
-                $ret['Block'] = $pieces[2];
-                $ret['Key'] = $pieces[3];
-            } elseif (count($pieces) == 2 && $track1 === false) {
-                $ret['Block'] = $pieces[0];
-                $ret['Key'] = $pieces[1];
-            }
-        }
-
-        return $ret;
-    }
-
-    private function parsePinBlock($str){
-        $ret = array('block'=>'', 'key'=>'');
-        if (strlen($str) == 36 && substr($str,0,2) == "FF") {
-            // idtech
-            $ret['key'] = substr($str,4,16);
-            $ret['block'] = substr($str,-16);
-        } else {
-            // ingenico
-            $ret['key'] = substr($str, -20);
-            $ret['block'] = substr($str, 0, 16);
-        }
-
-        return $ret;
-    }
-
-    /*
-      Utility. Convert hex string to ascii characters
-    */
-    private function dehexify($in){
-        // must be two characters per digit
-        if (strlen($in) % 2 != 0) {
-            return false;
-        }
-        $ret = "";
-        for ($i=0;$i<strlen($in);$i+=2) {
-            $ret .= chr(hexdec(substr($in,$i,2)));
-        }
-
-        return $ret;
     }
 
     public function myRefNum($ref)
