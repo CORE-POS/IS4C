@@ -58,6 +58,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
         $left = 5.175;
         $effective_width = $width - (2*$left);
         foreach ($data as $item) {
+            $item = $this->decodeItem($item);
             if ($count % 16 == 0) {
                 $pdf->AddPage();
                 $sign = 0;

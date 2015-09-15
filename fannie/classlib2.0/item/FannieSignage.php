@@ -704,6 +704,22 @@ class FannieSignage
     {
 
     }
+
+    /**
+      Convert HTML entities in strings to normal characters
+      for PDF output
+    */
+    protected function decodeItem($item)
+    {
+        $decode_fields = array('description', 'brand', 'size', 'vendor');
+        foreach ($decode_fields as $field) {
+            if (isset($item[$field])) {
+                $item[$field] = html_entity_decode($item[$field], ENT_QUOTES | ENT_HTML5);
+            }
+        }
+
+        return $item;
+    }
 }
 
 }

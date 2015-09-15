@@ -52,7 +52,7 @@ class FormLib
     */
     private static function filterCallback($item)
     {
-        return filter_var($item, FILTER_SANITIZE_STRING);
+        return $item;
     }
 
     public static function get_form_value($name, $default='')
