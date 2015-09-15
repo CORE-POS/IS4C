@@ -325,13 +325,9 @@ class SQLManager
     */
     public function queryAll($query_text)
     {
-        $ret = array_reduce(array_keys($this->connections),
-            function ($carry, $db_name) {
-                $carry[$db_name] = $this->query($query_text,$db_name);
-                return $carry;
-            },
-            array()
-        );
+        foreach ($this->connections as $db_name => $con) {
+            $carry[$db_name] = $this->query($query_text,$db_name);
+        }
 
         return $ret;
     }
@@ -1656,7 +1652,7 @@ class SQLManager
     {
         $def1 = $this->tableDefinition($table1, $which_connection1);
         $def2 = $this->tableDefinition($table2, $which_connection2);
-        $ret = array_reduce(array_key($def1),
+        $ret = array_reduce(array_keys($def1),
             function ($carry, $column_name) use ($def2) {
                 if (isset($def2[$column_name])) {
                     $carry .= $column_name . ',';
