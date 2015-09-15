@@ -246,13 +246,9 @@ class FannieUploadPage extends \FanniePage
                         unlink($this->upload_file_name);
                         if ($try && count($files) > 0) {
                             /* if more remain, redirect back to self */
-                            $url = $_SERVER['PHP_SELF'].'?';
-                            foreach($files as $f) {
-                                $url .= 'f[]='.$f.'&';
-                            }
-                            foreach($col_select as $c) {
-                                $url .= 'cs[]='.$c.'&';
-                            }
+                            $url = filter_input(INPUT_SERVER, 'PHP_SELF').'?';
+                            $url .= array_reduce($files, function($carry, $item){ return $carry . 'f[]=' . $item . '&'; }, '');
+                            $url .= array_reduce($col_select, function($carry, $item){ return $carry . 'cs[]=' . $item . '&'; }, '');
                             $url = rtrim($url,'&');
                             header('Location: '.$url);
 
@@ -665,15 +661,16 @@ class FannieUploadPage extends \FanniePage
             <span id="resultsSpan"></span>
             </div>';
         $ret .= '<div id="fieldInfo" style="display:none;">';
-        foreach (\FormLib::get('cs', array()) as $column) {
-            $ret .= sprintf('<input type="hidden" name="cs[]" value="%s" />', $column);
-        }
+        $ret .= array_reduce(\FormLib::get('cs', array()),
+            function ($carry, $column) {
+                return $carry . sprintf('<input type="hidden" name="cs[]" value="%s" />', $column);
+            }, '');
         foreach ($_POST as $key => $val) {
             if ($key != 'cs') {
                 if (is_array($val)) {
-                    foreach ($val as $v) {
-                        $ret .= sprintf('<input type="hidden" name="%s[]" value="%s" />', $key, $v);
-                    }
+                    $ret .= array_reduce($val, function($carry, $item) use ($key) {
+                        return $carry . sprintf('<input type="hidden" name="%s[]" value="%s" />', $key, $item);
+                    }, '');
                 } else {
                     $ret .= sprintf('<input type="hidden" name="%s" value="%s" />', $key, $val);
                 }
