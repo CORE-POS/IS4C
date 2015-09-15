@@ -7,7 +7,7 @@ class CashierTests extends \COREPOS\Fannie\API\test\TestWrapper
         $form = new \COREPOS\common\mvc\ValueContainer();
         $form->_method = 'get';
         $page->setForm($form);
-        $get = $this->runRESTfulPage($page);
+        $get = $this->runRESTfulPage($page, $form);
         $phpunit->assertNotEquals(0, strlen($get));
 
         $form->_method = 'post';
@@ -16,7 +16,7 @@ class CashierTests extends \COREPOS\Fannie\API\test\TestWrapper
         $form->fes = 20;
         $form->birthdate = date('Y-m-d');
         $page->setForm($form);
-        $post = $this->runRESTfulPage($page);
+        $post = $this->runRESTfulPage($page, $form);
 
         $this->connection->selectDB($this->config->get('OP_DB'));
         $emp = new EmployeesModel($this->connection);
