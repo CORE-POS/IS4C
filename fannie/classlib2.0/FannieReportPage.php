@@ -649,19 +649,8 @@ class FannieReportPage extends FanniePage
                             </script>';
                     }
                     $ret .= '<div id="pre-report-content">';
-                    /**
-                      Detect PEAR and only offer XLS if
-                      the system is capable.
-                    */
-                    $pear = true;
-                    if (!class_exists('PEAR')) {
-                        $pear = @include_once('PEAR.php');
-                        if (!$pear) {
-                            $pear = false;
-                        }
-                    }
                     $uri = filter_input(INPUT_SERVER, 'REQUEST_URI');
-                    if ($pear) {
+                    if (\COREPOS\Fannie\API\data\DataConvert::excelSupport()) {
                         $ret .= sprintf('<a href="%s%sexcel=xls">Download Excel</a>
                             &nbsp;&nbsp;&nbsp;&nbsp;',
                             $uri,
@@ -872,23 +861,25 @@ class FannieReportPage extends FanniePage
                     },
                     $xlsdata
                 );
-                $xlsdata = array_reduce($this->defaultDescriptionContent(), 
-                    function($carry, $line) {
-                        $carry[] = strip_tags($line);
-                        return $carry;
-                    },
-                    $xlsdata
-                );
                 $xlsdata = array_reduce($this->report_description_content(), 
                     function($carry, $line) {
                         $carry[] = strip_tags($line);
                         return $carry;
                     },
-                    $xlsdata
-                );
-                $ret = \COREPOS\Fannie\API\data\DataConvert::arrayToXls($xlsdata);
+                    array()
+                ) + $xlsdata; // prepend
+                $xlsdata = array_reduce($this->defaultDescriptionContent(), 
+                    function($carry, $line) {
+                        $carry[] = strip_tags($line);
+                        return $carry;
+                    },
+                    array() 
+                ) + $xlsdata; // prepend
+                $ext = \COREPOS\Fannie\API\data\DataConvert::excelFileExtension();
+                $ret = \COREPOS\Fannie\API\data\DataConvert::arrayToExcel($xlsdata);
                 header('Content-Type: application/ms-excel');
-                header('Content-Disposition: attachment; filename="'.$this->header.'.xls"');
+                header('Content-Disposition: attachment; filename="'
+                    . $this->header . '.' . $ext . '"');
                 break;
         }
 
@@ -1128,15 +1119,12 @@ class FannieReportPage extends FanniePage
             $this->report_format = 'xls';
             $this->window_dressing = false;
             /**
-              Verify whether PEAR is available. If it is not,
+              Verify whether Excel support is available. If it is not,
               fall back to CSV output. Should probably
               generate some kind of log message or notification.
             */
-            if (!class_exists('PEAR')) {
-                $pear = @include_once('PEAR.php');
-                if (!$pear) {
-                    $this->report_format = 'csv';
-                }
+            if (!\COREPOS\Fannie\API\data\DataConvert::excelSupport()) {
+                $this->report_format = 'csv';
             }
         } elseif (FormLib::get('excel') === 'csv') {
             $this->report_format = 'csv';

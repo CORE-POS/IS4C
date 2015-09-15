@@ -41,13 +41,12 @@ class DataConvert
         /* convert tables to 2-d array */
         $ret = array();
         foreach ($rows as $row) {
-            $good_nodes = array_filter($row->childNodes, function($node) {
+            $good_nodes = array();
+            foreach ($row->childNodes as $node) {
                 if (!property_exists($node,'tagName') || $node->tagName!='th' || $node->tagName!='td') {
-                    return false;
-                } else {
-                    return true;
+                    $good_nodes[] = $node;
                 }
-            });
+            }
 
             $record = array_map(function ($node) {
                 $val = trim($node->nodeValue,chr(160).chr(194));
@@ -104,11 +103,84 @@ class DataConvert
     }
 
     /**
+      Check whether an Excel library is present
+    */
+    public static function excelSupport()
+    {
+        if (self::composerExcelSupport()) {
+            return true;
+        } elseif (self::legacyExcelSupport()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+      Get file extension for the Excel library's 
+      output format
+    */
+    public static function excelFileExtension()
+    {
+        if (self::composerExcelSupport()) {
+            return 'xlsx';
+        } elseif (self::legacyExcelSupport()) {
+            return 'xls';
+        } else {
+            return false;
+        }
+    }
+
+    /**
+      Excel support installed via composer
+    */
+    private static function composerExcelSupport()
+    {
+        if (class_exists('\\PHPExcel_Writer_OpenDocument')) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+      Excel support is available via built-in library
+      that depends on PEAR
+    */
+    private static function legacyExcelSupport()
+    {
+        $pear = true;
+        if (!class_exists('\\PEAR')) {
+            $pear = @include_once('PEAR.php');
+            if (!$pear) {
+                $pear = false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+      Convert array to Excel format using an
+      available library
+    */
+    public static function arrayToExcel($array)
+    {
+        if (self::composerExcelSupport()) {
+            return self::arrayToXlsx($array);
+        } elseif (self::legacyExcelSupport()) {
+            return self::arrayToXls($array);
+        } else {
+            throw new \Exception('No Excel support available');
+        }
+    }
+
+    /**
       Convert array of data to excel XLS format
       @param $array [array] input data
       @return [string] XLS file content
     */
-    public static function arrayToXls($array)
+    private static function arrayToXls($array)
     {
         include_once(dirname(__FILE__) . '/../../src/Excel/xls_write/Spreadsheet_Excel_Writer/Writer.php');
 
@@ -144,56 +216,36 @@ class DataConvert
 
     /**
       Convert array of data to excel XLS format
-      This variation does not require an external
-      library/PEAR but likely does not work as well
       @param $array [array] input data
       @return [string] XLS file content
     */
-    public static function arrayToXls2($array)
+    private static function arrayToXlsx($array)
     {
-        $ret = self::xlsBOF();
-        $rownum = 1;
-        foreach ($array as $row) {
-            $colnum = 0;
-            foreach ($row as $col) {
-                if (is_numeric($col)) {
-                    $ret .= self::xlsWriteNumber($rownum,$colnum,$col);
-                } elseif(!empty($col)) {
-                    $ret .= self::xlsWriteLabel($rownum,$colnum,$col);
-                }
-                $colnum++;
+        $obj = new \PHPExcel();
+        $row = 1;
+        foreach ($array as $row_array) {
+            $col = 0;
+            if (!is_array($row_array)) {
+                $row_array = array($row_array);
             }
-            $rownum++;
+            foreach ($row_array as $val) {
+                if (($pos = strpos($val, chr(0))) !== false) {
+                    $val = substr($val,0,$pos);
+                    $obj->getActiveSheet()->getStyleByColumnAndRow($col, $row)->getFont()->setBold(true);
+                }
+                $obj->getActiveSheet()->setCellValueByColumnAndRow($col, $row, $val);
+                $col++;
+            }
+            $row++;
         }
-        $ret .= self::xlsEOF();
+        $writer = \PHPExcel_IOFactory::createWriter($obj, 'Excel2007');
+        $filename = tempnam(sys_get_temp_dir(),"xlsx");
+        $writer->save($filename);
+
+        $ret = file_get_contents($filename);
+        unlink($filename);
 
         return $ret;
-    }
-
-    /* additional functions from example @
-       http://www.appservnetwork.com/modules.php?name=News&file=article&sid=8
-    */
-    private static function xlsBOF() 
-    {
-        return pack("ssssss", 0x809, 0x8, 0x0, 0x10, 0x0, 0x0);  
-    } 
-
-    private static function xlsEOF() 
-    {
-        return pack("ss", 0x0A, 0x00);
-    }
-
-    private static function xlsWriteNumber($Row, $Col, $Value) 
-    {
-        return  pack("sssss", 0x203, 14, $Row, $Col, 0x0)
-            . pack("d", $Value);
-    } 
-
-    private static function xlsWriteLabel($Row, $Col, $Value ) 
-    {
-        $len = strlen($Value);
-        return pack("ssssss", 0x204, 8 + $len, $Row, $Col, 0x2bc, $len)
-            . $Value;
     }
 }
 

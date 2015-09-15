@@ -45,7 +45,8 @@
         "sabre/vobject": "~3.4",
         "videlalvaro/php-amqplib": "~2.5",
         "endroid/qrcode": "~1.5",
-        "itbz/fpdf": "~1.7"
+        "itbz/fpdf": "~1.7",
+        "phpoffice/phpexcel": "^1.8"
     },
     "require-dev": {
         "phpunit/phpunit": "4.5.*",

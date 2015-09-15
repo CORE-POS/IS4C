@@ -61,8 +61,9 @@ if ($errors == "" && $query != ""){
     }
     else {
         if (isset($_REQUEST['excel'])){
+            $ext = \COREPOS\Fannie\API\data\DataConvert::excelFileExtension();
             header('Content-Type: application/ms-excel');
-            header('Content-Disposition: attachment; filename="resultset.xls"');
+            header('Content-Disposition: attachment; filename="resultset.' . $ext . '"');
             ob_start();
         }
         echo '<table cellspacing="0" cellpadding="4" border="1">';
@@ -84,7 +85,7 @@ if ($errors == "" && $query != ""){
             $output = ob_get_contents();
             ob_end_clean();
             $array = \COREPOS\Fannie\API\data\DataConvert::htmlToArray($output);
-            $xls = \COREPOS\Fannie\API\data\DataConvert::arrayToXls($array);
+            $xls = \COREPOS\Fannie\API\data\DataConvert::arrayToExcel($array);
             echo $xls;
         }
 

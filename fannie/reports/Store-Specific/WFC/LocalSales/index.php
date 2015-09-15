@@ -32,7 +32,8 @@ if (isset($_REQUEST['submit'])){
     $dlog = DTransactionsModel::selectDlog($d1,$d2);
 
     if (isset($_REQUEST['excel'])){
-        header("Content-Disposition: inline; filename=local_{$d1}_{$d2}.xls");
+        $ext = \COREPOS\Fannie\API\data\DataConvert::excelFileExtension();
+        header("Content-Disposition: inline; filename=local_{$d1}_{$d2}.{$ext}");
         header("Content-type: application/vnd.ms-excel; name='excel'");
         ob_start();
     }
@@ -123,7 +124,7 @@ if (isset($_REQUEST['submit'])){
         $output = ob_get_contents();
         ob_end_clean();
         $array = \COREPOS\Fannie\API\data\DataConvert::htmlToArray($output);
-        $xls = \COREPOS\Fannie\API\data\DataConvert::arrayToXls($array);
+        $xls = \COREPOS\Fannie\API\data\DataConvert::arrayToExcel($array);
         echo $xls;
     }
             

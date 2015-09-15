@@ -4,8 +4,9 @@ include_once($FANNIE_ROOT.'src/SQLManager.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 if (isset($_REQUEST['excel'])){
+    $ext = \COREPOS\Fannie\API\data\DataConvert::excelFileExtension();
     header('Content-Type: application/ms-excel');
-    header('Content-Disposition: attachment; filename="AnnualMtg2011.xls"');
+    header('Content-Disposition: attachment; filename="AnnualMtg2011.' . $ext . '"');
     ob_start();
 }
 else {
@@ -114,7 +115,7 @@ if (isset($_REQUEST['excel'])){
     ob_end_clean();
 
     $array = \COREPOS\Fannie\API\data\DataConvert::htmlToArray($output);
-    $xls = \COREPOS\Fannie\API\data\DataConvert::arrayToXls($array);
+    $xls = \COREPOS\Fannie\API\data\DataConvert::arrayToExcel($array);
     
     echo $xls;
 }
