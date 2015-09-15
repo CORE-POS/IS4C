@@ -714,7 +714,7 @@ class FannieSignage
         $decode_fields = array('description', 'brand', 'size', 'vendor');
         foreach ($decode_fields as $field) {
             if (isset($item[$field])) {
-                $item[$field] = html_entity_decode($item[$field], ENT_QUOTES | ENT_HTML5);
+                $item[$field] = html_entity_decode($item[$field], ENT_QUOTES);
             }
         }
 
