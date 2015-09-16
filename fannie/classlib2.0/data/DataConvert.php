@@ -60,6 +60,17 @@ class DataConvert
         }
 
         /* prepend any other lines to the array */
+        $extra = self::getNonTableList($str);
+        $prepend = array_filter(array_reverse($extra), function($ext) { 
+            return empty($ext) ? false : true;
+        }); 
+        $as_array = array_map(function($item){return array($item); }, $prepend);
+
+        return array_merge($as_array, $ret);
+    }
+
+    private static function getNonTableList($str)
+    {
         $str = preg_replace("/<table.*?>.*<\/table>/s","",$str);
         $str = preg_replace("/<head.*?>.*<\/head>/s","",$str);
         $str = preg_replace("/<body.*?>/s","",$str);
@@ -68,13 +79,8 @@ class DataConvert
         $str = str_replace("</html>","",$str);
 
         $extra = preg_split("/<br.*?>/s",$str);
-        foreach (array_reverse($extra) as $e) {
-            if (!empty($e)) {
-                array_unshift($ret,array($e));
-            }
-        }
-
-        return $ret;
+        
+        return $extra;
     }
 
     /**
@@ -89,9 +95,7 @@ class DataConvert
         foreach ($array as $row) {
             foreach ($row as $col) {
                 $item = "\"";
-                if ( ($pos = strpos($col,chr(0))) !== False) {
-                    $col = substr($col,0,$pos);
-                }
+                list($col, $bold) = self::stringtoPair($col);
                 $item .= str_replace("\"","",$col);
                 $item .= "\",";
                 $ret .= $item;
@@ -100,6 +104,16 @@ class DataConvert
         }
 
         return $ret;
+    }
+
+    private static function stringToPair($str)
+    {
+        if (($pos = strpos($str,chr(0))) !== false) {
+            $str = substr($str,0,$pos);
+            return array($str, true);
+        } else {
+            return array($str, false);
+        }
     }
 
     /**
@@ -151,8 +165,8 @@ class DataConvert
     {
         $pear = true;
         if (!class_exists('\\PEAR')) {
-            $pear = @include_once('PEAR.php');
-            if (!$pear) {
+            $pear = stream_resolve_include_path('PEAR.php');
+            if ($pear === false) {
                 $pear = false;
             }
         }
@@ -196,11 +210,11 @@ class DataConvert
                 // 5Apr14 EL Added the isset test for StoreSummaryReport.php with multiple header sets.
                 //            Why should it be needed?
                 if (isset($array[$i][$j])) {
-                    if ( ($pos = strpos($array[$i][$j],chr(0))) !== false) {
-                        $val = substr($array[$i][$j],0,$pos);
+                    list($val, $bold) = self::stringtoPair($array[$i][$j]);
+                    if ($bold) {
                         $worksheet->write($i,$j,$val,$format_bold);
                     } else {
-                        $worksheet->write($i,$j,$array[$i][$j]);
+                        $worksheet->write($i,$j,$val);
                     }
                 }
             }
@@ -229,8 +243,8 @@ class DataConvert
                 $row_array = array($row_array);
             }
             foreach ($row_array as $val) {
-                if (($pos = strpos($val, chr(0))) !== false) {
-                    $val = substr($val,0,$pos);
+                list($val, $bold) = self::stringtoPair($val);
+                if ($bold) {
                     $obj->getActiveSheet()->getStyleByColumnAndRow($col, $row)->getFont()->setBold(true);
                 }
                 $obj->getActiveSheet()->setCellValueByColumnAndRow($col, $row, $val);
