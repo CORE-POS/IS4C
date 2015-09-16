@@ -54,15 +54,17 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
                     </div>
                     <label>
                         <span class="label primaryBackground">Checks</span>
-                        <input type="checkbox" name="HouseholdSeparateDiscounts_writeChecks[] value="%d" />
+                        <input type="checkbox" name="HouseholdSeparateDiscounts_writeChecks[]" %s value="%d" />
                     </label>
                     <label>
                         <span class="label primaryBackground">FFA</span>
-                        <input type="checkbox" name="HouseholdSeparateDiscounts_SSI[] value="%d" />
+                        <input type="checkbox" name="HouseholdSeparateDiscounts_SSI[]" %s value="%d" />
                     </label>
                 </div>',
                 $infoW['firstName'],$infoW['lastName'],$infoW['discount'],
-                $count+2, $count+2); // $count+2 == personNum
+                ($infoW['checksAllowed'] ? 'checked' : ''), $count+2, 
+                ($infoW['lowIncomeBenefits'] ? 'checked' : ''), $count+2, 
+                $infoW['customerID']); // $count+2 == personNum
             $count++;
         }
 
