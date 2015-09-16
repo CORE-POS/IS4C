@@ -178,6 +178,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             echo "<pre>";
             echo '$ cd "' . $FILEPATH . "\"\n";
             echo '$ /path/to/composer.phar update';
+            echo '</pre>';
+            echo '<a href="https://github.com/CORE-POS/IS4C/wiki/Installation#composer">More info about Composer</a>';
             echo '</div>';
         } else {
             $json = file_get_contents(dirname(__FILE__) . '/../../composer.json');
