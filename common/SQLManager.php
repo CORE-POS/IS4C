@@ -1763,30 +1763,24 @@ class SQLManager
       caches adapters on creation.
     */
     protected $adapters = array();
+    protected $adapter_map = array(
+        'mysql'     => 'COREPOS\common\sql\MysqlAdapter',
+        'mysqli'    => 'COREPOS\common\sql\MysqlAdapter',
+        'pdo_mysql' => 'COREPOS\common\sql\MysqlAdapter',
+        'pdo'       => 'COREPOS\common\sql\MysqlAdapter',
+        'mssql'     => 'COREPOS\common\sql\MssqlAdapter',
+        'pgsql'     => 'COREPOS\common\sql\PgsqlAdapter',
+        'sqlite3'   => 'COREPOS\common\sql\SqliteAdapter',
+    );
+
     protected function getAdapter($type)
     {
         if (isset($adapters[$type])) {
             return $adapters[$type];
         }
-        switch ($type)
-        {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                $adapters[$type] = new sql\MysqlAdapter();
-                break;
-            case 'mssql':
-                $adapters[$type] = new sql\MssqlAdapter();
-                break;
-            case 'pgsql':
-                $adapters[$type] = new sql\PgsqlAdapter();
-                break;
-            case 'sqlite3':
-                $adapters[$type] = new sql\SqliteAdapter();
-                break;
-            default:
-                throw new \Exception('Unknown database type: ' . $type);
+        if (isset($this->adapter_map[$type])) {
+            $class = $this->adapter_map[$type];
+            $adapters[$type] = new $class();
         }
 
         return $adapters[$type];
