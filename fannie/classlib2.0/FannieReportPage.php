@@ -861,20 +861,20 @@ class FannieReportPage extends FanniePage
                     },
                     $xlsdata
                 );
-                $xlsdata = array_reduce($this->report_description_content(), 
+                $xlsdata = array_merge(array_reduce($this->report_description_content(), 
                     function($carry, $line) {
                         $carry[] = strip_tags($line);
                         return $carry;
                     },
                     array()
-                ) + $xlsdata; // prepend
-                $xlsdata = array_reduce($this->defaultDescriptionContent(), 
+                ),$xlsdata); // prepend
+                $xlsdata = array_merge(array_reduce($this->defaultDescriptionContent(), 
                     function($carry, $line) {
                         $carry[] = strip_tags($line);
                         return $carry;
                     },
                     array() 
-                ) + $xlsdata; // prepend
+                ), $xlsdata); // prepend
                 $ext = \COREPOS\Fannie\API\data\DataConvert::excelFileExtension();
                 $ret = \COREPOS\Fannie\API\data\DataConvert::arrayToExcel($xlsdata);
                 header('Content-Type: application/ms-excel');
