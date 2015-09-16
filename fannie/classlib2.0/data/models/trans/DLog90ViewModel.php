@@ -24,33 +24,11 @@
 /**
   @class DLogModel
 */
-class DLog90ViewModel extends DTransactionsModel
+class DLog90ViewModel extends DLogModel
 {
 
     protected $name = "dlog_90_view";
     protected $preferred_db = 'trans';
-
-    public function __construct($con)
-    {
-        unset($this->columns['datetime']);
-        $tdate = array('tdate'=>array('type'=>'datetime','index'=>True));
-        $trans_num = array('trans_num'=>array('type'=>'VARCHAR(25)'));
-        $this->columns = $tdate + $this->columns + $trans_num;
-        $this->columns['store_row_id']['increment'] = false;
-        $this->columns['store_row_id']['primary_key'] = false;
-        $this->columns['store_row_id']['index'] = false;
-        $this->columns['pos_row_id']['index'] = false;
-
-        parent::__construct($con);
-    }
-
-    /**
-      Use DTransactionsModel to normalize same-schema tables
-    */
-    public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=false)
-    {
-        return 0;
-    }
 
     public function create()
     {
@@ -63,16 +41,6 @@ class DLog90ViewModel extends DTransactionsModel
         } else {
             return false;
         }
-    }
-
-    public function save()
-    {
-        return false;
-    }
-
-    public function delete()
-    {
-        return false;
     }
 
     public function doc()

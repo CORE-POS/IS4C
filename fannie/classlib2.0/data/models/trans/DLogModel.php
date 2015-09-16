@@ -26,7 +26,6 @@
 */
 class DLogModel extends DTransactionsModel
 {
-
     protected $name = "dlog";
     protected $preferred_db = 'trans';
 
