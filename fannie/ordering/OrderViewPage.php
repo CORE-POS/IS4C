@@ -563,7 +563,68 @@ class OrderViewPage extends FannieRESTfulPage
         return false;
     }
 
-    private function addUPC($orderID,$memNum,$upc,$num_cases=1)
+    private function addUPC($orderID, $memNum, $upc, $num_cases=1)
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
+
+        $ins_array = $this->genericRow($orderID);
+        $ins_array['upc'] = "$upc";
+        $ins_array['card_no'] = "$memNum";
+        $ins_array['trans_type'] = "I";
+        $ins_array['ItemQtty'] = $num_cases;
+
+        $mempricing = false;
+        if ($memNum != 0 && !empty($memNum)) {
+            $p = $dbc->prepare_statement("SELECT Type,memType FROM custdata WHERE CardNo=?");
+            $r = $dbc->exec_statement($p, array($memNum));
+            $w = $dbc->fetch_row($r);
+            if ($w['Type'] == 'PC') {
+                $mempricing = true;
+            } elseif($w['memType'] == 9) {
+                $mempricing = true;
+            }
+        }
+
+        if (!class_exists('OrderItemLib')) {
+            include(dirname(__FILE__) . '/OrderItemLib.php');
+        }
+
+        $item = OrderItemLib::getItem($upc);
+        $item['department'] = OrderItemLib::mapDepartment($item['department']);
+        $qtyReq = OrderItemLib::manualQuantityRequired($item);
+        if ($qtyReq !== false) {
+            $item['caseSize'] = $qtyReq;
+        }
+        $unitPrice = OrderItemLib::getUnitPrice($item, $mempricing);
+        $casePrice = OrderItemLib::getCasePrice($item, $mempricing);
+
+        $ins_array['upc'] = $item['upc'];
+        $ins_array['quantity'] = $item['caseSize'];
+        $ins_array['mixMatch'] = substr($item['vendor'], 0, 26);
+        $ins_array['description'] = substr($item['description'], 0, 32) . ' SO';
+        $ins_array['department'] = $item['department'];
+        $ins_array['discountable'] = $item['discountable'];
+        $ins_array['discounttype'] = $item['discounttype'];
+        $ins_array['unitPrice'] = $unitPrice;
+        $ins_array['total'] = $casePrice * $num_cases;
+        $ins_array['regPrice'] = $casePrice * $num_cases;
+
+        $tidP = $dbc->prepare_statement("SELECT MAX(trans_id),MAX(voided),MAX(numflag) 
+                FROM {$TRANS}PendingSpecialOrder WHERE order_id=?");
+        $tidR = $dbc->exec_statement($tidP,array($orderID));
+        $tidW = $dbc->fetch_row($tidR);
+        $ins_array['trans_id'] = $tidW[0]+1;
+        $ins_array['voided'] = $tidW[1];
+        $ins_array['numflag'] = $tidW[2];
+
+        $dbc->smart_insert("{$TRANS}PendingSpecialOrder",$ins_array);
+
+        return array($qtyReq,$ins_array['trans_id'],$ins_array['description']);
+    }
+
+    private function _legacy_addUPC($orderID,$memNum,$upc,$num_cases=1)
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
