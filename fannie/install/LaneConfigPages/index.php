@@ -24,11 +24,11 @@ other operational database table.
 </p>
 <p>
 <p>
-<a href="LaneTextStringPage.php" class="btn btn-default">Edit Text Strings</a> for receipt headers &amp; footers,
+<a href="../../admin/ReceiptText/LaneTextStringPage.php" class="btn btn-default">Edit Text Strings</a> for receipt headers &amp; footers,
 on screen messages, charge slips, and check endorsing.
 </p>
 <iframe width="100%" 
-    style="width:100%;" src="extra_directory_layer/index.php"
+    style="width:100%;height:500px;" src="extra_directory_layer/index.php"
     title="Embedded Lane Config"
     onload="$(this).height($(this).contents().height());console.log($(this).height());" >
 </iframe>

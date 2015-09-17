@@ -20,217 +20,204 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include_once('../../classlib2.0/InstallPage.php');
-include('../util.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
 /**
     @class LaneTextStringPage
     Class for the Global Lane define Text Strings page.
     Strings that appear in receipt headers and footers and in the PoS interface.
 */
-class LaneTextStringPage extends InstallPage {
+class LaneTextStringPage extends FannieRESTfulPage 
+{
+    protected $title = 'Lane Configuration: Text Strings';
+    protected $header = 'Lane Configuration: Text Strings';
 
-    protected $title = 'CORE:PoS Global Lane Configuration: Text Strings';
-    protected $header = 'CORE:PoS Global Lane Configuration: Text Strings';
+    public $description = "[Lane Text Editor] manages strings that appear in receipt headers and footers 
+    as well as some sections of the POS interface.";
 
-    public $description = "
-    Class for the Global Lane define Text Strings page.
-    Strings that appear in receipt headers and footers and in the PoS interface.
-    ";
+    private $TRANSLATE = array(
+        'receiptHeader'=>'Receipt Header',
+        'receiptFooter'=>'Receipt Footer',
+        'ckEndorse'=>'Check Endorsement',
+        'welcomeMsg'=>'Welcome On-screen Message',
+        'farewellMsg'=>'Goodbye On-screen Message',
+        'trainingMsg'=>'Training On-screen Message',
+        'chargeSlip'=>'Store Charge Slip',
+    );
 
-    // This replaces the __construct() in the parent.
-    public function __construct() {
-
-        // To set authentication.
-        FanniePage::__construct();
-
-        $SRC = '../../src';
-        // Link to a file of CSS by using a function.
-        $this->add_css_file("$SRC/style.css");
-        $this->add_css_file("$SRC/javascript/jquery-ui.css");
-        $this->add_css_file("$SRC/css/install.css");
-
-        // Link to a file of JS by using a function.
-        $this->add_script("$SRC/javascript/jquery.js");
-        $this->add_script("$SRC/javascript/jquery-ui.js");
-
-    // __construct()
+    public function preprocess()
+    {
+        $this->addRoute('get<type>');
+        $this->addRoute('post<id><line><type>');
+        return parent::preprocess();
     }
 
-    // If chunks of CSS are going to be added the function has to be
-    //  redefined to return them.
-    // If this is to override x.css draw_page() needs to load it after the add_css_file
-    /**
-      Define any CSS needed
-      @return A CSS string
-    function css_content(){
-        $css ="";
-        return $css;
-    //css_content()
-    }
-    */
-
-    // If chunks of JS are going to be added the function has to be
-    //  redefined to return them.
-    /**
-      Define any javascript needed
-      @return A javascript string
-    function javascript_content(){
-        $js ="";
-        return $js;
-    }
-    */
-
-    function body_content(){
-        global $FANNIE_OP_DB; //, $TRANSLATE;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        // keys are customReceipt.type values.
-        $TRANSLATE = array(
-            'receiptHeader'=>'Receipt Header',
-            'receiptFooter'=>'Receipt Footer',
-            'ckEndorse'=>'Check Endorsement',
-            'welcomeMsg'=>'Welcome On-screen Message',
-            'farewellMsg'=>'Goodbye On-screen Message',
-            'trainingMsg'=>'Training On-screen Message',
-            'chargeSlip'=>'Store Charge Slip',
-        );
-
-        if (isset($_REQUEST['new_submit'])){
-            $chkQ = $dbc->prepare_statement("SELECT MAX(seq) FROM customReceipt WHERE type=?");
-            $chkR = $dbc->exec_statement($chkQ, array($_REQUEST['new_type']));
-            $seq = 0;
-            if ($dbc->num_rows($chkR) > 0){
-                $max = array_pop($dbc->fetch_row($chkR));
-                if ($max != null) $seq=$max+1;
-            }
-            if (!empty($_REQUEST['new_content'])){
-                $insQ = $dbc->prepare_statement("INSERT INTO customReceipt (type,text,seq) VALUES (?,?,?)");
-                $dbc->exec_statement($insQ,array($_REQUEST['new_type'],$_REQUEST['new_content'],$seq));
-            }
+    protected function get_type_handler()
+    {
+        if ($this->type == '') {
+            echo '';
+            return false;
         }
-        else if (isset($_REQUEST['old_submit'])){
-            $cont = $_REQUEST['old_content'];
-            $type = $_REQUEST['old_type'];
-            $seq=0;
-            $prev_type='';
-            $trun = $dbc->prepare_statement("TRUNCATE TABLE customReceipt");
-            $dbc->exec_statement($trun);
-            $insP = $dbc->prepare_statement("INSERT INTO customReceipt (type,text,seq) VALUES (?,?,?)");
-            for($i=0;$i<count($cont);$i++){
-                if ($prev_type != $type[$i])
-                    $seq = 0; // new type, reset sequence
-                if (empty($cont[$i])) 
-                    continue; // empty means delete that line
-                $dbc->exec_statement($insP, array($type[$i],$cont[$i],$seq));
-                $prev_type=$type[$i];
-                $seq++;
-            }
+        $this->connection->selectDB($this->config->get('OP_DB'));
+        $model = new CustomReceiptModel($this->connection);
+        $model->type($this->type);
+        
+        $ret = '<table class="table table-bordered">
+            <tr>
+                <th>Line #</th>
+                <th>Text</th>
+                <th>' . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</th>
+            </tr>';
+        foreach ($model->find('seq') as $obj) {
+            $ret .= sprintf('<tr>
+                <td>%d<input type="hidden" name="id[]" value="%d" /></td>
+                <td><input type="text" maxlength="55" name="line[]" class="form-control" value="%s" /></td>
+                <td><input type="checkbox" name="del[]" value="%d" /></td>
+                </tr>',
+                $obj->seq(), $obj->seq(),
+                $obj->text(),
+                $obj->seq()
+            );
+        }
+        $ret .= '<tr><td>NEW</td><td><input type="text" name="newLine" class="form-control" /></td>
+            <td>&nbsp;</td></tr>';
+        $ret .= '</table>';
+        echo $ret;
+
+        return false;
+    }
+
+    protected function post_id_line_type_handler()
+    {
+        $this->connection->selectDB($this->config->get('OP_DB'));
+        $model = new CustomReceiptModel($this->connection);
+        $model->type($this->type);
+        try {
+            $delete = $this->form->del;
+        } catch (Exception $ex) {
+            $delete = array();
         }
 
+        $currentID = 0;
+        for ($i=0; $i<count($this->id); $i++) {
+            $postedID = $this->id[$i];
+            $line = $this->line[$i];
+            if (!in_array($postedID, $delete)) {
+                $model->seq($currentID);
+                $model->text($line);
+                $model->save();
+                $currentID++; 
+            }
+        }
+        try {
+            $new = $this->form->newLine;
+            if (!empty($new)) {
+                $model->seq($currentID);
+                $model->text($new);
+                $model->save();
+                $currentID++;
+            }
+        } catch (Exception $ex) {}
+
+        $trimP = $this->connection->prepare('
+            DELETE 
+            FROM customReceipt
+            WHERE type=?
+                AND seq >= ?
+        ');
+        $this->connection->execute($trimP, array($this->type, $currentID));
+
+        return $this->get_type_handler();
+    }
+
+    protected function get_view()
+    {
+        $this->addScript('lane-text.js');
         ob_start();
-
-        echo showLinkToFannie();
-        echo showInstallTabsLane("Text Strings", '');
-
 ?>
+<form action=LaneTextStringPage.php onsubmit="saveString(this); return false;">
 
-<form action=LaneTextStringPage.php method=post>
-<h1 class="install"><?php echo $this->header; ?></h1>
-
-<?php
-if (is_writable('../../config.php')){
-    echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
-}
-else {
-    echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
-}
-?>
 <p class="ichunk">Use this utility to enter and edit the lines of text that appear on
 receipts, the lane Welcome screen, and elsewhere.
 <br />If your receipts have no headers or footers or they are wrong this is the place to fix that.
-<br />The upper form is for adding lines.
-<br />The lower form is for editing existing lines.
-<br />Make changes in only one of the forms for each submit, i.e. Add and Edit separately.
 </p>
 <hr />
-
-<h4 class="install">Add lines</h4>
-<p class="ichunk2 ichunk3">Select a type of text string, enter the line of text for it, and click "Add".
-<br />Existing lines of the type are displayed in the "Edit existing text string lines" form, below.
-<br />All types of text strings may initially have no lines, i.e. be empty.
-<br />The maximum length of a line is 55 characters.
+<h4 class="install">Select Type of Text</h4>
+<p class="ichunk2 ichunk3">Select a type of text string to view and edit the current entries.
 </p>
 <div class="form-group">
-    <label>Text Type</label>
-<select class="form-control" name="new_type" size="5">
+    <select class="form-control" name="type" class="form-control" 
+        onchange="loadStrings(this.value);">
+    <option value="">Choose...</option>
 <?php
-$tcount = 0;
-foreach($TRANSLATE as $short=>$long){
-    $tcount++;
-    if (isset($_REQUEST['new_type'])) {
-        $selected=($_REQUEST['new_type']==$short)?'selected':'';
-    } else {
-        $selected = ($tcount==1)?'selected':'';
-    }
-    printf('<option value="%s" %s>%s</option>',
-        $short, $selected, $long);
+foreach ($this->TRANSLATE as $short=>$long) {
+    printf('<option value="%s">%s</option>', $short, $long);
 }
 ?>
 </select>
 </div>
-<div class="form-group">
-    <label>Content</label>
-<input type="text" class="form-control" name="new_content" size="55" maxlength="55" />
-</div>
-<div class="form-group">
-<button type="submit" class="btn btn-default" name="new_submit" value="1">Add a line of the selected type</button>
-</div>
-</form>
-<hr />
-
-<h4 class="install">Edit existing text string lines</h4>
-<p class="ichunk2 ichunk3">Existing lines of text of different types are displayed below and can be edited there.
-<br />All types may initially have no lines in which case the heading will not appear and no line boxes will appear.
-<br />To delete a line erase all the text from it.
+<p id="instructions-p">
+<br />To add an additional line fill out the last row marked NEW.
+<br />To delete a line check the box in the right-hand column (trash).
 <br />The maximum length of a line is 55 characters.
 </p>
-<form method="post" action="LaneTextStringPage.php">
-<?php
-$q = $dbc->prepare_statement("SELECT type,text FROM customReceipt ORDER BY type,seq");
-$r = $dbc->exec_statement($q);
-$header="";
-$i=1;
-while($w = $dbc->fetch_row($r)){
-    if ($header != $w['type']){
-        echo '<h3>'.$TRANSLATE[$w['type']].'</h3>';
-        $header = $w['type'];    
-        $i=1;
-    }
-    printf('<p class="form-inline">
-        <label>%d</label>: <input type="text" size="55" maxlength="55" 
-        class="form-control" name="old_content[]" value="%s" />
-        <input type="hidden" name="old_type[]" value="%s" /></p>',
-        $i++,$w['text'],$w['type']);
-}
-?>
+<div id="line-div">
+</div>
 <p>
-    <button type="submit" name="old_submit" value="1" class="btn btn-default">Save Changes</button>
+    <button type="submit" class="btn btn-default">Save Changes</button>
 </p>
 </form>
 
 <?php
 
         return ob_get_clean();
+    }
 
-    // body_content
+    public function helpContent()
+    {
+        return '
+            <p>
+            This editor manages strings of text that appear
+            on lane receipts as well as certain sections of the screen.
+            First select the type of text you wish to view or edit, then
+            adjust the line(s) of text.
+            </p>
+            <ul>
+            <li>Receipt Header lines appear at the beginnning of a receipt.
+            Values ending in ".bmp" are special and will print the specified
+            bitmap image rather than a line of text.</li>
+            <li>Receipt Footer lines appear at the end of a receipt.</li>
+            <li>Check Endorsement lines are printed on the back of paper checks
+            when the receipt printer is configured for endorsing.</li>
+            <li>Welcome On-screen Message is displayed when the cashier first
+            logs in and has not yet rung any items.</li>
+            <li>Goodbye On-screen Message is displayed at the conclusion of a
+            transaction.</li>
+            <li>Training On-screen Message is displayed when a cashier first
+            logs into training mode.</li>
+            <li>Store Charge Slip is printed on paper signature slips used
+            for store charge (AR) accounts.</li>
+            </ul>
+        ';
+    }
+
+    public function unitTest($phpunit)
+    {
+        if (!class_exists('LaneTextTests', false)) {
+            include(dirname(__FILE__) . '/LaneTextTests.php');
+        }
+        $tester = new LaneTextTests($this->connection, $this->config, $this->logger);
+        $tester->testHtml($this, $phpunit);
+        $tester->testAddLine($this, $phpunit);
+        $tester->testEditLine($this, $phpunit);
+        $tester->testDeleteLine($this, $phpunit);
     }
 
 // LaneTextStringPage  
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

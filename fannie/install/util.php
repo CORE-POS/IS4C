@@ -169,13 +169,14 @@ function showInstallTabsLane($current,$path='') {
     $ret = "";
 
     $ret .= "<ul class='installTabList2'>";
+    $url = FannieConfig::config('URL');
 
     $installTabs = array(
         'Lane Necessities'=>'LaneNecessitiesPage.php',
         'Additional Configuration' => 'LaneAdditionalConfigPage.php',
         'Scanning Options' => 'LaneScanningPage.php',
         'Security' => 'LaneSecurityPage.php',
-        'Text Strings' => 'LaneTextStringPage.php'
+        'Text Strings' => $url . '/admin/ReceiptText/LaneTextStringPage.php'
         );
 
     /* Original
