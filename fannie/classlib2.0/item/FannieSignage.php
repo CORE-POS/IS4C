@@ -233,8 +233,14 @@ class FannieSignage
                     p.numflag,';
         // 22Jul2015 check table compatibility
         if (isset($b_def['datedSigns'])) {
-            $query .= 'CASE WHEN t.datedSigns=0 THEN \'While supplies last\' ELSE b.startDate END AS startDate,';
-            $query .= 'CASE WHEN t.datedSigns=0 THEN \'While supplies last\' ELSE b.endDate END AS endDate,';
+            $query .= 'CASE 
+                        WHEN t.datedSigns=0 AND t.typeDesc LIKE \'%DISCO%\' THEN \'Discontinued\' 
+                        WHEN t.datedSigns=0 AND t.typeDesc NOT LIKE \'%DISCO%\' THEN \'While supplies last\' 
+                        ELSE b.startDate END AS startDate,';
+            $query .= 'CASE 
+                        WHEN t.datedSigns=0 AND t.typeDesc LIKE \'%DISCO%\' THEN \'Discontinued\' 
+                        WHEN t.datedSigns=0 AND t.typeDesc NOT LIKE \'%DISCO%\' THEN \'While supplies last\' 
+                        ELSE b.startDate END AS endDate,';
         } else {
             $query .= 'b.startDate, b.endDate,';
         }
@@ -719,6 +725,19 @@ class FannieSignage
         }
 
         return $item;
+    }
+
+    protected function getDateString($start, $end)
+    {
+        if ($start == 'While supplies last') {
+            return $start;
+        } elseif ($start == 'Discontinued') {
+            return $start;
+        } else {
+            return date('M d', strtotime($start))
+                . chr(0x96) // en dash in cp1252
+                . date('M d', strtotime($end));
+        }
     }
 }
 

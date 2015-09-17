@@ -160,13 +160,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
             if ($item['startDate'] != '' && $item['endDate'] != '') {
                 // intl would be nice
-                if ($item['startDate'] == 'While supplies last') {
-                    $datestr = $item['startDate'];
-                } else {
-                    $datestr = date('M d', strtotime($item['startDate']))
-                        . chr(0x96) // en dash in cp1252
-                        . date('M d', strtotime($item['endDate']));
-                }
+                $datestr = $this->getDateString($item['startDate'], $item['endDate']);
                 $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 10));
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $pdf->Cell($effective_width, 6, strtoupper($datestr), 0, 1, 'R');
