@@ -26,7 +26,7 @@ class LaneTextTests extends \COREPOS\Fannie\API\test\TestWrapper
 
         $model = new CustomReceiptModel($this->connection);
         $model->type($form->type);
-        $model->text($this->newLine);
+        $model->text($form->newLine);
         $phpunit->assertNotEquals(0, count($model->find()));
     }
 
