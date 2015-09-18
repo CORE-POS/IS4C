@@ -88,7 +88,7 @@ class BatchListPage extends FannieRESTfulPage
         $b->endDate($this->newEnd);
         $b->batchName($this->newName);
         $b->batchType($this->newType);
-        $b->discounttype($discounttype);
+        $b->discountType($discounttype);
         $b->priority(0);
         $b->owner($this->newOwner);
         $id = $b->save();
@@ -131,7 +131,7 @@ class BatchListPage extends FannieRESTfulPage
         $model->batchName($this->batchName);
         $model->startDate($this->startDate);
         $model->endDate($this->endDate);
-        $model->discounttype($discounttype);
+        $model->discountType($discounttype);
         $model->owner($this->owner);
         $saved = $model->save();
         
