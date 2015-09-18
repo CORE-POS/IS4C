@@ -62,7 +62,7 @@ class DTrans
         'ItemQtty'=>0,
         'volDiscType'=>0,
         'volume'=>0,
-        'volSpecial'=>0,
+        'VolSpecial'=>0,
         'mixMatch'=>'',
         'matched'=>0,
         'memType'=>'',
