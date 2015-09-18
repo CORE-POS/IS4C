@@ -88,7 +88,7 @@ class CustomersModel extends BasicModel
         }
 
         $this->reset();
-        $this->CardNo($card_no);
+        $this->cardNo($card_no);
         if (count($this->find()) > 0) {
             return false; // record(s) already exist
         }
@@ -156,7 +156,7 @@ class CustomersModel extends BasicModel
         $meminfo->card_no($card_no);
 
         $this->reset();
-        $this->CardNo($card_no);
+        $this->cardNo($card_no);
         $this->accountHolder(1);
         if (count($this->find()) != 1) {
             // no customer records

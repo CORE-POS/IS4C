@@ -1326,7 +1326,8 @@ class BasicModel
                 }
             }
             if (!isset($this->columns[$name])) {
-                throw new Exception('Invalid accessor: ' . $name);
+                $refl = new ReflectionClass($this);
+                throw new Exception('Invalid accessor: ' . $refl->getName() . ':: ' . $name);
             }
         }
 

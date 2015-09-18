@@ -98,7 +98,7 @@ class CustomerAccountsModel extends BasicModel
         }
 
         $this->reset();
-        $this->CardNo($card_no);
+        $this->cardNo($card_no);
         if ($this->load()) {
             return false; // record already exists
         }
@@ -160,7 +160,7 @@ class CustomerAccountsModel extends BasicModel
         $suspensions->cardno($card_no);
 
         $this->reset();
-        $this->CardNo($card_no);
+        $this->cardNo($card_no);
         if (!$this->load()) {
             return false;
         }
