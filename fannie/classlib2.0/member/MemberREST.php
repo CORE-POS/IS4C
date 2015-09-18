@@ -660,11 +660,11 @@ class MemberREST
                     $loopCD_changed = true;
                 }
                 if (isset($c_json['chargeAllowed'])) {
-                    $loopCD->chargeOk($c_json['chargeAllowed']);
+                    $loopCD->ChargeOk($c_json['chargeAllowed']);
                     $loopCD_changed = true;
                 }
                 if (isset($c_json['checksAllowed'])) {
-                    $loopCD->writeChecks($c_json['checksAllowed']);
+                    $loopCD->WriteChecks($c_json['checksAllowed']);
                     $loopCD_changed = true;
                 }
                 if (isset($c_json['staff'])) {

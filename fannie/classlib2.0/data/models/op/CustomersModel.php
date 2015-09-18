@@ -179,8 +179,8 @@ class CustomersModel extends BasicModel
             $custdata->FirstName($c->firstName());
             $custdata->LastName($c->lastName());
             $custdata->blueLine($card_no . ' ' . $c->lastName());
-            $custdata->chargeOk($c->chargeAllowed());
-            $custdata->writeChecks($c->checksAllowed());
+            $custdata->ChargeOk($c->chargeAllowed());
+            $custdata->WriteChecks($c->checksAllowed());
             $custdata->staff($c->staff());
             $custdata->SSI($c->lowIncomeBenefits());
             $custdata->Discount($c->discount());
@@ -194,8 +194,8 @@ class CustomersModel extends BasicModel
             $custdata->FirstName($c->firstName());
             $custdata->LastName($c->lastName());
             $custdata->blueLine($card_no . ' ' . $c->lastName());
-            $custdata->chargeOk($c->chargeAllowed());
-            $custdata->writeChecks($c->checksAllowed());
+            $custdata->ChargeOk($c->chargeAllowed());
+            $custdata->WriteChecks($c->checksAllowed());
             $custdata->staff($c->staff());
             $custdata->SSI($c->lowIncomeBenefits());
             $custdata->Discount($c->discount());
