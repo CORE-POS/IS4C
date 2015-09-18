@@ -55,8 +55,5 @@ to restrict certain actions at the register
 based on security level.
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
 }
 

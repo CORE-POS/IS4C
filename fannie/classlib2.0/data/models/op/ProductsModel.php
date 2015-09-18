@@ -425,7 +425,5 @@ it won\'t *do* anything.
         }
     }
 
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
 }
 
