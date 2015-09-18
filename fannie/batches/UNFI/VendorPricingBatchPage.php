@@ -113,7 +113,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $b->startDate('1900-01-01');
             $b->endDate('1900-01-01');
             $b->batchType($bType);
-            $b->discounttype(0);
+            $b->discountType(0);
             $b->priority(0);
             $batchID = $b->save();
         } else { 

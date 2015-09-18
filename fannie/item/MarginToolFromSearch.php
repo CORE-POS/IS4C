@@ -283,7 +283,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
         $b->startDate(date('Y-m-d', strtotime('yesterday')));
         $b->endDate(date('Y-m-d', strtotime('yesterday')));
         $b->batchType($btype);
-        $b->discounttype(0);
+        $b->discountType(0);
         $b->priority(0);
         $b->owner($owner);
         $id = $b->save();

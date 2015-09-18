@@ -156,7 +156,7 @@ class EditBatchPage extends FannieRESTfulPage
             date('Y-m-d', strtotime($batch->endDate())),
         );
         $overlapR = $dbc->execute($overlapP, $args);
-        if ($batch->discounttype() > 0 && $dbc->num_rows($overlapR) > 0) {
+        if ($batch->discountType() > 0 && $dbc->num_rows($overlapR) > 0) {
             $row = $dbc->fetch_row($overlapR);
             $error = 'Item already in concurrent batch: '
                 . '<a style="color:blue;" href="EditBatchPage.php?id=' . $row['batchID'] . '">'
@@ -456,7 +456,7 @@ class EditBatchPage extends FannieRESTfulPage
             $product = new ProductsModel($dbc);
             $product->upc($upc);
             foreach ($product->find('store_id') as $obj) {
-                $obj->discounttype(0);
+                $obj->discountType(0);
                 $obj->special_price(0);
                 $obj->start_date(0);
                 $obj->end_date(0);
@@ -478,7 +478,7 @@ class EditBatchPage extends FannieRESTfulPage
                 $product = new ProductsModel($dbc);
                 $product->upc($u->upc());
                 foreach ($product->find('store_id') as $p) {
-                    $p->discounttype(0);
+                    $p->discountType(0);
                     $p->special_price(0);
                     $p->start_date(0);
                     $p->end_date(0);
@@ -545,9 +545,9 @@ class EditBatchPage extends FannieRESTfulPage
         $batch = new BatchesModel($dbc);
         $batch->batchID($this->id);
         if (FormLib::get('member') == '1') {
-            $batch->discounttype(2);
+            $batch->discountType(2);
         } else {
-            $batch->discounttype(1);
+            $batch->discountType(1);
         }
         $save1 = $batch->save();
 
@@ -796,7 +796,7 @@ class EditBatchPage extends FannieRESTfulPage
         $model->load();
         $name = $model->batchName();
         $type = $model->batchType();
-        $dtype = $model->discounttype();
+        $dtype = $model->discountType();
         $start = strtotime($model->startDate());
         $end = strtotime($model->endDate()) + (60*60*24);
         $typeModel = new BatchTypeModel($dbc);
@@ -919,7 +919,7 @@ class EditBatchPage extends FannieRESTfulPage
             $ret .= '<br />';
         }
         $ret .= "<a href=\"BatchListPage.php\">Back to batch list</a> | ";
-        $ret .= sprintf('<input type="hidden" id="batch-discount-type" value="%d" />', $model->discounttype());
+        $ret .= sprintf('<input type="hidden" id="batch-discount-type" value="%d" />', $model->discountType());
         /**
           Price change batches probably want the upcoming retail
           rather than the current retail. Current sales will want
@@ -928,7 +928,7 @@ class EditBatchPage extends FannieRESTfulPage
           normal circumstances.
         */
         $future_mode = false;
-        if ($model->discounttype() == 0) {
+        if ($model->discountType() == 0) {
             $future_mode = true;
         } elseif (strtotime($model->startDate()) >= strtotime(mktime(0,0,0,date('n'),date('j'),date('Y')))) {
             $future_mode = true;

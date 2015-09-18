@@ -149,7 +149,7 @@ if (isset($_GET['action'])){
             date('Y-m-d', strtotime($batch->endDate())),
         );
         $overlapR = $sql->execute($overlapP, $args);
-        if ($batch->discounttype() > 0 && $sql->num_rows($overlapR) > 0) {
+        if ($batch->discountType() > 0 && $sql->num_rows($overlapR) > 0) {
             $row = $sql->fetch_row($overlapR);
             $error = 'Item already in concurrent batch: '
                 . $row['batchName'] . ' ('
