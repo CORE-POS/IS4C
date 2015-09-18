@@ -48,6 +48,8 @@ class LaneTextStringPage extends FannieRESTfulPage
         'chargeSlip'=>'Store Charge Slip',
     );
 
+    public $has_unit_tests = true;
+
     public function preprocess()
     {
         $this->addRoute('get<type>');

@@ -240,7 +240,7 @@ class FannieSignage
             $query .= 'CASE 
                         WHEN t.datedSigns=0 AND t.typeDesc LIKE \'%DISCO%\' THEN \'Discontinued\' 
                         WHEN t.datedSigns=0 AND t.typeDesc NOT LIKE \'%DISCO%\' THEN \'While supplies last\' 
-                        ELSE b.startDate END AS endDate,';
+                        ELSE b.endDate END AS endDate,';
         } else {
             $query .= 'b.startDate, b.endDate,';
         }
