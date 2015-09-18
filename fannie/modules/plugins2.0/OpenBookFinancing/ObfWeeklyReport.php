@@ -1118,7 +1118,7 @@ class ObfWeeklyReport extends FannieReportPage
         $ret .= '</div>';
         $ret .= '</form>';
         $ret .= '<p><button class="btn btn-default"
-                onclick="location=\'ObfIndexPage.php\';return false;">Home</button>
+                onclick="location=\'index.php\';return false;">Home</button>
                 </p>';
 
         return $ret;

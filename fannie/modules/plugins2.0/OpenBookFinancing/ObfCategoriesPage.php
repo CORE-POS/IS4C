@@ -44,12 +44,13 @@ class ObfCategoriesPage extends FannieRESTfulPage
     public $page_set = 'Plugin :: Open Book Financing';
     public $description = '[Categories] sets up labor category divisions.';
     public $themed = true;
+    protected $lib_class = 'ObfLibV2';
 
     public function post_id_handler()
     {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
-        $model = new ObfCategoriesModel($dbc);
+        $lib_class = $this->lib_class;
+        $dbc = $lib_class::getDB();
+        $model = $lib_class::getCategory($dbc);
 
         $ids = FormLib::get('id', array());
         $names = FormLib::get('cat', array());
@@ -75,9 +76,9 @@ class ObfCategoriesPage extends FannieRESTfulPage
 
     public function put_handler()
     {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
-        $model = new ObfCategoriesModel($dbc);
+        $lib_class = $this->lib_class;
+        $dbc = $lib_class::getDB();
+        $model = $lib_class::getCategory($dbc);
         $model->name('New Category');
         $model->save();
         
@@ -88,13 +89,13 @@ class ObfCategoriesPage extends FannieRESTfulPage
 
     public function get_view()
     {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $lib_class = $this->lib_class;
+        $dbc = $lib_class::getDB();
 
-        $model = new ObfCategoriesModel($dbc);
+        $model = $lib_class::getCategory($dbc);
 
         $ret = '<p><button class="btn btn-default"
-                onclick="location=\'ObfIndexPage.php\';return false;">Home</button>
+                onclick="location=\'index.php\';return false;">Home</button>
                 </p>';
 
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';

@@ -3,7 +3,7 @@
 
     Copyright 2014 Whole Foods Co-op
 
-    This file is part of CORE-POS.
+    This file is part of IT CORE.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,9 +21,14 @@
 
 *********************************************************************************/
 
-/**
-  @class ObfWeeksModel
-*/
-class ObfWeeksModelV2 extends ObfWeeksModel
+class ObfLibV2 extends ObfLib
 {
+    protected static $db_setting = 'ObfDatabaseV2';
+    protected static $category_model = 'ObfCategoriesModelV2';
+    protected static $category_map_model = 'ObfCategorySuperDeptMapModelV2';
+    protected static $labor_model = 'ObfLaborModelV2';
+    protected static $quarter_model = 'ObfQuartersModelV2';
+    protected static $week_model = 'ObfWeeksModelV2';
+    protected static $cache_model = 'ObfSalesCacheModelV2';
 }
+
