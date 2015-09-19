@@ -130,7 +130,7 @@ class ServiceScaleLib
     {
         $model = self::getSingletonModel();
         $model->host($host);
-        $matches = $scale_model->find();
+        $matches = $model->find();
         if (count($matches) > 0) {
             return $matches[0];
         } else {
