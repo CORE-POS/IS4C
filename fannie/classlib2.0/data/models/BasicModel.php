@@ -1323,6 +1323,9 @@ class BasicModel
                 if (isset($info['replaces']) && $info['replaces'] == $name) {
                     $name = $col;
                     break;
+                } elseif (strtolower($col) == strtolower($name)) {
+                    $name = $col;
+                    break;
                 }
             }
             if (!isset($this->columns[$name])) {
