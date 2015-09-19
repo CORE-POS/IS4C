@@ -22,68 +22,55 @@
 *********************************************************************************/
 
 /**
-  19Mar2015
-  If the common library does not exist, use the
-  old style SQLManager. This is a temporary measure
-  to avoid breaking deployments with a non-standard
-  directory structure.
+  Autoloader doesn't know about COREPOS\Common yet
 */
-if (!file_exists(dirname(__FILE__) . '/../../../common/SQLManager.php')) {
-    include(dirname(__FILE__) . '/SQLManager.old.php');
-} else {
+if (!class_exists('\\COREPOS\\common\\SQLManager', false)) {
+    include(dirname(__FILE__) . '/../../../common/SQLManager.php');
+}
+
+class SQLManager extends \COREPOS\common\SQLManager
+{
+    /**
+      Override to initialize QUERY_LOG
+    */
+    public function __construct($server,$type,$database,$username,$password='',$persistent=false, $new=false)
+    {
+        $this->setQueryLog(dirname(__FILE__) . '/../log/queries.log');
+
+        parent::__construct(
+            $server, 
+            $type, 
+            $database, 
+            $username, 
+            $password,
+            $persistent,
+            $new
+        );
+    }
 
     /**
-      Autoloader doesn't know about COREPOS\Common yet
+      Override to convert $type argument if needed
+      for backwards compatibility
     */
-    if (!class_exists('\\COREPOS\\common\\SQLManager', false)) {
-        include(dirname(__FILE__) . '/../../../common/SQLManager.php');
-    }
-
-    class SQLManager extends \COREPOS\common\SQLManager
+    public function addConnection($server,$type,$database,$username,$password='',$persistent=false,$new=false)
     {
         /**
-          Override to initialize QUERY_LOG
+          Convert old lane style to ADO style
+          naming for PDO MySQL
         */
-        public function __construct($server,$type,$database,$username,$password='',$persistent=false, $new=false)
-        {
-            $this->setQueryLog(dirname(__FILE__) . '/../log/queries.log');
-
-            parent::__construct(
-                $server, 
-                $type, 
-                $database, 
-                $username, 
-                $password,
-                $persistent,
-                $new
-            );
+        if (strtolower($type) == 'pdomysql') {
+            $type = 'pdo_mysql';
         }
 
-        /**
-          Override to convert $type argument if needed
-          for backwards compatibility
-        */
-        public function addConnection($server,$type,$database,$username,$password='',$persistent=false,$new=false)
-        {
-            /**
-              Convert old lane style to ADO style
-              naming for PDO MySQL
-            */
-            if (strtolower($type) == 'pdomysql') {
-                $type = 'pdo_mysql';
-            }
-
-            return parent::addConnection(
-                $server, 
-                $type, 
-                $database, 
-                $username, 
-                $password,
-                $persistent,
-                $new
-            );
-        }
+        return parent::addConnection(
+            $server, 
+            $type, 
+            $database, 
+            $username, 
+            $password,
+            $persistent,
+            $new
+        );
     }
-
-} // end else case defining SQLManager based on \COREPOS\Common
+}
 
