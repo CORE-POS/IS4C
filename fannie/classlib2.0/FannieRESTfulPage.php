@@ -294,8 +294,11 @@ class FannieRESTfulPage extends FanniePage
     {
         $obj = new $class($database_connection);
         foreach($params as $name => $value) {
-            if (method_exists($obj, $name))
+            try {
                 $obj->$name($value);
+            } catch (Exception $ex) {
+                $this->logger->debug($ex);
+            }
         }
         if ($find) {
             return $obj->find($find);
