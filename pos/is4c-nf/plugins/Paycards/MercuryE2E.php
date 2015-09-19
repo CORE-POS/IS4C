@@ -1403,6 +1403,7 @@ class MercuryE2E extends BasicCCModule
             $request = new PaycardRequest($ref);
         }
         $request->last_paycard_transaction_id = CoreLocal::get('LastEmvPcId');
+        $this->last_paycard_transaction_id = $request->last_paycard_transaction_id;
         $response = new PaycardResponse($request,array(
             'curlTime' => 0,
             'curlErr' => 0,
