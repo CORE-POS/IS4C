@@ -772,9 +772,9 @@ static public function drawItems($top_item, $rows, $highlight)
     $ret = self::printheaderb();
 
     $query = "select count(*) as count from localtemptrans";
-    $db = Database::tDataConnect();
-    $result = $db->query($query);
-    $row = $db->fetch_array($result);
+    $dbc = Database::tDataConnect();
+    $result = $dbc->query($query);
+    $row = $dbc->fetch_array($result);
     $rowCount = $row["count"];
 
     $last_item = array();
@@ -833,17 +833,17 @@ static public function drawItems($top_item, $rows, $highlight)
             $description = $row["description"];
             $total = $row["total"];
             $comment = $row["comment"];
-            $tf = $row["status"];
+            $tf_status = $row["status"];
             $color = $row["lineColor"];
 
             
             if ($trans_id == $highlight) {
-                $ret .= self::printItemColorHilite($color, $description, $comment, $total, $tf);
+                $ret .= self::printItemColorHilite($color, $description, $comment, $total, $tf_status);
             } else {
                 if ($color == "004080") {
-                    $ret .= self::printItem($description, $comment, $total, $tf,$trans_id);
+                    $ret .= self::printItem($description, $comment, $total, $tf_status,$trans_id);
                 } else {
-                    $ret .= self::printItemColor($color, $description, $comment, $total, $tf,$trans_id);
+                    $ret .= self::printItemColor($color, $description, $comment, $total, $tf_status,$trans_id);
                 }                
             }
 
