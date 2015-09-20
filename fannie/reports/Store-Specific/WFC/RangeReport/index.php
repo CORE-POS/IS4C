@@ -2,17 +2,15 @@
 include('../../../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
+if (!class_exists('WfcLib')) {
+    require(dirname(__FILE__) . '/../WfcLib.php');
+}
 
-if (isset($_GET['excel'])){
+$excel = FormLib::get('excel') !== '' ? true : false;
+if ($excel) {
     header('Content-Type: application/ms-excel');
     header('Content-Disposition: attachment; filename="rangeReport.xls"');
-}
-$ALIGN_RIGHT = 1;
-$ALIGN_LEFT = 2;
-$ALIGN_CENTER = 4;
-$TYPE_MONEY = 8;
-
-if (!isset($_GET['excel'])){
+} else {
 ?>
 
 <html>
@@ -40,7 +38,7 @@ td.center {
 <?php
 }
 
-if (!isset($_GET['excel'])){
+if ($excel === false) {
     echo "<script src=\"../../../../src/javascript/jquery.js\"></script>";
     echo "<script src=\"../../../../src/javascript/jquery-ui.js\"></script>";
     echo "<link type=\"text/css\" rel=\"stylesheet\" href=\"../../../../src/javascript/jquery-ui.css\">";
@@ -61,24 +59,25 @@ $today = date("m/j/y");
 $repDate = date('m/j/y', mktime(0, 0, 0, date("m") , date("d") - 1, date("Y")));
 $repDate2 = $repDate;
 
-$d1 = date("Y-m-d",strtotime('yesterday'));
-$ddiff = "'$d1 00:00:00' AND '$d1 23:59:59'";
-if(isset($_REQUEST['date']) && isset($_REQUEST['date2'])){
-   $repDate = $_REQUEST['date'];
-   $repDate2 = $_REQUEST['date2'];
+$date1 = date("Y-m-d",strtotime('yesterday'));
+$ddiff = "'$date1 00:00:00' AND '$date1 23:59:59'";
+if (FormLib::get('date') !== '' && FormLib::get('date2') !== '') {
+   $repDate = FormLib::get('date');
+   $repDate2 = FormLib::get('date2');
 
-   $t1 = strtotime($repDate);
-   $t2 = strtotime($repDate2);
-   $d1 = date('Y-m-d',($t1 ? $t1 : strtotime('yesterday')));
-   $d2 = date('Y-m-d',($t2 ? $t2 : strtotime('yesterday')));
+   $stamp1 = strtotime($repDate);
+   $stamp2 = strtotime($repDate2);
+   $date1 = date('Y-m-d',($stamp1 ? $stamp : strtotime('yesterday')));
+   $date2 = date('Y-m-d',($stamp2 ? $stamp2 : strtotime('yesterday')));
 
-   $ddiff = "'$d1 00:00:00' AND '$d2 23:59:59'";
+   $ddiff = "'$date1 00:00:00' AND '$date2 23:59:59'";
 }
-$dates = array($d1.' 00:00:00',$d2.' 23:59:59');
-$date_ids = array(date('Ymd', strtotime($d1)), date('Ymd', strtotime($d2)));
+$dates = array($date1.' 00:00:00',$date2.' 23:59:59');
+$date_ids = array(date('Ymd', strtotime($date1)), date('Ymd', strtotime($date2)));
 
-if (!isset($_GET['excel']))
+if ($excel === false) {
     echo "<br /><a href=index.php?date=$repDate&date2=$repDate2&excel=yes>Click here for Excel version</a>";
+}
 
 echo '<br>Report run ' . $today. ' for ' . $repDate." to ".$repDate2."<br />";
 
@@ -94,18 +93,7 @@ AND d.trans_subtype = t.TenderCode
 and d.total <> 0
 GROUP BY t.TenderName");
 $tenderR = $dbc->exec_statement($tenderQ,$date_ids);
-$tenders = array("Cash"=>array(10120,0.0,0),
-        "Check"=>array(10120,0.0,0),
-        "Credit Card"=>array(10120,0.0,0),
-        "EBT CASH."=>array(10120,0.0,0),
-        "EBT FS"=>array(10120,0.0,0),
-        "Gift Card"=>array(21205,0.0,0),
-        "GIFT CERT"=>array(21200,0.0,0),
-        "InStore Charges"=>array(10710,0.0,0),
-        "Pay Pal"=>array(10120,0.0,0),
-        "Coupons"=>array(10740,0.0,0),
-        "InStoreCoupon"=>array(67710,0.0,0),
-        "RRR Coupon"=>array(63380,0.0,0));
+$tenders = WfcLib::getTenders();
 $mad = array(0.0,0);
 while ($row = $dbc->fetch_row($tenderR)){
     if(isset($tenders[$row[0]])){
@@ -120,8 +108,8 @@ while ($row = $dbc->fetch_row($tenderR)){
 } 
 
 echo "<br /><b>Tenders</b>";
-echo tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Count"),
-         array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),2);
+echo WfcLib::tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Count"),
+         array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,WfcLib::ALIGN_RIGHT),2);
 
 
 $pCodeQ = $dbc->prepare_statement("SELECT d.salesCode,-1*sum(l.total) as total,min(l.department) 
@@ -131,44 +119,14 @@ AND l.department < 600 AND l.department <> 0
 GROUP BY d.salesCode
 order by d.salesCode");
 $pCodeR = $dbc->exec_statement($pCodeQ,$date_ids);
-$pCodes = array("41201"=>array(0.0),
-        "41205"=>array(0.0),
-        "41300"=>array(0.0),
-        "41305"=>array(0.0),
-        "41310"=>array(0.0),
-        "41315"=>array(0.0),
-        "41400"=>array(0.0),
-        "41405"=>array(0.0),
-        "41407"=>array(0.0),
-        "41410"=>array(0.0),
-        "41415"=>array(0.0),
-        "41420"=>array(0.0),
-        "41425"=>array(0.0),
-        "41430"=>array(0.0),
-        "41435"=>array(0.0),
-        "41440"=>array(0.0),
-        "41445"=>array(0.0),
-        "41500"=>array(0.0),
-        "41505"=>array(0.0),
-        "41510"=>array(0.0),
-        "41515"=>array(0.0),
-        "41520"=>array(0.0),
-        "41525"=>array(0.0),
-        "41530"=>array(0.0),
-        "41600"=>array(0.0),
-        "41605"=>array(0.0),
-        "41610"=>array(0.0),
-        "41640"=>array(0.0),
-        "41645"=>array(0.0),
-        "41700"=>array(0.0),
-        "41705"=>array(0.0));
+$pCodes = WfcLib::getPCodes();
 while($row = $dbc->fetch_row($pCodeR)){
     if (isset($pCodes[$row[0]])) $pCodes[$row[0]][0] = $row[1];
     //else var_dump( $row[2] );
 }
 echo "<br /><b>Sales</b>";
-echo tablify($pCodes,array(0,1),array("pCode","Sales"),
-         array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY),1);
+echo WfcLib::tablify($pCodes,array(0,1),array("pCode","Sales"),
+         array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY),1);
 
 $saleSumQ = $dbc->prepare_statement("SELECT -1*sum(l.total) as totalSales
 FROM {$WAREHOUSE}sumDeptSalesByDay as l
@@ -186,26 +144,14 @@ and d.department <> 610
 and d.department not between 500 and 599
 GROUP BY d.department, t.dept_name order by d.department");
 $otherR = $dbc->exec_statement($otherQ,$date_ids);
-$others = array("600"=>array("64410","SUPPLIES",0.0),
-        "604"=>array("&nbsp;","MISC PO",0.0),
-        "700"=>array("63320","TOTES",0.0),
-        "703"=>array("&nbsp;","MISCRECEIPT",0.0),
-        "708"=>array("42225","CLASSES",0.0),
-        "800"=>array("&nbsp;","IT Corrections",0.0),
-        "881"=>array("42231","MISC #1",0.0),
-        "882"=>array("42232","MISC #2",0.0),
-        "900"=>array("21200","GIFTCERT",0.0),
-        "902"=>array("21205","GIFTCARD",0.0),
-        "990"=>array("10710","ARPAYMEN",0.0),
-        "991"=>array("31110","CLASS B Equity",0.0),
-        "992"=>array("31100","CLASS A Equity",0.0));
+$others = WfcLib::getOtherCodes();
 while($row = $dbc->fetch_row($otherR)){
     $others["$row[0]"][1] = $row[1];
     $others["$row[0]"][2] = $row[2]; 
 }
 echo "<br /><b>Other</b>";
-echo tablify($others,array(1,0,2,3),array("Account","Dept","Description","Amount"),
-         array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY),3);
+echo WfcLib::tablify($others,array(1,0,2,3),array("Account","Dept","Description","Amount"),
+         array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY),3);
 
 $discQ = $dbc->prepare_statement("SELECT     m.memDesc, -1*SUM(d.total) AS Discount,count(*) 
 FROM $dlog d INNER JOIN
@@ -225,8 +171,8 @@ while($row = $dbc->fetch_row($discR)){
     $discounts[$row[0]][2] = $row[2];
 }
 echo "<br /><b>Discounts</b>";
-echo tablify($discounts,array(1,0,2,3),array("Account","Type","Amount","Count"),
-         array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),2);
+echo WfcLib::tablify($discounts,array(1,0,2,3),array("Account","Type","Amount","Count"),
+         array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,WfcLib::ALIGN_RIGHT),2);
 
 $taxSumQ = $dbc->prepare_statement("SELECT  -1*sum(total) as tax_collected
 FROM $dlog as d 
@@ -264,72 +210,10 @@ foreach(array_keys($transinfo) as $k){
 }
 $transinfo["Totals"] = array($tSum,$tItems,round($tItems/$tSum,2),$tDollars,round($tDollars/$tSum,2));
 echo "<br /><b>Transaction information</b>";
-echo tablify($transinfo,array(0,1,2,3,4,5),
+echo WfcLib::tablify($transinfo,array(0,1,2,3,4,5),
     array("Type","Transactions","Items","Average items/transaction","$","$/transaction"),
-    array($ALIGN_LEFT,$ALIGN_RIGHT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY,
-        $ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY));
+    array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,
+        WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY));
 
-function tablify($data,$col_order,$col_headers,$formatting,$sum_col=-1){
-    $sum = 0;
-    $ret = "";
-    
-    $ret .= "<table cellspacing=0 cellpadding=4 border=1><tr>";
-    $i = 0;
-    foreach ($col_headers as $c){
-        while ($formatting[$i] == 0) $i++;
-        $ret .= cellify("<u>".$c."</u>",$formatting[$i++]&7);
-    }
-    $ret .= "</tr>";
-
-    foreach(array_keys($data) as $k){
-        $ret .= "<tr>";
-        foreach($col_order as $c){
-            if($c == 0) $ret .= cellify($k,$formatting[$c]);
-            else $ret .= cellify($data[$k][$c-1],$formatting[$c]);
-
-            if ($sum_col != -1 && $c == $sum_col)
-                $sum += $data[$k][$c-1];
-        }
-        $ret .= "</tr>";
-    }
-    if (count($data) == 0){
-        $ret .= "<tr>";
-        $ret .= "<td colspan=".count($col_headers)." class=center>";
-        $ret .= "No results to report"."</td>";
-        $ret .= "</tr>";
-    }
-
-    if ($sum_col != -1 && count($data) > 0){
-        $ret .= "<tr>";
-        foreach($col_order as $c){
-            if ($c+1 == $sum_col) $ret .= "<td>Total</td>";
-            elseif ($c == $sum_col) $ret .= cellify($sum,$formatting[$c]);
-            else $ret .= "<td>&nbsp;</td>";
-        }
-        $ret .= "</tr>";
-    }
-
-    $ret .= "</table>";
-
-    return $ret;
-}
-
-function cellify($data,$formatting){
-    $ALIGN_RIGHT = 1;
-    $ALIGN_LEFT = 2;
-    $ALIGN_CENTER = 4;
-    $TYPE_MONEY = 8;
-    $ret = "";
-    if ($formatting & $ALIGN_LEFT) $ret .= "<td class=left>";
-    elseif ($formatting & $ALIGN_RIGHT) $ret .= "<td class=right>";
-    elseif ($formatting & $ALIGN_CENTER) $ret .= "<td class=center>";
-
-    if ($formatting & $TYPE_MONEY) $ret .= sprintf("%.2f",$data);
-    else $ret .= $data;
-
-    $ret .= "</td>";
-
-    return $ret;
-}
 ?>
 </body></html>
