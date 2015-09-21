@@ -460,17 +460,8 @@ class Valutec extends BasicCCModule
         if (!$dbTrans) {
             return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
         }
-
-        // prepare data for the request
-        $today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
-        $now = date('Y-m-d H:i:s'); // full timestamp
-        $cashierNo = CoreLocal::get("CashierNo");
-        $laneNo = CoreLocal::get("laneno");
-        $transNo = CoreLocal::get("transno");
-        $transID = CoreLocal::get("paycard_id");
+        $request = new PaycardGiftRequest($this->valutecIdentifier(CoreLocal::get('paycard_id')));
         $program = 'Gift'; // valutec also has 'Loyalty' cards which store arbitrary point values
-        $amount = CoreLocal::get("paycard_amount");
-        $amountText = number_format(abs($amount), 2, '.', '');
         $mode = "";
         $logged_mode = $mode;
         $authMethod = "";
@@ -494,40 +485,30 @@ class Valutec extends BasicCCModule
                 return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND);
         }
         $termID = $this->getTermID();
-        $live = $this->isLive();
-        $manual = (CoreLocal::get("paycard_manual") ? 1 : 0);
         $cardPAN = $this->getPAN();
         $cardTr2 = $this->getTrack2();
-        $identifier = $this->valutecIdentifier($transID); // valutec allows 10 digits; this uses lanenum-transnum-transid since we send cashiernum in another field
-        
-        /**
-          Log transaction before sending request
-        */
-        $insQ = sprintf("INSERT INTO PaycardTransactions (
-                    dateID, empNo, registerNo, transNo, transID,
-                    processor, refNum, live, cardType, transType,
-                    amount, PAN, issuer, name, manual, requestDateTime)
-                 VALUES (
-                    %d,     %d,    %d,         %d,      %d,
-                    '%s',     '%s',    %d,   '%s',     '%s',
-                    %.2f,  '%s', '%s',  '%s',  %d,     '%s')",
-                    $today, $cashierNo, $laneNo, $transNo, $transID,
-                    'Valutec', $identifier, $live, 'Gift', $logged_mode,
-                    $amountText, $cardPAN,
-                    'Valutec', 'Cardholder', $manual, $now);
-        $insR = $dbTrans->query($insQ);
-        if ($insR) {
-            $this->last_paycard_transaction_id = $dbTrans->insert_id();
+        $request->setPAN($cardPAN);
+        $request->setIssuer('Valutec');
+        $request->setProcessor('Valutec');
+        $request->setMode($logged_mode);
+        if ($cardTr2) {
+            $request->setSent(0, 0, 0, 1);
         } else {
+            $request->setSent(1, 0, 0, 0);
+        }
+        
+        try {
+            $request->saveRequest();
+        } catch (Exception $ex) {
             return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
         }
                 
         $authFields = array(
             'ProgramType'       => $program,
             'CardNumber'        => (($cardTr2) ? $cardTr2 : $cardPAN),
-            'Amount'            => $amountText,
-            'ServerID'          => $cashierNo,
-            'Identifier'        => $identifier
+            'Amount'            => $request->formattedAmount(),
+            'ServerID'          => $request->cashierNo,
+            'Identifier'        => $request->refNum,
         );
 
         $this->GATEWAY = "https://www.valutec.net/customers/transactions/valutec.asmx/";
@@ -537,6 +518,8 @@ class Valutec extends BasicCCModule
         foreach ($authFields as $field => $value) {
             $getData .= "&".urlencode($field)."=".urlencode($value);
         }
+
+        $this->last_request = $request;
 
         return $this->curlSend($getData,'GET');
     }
@@ -548,65 +531,23 @@ class Valutec extends BasicCCModule
         if (!$dbTrans) {
             return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // database error, nothing sent (ok to retry)
         }
+        $request = new PaycardVoidRequest($this->valutecIdentifier(CoreLocal::get('paycard_id')));
 
-        // prepare data for the void request
-        $today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
-        $now = date('Y-m-d H:i:s'); // full timestamp
-        $cashierNo = CoreLocal::get("CashierNo");
-        $laneNo = CoreLocal::get("laneno");
-        $transNo = CoreLocal::get("transno");
-        $transID = CoreLocal::get("paycard_id");
         $program = 'Gift'; // valutec also has 'Loyalty' cards which store arbitrary point values
-        $amount = CoreLocal::get("paycard_amount");
-        $amountText = number_format(abs($amount), 2, '.', '');
         $mode = 'void';
         $cardPAN = $this->getPAN();
         $identifier = date('mdHis'); // the void itself needs a unique identifier, so just use a timestamp minus the year (10 digits only)
         $termID = $this->getTermID();
 
-        // look up the auth code from the original response 
-        // (card number and amount should already be in session vars)
-        $sql = "SELECT 
-                    xApprovalNumber AS xAuthorizationCode 
-                FROM PaycardTransactions 
-                WHERE dateID='" . $today . "'
-                    AND empNo=" . $cashierNo . "
-                    AND registerNo=" . $laneNo . "
-                    AND transNo=" . $transNo . "
-                    AND transID=" . $transID;
-        $search = $dbTrans->query($sql);
-        if (!$search || $dbTrans->num_rows($search) != 1) {
+        try {
+            $log = $request->findOriginal();
+            $request->saveRequest();
+        } catch (Exception $ex) {
             return PaycardLib::PAYCARD_ERR_NOSEND; // database error, nothing sent (ok to retry)
         }
         $log = $dbTrans->fetch_array($search);
         $authcode = $log['xAuthorizationCode'];
         $this->temp = $authcode;
-
-        /**
-          populate a void record in PaycardTransactions
-        */
-        $initQ = "INSERT INTO PaycardTransactions (
-                    dateID, empNo, registerNo, transNo, transID,
-                    previousPaycardTransactionID, processor, refNum,
-                    live, cardType, transType, amount, PAN, issuer,
-                    name, manual, requestDateTime)
-                  SELECT dateID, empNo, registerNo, transNo, transID,
-                    paycardTransactionID, processor, refNum,
-                    live, cardType, 'VOID', amount, PAN, issuer,
-                    name, manual, " . $dbTrans->now() . "
-                  FROM PaycardTransactions
-                  WHERE
-                    dateID=" . $today . "
-                    AND empNo=" . $cashierNo . "
-                    AND registerNo=" . $laneNo . "
-                    AND transNo=" . $transNo . "
-                    AND transID=" . $transID;
-        $initR = $dbTrans->query($initQ);
-        if ($initR) {
-            $this->last_paycard_transaction_id = $dbTrans->insert_id();
-        } else {
-            return PaycardLib::PAYCARD_ERR_NOSEND; // database error, nothing sent (ok to retry)
-        }
 
         // assemble and send void request
         $vdMethod = 'Void';
@@ -614,8 +555,8 @@ class Valutec extends BasicCCModule
             'ProgramType'       => $program,
             'CardNumber'        => $cardPAN,
             'RequestAuthCode'   => $authcode,
-            'ServerID'          => $cashierNo,
-            'Identifier'        => $identifier
+            'ServerID'          => $request->cashierNo,
+            'Identifier'        => $request->refNum,
         );
 
         $this->GATEWAY = "https://www.valutec.net/customers/transactions/valutec.asmx/";
@@ -625,6 +566,8 @@ class Valutec extends BasicCCModule
         foreach ($vdFields as $field=>$value) {
             $getData .= "&".urlencode($field)."=".urlencode($value);
         }
+
+        $this->last_request = $request;
 
         return $this->curlSend($getData,'GET');
     }
@@ -677,19 +620,14 @@ class Valutec extends BasicCCModule
     private function handleResponseAuth($authResult)
     {
         $xml = new xmlData($authResult["response"]);
+        $request = $this->last_request;
+        $this->last_paycard_transaction_id = $request->last_paycard_transaction_id;
+        $response = new PaycardResponse($request, $authResult);
 
         // initialize
         $dbTrans = Database::tDataConnect();
 
-        // prepare data for the request
-        $today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
-        $now = date('Y-m-d H:i:s'); // full timestamp
-        $cashierNo = CoreLocal::get("CashierNo");
-        $laneNo = CoreLocal::get("laneno");
-        $transNo = CoreLocal::get("transno");
-        $transID = CoreLocal::get("paycard_id");
         $program = 'Gift';
-        $identifier = $this->valutecIdentifier($transID); // valutec allows 10 digits; this uses lanenum-transnum-transid since we send cashiernum in another field
 
         $validResponse = ($xml->isValid()) ? 1 : 0;
         $errorMsg = $xml->get_first("ERRORMSG");
@@ -730,8 +668,11 @@ class Valutec extends BasicCCModule
             }
         }
 
+        $response->setBalance($balance);
+
         $resultCode = 0;
         $apprNumber = $xml->get('AUTHORIZATIONCODE');
+        $response->setApprovalNum($apprNumber);
         $rMsg = '';
         if ($apprNumber != '' && $xml->get('AUTHORIZED') == 'true') {
             $validResponse = 1;
@@ -740,33 +681,15 @@ class Valutec extends BasicCCModule
         } else {
             $rMsg = substr($xml->get_first('ERRORMSG'), 0, 100);
         }
-        $finishQ = sprintf("UPDATE PaycardTransactions SET
-                                responseDatetime='%s',
-                                seconds=%f,
-                                commErr=%d,
-                                httpCode=%d,
-                                validResponse=%d,
-                                xResultCode=%d,
-                                xApprovalNumber='%s',
-                                xResponseCode=%d,
-                                xResultMessage='%s',
-                                xTransactionID='%s',
-                                xBalance=%.2f
-                            WHERE paycardTransactionID=%d",
-                                $now,
-                                $authResult['curlTime'],
-                                $authResult['curlErr'],
-                                $authResult['curlHTTP'],
-                                $normalized,
-                                $resultCode,
-                                $apprNumber,
-                                $resultCode,
-                                $rMsg,
-                                $apprNumber,
-                                $balance,
-                                $this->last_paycard_transaction_id
-        );
-        $dbTrans->query($finishQ);
+        $response->setResultMsg($rMsg);
+        $response->setResultCode($resultCode);
+        $response->setResponseCode($resultCode);
+        $response->setNormalizedCode($resultCode);
+        $response->setValid($validResponse);
+
+        try {
+            $response->saveResponse();
+        } catch (Exception $ex) {}
 
         // check for communication errors (any cURL error or any HTTP code besides 200)
         if ($authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200) {
@@ -788,11 +711,7 @@ class Valutec extends BasicCCModule
 
         $amtUsed = $xml->get('CARDAMOUNTUSED');
         if ($amtUsed) {
-            CoreLocal::set("paycard_amount",$amtUsed);
-            $correctionQ = sprintf("UPDATE PaycardTransactions SET amount=%f WHERE
-                dateID=%s AND refNum='%s'",
-                $amtUsed,date("Ymd"),$identifier);
-            $dbTrans->query($correctQ);
+            $request->changeAmount($amtUsed);
         }
 
         // put the parsed response into session so the caller, receipt printer, etc can get the data they need
@@ -819,19 +738,10 @@ class Valutec extends BasicCCModule
     private function handleResponseVoid($vdResult)
     {
         $xml = new xmlData($vdResult["response"]);
+        $request = $this->last_request;
+        $this->last_paycard_transaction_id = $request->last_paycard_transaction_id;
+        $response = new PaycardResponse($request, $authResult);
 
-        // initialize
-        $dbTrans = Database::tDataConnect();
-
-        // prepare data for the void request
-        $today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
-        $now = date('Y-m-d H:i:s'); // full timestamp
-        $cashierNo = CoreLocal::get("CashierNo");
-        $laneNo = CoreLocal::get("laneno");
-        $transNo = CoreLocal::get("transno");
-        $transID = CoreLocal::get("paycard_id");
-        $amount = CoreLocal::get("paycard_amount");
-        $amountText = number_format(abs($amount), 2, '.', '');
         $mode = 'void';
         $authcode = $this->temp;
         $program = "Gift";
@@ -850,6 +760,7 @@ class Valutec extends BasicCCModule
 
         $resultCode = 0;
         $apprNumber = $xml->get('AUTHORIZATIONCODE');
+        $response->setApprovalNum($apprNumber);
         $rMsg = '';
         if ($apprNumber != '' && $xml->get('AUTHORIZED') == 'true') {
             $validResponse = 1;
@@ -858,33 +769,15 @@ class Valutec extends BasicCCModule
         } else {
             $rMsg = substr($xml->get_first('ERRORMSG'), 0, 100);
         }
-        $finishQ = sprintf("UPDATE PaycardTransactions SET
-                                responseDatetime='%s',
-                                seconds=%f,
-                                commErr=%d,
-                                httpCode=%d,
-                                validResponse=%d,
-                                xResultCode=%d,
-                                xApprovalNumber='%s',
-                                xResponseCode=%d,
-                                xResultMessage='%s',
-                                xTransactionID='%s',
-                                xBalance=%.2f
-                            WHERE paycardTransactionID=%d",
-                                $now,
-                                $authResult['curlTime'],
-                                $authResult['curlErr'],
-                                $authResult['curlHTTP'],
-                                $validResponse,
-                                $resultCode,
-                                $apprNumber,
-                                $resultCode,
-                                $rMsg,
-                                $apprNumber,
-                                $xml->get('BALANCE'),
-                                $this->last_paycard_transaction_id
-        );
-        $dbTrans->query($finishQ);
+        $response->setResultMsg($rMsg);
+        $response->setResultCode($resultCode);
+        $response->setResponseCode($resultCode);
+        $response->setNormalizedCode($resultCode);
+        $response->setValid($validResponse);
+
+        try {
+            $response->saveResponse();
+        } catch (Exception $ex) {}
 
         if ($vdResult['curlErr'] != CURLE_OK || $vdResult['curlHTTP'] != 200) {
             if ($authResult['curlHTTP'] == '0') {

@@ -299,32 +299,14 @@ class FirstData extends BasicCCModule {
     {
         $inner_xml = $this->desoapify("SOAP-ENV:Body",$authResult['response']);
         $xml = new xmlData($inner_xml);
+        $request = $this->last_request;
+        $this->last_paycard_transaction_id = $request->last_paycard_transaction_id;
+        $response = new PaycardResponse($request, $authResult);
         $dbTrans = PaycardLib::paycard_db();
 
-        // prepare some fields to store the parsed response; we'll add more as we verify it
-        $today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
-        $now = date('Y-m-d H:i:s'); // full timestamp
-        $cashierNo = CoreLocal::get("CashierNo");
-        $laneNo = CoreLocal::get("laneno");
-        $transNo = CoreLocal::get("transno");
-        $transID = CoreLocal::get("paycard_id");
         $cvv2 = CoreLocal::get("paycard_cvv2");
 
-        $sqlColumns =
-            "date,cashierNo,laneNo,transNo,transID," .
-            "datetime," .
-            "seconds,commErr,httpCode";
-        $sqlValues =
-            sprintf("%d,%d,%d,%d,%d,",  $today, $cashierNo, $laneNo, $transNo, $transID) .
-            sprintf("'%s',",            $now ) .
-            sprintf("%f,%d,%d",         $authResult['curlTime'], $authResult['curlErr'], $authResult['curlHTTP']);
         $validResponse = ($xml->isValid()) ? 1 : 0;
-
-        $refNum = $xml->get("fdggwsapi:OrderId");
-        if ($refNum){
-            $sqlColumns .= ",refNum";
-            $sqlValues .= sprintf(",%s",$dbTrans->escape($refNum));
-        }
         $statusMsg = $xml->get("fdggwsapi:TransactionResult");
         $responseCode = 4;
         switch(strtoupper($statusMsg)){
@@ -337,47 +319,22 @@ class FirstData extends BasicCCModule {
         case 'DUPLICATE':
             $responseCode=0; break;
         }
-        if ($responseCode){
-            $sqlColumns .= ",xResponseCode";
-            $sqlValues .= sprintf(",%d",$responseCode);
-        }
+        $response->setResponseCode($responseCode);
         // aren't two separate codes from goemerchant
         $resultCode = $responseCode;
-        if ($resultCode){
-            $sqlColumns .= ",xResultCode";
-            $sqlValues .= sprintf(",%d",$resultCode);
-        }
+        $response->setResultCode($resultCode);
         $resultMsg = $statusMsg; // already gathered above
-        if ($resultMsg){
-            $sqlColumns .= ",xResultMessage";
-            $rMsg = $resultMsg;
-            if (strlen($rMsg) > 100){
-                $rMsg = substr($rMsg,0,100);
-            }
-            $sqlValues .= sprintf(",%s",$dbTrans->escape($rMsg));
-        }
+        $response->setResultMsg($resultMsg);
         $xTransID = $xml->get("fdggwsapi:ProcessorReferenceNumber");
-        if ($xTransID){
-            $sqlColumns .= ",xTransactionID";
-            $sqlValues .= sprintf(",%s",$dbTrans->escape($xTransID));
-        }
+        $response->setTransactionID($xTransID);
         $apprNumber = $xml->get("fdggwsapi:ApprovalCode");
-        if ($apprNumber){
-            $sqlColumns .= ",xApprovalNumber";
-            $sqlValues .= sprintf(",%s",$dbTrans->escape($apprNumber));
-        }
+        $response->setApprovalNum($apprNumber);
         // valid credit transactions don't have an approval number
-        $sqlColumns .= ",validResponse";
-        $sqlValues .= sprintf(",%d",0);
+        $response->setValid(0);
 
-        $table_def = $dbTrans->table_definition('efsnetResponse');
-        if (isset($table_def['efsnetRequestID'])) {
-            $sqlColumns .= ', efsnetRequestID';
-            $sqlValues .= sprintf(', %d', $this->last_req_id);
-        }
-
-        $sql = "INSERT INTO efsnetResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-        PaycardLib::paycard_db_query($sql, $dbTrans);
+        try {
+            $response->saveResponse();
+        } catch (Exception $ex) { }
 
         if( $authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200){
             TransRecord::addcomment("");    
@@ -406,87 +363,7 @@ class FirstData extends BasicCCModule {
     }
 
     function handleResponseVoid($authResult){
-        /*
-        global $USER_INFO;
-        $xml = new xmlData($authResult['response']);
-        $dbTrans = b2c_db();
-
-        // prepare some fields to store the parsed response; we'll add more as we verify it
-        $today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
-        $now = date('Y-m-d H:i:s'); // full timestamp
-        $cashierNo = (int)$USER_INFO['UID'];
-        $laneNo = 1;
-        $transNo = 1;
-        $transID = $this->TRANS_ID;
-        $amount = 0; // fix this
-        $amountText = number_format(abs($amount), 2, '.', '');
-        $refNum = $this->refnum($transID);
-
-        // prepare some fields to store the request and the parsed response; we'll add more as we verify it
-        $sqlColumns =
-            "date,cashierNo,laneNo,transNo,transID,[datetime]," .
-            "origAmount,mode,altRoute," .
-            "seconds,commErr,httpCode";
-        $sqlValues =
-            sprintf("%d,%d,%d,%d,%d,%s,",  $today, $cashierNo, $laneNo, $transNo, $transID, $dbTrans->escape($now)) .
-            sprintf("%f,'%s',%d,", $amountText, "VOID", 0) .
-            sprintf("%f,%d,%d", $authResult['curlTime'], $authResult['curlErr'], $authResult['curlHTTP']);
-
-        $validResponse = ($xml->isValid()) ? 1 : 0;
-
-        $responseCode = $xml->get("STATUS1");
-        if ($responseCode){
-            $sqlColumns .= ",xResponseCode";
-            $sqlValues .= sprintf(",%d",$responseCode);
-        }
-        else $validResponse = -3;
-        $resultCode = $xml->get_first("STATUS1");
-        if ($resultCode){
-            $sqlColumns .= ",xResultCode";
-            $sqlValues .= sprintf(",%d",$resultCode);
-        }
-        $resultMsg = $xml->get_first("RESPONSE1");
-        if ($resultMsg){
-            $sqlColumns .= ",xResultMessage";
-            $rMsg = $resultMsg;
-            if (strlen($rMsg) > 100){
-                $rMsg = substr($rMsg,0,100);
-            }
-            $sqlValues .= sprintf(",%s",$dbTrans->escape($rMsg));
-        }
-        $sqlColumns .= ",origTransactionID";
-        $sqlValues .= sprintf(",%s",$dbcTrans->escape($this->void_trans));
-        $sqlColumns .= ",origRefNum";
-        $sqlValues .= sprintf(",%s",$dbTrans->escape($this->void_ref));
-
-        $sqlColumns .= ",validResponse";
-        $sqlValues .= sprintf(",%d",$validResponse);
-
-        $sql = "INSERT INTO efsnetRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-        $dbTrans->query($sql);
-
-        if( $authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200){
-            if ($authResult['curlHTTP'] == '0'){
-                return PAYCARD_ERR_PROC;
-            }    
-            return PAYCARD_ERR_COMM;
-        }
-
-        switch ($xml->get("STATUS1")){
-            case 1: // APPROVED
-                return PAYCARD_ERR_OK;
-            case 2: // DECLINED
-                $this->ERRORS[] = "Void transaction declined";
-                break;
-            case 0: // ERROR
-                $texts = $xml->get_first("ERROR1");
-                $this->ERRORS[] = $texts;
-                break;
-            default:
-                $this->ERRORS[] = "An unknown error occurred<br />at the gateway";
-        }
-        return PAYCARD_ERR_PROC;
-        */
+        throw new Exception('Void not implemented');
     }
 
     function cleanup($json=array())
@@ -501,8 +378,8 @@ class FirstData extends BasicCCModule {
                 $t_type = 'AX';
             // if the transaction has a non-zero efsnetRequestID,
             // include it in the tender line
-            $record_id = $this->last_req_id;
-            $charflag = ($record_id != 0) ? 'RQ' : '';
+            $record_id = $this->last_paycard_transaction_id;
+            $charflag = ($record_id != 0) ? 'PT' : '';
             TransRecord::addFlaggedTender("Credit Card", $t_type, $amt, $record_id, $charflag);
             CoreLocal::set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[void] to cancel and void</font>");
             if (CoreLocal::get("paycard_amount") <= CoreLocal::get("CCSigLimit") && CoreLocal::get("paycard_amount") >= 0){
@@ -541,42 +418,32 @@ class FirstData extends BasicCCModule {
             return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // database error, nothing sent (ok to retry)
         }
 
-        $today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
-        $now = date('Y-m-d H:i:s'); // full timestamp
-        $cashierNo = CoreLocal::get("CashierNo");
-        $laneNo = CoreLocal::get("laneno");
-        $transNo = CoreLocal::get("transno");
-        $transID = CoreLocal::get("paycard_id");
-        $amount = CoreLocal::get("paycard_amount");
-        $amountText = number_format(abs($amount), 2, '.', '');
+        $request = new PaycardRequest($this->refnum(CoreLocal::get('paycard_id')));
+        $request->setProcessor('FirstData');
         $mode = 'sale';
-        $manual = (CoreLocal::get("paycard_manual") ? 1 : 0);
         $this->trans_pan['pan'] = CoreLocal::get("paycard_PAN");
         $cardPAN = $this->trans_pan['pan'];
-        $cardPANmasked = PaycardLib::paycard_maskPAN($cardPAN,0,4);
-        $cardIssuer = CoreLocal::get("paycard_issuer");
         $cardExM = substr(CoreLocal::get("paycard_exp"),0,2);
         $cardExY = substr(CoreLocal::get("paycard_exp"),2,2);
         $cardTr1 = CoreLocal::get("paycard_tr1");
         $cardTr2 = CoreLocal::get("paycard_tr2");
         $cardTr3 = CoreLocal::get("paycard_tr3");
-        $cardName = CoreLocal::get("paycard_name");
-        $refNum = $this->refnum($transID);
-        $live = 1;
+        $request->setCardholder(CoreLocal::get("paycard_name"));
         $cvv2 = CoreLocal::get("paycard_cvv2");
 
         if (CoreLocal::get("training") == 1){
-            $pan = "4111111111111111";
+            $cardPAN = "4111111111111111";
             $cardPANmasked = "xxxxxxxxxxxxTEST";
             $cardIssuer = "Visa";
             $cardTr1 = False;
             $cardTr2 = False;
-            $cardName = "Just Testing";
+            $request->setCardholder("Just Testing");
             $nextyear = mktime(0,0,0,date("m"),date("d"),date("Y")+1);
             $cardExM = date("m",$nextyear);
             $cardExY = date("y",$nextyear);
-            $live = 0;
         }
+        $request->setPAN($cardPAN);
+        $request->setIssuer(CoreLocal::get("paycard_issuer"));
 
         $sendPAN = 0;
         $sendExp = 0;
@@ -599,29 +466,16 @@ class FirstData extends BasicCCModule {
             $sendPAN = 1;
             $magstripe .= ";".$cardTr3."?";
         }
+        $request->setSent($sendPAN, $sendExp, $sendTr1, $sendTr2);
 
-        $sqlCols = "sentPAN,sentExp,sentTr1,sentTr2";
-        $sqlVals = "$sendPAN,$sendExp,$sendTr1,$sendTr2";
-        // store request in the database before sending it
-        $sqlCols .= "," . // already defined some sent* columns
-            "date,cashierNo,laneNo,transNo,transID," .
-            "datetime,refNum,live,mode,amount," .
-            "PAN,issuer,manual,name";
-        $fixedName = $dbTrans->escape($cardName);
-        $sqlVals .= "," . // already defined some sent* values
-            sprintf("%d,%d,%d,%d,%d,",        $today, $cashierNo, $laneNo, $transNo, $transID) .
-            sprintf("'%s','%s',%d,'%s',%s,",  $now, $refNum, $live, $mode, $amountText) .
-            sprintf("'%s','%s',%d,%s",           $cardPANmasked, $cardIssuer, $manual,$fixedName);
-        $sql = "INSERT INTO efsnetRequest (" . $sqlCols . ") VALUES (" . $sqlVals . ")";
-        $table_def = $dbTrans->table_definition('efsnetRequest');
-        if( !PaycardLib::paycard_db_query($sql, $dbTrans) ) {
+        try {
+            $request->saveRequest();
+        } catch (Exception $ex) {
             PaycardLib::paycard_reset();
             return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
         }
 
-        if (isset($table_def['efsnetRequestID'])) {
-            $this->last_req_id = $dbTrans->insert_id();
-        }
+        $this->last_request = $request;
 
         $xml = '<fdggwsapi:FDGGWSApiOrderRequest  
              xmlns:v1="http://secure.linkpt.net/fdggwsapi/schemas_us/v1" 
@@ -638,11 +492,11 @@ class FirstData extends BasicCCModule {
                <v1:CardCodeValue>$cvv2</v1:CardCodeValue>
               </v1:CreditCardData>";
         $xml .= "<v1:Payment>
-            <v1:ChargeTotal>$amountText</v1:ChargeTotal> 
+            <v1:ChargeTotal>" . $request->formattedAmount() . "</v1:ChargeTotal> 
             </v1:Payment>";
         $xml .= "<v1:TransactionDetails>
-            <v1:OrderId>$refNum</v1:OrderId>
-            <v1:Ip>{$_SERVER['REMOTE_ADDR']}</v1:Ip>
+            <v1:OrderId>" . $request->refNum . "</v1:OrderId>
+            <v1:Ip>" . filter_input(INPUT_SERVER, 'REMOTE_ADDR') . "</v1:Ip>
             </v1:TransactionDetails>";
         $xml .= '</v1:Transaction> 
             </fdggwsapi:FDGGWSApiOrderRequest>';
@@ -666,90 +520,7 @@ class FirstData extends BasicCCModule {
     var $void_trans;
     var $void_ref;
     function send_void($amt,$pan,$exp){
-        /*
-        global $USER_INFO;
-        $dbTrans = b2c_db();
-        if( !$dbTrans){
-            $this->ERRORS[] = "Could not connect to database";
-            return PAYCARD_ERR_NOSEND;
-        }
-
-        // prepare data for the void request
-        $today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
-        $now = date('Y-m-d H:i:s'); // new timestamp
-        $cashierNo = (int)$USER_INFO['UID'];
-        $laneNo = 1;
-        $transNo = 1;
-        $transID = $this->TRANS_ID;
-        $amount = $amt;
-        $amountText = number_format(abs($amount), 2, '.', '');
-        $mode = 'void';
-        $manual = 1;
-        $cardPANmasked = paycard_maskPAN($pan,0,4);
-        $cardIssuer = paycard_issuer($pan);
-        $cardExM = substr($exp,0,2);
-        $cardExY = substr($exp,2,2);
-        $refNum = $this->refnum($cashierNo,$laneNo,$transNo,$transID);
-        $live = 1;
-
-        $merchantID = GOEMERCH_ID;
-        $password = GOEMERCH_PASSWD;
-        $gatewayID = GOEMERCH_GATEWAY_ID;
-        if (GOEMERCH_TEST_MODE){
-            $merchantID = "1264";
-            $password = "password";
-            $pan = "4111111111111111";
-            $gatewayID = "a91c38c3-7d7f-4d29-acc7-927b4dca0dbe";
-            $cardPANmasked = "xxxxxxxxxxxxTEST";
-            $cardIssuer = "Visa";
-            $cardName = "Just Testing";
-            $nextyear = mktime(0,0,0,date("m"),date("d"),date("Y")+1);
-            $cardExM = date("m",$nextyear);
-            $cardExY = date("y",$nextyear);
-            $live = 0;
-        }
-
-        // look up original request
-        $sql = sprintf("SELECT transID FROM efsnetRequest WHERE amount=%.2f AND date=%s AND PAN=%s",
-                $amt,$dbTrans->escape($today),$dbTrans->escape($cardPANmasked));
-        $resp = $dbTrans->query($sql);
-        if ($dbTrans->num_rows($resp) != 1){
-            $this->ERRORS[] = "Could not find original transaction request";
-            return PAYCARD_ERR_NOSEND;
-        }
-        $old_id = array_pop($dbTrans->fetch_row($resp));
-
-        // look up the TransactionID from the original response 
-        $sql = sprintf("SELECT refNum,xTransactionID FROM efsnetResponse WHERE date=%s
-             AND cashierNo=%d AND laneNo=%d AND transNo=%d AND transID=%d",
-            $dbTrans->escape($today),$cashierNo,$laneNo,$transNo,$old_id);
-        $result = $dbTrans->query($sql);
-        if( !$result || $dbTrans->num_rows($result) != 1){
-            $this->ERRORS[] = "Could not find original transaction response";
-            return PAYCARD_ERR_NOSEND; 
-        }
-        $res = $dbTrans->fetch_array($result);
-        $TransactionID = $res['xTransactionID'];
-        $this->void_trans = $res['xTransactionID'];
-        $this->void_ref = $res['refNum'];
-
-        $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-        $xml .= "<TRANSACTION>";
-        $xml .= "<FIELDS>";
-        $xml .= "<FIELD KEY=\"merchant\">$merchantID</FIELD>";
-        if ($password != "")
-            $xml .= "<FIELD KEY=\"password\">$password</FIELD>";
-        $xml .= "<FIELD KEY=\"gateway_id\">$gatewayID</FIELD>";
-        $xml .= "<FIELD KEY=\"operation_type\">$mode</FIELD>";
-        $xml .= "<FIELD KEY=\"total_number_transactions\">1</FIELD>";
-        $xml .= "<FIELD KEY=\"reference_number1\">$TransactionID</FIELD>";
-        $xml .= "<FIELD KEY=\"credit_amount1\">$amountText</FIELD>";
-        $xml .= "</FIELDS>";
-        $xml .= "</TRANSACTION>";
-
-        $this->GATEWAY = "https://secure.goemerchant.com/secure/gateway/xmlgateway.aspx";
-        return $this->curlSend($xml,'POST',True);
-        */
+        throw new Exception('Void not implemented');
     }
 
     function refnum($transID)
