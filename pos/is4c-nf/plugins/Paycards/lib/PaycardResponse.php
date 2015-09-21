@@ -41,7 +41,7 @@ class PaycardResponse
     public function __construct($req, $curlResult)
     {
         $this->request = $req;
-        $now = date('Y-m-d H:i:s');
+        $this->now = date('Y-m-d H:i:s');
         $this->curlTime = $curlResult['curlTime'];
         $this->curlErr = $curlResult['curlErr'];
         $this->curlHttp = $curlResult['curlHTTP'];
@@ -70,7 +70,7 @@ class PaycardResponse
                             $this->now,
                             $this->curlTime,
                             $this->curlErr,
-                            $this->curlHTTP,
+                            $this->curlHttp,
                             $this->normalizedCode,
                             $this->responseCode,
                             $this->approvalNum,
@@ -156,7 +156,7 @@ class PaycardResponse
         $this->transactionID = substr($t, 0, 12);
     }
 
-    public function setNormalizedCode($t)
+    public function setNormalizedCode($n)
     {
         $this->normalizedCode = $n;
     }
@@ -165,7 +165,7 @@ class PaycardResponse
     {
         $tokenSql = sprintf("INSERT INTO efsnetTokens (expireDay, refNum, token, processData, acqRefData) 
                 VALUES (%s,'%s','%s','%s','%s')",
-            $this->now(),
+            $this->now,
             $this->request->refNum, 
             $this->token['record'],
             $this->token['proc'],
@@ -186,8 +186,6 @@ class PaycardResponse
             sprintf("%f,%d,%d",         $this->curlTime, $this->curlErr, $this->curlHttp);
         $sqlColumns .= ",xResponseCode";
         $sqlValues .= sprintf(",%d",$this->responseCode);
-        $sqlColumns .= ",xResultCode";
-        $sqlValues .= sprintf(",%d",$this->resultCode);
         $sqlColumns .= ",xResultCode";
         $sqlValues .= sprintf(",%d",$this->resultCode);
         $sqlColumns .= ",xResultMessage";

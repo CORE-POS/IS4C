@@ -671,6 +671,19 @@ static public function getTenderInfo($type, $issuer)
     }
 }
 
+static public function setupAuthJson($json)
+{
+    if (CoreLocal::get("paycard_amount") == 0) {
+        CoreLocal::set("paycard_amount",CoreLocal::get("amtdue"));
+    }
+    CoreLocal::set("paycard_id",CoreLocal::get("LastID")+1); // kind of a hack to anticipate it this way..
+    $plugin_info = new Paycards();
+    $json['main_frame'] = $plugin_info->pluginUrl().'/gui/paycardboxMsgAuth.php';
+    $json['output'] = '';
+
+    return $json;
+}
+
 /*
 summary of ISO standards for credit card magnetic stripe data tracks:
 http://www.cyberd.co.uk/support/technotes/isocards.htm

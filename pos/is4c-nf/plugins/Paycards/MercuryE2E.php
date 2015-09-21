@@ -62,63 +62,26 @@ class MercuryE2E extends BasicCCModule
     */
     public function entered($validate,$json)
     {
-        // error checks based on card type
-        if (CoreLocal::get("CCintegrate") != 1) { // credit card integration must be enabled
-            PaycardLib::paycard_reset();
-            $json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,
-                                                         "Card Integration Disabled",
-                                                         "Please process credit cards in standalone",
-                                                         "[clear] to cancel"
-            );
+        $enabled = PaycardDialogs::enabledCheck();
+        if ($enabled !== true) {
+            $json['output'] = $enabled;
 
             return $json;
         }
 
         // error checks based on processing mode
-        switch( CoreLocal::get("paycard_mode")) {
+        switch (CoreLocal::get("paycard_mode")) {
             case PaycardLib::PAYCARD_MODE_VOID:
                 // use the card number to find the trans_id
-                $dbTrans = PaycardLib::paycard_db();
-                $today = date('Ymd');
                 $pan4 = substr($this->$trans_pan['pan'],-4);
-                $cashier = CoreLocal::get("CashierNo");
-                $lane = CoreLocal::get("laneno");
-                $trans = CoreLocal::get("transno");
-                $sql = 'SELECT transID
-                        FROM PaycardTransactions
-                        WHERE dateID=' . $today . '
-                            AND empNo=' . $cashier . '
-                            AND registerNo=' . $lane . '
-                            AND transNo=' . $trans . '
-                            AND PAN LIKE \'%' . $pan4 . '\'';
-                if (!$dbTrans->table_exists('PaycardTransactions')) {
-                    $sql = "SELECT transID,cashierNo,laneNo,transNo FROM efsnetRequest WHERE "
-                        .$dbTrans->identifier_escape('date')."='".$today."' AND (PAN LIKE '%".$pan4."')"; 
-                }
-                $search = PaycardLib::paycard_db_query($sql, $dbTrans);
-                $num = PaycardLib::paycard_db_num_rows($search);
-                if ($num < 1) {
-                    PaycardLib::paycard_reset();
-                    $json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                                 "Card Not Used",
-                                                                 "That card number was not used in this transaction",
-                                                                 "[clear] to cancel"
-                    );
-
-                    return $json;
-                } else if ($num > 1) {
-                    PaycardLib::paycard_reset();
-                    $json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                                 "Multiple Uses",
-                                                                 "That card number was used more than once in this transaction; select the payment and press VOID",
-                                                                 "[clear] to cancel"
-                    );
-
+                $trans = array(CoreLocal::get('CashierNo'), CoreLocal::get('laneno'), CoreLocal::get('transno'));
+                list($success, $result) = PaycardDialogs::voidableCheck($pan4, $trans);
+                if ($success === true) {
+                    return $this->paycard_void($result,$trans[1],$trans[2],$json);
+                } else {
+                    $json['output'] = $result;
                     return $json;
                 }
-                $payment = PaycardLib::paycard_db_fetch_row($search);
-
-                return $this->paycard_void($payment['transID'],$lane,$trans,$json);
                 break;
 
             case PaycardLib::PAYCARD_MODE_AUTH:
@@ -136,25 +99,13 @@ class MercuryE2E extends BasicCCModule
 
                     return $json;
                 }
-                if (CoreLocal::get("paycard_amount") == 0) {
-                    CoreLocal::set("paycard_amount",CoreLocal::get("amtdue"));
-                }
-                CoreLocal::set("paycard_id",CoreLocal::get("LastID")+1); // kind of a hack to anticipate it this way..
-                $plugin_info = new Paycards();
-                $json['main_frame'] = $plugin_info->pluginUrl().'/gui/paycardboxMsgAuth.php';
-                $json['output'] = '';
-
-                return $json;
+                return PaycardLib::setupAuthJson($json);
                 break;
         } // switch mode
     
         // if we're still here, it's an error
         PaycardLib::paycard_reset();
-        $json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                     "Invalid Mode",
-                                                     "This card type does not support that processing mode",
-                                                     "[clear] to cancel"
-        );
+        $json['output'] = PaycardDialogs::invalidMode();
 
         return $json;
     }
@@ -167,236 +118,47 @@ class MercuryE2E extends BasicCCModule
         $this->voidTrans = "";
         $this->voidRef = "";
         // situation checking
-        if (CoreLocal::get("CCintegrate") != 1) { // credit card integration must be enabled
-            PaycardLib::paycard_reset();
-            $json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Card Integration Disabled",
-                                                         "Please process credit cards in standalone",
-                                                         "[clear] to cancel"
-            );
+        $enabled = PaycardDialogs::enabledCheck();
+        if ($enabled !== true) {
+            $json['output'] = $enabled;
 
             return $json;
         }
     
         // initialize
-        $dbTrans = PaycardLib::paycard_db();
-        $today = date('Ymd');
         $cashier = CoreLocal::get("CashierNo");
         $lane = CoreLocal::get("laneno");
         $trans = CoreLocal::get("transno");
         if ($laneNo != -1) $lane = $laneNo;
         if ($transNo != -1) $trans = $transNo;
-    
-        // look up the request using transID (within this transaction)
-        $sql = "SELECT live,
-                    PAN,
-                    transType AS mode,
-                    amount,
-                    name
-                FROM PaycardTransactions
-                WHERE dateID=" . $today . "
-                    AND empNo=" . $cashier . "
-                    AND registerNo=" . $lane . "
-                    AND transNo=" . $trans . " 
-                    AND transID=" . $transID;
-        // @deprecated table 5May14
-        if (!$dbTrans->table_exists('PaycardTransactions')) {
-            $sql = "SELECT live,PAN,mode,amount,name FROM efsnetRequest 
-                WHERE ".$dbTrans->identifier_escape('date')."='".$today."' AND cashierNo=".$cashier." AND 
-                laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
-        }
-        $search = PaycardLib::paycard_db_query($sql, $dbTrans);
-        $num = PaycardLib::paycard_db_num_rows($search);
-        if ($num < 1) {
-            PaycardLib::paycard_reset();
-            $json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Internal Error",
-                                                         "Card request not found, unable to void",
-                                                         "[clear] to cancel"
-            );
-
-            return $json;
-        } else if ($num > 1) {
-            PaycardLib::paycard_reset();
-            $json['output'] =  PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                          "Internal Error",
-                                                          "Card request not distinct, unable to void",
-                                                          "[clear] to cancel"
-            );
-
+        list($success, $request) = PaycardDialogs::getRequest(array($cashier, $lane, $trans), $transID);
+        if ($success === false) {
+            $json['output'] = $request;
             return $json;
         }
-        $request = PaycardLib::paycard_db_fetch_row($search);
 
-        // look up the response
-        $sql = "SELECT commErr,
-                    httpCode,
-                    validResponse,
-                    xResultCode AS xResponseCode,
-                    xTransactionID
-                FROM PaycardTransactions 
-                WHERE dateID=" . $today . " 
-                    AND empNo=" . $cashier . "
-                    AND registerNo=" . $lane ."
-                    AND transNo=" . $trans . "
-                    AND transID=" . $transID;
-        // @deprecated table 5May14
-        if (!$dbTrans->table_exists('PaycardTransactions')) {
-            $sql = "SELECT commErr,httpCode,validResponse,xResponseCode,
-                xTransactionID FROM efsnetResponse WHERE ".$dbTrans->identifier_escape('date')."='".$today."' 
-                AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
-        }
-        $search = PaycardLib::paycard_db_query($sql, $dbTrans);
-        $num = PaycardLib::paycard_db_num_rows($search);
-        if ($num < 1) {
-            PaycardLib::paycard_reset();
-            $json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Internal Error",
-                                                         "Card response not found, unable to void",
-                                                         "[clear] to cancel"
-            );
-
-            return $json;
-        } else if ($num > 1) {
-            PaycardLib::paycard_reset();
-            $json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Internal Error",
-                                                         "Card response not distinct, unable to void",
-                                                         "[clear] to cancel"
-            );
-
+        list($success, $response) = PaycardDialogs::getResponse(array($cashier, $lane, $trans), $transID);
+        if ($success === false) {
+            $json['output'] = $response;
             return $json;
         }
-        $response = PaycardLib::paycard_db_fetch_row($search);
 
         // look up any previous successful voids
-        $sql = "SELECT transID 
-                FROM PaycardTransactions 
-                WHERE dateID=" . $today . "
-                    AND empNo=" . $cashier . "
-                    AND registerNo=" . $lane . "
-                    AND transNo=" . $trans . "
-                    AND transID=" . $transID . "
-                    AND transType='VOID'
-                    AND xResultCode=1";
-        // @deprecated table 5May14
-        if (!$dbTrans->table_exists('PaycardTransactions')) {
-            $sql = "SELECT transID FROM efsnetRequestMod WHERE "
-                    .$dbTrans->identifier_escape('date')."=".$today
-                    ." AND cashierNo=".$cashier." AND laneNo=".$lane
-                    ." AND transNo=".$trans." AND transID=".$transID
-                    ." AND mode='void' AND xResponseCode=0";
-        }
-        $search = PaycardLib::paycard_db_query($sql, $dbTrans);
-        $voided = PaycardLib::paycard_db_num_rows($search);
-        if( $voided > 0) {
-            PaycardLib::paycard_reset();
-            $json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Unable to Void",
-                                                         "Card transaction already voided",
-                                                         "[clear] to cancel"
-            );
-
+        $eligible = PaycardDialogs::notVoided(array($cashier, $lane, $trans), $transID);
+        if ($eligible === false) {
+            $json['output'] = $eligible;
             return $json;
         }
 
-        // look up the transaction tender line-item
-        $sql = "SELECT trans_type,
-                    trans_subtype,
-                    trans_status,
-                    voided
-                FROM localtemptrans 
-                WHERE trans_id=" . $transID;
-        $search = PaycardLib::paycard_db_query($sql, $dbTrans);
-        $num = PaycardLib::paycard_db_num_rows($search);
-        if ($num < 1) {
-            $sql = "SELECT * FROM localtranstoday WHERE trans_id=".$transID." and emp_no=".$cashier
-                ." and register_no=".$lane." and trans_no=".$trans
-                ." AND datetime >= " . $dbTrans->curdate();
-            $search = PaycardLib::paycard_db_query($sql, $dbTrans);
-            $num = PaycardLib::paycard_db_num_rows($search);
-            if ($num != 1){
-                PaycardLib::paycard_reset();
-                $json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                             "Internal Error",
-                                                             "Transaction item not found, unable to void",
-                                                             "[clear] to cancel"
-                );
-
-                return $json;
-            }
-        } else if ($num > 1) {
-            PaycardLib::paycard_reset();
-            $json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Internal Error",
-                                                         "Transaction item not distinct, unable to void",
-                                                         "[clear] to cancel"
-            );
-
-            return $json;
-        }
-        $lineitem = PaycardLib::paycard_db_fetch_row($search);
-
-        // make sure the payment is applicable to void
-        if ($response['commErr'] != 0 || $response['httpCode'] != 200 || $response['validResponse'] != 1) {
-            PaycardLib::paycard_reset();
-            $json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Unable to Void",
-                                                         "Card transaction not successful",
-                                                         "[clear] to cancel"
-            );
-
-            return $json;
-        } else if ($request['live'] != PaycardLib::paycard_live(PaycardLib::PAYCARD_TYPE_ENCRYPTED)) {
-            // this means the transaction was submitted to the test platform, but we now think we're in live mode, or vice-versa
-            // I can't imagine how this could happen (short of serious $_SESSION corruption), but worth a check anyway.. --atf 7/26/07
-            PaycardLib::paycard_reset();
-            $json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Unable to Void",
-                                                         "Processor platform mismatch",
-                                                         "[clear] to cancel"
-            );
-
-            return $json;
-        } else if( $response['xResponseCode'] != 1) {
-            PaycardLib::paycard_reset();
-            $json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Unable to Void",
-                                                         "Card transaction not approved",
-                                                         "[clear] to cancel"
-            );
-
-            return $json;
-        } else if( $response['xTransactionID'] < 1) {
-            PaycardLib::paycard_reset();
-            $json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Internal Error",
-                                                         "Invalid reference number",
-                                                         "[clear] to cancel"
-            );
-
+        list($success, $lineitem) = PaycardDialogs::getTenderLine(array($cashier, $lane, $trans), $transID);
+        if ($success === false) {
+            $json['output'] = $lineitem;
             return $json;
         }
 
-        // make sure the tender line-item is applicable to void
-        if ($lineitem['trans_type'] != "T" || ($lineitem['trans_subtype'] != "CC" && $lineitem['trans_subtype'] != 'DC'
-            && $lineitem['trans_subtype'] != 'EF' && $lineitem['trans_subtype'] != 'EC' && $lineitem['trans_subtype'] != 'AX') ) {
-            PaycardLib::paycard_reset();
-            $json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Internal Error",
-                                                         "Authorization and tender records do not match $transID",
-                                                         "[clear] to cancel"
-            );
-
-            return $json;
-        } else if ($lineitem['trans_status'] == "V" || $lineitem['voided'] != 0) {
-            PaycardLib::paycard_reset();
-            $json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Internal Error",
-                                                         "Void records do not match",
-                                                         "[clear] to cancel"
-            );
-
+        $valid = PaycardDialogs::validateVoid($request, $response, $lineitem, $transID);
+        if ($valid !== true) {
+            $json['output'] = $valid;
             return $json;
         }
     
@@ -451,7 +213,7 @@ class MercuryE2E extends BasicCCModule
         } else {
             $validResponse = -3;
         }
-        $respose->setResponseCode($responseCode);
+        $response->setResponseCode($responseCode);
         $resultCode = $xml->get("DSIXRETURNCODE");
         if ($resultCode) {
             $response->setResultCode($resultCode);
@@ -507,7 +269,9 @@ class MercuryE2E extends BasicCCModule
         );
         try {
             $response->saveResponse();
-        } catch (Exception $ex) { }
+        } catch (Exception $ex) { 
+            echo $ex->getMessage() . "\n";
+        }
         // auth still happened even if logging the result failed
 
         if ($responseCode == 1) {
@@ -806,29 +570,10 @@ class MercuryE2E extends BasicCCModule
         CoreLocal::set('paycard_issuer',$e2e['Issuer']);
         $request->setCardholder($e2e['Name']);
         $request->setPAN($e2e['Last4']);
-        CoreLocal::set('paycard_partial',talse);
+        CoreLocal::set('paycard_partial',false);
         $request->setSent(0, 0, 0, 1);
         
         // store request in the database before sending it
-        $sql = 'INSERT INTO efsnetRequest (' .
-                    $dbTrans->identifier_escape('date') . ', cashierNo, laneNo, transNo, transID, ' .
-                    $dbTrans->identifier_escape('datetime') . ', refNum, live, mode, amount,
-                    PAN, issuer, manual, name,
-                    sentPAN, sentExp, sentTr1, sentTr2)
-                VALUES (
-                    ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, 
-                    ?, ?, ?, ?)'; 
-        $efsArgs = array(
-            $today, $cashierNo, $laneNo, $transNo, $transID,
-            $now, $refNum, $live, $logged_mode, ($amountText + $cashbackText),
-            $cardPANmasked, $cardIssuer, $manual, $cardName,
-            $sendPAN, $sendExp, $sendTr1, $sendTr2);
-        $prep = $dbTrans->prepare($sql);
-
-        $table_def = $dbTrans->table_definition('efsnetRequest');
-
         try {
             $request->saveRequest();
         } catch (Exception $ex) {
@@ -857,7 +602,7 @@ class MercuryE2E extends BasicCCModule
         } else {
             $msgXml .= '<TranType>'.$request->type.'</TranType>';
         }
-        $msgXml .= '<TranCode>'.$requset->mode.'</TranCode>
+        $msgXml .= '<TranCode>'.$request->mode.'</TranCode>
             <InvoiceNo>'.$request->refNum.'</InvoiceNo>
             <RefNo>'.$request->refNum.'</RefNo>
             <Memo>CORE POS 1.0.0</Memo>';
@@ -1513,7 +1258,9 @@ class MercuryE2E extends BasicCCModule
 
         try {
             $response->saveResponse();
-        } catch (Exception $ex) {}
+        } catch (Exception $ex) {
+            echo $ex->getMessage() . "\n";
+        }
 
         /** handle partial auth **/
         if ($responseCode == 1) {

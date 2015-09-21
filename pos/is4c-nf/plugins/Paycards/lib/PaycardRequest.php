@@ -33,6 +33,7 @@ class PaycardRequest
 
     public function __construct($refNum)
     {
+        $this->refNum = $refNum;
         $this->today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
         $this->now = date('Y-m-d H:i:s'); // full timestamp
         $this->cashierNo = CoreLocal::get("CashierNo");
