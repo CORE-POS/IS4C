@@ -25,6 +25,8 @@ namespace COREPOS\Fannie\API\item {
 
 class EpScaleLib 
 {
+    static private $NEWLINE = "\r\n";
+
     /**
       Generate CSV line for a given item
       @param $item_info [keyed array] of value. Keys correspond to WRITE_ITEM_FIELDS
