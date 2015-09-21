@@ -188,10 +188,12 @@ class FannieRESTfulPage extends FanniePage
         }
     }
 
-    public function addRoute($r)
+    public function addRoute()
     {
-        if (!in_array($r, $this->__routes)) {
-            $this->__routes[] = $r;
+        foreach (func_get_args() as $r) {
+            if (!in_array($r, $this->__routes)) {
+                $this->__routes[] = $r;
+            }
         }
     }
 
