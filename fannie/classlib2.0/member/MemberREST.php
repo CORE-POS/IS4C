@@ -1029,7 +1029,7 @@ class MemberREST
                 $params[] = '%' . $j['phone'] . '%';
             }
             if (isset($j['email'])) {
-                $query .= ' AND m.email LIKE ? ';
+                $query .= ' AND m.email_1 LIKE ? ';
                 $params[] = '%' . $j['email'] . '%';
             }
             if (isset($j['lowIncomeBenefits'])) {
@@ -1119,7 +1119,7 @@ class MemberREST
         $dbc = \FannieDB::get($config->get('OP_DB'));
         if (strtolower($field) == 'mfirstname') {
             list($query, $args) = self::autoCompleteFirstName($val);
-        } elseif (strtolower($field) == 'mfirstname') {
+        } elseif (strtolower($field) == 'mlastname') {
             list($query, $args) = self::autoCompleteLastName($val);
         } elseif (strtolower($field) == 'maddress') {
             list($query, $args) = self::autoCompleteAddress($val);
@@ -1127,6 +1127,9 @@ class MemberREST
             list($query, $args) = self::autoCompleteCity($val);
         } elseif (strtolower($field) == 'memail') {
             list($query, $args) = self::autoCompleteEmail($val);
+        } else {
+            $query = $field;
+            $args = array();
         }
 
         $ret = array();
