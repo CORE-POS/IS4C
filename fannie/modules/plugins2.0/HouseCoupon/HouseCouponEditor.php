@@ -494,10 +494,10 @@ class HouseCouponEditor extends FanniePage
         $hc->load();
         $query = '
             SELECT h.upc,
-                p.description,
+                COALESCE(p.description, \'Unknown item\') AS description,
                 h.type
             FROM houseCouponItems AS h
-                INNER JOIN products AS p ON p.upc=h.upc
+                LEFT JOIN products AS p ON p.upc=h.upc
             WHERE h.coupID=?';
         if ($hc->minType() == 'MX') {
             $query = "
@@ -511,10 +511,10 @@ class HouseCouponEditor extends FanniePage
         } elseif ($hc->minType() == "D" || $hc->minType() == "D+" || $hc->minType() == 'C' || $hc->minType() == 'C+' || $hc->discountType() == '%D') {
             $query = '
                 SELECT h.upc,
-                    d.dept_name AS description,
+                    COALESCE(d.dept_name, \'Unknown department\') AS description,
                     h.type
                 FROM houseCouponItems AS h
-                    INNER JOIN departments AS d ON d.dept_no=h.upc
+                    LEFT JOIN departments AS d ON d.dept_no=h.upc
                 WHERE h.coupID=?';
         }
         $prep = $dbc->prepare($query);
