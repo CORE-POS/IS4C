@@ -100,7 +100,8 @@ class AlaffiaUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             UPDATE products
             SET cost=?,
                 modified=' . $dbc->now() . '
-            WHERE upc=?');
+            WHERE upc=?
+                AND default_vendor_id=?');
         $itemP = $dbc->prepare("
             INSERT INTO vendorItems (
                 brand, 
@@ -191,7 +192,7 @@ class AlaffiaUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $reg_unit = $reg / $qty;
 
             $dbc->execute($extraP, array($reg_unit,$upc));
-            $dbc->execute($prodP, array($reg_unit,$upc));
+            $dbc->execute($prodP, array($reg_unit,$upc,$VENDOR_ID));
             $updated_upcs[] = $upc;
 
             $args = array(

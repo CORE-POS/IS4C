@@ -42,7 +42,6 @@ class ProductUserSearch extends ProductSearch
                 END as description,
                 p.normal_price,
                 p.special_price, 
-                p.advertised, 
                 p.scale
             FROM products AS p
                 LEFT JOIN productUser AS u ON p.upc=u.upc

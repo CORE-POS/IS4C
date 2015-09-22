@@ -29,13 +29,5 @@ class VirtualCoupon extends Plugin {
     public $plugin_description = 'A plugin for managing coupons assigned to
                       members. Type "VC" to use.
                       ';
-
-    public function plugin_enable(){
-
-    }
-
-    public function plugin_disable(){
-
-    }
-
 }
+

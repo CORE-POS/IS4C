@@ -142,8 +142,8 @@ class ItemPurchasesReport extends FannieReportPage
             class="form-control date-field" required />
     </div>
     <p>
-        <button type=submit class="btn btn-default">Submit</button>
-        <button type=reset class="btn btn-default">Start Over</button>
+        <button type=submit class="btn btn-default btn-core">Submit</button>
+        <button type=reset class="btn btn-default btn-reset">Start Over</button>
     </p>
 </div>
 <div class="col-sm-5">

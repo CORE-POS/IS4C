@@ -64,6 +64,62 @@ class FannieUI
         ';
     }
 
+    public static function prettyJSON($json)
+    {
+        $result= '';
+        $pos = 0;
+        $strLen= strlen($json);
+        $indentStr = '    ';
+        $newLine = "\n";
+        $prevChar= '';
+        $outOfQuotes = true;
+
+        for ($i=0; $i<=$strLen; $i++) {
+            // Grab the next character in the string.
+            $char = substr($json, $i, 1);
+
+            // Are we inside a quoted string?
+            if ($char == '"' && $prevChar != '\\') {
+                $outOfQuotes = !$outOfQuotes;
+            // If this character is the end of an element, 
+            // output a new line and indent the next line.
+            } elseif (($char == '}' || $char == ']') && $outOfQuotes) {
+                $result .= $newLine;
+                $pos--;
+                $result .= str_repeat($indentStr, $pos);
+            }
+
+            // Add the character to the result string.
+            $result .= $char;
+
+            // If the last character was the beginning of an element, 
+            // output a new line and indent the next line.
+            if (($char == ',' || $char == '{' || $char == '[') && $outOfQuotes) {
+                $result .= $newLine;
+                if ($char == '{' || $char == '[') {
+                    $pos++;
+                }
+                $result .= str_repeat($indentStr, $pos);
+            }
+
+            $prevChar = $char;
+        }
+
+        return $result;
+    }
+
+    public static function itemEditorLink($upc)
+    {
+        return sprintf('<a href="%sitem/ItemEditorPage.php?searchupc=%s">%s</a>',
+            \FannieConfig::config('URL'), $upc, $upc);
+    }
+
+    public static function receiptLink($date, $trans_num)
+    {
+        $date = date('Y-m-d', strtotime($date));
+        return sprintf('<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s">%s</a>',
+            \FannieConfig::config('URL'), $date, $trans_num, $trans_num);
+    }
 }
 
 }

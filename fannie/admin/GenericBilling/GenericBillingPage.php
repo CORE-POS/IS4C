@@ -159,7 +159,8 @@ function postBilling(){
         return false;
     }
 
-    function post_id_handler(){
+    function post_id_handler()
+    {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $sql = FannieDB::get($FANNIE_TRANS_DB);
 
@@ -178,54 +179,19 @@ function postBilling(){
 
         $desc = str_replace("'","''",$desc);
 
-        $transQ = $sql->prepare_statement("SELECT MAX(trans_no) 
-            FROM dtransactions
-            WHERE emp_no=? AND register_no=?");
-        $transR = $sql->exec_statement($transQ, array($this->EMP_NO, $this->LANE_NO));
-        $t_no = '';
-        if ($sql->num_rows($transR) > 0){
-            $row = $sql->fetch_array($transR);
-            $t_no = $row[0];
-        }
-        if ($t_no == "") $t_no = 1;
-        else $t_no++;
+        $trans_no = DTrans::getTransNo($sql, $this->EMP_NO, $this->LANE_NO);
+        $params = array(
+            'card_no' => $this->id,
+            'register_no' => $this->LANE_NO,
+            'emp_no' => $this->EMP_NO,
+        );
+        DTrans::addOpenRing($sql, $this->DEPT, $amount, $trans_no, $params);
 
-        $record = DTrans::$DEFAULTS;
-        $record['register_no'] = $this->LANE_NO;
-        $record['emp_no'] = $this->EMP_NO;    
-        $record['trans_no'] = $t_no;
-        $record['upc'] = $amount.'DP'.$this->DEPT;
-        $record['description'] = $desc;
-        $record['trans_type'] = 'D';
-        $record['department'] = $this->DEPT;
-        $record['quantity'] = 1;
-        $record['ItemQtty'] = 1;
-        $record['unitPrice'] = $amount;
-        $record['total'] = $amount;
-        $record['regPrice'] = $amount;
-        $record['card_no'] = $this->id;
-        $record['trans_id'] = 1;
-
-        $param = DTrans::parameterize($record, 'datetime', $sql->now());
-        $prep = $sql->prepare_statement("INSERT INTO dtransactions
-                ({$param['columnString']}) VALUES ({$param['valueString']})");
-        $sql->exec_statement($prep, $param['arguments']);
-
-        $record['upc'] = '0';
-        $record['description'] = 'InStore Charges';
-        $record['trans_type'] = 'T';
-        $record['trans_subtype'] = 'MI';
-        $record['quantity'] = 0;
-        $record['ItemQtty'] = 0;
-        $record['unitPrice'] = 0;
-        $record['regPrice'] = 0;
-        $record['total'] = -1*$amount;
-        $record['trans_id'] = 2;
-
-        $param = DTrans::parameterize($record, 'datetime', $sql->now());
-        $prep = $sql->prepare_statement("INSERT INTO dtransactions
-                ({$param['columnString']}) VALUES ({$param['valueString']})");
-        $sql->exec_statement($prep, $param['arguments']);
+        $params['description'] = 'InStore Charges';
+        $params['trans_type'] = 'T';
+        $params['trans_subtype'] = 'MI';
+        $params['total'] = -1*$amount;
+        DTrans::addItem($sql, $trans_no, $params);
 
         $json['msg'] = sprintf("Member <b>%d</b> billed <b>$%.2f</b>.<br />
                 Receipt is %d-%d-%d.",$this->id,$amount,
@@ -248,4 +214,3 @@ function postBilling(){
 
 FannieDispatch::conditionalExec();
 
-?>

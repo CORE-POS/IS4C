@@ -58,6 +58,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
         $left = 5.175;
         $effective_width = $width - (2*$left);
         foreach ($data as $item) {
+            $item = $this->decodeItem($item);
             if ($count % 16 == 0) {
                 $pdf->AddPage();
                 $sign = 0;
@@ -159,13 +160,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
             if ($item['startDate'] != '' && $item['endDate'] != '') {
                 // intl would be nice
-                if ($item['startDate'] == 'While supplies last') {
-                    $datestr = $item['startDate'];
-                } else {
-                    $datestr = date('M d', strtotime($item['startDate']))
-                        . chr(0x96) // en dash in cp1252
-                        . date('M d', strtotime($item['endDate']));
-                }
+                $datestr = $this->getDateString($item['startDate'], $item['endDate']);
                 $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 10));
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $pdf->Cell($effective_width, 6, strtoupper($datestr), 0, 1, 'R');

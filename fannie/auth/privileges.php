@@ -227,6 +227,15 @@ function getAuthList(){
     return $ret;
 }
 
+function getAuthSelect($name='authClass')
+{
+    return '<select name="' . $name . '" class="form-control">'
+        . array_reduce(getAuthList(), function($carry, $item) {
+            return $carry . '<option>' . $item . '</option>';
+        }, '')
+        . '</select>';
+}
+
 /*
 with how authorization checking currently works, sub classes
 must be countable (i.e., a sub class must be able to be 

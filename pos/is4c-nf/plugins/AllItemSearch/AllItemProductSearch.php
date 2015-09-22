@@ -27,7 +27,7 @@ class AllItemProductSearch extends ProductSearch {
         $ret = array();
         $sql = Database::pDataConnect();
         $query = "select upc, description, normal_price, special_price, "
-            ."advertised, scale from products where "
+            ."scale from products where "
             ."description like '%".$str."%' "
             ."and inUse='1' "
             ."order by description";

@@ -43,6 +43,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     protected string server_list = "x1.mercurydev.net;x2.mercurydev.net";
     protected int LISTEN_PORT = 8999; // acting as a Datacap stand-in
     protected string sequence_no = null;
+    private bool log_xml = true;
 
     public SPH_Datacap_EMVX(string p) : base(p)
     { 
@@ -120,6 +121,11 @@ public class SPH_Datacap_EMVX : SerialPortHandler
 
                         byte[] response = System.Text.Encoding.ASCII.GetBytes(result);
                         stream.Write(response, 0, response.Length);
+                        if (log_xml) {
+                            using (StreamWriter file = new StreamWriter("log.xml", true)) {
+                                file.WriteLine(result);
+                            }
+                        }
                     }
                     client.Close();
                 }
@@ -212,10 +218,22 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         */
         xml = xml.Trim(new char[]{'"'});
         xml = xml.Replace("{{SequenceNo}}", SequenceNo());
-        xml = xml.Replace("{{SecureDevice}}", SecureDeviceToEmvType(this.device_identifier));
+        if (IsCanadianDeviceType(this.device_identifier)) {
+            // tag name is different in this case;
+            // replace placeholder then the open/close tags
+            xml = xml.Replace("{{SecureDevice}}", this.device_identifier);
+            xml = xml.Replace("SecureDevice", "PadType");
+        } else {
+            xml = xml.Replace("{{SecureDevice}}", SecureDeviceToEmvType(this.device_identifier));
+        }
         xml = xml.Replace("{{ComPort}}", com_port);
         if (this.verbose_mode > 0) {
             Console.WriteLine(xml);
+        }
+        if (log_xml) {
+            using (StreamWriter file = new StreamWriter("log.xml", true)) {
+                file.WriteLine(xml);
+            }
         }
 
         string result = emv_ax_control.ProcessTransaction(xml);
@@ -246,8 +264,13 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         if (this.verbose_mode > 0) {
             Console.WriteLine(xml);
         }
+        if (log_xml) {
+            using (StreamWriter file = new StreamWriter("log.xml", true)) {
+                file.WriteLine(xml);
+            }
+        }
 
-        return pdc_ax_control.ProcessTransaction(xml, 0, null, null);
+        return pdc_ax_control.ProcessTransaction(xml, 1, null, null);
     }
 
     /**
@@ -286,6 +309,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         string xml="<?xml version=\"1.0\"?>"
             + "<TStream>"
             + "<Transaction>"
+            + "<HostOrIP>127.0.0.1</HostOrIP>"
             + "<MerchantID>MerchantID</MerchantID>"
             + "<TranCode>EMVPadReset</TranCode>"
             + "<SecureDevice>" + SecureDeviceToEmvType(this.device_identifier) + "</SecureDevice>"
@@ -358,6 +382,18 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 return "EMV_" + device;
         }
 
+    }
+
+    protected bool IsCanadianDeviceType(string device)
+    {
+        switch (device) {
+            case "Paymentech1":
+            case "Global1":
+            case "Moneris1":
+                return true;
+            default:
+                return false;
+        }
     }
 }
 

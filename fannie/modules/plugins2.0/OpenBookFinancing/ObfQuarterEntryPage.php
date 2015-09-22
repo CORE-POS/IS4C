@@ -30,20 +30,21 @@ if (!class_exists('FannieAPI')) {
 */
 class ObfQuarterEntryPage extends FannieRESTfulPage 
 {
+    public function preprocess()
+    {
+        if (!headers_sent()) {
+            header('Location: ../OpenBookFinancingV2/ObfQuarterEntryPageV2.php');
+        }
+        return false;
+    }
+
     protected $title = 'OBF: Quarters';
     protected $header = 'OBF: Quarters';
 
     public $page_set = 'Plugin :: Open Book Financing';
     public $description = '[Quarter Entry] sets sales and labor goals by quarter.';
     public $themed = true;
-
-    public function javascript_content()
-    {
-        ob_start();
-        ?>
-        <?php
-        return ob_get_clean();
-    }
+    protected $lib_class = 'ObfLib';
 
     public function post_handler()
     {
@@ -53,10 +54,10 @@ class ObfQuarterEntryPage extends FannieRESTfulPage
 
     public function post_id_handler()
     {
-        global $FANNIE_PLUGIN_SETTINGS;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $lib_class = $this->lib_class;
+        $dbc = $lib_class::getDB();
 
-        $model = new ObfQuartersModel($dbc);
+        $model = $lib_class::getQuarter($dbc);
         if ($this->id !== '') {
             $model->obfWeekID($this->id);
         }
@@ -79,10 +80,10 @@ class ObfQuarterEntryPage extends FannieRESTfulPage
 
     public function get_id_view()
     {
-        global $FANNIE_PLUGIN_SETTINGS;
         if ($this->id != 0) {
-            $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
-            $this->currentModel = new ObfQuartersModel($dbc);
+            $lib_class = $this->lib_class;
+            $dbc = $lib_class::getDB();
+            $this->currentModel = $lib_class::getQuarter($dbc);
             $this->currentModel->obfQuarterID($this->id);
             $this->currentModel->load();
         }
@@ -94,12 +95,12 @@ class ObfQuarterEntryPage extends FannieRESTfulPage
     
     public function get_view()
     {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $lib_class = $this->lib_class;
+        $dbc = $lib_class::getDB();
 
-        $model = new ObfQuartersModel($dbc);
+        $model = $lib_class::getQuarter($dbc);
         if (!is_object($this->currentModel)) {
-            $this->currentModel = new ObfQuartersModel($dbc);
+            $this->currentModel = $lib_class::getQuarter($dbc);
         }
         $select = '<select name="id" class="form-control" 
                     onchange="location=\'' . $_SERVER['PHP_SELF'] . '?id=\' + this.value;">';
@@ -116,7 +117,7 @@ class ObfQuarterEntryPage extends FannieRESTfulPage
                 <label>Quarter</label>: ' . $select 
                 . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
                 . '<button type="button" class="btn btn-default"
-                    onclick="location=\'ObfIndexPage.php\';return false;">Home</button>'
+                    onclick="location=\'index.php\';return false;">Home</button>'
                 . '</div>';
 
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';

@@ -40,6 +40,10 @@ class VendorPricingIndex extends FanniePage {
         ?>
         <table class="table">
         <tr>
+            <td><a href="../../item/vendors/">Manage Vendors<a></td>
+            <td>Tools to create and edit vendors</td>
+        </tr>
+        <tr>
             <td><a href=RecalculateVendorSRPs.php>Recalculate SRPs</a></td>
             <td>Re-compute SRPs for the vendor price change page based on
                 desired margins</td>
@@ -59,8 +63,39 @@ class VendorPricingIndex extends FanniePage {
     
     public function helpContent()
     {
-        return '<p>These tools are for managing pries based on vendor item costs 
-            and store margin targets</p>';
+        return '
+            <p>These tools are for managing prices based on vendor item costs 
+            and store margin targets
+            </p>
+            <p>
+            To create price change batches, the following pre-requites must be
+            fulfilled:
+            <ul>
+                <li>Products the store sells must be assigned to a vendor</li>
+                <li>The vendor\'s catalog must be in the system with unit costs
+                    and SRPs</li>
+                <li>Margin tagets must be entered for POS departments and/or
+                    the vendor\'s subcategories</li>
+            </ul>
+            </p>
+            <p>
+            SRPs (standard retail prices) are critical to this tool set as it
+            chiefly compares current prices to SRPs. These SRPs come from one of
+            two places:
+            <ul>
+                <li>If you specify a column of SRPs when importing a vendor catalog,
+                    those values will be used.</li>
+                <li>If you did not specify a column or SRPs <strong>or</strong> you
+                    wish to replace those SRPs with values based on margin targets, use
+                    the <em>Recalculate SRPs</em> tool. Read the Help text on that tool
+                    for details on the exact calculations.</li>
+            </ul>
+            </p>
+            <p>
+            When all prerequisites are fulfilled, use <em>Create Price Change Batch</em>
+            to compare pricing and create price change batches.
+            </p>
+            ';
     }
 }
 

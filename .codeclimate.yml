@@ -1,0 +1,12 @@
+# Save as .codeclimate.yml (note leading .) in project root directory
+languages:
+  Ruby: true
+  JavaScript: true
+  PHP: true
+  Python: true
+exclude_paths:
+- "common/adodb5/*"
+- "documentation/doxy/*"
+- "fannie/src/javascript/*"
+- "fannie/src/fpdf/*"
+- "fannie/src/Excel/*"

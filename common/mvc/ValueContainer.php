@@ -42,6 +42,11 @@ class ValueContainer implements \Iterator
         }
     }
 
+    public function __isset($name)
+    {
+        return isset($this->values[$name]);
+    }
+
     public function __unset($name)
     {
         if (isset($this->values[$name])) {

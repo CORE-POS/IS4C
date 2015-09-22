@@ -10,18 +10,18 @@ $EMP_NO=1001;
 $DEFAULT_DEPT=703;
 $CARD_NO=11;
 
-if (isset($_REQUEST['init'])){
+if (isset($_POST['init'])){
     $errors = "";
-    if (!isset($_REQUEST['desc']) || empty($_REQUEST['desc'])){
+    if (!isset($_POST['desc']) || empty($_POST['desc'])){
         $errors .= "Error: Description required<br />";
     }
-    if (!isset($_REQUEST['amount']) || !is_numeric($_REQUEST['amount'])){
+    if (!isset($_POST['amount']) || !is_numeric($_POST['amount'])){
         $errors .= "Error: amount is required<br />";
     }
-    if (!isset($_REQUEST['dept'])){
+    if (!isset($_POST['dept'])){
         $errors .= "Error: department is required<br />";
     }
-    if (!isset($_REQUEST['tender'])){
+    if (!isset($_POST['tender'])){
         $errors .= "Error: tender is required<br />";
     }
 
@@ -33,26 +33,26 @@ if (isset($_REQUEST['init'])){
         regularDisplay();
     }
 }
-elseif (isset($_REQUEST['confirm'])){
+elseif (isset($_POST['confirm'])){
     // these tests should always pass unless someone is
     // POST-ing data without using the form
     $errors = "";
-    if (!isset($_REQUEST['desc']) || empty($_REQUEST['desc'])){
+    if (!isset($_POST['desc']) || empty($_POST['desc'])){
         $errors .= "Error: Description required<br />";
     }
-    if (!isset($_REQUEST['amount']) || !is_numeric($_REQUEST['amount'])){
+    if (!isset($_POST['amount']) || !is_numeric($_POST['amount'])){
         $errors .= "Error: amount is required<br />";
     }
-    if (!isset($_REQUEST['dept'])){
+    if (!isset($_POST['dept'])){
         $errors .= "Error: department is required<br />";
     }
-    if (!isset($_REQUEST['tender'])){
+    if (!isset($_POST['tender'])){
         $errors .= "Error: tender is required<br />";
     }
 
     if (empty($errors)){
-        bill($_REQUEST['amount'],$_REQUEST['desc'],
-            $_REQUEST['dept'],$_REQUEST['tender']);
+        bill($_POST['amount'],$_POST['desc'],
+            $_POST['dept'],$_POST['tender']);
     }
     else {
         echo "<blockquote><i>".$errors."</i></blockquote>";
@@ -116,10 +116,10 @@ function billingDisplay(){
         </table>
         <input type=submit value=\"Make Payment\" name=confirm />
         </form>",
-        $_REQUEST['desc'],$_REQUEST['desc'],
-        $_REQUEST['dept'],$_REQUEST['dept'],
-        $_REQUEST['tender'],$_REQUEST['tender'],
-        $_REQUEST['amount'],$_REQUEST['amount']);
+        $_POST['desc'],$_POST['desc'],
+        $_POST['dept'],$_POST['dept'],
+        $_POST['tender'],$_POST['tender'],
+        $_POST['amount'],$_POST['amount']);
 }
 
 function bill($amt,$desc,$dept,$tender){
@@ -128,7 +128,7 @@ function bill($amt,$desc,$dept,$tender){
 
     $tnQ = $dbc->prepare_statement("SELECT TenderName FROM tenders WHERE TenderCode=?");
     $tnR = $dbc->exec_statement($tnQ,array($tender));
-    $tn = array_pop($dbc->fetch_array($tnR));
+    $tname = array_pop($dbc->fetch_array($tnR));
 
     $dbc = FannieDB::get($FANNIE_TRANS_DB);
 
@@ -157,7 +157,7 @@ function bill($amt,$desc,$dept,$tender){
         0.0,0,0.00,.0,?,.0,0,0,.0,.0,
         0,0,0,NULL,0.0,0,0,.0,0,0,0,0,0,'',
         ?,2)");
-    $args2 = array($LANE_NO,$EMP_NO,$t_no,$tn,$tender,$amt,$CARD_NO);
+    $args2 = array($LANE_NO,$EMP_NO,$t_no,$tname,$tender,$amt,$CARD_NO);
     $dbc->exec_statement($insQ,$args);
     $dbc->exec_statement($insQ2,$args2);
 
@@ -166,4 +166,4 @@ function bill($amt,$desc,$dept,$tender){
 }
 
 include($FANNIE_ROOT.'src/footer.html');
-?>
+

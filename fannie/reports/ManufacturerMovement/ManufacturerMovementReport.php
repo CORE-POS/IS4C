@@ -231,8 +231,8 @@ class ManufacturerMovementReport extends FannieReportPage
             </label>
         </div>
         <div class="form-group">
-        <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>
-        <button type=reset name=reset class="btn btn-default">Start Over</button>
+        <button type=submit name=submit value="Submit" class="btn btn-default btn-core">Submit</button>
+        <button type=reset name=reset class="btn btn-default btn-reset">Start Over</button>
         </div>
     </div>
     <div class="col-sm-5">

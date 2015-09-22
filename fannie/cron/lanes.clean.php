@@ -52,10 +52,12 @@ foreach($FANNIE_LANES as $ln){
     }
 
     $table = 'localtrans_today';
-    $cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'datetime')." <> 0";
-    $cleanR = $sql->query($cleanQ,$ln['trans']);
-    if ($cleanR === False){
-        echo cron_msg("Could not clean $table on lane: ".$ln['host']);
+    if ($sql->table_exists($table)) {
+        $cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'datetime')." <> 0";
+        $cleanR = $sql->query($cleanQ,$ln['trans']);
+        if ($cleanR === False){
+            echo cron_msg("Could not clean $table on lane: ".$ln['host']);
+        }
     }
 
     $table = 'localtrans';

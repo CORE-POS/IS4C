@@ -134,7 +134,7 @@ $pdf->SetRightMargin(0);  //Set the right margin of the page
 $pdf->AddPage();  //Add a page
 
 //Set increment counters for rows 
-$i = 6;  //x location of barcode
+$i = 7;  //x location of barcode
 $j = 31; //y locaton of barcode
 $l = 30; //y location of size and price on label
 $k = 8; //x location of date and price on label
@@ -151,7 +151,7 @@ foreach($data as $row){
    //If $m == 32 add a new page and reset all counters..
    if($m == 32){
       $pdf->AddPage();
-    $i = 6;  //x location of barcode
+    $i = 7;  //x location of barcode
     $j = 31; //y locaton of barcode
     $l = 30; //y location of size and price on label
     $k = 8; //x location of date and price on label
@@ -165,7 +165,7 @@ foreach($data as $row){
 
    //If $i > 175, start a new line of labels
    if($i > 175){
-      $i = 6;
+      $i = 7;
       $j = $j + $down;
       $k = 8;
       $l = $l + $down;

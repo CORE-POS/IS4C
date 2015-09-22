@@ -121,6 +121,11 @@ class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
             // capture POST of input field
             installTextField('FANNIE_STORE_ID', $FANNIE_STORE_ID, 1);
             installSelectField('FANNIE_STORE_MODE', $FANNIE_STORE_MODE, array('STORE'=>'Single Store', 'HQ'=>'HQ'),'STORE');
+            if (FormLib::get('FANNIE_READONLY_JSON', false) !== false) {
+                // decode and re-encode to squash whitespace
+                $FANNIE_READONLY_JSON = json_encode(json_decode(FormLib::get('FANNIE_READONLY_JSON')));
+                confset('FANNIE_READONLY_JSON', "'$FANNIE_READONLY_JSON'");
+            }
             header('Location: InstallStoresPage.php');
             return false;
         }
@@ -260,6 +265,26 @@ if (extension_loaded('mssql'))
     <i>Note: it's OK if this store's connection fails as long as it succeeds
        on the "Necessities" tab.</i>
 </p>
+<hr />
+<h4 class="install">Read-only Database Server(s)</h4>
+<p class="ichunk" style="margin:0.0em 0em 0.4em 0em;">
+Specify one or more database servers that can be used strictly
+for read operations. If more than one database is listed, read-only
+queries will be load-balanced across them.
+<?php
+if (!isset($FANNIE_READONLY_JSON)) {
+    $FANNIE_READONLY_JSON = json_encode(array(array(
+        'host' => $FANNIE_SERVER,
+        'type' => $FANNIE_SERVER_DBMS,
+        'user' => $FANNIE_SERVER_USER,
+        'pw' => $FANNIE_SERVER_PW,
+    )));
+}
+confset('FANNIE_READONLY_JSON', "'$FANNIE_READONLY_JSON'");
+?>
+<textarea rows="10" cols="30" name="FANNIE_READONLY_JSON" class="form-control">
+<?php echo \COREPOS\Fannie\API\lib\FannieUI::prettyJSON($FANNIE_READONLY_JSON); ?>
+</textarea>
 <hr />
 <p>
 <button type=submit name="saveButton" value="Save" class="btn btn-default">Save</button>

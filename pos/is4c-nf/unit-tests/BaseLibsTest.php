@@ -148,7 +148,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'PreParser',
             'Parser',
             'SQLManager',
-            'BasicPage',
+            'BasicCorePage',
             'TenderModule',
             'DisplayLib',
             'ReceiptLib',
@@ -531,6 +531,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $record['regPrice'] = -1.22;
         $record['quantity'] = 1;
         $record['ItemQtty'] = 1;
+        $record['discountable'] = 1;
         lttLib::verifyRecord(1, $record, $this);
 
         lttLib::clear();

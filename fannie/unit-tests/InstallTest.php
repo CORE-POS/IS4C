@@ -111,6 +111,7 @@ class InstallTest extends PHPUnit_Framework_TestCase
         $con = FannieDB::get('unit_test_op');
 
         $samples = array(
+            'batchType',
             'custdata',
             'departments',
             'employees',

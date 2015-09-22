@@ -85,7 +85,7 @@ class PaycardEmvGift extends PaycardProcessPage
             $e2e = new MercuryE2E();
             $json = array();
             $plugin_info = new Paycards();
-            $json['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvSuccess.php';
+            $json['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvSuccess.php';
             $json['receipt'] = false;
             $success = $e2e->handleResponseDataCap($xml);
             if ($success === PaycardLib::PAYCARD_ERR_OK) {
@@ -93,6 +93,9 @@ class PaycardEmvGift extends PaycardProcessPage
                 CoreLocal::set("strEntered","");
                 CoreLocal::set("strRemembered","");
                 CoreLocal::set("msgrepeat",0);
+                if ($json['receipt']) {
+                    $json['main_frame'] .= '?receipt=' . $json['receipt'];
+                }
             } else {
                 CoreLocal::set("msgrepeat",0);
                 $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';

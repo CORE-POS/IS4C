@@ -76,13 +76,7 @@ class MemberLookup {
             ORDER BY personNum');
         $result = $dbc->exec_statement($query, array($num));
 
-        $ret = $this->default_value();
-        while($w = $dbc->fetch_row($result)){
-            $key = $w['CardNo'].'::'.$w['personNum'];
-            $val = $w['CardNo'].' '.$w['LastName'].', '.$w['FirstName'];
-            $ret['results'][$key] = $val;
-        }
-        return $ret;
+        return $this->listToArray($dbc, $result);
     }
 
     /**
@@ -98,10 +92,16 @@ class MemberLookup {
             AND Type IN (\'PC\',\'REG\')
             ORDER BY LastName, FirstName');
         $result = $dbc->exec_statement($query, array($text.'%'));    
+
+        return $this->listToArray($dbc, $result);
+    }
+
+    private function listToArray($dbc, $result)
+    {
         $ret = $this->default_value();
-        while($w = $dbc->fetch_row($result)){
-            $key = $w['CardNo'].'::'.$w['personNum'];
-            $val = $w['CardNo'].' '.$w['LastName'].', '.$w['FirstName'];
+        while ($row = $dbc->fetch_row($result)) {
+            $key = $row['CardNo'].'::'.$row['personNum'];
+            $val = $row['CardNo'].' '.$row['LastName'].', '.$row['FirstName'];
             $ret['results'][$key] = $val;
         }
         return $ret;

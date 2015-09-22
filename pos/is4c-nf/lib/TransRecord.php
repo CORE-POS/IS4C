@@ -113,7 +113,8 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
     $dblunitPrice = str_replace(",", "", $dblunitPrice);
     $dblunitPrice = number_format($dblunitPrice, 2, '.', '');
 
-    if (CoreLocal::get("refund") == 1) {
+    // do not clear refund flag when adding an informational log record
+    if ($strtransType != 'L' && CoreLocal::get("refund") == 1) {
         $dblquantity = (-1 * $dblquantity);
         $dbltotal = (-1 * $dbltotal);
         $dbldiscount = (-1 * $dbldiscount);
@@ -665,6 +666,7 @@ static public function addhousecoupon($strupc, $intdepartment, $dbltotal, $descr
         'unitPrice' => $dbltotal,
         'total' => $dbltotal,
         'regPrice' => $dbltotal,
+        'discountable' => 1,
     ));
 }
 
@@ -697,16 +699,16 @@ static public function additemdiscount($intdepartment, $dbltotal)
 static public function addTare($dbltare) 
 {
     CoreLocal::set("tare",$dbltare/100);
-    $rf = CoreLocal::get("refund");
-    $rc = CoreLocal::get("refundComment");
+    $refund = CoreLocal::get("refund");
+    $rComment = CoreLocal::get("refundComment");
     self::addRecord(array(
         'description' => '** Tare Weight ' . CoreLocal::get('tare') . ' **',
         'trans_type' => '0',
         'trans_status' => 'D',
         'voided' => 6,
     ));
-    CoreLocal::set("refund",$rf);
-    CoreLocal::set("refundComment",$rc);
+    CoreLocal::set("refund",$refund);
+    CoreLocal::set("refundComment",$rComment);
 }
 
 /**

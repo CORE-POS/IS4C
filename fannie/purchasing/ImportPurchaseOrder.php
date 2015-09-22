@@ -132,7 +132,7 @@ class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage
         $orderID = $order->save();
 
         $item = new PurchaseOrderItemsModel($dbc);
-        $info = new VendorItems($dbc);
+        $info = new VendorItemsModel($dbc);
 
         $ret = '';
         foreach ($linedata as $line) {
@@ -148,21 +148,21 @@ class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage
                 continue;
             }
 
-            $unitQty = isset($line[$uQtyCol]) ? $line[$uQtyCol] : 0;
-            $caseQty = isset($line[$cQtyCol]) ? $line[$cQtyCol] : 0;
+            $unitQty = $uQtyCol !== false && isset($line[$uQtyCol]) ? $line[$uQtyCol] : 0;
+            $caseQty = $cQtyCol !== false && isset($line[$cQtyCol]) ? $line[$cQtyCol] : 0;
             if ($unitQty == 0 && $caseQty == 0) {
-                $ret .= "<i>Omitting item {$sku}. Quantity is zero</i><br />";
+                // no qty specified. 
                 continue;
             }
 
-            $unitSize = isset($line[$uSizeCol]) ? $line[$uSizeCol] : 0;
-            $caseSize = isset($line[$cSizeCol]) ? $line[$cSizeCol] : 0;
-            $brand = isset($line[$brandCol]) ? $line[$brandCol] : '';
-            $desc = isset($line[$descCol]) ? $line[$descCol] : '';
+            $unitSize = $uSizeCol !== false && isset($line[$uSizeCol]) ? $line[$uSizeCol] : 0;
+            $caseSize = $cSizeCol !== false && isset($line[$cSizeCol]) ? $line[$cSizeCol] : 0;
+            $brand = $brandCol !== '' && isset($line[$brandCol]) ? $line[$brandCol] : '';
+            $desc = $descCol !== false && isset($line[$descCol]) ? $line[$descCol] : '';
             $upc = '';
-            if (isset($line[$upcCol])) {
+            if ($upcCol !== false && isset($line[$upcCol])) {
                 $upc = BarcodeLib::padUPC($line[$upcCol]);
-            } else if (isset($line[$upccCol])) {
+            } elseif ($upccCol !== false && isset($line[$upccCol])) {
                 $upc = BarcodeLib::padUPC($line[$upccCol]);
                 $upc = '0' . substr($upc, 0, 12);
             }
@@ -174,7 +174,7 @@ class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage
                 if ($brand === '') {
                     $brand = $info->brand();
                 }
-                if ($desc === '') {
+                 if ($desc === '') {
                     $desc = $info->description();
                 }
                 if ($unitSize === 0) {
@@ -193,14 +193,14 @@ class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage
                 } else {
                     $caseQty = $unitQty / $caseSize;
                 }
-            } else if ($caseQty != 0 && $unitQty == 0) {
+            } elseif ($caseQty != 0 && $unitQty == 0) {
                 if ($caseSize == 0) {
                     $unitQty = $caseQty;
                     $caseSize = 1;
                 } else {
                     $unitQty = $caseQty * $caseSize;
                 }
-            } else if ($caseQty != 0 && $unitQty != 0) {
+            } elseif ($caseQty != 0 && $unitQty != 0) {
                 if ($caseSize == 0) {
                     $caseSize = $caseQty / $unitQty;
                 }
@@ -237,7 +237,7 @@ class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage
 
         $ret .= "<p>Import Complete";
         $ret .= '<br />';
-        $ret .= '<a href="ViewPurchaseOrders.php?id=' . $orderID . '">View Order</a></p>';
+        $ret .= '<a href="' . $this->config->get('URL') . 'purchasing/ViewPurchaseOrders.php?id=' . $orderID . '">View Order</a></p>';
         $this->results = $ret;
 
         return true;
@@ -254,13 +254,13 @@ class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage
         $vendor = new VendorsModel($dbc);
         $vendor->vendorID(FormLib::get('vendorID'));
         $vendor->load();
-        $ret = sprintf("<b>Batch Type: %s <input type=hidden value=%d name=vendorID /><br />",
+        $ret = sprintf("<b>Batch Type</b>: %s <input type=hidden value=%d name=vendorID /><br />",
             $vendor->vendorName(),FormLib::get_form_value('vendorID'));
-        $ret .= sprintf("<b>PO/Inv#: %s <input type=hidden value=\"%s\" name=identifier /><br />",
+        $ret .= sprintf("<b>PO/Inv#</b>: %s <input type=hidden value=\"%s\" name=identifier /><br />",
             FormLib::get_form_value('identifier'),FormLib::get_form_value('identifier'));
-        $ret .= sprintf("<b>Order Date: %s <input type=hidden value=\"%s\" name=orderDate /><br />",
+        $ret .= sprintf("<b>Order Date</b>: %s <input type=hidden value=\"%s\" name=orderDate /><br />",
             FormLib::get_form_value('orderDate'),FormLib::get_form_value('orderDate'));
-        $ret .= sprintf("<b>Recv'd Date: %s <input type=hidden value=\"%s\" name=recvDate /><br />",
+        $ret .= sprintf("<b>Recv'd Date</b>: %s <input type=hidden value=\"%s\" name=recvDate /><br />",
             FormLib::get_form_value('recvDate'),FormLib::get_form_value('recvDate'));
 
         return $ret;

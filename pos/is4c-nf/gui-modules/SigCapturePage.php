@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class SigCapturePage extends BasicPage 
+class SigCapturePage extends BasicCorePage 
 {
 
     private $bmp_path;

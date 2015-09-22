@@ -24,7 +24,7 @@
 
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
-class BitCoinPaymentPage extends InputPage 
+class BitCoinPaymentPage extends InputCorePage 
 {
     private $payment_id;
     private $payment_url;

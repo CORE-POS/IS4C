@@ -58,8 +58,8 @@ class HourlyCustomersReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $date = FormLib::get_form_value('date', date('Y-m-d'));
         $dlog = DTransactionsModel::selectDlog($date);

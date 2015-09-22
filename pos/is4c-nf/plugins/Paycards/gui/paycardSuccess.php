@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
-class paycardSuccess extends BasicPage {
+class paycardSuccess extends BasicCorePage 
+{
 
     private $bmp_path;
 
@@ -111,7 +112,7 @@ class paycardSuccess extends BasicPage {
             } else if ($mode == PaycardLib::PAYCARD_MODE_AUTH && $input == "VD" 
                 && (CoreLocal::get('CacheCardType') == 'CREDIT' || CoreLocal::get('CacheCardType') == '')){
                 $plugin_info = new Paycards();
-                $this->change_page($plugin_info->plugin_url()."/gui/paycardboxMsgVoid.php");
+                $this->change_page($plugin_info->pluginUrl()."/gui/paycardboxMsgVoid.php");
                 return False;
             }
         }

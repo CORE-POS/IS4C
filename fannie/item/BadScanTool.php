@@ -33,7 +33,7 @@ class BadScanTool extends FannieRESTfulPage
 
     public $description = '[Bad Scan Tool] shows information about UPCs that were scanned
     at the lanes but not found in POS.';
-    public $themed = true;
+    public $has_unit_tests = true;
 
     private $date_restrict = 1;
 
@@ -62,54 +62,49 @@ class BadScanTool extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
 
-        $data = \COREPOS\Fannie\API\data\DataCache::check();
-        if (true || !$data) {
-            /**
-              Excludes:
-              Values with spaces (fixed in lanecode going forward)
-              One and two digit PLUs (likely simply miskeys)
-              Values with no leading zeroes (EAN-13 and UPC-A should have
-                at least one. I do have some values with no leading zeroes
-                but not sure yet what they are. Do not appear to be GTIN-14).
-            */
-            $dbc = FannieDB::get($FANNIE_OP_DB);
-            $query = "SELECT t.upc, COUNT(t.upc) AS instances,
-                    MIN(datetime) as oldest,
-                    MAX(datetime) as newest,
-                    p.description as prod,
-                    MAX(v.description) as vend, MAX(n.vendorName) as vendorName, MAX(v.srp) as srp
-                    FROM " . $FANNIE_TRANS_DB . $dbc->sep() . "transarchive AS t
-                    LEFT JOIN products AS p ON p.upc=t.upc
-                    LEFT JOIN vendorItems AS v ON t.upc=v.upc
-                    LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
-                    WHERE t.trans_type='L' AND t.description='BADSCAN'
-                    AND t.upc NOT LIKE '% %'
-                    AND t.upc NOT LIKE '00000000000%'
-                    AND t.upc LIKE '0%'
-                    AND (t.upc NOT LIKE '00000000%' OR p.upc IS NOT NULL OR v.upc IS NOT NULL)";
-            if ($this->date_restrict) {
-                $query .= ' AND datetime >= ' . date('\'Y-m-d 00:00:00\'', strtotime('-8 days'));
-            }
-            $query .= "GROUP BY t.upc, p.description
-                    ORDER BY t.upc DESC";
-            if ($this->date_restrict == 2) {
-                $query = str_replace('transarchive', 'dtransactions', $query);
-            }
-            $result = $dbc->query($query);
-            $data = array();
-            while($row = $dbc->fetch_row($result)) {
-                $data[] = $row;
-            }
-
-            // stick a total in the cache along with SQL results
-            $dbc = FannieDB::get($FANNIE_TRANS_DB);
-            $query = "SELECT COUNT(*) FROM transarchive WHERE trans_type='I' AND upc <> '0'";
-            $result = $dbc->query($query);
-            $row = $dbc->fetch_row($result);
-            $data['itemTTL'] = $row[0];
-
-            \COREPOS\Fannie\API\data\DataCache::freshen($data, 'day');
+        /**
+          Excludes:
+          Values with spaces (fixed in lanecode going forward)
+          One and two digit PLUs (likely simply miskeys)
+          Values with no leading zeroes (EAN-13 and UPC-A should have
+            at least one. I do have some values with no leading zeroes
+            but not sure yet what they are. Do not appear to be GTIN-14).
+        */
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $query = "SELECT t.upc, COUNT(t.upc) AS instances,
+                MIN(datetime) as oldest,
+                MAX(datetime) as newest,
+                p.description as prod,
+                MAX(v.description) as vend, MAX(n.vendorName) as vendorName, MAX(v.srp) as srp
+                FROM " . $FANNIE_TRANS_DB . $dbc->sep() . "transarchive AS t
+                LEFT JOIN products AS p ON p.upc=t.upc
+                LEFT JOIN vendorItems AS v ON t.upc=v.upc
+                LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
+                WHERE t.trans_type='L' AND t.description='BADSCAN'
+                AND t.upc NOT LIKE '% %'
+                AND t.upc NOT LIKE '00000000000%'
+                AND t.upc LIKE '0%'
+                AND (t.upc NOT LIKE '00000000%' OR p.upc IS NOT NULL OR v.upc IS NOT NULL)";
+        if ($this->date_restrict) {
+            $query .= ' AND datetime >= ' . date('\'Y-m-d 00:00:00\'', strtotime('-8 days'));
         }
+        $query .= "GROUP BY t.upc, p.description
+                ORDER BY t.upc DESC";
+        if ($this->date_restrict == 2) {
+            $query = str_replace('transarchive', 'dtransactions', $query);
+        }
+        $result = $dbc->query($query);
+        $data = array();
+        while($row = $dbc->fetch_row($result)) {
+            $data[] = $row;
+        }
+
+        // stick a total in the cache along with SQL results
+        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $query = "SELECT COUNT(*) FROM transarchive WHERE trans_type='I' AND upc <> '0'";
+        $result = $dbc->query($query);
+        $row = $dbc->fetch_row($result);
+        $data['itemTTL'] = $row[0];
 
         $ret = '';
         $ret .= '<div class="nav">';
@@ -193,7 +188,8 @@ class BadScanTool extends FannieRESTfulPage
 
 
         $ret .= '<div id="ratio">';
-        $ret .= sprintf('Approx. bad scan rate: %.2f%%', ((float)$scanCount) / ((float)$data['itemTTL']) * 100);
+        $ret .= sprintf('Approx. bad scan rate: %.2f%%', 
+            $data['itemTTL'] == 0 ? 0 : ((float)$scanCount) / ((float)$data['itemTTL'] != 0) * 100);
         $ret .= '</div>';
 
         $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.min.js');
@@ -268,6 +264,18 @@ function showMultiple() {
             that were scanned at least twice. The <strong>All</strong>
             view lists every single unknown UPC.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $get = $this->get_view();
+        $phpunit->assertNotEquals(0, strlen($get));
+
+        $get = $this->get_lastquarter_view();
+        $phpunit->assertNotEquals(0, strlen($get));
+
+        $get = $this->get_today_view();
+        $phpunit->assertNotEquals(0, strlen($get));
     }
 }
 

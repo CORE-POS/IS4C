@@ -74,21 +74,18 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         ),
     );
 
-    function process_file($linedata){
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        if ($dbc->table_exists('tempCapPrices')){
+    function process_file($linedata)
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        if ($dbc->tableExists('tempCapPrices')){
             $drop = $dbc->prepare_statement("DROP TABLE tempCapPrices");
             $dbc->exec_statement($drop);
         }
-        $create = $dbc->prepare_statement("
-            CREATE TABLE tempCapPrices (
-                upc varchar(13), 
-                price decimal(10,2), 
-                abtpr varchar(3), 
-                multiplier INT DEFAULT 1
-            )");
-        $dbc->exec_statement($create);
+        if (!$dbc->tableExists('CoopDealsItems')) {
+            $cdi = new CoopDealsItemsModel($dbc);
+            $cdi->create();
+        }
 
         $SUB = $this->get_column_index('sub');
         $UPC = $this->get_column_index('upc');
@@ -97,16 +94,24 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $ABT = $this->get_column_index('abt');
         $MULT = $this->get_column_index('mult');
 
+        $month = FormLib::get('deal-month', 'not specified');
+        $delP = $dbc->prepare('DELETE FROM CoopDealsItems WHERE dealSet=?');
+        $dbc->execute($delP, array($month));
+
         $rm_checks = (FormLib::get_form_value('rm_cds') != '') ? True : False;
         $upcP = $dbc->prepare_statement('SELECT upc FROM products WHERE upc=? AND inUse=1');
         $skuP = $dbc->prepare_statement('
             SELECT s.upc 
             FROM vendorSKUtoPLU AS s
-                INNER JOIN vendors AS v ON s.vendorID=v.vendorID
-            WHERE s.sku=?
-                AND v.vendorName LIKE \'%UNFI%\'');
-        $insP = $dbc->prepare_statement('INSERT INTO tempCapPrices VALUES (?,?,?,?)');
-        foreach($linedata as $data) {
+                INNER JOIN products AS p ON s.vendorID=p.default_vendor_id AND s.upc=p.upc
+            WHERE s.sku=?'
+        );
+        $insP = $dbc->prepare_statement('
+            INSERT INTO CoopDealsItems 
+                (dealSet, upc, price, abtpr, multiplier)
+            VALUES
+                (?, ?, ?, ?, ?)');
+        foreach ($linedata as $data) {
             if (!is_array($data)) continue;
             if (count($data) < 14) continue;
 
@@ -123,12 +128,13 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 if ($dbc->num_rows($look2)) {
                     $w = $dbc->fetch_row($look2);
                     $upc = $w['upc'];
-                }
-                $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
-                $look3 = $dbc->exec_statement($skuP, array($sku));
-                if ($dbc->num_rows($look3)) {
-                    $w = $dbc->fetch_row($look3);
-                    $upc = $w['upc'];
+                } else {
+                    $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
+                    $look3 = $dbc->exec_statement($skuP, array($sku));
+                    if ($dbc->num_rows($look3)) {
+                        $w = $dbc->fetch_row($look3);
+                        $upc = $w['upc'];
+                    }
                 }
             }
             $mult = 1;
@@ -148,25 +154,31 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             if (strstr($data[$ABT],"TPR"))
                 $abt[] = "TPR";
             foreach($abt as $type){
-                $dbc->exec_statement($insP,array($upc,$price,$type,$mult));
+                $dbc->exec_statement($insP,array($month,$upc,$price,$type,$mult));
             }
         }
 
-        return True;
+        return true;
     }
 
-    function form_content(){
+    function form_content()
+    {
         return '<div class="well">Upload a CSV or Excel (XLS, not XLSX) file containing Co+op Deals
             Sale information. The file needs to contain UPCs, sale prices,
             and a column indicating A, B, or TPR (or some combination of the
             three).</div>';
     }
 
-    function preview_content(){
-        return '<input type="checkbox" name="rm_cds" checked /> Remove check digits';
+    function preview_content()
+    {
+        return '
+            <label>Month</label><input type="text" name="deal-month" required />
+            <label><input type="checkbox" name="rm_cds" checked /> Remove check digits</label>
+        ';
     }
 
-    function results_content(){
+    function results_content()
+    {
         $ret = "<p>Sales data import complete</p>";
         $ret .= "<p><a href=\"CoopDealsReviewPage.php\">Review data &amp; set up sales</a></p>";
         return $ret;
@@ -180,5 +192,5 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

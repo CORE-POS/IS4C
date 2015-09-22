@@ -234,21 +234,8 @@ class BaseLogger
             $file = $context['logfile'];
         }
         if ($file) {
-            $date = date('M j H:i:s');
-            $host = gethostname();
-            if ($host === false) {
-                $host = 'localhost';
-            }
-            $pid = getmypid();
-            if ($pid === false) {
-                $pid = 0;
-            }
-            $fp = fopen($file, 'a');
-            $log_line = sprintf('%s %s %s[%d]: (%s) %s',
-                $date, $host, $this->program_name, $pid,
-                $this->log_level_map[$int_level],
-                $message);
-            fwrite($fp, $log_line . "\n");
+            $fptr = fopen($file, 'a');
+            fwrite($fptr, $this->rfcLogLine($message, $int_level) . "\n");
             if ($this->syslog_host && !isset($context['skip_remote'])) {
                 $this->syslogRemote($log_line);
             }
@@ -260,15 +247,29 @@ class BaseLogger
                     $stack = $this->stackTrace(debug_backtrace());
                 }
                 foreach ($stack as $frame) {
-                    $log_line = sprintf('%s %s %s[%d]: (%s) %s',
-                        $date, $host, $this->program_name, $pid,
-                        $this->log_level_map[$int_level],
-                        $frame);
-                    fwrite($fp, $log_line . "\n");
+                    fwrite($fptr, $this->rfcLogLine($frame, $int_level) . "\n");
                 }
             }
-            fclose($fp);
+            fclose($fptr);
         }
+    }
+
+    private function rfcLogLine($line, $int_level)
+    {
+        $date = date('M j H:i:s');
+        $host = gethostname();
+        if ($host === false) {
+            $host = 'localhost';
+        }
+        $pid = getmypid();
+        if ($pid === false) {
+            $pid = 0;
+        }
+
+        return sprintf('%s %s %s[%d]: (%s) %s',
+            $date, $host, $this->program_name, $pid,
+            $this->log_level_map[$int_level],
+            $line);
     }
 
     /**
@@ -278,10 +279,10 @@ class BaseLogger
     */
     private function stackTrace($stack)
     {
-        $i = count($stack);
+        $counter = count($stack);
         $lines = array();
         foreach ($stack as $frame) {
-            $ret = 'Frame #' . $i . ' - ';
+            $ret = 'Frame #' . $counter . ' - ';
             $line = isset($frame['line']) ? $frame['line'] : 0;
             $file = isset($frame['file']) ? $frame['file'] : 'Unknown file';
             $args = isset($frame['args']) ? $frame['args'] : array();
@@ -292,7 +293,7 @@ class BaseLogger
             $ret .= 'File ' . $file . ', Line ' . $line 
                 . ', function ' . $function;
             $lines[] = $ret;
-            $i--;
+            $counter--;
         }
 
         return $lines;

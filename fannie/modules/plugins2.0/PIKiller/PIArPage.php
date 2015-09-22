@@ -58,7 +58,7 @@ class PIArPage extends PIKillerPage
         $rowcount = 0;
         foreach ($this->__models['ar'] as $transaction) {
             $stamp = strtotime($transaction->tdate());
-            if ($transaction->Payments() != 0){
+            if ($transaction->payments() != 0){
                 printf('<tr>
                     <td><a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s">%s</a></td>
                     <td>%.2f</td>
@@ -66,11 +66,11 @@ class PIArPage extends PIKillerPage
                     <td style="background-color:#ff66ff;">P</td>
                     </tr>',
                     $FANNIE_URL, date('Y-m-d',$stamp), $transaction->trans_num(), date('Y-m-d',$stamp),
-                    $transaction->Payments(),
+                    $transaction->payments(),
                     $transaction->card_no()
                 );
             }
-            if ($transaction->Charges() != 0){
+            if ($transaction->charges() != 0){
                 printf('<tr>
                     <td><a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s">%s</a></td>
                     <td>%.2f</td>
@@ -78,7 +78,7 @@ class PIArPage extends PIKillerPage
                     <td style="background-color:#0055ff;">C</td>
                     </tr>',
                     $FANNIE_URL, date('Y-m-d',$stamp), $transaction->trans_num(), date('Y-m-d',$stamp),
-                    $transaction->Charges(),
+                    $transaction->charges(),
                     $transaction->card_no()
                 );
             }

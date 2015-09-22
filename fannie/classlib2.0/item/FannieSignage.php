@@ -67,237 +67,33 @@ class FannieSignage
 
         $op_db = \FannieConfig::factory()->get('OP_DB');
         $dbc = \FannieDB::get($op_db);
-        $args = array();
         if ($this->source == 'shelftags') {
-            $query = 'SELECT s.upc,
-                        s.description,
-                        s.brand,
-                        s.units,
-                        s.size,
-                        s.sku,
-                        s.pricePerUnit,
-                        s.vendor,
-                        p.scale,
-                        p.numflag,
-                        \'\' AS startDate,
-                        \'\' AS endDate,
-                        o.name AS originName,
-                        o.shortName AS originShortName
-                      FROM shelftags AS s
-                        INNER JOIN products AS p ON s.upc=p.upc
-                        LEFT JOIN origins AS o ON p.current_origin_id=o.originID
-                      WHERE s.id=?
-                      ORDER BY p.department, s.upc';
-            $args[] = $this->source_id;
-        } else if ($this->source == 'batchbarcodes') {
-            if (!is_array($this->source_id)) {
-                $this->source_id = array($this->source_id);
-            }
-            $ids = '';
-            foreach ($this->source_id as $id) {
-                $args[] = $id;
-                $ids .= '?,';
-            }
-            $ids = substr($ids, 0, strlen($ids)-1);
-            $query = 'SELECT s.upc,
-                        s.description,
-                        s.description AS posDescription,
-                        s.brand,
-                        s.units,
-                        s.size,
-                        s.sku,
-                        \'\' AS pricePerUnit,
-                        s.vendor,
-                        p.scale,
-                        p.numflag,
-                        b.startDate,
-                        b.endDate,
-                        o.name AS originName,
-                        o.shortName AS originShortName
-                      FROM batchBarcodes AS s
-                        INNER JOIN products AS p ON s.upc=p.upc
-                        INNER JOIN batches AS b ON s.batchID=b.batchID
-                        LEFT JOIN origins AS o ON p.current_origin_id=o.originID
-                      WHERE s.batchID IN (' . $ids . ')
-                      ORDER BY p.department, s.upc';
+            $sql = $this->listFromShelftags();
+        } elseif ($this->source == 'batchbarcodes') {
+            $sql = $this->listFromBatchBarcodes();
         } else if ($this->source == 'batch') {
-            if (!is_array($this->source_id)) {
-                $this->source_id = array($this->source_id);
-            }
-            $ids = '';
-            foreach ($this->source_id as $id) {
-                $args[] = $id;
-                $ids .= '?,';
-            }
-            $ids = substr($ids, 0, strlen($ids)-1);
-            $b_def = $dbc->tableDefinition('batchType');
-            $l_def = $dbc->tableDefinition('batchList');
-            $u_def = $dbc->tableDefinition('productUser');
-            $query = 'SELECT l.upc,
-                        l.salePrice AS normal_price,
-                        CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
-                        p.description AS posDescription,
-                        CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
-                        v.units,
-                        CASE WHEN v.size IS NULL tHEN p.size ELSE v.size END AS size,
-                        v.sku,
-                        \'\' AS pricePerUnit,
-                        n.vendorName AS vendor,
-                        p.scale,
-                        p.numflag,';
-            // 22Jul2015 check table compatibility
-            if (isset($b_def['datedSigns'])) {
-                $query .= 'CASE WHEN t.datedSigns=0 THEN \'While supplies last\' ELSE b.startDate END AS startDate,';
-                $query .= 'CASE WHEN t.datedSigns=0 THEN \'While supplies last\' ELSE b.endDate END AS endDate,';
-            } else {
-                $query .= 'b.startDate, b.endDate,';
-            }
-            if (isset($l_def['signMultiplier'])) {
-                $query .= 'l.signMultiplier,';
-            } else {
-                $query .= '1 AS signMultiplier,';
-            }
-            if (isset($u_def['signCount'])) {
-                $query .= 'u.signCount,';
-            } else {
-                $query .= '1 AS signCount,';
-            }
-            $query .= ' o.name AS originName,
-                        o.shortName AS originShortName,
-                        b.batchType
-                     FROM batchList AS l
-                        INNER JOIN products AS p ON l.upc=p.upc
-                        INNER JOIN batches AS b ON b.batchID=l.batchID
-                        LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID
-                        LEFT JOIN productUser AS u ON p.upc=u.upc
-                        LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
-                        LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
-                        LEFT JOIN origins AS o ON p.current_origin_id=o.originID
-                     WHERE l.batchID IN (' . $ids . ')
-                     ORDER BY brand, description';
+            $sql = $this->listFromBatches($dbc);
         } else {
-            $ids = '';
-            foreach ($this->items as $id) {
-                $args[] = $id;
-                $ids .= '?,';
-            }
-            $ids = substr($ids, 0, strlen($ids)-1);
-            $query = 'SELECT p.upc,
-                        p.normal_price,
-                        CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
-                        p.description AS posDescription,
-                        CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
-                        v.units,
-                        CASE WHEN v.size IS NULL tHEN p.size ELSE v.size END AS size,
-                        v.sku,
-                        \'\' AS pricePerUnit,
-                        n.vendorName AS vendor,
-                        p.scale,
-                        p.numflag,
-                        \'\' AS startDate,
-                        \'\' AS endDate,
-                        o.name AS originName,
-                        o.shortName AS originShortName
-                     FROM products AS p
-                        LEFT JOIN productUser AS u ON p.upc=u.upc
-                        LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
-                        LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
-                        LEFT JOIN origins AS o ON p.current_origin_id=o.originID
-                     WHERE p.upc IN (' . $ids . ')
-                     ORDER BY p.department, p.upc';
+            $sql = $this->listFromCurrentRetail($dbc);
             if ($this->source_id == 1) { // upcoming retail
-                $query = 'SELECT p.upc,
-                            l.salePrice AS normal_price,
-                            CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
-                            p.description AS posDescription,
-                            CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
-                            v.units,
-                            CASE WHEN v.size IS NULL tHEN p.size ELSE v.size END AS size,
-                            v.sku,
-                            \'\' AS pricePerUnit,
-                            n.vendorName AS vendor,
-                            p.scale,
-                            p.numflag,
-                            \'\' AS startDate,
-                            \'\' AS endDate,
-                            o.name AS originName,
-                            o.shortName AS originShortName
-                         FROM products AS p
-                            LEFT JOIN productUser AS u ON p.upc=u.upc
-                            LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
-                            LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
-                            LEFT JOIN origins AS o ON p.current_origin_id=o.originID
-                            LEFT JOIN batchList AS l ON p.upc=l.upc
-                            LEFT JOIN batches AS b ON l.batchID=b.batchID
-                         WHERE p.upc IN (' . $ids . ')
-                            AND b.discounttype = 0
-                            AND b.startDate >= ' . $dbc->curdate() . '
-                         ORDER BY p.department, p.upc';
-            } else if ($this->source_id == 2) { // current sale
-                $query = 'SELECT p.upc,
-                            CASE WHEN p.discounttype <> 0 THEN p.special_price ELSE p.normal_price END AS normal_price,
-                            CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
-                            p.description AS posDescription,
-                            CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
-                            v.units,
-                            CASE WHEN v.size IS NULL tHEN p.size ELSE v.size END AS size,
-                            v.sku,
-                            \'\' AS pricePerUnit,
-                            n.vendorName AS vendor,
-                            p.scale,
-                            p.numflag,
-                            p.start_date AS startDate,
-                            p.end_date AS endDate,
-                            o.name AS originName,
-                            o.shortName AS originShortName
-                         FROM products AS p
-                            LEFT JOIN productUser AS u ON p.upc=u.upc
-                            LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
-                            LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
-                            LEFT JOIN origins AS o ON p.current_origin_id=o.originID
-                         WHERE p.upc IN (' . $ids . ')
-                         ORDER BY p.department, p.upc';
-            } else if ($this->source_id == 3) { // current sale
-                $query = 'SELECT p.upc,
-                            l.salePrice AS normal_price,
-                            CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
-                            p.description AS posDescription,
-                            CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
-                            v.units,
-                            CASE WHEN v.size IS NULL tHEN p.size ELSE v.size END AS size,
-                            v.sku,
-                            \'\' AS pricePerUnit,
-                            n.vendorName AS vendor,
-                            p.scale,
-                            p.numflag,
-                            b.startDate,
-                            b.endDate,
-                            o.name AS originName,
-                            o.shortName AS originShortName
-                         FROM products AS p
-                            LEFT JOIN productUser AS u ON p.upc=u.upc
-                            LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
-                            LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
-                            LEFT JOIN origins AS o ON p.current_origin_id=o.originID
-                            LEFT JOIN batchList AS l ON p.upc=l.upc
-                            LEFT JOIN batches AS b ON l.batchID=b.batchID
-                         WHERE p.upc IN (' . $ids . ')
-                            AND b.discounttype <> 0
-                            AND b.startDate > ' . $dbc->now() . '
-                         ORDER BY p.department, p.upc';
+                $sql = $this->listFromUpcomingRetail($dbc);
+            } elseif ($this->source_id == 2) { // current sale
+                $sql = $this->listFromCurrentSale($dbc);
+            } elseif ($this->source_id == 3) { // current sale
+                $sql = $this->listFromUpcomingSale($dbc);
             }
 
             $u_def = $dbc->tableDefinition('productUser');
             if (isset($u_def['signCount'])) {
-                $query = str_replace('p.upc,', 'p.upc, u.signCount,', $query);
+                $sql['query'] = str_replace('p.upc,', 'p.upc, u.signCount,', $sql['query']);
             } else {
-                $query = str_replace('p.upc,', 'p.upc, 1 AS signCount,', $query);
+                $sql['query'] = str_replace('p.upc,', 'p.upc, 1 AS signCount,', $sql['query']);
             }
         }
 
         $data = array();
-        $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, $args);
+        $prep = $dbc->prepare($sql['query']);
+        $result = $dbc->execute($prep, $sql['args']);
 
         $mapP = $dbc->prepare('SELECT o.name, o.shortName
                                FROM ProductOriginsMap AS m
@@ -346,6 +142,328 @@ class FannieSignage
         return $data;
     }
 
+    protected function listFromShelftags()
+    {
+        $query = 'SELECT s.upc,
+                    s.description,
+                    s.brand,
+                    s.units,
+                    s.size,
+                    s.sku,
+                    s.pricePerUnit,
+                    s.vendor,
+                    p.scale,
+                    p.numflag,
+                    \'\' AS startDate,
+                    \'\' AS endDate,
+                    o.name AS originName,
+                    o.shortName AS originShortName
+                  FROM shelftags AS s
+                    INNER JOIN products AS p ON s.upc=p.upc
+                    LEFT JOIN origins AS o ON p.current_origin_id=o.originID
+                  WHERE s.id=?
+                  ORDER BY p.department, s.upc';
+        $args = array($this->source_id);
+
+        return array('query' => $query, 'args' => $args);
+    }
+
+    protected function listFromBatchBarcodes()
+    {
+        if (!is_array($this->source_id)) {
+            $this->source_id = array($this->source_id);
+        }
+        $ids = '';
+        foreach ($this->source_id as $id) {
+            $args[] = $id;
+            $ids .= '?,';
+        }
+        $ids = substr($ids, 0, strlen($ids)-1);
+        $query = 'SELECT s.upc,
+                    s.description,
+                    s.description AS posDescription,
+                    s.brand,
+                    s.units,
+                    s.size,
+                    s.sku,
+                    \'\' AS pricePerUnit,
+                    s.vendor,
+                    p.scale,
+                    p.numflag,
+                    b.startDate,
+                    b.endDate,
+                    o.name AS originName,
+                    o.shortName AS originShortName
+                  FROM batchBarcodes AS s
+                    INNER JOIN products AS p ON s.upc=p.upc
+                    INNER JOIN batches AS b ON s.batchID=b.batchID
+                    LEFT JOIN origins AS o ON p.current_origin_id=o.originID
+                  WHERE s.batchID IN (' . $ids . ')
+                  ORDER BY p.department, s.upc';
+
+        return array('query' => $query, 'args' => $args);
+    }
+
+    protected function listFromBatches($dbc)
+    {
+        if (!is_array($this->source_id)) {
+            $this->source_id = array($this->source_id);
+        }
+        $ids = '';
+        $args = array();
+        foreach ($this->source_id as $id) {
+            $args[] = $id;
+            $ids .= '?,';
+        }
+        $ids = substr($ids, 0, strlen($ids)-1);
+        $b_def = $dbc->tableDefinition('batchType');
+        $l_def = $dbc->tableDefinition('batchList');
+        $u_def = $dbc->tableDefinition('productUser');
+        $query = 'SELECT l.upc,
+                    l.salePrice AS normal_price,
+                    CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                    p.description AS posDescription,
+                    CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
+                    v.units,
+                    CASE WHEN p.size IS NULL OR p.size=\'\' OR p.size=\'0\' THEN v.size ELSE p.size END AS size,
+                    v.sku,
+                    \'\' AS pricePerUnit,
+                    n.vendorName AS vendor,
+                    p.scale,
+                    p.numflag,';
+        // 22Jul2015 check table compatibility
+        if (isset($b_def['datedSigns'])) {
+            $query .= 'CASE 
+                        WHEN t.datedSigns=0 AND t.typeDesc LIKE \'%DISCO%\' THEN \'Discontinued\' 
+                        WHEN t.datedSigns=0 AND t.typeDesc NOT LIKE \'%DISCO%\' THEN \'While supplies last\' 
+                        ELSE b.startDate END AS startDate,';
+            $query .= 'CASE 
+                        WHEN t.datedSigns=0 AND t.typeDesc LIKE \'%DISCO%\' THEN \'Discontinued\' 
+                        WHEN t.datedSigns=0 AND t.typeDesc NOT LIKE \'%DISCO%\' THEN \'While supplies last\' 
+                        ELSE b.endDate END AS endDate,';
+        } else {
+            $query .= 'b.startDate, b.endDate,';
+        }
+        if (isset($l_def['signMultiplier'])) {
+            $query .= 'l.signMultiplier,';
+        } else {
+            $query .= '1 AS signMultiplier,';
+        }
+        if (isset($u_def['signCount'])) {
+            $query .= 'u.signCount,';
+        } else {
+            $query .= '1 AS signCount,';
+        }
+        $query .= ' o.name AS originName,
+                    o.shortName AS originShortName,
+                    b.batchType
+                 FROM batchList AS l
+                    INNER JOIN products AS p ON l.upc=p.upc
+                    INNER JOIN batches AS b ON b.batchID=l.batchID
+                    LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID
+                    LEFT JOIN productUser AS u ON p.upc=u.upc
+                    LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
+                    LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                    LEFT JOIN origins AS o ON p.current_origin_id=o.originID
+                 WHERE l.batchID IN (' . $ids . ')
+                 ORDER BY brand, description';
+
+        return array('query' => $query, 'args' => $args);
+    }
+
+    protected function listFromCurrentRetail($dbc)
+    {
+        $ids = '';
+        $args = array();
+        foreach ($this->items as $id) {
+            $args[] = $id;
+            $ids .= '?,';
+        }
+        $ids = substr($ids, 0, strlen($ids)-1);
+        $query = 'SELECT p.upc,
+                    p.normal_price,
+                    CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                    p.description AS posDescription,
+                    CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
+                    v.units,
+                    CASE WHEN p.size IS NULL OR p.size=\'\' OR p.size=\'0\' THEN v.size ELSE p.size END AS size,
+                    v.sku,
+                    \'\' AS pricePerUnit,
+                    n.vendorName AS vendor,
+                    p.scale,
+                    p.numflag,
+                    \'\' AS startDate,
+                    \'\' AS endDate,
+                    o.name AS originName,
+                    o.shortName AS originShortName
+                 FROM products AS p
+                    LEFT JOIN productUser AS u ON p.upc=u.upc
+                    LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
+                    LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                    LEFT JOIN origins AS o ON p.current_origin_id=o.originID
+                 WHERE p.upc IN (' . $ids . ')
+                 ORDER BY p.department, p.upc';
+
+        return array('query' => $query, 'args' => $args);
+    }
+
+    protected function listFromUpcomingRetail($dbc)
+    {
+        $ids = '';
+        $args = array();
+        foreach ($this->items as $id) {
+            $args[] = $id;
+            $ids .= '?,';
+        }
+        $ids = substr($ids, 0, strlen($ids)-1);
+        $query = 'SELECT p.upc,
+                    l.salePrice AS normal_price,
+                    CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                    p.description AS posDescription,
+                    CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
+                    v.units,
+                    CASE WHEN p.size IS NULL OR p.size=\'\' OR p.size=\'0\' THEN v.size ELSE p.size END AS size,
+                    v.sku,
+                    \'\' AS pricePerUnit,
+                    n.vendorName AS vendor,
+                    p.scale,
+                    p.numflag,
+                    \'\' AS startDate,
+                    \'\' AS endDate,
+                    o.name AS originName,
+                    o.shortName AS originShortName
+                 FROM products AS p
+                    LEFT JOIN productUser AS u ON p.upc=u.upc
+                    LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
+                    LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                    LEFT JOIN origins AS o ON p.current_origin_id=o.originID
+                    LEFT JOIN batchList AS l ON p.upc=l.upc
+                    LEFT JOIN batches AS b ON l.batchID=b.batchID
+                 WHERE p.upc IN (' . $ids . ')
+                    AND b.discounttype = 0
+                    AND b.startDate >= ' . $dbc->curdate() . '
+                 ORDER BY p.department, p.upc';
+
+        return array('query' => $query, 'args' => $args);
+    }
+
+    protected function listFromCurrentSale($dbc)
+    {
+        $ids = '';
+        $args = array();
+        foreach ($this->items as $id) {
+            $args[] = $id;
+            $ids .= '?,';
+        }
+        $ids = substr($ids, 0, strlen($ids)-1);
+        $query = 'SELECT p.upc,
+                    CASE WHEN p.discounttype <> 0 THEN p.special_price ELSE p.normal_price END AS normal_price,
+                    CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                    p.description AS posDescription,
+                    CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
+                    v.units,
+                    CASE WHEN p.size IS NULL OR p.size=\'\' OR p.size=\'0\' THEN v.size ELSE p.size END AS size,
+                    v.sku,
+                    \'\' AS pricePerUnit,
+                    n.vendorName AS vendor,
+                    p.scale,
+                    p.numflag,
+                    p.start_date AS startDate,
+                    p.end_date AS endDate,
+                    o.name AS originName,
+                    o.shortName AS originShortName
+                 FROM products AS p
+                    LEFT JOIN productUser AS u ON p.upc=u.upc
+                    LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
+                    LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                    LEFT JOIN origins AS o ON p.current_origin_id=o.originID
+                 WHERE p.upc IN (' . $ids . ')
+                         ORDER BY p.department, p.upc';
+
+        return array('query' => $query, 'args' => $args);
+    }
+
+    protected function listFromUpcomingSale($dbc)
+    {
+        $ids = '';
+        $args = array();
+        foreach ($this->items as $id) {
+            $args[] = $id;
+            $ids .= '?,';
+        }
+        $ids = substr($ids, 0, strlen($ids)-1);
+        $query = 'SELECT p.upc,
+                    l.salePrice AS normal_price,
+                    CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
+                    p.description AS posDescription,
+                    CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
+                    v.units,
+                    CASE WHEN p.size IS NULL OR p.size=\'\' OR p.size=\'0\' THEN v.size ELSE p.size END AS size,
+                    v.sku,
+                    \'\' AS pricePerUnit,
+                    n.vendorName AS vendor,
+                    p.scale,
+                    p.numflag,
+                    b.startDate,
+                    b.endDate,
+                    o.name AS originName,
+                    o.shortName AS originShortName
+                 FROM products AS p
+                    LEFT JOIN productUser AS u ON p.upc=u.upc
+                    LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
+                    LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                    LEFT JOIN origins AS o ON p.current_origin_id=o.originID
+                    LEFT JOIN batchList AS l ON p.upc=l.upc
+                    LEFT JOIN batches AS b ON l.batchID=b.batchID
+                 WHERE p.upc IN (' . $ids . ')
+                    AND b.discounttype <> 0
+                    AND b.startDate > ' . $dbc->now() . '
+                 ORDER BY p.department, p.upc';
+
+        return array('query' => $query, 'args' => $args);
+    }
+
+    protected $codes=array(
+        'A'=>array(
+            '0'=>'0001101','1'=>'0011001','2'=>'0010011','3'=>'0111101','4'=>'0100011',
+            '5'=>'0110001','6'=>'0101111','7'=>'0111011','8'=>'0110111','9'=>'0001011'),
+        'B'=>array(
+            '0'=>'0100111','1'=>'0110011','2'=>'0011011','3'=>'0100001','4'=>'0011101',
+            '5'=>'0111001','6'=>'0000101','7'=>'0010001','8'=>'0001001','9'=>'0010111'),
+        'C'=>array(
+            '0'=>'1110010','1'=>'1100110','2'=>'1101100','3'=>'1000010','4'=>'1011100',
+            '5'=>'1001110','6'=>'1010000','7'=>'1000100','8'=>'1001000','9'=>'1110100'),
+    );
+
+    protected $parities=array(
+        '0'=>array('A','A','A','A','A','A'),
+        '1'=>array('A','A','B','A','B','B'),
+        '2'=>array('A','A','B','B','A','B'),
+        '3'=>array('A','A','B','B','B','A'),
+        '4'=>array('A','B','A','A','B','B'),
+        '5'=>array('A','B','B','A','A','B'),
+        '6'=>array('A','B','B','B','A','A'),
+        '7'=>array('A','B','A','B','A','B'),
+        '8'=>array('A','B','A','B','B','A'),
+        '9'=>array('A','B','B','A','B','A')
+    );
+
+    protected function upcToBitString($upc)
+    {
+        $code='101'; // start bar
+        $parity = $this->parities[$upc[0]]; // parity based on first digit
+        for ($i=1;$i<=6;$i++) { // first half
+            $code .= $this->codes[$parity[$i-1]][$upc[$i]];
+        }
+        $code .= '01010'; // middle bar
+        for ($i=7;$i<=12;$i++) { // second half
+            $code .= $this->codes['C'][$upc[$i]];
+        }
+        $code.='101'; // end bar
+
+        return $code;
+    }
+
     /**
       Draw barcode on given PDF
       @param $upc [string] barcode value (UPC or EAN)
@@ -365,8 +483,8 @@ class FannieSignage
     */
     public function drawBarcode($upc, $pdf, $x, $y, $args=array())
     {
-        $h = isset($args['height']) ? $args['height'] : 16;
-        $w = isset($args['width']) ? $args['width'] : 0.35;
+        $height = isset($args['height']) ? $args['height'] : 16;
+        $width = isset($args['width']) ? $args['width'] : 0.35;
         $align = isset($args['align']) ? $args['align'] : 'C';
         $valign = isset($args['valign']) ? $args['valign'] : 'B';
         $prefix = isset($args['prefix']) ? $args['prefix'] : '';
@@ -388,48 +506,15 @@ class FannieSignage
         }
 
         //Convert digits to bars
-        $codes=array(
-            'A'=>array(
-                '0'=>'0001101','1'=>'0011001','2'=>'0010011','3'=>'0111101','4'=>'0100011',
-                '5'=>'0110001','6'=>'0101111','7'=>'0111011','8'=>'0110111','9'=>'0001011'),
-            'B'=>array(
-                '0'=>'0100111','1'=>'0110011','2'=>'0011011','3'=>'0100001','4'=>'0011101',
-                '5'=>'0111001','6'=>'0000101','7'=>'0010001','8'=>'0001001','9'=>'0010111'),
-            'C'=>array(
-                '0'=>'1110010','1'=>'1100110','2'=>'1101100','3'=>'1000010','4'=>'1011100',
-                '5'=>'1001110','6'=>'1010000','7'=>'1000100','8'=>'1001000','9'=>'1110100')
-        );
-        $parities=array(
-            '0'=>array('A','A','A','A','A','A'),
-            '1'=>array('A','A','B','A','B','B'),
-            '2'=>array('A','A','B','B','A','B'),
-            '3'=>array('A','A','B','B','B','A'),
-            '4'=>array('A','B','A','A','B','B'),
-            '5'=>array('A','B','B','A','A','B'),
-            '6'=>array('A','B','B','B','A','A'),
-            '7'=>array('A','B','A','B','A','B'),
-            '8'=>array('A','B','A','B','B','A'),
-            '9'=>array('A','B','B','A','B','A')
-        );
-
-        $code='101'; // start bar
-        $p = $parities[$upc[0]]; // parity based on first digit
-        for ($i=1;$i<=6;$i++) { // first half
-            $code .= $codes[$p[$i-1]][$upc[$i]];
-        }
-        $code .= '01010'; // middle bar
-        for ($i=7;$i<=12;$i++) { // second half
-            $code .= $codes['C'][$upc[$i]];
-        }
-        $code.='101'; // end bar
+        $code = $this->upcToBitString($upc);
 
         //Draw bars
-        $width = 0;
+        $full_width = 0;
         for ($i=0;$i<strlen($code);$i++) {
             if ($code{$i}=='1') {
-                $pdf->Rect($x+($i*$w), $y, $w, $h, 'F');
+                $pdf->Rect($x+($i*$width), $y, $width, $height, 'F');
             }
-            $width += $w;
+            $full_width += $width;
         }
 
         // Print text under barcode
@@ -439,9 +524,9 @@ class FannieSignage
             if ($valign == 'T') {
                 $pdf->SetXY($x, $y - 5);
             } else {
-                $pdf->SetXY($x, $y + $h);
+                $pdf->SetXY($x, $y + $height);
             }
-            $pdf->Cell($width, 5, $prefix . substr($upc, ($is_ean?-13:-12)) . $suffix, 0, 0, $align);
+            $pdf->Cell($full_width, 5, $prefix . substr($upc, ($is_ean?-13:-12)) . $suffix, 0, 0, $align);
         }
 
         return $pdf;
@@ -454,10 +539,10 @@ class FannieSignage
         $ret .= '<thead>';
         $ret .= '<tr>
             <th>UPC</th><th>Brand</th><th>Description</th><th>Price</th><th>Origin</th>
-            <th><label>Exclude
+            <td><label>Exclude
                 <input type="checkbox" onchange="$(\'.exclude-checkbox\').prop(\'checked\', $(this).prop(\'checked\'));" />
                 </label>
-            </th>
+            </td>
             </tr>';
         $ret .= '</thead><tbody>';
         $data = $this->loadItems();
@@ -500,46 +585,60 @@ class FannieSignage
         $op_db = \FannieConfig::factory()->get('OP_DB');
         switch (strtolower($this->source)) {
             case 'shelftags':
-                $model = new \ShelftagsModel(\FannieDB::get($op_db));
-                $model->id($this->source_id);
-                $model->upc(\BarcodeLib::padUPC($upc));
-                $model->brand($brand);
-                $model->description($description);
-                $model->save();
+                $this->updateShelftagItem($op_db, $upc, $brand, $description);
                 break;
             case 'batchbarcodes':
-                $dbc = \FannieDB::get($op_db);
-                $args = array($brand, $description, \BarcodeLib::padUPC($upc));
-                if (!is_array($this->source_id)) {
-                    $this->source_id = array($this->source_id);
-                }
-                $ids = '';
-                foreach ($this->source_id as $id) {
-                    $args[] = $id;
-                    $ids .= '?,';
-                }
-                $ids = substr($ids, 0, strlen($ids)-1);
-                $prep = $dbc->prepare('UPDATE batchBarcodes
-                                       SET brand=?,
-                                        description=?
-                                       WHERE upc=?
-                                        AND batchID IN (' . $ids . ')');
-                $dbc->execute($prep, $args);
+                $this->updateBatchBarocdeItem($op_db, $upc, $brand, $description);
                 break;
             case 'batch':
             case '':
-                $model = new \ProductUserModel(\FannieDB::get($op_db));
-                $model->upc(\BarcodeLib::padUPC($upc));
-                $model->brand($brand);
-                $model->description($description);
-                $model->save();
-                $model = new \ProductsModel(\FannieDB::get($op_db));
-                $model->upc(\BarcodeLib::padUPC($upc));
-                foreach ($model->find('store_id') as $obj) {
-                    $obj->brand($brand);
-                    $obj->save();
-                }
+                $this->updateRealItem($op_db, $upc, $brand, $description);
                 break;
+        }
+    }
+
+    protected function updateShelftagItem($dbc, $upc, $brand, $description)
+    {
+        $model = new \ShelftagsModel(\FannieDB::get($dbc));
+        $model->id($this->source_id);
+        $model->upc(\BarcodeLib::padUPC($upc));
+        $model->brand($brand);
+        $model->description($description);
+        return $model->save();
+    }
+
+    protected function updateBatchBarcodeItem($dbc, $upc, $brand, $description)
+    {
+        $args = array($brand, $description, \BarcodeLib::padUPC($upc));
+        if (!is_array($this->source_id)) {
+            $this->source_id = array($this->source_id);
+        }
+        $ids = '';
+        foreach ($this->source_id as $id) {
+            $args[] = $id;
+            $ids .= '?,';
+        }
+        $ids = substr($ids, 0, strlen($ids)-1);
+        $prep = $dbc->prepare('UPDATE batchBarcodes
+                               SET brand=?,
+                                description=?
+                               WHERE upc=?
+                                AND batchID IN (' . $ids . ')');
+        return $dbc->execute($prep, $args);
+    }
+
+    protected function updateRealItem($dbc, $upc, $brand, $description)
+    {
+        $model = new \ProductUserModel(\FannieDB::get($dbc));
+        $model->upc(\BarcodeLib::padUPC($upc));
+        $model->brand($brand);
+        $model->description($description);
+        $model->save();
+        $model = new \ProductsModel(\FannieDB::get($dbc));
+        $model->upc(\BarcodeLib::padUPC($upc));
+        foreach ($model->find('store_id') as $obj) {
+            $obj->brand($brand);
+            $obj->save();
         }
     }
 
@@ -610,6 +709,35 @@ class FannieSignage
     public function drawPDF()
     {
 
+    }
+
+    /**
+      Convert HTML entities in strings to normal characters
+      for PDF output
+    */
+    protected function decodeItem($item)
+    {
+        $decode_fields = array('description', 'brand', 'size', 'vendor');
+        foreach ($decode_fields as $field) {
+            if (isset($item[$field])) {
+                $item[$field] = html_entity_decode($item[$field], ENT_QUOTES);
+            }
+        }
+
+        return $item;
+    }
+
+    protected function getDateString($start, $end)
+    {
+        if ($start == 'While supplies last') {
+            return $start;
+        } elseif ($start == 'Discontinued') {
+            return $start;
+        } else {
+            return date('M d', strtotime($start))
+                . chr(0x96) // en dash in cp1252
+                . date('M d', strtotime($end));
+        }
     }
 }
 

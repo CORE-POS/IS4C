@@ -25,7 +25,7 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 AutoLoader::LoadMap();
 CoreState::loadParams();
 
-class login2 extends BasicPage 
+class login2 extends BasicCorePage 
 {
 
     private $box_css_class;

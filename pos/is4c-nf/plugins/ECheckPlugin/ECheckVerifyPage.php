@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
-class ECheckVerifyPage extends NoInputPage 
+class ECheckVerifyPage extends NoInputCorePage 
 {
 
     function preprocess()

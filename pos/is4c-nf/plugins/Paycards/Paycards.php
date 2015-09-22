@@ -122,6 +122,22 @@ messages from POS?',
                 'No' => 0
                 )
         ),
+        'PaycardsDatacapMode' => array(
+            'label' => 'Datacap Mode',
+            'description' => 'The Datacap driver has an EMV mode or a legacy credit/debit mode',
+            'default' => 0,
+            'options' => array(
+                'EMV' => 1,
+                'Credit/Debit' => 0,
+                'EMV (en-ca)' => 2,
+                'EMV (fr-ca)' => 3,
+                )
+        ),
+        'PaycardsDatacapLanHost' => array(
+            'label' => 'LAN Datacap Server',
+            'description' => 'Datacap server on the local network (only required for EMV)',
+            'default' => '127.0.0.1',
+        ),
         'PaycardsBlockExceptions' => array(
             'label' => 'Blocking Exceptions',
             'description' => 'Still allow these tenders with Block Other Tenders enabled',
@@ -146,6 +162,11 @@ messages from POS?',
             'label' => 'EBT Cash Tender Code',
             'description' => 'Two-letter tender code for EBT Cash transactions',
             'default' => 'EC',
+        ),
+        'PaycardsTenderCodeEbtEmv' => array(
+            'label' => 'EMV Tender Code',
+            'description' => 'Two-letter tender code for EMV transactions',
+            'default' => 'CC',
         ),
         'PaycardsTenderCodeVisa' => array(
             'label' => 'Visa-Specific Tender Code',
@@ -179,17 +200,10 @@ messages from POS?',
         ),
     );
 
-    public function plugin_enable(){
-
-    }
-
-    public function plugin_disable(){
-
-    }
-
     public function plugin_transaction_reset()
     {
         CoreLocal::set('paycardTendered', false);
     }
 
 }
+

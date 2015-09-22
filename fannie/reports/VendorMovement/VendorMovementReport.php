@@ -52,7 +52,7 @@ class VendorMovementReport extends FannieReportPage
             case 'upc':
                 $query = "
                     SELECT t.upc,
-                        COALESCE(p.brand, x.distributor) AS brand,
+                        COALESCE(p.brand, x.manufacturer) AS brand,
                         p.description, "
                         . DTrans::sumQuantity('t') . " AS qty,
                         SUM(t.total) AS ttl,
@@ -68,7 +68,7 @@ class VendorMovementReport extends FannieReportPage
                     WHERE (v.vendorName LIKE ? OR x.distributor LIKE ?)
                         AND t.tdate BETWEEN ? AND ?
                     GROUP BY t.upc,
-                        COALESCE(p.brand, x.distributor),
+                        COALESCE(p.brand, x.manufacturer),
                         p.description,
                         d.dept_no,
                         d.dept_name,

@@ -229,7 +229,7 @@ class HouseCoupon extends SpecialUPC
                     return $quiet ? false : $requirements_msg;
                 }
                 break;
-            case 'D': // must at least purchase from department
+            case 'D': // must purchase at least amount in $ from department
                 $minQ = "select case when sum(total) is null
                     then 0 else sum(total) end
                     from localtemptrans
@@ -243,13 +243,41 @@ class HouseCoupon extends SpecialUPC
                     return $quiet ? false : $requirements_msg;
                 }
                 break;
-            case 'D+': // must more than purchase from department 
+            case 'D+': // must purchase more than amount in $ from department
                 $minQ = "select case when sum(total) is null
                     then 0 else sum(total) end
                     from localtemptrans
                     as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.department = h.upc
                     where h.coupID = " . $coupID ;
+                $minR = $transDB->query($minQ);
+                $minW = $transDB->fetch_row($minR);
+                $validQtty = $minW[0];
+                if ($validQtty <= $infoW["minValue"]) {
+                    return $quiet ? false : $requirements_msg;
+                }
+                break;
+            case 'C': // must purchase at least amount in qty (count) from department
+                $minQ = "select case when sum(ItemQtty) is null
+                    then 0 else sum(ItemQtty) end
+                    from localtemptrans
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as h on l.department = h.upc
+                    where l.trans_type IN ('I','D') AND h.coupID = " . $coupID ;
+                $minR = $transDB->query($minQ);
+                $minW = $transDB->fetch_row($minR);
+                $validQtty = $minW[0];
+                if ($validQtty < $infoW["minValue"]) {
+                    return $quiet ? false : $requirements_msg;
+                }
+                break;
+            case 'C+': // must purchase more than amount in qty (count) from department
+                $minQ = "select case when sum(ItemQtty) is null
+                    then 0 else sum(ItemQtty) end
+                    from localtemptrans
+                    as l left join " . CoreLocal::get('pDatabase') . $transDB->sep() . "houseCouponItems
+                    as h on l.department = h.upc
+                    where l.trans_type IN ('I','D') AND h.coupID = " . $coupID ;
                 $minR = $transDB->query($minQ);
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];

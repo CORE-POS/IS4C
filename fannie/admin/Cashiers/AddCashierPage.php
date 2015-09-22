@@ -26,81 +26,120 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class AddCashierPage extends FanniePage 
+class AddCashierPage extends FannieRESTfulPage 
 {
-
     protected $title = "Fannie : Add Cashier";
     protected $header = "Add Cashier";
-    protected $must_authenticate = True;
+    protected $must_authenticate = true;
     protected $auth_classes = array('editcashiers');
 
     public $description = '[Add Cashier] is the tool to create new cashiers.';
-    public $themed = true;
+    public $has_unit_tests = true;
 
-    function preprocess()
+    public function preprocess()
+    {
+        $this->addRoute('post<fname><lname><fes><birthdate>');
+        $this->addRoute('get<flash>');
+
+        return parent::preprocess();
+    }
+
+    protected function post_fname_lname_fes_birthdate_handler()
     {
         global $FANNIE_OP_DB;
-        if (FormLib::get_form_value('fname') !== '')
-        {
-            $fn = FormLib::get_form_value('fname');
-            $ln = FormLib::get_form_value('lname');
-            $fes = FormLib::get_form_value('fes');
-            $dob = FormLib::get_form_value('birthdate');
-
-            $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($FANNIE_OP_DB);
             
-            $passwd = '';
-            srand();
-            $checkP = $dbc->prepare_statement("SELECT * FROM employees WHERE CashierPassword=?");
-            while($passwd == ''){
-                $newpass = rand(1000,9999);
-                $checkR = $dbc->exec_statement($checkP,array($newpass));
-                if ($dbc->num_rows($checkR) == 0)
-                    $passwd = $newpass;
+        $passwd = $this->genPassword($dbc);
+
+        $emp_no = $this->nextEmpNo($dbc);
+
+        $employee = new EmployeesModel($dbc);
+        $employee->emp_no($emp_no);
+        $employee->CashierPassword($passwd);
+        $employee->AdminPassword($passwd);
+        $employee->FirstName($this->fname);
+        $employee->LastName($this->lname);
+        $employee->JobTitle('');
+        $employee->EmpActive(1);
+        $employee->frontendsecurity($this->fes);
+        $employee->backendsecurity($this->fes);
+        $employee->birthdate($this->birthdate);
+        $employee->save();
+
+        try {
+            $this->saveStoreMapping($dbc, $emp_no, $this->form->stores);
+        } catch (Exception $e) {
+            // likely means HQ is disabled or
+            // not stores were selected
+        }
+
+        $message = sprintf("Cashier Created<br />Name:%s<br />Emp#:%d<br />Password:%d",
+            $this->fname.' '.$this->lname,$emp_no,$passwd);
+
+        return '?flash=' . base64_encode($message);
+    }
+
+    private function nextEmpNo($dbc)
+    {
+        $idQ = $dbc->prepare("
+            SELECT MAX(emp_no) AS max
+            FROM employees 
+            WHERE emp_no < 1000
+        ");
+        $idR = $dbc->execute($idQ);
+        $idW = $dbc->fetchRow($idR);
+        if ($idW && $idW['max'] !== null) {
+            return $idW['max']+1;
+        } else {
+            return 1;
+        }
+
+    }
+
+    private function genPassword($dbc)
+    {
+        $passwd = '';
+        srand();
+        $checkP = $dbc->prepare("SELECT * FROM employees WHERE CashierPassword=?");
+        while ($passwd === '') {
+            $newpass = rand(1000,9999);
+            $checkR = $dbc->exec_statement($checkP,array($newpass));
+            if ($dbc->num_rows($checkR) == 0) {
+                $passwd = $newpass;
             }
+        }
 
-            $idQ = $dbc->prepare_statement("SELECT max(emp_no)+1 FROM employees WHERE emp_no < 1000");
-            $idR = $dbc->exec_statement($idQ);
-            $idW = $dbc->fetchRow($idR);
-            $emp_no = is_array($idW) ? $idW[0]+1 : 1;
+        return $passwd;
+    }
 
-            $employee = new EmployeesModel($dbc);
-            $employee->emp_no($emp_no);
-            $employee->CashierPassword($passwd);
-            $employee->AdminPassword($passwd);
-            $employee->FirstName($fn);
-            $employee->LastName($ln);
-            $employee->JobTitle('');
-            $employee->EmpActive(1);
-            $employee->frontendsecurity($fes);
-            $employee->backendsecurity($fes);
-            $employee->birthdate($dob);
-            $employee->save();
-
-            $map = new StoreEmployeeMapModel($dbc);
-            $map->empNo($emp_no);
-            $stores = FormLib::get('store', array());
-            foreach ($stores as $s) {
-                $map->storeID($s);
-                $map->save();
+    private function saveStoreMapping($dbc, $emp_no, $stores)
+    {
+        $map = new StoreEmployeeMapModel($dbc);
+        $map->empNo($emp_no);
+        foreach ($stores as $s) {
+            $map->storeID($s);
+            $map->save();
+        }
+        $map->reset();
+        $map->empNo($emp_no);
+        foreach ($map->find() as $obj) {
+            if (!in_array($obj->storeID(), $stores)) {
+                $obj->delete();
             }
-            $map->reset();
-            $map->empNo($emp_no);
-            foreach ($map->find() as $obj) {
-                if (!in_array($obj->storeID(), $stores)) {
-                    $obj->delete();
-                }
-            }
+        }
+    }
 
-            $message = sprintf("Cashier Created<br />Name:%s<br />Emp#:%d<br />Password:%d",
-                $fn.' '.$ln,$emp_no,$passwd);
+    protected function get_flash_view()
+    {
+        $message = base64_decode($this->flash);
+        if ($message !== false) {
             $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', '$message');\n");
         }
 
-        return true;
+        return $this->get_view();
     }
 
-    function body_content()
+    protected function get_view()
     {
         ob_start();
         ?>
@@ -129,6 +168,7 @@ class AddCashierPage extends FanniePage
         <?php
         if ($this->config->get('STORE_MODE') == 'HQ') {
             echo '<div class="form-group">';
+            $dbc = $this->connection;
             $stores = new StoresModel($dbc);
             $mapP = $dbc->prepare('SELECT storeID FROM StoreEmployeeMap WHERE storeID=? AND empNo=?');
             foreach ($stores->find('storeID') as $s) {
@@ -163,8 +203,26 @@ class AddCashierPage extends FanniePage
             is randomly generated.</p>
             ';
     }
+
+    public function unitTest($phpunit)
+    {
+        if (!class_exists('CashierTests', false)) {
+            include(dirname(__FILE__) . '/CashierTests.php');
+        }
+        $tester = new CashierTests($this->connection, $this->config, $this->logger);
+        $tester->testAddCashier($this, $phpunit);
+
+        $map = new StoreEmployeeMapModel($this->connection);
+        $map->empNo(35);
+        $map->storeID(1);
+        // map
+        $this->saveStoreMapping($this->connection, 35, array(1));
+        $phpunit->assertEquals(true, $map->load());
+        // unmap
+        $this->saveStoreMapping($this->connection, 35, array());
+        $phpunit->assertEquals(false, $map->load());
+    }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

@@ -67,8 +67,16 @@ class PIMemberPage extends PIKillerPage {
         $this->title = 'Member '.$this->card_no;
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        if ($this->id == 0) {
+            echo 'Invalid ID';
+            return false;
+        }
 
         $this->account = \COREPOS\Fannie\API\member\MemberREST::get($this->id);
+        if ($this->account === false) {
+            echo 'Invalid ID';
+            return false;
+        }
         foreach ($this->account['customers'] as $c) {
             if ($c['accountHolder']) {
                 $this->primary_customer = $c;
@@ -94,7 +102,7 @@ class PIMemberPage extends PIKillerPage {
         $this->__models['ar'] = $this->get_model($dbc, 'ArLiveBalanceModel',
                     array('card_no'=>$this->card_no));
 
-        return True;
+        return true;
     }
 
     protected function post_id_handler()
@@ -144,12 +152,12 @@ class PIMemberPage extends PIKillerPage {
         if ($this->auth_mode == 'Full') {
             $json['customerTypeID'] = FormLib::get('memType');
             $json['chargeLimit'] = FormLib::get('chargelimit');
-            $json['chargeAllowed'] = $json['chargeLimit'] == 0 ? 0 : 1;
             $default = new MemtypeModel($dbc);
             $default->memtype($json['customerTypeID']);
             $default->load();
             $account_holder['discount'] = $default->discount();
             $account_holder['staff'] = $default->staff();
+            $account_holder['chargeAllowed'] = $json['chargeLimit'] == 0 ? 0 : 1;
             $account_holder['lowIncomeBenefits'] = $default->ssi();
 
             $start = FormLib::get('start_date', '');
@@ -170,6 +178,7 @@ class PIMemberPage extends PIKillerPage {
                     $account_holder['discount'] = $c['discount'];
                     $account_holder['staff'] = $c['staff'];
                     $account_holder['lowIncomeBenefits'] = $c['lowIncomeBenefits'];
+                    $account_holder['chargeAllowed'] = $c['chargeAllowed'];
                 }
             }
         }
@@ -194,6 +203,7 @@ class PIMemberPage extends PIKillerPage {
                 'discount' => $account_holder['discount'],
                 'staff' => $account_holder['staff'],
                 'lowIncomeBenefits' => $account_holder['lowIncomeBenefits'],
+                'chargeAllowed' => $account_holder['chargeAllowed'],
             );
         }
         $resp = \COREPOS\Fannie\API\member\MemberREST::post($this->card_no, $json);

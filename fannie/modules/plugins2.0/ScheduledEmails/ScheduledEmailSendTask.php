@@ -62,7 +62,8 @@ class ScheduledEmailSendTask extends FannieTask
                 templateData
             FROM ScheduledEmailQueue
             WHERE sent=0
-                AND sendDate <= ' . $dbc->now();
+                AND sendDate <= ' . $dbc->now() . '
+            ORDER BY scheduledEmailTemplateID';
         $result = $dbc->query($query);
         $template = new ScheduledEmailTemplatesModel($dbc);
         while ($row = $dbc->fetchRow($result)) {
@@ -86,6 +87,7 @@ class ScheduledEmailSendTask extends FannieTask
             }
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $this->cronMsg('Member does not have valid email address: ' . $row['cardNo']);
+                $dbc->execute($failP, array('no email address', $row['scheduledEmailQueueID']));
                 continue;
             }
             $data = json_decode($row['templateData'], true);

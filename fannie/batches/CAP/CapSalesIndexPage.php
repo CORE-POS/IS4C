@@ -26,9 +26,10 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class CapSalesIndexPage extends FanniePage {
-    protected $title = "Fannie - CAP sales";
-    protected $header = "CAP Sales";
+class CapSalesIndexPage extends FanniePage 
+{
+    protected $title = "Fannie - Co+op Deals sales";
+    protected $header = "Co+op Deals Sales";
 
     public $description = '[Co+op Deals Menu] lists options for importing and creating
     Co+op Deals batches.';
@@ -38,10 +39,16 @@ class CapSalesIndexPage extends FanniePage {
         ob_start();
         ?>
         <ul>
-        <li><a href="CoopDealsUploadPage.php">Upload Price File</a></li>
-        <li><a href="CoopDealsReviewPage.php">Review data &amp; create sales batches</a></li>
-        <li><a href="CoopDealsMergePage.php">Merge items into existing batches</a></li>
-        <li><a href="CoopDealsSignsPage.php">Print Sale Signs</a></li>
+        <li>Co+op Deals<ul>
+            <li><a href="CoopDealsUploadPage.php">Upload Price File</a></li>
+            <li><a href="CoopDealsReviewPage.php">Review data &amp; create sales batches</a></li>
+            <li><a href="CoopDealsMergePage.php">Merge items into existing batches</a></li>
+            <li><a href="CoopDealsSignsPage.php">Print Sale Signs</a></li>
+        </ul></li>
+        <li>EDLP<ul>
+            <li><a href="EdlpUploadPage.php">Upload EDLP Max Prices</a></li>
+            <li><a href="EdlpBatchPage.php">Create Price Change Batch</a></li>
+        </ul></li>
         </ul>
         <?php
         return ob_get_clean();
@@ -50,10 +57,13 @@ class CapSalesIndexPage extends FanniePage {
     public function helpContent()
     {
         return '<p>Upload Co+op Deals item data spreadsheet then review the
-            data to assign sale start and end dates.</p>';
+            data to assign sale start and end dates.</p>
+            <p>Alternately, upload maximum pricing for EDLP items and
+            create a price change batch if necessary.</p>
+            <p>The unifying thread here is NCG-related.</p>';
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

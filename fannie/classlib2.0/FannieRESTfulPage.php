@@ -99,6 +99,7 @@ class FannieRESTfulPage extends FanniePage
     public function __construct()
     {
         $this->routing_trait = new \COREPOS\common\ui\CoreRESTfulRouter();
+        $this->form = new COREPOS\common\mvc\FormValueContainer();
         parent::__construct();
     }
 
@@ -127,7 +128,10 @@ class FannieRESTfulPage extends FanniePage
         try {
             $this->__method = $this->form->_method;
         } catch (Exception $ex) {
-            $this->__method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'get';
+            $this->__method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
+            if ($this->__method === null) {
+                $this->__method = 'get';
+            }
         }
         $this->__method = strtolower($this->__method);
 
@@ -184,6 +188,15 @@ class FannieRESTfulPage extends FanniePage
         }
     }
 
+    public function addRoute()
+    {
+        foreach (func_get_args() as $r) {
+            if (!in_array($r, $this->__routes)) {
+                $this->__routes[] = $r;
+            }
+        }
+    }
+
     public function preprocess()
     {
         /*
@@ -193,7 +206,6 @@ class FannieRESTfulPage extends FanniePage
         return $this->routing_trait->handler($this);
         */
 
-        $this->form = new COREPOS\common\mvc\FormValueContainer();
         $this->readRoutes();
         $handler = $this->__route_stem.'Handler';
         $view = $this->__route_stem.'View';    
@@ -217,7 +229,9 @@ class FannieRESTfulPage extends FanniePage
         } elseif ($ret === false) {
             return false;
         } elseif (is_string($ret)) {
-            header('Location: ' . $ret);
+            if (!headers_sent()) {
+                header('Location: ' . $ret);
+            }
             return false;
         } else {
             // dev error/bug?
@@ -282,8 +296,11 @@ class FannieRESTfulPage extends FanniePage
     {
         $obj = new $class($database_connection);
         foreach($params as $name => $value) {
-            if (method_exists($obj, $name))
+            try {
                 $obj->$name($value);
+            } catch (Exception $ex) {
+                $this->logger->debug($ex);
+            }
         }
         if ($find) {
             return $obj->find($find);

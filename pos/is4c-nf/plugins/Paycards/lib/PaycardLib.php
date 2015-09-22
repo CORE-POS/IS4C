@@ -597,6 +597,93 @@ static public function paycard_db_fetch_row($result){
     return self::$paycardDB->fetch_row($result);
 }
 
+static private function getIssuerOverride($issuer)
+{
+    if (CoreLocal::get('PaycardsTenderCodeVisa') && $issuer == 'Visa') {
+        return array(CoreLocal::get('PaycardsTenderCodeVisa'));
+    } elseif (CoreLocal::get('PaycardsTenderCodeMC') && $issuer == 'MasterCard') {
+        return array(CoreLocal::get('PaycardsTenderCodeMC'));
+    } elseif (CoreLocal::get('PaycardsTenderCodeDiscover') && $issuer == 'Discover') {
+        return array(CoreLocal::get('PaycardsTenderCodeDiscover'));
+    } elseif (CoreLocal::get('PaycardsTenderCodeAmex') && $issuer == 'American Express') {
+        return array(CoreLocal::get('PaycardsTenderCodeAmex'));
+    } else {
+        return false;
+    }
+}
+
+/**
+  Lookup user-configured tender
+  Failover to defaults if tender does not exist
+  Since we already have an authorization at this point,
+  adding a default tender record to the transaction
+  is better than issuing an error message
+*/
+static public function getTenderInfo($type, $issuer)
+{
+    $db = Database::pDataConnect();
+    $lookup = $db->prepare('
+        SELECT TenderName,
+            TenderCode
+        FROM tenders
+        WHERE TenderCode = ?');
+    
+    switch ($type) {
+        case 'DEBIT':
+            $args = array(CoreLocal::get('PaycardsTenderCodeDebit'));
+            $default_code = 'DC';
+            $default_description = 'Debit Card';
+            break;
+        case 'EBTCASH':
+            $args = array(CoreLocal::get('PaycardsTenderCodeEbtCash'));
+            $default_code = 'EC';
+            $default_description = 'EBT Cash';
+            break;
+        case 'EBTFOOD':
+            $args = array(CoreLocal::get('PaycardsTenderCodeEbtFood'));
+            $default_code = 'EF';
+            $default_description = 'EBT Food';
+            break;
+        case 'EMV':
+            $args = array(CoreLocal::get('PaycardsTenderCodeEmv'));
+            $default_code = 'CC';
+            $default_description = 'Credit Card';
+            break;
+        case 'CREDIT':
+        default:
+            $args = array(CoreLocal::get('PaycardsTenderCodeCredit'));
+            $default_code = 'CC';
+            $default_description = 'Credit Card';
+            break;
+    }
+
+    $override = self::getIssuerOverride($issuer);
+    if ($override !== false) {
+        $args = $override;
+    }
+    
+    $found = $db->execute($lookup, $args);
+    if ($found === false || $db->num_rows($round) == 0) {
+        return array($default_code, $default_description);
+    } else {
+        $row = $db->fetch_row($found);
+        return array($row['TenderCode'], $row['TenderName']);
+    }
+}
+
+static public function setupAuthJson($json)
+{
+    if (CoreLocal::get("paycard_amount") == 0) {
+        CoreLocal::set("paycard_amount",CoreLocal::get("amtdue"));
+    }
+    CoreLocal::set("paycard_id",CoreLocal::get("LastID")+1); // kind of a hack to anticipate it this way..
+    $plugin_info = new Paycards();
+    $json['main_frame'] = $plugin_info->pluginUrl().'/gui/paycardboxMsgAuth.php';
+    $json['output'] = '';
+
+    return $json;
+}
+
 /*
 summary of ISO standards for credit card magnetic stripe data tracks:
 http://www.cyberd.co.uk/support/technotes/isocards.htm
@@ -633,4 +720,3 @@ TRACK 3
 
 }
 
-?>

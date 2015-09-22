@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class UnpaidAR extends BasicPage {
+class UnpaidAR extends BasicCorePage 
+{
 
     function preprocess()
     {

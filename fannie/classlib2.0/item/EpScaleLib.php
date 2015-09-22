@@ -25,50 +25,54 @@ namespace COREPOS\Fannie\API\item {
 
 class EpScaleLib 
 {
-    /* CSV fields for WriteOneItem & ChangeOneItem records
-       Required does not mean you *have to* specify a value,
-       but the default will be included if you omit that field.
-       Non-required fields won't be sent to the scale at all
-       unless specified by the caller
-    */
-    private static $WRITE_ITEM_FIELDS = array(
-        'RecordType' => array('name'=>'Record Type', 'required'=>true, 'default'=>'ChangeOneItem'),
-        'PLU' => array('name'=>'PLU Number', 'required'=>true, 'default'=>'0000'),
-        'Description' => array('name'=>'Item Description', 'required'=>false, 'default'=>'', 'quoted'=>true),
-        'ReportingClass' => array('name'=>'Reporting Class', 'required'=>true, 'default'=>'999999'),
-        'Label' => array('name'=>'Label Type 01', 'required'=>false, 'default'=>'53'),
-        'Tare' => array('name'=>'Tare 01', 'required'=>false, 'default'=>'0'),
-        'ShelfLife' => array('name'=>'Shelf Life', 'required'=>false, 'default'=>'0'),
-        'Price' => array('name'=>'Price', 'required'=>true, 'default'=>'0.00'),
-        'ByCount' => array('name'=>'By Count', 'required'=>false, 'default'=>'0'),
-        'Type' => array('name'=>'Item Type', 'required'=>true, 'default'=>'Random Weight'),
-        'NetWeight' => array('name'=>'Net Weight', 'required'=>false, 'default'=>'0'),
-        'Graphics' => array('name'=>'Graphics Number', 'required'=>false, 'default'=>'0'),
-    );
-
-    static private $NL = "\r\n";
+    static private $NEWLINE = "\r\n";
 
     /**
       Generate CSV line for a given item
       @param $item_info [keyed array] of value. Keys correspond to WRITE_ITEM_FIELDS
+      @param $scale_model [ServiceScaleModel]
       @return [string] CSV formatted line
     */
-    static public function getItemLine($item_info)
+    static public function getItemLine($item_info, $scale_model)
     {
+        $scale_fields = '';
+        if ($scale_model->epStoreNo() != 0) {
+            $scale_fields .= 'SNO' . $scale_model->epStoreNo() . chr(253);
+        }
+        $scale_fields .= 'DNO' . $scale_model->epDeptNo() . chr(253);
+        $scale_fields .= 'SAD' . $scale_model->epScaleAddress() . chr(253);
+
         if ($item_info['RecordType'] == 'WriteOneItem') {
-            return self::getAddItemLine($item_info);
+            return self::getAddItemLine($item_info) . $scale_fields;
         } else {
             $line = self::getAddItemLine($item_info);
-            return 'CCOSPIC' . substr($line, 7);
+            return 'CCOSPIC' . substr($line, 7) . $scale_fields;
             /**
               Docs say you don't have to send all fields with
               a change but it throws weird errors if I just send
               the changed fields.
             */
-            return self::getUpdateItemLine($item_info);
+            return self::getUpdateItemLine($item_info) . $scale_fields;
         }
 
         return $line;
+    }
+
+    static public function getIngredientLine($item_info, $scale_model)
+    {
+        $et_line = ($item_info['RecordType'] == 'WriteOneItem' ? 'CCOSIIA' : 'CCOSIIC') . chr(253);
+        if ($scale_model->epStoreNo() != 0) {
+            $et_line .= 'SNO' . $scale_model->epStoreNo() . chr(253);
+        }
+        $et_line .= 'DNO' . $scale_model->epDeptNo() . chr(253);
+        $et_line .= 'SAD' . $scale_model->epScaleAddress() . chr(253);
+        $et_line .= 'PNO' . $item['PLU'] . chr(253);
+        $et_line .= 'INO' . $item['PLU'] . chr(253);
+        $item_info['ExpandedText'] = str_replace("\r", '', $item_info['ExpandedText']);
+        $item_info['ExpandedText'] = str_replace("\n", '<br>', $item_info['ExpandedText']);
+        $et_line .= 'ITE' . $item_info['ExpandedText'] . chr(253);
+
+        return $et_line;
     }
 
     static private function getAddItemLine($item_info)
@@ -134,7 +138,7 @@ class EpScaleLib
     static private function getUpdateItemLine($item_info)
     {
         $line = 'CCOSPIC' . chr(253); 
-        foreach (self::$WRITE_ITEM_FIELDS as $key => $field_info) {
+        foreach (ServiceScaleLib::$WRITE_ITEM_FIELDS as $key => $field_info) {
             if (isset($item_info[$key])) {
                 switch ($key) {
                     case 'PLU':
@@ -200,7 +204,7 @@ class EpScaleLib
             $new_item = true;
         }
         $header_line = '';
-        $file_prefix = self::sessionKey();
+        $file_prefix = ServiceScaleLib::sessionKey();
         $output_dir = $config->get('EPLUM_DIRECTORY');
         if ($output_dir == '') {
             return false;
@@ -210,60 +214,40 @@ class EpScaleLib
             $selected_scales = $config->get('SCALES');
         }
         $scale_model = new \ServiceScalesModel(\FannieDB::get($config->get('OP_DB')));
-        $i = 0;
+        $counter = 0;
         $depts = array();
         foreach ($selected_scales as $scale) {
-            $scale_model->reset();
-            $scale_model->host($scale['host']);
-            $matches = $scale_model->find();
-            if (count($matches) > 0) {
-                $scale_model = $matches[0];
-            }
+            $scale_model = ServiceScaleLib::getModelByHost($scale['host']);
             // batches run per-department rather than per-scale
             // so duplicates can be skipped
-            if (in_array($scale_model->epDeptNo(), $depts)) {
+            if ($scale_model === false) {
+                continue;
+            } elseif (in_array($scale_model->epDeptNo(), $depts)) {
                 continue;
             } else {
                 $depts[] = $scale_model->epDeptNo();
             }
 
-            $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_writeItem_' . $i . '.dat';
-            $fp = fopen($file_name, 'w');
-            fwrite($fp, 'BNA' . $file_prefix . '_' . $i . chr(253) . self::$NL);
-            foreach($items as $item) {
-                $item_line = self::getItemLine($item);
-                if ($scale_model->epStoreNo() != 0) {
-                    $item_line .= 'SNO' . $scale_model->epStoreNo() . chr(253);
-                }
-                $item_line .= 'DNO' . $scale_model->epDeptNo() . chr(253);
-                $item_line .= 'SAD' . $scale_model->epScaleAddress() . chr(253);
-                $item_line .= self::$NL;
-                fwrite($fp, $item_line);
+            $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_writeItem_' . $counter . '.dat';
+            $fptr = fopen($file_name, 'w');
+            fwrite($fptr, 'BNA' . $file_prefix . '_' . $counter . chr(253) . self::$NEWLINE);
+            foreach ($items as $item) {
+                $item_line = self::getItemLine($item, $scale_model);
+                fwrite($fptr, $item_line . self::$NEWLINE);
 
                 if (isset($item['ExpandedText'])) {
-                    $et_line = ($new_item ? 'CCOSIIA' : 'CCOSIIC') . chr(253);
-                    if ($scale_model->epStoreNo() != 0) {
-                        $et_line .= 'SNO' . $scale_model->epStoreNo() . chr(253);
-                    }
-                    $et_line .= 'DNO' . $scale_model->epDeptNo() . chr(253);
-                    $et_line .= 'SAD' . $scale_model->epScaleAddress() . chr(253);
-                    $et_line .= 'PNO' . $item['PLU'] . chr(253);
-                    $et_line .= 'INO' . $item['PLU'] . chr(253);
-                    $item['ExpandedText'] = str_replace("\r", '', $item['ExpandedText']);
-                    $item['ExpandedText'] = str_replace("\n", '<br>', $item['ExpandedText']);
-                    $et_line .= 'ITE' . $item['ExpandedText'] . chr(253);
-                    $et_line .= self::$NL;
-                    fwrite($fp, $et_line);
+                    $et_line = self::getIngredientLine($item, $scale_model);
+                    fwrite($fptr, $et_line . self::$NEWLINE);
                 }
             }
-            fclose($fp);
+            fclose($fptr);
 
             // move to DGW; cleanup the file in the case of failure
             if (!rename($file_name, $output_dir . '/' . basename($file_name))) {
                 unlink($file_name);
             }
 
-            $i++;
+            $counter++;
         }
     }
 
@@ -280,7 +264,7 @@ class EpScaleLib
             $items = array($items);
         }
 
-        $file_prefix = self::sessionKey();
+        $file_prefix = ServiceScaleLib::sessionKey();
         $output_dir = $config->get('EPLUM_DIRECTORY');
         if ($output_dir == '') {
             return false;
@@ -290,10 +274,10 @@ class EpScaleLib
             $selected_scales = $config->get('SCALES');
         }
         $scale_model = new \ServiceScalesModel(\FannieDB::get($config->get('OP_DB')));
-        $i = 0;
+        $counter = 0;
         foreach ($selected_scales as $scale) {
-            $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteItem_' . $i . '.dat';
-            $fp = fopen($file_name, 'w');
+            $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteItem_' . $counter . '.dat';
+            $fptr = fopen($file_name, 'w');
             foreach ($items as $plu) {
                 if (strlen($plu) !== 4) {
                     // might be a UPC
@@ -306,106 +290,14 @@ class EpScaleLib
                     $plu = $matches[1];
                 }
             }
-            fclose($fp);
+            fclose($fptr);
 
             // move to DGW dir
             if (!rename($file_name, $output_dir . '/' . basename($file_name))) {
                 unlink($file_name);
             }
 
-            $i++;
-        }
-    }
-
-    /**
-      Get attributes for a given label number
-      @param $label_number [integer]
-      @return keyed array
-        - align => vertical or horizontal
-        - fixed_weight => boolean
-        - graphics => boolean
-    */
-    static public function labelToAttributes($label_number)
-    {
-        $ret = array(
-            'align' => 'vertical',
-            'fixed_weight' => false,
-            'graphics' => false,
-        );
-        switch ($label_number) {
-            case 23:
-                $ret['fixed_weight'] = true;
-                break;
-            case 53:
-                $ret['graphics'] = true;
-                break;
-            case 63:
-                $ret['fixed_weight'] = true;
-                $ret['align'] = 'horizontal';
-                break;
-            case 103:
-                break;
-            case 113:
-                $ret['align'] = 'horizontal';
-                break;
-        }
-
-        return $ret;
-    }
-
-    /**
-      Get appropriate label number for given attributes
-      @param $align [string] vertical or horizontal
-      @param $fixed_weight [boolean, default false]
-      @param $graphics [boolean, default false]
-      @return [integer] label number
-    */
-    static public function attributesToLabel($align, $fixed_weight=false, $graphics=false)
-    {
-        if ($graphics) {
-            return 53;
-        }
-
-        if ($align == 'horizontal') {
-            return ($fixed_weight) ? 63 : 133;
-        } else {
-            return ($fixed_weight) ? 23 : 103;
-        }
-    }
-
-    static private function scalePluToUpc($plu)
-    {
-        // convert PLU to UPC
-        // includes WFC oddities with zero alignment
-        // on short PLUs (less than 4 digits)
-        $upc = str_pad($plu, 3, '0', STR_PAD_LEFT);
-        $upc = str_pad($upc, 4, '0', STR_PAD_LEFT);
-        $upc = '002' . $upc . '000000';
-
-        return $upc;
-    }
-
-    static private function sessionKey()
-    {
-        $session_key = '';
-        for ($i = 0; $i < 20; $i++) {
-            $num = rand(97,122);
-            $session_key = $session_key . chr($num);
-        }
-
-        return $session_key;
-    }
-
-    static public function scaleOnline($host, $port=6000)
-    {
-        $s = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        socket_set_option($s, SOL_SOCKET, SO_RCVTIMEO, array('sec'=>2, 'usec'=>0));
-        socket_set_option($s, SOL_SOCKET, SO_SNDTIMEO, array('sec'=>2, 'usec'=>0));
-        if (socket_connect($s, $host, $port)) {
-            socket_close($s);
-            return true;
-        } else {
-            return false;
+            $counter++;
         }
     }
 }

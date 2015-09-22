@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
-class PaycardEmvSuccess extends BasicPage 
+class PaycardEmvSuccess extends BasicCorePage 
 {
     private $bmp_path;
 
@@ -109,9 +109,9 @@ class PaycardEmvSuccess extends BasicPage
 
                 return false;
             } elseif ($mode == PaycardLib::PAYCARD_MODE_AUTH && $input == "VD" 
-                && (CoreLocal::get('CacheCardType') == 'CREDIT' || CoreLocal::get('CacheCardType') == 'GIFT' || CoreLocal::get('CacheCardType') == '')) {
+                && (CoreLocal::get('CacheCardType') == 'CREDIT' || CoreLocal::get('CacheCardType') == 'EMV' || CoreLocal::get('CacheCardType') == 'GIFT' || CoreLocal::get('CacheCardType') == '')) {
                 $plugin_info = new Paycards();
-                $this->change_page($plugin_info->plugin_url()."/gui/PaycardEmvVoid.php");
+                $this->change_page($plugin_info->pluginUrl()."/gui/PaycardEmvVoid.php");
 
                 return false;
             }
@@ -256,22 +256,24 @@ class PaycardEmvSuccess extends BasicPage
         </div>
         <?php
         echo "<div id=\"footer\">";
+        Database::getsubtotals(); // in case of partial approval shows remainder due
         echo DisplayLib::printfooter();
         echo "</div>";
 
         $rp_type = '';
-        if( CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_GIFT) {
+        if (isset($_REQUEST['receipt']) && strlen($_REQUEST['receipt']) > 0) {
+            $rp_type = $_REQUEST['receipt'];
+            $this->add_onload_command("\$('#reginput').val('RP');\n");
+            $this->add_onload_command("submitWrapper();\n");
+        } elseif (CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_GIFT) {
             if( CoreLocal::get("paycard_mode") == PaycardLib::PAYCARD_MODE_BALANCE) {
                 $rp_type = "gcBalSlip";
-            } 
-            else {
+            } else {
                 $rp_type ="gcSlip";
             }
-        } 
-        else if( CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_CREDIT) {
+        } elseif( CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_CREDIT) {
             $rp_type = "ccSlip";
-        }
-        else if( CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_ENCRYPTED) {
+        } elseif( CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_ENCRYPTED) {
             $rp_type = "ccSlip";
         }
         printf("<input type=\"hidden\" id=\"rp_type\" value=\"%s\" />",$rp_type);

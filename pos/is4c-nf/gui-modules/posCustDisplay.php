@@ -23,7 +23,7 @@
  
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class posCustDisplay extends BasicPage 
+class posCustDisplay extends BasicCorePage 
 {
 
     public function body_content()

@@ -16,17 +16,9 @@
         "source": "https://github.com/CORE-POS/IS4C"
     },
     "repositories": {
-        "core-pos": {
-            "type": "vcs",
-            "url": "https://github.com/CORE-POS/IS4C"
-        },
         "adodb": {
             "type": "vcs",
             "url": "https://github.com/gohanman/adodb"
-        },
-        "sqlmanager": {
-            "type": "vcs",
-            "url": "https://github.com/CORE-POS/SqlManager"
         },
         "xpdf": {
             "type": "vcs",
@@ -38,13 +30,14 @@
         "components/bootstrap": "3.2.*",
         "components/bootstrap-default": "~3.2",
         "adodb/adodb-php": "dev-master",
-        "core-pos/sql-manager": "dev-master",
         "php-xpdf/php-xpdf" : "dev-master",
         "phpmailer/phpmailer": "~5.2",
         "psr/log": "~1.0",
         "sabre/vobject": "~3.4",
-        "videlalvaro/php-amqplib": "~2.5",
-        "endroid/qrcode": "~1.5"
+        "endroid/qrcode": "~1.5",
+        "itbz/fpdf": "~1.7",
+        "phpoffice/phpexcel": "^1.8",
+        "mailchimp/mailchimp": "^2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "4.5.*",

@@ -23,8 +23,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class boxMsg2 extends BasicPage {
-
+class boxMsg2 extends BasicCorePage 
+{
     function head_content(){
         ?>
         <script type="text/javascript">

@@ -36,13 +36,13 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
     foreach($newset as $plugin_class){
         if (!Plugin::isEnabled($plugin_class) && class_exists($plugin_class)){
             $obj = new $plugin_class();
-            $obj->plugin_enable();
+            $obj->pluginEnable();
         }
     }
     foreach($oldset as $plugin_class){
         if (!in_array($plugin_class,$newset) && class_exists($plugin_class)){
             $obj = new $plugin_class();
-            $obj->plugin_disable();
+            $obj->pluginDisable();
         }
     }
     CoreLocal::set('PluginList',$_REQUEST['PLUGINLIST']);

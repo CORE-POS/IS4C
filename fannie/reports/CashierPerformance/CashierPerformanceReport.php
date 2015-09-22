@@ -44,8 +44,8 @@ class CashierPerformanceReport extends FannieReportPage
 
     function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB, $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
         $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
         $emp_no = FormLib::get('emp_no', false);
@@ -55,7 +55,7 @@ class CashierPerformanceReport extends FannieReportPage
         $detailP = $dbc->prepare('
             SELECT SUM(CASE WHEN transInterval > 600 THEN 600 ELSE transInterval END) AS seconds,
                 COUNT(*) AS numTrans
-            FROM ' . $FANNIE_TRANS_DB . $dbc->sep() . 'CashPerformDay
+            FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'CashPerformDay
             WHERE proc_date BETWEEN ? AND ?
                 AND emp_no = ?
         ');
@@ -186,8 +186,8 @@ class CashierPerformanceReport extends FannieReportPage
         <label for="excel">Excel</label>
     </div>
     <p>
-        <button type=submit class="btn btn-default">Submit</button>
-        <button type=reset class="btn btn-default">Start Over</button>
+        <button type=submit class="btn btn-default btn-submit">Submit</button>
+        <button type=reset class="btn btn-default btn-reset">Start Over</button>
     </p>
 </div>
 <div class="col-sm-4">

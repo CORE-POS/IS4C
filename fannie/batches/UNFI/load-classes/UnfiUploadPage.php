@@ -147,7 +147,8 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             SET cost=?,
                 numflag= numflag | ? | ?,
                 modified=' . $dbc->now() . '
-            WHERE upc=?');
+            WHERE upc=?
+                AND default_vendor_id=?');
         $itemP = $dbc->prepare("
             INSERT INTO vendorItems (
                 brand, 
@@ -266,7 +267,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $net_unit = $net / $qty;
 
             $dbc->exec_statement($extraP, array($reg_unit,$upc));
-            $dbc->exec_statement($prodP, array($reg_unit,$organic_flag,$gf_flag,$upc));
+            $dbc->exec_statement($prodP, array($reg_unit,$organic_flag,$gf_flag,$upc,$VENDOR_ID));
             $updated_upcs[] = $upc;
 
             $args = array(

@@ -59,8 +59,8 @@ class NonMovementReport extends FannieReportPage {
             exit;
         } elseif (FormLib::get('deactivate') !== '') {
             $upc = BarcodeLib::padUPC(FormLib::get('deactivate'));
-            $this->connection->selectDB($this->config->OP_DB);
-            $model = new ProductsModel($this->connection);
+            $dbc = FannieDB::get($FANNIE_OP_DB);
+            $model = new ProductsModel($dbc);
             $model->upc($upc);
             $model->store_id(1);
             $model->inUse(0);
@@ -211,8 +211,8 @@ class NonMovementReport extends FannieReportPage {
             </label>
         </div>
         <div class="form-group">
-            <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>
-            <button type=reset name=reset class="btn btn-default"
+            <button type=submit name=submit value="Submit" class="btn btn-default btn-core">Submit</button>
+            <button type=reset name=reset class="btn btn-default btn-reset"
                 onclick="$('#super-id').val('').trigger('change');">Start Over</button>
         </div>
     </div>

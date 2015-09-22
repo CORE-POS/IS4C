@@ -90,7 +90,6 @@ class CoopDealsSignsPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $prices[$upcs[$i]] = $formatted_prices[$i];
             }
             $source_id = FormLib::get('sale-prices') == 'current' ? 2 : 3;
-            var_dump(class_exists($class));
             $obj = new $class($items, '', $source_id);
             foreach ($prices as $upc => $price) {
                 $obj->addOverride($upc, 'normal_price', $price);

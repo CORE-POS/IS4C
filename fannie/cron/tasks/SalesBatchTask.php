@@ -117,6 +117,7 @@ class SalesBatchTask extends FannieTask
             $start_date = $row['startDate'];
             $end_date = $row['endDate'];
             $discounttype = $row['discounttype'];
+            $batchID = $row['batchID'];
 
             // pricemethod 3 and 4 (AB pricing, typically)
             // has some overly complicated rules
@@ -205,6 +206,10 @@ class SalesBatchTask extends FannieTask
                     $changed = true;
                     $product->mixmatchcode($mixmatch);
                 }
+                if ($product->batchID() != $batchID) {
+                    $changed = true;
+                    $product->batchID($batchID);
+                }
 
                 if ($changed) {
                     $product->save();
@@ -251,6 +256,7 @@ class SalesBatchTask extends FannieTask
             $product->specialquantity(0);
             $product->start_date('');
             $product->end_date('');
+            $product->batchID(0);
             $product->save();
         }
     }

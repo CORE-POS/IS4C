@@ -24,7 +24,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class productlist extends NoInputPage {
+class productlist extends NoInputCorePage 
+{
 
     private $temp_result;
     private $temp_num_rows;

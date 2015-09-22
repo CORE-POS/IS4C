@@ -42,7 +42,7 @@ class RecentSalesReport extends FannieReportPage
     protected $title = 'Fannie : Recent Sales';
 
     protected $report_headers = array('', 'Qty', '$');
-    protected $report_cache = 'day';
+    protected $report_cache = 'none';
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
@@ -58,10 +58,9 @@ class RecentSalesReport extends FannieReportPage
                 $this->report_headers[0] = 'Like Code #'.$this->lc;
                 $this->required_fields = array('likecode');
             } else {
-                $this->report_headers[0] = $this->upc;
+                $this->report_headers[0] = 'UPC #' . $this->upc;
                 $this->required_fields = array('upc');
             }
-
             parent::preprocess();
         }
 
@@ -75,13 +74,18 @@ class RecentSalesReport extends FannieReportPage
         $prod = new ProductsModel($dbc);
         $prod->upc(BarcodeLib::padUPC(FormLib::get('upc')));
         $prod->load();
-        $ret = array('Recent Sales For ' . $prod->upc() . ' ' . $prod->description());
+        $ret = array('Recent Sales For ' . $prod->upc() . ' ' . $prod->description() . '<br />');
         if ($this->report_format == 'html') {
-            $ret[] = sprintf('<a href="../ItemLastQuarter/ItemLastQuarterReport.php?upc=%s">Weekly Sales Details</a>', $prod->upc());
+            $ret[] = sprintf('<a href="../ItemLastQuarter/ItemLastQuarterReport.php?upc=%s">Weekly Sales Details</a> | ', $prod->upc());
             $ret[] = sprintf('<a href="../ItemOrderHistory/ItemOrderHistoryReport.php?upc=%s">Recent Order History</a>', $prod->upc());
         }
 
         return $ret;
+    }
+
+    protected function defaultDescriptionContent($datefields=array())
+    {
+        return array(); // override
     }
 
     public function fetch_report_data()
@@ -94,7 +98,7 @@ class RecentSalesReport extends FannieReportPage
         $dates['Yesterday'] = array(date("Y-m-d",$stamp), date('Y-m-d', $stamp));
         $stamp = mktime(0,0,0,date("n",$stamp),date("j",$stamp)-1,date("Y",$stamp));
         $dates['2 Days Ago'] = array(date("Y-m-d",$stamp), date('Y-m-d', $stamp));
-        $stamp = mktime(0,0,0,date("n",$stamp),date("j",$stamp)-1,date("Y",$stamp));
+        $stamp = mktime(0,0,0,date("n",$stamp),date("j",$stamp)-2,date("Y",$stamp));
         $dates['3 Days Ago'] = array(date("Y-m-d",$stamp), date('Y-m-d', $stamp));
 
         $dates['This Week'] = array(date("Y-m-d",strtotime("monday this week")),
@@ -122,6 +126,7 @@ class RecentSalesReport extends FannieReportPage
             $q .= ' LEFT JOIN upcLike AS u ON d.upc=u.upc ';
         }
         $q .= "WHERE $where
+            AND tdate < " . $dbc->curdate() . "
             AND tdate BETWEEN ? AND ?";
         $p = $dbc->prepare_statement($q);
         

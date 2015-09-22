@@ -32,9 +32,49 @@ class AdvancedItemSearch extends FannieRESTfulPage
     protected $title = 'Advanced Search';
 
     public $description = '[Advanced Search] is a tool to look up items with lots of search options.';
-    public $themed = true;
+    public $has_unit_tests = true;
 
-    function preprocess()
+    /**
+      List of search methods. Search methods
+      are used to compose a query's FROM
+      and WHERE clauses as well as parameter
+      list.
+    */
+    private $search_methods = array(
+        'searchUPC',
+        'searchDescription',
+        'searchBrand',
+        'searchSuperDepartment',
+        'searchDepartments',
+        'searchServiceScale',
+        'searchModifiedDate',
+        'searchVendor',
+        'searchPrice',
+        'searchCost',
+        'searchPriceRule',
+        'searchTax',
+        'searchLocal',
+        'searchFoodstamp',
+        'searchInUse',
+        'searchDiscountable',
+        'searchLocation',
+        'searchSignage',
+        'searchOrigin',
+        'searchLikeCode',
+    );
+
+    /**
+      List of filter methods. Filter methods
+      accept an array of items and add or remove
+      items based on the filter's conditions.
+    */
+    private $filter_methods = array(
+        'filterSales',
+        'filterMovement',
+        'filterSavedItems',
+    );
+
+    public function preprocess()
     {
         $this->__routes[] = 'get<search>';
         $this->__routes[] = 'post<search>';
@@ -47,7 +87,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
     // if javascript breaks somewhere and the form
     // winds up submitted, at least display the results
     private $post_results = '';
-    function post_upc_handler()
+    protected function post_upc_handler()
     {
         ob_start();
         $this->get_search_handler();
@@ -57,314 +97,745 @@ class AdvancedItemSearch extends FannieRESTfulPage
     }
 
     // failover on ajax call
-    function post_upc_view()
+    protected function post_upc_view()
     {
         return $this->get_view() . $this->post_results;
     }
 
-    function post_search_handler()
+    protected function post_search_handler()
     {
         return $this->get_search_handler();
     }
 
-    function get_search_handler()
+    /**
+      Search based on a UPC. Asterisk is treated as a wildcard. 
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchUPC($search, $form)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        try {
+            if ($form->upc !== '') {
+                if (strstr($form->upc, '*')) {
+                    $upc = str_replace('*', '%', $form->upc);
+                    $search->where .= ' AND p.upc LIKE ? ';
+                    $search->args[] = $upc;
+                } elseif (substr(BarcodeLib::padUPC($form->upc), 0, 8) == '00499999') {
+                    $couponID = (int)substr(BarcodeLib::padUPC($form->upc), 8);
+                    $search->from .= ' LEFT JOIN houseCouponItems AS h ON p.upc=h.upc ';
+                    $search->where .= ' AND h.coupID=? ';
+                    $search->args[] = $couponID;
+                } else {
+                    $upc = str_pad($form->upc, 13, '0', STR_PAD_LEFT);
+                    $search->where .= ' AND p.upc = ? ';
+                    $search->args[] = $upc;
+                }
+            }
+        } catch (Exception $ex) {}
 
-        /**
-          Step 1:
-          Get a preliminary item set by querying products table
-        */
+        return $search;
+    }
 
-        $from = 'products AS p 
+    /**
+      Search based on item description. 
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchDescription($search, $form)
+    {
+        try {
+            if ($form->description !== '') {
+                if (isset($form->serviceScale)) {
+                    $search->where .= ' AND (p.description LIKE ? OR h.itemdesc LIKE ?) ';
+                    $search->args[] = '%' . $form->description . '%';
+                    $search->args[] = '%' . $form->description . '%';
+                } else {
+                    $search->where .= ' AND p.description LIKE ? ';
+                    $search->args[] = '%' . $form->description . '%';
+                }
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Search based on item brand. Numeric values are treated as
+      UPC prefixes where as non-numeric values are matched against
+      brand names.
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchBrand($search, $form)
+    {
+        try {
+            if ($form->brand !== '') {
+                if (is_numeric($form->brand)) {
+                    $search->where .= ' AND p.upc LIKE ? ';
+                    $search->args[] = '%' . $form->brand . '%';
+                } else {
+                    $search->where .= ' AND (p.brand LIKE ? OR x.manufacturer LIKE ? OR v.brand LIKE ?) ';
+                    $search->args[] = '%' . $form->brand . '%';
+                    $search->args[] = '%' . $form->brand . '%';
+                    $search->args[] = '%' . $form->brand . '%';
+                    if (!strstr($search->from, 'prodExtra')) {
+                        $search->from .= ' LEFT JOIN prodExtra AS x ON p.upc=x.upc ';
+                    }
+                    if (!strstr($search->from, 'vendorItems')) {
+                        $search->from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc ';
+                    }
+                }
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Search based on super department.
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchSuperDepartment($search, $form)
+    {
+        try {
+            if ($form->superID !== '') {
+                /**
+                  Unroll superdepartment into a list of department
+                  numbers so products.department index can be utilizied
+                */
+                $superP = $this->connection->prepare('
+                    SELECT dept_ID
+                    FROM superdepts
+                    WHERE superID=?'
+                );
+                $superR = $this->connection->execute($superP, array($form->superID));
+                if ($superR && $this->connection->numRows($superR) > 0) {
+                    $search->where .= ' AND p.department IN (';
+                    while ($superW = $this->connection->fetch_row($superR)) {
+                        $search->where .= '?,';
+                        $search->args[] = $superW['dept_ID'];
+                    }
+                    $search->where = substr($search->where, 0, strlen($search->where)-1) . ') ';
+                }
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Search based on a department range. If only one value is
+      specified it matches that single department.
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchDepartments($search, $form)
+    {
+        try {
+            $dept1 = $form->deptStart;
+            $dept2 = $form->deptEnd;
+            if ($dept1 !== '' || $dept2 !== '') {
+                // work with just one department field set
+                if ($dept1 === '') {
+                    $dept1 = $dept2;
+                } else if ($dept2 === '') {
+                    $dept2 = $dept1;
+                }
+                // swap order if needed
+                if ($dept2 < $dept1) {
+                    $tmp = $dept1;
+                    $dept1 = $dept2;
+                    $dept2 = $tmp;
+                }
+                $search->where .= ' AND p.department BETWEEN ? AND ? ';
+                $search->args[] = $dept1;
+                $search->args[] = $dept2;
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Checks where items exist in the scaleItems table
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchServiceScale($search, $form)
+    {
+        try {
+            if ($form->serviceScale !== '') {
+                $search->from .= ' INNER JOIN scaleItems AS h ON h.plu=p.upc ';
+                $search->where = str_replace('p.modified', 'h.modified', $search->where);
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Checks whether the item's modified date is before, after,
+      or exactly on the specified date. If service scale has been
+      specified it checks both products.modified and scaleItems.modified
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchModifiedDate($search, $form)
+    {
+        try {
+            if ($form->modDate !== '') {
+                switch ($form->modOp) {
+                case 'Modified Before':
+                    $search->where .= ' AND p.modified < ? ';
+                    $search->args[] = $form->modDate . ' 00:00:00';
+                    if (isset($form->serviceScale)) {
+                        $search->where = str_replace('p.modified', '(p.modified', $search->where)
+                            . ' OR h.modified < ?) ';
+                        $search->args[] = $form->modDate . ' 00:00:00';
+                    }
+                    break;
+                case 'Modified After':
+                    $search->where .= ' AND p.modified > ? ';
+                    $search->args[] = $form->modDate . ' 23:59:59';
+                    if (isset($form->serviceScale)) {
+                        $search->where = str_replace('p.modified', '(p.modified', $search->where)
+                            . ' OR h.modified > ?) ';
+                        $search->args[] = $form->modDate . ' 23:59:59';
+                    }
+                    break;
+                case 'Modified On':
+                default:
+                    $search->where .= ' AND p.modified BETWEEN ? AND ? ';
+                    $search->args[] = $form->modDate . ' 00:00:00';
+                    $search->args[] = $form->modDate . ' 23:59:59';
+                    if (isset($form->serviceScale)) {
+                        $search->where = str_replace('p.modified', '(p.modified', $search->where)
+                            . ' OR h.modified BETWEEN ? AND ?) ';
+                        $search->args[] = $form->modDate . ' 00:00:00';
+                        $search->args[] = $form->modDate . ' 23:59:59';
+                    }
+                    break;
+                }
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Search vendor by ID (as opposed to by name). 
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchVendor($search, $form)
+    {
+        try {
+            if ($form->vendor === '0') {
+                $search->where .= ' AND p.default_vendor_id=0 ';
+            } elseif ($form->vendor !== '') {
+                $search->where .= ' AND (v.vendorID=? or p.default_vendor_id=?)';
+                $search->args[] = $form->vendor;
+                $search->args[] = $form->vendor;
+                if (!strstr($search->from, 'vendorItems')) {
+                    $search->from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID = p.default_vendor_id ';
+                    /* May at some point want to support this less restrictive selection.
+                     * $from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc ';
+                     */
+                }
+
+                if (isset($form->vendorSale)) {
+                    $search->where .= ' AND v.saleCost <> 0 ';
+                    $search->where .= ' AND p.default_vendor_id=? ';
+                    $search->where .= ' AND p.default_vendor_id=v.vendorID ';
+                    $search->args[] = $form->vendor;
+                }
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Search items with a price greater than, less than, or exactly
+      equal to the specified value
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchPrice($search, $form)
+    {
+        try {
+            if ($form->price !== '') {
+                switch ($form->price_op) {
+                    case '=':
+                        $search->where .= ' AND p.normal_price = ? ';
+                        $search->args[] = $form->price;
+                        break;
+                    case '<':
+                        $search->where .= ' AND p.normal_price < ? ';
+                        $search->args[] = $form->price;
+                        break;
+                    case '>':
+                        $search->where .= ' AND p.normal_price > ? ';
+                        $search->args[] = $form->price;
+                        break;
+                }
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Search items with a cost greater than, less than, or exactly
+      equal to the specified value
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchCost($search, $form)
+    {
+        try {
+            if ($form->cost !== '') {
+                switch ($form->cost_op) {
+                    case '=':
+                        $search->where .= ' AND p.cost = ? ';
+                        $search->args[] = $form->cost;
+                        break;
+                    case '<':
+                        $search->where .= ' AND p.cost < ? ';
+                        $search->args[] = $form->cost;
+                        break;
+                    case '>':
+                        $search->where .= ' AND p.cost > ? ';
+                        $search->args[] = $form->cost;
+                        break;
+                }
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Search items that do or do not have a custom pricing rule
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchPriceRule($search, $form)
+    {
+        try {
+            if ($form->price_rule !== '') {
+                if ($form->price_rule == 1) {
+                    $search->where .= ' AND p.price_rule_id <> 0 ';
+                } elseif ($form->price_rule == 0) {
+                    $search->where .= ' AND p.price_rule_id = 0 ';
+                }
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Search items that have a given tax rate
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchTax($search, $form)
+    {
+        try {
+            if ($form->tax !== '') {
+                $search->where .= ' AND p.tax=? ';
+                $search->args[] = $form->tax;
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Search items that have a given local setting
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchLocal($search, $form)
+    {
+        try {
+            if ($form->local !== '') {
+                $search->where .= ' AND p.local=? ';
+                $search->args[] = $form->local;
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Search items that are or are not foodstamp eligible
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchFoodstamp($search, $form)
+    {
+        try {
+            if ($form->fs !== '') {
+                $search->where .= ' AND p.foodstamp=? ';
+                $search->args[] = $form->fs;
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Restrict search to products.inUse=1
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchInUse($search, $form)
+    {
+        try {
+            if ($form->in_use !== '') {
+                $search->where .= ' AND p.inUse=? ';
+                $search->args[] = $form->in_use;
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Search items that are or are not discount eligible
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchDiscountable($search, $form)
+    {
+        try {
+            if ($form->discountable !== '') {
+                $search->where .= ' AND p.discount=? ';
+                $search->args[] = $form->discountable;
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Search items that do or do not have a basic physical location
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchLocation($search, $form)
+    {
+        try {
+            if ($form->location !== '') {
+                if ($form->location == '1') {
+                    $search->from .= ' INNER JOIN prodPhysicalLocation AS y ON p.upc=y.upc ';
+                } else {
+                    $search->where .= ' AND p.upc NOT IN (SELECT upc FROM prodPhysicalLocation) ';
+                }
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Search items that do or do not have signage fields populated
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchSignage($search, $form)
+    {
+        try {
+            if ($form->signinfo !== '') {
+                if (!strstr($search->from, 'productUser')) {
+                    $search->from .= ' LEFT JOIN productUser AS s ON p.upc=s.upc ';
+                }
+                if ($form->signinfo == '1') {
+                    $search->where .= " AND s.brand IS NOT NULL 
+                        AND s.description IS NOT NULL
+                        AND s.brand <> ''
+                        AND s.description <> '' ";
+                } else {
+                    $search->where .= " AND (s.brand IS NULL 
+                        OR s.description IS NULL
+                        OR s.brand = ''
+                        OR s.description = '') ";
+                }
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Search items that have a given origin ID
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchOrigin($search, $form)
+    {
+        try {
+            if ($form->origin != 0) {
+                $search->from .= ' INNER JOIN ProductOriginsMap AS g ON p.upc=g.upc ';
+                $search->where .= ' AND (p.current_origin_id=? OR g.originID=?) ';
+                $search->args[] = $form->origin;
+                $search->args[] = $form->origin;
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Search items in a given like code. Special values ANY and NONE
+      will search items that belong to any like code or do not belong
+      to a like code, respectively.
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchLikeCode($search, $form)
+    {
+        try {
+            if ($form->likeCode !== '') {
+                if (!strstr($search->from, 'upcLike')) {
+                    $search->from .= ' LEFT JOIN upcLike AS u ON p.upc=u.upc ';
+                }
+                if ($form->likeCode == 'ANY') {
+                    $search->where .= ' AND u.upc IS NOT NULL ';
+                } else if ($form->likeCode == 'NONE') {
+                    $search->where .= ' AND u.upc IS NULL ';
+                } else {
+                    $search->where .= ' AND u.likeCode=? ';
+                    $search->args[] = $form->likeCode;
+                }
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    /**
+      Filters item list based on whether or not they
+      are in a sale batch
+      @param $items [array] of items keyed by UPC
+      @param $form [ValueContainer] representing submitted form values
+      @return [array] of items keyed by UPC
+    */
+    private function filterSales($items, $form)
+    {
+        try {
+            if ($form->onsale !== '') {
+
+                $where = '1=1';
+                $args = array();
+                $dbc = $this->connection;
+
+                if ($form->saletype !== '') {
+                    $where .= ' AND b.batchType = ? ';
+                    $args[] = $form->saletype;
+                }
+
+                $all = isset($form->sale_all) ? 1 : 0;
+                $prev = isset($form->sale_past) ? 1 : 0;
+                $now = isset($form->sale_current) ? 1 : 0;
+                $next = isset($form->sale_upcoming) ? 1 : 0;
+                // all=1 or all three times = 1 means no date filter
+                if ($all == 0 && ($prev == 0 || $now == 0 || $next == 0)) {
+                    // all permutations where one of the times is zero
+                    if ($prev == 1 && $now == 1) {
+                        $where .= ' AND b.endDate <= ' . $dbc->curdate();
+                    } else if ($prev == 1 && $next == 1) {
+                        $where .= ' AND (b.endDate < ' . $dbc->curdate() . ' OR b.startDate > ' . $dbc->curdate() . ') ';
+                    } else if ($prev == 1) {
+                        $where .= ' AND b.endDate < ' . $dbc->curdate();
+                    } else if ($now == 1 && $next == 1) {
+                        $where .= ' AND b.endDate >= ' . $dbc->curdate();
+                    } else if ($now == 1) {
+                        $where .= ' AND b.endDate >= ' . $dbc->curdate() . ' AND b.startDate <= ' . $dbc->curdate();
+                    } else if ($next == 1) {
+                        $where .= ' AND b.startDate > ' .$dbc->curdate();
+                    }
+                }
+
+                $query = 'SELECT l.upc FROM batchList AS l INNER JOIN batches AS b
+                            ON b.batchID=l.batchID WHERE ' . $where . ' 
+                            GROUP BY l.upc';
+                $prep = $this->connection->prepare($query);
+                $result = $this->connection->execute($prep, $args);
+                $saleUPCs = array();
+                while ($row = $this->connection->fetchRow($result)) {
+                    $saleUPCs[] = $row['upc'];
+                }
+
+                if ($form->onsale == 0) {
+                    // only items that are not selected sales
+                    foreach($saleUPCs as $s_upc) {
+                        if (isset($items[$s_upc])) {
+                            unset($items[$s_upc]);
+                        }
+                    }
+                } else {
+                    // only items that are in selected sales
+                    // collect items in both sets
+                    $valid = array();
+                    foreach($saleUPCs as $s_upc) {
+                        if (isset($items[$s_upc])) {
+                            $valid[$s_upc] = $items[$s_upc];
+                        }
+                    }
+                    $items = $valid;
+                }
+            }
+        } catch (Exception $ex) {}
+
+        return $items;
+    }
+
+    /**
+      Filters item list based on whether they
+      sold within a given number of days
+      @param $items [array] of items keyed by UPC
+      @param $form [ValueContainer] representing submitted form values
+      @return [array] of items keyed by UPC
+    */
+    private function filterMovement($items, $form)
+    {
+        try {
+            if ($form->soldOp !== '') {
+                $movementStart = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j')-$form->soldOp-1, date('Y')));
+                $movementEnd = date('Y-m-d', strtotime('yesterday'));
+                $dlog = DTransactionsModel::selectDlog($movementStart, $movementEnd);
+
+                $args = array($movementStart.' 00:00:00', $movementEnd.' 23:59:59');
+                $args = array_merge($args, array_keys($items));
+                $upc_in = str_repeat('?,', count(array_keys($items)));
+                $upc_in = substr($upc_in, 0, strlen($upc_in)-1);
+
+                $query = "SELECT t.upc
+                          FROM $dlog AS t
+                          WHERE tdate BETWEEN ? AND ?
+                            AND t.upc IN ($upc_in)
+                          GROUP BY t.upc";
+                $prep = $this->connection->prepare($query);
+                $result = $this->connection->execute($prep, $args);
+                $valid = array();
+                while ($row = $this->connection->fetchRow($result)) {
+                    if (isset($items[$row['upc']])) {
+                        $valid[$row['upc']] = $items[$row['upc']];
+                    }
+                }
+                $items = $valid;
+            }
+        } catch (Exception $ex) {}
+
+        return $items;
+    }
+
+    /**
+      This is really a reversed filter. It appends items that the user
+      has checked in previous results onto the list of items. But since
+      filters take and return item lists there was no need to create
+      a separate construct.
+      @param $items [array] of items keyed by UPC
+      @param $form [ValueContainer] representing submitted form values
+      @return [array] of items keyed by UPC
+    */
+    private function filterSavedItems($items, $form)
+    {
+        try {
+            $savedItems = $form->u;
+            if (is_array($savedItems) && count($savedItems) > 0) {
+                $savedQ = '
+                    SELECT p.upc, 
+                        p.brand,
+                        p.description, 
+                        m.super_name, 
+                        p.department, 
+                        d.dept_name,
+                        p.normal_price, p.special_price,
+                        CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale,
+                        1 as selected
+                   FROM products AS p 
+                       LEFT JOIN departments AS d ON p.department=d.dept_no
+                       LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+                   WHERE p.upc IN (';
+                foreach ($savedItems as $item) {
+                    $savedQ .= '?,';
+                }
+                $savedQ = substr($savedQ, 0, strlen($savedQ)-1);
+                $savedQ .= ')';
+
+                $savedP = $this->connection->prepare($savedQ);
+                $savedR = $this->connection->execute($savedP, $savedItems);
+                while ($savedW = $this->connection->fetchRow($savedR)) {
+                    if (isset($items[$savedW['upc']])) {
+                        $items[$savedW['upc']]['selected'] = 1;
+                    } else {
+                        $items[$savedW['upc']] = $savedW;
+                    }
+                }
+            }
+        } catch (Exception $ex) {}
+
+        return $items;
+    }
+
+    /**
+      Run all search methods to compose the inital SQL query
+      Then execute the query and return the results
+      @param $form [ValueContainer] representing submitted form values
+      @return [array] of items keyed by UPC
+
+      All search methods take a simple object as an argument
+      and return an object with the same structure. The search 
+      objects has these properties:
+      * from - search methods may modify this by adding joins
+      * where - search methods may modify this by adding conditional statements
+      * args - joins and/or conditional statements that incoporate
+               user-submitted form data should use prepared statement 
+               placeholders and append the form values to the
+               $search->args array.
+    */
+    private function runSearchMethods($form)
+    {
+        $search = new stdClass();
+        $search->from = 'products AS p 
                 LEFT JOIN departments AS d ON p.department=d.dept_no
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID';
-        $where = '1=1';
-        $args = array();
-
-        $upc = FormLib::get('upc');
-        if ($upc !== '') {
-            if (strstr($upc, '*')) {
-                $upc = str_replace('*', '%', $upc);
-                $where .= ' AND p.upc LIKE ? ';
-                $args[] = $upc;
-            } elseif (substr(BarcodeLib::padUPC($upc), 0, 8) == '00499999') {
-                $couponID = (int)substr(BarcodeLib::padUPC($upc), 8);
-                $from .= ' LEFT JOIN houseCouponItems AS h ON p.upc=h.upc ';
-                $where .= ' AND h.coupID=? ';
-                $args[] = $couponID;
-            } else {
-                $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
-                $where .= ' AND p.upc = ? ';
-                $args[] = $upc;
-            }
+        $search->where = '1=1';
+        $search->args = array();
+        foreach ($this->search_methods as $method) {
+            $search = $this->$method($search, $form);
         }
 
-        $desc = FormLib::get('description');
-        if ($desc !== '') {
-            if (FormLib::get('serviceScale') !== '') {
-                $where .= ' AND (p.description LIKE ? OR h.itemdesc LIKE ?) ';
-                $args[] = '%' . $desc . '%';
-                $args[] = '%' . $desc . '%';
-            } else {
-                $where .= ' AND p.description LIKE ? ';
-                $args[] = '%' . $desc . '%';
-            }
+        if ($search->where == '1=1') {
+            throw new Exception('Too many results');
         }
 
-        $brand = FormLib::get('brand');
-        if ($brand !== '') {
-            if (is_numeric($brand)) {
-                $where .= ' AND p.upc LIKE ? ';
-                $args[] = '%' . $brand . '%';
-            } else {
-                $where .= ' AND (p.brand LIKE ? OR x.manufacturer LIKE ? OR v.brand LIKE ?) ';
-                $args[] = '%' . $brand . '%';
-                $args[] = '%' . $brand . '%';
-                $args[] = '%' . $brand . '%';
-                if (!strstr($from, 'prodExtra')) {
-                    $from .= ' LEFT JOIN prodExtra AS x ON p.upc=x.upc ';
-                }
-                if (!strstr($from, 'vendorItems')) {
-                    $from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc ';
-                }
-            }
-        }
-
-        $superID = FormLib::get('superID');
-        if ($superID !== '') {
-            /**
-              Unroll superdepartment into a list of department
-              numbers so products.department index can be utilizied
-            */
-            $superP = $dbc->prepare('
-                SELECT dept_ID
-                FROM superdepts
-                WHERE superID=?'
-            );
-            $superR = $dbc->execute($superP, array($superID));
-            if ($superR && $dbc->numRows($superR) > 0) {
-                $where .= ' AND p.department IN (';
-                while ($superW = $dbc->fetch_row($superR)) {
-                    $where .= '?,';
-                    $args[] = $superW['dept_ID'];
-                }
-                $where = substr($where, 0, strlen($where)-1) . ') ';
-            }
-        }
-
-        $dept1 = FormLib::get('deptStart');
-        $dept2 = FormLib::get('deptEnd');
-        if ($dept1 !== '' || $dept2 !== '') {
-            // work with just one department field set
-            if ($dept1 === '') {
-                $dept1 = $dept2;
-            } else if ($dept2 === '') {
-                $dept2 = $dept1;
-            }
-            // swap order if needed
-            if ($dept2 < $dept1) {
-                $tmp = $dept1;
-                $dept1 = $dept2;
-                $dept2 = $tmp;
-            }
-            $where .= ' AND p.department BETWEEN ? AND ? ';
-            $args[] = $dept1;
-            $args[] = $dept2;
-        }
-
-        $hobart = FormLib::get('serviceScale');
-        if ($hobart !== '') {
-            $from .= ' INNER JOIN scaleItems AS h ON h.plu=p.upc ';
-            $where = str_replace('p.modified', 'h.modified', $where);
-        }
-
-
-        $modDate = FormLib::get('modDate');
-        if ($modDate !== '') {
-            switch(FormLib::get('modOp')) {
-            case 'Before':
-                $where .= ' AND p.modified < ? ';
-                $args[] = $modDate . ' 00:00:00';
-                if ($hobart !== '') {
-                    $where = str_replace('p.modified', '(p.modified', $where)
-                        . ' OR h.modified < ?) ';
-                    $args[] = $modDate . ' 00:00:00';
-                }
-                break;
-            case 'After':
-                $where .= ' AND p.modified > ? ';
-                $args[] = $modDate . ' 23:59:59';
-                if ($hobart !== '') {
-                    $where = str_replace('p.modified', '(p.modified', $where)
-                        . ' OR h.modified > ?) ';
-                    $args[] = $modDate . ' 23:59:59';
-                }
-                break;
-            case 'On':
-            default:
-                $where .= ' AND p.modified BETWEEN ? AND ? ';
-                $args[] = $modDate . ' 00:00:00';
-                $args[] = $modDate . ' 23:59:59';
-                if ($hobart !== '') {
-                    $where = str_replace('p.modified', '(p.modified', $where)
-                        . ' OR h.modified BETWEEN ? AND ?) ';
-                    $args[] = $modDate . ' 00:00:00';
-                    $args[] = $modDate . ' 23:59:59';
-                }
-                break;
-            }
-        }
-
-        $vendorID = FormLib::get('vendor');
-        if ($vendorID === '0') {
-            $where .= ' AND p.default_vendor_id=0 ';
-        } elseif ($vendorID !== '') {
-            $where .= ' AND (v.vendorID=? or p.default_vendor_id=?)';
-            $args[] = $vendorID;
-            $args[] = $vendorID;
-            if (!strstr($from, 'vendorItems')) {
-                $from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc ';
-            }
-
-            if (FormLib::get('vendorSale')) {
-                $where .= ' AND v.saleCost <> 0 ';
-                $where .= ' AND p.default_vendor_id=? ';
-                $where .= ' AND p.default_vendor_id=v.vendorID ';
-                $args[] = $vendorID;
-            }
-        }
-
-        $price = FormLib::get('price-val');
-        if ($price !== '') {
-            switch (FormLib::get('price-op')) {
-                case '=':
-                    $where .= ' AND p.normal_price = ? ';
-                    $args[] = $price;
-                    break;
-                case '<':
-                    $where .= ' AND p.normal_price < ? ';
-                    $args[] = $price;
-                    break;
-                case '>':
-                    $where .= ' AND p.normal_price > ? ';
-                    $args[] = $price;
-                    break;
-            }
-        }
-
-        $cost = FormLib::get('cost-val');
-        if ($cost !== '') {
-            switch (FormLib::get('cost-op')) {
-                case '=':
-                    $where .= ' AND p.cost = ? ';
-                    $args[] = $cost;
-                    break;
-                case '<':
-                    $where .= ' AND p.cost < ? ';
-                    $args[] = $cost;
-                    break;
-                case '>':
-                    $where .= ' AND p.cost > ? ';
-                    $args[] = $cost;
-                    break;
-            }
-        }
-
-        $rule = FormLib::get('price-rule');
-        if ($rule !== '') {
-            if ($rule == 1) {
-                $where .= ' AND p.price_rule_id <> 0 ';
-            } elseif ($rule == 0) {
-                $where .= ' AND p.price_rule_id = 0 ';
-            }
-        }
-
-        $tax = FormLib::get('tax');
-        if ($tax !== '') {
-            $where .= ' AND p.tax=? ';
-            $args[] = $tax;
-        }
-
-        $local = FormLib::get('local');
-        if ($local !== '') {
-            $where .= ' AND p.local=? ';
-            $args[] = $local;
-        }
-
-        $fs = FormLib::get('fs');
-        if ($fs !== '') {
-            $where .= ' AND p.foodstamp=? ';
-            $args[] = $fs;
-        }
-
-        $inUse = FormLib::get('in_use');
-        if ($inUse !== '') {
-            $where .= ' AND p.inUse=? ';
-            $args[] = $inUse;
-        }
-
-        $discount = FormLib::get('discountable');
-        if ($discount !== '') {
-            $where .= ' AND p.discount=? ';
-            $args[] = $discount;
-        }
-
-        $location = FormLib::get('location');
-        if ($location !== '') {
-            if ($location == '1') {
-                $from .= ' INNER JOIN prodPhysicalLocation AS y ON p.upc=y.upc ';
-            } else {
-                $where .= ' AND p.upc NOT IN (SELECT upc FROM prodPhysicalLocation) ';
-            }
-        }
-
-        $signinfo = FormLib::get('signinfo');
-        if ($signinfo !== '') {
-            if (!strstr($from, 'productUser')) {
-                $from .= ' LEFT JOIN productUser AS s ON p.upc=s.upc ';
-            }
-            if ($signinfo == '1') {
-                $where .= " AND s.brand IS NOT NULL 
-                    AND s.description IS NOT NULL
-                    AND s.brand <> ''
-                    AND s.description <> '' ";
-            } else {
-                $where .= " AND (s.brand IS NULL 
-                    OR s.description IS NULL
-                    OR s.brand = ''
-                    OR s.description = '') ";
-            }
-        }
-
-        $origin = FormLib::get('originID', 0);
-        if ($origin != 0) {
-            $from .= ' INNER JOIN ProductOriginsMap AS g ON p.upc=g.upc ';
-            $where .= ' AND (p.current_origin_id=? OR g.originID=?) ';
-            $args[] = $origin;
-            $args[] = $origin;
-        }
-
-        $lc = FormLib::get('likeCode');
-        if ($lc !== '') {
-            if (!strstr($from, 'upcLike')) {
-                $from .= ' LEFT JOIN upcLike AS u ON p.upc=u.upc ';
-            }
-            if ($lc == 'ANY') {
-                $where .= ' AND u.upc IS NOT NULL ';
-            } else if ($lc == 'NONE') {
-                $where .= ' AND u.upc IS NULL ';
-            } else {
-                $where .= ' AND u.likeCode=? ';
-                $args[] = $lc;
-            }
-        }
-
-        if ($where == '1=1') {
-            echo 'Too many results';
-            return false;
-        }
+        $this->connection->selectDB($this->config->get('OP_DB'));
 
         $query = '
             SELECT p.upc, 
@@ -377,152 +848,47 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 p.special_price,
                 CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale,
                 0 as selected
-            FROM ' . $from . '
-            WHERE ' . $where;
-        $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, $args);
+            FROM ' . $search->from . '
+            WHERE ' . $search->where;
+        $prep = $this->connection->prepare($query);
+        $result = $this->connection->execute($prep, $search->args);
 
         $items = array();
-        while($row = $dbc->fetch_row($result)) {
+        while ($row = $this->connection->fetchRow($result)) {
             $items[$row['upc']] = $row;
         }
 
-        /**
-          Step two:
-          Filter results based on sale-related
-          parameters
-        */
-        $sale = FormLib::get('onsale');
-        if ($sale !== '') {
+        return $items;
+    }
 
-            $where = '1=1';
-            $args = array();
+    /**
+      Run all filter methods and return the filtered
+      list of items
+      @param $items [array] of items keyed by UPC
+      @param $form [ValueContainer] representing submitted form values
+      @return [array] of items keyed by UPC
+    */
+    private function runFilterMethods($items, $form)
+    {
+        foreach ($this->filter_methods as $method) {
+            $items = $this->$method($items, $form);
+        }
+        
+        return $items;
+    }
 
-            $saletype = FormLib::get('saletype');
-            if ($saletype !== '') {
-                $where .= ' AND b.batchType = ? ';
-                $args[] = $saletype;
-            }
-
-            $all = FormLib::get('sale_all', 0);
-            $prev = FormLib::get('sale_past', 0);
-            $now = FormLib::get('sale_current', 0);
-            $next = FormLib::get('sale_upcoming', 0);
-            // all=1 or all three times = 1 means no date filter
-            if ($all == 0 && ($prev == 0 || $now == 0 || $next == 0)) {
-                // all permutations where one of the times is zero
-                if ($prev == 1 && $now == 1) {
-                    $where .= ' AND b.endDate <= ' . $dbc->curdate();
-                } else if ($prev == 1 && $next == 1) {
-                    $where .= ' AND (b.endDate < ' . $dbc->curdate() . ' OR b.startDate > ' . $dbc->curdate() . ') ';
-                } else if ($prev == 1) {
-                    $where .= ' AND b.endDate < ' . $dbc->curdate();
-                } else if ($now == 1 && $next == 1) {
-                    $where .= ' AND b.endDate >= ' . $dbc->curdate();
-                } else if ($now == 1) {
-                    $where .= ' AND b.endDate >= ' . $dbc->curdate() . ' AND b.startDate <= ' . $dbc->curdate();
-                } else if ($next == 1) {
-                    $where .= ' AND b.startDate > ' .$dbc->curdate();
-                }
-            }
-
-            $query = 'SELECT l.upc FROM batchList AS l INNER JOIN batches AS b
-                        ON b.batchID=l.batchID WHERE ' . $where . ' 
-                        GROUP BY l.upc';
-            $prep = $dbc->prepare($query);
-            $result = $dbc->execute($prep, $args);
-            $saleUPCs = array();
-            while($row = $dbc->fetch_row($result)) {
-                $saleUPCs[] = $row['upc'];
-            }
-
-            if ($sale == 0) {
-                // only items that are not selected sales
-                foreach($saleUPCs as $s_upc) {
-                    if (isset($items[$s_upc])) {
-                        unset($items[$s_upc]);
-                    }
-                }
-            } else {
-                // noly items that are in selected sales
-                // collect items in both sets
-                $valid = array();
-                foreach($saleUPCs as $s_upc) {
-                    if (isset($items[$s_upc])) {
-                        $valid[$s_upc] = $items[$s_upc];
-                    }
-                }
-                $items = $valid;
-            }
+    protected function get_search_handler()
+    {
+        try {
+            $items = $this->runSearchMethods($this->form);
+        } catch (Exception $ex) {
+            echo $ex->getMessage();
+            return false;
         }
 
-        /**
-          Filter by movement
-        */
-        $movementFilter = FormLib::get('soldOp');
-        if ($movementFilter !== '') {
-            $movementStart = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j')-$movementFilter-1, date('Y')));
-            $movementEnd = date('Y-m-d', strtotime('yesterday'));
-            $dlog = DTransactionsModel::selectDlog($movementStart, $movementEnd);
+        $items = $this->runFilterMethods($items, $this->form);
 
-            $args = array($movementStart.' 00:00:00', $movementEnd.' 23:59:59');
-            $in = '';
-            foreach($items as $upc => $info) {
-                $in .= '?,';
-                $args[] = $upc;
-            }
-            $in = substr($in, 0, strlen($in)-1);
-
-            $query = "SELECT t.upc
-                      FROM $dlog AS t
-                      WHERE tdate BETWEEN ? AND ?
-                        AND t.upc IN ($in)
-                      GROUP BY t.upc";
-            $prep = $dbc->prepare($query);
-            $result = $dbc->execute($prep, $args);
-            $valid = array();
-            while($row = $dbc->fetch_row($result)) {
-                if (isset($items[$row['upc']])) {
-                    $valid[$row['upc']] = $items[$row['upc']];
-                }
-            }
-            $items = $valid;
-        }
-
-        $savedItems = FormLib::get('u', array());
-        if (is_array($savedItems) && count($savedItems) > 0) {
-            $savedQ = '
-                SELECT p.upc, 
-                    p.brand,
-                    p.description, 
-                    m.super_name, 
-                    p.department, 
-                    d.dept_name,
-                    p.normal_price, p.special_price,
-                    CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale,
-                    1 as selected
-               FROM products AS p 
-                   LEFT JOIN departments AS d ON p.department=d.dept_no
-                   LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
-               WHERE p.upc IN (';
-            foreach ($savedItems as $item) {
-                $savedQ .= '?,';
-            }
-            $savedQ = substr($savedQ, 0, strlen($savedQ)-1);
-            $savedQ .= ')';
-
-            $savedP = $dbc->prepare($savedQ);
-            $savedR = $dbc->execute($savedP, $savedItems);
-            while ($savedW = $dbc->fetch_row($savedR)) {
-                if (isset($items[$savedW['upc']])) {
-                    $items[$savedW['upc']]['selected'] = 1;
-                } else {
-                    $items[$savedW['upc']] = $savedW;
-                }
-            }
-        }
-
-        if (count($items) > 2500) {
+        if (count($items) > 5000) {
             echo 'Too many results';
             return false;
         }
@@ -536,12 +902,15 @@ class AdvancedItemSearch extends FannieRESTfulPage
         return false;
     }
 
-    public function get_init_handler()
+    protected function get_init_handler()
     {
         $vars = base64_decode($this->init);
         parse_str($vars, $data);
         foreach ($data as $field_name => $field_val) {
             $this->add_onload_command('$(\'#searchform :input[name="' . $field_name . '"]\').val(\'' . $field_val . '\');' . "\n");
+            if ($field_val) {
+                $this->add_onload_command('$(\'#searchform :input[name="' . $field_name . '"][type="checkbox"]\').prop(\'checked\', true);' . "\n");
+            }
         }
         $this->add_onload_command('getResults();' . "\n");
 
@@ -557,11 +926,11 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 <th>UPC</th><th>Brand</th><th>Desc</th><th>Super</th><th>Dept</th>
                 <th>Retail</th><th>On Sale</th><th>Sale</th>
                 </tr></thead><tbody>';
-        foreach($data as $upc => $record) {
+        foreach ($data as $upc => $record) {
             $ret .= sprintf('<tr>
                             <td><input type="checkbox" name="u[]" class="upcCheckBox" value="%s" %s 
                                 onchange="checkedCount(\'#selection-counter\', \'.upcCheckBox\');" /></td>
-                            <td><a href="ItemEditorPage.php?searchupc=%s" target="_advs%s">%s</a></td>
+                            <td>%s</td>
                             <td>%s</td>
                             <td>%s</td>
                             <td>%s</td>
@@ -571,7 +940,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                             <td>$%.2f</td>
                             </tr>', 
                             $upc, ($record['selected'] == 1 ? 'checked' : ''),
-                            $upc, $upc, $upc,
+                            \COREPOS\Fannie\API\lib\FannieUI::itemEditorLink($upc),
                             $record['brand'],
                             $record['description'],
                             $record['super_name'],
@@ -586,148 +955,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
         return $ret;
     }
 
-    function javascript_content()
-    {
-        ob_start();
-        ?>
-function getResults() {
-    var dstr = $('#searchform').serialize();
-    $('.upcCheckBox:checked').each(function(){
-        dstr += '&u[]='+$(this).val();
-    });
-
-    $('.progress').show();
-    $('#resultArea').html('');
-    $.ajax({
-        url: 'AdvancedItemSearch.php',
-        type: 'get',
-        data: 'search=1&' + dstr,
-        success: function(data) {
-            $('.progress').hide();
-            $('#resultArea').html(data);
-            $('.search-table').tablesorter({headers: { 0: { sorter:false } } });
-        }
-    });
-}
-function toggleAll(elem, selector) {
-    if (elem.checked) {
-        $(selector).prop('checked', true);
-    } else {
-        $(selector).prop('checked', false);
-    }
-    checkedCount('#selection-counter', selector);
-}
-function checkedCount(output_selector, checked_selector)
-{
-    var count = $(checked_selector + ':checked').length;
-    if (count == 0) {
-        $(output_selector).html('');
-    } else {
-        $(output_selector).html(count + ' items selected. These items will be retained in the next search.');
-    }
-}
-// helper: add all selected upc values to hidden form
-// as hidden input tags. the idea is to submit UPCs
-// to the handling page via POST because the amount of
-// data might not fit in the query string. the hidden 
-// form also opens in a new tab/window so search
-// results are not lost
-function getItems() {
-    $('#actionForm').empty();
-    var ret = false;
-    $('.upcCheckBox:checked').each(function(){
-        $('#actionForm').append('<input type="hidden" name="u[]" value="' + $(this).val() + '" />');
-        ret = true;
-    });
-    return ret;
-}
-function goToBatch() {
-    if (getItems()) {
-        $('#actionForm').attr('action', '../batches/BatchFromSearch.php');
-        $('#actionForm').submit();
-    }
-}
-function goToEdit() {
-    if (getItems()) {
-        $('#actionForm').attr('action', 'EditItemsFromSearch.php');
-        $('#actionForm').submit();
-    }
-}
-function goToList() {
-    if (getItems()) {
-        $('#actionForm').attr('action', 'ProductListPage.php');
-        $('#actionForm').append('<input type="hidden" name="supertype" id="supertype-field" value="upc" />');
-        $('#actionForm').submit();
-    }
-}
-function goToSigns() {
-    if (getItems()) {
-        $('#actionForm').attr('action', '../admin/labels/SignFromSearch.php');
-        $('#actionForm').submit();
-    }
-}
-function goToMargins() {
-    if (getItems()) {
-        $('#actionForm').attr('action', 'MarginToolFromSearch.php');
-        $('#actionForm').submit();
-    }
-}
-function goToSync() {
-    if (getItems()) {
-        $('#actionForm').attr('action', 'hobartcsv/SyncFromSearch.php');
-        $('#actionForm').submit();
-    }
-}
-function goToReport() {
-    if (getItems()) {
-        $('#actionForm').attr('action', $('#reportURL').val());
-        $('#actionForm').submit();
-    }
-}
-function formReset()
-{
-    $('#vendorSale').attr('disabled', 'disabled');
-    $('.saleField').attr('disabled', 'disabled');
-}
-function chainSuper(superID)
-{
-    if (superID === '') {
-        superID = -1;
-    }
-    var req = {
-        jsonrpc: '2.0',
-        method: '\\COREPOS\\Fannie\\API\\webservices\\FannieDeptLookup',
-        id: new Date().getTime(),
-        params: {
-            'type' : 'children',
-            'superID' : superID
-        }
-    };
-    $.ajax({
-        url: '../ws/',
-        type: 'post',
-        data: JSON.stringify(req),
-        dataType: 'json',
-        contentType: 'application/json',
-        success: function(resp) {
-            if (resp.result) {
-                $('#dept-start').empty().append('<option value="">Select Start...</option>');
-                $('#dept-end').empty().append('<option value="">Select End...</option>');
-                for (var i=0; i<resp.result.length; i++) {
-                    var opt = $('<option>').val(resp.result[i]['id'])
-                        .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
-                    $('#dept-start').append(opt.clone());
-                    $('#dept-end').append(opt);
-                }
-            }
-        }
-    });
-}
-        <?php
-        return ob_get_clean();
-    }
-
-    public function get_init_view()
+    protected function get_init_view()
     {
         return $this->get_view();
     }
@@ -742,10 +970,11 @@ function chainSuper(superID)
             ';
     }
 
-    function get_view()
+    protected function get_view()
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        $this->addScript('search.js');
 
         $ret = '<div class="col-sm-10">';
 
@@ -859,29 +1088,29 @@ function chainSuper(superID)
                 <label class="control-label small">Price</label>
             </td>
             <td class="form-inline">
-                <select name="price-op" class="form-control input-sm">
+                <select name="price_op" class="form-control input-sm">
                     <option>=</option>
                     <option>&lt;</option>
                     <option>&gt;</option>
                 </select>
                 <input type="text" class="form-control input-sm price-field"
-                    name="price-val" placeholder="$0.00" />
+                    name="price" placeholder="$0.00" />
             </td>
             <td class="text-right">
                 <label class="control-label small">Cost</label>
             </td>
             <td class="form-inline">
-                <select name="cost-op" class="form-control input-sm">
+                <select name="cost_op" class="form-control input-sm">
                     <option>=</option>
                     <option>&lt;</option>
                     <option>&gt;</option>
                 </select>
                 <input type="text" class="form-control input-sm price-field"
-                    name="cost-val" placeholder="$0.00" />
+                    name="cost" placeholder="$0.00" />
             </td>
             <td class="form-inline" colspan="2">
                 <label class="control-label small">Pricing Rule</label>
-                <select name="price-rule" class="form-control input-sm">
+                <select name="price_rule" class="form-control input-sm">
                     <option value="">Any</option>
                     <option value="0">Standard</option>
                     <option value="1">Variable</option>
@@ -1030,9 +1259,8 @@ function chainSuper(superID)
 
         $ret .= '</tr></table>';
         
-        $ret .= '<button type="submit" class="btn btn-default">Find Items</button>';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<button type="reset" class="btn btn-default">Clear Settings</button>';
+        $ret .= '<button type="submit" class="btn btn-default btn-core">Find Items</button>';
+        $ret .= '<button type="reset" class="btn btn-default btn-reset">Clear Settings</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<span id="selection-counter"></span>';
         $ret .= '</form>';
@@ -1111,6 +1339,49 @@ function chainSuper(superID)
             products that match the second search <strong>and</strong>
             products that were selected in the first search.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $get = $this->get_view();
+        $phpunit->assertNotEquals(0, strlen($get));
+
+        // search crafted to use as many methods as possible
+        // and return a single result
+        $form = new \COREPOS\common\mvc\ValueContainer();
+        $form->upc = '*2';
+        $form->description = 'CHER';
+        $form->brand = '170';
+        $form->superID = 2;
+        $form->deptStart = 29;
+        $form->deptEnd = 20;
+        $form->vendor = '0'; // string type matters
+        $form->price = 2;
+        $form->price_op = '>';
+        $form->cost = 20;
+        $form->cost_op = '<';
+        $form->price_rule = 0;
+        $form->tax = 0;
+        $form->fs = 1;
+        $form->in_use = 1;
+        $form->discountable = 1;
+        $form->local = 0;
+        $form->location = 0;
+        $form->signinfo = 0;
+        $form->likeCode = 'NONE';
+
+        $items = $this->runSearchMethods($form);
+        $phpunit->assertInternalType('array', $items);
+        $phpunit->assertEquals(1, count($items));
+        $phpunit->assertArrayHasKey('0001707710532', $items);
+
+        // easiest filter to trigger is the saved items
+        // sales or movement would require substantially more
+        // sample data
+        $form->u = array('0001707710532', '0001707710332', '0001707712132');
+        $items = $this->runFilterMethods($items, $form);
+        $phpunit->assertInternalType('array', $items);
+        $phpunit->assertEquals(3, count($items));
     }
 
 }

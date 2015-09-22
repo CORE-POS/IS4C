@@ -98,39 +98,48 @@ class SQLManager
 
         $conn = ADONewConnection($type);
         $conn->SetFetchMode(ADODB_FETCH_BOTH);
-        $ok = false;
+        $connected = false;
         if (isset($this->connections[$database]) || $new) {
-            $ok = $conn->NConnect($server,$username,$password,$database);
+            $connected = $conn->NConnect($server,$username,$password,$database);
+        } elseif ($persistent) {
+            $connected = $conn->PConnect($server,$username,$password,$database);
         } else {
-            if ($persistent) {
-                $ok = $conn->PConnect($server,$username,$password,$database);
-            } else {
-                $ok = $conn->Connect($server,$username,$password,$database);
-            }
+            $connected = $conn->Connect($server,$username,$password,$database);
         }
         $this->connections[$database] = $conn;
 
         $this->last_connection_error = false;
-        if (!$ok) {
+        if (!$connected) {
             $this->last_connect_error = $conn->ErrorMsg();
-            $conn = ADONewConnection($type);
-            $conn->SetFetchMode(ADODB_FETCH_BOTH);
-            $ok = $conn->Connect($server,$username,$password);
-            if ($ok) {
-                $this->last_connection_error = false;
-                $stillok = $conn->Execute("CREATE DATABASE $database");
-                if (!$stillok) {
-                    $this->last_connect_error = $conn->ErrorMsg();
-                    $this->connections[$database] = false;
-                    return false;
-                }
-                $conn->Execute("USE $database");
-                $this->connections[$database] = $conn;
-            } else {
+            return $this->connectAndCreate($server, $type, $username, $password, $database);
+        }
+
+        return true;
+    }
+
+    /**
+      Try connecting without specifying a database
+      and then creating the requested database
+    */
+    private function connectAndCreate($server, $type, $username, $password, $database)
+    {
+        $conn = ADONewConnection($type);
+        $conn->SetFetchMode(ADODB_FETCH_BOTH);
+        $connected = $conn->Connect($server,$username,$password);
+        if ($connected) {
+            $this->last_connection_error = false;
+            $stillok = $conn->Execute("CREATE DATABASE $database");
+            if (!$stillok) {
                 $this->last_connect_error = $conn->ErrorMsg();
                 $this->connections[$database] = false;
                 return false;
             }
+            $conn->Execute("USE $database");
+            $this->connections[$database] = $conn;
+        } else {
+            $this->last_connect_error = $conn->ErrorMsg();
+            $this->connections[$database] = false;
+            return false;
         }
 
         return true;
@@ -247,10 +256,10 @@ class SQLManager
         }
 
         /** toggle test_mode off while checking database connection **/
-        $tm = $this->test_mode;
+        $current_tm = $this->test_mode;
         $this->test_mode = false;
         $current_db = $this->defaultDatabase($which_connection);
-        $this->test_mode = $tm;
+        $this->test_mode = $current_tm;
         if ($current_db === false) {
             // no connection; cannot switch database
             return false;
@@ -274,33 +283,36 @@ class SQLManager
             $this->test_mode = false;
         }
 
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
+        $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
         $con = $this->connections[$which_connection];
 
-        $ok = (!is_object($con)) ? false : $con->Execute($query_text,$params);
-        if (!$ok) {
-
-            if (is_array($query_text)) {
-                $query_text = $query_text[0];
-            }
-
-            $errorMsg = $this->error($which_connection);
-            $logMsg = 'Failed Query on ' . $_SERVER['PHP_SELF'] . "\n"
-                    . $query_text . "\n";
-            if (is_array($params)) {
-                $logMsg .= 'Parameters: ' . implode("\n", $params);
-            }
-            $logMsg .= $errorMsg . "\n";
-            $this->logger($logMsg);
+        $result = (!is_object($con)) ? false : $con->Execute($query_text,$params);
+        if (!$result) {
+            $this->logger($this->failedQueryMsg($query_text, $params, $which_connection));
 
             if ($this->throw_on_fail) {
                 throw new \Exception($errorMsg);
             }
         }
 
-        return $ok;
+        return $result;
+    }
+
+    protected function failedQueryMsg($query_text, $params, $which_connection)
+    {
+        if (is_array($query_text)) {
+            $query_text = $query_text[0];
+        }
+
+        $errorMsg = $this->error($which_connection);
+        $logMsg = 'Failed Query on ' . filter_input(INPUT_SERVER, 'PHP_SELF') . "\n"
+                . $query_text . "\n";
+        if (is_array($params)) {
+            $logMsg .= 'Parameters: ' . implode("\n", $params);
+        }
+        $logMsg .= $errorMsg . "\n";
+
+        return $logMsg;
     }
 
     /**
@@ -322,9 +334,9 @@ class SQLManager
     */
     public function queryAll($query_text)
     {
-        $ret = array();
-        foreach($this->connections as $db_name => $con) {
-            $ret[$db_name] = $this->query($query_text,$db_name);
+        $ret = true;
+        foreach ($this->connections as $db_name => $con) {
+            $ret = $this->query($query_text,$db_name);
         }
 
         return $ret;
@@ -355,23 +367,9 @@ class SQLManager
 
     public function identifierEscape($str,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                return '`'.$str.'`';
-            case 'mssql':
-                return '['.$str.']';
-            case 'pgsql':
-            case 'sqlite3':
-                return '"'.$str.'"';
-        }
-
-        return $str;
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->identifierEscape($str);
     }
 
     public function identifier_escape($str,$which_connection='')
@@ -544,22 +542,9 @@ class SQLManager
     */
     public function curtime($which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                return "CURTIME()";
-            case 'mssql':
-                return 'GETDATE()';
-            case 'pgsql':
-                return 'CURRENT_TIME';
-            case 'sqlite3':
-                return "TIME('NOW')";
-        }
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->curtime();
     }
 
     /**
@@ -576,22 +561,9 @@ class SQLManager
     */
     public function datediff($date1,$date2,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                return "datediff($date1,$date2)";
-            case 'mssql':
-                return "datediff(dd,$date2,$date1)";
-            case 'pgsql':
-                return "extract(day from ($date2 - $date1))";
-            case 'sqlite3':
-                return "CAST( (JULIANDAY($date1) - JULIANDAY($date2)) AS INT)";
-        }
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->datediff($date1, $date2);
     }
 
     /**
@@ -609,42 +581,16 @@ class SQLManager
 
     public function monthdiff($date1,$date2,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                return "period_diff(date_format($date1, '%Y%m'), date_format($date2, '%Y%m'))";
-            case 'mssql':
-                return "datediff(mm,$date2,$date1)";
-            case 'pgsql':
-                return "EXTRACT(year FROM age($date2,$date1))*12 + EXTRACT(month FROM age($date2,$date1))";
-        }
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->monthdiff($date1, $date2);
     }
 
     public function yeardiff($date1, $date2, $which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                return "DATE_FORMAT(FROM_DAYS(DATEDIFF($date1,$date2)), '%Y')+0";
-            case 'mssql':
-                return "extract(year from age($date1,$date))";
-            case 'pgsql':
-                return "extract(year from age($date1,$date))";
-            case 'sqlite3':
-                return "CAST( ((JULIANDAY($date1) - JULIANDAY($date2)) / 365) AS INT)";
-        }
-
-        return '0';
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->yeardiff($date1, $date2);
     }
 
     /**
@@ -658,18 +604,9 @@ class SQLManager
     */
     public function seconddiff($date1,$date2,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                return "TIMESTAMPDIFF(SECOND,$date1,$date2)";
-            case 'mssql':
-                return "datediff(ss,$date2,$date1)";
-        }
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->seconddiff($date1, $date2);
     }
 
     /**
@@ -682,20 +619,9 @@ class SQLManager
     */
     public function dateymd($date1,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                return "DATE_FORMAT($date1,'%Y%m%d')";
-            case 'mssql':
-                return "CONVERT(CHAR(11),$date1,112)";
-            case 'pgsql':
-                return "TO_CHAR($date1, 'YYYYMMDD')";
-        }
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->dateymd($date1);
     }
 
     /**
@@ -710,26 +636,9 @@ class SQLManager
     */
     public function convert($expr,$type,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                if(strtoupper($type)=='INT') {
-                    $type='SIGNED';
-                }
-                return "CONVERT($expr,$type)";
-            case 'mssql':
-                return "CONVERT($type,$expr)";
-            case 'pgsql':
-            case 'sqlite3':
-                return "CAST($expr AS $type)";
-        }
-
-        return "";
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->convert($expr, $type);
     }
 
     /**
@@ -743,22 +652,9 @@ class SQLManager
     */
     public function locate($substr,$str,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                return "LOCATE($substr,$str)";
-            case 'mssql':
-                return "CHARINDEX($substr,$str)";
-            case 'pgsql':
-                return "POSITION($substr IN $str)";
-        }
-
-        return "";
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->locate($substr, $str);
     }
 
     /**
@@ -777,38 +673,9 @@ class SQLManager
     public function concat()
     {
         $args = func_get_args();
-        $ret = "";
-        $which_connection = $args[count($args)-1];
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                $ret .= "CONCAT(";
-                for($i=0;$i<count($args)-1;$i++) {
-                    $ret .= $args[$i].",";
-                }
-                $ret = rtrim($ret,",").")";
-                break;
-            case 'mssql':
-                for($i=0;$i<count($args)-1;$i++) {
-                    $ret .= $args[$i]."+";
-                }
-                $ret = rtrim($ret,"+");
-                break;
-            case 'pgsql':
-            case 'sqlite3':
-                for ($i=0;$i<count($args)-1;$i++) {
-                    $ret .= $args[$i] . "||";
-                }
-                $ret = rtrim($ret,"||");
-                break;
-        }
-
-        return $ret;
+        $which_connection = array_pop($args);
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->concat($args);
     }
 
     /**
@@ -822,20 +689,9 @@ class SQLManager
     */
     public function weekdiff($date1,$date2,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                return "week($date1) - week($date2)";
-            case 'mssql':
-                return "datediff(wk,$date2,$date1)";
-            case 'pgsql':
-                return "EXTRACT(WEEK FROM $date1) - EXTRACT(WEEK FROM $date2)";
-        }
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->weekdiff($date1, $date2);
     }
 
     /**
@@ -921,11 +777,6 @@ class SQLManager
 
         $num_fields = $this->num_fields($result,$source_db);
 
-        $unquoted = array("money"=>1,"real"=>1,"numeric"=>1,
-            "float4"=>1,"float8"=>1,"bit"=>1);
-        $strings = array("varchar"=>1,"nvarchar"=>1,"string"=>1,
-            "char"=>1, 'var_string'=>1);
-        $dates = array("datetime"=>1);
         $prep = $insert_query . ' VALUES(';
         $arg_sets = array();
         $big_query = $insert_query . ' VALUES ';
@@ -937,30 +788,17 @@ class SQLManager
             $args = array();
             for ($i=0; $i<$num_fields; $i++) {
                 $type = strtolower($this->fieldType($result,$i,$source_db));
-                if ($row[$i] == "" && strstr(strtoupper($type),"INT")) {
-                    $row[$i] = 0;    
-                } elseif ($row[$i] == "" && isset($unquoted[$type])) {
-                    $row[$i] = 0;
-                }
-                if (isset($dates[$type])) {
-                    $row[$i] = $this->cleanDateTime($row[$i]);
-                } elseif (isset($strings[$type])) {
-                    $row[$i] = str_replace("'","''",$row[$i]);
-                }
+                $row[$i] = $this->sanitizeValue($row[$i], $type);
                 $args[] = $row[$i];
-                if (count($arg_sets) == 0) {
-                    $prep .= '?,';
-                }
                 $big_args[] = $row[$i];
                 $big_values .= '?,';
-            }
-            if (count($arg_sets) == 0) {
-                $prep = substr($prep, 0, strlen($prep)-1) . ')';
             }
             $arg_sets[] = $args;
             $big_values = substr($big_values, 0, strlen($big_values)-1) . '),';
         }
         $big_values = substr($big_values, 0, strlen($big_values)-1);
+        $prep .= str_repeat('?,', count($arg_sets[0]));
+        $prep = substr($prep, 0, strlen($prep)-1) . ')';
 
         /**
           Sending all records as a single query for large
@@ -973,24 +811,57 @@ class SQLManager
             $big_prep = $this->prepare($big_query . $big_values, $dest_db);
             $bigR = $this->execute($big_prep, $big_args, $dest_db);
             return ($bigR) ? true : false;
+        } else {
+            return $this->executeAsTransaction($query, $arg_sets, $dest_db);
         }
+    }
 
+    /**
+      Execute a statement repeatedly as transaction.
+      Commit if all statements succeed.
+      Otherwise roll back.
+    */
+    public function executeAsTransaction($query, $arg_sets, $which_connection='')
+    {
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
         $ret = true;
-        $this->startTransaction($dest_db);
-        $statement = $this->prepare($prep, $dest_db);
+        $this->startTransaction($which_connection);
+        $statement = $this->prepare($prep, $which_connection);
         foreach ($arg_sets as $args) {
-            if (!$this->execute($statement, $args, $dest_db)) {
+            if (!$this->execute($statement, $args, $which_connection)) {
                 $ret = false;
                 break;
             }
         }
         if ($ret === true) {
-            $this->commitTransaction($dest_db);
+            $this->commitTransaction($which_connection);
         } else {
-            $this->rollbackTransaction($dest_db);
+            $this->rollbackTransaction($which_connection);
         }
 
         return $ret;
+    }
+
+    private function sanitizeValue($val, $type)
+    {
+        $unquoted = array("money"=>1,"real"=>1,"numeric"=>1,
+            "float4"=>1,"float8"=>1,"bit"=>1);
+        $strings = array("varchar"=>1,"nvarchar"=>1,"string"=>1,
+            "char"=>1, 'var_string'=>1);
+        $dates = array("datetime"=>1);
+
+        if ($val == "" && strstr(strtoupper($type),"INT")) {
+            $val = 0;    
+        } elseif ($val == "" && isset($unquoted[$type])) {
+            $val = 0;    
+        }
+        if (isset($dates[$type])) {
+            $val = $this->cleanDateTime($val);
+        } elseif (isset($strings[$type])) {
+            $val = str_replace("'","''",$val);
+        }
+
+        return $val;
     }
 
     /**
@@ -1039,27 +910,9 @@ class SQLManager
     */
     public function dayofweek($field,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        // ado is inconsistent
-        //$conn = $this->connections[$which_connection];
-        //return $conn->SQLDate("w",$field);
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                return "DATE_FORMAT($field,'%w')+1";
-            case 'mssql':
-                return "DATEPART(dw,$field)";
-            case 'pgsql':
-                return "EXTRACT(dow from $col";
-            case 'sqlite3':
-                return "(7 - ROUND(JULIANDAY(DATETIME('now','weekday 0')) - JULIANDAY($col))) % 7";
-        }
-
-        return false;
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->dayofweek($field);
     }
 
     /**
@@ -1101,56 +954,19 @@ class SQLManager
 
       This is a utility method to support transfer()
     */
-    public function cleanDateTime($str)
+    protected function cleanDateTime($str)
     {
         $stdFmt = "/(\d\d\d\d)-(\d\d)-(\d\d) (\d+?):(\d\d):(\d\d)/";
         if (preg_match($stdFmt,$str,$group)) {
             return $str;    
         }
 
-        $msqlFmt = "/(\w\w\w) (\d\d) (\d\d\d\d) (\d+?):(\d\d)(\w)M/";
-
-        $months = array(
-            "jan"=>"01",
-            "feb"=>"02",
-            "mar"=>"03",
-            "apr"=>"04",
-            "may"=>"05",
-            "jun"=>"06",
-            "jul"=>"07",
-            "aug"=>"08",
-            "sep"=>"09",
-            "oct"=>"10",
-            "nov"=>"11",
-            "dec"=>"12"
-        );
-
-        $info = array(
-            "month" => 1,
-            "day" => 1,
-            "year" => 1900,
-            "hour" => 0,
-            "min" => 0
-        );
-        
-        if (preg_match($msqlFmt,$str,$group)) {
-            $info["month"] = $months[strtolower($group[1])];
-            $info["day"] = $group[2];
-            $info["year"] = $group[3];
-            $info["hour"] = $group[4];
-            $info["min"] = $group[5];
-            if ($group[6] == "P") {
-                $info["hour"] = ($info["hour"] + 12) % 24;
-            }
+        $timestamp = strtotime($str);
+        if ($timestamp === false) {
+            return $str;
+        } else {
+            return date('Y-m-d H:i:s', $timestamp);
         }
-
-        $ret = $info["year"]."-";
-        $ret .= str_pad($info["month"],2,"0",STR_PAD_LEFT)."-";
-        $ret .= str_pad($info["day"],2,"0",STR_PAD_LEFT)." ";
-        $ret .= str_pad($info["hour"],2,"0",STR_PAD_LEFT).":";
-        $ret .= str_pad($info["min"],2,"0",STR_PAD_LEFT);
-
-        return $ret;
     }
 
     /** 
@@ -1176,6 +992,9 @@ class SQLManager
         }
 
         $conn = $this->connections[$which_connection];
+        if (!is_object($conn)) {
+            return false;
+        }
         $cols = $conn->MetaColumns($table_name);
         if ($cols === false) {
             return false;
@@ -1201,11 +1020,8 @@ class SQLManager
 
         $conn = $this->connections[$which_connection];
         $views = $conn->MetaTables('VIEW');
-        $lc_views = array();
         $lc_name = strtolower($table_name);
-        foreach ($views as $view) {
-            $lc_views[] = strtolower($view);
-        }
+        $lc_views = array_map(function($view) { return strtolower($view); }, $views);
 
         if (in_array($table_name, $views) || in_array($lc_name, $lc_views)) {
             return true;
@@ -1222,69 +1038,14 @@ class SQLManager
     */
     public function getViewDefinition($view_name, $which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
+        $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
 
         if (!$this->isView($view_name, $which_connection)) {
             return false;
         }
 
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                $result = $this->query("SHOW CREATE VIEW " . $this->identifierEscape($view_name, $which_connection), $which_connection);
-                if ($this->numRows($result) > 0) {
-                    $row = $this->fetchRow($result);
-                    return $row[1];
-                } else {
-                    return false;
-                }
-                break;
-            case 'mssql':
-                $result = $this->query("SELECT OBJECT_DEFINITION(OBJECT_ID('$view_name'))", $which_connection);
-                if ($this->numRows($result) > 0) {
-                    $row = $this->fetchRow($result);
-                    return $row[0];
-                } else {
-                    return false;
-                }
-                break;
-            case 'pgsql':
-                $result = $this->query("SELECT oid FROM pg_class
-                        WHERE relname LIKE '$view_name'",
-                        $which_connection);
-                if ($this->numRows($result) > 0) {
-                    $row = $this->fetchRow($result);
-                    $defQ = sprintf('SELECT pg_get_viewdef(%d)', $row['oid']);
-                    $defR = $this->query($defQ, $which_connection);
-                    if ($this->numRows($defR) > 0) {
-                        $def = $this->fetchRow($defR);
-                        return $def[0];
-                    } else {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
-                break;
-            case 'sqlite3':
-                $result = $this->query("SELECT sql FROM sqlite_master
-                        WHERE type IN ('view') AND name='$table_name'",
-                        $which_connection);
-                $ret = false;
-                if ($this->numRows($result) > 0) {
-                    $row = $this->fetchRow($result);
-                    $ret = $row['sql'];
-                }
-                $this->end_query($result, $which_connection);
-                return $ret;
-                break;
-        }
-
-        return false;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->getViewDefinition($view_name, $this, $which_connection);
     }
 
 
@@ -1313,11 +1074,16 @@ class SQLManager
         $conn = $this->connections[$which_connection];
         $cols = $conn->MetaColumns($table_name);
 
-        $return = array();
         if (is_array($cols)) {
-            foreach($cols as $c) {
-                $return[$c->name] = $c->type;
-            }
+            $return = array_reduce($cols,
+                function ($carry, $c) {
+                    if (is_object($c)) {
+                        $carry[$c->name] = $c->type;
+                    }
+                    return $carry;
+                },
+                array()
+            );
             return $return;
         }
 
@@ -1343,56 +1109,58 @@ class SQLManager
     */
     public function detailedDefinition($table_name,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
+        $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
         $conn = $this->connections[$which_connection];
         $cols = $conn->MetaColumns($table_name);
 
         $return = array();
         if (is_array($cols)) {
             foreach($cols as $c) {
-                $info = array();
-                $type = strtoupper($c->type);
-                if (property_exists($c, 'max_length') && $c->max_length != -1 && substr($type, -3) != 'INT') {
-                    if (property_exists($c, 'scale') && $c->scale) {
-                        $type .= '(' . $c->max_length . ',' . $c->scale . ')';
-                    } else {
-                        $type .= '(' . $c->max_length . ')';
-                    }
-                }
-                if (property_exists($c, 'unsigned') && $c->unsigned) {
-                    $type .= ' UNSIGNED';
-                }
-                $info['type'] = $type;
-                if (property_exists($c, 'auto_increment') && $c->auto_increment) {
-                    $info['increment'] = true;
-                } else if (property_exists($c, 'auto_increment') && !$c->auto_increment) {
-                    $info['increment'] = false;
-                } else {
-                    $info['increment'] = null;
-                }
-                if (property_exists($c, 'primary_key') && $c->primary_key) {
-                    $info['primary_key'] = true;
-                } else if (property_exists($c, 'primary_key') && !$c->primary_key) {
-                    $info['primary_key'] = false;
-                } else {
-                    $info['primary_key'] = null;
-                }
-
-                if (property_exists($c, 'default_value') && $c->default_value !== 'NULL' && $c->default_value !== null) {
-                    $info['default'] = $c->default_value;
-                } else {
-                    $info['default'] = null;
-                }
-
-                $return[$c->name] = $info;
+                $return[$c->name] = $this->columnToArray($c);
             }
 
             return $return;
         }
 
         return false;
+    }
+
+    private function columnBooleanProperty($col, $prop)
+    {
+        if (property_exists($col, $prop) && $col->$prop) {
+            return true;
+        } else if (property_exists($col, $prop) && !$col->$prop) {
+            return false;
+        } else {
+            return null;
+        }
+    }
+
+    private function columnToArray($col)
+    {
+        $info = array();
+        $type = strtoupper($col->type);
+        if (property_exists($col, 'max_length') && $col->max_length != -1 && substr($type, -3) != 'INT') {
+            if ($this->columnBooleanProperty($col, 'scale')) {
+                $type .= '(' . $col->max_length . ',' . $col->scale . ')';
+            } else {
+                $type .= '(' . $col->max_length . ')';
+            }
+        }
+        if ($this->columnBooleanProperty($col, 'unsigned')) {
+            $type .= ' UNSIGNED';
+        }
+        $info['type'] = $type;
+        $info['increment'] = $this->columnBooleanProperty($col, 'auto_increment');
+        $info['primary_key'] = $this->columnBooleanProperty($col, 'primary_key');
+
+        if (property_exists($col, 'default_value') && $col->default_value !== 'NULL' && $col->default_value !== null) {
+            $info['default'] = $col->default_value;
+        } else {
+            $info['default'] = null;
+        }
+
+        return $info;
     }
 
     /**
@@ -1423,6 +1191,8 @@ class SQLManager
     */
     public function defaultDatabase($which_connection='')
     {
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
         if ($which_connection == '') {
             $which_connection=$this->default_db;
         }
@@ -1431,21 +1201,7 @@ class SQLManager
             return false;
         }
 
-        $query ='';
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                $query = 'SELECT DATABASE() as dbname';
-                break;
-            case 'mssql':
-                $query = 'SELECT DB_NAME() as dbname';
-                break;
-            case 'pgsql':
-                $query = 'SELECT CURRENT_DATABASE() AS dbname';
-                break;
-        }
+        $query = $adapter->defaultDatabase();
 
         $ret = false;
         $try = $this->query($query, $which_connection);
@@ -1464,21 +1220,9 @@ class SQLManager
     */
     public function currency($which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                return 'decimal(10,2)';
-            case 'mssql':
-            case 'pgsql':
-                return 'money';
-        }
-
-        return 'decimal(10,2)';
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->currency();
     }
 
     /**
@@ -1491,21 +1235,9 @@ class SQLManager
     */
     public function addSelectLimit($query,$int_limit,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-            case 'pgsql':
-                return sprintf("%s LIMIT %d",$query,$int_limit);
-            case 'mssql':
-                return str_ireplace("SELECT ","SELECT TOP $int_limit ",$query);
-        }
-
-        return $query;
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->addSelectLimit($query, $int_limit);
     }
 
     public function add_select_limit($query,$int_limit,$which_connection='')
@@ -1520,22 +1252,9 @@ class SQLManager
     */
     public function sep($which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-            case 'pgsql':
-            case 'sqlite3':
-                return ".";
-            case 'mssql':
-                return ".dbo.";
-        }
-
-        return ".";
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->sep();
     }
 
     /**
@@ -1631,9 +1350,7 @@ class SQLManager
      */
     public function smartInsert($table_name,$values,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
+        $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
 
         $t_def = $this->tableDefinition($table_name, $which_connection);
         if ($t_def === false) {
@@ -1643,12 +1360,11 @@ class SQLManager
         $cols = "(";
         $vals = "(";
         $args = array();
-        foreach($values as $k=>$v) {
+        foreach ($values as $k=>$v) {
             if (isset($t_def[$k])) {
-                $col_name = $k;
                 $vals .= '?,';
                 $args[] = $v;
-                $cols .= $this->identifierEscape($col_name, $which_connection) . ',';
+                $cols .= $this->identifierEscape($k, $which_connection) . ',';
             } else {
                 // implication: column isn't in the table
             }
@@ -1687,9 +1403,7 @@ class SQLManager
      */
     public function smartUpdate($table_name,$values,$where_clause,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
+        $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
 
         $t_def = $this->tableDefinition($table_name, $which_connection);
         if ($t_def === false) {
@@ -1700,8 +1414,7 @@ class SQLManager
         $args = array();
         foreach($values as $k=>$v) {
             if (isset($t_def[$k])) {
-                $col_name = $k;
-                $sets .= $this->identifierEscape($col_name) . ' = ?,';
+                $sets .= $this->identifierEscape($k) . ' = ?,';
                 $args[] = $v;
             } else {
                 // implication: column isn't in the table
@@ -1890,10 +1603,10 @@ class SQLManager
 
             return true;
         } elseif (is_string($this->QUERY_LOG)) {
-            $fp = @fopen($this->QUERY_LOG, 'a');
-            if ($fp) {
-                fwrite($fp, date('r') . ': ' . $str);
-                fclose($fp);
+            $fptr = @fopen($this->QUERY_LOG, 'a');
+            if ($fptr) {
+                fwrite($fptr, date('r') . ': ' . $str);
+                fclose($fptr);
 
                 return true;
             } else {
@@ -1923,12 +1636,11 @@ class SQLManager
             return array();
         }
 
-        $matches = array();
-        foreach($definition1 as $col_name => $info) {
-            if (isset($definition2[$col_name])) {
-                $matches[] = $col_name;
+        $matches = array_filter(array_keys($definition1),
+            function ($col_name) use ($definition2) {
+                return isset($definition2[$col_name]) ? true : false;
             }
-        }
+        );
 
         return $matches;
     }
@@ -1943,14 +1655,18 @@ class SQLManager
     */
     public function getMatchingColumns($table1, $which_connection1, $table2, $which_connection2)
     {
-        $ret = '';
         $def1 = $this->tableDefinition($table1, $which_connection1);
         $def2 = $this->tableDefinition($table2, $which_connection2);
-        foreach ($def1 as $column_name => $info) {
-            if (isset($def2[$column_name])) {
-                $ret .= $column_name . ',';
-            }
-        }
+        $ret = array_reduce(array_keys($def1),
+            function ($carry, $column_name) use ($def2) {
+                if (isset($def2[$column_name])) {
+                    $carry .= $column_name . ',';
+                }
+                return $carry;
+            },
+            ''
+        );
+                
         if ($ret === '') {
             return false;
         } else {
@@ -1976,35 +1692,11 @@ class SQLManager
     */
     public function temporaryTable($name, $source_table, $which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
-        switch ($this->connectionType($which_connection)) {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-            case 'pgsql':
-                $created = $this->query('
-                    CREATE TEMPORARY TABLE ' . $name . '
-                    LIKE ' . $source_table
-                );
-                return $created ? $name : false;
-            case 'mssql':
-                if (strstr($name, '.dbo.')) {
-                    list($schema, $table) = explode('.dbo.', $name, 2);
-                    $name = $schema . '.dbo.#' . $name;
-                } else {
-                    $name = '#' . $name;
-                }
-                $created = $this->query('
-                    CREATE TABLE ' . $name . '
-                    LIKE ' . $source_table
-                );
-                return $created ? $name : false;
-        }
-
-        return false;
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        $query = $adapter->temporaryTable($name, $source_table);
+        $created = $this->query($query, $which_connection);
+        return $created ? $name : false;
     }
 
     /**
@@ -2063,6 +1755,48 @@ class SQLManager
         $this->structure_cache[$which_connection] = array();
 
         return true;
+    }
+
+    /**
+      Adapters provide bits of rDBMS-specific SQL
+      that aren't covered by ADOdb. This method 
+      caches adapters on creation.
+    */
+    protected $adapters = array();
+    protected $adapter_map = array(
+        'mysql'     => 'COREPOS\common\sql\MysqlAdapter',
+        'mysqli'    => 'COREPOS\common\sql\MysqlAdapter',
+        'pdo_mysql' => 'COREPOS\common\sql\MysqlAdapter',
+        'pdo'       => 'COREPOS\common\sql\MysqlAdapter',
+        'mssql'     => 'COREPOS\common\sql\MssqlAdapter',
+        'pgsql'     => 'COREPOS\common\sql\PgsqlAdapter',
+        'sqlite3'   => 'COREPOS\common\sql\SqliteAdapter',
+    );
+
+    protected function getAdapter($type)
+    {
+        if (isset($adapters[$type])) {
+            return $adapters[$type];
+        }
+        if (isset($this->adapter_map[$type])) {
+            $class = $this->adapter_map[$type];
+            $adapters[$type] = new $class();
+        }
+
+        return $adapters[$type];
+    }
+
+    public function arrayToParams($arr) 
+    {
+        $str = '';
+        $args = array();
+        foreach($arr as $entry) {
+            $str .= '?,';
+            $args[] = $entry;
+        }
+        $str = substr($str, 0, strlen($str)-1);
+
+        return array('in'=>$str, 'args'=>$args);
     }
 }
 

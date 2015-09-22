@@ -71,7 +71,7 @@ class AuthClassesPage extends FannieRESTfulPage
             updateAuthNotes($this->id, $notes);
         }
 
-        header('Location: ' . $_SERVER['PHP_SELF']);
+        header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
 
         return false;
     }
@@ -79,7 +79,7 @@ class AuthClassesPage extends FannieRESTfulPage
     public function delete_id_handler()
     {
         deleteClass($this->id);
-        header('Location: ' . $_SERVER['PHP_SELF']);
+        header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
 
         return false;
     }
@@ -107,7 +107,7 @@ class AuthClassesPage extends FannieRESTfulPage
     public function get_id_view()
     {
         $this->add_onload_command("\$('input.form-control').focus();\n");
-        $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">
+        $ret = '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">
             <div class="form-group">
                 <label>Authorization class</label>
                 <input name="id" class="form-control" type="text"
@@ -126,7 +126,7 @@ class AuthClassesPage extends FannieRESTfulPage
     public function get_edit_view()
     {
         $this->add_onload_command("\$('select.form-control').focus();\n");
-        $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="get">
+        $ret = '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="get">
             <label>Authorization class</label>
             <select name="id" class="form-control">';
         foreach (getAuthList() as $name) {
@@ -142,7 +142,7 @@ class AuthClassesPage extends FannieRESTfulPage
     public function get_remove_view()
     {
         $this->add_onload_command("\$('select.form-control').focus();\n");
-        $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="get">
+        $ret = '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="get">
             <input type="hidden" name="_method" value="delete" />
             <label>Authorization class</label>
             <select name="id" class="form-control">';
@@ -161,9 +161,9 @@ class AuthClassesPage extends FannieRESTfulPage
         ob_start();
         echo '<div class="row container">';
         echo '<a class="btn btn-default" href="AuthIndexPage.php">Menu</a> ';
-        echo '<a class="btn btn-default" href="' . $_SERVER['PHP_SELF'] . '?new=1">Add Class</a> ';
-        echo '<a class="btn btn-default" href="' . $_SERVER['PHP_SELF'] . '?edit=1">Edit Class</a> ';
-        echo '<a class="btn btn-default" href="' . $_SERVER['PHP_SELF'] . '?remove=1">Delete Class</a>';
+        echo '<a class="btn btn-default" href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?new=1">Add Class</a> ';
+        echo '<a class="btn btn-default" href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?edit=1">Edit Class</a> ';
+        echo '<a class="btn btn-default" href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?remove=1">Delete Class</a>';
         echo '</div>';
         showClasses();
         return ob_get_clean();

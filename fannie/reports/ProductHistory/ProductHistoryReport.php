@@ -34,8 +34,10 @@ class ProductHistoryReport extends FannieReportPage
 
     protected $title = "Fannie : Product History";
     protected $header = "Product History Report";
-    protected $report_headers = array('Date','Description', 'Price', 'Dept#', 'Tax', 'FS', 'Scale', 'Qty Rq\'d', 'NoDisc', 'UserID');
+    protected $report_headers = array('Date','Description', 'Price', 'Cost', 'Dept#', 'Tax', 'FS', 'Scale', 'Qty Rq\'d', 'NoDisc', 'UserID');
     protected $required_fields = array('upc');
+
+    protected $sort_direction = 1;
 
     public function fetch_report_data()
     {
@@ -89,6 +91,7 @@ class ProductHistoryReport extends FannieReportPage
                 $row['modified'],
                 $row['description'],
                 $row['price'],
+                $row['cost'],
                 $row['dept'],
                 $row['tax'],
                 $row['fs'],

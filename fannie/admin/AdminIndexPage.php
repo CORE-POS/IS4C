@@ -31,15 +31,12 @@ class AdminIndexPage extends FanniePage
     protected $header = 'Fannie :: Admin Tools';
     protected $title = 'Fannie :: Admin Tools';
     public $description = '[Admin Tools] is a landing page listing various administrative tools.';
-    public $themed = true;
+    public $has_unit_tests = true;
 
     public function body_content()
     {
         ob_start();
         ?>
-<!-- 10Aug12 EL Added other options from the navbar flyout. -->
-
-<!-- 10Aug12 EL Was to mem/find_member.php, which doesn't exist. -->
 <a href="../mem/index.php"><font size=4>Membership Management</font></a></br>
 Utilities for managing membership database
 </br></br>
@@ -62,19 +59,6 @@ Manage special orders
 
 <a href="LookupReceipt"><font size=4>Transaction Look-up</font></a></br>
     Search transaction history and reprint receipts
-
-<!--<a href="/admin/volunteers.php"><font size=4>Volunteer Hours</font></a></br>
-    Enter volunteer hours worked
-</br></br>
-<a href="/admin/charges.php"><font size=4>Staff Charges</font></a><br>
-    View staff charge totals
-</br></br>
-<a href="/admin/patronage.php"><font size=4>Patronage Pts. Calculator</font></a></br>
-    View patronage point totals and calculate refunds
-</br></br>
-<a href="shelftags.php"><font size=4>Generate Shelftags</font></a><br>
-    Create and print shelftag batches
-</br>-->
         <?php
         return ob_get_clean();
     }
@@ -85,6 +69,17 @@ Manage special orders
             This landing page provides a handful of links to administrative tools.
             Each is already described.
             </p>';
+    }
+
+    /**
+      Simple page. Just call body method for the sake of code coverage.
+      phpunit will blow up if a notice or warning occurs
+    */
+    public function unitTest($phpunit)
+    {
+        $obj = new AdminIndexPage();
+        $body = $obj->bodyContent();
+        $phpunit->assertNotEquals(0, strlen($body), 'Page is empty');
     }
 }
 

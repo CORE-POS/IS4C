@@ -347,9 +347,9 @@ if (!empty($udesc) || !empty($ubrand) || !empty($usize)){
         $dbc->execute($del, array($upc));
         $query99 = $dbc->prepare("INSERT INTO products (upc,description,normal_price,pricemethod,groupprice,quantity,special_price,specialpricemethod,
                 specialgroupprice,specialquantity,start_date,end_date,department,size,tax,foodstamp,scale,scaleprice,mixmatchcode,
-                modified,advertised,tareweight,discount,discounttype,unitofmeasure,wicable,qttyEnforced,idEnforced,cost,inUse,numflag,
+                modified,tareweight,discount,discounttype,unitofmeasure,wicable,qttyEnforced,idEnforced,cost,inUse,numflag,
                 subdept,deposit,local)
-                VALUES(?,?,?,0,0.00,0,?,0,0.00,0,'','',?,0,?,?,?,0,0,now(),0,0,?,
+                VALUES(?,?,?,0,0.00,0,?,0,0.00,0,'','',?,0,?,?,?,0,0,now(),0,?,
                 ?,0,0,0,0,0.00,1,
                 0,0,0.00,?)");
         $dbc->execute($query99, array($upc, $descript, $price, $w['special_price'], $dept, $tax, $FS, $Scale, $NoDisc, $w['discounttype'], $local));

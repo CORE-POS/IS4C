@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
-class CashDropWarningPage extends InputPage {
+class CashDropWarningPage extends InputCorePage 
+{
 
     function preprocess()
     {

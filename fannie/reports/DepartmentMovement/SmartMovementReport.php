@@ -298,8 +298,8 @@ class SmartMovementReport extends FannieReportPage
             </div>
         </div>
         <p>
-            <button type="submit" class="btn btn-default">Get Report</button>
-            <button type="reset" class="btn btn-default">Reset Form</button>
+            <button type="submit" class="btn btn-default btn-core">Get Report</button>
+            <button type="reset" class="btn btn-default btn-reset">Reset Form</button>
         </p>
         </form>
         <?php

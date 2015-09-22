@@ -150,9 +150,72 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
     public function helpContent()
     {
         return '<p>Recalculate suggested retail prices for items from
-            a given vendor. If margin targets have been assigned to
-            vendor-specific departments, those margins are used. Otherwise
-            POS departments\' margin targets are used.</p>';
+            a given vendor. This takes place in three steps.
+            <ul>
+                <li>First, the vendor catalog unit costs are adjusted
+                    upwards or downwards to account for volume discounts
+                    or shipping markups. The adjusted cost is the catalog
+                    cost times (1 - volume discount) times (1 + shipping markup).
+                    If the cost is 1.99, volume discount is 15%, and shipping
+                    markup is 5%, the adjusted cost is 1.99 * (1 - 0.15) *
+                    (1 + 0.05) = 1.78.</li>
+                <li>Second, the margin target is applied to the adjusted cost
+                    to calculate an approximate SRP. In this case the adjusted 
+                    cost is divided by (1 - margin). If the adjusted cost is 1.78
+                    as before and the margin target is 35%, the appoximate
+                    SRP is 1.78 / (1 - 0.35) = 2.74.
+                    <ul>
+                        <li>There are two tiers of margin targets. If the
+                        item belongs to a vendor subcategory with a non-zero margin
+                        target, that margin is used in this calculation. Otherwise
+                        the POS department\'s margin target it used.
+                        </li>
+                    </ul>
+                </li>
+                <li>Finally, the price is rounded to conform with standards.
+                    <em>This is not currently configurable but probably should be</em>.
+                    In general prices round upward with exceptions around certain
+                    key price points. Higher prices will make larger rounding jumps.
+                    <ul>
+                        <li>Prices between $0.00 and $0.99
+                            <ul>
+                                <li>Round upward to next x.29, x.39, x.49, x.69, x.79, x.89, x.99</li>
+                                <li>Exceptions: none</li>
+                            </ul>
+                        </li>
+                        <li>Prices between $1.00 and $2.99
+                            <ul>
+                                <li>Round upward to next x.19, x.39, x.49, x.69, x.89, x.99</li>
+                                <li>Exceptions: pricing ending in x.15 or less round down to
+                                    the previous x.99</li>
+                            </ul>
+                        </li>
+                        <li>Prices between $3.00 and $5.99
+                            <ul>
+                                <li>Round upward to next x.39, x.69, x.99</li>
+                                <li>Exceptions: pricing ending in x.15 or less round down to
+                                    the previous x.99</li>
+                            </ul>
+                        </li>
+                        <li>Prices between $6.00 and $9.99
+                            <ul>
+                                <li>Round upward to next x.69, x.99</li>
+                                <li>Exceptions: pricing ending in x.29 or less round down to
+                                    the previous x.99</li>
+                            </ul>
+                        </li>
+                        <li>Prices $10.00 and higher
+                            <ul>
+                                <li>Round upward to next x.99</li>
+                                <li>Exceptions: Prices including a zero always round down.
+                                    For example, 30.99 rounds down to 29.99 where as
+                                    31.01 rounds up to 31.99.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                </ul>
+            </p>';
     }
 }
 

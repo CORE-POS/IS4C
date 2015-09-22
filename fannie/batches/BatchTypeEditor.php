@@ -107,110 +107,25 @@ class BatchTypeEditor extends FanniePage {
             return false; // ajax call
         }
         if (FormLib::get_form_value('addtype') !== ''){
-            $p = $dbc->prepare_statement("SELECT MAX(batchTypeID) FROM batchType");
-            $r = $dbc->exec_statement($p);
-            $id = array_pop($dbc->fetch_row($r));
-            $id = (empty($id)) ? 1 : $id + 1;
+            $prep = $dbc->prepare_statement("SELECT MAX(batchTypeID) FROM batchType");
+            $res = $dbc->exec_statement($prep);
+            $tid = array_pop($dbc->fetch_row($res));
+            $tid = (empty($tid)) ? 1 : $tid + 1;
 
             $ins = $dbc->prepare_statement("INSERT INTO batchType (batchTypeID,typeDesc,discType)
                 VALUES (?,'New Type',1)");
-            $dbc->exec_statement($ins,array($id));
+            $dbc->exec_statement($ins,array($tid));
         } elseif (FormLib::get_form_value('deltype') !== ''){
-            $q = $dbc->prepare_statement("DELETE FROM batchType WHERE batchTypeID=?");
-            $dbc->exec_statement($q,array(FormLib::get_form_value('bid')));
+            $query = $dbc->prepare_statement("DELETE FROM batchType WHERE batchTypeID=?");
+            $dbc->exec_statement($query,array(FormLib::get_form_value('bid')));
         }
 
         return true;
     }
 
-    function javascript_content()
-    {
-        ob_start();
-        ?>
-function saveDesc(val,bid){
-    var elem = $(this);
-    var orig = this.defaultValue;
-    $.ajax({
-        url: 'BatchTypeEditor.php',
-        cache: false,
-        type: 'post',
-        data: 'saveDesc='+val+'&bid='+bid,
-        dataType: 'json',
-        success: function(data){
-            showBootstrapPopover(elem, orig, data.error);
-        }
-    });
-}
-function saveType(val,bid){
-    var elem = $(this);
-    var orig = this.defaultValue;
-    $.ajax({
-        url: 'BatchTypeEditor.php',
-        cache: false,
-        type: 'post',
-        data: 'saveType='+val+'&bid='+bid,
-        dataType: 'json',
-        success: function(data){
-            showBootstrapPopover(elem, orig, data.error);
-        }
-    });
-}
-function saveDated(bid){
-    var elem = $(this);
-    var val = 0;
-    if ($(this).prop('checked')) {
-        val = 1;
-    }
-    var orig = this.defaultValue;
-    $.ajax({
-        url: 'BatchTypeEditor.php',
-        cache: false,
-        type: 'post',
-        data: 'saveDated='+val+'&bid='+bid,
-        dataType: 'json',
-        success: function(data){
-            showBootstrapPopover(elem, orig, data.error);
-        }
-    });
-}
-function saveSO(bid){
-    var elem = $(this);
-    var val = 0;
-    if ($(this).prop('checked')) {
-        val = 1;
-    }
-    var orig = this.defaultValue;
-    $.ajax({
-        url: 'BatchTypeEditor.php',
-        cache: false,
-        type: 'post',
-        data: 'saveSO='+val+'&bid='+bid,
-        dataType: 'json',
-        success: function(data){
-            showBootstrapPopover(elem, orig, data.error);
-        }
-    });
-}
-function saveUI(val,bid){
-    var elem = $(this);
-    var orig = this.defaultValue;
-    $.ajax({
-        url: 'BatchTypeEditor.php',
-        cache: false,
-        type: 'post',
-        data: 'saveUI='+val+'&bid='+bid,
-        dataType: 'json',
-        success: function(data){
-            showBootstrapPopover(elem, orig, data.error);
-        }
-    });
-}
-        <?php
-        return ob_get_clean();
-    }
-
     function body_content()
     {
+        $this->addScript('type-editor.js');
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $model = new BatchTypeModel($dbc);
@@ -336,4 +251,3 @@ function saveUI(val,bid){
 
 FannieDispatch::conditionalExec(false);
 
-?>

@@ -43,8 +43,8 @@ class CashierEditor extends FanniePage {
         $emp_no = FormLib::get_form_value('emp_no',0);
 
         if (FormLib::get_form_value('fname') !== '') {
-            $fn = FormLib::get_form_value('fname');
-            $ln = FormLib::get_form_value('lname');
+            $fname = FormLib::get_form_value('fname');
+            $lname = FormLib::get_form_value('lname');
             $passwd = FormLib::get_form_value('passwd');
             $fes = FormLib::get_form_value('fes');
             $active = FormLib::get_form_value('active') !== '' ? 1 : 0;
@@ -53,8 +53,8 @@ class CashierEditor extends FanniePage {
             $dbc = FannieDB::get($FANNIE_OP_DB);
             $employee = new EmployeesModel($dbc);
             $employee->emp_no($emp_no);
-            $employee->FirstName($fn);
-            $employee->LastName($ln);
+            $employee->FirstName($fname);
+            $employee->LastName($lname);
             $employee->CashierPassword($passwd);
             $employee->AdminPassword($passwd);
             $employee->frontendsecurity($fes);
@@ -109,7 +109,7 @@ class CashierEditor extends FanniePage {
         ob_start();
         ?>
         <div id="alert-area"></div>
-        <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
+        <form action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>" method="post">
         <div class="form-group">
             <label>First Name</label>
             <input type="text" name="fname" value="<?php echo $employee->FirstName(); ?>"
@@ -187,4 +187,3 @@ class CashierEditor extends FanniePage {
 
 FannieDispatch::conditionalExec(false);
 
-?>

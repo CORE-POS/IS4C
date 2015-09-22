@@ -101,8 +101,8 @@ elseif ($batchID !== False){
     $testQ = $dbc->prepare_statement("select b.*,p.scale,p.numflag
         FROM batchBarcodes as b INNER JOIN products AS p
         ON b.upc=p.upc
-        WHERE batchID in ($batchIDList) and b.description <> ''
-        ORDER BY batchID");
+        WHERE b.batchID in ($batchIDList) and b.description <> ''
+        ORDER BY b.batchID");
     $result = $dbc->exec_statement($testQ,$args);
     while($row = $dbc->fetch_row($result)){
         $myrow = array(

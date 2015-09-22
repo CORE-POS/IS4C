@@ -201,30 +201,30 @@ class MemberREST
             ORDER BY c.personNum';
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, array($id));
-        while ($w = $dbc->fetchRow($res)) {
+        while ($row = $dbc->fetchRow($res)) {
             $customer = array(
                 'customerID' => 0, // placeholder for compatibility
-                'firstName' => $w['FirstName'],
-                'lastName' => $w['LastName'],
-                'chargeAllowed' => $w['chargeOk'],
-                'checksAllowed' => $w['writeChecks'],
-                'discount' => $w['Discount'],
-                'staff' => $w['staff'],
-                'lowIncomeBenefits' => $w['SSI'],
-                'modified' => $w['modified'],
+                'firstName' => $row['FirstName'],
+                'lastName' => $row['LastName'],
+                'chargeAllowed' => $row['chargeOk'],
+                'checksAllowed' => $row['writeChecks'],
+                'discount' => $row['Discount'],
+                'staff' => $row['staff'],
+                'lowIncomeBenefits' => $row['SSI'],
+                'modified' => $row['modified'],
             );
-            if ($w['personNum'] == 1) {
+            if ($row['personNum'] == 1) {
                 $customer['accountHolder'] = 1;
-                $customer['phone'] = $w['phone'] === null ? '' : $w['phone'];
-                $customer['email'] = $w['email_1'] === null ? '' : $w['email_1'];
-                $customer['altPhone'] = $w['email_2'] === null ? '' : $w['email_2'];
+                $customer['phone'] = $row['phone'] === null ? '' : $row['phone'];
+                $customer['email'] = $row['email_1'] === null ? '' : $row['email_1'];
+                $customer['altPhone'] = $row['email_2'] === null ? '' : $row['email_2'];
             } else {
                 $customer['accountHolder'] = 0;
                 $customer['phone'] = '';
                 $customer['email'] = '';
                 $customer['altPhone'] = '';
             }
-            if ($w['memberStatus'] == 'PC') {
+            if ($row['memberStatus'] == 'PC') {
                 $customer['memberPricingAllowed'] = 1;
                 $customer['memberCouponsAllowed'] = 1;
             }
@@ -253,6 +253,7 @@ class MemberREST
                 }
                 $customers->migrateAccount($id);
                 $customers->reset();
+                $customers->cardNo($id);
             }
             foreach ($customers->find() as $c) {
                 for ($i=0; $i<count($ret['customers']); $i++) {
@@ -429,9 +430,9 @@ class MemberREST
         // even if using the old schema it should still create
         // this record if the new table exists.
         if ($dbc->tableExists('CustomerAccounts')) {
-            $ca = new \CustomerAccountsModel($dbc);
-            $ca->cardNo($max);
-            $ca->save();
+            $account = new \CustomerAccountsModel($dbc);
+            $account->cardNo($max);
+            $account->save();
         }
         $custdata = new \CustdataModel($dbc);
         $custdata->CardNo($max);
@@ -621,7 +622,7 @@ class MemberREST
           settings using a different per-person custdata instance
         */
         if (isset($json['customers']) && is_array($json['customers']) && count($json['customers']) > 0) {
-            $pn = 2;
+            $personNum = 2;
             foreach ($json['customers'] as $c_json) {
                 if (!isset($c_json['accountHolder'])) {
                     $ret['errors']++;
@@ -647,8 +648,8 @@ class MemberREST
                     // the customer was removed from the account
                     continue;
                 } else {
-                    $loopCD->personNum($pn);
-                    $pn++;
+                    $loopCD->personNum($personNum);
+                    $personNum++;
                 }
                 if (isset($c_json['firstName'])) {
                     $loopCD->FirstName($c_json['firstName']);
@@ -659,11 +660,11 @@ class MemberREST
                     $loopCD_changed = true;
                 }
                 if (isset($c_json['chargeAllowed'])) {
-                    $loopCD->chargeOk($c_json['chargeAllowed']);
+                    $loopCD->ChargeOk($c_json['chargeAllowed']);
                     $loopCD_changed = true;
                 }
                 if (isset($c_json['checksAllowed'])) {
-                    $loopCD->writeChecks($c_json['checksAllowed']);
+                    $loopCD->WriteChecks($c_json['checksAllowed']);
                     $loopCD_changed = true;
                 }
                 if (isset($c_json['staff'])) {
@@ -685,7 +686,7 @@ class MemberREST
                 }
             }
             $cleanP = $dbc->prepare('DELETE FROM custdata WHERE CardNo=? AND personNum>=?');
-            $cleanR = $dbc->execute($cleanP, array($id, $pn));
+            $cleanR = $dbc->execute($cleanP, array($id, $personNum));
         }
 
         if (!$meminfo->save()) {
@@ -735,7 +736,7 @@ class MemberREST
         $custdata = new \CustdataModel($dbc);
         $custdata->CardNo($id);
         $account = self::get($id); 
-        $pn = 2;
+        $personNum = 2;
         foreach ($account['customers'] as $c) {
             if (!isset($c['accountHolder'])) {
                 continue;
@@ -743,17 +744,17 @@ class MemberREST
             if ($c['accountHolder']) {
                 $custdata->personNum(1);
             } else {
-                $custdata->personNum($pn);
-                $pn++;
+                $custdata->personNum($personNum);
+                $personNum++;
             }
-            $bl = $template;
-            $bl = str_replace('{{ACCOUNTNO}}', $id, $bl);
-            $bl = str_replace('{{ACCOUNTTYPE}}', $account['customerType'], $bl);
-            $bl = str_replace('{{FIRSTNAME}}', $c['firstName'], $bl);
-            $bl = str_replace('{{LASTNAME}}', $c['lastName'], $bl);
-            $bl = str_replace('{{FIRSTINITIAL}}', substr($c['firstName'],0,1), $bl);
-            $bl = str_replace('{{LASTINITIAL}}', substr($c['lastName'],0,1), $bl);
-            $custdata->blueLine($bl);
+            $blueline = $template;
+            $blueline = str_replace('{{ACCOUNTNO}}', $id, $blueline);
+            $blueline = str_replace('{{ACCOUNTTYPE}}', $account['customerType'], $blueline);
+            $blueline = str_replace('{{FIRSTNAME}}', $c['firstName'], $blueline);
+            $blueline = str_replace('{{LASTNAME}}', $c['lastName'], $blueline);
+            $blueline = str_replace('{{FIRSTINITIAL}}', substr($c['firstName'],0,1), $blueline);
+            $blueline = str_replace('{{LASTINITIAL}}', substr($c['lastName'],0,1), $blueline);
+            $custdata->blueLine($blueline);
             $custdata->save();
         }
     }
@@ -899,9 +900,9 @@ class MemberREST
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $params);
         $ret = array();
-        while ($w = $dbc->fetchRow($res)) {
+        while ($row = $dbc->fetchRow($res)) {
             // this is not efficient
-            $ret[] = self::get($w['CardNo']);
+            $ret[] = self::get($row['CardNo']);
             if ($limit > 0 && count($ret) >= $limit) {
                 break;
             }
@@ -1028,7 +1029,7 @@ class MemberREST
                 $params[] = '%' . $j['phone'] . '%';
             }
             if (isset($j['email'])) {
-                $query .= ' AND m.email LIKE ? ';
+                $query .= ' AND m.email_1 LIKE ? ';
                 $params[] = '%' . $j['email'] . '%';
             }
             if (isset($j['lowIncomeBenefits'])) {
@@ -1047,21 +1048,21 @@ class MemberREST
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $params);
         $ret = array();
-        while ($w = $dbc->fetchRow($res)) {
+        while ($row = $dbc->fetchRow($res)) {
             // this is not efficient
             if ($minimal) {
                 $ret[] = array(
-                    'cardNo' => $w['CardNo'],
+                    'cardNo' => $row['CardNo'],
                     'customers' => array(
                         array(
-                            'cardNo' => $w['CardNo'],
-                            'firstName' => $w['FirstName'],
-                            'lastName' => $w['LastName'],
+                            'cardNo' => $row['CardNo'],
+                            'firstName' => $row['FirstName'],
+                            'lastName' => $row['LastName'],
                         ),
                     ),
                 );
             } else {
-                $ret[] = self::get($w['CardNo']);
+                $ret[] = self::get($row['CardNo']);
                 if ($limit > 0 && count($ret) >= $limit) {
                     break;
                 }
@@ -1086,13 +1087,7 @@ class MemberREST
             $query = 'SELECT MIN(CardNo) FROM custdata WHERE CardNo > ?';
         }
         $prep = $dbc->prepare($query);
-        $res = $dbc->execute($prep, array($id));
-        if (!$res || $dbc->numRows($res) == 0) {
-            return false;
-        }
-        $row = $dbc->fetchRow($res);
-
-        return self::get($row[0]);
+        return $dbc->getValue($prep, array($id));
     }
 
     /**
@@ -1110,13 +1105,7 @@ class MemberREST
             $query = 'SELECT MAX(CardNo) FROM custdata WHERE CardNo < ?';
         }
         $prep = $dbc->prepare($query);
-        $res = $dbc->execute($prep, array($id));
-        if (!$res || $dbc->numRows($res) == 0) {
-            return false;
-        }
-        $row = $dbc->fetchRow($res);
-
-        return self::get($row[0]);
+        return $dbc->getValue($prep, array($id));
     }
 
     /**
@@ -1128,189 +1117,127 @@ class MemberREST
     {
         $config = \FannieConfig::factory();
         $dbc = \FannieDB::get($config->get('OP_DB'));
-        if ($config->get('CUST_SCHEMA') == 1 && $dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
-            return self::autoCompleteAccount($dbc, $field, $val);
+        if (strtolower($field) == 'mfirstname') {
+            list($query, $args) = self::autoCompleteFirstName($val);
+        } elseif (strtolower($field) == 'mlastname') {
+            list($query, $args) = self::autoCompleteLastName($val);
+        } elseif (strtolower($field) == 'maddress') {
+            list($query, $args) = self::autoCompleteAddress($val);
+        } elseif (strtolower($field) == 'mcity') {
+            list($query, $args) = self::autoCompleteCity($val);
+        } elseif (strtolower($field) == 'memail') {
+            list($query, $args) = self::autoCompleteEmail($val);
         } else {
-            return self::autoCompleteCustdata($dbc, $field, $val);
+            $query = $field;
+            $args = array();
         }
+
+        $ret = array();
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep, $args);
+        while ($row = $dbc->fetch_row($res)) {
+            $ret[] = $row['firstName'];
+            if (count($ret) > 50) {
+                break;
+            }
+        }
+
+        return $ret;
     }
 
-    private static function autoCompleteAccount($dbc, $field, $val)
+    private static function autoCompleteFirstName($val)
     {
-        switch (strtolower($field)) {
-            case 'mfirstname':
-                $prep = $dbc->prepare('
-                    SELECT firstName
-                    FROM Customers
-                    WHERE firstName LIKE ?
-                    GROUP BY firstName
-                    ORDER BY firstName');
-                $res = $dbc->execute($prep, array('%' . $val . '%'));
-                while ($row = $dbc->fetch_row($res)) {
-                    $ret[] = $row['firstName'];
-                    if (count($ret) > 50) {
-                        break;
-                    }
-                }
-                
-                return $ret;
-
-            case 'mlastname':
-                $prep = $dbc->prepare('SELECT lastName
-                                       FROM Customers
-                                       WHERE lastName LIKE ?
-                                       GROUP BY lastName
-                                       ORDER BY lastName');
-                $res = $dbc->execute($prep, array('%' . $val . '%'));
-                while ($row = $dbc->fetch_row($res)) {
-                    $ret[] = $row['lastName'];
-                    if (count($ret) > 50) {
-                        break;
-                    }
-                }
-
-                return $ret;
-
-            case 'maddress':
-                $prep = $dbc->prepare('SELECT addressLineOne
-                                       FROM CustomerAccounts
-                                       WHERE addressLineOne LIKE ?
-                                       GROUP BY addressLineOne
-                                       ORDER BY addressLineOne');
-                $res = $dbc->execute($prep, array('%' . $val . '%'));
-                while ($row = $dbc->fetch_row($res)) {
-                    $ret[] = $row['addressLineOne'];
-                    if (count($ret) > 50) {
-                        break;
-                    }
-                }
-
-                return $ret;
-
-            case 'mcity':
-                $prep = $dbc->prepare('SELECT city
-                                       FROM CustomerAccounts
-                                       WHERE city LIKE ?
-                                       GROUP BY city
-                                       ORDER BY city');
-                $res = $dbc->execute($prep, array('%' . $val . '%'));
-                while ($row = $dbc->fetch_row($res)) {
-                    $ret[] = $row['city'];
-                    if (count($ret) > 50) {
-                        break;
-                    }
-                }
-
-                return $ret;
-
-            case 'memail':
-                $prep = $dbc->prepare('SELECT email
-                                       FROM Customers
-                                       WHERE email LIKE ?
-                                       GROUP BY email
-                                       ORDER BY email');
-                $res = $dbc->execute($prep, array('%' . $val . '%'));
-                while ($row = $dbc->fetch_row($res)) {
-                    $ret[] = $row['email'];
-                    if (count($ret) > 50) {
-                        break;
-                    }
-                }
-
-                return $ret;
-
-            default:
-                return array();
+        if (\FannieConfig::config('CUST_SCHEMA') == 1) {
+            $query = 'SELECT FirstName
+            FROM custdata
+            WHERE FirstName LIKE ?
+            GROUP BY FirstName
+            ORDER BY FirstName';
+        } else {
+            $query = 'SELECT firstName
+            FROM Customers
+            WHERE firstName LIKE ?
+            GROUP BY firstName
+            ORDER BY firstName';
         }
+
+        return array($query, array('%' . $val . '%'));
     }
 
-    private static function autoCompleteCustdata($dbc, $field, $val)
+    private static function autoCompleteLastName($val)
     {
-        switch (strtolower($field)) {
-            case 'mfirstname':
-                $prep = $dbc->prepare('
-                    SELECT FirstName
-                    FROM custdata
-                    WHERE FirstName LIKE ?
-                    GROUP BY FirstName
-                    ORDER BY FirstName');
-                $res = $dbc->execute($prep, array('%' . $val . '%'));
-                while ($row = $dbc->fetch_row($res)) {
-                    $ret[] = $row['FirstName'];
-                    if (count($ret) > 50) {
-                        break;
-                    }
-                }
-                
-                return $ret;
-
-            case 'mlastname':
-                $prep = $dbc->prepare('SELECT LastName
-                                       FROM custdata
-                                       WHERE LastName LIKE ?
-                                       GROUP BY LastName
-                                       ORDER BY LastName');
-                $res = $dbc->execute($prep, array('%' . $val . '%'));
-                while ($row = $dbc->fetch_row($res)) {
-                    $ret[] = $row['LastName'];
-                    if (count($ret) > 50) {
-                        break;
-                    }
-                }
-
-                return $ret;
-
-            case 'maddress':
-                $prep = $dbc->prepare('SELECT street
-                                       FROM meminfo
-                                       WHERE street LIKE ?
-                                       GROUP BY street
-                                       ORDER BY street');
-                $res = $dbc->execute($prep, array('%' . $val . '%'));
-                while ($row = $dbc->fetch_row($res)) {
-                    $ret[] = $row['street'];
-                    if (count($ret) > 50) {
-                        break;
-                    }
-                }
-
-                return $ret;
-
-            case 'mcity':
-                $prep = $dbc->prepare('SELECT city
-                                       FROM meminfo
-                                       WHERE city LIKE ?
-                                       GROUP BY city
-                                       ORDER BY city');
-                $res = $dbc->execute($prep, array('%' . $val . '%'));
-                while ($row = $dbc->fetch_row($res)) {
-                    $ret[] = $row['city'];
-                    if (count($ret) > 50) {
-                        break;
-                    }
-                }
-
-                return $ret;
-
-            case 'memail':
-                $prep = $dbc->prepare('SELECT email_1
-                                       FROM meminfo
-                                       WHERE email_1 LIKE ?
-                                       GROUP BY email_1
-                                       ORDER BY email_1');
-                $res = $dbc->execute($prep, array('%' . $val . '%'));
-                while ($row = $dbc->fetch_row($res)) {
-                    $ret[] = $row['email_1'];
-                    if (count($ret) > 50) {
-                        break;
-                    }
-                }
-
-                return $ret;
-
-            default:
-                return array();
+        if (\FannieConfig::config('CUST_SCHEMA') == 1) {
+            $query = 'SELECT LastName
+            FROM custdata
+            WHERE LastName LIKE ?
+            GROUP BY LastName
+            ORDER BY LastName';
+        } else {
+            $query = 'SELECT lastName
+            FROM Customers
+            WHERE lastName LIKE ?
+            GROUP BY lastName
+            ORDER BY lastName';
         }
+
+        return array($query, array('%' . $val . '%'));
+    }
+
+    private static function autoCompleteAddress($val)
+    {
+        if (\FannieConfig::config('CUST_SCHEMA') == 1) {
+            $query = 'SELECT addressLineOne
+                       FROM CustomerAccounts
+                       WHERE addressLineOne LIKE ?
+                       GROUP BY addressLineOne
+                       ORDER BY addressLineOne';
+        } else {
+            $query = 'SELECT street
+                       FROM meminfo
+                       WHERE street LIKE ?
+                       GROUP BY street
+                       ORDER BY street';
+        }
+
+        return array($query, array('%' . $val . '%'));
+    }
+
+    private static function autoCompleteCity($val)
+    {
+        if (\FannieConfig::config('CUST_SCHEMA') == 1) {
+            $query = 'SELECT city
+                       FROM CustomerAccounts
+                       WHERE city LIKE ?
+                       GROUP BY city
+                       ORDER BY city';
+        } else {
+            $query = 'SELECT city
+                       FROM meminfo
+                       WHERE city LIKE ?
+                       GROUP BY city
+                       ORDER BY city';
+        }
+
+        return array($query, array('%' . $val . '%'));
+    }
+
+    private static function autoCompleteEmail($val)
+    {
+        if (\FannieConfig::config('CUST_SCHEMA') == 1) {
+            $query = 'SELECT email
+                       FROM Customers
+                       WHERE email LIKE ?
+                       GROUP BY email
+                       ORDER BY email';
+        } else {
+            $query = 'SELECT email_1
+                       FROM meminfo
+                       WHERE email_1 LIKE ?
+                       GROUP BY email_1
+                       ORDER BY email_1';
+        }
+
+        return array($query, array('%' . $val . '%'));
     }
 }
 

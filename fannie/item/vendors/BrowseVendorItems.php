@@ -190,7 +190,14 @@ class BrowseVendorItems extends FanniePage
             $args[] = $did;
         }
         $query .= "ORDER BY v.upc";
-        $posP = $dbc->prepare('SELECT upc FROM products WHERE upc=?');
+        $posP = $dbc->prepare('
+            SELECT upc, 
+                normal_price, 
+                department,
+                d.dept_name
+            FROM products AS p
+                LEFT JOIN departments AS d ON p.department=d.dept_no
+            WHERE upc=?');
         
         $ret = "<table class=\"table table-bordered\">";
         $ret .= "<tr><th>UPC</th><th>Brand</th><th>Description</th>";
@@ -200,14 +207,30 @@ class BrowseVendorItems extends FanniePage
         while ($row = $dbc->fetch_row($result)) {
             $inPOS = $dbc->execute($posP, array($row['upc']));
             if ($inPOS && $dbc->numRows($inPOS) > 0) {
+                $pos = $dbc->fetchRow($inPOS);
                 $ret .= sprintf("<tr class=\"alert-success\">
-                    <td>%s</td><td>%s</td><td>%s</td>
-                    <td>%s</td><td>\$%.2f</td><td colspan=3>&nbsp;
-                    </td></tr>",$row['upc'],$row['brand'],
-                    $row['description'],$row['size'],$row['cost']);
+                    <td><a href=\"../ItemEditorPage.php?searchupc=%s\">%s</a></td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>\$%.2f</td>
+                    <td>\$%.2f</td>
+                    <td>%d %s</td>
+                    <td>&nbsp;</td>
+                    </tr>",
+                    $row['upc'], $row['upc'],
+                    $row['brand'],
+                    $row['description'],
+                    $row['size'],
+                    $row['cost'],
+                    $pos['normal_price'],
+                    $pos['department'], $pos['dept_name']
+                );
             } else {
                 $srp = !empty($row['srp']) ? $row['srp'] : $this->getSRP($row['cost'],$row['margin']);
-                $ret .= sprintf("<tr id=row%s><td>%s</td><td>%s</td><td>%s</td>
+                $ret .= sprintf("<tr id=row%s>
+                    <td><a href=\"../ItemEditorPage.php?searchupc=%s\">%s</a></td>
+                    <td>%s</td><td>%s</td>
                     <td>%s</td><td>\$%.2f</td>
                     <td class=\"col-sm-1\">
                         <div class=\"input-group\">
@@ -219,8 +242,10 @@ class BrowseVendorItems extends FanniePage
                     <td id=button%s>
                     <button type=button value=\"Add to POS\" class=\"btn btn-default\"
                     onclick=\"addToPos('%s');\">Add to POS</button></td>
-                    </tr>",$row['upc'],
-                    $row['upc'],$row['brand'],$row['description'],
+                    </tr>",
+                    $row['upc'],
+                    $row['upc'], $row['upc'],
+                    $row['brand'],$row['description'],
                     $row['size'],$row['cost'],$srp,$row['upc'],
                     $row['upc'],$depts,$row['upc'],$row['upc']);
             }
@@ -316,8 +341,12 @@ class BrowseVendorItems extends FanniePage
             $cats .= "<option value=$rw[0]>$rw[0] $rw[1]</option>";
         }
 
-        if ($cats =="") $cats = "<option value=\"\">Select a department...</option><option>All</option>";
-        else $cats = "<option value=\"\">Select a department...</option>".$cats;
+        if ($cats =="") {
+            $cats = "<option value=\"\">Select a subcategory...</option><option selected>All</option>";
+            $this->addOnloadCommand('catchange()');
+        } else {
+            $cats = "<option value=\"\">Select a subcategory...</option>".$cats; 
+        }
 
         ob_start();
         ?>
@@ -327,7 +356,7 @@ class BrowseVendorItems extends FanniePage
         </select>
         &nbsp;&nbsp;&nbsp;
         <select id=brandselect onchange="brandchange();" class="form-control">
-        <option>Select a department first...</option>
+        <option>Select a subcategory first...</option>
         </select>
         &nbsp;&nbsp;&nbsp;
         <select id="shelftags" class="form-control">
@@ -367,7 +396,7 @@ class BrowseVendorItems extends FanniePage
     {
         return '<p>This tool is used to create POS products from
             entries in the vendor\'s catalog of items. Selecting
-            a department and brand first is necessary to keep the
+            a subcategory and brand first is necessary to keep the
             list of available items a manageable size.
             </p>
             <p>Green rows are already in POS as products. Other

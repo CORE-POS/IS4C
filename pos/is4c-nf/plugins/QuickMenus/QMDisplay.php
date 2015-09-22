@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
-class QMDisplay extends NoInputPage {
+class QMDisplay extends NoInputCorePage 
+{
 
     private $offset;
     private $plugin_url;
@@ -58,7 +59,7 @@ class QMDisplay extends NoInputPage {
     function preprocess()
     {
         $plugin_info = new QuickMenus();
-        $this->plugin_url = $plugin_info->plugin_url().'/';
+        $this->plugin_url = $plugin_info->pluginUrl().'/';
 
         $this->offset = isset($_REQUEST['offset'])?$_REQUEST['offset']:0;
 
@@ -67,10 +68,15 @@ class QMDisplay extends NoInputPage {
             if ($_REQUEST["clear"] == 0) {
                 $value = $_REQUEST['ddQKselect'];
 
-                $output = CoreLocal::get("qmInput").$value;
-                CoreLocal::set("msgrepeat",1);
-                CoreLocal::set("strRemembered",$output);
-                CoreLocal::set("currentid",CoreLocal::get("qmCurrentId"));
+                if ($value === '') {
+                    CoreLocal::set("msgrepeat",0);
+                    CoreLocal::set("strRemembered",'');
+                } else {
+                    $output = CoreLocal::get("qmInput").$value;
+                    CoreLocal::set("msgrepeat",1);
+                    CoreLocal::set("strRemembered",$output);
+                    CoreLocal::set("currentid",CoreLocal::get("qmCurrentId"));
+                }
                 if (!FormLib::validateToken() && is_numeric($value)) {
                     CoreLocal::set("msgrepeat",0);
                 }

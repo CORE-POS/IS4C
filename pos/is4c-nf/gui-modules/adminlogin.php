@@ -37,7 +37,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class adminlogin extends NoInputPage {
+class adminlogin extends NoInputCorePage 
+{
     var $box_color;
     var $msg;
     var $heading;

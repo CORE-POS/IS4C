@@ -43,7 +43,7 @@ class EmailReporting extends \COREPOS\Fannie\API\FanniePlugin {
     public $plugin_description = 'Plugin for logging email usage';
 
 
-    public function setting_change()
+    public function settingChange()
     {
         $db_name = $FANNIE_PLUGIN_SETTINGS['EmailReportingDB'];
         if (empty($db_name)) return;
@@ -53,9 +53,6 @@ class EmailReporting extends \COREPOS\Fannie\API\FanniePlugin {
             $obj = new EmailUsageLogModel($dbc);
             $obj->create();
         }
-    }
-
-    public function plugin_enable(){
     }
 }
 

@@ -176,4 +176,3 @@ function goToPage(the_id){
 
 FannieDispatch::conditionalExec();
 
-?>

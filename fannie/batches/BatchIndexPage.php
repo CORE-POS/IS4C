@@ -25,14 +25,16 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class BatchIndexPage extends FanniePage {
+class BatchIndexPage extends FanniePage 
+{
     protected $title = 'Fannie - Batch Module';
     protected $header = 'Sales Batches';
 
     public $description = '[Batch Menu] lists various batch related pages.';
-    public $themed = true;
+    public $has_unit_tests = true;
 
-    function body_content(){
+    function bodyContent()
+    {
         ob_start();
         ?>
         <ul>
@@ -64,8 +66,13 @@ class BatchIndexPage extends FanniePage {
             are called "Price Change Batches".
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $body = $this->bodyContent();
+        $phpunit->assertNotEquals(0, strlen($body));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

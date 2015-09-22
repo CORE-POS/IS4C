@@ -210,8 +210,8 @@ class PriceMovementReport extends FannieReportPage
     </div>
 </div>
     <p>
-        <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>
-        <button type=reset name=reset class="btn btn-default"
+        <button type=submit name=submit value="Submit" class="btn btn-default btn-core">Submit</button>
+        <button type=reset name=reset class="btn btn-default btn-reset"
             onclick="$('#super-id').val('').trigger('change');">Start Over</button>
     </p>
 </form>

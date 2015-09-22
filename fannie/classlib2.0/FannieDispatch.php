@@ -94,7 +94,7 @@ class FannieDispatch
             return false;
         }
 
-        if (!$dbc || !isset($dbc->connections[$op_db]) || $dbc->connections[$op_db] == false) {
+        if (!$dbc || !isset($dbc->connections[$op_db]) || $dbc->connections[$op_db] === false) {
             // database unavailable
             return false;
         }
@@ -104,16 +104,23 @@ class FannieDispatch
             $user = 'n/a';
         }
 
-        $model = new UsageStatsModel($dbc);
-        $model->tdate(date('Y-m-d H:i:s'));
-        $model->pageName(basename($_SERVER['PHP_SELF']));
+        $prep = $dbc->prepare(
+            'INSERT INTO usageStats
+                (tdate, pageName, referrer, userHash, ipHash)
+             VALUES
+                (?, ?, ?, ?, ?)');
+        $args = array(
+            date('Y-m-d H:i:s'),
+            basename(filter_input(INPUT_SERVER, 'PHP_SELF')),
+        );
         $referrer = isset($_SERVER['HTTP_REFERER']) ? basename($_SERVER['HTTP_REFERER']) : 'n/a';
-        $model->referrer($referrer);
-        $model->userHash(sha1($user));
-        $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'n/a';
-        $model->ipHash(sha1($ip));
-        
-        return $model->save();
+        $referrer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
+        $args[] = $referrer === null ? 'n/a' : basename($referrer);
+        $args[] = sha1($user);
+        $ip_addr = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+        $args[] = sha1($ip_addr);
+
+        return $dbc->execute($prep, $args);
     }
 
     static public function i18n()
@@ -147,9 +154,9 @@ class FannieDispatch
     */
     static public function conditionalExec($custom_errors=true)
     {
-        $bt = debug_backtrace();
+        $frames = debug_backtrace();
         // conditionalExec() is the only function on the stack
-        if (count($bt) == 1) {
+        if (count($frames) == 1) {
             $config = FannieConfig::factory();
             $logger = new FannieLogger();
             if ($config->get('SYSLOG_SERVER')) {
@@ -171,12 +178,15 @@ class FannieDispatch
             self::logUsage($dbc, $op_db);
 
             // draw current page
-            $page = basename($_SERVER['PHP_SELF']);
+            $page = basename(filter_input(INPUT_SERVER, 'PHP_SELF'));
             $class = substr($page,0,strlen($page)-4);
             if ($class != 'index' && class_exists($class)) {
                 $obj = new $class();
                 $obj->setConfig($config);
                 $obj->setLogger($logger);
+                if (is_a($obj, 'FannieReportPage')) {
+                    $dbc = FannieDB::getReadOnly($op_db);
+                }
                 $obj->setConnection($dbc);
                 $obj->draw_page();
             } else {

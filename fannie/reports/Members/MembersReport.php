@@ -28,6 +28,7 @@ class MembersReport extends FannieReportPage
             $args[] = $memType; 
         }
         $inType = substr($inType, 0, strlen($inType)-1);
+        $suspended = FormLib::get('suspended', 1);
 
         $trans = $FANNIE_TRANS_DB;
         if ($dbc->dbms_name() == 'mssql') {
@@ -50,6 +51,7 @@ class MembersReport extends FannieReportPage
             WHERE c.Type <> 'TERM' 
                 AND (c.memType IN ($inType) OR s.memtype1 IN ($inType))
                 AND c.personNum=1
+                " . ($suspended == 0 ? ' AND s.cardno IS NULL ' : '') . "
             ORDER BY c.CardNo
         ");
         $arg_count = count($args);
@@ -60,7 +62,7 @@ class MembersReport extends FannieReportPage
         $saveW = array();
         $data = array();
         while ($w = $dbc->fetch_row($r)) {
-            if ($w['CardNo'] != $saveW['CardNo']){
+            if (count($saveW) == 0 || $w['CardNo'] != $saveW['CardNo']){
                 if (count($saveW) > 0) {
                     $data[] = $this->formatRow($saveW);
                 }
@@ -139,6 +141,12 @@ class MembersReport extends FannieReportPage
             );
         }
         ?>
+        <div class="form-group">
+            <select name="suspended" class="form-control">
+                <option value="1">Include suspended accounts</option>
+                <option value="0">Exclude suspended accounts</option>
+            </select>
+        </div>
         <p>
             <button type="submit" class="btn btn-default">List Members</button>
         </p>

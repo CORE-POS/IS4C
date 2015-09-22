@@ -283,7 +283,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
         $b->startDate(date('Y-m-d', strtotime('yesterday')));
         $b->endDate(date('Y-m-d', strtotime('yesterday')));
         $b->batchType($btype);
-        $b->discounttype(0);
+        $b->discountType(0);
         $b->priority(0);
         $b->owner($owner);
         $id = $b->save();
@@ -366,7 +366,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
         }
 
         // get applicable department(s)
-        $info = $this->arrayToParams($this->upcs);
+        $info = $dbc->arrayToParams($this->upcs);
         $deptQ = "SELECT department
                   FROM products 
                   WHERE upc in ({$info['in']})
@@ -394,7 +394,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
         $ret = '';
 
         // list super depts & starting margins
-        $info = $this->arrayToParams($this->depts);
+        $info = $dbc->arrayToParams($this->depts);
         $superQ = "SELECT m.superID, super_name,
                     SUM(cost) AS totalCost,
                     SUM(CASE WHEN p.cost = 0 THEN 0 ELSE p.normal_price END) as totalPrice
@@ -483,7 +483,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
                 <th>New Price</th>
                 </tr></thead><tbody>';
 
-        $info = $this->arrayToParams($this->upcs);
+        $info = $dbc->arrayToParams($this->upcs);
         $query = 'SELECT p.upc, p.description, p.department, p.cost,
                     p.normal_price, m.superID, q.percentageStoreSales,
                     q.percentageSuperDeptSales, q.percentageDeptSales
@@ -642,18 +642,6 @@ function reCalc(upc, price, cost, deptID, superID) {
 }
         <?php
         return ob_get_clean();
-    }
-
-    private function arrayToParams($arr) {
-        $str = '';
-        $args = array();
-        foreach($arr as $entry) {
-            $str .= '?,';
-            $args[] = $entry;
-        }
-        $str = substr($str, 0, strlen($str)-1);
-
-        return array('in'=>$str, 'args'=>$args);
     }
 
     public function helpContent()

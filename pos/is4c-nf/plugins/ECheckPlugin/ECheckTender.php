@@ -92,7 +92,7 @@ class ECheckTender extends TenderModule
             CoreLocal::set('strEntered', ($this->amount*100) . $this->tender_code);
             CoreLocal::set('lastRepeat', 'echeckVerifyType');
             $plugin_info = new ECheckPlugin();
-            return $plugin_info->plugin_url() . '/ECheckVerifyPage.php?amount='.$this->amount;;
+            return $plugin_info->pluginUrl() . '/ECheckVerifyPage.php?amount='.$this->amount;;
         } else if (CoreLocal::get('msgrepeat') == 1 && CoreLocal::get('lastRepeat') == 'echeckVerifyType') {
             CoreLocal::set('msgrepeat', 0);
             CoreLocal::set('lastRepeat', '');

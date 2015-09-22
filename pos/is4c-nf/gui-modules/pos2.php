@@ -25,8 +25,8 @@ session_cache_limiter('nocache');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class pos2 extends BasicPage {
-
+class pos2 extends BasicCorePage 
+{
     var $display;
 
     function preprocess()

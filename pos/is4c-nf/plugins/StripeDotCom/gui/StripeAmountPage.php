@@ -24,7 +24,7 @@
 
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
-class StripeAmountPage extends BasicPage 
+class StripeAmountPage extends BasicCorePage 
 {
     private $amt = 0;
 

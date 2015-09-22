@@ -235,7 +235,7 @@ class InstallUtilities extends LibraryClass
       @param $value string value
       @return boolean success
     */
-    static private function jsonConfSave($key, $value)
+    static public function jsonConfSave($key, $value)
     {
         $ini_json = dirname(__FILE__) . '/../ini.json';
         if (!is_writable($ini_json)) {
@@ -1207,6 +1207,7 @@ class InstallUtilities extends LibraryClass
             'EfsnetTokensModel',
             'PaycardTransactionsModel',
             'CapturedSignatureModel',
+            'EmvReceiptModel',
             // placeholder,
             '__LTT__',
             // Views

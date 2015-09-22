@@ -44,7 +44,8 @@ class DepartmentMovementReport extends FannieReportPage
     */
     function fetch_report_data()
     {
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $date1 = FormLib::getDate('date1',date('Y-m-d'));
         $date2 = FormLib::getDate('date2',date('Y-m-d'));
         $deptStart = FormLib::get_form_value('deptStart','');
@@ -320,25 +321,6 @@ class DepartmentMovementReport extends FannieReportPage
 
     function form_content()
     {
-        /*
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
-        $deptsR = $dbc->exec_statement($deptsQ);
-        $deptsList = "";
-
-        $deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames
-                WHERE superID <> 0 
-                ORDER BY superID");
-        $deptSubR = $dbc->exec_statement($deptSubQ);
-
-        $deptSubList = "";
-        while($deptSubW = $dbc->fetch_array($deptSubR)) {
-            $deptSubList .=" <option value=$deptSubW[0]>$deptSubW[1]</option>";
-        }
-        while ($deptsW = $dbc->fetch_array($deptsR)) {
-            $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
-        }
-        */
 ?>
 <form method = "get" action="DepartmentMovementReport.php" class="form-horizontal">
 <div class="row">

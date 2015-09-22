@@ -52,10 +52,11 @@ class CustomerCountReport extends FannieReportPage {
     public $themed = true;
     public $report_set = 'Membership';
 
-    function preprocess(){
-        global $FANNIE_OP_DB;
+    function preprocess()
+    {
         // dynamic column headers
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $typeQ = $dbc->prepare_statement("SELECT memtype,memDesc FROM memtype ORDER BY memtype");
         $typeR = $dbc->exec_statement($typeQ);
         $this->memtypes = array();
@@ -71,8 +72,8 @@ class CustomerCountReport extends FannieReportPage {
 
     function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
         $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 

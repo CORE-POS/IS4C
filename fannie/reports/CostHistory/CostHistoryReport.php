@@ -66,6 +66,18 @@ class CostHistoryReport extends FannieReportPage
         return parent::preprocess();
     }
 
+    public function report_description_content()
+    {
+        if ($this->report_format == 'html') {
+            return array(
+                '',
+                '<a href="../ProductHistory/ProductHistoryReport.php?upc=' . FormLib::get('upc') . '">Full History of this Item</a>',
+            );
+        } else {
+            return array();
+        }
+    }
+
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB;
@@ -88,7 +100,8 @@ class CostHistoryReport extends FannieReportPage
 
         $q = "";
         $args = array();
-        $sql = FannieDB::get($FANNIE_OP_DB);
+        $sql = $this->connection;
+        $sql->selectDB($this->config->get('OP_DB'));
         $type = FormLib::get('type');
         if ($type === '') { // not set
             $q = "
@@ -195,8 +208,8 @@ class CostHistoryReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $sql = FannieDB::get($FANNIE_OP_DB);
+        $sql = $this->connection;
+        $sql->selectDB($this->config->get('OP_DB'));
 
         $deptsQ = $sql->prepare_statement("select dept_no,dept_name from departments order by dept_no");
         $deptsR = $sql->exec_statement($deptsQ);
