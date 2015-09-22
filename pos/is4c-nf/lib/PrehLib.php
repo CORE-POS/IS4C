@@ -118,7 +118,7 @@ static public $requestInfoMsg = 'Card for which member?';
 static public function requestInfoCallback($info)
 {
     TransRecord::addcomment("CARD FOR #".$info);
-    self::setMember($row["CardNo"], $row["personNum"]);
+    self::setMember(5607, 1);
 
     return true;
 }
