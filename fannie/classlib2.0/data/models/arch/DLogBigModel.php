@@ -27,7 +27,7 @@
 class DLogBigModel extends DLogModel
 {
 
-    protected $name = "dLogBig";
+    protected $name = "dlogBig";
     protected $preferred_db = 'arch';
 
     public function create()
