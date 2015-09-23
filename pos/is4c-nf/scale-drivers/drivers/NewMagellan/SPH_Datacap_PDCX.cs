@@ -26,7 +26,11 @@ using System.Threading;
 using System.Net;
 using System.Net.Sockets;
 using System.Xml;
+using System.Drawing;
+using System.Collections;
+using System.Collections.Generic;
 using CustomForms;
+using BitmapBPP;
 using DSIPDCXLib;
 using AxDSIPDCXLib;
 
@@ -239,6 +243,18 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                 return null;
             }
             string sigdata = doc.SelectSingleNode("RStream/Signature").Value;
+            List<Point> points = SigDatatoPoints(sigdata);
+
+            int ticks = Environment.TickCount;
+            string my_location = AppDomain.CurrentDomain.BaseDirectory;
+            char sep = Path.DirectorySeparatorChar;
+            while (File.Exists(my_location + sep + "ss-output/"  + sep + ticks)) {
+                ticks++;
+            }
+            string filename = my_location + sep + "ss-output"+ sep + ticks + ".bmp";
+            Signature sig = new Signature(filename, points);
+            parent.MsgSend("TERMBMP" + ticks + ".bmp");
+            
         } catch (Exception) {
             return null;
         }
@@ -256,6 +272,29 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                 return "ISC250";
             default:
                 return device;
+        }
+    }
+
+    protected List<Point> SigDataToPoints(string data)
+    {
+        List<Point> points = new List<Point>();
+        char[] comma = new char[]{','};
+        foreach (var pair in data.Split(new char[]{':'})) {
+            var xy = pair.Split(comma);
+            if (xy.length == 2) {
+                points.Add(new Point(CoordsToInt(xy[0]), CoordsToInt(xy[1])));
+            }
+        }
+
+        return points;
+    }
+
+    protected int CoordsToInt(string coord)
+    {
+        if (coord == "#") {
+            return 0;
+        } else {
+            return Int32.Parse(coord);
         }
     }
 }
