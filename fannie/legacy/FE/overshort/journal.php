@@ -77,19 +77,19 @@ $double_lookup = array(
     882 => array('Misc Inc #2',42232)
 );
 
-if (isset($_GET["action"])){
-    $out = $_GET["action"]."`";
+if (filter_input(INPUT_GET, 'action')) {
+    $out = filter_input(INPUT_GET, 'action');
 
-    switch($_GET["action"]){
+    switch(filter_input(INPUT_GET, 'action')) {
     case 'repull':
-        $datestr = $_GET['startDate']." ".$_GET['endDate'];
+        $datestr = filter_input(INPUT_GET, 'startDate')." ".filter_input(INPUT_GET, 'endDate');
         $prep = $sql->prepare("DELETE FROM dailyDebitCredit WHERE dateStr=?");
         $sql->execute($prep, array($datestr));
-        $out .= $_GET['startDate']."`".$_GET['endDate'];
+        $datestr = filter_input(INPUT_GET, 'startDate')."`".filter_input(INPUT_GET, 'endDate');
         break;
     case 'dateinput':
-        $startDate = $_GET["startDate"];
-        $endDate = $_GET["endDate"];
+        $startDate = filter_input(INPUT_GET, "startDate");
+        $endDate = filter_input(INPUT_GET, "endDate");
         $out .= sprintf("<a href=\"journal.php?excel=yes&datestr=%s\">Save to Excel</a>",
                 $startDate." ".$endDate);    
         $out .= " | ";
@@ -97,7 +97,7 @@ if (isset($_GET["action"])){
         $out .= display($startDate,$endDate);
         break;
     case 'dateinput2':
-        $dateStr = $_GET['dateStr'];
+        $dateStr = filter_input(INPUT_GET, 'dateStr');
         $temp = explode(" ",$dateStr);
         $startDate = $temp[0];
         $endDate = $startDate;
@@ -110,64 +110,64 @@ if (isset($_GET["action"])){
         $out .= display($startDate,$endDate);
         break;
     case 'save2':
-        $datestr = $_GET['datestr'];
-        $val = $_GET['val'];
-        $k1 = $_GET['key1'];
-        $k2 = $_GET['key2'];
+        $datestr = filter_input(INPUT_GET, 'datestr');
+        $val = filter_input(INPUT_GET, 'val');
+        $key1 = filter_input(INPUT_GET, 'key1');
+        $key2 = filter_input(INPUT_GET, 'key2');
 
         $prep = $sql->prepare("SELECT phpData FROM dailyDebitCredit WHERE dateStr=?");
         $dataR = $sql->execute($prep, array($datestr));
         $dataW = $sql->fetch_row($dataR);
         $data = unserialize($dataW['phpData']);
 
-        $data[$k1][$k2] = $val;        
+        $data[$key1][$key2] = $val;        
         $prep = $sql->prepare("UPDATE dailyDebitCredit SET phpData=? WHERE dateStr=?");
         $sql->execute($prep, array(serialize($data), $datestr));
         break;
     case 'save3':
-        $datestr = $_GET['datestr'];
-        $val = $_GET['val'];
-        $k1 = $_GET['key1'];
-        $k2 = $_GET['key2'];
-        $k3 = $_GET['key3'];
+        $datestr = filter_input(INPUT_GET, 'datestr');
+        $val = filter_input(INPUT_GET, 'val');
+        $key1 = filter_input(INPUT_GET, 'key1');
+        $key2 = filter_input(INPUT_GET, 'key2');
+        $key3 = filter_input(INPUT_GET, 'key3');
 
         $prep = $sql->prepare("SELECT phpData FROM dailyDebitCredit WHERE dateStr=?");
         $dataR = $sql->execute($prep, array($datestr));
         $dataW = $sql->fetch_row($dataR);
 
-        $data[$k1][$k2][$k3] = $val;        
+        $data[$key1][$key2][$key3] = $val;        
         $prep = $sql->prepare("UPDATE dailyDebitCredit SET phpData=? WHERE dateStr=?");
         $sql->execute($prep, array(serialize($data), $datestr));
         break;
     case 'save4':
-        $datestr = $_GET['datestr'];
-        $val = $_GET['val'];
-        $k1 = $_GET['key1'];
-        $k2 = $_GET['key2'];
-        $k3 = $_GET['key3'];
-        $k4 = $_GET['key4'];
+        $datestr = filter_input(INPUT_GET, 'datestr');
+        $val = filter_input(INPUT_GET, 'val');
+        $key1 = filter_input(INPUT_GET, 'key1');
+        $key2 = filter_input(INPUT_GET, 'key2');
+        $key3 = filter_input(INPUT_GET, 'key3');
+        $key4 = filter_input(INPUT_GET, 'key4');
 
         $prep = $sql->prepare("SELECT phpData FROM dailyDebitCredit WHERE dateStr=?");
         $dataR = $sql->execute($prep, array($datestr));
         $dataW = $sql->fetch_row($dataR);
 
-        $data[$k1][$k2][$k3][$k4] = $val;        
+        $data[$key1][$key2][$key3][$key4] = $val;        
         $prep = $sql->prepare("UPDATE dailyDebitCredit SET phpData=? WHERE dateStr=?");
         $sql->execute($prep, array(serialize($data), $datestr));
         break;
     case 'saveMisc':
-        $datestr = $_GET['datestr'];
-        $val = $_GET['val'];
-        $misc = $_GET['misc'];
-        $ts = $_GET['ts'];
-        $type = $_GET['type'];
+        $datestr = filter_input(INPUT_GET, 'datestr');
+        $val = filter_input(INPUT_GET, 'val');
+        $misc = filter_input(INPUT_GET, 'misc');
+        $tstamp = filter_input(INPUT_GET, 'ts');
+        $type = filter_input(INPUT_GET, 'type');
 
         $prep = $sql->prepare("SELECT phpData FROM dailyDebitCredit WHERE dateStr=?");
         $dataR = $sql->execute($prep, array($datestr));
         $dataW = $sql->fetch_row($dataR);
 
         if ($type == 'sales')
-            $data['other'][$misc][1][$ts] = $val;
+            $data['other'][$misc][1][$tstamp] = $val;
         elseif ($type == 'pcode')
             $data['other'][$misc][0] = $val;
 
@@ -178,9 +178,8 @@ if (isset($_GET["action"])){
 
     echo $out;
     return;
-}
-elseif (isset($_GET['excel'])){
-    $dates = explode(" ",$_GET["datestr"]);
+} elseif (filter_input(INPUT_GET, 'excel')) {
+    $dates = explode(" ", filter_input(INPUT_GET, 'datestr'));
 
     header('Content-Type: application/ms-excel');
     header("Content-Disposition: attachment; filename=\"journal $dates[0] to $dates[1].xls\"");
@@ -217,7 +216,7 @@ function display($date1,$date2,$excel=False){
 
     $temp = explode("-",$date1);
     $startTS = mktime(0,0,0,$temp[1],$temp[2],$temp[0]);
-    $sY = (int)$temp[0]; $sM = (int)$temp[1]; (int)$sD = $temp[2];
+    $sYear = (int)$temp[0]; $sMonth = (int)$temp[1]; (int)$sDay = $temp[2];
     $temp = explode("-",$date2);
     $endTS = mktime(0,0,0,$temp[1],$temp[2],$temp[0]);
 
@@ -226,16 +225,16 @@ function display($date1,$date2,$excel=False){
     $stamps = "";
     $overshorts = array();
     for($i=0;$i<$num_days;$i++){
-        $ts = mktime(0,0,0,$sM,$sD+$i,$sY);
-        $stamps .= $ts.":";
-        $overshorts[$ts] = 0;
+        $tstamp = mktime(0,0,0,$sMonth,$sDay+$i,$sYear);
+        $stamps .= $tstamp.":";
+        $overshorts[$tstamp] = 0;
     }
     $stamps = substr($stamps,strlen($stamps)-1);
     $ret .= "<input type=hidden id=timestamps value=\"$stamps\" />";
 
     for($i=0;$i<$num_days;$i++){
         $ret .= "<td colspan=2>Type: General<br />";
-        $ret .= sprintf("Date: %s</td>",date("m/d/y",mktime(0,0,0,$sM,$sD+$i,$sY)));
+        $ret .= sprintf("Date: %s</td>",date("m/d/y",mktime(0,0,0,$sMonth,$sDay+$i,$sYear)));
     }
     $ret .= "</tr>";
 
@@ -311,36 +310,36 @@ function display($date1,$date2,$excel=False){
         $ret .= $tender_pcode_lookup[$k];
         $ret .= "</td>";
         for($i=0;$i<$num_days;$i++){
-            $ts = mktime(0,0,0,$sM,$sD+$i,$sY);
+            $tstamp = mktime(0,0,0,$sMonth,$sDay+$i,$sYear);
             if ($i==$num_days-1 && $k == "CA"){
-                $v[$ts] = 0;
-                $v[$ts] = array_sum($v)*-1;
+                $v[$tstamp] = 0;
+                $v[$tstamp] = array_sum($v)*-1;
             }    
             $ret .= "<td class=money>";    
-            if (!isset($v[$ts])) $v[$ts] = 0;
-            $v[$ts] = round($v[$ts],2);
-            if ($v[$ts] >= 0){
+            if (!isset($v[$tstamp])) $v[$tstamp] = 0;
+            $v[$tstamp] = round($v[$tstamp],2);
+            if ($v[$tstamp] >= 0){
                 if (!$excel){
-                    $ret .= "<input type=text size=7 value=\"".$v[$ts]."\" ";
-                    $ret .= "onchange=\"save3(this.value,'tenders','$k','$ts');rb($ts);\" ";
-                    $ret .= "style=\"text-align:right\" name=debit$ts id=tender$ts$k />";
+                    $ret .= "<input type=text size=7 value=\"".$v[$tstamp]."\" ";
+                    $ret .= "onchange=\"save3(this.value,'tenders','$k','$tstamp');rb($tstamp);\" ";
+                    $ret .= "style=\"text-align:right\" name=debit$tstamp id=tender$tstamp$k />";
                 }
                 else 
-                    $ret .= $v[$ts];
-                $overshorts[$ts] += $v[$ts];
+                    $ret .= $v[$tstamp];
+                $overshorts[$tstamp] += $v[$tstamp];
             }
             else
                 $ret .= "&nbsp;";
             $ret .= "</td><td class=money>";
-            if ($v[$ts] < 0){
+            if ($v[$tstamp] < 0){
                 if (!$excel){
-                    $ret .= "<input type=text size=7 value=\"".(-1*$v[$ts])."\" ";
-                    $ret .= "onchange=\"save3(this.value,'tenders','$k','$ts');rb($ts);\" ";
-                    $ret .= "style=\"text-align:right\" name=credit$ts id=tender$ts$k />";
+                    $ret .= "<input type=text size=7 value=\"".(-1*$v[$tstamp])."\" ";
+                    $ret .= "onchange=\"save3(this.value,'tenders','$k','$tstamp');rb($tstamp);\" ";
+                    $ret .= "style=\"text-align:right\" name=credit$tstamp id=tender$tstamp$k />";
                 }
                 else 
-                    $ret .= -1*$v[$ts];
-                $overshorts[$ts] -= -1*$v[$ts];
+                    $ret .= -1*$v[$tstamp];
+                $overshorts[$tstamp] -= -1*$v[$tstamp];
             }
             else
                 $ret .= "&nbsp;";
@@ -365,30 +364,30 @@ function display($date1,$date2,$excel=False){
             $ret .= "</td>";    
         }
         for($i=0;$i<$num_days;$i++){
-            $ts = mktime(0,0,0,$sM,$sD+$i,$sY);
+            $tstamp = mktime(0,0,0,$sMonth,$sDay+$i,$sYear);
             $ret .= "<td class=money>";    
-            if (isset($v[$ts]) && $v[$ts] < 0){
+            if (isset($v[$tstamp]) && $v[$tstamp] < 0){
                 if (!$excel){
-                    $ret .= "<input type=text size=7 value=\"".sprintf("%.2f",-1*$v[$ts])."\" ";
-                    $ret .= " onchange=\"save3(this.value,'sales','$k','$ts');rb($ts);\" ";
-                    $ret .= "style=\"text-align:right\" name=debit$ts />";
+                    $ret .= "<input type=text size=7 value=\"".sprintf("%.2f",-1*$v[$tstamp])."\" ";
+                    $ret .= " onchange=\"save3(this.value,'sales','$k','$tstamp');rb($tstamp);\" ";
+                    $ret .= "style=\"text-align:right\" name=debit$tstamp />";
                 }
                 else 
-                    $ret .= sprintf("%.2f",-1*$v[$ts]);
-                $overshorts[$ts] += -1*$v[$ts];
+                    $ret .= sprintf("%.2f",-1*$v[$tstamp]);
+                $overshorts[$tstamp] += -1*$v[$tstamp];
             }
             else
                 $ret .= "&nbsp;";
             $ret .= "</td><td class=money>";
-            if (isset($v[$ts]) && $v[$ts] >= 0){
+            if (isset($v[$tstamp]) && $v[$tstamp] >= 0){
                 if (!$excel){
-                    $ret .= "<input type=text size=7 value=\"".sprintf("%.2f",$v[$ts])."\" ";
-                    $ret .= "onchange=\"save3(this.value,'sales','$k','$ts');rb($ts);\" ";
-                    $ret .= "style=\"text-align:right\" name=credit$ts />";
+                    $ret .= "<input type=text size=7 value=\"".sprintf("%.2f",$v[$tstamp])."\" ";
+                    $ret .= "onchange=\"save3(this.value,'sales','$k','$tstamp');rb($tstamp);\" ";
+                    $ret .= "style=\"text-align:right\" name=credit$tstamp />";
                 }
                 else 
-                    $ret .= sprintf("%.2f",$v[$ts]);
-                $overshorts[$ts] -= $v[$ts];
+                    $ret .= sprintf("%.2f",$v[$tstamp]);
+                $overshorts[$tstamp] -= $v[$tstamp];
             }
             else
                 $ret .= "&nbsp;";
@@ -405,31 +404,31 @@ function display($date1,$date2,$excel=False){
         else
             $ret .= "<td>61170</td>";
         for($i=0;$i<$num_days;$i++){
-            $ts = mktime(0,0,0,$sM,$sD+$i,$sY);
+            $tstamp = mktime(0,0,0,$sMonth,$sDay+$i,$sYear);
             $ret .= "<td class=money>";
-            if (isset($v[$ts]) && $v[$ts] >= 0){
+            if (isset($v[$tstamp]) && $v[$tstamp] >= 0){
                 if (!$excel){
-                    $ret .= "<input type=text size=7 value=\"".$v[$ts]."\" ";
-                    $ret .= "onchange=\"save4(this.value,'other','discount','$k','$ts');rb($ts);\" ";
-                    $ret .= "style=\"text-align:right\" name=debit$ts />";
+                    $ret .= "<input type=text size=7 value=\"".$v[$tstamp]."\" ";
+                    $ret .= "onchange=\"save4(this.value,'other','discount','$k','$tstamp');rb($tstamp);\" ";
+                    $ret .= "style=\"text-align:right\" name=debit$tstamp />";
                 }
                 else 
-                    $ret .= $v[$ts];
-                $overshorts[$ts] += $v[$ts];
+                    $ret .= $v[$tstamp];
+                $overshorts[$tstamp] += $v[$tstamp];
             }
             else
                 $ret .= "&nbsp;";
             $ret .= "</td>";
             $ret .= "<td class=money>";
-            if (isset($v[$ts]) && $v[$ts] < 0){
+            if (isset($v[$tstamp]) && $v[$tstamp] < 0){
                 if (!$excel){
-                    $ret .= "<input type=text size=7 value=\"".(-1*$v[$ts])."\" ";
-                    $ret .= "onchange=\"save4(this.value,'other','discount','$k','$ts');rb($ts);\" ";
-                    $ret .= "style=\"text-align:right\" name=credit$ts />";
+                    $ret .= "<input type=text size=7 value=\"".(-1*$v[$tstamp])."\" ";
+                    $ret .= "onchange=\"save4(this.value,'other','discount','$k','$tstamp');rb($tstamp);\" ";
+                    $ret .= "style=\"text-align:right\" name=credit$tstamp />";
                 }
                 else 
-                    $ret .= -1*$v[$ts];
-                $overshorts[$ts] -= -1*$v[$ts];
+                    $ret .= -1*$v[$tstamp];
+                $overshorts[$tstamp] -= -1*$v[$tstamp];
             }
             else
                 $ret .= "&nbsp;";
@@ -441,30 +440,30 @@ function display($date1,$date2,$excel=False){
     $ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
     $ret .= "<td>Sales Tax Collected</td><td>21180</td>";
     for($i=0;$i<$num_days;$i++){
-        $ts = mktime(0,0,0,$sM,$sD+$i,$sY);
+        $tstamp = mktime(0,0,0,$sMonth,$sDay+$i,$sYear);
         $ret .= "<td class=money>";
-        if (isset($data['other']['tax'][$ts]) && $data['other']['tax'][$ts] < 0){
+        if (isset($data['other']['tax'][$tstamp]) && $data['other']['tax'][$tstamp] < 0){
             if (!$excel){
-                $ret .= "<input type=text size=7 value=\"".sprintf("%.2f",-1*$data['other']['tax'][$ts])."\" ";
-                $ret .= "onchange=\"save3(this.value,'other','tax','$ts');rb($ts);\" ";
-                $ret .= "style=\"text-align:right\" name=debit$ts />";
+                $ret .= "<input type=text size=7 value=\"".sprintf("%.2f",-1*$data['other']['tax'][$tstamp])."\" ";
+                $ret .= "onchange=\"save3(this.value,'other','tax','$tstamp');rb($tstamp);\" ";
+                $ret .= "style=\"text-align:right\" name=debit$tstamp />";
             }
             else 
-                $ret .= -1*$data['other']['tax'][$ts];
-            $overshorts[$ts] += -1*$data['other']['tax'][$ts];
+                $ret .= -1*$data['other']['tax'][$tstamp];
+            $overshorts[$tstamp] += -1*$data['other']['tax'][$tstamp];
         }
         else
             $ret .= "&nbsp;";
         $ret .= "</td><td class=money>";
-        if (isset($data['other']['tax'][$ts]) && $data['other']['tax'][$ts] >= 0){
+        if (isset($data['other']['tax'][$tstamp]) && $data['other']['tax'][$tstamp] >= 0){
             if (!$excel){
-                $ret .= "<input type=text size=7 value=\"".sprintf("%.2f",$data['other']['tax'][$ts])."\" ";
-                $ret .= "onchange=\"save3(this.value,'other','tax','$ts');rb($ts);\" ";
-                $ret .= "style=\"text-align:right\" name=credit$ts />";
+                $ret .= "<input type=text size=7 value=\"".sprintf("%.2f",$data['other']['tax'][$tstamp])."\" ";
+                $ret .= "onchange=\"save3(this.value,'other','tax','$tstamp');rb($tstamp);\" ";
+                $ret .= "style=\"text-align:right\" name=credit$tstamp />";
             }
             else 
-                $ret .= $data['other']['tax'][$ts];
-            $overshorts[$ts] -= $data['other']['tax'][$ts];
+                $ret .= $data['other']['tax'][$tstamp];
+            $overshorts[$tstamp] -= $data['other']['tax'][$tstamp];
         }
         else
             $ret .= "&nbsp;";
@@ -472,224 +471,123 @@ function display($date1,$date2,$excel=False){
     }
     $ret .= "</tr>";
 
-    $ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
-    $ret .= "<td>Gazette Ads</td><td>10730</td>";
-    for ($i=0;$i<$num_days;$i++){
-        $ts = mktime(0,0,0,$sM,$sD+$i,$sY);
-        $ret .= "<td class=money>";
-        $ret .= "</td><td class=money>";
-        if (isset($data['other']['gazette'][$ts]) && $data['other']['gazette'][$ts] < 0){
-            if (!$excel){
-                $ret .= "<input type=text size=7 value=\"".(-1*$data['other']['gazette'][$ts])."\" ";
-                $ret .= "onchange=\"save3(this.value,'other','gazette','$ts');rb($ts);\" ";
-                $ret .= "style=\"text-align:right\" name=debit$ts />";
+    $other = array(
+        'gazette' => array('Gazette Ads', 10730),
+        'foundmoney' => array('Found Money', 63350),
+    );
+    foreach ($other as $key => $pair) {
+        $ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
+        $ret .= "<td>{$pair[0]}</td><td>{$pair[1]}</td>";
+        for ($i=0;$i<$num_days;$i++){
+            $tstamp = mktime(0,0,0,$sMonth,$sDay+$i,$sYear);
+            $ret .= "<td class=money>";
+            $ret .= "</td><td class=money>";
+            if (isset($data['other'][$key][$tstamp]) && $data['other'][$key][$tstamp] < 0){
+                if (!$excel){
+                    $ret .= "<input type=text size=7 value=\"".(-1*$data['other'][$key][$tstamp])."\" ";
+                    $ret .= "onchange=\"save3(this.value,'other','{$key}','$tstamp');rb($tstamp);\" ";
+                    $ret .= "style=\"text-align:right\" name=debit$tstamp />";
+                }
+                else 
+                    $ret .= -1*$data['other'][$key][$tstamp];
+                $overshorts[$tstamp] += (-1*$data['other'][$key][$tstamp]);
             }
-            else 
-                $ret .= -1*$data['other']['gazette'][$ts];
-            $overshorts[$ts] += (-1*$data['other']['gazette'][$ts]);
-        }
-        else
-            $ret .= "&nbsp;";
-        if (isset($data['other']['gazette'][$ts]) && $data['other']['gazette'][$ts] >= 0){
-            if (!$excel){
-                $ret .= "<input type=text size=7 value=\"".$data['other']['gazette'][$ts]."\" ";
-                $ret .= "onchange=\"save3(this.value,'other','gazette','$ts');rb($ts);\" ";
-                $ret .= "style=\"text-align:right\" name=credit$ts />";
+            else
+                $ret .= "&nbsp;";
+            if (isset($data['other'][$key][$tstamp]) && $data['other'][$key][$tstamp] >= 0){
+                if (!$excel){
+                    $ret .= "<input type=text size=7 value=\"".$data['other'][$key][$tstamp]."\" ";
+                    $ret .= "onchange=\"save3(this.value,'other','{$key}','$tstamp');rb($tstamp);\" ";
+                    $ret .= "style=\"text-align:right\" name=credit$tstamp />";
+                }
+                else 
+                    $ret .= $data['other'][$key][$tstamp];
+                $overshorts[$tstamp] -= $data['other'][$key][$tstamp];
             }
-            else 
-                $ret .= $data['other']['gazette'][$ts];
-            $overshorts[$ts] -= $data['other']['gazette'][$ts];
+            else
+                $ret .= "&nbsp;";
+            
         }
-        else
-            $ret .= "&nbsp;";
-        
+        $ret .= "</tr>";
     }
-    $ret .= "</tr>";
 
-    $ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
-    $ret .= "<td>Found Money</td><td>63350</td>";
-    for ($i=0;$i<$num_days;$i++){
-        $ts = mktime(0,0,0,$sM,$sD+$i,$sY);
-        $ret .= "<td class=money>";
-        $ret .= "</td><td class=money>";
-        if (isset($data['other']['foundmoney'][$ts]) && $data['other']['foundmoney'][$ts] < 0){
-            if (!$excel){
-                $ret .= "<input type=text size=7 value=\"".(-1*$data['other']['foundmoney'][$ts])."\" ";
-                $ret .= "onchange=\"save3(this.value,'other','foundmoney','$ts');rb($ts);\" ";
-                $ret .= "style=\"text-align:right\" name=debit$ts />";
-            }
-            else 
-                $ret .= -1*$data['other']['foundmoney'][$ts];
-            $overshorts[$ts] += (-1*$data['other']['foundmoney'][$ts]);
-        }
-        else
-            $ret .= "&nbsp;";
-        if (isset($data['other']['foundmoney'][$ts]) && $data['other']['foundmoney'][$ts] >= 0){
-            if (!$excel){
-                $ret .= "<input type=text size=7 value=\"".$data['other']['foundmoney'][$ts]."\" ";
-                $ret .= "onchange=\"save3(this.value,'other','foundmoney','$ts');rb($ts);\" ";
-                $ret .= "style=\"text-align:right\" name=credit$ts />";
-            }
-            else 
-                $ret .= $data['other']['foundmoney'][$ts];
-            $overshorts[$ts] -= $data['other']['foundmoney'][$ts];
-        }
-        else
-            $ret .= "&nbsp;";
-        
-    }
-    $ret .= "</tr>";
+    $misc = array(
+        'misc0' => 'Old Misc',
+        'misc1' => 'Misc #1',
+        'misc2' => 'Misc #2',
+    );
 
-    $ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
-    $ret .= "<td>Old Misc</td><td>";
-    if (!$excel){
-        $ret .= "<input type=text onchange=\"saveMisc(this.value,'misc0','0','pcode');\" ";
-        $ret .= "value=\"".$data['other']['misc0'][0]."\" size=6 />";
-    }
-    else
-        $ret .= $data['other']['misc0'][0];
-    $ret .= "</td>";
-    for ($i=0;$i<$num_days;$i++){
-        $ts = mktime(0,0,0,$sM,$sD+$i,$sY);
-        $ret .= "<td class=money>";
-        if (isset($data['other']['misc0'][1][$ts]) && $data['other']['misc0'][1][$ts] < 0){
-            if (!$excel){
-                $ret .= "<input type=text size=7 value=\"".(-1*$data['other']['misc0'][1][$ts])."\" ";
-                $ret .= "onchange=\"saveMisc(this.value,'misc0','$ts','sales');rb($ts);\" ";
-                $ret .= "style=\"text-align:right\" name=debit$ts />";
-            }
-            else 
-                $ret .= -1*$data['other']['misc0'][1][$ts];
-            $overshorts[$ts] += (-1*$data['other']['misc0'][1][$ts]);
+    foreach ($misc as $key => $label) {
+        $ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
+        $ret .= "<td>{$label}</td><td>";
+        if (!$excel){
+            $ret .= "<input type=text onchange=\"saveMisc(this.value,'{$key}','0','pcode');\" ";
+            $ret .= "value=\"".$data['other'][$key][0]."\" size=6 />";
+        } else {
+            $ret .= $data['other'][$key][0];
         }
-        else
-            $ret .= "&nbsp;";
-        $ret .= "</td><td class=money>";
-        if (isset($data['other']['misc0'][1][$ts]) && $data['other']['misc0'][1][$ts] >= 0){
-            if (!$excel){
-                $ret .= "<input type=text size=7 value=\"".$data['other']['misc0'][1][$ts]."\" ";
-                $ret .= "onchange=\"saveMisc(this.value,'misc0','$ts','sales');rb($ts);\" ";
-                $ret .= "style=\"text-align:right\" name=credit$ts />";
+        $ret .= "</td>";
+        for ($i=0;$i<$num_days;$i++){
+            $tstamp = mktime(0,0,0,$sMonth,$sDay+$i,$sYear);
+            $ret .= "<td class=money>";
+            if (isset($data['other'][$key][1][$tstamp]) && $data['other'][$key][1][$tstamp] < 0){
+                if (!$excel){
+                    $ret .= "<input type=text size=7 value=\"".(-1*$data['other'][$key][1][$tstamp])."\" ";
+                    $ret .= "onchange=\"saveMisc(this.value,'{$key}','$tstamp','sales');rb($tstamp);\" ";
+                    $ret .= "style=\"text-align:right\" name=debit$tstamp />";
+                } else {
+                    $ret .= -1*$data['other'][$key][1][$tstamp];
+                }
+                $overshorts[$tstamp] += (-1*$data['other'][$key][1][$tstamp]);
+            } else {
+                $ret .= "&nbsp;";
             }
-            else 
-                $ret .= $data['other']['misc0'][1][$ts];
-            $overshorts[$ts] -= $data['other']['misc0'][1][$ts];
-        }
-        else
-            $ret .= "&nbsp;";
-    }
-    $ret .= "</tr>";
-
-    $ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
-    $ret .= "<td>Misc #1</td><td>";
-    if (!$excel){
-        $ret .= "<input type=text onchange=\"saveMisc(this.value,'misc1','0','pcode');\" ";
-        $ret .= "value=\"".$data['other']['misc1'][0]."\" size=6 />";
-    }
-    else
-        $ret .= $data['other']['misc1'][0];
-    $ret .= "</td>";
-    for ($i=0;$i<$num_days;$i++){
-        $ts = mktime(0,0,0,$sM,$sD+$i,$sY);
-        $ret .= "<td class=money>";
-        if (isset($data['other']['misc1'][1][$ts]) && $data['other']['misc1'][1][$ts] < 0){
-            if (!$excel){
-                $ret .= "<input type=text size=7 value=\"".(-1*$data['other']['misc1'][1][$ts])."\" ";
-                $ret .= "onchange=\"saveMisc(this.value,'misc1','$ts','sales');rb($ts);\" ";
-                $ret .= "style=\"text-align:right\" name=debit$ts />";
+            $ret .= "</td><td class=money>";
+            if (isset($data['other'][$key][1][$tstamp]) && $data['other'][$key][1][$tstamp] >= 0){
+                if (!$excel){
+                    $ret .= "<input type=text size=7 value=\"".$data['other'][$key][1][$tstamp]."\" ";
+                    $ret .= "onchange=\"saveMisc(this.value,'{$key}','$tstamp','sales');rb($tstamp);\" ";
+                    $ret .= "style=\"text-align:right\" name=credit$tstamp />";
+                } else {
+                    $ret .= $data['other'][$key][1][$tstamp];
+                }
+                $overshorts[$tstamp] -= $data['other'][$key][1][$tstamp];
+            } else {
+                $ret .= "&nbsp;";
             }
-            else 
-                $ret .= -1*$data['other']['misc1'][1][$ts];
-            $overshorts[$ts] += (-1*$data['other']['misc1'][1][$ts]);
         }
-        else
-            $ret .= "&nbsp;";
-        $ret .= "</td><td class=money>";
-        if (isset($data['other']['misc1'][1][$ts]) && $data['other']['misc1'][1][$ts] >= 0){
-            if (!$excel){
-                $ret .= "<input type=text size=7 value=\"".$data['other']['misc1'][1][$ts]."\" ";
-                $ret .= "onchange=\"saveMisc(this.value,'misc1','$ts','sales');rb($ts);\" ";
-                $ret .= "style=\"text-align:right\" name=credit$ts />";
-            }
-            else 
-                $ret .= $data['other']['misc1'][1][$ts];
-            $overshorts[$ts] -= $data['other']['misc1'][1][$ts];
-        }
-        else
-            $ret .= "&nbsp;";
+        $ret .= "</tr>";
     }
-    $ret .= "</tr>";
-
-    $ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
-    $ret .= "<td>Misc #2</td><td>";
-    if (!$excel){
-        $ret .= "<input type=text onchange=\"saveMisc(this.value,'misc2','0','pcode');\" ";
-        $ret .= "value=\"".$data['other']['misc2'][0]."\" size=6 />";
-    }
-    else
-        $ret .= $data['other']['misc2'][0];
-    $ret .= "</td>";
-    for ($i=0;$i<$num_days;$i++){
-        $ts = mktime(0,0,0,$sM,$sD+$i,$sY);
-        $ret .= "<td class=money>";
-        if (isset($data['other']['misc2'][1][$ts]) && $data['other']['misc2'][1][$ts] < 0){
-            if (!$excel){
-                $ret .= "<input type=text size=7 value=\"".(-1*$data['other']['misc2'][1][$ts])."\" ";
-                $ret .= "onchange=\"saveMisc(this.value,'misc2','$ts','sales');rb($ts);\" ";
-                $ret .= "style=\"text-align:right\" name=debit$ts />";
-            }
-            else 
-                $ret .= -1*$data['other']['misc2'][1][$ts];
-            $overshorts[$ts] += (-1*$data['other']['misc2'][1][$ts]);
-        }
-        else
-            $ret .= "&nbsp;";
-        $ret .= "</td><td class=money>";
-        if (isset($data['other']['misc2'][1][$ts]) && $data['other']['misc2'][1][$ts] >= 0){
-            if (!$excel){
-                $ret .= "<input type=text size=7 value=\"".$data['other']['misc2'][1][$ts]."\" ";
-                $ret .= "onchange=\"saveMisc(this.value,'misc2','$ts','sales');rb($ts);\" ";
-                $ret .= "style=\"text-align:right\" name=credit$ts />";
-            }
-            else 
-                $ret .= $data['other']['misc2'][1][$ts];
-            $overshorts[$ts] -= $data['other']['misc2'][1][$ts];
-        }
-        else
-            $ret .= "&nbsp;";
-        
-    }
-    $ret .= "</tr>";
 
     $ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
     $ret .= "<td>AMEX Fees</td><td>";
     $ret .= $data['other']['axfees'][0];
     $ret .= "</td>";
     for ($i=0;$i<$num_days;$i++){
-        $ts = mktime(0,0,0,$sM,$sD+$i,$sY);
+        $tstamp = mktime(0,0,0,$sMonth,$sDay+$i,$sYear);
         $ret .= "<td class=money>";
-        if (isset($data['other']['axfees'][1][$ts]) && $data['other']['axfees'][1][$ts] >= 0){
+        if (isset($data['other']['axfees'][1][$tstamp]) && $data['other']['axfees'][1][$tstamp] >= 0){
             if (!$excel){
-                $ret .= "<input type=text size=7 value=\"".(-1*$data['other']['axfees'][1][$ts])."\" ";
-                $ret .= "onchange=\"saveMisc(this.value,'axfees','$ts','sales');rb($ts);\" ";
-                $ret .= "style=\"text-align:right\" name=debit$ts id=axfees$ts />";
+                $ret .= "<input type=text size=7 value=\"".(-1*$data['other']['axfees'][1][$tstamp])."\" ";
+                $ret .= "onchange=\"saveMisc(this.value,'axfees','$tstamp','sales');rb($tstamp);\" ";
+                $ret .= "style=\"text-align:right\" name=debit$tstamp id=axfees$tstamp />";
             }
             else 
-                $ret .= -1*$data['other']['axfees'][1][$ts];
-            $overshorts[$ts] += (-1*$data['other']['axfees'][1][$ts]);
+                $ret .= -1*$data['other']['axfees'][1][$tstamp];
+            $overshorts[$tstamp] += (-1*$data['other']['axfees'][1][$tstamp]);
         }
         else
             $ret .= "&nbsp;";
         $ret .= "</td><td class=money>";
-        if (isset($data['other']['axfees'][1][$ts]) && $data['other']['axfees'][1][$ts] < 0){
+        if (isset($data['other']['axfees'][1][$tstamp]) && $data['other']['axfees'][1][$tstamp] < 0){
             if (!$excel){
-                $ret .= "<input type=text size=7 value=\"".$data['other']['axfees'][1][$ts]."\" ";
-                $ret .= "onchange=\"saveMisc(this.value,'axfees','$ts','sales');rb($ts);\" ";
-                $ret .= "style=\"text-align:right\" name=credit$ts id=axfees$ts />";
+                $ret .= "<input type=text size=7 value=\"".$data['other']['axfees'][1][$tstamp]."\" ";
+                $ret .= "onchange=\"saveMisc(this.value,'axfees','$tstamp','sales');rb($tstamp);\" ";
+                $ret .= "style=\"text-align:right\" name=credit$tstamp id=axfees$tstamp />";
             }
             else 
-                $ret .= $data['other']['axfees'][1][$ts];
-            $overshorts[$ts] -= $data['other']['axfees'][1][$ts];
+                $ret .= $data['other']['axfees'][1][$tstamp];
+            $overshorts[$tstamp] -= $data['other']['axfees'][1][$tstamp];
         }
         else
             $ret .= "&nbsp;";
@@ -718,17 +616,17 @@ function display($date1,$date2,$excel=False){
     $ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
     $ret .= "<td>Over/Short</td><td>63350</td>";
     for($i=0;$i<$num_days;$i++){
-        $ts = mktime(0,0,0,$sM,$sD+$i,$sY);
-        $overshorts[$ts] = round($overshorts[$ts],2);
-        $ret .= "<td class=money id=overshortDebit$ts>";
-        if ($overshorts[$ts] < 0){
-            $ret .= -1*$overshorts[$ts];
+        $tstamp = mktime(0,0,0,$sMonth,$sDay+$i,$sYear);
+        $overshorts[$tstamp] = round($overshorts[$tstamp],2);
+        $ret .= "<td class=money id=overshortDebit$tstamp>";
+        if ($overshorts[$tstamp] < 0){
+            $ret .= -1*$overshorts[$tstamp];
         }
         else
             $ret .= "&nbsp;";
-        $ret .= "</td><td class=money id=overshortCredit$ts>";
-        if ($overshorts[$ts] >= 0){
-            $ret .= $overshorts[$ts];
+        $ret .= "</td><td class=money id=overshortCredit$tstamp>";
+        if ($overshorts[$tstamp] >= 0){
+            $ret .= $overshorts[$tstamp];
         }
         else
             $ret .= "&nbsp;";
@@ -948,15 +846,15 @@ function fetch_data($date1,$date2){
         $y = $discountW[0];
         $m = $discountW[1];
         $d = $discountW[2];
-        $ts = mktime(0,0,0,$m,$d,$y);
+        $tstamp = mktime(0,0,0,$m,$d,$y);
         
         $type = $discountW[3];
         if ($type == 'Non Member') $type = 'Staff Member';
         if (!isset($data['other']['discount'][$type]))
             $data['other']['discount'][$type] = array();
-        if (!isset($data['other']['discount'][$type][$ts]))
-            $data['other']['discount'][$type][$ts] = 0;
-        $data['other']['discount'][$type][$ts] += $discountW[4];
+        if (!isset($data['other']['discount'][$type][$tstamp]))
+            $data['other']['discount'][$type][$tstamp] = 0;
+        $data['other']['discount'][$type][$tstamp] += $discountW[4];
     }
 
     return $data;

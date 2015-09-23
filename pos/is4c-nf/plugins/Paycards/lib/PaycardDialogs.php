@@ -268,11 +268,8 @@ class PaycardDialogs
         }
     }
 
-    public static function validateVoid($request, $response, $lineitem, $id)
+    private static function voidReqResp($request, $response)
     {
-        // make sure the payment is applicable to void
-        $err_header = _('Unable to Void');
-        $buttons = _('[clear] to cancel');
         $error = false;
         if ($response['commErr'] != 0 || $response['httpCode'] != 200 || $response['validResponse'] != 1) {
             $error = _("Card transaction not successful");
@@ -286,12 +283,30 @@ class PaycardDialogs
             $error = _("Invalid reference number");
         }
 
-        // make sure the tender line-item is applicable to void
+        return $error;
+    }
+
+    private static function voidLineItem($lineitem, $id)
+    {
+        $error = false;
         if ($lineitem['trans_type'] != "T" || ($lineitem['trans_subtype'] != "CC" && $lineitem['trans_subtype'] != 'DC'
             && $lineitem['trans_subtype'] != 'EF' && $lineitem['trans_subtype'] != 'EC' && $lineitem['trans_subtype'] != 'AX') ) {
             $error = _("Authorization and tender records do not match ") . $id;
         } elseif ($lineitem['trans_status'] == "V" || $lineitem['voided'] != 0) {
             $error = _("Void records do not match");
+        }
+
+        return $error;
+    }
+
+    public static function validateVoid($request, $response, $lineitem, $id)
+    {
+        // make sure the payment is applicable to void
+        $err_header = _('Unable to Void');
+        $buttons = _('[clear] to cancel');
+        $error = self::voidReqResp($request, $response);
+        if ($error === false) {
+            $error = self::voidLineItem($lineitem, $id);
         }
 
         if ($error !== false) {
