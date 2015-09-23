@@ -48,7 +48,7 @@ class MailChimpTask extends FannieTask
             $this->cronMsg('MailChimp library is not installed', FannieLogger::NOTICE);
             return false;
         }
-        $mc = new Mailchimp($APIKEY);
+        $mc = new MailChimpEx($APIKEY);
 
         if ($FANNIE_PLUGIN_SETTINGS['MailChimpMergeVarField'] != 1) {
             $vars = $mc->lists->mergeVars(array($LISTID));
