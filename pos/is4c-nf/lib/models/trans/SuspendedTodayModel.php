@@ -52,8 +52,5 @@ could eventually make the list of available
 transactions unwieldy.
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
 }
 

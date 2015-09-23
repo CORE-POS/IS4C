@@ -57,53 +57,5 @@ Current valid types are:
 * chargeSlip
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function text()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["text"])) {
-                return $this->instance["text"];
-            } elseif(isset($this->columns["text"]["default"])) {
-                return $this->columns["text"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["text"] = func_get_arg(0);
-        }
-    }
-
-    public function seq()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["seq"])) {
-                return $this->instance["seq"];
-            } elseif(isset($this->columns["seq"]["default"])) {
-                return $this->columns["seq"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["seq"] = func_get_arg(0);
-        }
-    }
-
-    public function type()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["type"])) {
-                return $this->instance["type"];
-            } elseif(isset($this->columns["type"]["default"])) {
-                return $this->columns["type"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["type"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

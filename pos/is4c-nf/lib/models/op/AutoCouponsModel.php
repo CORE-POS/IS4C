@@ -42,38 +42,5 @@ class AutoCouponsModel extends BasicModel
 Apply coupons to transactions automatically
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function coupID()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["coupID"])) {
-                return $this->instance["coupID"];
-            } elseif(isset($this->columns["coupID"]["default"])) {
-                return $this->columns["coupID"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["coupID"] = func_get_arg(0);
-        }
-    }
-
-    public function description()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["description"])) {
-                return $this->instance["description"];
-            } elseif(isset($this->columns["description"]["default"])) {
-                return $this->columns["description"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["description"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

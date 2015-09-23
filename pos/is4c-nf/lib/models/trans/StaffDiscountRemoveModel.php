@@ -116,7 +116,5 @@ staff discounts if needed.
     public function save(){ return false; }
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False){ return 0; }
 
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
 }
 

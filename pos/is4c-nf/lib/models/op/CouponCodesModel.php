@@ -45,53 +45,5 @@ Standard UPC coupon codes. Code is the UPC suffix,
 Qty is required quantity, value is the coupon\'s value.
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function Code()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["Code"])) {
-                return $this->instance["Code"];
-            } elseif(isset($this->columns["Code"]["default"])) {
-                return $this->columns["Code"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["Code"] = func_get_arg(0);
-        }
-    }
-
-    public function Qty()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["Qty"])) {
-                return $this->instance["Qty"];
-            } elseif(isset($this->columns["Qty"]["default"])) {
-                return $this->columns["Qty"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["Qty"] = func_get_arg(0);
-        }
-    }
-
-    public function Value()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["Value"])) {
-                return $this->instance["Value"];
-            } elseif(isset($this->columns["Value"]["default"])) {
-                return $this->columns["Value"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["Value"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

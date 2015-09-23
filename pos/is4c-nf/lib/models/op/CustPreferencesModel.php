@@ -46,53 +46,5 @@ This table supplements custdata and is
 available at the lanes.
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function card_no()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["card_no"])) {
-                return $this->instance["card_no"];
-            } elseif(isset($this->columns["card_no"]["default"])) {
-                return $this->columns["card_no"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["card_no"] = func_get_arg(0);
-        }
-    }
-
-    public function pref_key()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["pref_key"])) {
-                return $this->instance["pref_key"];
-            } elseif(isset($this->columns["pref_key"]["default"])) {
-                return $this->columns["pref_key"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["pref_key"] = func_get_arg(0);
-        }
-    }
-
-    public function pref_value()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["pref_value"])) {
-                return $this->instance["pref_value"];
-            } elseif(isset($this->columns["pref_value"]["default"])) {
-                return $this->columns["pref_value"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["pref_value"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 
