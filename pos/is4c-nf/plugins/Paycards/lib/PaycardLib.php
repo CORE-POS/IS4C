@@ -663,7 +663,7 @@ static public function getTenderInfo($type, $issuer)
     }
     
     $found = $db->execute($lookup, $args);
-    if ($found === false || $db->num_rows($round) == 0) {
+    if ($found === false || $db->num_rows($found) == 0) {
         return array($default_code, $default_description);
     } else {
         $row = $db->fetch_row($found);

@@ -149,7 +149,7 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
         $form = '
         <div class="inputform ' . (CoreLocal::get("training")==1?'training':'') . '">
             <form name="form" id="formlocal" method="post" autocomplete="off"
-                ' . $action . '
+                ' . $action . '>
             <input name="reginput" value="" onblur="$(\'#reginput\').focus();"
                 type="' . $inputType . '" id="reginput"  />
             </form>

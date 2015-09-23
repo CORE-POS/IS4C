@@ -742,7 +742,7 @@ class MercuryE2E extends BasicCCModule
             $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
             return 'Error';
         }
-        CoreLocal::set('LastEmvPcId', $request->last_paycard_transaction_id);
+	CoreLocal::set('LastEmvPcId', array($request->last_paycard_transaction_id, $request->last_req_id));
         CoreLocal::set('LastEmvReqType', 'normal');
 
         // start with fields common to PDCX and EMVX
@@ -849,7 +849,7 @@ class MercuryE2E extends BasicCCModule
 
         try {
             $request->saveRequest();
-            CoreLocal::set('LastEmvPcId', $request->last_paycard_transaction_id);
+	    CoreLocal::set('LastEmvPcId', array($request->last_paycard_transaction_id, $request->last_req_id));
             CoreLocal::set('LastEmvReqType', 'void');
         } catch (Exception $ex) {
             $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
@@ -1070,7 +1070,7 @@ class MercuryE2E extends BasicCCModule
             $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
             return 'Error';
         }
-        CoreLocal::set('LastEmvPcId', $request->last_paycard_transaction_id);
+        CoreLocal::set('LastEmvPcId', array($request->last_paycard_transaction_id, $request->last_req_id));
         CoreLocal::set('LastEmvReqType', 'gift');
         CoreLocal::set('paycard_amount', $amount);
         CoreLocal::set('paycard_id', CoreLocal::get('LastID'+1));
@@ -1127,7 +1127,9 @@ class MercuryE2E extends BasicCCModule
         } else {
             $request = new PaycardRequest($ref);
         }
-        $request->last_paycard_transaction_id = CoreLocal::get('LastEmvPcId');
+	$id_set = CoreLocal::get('LastEmvPcId');
+        $request->last_paycard_transaction_id = $id_set[0];
+	$request->last_req_id = $id_set[1];
         $this->last_paycard_transaction_id = $request->last_paycard_transaction_id;
         $response = new PaycardResponse($request,array(
             'curlTime' => 0,
@@ -1149,7 +1151,7 @@ class MercuryE2E extends BasicCCModule
         $resultCode = $xml->query('/RStream/CmdResponse/DSIXReturnCode');
         $response->setResultCode($resultCode);
         $apprNumber = $xml->query('/RStream/TranResponse/AuthCode');
-        $response->approvalNum($apprNumber);
+        $response->setApprovalNum($apprNumber);
         $rMsg = $resultMsg;
         if ($resultMsg) {
             $rMsg = $resultMsg;
@@ -1171,6 +1173,7 @@ class MercuryE2E extends BasicCCModule
             $validResponse = -3;
         }
 
+	$issuer = $xml->query('/RStream/TranResponse/CardType');
         $resp_balance = $xml->query('/RStream/TranResponse/Balance');
         $ebtbalance = 0;
         if ($issuer == 'Foodstamp' && $resp_balance !== false) {
@@ -1222,11 +1225,11 @@ class MercuryE2E extends BasicCCModule
             $normalized = 3;
         }
         $response->setNormalizedCode($normalized);
-        $response->setToken(array(
+        $response->setToken(
             $xml->query('/RStream/TranResponse/RecordNo'),
             $xml->query('/RStream/TranResponse/ProcessData'),
-            $xml->query('/RStream/TranResponse/AcqRefData'),
-        ));
+            $xml->query('/RStream/TranResponse/AcqRefData')
+        );
 
         try {
             $response->saveResponse();
