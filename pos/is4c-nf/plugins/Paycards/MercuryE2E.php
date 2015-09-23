@@ -742,7 +742,7 @@ class MercuryE2E extends BasicCCModule
             $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
             return 'Error';
         }
-	CoreLocal::set('LastEmvPcId', array($request->last_paycard_transaction_id, $request->last_req_id));
+    CoreLocal::set('LastEmvPcId', array($request->last_paycard_transaction_id, $request->last_req_id));
         CoreLocal::set('LastEmvReqType', 'normal');
 
         // start with fields common to PDCX and EMVX
@@ -849,7 +849,7 @@ class MercuryE2E extends BasicCCModule
 
         try {
             $request->saveRequest();
-	    CoreLocal::set('LastEmvPcId', array($request->last_paycard_transaction_id, $request->last_req_id));
+        CoreLocal::set('LastEmvPcId', array($request->last_paycard_transaction_id, $request->last_req_id));
             CoreLocal::set('LastEmvReqType', 'void');
         } catch (Exception $ex) {
             $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
@@ -1127,9 +1127,9 @@ class MercuryE2E extends BasicCCModule
         } else {
             $request = new PaycardRequest($ref);
         }
-	$id_set = CoreLocal::get('LastEmvPcId');
+    $id_set = CoreLocal::get('LastEmvPcId');
         $request->last_paycard_transaction_id = $id_set[0];
-	$request->last_req_id = $id_set[1];
+    $request->last_req_id = $id_set[1];
         $this->last_paycard_transaction_id = $request->last_paycard_transaction_id;
         $response = new PaycardResponse($request,array(
             'curlTime' => 0,
@@ -1173,7 +1173,7 @@ class MercuryE2E extends BasicCCModule
             $validResponse = -3;
         }
 
-	$issuer = $xml->query('/RStream/TranResponse/CardType');
+        $issuer = $xml->query('/RStream/TranResponse/CardType');
         $resp_balance = $xml->query('/RStream/TranResponse/Balance');
         $ebtbalance = 0;
         if ($issuer == 'Foodstamp' && $resp_balance !== false) {
