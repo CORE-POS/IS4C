@@ -812,7 +812,7 @@ class SQLManager
             $bigR = $this->execute($big_prep, $big_args, $dest_db);
             return ($bigR) ? true : false;
         } else {
-            return $this->executeAsTransaction($query, $arg_sets, $dest_db);
+            return $this->executeAsTransaction($prep, $arg_sets, $dest_db);
         }
     }
 
@@ -826,7 +826,7 @@ class SQLManager
         $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
         $ret = true;
         $this->startTransaction($which_connection);
-        $statement = $this->prepare($prep, $which_connection);
+        $statement = $this->prepare($query, $which_connection);
         foreach ($arg_sets as $args) {
             if (!$this->execute($statement, $args, $which_connection)) {
                 $ret = false;
