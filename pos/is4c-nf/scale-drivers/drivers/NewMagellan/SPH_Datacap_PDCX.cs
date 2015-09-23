@@ -243,7 +243,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                 return null;
             }
             string sigdata = doc.SelectSingleNode("RStream/Signature").Value;
-            List<Point> points = SigDatatoPoints(sigdata);
+            List<Point> points = SigDataToPoints(sigdata);
 
             int ticks = Environment.TickCount;
             string my_location = AppDomain.CurrentDomain.BaseDirectory;
@@ -252,7 +252,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                 ticks++;
             }
             string filename = my_location + sep + "ss-output"+ sep + ticks + ".bmp";
-            Signature sig = new Signature(filename, points);
+            BitmapBPP.Signature sig = new BitmapBPP.Signature(filename, points);
             parent.MsgSend("TERMBMP" + ticks + ".bmp");
             
         } catch (Exception) {
@@ -281,7 +281,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         char[] comma = new char[]{','};
         foreach (var pair in data.Split(new char[]{':'})) {
             var xy = pair.Split(comma);
-            if (xy.length == 2) {
+            if (xy.Length == 2) {
                 points.Add(new Point(CoordsToInt(xy[0]), CoordsToInt(xy[1])));
             }
         }
