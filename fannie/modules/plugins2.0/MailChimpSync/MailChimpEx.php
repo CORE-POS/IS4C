@@ -1,5 +1,7 @@
 <?php
 
+if (class_exists('Mailchimp')) {
+
 class MailChimpEx extends Mailchimp
 {
     public $export_root = 'https://api.mailchimp.com/export/1.0';
@@ -81,3 +83,8 @@ class MailChimpEx extends Mailchimp
     }
 }
 
+} else {
+
+class MailChimpEx {} // useless stub if MC is not installed via composer
+
+}

@@ -1,5 +1,7 @@
 <?php
 
+if (class_exists('Mailchimp')) {
+
 class McListEx extends Mailchimp_Lists
 {
     /**
@@ -19,4 +21,10 @@ class McListEx extends Mailchimp_Lists
 
         return $ret;
     }
+}
+
+} else {
+
+class McListEx {}
+
 }
