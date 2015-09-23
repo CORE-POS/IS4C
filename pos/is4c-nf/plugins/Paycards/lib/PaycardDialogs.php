@@ -271,57 +271,35 @@ class PaycardDialogs
     public static function validateVoid($request, $response, $lineitem, $id)
     {
         // make sure the payment is applicable to void
+        $err_header = _('Unable to Void');
+        $buttons = _('[clear] to cancel');
+        $error = false;
         if ($response['commErr'] != 0 || $response['httpCode'] != 200 || $response['validResponse'] != 1) {
-            PaycardLib::paycard_reset();
-            return PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Unable to Void",
-                                                         "Card transaction not successful",
-                                                         "[clear] to cancel"
-            );
+            $error = _("Card transaction not successful");
         } elseif ($request['live'] != PaycardLib::paycard_live(PaycardLib::PAYCARD_TYPE_CREDIT)) {
             // this means the transaction was submitted to the test platform, but we now think we're in live mode, or vice-versa
             // I can't imagine how this could happen (short of serious $_SESSION corruption), but worth a check anyway.. --atf 7/26/07
-            PaycardLib::paycard_reset();
-            return PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Unable to Void",
-                                                         "Processor platform mismatch",
-                                                         "[clear] to cancel"
-            );
+            $error = _("Processor platform mismatch");
         } elseif( $response['xResponseCode'] != 1) {
-            PaycardLib::paycard_reset();
-            return PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Unable to Void",
-                                                         "Card transaction not approved",
-                                                         "[clear] to cancel"
-            );
+            $error = _("Card transaction not approved");
         } elseif( $response['xTransactionID'] < 1) {
-            PaycardLib::paycard_reset();
-            return PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Internal Error",
-                                                         "Invalid reference number",
-                                                         "[clear] to cancel"
-            );
+            $error = _("Invalid reference number");
         }
 
         // make sure the tender line-item is applicable to void
         if ($lineitem['trans_type'] != "T" || ($lineitem['trans_subtype'] != "CC" && $lineitem['trans_subtype'] != 'DC'
             && $lineitem['trans_subtype'] != 'EF' && $lineitem['trans_subtype'] != 'EC' && $lineitem['trans_subtype'] != 'AX') ) {
-            PaycardLib::paycard_reset();
-            return PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Internal Error",
-                                                         "Authorization and tender records do not match $id",
-                                                         "[clear] to cancel"
-            );
+            $error = _("Authorization and tender records do not match ") . $id;
         } elseif ($lineitem['trans_status'] == "V" || $lineitem['voided'] != 0) {
-            PaycardLib::paycard_reset();
-            return PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                                                         "Internal Error",
-                                                         "Void records do not match",
-                                                         "[clear] to cancel"
-            );
+            $error = _("Void records do not match");
         }
 
-        return true;
+        if ($error !== false) {
+            return PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
+                              $err_header, $error, $buttons);
+        } else {
+            return true;
+        }
     }
 }
 
