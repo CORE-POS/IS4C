@@ -1,4 +1,4 @@
-var orderView = function($) {
+var orderView = (function($) {
     var mod = {};
     mod.saveContactInfo = function()
     {
@@ -37,7 +37,7 @@ var orderView = function($) {
                 }
             }
         });
-    }
+    };
 
     mod.confirmC = function(oid,tid,label){
         if (window.confirm("Are you sure you want to close this order as "+label+"?")){
@@ -45,12 +45,12 @@ var orderView = function($) {
             url: 'ajax-calls.php',
             type: 'post',
             data: 'action=closeOrder&orderID='+oid+'&status='+tid,
-            success: function(resp){
+            success: function(){
                 window.location = $('#redirectURL').val();
             }
             });
         }
-    }
+    };
 
     mod.memNumEntered = function(){
         var oid = $('#orderID').val();
@@ -72,15 +72,15 @@ var orderView = function($) {
             }
         }
         });
-    }
+    };
 
     mod.afterLoadCustomer = function() {
         $('.contact-field').change(mod.saveContactInfo);
         $('#memNum').change(mod.memNumEntered);
-        $('#ctcselect').change(function(e) {
+        $('#ctcselect').change(function() {
             mod.saveCtC($(this).val(), $('#orderID').val());
         });
-        $('#s_personNum').change(function(e) {
+        $('#s_personNum').change(function() {
             mod.savePN($('#orderID').val(), $(this).val());
         });
         $('.done-btn').click(function(e) {
@@ -88,18 +88,18 @@ var orderView = function($) {
             e.preventDefault();
             return false;
         });
-        $('#orderStatus').change(function(e) {
+        $('#orderStatus').change(function() {
             mod.updateStatus($('#orderID').val(), $(this).val());
         });
-        $('.print-cb').change(function(e) {
+        $('.print-cb').change(function() {
             mod.togglePrint($('#orderID').val());
         });
-    }
+    };
 
     mod.searchWindow = function (){
         window.open('search.php','Search',
             'width=350,height=400,status=0,toolbar=0,scrollbars=1');
-    }
+    };
 
     mod.afterLoadItems = function() {
         $('.item-field').change(mod.saveItem);
@@ -125,7 +125,7 @@ var orderView = function($) {
             });
         }
         $('.close-order-btn').click(function (e) {
-            mod.confirmC(oid, $(this).data('close'), $(this).html());
+            mod.confirmC($('#orderID').val(), $(this).data('close'), $(this).html());
             e.preventDefault();
             return false;
         });
@@ -134,14 +134,14 @@ var orderView = function($) {
             e.preventDefault();
             return false;
         });
-        $('.itemChkO').change(function (e) {
+        $('.itemChkO').change(function () {
             mod.toggleO($(this).data('order'), $(this).data('trans'));
         });
-        $('.itemChkA').change(function (e) {
+        $('.itemChkA').change(function () {
             mod.toggleA($(this).data('order'), $(this).data('trans'));
         });
         $('.btn-search').click(mod.searchWindow);
-    }
+    };
 
     mod.addUPC = function()
     {
@@ -157,7 +157,7 @@ var orderView = function($) {
             mod.afterLoadItems();
         }
         });
-    }
+    };
     mod.deleteID = function(orderID,transID)
     {
         $.ajax({
@@ -167,16 +167,14 @@ var orderView = function($) {
             mod.afterLoadItems();
         }
         });
-    }
+    };
     mod.saveCtC = function (val,oid){
         $.ajax({
         url: 'ajax-calls.php',
         type: 'post',
         data: 'action=saveCtC&orderID='+oid+'&val='+val,
-        success: function(resp){
-        }
         });
-    }
+    };
     mod.newQty = function (oid,tid){
         var qty = $('#newqty').val();
         $.ajax({
@@ -187,7 +185,7 @@ var orderView = function($) {
             mod.afterLoadItems();
         }
         });
-    }
+    };
     mod.newDept = function (oid,tid){
         var d = $('#newdept').val();
         $.ajax({
@@ -198,15 +196,14 @@ var orderView = function($) {
             mod.afterLoadItems();
         }
         });
-    }
+    };
     mod.savePN = function (oid,val){
         $.ajax({
         url: 'ajax-calls.php',
         type: 'post',
         data: 'action=savePN&val='+val+'&orderID='+oid,
-        success: function(resp){}
         });
-    }
+    };
     mod.saveConfirmDate = function (val,oid){
         if (val){
             $.ajax({
@@ -222,36 +219,33 @@ var orderView = function($) {
             url: 'ajax-calls.php',
             type: 'post',
             data: 'action=unconfirmOrder&orderID='+oid,
-            success: function(resp){
+            success: function(){
                 $('#confDateSpan').html('Not confirmed');
             }
             });
         }
-    }
+    };
     mod.togglePrint = function (oid)
     {
         $.ajax({
         dataType: 'post',
         data: 'togglePrint=1&orderID='+oid,
-        success: function(resp){}
         });
-    }
+    };
     mod.toggleO = function (oid,tid)
     {
         $.ajax({
         dataType: 'post',
         data: 'toggleMemType=1&orderID='+oid+'&transID='+tid,
-        success: function(resp){}
         });
-    }
+    };
     mod.toggleA = function (oid,tid)
     {
         $.ajax({
         dataType: 'post',
         data: 'toggleStaff=1&orderID='+oid+'&transID='+tid,
-        success: function(resp){}
         });
-    }
+    };
     mod.doSplit = function (oid,tid){
         var dcheck=false;
         $('select.editDept').each(function(){
@@ -274,7 +268,7 @@ var orderView = function($) {
             mod.afterLoadItems();
         }
         });
-    }
+    };
     mod.validateAndHome = function (){
         var dcheck=false;
         $('select.editDept').each(function(){
@@ -303,7 +297,7 @@ var orderView = function($) {
         }
 
         return false;
-    }
+    };
     mod.updateStatus = function updateStatus(oid,val){
         $.ajax({
         url: 'ajax-calls.php',
@@ -313,11 +307,11 @@ var orderView = function($) {
             $('#statusdate'+oid).html(resp);	
         }
         });
-    }
+    };
 
     return mod;
 
-}(jQuery);
+}(jQuery));
 
 $(document).ready(function(){
 	var initoid = $('#init_oid').val();
@@ -336,7 +330,7 @@ $(document).ready(function(){
                 orderView.saveConfirmDate(e.target.checked, $('#orderID').val());
             });
             $('.done-btn').click(function(e) {
-                mod.validateAndHome();
+                orderView.validateAndHome();
                 e.preventDefault();
                 return false;
             });

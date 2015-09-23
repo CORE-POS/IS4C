@@ -54,8 +54,5 @@ is this table has an automatically incremented
 trans_id column.
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
 }
 

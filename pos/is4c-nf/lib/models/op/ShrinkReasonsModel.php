@@ -44,38 +44,5 @@ Maintain list of reasons for marking
 shrink
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function shrinkReasonID()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["shrinkReasonID"])) {
-                return $this->instance["shrinkReasonID"];
-            } elseif(isset($this->columns["shrinkReasonID"]["default"])) {
-                return $this->columns["shrinkReasonID"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["shrinkReasonID"] = func_get_arg(0);
-        }
-    }
-
-    public function description()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["description"])) {
-                return $this->instance["description"];
-            } elseif(isset($this->columns["description"]["default"])) {
-                return $this->columns["description"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["description"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

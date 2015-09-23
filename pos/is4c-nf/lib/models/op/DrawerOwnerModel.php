@@ -43,38 +43,5 @@ Manage assignments when more than one
 cash drawer is present.
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function drawer_no()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["drawer_no"])) {
-                return $this->instance["drawer_no"];
-            } elseif(isset($this->columns["drawer_no"]["default"])) {
-                return $this->columns["drawer_no"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["drawer_no"] = func_get_arg(0);
-        }
-    }
-
-    public function emp_no()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["emp_no"])) {
-                return $this->instance["emp_no"];
-            } elseif(isset($this->columns["emp_no"]["default"])) {
-                return $this->columns["emp_no"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["emp_no"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 
