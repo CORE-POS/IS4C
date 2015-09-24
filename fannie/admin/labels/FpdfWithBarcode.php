@@ -3,9 +3,9 @@
 /****Credit for the majority of what is below for barcode generation
  has to go to Olivier for posting the script on the FPDF.org scripts
  webpage.****/
-if (!class_exists('FpdfBarcodePDF', false)) {
+if (!class_exists('FpdfWithBarcode', false)) {
 
-class FpdfBarcodePDF extends FPDF
+class FpdfWithBarcode extends FPDF
 {
    function EAN13($x,$y,$barcode,$h=16,$w=.35)
    {
