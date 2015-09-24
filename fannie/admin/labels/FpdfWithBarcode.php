@@ -3,6 +3,7 @@
 /****Credit for the majority of what is below for barcode generation
  has to go to Olivier for posting the script on the FPDF.org scripts
  webpage.****/
+if (!class_exists('FpdfBarcodePDF', false)) {
 
 class FpdfBarcodePDF extends FPDF
 {
@@ -101,5 +102,7 @@ class FpdfBarcodePDF extends FPDF
       $this->SetFont('Arial','',9);
       $this->Text($x,$y+$h+11/$this->k,substr($barcode,-$len));
     }
+}
+
 }
 
