@@ -79,18 +79,18 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $depts = array();
-        $p = $dbc->prepare_statement('SELECT dept_no,dept_name FROM departments ORDER BY dept_no');
-        $result = $dbc->exec_statement($p);
-        while($w = $dbc->fetch_row($result))
-            $depts[$w[0]] = $w[1];
+        $prep = $dbc->prepare_statement('SELECT dept_no,dept_name FROM departments ORDER BY dept_no');
+        $result = $dbc->exec_statement($prep);
+        while($row = $dbc->fetch_row($result))
+            $depts[$row[0]] = $row[1];
         $taxes = array('-'=>array(0,'NoTax'));
-        $p = $dbc->prepare_statement('SELECT id, description FROM taxrates ORDER BY id');
-        $result = $dbc->exec_statement($p);
-        while($w = $dbc->fetch_row($result)){
-            if ($w['id'] == 1)
+        $prep = $dbc->prepare_statement('SELECT id, description FROM taxrates ORDER BY id');
+        $result = $dbc->exec_statement($prep);
+        while($row = $dbc->fetch_row($result)){
+            if ($row['id'] == 1)
                 $taxes['X'] = array(1,'Regular');
             else
-                $taxes[strtoupper(substr($w[1],0,1))] = array($w[0], $w[1]);
+                $taxes[strtoupper(substr($row[1],0,1))] = array($row[0], $row[1]);
         }
         $local_opts = array('-'=>array(0,'No'));
         $origins = new OriginsModel($dbc);
@@ -329,9 +329,9 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             if ($tax !== '') {
                 $model->tax($tax);
             }
-            $fs = FormLib::get_form_value('fs');
-            if ($fs !== '') {
-                $model->foodstamp($fs);
+            $fsx = FormLib::get_form_value('fs');
+            if ($fsx !== '') {
+                $model->foodstamp($fsx);
             }
             $disc = FormLib::get_form_value('disc');
             if ($disc !== '') {
@@ -489,7 +489,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $page_url = sprintf('ProductListPage.php?supertype=%s&deptStart=%s&deptEnd=%s&deptSub=%s&manufacturer=%s&mtype=%s&vendor=%d',
                 $supertype, $deptStart, $deptEnd, $super, $manufacturer, $mtype, $vendorID);
         if (!$this->excel) {
-            $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post" id="excel-form">
+            $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post" id="excel-form">
                 <input type="hidden" name="supertype" value="' . $supertype . '" />
                 <input type="hidden" name="deptStart" value="' . $deptStart . '" />
                 <input type="hidden" name="deptEnd" value="' . $deptEnd . '" />
@@ -581,13 +581,13 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $query .= ' WHERE (i.default_vendor_id=? OR z.vendorID=?) ';
             $args = array($vendorID, $vendorID);
         } elseif ($supertype == 'upc') {
-            $in = '';
+            $inp = '';
             foreach ($upc_list as $u) {
-                $in .= '?,';
+                $inp .= '?,';
                 $args[] = $u;
             }
-            $in = substr($in, 0, strlen($in)-1);
-            $query .= ' WHERE i.upc IN (' . $in . ') ';
+            $inp = substr($inp, 0, strlen($inp)-1);
+            $query .= ' WHERE i.upc IN (' . $inp . ') ';
         } else {
             $query .= ' WHERE i.department BETWEEN ? AND ? ';
             $args = array($deptStart, $deptEnd);

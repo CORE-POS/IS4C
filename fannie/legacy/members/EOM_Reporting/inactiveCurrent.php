@@ -6,23 +6,7 @@ include('../../db.php');
 if (isset($_GET['excel'])){
     header('Content-Type: application/ms-excel');
     header('Content-Disposition: attachment; filename="InactiveCurrently.xls"');
-    $_SERVER['REQUEST_URI'] = $_SERVER['PHP_SELF'];
 }
-
-$months = array(
-"Jan"=>"01",
-"Feb"=>"02",
-"Mar"=>"03",
-"Apr"=>"04",
-"May"=>"05",
-"Jun"=>"06",
-"Jul"=>"07",
-"Aug"=>"08",
-"Sep"=>"09",
-"Oct"=>"10",
-"Nov"=>"11",
-"Dec"=>"12",
-);
 
 $query = "select s.cardno,r.mask from
     suspensions as s left join reasoncodes as r
@@ -41,7 +25,19 @@ foreach($headers as $h)
     echo "<th ><font size=2>$h</font></th>";
 echo "</tr>";
 
-$backgrounds = array('#ffffcc','#ffffff');
+function printLine($reasons, $curMem, $b)
+{
+    $backgrounds = array('#ffffcc','#ffffff');
+    echo "<tr>";
+    echo "<td bgcolor=$backgrounds[$b]>$curMem</td>";
+    foreach ($reasons as $r){
+        echo "<td bgcolor=$backgrounds[$b] align=center>$r</td>";
+    }
+    echo "</tr>";
+    $b = ($b+1)%2;
+    return $b;
+}
+
 $b = 0;
 
 $result = $sql->query($query);
@@ -52,13 +48,7 @@ $rsums = array(0,0,0,0,0,0);
 while($row = $sql->fetch_row($result)){
     if ($curMem != $row[0]){
         if ($curMem != -1){
-            echo "<tr>";
-            echo "<td bgcolor=$backgrounds[$b]>$curMem</td>";
-            foreach ($reasons as $r){
-                echo "<td bgcolor=$backgrounds[$b] align=center>$r</td>";
-            }
-            echo "</tr>";
-            $b = ($b+1)%2;
+            $b = printLine($reasons, $curMem, $b);
         }
         $curMem = $row[0];
         $reasons = array("&nbsp;","&nbsp;","&nbsp;","&nbsp;","&nbsp;","&nbsp;");
@@ -90,19 +80,7 @@ while($row = $sql->fetch_row($result)){
         $rsums[5] += 1;
     }
 }
-echo "<tr>";
-echo "<td bgcolor=$backgrounds[$b]>$curMem</td>";
-foreach ($reasons as $r){
-    echo "<td bgcolor=$backgrounds[$b] align=center>$r</td>";
-}
-echo "</tr>";
-$b = ($b+1)%2;
-echo "<tr>";
-echo "<th bgcolor=$backgrounds[$b]>Totals</th>";
-foreach ($rsums as $r){
-    echo "<td bgcolor=$backgrounds[$b] align=center>$r</td>";
-}
-echo "</tr>";
+$b = printLine($reasons, $curMem, $b);
+$b = printLine($rsums, 'Totals', $b);
 echo "</table>";
 
-?>
