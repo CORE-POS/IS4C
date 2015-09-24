@@ -353,16 +353,16 @@ class Bitmap
         $this->error = null;
         
         if (!is_numeric($width) || (int)$width < 1) {
-            die('Bitmap width must be at least 1');
+            throw('Bitmap width must be at least 1');
         }
         if (!is_numeric($height) || (int)$height < 1) {
-            die('Bitmap height must be at least 1');
+            throw('Bitmap height must be at least 1');
         }
         if (!is_numeric($bpp) || (int)$bpp != 1) {
-            die('Color bitmaps not yet supported');
+            throw('Color bitmaps not yet supported');
         }
         if (!is_numeric($dpi) || (int)$dpi < 1) {
-            die('Bitmap DPI must be at least 1');
+            throw('Bitmap DPI must be at least 1');
         }
         $this->magic = "BM";
         $this->dibVersion = $this->DIB3;
@@ -631,20 +631,20 @@ class Bitmap
             $t=$x0; $x0=$x1; $x1=$t; // swap $x0,$x1
             $t=$y0; $y0=$y1; $y1=$t; // swap $y0,$y1
         }
-        $dx = ($x1 - $x0);
-        $dy = abs($y1 - $y0);
-        $err = $dx >> 1;
-        $sy = ($y0 < $y1) ? 1 : -1;
+        $divx = ($x1 - $x0);
+        $divy = abs($y1 - $y0);
+        $err = $divx >> 1;
+        $s_y = ($y0 < $y1) ? 1 : -1;
         while ($x0 <= $x1) {
             if ($steep) {
                 $this->setPixelValue($y0, $x0, 1);
             } else {
                 $this->setPixelValue($x0, $y0, 1);
             }
-            $err -= $dy;
+            $err -= $divy;
             if ($err < 0) {
-                $y0 += $sy;
-                $err += $dx;
+                $y0 += $s_y;
+                $err += $divx;
             }
             $x0++;
         }

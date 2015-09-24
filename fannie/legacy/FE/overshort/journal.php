@@ -192,7 +192,7 @@ function display($date1,$date2,$excel=False){
     global $sql,$pCodes_lookup,$tender_pcode_lookup,$double_lookup;
 
     $classes = array("one","two");
-    $c = 0;
+    $cur = 0;
 
     $data = array();
     $dataP = $sql->prepare("SELECT phpData FROM dailyDebitCredit WHERE dateStr=?");
@@ -208,7 +208,7 @@ function display($date1,$date2,$excel=False){
     }
 
     $ret = "<table cellspacing=0 cellpadding=4 border=1>";
-    $ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
+    $ret .= "<tr class=$classes[$cur]>"; $cur = ($cur+1)%2;
     $ret .= "<td colspan=2>Sales Entries<br />$date1 through $date2</td>";
 
     if (!$excel)
@@ -250,15 +250,9 @@ function display($date1,$date2,$excel=False){
     for ($i=0;$i<$num_days-1;$i++)
         $ret .= "<td>&nbsp;</td><td>&nbsp;</td>";
     $ret .= "<td class=money>";
-    if (!$excel){
-        $ret .= "<input type=text size=7 value=\"";
-        $ret .= (isset($data['other']['depositAmount'])?$data['other']['depositAmount']:'')."\"";
-        $ret .= " onchange=\"save2(this.value,'other','depositAmount');rb($endTS);\" ";
-        $ret .= "style=\"text-align:right\" name=debit$endTS />";
-    }
-    else
-        $ret .= (isset($data['other']['depositAmount'])?$data['other']['depositAmount']:'');
-    $overshorts[$endTS] += isset($data['other']['depositAmount'])?$data['other']['depositAmount']:0;
+    $amt = isset($data['other']['depositAmount']) ? $data['other']['depositAmount'] : '';
+    $ret .= inputTypeOther(array('other','depositAmount','debit'), $amt, $excel, $endTS);
+    $overshorts[$endTS] += $amt === '' ? 0 : $amt;
     
     $ret .= "</td>";
     $ret .= "<td>&nbsp;</td>";
@@ -269,15 +263,9 @@ function display($date1,$date2,$excel=False){
     for ($i=0;$i<$num_days-1;$i++)
         $ret .= "<td>&nbsp;</td><td>&nbsp;</td>";
     $ret .= "<td class=money>";
-    if (!$excel){
-        $ret .= "<input type=text size=7 value=\"";
-        $ret .= (isset($data['other']['depositChecks'])?$data['other']['depositChecks']:'')."\"";
-        $ret .= " onchange=\"save2(this.value,'other','depositChecks');rb($endTS);\" ";
-        $ret .= "style=\"text-align:right\" name=debit$endTS />";
-    }
-    else
-        $ret .= (isset($data['other']['depositChecks'])?$data['other']['depositChecks']:'');
-    $overshorts[$endTS] += isset($data['other']['depositChecks'])?$data['other']['depositChecks']:0;
+    $amt = isset($data['other']['depositChecks']) ? $data['other']['depositChecks'] : '';
+    $ret .= inputTypeOther(array('other','depositChecks','debit'), $amt, $excel, $endTS);
+    $overshorts[$endTS] += $amt === '' ? 0 : $amt;
 
     $ret .= "</td>";
     $ret .= "<td>&nbsp;</td>";
@@ -288,14 +276,9 @@ function display($date1,$date2,$excel=False){
     for ($i=0;$i<$num_days-1;$i++)
         $ret .= "<td>&nbsp;</td><td>&nbsp;</td>";
     $ret .= "<td class=money>";
-    if (!$excel){
-        $ret .= "<input type=text size=7 value=\"";
-        $ret .= (isset($data['other']['atmNet'])?$data['other']['atmNet']:'')."\"";
-        $ret .= " onchange=\"save2(this.value,'other','atmNet');rb($endTS);\" ";
-        $ret .= "style=\"text-align:right\" name=debit$endTS />";
-    }
-    else
-        $ret .= (isset($data['other']['atmNet'])?$data['other']['atmNet']:'');
+    $amt = isset($data['other']['atmNet']) ? $data['other']['atmNet'] : '';
+    $ret .= inputTypeOther(array('other','atmNet','debit'), $amt, $excel, $endTS);
+    $overshorts[$endTS] += $amt === '' ? 0 : $amt;
 
     $ret .= "</td>";
     $ret .= "<td>&nbsp;</td>";
@@ -601,15 +584,9 @@ function display($date1,$date2,$excel=False){
         $ret .= "<td>&nbsp;</td><td>&nbsp;</td>";
     $ret .= "<td>&nbsp;</td>";
     $ret .= "<td class=money>";
-    if (!$excel){
-        $ret .= "<input type=text size=7 value=\"";
-        $ret .= (isset($data['other']['buyAmount'])?$data['other']['buyAmount']:'')."\"";
-        $ret .= " onchange=\"save2(this.value,'other','buyAmount');rb($endTS);\" ";
-        $ret .= "style=\"text-align:right\" name=credit$endTS />";
-    }
-    else
-        $ret .= (isset($data['other']['buyAmount'])?$data['other']['buyAmount']:'');
-    $overshorts[$endTS] -= isset($data['other']['buyAmount'])?$data['other']['buyAmount']:0;
+    $amt = isset($data['other']['buyAmount']) ? $data['other']['buyAmount'] : '';
+    $ret .= inputTypeOther(array('other','buyAmount','credit'), $amt, $excel, $endTS);
+    $overshorts[$endTS] -= $amt === '' ? 0 : $amt;
     $ret .= "</td>";
     $ret .= "</tr>";
 
@@ -669,17 +646,17 @@ function fetch_data($date1,$date2){
         rowName in ('depositAmount','atm')
         and denomination in ('Checks','fill','reject')");
     $pageOneR2 = $sql->execute($pageOneP2, $default_args);
-    while($w = $sql->fetch_row($pageOneR2)){
-        switch(strtolower($w['denomination'])){
+    while($row = $sql->fetch_row($pageOneR2)){
+        switch(strtolower($row['denomination'])){
             case 'checks':
-                $data['other']['depositChecks'] += $w['amt'];
-                $data['other']['depositAmount'] -= $w['amt'];
+                $data['other']['depositChecks'] += $row['amt'];
+                $data['other']['depositAmount'] -= $row['amt'];
                 break;
             case 'fill':
-                $data['other']['atmNet'] += $w['amt'];
+                $data['other']['atmNet'] += $row['amt'];
                 break;
             case 'reject':
-                $data['other']['atmNet'] -= $w['amt'];
+                $data['other']['atmNet'] -= $row['amt'];
                 break;
         }
     }
@@ -697,10 +674,7 @@ function fetch_data($date1,$date2){
         tender_type,tendername order by tendername");
     $tenderR = $sql->execute($tenderP, $date_args);
     while ($tenderW = $sql->fetch_row($tenderR)){
-        $y = $tenderW[3];
-        $m = $tenderW[4];
-        $d = $tenderW[5];    
-        $timestamp = mktime(0,0,0,$m,$d,$y);
+        $timestamp = getTS($tenderW, 3, 4, 5);
 
         $code = $tenderW[1];
         $name = $tenderW[2];
@@ -739,10 +713,7 @@ function fetch_data($date1,$date2){
             trans_subtype");
     $extraTenderR = $sql->execute($extraTenderP, $date_args);
     while($extraTenderW = $sql->fetch_row($extraTenderR)){
-        $y = $extraTenderW[0];
-        $m = $extraTenderW[1];
-        $d = $extraTenderW[2];    
-        $timestamp = mktime(0,0,0,$m,$d,$y);
+        $timestamp = getTS($extraTenderW, 0, 1, 2);
         $code = $extraTenderW[3];
 
         if (!isset($data['tenders'][$code]))
@@ -784,10 +755,7 @@ function fetch_data($date1,$date2){
     $salesR = $sql->execute($salesP, $date_args);
     $preTS = 0;
     while($salesW = $sql->fetch_row($salesR)){
-        $y = $salesW[0];
-        $m = $salesW[1];
-        $d = $salesW[2];    
-        $timestamp = mktime(0,0,0,$m,$d,$y);
+        $timestamp = getTS($salesW, 0, 1, 2);
 
         /* fill in zeroes for all pcodes */
         if ($timestamp != $preTS){
@@ -843,10 +811,7 @@ function fetch_data($date1,$date2){
     $discountR = $sql->execute($discountP, $date_args);
     $data['other']['discount'] = array();
     while($discountW = $sql->fetch_row($discountR)){
-        $y = $discountW[0];
-        $m = $discountW[1];
-        $d = $discountW[2];
-        $tstamp = mktime(0,0,0,$m,$d,$y);
+        $tstamp = getTS($discountW, 0, 1, 2);
         
         $type = $discountW[3];
         if ($type == 'Non Member') $type = 'Staff Member';
@@ -858,6 +823,33 @@ function fetch_data($date1,$date2){
     }
 
     return $data;
+}
+
+function inputTypeOther($type, $amt, $excel, $endTS)
+{
+    $ret = '';
+    if (!$excel){
+        $ret .= "<input type=text size=7 value=\"";
+        $ret .= ($amt)."\"";
+        $ret .= " onchange=\"save2(this.value,'{$type[0]}','{$type[1]}');rb($endTS);\" ";
+        $ret .= "style=\"text-align:right\" name={$type[2]}$endTS />";
+    } else {
+        $ret .= $amt;
+    }
+
+    return $ret;
+}
+
+function getTS($row, $year, $month, $day)
+{
+    return mktime(
+        0,
+        0,
+        0,
+        $row[$month],
+        $row[$day],
+        $row[$year]
+    );
 }
 
 ?>

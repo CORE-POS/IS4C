@@ -7,9 +7,9 @@ $(document).ready(function(){
 	data: 'action=loadCustomer&orderID='+initoid,
 	cache: false,
 	error: function(e1,e2,e3){
-		alert(e1);
-		alert(e2);
-		alert(e3);
+		windows.alert(e1);
+		windows.alert(e2);
+		windows.alert(e3);
 	},
 	success: function(resp){
 		var tmp = resp.split("`");
@@ -38,12 +38,12 @@ $(window).unload(function() {
 
 
 function confirmC(oid,tid){
-	var t = new Array();
+	var t = [];
 	t[7] = "Completed";
 	t[8] = "Canceled";
 	t[9] = "Inquiry";
 
-	if (confirm("Are you sure you want to close this order as "+t[tid]+"?")){
+	if (window.confirm("Are you sure you want to close this order as "+t[tid]+"?")){
 		$.ajax({
 		url: 'ajax-calls.php',
 		type: 'post',
@@ -51,7 +51,7 @@ function confirmC(oid,tid){
 		cache: false,
 		success: function(resp){
 			//location = 'review.php?orderID='+oid;
-			location = $('#redirectURL').val();
+			window.location = $('#redirectURL').val();
 		}
 		});
 	}
@@ -89,8 +89,9 @@ function addUPC(){
 	cache: false,
 	success: function(resp){
 		$('#itemDiv').html(resp);
-		if ($('#newqty').length)
+		if ($('#newqty').length) {
 			$('#newqty').focus();	
+        }
 	}
 	});
 }
@@ -135,8 +136,9 @@ function savePrice(new_price,tid){
 	data: 'action=savePrice&orderID='+oid+'&transID='+tid+'&price='+new_price,
 	cache: false,
 	success: function(resp){
-		if ($('#discPercent'+upc).html() != 'Sale')
-			$('#discPercent'+upc).html(resp+"%");
+		if ($('#discPercent'+tid).html() !== 'Sale') {
+			$('#discPercent'+tid).html(resp+"%");
+        }
 	}
 	});
 }
@@ -148,11 +150,12 @@ function saveSRP(new_price,tid){
 	data: 'action=saveSRP&orderID='+oid+'&transID='+tid+'&srp='+new_price,
 	cache: false,
 	success: function(resp){
-		var fields = resp.split('`')
-		$('#srp'+tid).val(fields[1])	
-		$('#act'+tid).val(fields[2])	
-		if ($('#discPercent'+tid).html() != 'Sale')
+		var fields = resp.split('`');
+		$('#srp'+tid).val(fields[1]);
+		$('#act'+tid).val(fields[2]);
+		if ($('#discPercent'+tid).html() !== 'Sale') {
 			$('#discPercent'+tid).html(fields[0]+"%");
+        }
 	}
 	});
 }
@@ -405,13 +408,13 @@ function toggleA(oid,tid){
 function doSplit(oid,tid){
 	var dcheck=false;
 	$('select.editDept').each(function(){
-		if ($(this).val() == 0){
+		if ($(this).val() === '0'){
 			dcheck=true;
 		}
 	});
 
 	if (dcheck){
-		alert("Item(s) don't have a department set");
+		windows.alert("Item(s) don't have a department set");
 		return false;
 	}
 
@@ -429,28 +432,29 @@ function doSplit(oid,tid){
 function validateAndHome(){
 	var dcheck=false;
 	$('select.editDept').each(function(){
-		if ($(this).val() == 0){
+		if ($(this).val() === '0'){
 			dcheck=true;
 		}
 	});
 
 	if (dcheck){
-		alert("Item(s) don't have a department");
+		windows.alert("Item(s) don't have a department");
 		return false;
 	}
 
 	var CtC = $('#ctcselect').val();
-	if (CtC == 2){
-		alert("Choose Call to Confirm option");
+	if (CtC === '2'){
+		windows.alert("Choose Call to Confirm option");
 		return false;
 	}
 
 	var nD = $('#nDept').val();
 	var nT = $('#nText').val();
-	if (nT != "" && nD == 0)
-		alert("Assign your notes to a department");
-	else
-		location = $('#redirectURL').val();
+	if (nT !== "" && nD === '0') {
+		windows.alert("Assign your notes to a department");
+	} else {
+		window.location = $('#redirectURL').val();
+    }
 
 	return false;
 }
