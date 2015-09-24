@@ -1,4 +1,7 @@
 <?php
+if (!class_exists('FpdfWithBarcode')) {
+    include(dirname(__FILE__) . '/../FpdfWithBarcode.php');
+}
 /*
     Using layouts
     1. Make a file, e.g. New_Layout.php

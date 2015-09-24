@@ -20,6 +20,9 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+if (!class_exists('FpdfWithBarcode')) {
+    include(dirname(__FILE__) . '/../FpdfWithBarcode.php');
+}
 
   class Fannie_Standard_PDF extends FpdfWithBarcode
   {
