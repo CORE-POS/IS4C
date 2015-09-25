@@ -27,6 +27,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Xml;
 using System.Drawing;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using CustomForms;
@@ -277,16 +278,15 @@ public class SPH_Datacap_PDCX : SerialPortHandler
 
     protected List<Point> SigDataToPoints(string data)
     {
-        List<Point> points = new List<Point>();
         char[] comma = new char[]{','};
-        foreach (var pair in data.Split(new char[]{':'})) {
-            var xy = pair.Split(comma);
-            if (xy.Length == 2) {
-                points.Add(new Point(CoordsToInt(xy[0]), CoordsToInt(xy[1])));
-            }
-        }
+        char[] colon = new char[]{':'};
+        var pairs = from pair in data.Split(colon) 
+            select pair.Split(comma);
+        var points = from pair in pairs 
+            where pair.Length == 2
+            select new Point(CoordsToInt(pair[0]), CoordsToInt(pair[1]));
 
-        return points;
+        return points.ToList();
     }
 
     protected int CoordsToInt(string coord)

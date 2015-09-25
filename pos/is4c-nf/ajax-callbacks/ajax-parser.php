@@ -25,7 +25,6 @@ ini_set('display_errors','Off');
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $sd = MiscLib::scaleObject();
-$st = MiscLib::sigTermObject();
 
 /*
  * MAIN PARSING BEGINS
@@ -128,8 +127,6 @@ if ($entered != ""){
             if (isset($result['udpmsg']) && $result['udpmsg'] !== False){
                 if (is_object($sd))
                     $sd->WriteToScale($result['udpmsg']);
-                if (is_object($st))
-                    $st->WriteToScale($result['udpmsg']);
             }
         }
         else {

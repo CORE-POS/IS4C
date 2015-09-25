@@ -42,16 +42,12 @@ foreach(CoreLocal::get("RegisteredPaycardClasses") as $rpc){
     }
 }
 
-$st = MiscLib::sigTermObject();
-
 $result = $myObj->doSend(CoreLocal::get("paycard_mode"));
 if ($result === PaycardLib::PAYCARD_ERR_OK){
     PaycardLib::paycard_wipe_pan();
     $json = $myObj->cleanup($json);
     CoreLocal::set("strRemembered","");
     CoreLocal::set("msgrepeat",0);
-    if (is_object($st))
-        $st->WriteToScale(CoreLocal::get("ccTermOut"));
 } else if ($result === PaycardLib::PAYCARD_ERR_NSF_RETRY) {
     // card shows balance < requested amount
     // try again with lesser amount
@@ -64,8 +60,6 @@ if ($result === PaycardLib::PAYCARD_ERR_OK){
     PaycardLib::paycard_reset();
     CoreLocal::set("msgrepeat",0);
     $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
-    if (is_object($st))
-        $st->WriteToScale(CoreLocal::get("ccTermOut"));
 }
 
 echo JsonLib::array_to_json($json);

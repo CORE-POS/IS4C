@@ -122,13 +122,6 @@ static public function systemInit()
     CoreLocal::set("plainmsg","");
 
     /**
-      @var ccTermOut
-      Used for sending messages to Ingenico
-      device. Very alpha.
-    */
-    CoreLocal::set("ccTermOut","idle");
-
-    /**
       Load lane and store numbers from LaneMap array
       if present
     */

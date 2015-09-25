@@ -61,7 +61,7 @@ public class Signature
         Brush blackBrush = new SolidBrush(Color.Black);
         Pen p = getPen(blackBrush);
         List<Point> line = new List<Point>();
-        foreach (Point point in points){
+        foreach (Point point in points) {
             if (point.IsEmpty) {
                 try {
                     g.DrawLines(p, line.ToArray());

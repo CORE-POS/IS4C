@@ -193,16 +193,13 @@ class AuthorizeDotNet extends BasicCCModule {
 
         switch ($xml->get("RESPONSECODE")){
             case 1: // APPROVED
-                CoreLocal::set("ccTermOut","approval:".str_pad($xml->get("AUTH_CODE"),6,'0',STR_PAD_RIGHT));
                 return PaycardLib::PAYCARD_ERR_OK;
             case 2: // DECLINED
-                CoreLocal::set("ccTermOut","approval:denied");
                 CoreLocal::set("boxMsg","Transaction declined");
                 if ($xml->get_first("ERRORCODE") == 4)
                     CoreLocal::set("boxMsg",CoreLocal::get("boxMsg")."<br />Pick up card)");
                 break;
             case 3: // ERROR
-                CoreLocal::set("ccTermOut","resettotal");
                 CoreLocal::set("boxMsg","");
                 $codes = $xml->get("ERRORCODE");
                 $texts = $xml->get("ERRORTEXT");
