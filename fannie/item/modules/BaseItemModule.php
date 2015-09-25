@@ -790,16 +790,16 @@ HTML;
                             cache: false,
                             success: function(data){
                                 if (data.tax)
-                                    $('#tax').val(data.tax);
+                                    $('#tax'+store_id).val(data.tax);
                                 if (data.fs)
-                                    $('#FS').prop('checked',true);
+                                    $('#FS'+store_id).prop('checked',true);
                                 else{
-                                    $('#FS').prop('checked', false);
+                                    $('#FS'+store_id).prop('checked', false);
                                 }
                                 if (data.nodisc) {
-                                    $('#discount-select').val(0);
+                                    $('#discount-select'+store_id).val(0);
                                 } else {
-                                    $('#discount-select').val(1);
+                                    $('#discount-select'+store_id).val(1);
                                 }
                             }
                         });
