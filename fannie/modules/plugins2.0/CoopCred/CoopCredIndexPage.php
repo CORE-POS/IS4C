@@ -103,6 +103,22 @@ class CoopCredIndexPage extends FanniePage
             "<br />It includes a Balance." .
             "";
 
+        $hbKey = 'rliability';
+        $hbKeys[] = $hbKey;
+        $hbShortMessage["$hbKey"] = "Use this report to see what the Coop is still " .
+            "liable for to Programs and Members." .
+            "" .
+            "";
+        $hbLongMessage["$hbKey"] = "{$hbShortMessage[$hbKey]}" .
+            "<br />The amounts that have been " .
+            "Input to Programs, " .
+            "Transferred to members of a Program, " .
+            "are awaiting transfer to members, " .
+            "the amount the members have used for purchases, " .
+            "and amounts they have not yet used." .
+            "" .
+            "";
+
         $hbKey = 'config';
         $hbKeys[] = $hbKey;
         $hbShortMessage["$hbKey"] = "Configure Coop Cred to fit in your system. " .
@@ -231,8 +247,12 @@ class CoopCredIndexPage extends FanniePage
                                 <?php echo $hb['revents']['a']; ?>
                     </li>
                 <li><a href="reports/MemberSummary/"
-                    target="_CCStatus">Report on Coop Cred - Program Members Summary</a>
+                    target="_CCMemSumm">Report on Coop Cred - Program Members Summary</a>
                                 <?php echo $hb['rstatus']['a']; ?>
+                </li>
+                <li><a href="reports/Liability/"
+                    target="_CCLiability">Report on Coop Cred - Program Liability</a>
+                                <?php echo $hb['rliability']['a']; ?>
                 </li>
             </ul>
         </li>
