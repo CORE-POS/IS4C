@@ -45,7 +45,7 @@ class CalendarPlugin extends \COREPOS\Fannie\API\FanniePlugin {
     public $plugin_description = 'Plugin for calendars';
 
 
-    public function setting_change()
+    public function settingChange()
     {
         global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
@@ -86,9 +86,5 @@ class CalendarPlugin extends \COREPOS\Fannie\API\FanniePlugin {
             }
         }
     }
-
-    public function plugin_enable(){
-    }
 }
 
-?>

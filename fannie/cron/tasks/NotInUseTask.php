@@ -63,6 +63,7 @@ report when items are sold that have been marked not inUse.';
                 d.description,
                 d.department,
                 p.inUse
+            HAVING SUM(d.quantity) <> 0
         ');
         $findR = $dbc->execute($findP, array($yesterday . ' 00:00:00', $yesterday . ' 23:59:59'));
         while ($w = $dbc->fetchRow($findR)) {

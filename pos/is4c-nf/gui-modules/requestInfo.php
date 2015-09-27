@@ -37,7 +37,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class requestInfo extends NoInputPage {
+class requestInfo extends NoInputCorePage 
+{
 
     private $request_header = '';
     private $request_msg = '';

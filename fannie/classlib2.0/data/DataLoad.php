@@ -43,7 +43,6 @@ class DataLoad
     */
     public static function loadSampleData($sql, $table, $search_dir='') 
     {
-        $fannie_host = \FannieConfig::factory()->get('SERVER');
         $loaded = 0;
         $success = true;
         if (empty($search_dir)) {
@@ -59,41 +58,19 @@ class DataLoad
         $valid_range = array(count($table_def), count($table_def));
         $columns = array_keys($table_def);
         $last_column = array_pop($columns);
-        if ($table_def[$last_column]['increment'] == true) {
+        if ($table_def[$last_column]['increment'] === true) {
             $valid_range[0]--;
         }
 
         if (file_exists($search_dir . "/$table.sql")) {
             echo " from $table.sql<br>\n";
-            $fp = fopen($search_dir . "/$table.sql","r");
-            while ($line = fgets($fp)) {
-                $prep = $sql->prepare_statement("INSERT INTO $table VALUES $line");
-                $try = $sql->exec_statement($prep);
-                if ($try === false) {
-                    $error = $sql->error();
-                    $success = false;
-                    echo "<br><small style='color:red;'>"
-                        . (strlen($error)? $error : 'Unknown error')
-                        . " executing:<br><code>{$prep[0]}</code></small><br>\n";
-                } else {
-                    if (++$loaded % 100 === 0) {
-                        echo "<br>\n";
-                        flush();
-                    }
-                    echo ".";
-                }
-            }
-            fclose($fp);
+            $success = self::loadFromSql($table, $search_dir . '/' . $table . '.sql', $sql);
         } elseif (file_exists($search_dir . "/$table.csv")) {
-            $LOCAL = 'LOCAL';
-            if ($fannie_host == '127.0.0.1' || $fannie_host == 'localhost') {
-                $LOCAL = '';
-            }
             $filename = realpath($search_dir . "/$table.csv");
 
-            $fp = fopen($filename, 'r');
-            $first_line = fgetcsv($fp);
-            fclose($fp);
+            $fptr = fopen($filename, 'r');
+            $first_line = fgetcsv($fptr);
+            fclose($fptr);
             if (count($first_line) < $valid_range[0] || count($first_line) > $valid_range[1]) {
                 printf('Sample data for table %s has %d columns; should have between %d and %d columns', 
                         $table, count($first_line),
@@ -104,60 +81,13 @@ class DataLoad
 
             echo " from $table.csv ";
 
-            $prep = $sql->prepare_statement("LOAD DATA $LOCAL INFILE
-                '{$filename}'
-                INTO TABLE $table
-                FIELDS TERMINATED BY ','
-                ESCAPED BY '\\\\'
-                OPTIONALLY ENCLOSED BY '\"'
-                LINES TERMINATED BY '\\r\\n'");
-            $try = $sql->exec_statement($prep);
-            if ($try === false) {
-                $error = $sql->error();
-                echo "<br><span style='color:red;'>"
-                    . (strlen($error)? $error : 'Unknown error')
-                    . " executing:<br><code>{$prep[0]}</code><br></span><br>\n";
-            }
-            /** alternate implementation
-                for non-mysql and/or LOAD DATA LOCAL
-                not allowed */
-            if ($try !== false) {
+            if (self::loadFromCsv($table, $filename, $sql) !== false) {
                 echo " succeeded!<br>\n";
                 $loaded = 'All';
+                $success = true;
             } else {
                 echo " line-by-line<br>\n";
-                $fp = fopen($filename, 'r');
-                $stmt = false;
-                while (!feof($fp)) {
-                    $line = fgetcsv($fp);
-                    if (!is_array($line)) continue;
-                    if ($stmt === false){
-                        $query = 'INSERT INTO '.$table.' VALUES (';
-                        foreach ($line as $field) {
-                            $query .= '?,';
-                        }
-                        $query = substr($query,0,strlen($query)-1).')';
-                        $stmt = $sql->prepare_statement($query);
-                    }
-                    $try = $sql->exec_statement($stmt, $line);
-                    if ($try === false) {
-                        $error = $sql->error();
-                        $success = false;
-                        echo "<br><span style='color:red;'>"
-                            . (strlen($error)? $error : 'Unknown error')
-                            . " executing:<br><code>{$query}</code><br>("
-                            . "'" . join("', '", $line) . "')"
-                            . ' [' . count($line) . ' operands]'
-                            . "</span><br>\n";
-                    } else {
-                        if (++$loaded % 100 === 0) {
-                            echo "<br>\n";
-                            flush();
-                        }
-                        echo ".";
-                    }
-                }
-                fclose($fp);
+                $success = self::loadLinesFromCsv($table, $filename, $sql);
             }
         } else {
             echo "<br><span style='color:red;'>Table data not found in either {$table}.sql or {$table}.csv</span><br>\n";
@@ -168,6 +98,86 @@ class DataLoad
             . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
 
         return $success;
+    }
+
+    private static function loadFromSql($table, $file, $sql)
+    {
+        echo " from $table.sql<br>\n";
+        $fptr = fopen($file, 'r');
+        $ret = true;
+        while ($line = fgets($fptr)) {
+            $prep = $sql->prepare_statement("INSERT INTO $table VALUES $line");
+            $try = $sql->exec_statement($prep);
+            if ($try === false) {
+                $error = $sql->error();
+                $ret = false;
+                echo "<br><small style='color:red;'>"
+                    . (strlen($error)? $error : 'Unknown error')
+                    . " executing:<br><code>{$prep[0]}</code></small><br>\n";
+            }
+        }
+        fclose($fptr);
+
+        return $ret;
+    }
+
+    private static function loadFromCsv($table, $file, $sql)
+    {
+        $fannie_host = \FannieConfig::factory()->get('SERVER');
+        $LOCAL = 'LOCAL';
+        if ($fannie_host == '127.0.0.1' || $fannie_host == 'localhost') {
+            $LOCAL = '';
+        }
+        $prep = $sql->prepare_statement("LOAD DATA $LOCAL INFILE
+            '{$file}'
+            INTO TABLE $table
+            FIELDS TERMINATED BY ','
+            ESCAPED BY '\\\\'
+            OPTIONALLY ENCLOSED BY '\"'
+            LINES TERMINATED BY '\\r\\n'");
+        $try = $sql->exec_statement($prep);
+        if ($try === false) {
+            $error = $sql->error();
+            echo "<br><span style='color:red;'>"
+                . (strlen($error)? $error : 'Unknown error')
+                . " executing:<br><code>{$prep[0]}</code><br></span><br>\n";
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private static function loadLinesFromCsv($table, $file, $sql)
+    {
+        $fptr = fopen($file, 'r');
+        $stmt = false;
+        $ret = true;
+        while (!feof($fptr)) {
+            $line = fgetcsv($fptr);
+            if (!is_array($line)) continue;
+            if ($stmt === false) {
+                $query = 'INSERT INTO '.$table.' VALUES (';
+                foreach ($line as $field) {
+                    $query .= '?,';
+                }
+                $query = substr($query,0,strlen($query)-1).')';
+                $stmt = $sql->prepare_statement($query);
+            }
+            $try = $sql->exec_statement($stmt, $line);
+            if ($try === false) {
+                $error = $sql->error();
+                $ret = false;
+                echo "<br><span style='color:red;'>"
+                    . (strlen($error)? $error : 'Unknown error')
+                    . " executing:<br><code>{$query}</code><br>("
+                    . "'" . join("', '", $line) . "')"
+                    . ' [' . count($line) . ' operands]'
+                    . "</span><br>\n";
+            }
+        }
+        fclose($fptr);
+
+        return $ret;
     }
 
 }

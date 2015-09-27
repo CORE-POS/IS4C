@@ -36,6 +36,8 @@ class OwnerJoinLeaveReport extends FannieReportPage
     protected $header = "Ownership Status Report";
     protected $required_fields = array('date1', 'date2');
 
+    protected $new_tablesorter = false;
+
     protected $report_headers = array(
         array('Ownership Report', null, null, null, null),
         array('Total Equity', null, null, null, null),
@@ -138,7 +140,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
         );
         if ($this->config->COOP_ID == 'WFC_Duluth') {
             $ts = strtotime($args[0]);
-            if (mktime(0, 0, 0, 7, 1, date('Y',$ts)) < $ts) {
+            if (mktime(0, 0, 0, 7, 1, date('Y',$ts)) <= $ts) {
                 $ts = mktime(0, 0, 0, 7, 1, date('Y', $ts));
             } else {
                 $ts = mktime(0, 0, 0, 7, 1, date('Y', $ts)-1);

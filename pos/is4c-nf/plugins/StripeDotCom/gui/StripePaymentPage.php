@@ -24,7 +24,7 @@
 
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
-class StripePaymentPage extends InputPage 
+class StripePaymentPage extends InputCorePage 
 {
     private $payment_id;
     private $payment_url;

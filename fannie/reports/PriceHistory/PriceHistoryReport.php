@@ -65,6 +65,18 @@ class PriceHistoryReport extends FannieReportPage
         return parent::preprocess();
     }
 
+    public function report_description_content()
+    {
+        if ($this->report_format == 'html') {
+            return array(
+                '',
+                '<a href="../ProductHistory/ProductHistoryReport.php?upc=' . FormLib::get('upc') . '">Full History of this Item</a>',
+            );
+        } else {
+            return array();
+        }
+    }
+
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB;

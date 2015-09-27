@@ -245,7 +245,7 @@ class UnitBreakdownPage extends FannieRESTfulPage
             $ret .= sprintf('
                 <tr>
                     <td>%s</td>
-                    <td><a href="../ItemEditor.php?searchupc=%s">%s</a></td>
+                    <td><a href="../ItemEditorPage.php?searchupc=%s">%s</a></td>
                     <td>%s</td>
                     <td>%s</td>
                     <td>

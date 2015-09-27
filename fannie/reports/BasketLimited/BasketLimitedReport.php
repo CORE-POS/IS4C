@@ -134,8 +134,8 @@ class BasketLimitedReport extends FannieReportPage
         </label>
     </div>
     <p>
-        <button class="btn btn-default" type="submit">Submit</button>
-        <button class="btn btn-default" type="reset">Start Over</button>
+        <button class="btn btn-default btn-core" type="submit">Submit</button>
+        <button class="btn btn-default btn-reset" type="reset">Start Over</button>
     </p>
 </div>
 <div class="col-sm-5">

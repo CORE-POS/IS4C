@@ -41,12 +41,27 @@ $batchID = FormLib::get_form_value('batchID',False);
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 if ($id !== False){
-    $query = $dbc->prepare_statement("SELECT s.*,p.scale,p.numflag
+    $query = "
+        SELECT s.*,
+            p.scale,
+            p.numflag
         FROM shelftags AS s
-        INNER JOIN products AS p ON s.upc=p.upc
-        WHERE s.id=? ORDER BY
-        p.department,s.upc");
-    $result = $dbc->exec_statement($query,array($id));
+            INNER JOIN products AS p ON s.upc=p.upc
+        WHERE s.id=? ";
+    switch (strtolower(FormLib::get('sort'))) {
+        case 'order entered':
+            $query .= ' ORDER BY shelftagID';
+            break;
+        case 'alphabetically':
+            $query .= ' ORDER BY s.description';
+            break;
+        case 'department':
+        default:
+            $query .= ' ORDER BY p.department, s.upc';
+            break;
+    }
+    $prep = $dbc->prepare($query);
+    $result = $dbc->exec_statement($prep,array($id));
 
     while ($row = $dbc->fetch_row($result)) {
         $count = 1;
@@ -55,6 +70,9 @@ if ($id !== False){
             $count = $row['count'];
         }
         for ($i=0; $i<$count; $i++) {
+            if (strlen($row['sku']) > 7) {
+                $row['sku'] = ltrim($row['sku'], '0');
+            }
             $myrow = array(
                 'normal_price' => $row['normal_price'],
                 'description' => $row['description'],
@@ -83,8 +101,8 @@ elseif ($batchID !== False){
     $testQ = $dbc->prepare_statement("select b.*,p.scale,p.numflag
         FROM batchBarcodes as b INNER JOIN products AS p
         ON b.upc=p.upc
-        WHERE batchID in ($batchIDList) and b.description <> ''
-        ORDER BY batchID");
+        WHERE b.batchID in ($batchIDList) and b.description <> ''
+        ORDER BY b.batchID");
     $result = $dbc->exec_statement($testQ,$args);
     while($row = $dbc->fetch_row($result)){
         $myrow = array(
@@ -105,7 +123,16 @@ elseif ($batchID !== False){
 
 }
 
+if (!defined('FPDF_FONTPATH')) {
+  define('FPDF_FONTPATH','font/');
+}
+if (!class_exists('FPDF', false)) {
+    require($FANNIE_ROOT.'src/fpdf/fpdf.php');
+}
+if (!class_exists('FpdfWithBarcode', false)) {
+    include('FpdfWithBarcode.php');
+}
+
 include("pdf_layouts/".$layout.".php");
 $layout($data,$offset);
 
-?>

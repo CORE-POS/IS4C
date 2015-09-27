@@ -30,6 +30,14 @@ if (!class_exists('FannieAPI')) {
 */
 class ObfIndexPage extends FannieRESTfulPage 
 {
+    public function preprocess()
+    {
+        if (!headers_sent()) {
+            header('Location: ../OpenBookFinancingV2/ObfIndexPageV2.php');
+        }
+        return false;
+    }
+
     protected $title = 'OBF: Menu';
     protected $header = 'OBF: Menu';
 

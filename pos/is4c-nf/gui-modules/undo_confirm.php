@@ -27,7 +27,8 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
    CL cancels the attempt (wraps to input "CN")
    {Enter} finishes the transaction (wraps to input "0CA")
 */
-class undo_confirm extends BasicPage {
+class undo_confirm extends BasicCorePage 
+{
     var $box_color;
     var $msg;
 

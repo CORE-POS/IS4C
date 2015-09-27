@@ -57,12 +57,18 @@ function edit(did)
 	var margin = $('#margintd'+did).html();
 	var pos = $('#posdepttd'+did).html();
 
-	$('#nametd'+did).html("<input id=in"+did+" type=text class=form-control value=\""+name+"\" />");
-	$('#margintd'+did).html("<input id=im"+did+" type=text class=form-control value=\""+margin+"\" />");
-	$('#posdepttd'+did).html("<input id=ip"+did+" type=text class=form-control value=\""+pos+"\" />");
+	$('#nametd'+did).html("<input id=in"+did+" type=text class=\"form-control save-"+did+"\" value=\""+name+"\" />");
+	$('#margintd'+did).html("<input id=im"+did+" type=text class=\"form-control save-"+did+"\" value=\""+margin+"\" />");
+	$('#posdepttd'+did).html("<input id=ip"+did+" type=text class=\"form-control save-"+did+"\" value=\""+pos+"\" />");
 
     $('#button'+did+' .edit-link').hide();
     $('#button'+did+' .save-link').show();
+    $('#im'+did).focus();
+    $('.save-'+did).keydown(function(event) {
+        if (event.which == 13) {
+            save(did);
+        }
+    });
 }
 
 function save(did)

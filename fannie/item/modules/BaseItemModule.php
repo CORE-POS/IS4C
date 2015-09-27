@@ -743,7 +743,12 @@ HTML;
             }
         }
         $nav_tabs .= '</ul>';
-        $ret = str_replace('{{nav_tabs}}', $nav_tabs, $ret);
+        // only show the store tabs in HQ mode
+        if (FannieConfig::config('STORE_MODE') == 'HQ') {
+            $ret = str_replace('{{nav_tabs}}', $nav_tabs, $ret);
+        } else {
+            $ret = str_replace('{{nav_tabs}}', '', $ret);
+        }
 
         $ret .= <<<HTML
 <div id="newVendorDialog" title="Create new Vendor" class="collapse">
@@ -785,16 +790,16 @@ HTML;
                             cache: false,
                             success: function(data){
                                 if (data.tax)
-                                    $('#tax').val(data.tax);
+                                    $('#tax'+store_id).val(data.tax);
                                 if (data.fs)
-                                    $('#FS').prop('checked',true);
+                                    $('#FS'+store_id).prop('checked',true);
                                 else{
-                                    $('#FS').prop('checked', false);
+                                    $('#FS'+store_id).prop('checked', false);
                                 }
                                 if (data.nodisc) {
-                                    $('#discount-select').val(0);
+                                    $('#discount-select'+store_id).val(0);
                                 } else {
-                                    $('#discount-select').val(1);
+                                    $('#discount-select'+store_id).val(1);
                                 }
                             }
                         });
@@ -951,8 +956,8 @@ HTML;
             $model->specialgroupprice(0);
             $model->advertised(0);
             $model->tareweight(0);
-            $model->start_date('');
-            $model->end_date('');
+            $model->start_date('0000-00-00');
+            $model->end_date('0000-00-00');
             $model->discounttype(0);
             $model->wicable(0);
             $model->scaleprice(0);
@@ -1096,6 +1101,18 @@ HTML;
             $sku = FormLib::get('vendorSKU');
             if (empty($sku)) {
                 $sku = $upc;
+            } else {
+                /**
+                  If a SKU is provided, update any
+                  old record that used the UPC as a
+                  placeholder SKU.
+                */
+                $fixSkuP = $dbc->prepare('
+                    UPDATE vendorItems
+                    SET sku=?
+                    WHERE sku=?
+                        AND vendorID=?');
+                $dbc->execute($fixSkuP, array($sku, $upc, $vendorID));
             }
             $vitem->sku($sku);
             $vitem->size($model->size());

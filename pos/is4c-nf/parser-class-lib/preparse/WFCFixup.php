@@ -33,17 +33,9 @@ class WFCFixup extends PreParser {
         } else if (substr($str,-4) == "QK10"){
             $this->remainder = str_replace("QK10","QM10",$str);
             return True;
-        } else if (strstr($str, '59070000087') || strstr($str, '59070000087') || strstr($str, '59070000087')) {
-            // stupid Herb Pharm coupon. Expires 30Apr14
-            $this->remainder = '59070099287';
-            return true;
         } else if ($str == 'MA' || $str == 'OB') {
             // re-write old WFC quarterly coupon as houseCoupon UPC
             $this->remainder = '0049999900001';
-            return true;
-        } else if ($str == 'AD') {
-            // re-write WFC access coupon as houseCoupon UPC
-            $this->remainder = '0049999900002';
             return true;
         } else if (($as_upc == '0000000001112' || $as_upc == '0000000001113') && CoreLocal::get('msgrepeat') == 0) {
             $this->remainder = 'QM708';
@@ -53,6 +45,9 @@ class WFCFixup extends PreParser {
             return true;
         } elseif (preg_match('/(\d+)\*0*1113/', $str, $matches) && CoreLocal::get('msgrepeat') == 0) {
             $this->remainder = $matches[1] . '*QM708';
+            return true;
+        } elseif ($as_upc == '0049999900047') {
+            $this->remainder = '0049999900048';
             return true;
         }
         return False;

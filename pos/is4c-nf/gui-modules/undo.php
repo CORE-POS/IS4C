@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class undo extends NoInputPage {
+class undo extends NoInputCorePage 
+{
     var $msg;
 
     function body_content()

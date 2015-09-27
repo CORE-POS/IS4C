@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
-class PaycardEmvMenu extends NoInputPage 
+class PaycardEmvMenu extends NoInputCorePage 
 {
     private $menu = array(
         'CC' => 'Credit',
@@ -38,12 +38,19 @@ class PaycardEmvMenu extends NoInputPage
         if (isset($_REQUEST["selectlist"])) {
             $parser = new PaycardDatacapParser();
             switch ($_REQUEST['selectlist']) {
+                case 'CAADMIN':
+                    $this->change_page('PaycardEmvCaAdmin.php');
+                    return false;
                 case 'CC':
                     $json = $parser->parse('DATACAPCC');
                     $this->change_page($json['main_frame']);
                     return false;
                 case 'DC':
                     $json = $parser->parse('DATACAPDC');
+                    $this->change_page($json['main_frame']);
+                    return false;
+                case 'EMV':
+                    $json = $parser->parse('DATACAPEMV');
                     $this->change_page($json['main_frame']);
                     return false;
                 case 'EF':
@@ -120,6 +127,18 @@ class PaycardEmvMenu extends NoInputPage
     function body_content() 
     {
         $stem = MiscLib::baseURL() . 'graphics/';
+        if (CoreLocal::get('PaycardsDatacapMode') == 1) {
+            $this->menu = array(
+                'EMV' => 'EMV Credit/Debit',
+                'EBT' => 'EBT',
+                'GIFT' => 'Gift',
+            );
+        } elseif (CoreLocal::get('PaycardsDatacapMode') == 2 || CoreLocal::get('PaycardsDatacapMode') == 3) {
+            $this->menu = array(
+                'EMV' => 'EMV Credit/Debit',
+                'CAADMIN' => 'Admin Functions',
+            );
+        }
         ?>
         <div class="baseHeight">
         <div class="centeredDisplay colored rounded">

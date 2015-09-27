@@ -268,6 +268,7 @@ class SuperDeptEditor extends FanniePage {
         </p>
         <?php
         $this->add_script('super.js');
+        $this->addOnloadCommand("\$('#sd_email').keyup(function(e){ if (e.which==13) saveData(); });\n");
 
         return ob_get_clean();
     }

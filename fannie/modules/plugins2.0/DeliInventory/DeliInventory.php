@@ -41,7 +41,7 @@ class DeliInventory extends \COREPOS\Fannie\API\FanniePlugin {
             a so-so web implemntation of a spreadsheet.';
 
 
-    public function setting_change(){
+    public function settingChange(){
         global $FANNIE_OP_DB;
 
         $dbc = FannieDB::get($FANNIE_OP_DB);

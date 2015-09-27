@@ -48,7 +48,7 @@ class TimesheetPlugin extends \COREPOS\Fannie\API\FanniePlugin {
     public $plugin_description = 'Plugin for timeclock operations';
 
 
-    public function setting_change()
+    public function settingChange()
     {
         global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
@@ -71,7 +71,7 @@ class TimesheetPlugin extends \COREPOS\Fannie\API\FanniePlugin {
         }
     }
 
-    public function plugin_enable(){
+    public function pluginEnable(){
         ob_start();
         $try = FannieAuth::createClass('timesheet_access',
             'Grants user permission to use the
@@ -87,4 +87,3 @@ class TimesheetPlugin extends \COREPOS\Fannie\API\FanniePlugin {
     }
 }
 
-?>

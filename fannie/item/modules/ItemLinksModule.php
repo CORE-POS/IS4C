@@ -54,8 +54,8 @@ class ItemLinksModule extends ItemModule
             $ret .= '<div style="width:40%; float:left;">';
             $ret .= "<li><a href=\"javascript:shelftag('$upc');\">" .
                 "New Shelf Tag</a></li>";
-            $ret .= "<li><a href=\"{$FANNIE_URL}item/deleteItem.php?upc=$upc&" .
-                "submit=submit\">Delete this item</a></li>";
+            $ret .= "<li><a href=\"{$FANNIE_URL}item/DeleteItemPage.php?id=$upc" .
+                "\">Delete this item</a></li>";
             $ret .= '</div>';
 
             $ret .= '<div style="width:40%; float:left;">';

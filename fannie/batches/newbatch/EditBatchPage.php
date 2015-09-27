@@ -44,38 +44,37 @@ class EditBatchPage extends FannieRESTfulPage
     private $audited = 1;
     private $con = null;
 
-    function preprocess()
+    public function preprocess()
     {
-        global $FANNIE_OP_DB;
         // maintain user logins longer
         refreshSession();
         if (validateUserQuiet('batches')) {
             $this->audited = 0;
         }
 
-        $this->con = FannieDB::get($FANNIE_OP_DB);
-
         // autoclear old data from clipboard table on intial page load
-        $clipboard = $this->con->tableDefinition('batchCutPaste');
+        $clipboard = $this->connection->tableDefinition('batchCutPaste');
         if (isset($clipboard['tdate'])) {
-            $this->con->query('DELETE FROM batchCutPaste WHERE tdate < ' . $this->con->curdate());
+            $this->connection->query('DELETE FROM batchCutPaste WHERE tdate < ' . $this->connection->curdate());
         }
 
-        $this->__routes[] = 'get<id><paste>';
-        $this->__routes[] = 'post<id><addUPC>';
-        $this->__routes[] = 'post<id><addLC>';
-        $this->__routes[] = 'post<id><upc><price>';
-        $this->__routes[] = 'post<id><autotag>';
-        $this->__routes[] = 'post<id><force>';
-        $this->__routes[] = 'post<id><unsale>';
-        $this->__routes[] = 'post<id><limit>';
-        $this->__routes[] = 'post<id><upc><uid><cut>';
-        $this->__routes[] = 'post<id><upc><price><qty>';
-        $this->__routes[] = 'delete<id><upc>';
-        $this->__routes[] = 'post<id><upc><swap>';
-        $this->__routes[] = 'post<id><qualifiers><discount>';
-        $this->__routes[] = 'post<id><trim>';
-        $this->__routes[] = 'post<id><storeID>';
+        $this->addRoute(
+            'get<id><paste>',
+            'post<id><addUPC>',
+            'post<id><addLC>',
+            'post<id><upc><price>',
+            'post<id><autotag>',
+            'post<id><force>',
+            'post<id><unsale>',
+            'post<id><limit>',
+            'post<id><upc><uid><cut>',
+            'post<id><upc><price><qty>',
+            'delete<id><upc>',
+            'post<id><upc><swap>',
+            'post<id><qualifiers><discount>',
+            'post<id><trim>',
+            'post<id><storeID>'
+        );
 
         return parent::preprocess();
     }
@@ -109,29 +108,9 @@ class EditBatchPage extends FannieRESTfulPage
         return true;
     }
 
-    protected function post_id_addUPC_handler()
+    private function checkOverlap($id, $upc)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $id = $this->id;
-        $upc = trim($this->addUPC);
-        $upc = BarcodeLib::padUPC($upc);
-
-        $json = array(
-            'error' => 0,
-            'msg' => '',
-            'content' => '',
-            'field' => '#addItemUPC',
-        );
-
-        /**
-          Nothing submitted; don't do anything
-        */
-        if ($this->addUPC === '') {
-            echo json_encode($json);
-            return false;
-        }
-
+        $dbc = $this->connection;
         $batch = new BatchesModel($dbc);
         $batch->batchID($id);
         $batch->load();
@@ -156,13 +135,44 @@ class EditBatchPage extends FannieRESTfulPage
             date('Y-m-d', strtotime($batch->endDate())),
         );
         $overlapR = $dbc->execute($overlapP, $args);
-        if ($batch->discounttype() > 0 && $dbc->num_rows($overlapR) > 0) {
+        if ($batch->discountType() > 0 && $dbc->num_rows($overlapR) > 0) {
             $row = $dbc->fetch_row($overlapR);
+            return $row;
+        } else {
+            return false;
+        }
+    }
+
+    protected function post_id_addUPC_handler()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $id = $this->id;
+        $upc = trim($this->addUPC);
+        $upc = BarcodeLib::padUPC($upc);
+
+        $json = array(
+            'error' => 0,
+            'msg' => '',
+            'content' => '',
+            'field' => '#addItemUPC',
+        );
+
+        /**
+          Nothing submitted; don't do anything
+        */
+        if ($this->addUPC === '') {
+            echo json_encode($json);
+            return false;
+        }
+
+        $overlap = $this->checkOverlap($id, $upc);
+        if ($overlap !== false) {
             $error = 'Item already in concurrent batch: '
-                . '<a style="color:blue;" href="EditBatchPage.php?id=' . $row['batchID'] . '">'
-                . $row['batchName'] . '</a> ('
-                . date('Y-m-d', strtotime($row['startDate'])) . ' - '
-                . date('Y-m-d', strtotime($row['endDate'])) . ')'
+                . '<a style="color:blue;" href="EditBatchPage.php?id=' . $overlap['batchID'] . '">'
+                . $overlap['batchName'] . '</a> ('
+                . date('Y-m-d', strtotime($overlap['startDate'])) . ' - '
+                . date('Y-m-d', strtotime($overlap['endDate'])) . ')'
                 . '<br />'
                 . 'Either remove item from conflicting batch or change
                    dates so the batches do not overlap.';
@@ -175,8 +185,7 @@ class EditBatchPage extends FannieRESTfulPage
                 $json['error'] = 1;
                 $json['msg'] = 'Item not found: ' . $upc;
             } else {
-                $tag = FormLib::get('tag') !== '' ? true : false;
-                $json['content'] = $this->addItemPriceInput($upc, $tag, $product->description(), $product->normal_price());
+                $json['content'] = $this->addItemPriceInput($upc, false, $product->description(), $product->normal_price());
                 $json['field'] = '#add-item-price';
             }
         }
@@ -219,9 +228,8 @@ class EditBatchPage extends FannieRESTfulPage
             $json['error'] = 1;
             $json['msg'] = 'Like code #' . $this->addLC . ' not found';
         } else {
-            $tag = FormLib::get('tag') !== '' ? true : false;
             $infoW = $dbc->fetch_row($infoR);
-            $json['content'] = $this->addItemPriceInput('LC' . $this->addLC, $tag, $infoW['likeCodeDesc'], $infoW['normal_price']);
+            $json['content'] = $this->addItemPriceInput('LC' . $this->addLC, false, $infoW['likeCodeDesc'], $infoW['normal_price']);
             $json['field'] = '#add-item-price';
         }
 
@@ -234,33 +242,31 @@ class EditBatchPage extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $id = $this->id;
-        $upc = $this->upc;
         $price = trim($this->price);
-        $qty = 0;
 
-        $json = array();
-        $json['input'] = $this->addItemUPCInput();
-        $json['added'] = 0;
+        $json = array(
+            'input' => $this->addItemUPCInput(),
+            'added' => 0,
+        );
         
         if ($price != "") {
             $model = new BatchListModel($dbc);
-            $model->upc($upc);
-            $model->batchID($id);
+            $model->upc($this->upc);
+            $model->batchID($this->id);
             $model->salePrice($price);
             $model->groupSalePrice($price);
-            $model->quantity($qty);
+            $model->quantity(0);
             $model->pricemethod(0);
             $model->save();
 
             if (FormLib::get_form_value('audited') == '1') {
                 \COREPOS\Fannie\API\lib\AuditLib::batchNotification(
-                    $id, 
-                    $upc, 
+                    $this->id, 
+                    $this->upc, 
                     \COREPOS\Fannie\API\lib\AuditLib::BATCH_ADD);
             }
             $json['added'] = 1;
-            $json['display'] = $this->showBatchDisplay($id);
+            $json['display'] = $this->showBatchDisplay($this->id);
         }
         
         echo json_encode($json);
@@ -277,7 +283,7 @@ class EditBatchPage extends FannieRESTfulPage
         $delQ = $dbc->prepare_statement("DELETE FROM batchBarcodes where batchID=?");
         $dbc->exec_statement($delQ,array($bid));
         
-        $selQ = $dbc->prepare_statement("
+        $selQ = "
             SELECT l.upc,
                 p.description,
                 l.salePrice, 
@@ -294,10 +300,15 @@ class EditBatchPage extends FannieRESTfulPage
                 left join prodExtra as x on l.upc=x.upc
                 left join vendorItems as v on l.upc=v.upc AND p.default_vendor_id=v.vendorID
                 left join vendors as z on p.default_vendor_id=z.vendorID
-            where batchID=? 
-                AND p.store_id=1 
-            ORDER BY l.upc");
-        $selR = $dbc->exec_statement($selQ,array($bid));
+            WHERE l.batchID=? ";
+        $args = array($bid);
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $selQ .= " AND p.store_id=? ";
+            $args[] = $this->config->get('STORE_ID');
+        }
+        $selQ .= " ORDER BY l.upc";
+        $selP = $dbc->prepare($selQ);
+        $selR = $dbc->execute($selP, $args);
         $upc = "";
         $insP = $dbc->prepare_statement("INSERT INTO batchBarcodes
             (upc,description,normal_price,brand,sku,size,units,vendor,batchID)
@@ -401,7 +412,7 @@ class EditBatchPage extends FannieRESTfulPage
             $this->qty = 1;
         }
 
-        $pm = ($this->qty >= 2)?2:0;    
+        $pmethod = ($this->qty >= 2)?2:0;    
 
         $model = new BatchListModel($dbc);
         $model->upc($this->upc);
@@ -415,7 +426,7 @@ class EditBatchPage extends FannieRESTfulPage
             $this->qty = 1;
             $model->quantity(0);
         }
-        $model->pricemethod($pm);    
+        $model->pricemethod($pmethod);    
         $model->save();
 
         $json['price'] = sprintf('%.2f', $this->price);
@@ -437,6 +448,35 @@ class EditBatchPage extends FannieRESTfulPage
         return false;
     }
 
+    private function unsaleUPC($upc)
+    {
+        // take the item off sale if this batch is currently on sale
+        $product = new ProductsModel($this->connection);
+        $product->upc($upc);
+        $ret = true;
+        foreach ($product->find('store_id') as $obj) {
+            $obj->discountType(0);
+            $obj->special_price(0);
+            $obj->start_date(0);
+            $obj->end_date(0);
+            $ret = $obj->save();
+        }
+
+        return $ret ? true : false;
+    }
+
+    private function unsaleLikeCode($likecode)
+    {
+        $upcLike = new UpcLikeModel($this->connection);
+        $upcLike->likeCode($likecode);
+        $ret = true;
+        foreach ($upcLike->find() as $u) {
+            $ret = $this->unsaleUPC($u->upc());
+        }
+
+        return $ret ? true : false;
+    }
+
     protected function delete_id_upc_handler()
     {
         global $FANNIE_OP_DB;
@@ -448,42 +488,17 @@ class EditBatchPage extends FannieRESTfulPage
         
         if (substr($upc,0,2) != 'LC') {
             // take the item off sale if this batch is currently on sale
-            $product = new ProductsModel($dbc);
-            $product->upc($upc);
-            foreach ($product->find('store_id') as $obj) {
-                $obj->discounttype(0);
-                $obj->special_price(0);
-                $obj->start_date(0);
-                $obj->end_date(0);
-                $unsaleR = $obj->save();
-            }
-
-            if ($unsaleR === false) {
+            if ($this->unsaleUPC($this->upc) === false) {
                 $json['error'] = 1;
                 $json['msg'] = 'Error taking item ' . $upc . ' off sale';
             }
             
             updateProductAllLanes($upc);
         } else {
-            $lc = substr($upc,2);
-            $upcLike = new UpcLikeModel($dbc);
-            $upcLike->likeCode($lc);
-            $unsaleR = true;
-            foreach ($upcLike->find() as $u) {
-                $product = new ProductsModel($dbc);
-                $product->upc($u->upc());
-                foreach ($product->find('store_id') as $p) {
-                    $p->discounttype(0);
-                    $p->special_price(0);
-                    $p->start_date(0);
-                    $p->end_date(0);
-                    $unsaleR = $p->save();
-                }
-            }
-
-            if ($unsaleR === false) {
+            $likecode = substr($upc,2);
+            if ($this->unsaleLikeCode($likecode) === false) {
                 $json['error'] = 1;
-                $json['msg'] = 'Error taking like code ' . $lc . ' off sale';
+                $json['msg'] = 'Error taking like code ' . $likecode . ' off sale';
             }
         }
 
@@ -540,9 +555,9 @@ class EditBatchPage extends FannieRESTfulPage
         $batch = new BatchesModel($dbc);
         $batch->batchID($this->id);
         if (FormLib::get('member') == '1') {
-            $batch->discounttype(2);
+            $batch->discountType(2);
         } else {
-            $batch->discounttype(1);
+            $batch->discountType(1);
         }
         $save1 = $batch->save();
 
@@ -670,75 +685,15 @@ class EditBatchPage extends FannieRESTfulPage
         $ret .= "<label>ID</label>: $upc <label>Description</label>: $description <label>Normal price</label>: $price ";
         $ret .= "<label>Sale price</label><input class=\"form-control\" type=text id=add-item-price name=price size=5 /> ";
         $ret .= "<button type=submit value=Add class=\"btn btn-default\">Add</button>";
-        /* No shelf tag creation
-        $ret .= "<label><input type=checkbox id=addItemTag name=\"tag\" ";
-        if ($newtags) {
-            $ret .= " checked";
-        }
-        $ret .= " /> New shelf tag</label>";
-        */
         $ret .= "</form>";
         
         return $ret;
     }
 
-    function newTagInput($upc, $price, $id)
-    {
-        $dbc = $this->con;
-
-        $unfiQ = $dbc->prepare_statement("select brand,sku,size,upc,units,
-                cost,description,vendorName from vendorItems as i 
-                LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
-                where upc = ?");
-        $unfiR = $dbc->exec_statement($unfiQ,array($upc));
-        $unfiN = $dbc->num_rows($unfiR);
-        
-        $size = '';
-        $brand = '';
-        $units = '';
-        $sku = '';
-        $desc = '';
-        $vendor = '';
-        // grab info from the UNFI table if possible.
-        if ($unfiN == 1) {
-            $unfiW = $dbc->fetch_array($unfiR);
-            $size = $unfiW['size'];
-            $brand = strtoupper($unfiW['brand']);
-            $brand = preg_replace("/\'/","",$brand);
-            $units = $unfiW['units'];
-            $sku = $unfiW['sku'];
-            $desc = strtoupper($unfiW['description']);
-            $desc = preg_replace("/\'/","",$desc);
-            $vendor = $unfiW['vendorName'];
-        } else {
-            $descQ = $dbc->prepare_statement("select description from products where upc=?");
-            $descR = $dbc->exec_statement($descQ,array($upc));
-            $desc = strtoupper(array_pop($dbc->fetch_array($descR)));
-        }
-        
-        $ret = "<form onsubmit=\"newTag(); return false;\">";
-        $ret .= "<table>";
-        $ret .= "<tr><th>UPC</th><td>$upc <input type=hidden id=newTagUPC value=$upc /></td></tr>";
-        $ret .= "<tr><th>Description</th><td><input type=text id=newTagDesc value=\"$desc\" /></td></tr>";
-        $ret .= "<tr><th>Brand</th><td><input type=text id=newTagBrand value=\"$brand\" /></td></tr>";
-        $ret .= "<tr><th>Units</th><td><input type=text size=8 id=newTagUnits value=\"$units\" /></td></tr>";
-        $ret .= "<tr><th>Size</th><td><input type=text size=7 id=newTagSize value=\"$size\" /></td></tr>";
-        $ret .= "<tr><th>Vendor</th><td><input type=text id=newTagVendor value=\"$vendor\" /></td></tr>";
-        $ret .= "<tr><th>SKU</th><td><input type=text id=newTagSKU value=\"$sku\" /></td></tr>";
-        $ret .= "<tr><th>Price</th><td><span style=\"{color: #00bb00;}\">$price</span>";
-        $ret .= "<input type=hidden id=newTagPrice value=\"$price\" /></td></tr>";
-        $ret .= "<tr><td><input type=submit value=Add /></td>";
-        $ret .= "<td><a href=\"\" onclick=\"showBatch($id,'true'); return false;\">Cancel</a></td></tr>";
-        $ret .= "<input type=hidden id=newTagID value=$id />";
-        $ret .= "</table></form>";
-        
-        return $ret;
-    }
-
-    function showBatchDisplay($id, $order='natural')
+    protected function showBatchDisplay($id, $order='natural')
     {
         global $FANNIE_SERVER_DBMS,$FANNIE_URL;
-        $dbc = $this->con;
+        $dbc = $this->connection;
         $uid = getUID($this->current_user);
         $uid = ltrim($uid,'0');
     
@@ -791,7 +746,7 @@ class EditBatchPage extends FannieRESTfulPage
         $model->load();
         $name = $model->batchName();
         $type = $model->batchType();
-        $dtype = $model->discounttype();
+        $dtype = $model->discountType();
         $start = strtotime($model->startDate());
         $end = strtotime($model->endDate()) + (60*60*24);
         $typeModel = new BatchTypeModel($dbc);
@@ -814,6 +769,7 @@ class EditBatchPage extends FannieRESTfulPage
             $saleHeader = "New price";
         }
 
+        $fetchArgs = array();
         $fetchQ = "
             SELECT b.upc,
                 CASE 
@@ -831,13 +787,19 @@ class EditBatchPage extends FannieRESTfulPage
                 y.shelf,
                 p.brand
             FROM batchList AS b 
-                LEFT JOIN products AS p ON b.upc = p.upc AND p.store_id=1
+                LEFT JOIN products AS p ON b.upc = p.upc ";
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $fetchQ .= " AND p.store_id=? ";
+            $fetchArgs[] = $this->config->get('STORE_ID');
+        }
+        $fetchQ .= "
                 LEFT JOIN likeCodes AS l ON b.upc = CONCAT('LC',CONVERT(l.likeCode,CHAR))
                 LEFT JOIN batchCutPaste AS c ON b.upc=c.upc AND b.batchID=c.batchID
                 LEFT JOIN prodPhysicalLocation AS y ON b.upc=y.upc
                 LEFT JOIN superDeptNames AS m ON y.section=m.superID
             WHERE b.batchID = ? 
             $orderby";
+        $fetchArgs[] = $id;
         if ($dbc->dbms_name() == "mssql") {
             $fetchQ = "select b.upc,
                     case when l.likecode is null then p.description
@@ -863,7 +825,7 @@ class EditBatchPage extends FannieRESTfulPage
         }
 
         $fetchP = $dbc->prepare_statement($fetchQ);
-        $fetchR = $dbc->exec_statement($fetchP,array($id));
+        $fetchR = $dbc->exec_statement($fetchP, $fetchArgs);
 
         $overlapP = $dbc->prepare('
             SELECT b.batchID,
@@ -884,7 +846,7 @@ class EditBatchPage extends FannieRESTfulPage
         $cpCount = $dbc->prepare_statement("SELECT count(*) FROM batchCutPaste WHERE uid=?");
         $res = $dbc->exec_statement($cpCount,array($uid));
         $row = $dbc->fetch_row($res);
-        $cp = $row[0];
+        $cpCount = $row[0];
         
         $ret = "<span class=\"newBatchBlack\"><b>Batch name</b>: $name</span> | ";
         $ret .= '<b>Sale Dates</b>: ' 
@@ -907,7 +869,7 @@ class EditBatchPage extends FannieRESTfulPage
             $ret .= '<br />';
         }
         $ret .= "<a href=\"BatchListPage.php\">Back to batch list</a> | ";
-        $ret .= sprintf('<input type="hidden" id="batch-discount-type" value="%d" />', $model->discounttype());
+        $ret .= sprintf('<input type="hidden" id="batch-discount-type" value="%d" />', $model->discountType());
         /**
           Price change batches probably want the upcoming retail
           rather than the current retail. Current sales will want
@@ -916,17 +878,18 @@ class EditBatchPage extends FannieRESTfulPage
           normal circumstances.
         */
         $future_mode = false;
-        if ($model->discounttype() == 0) {
+        if ($model->discountType() == 0) {
             $future_mode = true;
         } elseif (strtotime($model->startDate()) >= strtotime(mktime(0,0,0,date('n'),date('j'),date('Y')))) {
             $future_mode = true;
         }
         $ret .= sprintf('<input type="hidden" id="batch-future-mode" value="%d" />', $future_mode ? 1 : 0);
         $ret .= "<a href=\"../../admin/labels/SignFromSearch.php?batch=$id\">Print Sale Signs</a> | ";
+        $ret .= "<a href=\"BatchSignStylesPage.php?id=$id\">Sign Pricing</a> | ";
         $ret .= "<a href=\"{$FANNIE_URL}admin/labels/BatchShelfTags.php?batchID%5B%5D=$id\">Print Shelf Tags</a> | ";
         $ret .= "<a href=\"\" onclick=\"generateTags($id); return false;\">Auto-tag</a> | ";
-        if ($cp > 0) {
-            $ret .= "<a href=\"EditBatchPage.php?id=$id&paste=1\">Paste Items ($cp)</a> | ";
+        if ($cpCount > 0) {
+            $ret .= "<a href=\"EditBatchPage.php?id=$id&paste=1\">Paste Items ($cpCount)</a> | ";
         }
         if ($dtype == 0 || (time() >= $start && time() <= $end)) {
             $ret .= "<a href=\"\" onclick=\"forceNow($id); return false;\">Force batch</a> | ";
@@ -979,25 +942,15 @@ class EditBatchPage extends FannieRESTfulPage
         }
         $ret .= "</tr>";
 
-        $likeP = $dbc->prepare("
-            SELECT p.upc,
-                p.description,
-                p.normal_price
-            FROM products AS p 
-                INNER JOIN upcLike AS u ON p.upc=u.upc
-            WHERE u.likeCode = ? 
-                AND store_id=1
-            ORDER BY p.upc DESC");
-        
         $colors = array('#ffffff','#ffffcc');
-        $c = 0;
+        $cur = 0;
         while ($fetchW = $dbc->fetch_array($fetchR)) {
-            $c = ($c + 1) % 2;
+            $cur = ($cur + 1) % 2;
             $ret .= "<tr>";
             $fetchW['upc'] = rtrim($fetchW['upc']);
             if (substr($fetchW['upc'],0,2) == "LC") {
                 $likecode = rtrim(substr($fetchW['upc'],2));
-                $ret .= "<td bgcolor=$colors[$c]>" . $fetchW['upc'];
+                $ret .= "<td bgcolor=$colors[$cur]>" . $fetchW['upc'];
                 $ret .= " <a href=\"\" onclick=\"\$('.lc-item-{$likecode}').toggle(); return false;\">[+]</a>";
                 $ret .= "</td>";
             } else {
@@ -1014,15 +967,15 @@ class EditBatchPage extends FannieRESTfulPage
                                                 $overlap['batchName']);
                     }
                 }
-                $ret .= "<td bgcolor=$colors[$c]><a href=\"{$FANNIE_URL}item/ItemEditorPage.php?searchupc={$fetchW['upc']}\" 
+                $ret .= "<td bgcolor=$colors[$cur]><a href=\"{$FANNIE_URL}item/ItemEditorPage.php?searchupc={$fetchW['upc']}\" 
                     target=\"_new{$fetchW['upc']}\">{$fetchW['upc']}</a>{$conflict}</td>";
             }
-            $ret .= "<td bgcolor=$colors[$c]>{$fetchW['brand']}</td>";
-            $ret .= "<td bgcolor=$colors[$c]>{$fetchW['description']}</td>";
-            $ret .= "<td bgcolor=$colors[$c]>{$fetchW['normal_price']}</td>";
+            $ret .= "<td bgcolor=$colors[$cur]>{$fetchW['brand']}</td>";
+            $ret .= "<td bgcolor=$colors[$cur]>{$fetchW['description']}</td>";
+            $ret .= "<td bgcolor=$colors[$cur]>{$fetchW['normal_price']}</td>";
             $qtystr = ($fetchW['pricemethod']>0 && is_numeric($fetchW['quantity']) && $fetchW['quantity'] > 0) ? $fetchW['quantity'] . " for " : "";
             $qty = is_numeric($fetchW['quantity']) && $fetchW['quantity'] > 0 ? $fetchW['quantity'] : 1;
-            $ret .= "<td bgcolor=$colors[$c] class=\"\">";
+            $ret .= "<td bgcolor=$colors[$cur] class=\"\">";
             $ret .= '<span id="editable-text-' . $fetchW['upc'] . '">';
             $ret .= '<span class="editable-' . $fetchW['upc'] . ($qty == 1 ? ' collapse ' : '') . '"'
                     . ' id="item-qty-' . $fetchW['upc'] . '" data-name="qty">'
@@ -1038,23 +991,23 @@ class EditBatchPage extends FannieRESTfulPage
             $ret .= '<span class="input-group-addon">$</span>';
             $ret .= sprintf('<input text="text" class="form-control" name="price" value="%.2f" />', $fetchW['salePrice']);
             $ret .= '</div></div></td>';
-            $ret .= "<td bgcolor=$colors[$c] id=editLink{$fetchW['upc']}>
+            $ret .= "<td bgcolor=$colors[$cur] id=editLink{$fetchW['upc']}>
                 <a href=\"\" class=\"edit\" onclick=\"editUpcPrice('{$fetchW['upc']}'); return false;\">
                     " . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</a>
                 <a href=\"\" class=\"save collapse\" onclick=\"saveUpcPrice('{$fetchW['upc']}'); return false;\">
                     " . \COREPOS\Fannie\API\lib\FannieUI::saveIcon() . "</a>
                 </td>";
-            $ret .= "<td bgcolor=$colors[$c]><a href=\"\" 
+            $ret .= "<td bgcolor=$colors[$cur]><a href=\"\" 
                 onclick=\"deleteUPC.call(this, $id, '{$fetchW['upc']}'); return false;\">"
                 . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . "</a>
                 </td>";
             if ($fetchW['isCut'] == 1) {
-                $ret .= "<td bgcolor=$colors[$c] id=cpLink{$fetchW['upc']}>
+                $ret .= "<td bgcolor=$colors[$cur] id=cpLink{$fetchW['upc']}>
                     <a href=\"\" id=\"unCut{$fetchW['upc']}\" onclick=\"cutItem('{$fetchW['upc']}',$id,$uid, 0); return false;\">Undo</a>
                     <a href=\"\" class=\"collapse\" id=\"doCut{$fetchW['upc']}\" onclick=\"cutItem('{$fetchW['upc']}',$id,$uid, 1); return false;\">Cut</a>
                     </td>";
             } else {
-                $ret .= "<td bgcolor=$colors[$c] id=cpLink{$fetchW['upc']}>
+                $ret .= "<td bgcolor=$colors[$cur] id=cpLink{$fetchW['upc']}>
                     <a href=\"\" class=\"collapse\" id=\"unCut{$fetchW['upc']}\" onclick=\"cutItem('{$fetchW['upc']}',$id,$uid,0); return false;\">Undo</a>
                     <a href=\"\" id=\"doCut{$fetchW['upc']}\" onclick=\"cutItem('{$fetchW['upc']}',$id,$uid,1); return false;\">Cut</a>
                     </td>";
@@ -1069,24 +1022,13 @@ class EditBatchPage extends FannieRESTfulPage
             } elseif (!empty($fetchW['floorSectionID'])) {
                 $loc = $sections[$fetchW['floorSectionID']];
             }
-            $ret .= "<td bgcolor=$colors[$c]>".$loc.'</td>';
+            $ret .= "<td bgcolor=$colors[$cur]>".$loc.'</td>';
             $ret .= '<input type="hidden" class="batch-hidden-upc" value="' . $fetchW['upc'] . '" />';
 
             $ret .= "</tr>";
             if (substr($fetchW['upc'], 0, 2) == "LC") {
                 $likecode = rtrim(substr($fetchW['upc'],2));
-                $likeR = $dbc->execute($likeP, array($likecode));
-                while ($likeW = $dbc->fetch_row($likeR)) {
-                    $ret .= '<tr class="collapse lc-item-' . $likecode . '">';
-                    $ret .= "<td><a href=\"{$FANNIE_URL}item/ItemEditorPage.php?searchupc={$likeW['upc']}\" 
-                        target=_new{$likeW['upc']}>{$likeW['upc']}</a></td>";
-                    $ret .= "<td>{$likeW['description']}</td>";
-                    $ret .= "<td>{$likeW['normal_price']}</td>";
-                    $ret .= "<td>{$fetchW['salePrice']}</td>";
-                    $ret .= "<td>&nbsp;</td>";
-                    $ret .= "<td>&nbsp;</td>";
-                    $ret .= '</tr>';
-                }
+                $ret .= self::likeToTable($dbc, $likecode);
             }
         }
         $ret .= "</table>";
@@ -1095,10 +1037,91 @@ class EditBatchPage extends FannieRESTfulPage
         return $ret;
     }
 
-    function showPairedBatchDisplay($id, $name)
+    private static $like_stmt = null;
+    private static $like_args = null;
+    private static function likeToTable($dbc, $likecode)
     {
-        global $FANNIE_SERVER_DBMS,$FANNIE_URL;
-        $dbc = $this->con;
+        // singleton prepared statement
+        if (self::$like_stmt === null) {
+            $likeQ = "
+                SELECT p.upc,
+                    p.description,
+                    p.normal_price
+                FROM products AS p 
+                    INNER JOIN upcLike AS u ON p.upc=u.upc
+                WHERE 1=1 ";
+            self::$like_args = array();
+            if (FannieConfig::config('STORE_MODE') == 'HQ') {
+                $likeQ .= " AND p.store_id=? ";
+                self::$like_args[] = FannieConfig::config('STORE_ID');
+            }
+            $likeQ .= " 
+                    AND u.likeCode=?
+                ORDER BY p.upc DESC";
+            self::$like_stmt = $dbc->prepare($likeQ);
+        }
+
+        $likeR = $dbc->execute(self::$like_stmt, array_merge(self::$like_args, array($likecode)));
+        $ret = '';
+        $FANNIE_URL = FannieConfig::config('URL');
+        while ($likeW = $dbc->fetch_row($likeR)) {
+            $ret .= '<tr class="collapse lc-item-' . $likecode . '">';
+            $ret .= "<td><a href=\"{$FANNIE_URL}item/ItemEditorPage.php?searchupc={$likeW['upc']}\" 
+                target=_new{$likeW['upc']}>{$likeW['upc']}</a></td>";
+            $ret .= "<td>{$likeW['description']}</td>";
+            $ret .= "<td>{$likeW['normal_price']}</td>";
+            $ret .= "<td>{$fetchW['salePrice']}</td>";
+            $ret .= "<td>&nbsp;</td>";
+            $ret .= "<td>&nbsp;</td>";
+            $ret .= '</tr>';
+        }
+
+        return $ret;
+    }
+
+    private function pairedTableBody($result)
+    {
+        $colors = array('#ffffff','#ffffcc');
+        $cur = 0;
+        $FANNIE_URL = $this->config->get('URL');
+        $ret = '';
+        while ($fetchW = $dbc->fetch_array($result)) {
+            $cur = ($cur + 1) % 2;
+            $ret .= "<tr>";
+            $fetchW[0] = rtrim($fetchW[0]);
+            if (substr($fetchW[0],0,2) == "LC") {
+                $likecode = rtrim(substr($fetchW[0],2));
+                $ret .= "<td bgcolor=$colors[$cur]>" . $fetchW['upc'];
+                $ret .= " <a href=\"\" onclick=\"\$('.lc-item-{$likecode}').toggle(); return false;\">[+]</a>";
+                $ret .= "</td>";
+            } else {
+                $ret .= "<td bgcolor=$colors[$cur]><a href={$FANNIE_URL}item/ItemEditorPage.php?searchupc=$fetchW[0] target=_new$fetchW[0]>$fetchW[0]</a></td>";
+            }
+            $ret .= "<td bgcolor=$colors[$cur]>$fetchW[1]</td>";
+            $ret .= "<td bgcolor=$colors[$cur]>
+                <a href=\"\" class=\"down-arrow\" onclick=\"swapQualifierToDiscount(this, '$fetchW[0]'); return false;\">
+                    <img src=\"{$FANNIE_URL}src/img/buttons/arrow_down.gif\" alt=\"Make Discount Item\" /></a>
+                <a href=\"\" class=\"up-arrow collapse\" onclick=\"swapDiscountToQualifier(this, '$fetchW[0]'); return false;\">
+                    <img src=\"{$FANNIE_URL}src/img/buttons/arrow_up.gif\" alt=\"Make Qualifying Item\" />
+                    </a>
+                </td>";
+            $ret .= "<td bgcolor=$colors[$cur]><a href=\"\" onclick=\"deleteUPC.call(this, $id, '$fetchW[0]'); return false;\">"
+                . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a></td>';
+            $ret .= "</tr>";
+
+            if (substr($fetchW['upc'], 0, 2) == "LC") {
+                $likecode = rtrim(substr($fetchW['upc'],2));
+                $ret .= self::likeToTable($dbc, $likecode);
+            }
+        }
+
+        return $ret;
+    }
+
+    protected function showPairedBatchDisplay($id, $name)
+    {
+        global $FANNIE_SERVER_DBMS;
+        $dbc = $this->connection;
         $uid = getUID($this->current_user);
         $uid = ltrim($uid,'0');
 
@@ -1172,60 +1195,9 @@ class EditBatchPage extends FannieRESTfulPage
         }
         $fetchR = $dbc->exec_statement($fetchQ,array($id));
 
-        $likeP = $dbc->prepare("
-            SELECT p.upc,
-                p.description,
-                p.normal_price
-            FROM products AS p 
-                INNER JOIN upcLike AS u ON p.upc=u.upc
-            WHERE u.likeCode = ? 
-                AND p.store_id=1
-            ORDER BY p.upc DESC");
-        
-        $colors = array('#ffffff','#ffffcc');
-        $c = 0;
         $ret .= '<table class="table" id="qualifier-table">';
         $ret .= '<tr><th colspan="4">Qualifying Item(s)</th></tr>';
-        while ($fetchW = $dbc->fetch_array($fetchR)) {
-            $c = ($c + 1) % 2;
-            $ret .= "<tr>";
-            $fetchW[0] = rtrim($fetchW[0]);
-            if (substr($fetchW[0],0,2) == "LC") {
-                $likecode = rtrim(substr($fetchW[0],2));
-                $ret .= "<td bgcolor=$colors[$c]>" . $fetchW['upc'];
-                $ret .= " <a href=\"\" onclick=\"\$('.lc-item-{$likecode}').toggle(); return false;\">[+]</a>";
-                $ret .= "</td>";
-            } else {
-                $ret .= "<td bgcolor=$colors[$c]><a href={$FANNIE_URL}item/ItemEditorPage.php?searchupc=$fetchW[0] target=_new$fetchW[0]>$fetchW[0]</a></td>";
-            }
-            $ret .= "<td bgcolor=$colors[$c]>$fetchW[1]</td>";
-            $ret .= "<td bgcolor=$colors[$c]>
-                <a href=\"\" class=\"down-arrow\" onclick=\"swapQualifierToDiscount(this, '$fetchW[0]'); return false;\">
-                    <img src=\"{$FANNIE_URL}src/img/buttons/arrow_down.gif\" alt=\"Make Discount Item\" /></a>
-                <a href=\"\" class=\"up-arrow collapse\" onclick=\"swapDiscountToQualifier(this, '$fetchW[0]'); return false;\">
-                    <img src=\"{$FANNIE_URL}src/img/buttons/arrow_up.gif\" alt=\"Make Qualifying Item\" />
-                    </a>
-                </td>";
-            $ret .= "<td bgcolor=$colors[$c]><a href=\"\" onclick=\"deleteUPC.call(this, $id, '$fetchW[0]'); return false;\">"
-                . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a></td>';
-            $ret .= "</tr>";
-
-            if (substr($fetchW['upc'], 0, 2) == "LC") {
-                $likecode = rtrim(substr($fetchW['upc'],2));
-                $likeR = $dbc->execute($likeP, array($likecode));
-                while ($likeW = $dbc->fetch_row($likeR)) {
-                    $ret .= '<tr class="collapse lc-item-' . $likecode . '">';
-                    $ret .= "<td><a href=\"{$FANNIE_URL}item/ItemEditorPage.php?searchupc={$likeW['upc']}\" 
-                        target=_new{$likeW['upc']}>{$likeW['upc']}</a></td>";
-                    $ret .= "<td>{$likeW['description']}</td>";
-                    $ret .= "<td>{$likeW['normal_price']}</td>";
-                    $ret .= "<td>{$fetchW['salePrice']}</td>";
-                    $ret .= "<td>&nbsp;</td>";
-                    $ret .= "<td>&nbsp;</td>";
-                    $ret .= '</tr>';
-                }
-            }
-        }
+        $ret .= $this->pairedTableBody($fetchR);
         $ret .= "</table>";
 
         $fetchQ = $dbc->prepare_statement("select b.upc,
@@ -1248,51 +1220,9 @@ class EditBatchPage extends FannieRESTfulPage
         }
         $fetchR = $dbc->exec_statement($fetchQ,array($id));
 
-        $colors = array('#ffffff','#ffffcc');
-        $c = 0;
         $ret .= '<table class="table" id="discount-table">';
         $ret .= '<tr><th colspan="4">Discount Item(s)</th></tr>';
-        while($fetchW = $dbc->fetch_array($fetchR)){
-            $c = ($c + 1) % 2;
-            $ret .= "<tr>";
-            $fetchW[0] = rtrim($fetchW[0]);
-            if (substr($fetchW[0],0,2) == "LC") {
-                $likecode = rtrim(substr($fetchW[0],2));
-                $ret .= "<td bgcolor=$colors[$c]>" . $fetchW['upc'];
-                $ret .= " <a href=\"\" onclick=\"\$('.lc-item-{$likecode}').toggle(); return false;\">[+]</a>";
-                $ret .= "</td>";
-            } else {
-                $ret .= "<td bgcolor=$colors[$c]><a href={$FANNIE_URL}item/ItemEditorPage.php?searchupc=$fetchW[0] target=_new$fetchW[0]>$fetchW[0]</a></td>";
-            }
-            $ret .= "<td bgcolor=$colors[$c]>$fetchW[1]</td>";
-            $ret .= "<td bgcolor=$colors[$c]>
-                <a href=\"\" class=\"down-arrow collapse\" onclick=\"swapQualifierToDiscount(this, '$fetchW[0]'); return false;\">
-                    <img src=\"{$FANNIE_URL}src/img/buttons/arrow_down.gif\" alt=\"Make Discount Item\" /></a>
-                <a href=\"\" class=\"up-arrow\" onclick=\"swapDiscountToQualifier(this, '$fetchW[0]'); return false;\">
-                    <img src=\"{$FANNIE_URL}src/img/buttons/arrow_up.gif\" alt=\"Make Qualifying Item\" />
-                    </a>
-                </td>";
-            $ret .= "<td bgcolor=$colors[$c]><a href=\"\" onclick=\"deleteUPC.call(this, $id, '$fetchW[0]'); return false;\">"
-                . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a></td>';
-            $ret .= "</tr>";
-
-            if (substr($fetchW['upc'], 0, 2) == "LC") {
-                $likecode = rtrim(substr($fetchW['upc'],2));
-                $likeR = $dbc->execute($likeP, array($likecode));
-                while ($likeW = $dbc->fetch_row($likeR)) {
-                    $ret .= '<tr class="collapse lc-item-' . $likecode . '">';
-                    $ret .= "<td><a href=\"{$FANNIE_URL}item/ItemEditorPage.php?searchupc={$likeW['upc']}\" 
-                        target=_new{$likeW['upc']}>{$likeW['upc']}</a></td>";
-                    $ret .= "<td>{$likeW['description']}</td>";
-                    $ret .= "<td>{$likeW['normal_price']}</td>";
-                    $ret .= "<td>{$fetchW['salePrice']}</td>";
-                    $ret .= "<td>&nbsp;</td>";
-                    $ret .= "<td>&nbsp;</td>";
-                    $ret .= '</tr>';
-                }
-            }
-
-        }
+        $ret .= $this->pairedTableBody($fetchR);
         $ret .= "</table>";
 
         return $ret;

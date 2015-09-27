@@ -36,6 +36,11 @@ class PIApply extends FannieRESTfulPage
         return parent::preprocess();
     }
 
+    public function setJson($j)
+    {
+        $this->json = $j;
+    }
+
     /**
       Update a member account based on a JSON encoded array
     */

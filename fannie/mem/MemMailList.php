@@ -94,7 +94,7 @@ class MemMailList extends FannieReportPage
         $data = array();
 
         while ($row = $dbc->fetch_row($result)) {
-            list($street, $addr2) = explode("\n", $row['street'], 2);
+            list($street, $addr2) = array_pad(explode("\n", $row['street'], 2), 2, null);
             $data[] = array(
                 $row['CardNo'],
                 $row['LastName'],

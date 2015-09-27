@@ -51,8 +51,8 @@ class CouponsReport extends FannieReportPage {
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $d1 = FormLib::get('date1', date('Y-m-d'));
         $d2 = FormLib::get('date2', date('Y-m-d'));

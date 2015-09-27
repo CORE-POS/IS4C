@@ -53,7 +53,6 @@ class DefaultProductSearch extends ProductSearch
                     description, 
                     normal_price, 
                     special_price,
-                    advertised, 
                     scale 
                   FROM products 
                   WHERE $string_search

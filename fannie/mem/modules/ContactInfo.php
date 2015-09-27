@@ -60,6 +60,8 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
                 value="%s" class="form-control" />',$primary['lastName']);
         $ret .= sprintf(' <a href="MemPurchasesPage.php?id=%d">View Receipts</a>',
                     $memNum);
+        $ret .= sprintf(' |  <a href="../reports/Patronage/MemberPatronageReport.php?id=%d">View Patronage</a>',
+                    $memNum);
         $ret .= '</div>';
 
         $ret .= '<div class="form-group form-inline">';
@@ -263,7 +265,7 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         }
         $json['customers'] = array($customer);
 
-        $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json);
+        $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json, 0, true);
 
         $ret = array();
         foreach ($accounts as $account) {

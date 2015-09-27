@@ -136,14 +136,14 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
     foreach($newset as $plugin_class){
         if (!\COREPOS\Fannie\API\FanniePlugin::IsEnabled($plugin_class)){
             $obj = new $plugin_class();
-            $obj->plugin_enable();
+            $obj->pluginEnable();
         }
     }
     foreach($oldset as $plugin_class){
         if (!class_exists($plugin_class)) continue;
         if (!in_array($plugin_class,$newset)){
             $obj = new $plugin_class();
-            $obj->plugin_disable();
+            $obj->pluginDisable();
         }
     }
     $FANNIE_PLUGIN_LIST = $_REQUEST['PLUGINLIST'];
@@ -219,7 +219,7 @@ foreach($mods as $m){
             //confset($field,"'".$CORE_LOCAL->get($field)."'");
         }
         if ($enabled && isset($_REQUEST['psubmit'])) {
-            $instance->setting_change();
+            $instance->settingChange();
         }
         echo '</div>';
         echo '</td></tr>';

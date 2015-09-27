@@ -37,7 +37,7 @@ class CCReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_TRANS_DB;
+        global $FANNIE_TRANS_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_TRANS_DB);
 
         $date = FormLib::getDate('date', date('Y-m-d', strtotime('yesterday')));

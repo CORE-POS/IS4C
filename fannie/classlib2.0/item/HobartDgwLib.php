@@ -25,27 +25,6 @@ namespace COREPOS\Fannie\API\item {
 
 class HobartDgwLib 
 {
-    /* CSV fields for WriteOneItem & ChangeOneItem records
-       Required does not mean you *have to* specify a value,
-       but the default will be included if you omit that field.
-       Non-required fields won't be sent to the scale at all
-       unless specified by the caller
-    */
-    private static $WRITE_ITEM_FIELDS = array(
-        'RecordType' => array('name'=>'Record Type', 'required'=>true, 'default'=>'ChangeOneItem'),
-        'PLU' => array('name'=>'PLU Number', 'required'=>true, 'default'=>'0000'),
-        'Description' => array('name'=>'Item Description', 'required'=>false, 'default'=>'', 'quoted'=>true),
-        'ReportingClass' => array('name'=>'Reporting Class', 'required'=>true, 'default'=>'999999'),
-        'Label' => array('name'=>'Label Type 01', 'required'=>false, 'default'=>'53'),
-        'Tare' => array('name'=>'Tare 01', 'required'=>false, 'default'=>'0'),
-        'ShelfLife' => array('name'=>'Shelf Life', 'required'=>false, 'default'=>'0'),
-        'Price' => array('name'=>'Price', 'required'=>true, 'default'=>'0.00'),
-        'ByCount' => array('name'=>'By Count', 'required'=>false, 'default'=>'0'),
-        'Type' => array('name'=>'Item Type', 'required'=>true, 'default'=>'Random Weight'),
-        'NetWeight' => array('name'=>'Net Weight', 'required'=>false, 'default'=>'0'),
-        'Graphics' => array('name'=>'Graphics Number', 'required'=>false, 'default'=>'0'),
-    );
-
     /**
       Generate CSV line for a given item
       @param $item_info [keyed array] of value. Keys correspond to WRITE_ITEM_FIELDS
@@ -55,7 +34,7 @@ class HobartDgwLib
     {
         $line = '';
         // first write fields that are present
-        foreach(self::$WRITE_ITEM_FIELDS as $key => $field_info) {
+        foreach(ServiceScaleLib::$WRITE_ITEM_FIELDS as $key => $field_info) {
             if (isset($item_info[$key])) {
                 if (isset($field_info['quoted']) && $field_info['quoted']) {
                     $line .= '"' . $item_info[$key] . '",';
@@ -76,7 +55,7 @@ class HobartDgwLib
             }
         }
         // next write required fields that are not present
-        foreach(self::$WRITE_ITEM_FIELDS as $key => $field_info) {
+        foreach(ServiceScaleLib::$WRITE_ITEM_FIELDS as $key => $field_info) {
             if (!isset($item_info[$key]) && $field_info['required']) {
                 if (isset($field_info['quoted']) && $field_info['quoted']) {
                     $line .= '"' . $field_info['default'] . '",';
@@ -117,7 +96,7 @@ class HobartDgwLib
         }
         $new_item = false;
         $header_line = '';
-        foreach (self::$WRITE_ITEM_FIELDS as $key => $field_info) {
+        foreach (ServiceScaleLib::$WRITE_ITEM_FIELDS as $key => $field_info) {
             if (isset($items[0][$key])) {
                 $header_line .= $field_info['name'] . ',';
                 if ($key == 'PLU') {
@@ -128,7 +107,7 @@ class HobartDgwLib
                 $new_item = true;
             }
         }
-        foreach(self::$WRITE_ITEM_FIELDS as $key => $field_info) {
+        foreach(ServiceScaleLib::$WRITE_ITEM_FIELDS as $key => $field_info) {
             if (!isset($items[0][$key]) && $field_info['required']) {
                 $header_line .= $field_info['name'] . ',';
                 if ($key == 'PLU') {
@@ -139,7 +118,7 @@ class HobartDgwLib
         $header_line = substr($header_line, 0, strlen($header_line)-1);
         $header_line .= "\r\n";
 
-        $file_prefix = self::sessionKey();
+        $file_prefix = ServiceScaleLib::sessionKey();
         $output_dir = $config->get('DGW_DIRECTORY');
         if ($output_dir == '') {
             return false;
@@ -148,9 +127,9 @@ class HobartDgwLib
         if (!is_array($scales) || count($selected_scales) == 0) {
             $selected_scales = $config->get('SCALES');
         }
-        $i = 0;
+        $counter = 0;
         foreach ($selected_scales as $scale) {
-            $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_writeItem_' . $i . '.csv';
+            $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_writeItem_' . $counter . '.csv';
             $fp = fopen($file_name, 'w');
             fwrite($fp,"Record Type,Task Department,Task Destination,Task Destination Device,Task Destination Type\r\n");
             fwrite($fp, "ExecuteOneTask,{$scale['dept']},{$scale['host']},{$scale['type']},SCALE\r\n");
@@ -166,7 +145,7 @@ class HobartDgwLib
                 //unlink($file_name);
             }
 
-            $et_file = sys_get_temp_dir() . '/' . $file_prefix . '_exText' . $i . '.csv';
+            $et_file = sys_get_temp_dir() . '/' . $file_prefix . '_exText' . $counter . '.csv';
             $fp = fopen($et_file, 'w');
             fwrite($fp,"Record Type,Task Department,Task Destination,Task Destination Device,Task Destination Type\r\n");
             fwrite($fp, "ExecuteOneTask,{$scale['dept']},{$scale['host']},{$scale['type']},SCALE\r\n");
@@ -196,7 +175,7 @@ class HobartDgwLib
                 }
             }
 
-            $i++;
+            $counter++;
         }
     }
 
@@ -218,15 +197,15 @@ class HobartDgwLib
             $selected_scales = $config->get('SCALES');
         }
 
-        $file_prefix = self::sessionKey();
+        $file_prefix = ServiceScaleLib::sessionKey();
         $output_dir = $config->get('DGW_DIRECTORY');
         if ($output_dir == '') {
             return false;
         }
-        $i = 0;
+        $counter = 0;
         foreach ($selected_scales as $scale) {
-            $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteItem_' . $i . '.csv';
-            $et_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteText_' . $i . '.csv';
+            $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteItem_' . $counter . '.csv';
+            $et_name = sys_get_temp_dir() . '/' . $file_prefix . '_deleteText_' . $counter . '.csv';
             $fp = fopen($file_name, 'w');
             $fp2 = fopen($et_name, 'w');
             fwrite($fp,"Record Type,Task Department,Task Destination,Task Destination Device,Task Destination Type\r\n");
@@ -260,7 +239,7 @@ class HobartDgwLib
                 unlink($et_name);
             }
 
-            $i++;
+            $counter++;
         }
     }
 
@@ -308,7 +287,7 @@ class HobartDgwLib
             }
 
             $plu = $line[$column_index['PLU Number']];
-            $upc = $this->scalePluToUpc($plu);
+            $upc = self::scalePluToUpc($plu);
 
             $product->reset();
             $product->upc($upc);
@@ -393,7 +372,7 @@ class HobartDgwLib
         while(!feof($fp)) {
             $line = fgetcsv($fp);
             $plu = $line[$number_index];
-            $upc = $this->scalePluToUpc($plu);
+            $upc = self::scalePluToUpc($plu);
 
             $product->reset();
             $product->upc($upc);
@@ -415,62 +394,6 @@ class HobartDgwLib
         return $item_count;
     }
 
-    /**
-      Get attributes for a given label number
-      @param $label_number [integer]
-      @return keyed array
-        - align => vertical or horizontal
-        - fixed_weight => boolean
-        - graphics => boolean
-    */
-    static public function labelToAttributes($label_number)
-    {
-        $ret = array(
-            'align' => 'vertical',
-            'fixed_weight' => false,
-            'graphics' => false,
-        );
-        switch ($label_number) {
-            case 23:
-                $ret['fixed_weight'] = true;
-                break;
-            case 53:
-                $ret['graphics'] = true;
-                break;
-            case 63:
-                $ret['fixed_weight'] = true;
-                $ret['align'] = 'horizontal';
-                break;
-            case 103:
-                break;
-            case 113:
-                $ret['align'] = 'horizontal';
-                break;
-        }
-
-        return $ret;
-    }
-
-    /**
-      Get appropriate label number for given attributes
-      @param $align [string] vertical or horizontal
-      @param $fixed_weight [boolean, default false]
-      @param $graphics [boolean, default false]
-      @return [integer] label number
-    */
-    static public function attributesToLabel($align, $fixed_weight=false, $graphics=false)
-    {
-        if ($graphics) {
-            return 53;
-        }
-
-        if ($align == 'horizontal') {
-            return ($fixed_weight) ? 63 : 133;
-        } else {
-            return ($fixed_weight) ? 23 : 103;
-        }
-    }
-
     static private function scalePluToUpc($plu)
     {
         // convert PLU to UPC
@@ -481,30 +404,6 @@ class HobartDgwLib
         $upc = '002' . $upc . '000000';
 
         return $upc;
-    }
-
-    static private function sessionKey()
-    {
-        $session_key = '';
-        for ($i = 0; $i < 20; $i++) {
-            $num = rand(97,122);
-            $session_key = $session_key . chr($num);
-        }
-
-        return $session_key;
-    }
-
-    static public function scaleOnline($host, $port=6000)
-    {
-        $s = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        socket_set_option($s, SOL_SOCKET, SO_RCVTIMEO, array('sec'=>2, 'usec'=>0));
-        socket_set_option($s, SOL_SOCKET, SO_SNDTIMEO, array('sec'=>2, 'usec'=>0));
-        if (socket_connect($s, $host, $port)) {
-            socket_close($s);
-            return true;
-        } else {
-            return false;
-        }
     }
 }
 

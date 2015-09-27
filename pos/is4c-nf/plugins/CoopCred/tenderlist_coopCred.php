@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
-class tenderlist_coopCred extends NoInputPage {
+class tenderlist_coopCred extends NoInputCorePage 
+{
 
     /**
       Input processing function

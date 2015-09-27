@@ -36,8 +36,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class memlist_cards extends NoInputPage {
-
+class memlist_cards extends NoInputCorePage 
+{
     var $temp_result;
     var $temp_num_rows;
     var $entered;

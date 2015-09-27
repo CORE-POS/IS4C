@@ -23,8 +23,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class drawerPage extends NoInputPage {
-
+class drawerPage extends NoInputCorePage 
+{
     var $is_admin;
     var $my_drawer;
     var $available;

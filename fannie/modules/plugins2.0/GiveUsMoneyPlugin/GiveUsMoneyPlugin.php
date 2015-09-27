@@ -38,7 +38,7 @@ class GiveUsMoneyPlugin extends \COREPOS\Fannie\API\FanniePlugin
     public $plugin_description = 'Plugin for mananging member loan/bond accounts
                                 and share-based, dividend earning equity.';
 
-    public function setting_change() {
+    public function settingChange() {
         global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
         $db_name = $FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB'];
@@ -336,7 +336,7 @@ class GiveUsMoneyPlugin extends \COREPOS\Fannie\API\FanniePlugin
         }
     }
 
-    public function plugin_enable()
+    public function pluginEnable()
     {
         FannieAuth::createClass('GiveUsMoney', 'Grants permission to use the GiveUsMoney plugin');
     }

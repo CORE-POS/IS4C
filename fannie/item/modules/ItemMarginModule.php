@@ -102,6 +102,12 @@ class ItemMarginModule extends ItemModule
     public function avgSales($upc)
     {
         $config = FannieConfig::factory();
+        $dbc = FannieDB::get($config->get('OP_DB'));
+        $prodP = $dbc->prepare('SELECT auto_par FROM products WHERE upc=?');
+        $avg = $dbc->getValue($prodP, array($upc));
+        if ($avg) {
+            return $avg;
+        }
         $dbc = FannieDB::get($config->get('ARCHIVE_DB'));
         $avg = 0.0;
         if ($dbc->tableExists('productWeeklyLastQuarter')) {
@@ -173,6 +179,7 @@ class ItemMarginModule extends ItemModule
                     */
                     $rule->reviewDate(FormLib::get('rule-review-date'));
                     $rule->details(FormLib::get('rule-details'));
+                    $rule->priceRuleTypeID(FormLib::get('price-rule-type'));
                     if ($old_rule > 1) {
                         $rule->priceRuleID($old_rule);
                         $prod->price_rule_id($old_rule); // just in case
@@ -267,7 +274,7 @@ class ItemMarginModule extends ItemModule
                 $actual_margin);
             $srp = $this->getSRP($cost, $desired_margin/100.0);
             $ret .= sprintf("Suggested price: \$%.2f ",$srp);
-            $ret .= sprintf("(<a href=\"\" onclick=\"\$('#price').val(%.2f); updateMarginMod(); return false;\">Use this price</a>)",$srp);
+            $ret .= sprintf("(<a href=\"\" onclick=\"\$('.price-input').val(%.2f); \$('.price-input:visible').trigger('change'); return false;\">Use this price</a>)",$srp);
         }
 
         return $ret;

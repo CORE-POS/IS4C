@@ -73,9 +73,7 @@ class FannieWebService
     */
     protected function renderPlain($arr)
     {
-        $ret = '';
-        foreach($arr as $a) $ret .= $a;
-        return $ret;
+        return array_reduce($arr, function($carry, $item){ return $carry . $item; }, '');
     }
 }
 

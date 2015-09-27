@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
-class QKDisplay extends NoInputPage 
+class QKDisplay extends NoInputCorePage 
 {
     private $offset;
     private $plugin_url;
@@ -94,7 +94,7 @@ class QKDisplay extends NoInputPage
     function preprocess()
     {
         $plugin_info = new QuickKeys();
-        $this->plugin_url = $plugin_info->plugin_url().'/';
+        $this->plugin_url = $plugin_info->pluginUrl().'/';
 
         $this->offset = isset($_REQUEST['offset'])?$_REQUEST['offset']:0;
 

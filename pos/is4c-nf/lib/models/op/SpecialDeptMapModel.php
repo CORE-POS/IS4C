@@ -67,38 +67,5 @@ class SpecialDeptMapModel extends BasicModel
             }
         }
     }
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function specialDeptModuleName()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["specialDeptModuleName"])) {
-                return $this->instance["specialDeptModuleName"];
-            } elseif(isset($this->columns["specialDeptModuleName"]["default"])) {
-                return $this->columns["specialDeptModuleName"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["specialDeptModuleName"] = func_get_arg(0);
-        }
-    }
-
-    public function dept_no()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["dept_no"])) {
-                return $this->instance["dept_no"];
-            } elseif(isset($this->columns["dept_no"]["default"])) {
-                return $this->columns["dept_no"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["dept_no"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

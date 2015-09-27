@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
-class PaycardTransLookupPage extends BasicPage 
+class PaycardTransLookupPage extends BasicCorePage 
 {
 
     function preprocess()

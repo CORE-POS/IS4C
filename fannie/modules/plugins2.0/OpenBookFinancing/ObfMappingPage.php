@@ -37,9 +37,14 @@ class ObfMappingPage extends FannieRESTfulPage
     public $description = '[Department Mapping] associates POS sales departments with
     OBF labor categories.';
     public $themed = true;
+    protected $lib_class = 'ObfLib';
 
     public function preprocess()
     {
+        if (!headers_sent()) {
+            header('Location: ../OpenBookFinancingV2/ObfMappingPageV2.php');
+        }
+        return false;
         $this->__routes[] = 'post<id><superID><growth>';
         $this->__routes[] = 'post<add><cat>';
 
@@ -48,10 +53,10 @@ class ObfMappingPage extends FannieRESTfulPage
 
     public function post_add_cat_handler()
     {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $lib_class = $this->lib_class;
+        $dbc = $lib_class::getDB();
 
-        $map = new ObfCategorySuperDeptMapModel($dbc);
+        $map = $lib_class::getCategoryMap($dbc);
         $map->obfCategoryID($this->cat);
         $map->superID($this->add);
         $map->save();
@@ -64,10 +69,10 @@ class ObfMappingPage extends FannieRESTfulPage
 
     public function post_id_superID_growth_handler()
     {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $lib_class = $this->lib_class;
+        $dbc = $lib_class::getDB();
 
-        $map = new ObfCategorySuperDeptMapModel($dbc);
+        $map = $lib_class::getCategoryMap($dbc);
         for ($i=0; $i<count($this->id); $i++) {
             if (!isset($this->superID[$i])) {
                 continue;
@@ -95,16 +100,16 @@ class ObfMappingPage extends FannieRESTfulPage
 
     public function get_view()
     {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL, $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $lib_class = $this->lib_class;
+        $dbc = $lib_class::getDB();
 
-        $model = new ObfCategoriesModel($dbc);
+        $model = $lib_class::getCategory($dbc);
         $model->hasSales(1);
 
-        $map = new ObfCategorySuperDeptMapModel($dbc);
+        $map = $lib_class::getCategoryMap($dbc);
 
         $supers = 'SELECT s.superID, s.super_name
-                   FROM ' . $FANNIE_OP_DB . $dbc->sep() . 'superDeptNames AS s
+                   FROM ' . $this->config->get('OP_DB') . $dbc->sep() . 'superDeptNames AS s
                    ORDER BY s.super_name';
         $res = $dbc->query($supers);
         $sdepts = array();
@@ -163,7 +168,7 @@ class ObfMappingPage extends FannieRESTfulPage
         $ret .= '<p><button type="submit" class="btn btn-default">Add New Mapping</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<button type="button" class="btn btn-default"
-                onclick="location=\'ObfIndexPage.php\';return false;">Home</button></p>';
+                onclick="location=\'index.php\';return false;">Home</button></p>';
         $ret .= '</form>';
         $ret .= '</div>';
         $ret .= '<div class="panel-footer">Note: percentages are sales growth targets for categories</div>';

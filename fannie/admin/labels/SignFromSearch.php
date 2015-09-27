@@ -44,7 +44,22 @@ class SignFromSearch extends FannieRESTfulPage
        $this->__routes[] = 'post<u>'; 
        $this->__routes[] = 'post<batch>'; 
        $this->__routes[] = 'get<batch>'; 
+       $this->__routes[] = 'get<queueID>'; 
        return parent::preprocess();
+    }
+
+    public function get_queueID_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $tags = new ShelftagsModel($dbc);
+        $tags->id($this->queueID);
+        $this->u = array();
+        foreach ($tags->find() as $tag) {
+            $this->u[] = $tag->upc();
+        }
+
+        return $this->post_u_handler();
     }
 
     function post_u_handler()
@@ -86,7 +101,7 @@ class SignFromSearch extends FannieRESTfulPage
             $this->signage_obj->saveItems();
             echo '<html><head></head>
                   <body onload="document.forms[0].submit();">
-                  <form method="post" action="' . $_SERVER['PHP_SELF'] . '">';
+                  <form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">';
             foreach ($this->upcs as $u) {
                 printf('<input type="hidden" name="u[]" value="%s" />', $u);
             }
@@ -149,7 +164,7 @@ class SignFromSearch extends FannieRESTfulPage
             $this->signage_obj->saveItems();
             echo '<html><head></head>
                   <body onload="document.forms[0].submit();">
-                  <form method="post" action="' . $_SERVER['PHP_SELF'] . '">';
+                  <form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">';
             foreach ($this->batch as $b) {
                 printf('<input type="hidden" name="batch[]" value="%d" />', $b);
             }
@@ -203,10 +218,15 @@ class SignFromSearch extends FannieRESTfulPage
         return $this->post_u_view();
     }
 
+    public function get_queueID_view()
+    {
+        return $this->post_u_view();
+    }
+
     function post_u_view()
     {
         $ret = '';
-        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post" id="signform">';
+        $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post" id="signform">';
         $mods = FannieAPI::listModules('FannieSignage');
         $others = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
         foreach ($others as $o) {
@@ -293,7 +313,7 @@ class SignFromSearch extends FannieRESTfulPage
         $batchR = $dbc->execute($batchP, array($today, $today, $today));
 
         $ret = '<b>Select batch(es)</b>:'; 
-        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+        $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">';
         $ret .= '<select name="batch[]" multiple size="15">';
         while ($batchW = $dbc->fetch_row($batchR)) {
             $ret .= sprintf('<option value="%d">%s (%s - %s)</option>',
@@ -326,4 +346,3 @@ class SignFromSearch extends FannieRESTfulPage
 
 FannieDispatch::conditionalExec(false);
 
-?>

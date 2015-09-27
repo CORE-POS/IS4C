@@ -34,6 +34,8 @@ class FannieDB
 
     private static $db = null;
 
+    private static $read_only = null;
+
     private function __construct(){}
 
     /**
@@ -89,6 +91,45 @@ class FannieDB
     private static function addDB($db_name)
     {
         self::$db->selectDB($db_name);
+    }
+
+    /**
+      Get a read-only database connection
+      @param $db_name the database name
+      
+      Unlike the normal get() method which returns
+      a connection to the master database server,
+      multiple read-only databases might be available. 
+      Load balancing among them is simply random.
+    */
+    public static function getReadOnly($db_name)
+    {
+        if (self::$read_only === null) {
+            $config = FannieConfig::factory();
+            $json = json_decode($config->get('READONLY_JSON'), true);
+            if (!is_array($json)) {
+                return self::get($db_name);
+            }
+
+            $key = mt_rand(0, count($json)-1);
+            $pick = $json[$key];
+            if (!isset($pick['host']) || !isset($pick['type']) || !isset($pick['user']) || !isset($pick['pw'])) {
+                return self::get($db_name);
+            }
+
+            self::$read_only = new SQLManager(
+                $pick['host'],
+                $pick['type'],
+                $db_name,
+                $pick['user'],
+                $pick['pw'],
+                false,
+                true);
+        } else {
+            self::$read_only->selectDB($db_name);
+        }
+
+        return self::$read_only;
     }
 }
 

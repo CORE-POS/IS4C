@@ -34,7 +34,7 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class memlist extends NoInputPage 
+class memlist extends NoInputCorePage 
 {
 
     private $temp_result;

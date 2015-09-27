@@ -130,16 +130,17 @@ class FannieCRUDPage extends \FannieRESTfulPage
         for ($i=0; $i<count($this->id); $i++) {
             $obj->reset();
             $obj->$id_col($this->id[$i]); 
-            foreach ($columns as $col_name => $c) {
-                if ($col_name == $id_col) {
-                    continue;
-                }
-                $vals = \FormLib::get($col_name);
-                if (!is_array($vals) || !isset($vals[$i])) {
-                    continue;
-                }
-                $obj->$col_name($vals[$i]);
-            }
+            array_map(array_keys($columns),
+                function ($col_name) use ($id_col, $obj) {
+                    if ($col_name == $id_col) {
+                        return false;
+                    }
+                    $vals = \FormLib::get($col_name);
+                    if (!is_array($vals) || !isset($vals[$i])) {
+                        return false;
+                    }
+                    $obj->$col_name($vals[$i]);
+                });
             if (!$obj->save()) {
                 $errors++;
             }
@@ -223,22 +224,24 @@ class FannieCRUDPage extends \FannieRESTfulPage
         $columns = $obj->getColumns();
         $ret = '<form class="crud-form" method="post">';
         $ret .= '<div class="flash-div">';
-        foreach (\FormLib::get('flash', array()) as $f) {
-            $css = '';
-            switch (substr($f, 0, 1)) {
-                case 's':
-                    $css = 'alert-success';
-                    break;
-                case 'd':
-                    $css = 'alert-danger';
-                    break;
-            }
-            $ret .= '<div class="alert ' . $css . '" role="alert">' 
-                . substr($f, 1) 
-                . '<button type="button" class="close" data-dismiss="alert">'
-                . '<span>&times;</span></button>'
-                . '</div>';
-        }
+        $ret .= array_reduce(\FormLib::get('flash', array()),
+            function ($carry, $item) {
+                $css = '';
+                switch (substr($item, 0, 1)) {
+                    case 's':
+                        $css = 'alert-success';
+                        break;
+                    case 'd':
+                        $css = 'alert-danger';
+                        break;
+                }
+                $carry .= '<div class="alert ' . $css . '" role="alert">' 
+                    . substr($item, 1) 
+                    . '<button type="button" class="close" data-dismiss="alert">'
+                    . '<span>&times;</span></button>'
+                    . '</div>';
+                return $carry;
+            }, '');
         $ret .= '</div>';
         $ret .= '<table class="table table-bordered">';
         $ret .= '<tr>';

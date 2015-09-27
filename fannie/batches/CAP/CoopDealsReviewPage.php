@@ -70,6 +70,7 @@ class CoopDealsReviewPage extends FanniePage
         $upcs = FormLib::get_form_value('upc',array());
         $prices = FormLib::get_form_value('price',array());
         $names = FormLib::get_form_value('batch',array());
+        $set = FormLib::get('deal-set');
         $batchIDs = array();
 
         if( FormLib::get_form_value('group_by_superdepts','') == 'on' ){
@@ -88,16 +89,14 @@ class CoopDealsReviewPage extends FanniePage
                     "t.abtpr",
                     ''
                 ) . " AS batch
-            FROM tempCapPrices as t
+            FROM CoopDealsItems as t
                 INNER JOIN products AS p on t.upc = p.upc
                 LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
             WHERE p.inUse=1
+                AND t.dealSet=?
             ORDER BY s.super_name, t.upc
         ");
-        $saleItemsR = $dbc->exec_statement($saleItemsP);
-        define("UPC_COL",0);
-        define("PRICE_COL",1);
-        define("BATCHNAME_COL",2);
+        $saleItemsR = $dbc->exec_statement($saleItemsP, array($set));
 
         $batchP = $dbc->prepare_statement('
             INSERT INTO batches (
@@ -117,12 +116,12 @@ class CoopDealsReviewPage extends FanniePage
         $list->quantity(0);
 
         while ($row = $dbc->fetch_row($saleItemsR)) {
-            if (!isset($batchIDs[$row[BATCHNAME_COL]])) {
-                $args = array($row[BATCHNAME_COL] . ' ' . $naming, 1, 1);
-                if (substr($row[BATCHNAME_COL],-2) == " A"){
+            if (!isset($batchIDs[$row['batch']])) {
+                $args = array($row['batch'] . ' ' . $naming, 1, 1);
+                if (substr($row['batch'],-2) == " A"){
                     $args[] = $start;
                     $args[] = $end;
-                } else if (substr($row[BATCHNAME_COL],-2) == " B") {
+                } else if (substr($row['batch'],-2) == " B") {
                     $args[] = $b_start;
                     $args[] = $b_end;
                 } else {
@@ -132,17 +131,17 @@ class CoopDealsReviewPage extends FanniePage
     
                 $dbc->exec_statement($batchP,$args);
                 $bID = $dbc->insert_id();
-                $batchIDs[$row[BATCHNAME_COL]] = $bID;
+                $batchIDs[$row['batch']] = $bID;
 
                 if ($this->config->get('STORE_MODE') === 'HQ') {
                     StoreBatchMapModel::initBatch($bID);
                 }
             }
-            $id = $batchIDs[$row[BATCHNAME_COL]];
+            $id = $batchIDs[$row['batch']];
 
-            $list->upc($row[UPC_COL]);
+            $list->upc($row['upc']);
             $list->batchID($id);
-            $list->salePrice(sprintf("%.2f",$row[PRICE_COL]));
+            $list->salePrice(sprintf("%.2f",$row['price']));
             $list->signMultiplier($row['multiplier']);
             $list->save();
         }
@@ -155,8 +154,26 @@ class CoopDealsReviewPage extends FanniePage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+
+        $set = FormLib::get('deal-set');
+        $optsR = $dbc->query('
+            SELECT dealSet
+            FROM CoopDealsItems
+            GROUP BY dealSet
+            ORDER BY MAX(coopDealsItemID) DESC');
+        $opts = '';
+        while ($optsW = $dbc->fetchRow($optsR)) {
+            if ($set === '') {
+                $set = $optsW['dealSet'];
+            }
+            $opts .= sprintf('<option %s>%s</option>',
+                ($set == $optsW['dealSet'] ? 'selected' : ''),
+                $optsW['dealSet']
+            );
+        }
+
         $query = $dbc->prepare_statement("
             SELECT
                 t.upc,
@@ -165,15 +182,23 @@ class CoopDealsReviewPage extends FanniePage
                 t.price,
                 CASE WHEN s.super_name IS NULL THEN 'sale' ELSE s.super_name END as batch,
                 t.abtpr as subbatch
-            FROM
-                tempCapPrices as t
+            FROM CoopDealsItems as t
                 INNER JOIN products AS p on t.upc = p.upc
                 LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
+            WHERE t.dealSet=?
+                AND p.inUse=1
             ORDER BY s.super_name,t.upc
         ");
-        $result = $dbc->exec_statement($query);
+        $result = $dbc->exec_statement($query, array($set));
 
         $ret = "<form action=CoopDealsReviewPage.php method=post>
+        <div class=\"form-group\">
+            <label>Month</label>
+            <select name=\"deal-set\" class=\"form-control\" 
+                onchange=\"location='?deal-set='+this.value;\">
+            " . $opts . "
+            </select>
+        </div>
         <table class=\"table table-bordered table-striped tablesorter tablesorter-core small\">
         <thead>
         <tr><th>UPC</th><th>Brand</th><th>Desc</th><th>Sale Price</th>
@@ -221,7 +246,7 @@ class CoopDealsReviewPage extends FanniePage
         <div class="row form-horizontal form-group">
             <label class="col-sm-2 control-label">Month</label>
             <div class="col-sm-4">
-                <input type="text" name="naming" class="form-control" />
+                <input type="text" name="naming" class="form-control" value="{{set}}" />
             </div>
             <label class="col-sm-6">
                 <input type="checkbox" name="group_by_superdepts" checked="true" 
@@ -235,6 +260,7 @@ class CoopDealsReviewPage extends FanniePage
         </p>
         </form>
 html;
+        $ret = str_replace('{{set}}', $set, $ret);
 
         return $ret;
     }
@@ -253,5 +279,5 @@ html;
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

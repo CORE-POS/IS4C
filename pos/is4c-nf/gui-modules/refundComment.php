@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class RefundComment extends NoInputPage {
+class RefundComment extends NoInputCorePage 
+{
 
     function preprocess()
     {

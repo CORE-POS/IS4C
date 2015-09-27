@@ -26,13 +26,13 @@
 */
 class SpecialOrderDeptMapModel extends BasicModel
 {
-
     protected $name = "SpecialOrderDeptMap";
     protected $preferred_db = 'trans';
 
     protected $columns = array(
     'dept_ID' => array('type'=>'INT', 'primary_key'=>true),
-    'map_to' => array('type'=>'INT', 'primary_key'=>true),
+    'map_to' => array('type'=>'INT'),
+    'minQty' => array('type'=>'TINYINT', 'default'=>0),
     );
 
     public function doc()
@@ -43,82 +43,5 @@ to alternate departments. Essentially, put
 entries into historic "special order" departments
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function dept_ID()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["dept_ID"])) {
-                return $this->instance["dept_ID"];
-            } else if (isset($this->columns["dept_ID"]["default"])) {
-                return $this->columns["dept_ID"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'dept_ID',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["dept_ID"]) || $this->instance["dept_ID"] != func_get_args(0)) {
-                if (!isset($this->columns["dept_ID"]["ignore_updates"]) || $this->columns["dept_ID"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["dept_ID"] = func_get_arg(0);
-        }
-        return $this;
-    }
-
-    public function map_to()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["map_to"])) {
-                return $this->instance["map_to"];
-            } else if (isset($this->columns["map_to"]["default"])) {
-                return $this->columns["map_to"]["default"];
-            } else {
-                return null;
-            }
-        } else if (func_num_args() > 1) {
-            $value = func_get_arg(0);
-            $op = $this->validateOp(func_get_arg(1));
-            if ($op === false) {
-                throw new Exception('Invalid operator: ' . func_get_arg(1));
-            }
-            $filter = array(
-                'left' => 'map_to',
-                'right' => $value,
-                'op' => $op,
-                'rightIsLiteral' => false,
-            );
-            if (func_num_args() > 2 && func_get_arg(2) === true) {
-                $filter['rightIsLiteral'] = true;
-            }
-            $this->filters[] = $filter;
-        } else {
-            if (!isset($this->instance["map_to"]) || $this->instance["map_to"] != func_get_args(0)) {
-                if (!isset($this->columns["map_to"]["ignore_updates"]) || $this->columns["map_to"]["ignore_updates"] == false) {
-                    $this->record_changed = true;
-                }
-            }
-            $this->instance["map_to"] = func_get_arg(0);
-        }
-        return $this;
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

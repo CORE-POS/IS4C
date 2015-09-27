@@ -120,6 +120,8 @@ class ReprintReceiptPage extends FanniePage
             if ($tenderTotal != "") {
                 $tender_clause .= " AND total=-1*? ";
                 $args[] = $tenderTotal;
+            } else {
+                $tender_clause .= ' AND total <> 0 ';
             }
             $tender_clause .= ")";
 
@@ -267,10 +269,10 @@ class ReprintReceiptPage extends FanniePage
         global $FANNIE_OP_DB,$FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $depts = "<option value=\"\">Select one...</option>";
-        $p = $dbc->prepare_statement("SELECT dept_no,dept_name from departments order by dept_name");
-        $r = $dbc->exec_statement($p);
-        while($w = $dbc->fetch_row($r)) {
-            $depts .= sprintf("<option value=%d>%s</option>",$w[0],$w[1]);
+        $prep = $dbc->prepare_statement("SELECT dept_no,dept_name from departments order by dept_name");
+        $res = $dbc->exec_statement($prep);
+        while($row = $dbc->fetch_row($res)) {
+            $depts .= sprintf("<option value=%d>%s</option>",$row[0],$row[1]);
         }
         ob_start();
         ?>
@@ -373,4 +375,3 @@ class ReprintReceiptPage extends FanniePage
 
 FannieDispatch::conditionalExec(false);
 
-?>

@@ -29,45 +29,8 @@
   provides meta-information about the plugin like settings
   and enable/disable hooks
 */
-class Plugin 
+class Plugin extends \COREPOS\common\CorePlugin
 {
-
-    /**
-      Desired settings. These are automatically exposed
-      on the 'Plugins' area of the install page and
-      written to ini.php
-    */
-    public $plugin_settings = array(
-    'example1' => array('default'=>'','label'=>'Setting #1',
-            'description'=>'Text goes here'),
-    'example2' => array('default'=>1,
-            'options'=>array('Yes'=>1,'No'=>0)
-        )
-    );
-
-    public $plugin_description = 'This author didn\'t provide anything. Shame!';
-
-    /**
-      Callback. Triggered when plugin is enabled
-    */
-    public function plugin_enable(){
-
-    }
-
-    /**
-      Callback. Triggered when plugin is disabled
-    */
-    public function plugin_disable(){
-
-    }
-
-    /**
-      Callback. Triggered when plugin settings are updated.
-    */
-    public function settingChange()
-    {
-
-    }
 
     /**
       Callback. Triggered after every transaction.
@@ -84,75 +47,27 @@ class Plugin
     /**
       Get a URL for the plugin's directory    
     */
-    public function plugin_url(){
+    public function pluginUrl()
+    {
         $info = new ReflectionClass($this);
         return MiscLib::base_url().'plugins/'.basename(dirname($info->getFileName()));
     }
-    
-    /**
-      Find the plugin containing a given file
-      @param $file string filename
-      @return plugin name or boolean False
-    */
-    public static function memberOf($file)
-    {
-        $file = realpath($file);
-        $sep = '/';
-        if (strstr($file,'/')) {
-            $sep = '/';
-        } elseif (strstr($file,'\\')) {
-            $sep = '\\';
-        } else {
-            return false;
-        }
 
-        $dirs = explode($sep, $file);
-        for($i=0;$i<count($dirs);$i++) {
-            if ($dirs[$i] == "plugins" && isset($dirs[$i+1])) {
-                return $dirs[$i+1];
-            }
-        }
-
-        return false;
-    }
-
-    /**
-      Check whether a given plugin is enabled
-      @param $plugin string plugin name
-      @return True or False
-    */
-    static public function isEnabled($plugin)
+    protected static function getPluginList()
     {
         $list = CoreLocal::get("PluginList");
-        if (!is_array($list)) {
-            return false;
+        if (is_array($list)) {
+            return $list;
+        } else {
+            return array();
         }
-
-        return (in_array($plugin, $list)) ? true : false;
     }
 
-    /**
-      Find potential class files in a given directory
-      @param $path starting directory
-      @return array of class name => full file name
-    */
-    static public function pluginMap($path="",$in=array())
+    protected static $unmapped_files = array('Plugin.php');
+
+    protected static function defaultSearchDir()
     {
-        if($path=="") $path = dirname(__FILE__);
-        $dh = opendir($path);
-        while( ($file = readdir($dh)) !== False) {
-            if ($file[0] == ".") continue;
-
-            if (is_dir($path."/".$file)) {
-                $in = self::pluginMap(realpath($path.'/'.$file),$in);
-            }
-            if (substr($file,-4)==".php" && $file != "Plugin.php") {
-                $in[substr($file,0,strlen($file)-4)] = realpath($path.'/'.$file);
-            }
-        }
-        closedir($dh);
-
-        return $in;
+        return realpath(dirname(__FILE__));
     }
 }
 

@@ -139,6 +139,15 @@ class OverShortDayPage extends FanniePage
                 );
                 $tender_info[$tW['trans_subtype']] = $record;
             }
+            if ($this->config->get('COOP_ID') == 'WFC_Duluth' && !isset($tender_info['CK'])) {
+                $tender_info['CK'] = array(
+                    'name' => 'Check',
+                    'posTtl' => 0.0,
+                    'countTtl' => 0.0,
+                    'osTtl' => 0.0,
+                    'perEmp' => array(),
+                );
+            }
     
             $overallTotal = 0;
             $overallCountTotal = 0;

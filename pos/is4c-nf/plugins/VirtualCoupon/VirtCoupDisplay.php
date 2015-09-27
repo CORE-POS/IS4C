@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
-class VirtCoupDisplay extends NoInputPage {
+class VirtCoupDisplay extends NoInputCorePage 
+{
 
     private $temp_result;
     private $temp_num_rows;

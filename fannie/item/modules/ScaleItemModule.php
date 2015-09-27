@@ -99,7 +99,7 @@ class ScaleItemModule extends ItemModule
                 $scale['netWeight']);
 
         $ret .= "<td><select name=s_label size=2 class=\"form-control\">";
-        $label_attr = HobartDgwLib::labelToAttributes($scale['label']);
+        $label_attr = \COREPOS\Fannie\API\item\ServiceScaleLib::labelToAttributes($scale['label']);
         if ($label_attr['align'] == 'horizontal') {
             $ret .= "<option value=horizontal selected>Horizontal</option>";
             $ret .= "<option value=vertical>Vertical</option>";
@@ -149,7 +149,7 @@ class ScaleItemModule extends ItemModule
             $css_class = '';
             $title = '';
             if ($checked) {
-                $online = \COREPOS\Fannie\API\item\HobartDgwLib::scaleOnline($scale->host());
+                $online = \COREPOS\Fannie\API\item\ServiceScaleLib::scaleOnline($scale->host());
                 $css_class = $online ? 'has-success' : 'has-danger';
                 $title = $online ? 'Scale Online' : 'Scale Offline';
             }
@@ -195,7 +195,7 @@ class ScaleItemModule extends ItemModule
         $align = FormLib::get('s_label','horizontal');
         $netWeight = FormLib::get('s_netwt', 0);
 
-        $label = HobartDgwLib::attributesToLabel(
+        $label = \COREPOS\Fannie\API\item\ServiceScaleLib::attributesToLabel(
             $align,
             ($type == 'Fixed Weight') ? true : false,
             ($graphics != 0) ? true : false

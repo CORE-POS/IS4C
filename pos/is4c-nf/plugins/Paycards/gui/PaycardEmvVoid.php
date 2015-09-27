@@ -32,6 +32,7 @@ class PaycardEmvVoid extends PaycardProcessPage
 
     function preprocess()
     {
+        $this->hide_input(true);
         $dbc = Database::tDataConnect();
         $q = '
             SELECT MAX(paycardTransactionID) 
@@ -72,7 +73,7 @@ class PaycardEmvVoid extends PaycardProcessPage
             $e2e = new MercuryE2E();
             $json = array();
             $plugin_info = new Paycards();
-            $json['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvSuccess.php';
+            $json['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvSuccess.php';
             $json['receipt'] = false;
             $success = $e2e->handleResponseDataCap($xml);
             if ($success === PaycardLib::PAYCARD_ERR_OK) {
@@ -80,6 +81,9 @@ class PaycardEmvVoid extends PaycardProcessPage
                 CoreLocal::set("strEntered","");
                 CoreLocal::set("strRemembered","");
                 CoreLocal::set("msgrepeat",0);
+                if ($json['receipt']) {
+                    $json['main_frame'] .= '?receipt=' . $json['receipt'];
+                }
             } else {
                 CoreLocal::set("msgrepeat",0);
                 $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
@@ -109,7 +113,7 @@ function emvSubmit()
         return false;
     }
     $.ajax({
-        url: 'http://localhost:9000',
+        url: 'http://localhost:8999',
         type: 'POST',
         data: xmlData,
         dataType: 'text',

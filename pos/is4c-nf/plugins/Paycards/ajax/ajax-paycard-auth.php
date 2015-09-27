@@ -33,7 +33,7 @@ $result = 0; // 0 is never returned, so we use it to make sure it changes
 $myObj = 0;
 $json = array();
 $plugin_info = new Paycards();
-$json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardSuccess.php';
+$json['main_frame'] = $plugin_info->pluginUrl().'/gui/paycardSuccess.php';
 $json['receipt'] = false;
 foreach(CoreLocal::get("RegisteredPaycardClasses") as $rpc){
     $myObj = new $rpc();
@@ -42,30 +42,24 @@ foreach(CoreLocal::get("RegisteredPaycardClasses") as $rpc){
     }
 }
 
-$st = MiscLib::sigTermObject();
-
 $result = $myObj->doSend(CoreLocal::get("paycard_mode"));
 if ($result === PaycardLib::PAYCARD_ERR_OK){
     PaycardLib::paycard_wipe_pan();
     $json = $myObj->cleanup($json);
     CoreLocal::set("strRemembered","");
     CoreLocal::set("msgrepeat",0);
-    if (is_object($st))
-        $st->WriteToScale(CoreLocal::get("ccTermOut"));
 } else if ($result === PaycardLib::PAYCARD_ERR_NSF_RETRY) {
     // card shows balance < requested amount
     // try again with lesser amount
-    $json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgAuth.php';
+    $json['main_frame'] = $plugin_info->pluginUrl().'/gui/paycardboxMsgAuth.php';
 } else if ($result === PaycardLib::PAYCARD_ERR_TRY_VERIFY) {
     // communication error. query processor about
     // transaction status.
-    $json['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardTransLookupPage.php?mode=verify&id=_l'.$myObj->last_ref_num;
+    $json['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardTransLookupPage.php?mode=verify&id=_l'.$myObj->last_ref_num;
 } else {
     PaycardLib::paycard_reset();
     CoreLocal::set("msgrepeat",0);
     $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
-    if (is_object($st))
-        $st->WriteToScale(CoreLocal::get("ccTermOut"));
 }
 
 echo JsonLib::array_to_json($json);

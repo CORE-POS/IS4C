@@ -23,8 +23,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class suspendedlist extends NoInputPage {
-
+class suspendedlist extends NoInputCorePage 
+{
     private $temp_result;
     private $temp_num_rows;
     private $temp_db;

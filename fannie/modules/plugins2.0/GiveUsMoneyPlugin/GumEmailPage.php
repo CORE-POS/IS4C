@@ -486,6 +486,8 @@ class GumEmailPage extends FannieRESTfulPage
                 );
             }
         }
+        /* do not list dividend receipt option. was never completed, these
+           get postal mailed
         foreach ($this->dividends as $obj) {
             $ret .= sprintf('<tr>
                             <td>Divident Issued %.2f</td>
@@ -502,6 +504,7 @@ class GumEmailPage extends FannieRESTfulPage
                                 $obj->gumDividendID()
             );
         }
+        */
         $ret .= '</table>';
         $ret .= '</fieldset>';
 

@@ -24,7 +24,6 @@ class ModelsTest extends PHPUnit_Framework_TestCase
                 $this->assertArrayHasKey('type', $column_definition, $model_class . ' missing type for ' . $column_name);
 
                 // must have a get/set method for each collumn
-                $this->assertEquals(true, method_exists($obj, $column_name), $model_class . ' missing method ' . $column_name);
                 $val = rand();
                 $obj->$column_name($val);
                 $this->assertEquals($val, $obj->$column_name(), 'Get/set busted for ' . $model_class . ' :: ' . $column_name);

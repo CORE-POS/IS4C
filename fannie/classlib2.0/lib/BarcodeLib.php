@@ -87,13 +87,17 @@ class BarcodeLib
         // GTIN standard provides weights for 17 digits
         // values must be right aligned, so left pad with 0s
         $upc = str_pad($upc, 17, '0', STR_PAD_LEFT);
+        return self::calculateVariableCheckDigit($upc);
+    }
 
+    static private function calculateVariableCheckDigit($upc)
+    {
         $sum = 0;
-        for ($i=0; $i<17; $i++) {
+        for ($i=0; $i<strlen($upc); $i++) {
             if ($i % 2 == 0) {
-                $sum += 3 * $upc[$i];
+                $sum += 3 * ((int)$upc[$i]);
             } else {
-                $sum += $upc[$i];
+                $sum += (int)$upc[$i];
             }
         }
 
@@ -119,37 +123,13 @@ class BarcodeLib
     static public function EAN13CheckDigit($str)
     {
         $ean = str_pad($str,12,'0',STR_PAD_LEFT);
-
-        $evens = 0;
-        $odds = 0;
-        for ($i=0;$i<12;$i++) {
-            if ($i%2 == 0) $evens += (int)$ean[$i];
-            else $odds += (int)$ean[$i];
-        }
-        $odds *= 3;
-        
-        $total = $evens + $odds;
-        $chk = (10 - ($total%10)) % 10;
-
-        return $ean.$chk;
+        return $ean . self::getCheckDigit($ean);
     }
 
     public static function UPCACheckDigit($str)
     {
         $upc = str_pad($str,11,'0',STR_PAD_LEFT);
-
-        $evens = 0;
-        $odds = 0;
-        for ($i=0;$i<11;$i++) {
-            if($i%2==0) $odds += (int)$upc[$i];
-            else $evens += (int)$upc[$i];
-        }
-        $odds *= 3;
-
-        $total = $evens+$odds;
-        $chk = (10 - ($total%10)) % 10;
-
-        return $upc.$chk;
+        return $upc . self::getCheckDigit($upc);
     }
 
     public static function normalize13($str)

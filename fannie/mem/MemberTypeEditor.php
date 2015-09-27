@@ -43,6 +43,7 @@ class MemberTypeEditor extends FannieRESTfulPage
         $this->__routes[] = 'post<id><ssi>';
         $this->__routes[] = 'post<id><discount>';
         $this->__routes[] = 'post<id><description>';
+        $this->__routes[] = 'post<id><salesCode>';
 
         return parent::preprocess();
     }
@@ -177,6 +178,24 @@ class MemberTypeEditor extends FannieRESTfulPage
         return false;
     }
 
+    public function post_id_salesCode_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $json = array('msg'=>'');
+
+        $mtModel = new MemtypeModel($dbc);
+        $mtModel->memtype($this->id);
+        $mtModel->salesCode($this->salesCode);
+        $saved = $mtModel->save();
+        if (!$saved) {
+            $json['msg'] = 'Error saving account number';
+        }
+        echo json_encode($json);
+
+        return false;
+    }
+
     function javascript_content()
     {
         ob_start();
@@ -256,6 +275,20 @@ class MemberTypeEditor extends FannieRESTfulPage
                 }
             });
         }
+
+        function saveAccount(account,t_id){
+            var elem = $(this);
+            var orig = this.defaultValue;
+            $.ajax({url:'MemberTypeEditor.php',
+                cache: false,
+                type: 'post',
+                dataType: 'json',
+                data: 'id='+t_id+'&salesCode='+account,
+                success: function(data){
+                    showBootstrapPopover(elem, orig, data.msg);
+                }
+            });
+        }
         <?php
         return ob_get_clean();
     }
@@ -317,19 +350,11 @@ class MemberTypeEditor extends FannieRESTfulPage
             <tr><th>ID#</th><th>Description</th>
             <th>Member</th><th>Discount</th>
             <th>Staff</th><th>SSI</th>
+            <th>Account #</th>
             </tr>';
 
-        $q = $dbc->prepare_statement("
-            SELECT m.memtype,
-                m.memDesc,
-                m.custdataType AS cd_type,
-                m.discount,
-                m.staff,
-                m.ssi
-            FROM memtype AS m 
-            ORDER BY m.memtype");
-        $r = $dbc->exec_statement($q);
-        while($w = $dbc->fetch_row($r)){
+        $model = new MemtypeModel($dbc);
+        foreach ($model->find('memtype') as $mem) {
             $ret .= sprintf('<tr><td>%d</td>
                     <td><input type="text" class="form-control" value="%s" 
                         onchange="saveType.call(this, this.value, %d);" /></td>
@@ -339,12 +364,16 @@ class MemberTypeEditor extends FannieRESTfulPage
                     </div></td>
                     <td><input type="checkbox" %s onclick="saveStaff.call(this, this.checked,%d);" /></td>
                     <td><input type="checkbox" %s onclick="saveSSI.call(this, this.checked,%d);" /></td>
-                    </tr>',$w['memtype'],
-                    $w['memDesc'],$w['memtype'],
-                    ($w['cd_type']=='PC'?'checked':''),$w['memtype'],
-                    $w['discount'],$w['memtype'],
-                    ($w['staff']=='1'?'checked':''),$w['memtype'],
-                    ($w['ssi']=='1'?'checked':''),$w['memtype']
+                    <td><input type="text" class="form-control" value="%s"
+                        onchange="saveAccount.call(this, this.value, %d);" /></td>
+                    </tr>',
+                    $mem->memtype(),
+                    $mem->memDesc(), $mem->memtype(),
+                    ($mem->custdataType() == 'PC' ? 'checked' : ''), $mem->memtype(),
+                    $mem->discount(), $mem->memtype(),
+                    ($mem->staff() == '1' ? 'checked' : ''), $mem->memtype(),
+                    ($mem->ssi() == '1' ? 'checked' : ''), $mem->memtype(),
+                    $mem->salesCode(), $mem->memtype()
                 );
         }
         $ret .= "</table>";
@@ -374,6 +403,9 @@ class MemberTypeEditor extends FannieRESTfulPage
                 It does not control any POS behavior.</li>
                 <li><em>SSI</em> is a flag for low-income customers who
                 receive some kind of benefit.</li>
+                <li><em>Account #</em> associates a chart of accounts number
+                with discount given to a particular member type. The setting
+                is irrelevant on member types with a 0% discount.</li>
             </ul>';
     }
 

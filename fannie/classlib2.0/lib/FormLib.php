@@ -35,7 +35,24 @@ class FormLib
     */
     public static function getFormValue($name, $default='')
     {
-        return (isset($_REQUEST[$name])) ? $_REQUEST[$name] : $default;
+        $val = filter_input(INPUT_GET, $name, FILTER_CALLBACK, array('options'=>array('FormLib', 'filterCallback')));
+        if ($val === null) {
+            $val = filter_input(INPUT_POST, $name, FILTER_CALLBACK, array('options'=>array('FormLib', 'filterCallback')));
+        }
+        if ($val === null) {
+            $val = $default;
+        }
+
+        return $val;
+    }
+
+    /**
+      Using callback style filtering so the form retrieval
+      message can return both strings and arrays of strings.
+    */
+    private static function filterCallback($item)
+    {
+        return $item;
     }
 
     public static function get_form_value($name, $default='')
@@ -180,7 +197,7 @@ class FormLib
     public static function storePicker($field_name='store')
     {
         $op_db = FannieConfig::config('OP_DB');
-        $dbc = FannieDB::get($op_db, $previous);
+        $dbc = FannieDB::getReadOnly($op_db);
 
         $stores = new StoresModel($dbc);
         $current = FormLib::get($field_name, 0);
@@ -196,11 +213,6 @@ class FormLib
             $labels[$store->storeID()] = $store->description();
         }
         $ret .= '</select>';
-
-        // restore previous selected database
-        if ($previous != $op_db) {
-            FannieDB::get($previous);
-        }
 
         return array(
             'html' => $ret,
@@ -225,8 +237,8 @@ class FormLib
     <?php echo self::standardDateFields(); ?>
 </div>
 <p>
-    <button type="submit" class="btn btn-default">Submit</button>
-    <button type="reset" class="btn btn-default"
+    <button type="submit" class="btn btn-default btn-core">Submit</button>
+    <button type="reset" class="btn btn-default btn-reset"
         onclick="$('#super-id').val('').trigger('change');">Start Over</button>
 </p>
         <?php
@@ -243,7 +255,7 @@ class FormLib
     */
     public static function standardItemFields()
     {
-        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $dbc = FannieDB::getReadOnly(FannieConfig::config('OP_DB'));
         ob_start();
         ?>
         <div class="col-sm-5">
@@ -359,7 +371,7 @@ class FormLib
         /**
           Precalculate options for superdept and dept selects
         */
-        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $dbc = FannieDB::getReadOnly(FannieConfig::config('OP_DB'));
         $superR = $dbc->query('SELECT superID, super_name FROM superDeptNames');
         $super_opts = '';
         while ($w = $dbc->fetchRow($superR)) {
@@ -536,7 +548,7 @@ HTML;
     static public function standardItemFromWhere()
     {
         $op_db = FannieConfig::config('OP_DB');
-        $dbc = FannieDB::get($op_db);
+        $dbc = FannieDB::getReadOnly($op_db);
         $start_date = self::getDate('date1', date('Y-m-d'));
         $end_date = self::getDate('date2', date('Y-m-d'));
         $dlog = DTransactionsModel::selectDlog($start_date, $end_date);

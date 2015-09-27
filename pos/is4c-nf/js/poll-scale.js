@@ -72,6 +72,14 @@ function subscribeToQueue(rel_prefix)
 			if (typeof runParser == 'function') {
 				runParser(encodeURI(x.body), SCALE_REL_PRE);
             }
+        } else if (/^S1\d+$/.test(x.body)) {
+            $.ajax({url: SCALE_REL_PRE+'ajax-callbacks/ajax-scale.php',
+                type: 'post',
+                cache: false,
+                success: function(resp) {
+                    $('#scaleBottom').html(resp);	
+                }
+            });
         } else if (/^\d+$/.test(x.body)) {
 			var v = $('#reginput').val();
             var url = document.URL;

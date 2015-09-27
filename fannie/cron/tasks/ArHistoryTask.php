@@ -43,12 +43,38 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
 
     public function run()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_AR_DEPARTMENTS, $FANNIE_SERVER_DBMS;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = FannieDB::get($this->config->get('TRANS_DB'));
 
         // build department list
-        $ret = preg_match_all("/[0-9]+/",$FANNIE_AR_DEPARTMENTS,$depts);
+        $ret = preg_match_all("/[0-9]+/",$this->config->get('AR_DEPARTMENTS'),$depts);
         $depts = array_pop($depts);
+        $errors = $this->logActivity($dbc, $depts);
+        foreach ($errors as $error) {
+            $this->cronMsg($error, FannieLogger::ERROR);
+        }
+
+        // rebuild ar history sum table
+        if ($this->rebuildCacheTable($dbc) === false) {
+            $this->cronMsg('Error rebuilding ar_history_sum table', FannieLogger::ERROR);
+        }
+
+        // update custdata balance fields
+        if ($this->updateBalances($dbc) === false) {
+            $this->cronMsg('Error reloading custdata balances', FannieLogger::ERROR);
+        }
+
+        $this->cronMsg('Finished every-day tasks.', FannieLogger::INFO);
+
+        /* turnover view/cache base tables for WFC end-of-month reports */
+        if (date('j') == 1) {
+            $this->endOfMonthCaches($dbc);
+            $this->cronMsg('Finished first-of-month tasks.', FannieLogger::INFO);
+        }
+    }
+
+    private function logActivity($dbc, $depts)
+    {
+        $errors = array();
         $dlist = "(";
         $case_args = array();
         $where_args = array();
@@ -60,7 +86,8 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
         $dlist = substr($dlist,0,strlen($dlist)-1).")";
         if ($dlist == ')') {
             // no configured departments
-            return false;
+            $errors[] = 'No configured AR departments';
+            return $errors;
         }
         
         // lookup AR transactions from past 15 days
@@ -104,94 +131,94 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
             $try = $addR = $dbc->execute($addP, array($lookupW['card_no'], $lookupW['charges'], $lookupW['payments'],
                                                 $lookupW['tdate'], $lookupW['trans_num']));
             if ($try === false) {
-                $this->cronMsg('Error adding AR entry '.$lookupW['tdate']. ' '.$lookupW['trans_num'], FannieLogger::ERROR);
+                $errors[] = 'Error adding AR entry '.$lookupW['tdate']. ' '.$lookupW['trans_num'];
             }
         }
 
+        return $errors;
+    }
+
+    private function rebuildCacheTable($dbc)
+    {
         // rebuild ar history sum table
         $dbc->query("TRUNCATE TABLE ar_history_sum");
         $query = "INSERT INTO ar_history_sum
             SELECT card_no,SUM(charges),SUM(payments),SUM(charges)-SUM(payments)
             FROM ar_history GROUP BY card_no";
-        $try = $dbc->query($query);
-        if ($try === false) {
-            $this->cronMsg('Error rebuilding ar_history_sum table', FannieLogger::ERROR);
-        }
+        return $dbc->query($query);
+    }
 
-        // update custdata balance fields
+    private function updateBalances($dbc)
+    {
+        $FANNIE_OP_DB = $this->config->get('OP_DB');
         $balQ = "UPDATE {$FANNIE_OP_DB}.custdata AS c LEFT JOIN 
             ar_live_balance AS n ON c.CardNo=n.card_no
             SET c.Balance = n.balance";
-        if ($FANNIE_SERVER_DBMS == "MSSQL"){
-            $balQ = "UPDATE {$FANNIE_OP_DB}.dbo.custdata SET Balance = n.balance
-            FROM {$FANNIE_OP_DB}.dbo.custdata AS c LEFT JOIN
-            ar_live_balance AS n ON c.CardNo=n.card_no";
+        if ($this->config->get('SERVER_DBMS') == "MSSQL"){
+            $balQ = "
+                UPDATE {$FANNIE_OP_DB}.dbo.custdata 
+                    SET Balance = n.balance
+                FROM {$FANNIE_OP_DB}.dbo.custdata AS c 
+                LEFT JOIN ar_live_balance AS n ON c.CardNo=n.card_no";
         }
-        $try = $dbc->query($balQ);
-        if ($try === false) {
-            $this->cronMsg('Error reloading custdata balances', FannieLogger::ERROR);
+        return $dbc->query($balQ);
+    }
+
+    private function endOfMonthCaches($dbc)
+    {
+        if ($dbc->tableExists('ar_history_backup')) {
+            $dbc->query("TRUNCATE TABLE ar_history_backup");
+            $dbc->query("INSERT INTO ar_history_backup SELECT * FROM ar_history");
         }
 
-        $this->cronMsg('Finished every-day tasks.', FannieLogger::INFO);
+        if ($dbc->tableExists('AR_EOM_Summary')) {
+            $AR_EOM_Summary_Q = "
+            INSERT INTO AR_EOM_Summary
+            SELECT c.CardNo,"
+            .$dbc->concat("c.FirstName","' '","c.LastName",'')." AS memName,
 
-        /* turnover view/cache base tables for WFC end-of-month reports */
-        if (date('j') == 1) {
+            SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." <= -4
+            THEN charges ELSE 0 END)
+            - SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." <= -4
+            THEN payments ELSE 0 END) AS priorBalance,
 
-            if ($dbc->table_exists('ar_history_backup')) {
-                $dbc->query("TRUNCATE TABLE ar_history_backup");
-                $dbc->query("INSERT INTO ar_history_backup SELECT * FROM ar_history");
-            }
+            SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." = -3
+                THEN a.charges ELSE 0 END) AS threeMonthCharges,
+            SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." = -3
+                THEN a.payments ELSE 0 END) AS threeMonthPayments,
 
-            if ($dbc->table_exists('AR_EOM_Summary')) {
-                $AR_EOM_Summary_Q = "
-                INSERT INTO AR_EOM_Summary
-                SELECT c.CardNo,"
-                .$dbc->concat("c.FirstName","' '","c.LastName",'')." AS memName,
+            SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." <= -3
+            THEN charges ELSE 0 END)
+            - SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." <= -3
+            THEN payments ELSE 0 END) AS threeMonthBalance,
 
-                SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." <= -4
-                THEN charges ELSE 0 END)
-                - SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." <= -4
-                THEN payments ELSE 0 END) AS priorBalance,
+            SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." = -2
+                THEN a.charges ELSE 0 END) AS twoMonthCharges,
+            SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." = -2
+                THEN a.payments ELSE 0 END) AS twoMonthPayments,
 
-                SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." = -3
-                    THEN a.charges ELSE 0 END) AS threeMonthCharges,
-                SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." = -3
-                    THEN a.payments ELSE 0 END) AS threeMonthPayments,
+            SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." <= -2
+            THEN charges ELSE 0 END)
+            - SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." <= -2
+            THEN payments ELSE 0 END) AS twoMonthBalance,
 
-                SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." <= -3
-                THEN charges ELSE 0 END)
-                - SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." <= -3
-                THEN payments ELSE 0 END) AS threeMonthBalance,
+            SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." = -1
+                THEN a.charges ELSE 0 END) AS lastMonthCharges,
+            SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." = -1
+                THEN a.payments ELSE 0 END) AS lastMonthPayments,
 
-                SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." = -2
-                    THEN a.charges ELSE 0 END) AS twoMonthCharges,
-                SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." = -2
-                    THEN a.payments ELSE 0 END) AS twoMonthPayments,
+            SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." <= -1
+            THEN charges ELSE 0 END)
+            - SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." <= -1
+            THEN payments ELSE 0 END) AS lastMonthBalance
 
-                SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." <= -2
-                THEN charges ELSE 0 END)
-                - SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." <= -2
-                THEN payments ELSE 0 END) AS twoMonthBalance,
+            FROM ar_history_backup AS a LEFT JOIN "
+            .$this->config->get('OP_DB').$dbc->sep()."custdata AS c 
+            ON a.card_no=c.CardNo AND c.personNum=1
+            GROUP BY c.CardNo,c.LastName,c.FirstName";
 
-                SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." = -1
-                    THEN a.charges ELSE 0 END) AS lastMonthCharges,
-                SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." = -1
-                    THEN a.payments ELSE 0 END) AS lastMonthPayments,
-
-                SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." <= -1
-                THEN charges ELSE 0 END)
-                - SUM(CASE WHEN ".$dbc->monthdiff('a.tdate',$dbc->now())." <= -1
-                THEN payments ELSE 0 END) AS lastMonthBalance
-
-                FROM ar_history_backup AS a LEFT JOIN "
-                .$FANNIE_OP_DB.$dbc->sep()."custdata AS c 
-                ON a.card_no=c.CardNo AND c.personNum=1
-                GROUP BY c.CardNo,c.LastName,c.FirstName";
-
-                $dbc->query("TRUNCATE TABLE AR_EOM_Summary");
-                $dbc->query($AR_EOM_Summary_Q);
-            }
-            $this->cronMsg('Finished first-of-month tasks.', FannieLogger::INFO);
+            $dbc->query("TRUNCATE TABLE AR_EOM_Summary");
+            $dbc->query($AR_EOM_Summary_Q);
         }
     }
 }

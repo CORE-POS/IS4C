@@ -26,68 +26,84 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class TaxRateEditor extends FanniePage {
+class TaxRateEditor extends FannieRESTfulPage 
+{
     protected $title = "Fannie : Tax Rates";
     protected $header = "Tax Rates";
 
     public $description = '[Tax Rates] defines applicable sales tax rates.';
-    public $themed = true;
+    public $has_unit_tests = true;
 
-    function preprocess(){
+    function post_handler()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        if (FormLib::get_form_value('sub',False) !== False){
-            $desc = FormLib::get_form_value('desc',array());
-            $rate = FormLib::get_form_value('rate',array());
-            $id = 1;
-            $trun = $dbc->prepare_statement("TRUNCATE TABLE taxrates");
-            $dbc->exec_statement($trun);
-            $p = $dbc->prepare_statement("INSERT INTO taxrates (id,rate,description)
-                VALUES (?,?,?)");
-            for ($j=0;$j<count($desc);$j++){
-                if (empty($desc[$j]) || empty($rate[$j])) continue;
-                if (FormLib::get_form_value('del'.$j) !== '') continue;
+        try {
+            $desc = $this->form->desc;
+            $rate = $this->form->rate;
+            $account = $this->form->account;
+            $delete_flag = isset($this->form->del) ? $this->form->del : array();
+            $tax_id = 1;
+            $trun = $dbc->query("TRUNCATE TABLE taxrates");
+            $model = new TaxRatesModel($dbc);
+            for ($j=0;$j<count($desc);$j++) {
+                if (empty($desc[$j]) || empty($rate[$j])) {
+                    continue;
+                }
+                if (in_array($tax_id, $delete_flag)) {
+                    continue;
+                }
 
-                $saved = $dbc->exec_statement($p, array($id,$rate[$j],$desc[$j]));
+                $model->id($tax_id);
+                $model->rate($rate[$j]);
+                $model->description($desc[$j]);
+                $model->salesCode($account[$j]);
+                $saved = $model->save();
                 if ($saved) {
                     $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', 'Saved {$desc[$j]}');");
                 } else {
                     $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', 'Error saving {$desc[$j]}');");
                 }
-                $id++;
+                $tax_id++;
             }
+        } catch (Exception $e) {
+            $this->add_onload_command("showBootstrapAlert('#alert-area', 'danger', 'Invalid values submitted');");
         }
 
-        return True;
+        return true;
     }
 
-    function body_content()
+    function post_view()
+    {
+        return $this->get_view();
+    }
+
+    function get_view()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $taxQ = $dbc->prepare_statement("SELECT id,rate,description 
-                FROM taxrates ORDER BY id");
-        $taxR = $dbc->exec_statement($taxQ);
+        $model = new TaxRatesModel($dbc);
 
         $ret = '<div id="alert-area"></div>';
         $ret .= '<form action="TaxRateEditor.php" method="post">';
         $ret .= '<table class="table">';
-        $ret .= '<tr><th>Description</th><th>Rate</th><th>Delete</th></tr>';
-        $ret .= '<tr><td>NoTax</th><td>0.00</td><td>&nbsp;</td></tr>';
-        $i=0;
-        while($taxW = $dbc->fetch_row($taxR)){
+        $ret .= '<tr><th>Description</th><th>Rate</th><th>Account #</th><th>Delete</th></tr>';
+        $ret .= '<tr><td>NoTax</th><td>0.00</td><td colspan="2">&nbsp;</td></tr>';
+        foreach ($model->find('id') as $tax) {
             $ret .= sprintf('
                 <tr>
                     <td><input type="text" name="desc[]" value="%s" class="form-control" /></td>
                     <td><input type="text" name="rate[]" value="%f" class="form-control" /></td>
-                    <td><input type="checkbox" name="del%d" /></td>
+                    <td><input type="text" name="account[]" value="%s" class="form-control" /></td>
+                    <td><input type="checkbox" name="del[]" value="%d" /></td>
                 </tr>',
-                $taxW['description'],$taxW['rate'],$i);
-            $i++;
+                $tax->description(), $tax->rate(), $tax->salesCode(), $tax->id()
+            );
         }
         $ret .= '<tr>
             <td><input type="text" name="desc[]" class="form-control" /></td>
             <td><input type="text" name="rate[]" class="form-control" /></td>
+            <td><input type="text" name="account[]" class="form-control" /></td>
             <td>NEW</td></tr>';
         $ret .= "</table>";
         $ret .= '<p><button type="submit" value="1" name="sub"
@@ -107,7 +123,52 @@ class TaxRateEditor extends FanniePage {
             sales tax as well as city sales tax that applies to
             taxable items, the <em>effective</em> rate is both
             rates added together.
-            </p>';
+            </p>
+            <p>
+            The account number field is provided for mapping sales
+            tax collected to chart of accounts numbers.
+            </p> 
+            ';
+    }
+
+    /**
+      Create a tax rate, update it, delete it.
+    */
+    public function unitTest($phpunit)
+    {
+        $get = $this->get_view();
+        $phpunit->assertNotEquals(0, strlen($get)); 
+
+        $form = new \COREPOS\common\mvc\ValueContainer();
+        $form->desc = array('test rate');
+        $form->rate = array('0.05');
+        $form->account = array('101');
+        $this->setForm($form);
+        $post = $this->post_handler();
+        $phpunit->assertInternalType('bool', $post);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $rate = new TaxRatesModel($dbc);
+        $rate->id(1);
+        $phpunit->assertEquals(true, $rate->load());
+        $phpunit->assertEquals('test rate', $rate->description());
+        $phpunit->assertEquals(0.05, $rate->rate());
+        $phpunit->assertEquals('101', $rate->salesCode());
+
+        $form->rate = array('0.15');
+        $this->setForm($form);
+        $post = $this->post_handler();
+        $rate->reset();
+        $rate->id(1);
+        $phpunit->assertEquals(true, $rate->load());
+        $phpunit->assertEquals(0.15, $rate->rate());
+
+        $form->del = array(1);
+        $this->setForm($form);
+        $post = $this->post_handler();
+        $rate->reset();
+        $rate->id(1);
+        $phpunit->assertEquals(false, $rate->load());
     }
 }
 

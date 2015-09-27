@@ -160,6 +160,11 @@ elseif(isset($_REQUEST['prod-flags'])){
     $db->query("TRUNCATE TABLE prodFlags");
     \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'prodFlags');
 }
+elseif(isset($_REQUEST['batchType'])){
+    echo "Loading batchn types";
+    $db->query("TRUNCATE TABLE batchType");
+    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'batchType');
+}
 elseif(isset($_REQUEST['depts'])){
     echo "Loading departments";
     $db->query("TRUNCATE TABLE departments");
@@ -244,6 +249,12 @@ utilities to populate the lane tables.
     Product Flags are a flexible method for identifying custom attributes of items.
     CORE includes a default set of some more common flags.<br />
     <?php echo $this->loadButton('prodFlags', 'prod-flags', _('Load sample product flags')); ?>
+<hr />
+    <h4 class="install">Batch Types</h4>
+    Batches are used for temporary promotional pricing as well as scheduling changes
+    in regular retail price. Batches may be organized by type. Sample data includes
+    a couple common options.
+    <?php echo $this->loadButton('batchType', 'batchType', _('Load sample batch types')); ?>
 <hr />
     <h4 class="install">Departments</h4>
     Products get categorized into departments .

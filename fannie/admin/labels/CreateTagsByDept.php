@@ -37,41 +37,36 @@ class CreateTagsByDept extends FanniePage {
 
     private $msgs = '';
 
-    function preprocess(){
+    function preprocess()
+    {
         global $FANNIE_OP_DB;
-        if (FormLib::get_form_value('deptStart',False) !== False){
+        if (FormLib::get_form_value('deptStart',False) !== false) {
             $start = FormLib::get_form_value('deptStart');
             $end = FormLib::get_form_value('deptEnd');
             $pageID = FormLib::get_form_value('sID',0);
             $dbc = FannieDB::get($FANNIE_OP_DB);
-            $q = $dbc->prepare_statement("
+            $prodP = $dbc->prepare_statement("
                 SELECT p.upc
                 FROM products AS p
                 WHERE p.department BETWEEN ? AND ?
             ");
-            $r = $dbc->exec_statement($q,array($start,$end));
+            $prodR = $dbc->exec_statement($prodP, array($start,$end));
             $tag = new ShelftagsModel($dbc);
             $product = new ProductsModel($dbc);
-            while ($w = $dbc->fetch_row($r)) {
-                $product->upc($w['upc']);
+            while ($row = $dbc->fetch_row($prodR)) {
+                $product->upc($row['upc']);
                 $info = $product->getTagData();
                 $tag->id($pageID);
-                $tag->upc($w['upc']);
-                $tag->description($info['description']);
-                $tag->normal_price($info['normal_price']);
-                $tag->brand($info['brand']);
-                $tag->sku($info['sku']);
-                $tag->size($info['size']);
-                $tag->units($info['units']);
-                $tag->vendor($info['vendor']);
-                $tag->pricePerUnit($info['pricePerUnit']);
+                $tag->upc($row['upc']);
+                $tag->setData($info);
                 $tag->save();
             }
             $this->msgs = sprintf('<em>Created tags for departments #%d through #%d</em>
                     <br /><a href="ShelfTagIndex.php">Home</a>',
                 $start, $end);
         }
-        return True;
+
+        return true;
     }
 
     function body_content()
@@ -82,8 +77,8 @@ class CreateTagsByDept extends FanniePage {
         $deptsR = $dbc->exec_statement($deptsQ);
         $deptsList = "";
 
-        $qm = new ShelfTagQueuesModel($dbc);
-        $deptSubList = $qm->toOptions();
+        $qmodel = new ShelfTagQueuesModel($dbc);
+        $deptSubList = $qmodel->toOptions();
 
         while ($deptsW = $dbc->fetch_array($deptsR))
           $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
@@ -147,4 +142,3 @@ class CreateTagsByDept extends FanniePage {
 
 FannieDispatch::conditionalExec();
 
-?>

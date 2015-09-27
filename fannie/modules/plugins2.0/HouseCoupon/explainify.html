@@ -35,11 +35,9 @@ in mind.
     E.g., if the expiration date is January 31, 2010, the coupon will ring as "expired" starting February 1, 2010
     <li><b>Limit</b> is the number of times the coupon can be used <i>per transaction</i>
     <li><b>Member-only</b> coupons can only be used by members
-    <li><b>Department</b> dicates how the discount gets coded by the POS.
-    If the coupon involves more than one department,
-    select the first one here, then, after selecting the appropriate
-    <span class="b">Discount Type</span>, click <span class="b">Save</span>,
-    to expose the form for selecting more departments.
+    <li><b>Department</b> dicates how the discount gets coded by the POS. This is strictly
+    an accounting setting to control whose sales/budget the coupon value is deducted from.
+    It does not influence what item(s) the coupon applies to.</li>
 <!--
 The amount of the discount is credited to this department,
 in other words sales of the department are reduced by the amount of the discount.
@@ -65,8 +63,12 @@ quantity of more than 2, then 3 (or more) soda purchases would be needed.
     A quantity minimum must have items associated with it.
     Quantity is the one of the more flexible minimum types;
     it works with every discount type except <i>scaling discount (department)</i>
-    <li><b>Department</b> (D, D+) requires a minimum total purchase across the selected departments.
+    <li><b>Department in $</b> (D, D+) requires a minimum total purchase across the selected departments.
 Purchase is measured in dollars rather than quantity. Applicable discount types are
+<i>scaling discount (department)</i>, <i>flat discount</i>, and <i>percent discount</i>.
+    <li><b>Department in Quantity</b> (C, C+) requires a minimum total purchase across the selected departments.
+Purchase is measured in quantity (by weight or by each depending on the scale setting for the item. 
+Applicable discount types are
 <i>scaling discount (department)</i>, <i>flat discount</i>, and <i>percent discount</i>.
     <li><b>Mixed</b> (M) is the most complicated minimum type (yet). The customer must purchase
 at least the specified quantity of <i>qualifying</i> items and some quantity of <i>discount</i>

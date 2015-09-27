@@ -36,7 +36,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
         $op_db = $config->get('OP_DB');
         $dbc = FannieDB::get($op_db);
 
-        foreach($pages as $page_class) {
+        foreach ($pages as $page_class) {
             $obj = new $page_class();
             $obj->setConfig($config);
             $obj->setLogger($logger);
@@ -48,6 +48,9 @@ class PagesTest extends PHPUnit_Framework_TestCase
             $pre = $obj->preprocess();
             ob_end_clean();
             $this->assertInternalType('boolean',$pre);
+
+            $help = $obj->helpContent();
+            $this->assertInternalType('string', $help);
 
             $auth = $obj->checkAuth();
             $this->assertInternalType('boolean',$pre);

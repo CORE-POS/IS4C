@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class bigComment extends NoInputPage {
+class bigComment extends NoInputCorePage 
+{
 
     /**
       Input processing function

@@ -69,11 +69,11 @@ class PaycardDatacapParser extends Parser
     {
         $ret = $this->default_json();
         $plugin_info = new Paycards();
-        $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvPage.php';
+        $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvPage.php';
         Database::getsubtotals();
         switch ($str) {
             case 'DATACAP':
-                $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvMenu.php';
+                $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvMenu.php';
                 break; 
             case 'DATACAPEMV': 
                 CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
@@ -131,31 +131,31 @@ class PaycardDatacapParser extends Parser
                 CoreLocal::set('CacheCardType', 'GIFT');
                 CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
                 CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
-                $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvBalance.php';
+                $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvBalance.php';
                 break;
             case 'PVDATACAPEF':
                 CoreLocal::set('CacheCardType', 'EBTFOOD');
                 CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
                 CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
-                $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvBalance.php';
+                $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvBalance.php';
                 break;
             case 'PVDATACAPEC':
                 CoreLocal::set('CacheCardType', 'EBTCASH');
                 CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
                 CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
-                $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvBalance.php';
+                $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvBalance.php';
                 break;
             case 'ACDATACAPGD':
                 CoreLocal::set('CacheCardType', 'GIFT');
                 CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_ACTIVATE);
                 CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
-                $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvGift.php?mode=' . CoreLocal::get('paycard_mode');
+                $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvGift.php?mode=' . CoreLocal::get('paycard_mode');
                 break;
             case 'AVDATACAPGD':
                 CoreLocal::set('CacheCardType', 'GITFT');
                 CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_ADDVALUE);
                 CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
-                $ret['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvGift.php?mode=' . CoreLocal::get('paycard_mode');
+                $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvGift.php?mode=' . CoreLocal::get('paycard_mode');
                 break;
         }
         CoreLocal::set('paycard_id', CoreLocal::get('LastID')+1);

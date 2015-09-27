@@ -29,28 +29,36 @@ if (!class_exists('PIKillerPage')) {
     include('lib/PIKillerPage.php');
 }
 
-class PIArPage extends PIKillerPage {
-
-    protected function get_id_handler(){
+class PIArPage extends PIKillerPage 
+{
+    protected function get_id_handler()
+    {
         global $FANNIE_TRANS_DB;
         $this->card_no = $this->id;
 
         $this->title = 'AR History : Member '.$this->card_no;
 
-        $this->__models['ar'] = $this->get_model(FannieDB::get($FANNIE_TRANS_DB), 'ArHistoryModel',
-                        array('card_no'=>$this->id),'tdate');
-        $this->__models['ar'] = array_reverse($this->__models['ar']);
-    
-        return True;
+        $this->all = FormLib::get('all', 0);
+        $this->connection->selectDB($this->config->get('TRANS_DB'));
+        $model = new ArHistoryModel($this->connection);
+        $model->card_no($this->id);
+        if (!$this->all) {
+            $model->setFindLimit(100);
+        }
+        $this->__models['ar'] = $model->find('tdate', true);
+        
+        return true;
     }
 
-    protected function get_id_view(){
+    protected function get_id_view()
+    {
         global $FANNIE_URL;
         echo '<table border="1" style="background-color: #ffff99;">';
         echo '<tr align="left"></tr>';
-        foreach($this->__models['ar'] as $transaction){
+        $rowcount = 0;
+        foreach ($this->__models['ar'] as $transaction) {
             $stamp = strtotime($transaction->tdate());
-            if ($transaction->Payments() != 0){
+            if ($transaction->payments() != 0){
                 printf('<tr>
                     <td><a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s">%s</a></td>
                     <td>%.2f</td>
@@ -58,11 +66,11 @@ class PIArPage extends PIKillerPage {
                     <td style="background-color:#ff66ff;">P</td>
                     </tr>',
                     $FANNIE_URL, date('Y-m-d',$stamp), $transaction->trans_num(), date('Y-m-d',$stamp),
-                    $transaction->Payments(),
+                    $transaction->payments(),
                     $transaction->card_no()
                 );
             }
-            if ($transaction->Charges() != 0){
+            if ($transaction->charges() != 0){
                 printf('<tr>
                     <td><a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s">%s</a></td>
                     <td>%.2f</td>
@@ -70,15 +78,21 @@ class PIArPage extends PIKillerPage {
                     <td style="background-color:#0055ff;">C</td>
                     </tr>',
                     $FANNIE_URL, date('Y-m-d',$stamp), $transaction->trans_num(), date('Y-m-d',$stamp),
-                    $transaction->Charges(),
+                    $transaction->charges(),
                     $transaction->card_no()
                 );
             }
+            $rowcount++;
+            if ($rowcount > 100 && !$this->all) {
+                break;
+            }
         }
         echo '</table>';
+        if (!$this->all) {
+            echo ' <a href="?id=' . $this->id . '&all=1">Show Entire AR History</a>';
+        }
     }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

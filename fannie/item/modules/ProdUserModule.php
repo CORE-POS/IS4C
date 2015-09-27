@@ -75,6 +75,14 @@ class ProdUserModule extends ItemModule
                 . '</div>'
                 . '</div>';
 
+        $ret .= '<div class="row form-group">'
+                . '<label class="small col-sm-1">Sign Ct.</label> '
+                . '<div class="col-sm-8">'
+                . '<input type="number" class="form-control price-field"
+                    name="sign-count" value="' . $model->signCount() . '" />'
+                . '</div>'
+                . '</div>';
+
         $ret .= '<div class="row form-group">
                     <label tile="Location on the floor" class="col-sm-1">Loc.</label>
                     <div class="col-sm-8">
@@ -162,6 +170,10 @@ class ProdUserModule extends ItemModule
         $text = str_replace("\n", '<br />', $text);
         // strip non-ASCII (word copy/paste artifacts)
         $text = preg_replace("/[^\x01-\x7F]/","", $text); 
+        $signs = FormLib::get('sign-count', 1);
+        if ($signs < 1) {
+            $signs = 1;
+        }
 
         $dbc = $this->db();
 
@@ -175,6 +187,7 @@ class ProdUserModule extends ItemModule
         $model->brand($brand);
         $model->description($desc);
         $model->long_text($text);
+        $model->signCount($signs);
 
         $multiOrigin = FormLib::get('otherOrigin', array());
         $originMap = array();

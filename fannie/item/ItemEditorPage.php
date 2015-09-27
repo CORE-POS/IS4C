@@ -201,7 +201,7 @@ class ItemEditorPage extends FanniePage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $upc = FormLib::get_form_value('searchupc');
+        $upc = trim(FormLib::get_form_value('searchupc'));
         $numType = FormLib::get_form_value('ntype','UPC');
         $inUseFlag = FormLib::get('inUse', false);
         $store_id = $this->config->get('STORE_ID');
@@ -309,6 +309,9 @@ class ItemEditorPage extends FanniePage
         $actualUPC = '';
         $new = false;
         if ($num == 0) {
+            if (strlen($upc) > 13) {
+                $upc = ltrim($upc, '0');
+            }
             $actualUPC = BarcodeLib::padUPC($upc);
             $new = true;
             $this->mode = 'new'; // mode drives appropriate help text
@@ -414,6 +417,8 @@ class ItemEditorPage extends FanniePage
                     $authorized = true;
                 }
             }
+        } elseif (substr($upc, 0, 3) == '002' && $this->config->get('COOP_ID') == 'WFC_Duluth') {
+            $authorized = true;
         }
 
         // remove action so form cannot be submitted by pressing enter
@@ -469,7 +474,7 @@ class ItemEditorPage extends FanniePage
                 $this->add_css_file($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
                 if (!$isNew) {
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-                    $ret .= '<a href="deleteItem.php?submit=submit&upc='.$upc.'" class="btn btn-danger btn-sm">Delete this item</a>';
+                    $ret .= '<a href="DeleteItemPage.php?id='.$upc.'" class="btn btn-danger btn-sm">Delete this item</a>';
 
                     $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                     $ret .= '<label class="badge">History</label> <span class="btn-group">';
@@ -481,6 +486,10 @@ class ItemEditorPage extends FanniePage
 
                     $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
                         href="'.$FANNIE_URL.'reports/RecentSales/?upc='.$upc.'" title="Sales History">Sales</a>';
+
+                    $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
+                        href="'.$FANNIE_URL.'reports/ItemBatches/ItemBatchesReport.php?upc='.$upc.'" 
+                        title="Batch History">Batches</a>';
 
                     $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
                         href="'.$FANNIE_URL.'reports/ItemOrderHistory/ItemOrderHistoryReport.php?upc='.$upc.'" 

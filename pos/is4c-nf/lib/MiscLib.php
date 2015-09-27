@@ -146,33 +146,12 @@ static public function win32()
 static public function scaleObject()
 {
     $scaleDriver = CoreLocal::get("scaleDriver");
-    $sd = 0;
+    $sdh = 0;
     if ($scaleDriver != ""){
-        $sd = new $scaleDriver();
+        $sdh = new $scaleDriver();
     }
 
-    return $sd;
-}
-
-/**
-  Get the signature capture wrapper object
-  @return An ScaleDriverWrapper object
-  
-  The driver is chosen via "termDriver"
-  in session. If the object cannot be 
-  found this returns zero.
-
-  Signature capture support is very alpha.
-*/
-static public function sigTermObject()
-{
-    $termDriver = CoreLocal::get("termDriver");
-    $st = 0;
-    if ($termDriver != "") {
-        $st = new $termDriver();
-    }
-
-    return $st;
+    return $sdh;
 }
 
 /**
@@ -180,9 +159,9 @@ static public function sigTermObject()
 */
 static public function goodBeep() 
 {
-    $sd = self::scaleObject();
-    if (is_object($sd)) {
-        $sd->WriteToScale("goodBeep");
+    $sdh = self::scaleObject();
+    if (is_object($sdh)) {
+        $sdh->WriteToScale("goodBeep");
     }
 }
 
@@ -191,9 +170,9 @@ static public function goodBeep()
 */
 static public function rePoll() 
 {
-    $sd = self::scaleObject();
-    if (is_object($sd)) {
-        $sd->WriteToScale("rePoll");
+    $sdh = self::scaleObject();
+    if (is_object($sdh)) {
+        $sdh->WriteToScale("rePoll");
     }
 }
 
@@ -202,9 +181,9 @@ static public function rePoll()
 */
 static public function errorBeep() 
 {
-    $sd = self::scaleObject();
-    if (is_object($sd)) {
-        $sd->WriteToScale("errorBeep");
+    $sdh = self::scaleObject();
+    if (is_object($sdh)) {
+        $sdh->WriteToScale("errorBeep");
     }
 }
 
@@ -213,9 +192,9 @@ static public function errorBeep()
 */
 static public function twoPairs() 
 {
-    $sd = self::scaleObject();
-    if (is_object($sd)) {
-        $sd->WriteToScale("twoPairs");
+    $sdh = self::scaleObject();
+    if (is_object($sdh)) {
+        $sdh->WriteToScale("twoPairs");
     }
 }
 
@@ -297,16 +276,18 @@ static public function getAllIPs()
     /**
       $_SERVER may simply contain an IP address
     */
-    if (isset($_SERVER['SERVER_ADDR']) && !in_array($_SERVER['SERVER_ADDR'], $ret)) {
-        $ret[] = $_SERVER['SERVER_ADDR'];
+    $addr = filter_input(INPUT_SERVER, 'SERVER_ADDR');
+    if ($addr !== null && !in_array($addr, $ret)) {
+        $ret[] = $addr;
     }
 
     /**
       $_SERVER may contain a host name that can
       be resolved to an IP address
     */
-    if (isset($_SERVER['SERVER_NAME'])) {
-        $resolved = gethostbyname($_SERVER['SERVER_NAME']);
+    $sname = filter_input(INPUT_SERVER, 'SERVER_NAME');
+    if ($sname !== null) {
+        $resolved = gethostbyname($sname);
         if (preg_match('/^[\d\.+]$/', $resolved) && !in_array($resolved, $ret)) {
             $ret[] = $resolved;
         }

@@ -24,7 +24,7 @@
 
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
-class BitCoinAmountPage extends BasicPage 
+class BitCoinAmountPage extends BasicCorePage 
 {
     private $amt = 0;
 

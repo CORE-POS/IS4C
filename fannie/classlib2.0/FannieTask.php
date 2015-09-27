@@ -140,26 +140,17 @@ class FannieTask
 
         for ($i=0; $i<count($argv); $i++) {
             $arg = $argv[$i];
-            if (preg_match('/^(--\w+)=(.+)$/', $arg, $long)) {
-                $options[$long[1]] = $long[2];
-            } elseif (preg_match('/^--\w+$/', $arg)) {
+            if ($this->isValueOption($arg)) {
+                $options[$this->getOptionName($arg)] = $this->getOptionValue($arg);
+            } elseif ($this->isBareOption($arg)) {
                 if ($i+1 < count($argv) && substr($argv[$i+1],0,1) != '-') {
-                    $options[$arg] = $argv[$i+1];
+                    $options[$this->getOptionName($arg)] = $argv[$i+1];
                     $i++;
                 } else {
-                    $options[$arg] = true;
-                }
-            } elseif (preg_match('/^(-\w)=.+$/', $arg, $short)) {
-                $options[$short[1]] = $short[2];
-            } elseif (preg_match('/^-\w$/', $arg)) {
-                if ($i+1 < count($argv) && substr($argv[$i+1],0,1) != '-') {
-                    $options[$arg] = $argv[$i+1];
-                    $i++;
-                } else {
-                    $options[$arg] = true;
+                    $options[$this->getOptionName($arg)] = true;
                 }
             } else {
-                $nonopt[] = $arg;
+                $nonopt[] = $opt;
             }
         }
 
@@ -167,6 +158,31 @@ class FannieTask
             'options' => $options,
             'arguments' => $nonopt,
         );
+    }
+
+    private function isBareOption($opt)
+    {
+        return preg_match('/^-\w$/', $opt) || preg_match('/^--\w+$/', $opt);
+    }
+
+    private function isValueOption($opt)
+    {
+        return preg_match('/^-\w=.+$/', $opt) || preg_match('/^--\w+=.+$/', $opt);
+    }
+
+    private function getOptionName($opt)
+    {
+        $opt = ltrim($opt, '-');
+        $parts = explode('=', $opt, 2);
+
+        return $parts[0];
+    }
+
+    private function getOptionValue($opt)
+    {
+        $parts = explode('=', $opt, 2);
+
+        return $parts[1];
     }
 }
 

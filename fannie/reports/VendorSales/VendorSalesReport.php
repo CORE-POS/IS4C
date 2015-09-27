@@ -45,7 +45,7 @@ class VendorSalesReport extends FannieReportPage
         $date1 = FormLib::getDate('date1', date('Y-m-d'));
         $date2 = FormLib::getDate('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart', 1);
-        $deptEnd = FormLib::get('deptStart', 1);
+        $deptEnd = FormLib::get('deptEnd', 1);
         $deptMulti = FormLib::get('departments', array());
         $buyer = FormLib::get('buyer', '');
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
@@ -68,7 +68,7 @@ class VendorSalesReport extends FannieReportPage
             FROM ' . $dlog . ' AS t
                 ' . DTrans::joinProducts('t', 'p', 'LEFT') . '
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
-                LEFT JOIN prodExtra AS x ON p.upc=x.upc AND x.distributor <> \'\'
+                LEFT JOIN prodExtra AS x ON p.upc=x.upc 
                 ';
         if ($buyer !== '' && $buyer > -1) {
             $query .= ' LEFT JOIN superdepts AS s ON t.department=s.dept_ID ';

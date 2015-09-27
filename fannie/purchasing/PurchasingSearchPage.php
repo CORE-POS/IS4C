@@ -74,7 +74,7 @@ class PurchasingSearchPage extends FannieRESTfulPage {
                             <td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
                             <td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
                             <td>%s</td>
-                            <td>%s</td>
+                            <td><a href="../item/ItemEditorPage.php?searchupc=%s">%s</a></td>
                             <td>%s</td>
                             <td>%s</td>
                             <td>%s</td>
@@ -83,7 +83,7 @@ class PurchasingSearchPage extends FannieRESTfulPage {
                             $row['orderID'], date('Y-m-d', strtotime($row['placedDate'])),
                             $row['orderID'], $row['vendorInvoiceID'],
                             $row['vendorName'],
-                            $row['internalUPC'],
+                            $row['internalUPC'], $row['internalUPC'],
                             $row['sku'],
                             $row['brand'],
                             $row['description'],

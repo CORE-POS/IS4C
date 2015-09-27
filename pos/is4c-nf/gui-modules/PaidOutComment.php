@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class PaidOutComment extends NoInputPage {
+class PaidOutComment extends NoInputCorePage 
+{
 
     function preprocess()
     {

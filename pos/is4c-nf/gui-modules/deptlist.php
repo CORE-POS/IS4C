@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class deptlist extends NoInputPage {
+class deptlist extends NoInputCorePage 
+{
 
     /**
       Input processing function

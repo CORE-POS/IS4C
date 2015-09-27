@@ -52,8 +52,9 @@ class DeptSettingsReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $FANNIE_URL = $this->config->get('URL');
 
         $super = FormLib::get('submit')=="by_sd" ? 1 : 0;
 
@@ -107,8 +108,8 @@ class DeptSettingsReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $opts = "";
         $prep = $dbc->prepare_statement("SELECT superID,super_name fROM superDeptNames ORDER BY super_name");

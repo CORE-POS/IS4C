@@ -299,15 +299,8 @@ class CronManagementPage extends FanniePage
             $vals[$i] = (($i>12)?($i-12):$i) . (($i>11)?'PM':'AM');
         }
         $ret .= '<td><select class="form-control" name="hour[]">';
-        $matched = false;
-        foreach ($vals as $k=>$v) {
-            $ret .= sprintf('<option value="%s"',$k);
-            if ("$k" === (isset($tab[$t_index][$shortname])?$tab[$t_index][$shortname]['hour']:'0')) {
-                $ret .= ' selected';
-                $matched = true;
-            }
-            $ret .= '>'.$v.'</option>';
-        }
+        list($matched, $opts) = $this->getOpts($vals, $tab[$t_index], $shortname, 'hour', 0);
+        $ret .= $opts;
         $ret .= '</select></td>';
         if (!$matched) {
             return false;
@@ -320,14 +313,8 @@ class CronManagementPage extends FanniePage
         }
         $ret .= '<td><select class="form-control" name="day[]">';
         $matched = False;
-        foreach ($vals as $k=>$v) {
-            $ret .= sprintf('<option value="%s"',$k);
-            if ("$k" === (isset($tab[$t_index][$shortname])?$tab[$t_index][$shortname]['day']:'1')) {
-                $ret .= ' selected';
-                $matched = true;
-            }
-            $ret .= '>'.$v.'</option>';
-        }
+        list($matched, $opts) = $this->getOpts($vals, $tab[$t_index], $shortname, 'day', 1);
+        $ret .= $opts;
         $ret .= '</select></td>';
         if (!$matched) {
             return false;
@@ -340,14 +327,8 @@ class CronManagementPage extends FanniePage
         }
         $ret .= '<td><select class="form-control" name="month[]">';
         $matched = false;
-        foreach ($vals as $k=>$v) {
-            $ret .= sprintf('<option value="%s"',$k);
-            if ("$k" === (isset($tab[$t_index][$shortname])?$tab[$t_index][$shortname]['month']:'1')) {
-                $ret .= ' selected';
-                $matched = true;
-            }
-            $ret .= '>'.$v.'</option>';
-        }
+        list($matched, $opts) = $this->getOpts($vals, $tab[$t_index], $shortname, 'month', 1);
+        $ret .= $opts;
         $ret .= '</select></td>';
         if (!$matched) {
             return false;
@@ -355,24 +336,18 @@ class CronManagementPage extends FanniePage
 
         // same as hours
         $vals = array('*'=>'*');
-        $ts = time();
-        while (date('w',$ts) != 0) {
-            $ts = mktime(0,0,0,date('n',$ts),date('j',$ts)+1,date('Y'));
+        $tstamp = time();
+        while (date('w',$tstamp) != 0) {
+            $tstamp = mktime(0,0,0,date('n',$tstamp),date('j',$tstamp)+1,date('Y'));
         }
         for ($i=0;$i<7;$i++) {
-            $vals[$i] = date('D',$ts);
-            $ts = mktime(0,0,0,date('n',$ts),date('j',$ts)+1,date('Y'));
+            $vals[$i] = date('D',$tstamp);
+            $tstamp = mktime(0,0,0,date('n',$tstamp),date('j',$tstamp)+1,date('Y'));
         }
         $ret .= '<td><select name="wkdy[]" class="form-control">';
         $matched = false;
-        foreach ($vals as $k=>$v) {
-            $ret .= sprintf('<option value="%s"',$k);
-            if ("$k" === (isset($tab[$t_index][$shortname])?$tab[$t_index][$shortname]['wkdy']:'*')) {
-                $ret .= ' selected';
-                $matched = true;
-            }
-            $ret .= '>'.$v.'</option>';
-        }
+        list($matched, $opts) = $this->getOpts($vals, $tab[$t_index], $shortname, 'wkdy', '*');
+        $ret .= $opts;
         $ret .= '</select></td>';
         if (!$matched) {
             return false;
@@ -448,8 +423,8 @@ class CronManagementPage extends FanniePage
         } else if (substr($dir,-11) == "/management"){
             return $arr;
         } else {
-            $dh = opendir($dir);
-            while(($file = readdir($dh)) !== false){
+            $dhd = opendir($dir);
+            while(($file = readdir($dhd)) !== false){
                 if ($file == "." || $file == "..") {
                     continue;
                 }
@@ -469,12 +444,12 @@ class CronManagementPage extends FanniePage
     private function readCrontab()
     {
         global $FANNIE_ROOT;
-        $pp = popen('crontab -l 2>&1','r');
+        $pct = popen('crontab -l 2>&1','r');
         $lines = array();
-        while (!feof($pp)) {
-            $lines[] = fgets($pp);
+        while (!feof($pct)) {
+            $lines[] = fgets($pct);
         }
-        pclose($pp);
+        pclose($pct);
 
         $ret = array(
         'jobs' => array(),
@@ -497,12 +472,12 @@ class CronManagementPage extends FanniePage
             $tmp = preg_split("/\s+/",$line,6);
             if (count($tmp) == 6) {
                 if (strstr($tmp[5], 'FannieTask')) {
-                    $sn = str_replace(" >> {$FANNIE_ROOT}logs/fannie.log","",$tmp[5]);
-                    $sn = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log","",$sn);
+                    $script = str_replace(" >> {$FANNIE_ROOT}logs/fannie.log","",$tmp[5]);
+                    $script = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log","",$script);
                     $tmp[5] = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log", " >> {$FANNIE_ROOT}logs/fannie.log", $tmp[5]);
-                    $parts = explode(' ', $sn);
-                    $sn = $parts[count($parts)-1];
-                    $ret['tasks'][$sn] = array(
+                    $parts = explode(' ', $script);
+                    $script = $parts[count($parts)-1];
+                    $ret['tasks'][$script] = array(
                         'min' => $tmp[0],
                         'hour' => $tmp[1],
                         'day' => $tmp[2],
@@ -511,11 +486,11 @@ class CronManagementPage extends FanniePage
                         'cmd' => $tmp[5]
                     );
                 } else {
-                    $sn = str_replace("cd {$FANNIE_ROOT}cron && php ./","",$tmp[5]);
-                    $sn = str_replace(" >> {$FANNIE_ROOT}logs/fannie.log","",$sn);
-                    $sn = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log","",$sn);
+                    $script = str_replace("cd {$FANNIE_ROOT}cron && php ./","",$tmp[5]);
+                    $script = str_replace(" >> {$FANNIE_ROOT}logs/fannie.log","",$script);
+                    $script = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log","",$script);
                     $tmp[5] = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log", " >> {$FANNIE_ROOT}logs/fannie.log", $tmp[5]);
-                    $ret['jobs'][$sn] = array(
+                    $ret['jobs'][$script] = array(
                         'min' => $tmp[0],
                         'hour' => $tmp[1],
                         'day' => $tmp[2],
@@ -563,6 +538,22 @@ class CronManagementPage extends FanniePage
             instead of dropdowns. This is for experienced users who want to use
             more advanced cron settings.</p>'
             ;
+    }
+
+    private function getOpts($vals, $tab, $shortname, $period, $default)
+    {
+        $ret = '';
+        $matched = false;
+        foreach ($vals as $k=>$v) {
+            $ret .= sprintf('<option value="%s"',$k);
+            if ("$k" === (isset($tab[$shortname])?$tab[$shortname][$period]:"{$default}")) {
+                $ret .= ' selected';
+                $matched = true;
+            }
+            $ret .= '>'.$v.'</option>';
+        }
+
+        return array($matched, $ret);
     }
 
 }

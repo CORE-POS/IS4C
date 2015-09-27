@@ -44,7 +44,5 @@ class LocalTransTodayViewModel extends LocalTransModel
         return '';
     }
 
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
 }
 

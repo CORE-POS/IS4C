@@ -54,8 +54,8 @@ class CalendarMainPage extends FanniePage {
         $plugin = new CalendarPlugin(); 
         $this->add_script($FANNIE_URL . 'src/javascript/jquery.js');
         $this->add_script($FANNIE_URL . 'src/javascript/jquery-ui.js');
-        $this->add_script($plugin->plugin_url().'/javascript/calendar.js');
-        $this->add_script($plugin->plugin_url().'/javascript/ajax.js');
+        $this->add_script($plugin->pluginURL().'/javascript/calendar.js');
+        $this->add_script($plugin->pluginURL().'/javascript/ajax.js');
 
         $view = FormLib::get_form_value('view','index');
         if (FormLib::get('calID') === '') {
@@ -67,7 +67,7 @@ class CalendarMainPage extends FanniePage {
             $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
 
         if (file_exists(dirname(__FILE__).'/css/'.$view.'.css'))
-            $this->add_css_file($plugin->plugin_url().'/css/'.$view.'.css');
+            $this->add_css_file($plugin->pluginURL().'/css/'.$view.'.css');
 
         return True;
     }

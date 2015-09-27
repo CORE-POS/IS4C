@@ -254,6 +254,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $searchR = $sql->exec_statement($searchP, array(6880));
             }
             
+            $warning = '';
             if ($sql->num_rows($searchR) == 0){
                 $warning .= sprintf("<i>Warning: no membership found for %s (%s)<br />",
                     $data[$CONTACT],$ph);

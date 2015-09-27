@@ -48,7 +48,7 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
   of 0.123. This is only appropriate for items that
   always weigh less than 1.0.
 */
-class QuantityEntryPage extends BasicPage2 
+class QuantityEntryPage extends BasicCorePage 
 {
     protected $box_color;
     protected $msg;

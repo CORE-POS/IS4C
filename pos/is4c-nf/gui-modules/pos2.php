@@ -25,8 +25,8 @@ session_cache_limiter('nocache');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class pos2 extends BasicPage {
-
+class pos2 extends BasicCorePage 
+{
     var $display;
 
     function preprocess()
@@ -34,7 +34,6 @@ class pos2 extends BasicPage {
         $this->display = "";
 
         $sd = MiscLib::scaleObject();
-        //$st = MiscLib::sigTermObject();
 
         $entered = "";
         if (isset($_REQUEST["reginput"])) {
@@ -132,10 +131,6 @@ class pos2 extends BasicPage {
                     if (isset($result['udpmsg']) && $result['udpmsg'] !== False){
                         if (is_object($sd))
                             $sd->WriteToScale($result['udpmsg']);
-                        /*
-                        if (is_object($st))
-                            $st->WriteToScale($result['udpmsg']);
-                        */
                     }
                 }
                 else {

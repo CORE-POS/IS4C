@@ -54,7 +54,7 @@ class FannieAutoComplete extends FannieWebService
             return $ret;
         }
 
-        $dbc = \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
+        $dbc = \FannieDB::getReadOnly(\FannieConfig::factory()->get('OP_DB'));
         switch (strtolower($args->field)) {
             case 'item':
                 $res = false;

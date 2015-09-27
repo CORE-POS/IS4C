@@ -37,6 +37,12 @@ function deptchange(){
 		},
 		success: function(resp){
 			$('#infodiv').html(resp);
+            $('#infodiv input[type=text]').keyup(function (e){
+                if (e.which == 13) {
+                    deptSave();
+                }
+            });
+            $('#infodiv input[type=text]:first').focus();
 		}
 	});
 }

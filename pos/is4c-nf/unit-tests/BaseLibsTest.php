@@ -148,7 +148,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'PreParser',
             'Parser',
             'SQLManager',
-            'BasicPage',
+            'BasicCorePage',
             'TenderModule',
             'DisplayLib',
             'ReceiptLib',
@@ -303,9 +303,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('upc',$both);
         $this->assertEquals('0.50 lb',$both['display']);
         $this->assertEquals('4011',$both['upc']);
-
-        $term = DisplayLib::termdisplaymsg();
-        $this->assertInternalType('string',$term);
 
         $list = DisplayLib::listItems(0,0);
         $this->assertInternalType('string',$list);
@@ -531,6 +528,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $record['regPrice'] = -1.22;
         $record['quantity'] = 1;
         $record['ItemQtty'] = 1;
+        $record['discountable'] = 1;
         lttLib::verifyRecord(1, $record, $this);
 
         lttLib::clear();

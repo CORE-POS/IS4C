@@ -9,6 +9,8 @@ php:
 services:
     - mysql
 
+sudo: false
+
 branches:
     only:
         - master

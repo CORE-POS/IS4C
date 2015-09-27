@@ -61,6 +61,8 @@ function goToPage(the_id){
     var pdf = sel.options[sel.selectedIndex].text;
     url += '&layout='+pdf;
 
+    url += '&sort='+$('#tag-sort').val();
+
     /*window.top.location = url;*/
     /* 5May13 Eric Lee As popup instead of replacing the select window. */
     tagwindow=window.open (url, "Shelftags", "location=0,status=1,scrollbars=1,width=800,height=1100");
@@ -75,7 +77,7 @@ function goToPage(the_id){
         global $FANNIE_URL, $FANNIE_OP_DB, $FANNIE_DEFAULT_PDF;
         ob_start();
         ?>
-        <div class="col-sm-6">
+        <div class="col-sm-8">
         
         <ul class="nav nav-tabs" role="tablist">
             <li class="active"><a href="ShelfTagIndex.php">Regular shelf tags</a></li>
@@ -84,8 +86,9 @@ function goToPage(the_id){
         <p>
         <div class="form-group form-inline">
             <label>Offset</label>: 
-            <input type="number" class="form-control" id=offset value=0 />
+            <input type="number" class="price-field form-control" id=offset value=0 />
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <label>Layout</label>: 
         <select id=layoutselector class="form-control">
         <?php
         foreach($this->layouts as $l){
@@ -96,18 +99,19 @@ function goToPage(the_id){
         }
         ?>
         </select>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <label>Sort</label>: 
+            <select id="tag-sort" class="form-control">
+                <option>Department</option>
+                <option>Alphabetically</option>
+                <option>Order Entered</option>
+            </select>
         </div>
         </p>
         <table class="table">
         <?php
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        /* Was:
-        $query = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts
-            GROUP BY superID,super_name
-            ORDER BY superID");
-        */
-        // 5May13 Change SELECT so #-of-labels can be displayed. */
         $query = $dbc->prepare("
             SELECT s.shelfTagQueueID, 
                 s.description, 
@@ -129,7 +133,6 @@ function goToPage(the_id){
         $zeroID = $dbc->query('SELECT upc FROM shelftags WHERE id=0');
         array_unshift($rows, array(0,'Default',$dbc->numRows($zeroID)));
 
-
         foreach($rows as $row){
             printf("<tr>
             <td>%s barcodes/shelftags</td>
@@ -137,14 +140,15 @@ function goToPage(the_id){
             <td><a href=\"\" onclick=\"goToPage('%d');return false;\">Print</a></td>
             <td><a href=\"DeleteShelfTags.php?id=%d\">Clear</a></td>
             <td><a href=\"EditShelfTags.php?id=%d\">" . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</td>
+            <td><a href=\"SignFromSearch.php?queueID=%d\">Signs</a></td>
             </tr>",
-            $row[1],$row[2],$row[0],$row[0],$row[0]);
+            $row[1],$row[2],$row[0],$row[0],$row[0],$row[0]);
         }
         ?>
         </table>
         </div>
 
-        <div class="col-sm-4">
+        <div class="col-sm-3">
         <a href="CreateTagsByDept.php">Create Tags By Department</a>
         <br />
         <a href="CreateTagsByManu.php">Create Tags By Brand</a>
@@ -172,4 +176,3 @@ function goToPage(the_id){
 
 FannieDispatch::conditionalExec();
 
-?>

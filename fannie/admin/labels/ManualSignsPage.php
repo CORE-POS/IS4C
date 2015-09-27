@@ -75,7 +75,7 @@ class ManualSignsPage extends FannieRESTfulPage
     public function get_view()
     {
         $ret = '';
-        $ret .= '<form target="_blank" action="' . $_SERVER['PHP_SELF'] . '" method="post" id="signform">';
+        $ret .= '<form target="_blank" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post" id="signform">';
         $mods = FannieAPI::listModules('FannieSignage');
         $others = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
         foreach ($others as $o) {

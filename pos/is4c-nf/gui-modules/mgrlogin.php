@@ -23,7 +23,8 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class mgrlogin extends NoInputPage {
+class mgrlogin extends NoInputCorePage 
+{
 
     function preprocess(){
         if (isset($_REQUEST['input'])){
@@ -168,10 +169,8 @@ class mgrlogin extends NoInputPage {
     {
         CoreLocal::set("plainmsg",_("transaction cancelled"));
         UdpComm::udpSend("rePoll");
-        CoreLocal::set("ccTermOut","reset");
     }
 }
 
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
     new mgrlogin();
-?>

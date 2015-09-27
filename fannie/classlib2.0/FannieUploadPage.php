@@ -246,13 +246,9 @@ class FannieUploadPage extends \FanniePage
                         unlink($this->upload_file_name);
                         if ($try && count($files) > 0) {
                             /* if more remain, redirect back to self */
-                            $url = $_SERVER['PHP_SELF'].'?';
-                            foreach($files as $f) {
-                                $url .= 'f[]='.$f.'&';
-                            }
-                            foreach($col_select as $c) {
-                                $url .= 'cs[]='.$c.'&';
-                            }
+                            $url = filter_input(INPUT_SERVER, 'PHP_SELF').'?';
+                            $url .= array_reduce($files, function($carry, $item){ return $carry . 'f[]=' . $item . '&'; }, '');
+                            $url .= array_reduce($col_select, function($carry, $item){ return $carry . 'cs[]=' . $item . '&'; }, '');
                             $url = rtrim($url,'&');
                             header('Location: '.$url);
 
@@ -665,15 +661,16 @@ class FannieUploadPage extends \FanniePage
             <span id="resultsSpan"></span>
             </div>';
         $ret .= '<div id="fieldInfo" style="display:none;">';
-        foreach (\FormLib::get('cs', array()) as $column) {
-            $ret .= sprintf('<input type="hidden" name="cs[]" value="%s" />', $column);
-        }
+        $ret .= array_reduce(\FormLib::get('cs', array()),
+            function ($carry, $column) {
+                return $carry . sprintf('<input type="hidden" name="cs[]" value="%s" />', $column);
+            }, '');
         foreach ($_POST as $key => $val) {
             if ($key != 'cs') {
                 if (is_array($val)) {
-                    foreach ($val as $v) {
-                        $ret .= sprintf('<input type="hidden" name="%s[]" value="%s" />', $key, $v);
-                    }
+                    $ret .= array_reduce($val, function($carry, $item) use ($key) {
+                        return $carry . sprintf('<input type="hidden" name="%s[]" value="%s" />', $key, $item);
+                    }, '');
                 } else {
                     $ret .= sprintf('<input type="hidden" name="%s" value="%s" />', $key, $val);
                 }
@@ -731,20 +728,7 @@ class FannieUploadPage extends \FanniePage
     */
     protected function csvToArray($limit=0)
     {
-        $fp = fopen($this->upload_file_name,'r');
-        if (!$fp) {
-            return array();
-        }
-        $ret = array();
-        while(!feof($fp)) {
-            $ret[] = fgetcsv($fp);
-            if ($limit != 0 && count($ret) >= $limit) {
-                break;
-            }
-        }
-        fclose($fp);
-
-        return $ret;
+        return \COREPOS\Fannie\API\data\FileData::csvToArray($this->upload_file_name, $limit);
     }
 
     /**
@@ -752,58 +736,12 @@ class FannieUploadPage extends \FanniePage
     */
     protected function xlsToArray($limit)
     {
-        if (!class_exists('Spreadsheet_Excel_Reader')) {
-            return array();
-        }
-
-        $data = new \Spreadsheet_Excel_Reader();
-        $data->read($this->upload_file_name);
-
-        $sheet = $data->sheets[0];
-        $rows = $sheet['numRows'];
-        $cols = $sheet['numCols'];
-        $ret = array();
-        for($i=1; $i<=$rows; $i++) {
-            $line = array();
-            for ($j=1; $j<=$cols; $j++) {
-                if (isset($sheet['cells'][$i]) && isset($sheet['cells'][$i][$j])) {
-                    $line[] = $sheet['cells'][$i][$j];
-                } else {
-                    $line[] = '';
-                }
-            }
-            $ret[] = $line;
-            if ($limit != 0 && count($ret) >= $limit) {
-                break;
-            }
-        }
-
-        return $ret;
+        return \COREPOS\Fannie\API\data\FileData::xlsToArray($this->upload_file_name, $limit);
     }
 
     protected function xlsxToArray($limit)
     {
-        if (!class_exists('PHPExcel_IOFactory')) {
-            return array();
-        }
-
-        $objPHPExcel = \PHPExcel_IOFactory::load($this->upload_file_name);
-        $sheet = $objPHPExcel->getActiveSheet();
-        $rows = $sheet->getHighestRow();
-        $cols = \PHPExcel_Cell::columnIndexFromString($sheet->getHighestColumn());
-        $ret = array();
-        for ($i=1; $i<=$rows; $i++) {
-            $new = array();
-            for($j=0; $j<=$cols; $j++) {
-                $new[] = $sheet->getCellByColumnAndRow($j,$i)->getValue();
-            }
-            $ret[] = $new;
-            if ($limit != 0 && count($ret) >= $limit) {
-                break;
-            }
-        }
-
-        return $ret;
+        return \COREPOS\Fannie\API\data\FileData::xlsxToArray($this->upload_file_name, $limit);
     }
 
     public function helpContent()

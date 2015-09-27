@@ -30,12 +30,21 @@ if (!class_exists('FannieAPI')) {
 */
 class ObfWeekEntryPage extends FannieRESTfulPage 
 {
+    public function preprocess()
+    {
+        if (!headers_sent()) {
+            header('Location: ../OpenBookFinancingV2/ObfWeekEntryPageV2.php');
+        }
+        return false;
+    }
+
     protected $title = 'OBF: Weeks';
     protected $header = 'OBF: Weeks';
 
     public $page_set = 'Plugin :: Open Book Financing';
     public $description = '[Week Entry] sets labor amounts and sales goals by week.';
     public $themed = true;
+    protected $lib_class = 'ObfLib';
 
     public function javascript_content()
     {
@@ -87,8 +96,8 @@ class ObfWeekEntryPage extends FannieRESTfulPage
 
     public function post_handler()
     {
-        global $FANNIE_PLUGIN_SETTINGS;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $lib_class = $this->lib_class;
+        $dbc = $lib_class::getDB();
 
         $date1 = FormLib::get('date1');
         $date2 = FormLib::get('date2');
@@ -96,7 +105,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $end_ts = strtotime($date1);
         $prev_ts = strtotime($date2);
 
-        $model = new ObfWeeksModel($dbc);
+        $model = $lib_class::getWeek($dbc);
         $model->startDate(date('Y-m-d', mktime(0, 0, 0, date('n', $end_ts), date('j', $end_ts)-6, date('Y', $end_ts))));
         $model->endDate(date('Y-m-d', $end_ts));
         $exists = $model->find();
@@ -118,8 +127,8 @@ class ObfWeekEntryPage extends FannieRESTfulPage
 
     public function post_id_handler()
     {
-        global $FANNIE_PLUGIN_SETTINGS;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $lib_class = $this->lib_class;
+        $dbc = $lib_class::getDB();
 
         $date1 = FormLib::get('date1');
         $date2 = FormLib::get('date2');
@@ -127,7 +136,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $end_ts = strtotime($date1);
         $prev_ts = strtotime($date2);
 
-        $model = new ObfWeeksModel($dbc);
+        $model = $lib_class::getWeek($dbc);
         $model->obfWeekID($this->id);
         $model->startDate(date('Y-m-d', mktime(0, 0, 0, date('n', $end_ts), date('j', $end_ts)-6, date('Y', $end_ts))));
         $model->endDate(date('Y-m-d', $end_ts));
@@ -145,7 +154,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         $goals = FormLib::get('labor', array());
         $alloc = FormLib::get('alloc', array());
         $sales = FormLib::get('sales', array());
-        $model = new ObfLaborModel($dbc);
+        $model = $lib_class::getLabor($dbc);
         for($i=0;$i<count($cats);$i++) {
             $model->reset();
             $model->obfCategoryID($cats[$i]);
@@ -170,10 +179,10 @@ class ObfWeekEntryPage extends FannieRESTfulPage
 
     public function get_id_view()
     {
-        global $FANNIE_PLUGIN_SETTINGS;
         if ($this->id != 0) {
-            $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
-            $this->weekModel = new ObfWeeksModel($dbc);
+            $class = $this->lib_class;
+            $dbc = $class::getDB();
+            $this->weekModel = $class::getWeek($dbc);
             $this->weekModel->obfWeekID($this->id);
             $this->weekModel->load();
         }
@@ -183,12 +192,12 @@ class ObfWeekEntryPage extends FannieRESTfulPage
     
     public function get_view()
     {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabase']);
+        $lib_class = $this->lib_class;
+        $dbc = $lib_class::getDB();
 
-        $model = new ObfWeeksModel($dbc);
+        $model = $lib_class::getWeek($dbc);
         if (!is_object($this->weekModel)) {
-            $this->weekModel = new ObfWeeksModel($dbc);
+            $this->weekModel = $lib_class::getWeek($dbc);
             $quarterID = '';
             $laborID = '';
             foreach ($this->weekModel->find('endDate', true) as $w) {
@@ -215,7 +224,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
                 <lablel>Week Ending</label>: ' . $select
                 . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
                 . '<button type="button" class="btn btn-default"
-                    onclick="location=\'ObfIndexPage.php\';return false;">Home</button>'
+                    onclick="location=\'index.php\';return false;">Home</button>'
                 . '</div>';
 
         $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
@@ -246,7 +255,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
                     value="' . sprintf('%.2f', $this->weekModel->growthTarget() * 100) . '" />
                 <span class="input-group-addon">%</span></div></td>';
         $ret .= '<td><select name="quarter" class="form-control">';
-        $quarters = new ObfQuartersModel($dbc);
+        $quarters = $lib_class::getQuarter($dbc);
         foreach ($quarters->find('obfQuarterID', true) as $q) {
             $ret .= sprintf('<option %s value="%d">%s %s</option>',
                         ($q->obfQuarterID() == $this->weekModel->obfQuarterID() ? 'selected' : ''),
@@ -254,7 +263,7 @@ class ObfWeekEntryPage extends FannieRESTfulPage
         }
         $ret .= '</select></td>';
         $ret .= '<td><select name="labor-quarter" class="form-control">';
-        $quarters = new ObfQuartersModel($dbc);
+        $quarters = $lib_class::getQuarter($dbc);
         foreach ($quarters->find('obfQuarterID', true) as $q) {
             $ret .= sprintf('<option %s value="%d">%s %s</option>',
                         ($q->obfQuarterID() == $this->weekModel->obfLaborQuarterID() ? 'selected' : ''),
@@ -273,8 +282,8 @@ class ObfWeekEntryPage extends FannieRESTfulPage
             $ret .= '<table class="table">';
             $ret .= '<tr><th>Group</th><th>Hours</th><th>Wages</th>
                     <th>Labor Goal</th><th>Allocated Hours</th><th>Sales Forecast</th></tr>';
-            $categories = new ObfCategoriesModel($dbc);
-            $labor = new ObfLaborModel($dbc);
+            $categories = $lib_class::getCategory($dbc);
+            $labor = $lib_class::getLabor($dbc);
             foreach($categories->find() as $obj) {
                 $labor->reset();
                 $labor->obfWeekID($this->weekModel->obfWeekID());

@@ -101,17 +101,26 @@ class CoreTemplate
         $with_tags = $matches[0];
         $strings = $matches[1];
         for ($i=0; $i<count($strings); $i++) {
-            if (is_array($data) && array_key_exists($strings[$i], $data)) {
-                $str = str_replace($with_tags[$i], $data[$strings[$i]], $str);
-            } elseif (is_object($data) && property_exists($data, $strings[$i])) {
-                $str = str_replace($with_tags[$i], $data->$strings[$i], $str);
-            } elseif (is_object($data) && method_exists($data, $strings[$i])) {
-                $func = $strings[$i];
-                $str = str_replace($with_tags[$i], $data->$func(), $str);
+            try {
+                $str = str_replace($with_tags[$i], $this->dataValue($data, $strings[$i]), $str);
+            } catch (\Exception $ex) {
             }
         }
         
         return $str;
+    }
+
+    private function dataValue($data, $key)
+    {
+        if (is_array($data) && array_key_exists($key, $data)) {
+            return $data[$key];
+        } elseif (is_object($data) && property_exists($data, $key)) {
+            return $data->$key;
+        } elseif (is_object($data) && method_exists($data, $key)) {
+            return $data->$key();
+        }
+
+        throw new \Exception('missing data value: ' . $key);
     }
 
     /**
@@ -160,12 +169,9 @@ class CoreTemplate
                 $line = $repeated;
                 for ($j=0; $j<count($line_properties); $j++) {
                     $prop = $line_properties[$j];
-                    if (is_array($obj) && array_key_exists($prop, $obj)) {
-                        $line = str_replace($line_tags[$j], $obj[$prop], $line);
-                    } elseif (is_object($obj) && property_exists($obj, $prop)) {
-                        $line = str_replace($line_tags[$j], $obj->$prop, $line);
-                    } elseif (is_object($obj) && method_exists($obj, $prop)) {
-                        $line = str_replace($line_tags[$j], $obj->$prop(), $line);
+                    try {
+                        $line = str_replace($line_tags[$j], $this->dataValue($obj, $prop), $line);
+                    } catch (\Exception $ex) {
                     }
                 }
                 $unrolled .= $line;

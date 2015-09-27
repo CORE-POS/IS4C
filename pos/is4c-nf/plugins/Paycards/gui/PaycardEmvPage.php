@@ -39,11 +39,6 @@ class PaycardEmvPage extends PaycardProcessPage
                 CoreLocal::set("msgrepeat",0);
                 CoreLocal::set("toggletax",0);
                 CoreLocal::set("togglefoodstamp",0);
-                CoreLocal::set("ccTermOut","resettotal:".
-                    str_replace(".","",sprintf("%.2f",CoreLocal::get("amtdue"))));
-                $st = MiscLib::sigTermObject();
-                if (is_object($st))
-                    $st->WriteToScale(CoreLocal::get("ccTermOut"));
                 PaycardLib::paycard_reset();
                 CoreLocal::set("CachePanEncBlock","");
                 CoreLocal::set("CachePinEncBlock","");
@@ -77,13 +72,16 @@ class PaycardEmvPage extends PaycardProcessPage
             $e2e = new MercuryE2E();
             $json = array();
             $plugin_info = new Paycards();
-            $json['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardEmvSuccess.php';
+            $json['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvSuccess.php';
             $json['receipt'] = false;
             $success = $e2e->handleResponseDataCap($xml);
             if ($success === PaycardLib::PAYCARD_ERR_OK) {
                 $json = $e2e->cleanup($json);
                 CoreLocal::set("strRemembered","");
                 CoreLocal::set("msgrepeat",0);
+                if ($json['receipt']) {
+                    $json['main_frame'] .= '?receipt=' . $json['receipt'];
+                }
             } else {
                 CoreLocal::set("msgrepeat",0);
                 $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
@@ -120,8 +118,7 @@ function emvSubmit()
         success: function(resp) {
             // POST result to PHP page in POS to
             // process the result.
-            console.log('success');
-            console.log(resp);
+            $('div.baseHeight').html('Finishing transaction');
             var f = $('<form id="js-form"></form>');
             f.append($('<input type="hidden" name="xml-resp" />').val(resp));
             $('body').append(f);
@@ -130,8 +127,7 @@ function emvSubmit()
         error: function(resp) {
             // display error to user?
             // go to dedicated error page?
-            console.log('error');
-            console.log(resp);
+            $('div.baseHeight').html('Finishing transaction');
             var f = $('<form id="js-form"></form>');
             f.append($('<input type="hidden" name="xml-resp" />').val(resp));
             $('body').append(f);

@@ -235,7 +235,7 @@ class InstallUtilities extends LibraryClass
       @param $value string value
       @return boolean success
     */
-    static private function jsonConfSave($key, $value)
+    static public function jsonConfSave($key, $value)
     {
         $ini_json = dirname(__FILE__) . '/../ini.json';
         if (!is_writable($ini_json)) {
@@ -633,38 +633,6 @@ class InstallUtilities extends LibraryClass
         return false;
     }
 
-    static public function createIfNeeded($con, $dbms, $db_name, $table_name, $stddb, &$errors=array())
-    {
-        if ($con->table_exists($table_name,$db_name)) return $errors;
-        $dbms = strtoupper($dbms);
-
-        $fn = dirname(__FILE__)."/sql/$stddb/$table_name.php";
-        if (!file_exists($fn)) {
-            $errors[] = array(
-                'struct'=>$table_name,
-                'error' => 1,
-                'query'=>'n/a',
-                'details'=>'Missing file: '.$fn,
-                'important'=>True
-            );
-            return $errors;
-        }
-
-        include($fn);
-        if (!isset($CREATE["$stddb.$table_name"])) {
-            $errors[] = array(
-                'struct'=>$table_name,
-                'error' => 1,
-                'query'=>'n/a',
-                'details'=>'No valid $CREATE in: '.$fn,
-                'important'=>True
-            );
-            return $errors;
-        }
-
-        return self::dbStructureModify($con, $table_name, $CREATE["$stddb.$table_name"], $errors);
-    }
-
     public static function dbStructureModify($sql, $struct_name, $queries, &$errors=array())
     {
         if (!is_array($queries)) {
@@ -714,19 +682,7 @@ class InstallUtilities extends LibraryClass
         }
     }
 
-    /**
-      Render configuration variable as an <input> tag
-      Process any form submissions
-      Write configuration variable to config.php
-
-      @param $name [string] name of the variable
-      @param $default_value [mixed, default empty string] default value for the setting
-      @param $quoted [boolean, default true] write value to config.php with single quotes
-      @param $attributes [array, default empty] array of <input> tag attribute names and values
-
-      @return [string] html input field
-    */
-    static public function installTextField($name, $default_value='', $storage=self::EITHER_SETTING, $quoted=true, $attributes=array(), $area=false)
+    static private function getCurrentValue($name, $default_value, $quoted)
     {
         $current_value = CoreLocal::get($name);
         if ($current_value === '') {
@@ -747,6 +703,62 @@ class InstallUtilities extends LibraryClass
                 }
             }
         }
+
+        return $current_value;
+    }
+
+    static private function storageAttribute($name, $storage)
+    {
+        if ($storage == self::INI_SETTING) {
+            return 'Stored in ini.php';
+        } elseif (self::confExists($name)) {
+            return 'Stored in ini and DB';
+        } else {
+            return 'Stored in opdata.parameters';
+        }
+    }
+
+    static private function attributesToStr($attributes)
+    {
+        $ret = '';
+        foreach ($attributes as $name => $value) {
+            if ($name == 'name' || $name == 'value') {
+                continue;
+            }
+            $ret .= ' ' . $name . '="' . $value . '"';
+        }
+
+        return $ret;
+    }
+
+    static private function writeInput($name, $current_value, $storage)
+    {
+        if ($storage == self::INI_SETTING) {
+            if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value !== 'false')) {
+                self::confsave($name, "'" . $current_value . "'");
+            } else {
+                self::confsave($name, $current_value);
+            }
+        } else {
+            self::paramSave($name, $current_value);
+        }
+    }
+
+    /**
+      Render configuration variable as an <input> tag
+      Process any form submissions
+      Write configuration variable to config.php
+
+      @param $name [string] name of the variable
+      @param $default_value [mixed, default empty string] default value for the setting
+      @param $quoted [boolean, default true] write value to config.php with single quotes
+      @param $attributes [array, default empty] array of <input> tag attribute names and values
+
+      @return [string] html input field
+    */
+    static public function installTextField($name, $default_value='', $storage=self::EITHER_SETTING, $quoted=true, $attributes=array(), $area=false)
+    {
+        $current_value = getCurrentValue($name, $default_value, $quoted);
 
         // sanitize values:
         if (!$quoted) {
@@ -792,22 +804,11 @@ class InstallUtilities extends LibraryClass
             $current_value = implode(', ', $current_value);
         }
         
-        if ($storage == self::INI_SETTING) {
-            $attributes['title'] = 'Stored in ini.php';
-        } elseif (self::confExists($name)) {
-            $attributes['title'] = 'Stored in ini and DB';
-        } else {
-            $attributes['title'] = 'Stored in opdata.parameters';
-        }
+        $attributes['title'] = self::storageAttribute($name, $storage);
 
         if ($area) {
             $ret = sprintf('<textarea name="%s"', $name);
-            foreach ($attributes as $attr => $value) {
-                if ($attr == 'name') {
-                    continue;
-                }
-                $ret .= ' ' . $attr . '="' . $value . '"';
-            }
+            $ret .= self::attributesToStr($attributes);
             $ret .= '>' . $current_value . '</textarea>';
         } else {
             $ret = sprintf('<input name="%s" value="%s"',
@@ -815,12 +816,7 @@ class InstallUtilities extends LibraryClass
             if (!isset($attributes['type'])) {
                 $attributes['type'] = 'text';
             }
-            foreach ($attributes as $name => $value) {
-                if ($name == 'name' || $name == 'value') {
-                    continue;
-                }
-                $ret .= ' ' . $name . '="' . $value . '"';
-            }
+            $ret .= self::attributesToStr($attributes);
             $ret .= " />\n";
         }
 
@@ -845,13 +841,7 @@ class InstallUtilities extends LibraryClass
     */
     static public function installSelectField($name, $options, $default_value='', $storage=self::EITHER_SETTING, $quoted=true, $attributes=array())
     {
-        $current_value = CoreLocal::get($name);
-        if ($current_value === '') {
-            $current_value = $default_value;
-        }
-        if (isset($_REQUEST[$name])) {
-            $current_value = $_REQUEST[$name];
-        }
+        $current_value = getCurrentValue($name, $default_value, $quoted);
 
         $is_array = false;
         if (isset($attributes['multiple'])) {
@@ -887,31 +877,12 @@ class InstallUtilities extends LibraryClass
         }
         
         CoreLocal::set($name, $current_value);
-        if ($storage == self::INI_SETTING) {
-            if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value !== 'false')) {
-                self::confsave($name, "'" . $current_value . "'");
-            } else {
-                self::confsave($name, $current_value);
-            }
-        } else {
-            self::paramSave($name, $current_value);
-        }
+        self::writeInput($name, $current_value, $storage);
 
-        if ($storage == self::INI_SETTING) {
-            $attributes['title'] = 'Stored in ini.php';
-        } elseif (self::confExists($name)) {
-            $attributes['title'] = 'Stored in ini and DB';
-        } else {
-            $attributes['title'] = 'Stored in opdata.parameters';
-        }
+        $attributes['title'] = self::storageAttribute($name, $storage);
 
         $ret = '<select name="' . $name . ($is_array ? '[]' : '') . '" ';
-        foreach ($attributes as $name => $value) {
-            if ($name == 'name' || $name == 'value') {
-                continue;
-            }
-            $ret .= ' ' . $name . '="' . $value . '"';
-        }
+        $ret .= self::attributesToStr($attributes);
         $ret .= ">\n";
         // array has non-numeric keys
         // if the array has meaningful keys, use the key value
@@ -939,15 +910,9 @@ class InstallUtilities extends LibraryClass
         return $ret;
     }
 
-    static public function installCheckboxField($name, $label, $default_value=0, $storage=self::EITHER_SETTING, $choices=array(0, 1))
+    static public function installCheckboxField($name, $label, $default_value=0, $storage=self::EITHER_SETTING, $choices=array(0, 1), $attributes=array())
     {
-        $current_value = CoreLocal::get($name);
-        if ($current_value === '') {
-            $current_value = $default_value;
-        }
-        if (isset($_REQUEST[$name])) {
-            $current_value = $_REQUEST[$name];
-        }
+        $current_value = getCurrentValue($name, $default_value, $quoted);
 
         // sanitize
         if (!is_array($choices) || count($choices) != 2) {
@@ -962,23 +927,9 @@ class InstallUtilities extends LibraryClass
         }
 
         CoreLocal::set($name, $current_value);
-        if ($storage == self::INI_SETTING) {
-            if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value !== 'false')) {
-                self::confsave($name, "'" . $current_value . "'");
-            } else {
-                self::confsave($name, $current_value);
-            }
-        } else {
-            self::paramSave($name, $current_value);
-        }
+        self::writeInput($name, $current_value, $storage);
 
-        if ($storage == self::INI_SETTING) {
-            $attributes['title'] = 'Stored in ini.php';
-        } elseif (self::confExists($name)) {
-            $attributes['title'] = 'Stored in ini and DB';
-        } else {
-            $attributes['title'] = 'Stored in opdata.parameters';
-        }
+        $attributes['title'] = self::storageAttribute($name, $storage);
 
         $ret = '<fieldset class="toggle">' . "\n";
         $ret .= sprintf('<input type="checkbox" name="%s" id="%s" value="%s" %s />',
@@ -1207,6 +1158,7 @@ class InstallUtilities extends LibraryClass
             'EfsnetTokensModel',
             'PaycardTransactionsModel',
             'CapturedSignatureModel',
+            'EmvReceiptModel',
             // placeholder,
             '__LTT__',
             // Views

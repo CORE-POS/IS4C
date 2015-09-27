@@ -77,7 +77,7 @@ class FannieItemInfo extends FannieWebService
         }
 
         // lookup results
-        $dbc = \FannieDB::get(\FannieConfig::factory()->get('OP_DB'));
+        $dbc = \FannieDB::getReadOnly(\FannieConfig::factory()->get('OP_DB'));
         switch (strtolower($args->type)) {
             case 'vendor':
                 $vendor = new \VendorItemsModel($dbc);

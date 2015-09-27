@@ -30,13 +30,5 @@ class QuickKeys extends Plugin {
                       PHP files within the plugin. Type "QK" followed by the menu
                       number to launch that menu. QuickKeys render options as a
                       3x3 grid of buttons for touchscreen accessibility.';
-
-    public function plugin_enable(){
-
-    }
-
-    public function plugin_disable(){
-
-    }
-
 }
+

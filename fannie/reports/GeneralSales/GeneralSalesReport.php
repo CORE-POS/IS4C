@@ -56,8 +56,8 @@ class GeneralSalesReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $d1 = FormLib::get_form_value('date1',date('Y-m-d'));
         $d2 = FormLib::get_form_value('date2',date('Y-m-d'));
         $dept = $_REQUEST['dept'];

@@ -36,7 +36,7 @@ class AccessProgramReceipt extends ReceiptMessage
         if ($val == 0) {
             return '';
         }
-        $msg = _('WFC is offering to its Owners an Access Discount for a once a month 10% discount on one total purchase when an Owner chooses to apply that discount.  The Access Discount is a use it or lose it once a month benefit only for Owners who register annually at Customer Service by presenting proof of participation (e.g., a current card or current award letter) in an applicable program.');
+        $msg = _('WFC is offering to its Owners an Access Discount for a 10% discount on all eligible items.  The Access Discount is available only for Owners who register annually at Customer Service by presenting proof of participation (e.g., a current card or current award letter) in an applicable program.');
         $msg = wordwrap($msg, 50, "\n");
         $only = ReceiptLib::bold() . 'only' . ReceiptLib::unbold();
         $annually = ReceiptLib::bold() . 'annually' . ReceiptLib::unbold();

@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class cablist extends NoInputPage2 
+class cablist extends NoInputCorePage 
 {
 
     function head_content()

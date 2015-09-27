@@ -31,16 +31,18 @@ class BatchReport extends FannieReportPage
     protected $header = "Select batch(es)";
     protected $title = "Fannie :: Batch Report";
     protected $report_cache = 'none';
-    protected $report_headers = array('UPC','Description','$','Qty');
+    protected $report_headers = array('UPC','Description','$','Qty','Location');
     protected $required_fields = array('batchID');
 
     public $description = '[Batch Report] lists sales for items in a sales batch (or group of sales batches).';
     public $themed = true;
     public $report_set = 'Batches';
+    protected $new_tablesorter = true;
 
     function fetch_report_data()
     {
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $bStart = FormLib::get_form_value('date1','');
         $bEnd = FormLib::get_form_value('date2','');
         $model = new BatchesModel($dbc);
@@ -101,10 +103,14 @@ class BatchReport extends FannieReportPage
         $salesBatchQ ="
             SELECT d.upc, 
                 p.description, 
+                l.floorSectionID,
+                f.name AS location,
                 SUM(d.total) AS sales, "
                 . DTrans::sumQuantity('d') . " AS quantity 
             FROM $dlog AS d "
                 . DTrans::joinProducts('d', 'p', 'INNER') . "
+            LEFT JOIN prodPhysicalLocation AS l ON l.upc=p.upc
+            LEFT JOIN FloorSections as f ON f.floorSectionID=l.floorSectionID
             WHERE d.tdate BETWEEN ? AND ?
                 AND d.upc IN ($in_sql)
             GROUP BY d.upc, 
@@ -127,6 +133,7 @@ class BatchReport extends FannieReportPage
             $record[] = $row['description'];
             $record[] = $row['sales'];
             $record[] = $row['quantity'];
+            $record[] = $row['location'] === null ? '' : $row['location'];
             $ret[] = $record;
         }
         return $ret;
@@ -149,7 +156,8 @@ class BatchReport extends FannieReportPage
 
     function form_content()
     {
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $filter1 = FormLib::get('btype','');
         $filter2 = FormLib::get('owner','');
@@ -240,7 +248,8 @@ class BatchReport extends FannieReportPage
     function report_description_content()
     {
         $FANNIE_URL = $this->config->get('URL');
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $ret = array();
         $bStart = FormLib::get('date1','');
         $bEnd = FormLib::get('date2','');
@@ -271,10 +280,12 @@ class BatchReport extends FannieReportPage
         }
         $ret[] = '<br /><span style="font-size:150%;">'.$bName.'</span>';
         if ($this->report_format == 'html') {
-            $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
-            $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
-            $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
-            $ret[] = '<form action="BatchReport.php" method="get">';
+            if (!$this->new_tablesorter) {
+                $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
+                $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
+                $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
+            }
+            $ret[] = '<p><form action="BatchReport.php" method="get">';
             $ret[] = "<span style=\"color:black; display:inline;\">From: 
                     <input type=\"text\" name=\"date1\" size=\"10\" value=\"$bStart\" id=\"date1\" />
                     to: 
@@ -285,7 +296,7 @@ class BatchReport extends FannieReportPage
             foreach($batchID as $bID) {
                 $ret[] = sprintf('<input type="hidden" name="batchID[]" value="%d" />', $bID);
             }
-            $ret[] = '</form>';
+            $ret[] = '</form></p>';
         } else {
             $ret[] = "<span style=\"color:black\">From: $bStart to: $bEnd</span>";
         }

@@ -39,6 +39,7 @@ class HourlyTransReport extends FannieReportPage
 
     protected $sortable = false;
     protected $no_sort_but_style = true;
+    protected $new_tablesorter = true;
 
     public function preprocess()
     {
@@ -103,8 +104,8 @@ class HourlyTransReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $date1 = FormLib::get('date1', date('Y-m-d'));
         $date2 = FormLib::get('date2', date('Y-m-d'));
@@ -327,26 +328,6 @@ function showGraph(i) {
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
-        $deptsR = $dbc->exec_statement($deptsQ);
-        $deptsList = "";
-
-        $deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames
-                WHERE superID <> 0 
-                ORDER BY superID");
-        $deptSubR = $dbc->exec_statement($deptSubQ);
-
-        $deptSubList = "";
-        while($deptSubW = $dbc->fetch_array($deptSubR)) {
-            $deptSubList .=" <option value=$deptSubW[0]>$deptSubW[1]</option>";
-        }
-        while ($deptsW = $dbc->fetch_array($deptsR)) {
-            $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
-        }
-
         ob_start();
         ?>
 <form method="get" class="form-horizontal">
@@ -388,8 +369,8 @@ function showGraph(i) {
     </div>
 </div>
     <p>
-        <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>
-        <button type=reset name=reset class="btn btn-default"
+        <button type=submit name=submit value="Submit" class="btn btn-default btn-core">Submit</button>
+        <button type=reset name=reset class="btn btn-default btn-reset"
             onclick="$('#super-id').val('').trigger('change');">Start Over</button>
     </p>
 </form>

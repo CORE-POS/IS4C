@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class fsTotalConfirm extends NoInputPage 
+class fsTotalConfirm extends NoInputCorePage 
 {
 
     private $tendertype;

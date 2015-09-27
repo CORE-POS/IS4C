@@ -21,7 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
 if (!file_exists(dirname(__FILE__).'/../config.php')){
     echo "Missing config file!<br />";
     echo "Create a file named config.php in ".realpath(dirname(__FILE__).'/../').'<br />';
@@ -29,7 +28,7 @@ if (!file_exists(dirname(__FILE__).'/../config.php')){
     echo "<div style=\"border: 1px solid black;padding: 5em;\">";
     echo '&lt;?php<br />';
     echo '</div>';  
-    exit;   
+    return false;   
 }
 
 require(dirname(__FILE__).'/../config.php'); 
@@ -178,6 +177,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             echo "<pre>";
             echo '$ cd "' . $FILEPATH . "\"\n";
             echo '$ /path/to/composer.phar update';
+            echo '</pre>';
+            echo '<a href="https://github.com/CORE-POS/IS4C/wiki/Installation#composer">More info about Composer</a>';
             echo '</div>';
         } else {
             $json = file_get_contents(dirname(__FILE__) . '/../../composer.json');
@@ -219,7 +220,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 error, make sure they are enabled in your PHP configuration and try 
                 restarting your web server.';
             echo "</div>";
-            exit;
+            return false;
         }
         $db_keys = array_keys($supportedTypes);
         $defaultDbType = $db_keys[0];
@@ -512,6 +513,12 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         <?php
         echo installTextField('FANNIE_COOP_ID', $FANNIE_COOP_ID);
         ?>
+        <br />Home Page (URL)
+        <br />Normally the item editor is displayed by default but another page or site can
+        be designated instead.
+        <?php
+        echo installTextField('FANNIE_HOME_PAGE', $FANNIE_HOME_PAGE, 'item/ItemEditorPage.php');
+        ?>
 
         <hr />
         <h4 class="install">Locale</h4>
@@ -593,6 +600,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'BatchBarcodesModel',
             'BatchTypeModel',
             'BatchMergeTableModel',
+            'CoopDealsItemsModel',
             'CronBackupModel',
             'CustdataModel',
             'CustdataBackupModel',
@@ -607,6 +615,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'DepartmentsModel',
             'DisableCouponModel',
             'EmployeesModel',
+            'EquityPaymentPlansModel',
+            'EquityPaymentPlanAccountsModel',
             'FloorSectionsModel',
             'HouseCouponsModel',
             'HouseCouponItemsModel',
@@ -936,4 +946,3 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
 
 FannieDispatch::conditionalExec();
 
-?>

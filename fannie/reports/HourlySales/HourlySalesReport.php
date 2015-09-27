@@ -39,6 +39,7 @@ class HourlySalesReport extends FannieReportPage
 
     protected $sortable = false;
     protected $no_sort_but_style = true;
+    protected $new_tablesorter = true;
 
     public function preprocess()
     {
@@ -106,8 +107,8 @@ class HourlySalesReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_COOP_ID;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $date1 = FormLib::get('date1', date('Y-m-d'));
         $date2 = FormLib::get('date2', date('Y-m-d'));
@@ -173,7 +174,7 @@ class HourlySalesReport extends FannieReportPage
         $query .= "WHERE d.trans_type IN ('I','D')
                     AND d.tdate BETWEEN ? AND ?
                     AND $where ";
-        if ($FANNIE_COOP_ID == 'WFC_Duluth') {
+        if ($this->config->get('COOP_ID') == 'WFC_Duluth') {
             $query .= ' AND d.department NOT IN (993, 998, 703) ';
         }
         $query .= " GROUP BY $date_selector, $hour
@@ -376,8 +377,8 @@ function showGraph(i) {
     </div>
 </div>
     <p>
-        <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>
-        <button type=reset name=reset class="btn btn-default"
+        <button type=submit name=submit value="Submit" class="btn btn-default btn-core">Submit</button>
+        <button type=reset name=reset class="btn btn-default btn-reset"
             onclick="$('#super-id').val('').trigger('change');">Start Over</button>
     </p>
 </form>

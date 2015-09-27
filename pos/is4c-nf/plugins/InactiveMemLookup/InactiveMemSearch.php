@@ -32,24 +32,8 @@ class InactiveMemSearch extends MemberLookup {
             AND Type=\'INACT\'
             ORDER BY personNum');
         $result = $dbc->exec_statement($query, array($num));
-        $inactives = array();
 
-        $ret = $this->default_value();
-        $i = 1;
-        while ($w = $dbc->fetch_row($result)) {
-            if (CoreLocal::get('InactiveMemUsage') == 1) {
-                $key = CoreLocal::get('defaultNonMem').'::'.$i;
-            } else {
-                $key = $w['CardNo'].'::'.$w['personNum'];
-                $inactives[] = $w['CardNo'];
-            }
-            $val = $w['CardNo'].'(CSC) '.$w['LastName'].', '.$w['FirstName'];
-            $ret['results'][$key] = $val;
-            $i++;
-        }
-        CoreLocal::set('InactiveMemList', $inactives);
-
-        return $ret;
+        return $this->resultToArray($dbc, $result);;
     }
 
     public function lookup_by_text($text)
@@ -61,22 +45,28 @@ class InactiveMemSearch extends MemberLookup {
             AND Type = \'INACT\'
             ORDER BY LastName, FirstName');
         $result = $dbc->exec_statement($query, array($text.'%'));    
+
+        return $this->resultToArray($dbc, $result);;
+    }
+
+    private function resultToArray($dbc, $result)
+    {
         $ret = $this->default_value();
         $inactives = array();
-        $i=1;
-        while ($w = $dbc->fetch_row($result)) {
+        $count=1;
+        while ($row = $dbc->fetch_row($result)) {
             if (CoreLocal::get('InactiveMemUsage') == 1) {
-                $key = CoreLocal::get('defaultNonMem').'::'.$i;
+                $key = CoreLocal::get('defaultNonMem').'::'.$count;
             } else {
-                $key = $w['CardNo'].'::'.$w['personNum'];
-                $inactives[] = $w['CardNo'];
+                $key = $w['CardNo'].'::'.$row['personNum'];
+                $inactives[] = $row['CardNo'];
             }
-            $val = $w['CardNo'].'(CSC) '.$w['LastName'].', '.$w['FirstName'];
+            $val = $row['CardNo'].'(CSC) '.$row['LastName'].', '.$row['FirstName'];
             $ret['results'][$key] = $val;
-            $i++;
+            $count++;
         }
         CoreLocal::set('InactiveMemList', $inactives);
-
+        
         return $ret;
     }
 

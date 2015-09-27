@@ -112,6 +112,30 @@ class CoreRESTfulRouter
         }
     }
 
+    private function hasParams($params)
+    {
+        return array_reduce(
+            $params, 
+            function($carry, $item) {
+                return $carry && isset($this->form->$item);
+            },
+            true
+        );
+    }
+
+    private function detectMethod()
+    {
+        $method = 'get';
+        try {
+            $method = $this->form->_method;
+        } catch (\Exception $ex) {
+            $req = filter_input(INPUTT_SERVER, 'REQUEST_METHOD');
+            $method = $req ? $req : 'get';
+        }
+
+        return strtolower($method);
+    }
+
     public function addRoute($r)
     {
         if (!in_array($r, $this->__routes)) {
@@ -126,12 +150,7 @@ class CoreRESTfulRouter
     public function readRoutes()
     {
         // routes begin with method
-        try {
-            $this->__method = $this->form->_method;
-        } catch (\Exception $ex) {
-            $this->__method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'get';
-        }
-        $this->__method = strtolower($this->__method);
+        $this->__method = $this->detectMethod();
 
         // find all matching routes
         $try_routes = array();
@@ -139,31 +158,11 @@ class CoreRESTfulRouter
             // correct request type
             if(substr($route,0,strlen($this->__method)) == $this->__method) {
                 $params = $this->routeParams($route);    
-                if ($params === false || count($params) === 0) {
-                    // route with no params
-                    if (!isset($try_routes[0])) {
-                        $try_routes[0] = array();
+                if ($params !== false && $this->hasParams($params)) {
+                    if (!isset($try_routes[count($params)])) {
+                        $try_routes[count($params)] = array();
                     }
-                    $try_routes[0][] = $route;
-                } else {
-                    // make sure all params provided
-                    $all = true;
-                    foreach($params as $p) {
-                        // just checking whether field exists
-                        // exception means it doesn't
-                        try {
-                            $this->form->$p;
-                        } catch (\Exception $e) {
-                            $all = false;
-                            break;
-                        }
-                    }
-                    if ($all) {
-                        if (!isset($try_routes[count($params)])) {
-                            $try_routes[count($params)] = array();
-                        }
-                        $try_routes[count($params)][] = $route;
-                    }
+                    $try_routes[count($params)][] = $route;
                 }
             }
         }
@@ -186,31 +185,46 @@ class CoreRESTfulRouter
         }
     }
 
+    private function handlerName($caller, $stem)
+    {
+        if (method_exists($caller, $stem . 'Handler')) {
+            return $stem . 'Handler';
+        } elseif (method_exists($caller, $stem . '_handler')) {
+            return $stem . '_handler';
+        } else {
+            return false;
+        }
+    }
+
+    private function viewName($caller, $stem)
+    {
+        if (method_exists($caller, $stem . 'View')) {
+            return $stem . 'View';
+        } elseif (method_exists($caller, $stem . '_view')) {
+            return $stem . '_view';
+        } else {
+            return false;
+        }
+    }
+
+
     public function handler($caller) 
     {
         $this->form = new \COREPOS\common\mvc\FormValueContainer();
         $this->readRoutes();
-        $handler = $this->__route_stem.'Handler';
-        $view = $this->__route_stem.'View';    
-        $old_handler = $this->__route_stem.'_handler';
-        $old_view = $this->__route_stem.'_view';    
+        $handler = $this->handlerName($caller, $this->__route_stem);
+        $view = $this->viewName($caller, $this->__route_stem);
         $ret = true;
-        if (method_exists($caller, $handler)) {
+        if ($handler !== false) {
             $ret = $caller->$handler();
-        } elseif (method_exists($caller, $old_handler)) {
-            $ret = $caller->$old_handler();
-        } elseif (method_exists($caller, $view)) {
-            $ret = true;
-        } elseif (method_exists($caller, $old_view)) {
+        } elseif ($view !== false) {
             $ret = true;
         } else {
             $ret = $this->unknownRequestHandler();
         }
 
-        if ($ret === true) {
-            return true;
-        } elseif ($ret === false) {
-            return false;
+        if ($ret === true || $ret === false) {
+            return $ret;
         } elseif (is_string($ret)) {
             header('Location: ' . $ret);
             return false;

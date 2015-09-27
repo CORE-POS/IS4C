@@ -221,9 +221,12 @@ class FannieReportPage extends FanniePage
                                 <option>CoreWarehouse</option>
                             </select>
                         </div>';
-                foreach ($source->additionalFields($reflector->getName()) as $field) {
-                    $source_select .= '<div class="form-group">' . $field->toHTML() . '</div>';
-                }
+                $source_select = array_reduce($source->additionalFields($reflector->getName()),
+                    function ($carry, $field) {
+                        return $carry . '<div class="form-group">' . $field->toHTML() . '</div>';
+                    },
+                    $source_select
+                );
                 $source_select .= '</div>';
                 $source_select = preg_replace('/\s\s+/', '', $source_select);
                 $this->addOnloadCommand("\$('#primary-content form').prepend('$source_select');\n");
@@ -321,18 +324,26 @@ class FannieReportPage extends FanniePage
                         $xlsdata[] = $headers1;
                     }
                     $report_data = $this->xlsMeta($report_data);
-                    foreach($report_data as $line) {
-                        $xlsdata[] = $line;
-                    }
+                    $xlsdata = array_reduce($report_data, 
+                        function($carry, $line) {
+                            $carry[] = $line;
+                            return $carry;
+                        },
+                        $xlsdata
+                    );
                     if (!empty($footers)) {
                         // A single footer row
                         if (!is_array($footers[0])) {
                             $xlsdata[] = $footers;
                         // More than one footer row
                         } else {
-                            foreach ($footers as $footer) {
-                                $xlsdata[] = $footer;
-                            }
+                            $xlsdata = array_reduce($footers, 
+                                function($carry, $footer) {
+                                    $carry[] = $footer;
+                                    return $carry;
+                                },
+                                $xlsdata
+                            );
                         }
                     }
                     $xlsdata[] = array('');
@@ -461,7 +472,7 @@ class FannieReportPage extends FanniePage
     */
     protected function checkDataCache()
     {
-        if (isset($_REQUEST['no-cache']) && $_REQUEST['no-cache'] === '1') {
+        if (isset($_GET['no-cache']) && $_GET['no-cache'] === '1') {
             return false;
         }
         $archive_db = $this->config->get('ARCHIVE_DB');
@@ -470,7 +481,7 @@ class FannieReportPage extends FanniePage
             return False;
         }
         $table = $archive_db . $dbc->sep() . "reportDataCache";
-        $hash = $_SERVER['REQUEST_URI'];
+        $hash = filter_input(INPUT_SERVER, 'REQUEST_URI');
         $hash = str_replace("&excel=xls","",$hash);
         $hash = str_replace("&excel=csv","",$hash);
         $hash = md5($hash);
@@ -500,7 +511,7 @@ class FannieReportPage extends FanniePage
             return false;
         }
         $table = $archive_db . $dbc->sep() . "reportDataCache";
-        $hash = $_SERVER['REQUEST_URI'];
+        $hash = filter_input(INPUT_SERVER, 'REQUEST_URI');
         $hash = str_replace("excel=xls","",$hash);
         $hash = str_replace("excel=csv","",$hash);
         $hash = str_replace("no-cache=1","",$hash);
@@ -638,40 +649,36 @@ class FannieReportPage extends FanniePage
                             </script>';
                     }
                     $ret .= '<div id="pre-report-content">';
-                    /**
-                      Detect PEAR and only offer XLS if
-                      the system is capable.
-                    */
-                    $pear = true;
-                    if (!class_exists('PEAR')) {
-                        $pear = @include_once('PEAR.php');
-                        if (!$pear) {
-                            $pear = false;
-                        }
-                    }
-                    if ($pear) {
+                    $uri = filter_input(INPUT_SERVER, 'REQUEST_URI');
+                    if (\COREPOS\Fannie\API\data\DataConvert::excelSupport()) {
                         $ret .= sprintf('<a href="%s%sexcel=xls">Download Excel</a>
                             &nbsp;&nbsp;&nbsp;&nbsp;',
-                            $_SERVER['REQUEST_URI'],
-                            (strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&')
+                            $uri,
+                            (strstr($uri, '?') === false ? '?' : '&')
                         );
                     }
                     $ret .= sprintf('<a href="%s%sexcel=csv">Download CSV</a>
                         &nbsp;&nbsp;&nbsp;&nbsp;
                         <a href="javascript:history.back();">Back</a>',
-                        $_SERVER['REQUEST_URI'],
-                        (strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&')
+                        $uri,
+                        (strstr($uri, '?') === false ? '?' : '&')
                     );
-                    foreach ($this->defaultDescriptionContent() as $line) {
-                        $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
-                    }
-                    foreach ($this->report_description_content() as $line) {
-                        $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
-                    }
+                    $ret = array_reduce($this->defaultDescriptionContent(),
+                        function ($carry, $line) {
+                            return $carry . (substr($line,0,1)=='<'?'':'<br />').$line;
+                        },
+                        $ret
+                    );
+                    $ret = array_reduce($this->report_description_content(),
+                        function ($carry, $line) {
+                            return $carry . (substr($line,0,1)=='<'?'':'<br />').$line;
+                        },
+                        $ret
+                    );
                     $ret .= '</div>';
                 }
                 if ($this->sortable || $this->no_sort_but_style) {
-                    $ret .= '<table class="mySortableTable tablesorter">';
+                    $ret .= '<table class="mySortableTable tablesorter tablesorter-bootstrap">';
                 } else {
                     $ret .= '<table class="mySortableTable" cellspacing="0" 
                         cellpadding="4" border="1">' . "\n";
@@ -760,9 +767,12 @@ class FannieReportPage extends FanniePage
         switch(strtolower($format)) {
             case 'html':
                 $ret .= '</table>';
-                foreach($this->report_end_content() as $line) {
-                    $ret .= (substr($line,0,1)=='<'?'':'<br />').$line;
-                }
+                $ret = array_reduce($this->report_end_content(),
+                    function ($carry, $line) {
+                        return $carry . (substr($line,0,1)=='<'?'':'<br />').$line;
+                    },
+                    $ret
+                );
                 if (!$this->no_jquery && !$this->new_tablesorter) {
                     if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
                         // windows has trouble with symlinks
@@ -792,6 +802,16 @@ class FannieReportPage extends FanniePage
                         $this->add_onload_command("\$.tablesorter.themes.bootstrap['header'] += ' table-condensed small';");
                         $this->add_onload_command("\$('.mySortableTable').tablesorter({sortList: $sort, theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
                     }
+                } elseif ($this->new_tablesorter) {
+                    /**
+                      New bootstrap-themed tablesorter requires more setup to style correctly
+                      even when sorting isn't used. Simply including a CSS file is not sufficient.
+                    */
+                    $this->add_onload_command("\$.tablesorter.themes.bootstrap['active'] = 'info';");
+                    $this->add_onload_command("\$.tablesorter.themes.bootstrap['table'] += ' tablesorter-core table-condensed small';");
+                    $this->add_onload_command("\$.tablesorter.themes.bootstrap['header'] += ' table-condensed small';");
+                    $this->add_onload_command("\$('.mySortableTable thead th').data('sorter', false);\n");
+                    $this->add_onload_command("\$('.mySortableTable').tablesorter({theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
                 }
                 break;
             case 'csv':
@@ -825,26 +845,41 @@ class FannieReportPage extends FanniePage
                         array_push($xlsdata,$footers);
                     // More than one footer row
                     } else {
-                        foreach ($footers as $footer) {
-                            array_push($xlsdata,$footer);
-                        }
+                        $xlsdata = array_reduce($footers, 
+                            function($carry, $footer) {
+                                $carry[] = $footer;
+                                return $carry;
+                            },
+                            $xlsdata
+                        );
                     }
                 }
-                foreach ($this->report_end_content() as $line) {
-                    array_push($xlsdata, array(strip_tags($line)));
-                }
-                foreach ($this->defaultDescriptionContent() as $line) {
-                    array_unshift($xlsdata,array(strip_tags($line)));
-                }
-                foreach ($this->report_description_content() as $line) {
-                    array_unshift($xlsdata,array(strip_tags($line)));
-                }
-                if (!function_exists('ArrayToXls')) {
-                    include_once(dirname(__FILE__) . '/../src/ReportConvert/ArrayToXls.php');
-                }
-                $ret = ArrayToXls($xlsdata);
+                $xlsdata = array_reduce($this->report_end_content(), 
+                    function($carry, $line) {
+                        $carry[] = strip_tags($line);
+                        return $carry;
+                    },
+                    $xlsdata
+                );
+                $xlsdata = array_merge(array_reduce($this->report_description_content(), 
+                    function($carry, $line) {
+                        $carry[] = strip_tags($line);
+                        return $carry;
+                    },
+                    array()
+                ),$xlsdata); // prepend
+                $xlsdata = array_merge(array_reduce($this->defaultDescriptionContent(), 
+                    function($carry, $line) {
+                        $carry[] = strip_tags($line);
+                        return $carry;
+                    },
+                    array() 
+                ), $xlsdata); // prepend
+                $ext = \COREPOS\Fannie\API\data\DataConvert::excelFileExtension();
+                $ret = \COREPOS\Fannie\API\data\DataConvert::arrayToExcel($xlsdata);
                 header('Content-Type: application/ms-excel');
-                header('Content-Disposition: attachment; filename="'.$this->header.'.xls"');
+                header('Content-Disposition: attachment; filename="'
+                    . $this->header . '.' . $ext . '"');
                 break;
         }
 
@@ -896,17 +931,13 @@ class FannieReportPage extends FanniePage
         $tag = $header ? 'th' : 'td';
 
         if (($meta & self::META_BOLD) != 0) {
-            $ret = "</tbody>\n<tbody>\n" . $ret;
             $tag = 'th';
         }
         if (($meta & self::META_BLANK) != 0) {
             $ret = "</tbody>\n<tbody>\n\t<tr>\n";
-            $row = array();
             $header1 = $this->select_headers(False);
             // just using headers as a column count
-            foreach ($header1 as $h) {
-                $row[] = null;
-            }
+            $row = array_map(function ($item) { return null; }, $header1);
         }
         $color_styles = '';
         if (($meta & self::META_COLOR) != 0) {
@@ -923,10 +954,8 @@ class FannieReportPage extends FanniePage
             $ret = "</tbody>\n<tbody>\n\t<tr>\n";
             $tag = 'th';
             $row = array();
-            $header1 = $this->select_headers(True);
-            foreach($header1 as $h) {
-                $row[] = $h;
-            }
+            $header1 = $this->select_headers(true);
+            $row = array_filter($header1, function ($item) { return true; });
         }
 
         $date = false;
@@ -950,8 +979,7 @@ class FannieReportPage extends FanniePage
                 $row[$i] = '&nbsp;';
             } elseif (is_numeric($row[$i]) && strlen($row[$i]) == 13) {
                 // auto-link UPCs to edit tool
-                $row[$i] = sprintf('<a target="_new%s" href="%sitem/itemMaint.php?upc=%s">%s</a>',
-                    $row[$i],$url,$row[$i],$row[$i]);
+                $row[$i] = \COREPOS\Fannie\API\lib\FannieUI::itemEditorLink($row[$i]);
             } else if (!$header && !$date && preg_match('/^\d\d\d\d-\d\d-\d\d$/', $row[$i])) {
                 // cell contains a date column
                 $date = $row[$i];
@@ -1014,19 +1042,13 @@ class FannieReportPage extends FanniePage
             unset($row['meta']);
         }
         if (($meta & self::META_BLANK) != 0) {
-            $row = array();
             $header1 = $this->select_headers(False);
             // just using headers as a column count
-            foreach($header1 as $h) {
-                $row[] = null;
-            }
+            $row = array_map(function ($val) { return null; }, $header1);
         }
         if (($meta & self::META_REPEAT_HEADERS) != 0) {
-            $row = array();
             $header1 = $this->select_headers(True);
-            foreach($header1 as $h) {
-                $row[] = strip_tags($h);
-            }
+            $row = array_map(function ($val) { return strip_tags($val); }, $header1);
         }
         $ret = "";
         foreach($row as $item) {
@@ -1076,16 +1098,11 @@ class FannieReportPage extends FanniePage
                 $row = array();
                 $header1 = $this->select_headers(False);
                 // just using headers as a column count
-                foreach($header1 as $h) {
-                    $row[] = null;
-                }
+                $row = array_map(function($i){ return null; }, $header1);
             }
             if (($meta & self::META_REPEAT_HEADERS) != 0) {
-                $row = array();
                 $header1 = $this->select_headers(True);
-                foreach($header1 as $h) {
-                    $row[] = strip_tags($h);
-                }
+                $row = array_map(function($i){ return strip_tags($i); }, $header1);
             }
             $fixup[] = $row;
         }
@@ -1102,15 +1119,12 @@ class FannieReportPage extends FanniePage
             $this->report_format = 'xls';
             $this->window_dressing = false;
             /**
-              Verify whether PEAR is available. If it is not,
+              Verify whether Excel support is available. If it is not,
               fall back to CSV output. Should probably
               generate some kind of log message or notification.
             */
-            if (!class_exists('PEAR')) {
-                $pear = @include_once('PEAR.php');
-                if (!$pear) {
-                    $this->report_format = 'csv';
-                }
+            if (!\COREPOS\Fannie\API\data\DataConvert::excelSupport()) {
+                $this->report_format = 'csv';
             }
         } elseif (FormLib::get('excel') === 'csv') {
             $this->report_format = 'csv';
@@ -1153,8 +1167,8 @@ class FannieReportPage extends FanniePage
             }
 
             if ($this->readinessCheck() !== false) {
-                $fn = $this->content_function;
-                echo $this->$fn();
+                $func = $this->content_function;
+                echo $this->$func();
             } else {
                 echo $this->errorContent();
             }
@@ -1195,11 +1209,13 @@ class FannieReportPage extends FanniePage
                     echo '</style>';
                 }
 
-                foreach($this->css_files as $css_url) {
-                    printf('<link rel="stylesheet" type="text/css" href="%s">',
-                        $css_url);
-                    echo "\n";
-                }
+                echo array_reduce($this->css_files,
+                    function ($carry, $css_url) {
+                        return $carry . sprintf('<link rel="stylesheet" type="text/css" href="%s">' . "\n",
+                                        $css_url);
+                    },
+                    ''
+                );
             }
 
             if ($this->window_dressing || $this->report_format == 'html') {

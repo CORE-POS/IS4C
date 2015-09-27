@@ -149,8 +149,8 @@ function logout(){
     /**
       Remove session data from the database
     */
-    if (isset($_COOKIE['session_data'])){
-        $cookie_data = base64_decode($_COOKIE['session_data']);
+    if (filter_input(INPUT_COOKIE, 'session_data') !== null) {
+        $cookie_data = base64_decode(filter_input(INPUT_COOKIE, 'session_data'));
         $session_data = unserialize($cookie_data);
 
         $name = $session_data['name'];
@@ -260,11 +260,11 @@ function checkLogin(){
   if (init_check())
     return 'init';
 
-  if (!isset($_COOKIE['session_data'])){
+  if (filter_input(INPUT_COOKIE, 'session_data') === null) {
     return false;
   }
 
-  $cookie_data = base64_decode($_COOKIE['session_data']);
+  $cookie_data = base64_decode(filter_input(INPUT_COOKIE, 'session_data'));
   $session_data = unserialize($cookie_data);
 
   $name = $session_data['name'];
@@ -313,13 +313,19 @@ function showUsers(){
   echo "</table>";
 }
 
-function getUserList(){
+function getUserList()
+{
     $sql = dbconnect();
     $ret = array();
-    $prep = $sql->prepare_statement("SELECT name,uid FROM Users ORDER BY name");
-    $result = $sql->exec_statement($prep);
-    while($row = $sql->fetch_row($result))
+    $result = $sql->query('
+        SELECT name,
+            uid
+        FROM Users
+        ORDER BY name');
+    while ($row = $sql->fetch_row($result)) {
         $ret[$row['uid']] = $row['name'];
+    }
+
     return $ret;
 }
 
@@ -431,15 +437,15 @@ function validateUserQuiet($auth,$sub='all'){
 // user is currently logged in
 // must be called prior to any output
 function refreshSession(){
-  return true;
-  if (!isset($_COOKIE['session_data']))
-    return false;
-  setcookie('session_data',$_COOKIE['session_data'],0,'/');
-  return true;
+    return true;
+    if (filter_input(INPUT_COOKIE, 'session_data') === null)
+        return false;
+    setcookie('session_data',filter_input(INPUT_COOKIE, 'session_data'),0,'/');
+    return true;
 }
 
 function pose($username){
-    if (!isset($_COOKIE['session_data']))
+    if (filter_input(INPUT_COOKIE, 'session_data') === null)
         return false;
     if (!isAlphanumeric($username))
         return false;
@@ -449,4 +455,3 @@ function pose($username){
     return true;
 }
 
-?>

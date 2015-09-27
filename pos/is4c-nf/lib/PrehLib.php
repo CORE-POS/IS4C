@@ -34,8 +34,8 @@ class PrehLib extends LibraryClass
 static public function clearMember()
 {
     CoreState::memberReset();
-    $db = Database::tDataConnect();
-    $db->query("UPDATE localtemptrans SET card_no=0,percentDiscount=NULL");
+    $dbc = Database::tDataConnect();
+    $dbc->query("UPDATE localtemptrans SET card_no=0,percentDiscount=NULL");
     CoreLocal::set("ttlflag",0);    
     $opts = array('upc'=>'DEL_MEMENTRY');
     TransRecord::add_log_record($opts);
@@ -55,8 +55,7 @@ static public function clearMember()
   to be set immediately, use setMember().
 */
 static public function memberID($member_number) 
-{
-    $query = "
+{ $query = "
         SELECT CardNo,
             personNum
         FROM custdata
@@ -119,7 +118,7 @@ static public $requestInfoMsg = 'Card for which member?';
 static public function requestInfoCallback($info)
 {
     TransRecord::addcomment("CARD FOR #".$info);
-    self::setMember($row["CardNo"], $row["personNum"]);
+    self::setMember(5607, 1);
 
     return true;
 }
@@ -476,25 +475,18 @@ static public function checkstatus($num)
         'discountable' => 0,
         'discounttype' => 0,
         'caseprice' => 0,
-        'refund' => False,
+        'refund' => false,
         'status' => ''
     );
 
-    if (!$num) {
-        $num = 0;
-    }
-
     $query = "select voided,unitPrice,discountable,
         discounttype,trans_status
-        from localtemptrans where trans_id = ".$num;
+        from localtemptrans where trans_id = ".((int)$num);
 
     $db = Database::tDataConnect();
     $result = $db->query($query);
 
-
-    $num_rows = $db->num_rows($result);
-
-    if ($num_rows > 0) {
+    if ($result && $db->numRows($result) > 0) {
         $row = $db->fetch_array($result);
 
         $ret['voided'] = $row['voided'];
@@ -505,14 +497,11 @@ static public function checkstatus($num)
 
         if ($row["trans_status"] == "V") {
             $ret['status'] = 'V';
-        }
-
-        // added by apbw 6/04/05 to correct voiding of refunded items 
-        if ($row["trans_status"] == "R") {
+        } elseif ($row["trans_status"] == "R") {
             CoreLocal::set("refund",1);
             CoreLocal::set("autoReprint",1);
             $ret['status'] = 'R';
-            $ret['refund'] = True;
+            $ret['refund'] = true;
         }
     }
     
@@ -565,14 +554,14 @@ static public function tender($right, $strl)
     */
     $base_object = new TenderModule($right, $strl);
     Database::getsubtotals();
-    $ec = $base_object->ErrorCheck();
-    if ($ec !== true) {
-        $ret['output'] = $ec;
+    $error = $base_object->ErrorCheck();
+    if ($error !== true) {
+        $ret['output'] = $error;
         return $ret;
     }
-    $pr = $base_object->PreReqCheck();
-    if ($pr !== true) {
-        $ret['main_frame'] = $pr;
+    $prereq = $base_object->PreReqCheck();
+    if ($prereq !== true) {
+        $ret['main_frame'] = $prereq;
         return $ret;
     }
 
@@ -612,14 +601,14 @@ static public function tender($right, $strl)
         /**
           Do tender-specific error checking and prereqs
         */
-        $ec = $tender_object->ErrorCheck();
-        if ($ec !== true) {
-            $ret['output'] = $ec;
+        $error = $tender_object->ErrorCheck();
+        if ($error !== true) {
+            $ret['output'] = $error;
             return $ret;
         }
-        $pr = $tender_object->PreReqCheck();
-        if ($pr !== true) {
-            $ret['main_frame'] = $pr;
+        $prereq = $tender_object->PreReqCheck();
+        if ($prereq !== true) {
+            $ret['main_frame'] = $prereq;
             return $ret;
         }
     }
@@ -801,9 +790,9 @@ static public function deptkey($price, $dept,$ret=array())
             if (CoreLocal::get("memAge")=="") {
                 CoreLocal::set("memAge",date('Ymd'));
             }
-            $ts = strtotime(CoreLocal::get("memAge"));
+            $stamp = strtotime(CoreLocal::get("memAge"));
             $required_age = $row['dept_see_id'];
-            $of_age_on_day = mktime(0, 0, 0, date('n', $ts), date('j', $ts), date('Y', $ts) + $required_age);
+            $of_age_on_day = mktime(0, 0, 0, date('n', $stamp), date('j', $stamp), date('Y', $stamp) + $required_age);
             $today = strtotime( date('Y-m-d') );
             if ($of_age_on_day > $today) {
                 $ret['udpmsg'] = 'twoPairs';
@@ -1100,8 +1089,6 @@ static public function ttl()
 
         $amtDue = str_replace(",", "", CoreLocal::get("amtdue"));
 
-        CoreLocal::set("ccTermOut","total:".
-            str_replace(".","",sprintf("%.2f",$amtDue)));
         $memline = "";
         if(CoreLocal::get("memberID") != CoreLocal::get("defaultNonMem")) {
             $memline = " #" . CoreLocal::get("memberID");
@@ -1251,9 +1238,6 @@ static public function omtr_ttl()
 
         $amtDue = str_replace(",", "", CoreLocal::get("amtdue"));
 
-        CoreLocal::set("ccTermOut","total:".
-            str_replace(".","",sprintf("%.2f",$amtDue)));
-
         // Compose the member ID string for the description.
         if(CoreLocal::get("memberID") != CoreLocal::get("defaultNonMem")) {
             $memline = " #" . CoreLocal::get("memberID");
@@ -1334,14 +1318,14 @@ static public function wicableTotal()
 static public function peekItem($full_record=false)
 {
     $db = Database::tDataConnect();
-    $q = "SELECT description FROM localtemptrans ORDER BY trans_id DESC";
-    $r = $db->query($q);
-    $w = $db->fetch_row($r);
+    $query = "SELECT description FROM localtemptrans ORDER BY trans_id DESC";
+    $res = $db->query($query);
+    $row = $db->fetch_row($res);
 
     if ($full_record) {
-        return is_array($w) ? $w : false;
+        return is_array($row) ? $row : false;
     } else {
-        return isset($w['description']) ? $w['description'] : false;
+        return isset($row['description']) ? $row['description'] : false;
     }
 }
 
@@ -1453,18 +1437,22 @@ static public function percentDiscount($strl,$json=array())
         $result = $db->query($query);
 
         $num_rows = $db->num_rows($result);
-            if ($num_rows == 0) $couponTotal = 0;
-        else {
+        if ($num_rows == 0) {
+            $couponTotal = 0;
+        } else {
             $row = $db->fetch_array($result);
             $couponTotal = MiscLib::nullwrap($row["total"]);
         }
-            if ($couponTotal == 0 || $strl == 0) {
+        if ($couponTotal == 0 || $strl == 0) {
 
-                if ($strl != 0) TransRecord::discountnotify($strl);
-                $db->query("update localtemptrans set percentDiscount = ".$strl);
+            if ($strl != 0) {
+                TransRecord::discountnotify($strl);
+            }
+            $db->query("update localtemptrans set percentDiscount = ".$strl);
             $chk = self::ttl();
-            if ($chk !== True)
+            if ($chk !== true) {
                 $json['main_frame'] = $chk;
+            }
             $json['output'] = DisplayLib::lastpage();
         } else {
             $json['output'] = DisplayLib::xboxMsg(
