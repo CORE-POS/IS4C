@@ -198,7 +198,7 @@ class HouseCoupon extends SpecialUPC
                 $validQtty = $minW[0];
                 if ($infoW['minType'] == 'Q+' && $validQtty <= $infoW["minValue"]) {
                     return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
-                } elseif ($infoW['minType'] == 'Q' && $validQty < $infoW['minValue']) {
+                } elseif ($infoW['minType'] == 'Q' && $validQtty < $infoW['minValue']) {
                     return $this->errorOrQuiet(_('coupon requirements not met'), $quiet);
                 }
                 break;
@@ -611,7 +611,8 @@ class HouseCoupon extends SpecialUPC
             FROM localtemptrans AS l
                 INNER JOIN ' . CoreLocal::get('pDatabase') . $dbc->sep() . 'houseCouponItems AS h 
                 ON h.upc=' . ($mode=='upc' ? 'l.upc' : 'l.department') . '
-            WHERE l.coupID=' . ((int)$coupID);
+            WHERE h.coupID=' . ((int)$coupID);
+        return $ret;
     }
 }
 

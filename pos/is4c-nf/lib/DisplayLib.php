@@ -443,7 +443,7 @@ private static function displayableText($field, $color=true, $total=true)
         return trim($field) == '' ? '&nbsp;' : $field;
     } elseif ($field == 0 && $color == "408080") {
         return "&nbsp;";
-    } elseif (strlen($field) > 0) {
+    } elseif (is_numeric($field) && strlen($field) > 0) {
         return number_format($field, 2);
     } else {
         return $field;

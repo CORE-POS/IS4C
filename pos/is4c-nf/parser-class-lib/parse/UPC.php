@@ -69,7 +69,7 @@ class UPC extends Parser
         $prefixes = $this->prefixes();
         if (is_numeric($str) && strlen($str) < 16) {
             return true;
-        } elseif ($this->getPrefix() !== false) { 
+        } elseif ($this->getPrefix($str) !== false) { 
             return true;
         }
 
@@ -88,7 +88,7 @@ class UPC extends Parser
 
     private function getPrefix($str)
     {
-        foreach ($this->prefixes as $prefix) {
+        foreach ($this->prefixes() as $prefix) {
             $len = strlen($prefix);
             if (substr($str,0,$len) == $prefix && is_numeric(substr($str, $len))) {
                 return $prefix;
