@@ -69,7 +69,7 @@ class OrderItemLib
                 p.description,
                 p.normal_price,
                 p.special_price,
-                CASE WHEN p.cost=0 AND v.cost<>0 THEN p.cost ELSE v.cost END AS cost,
+                CASE WHEN p.cost=0 AND v.cost<>0 THEN v.cost ELSE p.cost END AS cost,
                 COALESCE(v.saleCost, 0) AS saleCost,
                 p.discounttype,
                 p.discount AS discountable,
@@ -146,7 +146,7 @@ class OrderItemLib
                 p.description,
                 p.normal_price,
                 p.special_price,
-                CASE WHEN p.cost=0 AND v.cost<>0 THEN p.cost ELSE v.cost END AS cost,
+                CASE WHEN p.cost=0 AND v.cost<>0 THEN v.cost ELSE p.cost END AS cost,
                 COALESCE(v.saleCost, 0) AS saleCost,
                 p.discounttype,
                 p.discount AS discountable,
@@ -275,14 +275,8 @@ class OrderItemLib
     */
     private static function notStockedUnitPrice($item, $is_member)
     {
-        /**
-          @Configurability: show be configurable to markdown from
-          retail or mark up from wholesale
-          WFC assumes vendorItems entries have SRPs even if they aren't
-          stocked which is why it can work down from retail price.
-        */
-        if ($is_member) {
-            return $item['discountable'] ? 0.85 * $item['normal_price'] : $item['normal_price'];
+        if ($item['discountable']) {
+            return self::markUpOrDown($item, $is_member);
         } else {
             return $item['normal_price'];
         }
@@ -294,12 +288,19 @@ class OrderItemLib
     */
     private static function stockedUnitPrice($item, $is_member)
     {
-        /**
-          @Configurability: show be configurable to markdown from
-          retail or mark up from wholesale
-        */
-        if ($is_member) {
-            return $item['discountable'] ? 0.85 * $item['normal_price'] : $item['normal_price'];
+        if ($item['discountable']) {
+            return self::markUpOrDown($item, $is_member);
+        } else {
+            return $item['normal_price'];
+        }
+    }
+
+    public static function markUpOrDown($item, $is_member)
+    {
+        if ($is_member['type'] == 'markdown') {
+            return (1.0-$is_member['amount']) * $item['normal_price'];
+        } elseif ($is_member['type'] == 'markup') {
+            return (1.0+$is_member['amount']) * $item['cost'];
         } else {
             return $item['normal_price'];
         }
@@ -319,7 +320,7 @@ class OrderItemLib
             return false;
         } elseif ($item['discounttype'] == 1) {
             return self::saleApplies($item);
-        } elseif ($item['discounttype'] == 2 && $is_member) {
+        } elseif ($item['discounttype'] == 2 && $is_member['isMember']) {
             return self::saleApplies($item);
         } 
 
@@ -355,21 +356,47 @@ class OrderItemLib
     */
     public static function manualQuantityRequired($item)
     {
-        /**
-          @Configurability: this is extremely WFC-specific.
-          A field in SpecialOrderDeptMap could list a default
-          manual quantity rather than hardcoding values here.
-        */
         $dbc = self::dbc(); 
+        $table = FannieConfig::config('TRANS_DB') . $dbc->sep() . 'SpecialOrderDeptMap';
         $superP = $dbc->prepare("
-            SELECT superID 
-            FROM superdepts 
+            SELECT minQty 
+            FROM " . $table . "
             WHERE dept_ID=?");
         $req = $dbc->getValue($superP, array($item['department']));
-        if ($req == 5) {
-            return 3;
+        if ($req > 0) {
+            return $req;
         } else {
             return false;
+        }
+    }
+
+    public static function memPricing($cardno)
+    {
+        $default = array(
+            'type' => 'markdown',
+            'amount' => 0,
+            'isMember' => false,
+        );
+        $dbc = self::dbc();
+        $table = FannieConfig::config('TRANS_DB') . $dbc->sep() . 'SpecialOrderDiscounts';
+        $prep = $dbc->prepare('
+            SELECT d.type,
+                d.amount,
+                c.Type AS cType
+            FROM ' . $table . ' AS d
+                INNER JOIN custdata AS c ON c.memType=d.memType
+            WHERE c.CardNo=?
+                AND c.personNum=1
+        ');
+        $res = $dbc->getRow($prep, array($cardno));
+        if ($res) {
+            return array(
+                'type' => $res['type'],
+                'amount' => $res['amount'],
+                'isMember' => $res['cType'] == 'PC' ? true : false,
+            );
+        } else {
+            return $default;
         }
     }
 }
