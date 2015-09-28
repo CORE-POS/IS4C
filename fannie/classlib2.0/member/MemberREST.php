@@ -1148,17 +1148,17 @@ class MemberREST
     private static function autoCompleteFirstName($val)
     {
         if (\FannieConfig::config('CUST_SCHEMA') == 1) {
-            $query = 'SELECT FirstName
-            FROM custdata
-            WHERE FirstName LIKE ?
-            GROUP BY FirstName
-            ORDER BY FirstName';
-        } else {
             $query = 'SELECT firstName
             FROM Customers
             WHERE firstName LIKE ?
             GROUP BY firstName
             ORDER BY firstName';
+        } else {
+            $query = 'SELECT FirstName
+            FROM custdata
+            WHERE FirstName LIKE ?
+            GROUP BY FirstName
+            ORDER BY FirstName';
         }
 
         return array($query, array('%' . $val . '%'));
@@ -1167,17 +1167,17 @@ class MemberREST
     private static function autoCompleteLastName($val)
     {
         if (\FannieConfig::config('CUST_SCHEMA') == 1) {
-            $query = 'SELECT LastName
-            FROM custdata
-            WHERE LastName LIKE ?
-            GROUP BY LastName
-            ORDER BY LastName';
-        } else {
             $query = 'SELECT lastName
             FROM Customers
             WHERE lastName LIKE ?
             GROUP BY lastName
             ORDER BY lastName';
+        } else {
+            $query = 'SELECT LastName
+            FROM custdata
+            WHERE LastName LIKE ?
+            GROUP BY LastName
+            ORDER BY LastName';
         }
 
         return array($query, array('%' . $val . '%'));
