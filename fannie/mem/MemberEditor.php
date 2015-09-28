@@ -172,12 +172,12 @@ class MemberEditor extends FanniePage {
             $ret = array('', '');
             if ($prev != false) {
                 $ret[0] = sprintf('<a id="prevLink" href="MemberEditor.php?memNum=%d">Prev</a>',
-                    $prev['cardNo']
+                    $prev
                 );
             }
             if ($next != false) {
                 $ret[1] = sprintf('<a id="nextLink" href="MemberEditor.php?memNum=%d">Next</a>',
-                    $next['cardNo']
+                    $next
                 );
             }
             
