@@ -1136,7 +1136,7 @@ class MemberREST
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
         while ($row = $dbc->fetch_row($res)) {
-            $ret[] = $row['firstName'];
+            $ret[] = $row[0];
             if (count($ret) > 50) {
                 break;
             }
