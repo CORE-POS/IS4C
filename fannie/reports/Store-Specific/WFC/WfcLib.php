@@ -52,7 +52,7 @@ class WfcLib
         return $sum;
     }
 
-    private static function sumRow($sum, $col_order, $formatting)
+    private static function sumRow($sum, $col_order, $formatting, $sum_col)
     {
         $ret = "<tr>";
         foreach($col_order as $c){
@@ -74,7 +74,7 @@ class WfcLib
 
         if ($sum_col != -1 && count($data) > 0){
             $sum = self::sumData($data, $sum_col);
-            $ret .= self::sumRow($sum, $col_order, $formatting);
+            $ret .= self::sumRow($sum, $col_order, $formatting, $sum_col);
         }
 
         $ret .= "</table>";
