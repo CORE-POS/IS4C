@@ -45,11 +45,7 @@ class AccessProgramParser extends Parser {
             return $ret;
         }
 
-        if ($str == 'ACCESS' && CoreLocal::get('msgrepeat') == 0) {
-            $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/adminlogin.php?class=AccessProgramParser';
-
-            return $ret;
-        } else if ($str == 'ACCESS') {
+        if ($str == 'ACCESS') {
             if (CoreLocal::get('AccessQuickMenu') != '' && class_exists('QuickMenuLauncher')) {
                 $qm = new QuickMenuLauncher();
 
@@ -57,6 +53,15 @@ class AccessProgramParser extends Parser {
             } else {
                 $str = 'ACCESS0';
             }
+        }
+
+        if ($str !== 'ACCESS6' && CoreLocal::get('AccessSelection') === '') {
+            CoreLocal::set('AccessSelection', $str);
+            $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/adminlogin.php?class=AccessProgramParser';
+
+            return $ret;
+        } else {
+            CoreLocal::set('AccessSelection', '');
         }
 
         $selection = substr($str, 6);
@@ -74,18 +79,20 @@ class AccessProgramParser extends Parser {
         return $ret;
     }
 
-    public static $adminLoginMsg = 'Login to approve Acess Application';
+    public static $adminLoginMsg = 'Login to approve Access Application';
     public static $adminLoginLevel = 30;
 
     public static function adminLoginCallback($success)
     {
         if ($success) {
-            CoreLocal::set('strRemembered', 'ACCESS');
+            CoreLocal::set('strRemembered', CoreLocal::get('AccessSelection'));
             CoreLocal::set('msgrepeat', 1);
 
             return true;
         } else {
+            CoreLocal::set('AccessSelection', '');
             return false;
         }
     }
 }
+
