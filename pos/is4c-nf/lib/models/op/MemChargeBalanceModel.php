@@ -53,53 +53,5 @@ lookup is faster if slightly stale data is acceptable.
     public function delete(){ return false; }
     public function save(){ return false; }
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False){ return 0; }
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function CardNo()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["CardNo"])) {
-                return $this->instance["CardNo"];
-            } elseif(isset($this->columns["CardNo"]["default"])) {
-                return $this->columns["CardNo"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["CardNo"] = func_get_arg(0);
-        }
-    }
-
-    public function availBal()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["availBal"])) {
-                return $this->instance["availBal"];
-            } elseif(isset($this->columns["availBal"]["default"])) {
-                return $this->columns["availBal"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["availBal"] = func_get_arg(0);
-        }
-    }
-
-    public function Balance()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["Balance"])) {
-                return $this->instance["Balance"];
-            } elseif(isset($this->columns["Balance"]["default"])) {
-                return $this->columns["Balance"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["Balance"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

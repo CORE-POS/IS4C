@@ -21,7 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
 if (!file_exists(dirname(__FILE__).'/../config.php')){
     echo "Missing config file!<br />";
     echo "Create a file named config.php in ".realpath(dirname(__FILE__).'/../').'<br />';
@@ -29,7 +28,7 @@ if (!file_exists(dirname(__FILE__).'/../config.php')){
     echo "<div style=\"border: 1px solid black;padding: 5em;\">";
     echo '&lt;?php<br />';
     echo '</div>';  
-    exit;   
+    return false;   
 }
 
 require(dirname(__FILE__).'/../config.php'); 
@@ -221,7 +220,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 error, make sure they are enabled in your PHP configuration and try 
                 restarting your web server.';
             echo "</div>";
-            exit;
+            return false;
         }
         $db_keys = array_keys($supportedTypes);
         $defaultDbType = $db_keys[0];
@@ -947,4 +946,3 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
 
 FannieDispatch::conditionalExec();
 
-?>

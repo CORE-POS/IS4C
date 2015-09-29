@@ -120,6 +120,8 @@ class ReprintReceiptPage extends FanniePage
             if ($tenderTotal != "") {
                 $tender_clause .= " AND total=-1*? ";
                 $args[] = $tenderTotal;
+            } else {
+                $tender_clause .= ' AND total <> 0 ';
             }
             $tender_clause .= ")";
 

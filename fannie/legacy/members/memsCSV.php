@@ -32,4 +32,3 @@ echo ",";
 echo $row["memType"]."\r\n";
 }
 
-?>

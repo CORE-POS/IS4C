@@ -123,7 +123,16 @@ elseif ($batchID !== False){
 
 }
 
+if (!defined('FPDF_FONTPATH')) {
+  define('FPDF_FONTPATH','font/');
+}
+if (!class_exists('FPDF', false)) {
+    require($FANNIE_ROOT.'src/fpdf/fpdf.php');
+}
+if (!class_exists('FpdfWithBarcode', false)) {
+    include('FpdfWithBarcode.php');
+}
+
 include("pdf_layouts/".$layout.".php");
 $layout($data,$offset);
 
-?>

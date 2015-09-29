@@ -50,8 +50,5 @@ See dtransactions for details on what the columns
 are used for.
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
 }
 

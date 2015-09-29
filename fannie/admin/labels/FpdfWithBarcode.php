@@ -1,31 +1,30 @@
 <?php
 
-require($FANNIE_ROOT.'src/fpdf/fpdf.php');
-
 /****Credit for the majority of what is below for barcode generation
  has to go to Olivier for posting the script on the FPDF.org scripts
  webpage.****/
+if (!class_exists('FpdfWithBarcode', false)) {
 
-class BarcodePDF extends FPDF
+class FpdfWithBarcode extends FPDF
 {
    function EAN13($x,$y,$barcode,$h=16,$w=.35)
    {
-        $this->Barcode($x,$y,$barcode,$h,$w,13);
+      $this->Barcode($x,$y,$barcode,$h,$w,13);
    }
 
-   function UPC_A($x,$y,$barcode,$h=16,$w=.35,$nonumbers=False)
+   function UPC_A($x,$y,$barcode,$h=16,$w=.35)
    {
-      $this->Barcode($x,$y,$barcode,$h,$w,12,$nonumbers);
+      $this->Barcode($x,$y,$barcode,$h,$w,12);
     }
 
     function GetCheckDigit($barcode)
    {
-       //Compute the check digit
+      //Compute the check digit
       $sum=0;
       for($i=1;$i<=11;$i+=2)
-        $sum+=3*$barcode{$i};
+        $sum+=3*(isset($barcode[$i])?$barcode[$i]:0);
       for($i=0;$i<=10;$i+=2)
-        $sum+=$barcode{$i};
+        $sum+=(isset($barcode[$i])?$barcode[$i]:0);
       $r=$sum%10;
       if($r>0)
         $r=10-$r;
@@ -43,7 +42,7 @@ class BarcodePDF extends FPDF
       return ($sum+$barcode{12})%10==0;
    }
 
-   function Barcode($x,$y,$barcode,$h,$w,$len,$nonumbers=False)
+   function Barcode($x,$y,$barcode,$h,$w,$len)
    {
       //Padding
       $barcode=str_pad($barcode,$len-1,'0',STR_PAD_LEFT);
@@ -94,12 +93,16 @@ class BarcodePDF extends FPDF
         if($code{$i}=='1')
             $this->Rect($x+$i*$w,$y,$w,$h,'F');
       }
-      //Print text uder barcode
-      if (!$nonumbers){
-          $this->SetFont('Arial','',9);
-          $this->Text($x,$y+$h+11/$this->k,substr($barcode,-$len));
-      }
+      //Print text under barcode
+      $this->barcodeText($x, $y, $h, $barcode, $len);
+    }
+
+    function barcodeText($x, $y, $h, $barcode, $len)
+    {
+      $this->SetFont('Arial','',9);
+      $this->Text($x,$y+$h+11/$this->k,substr($barcode,-$len));
     }
 }
 
-?>
+}
+

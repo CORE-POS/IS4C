@@ -64,5 +64,10 @@ class Plugin extends \COREPOS\common\CorePlugin
     }
 
     protected static $unmapped_files = array('Plugin.php');
+
+    protected static function defaultSearchDir()
+    {
+        return realpath(dirname(__FILE__));
+    }
 }
 

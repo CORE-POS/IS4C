@@ -44,6 +44,9 @@ class UPC extends Parser
     const HID_PREFIX = '0XC';
     const HID_STATUS = 'HI';
 
+    const GS1_PREFIX = 'GS1~';
+    const GS1_STATUS = 'GS';
+
     /**
       The default case is pretty simple. A numeric string
       is checked as a UPC.
@@ -63,16 +66,33 @@ class UPC extends Parser
     */
     function check($str)
     {
+        $prefixes = $this->prefixes();
         if (is_numeric($str) && strlen($str) < 16) {
             return true;
-        } elseif (substr($str,0,strlen(self::SCANNED_PREFIX)) === self::SCANNED_PREFIX && is_numeric($substr($str, 3))) {
+        } elseif ($this->getPrefix($str) !== false) { 
             return true;
-        } elseif (substr($str,0,strlen(self::MACRO_PREFIX)) === self::MACRO_PREFIX && is_numeric($substr($str, 3))) {
-            return true;
-        } elseif (substr($str,0,strlen(self::HID_PREFIX)) === self::HID_PREFIX && is_numeric($substr($str, 3))) {
-            return true;
-        } elseif (substr($str,0,4) == "GS1~" && is_numeric(substr($str, 4))) {
-            return true;
+        }
+
+        return false;
+    }
+
+    private function prefixes()
+    {
+        return array(
+            self::SCANNED_STATUS => self::SCANNED_PREFIX, 
+            self::MACRO_STATUS => self::MACRO_PREFIX, 
+            self::HID_STATUS => self::HID_PREFIX, 
+            self::GS1_STATUS => self::GS1_PREFIX,
+        );
+    }
+
+    private function getPrefix($str)
+    {
+        foreach ($this->prefixes() as $prefix) {
+            $len = strlen($prefix);
+            if (substr($str,0,$len) == $prefix && is_numeric(substr($str, $len))) {
+                return $prefix;
+            }
         }
 
         return false;
@@ -80,18 +100,13 @@ class UPC extends Parser
 
     function parse($str)
     {
-        if (substr($str,0,4) == "GS1~") {
+        $this->source = $this->getPrefix($str);
+        if ($this->source == self::GS1_PREFIX) {
             $str = $this->fixGS1($str);
-            $this->source = self::SCANNED_PREFIX;
-        } elseif (substr($str, 0, strlen(self::SCANNED_PREFIX)) === self::SCANNED_PREFIX) {
-            $str = substr($str, strlen(self::SCANNED_PREFIX));
-            $this->source = self::SCANNED_PREFIX;
-        } elseif (substr($str, 0, strlen(self::MACRO_PREFIX)) === self::MACRO_PREFIX) {
-            $str = substr($str, strlen(self::MACRO_PREFIX));
-            $this->source = self::MACRO_PREFIX;
-        } elseif (substr($str, 0, strlen(self::HID_PREFIX)) === self::HID_PREFIX) {
-            $str = substr($str, strlen(self::HID_PREFIX));
-            $this->source = self::HID_PREFIX;
+            $prefixes = $this->prefixes();
+            $this->status = $prefixes[$this->source];
+        } else {
+            $this->status = self::GENERIC_STATUS;
         }
 
         /**
@@ -147,80 +162,14 @@ class UPC extends Parser
             }
         }
 
-        // leading/trailing whitespace creates issues
-        $entered = trim($entered);
-
-        // 6Jan14 - I have no idea why this is here
-        // unless some else does, it's probably legacy
-        // cruft. spaces in UPCs are bad.
-        //$entered = str_replace(".", " ", $entered);
+        $upc = $this->sanitizeUPC($entered);
 
         $quantity = CoreLocal::get("quantity");
-        if (CoreLocal::get("quantity") == 0 && CoreLocal::get("multiple") == 0) $quantity = 1;
-
-        /* exapnd UPC-E */
-        if (substr($entered, 0, 1) == 0 && strlen($entered) == 7) {
-            $p6 = substr($entered, -1);
-            if ($p6 == 0) $entered = substr($entered, 0, 3)."00000".substr($entered, 3, 3);
-            elseif ($p6 == 1) $entered = substr($entered, 0, 3)."10000".substr($entered, 3, 3);
-            elseif ($p6 == 2) $entered = substr($entered, 0, 3)."20000".substr($entered, 3, 3);
-            elseif ($p6 == 3) $entered = substr($entered, 0, 4)."00000".substr($entered, 4, 2);
-            elseif ($p6 == 4) $entered = substr($entered, 0, 5)."00000".substr($entered, 5, 1);
-            else $entered = substr($entered, 0, 6)."0000".$p6;
+        if (CoreLocal::get("quantity") == 0 && CoreLocal::get("multiple") == 0) {
+            $quantity = 1;
         }
 
-        /* make sure upc length is 13 */
-        $upc = "";
-        if (CoreLocal::get('EanIncludeCheckDigits') != 1) {
-            /** 
-              If EANs do not include check digits, the value is 13 digits long,
-              and the value does not begin with a zero, it most likely
-              represented a hand-keyed EAN13 value w/ check digit. In this configuration
-              it's probably a miskey so trim the last digit.
-            */
-            if (strlen($entered) == 13 && substr($entered, 0, 1) != 0) {
-                $upc = "0".substr($entered, 0, 12);
-            }
-        }
-        // pad value to 13 digits
-        $upc = substr("0000000000000".$entered, -13);
-
-        /* extract scale-sticker prices 
-           Mixed check digit settings do not work here. 
-           Scale UPCs and EANs must uniformly start w/
-           002 or 02.
-        */
-        $scalePrefix = '002';
-        $scaleStickerItem = false;
-        $scaleCheckDigits = false;
-        if (CoreLocal::get('UpcIncludeCheckDigits') == 1) {
-            $scalePrefix = '02';
-            $scaleCheckDigits = true;
-        }
-        $scalepriceUPC = 0;
-        $scalepriceEAN = 0;
-        // prefix indicates it is a scale-sticker
-        if (substr($upc, 0, strlen($scalePrefix)) == $scalePrefix) {
-            $scaleStickerItem = true;
-            // extract price portion of the barcode
-            // position varies depending whether a check
-            // digit is present in the upc
-            if ($scaleCheckDigits) {
-                $scalepriceUPC = MiscLib::truncate2(substr($upc, 8, 4)/100);
-                $scalepriceEAN = MiscLib::truncate2(substr($upc, 7, 5)/100);
-            } else {
-                $scalepriceUPC = MiscLib::truncate2(substr($upc, -4)/100);
-                $scalepriceEAN = MiscLib::truncate2(substr($upc, -5)/100);
-            }
-            $rewrite_class = CoreLocal::get('VariableWeightReWriter');
-            if ($rewrite_class === '' || !class_exists($rewrite_class)) {
-                $rewrite_class = 'ZeroedPriceReWrite';
-            }
-            $rewriter = new $rewrite_class();
-            $upc = $rewriter->translate($upc, $scaleCheckDigits);
-            // I think this is WFC special casing; needs revising.
-            if ($upc == "0020006000000" || $upc == "0020010000000") $scalepriceUPC *= -1;
-        }
+        list($scaleStickerItem,$scalepriceUPC,$scalepricEAN) = $this->rewriteScaleSticker($upc);
 
         $db = Database::pDataConnect();
         $table = $db->table_definition('products');
@@ -541,28 +490,9 @@ class UPC extends Parser
         $row['numflag'] = isset($row["local"])?$row["local"]:0;
         $row['description'] = str_replace("'","",$row['description']);
 
-        /* do tax shift */
-        $tax = $row['tax'];
-        if (CoreLocal::get("toggletax") != 0) {
-            $tax = ($tax==0) ? 1 : 0;
-            CoreLocal::set("toggletax",0);
-        }
+        list($tax, $foodstamp, $discountable) = $this->applyToggles($row['tax'], $row['foodstamp'], $row['discount']);
         $row['tax'] = $tax;
-
-        /* do foodstamp shift */
-        $foodstamp = $row["foodstamp"];
-        if (CoreLocal::get("togglefoodstamp") != 0){
-            CoreLocal::set("togglefoodstamp",0);
-            $foodstamp = ($foodstamp==0) ? 1 : 0;
-        }
         $row['foodstamp'] = $foodstamp;
-
-        /* do discount shifts */
-        $discountable = $row["discount"];
-        if (CoreLocal::get("toggleDiscountable") == 1) {
-            CoreLocal::set("toggleDiscountable",0);
-            $discountable = ($discountable == 0) ? 1 : 0;
-        }
         $row['discount'] = $discountable;
 
         /**
@@ -672,19 +602,7 @@ class UPC extends Parser
         $PMClasses = CoreLocal::get("PriceMethodClasses");
         $PriceMethodObject = null;
 
-        $status = self::GENERIC_STATUS;
-        switch ($this->source) {
-            case self::SCANNED_PREFIX:
-                $status = self::SCANNED_STATUS;
-                break;
-            case self::MACRO_PREFIX:
-                $status = self::MACRO_STATUS;
-                break;
-            case self::HID_PREFIX:
-                $status = self::HID_STATUS;
-                break;
-        }
-        $row['trans_subtype'] = $status;
+        $row['trans_subtype'] = $this->status;
 
         if ($pricemethod < 100 && isset(PriceMethod::$MAP[$pricemethod])) {
             $class = PriceMethod::$MAP[$pricemethod];
@@ -762,30 +680,9 @@ class UPC extends Parser
         $scale = 0;
         if ($row["scale"] != 0) $scale = 1;
 
-        $tax = 0;
-        if ($row["tax"] > 0 && CoreLocal::get("toggletax") == 0) {
-            $tax = $row["tax"];
-        } else if ($row["tax"] > 0 && CoreLocal::get("toggletax") == 1) {
-            $tax = 0;
-            CoreLocal::set("toggletax",0);
-        } else if ($row["tax"] == 0 && CoreLocal::get("toggletax") == 1) {
-            $tax = 1;
-            CoreLocal::set("toggletax",0);
-        }
-                        
-        $foodstamp = 0;
-        if ($row["foodstamp"] != 0 && CoreLocal::get("togglefoodstamp") == 0) {
-            $foodstamp = 1;
-        } else if ($row["foodstamp"] != 0 && CoreLocal::get("togglefoodstamp") == 1) {
-            $foodstamp = 0;
-            CoreLocal::set("togglefoodstamp",0);
-        } else if ($row["foodstamp"] == 0 && CoreLocal::get("togglefoodstamp") == 1) {
-            $foodstamp = 1;
-            CoreLocal::set("togglefoodstamp",0);
-        }
+        list($tax, $foodstamp, $discountable) = $this->applyToggles($row['tax'], $row['foodstamp'], $row['discount']);
 
         $discounttype = MiscLib::nullwrap($row["discounttype"]);
-        $discountable = $row["discount"];
 
         $quantity = 1;
         if (CoreLocal::get("quantity") != 0) {
@@ -835,6 +732,114 @@ class UPC extends Parser
         return $str; 
     }
 
+    public function expandUPCE($entered)
+    {
+        $p6 = substr($entered, -1);
+        if ($p6 == 0) $entered = substr($entered, 0, 3)."00000".substr($entered, 3, 3);
+        elseif ($p6 == 1) $entered = substr($entered, 0, 3)."10000".substr($entered, 3, 3);
+        elseif ($p6 == 2) $entered = substr($entered, 0, 3)."20000".substr($entered, 3, 3);
+        elseif ($p6 == 3) $entered = substr($entered, 0, 4)."00000".substr($entered, 4, 2);
+        elseif ($p6 == 4) $entered = substr($entered, 0, 5)."00000".substr($entered, 5, 1);
+        else $entered = substr($entered, 0, 6)."0000".$p6;
+
+        return $entered;
+    }
+
+    public function applyToggles($tax, $foodstamp, $discount)
+    {
+        if (CoreLocal::get("toggletax") != 0) {
+            $tax = ($tax==0) ? 1 : 0;
+            CoreLocal::set("toggletax",0);
+        }
+
+        if (CoreLocal::get("togglefoodstamp") != 0){
+            CoreLocal::set("togglefoodstamp",0);
+            $foodstamp = ($foodstamp==0) ? 1 : 0;
+        }
+
+        if (CoreLocal::get("toggleDiscountable") == 1) {
+            CoreLocal::set("toggleDiscountable",0);
+            $discount = ($discount == 0) ? 1 : 0;
+        }
+
+        return array($tax, $foodstamp, $discount);
+    }
+
+    public function sanitizeUPC($entered)
+    {
+        // leading/trailing whitespace creates issues
+        $entered = trim($entered);
+
+        /* exapnd UPC-E */
+        if (substr($entered, 0, 1) == 0 && strlen($entered) == 7) {
+            $entered = $this->expandUPCE($entered);
+        }
+
+        /* make sure upc length is 13 */
+        $upc = "";
+        if (CoreLocal::get('EanIncludeCheckDigits') != 1) {
+            /** 
+              If EANs do not include check digits, the value is 13 digits long,
+              and the value does not begin with a zero, it most likely
+              represented a hand-keyed EAN13 value w/ check digit. In this configuration
+              it's probably a miskey so trim the last digit.
+            */
+            if (strlen($entered) == 13 && substr($entered, 0, 1) != 0) {
+                $upc = "0".substr($entered, 0, 12);
+            }
+        }
+        // pad value to 13 digits
+        $upc = substr("0000000000000".$entered, -13);
+
+        return $upc;
+    }
+
+    /* extract scale-sticker prices 
+       Mixed check digit settings do not work here. 
+       Scale UPCs and EANs must uniformly start w/
+       002 or 02.
+       @return [array] 
+        boolean is-scale-sticker
+        number UPC-price
+        number EAN-price
+    */
+    private function rewriteScaleSticker($upc)
+    {
+        $scalePrefix = '002';
+        $scaleStickerItem = false;
+        $scaleCheckDigits = false;
+        if (CoreLocal::get('UpcIncludeCheckDigits') == 1) {
+            $scalePrefix = '02';
+            $scaleCheckDigits = true;
+        }
+        $scalepriceUPC = 0;
+        $scalepriceEAN = 0;
+        // prefix indicates it is a scale-sticker
+        if (substr($upc, 0, strlen($scalePrefix)) == $scalePrefix) {
+            $scaleStickerItem = true;
+            // extract price portion of the barcode
+            // position varies depending whether a check
+            // digit is present in the upc
+            if ($scaleCheckDigits) {
+                $scalepriceUPC = MiscLib::truncate2(substr($upc, 8, 4)/100);
+                $scalepriceEAN = MiscLib::truncate2(substr($upc, 7, 5)/100);
+            } else {
+                $scalepriceUPC = MiscLib::truncate2(substr($upc, -4)/100);
+                $scalepriceEAN = MiscLib::truncate2(substr($upc, -5)/100);
+            }
+            $rewrite_class = CoreLocal::get('VariableWeightReWriter');
+            if ($rewrite_class === '' || !class_exists($rewrite_class)) {
+                $rewrite_class = 'ZeroedPriceReWrite';
+            }
+            $rewriter = new $rewrite_class();
+            $upc = $rewriter->translate($upc, $scaleCheckDigits);
+            // I think this is WFC special casing; needs revising.
+            if ($upc == "0020006000000" || $upc == "0020010000000") $scalepriceUPC *= -1;
+        }
+
+        return array($scaleStickerItem, $scalepriceUPC, $scalepriceEAN);
+    }
+
     public static $requestInfoHeader = 'customer age';
     public static $requestInfoMsg = 'Type customer birthdate YYYYMMDD';
     public static function requestInfoCallback($info)
@@ -873,4 +878,3 @@ class UPC extends Parser
     }
 }
 
-?>

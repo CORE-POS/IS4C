@@ -96,7 +96,5 @@ reprinting receipts.
         }
     }
 
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
 }
 

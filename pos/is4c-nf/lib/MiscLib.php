@@ -155,27 +155,6 @@ static public function scaleObject()
 }
 
 /**
-  Get the signature capture wrapper object
-  @return An ScaleDriverWrapper object
-  
-  The driver is chosen via "termDriver"
-  in session. If the object cannot be 
-  found this returns zero.
-
-  Signature capture support is very alpha.
-*/
-static public function sigTermObject()
-{
-    $termDriver = CoreLocal::get("termDriver");
-    $sth = 0;
-    if ($termDriver != "") {
-        $sth = new $termDriver();
-    }
-
-    return $sth;
-}
-
-/**
   Send good beep message to the scale
 */
 static public function goodBeep() 

@@ -221,6 +221,7 @@ class FannieSignage
         $u_def = $dbc->tableDefinition('productUser');
         $query = 'SELECT l.upc,
                     l.salePrice AS normal_price,
+                    p.normal_price AS nonSalePrice,
                     CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
                     p.description AS posDescription,
                     CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
@@ -358,6 +359,7 @@ class FannieSignage
         $ids = substr($ids, 0, strlen($ids)-1);
         $query = 'SELECT p.upc,
                     CASE WHEN p.discounttype <> 0 THEN p.special_price ELSE p.normal_price END AS normal_price,
+                    p.normal_price AS nonSalePrice,
                     CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
                     p.description AS posDescription,
                     CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
@@ -394,6 +396,7 @@ class FannieSignage
         $ids = substr($ids, 0, strlen($ids)-1);
         $query = 'SELECT p.upc,
                     l.salePrice AS normal_price,
+                    p.normal_price AS nonSalePrice,
                     CASE WHEN u.description IS NULL OR u.description=\'\' THEN p.description ELSE u.description END as description,
                     p.description AS posDescription,
                     CASE WHEN u.brand IS NULL OR u.brand=\'\' THEN p.brand ELSE u.brand END as brand,
@@ -669,11 +672,13 @@ class FannieSignage
         $this->excludes[] = $upc;
     }
 
-    public function formatPrice($price, $multiplier=1)
+    public function formatPrice($price, $multiplier=1, $regPrice=0)
     {
         if ($multiplier > 1) {
             $ttl = round($multiplier*$price);
             return $multiplier . '/$' . $ttl;
+        } elseif ($multiplier < 0) {
+            return self::formatOffString($price, $multiplier, $regPrice);
         }
 
         if (substr($price, -3) == '.33') {
@@ -704,6 +709,28 @@ class FannieSignage
         } else {
             return sprintf('$%.2f', $price);
         }
+    }
+
+    protected static function formatOffString($price, $multiplier, $regPrice)
+    {
+        if ($regPrice == 0) {
+            return sprintf('%.2f', $price);
+        } elseif ($multiplier == -1) {
+            return self::dollarsOff($price, $regPrice);
+        } elseif ($multiplier == -2) {
+            return self::percentOff($price, $regPrice);
+        }
+    }
+
+    protected static function dollarsOff($price, $regPrice)
+    {
+        return sprintf('$%.2f off', $regPrice - $price);
+    }
+
+    protected static function percentOff($price, $regPrice)
+    {
+        $percent = 1.0 - ($price/$regPrice);
+        return sprintf('%d%% off', round($percent*100));
     }
 
     public function drawPDF()

@@ -50,10 +50,12 @@ class PIDocumentsPage extends PIKillerPage {
         </iframe>';
 
         echo '</td></tr>';
+        echo '<tr><td>
+            <button type="button" onclick="window.location=\'PISignaturePage.php\';">Sign</button>
+            </td></tr>';
         return ob_get_clean();
     }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

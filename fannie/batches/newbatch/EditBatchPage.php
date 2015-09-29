@@ -885,6 +885,7 @@ class EditBatchPage extends FannieRESTfulPage
         }
         $ret .= sprintf('<input type="hidden" id="batch-future-mode" value="%d" />', $future_mode ? 1 : 0);
         $ret .= "<a href=\"../../admin/labels/SignFromSearch.php?batch=$id\">Print Sale Signs</a> | ";
+        $ret .= "<a href=\"BatchSignStylesPage.php?id=$id\">Sign Pricing</a> | ";
         $ret .= "<a href=\"{$FANNIE_URL}admin/labels/BatchShelfTags.php?batchID%5B%5D=$id\">Print Shelf Tags</a> | ";
         $ret .= "<a href=\"\" onclick=\"generateTags($id); return false;\">Auto-tag</a> | ";
         if ($cpCount > 0) {
@@ -1027,7 +1028,7 @@ class EditBatchPage extends FannieRESTfulPage
             $ret .= "</tr>";
             if (substr($fetchW['upc'], 0, 2) == "LC") {
                 $likecode = rtrim(substr($fetchW['upc'],2));
-                $ret .= self::likeToTable($dbc, $likecode);
+                $ret .= self::likeToTable($dbc, $likecode, $fetchW['salePrice']);
             }
         }
         $ret .= "</table>";
@@ -1038,7 +1039,7 @@ class EditBatchPage extends FannieRESTfulPage
 
     private static $like_stmt = null;
     private static $like_args = null;
-    private static function likeToTable($dbc, $likecode)
+    private static function likeToTable($dbc, $likecode, $salePrice)
     {
         // singleton prepared statement
         if (self::$like_stmt === null) {
@@ -1069,7 +1070,7 @@ class EditBatchPage extends FannieRESTfulPage
                 target=_new{$likeW['upc']}>{$likeW['upc']}</a></td>";
             $ret .= "<td>{$likeW['description']}</td>";
             $ret .= "<td>{$likeW['normal_price']}</td>";
-            $ret .= "<td>{$fetchW['salePrice']}</td>";
+            $ret .= "<td>{$salePrice}</td>";
             $ret .= "<td>&nbsp;</td>";
             $ret .= "<td>&nbsp;</td>";
             $ret .= '</tr>';
@@ -1110,7 +1111,7 @@ class EditBatchPage extends FannieRESTfulPage
 
             if (substr($fetchW['upc'], 0, 2) == "LC") {
                 $likecode = rtrim(substr($fetchW['upc'],2));
-                $ret .= self::likeToTable($dbc, $likecode);
+                $ret .= self::likeToTable($dbc, $likecode, $fetchW['salePrice']);
             }
         }
 

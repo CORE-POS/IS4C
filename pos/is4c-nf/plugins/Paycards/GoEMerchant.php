@@ -301,15 +301,12 @@ class GoEMerchant extends BasicCCModule
 
         switch ($xml->get("STATUS")) {
             case 1: // APPROVED
-                CoreLocal::set("ccTermOut","approval:".str_pad($xml->get("AUTH_CODE"),6,'0',STR_PAD_RIGHT));
                 return PaycardLib::PAYCARD_ERR_OK;
             case 2: // DECLINED
-                CoreLocal::set("ccTermOut","approval:denied");
                 CoreLocal::set("boxMsg",$resultMsg);
                 TransRecord::addcomment("");    
                 break;
             case 0: // ERROR
-                CoreLocal::set("ccTermOut","resettotal");
                 CoreLocal::set("boxMsg","");
                 $texts = $xml->get_first("ERROR");
                 CoreLocal::set("boxMsg","Error: $texts");

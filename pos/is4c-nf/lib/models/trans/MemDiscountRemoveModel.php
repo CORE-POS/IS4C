@@ -154,7 +154,5 @@ member discounts if needed.
         return 0;
     }
 
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
 }
 

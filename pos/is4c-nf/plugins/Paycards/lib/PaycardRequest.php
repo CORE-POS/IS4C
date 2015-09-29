@@ -30,6 +30,7 @@ class PaycardRequest
         'track1' => 0,
         'track2' => 0,
     );
+    public $pan = '';
 
     public function __construct($refNum)
     {
@@ -221,7 +222,7 @@ class PaycardRequest
     {
         $this->setPAN($pan);
         $this->cardholder = $name;
-        $this->issuer = $isser;
+        $this->issuer = $issuer;
         $dbTrans = PaycardLib::paycard_db();
         $upP = $dbTrans->prepare('
             UPDATE PaycardTransactions

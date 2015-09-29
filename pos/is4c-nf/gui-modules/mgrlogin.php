@@ -169,10 +169,8 @@ class mgrlogin extends NoInputCorePage
     {
         CoreLocal::set("plainmsg",_("transaction cancelled"));
         UdpComm::udpSend("rePoll");
-        CoreLocal::set("ccTermOut","reset");
     }
 }
 
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
     new mgrlogin();
-?>

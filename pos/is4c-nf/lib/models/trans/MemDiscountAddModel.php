@@ -147,7 +147,5 @@ to apply the relevant discount(s).
         return 0;
     }
 
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
 }
 

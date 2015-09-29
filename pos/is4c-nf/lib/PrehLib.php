@@ -1089,8 +1089,6 @@ static public function ttl()
 
         $amtDue = str_replace(",", "", CoreLocal::get("amtdue"));
 
-        CoreLocal::set("ccTermOut","total:".
-            str_replace(".","",sprintf("%.2f",$amtDue)));
         $memline = "";
         if(CoreLocal::get("memberID") != CoreLocal::get("defaultNonMem")) {
             $memline = " #" . CoreLocal::get("memberID");
@@ -1239,9 +1237,6 @@ static public function omtr_ttl()
         }
 
         $amtDue = str_replace(",", "", CoreLocal::get("amtdue"));
-
-        CoreLocal::set("ccTermOut","total:".
-            str_replace(".","",sprintf("%.2f",$amtDue)));
 
         // Compose the member ID string for the description.
         if(CoreLocal::get("memberID") != CoreLocal::get("defaultNonMem")) {

@@ -66,8 +66,8 @@ class EpScaleLib
         }
         $et_line .= 'DNO' . $scale_model->epDeptNo() . chr(253);
         $et_line .= 'SAD' . $scale_model->epScaleAddress() . chr(253);
-        $et_line .= 'PNO' . $item['PLU'] . chr(253);
-        $et_line .= 'INO' . $item['PLU'] . chr(253);
+        $et_line .= 'PNO' . $item_info['PLU'] . chr(253);
+        $et_line .= 'INO' . $item_info['PLU'] . chr(253);
         $item_info['ExpandedText'] = str_replace("\r", '', $item_info['ExpandedText']);
         $item_info['ExpandedText'] = str_replace("\n", '<br>', $item_info['ExpandedText']);
         $et_line .= 'ITE' . $item_info['ExpandedText'] . chr(253);

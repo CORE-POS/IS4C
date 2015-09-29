@@ -74,6 +74,11 @@ class BasicModel
     protected $instance = array();
 
     /**
+      List of WHERE clauses
+    */
+    protected $filters = array();
+    
+    /**
       Name of preferred database
     */
     protected $preferred_db = '';
@@ -772,70 +777,6 @@ class BasicModel
         return $ret;
     }
 
-    /**
-      Rewrite the given file to create accessor
-      functions for all of its columns
-    */
-    public function generate($filename)
-    {
-        $start_marker = '/* START ACCESSOR FUNCTIONS */';
-        $end_marker = '/* END ACCESSOR FUNCTIONS */';
-        $before = '';
-        $after = '';
-        $foundStart = false;
-        $foundEnd = false;
-        $fp = fopen($filename,'r');
-        while(!feof($fp)) {
-            $line = fgets($fp);
-            if (!$foundStart) {
-                $before .= $line;
-                if (strstr($line,$start_marker)) {
-                    $foundStart = true;
-                }
-            } elseif($foundStart && !$foundEnd) {
-                if (strstr($line, $end_marker)) {
-                    $foundEnd = true;
-                    $after .= $line;
-                }
-            } elseif($foundStart && $foundEnd) {
-                $after .= $line;
-            }
-        }
-        fclose($fp);
-
-        if (!$foundStart || !$foundEnd) {
-            echo "Error: could not locate code block\n";
-            if (!$foundStart) echo "Missing start\n";
-            if (!$foundEnd) echo "Missing end\n";
-            return false;
-        }
-
-        $fp = fopen($filename,'w');
-        fwrite($fp,$before);
-        foreach($this->columns as $name => $definition) {
-            fwrite($fp,"\n");
-            fwrite($fp,"    public function ".$name."()\n");
-            fwrite($fp,"    {\n");
-            fwrite($fp,"        if(func_num_args() == 0) {\n");
-            fwrite($fp,'            if(isset($this->instance["'.$name.'"])) {'."\n");
-            fwrite($fp,'                return $this->instance["'.$name.'"];'."\n");
-            fwrite($fp,'            } elseif(isset($this->columns["'.$name.'"]["default"])) {'."\n");
-            fwrite($fp,'                return $this->columns["'.$name.'"]["default"];'."\n");
-            fwrite($fp,"            } else {\n");
-            fwrite($fp,"                return null;\n");
-            fwrite($fp,"            }\n");
-            fwrite($fp,"        } else {\n");
-            fwrite($fp,'            $this->instance["'.$name.'"] = func_get_arg(0);'."\n");
-            fwrite($fp,"        }\n");
-            fwrite($fp,"    }\n");
-        }
-        fwrite($fp,$after);
-        fclose($fp);
-
-        return true;
-    // generate()
-    }
-
     public function newModel($name)
     {
         $fp = fopen($name.'.php','w');
@@ -872,9 +813,6 @@ class $name extends BasicModel\n");
         fwrite($fp,"\n");
         fwrite($fp,"    protected \$columns = array(\n");
         fwrite($fp,"    );\n");
-        fwrite($fp,"\n");
-        fwrite($fp,"    /* START ACCESSOR FUNCTIONS */\n");
-        fwrite($fp,"    /* END ACCESSOR FUNCTIONS */\n");
         fwrite($fp,"}\n");
         fwrite($fp,"\n");
         fclose($fp);
@@ -945,6 +883,70 @@ class $name extends BasicModel\n");
             );
         }
     }
+
+    public function getColumn($col)
+    {
+        if (isset($this->instance[$col])) {
+            return $this->instance[$col];
+        } elseif (isset($this->columns[$col]) && isset($this->columns[$col]['default'])) {
+            return $this->columns[$col]['default'];
+        } else {
+            return null;
+        }
+    }
+
+    public function setColumn($col, $val)
+    {
+        if (!isset($this->instance[$col]) || $this->instance[$col] != $val) {
+            if (!isset($this->columns[$col]['ignore_updates']) || $this->columns[$col]['ignore_updates'] == false) {
+                $this->record_changed = true;
+            }
+        }
+        $this->instance[$col] = $val;
+    }
+
+    public function filterColumn($col, $val, $op, $literal=false)
+    {
+        $valid_op = $this->validateOp($op);
+        if ($valid_op === false) {
+            throw new Exception('Invalid operator: ' . $op);
+        }
+        $this->filters[] = array(
+            'left' => $col,
+            'right' => $val,
+            'op' => $valid_op,
+            'rightIsLiteral' => $literal,
+        );
+    }
+
+    public function __call($name, $arguments)
+    {
+        if (!isset($this->columns[$name])) {
+            foreach ($this->columns as $col => $info) {
+                if (isset($info['replaces']) && $info['replaces'] == $name) {
+                    $name = $col;
+                    break;
+                } elseif (strtolower($col) == strtolower($name)) {
+                    $name = $col;
+                    break;
+                }
+            }
+            if (!isset($this->columns[$name])) {
+                $refl = new ReflectionClass($this);
+                throw new Exception('Invalid accessor: ' . $refl->getName() . ':: ' . $name);
+            }
+        }
+
+        if (count($arguments) == 0) {
+            return $this->getColumn($name);
+        } elseif (count($arguments) == 1) {
+            $this->setColumn($name, $arguments[0]);
+        } else {
+            $literal = isset($arguments[2]) && $arguments[2] === true ? true : false;
+            $this->filterColumn($name, $arguments[0], $arguments[1], $literal);
+        }
+    }
+
 }
 
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
@@ -999,12 +1001,10 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
     }
 
     /* Argument signatures, to php, where BasicModel.php is the first:
-   * 2 args: Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
    * 3 args: Create new Model: php BasicModel.php --new <Model Name>\n";
    * 4 args: Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename[[Model].php]>\n";
     */
-    if (($argc < 2 || $argc > 4) || ($argc == 3 && $argv[1] != "--new") || ($argc == 4 && $argv[1] != '--update')) {
-        echo "Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
+    if (($argc < 3 || $argc > 4) || ($argc == 3 && $argv[1] != "--new") || ($argc == 4 && $argv[1] != '--update')) {
         echo "Create new Model: php BasicModel.php --new <Model Name>\n";
         echo "Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename>\n";
         echo "Generate markdown documentation: php BasicModel.php --doc <Model Filename(s)>\n";
@@ -1052,37 +1052,26 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         exit;
     }
 
-    // Generate accessor functions
-    if ($argc == 2) {
-        $try = $obj->generate($classfile);
-        if ($try) {
-            echo "Generated accessor functions\n";
-        } else {
-            echo "Failed to generate functions\n";
-        }
-    } else if ($argc == 4) {
-        // Update Table Structure
-        // Show what changes are needed but don't make them yet.
-        $try = $obj->normalize($argv[2],BasicModel::NORMALIZE_MODE_CHECK);
-        // If there was no error and there is anything to change,
-        //  including creating the table.
-        // Was: If the table exists and there is anything to change
-        //  get OK to change.
-        if ($try !== false && $try > 0) {
-            while(true) {
-                echo 'Apply Changes [Y/n]: ';
-                $in = rtrim(fgets(STDIN));
-                if ($in === 'n' || $in === false || $in === '') {
-                    echo "Goodbye.\n";
-                    break;
-                } elseif($in ==='Y') {
-                    // THIS WILL APPLY PROPOSED CHANGES!
-                    $obj->normalize($argv[2], BasicModel::NORMALIZE_MODE_APPLY, true);
-                    break;
-                }
+    // Update Table Structure
+    // Show what changes are needed but don't make them yet.
+    $try = $obj->normalize($argv[2],BasicModel::NORMALIZE_MODE_CHECK);
+    // If there was no error and there is anything to change,
+    //  including creating the table.
+    // Was: If the table exists and there is anything to change
+    //  get OK to change.
+    if ($try !== false && $try > 0) {
+        while(true) {
+            echo 'Apply Changes [Y/n]: ';
+            $in = rtrim(fgets(STDIN));
+            if ($in === 'n' || $in === false || $in === '') {
+                echo "Goodbye.\n";
+                break;
+            } elseif($in ==='Y') {
+                // THIS WILL APPLY PROPOSED CHANGES!
+                $obj->normalize($argv[2], BasicModel::NORMALIZE_MODE_APPLY, true);
+                break;
             }
         }
     }
-    exit;
 }
 

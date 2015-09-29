@@ -74,7 +74,7 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
                 }
                 $price .= ' /lb.';
             } elseif (isset($item['signMultiplier'])) {
-                $price = $this->formatPrice($item['normal_price'], $item['signMultiplier']);
+                $price = $this->formatPrice($item['normal_price'], $item['signMultiplier'], $item['nonSalePrice']);
             } else {
                 $price = $this->formatPrice($item['normal_price']);
             }

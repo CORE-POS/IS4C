@@ -10,3 +10,4 @@ exclude_paths:
 - "fannie/src/javascript/*"
 - "fannie/src/fpdf/*"
 - "fannie/src/Excel/*"
+- "fannie/modules/plugins2.0/CoopDealsSigns/noauto/fonts/*"

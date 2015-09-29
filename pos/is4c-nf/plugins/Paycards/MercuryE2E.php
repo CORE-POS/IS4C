@@ -206,10 +206,7 @@ class MercuryE2E extends BasicCCModule
 
         $responseCode = $xml->get("CMDSTATUS");
         if ($responseCode) {
-            // map response status to 0/1/2 for compatibility
-            if ($responseCode == "Approved") $responseCode=1;
-            elseif ($responseCode == "Declined") $responseCode=2;
-            elseif ($responseCode == "Error") $responseCode=0;
+            $responseCode = $this->responseToNumber($responseCode);
         } else {
             $validResponse = -3;
         }
@@ -351,10 +348,7 @@ class MercuryE2E extends BasicCCModule
 
         $responseCode = $xml->get("CMDSTATUS");
         if ($responseCode) {
-            // map response status to 0/1/2 for compatibility
-            if ($responseCode == "Approved") $responseCode=1;
-            elseif ($responseCode == "Declined") $responseCode=2;
-            elseif ($responseCode == "Error") $responseCode=0;
+            $responseCode = $this->responseToNumber($responseCode);
         } else {
             $validResponse = -3;
         }
@@ -508,8 +502,8 @@ class MercuryE2E extends BasicCCModule
                 } 
                 break;
             case PaycardLib::PAYCARD_MODE_VOID:
-                $v = new Void();
-                $v->voidid(CoreLocal::get("paycard_id"), array());
+                $void = new Void();
+                $void->voidid(CoreLocal::get("paycard_id"), array());
                 // advanced ID to the void line
                 CoreLocal::set('paycard_id', CoreLocal::get('paycard_id')+1);
                 CoreLocal::set("boxMsg","<b>Voided</b>
@@ -636,14 +630,7 @@ class MercuryE2E extends BasicCCModule
             $msgXml .= "</AuthCode>";
             $msgXml .= "</TransInfo>";
         } else if (CoreLocal::get("ebt_authcode") != "" && CoreLocal::get("ebt_vnum") != "") {
-            $msgXml .= "<TransInfo>";
-            $msgXml .= "<AuthCode>";
-            $msgXml .= CoreLocal::get("ebt_authcode");
-            $msgXml .= "</AuthCode>";
-            $msgXml .= "<VoucherNo>";
-            $msgXml .= CoreLocal::get("ebt_vnum");
-            $msgXml .= "</VoucherNo>";
-            $msgXml .= "</TransInfo>";
+            $msgXml .= $this->ebtVoucherXml();
         }
         $msgXml .= "</Transaction>
             </TStream>";
@@ -755,7 +742,7 @@ class MercuryE2E extends BasicCCModule
             $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
             return 'Error';
         }
-        CoreLocal::set('LastEmvPcId', $request->last_paycard_transaction_id);
+    CoreLocal::set('LastEmvPcId', array($request->last_paycard_transaction_id, $request->last_req_id));
         CoreLocal::set('LastEmvReqType', 'normal');
 
         // start with fields common to PDCX and EMVX
@@ -818,14 +805,7 @@ class MercuryE2E extends BasicCCModule
                 $msgXml .= '<IpAddress>' . $this->giftServerIP() . '</IpAddress>';
             }
             if (CoreLocal::get("ebt_authcode") != "" && CoreLocal::get("ebt_vnum") != "") {
-                $msgXml .= "<TranInfo>";
-                $msgXml .= "<AuthCode>";
-                $msgXml .= CoreLocal::get("ebt_authcode");
-                $msgXml .= "</AuthCode>";
-                $msgXml .= "<VoucherNo>";
-                $msgXml .= CoreLocal::get("ebt_vnum");
-                $msgXml .= "</VoucherNo>";
-                $msgXml .= "</TranInfo>";
+                $msgXml .= $this->ebtVoucherXml();
             }
         }
         $msgXml .= '
@@ -869,7 +849,7 @@ class MercuryE2E extends BasicCCModule
 
         try {
             $request->saveRequest();
-            CoreLocal::set('LastEmvPcId', $request->last_paycard_transaction_id);
+        CoreLocal::set('LastEmvPcId', array($request->last_paycard_transaction_id, $request->last_req_id));
             CoreLocal::set('LastEmvReqType', 'void');
         } catch (Exception $ex) {
             $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
@@ -1090,7 +1070,7 @@ class MercuryE2E extends BasicCCModule
             $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
             return 'Error';
         }
-        CoreLocal::set('LastEmvPcId', $request->last_paycard_transaction_id);
+        CoreLocal::set('LastEmvPcId', array($request->last_paycard_transaction_id, $request->last_req_id));
         CoreLocal::set('LastEmvReqType', 'gift');
         CoreLocal::set('paycard_amount', $amount);
         CoreLocal::set('paycard_id', CoreLocal::get('LastID'+1));
@@ -1147,7 +1127,9 @@ class MercuryE2E extends BasicCCModule
         } else {
             $request = new PaycardRequest($ref);
         }
-        $request->last_paycard_transaction_id = CoreLocal::get('LastEmvPcId');
+    $id_set = CoreLocal::get('LastEmvPcId');
+        $request->last_paycard_transaction_id = $id_set[0];
+    $request->last_req_id = $id_set[1];
         $this->last_paycard_transaction_id = $request->last_paycard_transaction_id;
         $response = new PaycardResponse($request,array(
             'curlTime' => 0,
@@ -1161,14 +1143,7 @@ class MercuryE2E extends BasicCCModule
         $responseCode = $xml->query('/RStream/CmdResponse/CmdStatus');
         $resultMsg = $responseCode;
         if ($responseCode) {
-            // map response status to 0/1/2 for compatibility
-            if ($responseCode == "Approved") {
-                $responseCode=1;
-            } elseif ($responseCode == "Declined") {
-                $responseCode=2;
-            } elseif ($responseCode == "Error") {
-                $responseCode=0;
-            }
+            $responseCode = $this->responseToNumber($responseCode);
         } else {
             $validResponse = -3;
         }
@@ -1176,7 +1151,7 @@ class MercuryE2E extends BasicCCModule
         $resultCode = $xml->query('/RStream/CmdResponse/DSIXReturnCode');
         $response->setResultCode($resultCode);
         $apprNumber = $xml->query('/RStream/TranResponse/AuthCode');
-        $response->approvalNum($apprNumber);
+        $response->setApprovalNum($apprNumber);
         $rMsg = $resultMsg;
         if ($resultMsg) {
             $rMsg = $resultMsg;
@@ -1198,6 +1173,7 @@ class MercuryE2E extends BasicCCModule
             $validResponse = -3;
         }
 
+        $issuer = $xml->query('/RStream/TranResponse/CardType');
         $resp_balance = $xml->query('/RStream/TranResponse/Balance');
         $ebtbalance = 0;
         if ($issuer == 'Foodstamp' && $resp_balance !== false) {
@@ -1224,7 +1200,6 @@ class MercuryE2E extends BasicCCModule
             CoreLocal::set('EmvSignature', false);
         }
         if (substr($tran_code, 0, 3) == 'EMV') {
-            $i = 1;
             $printData = $xml->query('/RStream/PrintData/*', false);
             if (strlen($printData) > 0) {
                 $receiptID = $transID;
@@ -1250,11 +1225,11 @@ class MercuryE2E extends BasicCCModule
             $normalized = 3;
         }
         $response->setNormalizedCode($normalized);
-        $response->setToken(array(
+        $response->setToken(
             $xml->query('/RStream/TranResponse/RecordNo'),
             $xml->query('/RStream/TranResponse/ProcessData'),
-            $xml->query('/RStream/TranResponse/AcqRefData'),
-        ));
+            $xml->query('/RStream/TranResponse/AcqRefData')
+        );
 
         try {
             $response->saveResponse();
@@ -1330,14 +1305,7 @@ class MercuryE2E extends BasicCCModule
         $validResponse = ($xml->isValid()) ? 1 : 0;
         $responseCode = $xml->get("CMDSTATUS");
         if ($responseCode) {
-            // map response status to 0/1/2 for compatibility
-            if ($responseCode == "Approved") {
-                $responseCode=1;
-            } elseif ($responseCode == "Declined") {
-                $responseCode=2;
-            } elseif ($responseCode == "Error") {
-                $responseCode=0;
-            }
+            $responseCode = $this->responseToNumber($responseCode);
         } else {
             $validResponse = -3;
         }
@@ -1715,15 +1683,41 @@ class MercuryE2E extends BasicCCModule
         if (isset($host_cache[$host])) {
             return $host_cache[$host];
         } else {
-            $ip = gethostbyname($host);
-            if ($ip === $host) { // name did not resolve
+            $addr = gethostbyname($host);
+            if ($addr === $host) { // name did not resolve
                 return $host;
             } else { // cache IP for next time
-                $host_cache[$host] = $ip;
+                $host_cache[$host] = $addr;
                 CoreLocal::set('DnsCache', $host_cache);
-                return $ip;
+                return $addr;
             }
         }
+    }
+
+    private function responseToNumber($responseCode)
+    {
+        // map response status to 0/1/2 for compatibility
+        if ($responseCode == "Approved") {
+            return 1;
+        } elseif ($responseCode == "Declined") {
+            return 2;
+        } elseif ($responseCode == "Error") {
+            return 0;
+        } else {
+            return -1;
+        }
+    }
+
+    private function ebtVoucherXml()
+    {
+        return "<TranInfo>
+            <AuthCode>
+            " . CoreLocal::get("ebt_authcode") . "
+            </AuthCode>
+            <VoucherNo>
+            " . CoreLocal::get("ebt_vnum") . "
+            </VoucherNo>
+            </TranInfo>";
     }
 }
 

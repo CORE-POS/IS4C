@@ -47,53 +47,5 @@ rows in some reports. By convention, a department\'s
 "master" superdepartment is the one with the lowest superID.
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function superID()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["superID"])) {
-                return $this->instance["superID"];
-            } elseif(isset($this->columns["superID"]["default"])) {
-                return $this->columns["superID"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["superID"] = func_get_arg(0);
-        }
-    }
-
-    public function super_name()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["super_name"])) {
-                return $this->instance["super_name"];
-            } elseif(isset($this->columns["super_name"]["default"])) {
-                return $this->columns["super_name"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["super_name"] = func_get_arg(0);
-        }
-    }
-
-    public function dept_ID()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["dept_ID"])) {
-                return $this->instance["dept_ID"];
-            } elseif(isset($this->columns["dept_ID"]["default"])) {
-                return $this->columns["dept_ID"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["dept_ID"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

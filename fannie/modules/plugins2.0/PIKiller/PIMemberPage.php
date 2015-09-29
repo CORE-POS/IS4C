@@ -532,4 +532,3 @@ class PIMemberPage extends PIKillerPage {
 
 FannieDispatch::conditionalExec();
 
-?>

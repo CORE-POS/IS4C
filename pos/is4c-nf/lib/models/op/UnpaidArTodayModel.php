@@ -46,53 +46,5 @@ but checking a local table is faster if
 slightly stale data is acceptable
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function card_no()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["card_no"])) {
-                return $this->instance["card_no"];
-            } elseif(isset($this->columns["card_no"]["default"])) {
-                return $this->columns["card_no"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["card_no"] = func_get_arg(0);
-        }
-    }
-
-    public function old_balance()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["old_balance"])) {
-                return $this->instance["old_balance"];
-            } elseif(isset($this->columns["old_balance"]["default"])) {
-                return $this->columns["old_balance"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["old_balance"] = func_get_arg(0);
-        }
-    }
-
-    public function recent_payments()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["recent_payments"])) {
-                return $this->instance["recent_payments"];
-            } elseif(isset($this->columns["recent_payments"]["default"])) {
-                return $this->columns["recent_payments"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["recent_payments"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

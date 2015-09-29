@@ -43,8 +43,5 @@ By the data is removed from localtrans it should be
 safely archived on the server side anyway.
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
 }
 

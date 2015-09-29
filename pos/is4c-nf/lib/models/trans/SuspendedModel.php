@@ -41,8 +41,5 @@ Local table for suspending transactions if
 server connection is temporarily unavailable
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
 }
 

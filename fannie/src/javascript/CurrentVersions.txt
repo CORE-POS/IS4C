@@ -9,3 +9,4 @@ Currently installed versions of javascript libraries:
 * chosen             1.4.2       09Jul2015
 * ScannerLib-Linea   2.0.0       20Oct2014
 * cordova (linea)    2.2.0       20Oct2014
+* signature_pad      1.5.0       28Sep2015
