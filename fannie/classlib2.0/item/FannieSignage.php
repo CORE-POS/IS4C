@@ -711,12 +711,23 @@ class FannieSignage
         }
     }
 
+    protected static function formatScalePrice($price, $multiplier, $regPrice)
+    {
+        if ($multiplier == -1) {
+            return 'Save $' . self::dollarsOff($price, $regPrice) . '/lb';
+        } elseif ($multiplier == -2) {
+            return self::percentOff($price, $regPrice);
+        } else {
+            return sprintf('$%.2f /lb.', $price);
+        }
+    }
+
     protected static function formatOffString($price, $multiplier, $regPrice)
     {
         if ($regPrice == 0) {
             return sprintf('%.2f', $price);
         } elseif ($multiplier == -1) {
-            return self::dollarsOff($price, $regPrice);
+            return sprintf('$%.2f off', self::dollarsOff($price, $regPrice));
         } elseif ($multiplier == -2) {
             return self::percentOff($price, $regPrice);
         }
@@ -724,7 +735,12 @@ class FannieSignage
 
     protected static function dollarsOff($price, $regPrice)
     {
-        return sprintf('$%.2f off', $regPrice - $price);
+        // floating point arithmetic goes bonkers here
+        $signPrice = sprintf('%.2f', ($regPrice - $price));
+        if (substr($signPrice, -3) === '.00') {
+            $signPrice = substr($signPrice, 0, strlen($signPrice)-3);
+        }
+        return $signPrice;
     }
 
     protected static function percentOff($price, $regPrice)
