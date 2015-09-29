@@ -31,16 +31,6 @@ class MemDates extends \COREPOS\Fannie\API\member\MemberModule {
     function showEditForm($memNum, $country="US")
     {
         $account = self::getAccount();
-        if (date('Y', strtotime($account['startDate'])) > 1900) {
-            $account['startDate'] = date('Y-m-d', strtotime($account['startDate']));
-        } else {
-            $account['startDate'] = '';
-        }
-        if (date('Y', strtotime($account['endDate'])) > 1900) {
-            $account['endDate'] = date('Y-m-d', strtotime($account['endDate']));
-        } else {
-            $account['endDate'] = '';
-        }
 
         $ret = "<div class=\"panel panel-default\">
             <div class=\"panel-heading\">Membership Dates</div>
@@ -50,11 +40,13 @@ class MemDates extends \COREPOS\Fannie\API\member\MemberModule {
         $ret .= '<span class="label primaryBackground">Start</span>';
         $ret .= sprintf(' <input name="MemDates_start"
                 maxlength="10" value="%s" id="MemDates_start"
-                class="form-control date-field" /> ',$account['startDate']); 
+                class="form-control date-field" /> ',
+                \COREPOS\Fannie\API\lib\FannieUI::formatDate($account['startDate'])); 
         $ret .= '<span class="label primaryBackground">End</span>';
         $ret .= sprintf(' <input name="MemDates_end" 
                 maxlength="10" value="%s" id="MemDates_end"
-                class="form-control date-field" />',$account['endDate']);  
+                class="form-control date-field" />',
+                \COREPOS\Fannie\API\lib\FannieUI::formatDate($account['endDate'])); 
         $ret .= '</div>';
 
         $ret .= "</div>";
