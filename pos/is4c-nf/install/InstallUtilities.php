@@ -758,7 +758,7 @@ class InstallUtilities extends LibraryClass
     */
     static public function installTextField($name, $default_value='', $storage=self::EITHER_SETTING, $quoted=true, $attributes=array(), $area=false)
     {
-        $current_value = getCurrentValue($name, $default_value, $quoted);
+        $current_value = self::getCurrentValue($name, $default_value, $quoted);
 
         // sanitize values:
         if (!$quoted) {
@@ -841,7 +841,7 @@ class InstallUtilities extends LibraryClass
     */
     static public function installSelectField($name, $options, $default_value='', $storage=self::EITHER_SETTING, $quoted=true, $attributes=array())
     {
-        $current_value = getCurrentValue($name, $default_value, $quoted);
+        $current_value = self::getCurrentValue($name, $default_value, $quoted);
 
         $is_array = false;
         if (isset($attributes['multiple'])) {
@@ -912,7 +912,7 @@ class InstallUtilities extends LibraryClass
 
     static public function installCheckboxField($name, $label, $default_value=0, $storage=self::EITHER_SETTING, $choices=array(0, 1), $attributes=array())
     {
-        $current_value = getCurrentValue($name, $default_value, $quoted);
+        $current_value = self::getCurrentValue($name, $default_value, $quoted);
 
         // sanitize
         if (!is_array($choices) || count($choices) != 2) {
