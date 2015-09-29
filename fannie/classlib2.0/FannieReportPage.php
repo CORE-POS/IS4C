@@ -552,11 +552,12 @@ class FannieReportPage extends FanniePage
         "date2" are detected automatically.
       @return array of description lines
     */
-    protected function defaultDescriptionContent($datefields=array())
+    protected function defaultDescriptionContent($rowcount, $datefields=array())
     {
         $ret = array();
         $ret[] = $this->header;
         $ret[] = _('Report generated') . ' ' . date('l, F j, Y g:iA');
+        $ret[] = 'Returned ' . $rowcount . ' rows';
         $dt1 = false;
         $dt2 = false;
         if (count($datefields) == 1) {
@@ -663,7 +664,7 @@ class FannieReportPage extends FanniePage
                         $uri,
                         (strstr($uri, '?') === false ? '?' : '&')
                     );
-                    $ret = array_reduce($this->defaultDescriptionContent(),
+                    $ret = array_reduce($this->defaultDescriptionContent(count($data)),
                         function ($carry, $line) {
                             return $carry . (substr($line,0,1)=='<'?'':'<br />').$line;
                         },
@@ -685,7 +686,7 @@ class FannieReportPage extends FanniePage
                 }
                 break;
             case 'csv':
-                foreach ($this->defaultDescriptionContent() as $line) {
+                foreach ($this->defaultDescriptionContent(count($data)) as $line) {
                     $ret .= $this->csvLine(array(strip_tags($line)));
                 }
                 foreach ($this->report_description_content() as $line) {
@@ -868,7 +869,7 @@ class FannieReportPage extends FanniePage
                     },
                     array()
                 ),$xlsdata); // prepend
-                $xlsdata = array_merge(array_reduce($this->defaultDescriptionContent(), 
+                $xlsdata = array_merge(array_reduce($this->defaultDescriptionContent(count($date)), 
                     function($carry, $line) {
                         $carry[] = strip_tags($line);
                         return $carry;
