@@ -714,7 +714,7 @@ class FannieSignage
     protected static function formatScalePrice($price, $multiplier, $regPrice)
     {
         if ($multiplier == -1) {
-            return 'Save $' . self::dollarsOff($price, $regPrice) . '/lb';
+            return 'SAVE $' . self::dollarsOff($price, $regPrice) . '/lb';
         } elseif ($multiplier == -2) {
             return self::percentOff($price, $regPrice);
         } else {
@@ -727,7 +727,7 @@ class FannieSignage
         if ($regPrice == 0) {
             return sprintf('%.2f', $price);
         } elseif ($multiplier == -1) {
-            return sprintf('$%.2f off', self::dollarsOff($price, $regPrice));
+            return sprintf('$%.2f OFF', self::dollarsOff($price, $regPrice));
         } elseif ($multiplier == -2) {
             return self::percentOff($price, $regPrice);
         }
@@ -746,7 +746,7 @@ class FannieSignage
     protected static function percentOff($price, $regPrice)
     {
         $percent = 1.0 - ($price/$regPrice);
-        return sprintf('%d%% off', round($percent*100));
+        return sprintf('SAVE %d%%', round($percent*100));
     }
 
     public function drawPDF()
