@@ -695,7 +695,7 @@ class InstallUtilities extends LibraryClass
               Split quoted values on whitespace, commas, and semicolons
               Split non-quoted values on non-numeric characters
             */
-            if (is_array($default_value)) {
+            if (is_array($default_value) && !is_array($current_value)) {
                 if ($quoted) {
                     $current_value = preg_split('/[\s,;]+/', $current_value); 
                 } else {
