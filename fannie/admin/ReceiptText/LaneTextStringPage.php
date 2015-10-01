@@ -54,7 +54,7 @@ class LaneTextStringPage extends FannieRESTfulPage
     {
         $this->addRoute('get<type>');
         $this->addRoute('post<id><line><type>');
-        $this->addRoute('post<newLine>)';
+        $this->addRoute('post<newLine>');
         return parent::preprocess();
     }
 
