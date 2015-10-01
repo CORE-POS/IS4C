@@ -54,6 +54,7 @@ class LaneTextStringPage extends FannieRESTfulPage
     {
         $this->addRoute('get<type>');
         $this->addRoute('post<id><line><type>');
+        $this->addRoute('post<newLine>)';
         return parent::preprocess();
     }
 
@@ -90,6 +91,13 @@ class LaneTextStringPage extends FannieRESTfulPage
         echo $ret;
 
         return false;
+    }
+
+    // with a blank set of lines there will be no ID yet
+    protected function post_newLine_handler()
+    {
+        $this->form->id = array();
+        return $this->post_id_line_type_handler();
     }
 
     protected function post_id_line_type_handler()
