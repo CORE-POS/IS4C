@@ -96,7 +96,7 @@ class LaneTextStringPage extends FannieRESTfulPage
     // with a blank set of lines there will be no ID yet
     protected function post_newLine_handler()
     {
-        $this->form->id = array();
+        $this->id = array();
         return $this->post_id_line_type_handler();
     }
 
