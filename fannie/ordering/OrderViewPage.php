@@ -567,16 +567,7 @@ class OrderViewPage extends FannieRESTfulPage
         $ins_array['trans_type'] = "I";
         $ins_array['ItemQtty'] = $num_cases;
 
-        $mempricing = false;
-        if ($memNum != 0 && !empty($memNum)) {
-            $prep = $dbc->prepare_statement("SELECT Type,memType FROM custdata WHERE CardNo=?");
-            $row = $dbc->getRow($prep, array($memNum));
-            if ($row && $row['Type'] == 'PC') {
-                $mempricing = true;
-            } elseif ($row && $row['memType'] == 9) {
-                $mempricing = true;
-            }
-        }
+        $mempricing = OrderItemLib::memPricing($memNum);
 
         if (!class_exists('OrderItemLib')) {
             include(dirname(__FILE__) . '/OrderItemLib.php');
@@ -598,6 +589,7 @@ class OrderViewPage extends FannieRESTfulPage
         $ins_array['department'] = $item['department'];
         $ins_array['discountable'] = $item['discountable'];
         $ins_array['discounttype'] = $item['discounttype'];
+        $ins_array['cost'] = $item['cost'];
         $ins_array['unitPrice'] = $unitPrice;
         $ins_array['total'] = $casePrice * $num_cases;
         $ins_array['regPrice'] = $casePrice * $num_cases;
@@ -947,7 +939,7 @@ HTML;
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
 
         $query = $dbc->prepare_statement("SELECT o.unitPrice,o.itemQtty,o.quantity,o.discounttype,
-            c.type,c.memType,o.regPrice,o.total,o.discountable
+            c.type,c.memType,o.regPrice,o.total,o.discountable,o.cost,o.card_no
             FROM {$TRANS}PendingSpecialOrder AS o LEFT JOIN custdata AS c ON
             o.card_no=c.CardNo AND c.personNum=1
             WHERE order_id=? AND trans_id=?");
@@ -955,12 +947,16 @@ HTML;
         $row = $dbc->fetch_row($response);
 
         $regPrice = $row['itemQtty']*$row['quantity']*$row['unitPrice'];
-        if ($reg) {
+        if ($reg !== false) {
             $regPrice = $reg;
         }
         $total = $regPrice;
-        if (($row['type'] == 'PC' || $row['memType'] == 9) && $row['discountable'] != 0 && $row['discounttype'] == 0) {
-            $total *= 0.85;
+        if ($row['discountable'] != 0 && $row['discounttype'] == 0) {
+            $mempricing = OrderItemLib::memPricing($row['card_no']);
+            // create fake item to re-apply rules for marking up/down
+            $item = array('normal_price' => $regPrice, 
+                'cost'=>$row['cost']*$row['itemQtty']*$row['quantity']);
+            $total = OrderItemLib::markUpOrDown($item, $mempricing);
         }
 
         if ($row['unitPrice'] == 0 || $row['quantity'] == 0) {

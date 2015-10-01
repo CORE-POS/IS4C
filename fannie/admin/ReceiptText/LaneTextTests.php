@@ -19,8 +19,6 @@ class LaneTextTests extends \COREPOS\Fannie\API\test\TestWrapper
         $form = new \COREPOS\common\mvc\ValueContainer();
         $form->_method = 'post';
         $form->type = 'receiptHeader';
-        $form->id = array();
-        $form->line = array();
         $form->newLine = 'TEST NEW LINE';
         $post = $this->runRESTfulPage($page, $form);
 

@@ -480,7 +480,7 @@ HTML;
 
                 $ret .= '<td class="alert-success" colspan="8">';
                 $ret .= sprintf("<strong>Sale Price:</strong>
-                    %.2f (<em>Batch: <a href=\"%sbatches/newbatch/BatchManagementTool.php?startAt=%d\">%s</a></em>)",
+                    %.2f (<em>Batch: <a href=\"%sbatches/newbatch/EditBatchPage.php?id=%d\">%s</a></em>)",
                     $rowItem['special_price'], FannieConfig::config('URL'), $batch['batchID'], $batch['batchName']);
                 list($date,$time) = explode(' ',$rowItem['end_date']);
                 $ret .= "<strong>End Date:</strong>
