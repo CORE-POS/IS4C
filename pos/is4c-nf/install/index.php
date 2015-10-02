@@ -150,9 +150,7 @@ if (is_array(CoreLocal::get('LaneMap'))) {
     <td>Lane database type*:</td>
     <td>
     <?php
-    $db_opts = array('mysql'=>'MySQL','mssql'=>'SQL Server',
-        'pdomysql'=>'MySQL (PDO)','pdomssql'=>'SQL Server (PDO)',
-        'pdolite' => 'SQLite (PDO)');
+    $db_opts = \COREPOS\common\sql\Lib::getDrivers();
     echo InstallUtilities::installSelectField('DBMS', $db_opts, 'mysql', InstallUtilities::INI_SETTING);
     ?>
     </td>
@@ -329,8 +327,7 @@ if ($gotDBs == 2 && CoreLocal::get('laneno') != 0) {
     <td>Server database type:</td>
     <td>
     <?php
-    $db_opts = array('mysql'=>'MySQL','mssql'=>'SQL Server',
-        'pdomysql'=>'MySQL (PDO)','pdomssql'=>'SQL Server (PDO)');
+    $db_opts = \COREPOS\common\sql\Lib::getDrivers();
     echo InstallUtilities::installSelectField('mDBMS', $db_opts, 'mysql');
     ?>
     </td>
