@@ -877,6 +877,33 @@ class SQLManager
             $which_connection = $this->default_db;
         }
         $fld = $result_object->FetchField($index);
+        // mysqli puts a integer constant in the type property
+        // ADOdb provides MetaType to convert to relative type
+        $dbtype = $this->connectionType($which_connection);
+        if (strtolower($dbtype) === 'mysqli') {
+            $meta = $this->connections[$which_connection]->MetaType($fld->type);
+            switch ($meta) {
+                case 'C':
+                case 'X':
+                    $fld->type = 'varchar';
+                    break;
+                case 'B':
+                case 'X':
+                    $fld->type= 'blob';
+                    break;
+                case 'D':
+                case 'T':
+                    $fld->type= 'datetime';
+                    break;
+                case 'R':
+                case 'I':
+                    $fld->type= 'int';
+                    break;
+                case 'N':
+                    $fld->type= 'numeric';
+                    break;
+            }
+        }
 
         return $fld->type;
     }
