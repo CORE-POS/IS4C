@@ -112,7 +112,6 @@ class SyncLanes
                 if ($dbc->connections[$lane[$db]]) {
                     $lane_def = $dbc->tableDefinition($table, $lane[$db]);
                     $columns = self::commonColumns($server_def, $lane_def);
-                    var_dump($columns);
                     if ($columns === false) {
                         $ret['messages'] .= "No matching columns on lane $laneNumber table $table" . self::endLine();
                         continue;
