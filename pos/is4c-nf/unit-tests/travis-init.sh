@@ -3,10 +3,12 @@ set -e
 
 mysql -u root -e "DROP DATABASE IF EXISTS unit_test_opdata;"
 mysql -u root -e "DROP DATABASE IF EXISTS unit_test_translog;"
+mysql -u root -e "DROP DATABASE IF EXISTS core_trans;"
 
 # create Fannie databases
 mysql -u root -e "CREATE DATABASE unit_test_opdata;"
 mysql -u root -e "CREATE DATABASE unit_test_translog;"
+mysql -u root -e "CREATE DATABASE core_trans;"
 # create default configuration file
 cp pos/is4c-nf/ini.php.dist pos/is4c-nf/ini.php
 # strip closing PHP tag so we can add settings
