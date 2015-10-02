@@ -1315,10 +1315,14 @@ static public function wicableTotal()
 
     If no record exists, returns false
 */
-static public function peekItem($full_record=false)
+static public function peekItem($full_record=false, $transID=false)
 {
     $db = Database::tDataConnect();
-    $query = "SELECT description FROM localtemptrans ORDER BY trans_id DESC";
+    $query = "SELECT * FROM localtemptrans ";
+    if ($transID) {
+        $query .= ' WHERE trans_id=' . ((int)$transID);
+    }
+    $query .= " ORDER BY trans_id DESC";
     $res = $db->query($query);
     $row = $db->fetch_row($res);
 
