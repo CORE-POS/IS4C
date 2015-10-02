@@ -116,13 +116,15 @@ class SyncLanes
                         $ret['messages'] .= "No matching columns on lane $laneNumber table $table" . self::endLine();
                         continue;
                     }
+                    $my_cols = self::safeColumnString($dbc, $server_db, $columns);
+                    $their_cols = self::safeColumnString($dbc, $lane[$db], $columns);
                     if ($truncate & self::TRUNCATE_DESTINATION) {
                         $dbc->query("TRUNCATE TABLE $table",$lane[$db]);
                     }
                     $success = $dbc->transfer($server_db,
-                               "SELECT $columns FROM $table",
+                               "SELECT $my_cols FROM $table",
                                $lane[$db],
-                               "INSERT INTO $table ($columns)");
+                               "INSERT INTO $table ($their_cols)");
                     $dbc->close($lane[$db]);
                     if ($success) {
                         $ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed successfully" . self::endLine();
@@ -233,8 +235,13 @@ class SyncLanes
             return false;
         }
 
-        $colstr = array_reduce($names, function($carry, $col) {
-            return $carry . $col . ',';
+        return $names;
+    }
+
+    static private function safeColumnString($dbc, $db_name, $cols)
+    {
+        $colstr = array_reduce($cols, function($carry, $col) use ($dbc, $db_name) {
+            return $carry . $dbc->identifierEscape($col, $db_name) . ',';
         });
 
         return substr($colstr, 0, strlen($colstr)-1);
