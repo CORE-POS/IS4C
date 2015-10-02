@@ -45,6 +45,10 @@ class SyncLanes
     */
     const TRUNCATE_DESTINATION    = 2;
     
+    static private function endLine()
+    {
+        return php_sapi_name() == 'cli' ? "\n" : '<br />';
+    }
 
     /**
       Copy a table from the server to the lanes
@@ -69,15 +73,15 @@ class SyncLanes
         $db = strtolower($db);
         if ($db != 'op' && $db != 'trans') {
             $ret['sending'] = False;
-            $ret['messages'] = 'Error: Invalid database: '.$db;
+            $ret['messages'] = 'Error: Invalid database: '.$db. self::endLine();
             return $ret;
         } elseif(empty($table)) {
             $ret['sending'] = False;
-            $ret['messages'] = 'Error: No table given';
+            $ret['messages'] = 'Error: No table given' . self::endLine();
             return $ret;
         } elseif (!preg_match('/^[A-Za-z0-9_]+$/',$table)) {
             $ret['sending'] = False;
-            $ret['messages'] = 'Error: Illegal table name: \'' . $table . '\'';
+            $ret['messages'] = 'Error: Illegal table name: \'' . $table . '\'' . self::endLine();
             return $ret;
         }
 
@@ -100,26 +104,34 @@ class SyncLanes
             */
             $server_db = $db=='op' ? $op_db : $trans_db;
             $dbc = \FannieDB::get( $server_db );
+            $server_def = $dbc->tableDefinition($table, $server_db);
             $laneNumber=1;
-            foreach($lanes as $lane) {
+            foreach ($lanes as $lane) {
                 $dbc->add_connection($lane['host'],$lane['type'],
                     $lane[$db],$lane['user'],$lane['pw']);
                 if ($dbc->connections[$lane[$db]]) {
+                    $lane_def = $dbc->tableDefinition($table, $lane[$db]);
+                    $columns = self::commonColumns($server_def, $lane_def);
+                    var_dump($columns);
+                    if ($columns === false) {
+                        $ret['messages'] .= "No matching columns on lane $laneNumber table $table" . self::endLine();
+                        continue;
+                    }
                     if ($truncate & self::TRUNCATE_DESTINATION) {
                         $dbc->query("TRUNCATE TABLE $table",$lane[$db]);
                     }
                     $success = $dbc->transfer($server_db,
-                               "SELECT * FROM $table",
+                               "SELECT $columns FROM $table",
                                $lane[$db],
-                               "INSERT INTO $table");
+                               "INSERT INTO $table ($columns)");
                     $dbc->close($lane[$db]);
                     if ($success) {
-                        $ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed successfully";
+                        $ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed successfully" . self::endLine();
                     } else {
-                        $ret['messages'] .= "Error: Lane $laneNumber ({$lane['host']}) $table completed but with some errors";
+                        $ret['messages'] .= "Error: Lane $laneNumber ({$lane['host']}) $table completed but with some errors" . self::endLine();
                     }
                 } else {
-                    $ret['messages'] .= "Error: Couldn't connect to lane $laneNumber ({$lane['host']})";
+                    $ret['messages'] .= "Error: Couldn't connect to lane $laneNumber ({$lane['host']})" . self::endLine();
                 }
                 $laneNumber++;
             }
@@ -208,6 +220,25 @@ class SyncLanes
     static public function pull_table($table,$db='trans',$truncate=self::TRUNCATE_SOURCE)
     {
         return self::pullTable($table, $db, $truncate);
+    }
+
+    static private function commonColumns($def1, $def2) 
+    {
+        $cols1 = array_keys($def1);
+        $cols2 = array_keys($def2);
+        $names = array_filter($cols1, function($col) use ($cols2) {
+            return in_array($col, $cols2);
+        });
+
+        if (count($names) == 0) {
+            return false;
+        }
+
+        $colstr = array_reduce($names, function($carry, $col) {
+            return $carry . $col . ',';
+        });
+
+        return substr($colstr, 0, strlen($colstr)-1);
     }
 }
 
