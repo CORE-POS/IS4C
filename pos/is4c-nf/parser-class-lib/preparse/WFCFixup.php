@@ -33,10 +33,6 @@ class WFCFixup extends PreParser {
         } else if (substr($str,-4) == "QK10"){
             $this->remainder = str_replace("QK10","QM10",$str);
             return True;
-        } else if ($str == 'MA' || $str == 'OB') {
-            // re-write old WFC quarterly coupon as houseCoupon UPC
-            $this->remainder = '0049999900001';
-            return true;
         } else if (($as_upc == '0000000001112' || $as_upc == '0000000001113') && CoreLocal::get('msgrepeat') == 0) {
             $this->remainder = 'QM708';
             return true;

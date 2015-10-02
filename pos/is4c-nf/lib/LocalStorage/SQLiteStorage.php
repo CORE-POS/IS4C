@@ -16,7 +16,7 @@ class SQLiteStorage extends LocalStorage
 {
     private $db;
 
-    public function SQLiteStorage()
+    public function __construct()
     {
         $this->db = $this->conn();
         $result = sqlite_query($this->db, "SELECT name FROM sqlite_master WHERE type='table' AND name='is4c_local'");

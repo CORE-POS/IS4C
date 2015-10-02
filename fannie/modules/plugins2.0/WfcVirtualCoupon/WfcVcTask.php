@@ -69,7 +69,7 @@ class WfcVcTask extends FannieTask
                                SET memType=5,
                                 Discount=10
                                WHERE Type=\'PC\' 
-                                AND memType=1
+                                AND memType IN (1,5)
                                 AND CardNo IN (' . $in . ')');
         $dbc->execute($redo, $mems);
         $undo = $dbc->prepare('UPDATE custdata 
@@ -94,6 +94,7 @@ class WfcVcTask extends FannieTask
         // normalize everyone to zero
         $dbc->query('UPDATE custdata AS c SET memCoupons=0, blueLine=' . $default_blueline);
         // grant coupon to all members
+        /*
         $dbc->query("UPDATE custdata AS c SET memCoupons=1 WHERE Type='PC'");
 
         // lookup OB usage in the last month
@@ -130,6 +131,7 @@ class WfcVcTask extends FannieTask
                         ''
         );
         $dbc->query("UPDATE custdata AS c SET blueLine=$coupon_blueline WHERE Type='PC' AND memCoupons = 0");
+        */
     }
 }
 

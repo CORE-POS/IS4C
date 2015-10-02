@@ -96,7 +96,7 @@ class MemContactImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     private $stats = array('imported'=>0, 'errors'=>array());
 
-    function MemContactImportPage()
+    function __construct()
     {
         global $FANNIE_COUNTRY;
         $country = (isset($FANNIE_COUNTRY)&&!empty($FANNIE_COUNTRY))?$FANNIE_COUNTRY:"US";

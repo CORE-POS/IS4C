@@ -45,7 +45,7 @@ class TenderModule
       If you override this, be sure to call the
       parent constructor
     */
-    public function TenderModule($code, $amt)
+    public function __construct($code, $amt)
     {
         $this->tender_code = $code;
         $this->amount = $amt;

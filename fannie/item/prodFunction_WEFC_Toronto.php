@@ -1420,7 +1420,7 @@ class chainedSelectors
     */
     
     //constructor
-    function chainedSelectors($names, $data)
+    function __construct($names, $data)
     {
         /*
         **copy parameters into properties

@@ -50,7 +50,7 @@ class AuthorizeDotNet extends BasicCCModule {
         switch (CoreLocal::get("paycard_mode")) {
             case PaycardLib::PAYCARD_MODE_VOID:
                 // use the card number to find the trans_id
-                $pan4 = substr($this->$trans_pan['pan'],-4);
+                $pan4 = substr($this->trans_pan['pan'],-4);
                 $trans = array(CoreLocal::get('CashierNo'), CoreLocal::get('laneno'), CoreLocal::get('transno'));
                 list($success, $result) = PaycardDialogs::voidableCheck($pan4, $trans);
                 if ($success === true) {

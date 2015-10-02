@@ -18,7 +18,7 @@ class BeerXMLParser {
     private $outer_element = "";
     private $current_element = array();
 
-    public function BeerXMLParser($filename){
+    public function __construct($filename){
         $file = file_get_contents($filename);
         if (!$file) $this->data = False;
         else {
