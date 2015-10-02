@@ -782,6 +782,25 @@ class FannieSignage
                 . date('M d', strtotime($end));
         }
     }
+
+    protected function formatSize($size, $item)
+    {
+        $size = trim(strtolower($size));
+        if ($size == '0' || $size == '00' || $size == '') {
+            return '';
+        } elseif (substr($size, -1) != '.') {
+            $size .= '.'; // end abbreviation w/ period
+            $size = str_replace('fz.', 'fl oz.', $size);
+        }
+        if (substr($size, 0, 1) == '.') {
+            $size = '0' . $size; // add leading zero on decimal qty
+        }
+        if (strlen(ltrim($item['upc'], '0')) < 5 && $item['scale']) {
+            $size = 'PLU# ' . ltrim($item['upc'], '0'); // show PLU #s on by-weight
+        }
+
+        return $size;
+    }
 }
 
 }

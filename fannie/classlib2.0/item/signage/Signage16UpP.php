@@ -140,19 +140,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
             $pdf->SetX($left + ($width*$column));
             $pdf->SetFont($this->alt_font, '', $this->SMALLER_FONT);
-            $item['size'] = trim(strtolower($item['size']));
-            if ($item['size'] == '0' || $item['size'] == '00' || $item['size'] == '') {
-                $item['size'] = '';
-            } elseif (substr($item['size'], -1) != '.') {
-                $item['size'] .= '.'; // end abbreviation w/ period
-                $item['size'] = str_replace('fz.', 'fl oz.', $item['size']);
-            }
-            if (substr($item['size'], 0, 1) == '.') {
-                $item['size'] = '0' . $item['size']; // add leading zero on decimal qty
-            }
-            if (strlen(ltrim($item['upc'], '0')) < 5 && $item['scale']) {
-                $item['size'] = 'PLU# ' . ltrim($item['upc'], '0'); // show PLU #s on by-weight
-            }
+            $item['size'] = $this->formatSize($item['size'], $item);
             $pdf->Cell($effective_width, 6, $item['size'], 0, 1, 'C');
 
             $pdf->Ln(4);
