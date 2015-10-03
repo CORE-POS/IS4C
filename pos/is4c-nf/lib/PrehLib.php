@@ -880,6 +880,8 @@ static private function deptOpenRing($dept, $price, $discount, $ret)
         $ret['redraw_footer'] = true;
         $ret['udpmsg'] = 'goodBeep';
     }
+
+    return $ret;
 }
 
 static private function addRemoveDiscountViews()
