@@ -88,18 +88,8 @@ class VendorSalesReport extends FannieReportPage
             }
         }
         if ($buyer != -1) {
-            if (count($deptMulti) > 0) {
-                $query .= ' AND t.department IN (';
-                foreach ($deptMulti as $d) {
-                    $query .= '?,';
-                    $args[] = $d;
-                }
-                $query = substr($query, 0, strlen($query)-1) . ')';
-            } else {
-                $query .= ' AND t.department BETWEEN ? AND ? ';
-                $args[] = $deptStart;
-                $args[] = $deptEnd;
-            }
+            list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args);
+            $query .= $conditional;
         }
         $query .= '
             GROUP BY COALESCE(v.vendorName, x.distributor)

@@ -116,18 +116,8 @@ class NonMovementReport extends FannieReportPage {
             }
         }
         if ($buyer != -1) {
-            if (count($deptMulti) > 0) {
-                $where .= ' AND p.department IN (';
-                foreach ($deptMulti as $d) {
-                    $where .= '?,';
-                    $args[] = $d;
-                }
-                $where = substr($where, 0, strlen($where)-1) . ')';
-            } else {
-                $where .= ' AND p.department BETWEEN ? AND ? ';
-                $args[] = $dept1;
-                $args[] = $dept2;
-            }
+            list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args);
+            $where .= $conditional;
         }
 
         $query = "

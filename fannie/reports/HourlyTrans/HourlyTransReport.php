@@ -129,18 +129,8 @@ class HourlyTransReport extends FannieReportPage
             }
         }
         if ($buyer != -1) {
-            if (count($deptMulti) > 0) {
-                $where .= ' AND d.department IN (';
-                foreach ($deptMulti as $d) {
-                    $where .= '?,';
-                    $args[] = $d;
-                }
-                $where = substr($where, 0, strlen($where)-1) . ')';
-            } else {
-                $where .= ' AND d.department BETWEEN ? AND ? ';
-                $args[] = $deptStart;
-                $args[] = $deptEnd;
-            }
+            list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args);
+            $where .= $conditional;
         }
 
         $date_selector = 'year(tdate), month(tdate), day(tdate)';

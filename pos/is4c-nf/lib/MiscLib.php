@@ -315,5 +315,26 @@ static public function getNumbers($string)
     return $pieces;
 }
 
+public static function centStrToDouble($str)
+{
+    if (strlen($str) == 0) {
+        return 0.0;
+    }
+    /* when processing as strings, weird things happen
+     * in excess of 1000, so use floating point */
+    $str .= ""; // force type to string
+    $mult = 1;
+    if ($str[0] == "-") {
+        $mult = -1;
+        $str = substr($str,1,strlen($str));
+    }
+    $dollars = (int)substr($str,0,strlen($str)-2);
+    $cents = ((int)substr($str,-2))/100.0;
+    $ret = (double)($dollars+round($cents,2));
+    $ret *= $mult;
+
+    return $ret;
+}
+
 } // end class MiscLib
 

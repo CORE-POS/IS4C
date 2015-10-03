@@ -82,18 +82,8 @@ class DeptTransactionsReport extends FannieReportPage
             }
         }
         if ($buyer != -1) {
-            if (count($deptMulti) > 0) {
-                $querySelected .= ' AND d.department IN (';
-                foreach ($deptMulti as $d) {
-                    $querySelected .= '?,';
-                    $argsSel[] = $d;
-                }
-                $querySelected = substr($querySelected, 0, strlen($querySelected)-1) . ')';
-            } else {
-                $querySelected .= " AND d.department BETWEEN ? AND ?";
-                $argsSel[] = $deptStart;
-                $argsSel[] = $deptEnd;
-            }
+            list($conditional, $argsSel) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $argsSel);
+            $querySelected .= $conditional;
         }
         $querySelected .= " GROUP BY YEAR(tdate), MONTH(tdate), DAY(tdate)";
 
