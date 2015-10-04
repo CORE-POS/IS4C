@@ -57,12 +57,7 @@ class WfcProduceSingle extends \COREPOS\Fannie\API\item\FannieSignage
 
             $column = 1; // right aligned
 
-            $price = sprintf('$%.2f', $item['normal_price']);
-            if ($item['scale']) {
-                $price .= ' / lb';
-            } else {
-                $price .= ' / ea';
-            }
+            $price = $this->printablePrice($item);
 
             $pdf->SetXY($left + ($width*$column), $top);
             $pdf->SetFontSize($this->SMALL_FONT);
@@ -73,20 +68,18 @@ class WfcProduceSingle extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->SetX($left + ($width*$column));
             $pdf->SetFontSize($this->BIG_FONT);
             $pdf->Cell($effective_width, 25, $price, 0, 1, 'C');
-            $y = $pdf->GetY();
+            $y_pos = $pdf->GetY();
 
             if ($item['startDate'] != '' && $item['endDate'] != '') {
                 // intl would be nice
-                $datestr = date('m/d/Y', strtotime($item['startDate']))
-                        . ' - ' 
-                        . date('m/d/Y', strtotime($item['endDate']));
+                $datestr = $this->getDateString($item['startDate'], $item['endDate']);
                 $pdf->SetXY($left + ($width*$column), $top + ($height - 40));
                 $pdf->SetFontSize($this->SMALL_FONT);
                 $pdf->Cell($effective_width, 20, $datestr, 0, 1, 'R');
             }
 
             if ($item['originName'] != '') {
-                $pdf->SetXY($left + ($width*$column), $y);
+                $pdf->SetXY($left + ($width*$column), $y_pos);
                 $pdf->SetFontSize($this->SMALL_FONT);
                 if (strlen($item['originName']) < 50) {
                     $pdf->Cell($effective_width, 20, $item['originName'], 0, 1, 'L');

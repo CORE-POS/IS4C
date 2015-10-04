@@ -229,4 +229,3 @@ class suspendedlist extends NoInputCorePage
 
 AutoLoader::dispatch();
 
-?>

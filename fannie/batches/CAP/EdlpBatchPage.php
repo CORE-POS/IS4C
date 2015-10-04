@@ -34,40 +34,35 @@ class EdlpBatchPage extends FannieRESTfulPage
     public $description = '[NCG EDLP Batch] creates a price change
     batch for all items that have a maximum pricing rule attached.';
 
+    private $itemQ = '
+        SELECT p.upc,
+            r.maxPrice
+        FROM products AS p
+            INNER JOIN PriceRules AS r ON p.price_rule_id=r.priceRuleID
+        WHERE r.priceRuleTypeID=?
+            AND r.maxPrice <> 0
+            AND r.maxPrice IS NOT NULL
+            AND r.maxPrice <> p.normal_price';
+
     public function get_id_view()
     {
         $dbc = $this->connection;
         $date = FormLib::get('date', false);
 
-        $itemQ = '
-            SELECT p.upc,
-                r.maxPrice
-            FROM products AS p
-                INNER JOIN PriceRules AS r ON p.price_rule_id=r.priceRuleID
-            WHERE r.priceRuleTypeID=?
-                AND r.maxPrice <> 0
-                AND r.maxPrice IS NOT NULL
-                AND r.maxPrice <> p.normal_price';
         $args = array($this->id);
         if ($date) {
-            $itemQ .= ' AND r.reviewDate BETWEEN ? AND ?';
+            $this->itemQ .= ' AND r.reviewDate BETWEEN ? AND ?';
             $args[] = $date . ' 00:00:00';
             $args[] = $date . ' 23:59:59';
         }
-        $itemP = $dbc->prepare($itemQ);
+        $itemP = $dbc->prepare($this->itemQ);
         $itemR = $dbc->execute($itemP, $args);
 
         if ($dbc->numRows($itemR) == 0) {
             return '<div class="alert alert-warning">No applicable items</div>' . $this->get_view();
         }
 
-        $type = new BatchTypeModel($dbc);
-        $type->discType(0);
-        $typeID = false;
-        foreach ($type->find('batchTypeID') as $t) {
-            $typeID = $t->batchTypeID();
-            break;
-        }
+        $typeID = $this->getBatchType();
         if ($typeID === false) {
             return '<div class="alert alert-danger">Cannot create a price change batch</div>' . $this->get_view();
         }
@@ -92,6 +87,17 @@ class EdlpBatchPage extends FannieRESTfulPage
         return sprintf('<div class="alert alert-success">Created Batch. 
             <a href="../newbatch/EditBatchPage.php?id=%d">View it</a>.</div>',
             $batchID) . $this->get_view();
+    }
+
+    private function getBatchType()
+    {
+        $type = new BatchTypeModel($this->connection);
+        $type->discType(0);
+        foreach ($type->find('batchTypeID') as $t) {
+            return $t->batchTypeID();
+        }
+
+        return false;
     }
 
     public function get_view()

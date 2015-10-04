@@ -63,19 +63,7 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
             }
 
             $row = $sign;
-            $price = $item['normal_price'];
-            if ($item['scale'] && isset($item['signMultiplier']) && $item['signMultiplier'] < 0) {
-                $price = $this->formatScalePrice($item['normal_price'], $item['signMultiplier'], $item['nonSalePrice']);
-            } elseif ($item['scale']) {
-                if (substr($price, 0, 1) != '$') {
-                    $price = sprintf('$%.2f', $price);
-                }
-                $price .= ' /lb.';
-            } elseif (isset($item['signMultiplier'])) {
-                $price = $this->formatPrice($item['normal_price'], $item['signMultiplier'], $item['nonSalePrice']);
-            } else {
-                $price = $this->formatPrice($item['normal_price']);
-            }
+            $price = $this->printablePrice($item);
 
             $pdf->SetXY($left, $top + ($row*$height));
             $pdf->SetFont($this->font, 'B', $this->SMALL_FONT);

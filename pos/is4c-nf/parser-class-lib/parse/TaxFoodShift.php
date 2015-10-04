@@ -25,8 +25,7 @@ class TaxFoodShift extends Parser {
 
     function check($str)
     {
-        $id = CoreLocal::get("currentid");
-        if ($str == "TFS" && $id > 0){
+        if ($str == "TFS" && CoreLocal::get('currentid') > 0){
             return True;
         }
         return False;
@@ -34,24 +33,24 @@ class TaxFoodShift extends Parser {
 
     function parse($str)
     {
-        $id = CoreLocal::get("currentid");
+        $curID = CoreLocal::get("currentid");
 
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
 
-        $q = "SELECT trans_type,tax,foodstamp FROM localtemptrans WHERE trans_id=$id";
-        $r = $db->query($q);
-        if ($db->num_rows($r) == 0) return True; // shouldn't ever happen
-        $row = $db->fetch_row($r);
+        $query = "SELECT trans_type,tax,foodstamp FROM localtemptrans WHERE trans_id=$curID";
+        $res = $dbc->query($query);
+        if ($dbc->num_rows($res) == 0) return True; // shouldn't ever happen
+        $row = $dbc->fetch_row($res);
 
-        $q = "SELECT MAX(id) FROM taxrates";
-        $r = $db->query($q);
+        $query = "SELECT MAX(id) FROM taxrates";
+        $res = $dbc->query($query);
         $tax_cap = 0;
-        if ($db->num_rows($r)>0) {
-            $w = $db->fetch_row($r);
-            $max = $w[0];
+        if ($dbc->num_rows($res)>0) {
+            $row = $dbc->fetch_row($res);
+            $max = $row[0];
             if (!empty($max)) $tax_cap = $max;
         }
-        $db->query($q);    
+        $dbc->query($query);    
 
         $next_tax = $row['tax']+1;
         $next_fs = 0;
@@ -60,13 +59,13 @@ class TaxFoodShift extends Parser {
             $next_fs = 1;
         }
 
-        $q = "UPDATE localtemptrans 
+        $query = "UPDATE localtemptrans 
             set tax=$next_tax,foodstamp=$next_fs 
-            WHERE trans_id=$id";
-        $db->query($q);    
+            WHERE trans_id=$curID";
+        $dbc->query($query);    
         
         $ret = $this->default_json();
-        $ret['output'] = DisplayLib::listItems(CoreLocal::get("currenttopid"),$id);
+        $ret['output'] = DisplayLib::listItems(CoreLocal::get("currenttopid"),$curID);
         return $ret; // maintain item cursor position
     }
 
@@ -84,4 +83,3 @@ class TaxFoodShift extends Parser {
     }
 }
 
-?>
