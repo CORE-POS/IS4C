@@ -214,7 +214,7 @@ Deprecates nightly.equity.php.';
                   any progress toward tier.
                 */
                 $payment_number = 1;
-                for ($i=$myplan->initalPayment(); $i<=$bal['payments']; $i+= $myplan->recurringPayment()) {
+                for ($i=$myplan->initialPayment(); $i<=$bal['payments']; $i+= $myplan->recurringPayment()) {
                     $payment_number++;
                 }
                 $last_threshold_reached = $myplan->initialPayment() + (($payment_number-1)*$myplan->recurringPayment());
