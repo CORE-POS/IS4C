@@ -58,8 +58,7 @@ class PatronageByOwner extends FannieReportPage
                 FROM dlog_90_view
                 WHERE upc != 0
                 GROUP BY card_no 
-                ORDER BY T desc limit {$_POST['num']}
-                ;";
+                ORDER BY T desc limit " . ((int)$this->form->num);
         $result = $dbc->query($query);
         while ($row = $dbc->fetch_row($result)) {
             $id[] = count($card_no);

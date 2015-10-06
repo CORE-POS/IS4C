@@ -43,17 +43,20 @@ class DDDReport extends FannieReportPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $FANNIE_TRANS_DB = $this->config->get('TRANS_DB');
-        $date1 = $this->form->date1;
-        $date2 = $this->form->date2;
 
         $dtrans = $FANNIE_TRANS_DB . $dbc->sep() . 'transarchive';
         $union = true;
         $args = array();
-        if ($date1 !== '' && $date2 !== '') {
+        try {
+            $date1 = $this->form->date1;
+            $date2 = $this->form->date2;
             $dtrans = DTransactionsModel::selectDTrans($date1, $date2);
             $union = false;
             $args[] = $date1 . ' 00:00:00';
             $args[] = $date2 . ' 23:59:59';
+        } catch (Exception $ex) {
+            $date1 = '';
+            $date2 = '';
         }
 
         /**

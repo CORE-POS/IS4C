@@ -77,13 +77,13 @@ class CCReport extends FannieReportPage
         $htable = array();
         $data = array();
         while ($row = $dbc->fetch_row($result)) {
-            $data[] = $this->rowToRecord($row, $htable);
+            $data[] = $this->rowToRecord($row, $htable, $sum);
         }
 
         return $data;
     }
 
-    private function rowToRecord($row, &$htable)
+    private function rowToRecord($row, &$htable, &$sum)
     {
         $record = array(
             $row['datetime'],

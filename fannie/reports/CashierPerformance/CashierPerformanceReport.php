@@ -120,7 +120,7 @@ class CashierPerformanceReport extends FannieReportPage
             $minutes = $time / 60.0;
             $record[] = $trans;
             $record[] = sprintf('%.2f', $time / 60.0);
-            $record[] = sprintf('%.2f', $row['rings'] / $minutes);
+            $record[] = sprintf('%.2f', $this->safeDivide($row['rings'], $minutes));
             $data[] = $record;
         }
 

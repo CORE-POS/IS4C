@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 class MonthOverMonthReport extends FannieReportPage {
 
-    private $months;
+    private $months = array();
     protected $title = "Fannie : Month Over Month Movement";
     protected $header = "Month Over Month Movement";
     protected $required_fields = array('month1', 'month2');

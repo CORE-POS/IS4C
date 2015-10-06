@@ -85,8 +85,8 @@ class NonMovementReport extends FannieReportPage {
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $date1 = $this->form->date1;
         $date2 = $this->form->date2;
-        $dept1 = FormLib::get_form_value('deptStart',0);
-        $dept2 = FormLib::get_form_value('deptEnd',0);
+        $deptStart = FormLib::get_form_value('deptStart',0);
+        $deptEnd = FormLib::get_form_value('deptEnd',0);
         $deptMulti = FormLib::get('departments', array());
 
         $tempName = "TempNoMove";

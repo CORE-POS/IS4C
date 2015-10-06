@@ -30,7 +30,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
             $this->assertNotEquals(0, strlen($html_form), 'Report form is empty for ' . $report_class);
 
             $form = new \COREPOS\common\mvc\ValueContainer();
-            foreach ($obj->requiredFields as $field) {
+            foreach ($obj->requiredFields() as $field) {
                 if (strstr($field, 'date')) {
                     $form->$field = date('Y-m-d');
                 } else {
@@ -38,7 +38,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
                 }
             }
             $obj->setForm($form);
-            $results = $obj->fetch_result_data();
+            $results = $obj->fetch_report_data();
             $this->assertInternalType('array', $results, 'Report did not return results ' . $report_class);
         }
     }

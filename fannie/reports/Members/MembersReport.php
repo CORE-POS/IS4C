@@ -23,7 +23,10 @@ class MembersReport extends FannieReportPage
 
         $inType = '';
         $args = array();
-        foreach ($this->form->type) as $memType) {
+        if (!is_array($this->form->type)) {
+            $this->form->type = array($this->form->type);
+        }
+        foreach ($this->form->type as $memType) {
             $inType .= '?,';
             $args[] = $memType; 
         }

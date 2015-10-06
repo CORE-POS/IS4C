@@ -52,6 +52,9 @@ class BatchReport extends FannieReportPage
           for an IN clause in a prepared statement
         */
         $batchID = $this->form->batchID;
+        if (!is_array($batchID)) {
+            $batchID = array($batchID);
+        }
         $inArgs = array();
         $inClause = '(';
         $upcs = array();

@@ -105,11 +105,17 @@ class SalePerformanceReport extends FannieReportPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
+        if (!is_array($this->form->ids)) {
+            $this->form->ids = array($this->form->ids);
+        }
+
         $data = array();
         $model = new BatchesModel($dbc); 
-        foreach($this->form->ids as $batchID) {
+        foreach ($this->form->ids as $batchID) {
             $model->batchID($batchID);
-            $model->load();
+            if ($model->load() === false) {
+                continue;
+            }
             
             list($start, $time) = explode(' ', $model->startDate(), 2);
             list($end, $time) = explode(' ', $model->endDate(), 2);

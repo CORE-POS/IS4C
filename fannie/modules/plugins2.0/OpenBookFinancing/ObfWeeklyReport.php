@@ -65,7 +65,7 @@ class ObfWeeklyReport extends FannieReportPage
         $dbc = $class_lib::getDB();
         
         $week = $class_lib::getWeek($dbc);
-        $week->obfWeekID(FormLib::get('weekID'));
+        $week->obfWeekID($this->form->weekID);
         $week->load();
         $start_ts = strtotime($week->startDate());
         $end_ts = mktime(0, 0, 0, date('n', $start_ts), date('j', $start_ts)+6, date('Y', $start_ts));
@@ -79,7 +79,7 @@ class ObfWeeklyReport extends FannieReportPage
         $dbc = $class_lib::getDB();
         
         $week = $class_lib::getWeek($dbc);
-        $week->obfWeekID(FormLib::get('weekID'));
+        $week->obfWeekID($this->form->weekID);
         $week->load();
 
         $colors = array(
