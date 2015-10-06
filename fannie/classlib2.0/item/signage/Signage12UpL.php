@@ -39,14 +39,7 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf = new \FPDF('L', 'mm', 'Letter');
         $pdf->SetMargins(3.175, 3.175, 3.175);
         $pdf->SetAutoPageBreak(false);
-        if (\COREPOS\Fannie\API\FanniePlugin::isEnabled('CoopDealsSigns')) {
-            $this->font = 'Gill';
-            $this->alt_font = 'GillBook';
-            define('FPDF_FONTPATH', dirname(__FILE__) . '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
-            $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
-            $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
-            $pdf->AddFont('GillBook', '', 'GillSansMTPro-Book.php');
-        }
+        $pdf = $this->loadPluginFonts($pdf);
         $pdf->SetFont($this->font, '', 16);
 
         $data = $this->loadItems();
@@ -151,11 +144,11 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
                 $pdf->Cell($effective_width, 20, strtoupper($datestr), 0, 1, 'R');
             }
 
-            if ($item['originShortName'] != '') {
+            if ($item['originShortName'] != '' || $item['signMultiplier'] < 0) {
                 $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 33));
-                $pdf->SetFontSize($this->SMALL_FONT);
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
-                $pdf->Cell($effective_width, 20, $item['originShortName'], 0, 1, 'L');
+                $text = ($item['originShortName'] != '') ? $item['originShortName'] : sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
+                $pdf->Cell($effective_width, 20, $text, 0, 1, 'L');
             }
 
             $count++;
