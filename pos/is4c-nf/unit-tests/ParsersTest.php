@@ -409,4 +409,41 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['trans_status'] = 'V';
         lttLib::verifyRecord(2, $record, $this);
     }
+
+    /**
+      Add a taxable, non-foodstampable item record,
+      shift it, and verify
+    */
+    function testTaxFoodShift()
+    {
+        if (!class_exists('lttLib')) {
+            include (dirname(__FILE__) . '/lttLib.php');
+        }
+        lttLib::clear();
+        $upc = new UPC();
+        $upc->parse('0000000000111');
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0000000000111';
+        $record['description'] = 'WYNDMERE 5-8 DRAM BOTTLE';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = 'NA';
+        $record['trans_status'] = '';
+        $record['department'] = 103;
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = 1.65;
+        $record['total'] = 1.65;
+        $record['regPrice'] = 1.65;
+        $record['tax'] = 1;
+        $record['discountable'] = 1;
+        $record['mixMatch'] = '499';
+        lttLib::verifyRecord(1, $record, $this);
+        $tfs = new TaxFoodShift();
+        $tfs->parse('TFS');
+        $record['tax'] = 0;
+        $record['foodstamp'] = 1;
+        lttLib::verifyRecord(1, $record, $this);
+
+        lttLib::clear();
+    }
 }

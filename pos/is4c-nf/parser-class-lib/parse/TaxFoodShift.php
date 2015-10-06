@@ -40,19 +40,19 @@ class TaxFoodShift extends Parser {
         $query = "SELECT trans_type,tax,foodstamp FROM localtemptrans WHERE trans_id=$curID";
         $res = $dbc->query($query);
         if ($dbc->num_rows($res) == 0) return True; // shouldn't ever happen
-        $row = $dbc->fetch_row($res);
+        $item = $dbc->fetch_row($res);
 
         $query = "SELECT MAX(id) FROM taxrates";
         $res = $dbc->query($query);
         $tax_cap = 0;
         if ($dbc->num_rows($res)>0) {
-            $row = $dbc->fetch_row($res);
-            $max = $row[0];
+            $taxID = $dbc->fetch_row($res);
+            $max = $taxID[0];
             if (!empty($max)) $tax_cap = $max;
         }
         $dbc->query($query);    
 
-        $next_tax = $row['tax']+1;
+        $next_tax = $item['tax']+1;
         $next_fs = 0;
         if ($next_tax > $max){
             $next_tax = 0;
