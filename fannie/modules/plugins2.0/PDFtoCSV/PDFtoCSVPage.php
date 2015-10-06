@@ -51,26 +51,13 @@ class PDFtoCSVPage extends FannieRESTfulPage
     */
     public function readinessCheck()
     {
-        if (!class_exists('XPDF\PdfToText')) {
-            $this->error_text = 'Missing dependency php-xpdf/php-xpdf; install it using composer';
-
+        $ready = \COREPOS\Fannie\API\lib\UploadLib::pdfUploadEnabled();
+        if ($ready !== true) {
+            $this->error_text = $ready;
             return false;
         } else {
-            try {
-                $obj = XPDF\PdfToText::create();
-            } catch (XPDF\Exception\BinaryNotFoundException $e) {
-                $this->error_text = 'Cannot locate required binary "pdftotext". Package name
-                    may be "poppler-utils" or "xpdf-utils" on Debian based distros or "xpdf"
-                    on Red Hat based distros.';
-                return false;
-            } catch (Exception $e) {
-                $this->error_text = 'Unexpected error initializing pdftotext wrapper. Details: '
-                    . $e->getMessage();
-                return false;
-            }
+            return true;
         }
-
-        return true;
     }
 
     public function post_download_handler()
@@ -92,28 +79,7 @@ class PDFtoCSVPage extends FannieRESTfulPage
         } 
 
         if ($_FILES['file-upload']['error'] != UPLOAD_ERR_OK) {
-            $msg = '';
-            switch($_FILES['file-upload']['error']) {
-                case UPLOAD_ERR_INI_SIZE:
-                case UPLOAD_ERR_FORM_SIZE:
-                    $msg = 'File is too big.';
-                    break;
-                case UPLOAD_ERR_PARTIAL:
-                    $msg = 'Upload did not complete.';
-                    break;
-                case UPLOAD_ERR_NO_FILE:
-                    $msg = 'No file was uploaded.';
-                    break;
-                case UPLOAD_ERR_NO_TMP_DIR:
-                    $msg = 'No place to put the file.';
-                    break;
-                case UPLOAD_ERR_CANT_WRITE:
-                    $msg = 'Permission problem saving file.';
-                    break;
-                default:
-                    $msg = 'Unknown problem uploading the file.';
-                    break;
-            }
+            $msg = \COREPOS\Fannie\API\lib\UploadLib::errorToMessage($_FILES['file-upload']['error']);
             $this->add_onload_command("showBootstrapAlert('#alert-area', 'danger', '$msg');");
             $this->__route_stem = 'get';
 
@@ -161,7 +127,7 @@ class PDFtoCSVPage extends FannieRESTfulPage
 
     public function get_view()
     {
-        return '<form action="' . $_SERVER['PHP_SELF'] . '" method="post"
+        return '<form method="post"
             enctype="multipart/form-data">
             <div id="alert-area"></div>
             <p>

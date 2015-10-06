@@ -278,6 +278,7 @@ class GeneralRangeReport extends FannieReportPage
     function form_content()
     {
         $start = date('Y-m-d',strtotime('yesterday'));
+        ob_start();
         ?>
         <form method=get>
         <div class="col-sm-5">
@@ -300,6 +301,8 @@ class GeneralRangeReport extends FannieReportPage
         <?php echo FormLib::standardDateFields(); ?>
         </form>
         <?php
+
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -322,6 +325,5 @@ class GeneralRangeReport extends FannieReportPage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

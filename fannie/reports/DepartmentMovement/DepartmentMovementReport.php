@@ -321,6 +321,7 @@ class DepartmentMovementReport extends FannieReportPage
 
     function form_content()
     {
+        ob_start();
 ?>
 <form method = "get" action="DepartmentMovementReport.php" class="form-horizontal">
 <div class="row">
@@ -373,6 +374,8 @@ class DepartmentMovementReport extends FannieReportPage
 </form>
 <?php
         $this->addOnloadCommand("\$('#subdepts').closest('.form-group').hide();");
+
+        return ob_get_clean();
     }
 
     public function helpContent()

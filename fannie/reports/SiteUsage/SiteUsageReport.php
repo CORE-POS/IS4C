@@ -76,6 +76,7 @@ class SiteUsageReport extends FannieReportPage
 
     public function form_content()
     {
+        ob_start();
         ?>
         <form method=get class="form-horizontal">
         <div class="row">
@@ -101,6 +102,7 @@ class SiteUsageReport extends FannieReportPage
         </p>
         </form>
         <?php
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -118,4 +120,3 @@ class SiteUsageReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

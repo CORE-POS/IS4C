@@ -127,6 +127,10 @@ class GumBothReport extends FannieReportPage
         }
     }
 
+    public function form_content()
+    {
+        return '<!-- no need -->';
+    }
 
 }
 

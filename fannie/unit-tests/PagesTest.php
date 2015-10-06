@@ -25,6 +25,9 @@ class PagesTest extends PHPUnit_Framework_TestCase
 
             $auth = $obj->checkAuth();
             $this->assertInternalType('boolean',$pre);
+
+            $form = $obj->form_content();
+            $this->assertNotEquals(0, strlen($form), 'Report form is empty for ' . $report_class);
         }
     }
 
@@ -55,7 +58,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
             $auth = $obj->checkAuth();
             $this->assertInternalType('boolean',$pre);
 
-            $obj->unitTest($this);
+            //$obj->unitTest($this);
         }
     }
 }

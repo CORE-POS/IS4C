@@ -88,6 +88,11 @@ class ProductLineReport extends FannieReportPage
 
         return $data;
     }
+
+    public function form_content()
+    {
+        return 'No direct entries allowed on this report';
+    }
 }
 
 FannieDispatch::conditionalExec();

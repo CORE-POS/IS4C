@@ -76,7 +76,12 @@ class StockSummaryReport extends FannieReportPage
 
         return $data;
     }
+
+    public function form_content()
+    {
+        return 'Direct input not allowed on this report';
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

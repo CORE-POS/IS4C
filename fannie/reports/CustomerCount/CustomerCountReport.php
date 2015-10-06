@@ -145,6 +145,7 @@ class CustomerCountReport extends FannieReportPage {
                 $lastSunday = date("Y-m-d",$ts);
             $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));    
         }
+        ob_start();
 ?>
 <form action=CustomerCountReport.php method=get>
 <div class="col-sm-6">
@@ -168,6 +169,7 @@ class CustomerCountReport extends FannieReportPage {
 </div>
 </form>
 <?php
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -179,5 +181,5 @@ class CustomerCountReport extends FannieReportPage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

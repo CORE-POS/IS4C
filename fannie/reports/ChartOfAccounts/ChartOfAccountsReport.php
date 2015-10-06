@@ -172,6 +172,7 @@ class ChartOfAccountsReport extends FannieReportPage
 
     function form_content()
     {
+        ob_start();
         ?>
         <form method=get>
         <div>
@@ -186,6 +187,7 @@ class ChartOfAccountsReport extends FannieReportPage
         </div>
         </form>
         <?php
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -210,6 +212,5 @@ class ChartOfAccountsReport extends FannieReportPage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

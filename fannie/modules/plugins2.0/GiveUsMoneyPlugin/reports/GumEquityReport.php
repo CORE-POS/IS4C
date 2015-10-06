@@ -125,6 +125,11 @@ class GumEquityReport extends FannieReportPage
             return array('Total', '', '', $sumS, sprintf('%.2f', $sumV));
         }
     }
+
+    public function form_content()
+    {
+        return '<!-- no need -->';
+    }
 }
 
 FannieDispatch::conditionalExec();

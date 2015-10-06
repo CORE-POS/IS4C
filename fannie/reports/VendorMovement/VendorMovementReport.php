@@ -187,6 +187,7 @@ class VendorMovementReport extends FannieReportPage
     public function form_content()
     {
         $this->addScript('../../item/autocomplete.js');
+        ob_start();
 ?>
 <form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 <div class="col-sm-5">
@@ -230,6 +231,8 @@ class VendorMovementReport extends FannieReportPage
         $auto_url = $this->config->URL . 'ws/';
         $this->add_onload_command("bindAutoComplete('#vendor', '$auto_url', 'vendor');\n");
         $this->add_onload_command('$(\'#vendor\').focus();');
+
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -241,6 +244,5 @@ class VendorMovementReport extends FannieReportPage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

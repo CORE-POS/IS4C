@@ -503,7 +503,8 @@ class StoreSummaryReport extends FannieReportPage {
     // calculate_footers()
     }
 
-    function form_content(){
+    function form_content()
+    {
         $lastMonday = "";
         $lastSunday = "";
 
@@ -515,6 +516,7 @@ class StoreSummaryReport extends FannieReportPage {
                 $lastSunday = date("Y-m-d",$ts);
             $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));    
         }
+        ob_start();
         ?>
         <form action=StoreSummaryReport.php method=get>
         <div class="col-sm-5">
@@ -554,6 +556,7 @@ class StoreSummaryReport extends FannieReportPage {
         </form>
         <?php
 
+        return ob_get_clean();
     // form_content()
     }
 
@@ -571,6 +574,5 @@ class StoreSummaryReport extends FannieReportPage {
 // StoreSummaryReport
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

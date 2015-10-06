@@ -389,6 +389,7 @@ class StoreSummaryReportAlt extends FannieReportPage {
                 $lastSunday = date("Y-m-d",$ts);
             $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));    
         }
+        ob_start();
         ?>
         <form action=StoreSummaryReportAlt.php method=get>
         <div class="col-sm-5">
@@ -423,6 +424,7 @@ class StoreSummaryReportAlt extends FannieReportPage {
         </form>
         <?php
 
+        return ob_get_clean();
     // form_content()
     }
 
@@ -431,4 +433,3 @@ class StoreSummaryReportAlt extends FannieReportPage {
 
 FannieDispatch::conditionalExec();
 
-?>

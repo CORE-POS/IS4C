@@ -75,6 +75,11 @@ class BadSaleReport extends FannieReportPage
         return $data;
     }
 
+    public function form_content()
+    {
+        return '<!-- not required -->';
+    }
+
     public function helpContent()
     {
         return '<p>

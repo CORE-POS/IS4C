@@ -165,6 +165,7 @@ class CashierPerformanceReport extends FannieReportPage
     function form_content()
     {
         global $FANNIE_URL;
+        ob_start();
 ?>
 <form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 <div class="col-sm-4">
@@ -195,6 +196,7 @@ class CashierPerformanceReport extends FannieReportPage
 </div>
 </form>
 <?php
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -222,6 +224,5 @@ class CashierPerformanceReport extends FannieReportPage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

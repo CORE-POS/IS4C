@@ -42,8 +42,8 @@ class CustomerPurchasesReport extends FannieReportPage
         $dbc = $this->connection;
         $FANNIE_OP_DB = $this->config->get('OP_DB');
         $dbc->selectDB($FANNIE_OP_DB);
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $card_no = FormLib::get_form_value('card_no','0');
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
@@ -61,7 +61,7 @@ class CustomerPurchasesReport extends FannieReportPage
               group by year(t.tdate),month(t.tdate),day(t.tdate),
               t.upc,p.description
               order by year(t.tdate),month(t.tdate),day(t.tdate)";
-        $args = array($card_no,$date1.' 00:00:00',$date2.' 23:59:59');
+        $args = array($card_no, $date1.' 00:00:00',$date2.' 23:59:59');
     
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($prep,$args);
@@ -106,9 +106,11 @@ class CustomerPurchasesReport extends FannieReportPage
         return array('Total',null,null,null,null,$sumQty,$sumSales);
     }
 
-    function form_content(){
+    function form_content()
+    {
+        ob_start();
 ?>
-<form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+<form method = "get"> 
 <div class="col-sm-4">
     <div class="form-group">
         <label><?php echo _('Owner #'); ?></label>
@@ -136,6 +138,7 @@ class CustomerPurchasesReport extends FannieReportPage
 </div>
 </form>
 <?php
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -146,6 +149,5 @@ class CustomerPurchasesReport extends FannieReportPage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

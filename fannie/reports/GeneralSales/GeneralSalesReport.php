@@ -277,6 +277,7 @@ function drawPieChart()
                 $lastSunday = date("Y-m-d",$ts);
             $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));    
         }
+        ob_start();
         ?>
         <form action=GeneralSalesReport.php method=get class="form-horizontal">
         <div class="row">
@@ -308,6 +309,8 @@ function drawPieChart()
         </p>
         </form>
         <?php
+
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -327,4 +330,3 @@ function drawPieChart()
 
 FannieDispatch::conditionalExec();
 
-?>

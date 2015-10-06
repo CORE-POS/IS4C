@@ -122,7 +122,9 @@ class ItemPurchasesReport extends FannieReportPage
         );
     }
     
-    function form_content(){
+    function form_content()
+    {
+        ob_start();
 ?>
 <form method="get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 <div class="col-sm-5">
@@ -152,6 +154,8 @@ class ItemPurchasesReport extends FannieReportPage
 </form>
 <?php
         $this->add_onload_command('$(\'#upc-field\').focus();');
+
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -162,6 +166,5 @@ class ItemPurchasesReport extends FannieReportPage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

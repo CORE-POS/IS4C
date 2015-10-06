@@ -38,16 +38,9 @@ class ArReport extends FannieReportPage
     protected $header = "AR Activity Report";
     protected $required_fields = array('memNum');
 
-    public function preprocess()
-    {
-        $this->card_no = FormLib::get('memNum','');
-
-        return parent::preprocess();
-    }
-
     public function report_description_content()
     {
-        return array('Activity for account #'.$this->card_no);
+        return array('Activity for account #'.$this->form->memNum);
     }
 
     public function fetch_report_data()
@@ -58,7 +51,7 @@ class ArReport extends FannieReportPage
                 year(tdate),month(tdate),day(tdate)
                 from ar_history AS s 
                 WHERE s.card_no=? ORDER BY tdate DESC");
-        $r = $dbc->exec_statement($q,array($this->card_no));
+        $r = $dbc->exec_statement($q,array($this->form->memNum));
 
         $data = array();
         while($w = $dbc->fetch_row($r)) {

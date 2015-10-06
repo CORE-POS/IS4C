@@ -221,6 +221,7 @@ function showGraph() {
     function form_content()
     {
         global $FANNIE_URL;
+        ob_start();
 ?>
 <form method = "get" action="ProductMovementModular.php" class="form-horizontal">
     <div class="col-sm-5">
@@ -263,6 +264,8 @@ function showGraph() {
         $ws = $FANNIE_URL . 'ws/';
         $this->add_onload_command("bindAutoComplete('#upc', '$ws', 'item');\n");
         $this->add_onload_command('$(\'#upc\').focus();');
+
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -275,4 +278,3 @@ function showGraph() {
 
 FannieDispatch::conditionalExec();
 
-?>

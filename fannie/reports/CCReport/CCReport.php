@@ -37,10 +37,13 @@ class CCReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_TRANS_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = FannieDB::get($this->config->get('TRANS_DB'));
 
-        $date = FormLib::getDate('date', date('Y-m-d', strtotime('yesterday')));
+        try {
+            $date = $this->form->date;
+        } catch (Exception $ex) {
+            $date = date('Y-m-d', strtotime('yesterday'));
+        }
 
         $seconds = strtotime($date);
         $start = date('Y-m-d 00:00:00',$seconds);
@@ -73,28 +76,34 @@ class CCReport extends FannieReportPage
         $sum = 0;
         $htable = array();
         $data = array();
-        while($row = $dbc->fetch_row($result)){
-            $record = array(
-                $row['datetime'],
-                $row['PAN'],
-                sprintf('%.2f', $row['amount']),
-                $row['xResultMessage'],
-                sprintf('<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?month=%d&year=%d&day=%d&receipt=%d-%d-%d">POS Receipt</a>',
-                    $FANNIE_URL, $row['month'], $row['year'], $row['day'],
-                    $row['cashierno'], $row['laneno'], $row['transno']),
-            );
-            if (isset($htable[$row['amount']."+".$row['PAN']])) {
-                $record['meta'] = FannieReportPage::META_COLOR;
-                $record['meta_background'] = '#ffffcc';
-            }
-            if (strstr($row[9],"APPROVED") || $row[9] == "" || strstr($row[9],"PENDING")){
-                $sum += $row[4];
-                $htable[$row['amount']."+".$row['PAN']] = 1;
-            }
-            $data[] = $record;
+        while ($row = $dbc->fetch_row($result)) {
+            $data[] = $this->rowToRecord($row, $htable);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row, &$htable)
+    {
+        $record = array(
+            $row['datetime'],
+            $row['PAN'],
+            sprintf('%.2f', $row['amount']),
+            $row['xResultMessage'],
+            sprintf('<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?month=%d&year=%d&day=%d&receipt=%d-%d-%d">POS Receipt</a>',
+                $this->config->get('URL'), $row['month'], $row['year'], $row['day'],
+                $row['cashierno'], $row['laneno'], $row['transno']),
+        );
+        if (isset($htable[$row['amount']."+".$row['PAN']])) {
+            $record['meta'] = FannieReportPage::META_COLOR;
+            $record['meta_background'] = '#ffffcc';
+        }
+        if (strstr($row[9],"APPROVED") || $row[9] == "" || strstr($row[9],"PENDING")){
+            $sum += $row[4];
+            $htable[$row['amount']."+".$row['PAN']] = 1;
+        }
+
+        return $record;
     }
 
     public function helpContent()

@@ -143,6 +143,7 @@ class MonthOverMonthReport extends FannieReportPage {
         $r = $dbc->exec_statement($q);
         while($w = $dbc->fetch_row($r))
             $depts[$w[0]] = $w[1];
+        ob_start();
 ?>
 <form action="MonthOverMonthReport.php" method="get" class="form-inline">
     <p>
@@ -205,6 +206,7 @@ class MonthOverMonthReport extends FannieReportPage {
     </p>
 </form>
 <?php
+        return ob_get_clean();
     }
 
     public function helpContent()

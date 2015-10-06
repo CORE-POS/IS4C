@@ -188,6 +188,8 @@ class BatchReport extends FannieReportPage
                 $typeW[0],$typeW[1]);
         }
 
+        ob_start();
+
         echo '<div class="form-inline">';
         echo "<label>Filters</label> ";
         echo '<select id="typef" class="form-control"
@@ -243,6 +245,8 @@ class BatchReport extends FannieReportPage
         echo '</div>';
 
         echo '</form>';
+
+        return ob_get_clean();
     }
 
     function report_description_content()
