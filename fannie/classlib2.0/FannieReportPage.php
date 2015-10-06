@@ -143,6 +143,8 @@ class FannieReportPage extends FanniePage
     */
     protected $chart_data_columns = array();
 
+    protected $form;
+
     /** 
         Assign meta constant(s) to a row's "meta" field
         for special behavior.
@@ -182,6 +184,7 @@ class FannieReportPage extends FanniePage
         }
 
         if ($all_fields) {
+            $this->form = new \COREPOS\common\mvc\FormValueContainer();
             $this->content_function = 'report_content'; 
             if ($this->config->get('WINDOW_DRESSING')) {
                 $this->has_menus(true);
@@ -1131,6 +1134,22 @@ class FannieReportPage extends FanniePage
             $this->report_format = 'csv';
             $this->window_dressing = false;
         }
+    }
+
+    /**
+      Set the form value container
+      @param [ValueContainer] $f
+      Accepts a generic ValueContainer instead of a FormValueContainer
+      so that unit tests can inject preset values 
+    */
+    public function setForm(COREPOS\common\mvc\ValueContainer $f)
+    {
+        $this->form = $f;
+    }
+
+    public function requiredFields()
+    {
+        return $this->required_fields;
     }
 
     /**
