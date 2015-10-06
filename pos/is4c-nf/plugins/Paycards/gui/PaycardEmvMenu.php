@@ -112,6 +112,20 @@ class PaycardEmvMenu extends NoInputCorePage
                     break;
             }
         }
+        if (!isset($_REQUEST['selectlist']) || $_REQUEST['selectlist'] == 'CL' || $_REQUEST['selectlist'] === '') {
+            if (CoreLocal::get('PaycardsDatacapMode') == 1) {
+                $this->menu = array(
+                    'EMV' => 'EMV Credit/Debit',
+                    'EBT' => 'EBT',
+                    'GIFT' => 'Gift',
+                );
+            } elseif (CoreLocal::get('PaycardsDatacapMode') == 2 || CoreLocal::get('PaycardsDatacapMode') == 3) {
+                $this->menu = array(
+                    'EMV' => 'EMV Credit/Debit',
+                    'CAADMIN' => 'Admin Functions',
+                );
+            }
+        }
 
         return true;
     }
@@ -127,18 +141,6 @@ class PaycardEmvMenu extends NoInputCorePage
     function body_content() 
     {
         $stem = MiscLib::baseURL() . 'graphics/';
-        if (CoreLocal::get('PaycardsDatacapMode') == 1) {
-            $this->menu = array(
-                'EMV' => 'EMV Credit/Debit',
-                'EBT' => 'EBT',
-                'GIFT' => 'Gift',
-            );
-        } elseif (CoreLocal::get('PaycardsDatacapMode') == 2 || CoreLocal::get('PaycardsDatacapMode') == 3) {
-            $this->menu = array(
-                'EMV' => 'EMV Credit/Debit',
-                'CAADMIN' => 'Admin Functions',
-            );
-        }
         ?>
         <div class="baseHeight">
         <div class="centeredDisplay colored rounded">
