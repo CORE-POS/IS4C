@@ -132,9 +132,18 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
             $item['size'] = $this->formatSize($item['size'], $item);
             $pdf->Cell($effective_width, 6, $item['size'], 0, 1, 'C');
 
-            $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 39));
-            $pdf->SetFont($this->font, '', $this->BIG_FONT);
-            $pdf->Cell($effective_width, 12, $price, 0, 1, 'C');
+            if ($item['signMultiplier'] != -3) {
+                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 39));
+                $pdf->SetFont($this->font, '', $this->BIG_FONT);
+                $pdf->Cell($effective_width, 12, $price, 0, 1, 'C');
+            } else {
+                $pdf->SetXY(-5 + $left + ($width*$column), $top + ($height*$row) + ($height - 39));
+                $pdf->SetFont($this->font, '', $this->MED_FONT);
+                $pdf->MultiCell($effective_width/2, 6, "BUY ONE\nGET ONE", 0, 'R');
+                $pdf->SetXY(-5 + $left + ($width*$column) + ($effective_width/2), $top + ($height*$row) + ($height - 39));
+                $pdf->SetFont($this->font, '', $this->BIG_FONT);
+                $pdf->Cell($effective_width/2, 12, 'FREE', 0, 1, 'L');
+            }
 
             if ($item['startDate'] != '' && $item['endDate'] != '') {
                 // intl would be nice

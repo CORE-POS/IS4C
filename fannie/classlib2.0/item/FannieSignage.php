@@ -105,6 +105,10 @@ class FannieSignage
 
         while ($row = $dbc->fetch_row($result)) {
 
+            if (substr($row['upc'], 0, 2) == 'LC') {
+                $row = $this->unrollLikeCode($dbc, substr($row['upc'], 2), $row);
+            }
+
             if (in_array($row['upc'], $this->excludes)) {
                 continue;
             }
@@ -259,7 +263,7 @@ class FannieSignage
                     o.shortName AS originShortName,
                     b.batchType
                  FROM batchList AS l
-                    INNER JOIN products AS p ON l.upc=p.upc
+                    LEFT JOIN products AS p ON l.upc=p.upc
                     INNER JOIN batches AS b ON b.batchID=l.batchID
                     LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID
                     LEFT JOIN productUser AS u ON p.upc=u.upc
@@ -270,6 +274,35 @@ class FannieSignage
                  ORDER BY brand, description';
 
         return array('query' => $query, 'args' => $args);
+    }
+
+    protected function unrollLikeCode($dbc, $code, $item)
+    {
+        $likeP = $dbc->prepare('
+            SELECT u.upc,
+                CASE WHEN s.brand IS NULL OR s.brand=\'\' THEN p.brand ELSE s.brand END as brand,
+                CASE WHEN s.description IS NULL OR s.description=\'\' THEN l.likeCodeDesc ELSE s.description END AS likeCodeDesc,
+                p.normal_price,
+                p.scale,
+                p.numflag,
+                p.size
+            FROM upcLike AS u
+                INNER JOIN likeCodes AS l ON u.likeCode=l.likeCode
+                INNER JOIN products AS p ON u.upc=p.upc
+                LEFT JOIN productUser AS s ON u.upc=s.upc
+            WHERE u.likeCode=?
+            ORDER BY u.upc
+        ');
+        $info = $dbc->getRow($likeP, array($code));
+        $item['description'] = $info['likeCodeDesc'];
+        $item['posDescription'] = $info['likeCodeDesc'];
+        $item['nonSalePrice'] = $info['normal_price'];
+        $item['scale'] = $info['scale'];
+        $item['numflag'] = $info['numflag'];
+        $item['upc'] = $info['upc'];
+        $item['size'] = $info['size'];
+
+        return $item;
     }
 
     protected function listFromCurrentRetail($dbc)
@@ -730,6 +763,8 @@ class FannieSignage
             return sprintf('$%.2f OFF', self::dollarsOff($price, $regPrice));
         } elseif ($multiplier == -2) {
             return self::percentOff($price, $regPrice);
+        } elseif ($multiplier == -3) {
+            return _('BUY ONE GET ONE FREE');
         }
     }
 
@@ -819,6 +854,20 @@ class FannieSignage
         }
 
         return $price;
+    }
+
+    protected function loadPluginFonts($pdf)
+    {
+        if (\COREPOS\Fannie\API\FanniePlugin::isEnabled('CoopDealsSigns')) {
+            $this->font = 'Gill';
+            $this->alt_font = 'GillBook';
+            define('FPDF_FONTPATH', dirname(__FILE__) . '/../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+            $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+            $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
+            $pdf->AddFont('GillBook', '', 'GillSansMTPro-Book.php');
+        }
+
+        return $pdf;
     }
 }
 

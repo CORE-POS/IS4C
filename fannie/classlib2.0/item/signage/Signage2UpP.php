@@ -38,14 +38,7 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf = new \FPDF('P', 'mm', 'Letter');
         $pdf->SetMargins(6.35, 6.35, 6.35);
         $pdf->SetAutoPageBreak(false);
-        if (\COREPOS\Fannie\API\FanniePlugin::isEnabled('CoopDealsSigns')) {
-            $this->font = 'Gill';
-            $this->alt_font = 'GillBook';
-            define('FPDF_FONTPATH', dirname(__FILE__) . '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
-            $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
-            $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
-            $pdf->AddFont('GillBook', '', 'GillSansMTPro-Book.php');
-        }
+        $pdf = $this->loadPluginFonts($pdf);
         $pdf->SetFont($this->font, '', 16);
 
         $data = $this->loadItems();
