@@ -26,8 +26,20 @@ class PagesTest extends PHPUnit_Framework_TestCase
             $auth = $obj->checkAuth();
             $this->assertInternalType('boolean',$pre);
 
-            $form = $obj->form_content();
-            $this->assertNotEquals(0, strlen($form), 'Report form is empty for ' . $report_class);
+            $html_form = $obj->form_content();
+            $this->assertNotEquals(0, strlen($html_form), 'Report form is empty for ' . $report_class);
+
+            $form = new \COREPOS\common\mvc\ValueContainer();
+            foreach ($obj->requiredFields as $field) {
+                if (strstr($field, 'date')) {
+                    $form->$field = date('Y-m-d');
+                } else {
+                    $form->$field = 1;
+                }
+            }
+            $obj->setForm($form);
+            $results = $obj->fetch_result_data();
+            $this->assertInternalType('array', $results, 'Report did not return results ' . $report_class);
         }
     }
 

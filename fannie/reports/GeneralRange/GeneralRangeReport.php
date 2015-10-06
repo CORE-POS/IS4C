@@ -48,8 +48,8 @@ class GeneralRangeReport extends FannieReportPage
     {
         $dbc = $this->connection;
         $dbc->setDefaultDB($this->config->get('OP_DB'));
-        $d1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $d2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $d1 = $this->form->date1;
+        $d2 = $this->form->date2;
         $dates = array($d1.' 00:00:00', $d2.' 23:59:59');
         $data = array();
 

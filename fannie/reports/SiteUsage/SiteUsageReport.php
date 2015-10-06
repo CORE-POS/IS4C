@@ -42,8 +42,8 @@ class SiteUsageReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        $d1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $d2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $d1 = $this->form->date1;
+        $d2 = $this->form->date2;
         $dates = array($d1.' 00:00:00', $d2.' 23:59:59');
         $query = '
             SELECT pageName,

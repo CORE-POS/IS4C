@@ -56,9 +56,9 @@ class OwnerJoinLeaveReport extends FannieReportPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $this->report_headers[0][0] .= ' '
-            . date('M j, Y', strtotime(FormLib::get('date1')))
+            . date('M j, Y', strtotime($this->form->date1))
             . ' through ' 
-            . date('M j, Y', strtotime(FormLib::get('date2')));
+            . date('M j, Y', strtotime($this->form->date2));
         if ($this->report_format == 'html') {
             echo '<style type="text/css">
                 thead th {
@@ -115,8 +115,8 @@ class OwnerJoinLeaveReport extends FannieReportPage
             'meta_background'=>'#ccc','meta_foreground'=>'#000');
 
         $args = array(
-            FormLib::getDate('date1', date('Y-m-d')) . ' 00:00:00',
-            FormLib::getDate('date2', date('Y-m-d')) . ' 23:59:59',
+            $this->form->date1 . ' 00:00:00',
+            $this->form->date2 . ' 23:59:59',
         );
 
         $joinR = $dbc->execute($joinP, $args);

@@ -58,7 +58,7 @@ HTML;
 
     public function report_description_content()
     {
-        $id = FormLib::get('id');
+        $id = $this->form->id;
         if ($fy === '') {
             return array();
         } else {
@@ -71,7 +71,7 @@ HTML;
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $id = FormLib::get('id');
+        $id = $this->form->id;
         if ($id === '') {
             return array();
         }

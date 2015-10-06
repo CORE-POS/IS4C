@@ -46,8 +46,8 @@ class CashierPerformanceReport extends FannieReportPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $emp_no = FormLib::get('emp_no', false);
 
         $dtrans = DTransactionsModel::selectDTrans($date1,$date2);

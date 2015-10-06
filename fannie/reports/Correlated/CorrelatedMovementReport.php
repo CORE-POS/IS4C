@@ -47,8 +47,8 @@ class CorrelatedMovementReport extends FannieReportPage
 
         $depts = FormLib::get('depts', array());
         $upc = FormLib::get('upc');
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $filters = FormLib::get('filters', array());
 
         $dClause = "";

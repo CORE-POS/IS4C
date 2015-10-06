@@ -58,8 +58,8 @@ class GeneralSalesReport extends FannieReportPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $d1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $d2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $d1 = $this->form->date1;
+        $d2 = $this->form->date2;
         $dept = $_REQUEST['dept'];
 
         $dlog = DTransactionsModel::selectDlog($d1,$d2);

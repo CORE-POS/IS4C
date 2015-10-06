@@ -109,8 +109,8 @@ class StoreSummaryReport extends FannieReportPage {
 
     function fetch_report_data(){
         global $FANNIE_OP_DB, $FANNIE_COOP_ID;
-        $d1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $d2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $d1 = $this->form->date1;
+        $d2 = $this->form->date2;
         $dept = FormLib::get_form_value('dept',0);
 
         $dbc = FannieDB::get($FANNIE_OP_DB);

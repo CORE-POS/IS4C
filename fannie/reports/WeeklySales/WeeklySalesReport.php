@@ -19,8 +19,8 @@ class WeeklySalesReport extends FannieReportPage
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB;
-        $date1 = FormLib::getDate('date1', date('Y-m-d'));
-        $date2 = FormLib::getDate('date2', date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 

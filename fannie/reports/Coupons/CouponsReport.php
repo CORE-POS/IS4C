@@ -54,8 +54,8 @@ class CouponsReport extends FannieReportPage {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $d1 = FormLib::get('date1', date('Y-m-d'));
-        $d2 = FormLib::get('date2', date('Y-m-d'));
+        $d1 = $this->form->date1;
+        $d2 = $this->form->date2;
 
         $dlog = DTransactionsModel::selectDlog($d1,$d2);
 

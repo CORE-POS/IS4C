@@ -59,8 +59,8 @@ class MonthOverMonthReport extends FannieReportPage {
     function fetch_report_data(){
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $month1 = FormLib::get_form_value('month1',date('n'));
-        $month2 = FormLib::get_form_value('month2',date('n'));
+        $month1 = $this->form->month1;
+        $month2 = $this->form->month2;
         $year1 = FormLib::get_form_value('year1',date('Y'));
         $year2 = FormLib::get_form_value('year2',date('Y'));
 

@@ -44,7 +44,7 @@ class ItemLastQuarterReport extends FannieReportPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $prod = new ProductsModel($dbc);
-        $prod->upc(BarcodeLib::padUPC(FormLib::get('upc')));
+        $prod->upc(BarcodeLib::padUPC($this->form->upc));
         $prod->load();
         return array('Weekly Sales For ' . $prod->upc() . ' ' . $prod->description());
     }
@@ -54,7 +54,7 @@ class ItemLastQuarterReport extends FannieReportPage
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $upc = FormLib::get('upc');
+        $upc = $this->form->upc;
         $upc = BarcodeLib::padUPC($upc);
 
         $query = "SELECT 

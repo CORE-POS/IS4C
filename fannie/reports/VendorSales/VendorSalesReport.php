@@ -42,8 +42,8 @@ class VendorSalesReport extends FannieReportPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $date1 = FormLib::getDate('date1', date('Y-m-d'));
-        $date2 = FormLib::getDate('date2', date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $deptStart = FormLib::get('deptStart', 1);
         $deptEnd = FormLib::get('deptEnd', 1);
         $deptMulti = FormLib::get('departments', array());

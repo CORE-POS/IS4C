@@ -39,7 +39,7 @@ class ProductLineReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        $prefix = FormLib::get('prefix');
+        $prefix = $this->form->prefix;
         $prefix = str_pad($prefix, '0', 5, STR_PAD_LEFT);
 
         $dbc = FannieDB::get($this->config->get('OP_DB'));

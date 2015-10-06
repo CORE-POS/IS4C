@@ -41,7 +41,7 @@ class PatronageChecksReport extends FannieReportPage
     public function fetch_report_data()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));    
-        $fy = FormLib::get('fy');
+        $fy = $this->form->fy;
         $date1 = FormLib::get('date1');
         $date2 = FormLib::get('date2');
         

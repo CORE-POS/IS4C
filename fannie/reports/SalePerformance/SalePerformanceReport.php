@@ -107,7 +107,7 @@ class SalePerformanceReport extends FannieReportPage
 
         $data = array();
         $model = new BatchesModel($dbc); 
-        foreach(FormLib::get('ids') as $batchID) {
+        foreach($this->form->ids as $batchID) {
             $model->batchID($batchID);
             $model->load();
             

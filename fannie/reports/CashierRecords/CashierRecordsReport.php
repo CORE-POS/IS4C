@@ -45,8 +45,8 @@ class CashierRecordsReport extends FannieReportPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
         $q = $dbc->prepare_statement("select emp_no,sum(-total),count(DISTINCT trans_num),

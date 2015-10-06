@@ -23,7 +23,7 @@ class MembersReport extends FannieReportPage
 
         $inType = '';
         $args = array();
-        foreach (FormLib::get('type', array()) as $memType) {
+        foreach ($this->form->type) as $memType) {
             $inType .= '?,';
             $args[] = $memType; 
         }
@@ -105,7 +105,7 @@ class MembersReport extends FannieReportPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $memtypes = new MemtypeModel($dbc);
         $ret = 'List of: ';
-        foreach (FormLib::get('type', array()) as $type) {
+        foreach ($this->form->type as $type) {
             $memtypes->memtype($type);
             $memtypes->load();
             $ret .= $memtypes->memDesc() . ', ';

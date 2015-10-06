@@ -43,8 +43,8 @@ class DDDReport extends FannieReportPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $FANNIE_TRANS_DB = $this->config->get('TRANS_DB');
-        $date1 = FormLib::get_form_value('date1');
-        $date2 = FormLib::get_form_value('date2');
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
 
         $dtrans = $FANNIE_TRANS_DB . $dbc->sep() . 'transarchive';
         $union = true;

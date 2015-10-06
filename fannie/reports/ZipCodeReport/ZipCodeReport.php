@@ -37,8 +37,8 @@ class ZipCodeReport extends FannieReportPage
 
     function fetch_report_data()
     {
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $exclude = FormLib::get_form_value('excludes','');
 
         $ex = preg_split('/\D+/',$exclude, 0, PREG_SPLIT_NO_EMPTY);

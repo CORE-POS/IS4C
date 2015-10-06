@@ -51,7 +51,7 @@ class BatchReport extends FannieReportPage
           Assemble argument array and appropriate string
           for an IN clause in a prepared statement
         */
-        $batchID = FormLib::get_form_value('batchID','0');
+        $batchID = $this->form->batchID;
         $inArgs = array();
         $inClause = '(';
         $upcs = array();

@@ -40,8 +40,8 @@ class VendorMovementReport extends FannieReportPage
     {
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $vendor = FormLib::get_form_value('vendor','');
         $groupby = FormLib::get_form_value('groupby','upc');
 

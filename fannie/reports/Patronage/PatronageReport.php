@@ -76,7 +76,7 @@ class PatronageReport extends FannieReportPage
 
     public function report_description_content()
     {
-        $fy = FormLib::get('fy');
+        $fy = $this->form->fy;
         if ($fy === '') {
             return array();
         } else {
@@ -89,7 +89,7 @@ class PatronageReport extends FannieReportPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $fy = FormLib::get('fy');
+        $fy = $this->form->fy;
         if ($fy === '') {
             return array();
         }
