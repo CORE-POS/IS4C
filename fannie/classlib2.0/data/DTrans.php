@@ -444,17 +444,17 @@ class DTrans
         return self::addItem($connection, $trans_no, $params);
     }
 
-    public static function departmentClause($deptStart, $deptEnd, $deptMulti, $args)
+    public static function departmentClause($deptStart, $deptEnd, $deptMulti, $args, $alias='d')
     {
         if (count($deptMulti) > 0) {
-            $where = ' AND d.department IN (';
+            $where = ' AND ' . $alias . '.department IN (';
             foreach ($deptMulti as $d) {
                 $where .= '?,';
                 $args[] = $d;
             }
             $where = substr($where, 0, strlen($where)-1) . ')';
         } else {
-            $where = ' AND d.department BETWEEN ? AND ? ';
+            $where = ' AND ' . $alias . '.department BETWEEN ? AND ? ';
             $args[] = $deptStart;
             $args[] = $deptEnd;
         }

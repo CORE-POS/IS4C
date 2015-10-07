@@ -83,7 +83,7 @@ class NewItemsReport extends FannieReportPage
             }
         }
         if ($buyer != -1) {
-            list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args);
+            list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args, 'p');
             $where .= $conditional;
         }
         $args[] = $date1.' 00:00:00';
