@@ -670,20 +670,20 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         CoreLocal::set('cashierAge', 17);
         CoreLocal::set('cashierAgeOverride', 0);
-        list($allowed, $json) = PrehLib::ageCheck(21, array());
-        $this->assertEquals(false, $allowed);
-        $this->assertInternalType('array', $json);
-        CoreLocal::set('cashierAgeOverride', 1);
-        list($allowed, $json) = PrehLib::ageCheck(21, array());
-        $this->assertEquals(false, $allowed);
-        $this->assertInternalType('array', $json);
-        CoreLocal::set('memAge', date('Ymd', strtotime('21 years ago')));
-        list($allowed, $json) = PrehLib::ageCheck(21, array());
+        list($age_required, $json) = PrehLib::ageCheck(21, array());
         $this->assertEquals(true, $allowed);
         $this->assertInternalType('array', $json);
-        CoreLocal::set('memAge', date('Ymd', strtotime('20 years ago')));
-        list($allowed, $json) = PrehLib::ageCheck(21, array());
+        CoreLocal::set('cashierAgeOverride', 1);
+        list($age_required, $json) = PrehLib::ageCheck(21, array());
+        $this->assertEquals(true, $allowed);
+        $this->assertInternalType('array', $json);
+        CoreLocal::set('memAge', date('Ymd', strtotime('21 years ago')));
+        list($age_required, $json) = PrehLib::ageCheck(21, array());
         $this->assertEquals(false, $allowed);
+        $this->assertInternalType('array', $json);
+        CoreLocal::set('memAge', date('Ymd', strtotime('20 years ago')));
+        list($age_required, $json) = PrehLib::ageCheck(21, array());
+        $this->assertEquals(true, $allowed);
         $this->assertInternalType('array', $json);
     }
 
