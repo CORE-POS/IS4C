@@ -541,16 +541,25 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 LEFT JOIN origins AS o ON i.local=o.originID";
         /** add extra joins if this lookup requires them **/
         if ($supertype == 'dept' && $super !== '') {
-            $query .= ' LEFT JOIN superdepts AS s ON i.department=s.dept_ID ';                
+            if ($super >= 0) {
+                $query .= ' LEFT JOIN superdepts AS s ON i.department=s.dept_ID ';                
+            } elseif ($super == -2) {
+                $query .= ' LEFT JOIN MasterSuperDepts AS s ON i.department=s.dept_ID ';                
+            }
         } elseif ($supertype == 'vendor') {
             $query .= ' LEFT JOIN vendors AS z ON z.vendorName=x.distributor ';
         }
         /** build where clause and parameters based on
             the lookup type **/
+        $query .= ' WHERE 1=1 ';
         $args = array();
         if ($supertype == 'dept' && $super !== '') {
-            $query .= ' WHERE s.superID=? ';
-            $args = array($super);
+            if ($super >= 0) {
+                $query .= ' AND s.superID=? ';
+                $args = array($super);
+            } elseif ($super == -2) {
+                $query .= ' AND s.superID <> 0 ';
+            }
             if ($deptStart != 0 && $deptEnd != 0) {
                 $query .= ' AND i.department BETWEEN ? AND ? ';
                 $args[] = $deptStart;
@@ -572,13 +581,13 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 $query = substr($query, 0, strlen($query)-1) . ')';
             }
         } elseif ($supertype == 'manu' && $mtype == 'prefix') {
-            $query .= ' WHERE i.upc LIKE ? ';
+            $query .= ' AND i.upc LIKE ? ';
             $args = array('%' . $manufacturer . '%');
         } elseif ($supertype == 'manu' && $mtype != 'prefix') {
-            $query .= ' WHERE (i.brand LIKE ? OR x.manufacturer LIKE ?) ';
+            $query .= ' AND (i.brand LIKE ? OR x.manufacturer LIKE ?) ';
             $args = array('%' . $manufacturer . '%','%' . $manufacturer . '%');
         } elseif ($supertype == 'vendor') {
-            $query .= ' WHERE (i.default_vendor_id=? OR z.vendorID=?) ';
+            $query .= ' AND (i.default_vendor_id=? OR z.vendorID=?) ';
             $args = array($vendorID, $vendorID);
         } elseif ($supertype == 'upc') {
             $inp = '';
@@ -587,9 +596,9 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 $args[] = $u;
             }
             $inp = substr($inp, 0, strlen($inp)-1);
-            $query .= ' WHERE i.upc IN (' . $inp . ') ';
+            $query .= ' AND i.upc IN (' . $inp . ') ';
         } else {
-            $query .= ' WHERE i.department BETWEEN ? AND ? ';
+            $query .= ' AND i.department BETWEEN ? AND ? ';
             $args = array($deptStart, $deptEnd);
             if (is_array($subDepts) && count($subDepts) > 0) {
                 $query .= ' AND i.subdept IN (';
