@@ -12,6 +12,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
         $logger = new FannieLogger();
         $op_db = $config->get('OP_DB');
         $dbc = FannieDB::get($op_db);
+        $dbc->throwOnFailure(true);
 
         foreach ($reports as $report_class) {
             $obj = new $report_class();
@@ -50,6 +51,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
         $logger = new FannieLogger();
         $op_db = $config->get('OP_DB');
         $dbc = FannieDB::get($op_db);
+        $dbc->throwOnFailure(true);
 
         foreach ($pages as $page_class) {
             $obj = new $page_class();
@@ -70,7 +72,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
             $auth = $obj->checkAuth();
             $this->assertInternalType('boolean',$pre);
 
-            //$obj->unitTest($this);
+            $obj->unitTest($this);
         }
     }
 }
