@@ -76,9 +76,15 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
             if ($item['startDate'] != '' && $item['endDate'] != '') {
                 $datestr = $this->getDateString($item['startDate'], $item['endDate']);
-                $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 20));
+                $pdf->SetXY($left, $top + ($height*$row) + ($height - $top - 20));
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $pdf->Cell($effective_width, 20, $datestr, 0, 1, 'R');
+            }
+            if ($item['originShortName'] != '' || $item['signMultiplier'] < 0) {
+                $pdf->SetXY($left, $top + ($height*$row) + ($height - $top - 20));
+                $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+                $text = ($item['originShortName'] != '') ? $item['originShortName'] : sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
+                $pdf->Cell($effective_width, 20, $text, 0, 1, 'L');
             }
 
             $count++;
