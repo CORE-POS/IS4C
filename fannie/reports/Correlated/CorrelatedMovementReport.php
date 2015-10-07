@@ -65,7 +65,7 @@ class CorrelatedMovementReport extends FannieReportPage
 
         $filter = "";
         $fArgs = array();
-        if (is_array($filters)){
+        if (is_array($filters) && count($filters) > 0) {
             $fClause = "";
             foreach($filters as $f){
                 $fClause .= "?,";
