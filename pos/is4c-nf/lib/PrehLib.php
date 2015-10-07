@@ -1377,7 +1377,8 @@ public static function ageCheck($required_age, $ret)
     if (CoreLocal::get("memAge")=="") {
         CoreLocal::set("memAge",date('Ymd'));
     }
-    $of_age_on_day = mktime(0, 0, 0, date('n', $ts), date('j', $ts), date('Y', $ts) + $required_age);
+    $stamp = strtotime(CoreLocal::get("memAge"));
+    $of_age_on_day = mktime(0, 0, 0, date('n', $stamp), date('j', $stamp), date('Y', $stamp) + $required_age);
     $today = strtotime( date('Y-m-d') );
     if ($of_age_on_day > $today) {
         $ret['udpmsg'] = 'twoPairs';

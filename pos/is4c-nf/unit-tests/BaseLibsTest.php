@@ -667,6 +667,24 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         lttLib::verifyRecord(4, $record, $this);
 
         lttLib::clear();
+
+        CoreLocal::set('cashierAge', 17);
+        CoreLocal::set('cashierAgeOverride', 0);
+        list($allowed, $json) = PrehLib::ageCheck(21);
+        $this->assertEquals(false, $allowed);
+        $this->assertInternalType('array', $json);
+        CoreLocal::set('cashierAgeOverride', 1);
+        list($allowed, $json) = PrehLib::ageCheck(21);
+        $this->assertEquals(false, $allowed);
+        $this->assertInternalType('array', $json);
+        CoreLocal::set('memAge', date('Ymd', strtotime('21 years ago')));
+        list($allowed, $json) = PrehLib::ageCheck(21);
+        $this->assertEquals(true, $allowed);
+        $this->assertInternalType('array', $json);
+        CoreLocal::set('memAge', date('Ymd', strtotime('20 years ago')));
+        list($allowed, $json) = PrehLib::ageCheck(21);
+        $this->assertEquals(false, $allowed);
+        $this->assertInternalType('array', $json);
     }
 
 }
