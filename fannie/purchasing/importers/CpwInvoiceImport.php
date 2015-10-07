@@ -124,7 +124,7 @@ class CpwInvoiceImport extends FannieRESTfulPage
             }
         }
 
-        header('Location: ' . $_SERVER['PHP_SELF'] . '?complete=' . $orderID);
+        header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?complete=' . $orderID);
 
         return false;
     }
@@ -139,28 +139,7 @@ class CpwInvoiceImport extends FannieRESTfulPage
         } 
 
         if ($_FILES['file-upload']['error'] != UPLOAD_ERR_OK) {
-            $msg = '';
-            switch($_FILES['file-upload']['error']) {
-                case UPLOAD_ERR_INI_SIZE:
-                case UPLOAD_ERR_FORM_SIZE:
-                    $msg = 'File is too big.';
-                    break;
-                case UPLOAD_ERR_PARTIAL:
-                    $msg = 'Upload did not complete.';
-                    break;
-                case UPLOAD_ERR_NO_FILE:
-                    $msg = 'No file was uploaded.';
-                    break;
-                case UPLOAD_ERR_NO_TMP_DIR:
-                    $msg = 'No place to put the file.';
-                    break;
-                case UPLOAD_ERR_CANT_WRITE:
-                    $msg = 'Permission problem saving file.';
-                    break;
-                default:
-                    $msg = 'Unknown problem uploading the file.';
-                    break;
-            }
+            $msg = \COREPOS\Fannie\API\lib\UploadLib::errorToMessage($_FILES['file-upload']['error']);
             $this->add_onload_command("showBootstrapAlert('#alert-area', 'danger', '$msg');");
             $this->__route_stem = 'get';
 
@@ -203,7 +182,7 @@ class CpwInvoiceImport extends FannieRESTfulPage
                 break; // item data begins
             }
         }
-        $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+        $ret = '<form method="post">';
         $ret .= '<div class="form-group">
             <label>Invoice #</label>
             <input type="text" name="invoice_num" class="form-control" value="' . $inv_no . '" />
@@ -258,33 +237,7 @@ class CpwInvoiceImport extends FannieRESTfulPage
             $sku = $data[5];
             $caseCost = $data[6];
             $totalCost = $data[7];
-            $caseSize = 1;
-            $unitSize = '';
-            if (preg_match('/(\d+) *\/(\d+) ?LB/', $description, $matches)) {
-                $caseSize = $matches[1] * $matches[2];
-                $unitSize = 'LB';
-            } elseif (preg_match('/(\d+) *\/(\d+) ?#/', $description, $matches)) {
-                $caseSize = $matches[1] * $matches[2];
-                $unitSize = 'LB';
-            } elseif (preg_match('/(\d+) *- *(\d+) ?LB/', $description, $matches)) {
-                $caseSize = ($matches[1] + $matches[2]) / 2.0;
-                $unitSize = 'LB';
-            } elseif (preg_match('/(\d+) *- *(\d+) ?#/', $description, $matches)) {
-                $caseSize = ($matches[1] + $matches[2]) / 2.0;
-                $unitSize = 'LB';
-            } elseif (preg_match('/(\d+) *LB/', $description, $matches)) {
-                $caseSize = $matches[1];
-                $unitSize = 'LB';
-            } elseif (preg_match('/(\d+) *#/', $description, $matches)) {
-                $caseSize = $matches[1];
-                $unitSize = 'LB';
-            } elseif (preg_match('/(\d+) *- *(\d+) ?CT/', $description, $matches)) {
-                $caseSize = ($matches[1] + $matches[2]) / 2.0;
-                $unitSize = 'CT';
-            } elseif (preg_match('/(\d+) *CT/', $description, $matches)) {
-                $caseSize = $matches[1];
-                $unitSize = 'CT';
-            }
+            list($caseSize, $unitSize) = $this->caseAndUnit($description);
 
             $unitCost = $caseCost / $caseSize;
             $upc = '';
@@ -335,6 +288,39 @@ class CpwInvoiceImport extends FannieRESTfulPage
         return $ret;
     }
 
+    private function caseAndUnit($description)
+    {
+        $caseSize = 1;
+        $unitSize = '';
+        if (preg_match('/(\d+) *\/(\d+) ?LB/', $description, $matches)) {
+            $caseSize = $matches[1] * $matches[2];
+            $unitSize = 'LB';
+        } elseif (preg_match('/(\d+) *\/(\d+) ?#/', $description, $matches)) {
+            $caseSize = $matches[1] * $matches[2];
+            $unitSize = 'LB';
+        } elseif (preg_match('/(\d+) *- *(\d+) ?LB/', $description, $matches)) {
+            $caseSize = ($matches[1] + $matches[2]) / 2.0;
+            $unitSize = 'LB';
+        } elseif (preg_match('/(\d+) *- *(\d+) ?#/', $description, $matches)) {
+            $caseSize = ($matches[1] + $matches[2]) / 2.0;
+            $unitSize = 'LB';
+        } elseif (preg_match('/(\d+) *LB/', $description, $matches)) {
+            $caseSize = $matches[1];
+            $unitSize = 'LB';
+        } elseif (preg_match('/(\d+) *#/', $description, $matches)) {
+            $caseSize = $matches[1];
+            $unitSize = 'LB';
+        } elseif (preg_match('/(\d+) *- *(\d+) ?CT/', $description, $matches)) {
+            $caseSize = ($matches[1] + $matches[2]) / 2.0;
+            $unitSize = 'CT';
+        } elseif (preg_match('/(\d+) *CT/', $description, $matches)) {
+            $caseSize = $matches[1];
+            $unitSize = 'CT';
+        }
+
+        return array($caseSize, $unitSize);
+    }
+
     public function get_complete_view()
     {
         return '<div class="alert alert-success">Import complete</div>
@@ -346,7 +332,7 @@ class CpwInvoiceImport extends FannieRESTfulPage
 
     public function get_view()
     {
-        return '<form action="' . $_SERVER['PHP_SELF'] . '" method="post"
+        return '<form method="post"
             enctype="multipart/form-data">
             <div id="alert-area"></div>
             <p>

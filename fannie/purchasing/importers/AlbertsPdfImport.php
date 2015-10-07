@@ -53,26 +53,13 @@ class AlbertsPdfImport extends FannieRESTfulPage
     */
     public function readinessCheck()
     {
-        if (!class_exists('XPDF\PdfToText')) {
-            $this->error_text = 'Missing dependency php-xpdf/php-xpdf; install it using composer';
-
+        $ready = \COREPOS\Fannie\API\lib\UploadLib::pdfUploadEnabled();
+        if ($ready !== true) {
+            $this->error_text = $ready;
             return false;
         } else {
-            try {
-                $obj = XPDF\PdfToText::create();
-            } catch (XPDF\Exception\BinaryNotFoundException $e) {
-                $this->error_text = 'Cannot locate required binary "pdftotext". Package name
-                    may be "poppler-utils" or "xpdf-utils" on Debian based distros or "xpdf"
-                    on Red Hat based distros.';
-                return false;
-            } catch (Exception $e) {
-                $this->error_text = 'Unexpected error initializing pdftotext wrapper. Details: '
-                    . $e->getMessage();
-                return false;
-            }
+            return true;
         }
-
-        return true;
     }
 
     public function post_vendorID_invoice_num_po_num_invoice_date_handler()
@@ -165,28 +152,7 @@ class AlbertsPdfImport extends FannieRESTfulPage
         } 
 
         if ($_FILES['file-upload']['error'] != UPLOAD_ERR_OK) {
-            $msg = '';
-            switch($_FILES['file-upload']['error']) {
-                case UPLOAD_ERR_INI_SIZE:
-                case UPLOAD_ERR_FORM_SIZE:
-                    $msg = 'File is too big.';
-                    break;
-                case UPLOAD_ERR_PARTIAL:
-                    $msg = 'Upload did not complete.';
-                    break;
-                case UPLOAD_ERR_NO_FILE:
-                    $msg = 'No file was uploaded.';
-                    break;
-                case UPLOAD_ERR_NO_TMP_DIR:
-                    $msg = 'No place to put the file.';
-                    break;
-                case UPLOAD_ERR_CANT_WRITE:
-                    $msg = 'Permission problem saving file.';
-                    break;
-                default:
-                    $msg = 'Unknown problem uploading the file.';
-                    break;
-            }
+            $msg = \COREPOS\Fannie\API\lib\UploadLib::errorToMessage($_FILES['file-upload']['error']);
             $this->add_onload_command("showBootstrapAlert('#alert-area', 'danger', '$msg');");
             $this->__route_stem = 'get';
 
@@ -262,27 +228,7 @@ class AlbertsPdfImport extends FannieRESTfulPage
                 $numCases = $matches[1];
                 $sku = $matches[2];
                 $description = $matches[3];
-                $caseSize = 1;
-                $unitSize = 1;
-                if (preg_match('/(\d+)x\d+/', $description, $m)) {
-                    $caseSize = $m[1];
-                    $tmp = preg_split('/\d+x/', $description, 2);
-                    if (count($tmp) >= 2) {
-                        $tmp = explode(' ', $tmp[1], 3);
-                        if (count($tmp) >= 2) {
-                            $unitSize = trim($tmp[0] . $tmp[1], ',');
-                        }
-                    }
-                } elseif (preg_match('/(\d+) lb/i', $description, $m)) {
-                    $caseSize = $m[1];
-                    $unitSize = 'lb';
-                } elseif (preg_match('/(\d+) ct/i', $description, $m)) {
-                    $caseSize = $m[1];
-                    $unitSize = 'ea';
-                } elseif (preg_match('/(\d+) pt/i', $description, $m)) {
-                    $caseSize = $m[1];
-                    $unitSize = 'pt';
-                }
+                list($caseSize, $unitSize) = $this->caseAndUnit($description);
 
                 $upc = $matches[5];
                 if (strlen($upc) == 5 && $upc[0] == '9') {
@@ -351,6 +297,33 @@ class AlbertsPdfImport extends FannieRESTfulPage
             <button type="submit" class="btn btn-default">Import Invoice</button>
             </p>';
         echo '</form>';
+    }
+
+    private function caseAndUnit($description)
+    {
+        $caseSize = 1;
+        $unitSize = 1;
+        if (preg_match('/(\d+)x\d+/', $description, $m)) {
+            $caseSize = $m[1];
+            $tmp = preg_split('/\d+x/', $description, 2);
+            if (count($tmp) >= 2) {
+                $tmp = explode(' ', $tmp[1], 3);
+                if (count($tmp) >= 2) {
+                    $unitSize = trim($tmp[0] . $tmp[1], ',');
+                }
+            }
+        } elseif (preg_match('/(\d+) lb/i', $description, $m)) {
+            $caseSize = $m[1];
+            $unitSize = 'lb';
+        } elseif (preg_match('/(\d+) ct/i', $description, $m)) {
+            $caseSize = $m[1];
+            $unitSize = 'ea';
+        } elseif (preg_match('/(\d+) pt/i', $description, $m)) {
+            $caseSize = $m[1];
+            $unitSize = 'pt';
+        }
+
+        return array($caseSize, $unitSize);
     }
 
     public function get_complete_view()
