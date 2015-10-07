@@ -254,7 +254,7 @@ table.shelf-audit tr:hover {
         $vendors = array();
         foreach($this->scans as $row) {
             if ($row['cost'] == 0 && $row['margin'] != 0) {
-                $row['cost'] = $row['normal_retail'] / ($row['margin'] * $row['normal_retail']);
+                $row['cost'] = $row['normal_retail'] - ($row['margin'] * $row['normal_retail']);
                 $row['retailstatus'] .= '*';
             }
             $ret .= sprintf("%s,\"%s\",\"%s\",%s,%s,%s,%.2f,%.2f,%.2f,%.2f,%s,%.2f,\r\n",
