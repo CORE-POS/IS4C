@@ -77,6 +77,7 @@ class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
             $trans_dbs = FormLib::get('storeTrans', array());
             $push = FormLib::get('storePush', array());
             $pull = FormLib::get('storePull', array());
+            $items = FormLib::get('storeItems', array());
 
             for($i=0; $i<count($ids); $i++) {
                 $model->reset();
@@ -90,6 +91,7 @@ class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
                 $model->transDB( isset($trans_dbs[$i]) ? $trans_dbs[$i] : '' );
                 $model->push( in_array($ids[$i], $push) ? 1 : 0 );
                 $model->pull( in_array($ids[$i], $pull) ? 1 : 0 );
+                $model->hasOwnItems( in_array($ids[$i], $items) ? 1 : 0 );
                 $model->save();
             }
 
@@ -209,6 +211,7 @@ if (extension_loaded('mssql'))
     <th>Transaction DB</th>
     <th>Push</th>
     <th>Pull</th>
+    <th>Own Items</th>
     <th>Delete Entry</th>
 </tr>
 <?php foreach($model->find('storeID') as $store) {
@@ -234,6 +237,7 @@ if (extension_loaded('mssql'))
             <td><input type="text" class="form-control" name="storeTrans[]" value="%s" /></td>
             <td><input type="checkbox" name="storePush[]" value="%d" %s /></td>
             <td><input type="checkbox" name="storePull[]" value="%d" %s /></td>
+            <td><input type="checkbox" name="storeItems[]" value="%d" %s /></td>
             <td><input type="checkbox" name="storeDelete[]" value="%d" /></td>
             </tr>',
             $store->dbUser(),
@@ -242,6 +246,7 @@ if (extension_loaded('mssql'))
             $store->transDB(),
             $store->storeID(), ($store->push() ? 'checked' : ''),
             $store->storeID(), ($store->pull() ? 'checked' : ''),
+            $store->storeID(), ($store->hasOwnItems() ? 'checked' : ''),
             $store->storeID()
     );
 

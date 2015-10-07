@@ -42,6 +42,7 @@ class StoresModel extends BasicModel
     'opDB' => array('type'=>'VARCHAR(20)'),
     'push' => array('type'=>'TINYINT', 'default'=>1),
     'pull' => array('type'=>'TINYINT', 'default'=>1),
+    'hasOwnItems' => array('type'=>'TINYINT', 'default'=>1),
     );
 
     public function doc()

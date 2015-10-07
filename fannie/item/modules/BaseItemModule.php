@@ -99,6 +99,7 @@ class BaseItemModule extends ItemModule
         $p = $dbc->prepare($q);
         $r = $dbc->exec_statement($p,array($upc));
         $store_model = new StoresModel($dbc);
+        $store_model->hasOwnItems(1);
         $stores = array();
         foreach ($store_model->find('storeID') as $obj) {
             $stores[$obj->storeID()] = $obj;
@@ -147,6 +148,16 @@ class BaseItemModule extends ItemModule
             if ($dbc->num_rows($lcR) > 0) {
                 $lcW = $dbc->fetch_row($lcR);
                 $likeCode = $lcW['likeCode'];
+            }
+
+            if (FannieConfig::config('STORE_MODE') == 'HQ') {
+                $default_id = array_shift(array_keys($items));
+                $default_item = $items[$default_id];
+                foreach ($stores as $id => $info) {
+                    if (!isset($items[$id])) {
+                        $items[$id] = $default_item;
+                    }
+                }
             }
         } else {
             // default values for form fields
@@ -727,20 +738,15 @@ HTML;
 
             $ret = str_replace('{{store_id}}', $store_id, $ret);
             $active_tab = false;
-            if ($new_item || FannieConfig::config('STORE_MODE') != 'HQ') {
+            if (FannieConfig::config('STORE_MODE') != 'HQ') {
                 break;
             }
         }
         $ret .= '</div>';
         // sync button will copy current tab values to all other store tabs
         if (!$new_item && FannieConfig::config('STORE_MODE') == 'HQ') {
-            if (count($items) == count($stores)) {
-                $nav_tabs .= '<li><a href="" onclick="syncStoreTabs(); return false;"
-                    title="Set other stores to match this one">Sync</a></li>';
-            } else {
-                $nav_tabs .= '<li><a href="multistore/IncompleteItemsPage.php?id=' . $upc . '"
-                    title="Add item to other stores">Sync</a></li>';
-            }
+            $nav_tabs .= '<li><label title="Apply update to all stores">
+                <input type="checkbox" id="store-sync" checked /> Sync</label></li>';
         }
         $nav_tabs .= '</ul>';
         // only show the store tabs in HQ mode
@@ -758,8 +764,6 @@ HTML;
     </fieldset>
 </div>
 HTML;
-
-
         $ret .= '</div>'; // end panel-body
         $ret .= '</div>'; // end panel
 
@@ -895,6 +899,9 @@ HTML;
         }
         function syncStoreTabs()
         {
+            if ($('#store-sync').prop('checked') === false) {
+                return true;
+            }
             var store_id = $('.tab-pane.active .store-id:first').val();
             var current = {};
             $('#store-tab-'+store_id+' .syncable-input').each(function(){
@@ -934,6 +941,8 @@ HTML;
                     }
                 }
             });
+
+            return true;
         }
         <?php
 
@@ -1247,4 +1256,3 @@ if (basename($_SERVER['SCRIPT_NAME']) == basename(__FILE__)){
     $obj->AjaxCallback();   
 }
 
-?>
