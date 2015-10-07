@@ -215,25 +215,28 @@ class ItemEditorPage extends FanniePage
                         FROM products as p inner join 
                         vendorItems as v ON p.upc=v.upc 
                         left join prodExtra as x on p.upc=x.upc 
-                        WHERE v.sku LIKE ?
-                            AND p.store_id=? ";
+                        WHERE v.sku LIKE ? ";
                     $args[] = '%'.$upc;
-                    $args[] = $store_id;
                     if (!$inUseFlag) {
                         $query .= ' AND inUse=1 ';
+                    }
+                    if ($this->config->get('STORE_MODE') == 'HQ') {
+                        $query .= " AND p.store_id=? ";
+                        $args[] = $store_id;
                     }
                     break;
                 case 'Brand Prefix':
                     $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
                         FROM products as p left join 
                         prodExtra as x on p.upc=x.upc 
-                        WHERE p.upc like ?
-                            AND p.store_id=?
-                        ORDER BY p.upc";
+                        WHERE p.upc like ? ";
                     $args[] = '%'.$upc.'%';
-                    $args[] = $store_id;
                     if (!$inUseFlag) {
                         $query .= ' AND inUse=1 ';
+                    }
+                    if ($this->config->get('STORE_MODE') == 'HQ') {
+                        $query .= " AND p.store_id=? ";
+                        $args[] = $store_id;
                     }
                     break;
                 case 'UPC':
@@ -242,25 +245,28 @@ class ItemEditorPage extends FanniePage
                     $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
                         FROM products as p left join 
                         prodExtra as x on p.upc=x.upc 
-                        WHERE p.upc = ?
-                            AND p.store_id=?
-                        ORDER BY p.description";
+                        WHERE p.upc = ? ";
                     $args[] = $upc;
-                    $args[] = $store_id;
+                    if ($this->config->get('STORE_MODE') == 'HQ') {
+                        $query .= " AND p.store_id=? ";
+                        $args[] = $store_id;
+                    }
                     break;
             }
         } else {
             $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
                 FROM products AS p LEFT JOIN 
                 prodExtra AS x ON p.upc=x.upc
-                WHERE description LIKE ? 
-                    AND p.store_id=? ";
+                WHERE description LIKE ? ";
+            $args[] = '%'.$upc.'%';    
             if (!$inUseFlag) {
                 $query .= ' AND inUse=1 ';
             }
+            if ($this->config->get('STORE_MODE') == 'HQ') {
+                $query .= " AND p.store_id=? ";
+                $args[] = $store_id;
+            }
             $query .= " ORDER BY description";
-            $args[] = '%'.$upc.'%';    
-            $args[] = $store_id;
         }
 
         $query = $dbc->addSelectLimit($query, 500);
