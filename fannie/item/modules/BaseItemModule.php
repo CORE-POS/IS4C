@@ -151,7 +151,8 @@ class BaseItemModule extends ItemModule
             }
 
             if (FannieConfig::config('STORE_MODE') == 'HQ') {
-                $default_id = array_shift(array_keys($items));
+                $default_id = array_keys($items);
+                $default_id = $default_id[0];
                 $default_item = $items[$default_id];
                 foreach ($stores as $id => $info) {
                     if (!isset($items[$id])) {
