@@ -339,8 +339,8 @@ class StoreSummaryReportAlt extends FannieReportPage {
             'Profit',
             '',
             'Margin %',
-            $taxNames['2'],
-            $taxNames['1']
+            isset($taxNames['2']) ? $taxNames['2'] : 'n/a',
+            isset($taxNames['1']) ? $taxNames['1'] : 'n/a',
         );
         $record['meta'] = FannieReportPage::META_BOLD;
         $data[] = $record;
