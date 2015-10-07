@@ -116,7 +116,7 @@ class NonMovementReport extends FannieReportPage {
             }
         }
         if ($buyer != -1) {
-            list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args);
+            list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args, 'p');
             $where .= $conditional;
         }
 
