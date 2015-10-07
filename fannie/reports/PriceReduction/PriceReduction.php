@@ -67,7 +67,7 @@ class PriceReduction extends FannieReportPage
         $query = "SELECT P.upc, P.description, P.cost, P.normal_price, P.department, 
                 P.modified, V.vendorDept, V.vendorID, D.margin as uMarg, D.vendorID, 
                 D.deptID, S.margin as dMarg, P.auto_par
-                FROM is4c_op.products as P
+                FROM products as P
                 LEFT JOIN vendorItems as V ON P.upc = V.upc AND P.default_vendor_id = V.vendorID
                 LEFT JOIN vendorDepartments as D ON (V.vendorID = D.vendorID) AND (D.deptID = V.vendorDept) 
                 LEFT JOIN departments as S ON (P.department = S.dept_no)
