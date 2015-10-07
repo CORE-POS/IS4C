@@ -51,16 +51,9 @@ class CorrelatedMovementReport extends FannieReportPage
         $date2 = $this->form->date2;
         $filters = FormLib::get('filters', array());
 
-        $dClause = "";
-        $dArgs = array();
-        foreach($depts as $d){
-            $dClause .= "?,";
-            $dArgs[] = $d;
-        }
-        $dClause = "(".rtrim($dClause,",").")";
-
-        $where = "d.department IN $dClause";
-        $inv = "d.department NOT IN $dClause";
+        list($dClause, $dArgs) = $dbc->safeInClause($depts);
+        $where = "d.department IN ($dClause)";
+        $inv = "d.department NOT IN ($dClause)";
         if ($upc != "") {
             $upc = BarcodeLib::padUPC($upc);
             $where = "d.upc = ?";
