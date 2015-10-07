@@ -592,6 +592,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'BatchBarcodesModel',
             'BatchTypeModel',
             'BatchMergeTableModel',
+            'ConsistentProductRulesModel',
             'CoopDealsItemsModel',
             'CronBackupModel',
             'CustdataModel',
