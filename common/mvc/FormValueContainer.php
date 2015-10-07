@@ -23,7 +23,7 @@
 
 namespace COREPOS\common\mvc;
 
-if (!class_exists('ValueContainer', false)) {
+if (!class_exists('\COREPOS\common\mvc\ValueContainer', false)) {
     include(dirname(__FILE__) . '/ValueContainer.php');
 }
 
