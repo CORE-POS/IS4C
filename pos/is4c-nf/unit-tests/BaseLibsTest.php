@@ -671,19 +671,19 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('cashierAge', 17);
         CoreLocal::set('cashierAgeOverride', 0);
         list($age_required, $json) = PrehLib::ageCheck(21, array());
-        $this->assertEquals(true, $allowed);
+        $this->assertEquals(true, $age_required);
         $this->assertInternalType('array', $json);
         CoreLocal::set('cashierAgeOverride', 1);
         list($age_required, $json) = PrehLib::ageCheck(21, array());
-        $this->assertEquals(true, $allowed);
+        $this->assertEquals(true, $age_required);
         $this->assertInternalType('array', $json);
         CoreLocal::set('memAge', date('Ymd', strtotime('21 years ago')));
         list($age_required, $json) = PrehLib::ageCheck(21, array());
-        $this->assertEquals(false, $allowed);
+        $this->assertEquals(false, $age_required);
         $this->assertInternalType('array', $json);
         CoreLocal::set('memAge', date('Ymd', strtotime('20 years ago')));
         list($age_required, $json) = PrehLib::ageCheck(21, array());
-        $this->assertEquals(true, $allowed);
+        $this->assertEquals(true, $age_required);
         $this->assertInternalType('array', $json);
     }
 
