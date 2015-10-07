@@ -216,7 +216,7 @@ class GeneralDayReport extends FannieReportPage
             ) as q 
             group by q.trans_num,q.transaction_type");
         $transR = $dbc->exec_statement($transQ,$dates);
-        $trans_info = array();
+        $transinfo = array();
         while($row = $dbc->fetch_array($transR)){
             if (!isset($transinfo[$row[2]]))
                 $transinfo[$row[2]] = array(0,0.0,0.0,0.0,0.0);
@@ -227,7 +227,7 @@ class GeneralDayReport extends FannieReportPage
         $tSum = 0;
         $tItems = 0;
         $tDollars = 0;
-        foreach(array_keys($transinfo) as $k){
+        foreach (array_keys($transinfo) as $k) {
             $transinfo[$k][2] = round($transinfo[$k][1]/$transinfo[$k][0],2);
             $transinfo[$k][4] = round($transinfo[$k][3]/$transinfo[$k][0],2);
             $tSum += $transinfo[$k][0];
