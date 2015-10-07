@@ -378,17 +378,7 @@ class StoreSummaryReportAlt extends FannieReportPage {
 
     function form_content()
     {
-        $lastMonday = "";
-        $lastSunday = "";
-
-        $ts = mktime(0,0,0,date("n"),date("j")-1,date("Y"));
-        while($lastMonday == "" || $lastSunday == ""){
-            if (date("w",$ts) == 1 && $lastSunday != "")
-                $lastMonday = date("Y-m-d",$ts);
-            elseif(date("w",$ts) == 0)
-                $lastSunday = date("Y-m-d",$ts);
-            $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));    
-        }
+        list($lastMonday, $lastSunday) = \COREPOS\Fannie\API\lib\Dates::lastWeek();
         ob_start();
         ?>
         <form action=StoreSummaryReportAlt.php method=get>
