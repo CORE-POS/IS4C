@@ -188,7 +188,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
             'Still Active',
             null,
             number_format($totals['active']),
-            number_format($totals['active'] / $allTimeW['members'] * 100) . '%',
+            number_format($allTimeW['members'] == 0 ? 0 : $totals['active'] / $allTimeW['members'] * 100) . '%',
             null,
         ));
 
