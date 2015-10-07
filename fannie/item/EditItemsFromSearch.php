@@ -268,17 +268,17 @@ class EditItemsFromSearch extends FannieRESTfulPage
 
         $ret .= '</tr>';
 
-        $info = $dbc->arrayToParams($this->upcs);
+        list($in_sql, $args) = $dbc->safeInClause($this->upcs);
         $query = 'SELECT p.upc, p.description, p.department, d.dept_name,
                     p.tax, p.foodstamp, p.discount, p.scale, p.local,
                     x.manufacturer, x.distributor
                   FROM products AS p
                   LEFT JOIN departments AS d ON p.department=d.dept_no
                   LEFT JOIN prodExtra AS x ON p.upc=x.upc
-                  WHERE p.upc IN (' . $info['in'] . ')
+                  WHERE p.upc IN (' . $in_sql . ')
                   ORDER BY p.upc';
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, $info['args']);
+        $result = $dbc->execute($prep, $args);
         while($row = $dbc->fetch_row($result)) {
             $deptOpts = '';
             foreach($depts as $num => $name) {

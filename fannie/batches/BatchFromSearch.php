@@ -152,19 +152,19 @@ class BatchFromSearch extends FannieRESTfulPage
         for ($i=0; $i<count($upcs); $i++) {
             $upcs[$i] = BarcodeLib::padUPC($upcs[$i]);
         }
-        $params = $dbc->arrayToParams($upcs);
+        list($in_sql, $args) = $dbc->safeInClause($upcs);
 
         $query = '
             SELECT p.upc,
                 CASE WHEN v.srp IS NULL THEN 0 ELSE v.srp END as newSRP
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc 
-            WHERE p.upc IN (' . $params['in'] . ')
+            WHERE p.upc IN (' . $in_sql . ')
             ORDER BY p.upc,
                 CASE WHEN v.vendorID=? THEN -999 ELSE v.vendorID END';
         $prep = $dbc->prepare($query);
-        $params['args'][] = $vendorID;
-        $result = $dbc->execute($prep, $params['args']);
+        $args[] = $vendorID;
+        $result = $dbc->execute($prep, $args);
 
         $prevUPC = 'notUPC';
         $results = array();
@@ -260,17 +260,17 @@ class BatchFromSearch extends FannieRESTfulPage
 
         $ret .= '<hr />';
 
-        $info = $dbc->arrayToParams($this->upcs);
+        list($in_sql, $args) = $dbc->safeInClause($this->upcs);
         $query = 'SELECT p.upc, p.description, p.normal_price, m.superID,
                 MAX(CASE WHEN v.srp IS NULL THEN 0.00 ELSE v.srp END) as srp
                 FROM products AS p
                     LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                     LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
-                WHERE p.upc IN ( ' . $info['in'] . ')
+                WHERE p.upc IN ( ' . $in_sql . ')
                 GROUP BY p.upc, p.description, p.normal_price, m.superID
                 ORDER BY p.upc';
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, $info['args']);
+        $result = $dbc->execute($prep, $args);
 
         $ret .= '<div id="saleTools" class="form-group form-inline">';
         $ret .= '<label>Markdown</label>

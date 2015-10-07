@@ -96,12 +96,7 @@ class BatchReport extends FannieReportPage
         $bStart .= ' 00:00:00';
         $bEnd .= ' 23:59:59';
         $reportArgs = array($bStart, $bEnd);
-        $in_sql = '';
-        foreach ($upcs as $upc) {
-            $in_sql .= '?,';
-            $reportArgs[] = $upc;
-        }
-        $in_sql = substr($in_sql, 0, strlen($in_sql)-1);
+        list($in_sql, $reportArgs) = $dbc->safeInClause($upcs, $reportArgs);
 
         $salesBatchQ ="
             SELECT d.upc, 
@@ -322,4 +317,3 @@ class BatchReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

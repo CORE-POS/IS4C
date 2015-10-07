@@ -366,13 +366,13 @@ class MarginToolFromSearch extends FannieRESTfulPage
         }
 
         // get applicable department(s)
-        $info = $dbc->arrayToParams($this->upcs);
+        list($in_sql, $args) = $dbc->safeInClause($this->upcs);
         $deptQ = "SELECT department
                   FROM products 
-                  WHERE upc in ({$info['in']})
+                  WHERE upc in ({$in_sql})
                   GROUP BY department";
         $deptP = $dbc->prepare($deptQ);
-        $deptR = $dbc->execute($deptP, $info['args']);
+        $deptR = $dbc->execute($deptP, $args);
         while($deptW = $dbc->fetch_row($deptR)) {
             $this->depts[] = $deptW['department'];
         }
@@ -394,16 +394,16 @@ class MarginToolFromSearch extends FannieRESTfulPage
         $ret = '';
 
         // list super depts & starting margins
-        $info = $dbc->arrayToParams($this->depts);
+        list($in_sql, $args) = $dbc->safeInClause($this->upcs);
         $superQ = "SELECT m.superID, super_name,
                     SUM(cost) AS totalCost,
                     SUM(CASE WHEN p.cost = 0 THEN 0 ELSE p.normal_price END) as totalPrice
                    FROM MasterSuperDepts AS m
                    LEFT JOIN products AS p ON m.dept_ID=p.department
-                   WHERE m.dept_ID IN ({$info['in']})
+                   WHERE m.dept_ID IN ({$in_sql})
                    GROUP BY m.superID, super_name";
         $superP = $dbc->prepare($superQ);
-        $superR = $dbc->execute($superP, $info['args']);
+        $superR = $dbc->execute($superP, $args);
         $ret .= '<div class="col-sm-2 pull-right">';
         $ret .= '<div class="fluid-container form-group"><strong>Overall Margins</strong>';
         $ret .= '<table class="table table-bordered small">';
@@ -435,11 +435,11 @@ class MarginToolFromSearch extends FannieRESTfulPage
                     FROM products AS p
                     LEFT JOIN departments AS d ON p.department=d.dept_no
                     LEFT JOIN $summary AS q ON p.upc=q.upc
-                    WHERE department IN ({$info['in']})
+                    WHERE department IN ({$in_sql})
                         AND cost <> 0
                     GROUP BY department, dept_name";
         $marginP = $dbc->prepare($marginQ);
-        $marginR = $dbc->execute($marginP, $info['args']);
+        $marginR = $dbc->execute($marginP, $args);
         while($marginW = $dbc->fetch_row($marginR)) {
             $ret .= sprintf('<tr><td>%d %s</td><td id="dmargin%d">%.4f%%</td></tr>',
                             $marginW['department'], $marginW['dept_name'], $marginW['department'],
@@ -483,7 +483,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
                 <th>New Price</th>
                 </tr></thead><tbody>';
 
-        $info = $dbc->arrayToParams($this->upcs);
+        list($in_sql, $args) = $dbc->safeInClause($this->upcs);
         $query = 'SELECT p.upc, p.description, p.department, p.cost,
                     p.normal_price, m.superID, q.percentageStoreSales,
                     q.percentageSuperDeptSales, q.percentageDeptSales
@@ -491,10 +491,10 @@ class MarginToolFromSearch extends FannieRESTfulPage
                   LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
                   LEFT JOIN ' . $FANNIE_ARCHIVE_DB . $dbc->sep() . 'productSummaryLastQuarter AS q
                     ON p.upc=q.upc
-                  WHERE p.upc IN (' . $info['in'] . ')
+                  WHERE p.upc IN (' . $in_sql . ')
                   ORDER BY p.upc';
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, $info['args']);
+        $result = $dbc->execute($prep, $args);
         while($row = $dbc->fetch_row($result)) {
             $ret .= sprintf('<tr class="itemrow" id="row%s">
                             <td>%s</td>
