@@ -358,6 +358,8 @@ class MemberREST
                 }
                 if (isset($row['customerAccountID'])) {
                     $account['customerAccountID'] = $row['customerAccountID'];
+                } else {
+                    $account['customerAccountID'] = 0;
                 }
 
                 $account['customers'] = array();
