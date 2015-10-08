@@ -259,7 +259,7 @@ class BatchReport extends FannieReportPage
         if (!is_array($batchID)) {
             $batchID = array($batchID);
         }
-        list($inArgs, $inClause) = $dbc->safeInClause($batchID);
+        list($inClause, $inArgs) = $dbc->safeInClause($batchID);
         $batchInfoQ = $dbc->prepare("
             SELECT batchName,
                 startDate AS startDate,
