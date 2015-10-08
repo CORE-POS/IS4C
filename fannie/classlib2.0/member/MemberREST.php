@@ -264,6 +264,9 @@ class MemberREST
                     }
                 }
             }
+        } else {
+            // plug a value so the returned structure is complete
+            $ret['customerAccountID'] = 0;
         }
 
         return $ret;
