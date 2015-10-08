@@ -139,7 +139,7 @@ class CorrelatedMovementReport extends FannieReportPage
         $line = 'Corresponding sales for: ';
         if (FormLib::get('upc') === '') {
             $line .= 'departments ';
-            foreach(FormLib::get('depts') as $d) {
+            foreach (FormLib::get('depts', array()) as $d) {
                 $line .= $d.', ';
             }
             $line = substr($line, 0, strlen($line)-1);

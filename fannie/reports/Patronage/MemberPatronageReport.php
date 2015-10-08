@@ -59,7 +59,7 @@ HTML;
     public function report_description_content()
     {
         $id = $this->form->id;
-        if ($fy === '') {
+        if ($id === '') {
             return array();
         } else {
             return array('Patronage Rebate for #' . $id);

@@ -109,6 +109,7 @@ class ScaleItemsReport extends FannieReportPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
+        $model = new DepartmentsModel($dbc);
         $dlist = array();
         foreach($model->find('dept_no') as $dept) {
             $dlist[$dept->dept_no()] = $dept->dept_name();

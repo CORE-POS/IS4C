@@ -79,7 +79,7 @@ class HourlySalesReport extends FannieReportPage
 
         if ($this->report_format == 'html') {
             $ret[] = sprintf(' <a href="../HourlyTrans/HourlyTransReport.php?%s">Transaction Counts for Same Period</a>', 
-                            $_SERVER['QUERY_STRING']);
+                            filter_input(INPUT_SERVER, 'QUERY_STRING'));
         }
 
         return $ret;

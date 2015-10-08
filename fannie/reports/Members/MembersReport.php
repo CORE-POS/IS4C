@@ -108,6 +108,9 @@ class MembersReport extends FannieReportPage
         $dbc->selectDB($this->config->get('OP_DB'));
         $memtypes = new MemtypeModel($dbc);
         $ret = 'List of: ';
+        if (!is_array($this->form->type)) {
+            $this->form->type = array($this->form->type);
+        }
         foreach ($this->form->type as $type) {
             $memtypes->memtype($type);
             $memtypes->load();

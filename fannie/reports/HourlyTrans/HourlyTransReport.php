@@ -76,7 +76,7 @@ class HourlyTransReport extends FannieReportPage
 
         if ($this->report_format == 'html') {
             $ret[] = sprintf(' <a href="../HourlySales/HourlySalesReport.php?%s">Sales for Same Period</a>', 
-                            $_SERVER['QUERY_STRING']);
+                            filter_input(INPUT_SERVER, 'QUERY_STRING'));
         }
 
         return $ret;

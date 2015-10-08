@@ -142,7 +142,7 @@ class FreshDealsMovementReport extends FannieReportPage
         $args = array_map(function($i){ 
             $item = trim($i);
             // trim check digit based on dashes or spacing
-            if (($item[strlen($item)-2] == ' ' || $item[strlen($item)-2] == '-') && is_numeric($item[strlen($item)-1])) {
+            if (strlen($item) > 2 && ($item[strlen($item)-2] == ' ' || $item[strlen($item)-2] == '-') && is_numeric($item[strlen($item)-1])) {
                 $item = substr($item, 0, strlen($item)-2);
             }
             $item = str_replace(' ', '', $item);

@@ -272,6 +272,9 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         while ($splhWeekW = $dbc->fetch_row($splhWeekR)) {
             $splhWeeks .= sprintf('%d,', $splhWeekW['obfWeekID']);
         }
+        if ($splhWeeks == '(') {
+            $splhWeeks .= '-99999';
+        }
         $splhWeeks = substr($splhWeeks, 0, strlen($splhWeeks)-1) . ')';
         $trendQ = '
             SELECT 
