@@ -403,7 +403,6 @@ class HouseCouponEditor extends FanniePage
             '%B' => 'Percent Discount (Coupon discount OR member discount)',
             '%D'=>'Percent Discount (Department)',
             'PD'=>'Percent Discount (Anytime)',
-            '%C'=>'Percent Discount (Capped)',
             'AD'=>'All Discount (Department)',
         );
         $ret .= '<div class="row">
