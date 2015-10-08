@@ -687,5 +687,59 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $this->assertInternalType('array', $json);
     }
 
+    public function testDiscountModules()
+    {
+        $ten = new DiscountModule(10, 'ten');
+        $fifteen = new DiscountModule(15, 'fifteen');
+
+        // verify stacking discounts
+        CoreLocal::set('percentDiscount', 0);
+        CoreLocal::set('NonStackingDiscounts', 0);
+        DiscountModule::updateDiscount($ten, false);
+        $this->assertEquals(10, CoreLocal::get('percentDiscount'));
+        DiscountModule::updateDiscount($fifteen, false);
+        $this->assertEquals(25, CoreLocal::get('percentDiscount'));
+
+        DiscountModule::transReset();
+
+        // verify non-stacking discounts
+        CoreLocal::set('percentDiscount', 0);
+        CoreLocal::set('NonStackingDiscounts', 1);
+        DiscountModule::updateDiscount($ten, false);
+        $this->assertEquals(10, CoreLocal::get('percentDiscount'));
+        DiscountModule::updateDiscount($fifteen, false);
+        $this->assertEquals(15, CoreLocal::get('percentDiscount'));
+
+        DiscountModule::transReset();
+
+        // verify best non-stacking discount wins
+        CoreLocal::set('percentDiscount', 0);
+        DiscountModule::updateDiscount($fifteen, false);
+        $this->assertEquals(15, CoreLocal::get('percentDiscount'));
+        DiscountModule::updateDiscount($ten, false);
+        $this->assertEquals(15, CoreLocal::get('percentDiscount'));
+
+        DiscountModule::transReset();
+
+        // verify same-name discounts overwrite
+        $one = new DiscountModule(1, 'custdata');
+        $two = new DiscountModule(2, 'custdata');
+        CoreLocal::set('percentDiscount', 0);
+        CoreLocal::set('NonStackingDiscounts', 0);
+        DiscountModule::updateDiscount($one, false);
+        $this->assertEquals(1, CoreLocal::get('percentDiscount'));
+        DiscountModule::updateDiscount($two, false);
+        $this->assertEquals(2, CoreLocal::get('percentDiscount'));
+
+        DiscountModule::transReset();
+
+        // same-name should overwrite in the order called
+        CoreLocal::set('percentDiscount', 0);
+        DiscountModule::updateDiscount($two, false);
+        $this->assertEquals(2, CoreLocal::get('percentDiscount'));
+        DiscountModule::updateDiscount($one, false);
+        $this->assertEquals(1, CoreLocal::get('percentDiscount'));
+    }
+
 }
 
