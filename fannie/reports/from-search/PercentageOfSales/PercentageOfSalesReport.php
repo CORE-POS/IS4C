@@ -42,7 +42,7 @@ class PercentageOfSalesReport extends FannieReportPage
         $dbc->selectDB($this->config->get('OP_DB'));
 
         $upcs = FormLib::get('u', array());
-        list ($in, $args) = $dbc->safeInClause($upcs);
+        list($in, $args) = $dbc->safeInClause($upcs);
 
         $query = "SELECT p.upc, p.description, p.department,
                     d.dept_name, l.quantity, l.total,
