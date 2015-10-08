@@ -42,13 +42,7 @@ class PercentageOfSalesReport extends FannieReportPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $upcs = FormLib::get('u', array());
-        $in = '';
-        $args = array();
-        foreach($upcs as $u) {
-            $in .= '?,';
-            $args[] = BarcodeLib::padUPC($u);
-        }
-        $in = substr($in, 0, strlen($in)-1);
+        list ($in, $args) = $dbc->safeInClause($upcs);
 
         $query = "SELECT p.upc, p.description, p.department,
                     d.dept_name, l.quantity, l.total,
