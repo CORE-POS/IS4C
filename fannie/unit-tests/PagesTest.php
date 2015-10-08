@@ -39,7 +39,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
                 }
             }
             $obj->setForm($form);
-            $preamble = $obj->repor_description_content();
+            $preamble = $obj->report_description_content();
             $this->assertInternalType('array', $preamble, 'Report did not return description content ' . $report_class);
             $results = $obj->fetch_report_data();
             $this->assertInternalType('array', $results, 'Report did not return results ' . $report_class);
