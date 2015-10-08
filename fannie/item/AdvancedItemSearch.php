@@ -42,6 +42,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private $search_methods = array(
         'searchUPC',
+        'searchUPCs',
         'searchDescription',
         'searchBrand',
         'searchSuperDepartment',
@@ -131,6 +132,21 @@ class AdvancedItemSearch extends FannieRESTfulPage
                     $search->where .= ' AND p.upc = ? ';
                     $search->args[] = $upc;
                 }
+            }
+        } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    private function searchUPCs($search, $form)
+    {
+        try {
+            if ($form->upcs !== '') {
+                $upcs = explode("\n", $form->upcs);
+                $upcs = array_map(function($i){ return BarcodeLib::padUPC(trim($i)); }, $upcs);
+                $search->args = array_merge($search->args, $upcs);
+                $search->where .= ' AND p.upc IN (' . str_repeat('?,', count($upcs));
+                $search->where = substr($search->where, 0, strlen($search->where)-1) . ')';
             }
         } catch (Exception $ex) {}
 
@@ -984,10 +1000,15 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $ret .= '<tr>';
 
         $ret .= '<td class="text-right">
-            <label class="small control-label">UPC</label>
+            <label class="small control-label">
+                <a href="" class="btn btn-default btn-xs"
+                onclick="$(\'.upc-in\').toggle(); return false;">+</a>
+                UPC
+            </label>
             </td>
             <td>
-                <input type="text" name="upc" class="form-control input-sm" 
+                <textarea class="upc-in form-control input-sm collapse" name="upcs"></textarea>
+                <input type="text" name="upc" class="upc-in form-control input-sm" 
                     placeholder="UPC or PLU" />
             </td>';
 
