@@ -49,11 +49,11 @@ class FpdfWithBarcode extends FPDF
       if($len==12)
         $barcode='0'.$barcode;
       //Add or control the check digit
-      if(strlen($barcode)==12)
+      if (strlen($barcode)==12) {
         $barcode.=$this->GetCheckDigit($barcode);
-      elseif(!$this->TestCheckDigit($barcode)){
-        $this->Error('This is an Incorrect check digit' . $barcode);
-        //echo $x.$y.$barcode."\n";
+      } elseif (!$this->TestCheckDigit($barcode)) {
+        $barcode = substr($barcode, 0, strlen($barcode)-1);
+        $barcode .= $this->GetCheckDigit($barcode);
       }
       //Convert digits to bars
       $codes=array(
