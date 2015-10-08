@@ -975,6 +975,14 @@ HTML;
         );
     }
 
+    protected function get_handler()
+    {
+        $orderID = $this->createEmptyOrder();
+
+        return filter_input(INPUT_SERVER, 'PHP_SELF') . '?orderID=' . $orderID;
+    }
+
+    // this shouldn't occur unless something goes wonky creating the new order
     protected function get_view()
     {
         return '<div class="alert alert-danger">No Order Specified</div>';
