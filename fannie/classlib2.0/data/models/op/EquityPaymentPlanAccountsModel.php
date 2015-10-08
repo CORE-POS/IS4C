@@ -32,7 +32,7 @@ class EquityPaymentPlanAccountsModel extends BasicModel
     protected $columns = array(
     'equityPaymentPlanAccountID' => array('type'=>'INT', 'increment'=>true, 'index'=>true),
     'cardNo' => array('type'=>'INT', 'primary_key'=>true),
-    'equityPaymentPlanID' => array('type'=>'INT', 'primary_key'=>true),
+    'equityPaymentPlanID' => array('type'=>'INT'),
     'lastPaymentDate' => array('type'=>'DATETIME'),
     'lastPaymentAmount' => array('type'=>'MONEY'),
     'nextPaymentDate' => array('type'=>'DATETIME'),
