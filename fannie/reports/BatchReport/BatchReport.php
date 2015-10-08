@@ -265,7 +265,7 @@ class BatchReport extends FannieReportPage
                 startDate AS startDate,
                 endDate AS endDate 
             FROM batches 
-            WHERE batchID IN $inClause");
+            WHERE batchID IN ($inClause)");
         $batchInfoR = $dbc->execute($batchInfoQ,$inArgs);
         $bName = "";
         while ($batchInfoW = $dbc->fetchRow($batchInfoR)) {
