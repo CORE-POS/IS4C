@@ -57,6 +57,7 @@ class DiscountApplied extends Parser
                 );
             } elseif ($strl <= 50 and $strl > 0) {
                 $this->ret = PrehLib::percentDiscount($strl,$this->ret);
+                $this->ret['redraw_footer'] = true;
             } else {
                 return false;
             }
