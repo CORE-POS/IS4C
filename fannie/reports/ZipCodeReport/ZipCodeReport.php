@@ -51,7 +51,8 @@ class ZipCodeReport extends FannieReportPage
         $exCondition = substr($exCondition, 0, strlen($exCondition)-1);
 
         $ret = array();
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $query = "
             SELECT 
                 CASE WHEN m.zip='' THEN 'none' ELSE m.zip END as zipcode,

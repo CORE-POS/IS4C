@@ -37,7 +37,8 @@ class CCReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        $dbc = FannieDB::get($this->config->get('TRANS_DB'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
 
         try {
             $date = $this->form->date;

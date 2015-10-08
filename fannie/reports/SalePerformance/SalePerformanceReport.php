@@ -52,8 +52,8 @@ class SalePerformanceReport extends FannieReportPage
 
     private function ajaxCallback()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $m = FormLib::get('month', 1);
         $y = FormLib::get('year', date('Y'));
@@ -102,8 +102,8 @@ class SalePerformanceReport extends FannieReportPage
     
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         if (!is_array($this->form->ids)) {
             $this->form->ids = array($this->form->ids);

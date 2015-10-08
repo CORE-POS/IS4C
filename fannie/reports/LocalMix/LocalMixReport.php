@@ -42,8 +42,9 @@ class LocalMixReport extends FannieReportPage
 
     public function preprocess()
     {
-        global $FANNIE_OP_DB;
-        $o = new OriginsModel(FannieDB::get($FANNIE_OP_DB));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $o = new OriginsModel($dbc);
         $o->local(1);
         foreach ($o->find('originID') as $origin) {
             $this->localSettings[$origin->originID()] = $origin->shortName();
@@ -55,8 +56,8 @@ class LocalMixReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $data = array();
         
         $localCols = '';

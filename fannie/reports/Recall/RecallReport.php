@@ -41,8 +41,8 @@ class RecallReport extends FannieReportPage
 
     public function report_description_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $upc = BarcodeLib::padUPC(FormLib::get('upc'));
 
@@ -56,8 +56,8 @@ class RecallReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $upc = BarcodeLib::padUPC(FormLib::get('upc'));
         $date1 = $this->form->date1;

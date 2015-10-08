@@ -113,7 +113,8 @@ class StoreSummaryReport extends FannieReportPage {
         $d2 = $this->form->date2;
         $dept = FormLib::get_form_value('dept',0);
 
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         // Can dlog views if they include cost.
         $dtrans = DTransactionsModel::select_dtrans($d1,$d2);

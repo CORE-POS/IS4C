@@ -43,6 +43,8 @@ class CorrelatedMovementReport extends FannieReportPage
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+        // creates a temporary table so requesting a writable connection
+        // does make sense here
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $depts = FormLib::get('depts', array());
@@ -198,8 +200,8 @@ function flipover(opt){
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $deptQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
         $deptR = $dbc->exec_statement($deptQ);

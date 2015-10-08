@@ -79,7 +79,6 @@ class PriceHistoryReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
         /* provide a department range and date range to
            get history for all products in those departments
            for that time period AND current price
@@ -99,7 +98,8 @@ class PriceHistoryReport extends FannieReportPage
 
         $q = "";
         $args = array();
-        $sql = FannieDB::get($FANNIE_OP_DB);
+        $sql = $this->connection;
+        $sql->selectDB($this->config->get('OP_DB'));
         $type = FormLib::get('type');
         if ($type === '') { // not set
             $q = "
@@ -205,8 +205,8 @@ class PriceHistoryReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $sql = FannieDB::get($FANNIE_OP_DB);
+        $sql = $this->connection;
+        $sql->selectDB($this->config->get('OP_DB'));
 
         $deptsQ = $sql->prepare_statement("select dept_no,dept_name from departments order by dept_no");
         $deptsR = $sql->exec_statement($deptsQ);

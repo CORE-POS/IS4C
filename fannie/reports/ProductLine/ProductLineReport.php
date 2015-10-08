@@ -42,7 +42,8 @@ class ProductLineReport extends FannieReportPage
         $prefix = $this->form->prefix;
         $prefix = str_pad($prefix, '0', 5, STR_PAD_LEFT);
 
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         if ($dbc->tableExists('FloorSections')) {
             $loc_col = 'f.name AS floorSection';

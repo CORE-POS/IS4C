@@ -50,8 +50,8 @@ class PatronageReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $fyQ = $dbc->prepare_statement("SELECT FY FROM patronage GROUP BY FY ORDER BY FY DESC");
         $fyR = $dbc->exec_statement($fyQ);
@@ -86,8 +86,8 @@ class PatronageReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $fy = FormLib::get('fy');
         if ($fy === '') {

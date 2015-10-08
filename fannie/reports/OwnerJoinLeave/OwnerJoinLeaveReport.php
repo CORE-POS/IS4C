@@ -53,7 +53,8 @@ class OwnerJoinLeaveReport extends FannieReportPage
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $this->report_headers[0][0] .= ' '
             . date('M j, Y', strtotime($this->form->date1))

@@ -18,8 +18,8 @@ class MembersReport extends FannieReportPage
 
     function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $inType = '';
         $args = array();
@@ -33,7 +33,7 @@ class MembersReport extends FannieReportPage
         $inType = substr($inType, 0, strlen($inType)-1);
         $suspended = FormLib::get('suspended', 1);
 
-        $trans = $FANNIE_TRANS_DB;
+        $trans = $this->config->get('TRANS_DB');
         if ($dbc->dbms_name() == 'mssql') {
             $trans .= ".dbo";
         }
@@ -104,8 +104,8 @@ class MembersReport extends FannieReportPage
 
     public function report_description_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $memtypes = new MemtypeModel($dbc);
         $ret = 'List of: ';
         foreach ($this->form->type as $type) {
@@ -119,8 +119,8 @@ class MembersReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $memtypes = new MemtypeModel($dbc);
         ob_start();
         ?>

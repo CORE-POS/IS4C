@@ -52,8 +52,8 @@ class SaleItemsByDate extends FannieReportPage
         $owner = array();
         $size = array();
         
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         
         //procure batchIDs from 'batches'
         $query = "select batchID, owner from batches where startDate='{$this->form->startdate} 00:00:00';";

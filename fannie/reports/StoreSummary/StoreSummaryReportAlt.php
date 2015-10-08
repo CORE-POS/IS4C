@@ -86,7 +86,8 @@ class StoreSummaryReportAlt extends FannieReportPage {
         $d2 = $this->form->date2;
         $dept = FormLib::get_form_value('dept',0);
 
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $dtrans = DTransactionsModel::selectDtrans($d1,$d2);
         $datestamp = $dbc->identifier_escape('datetime');

@@ -42,8 +42,8 @@ class SuspensionsReport extends FannieReportPage
 
     function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $date1 = $this->form->date1;
         $date2 = $this->form->date2;
         $code = FormLib::get_form_value('reason','0');
@@ -111,8 +111,8 @@ class SuspensionsReport extends FannieReportPage
 
     function report_description_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $reason = 'Any Reason';
         $mask = FormLib::get('reason', 0);
         if ($mask != 0) {
@@ -131,8 +131,8 @@ class SuspensionsReport extends FannieReportPage
     
     function form_content()
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $codes = new ReasoncodesModel($dbc);
         ob_start();
 ?>

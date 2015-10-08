@@ -61,8 +61,8 @@ class PriceReduction extends FannieReportPage
         $roundSRP = array();
         
         // Connect
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         // Create List of Items
         $query = "SELECT P.upc, P.description, P.cost, P.normal_price, P.department, 
                 P.modified, V.vendorDept, V.vendorID, D.margin as uMarg, D.vendorID, 

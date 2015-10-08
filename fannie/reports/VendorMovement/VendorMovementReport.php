@@ -38,8 +38,8 @@ class VendorMovementReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $date1 = $this->form->date1;
         $date2 = $this->form->date2;
         $vendor = FormLib::get_form_value('vendor','');

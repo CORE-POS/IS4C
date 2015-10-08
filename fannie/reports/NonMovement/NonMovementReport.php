@@ -179,8 +179,8 @@ class NonMovementReport extends FannieReportPage {
     
     function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
         $deptsR = $dbc->exec_statement($deptsQ);
         $deptsList = "";

@@ -57,8 +57,8 @@ class MonthOverMonthReport extends FannieReportPage {
     }
 
     function fetch_report_data(){
-        global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $month1 = $this->form->month1;
         $month2 = $this->form->month2;
         $year1 = FormLib::get_form_value('year1',date('Y'));
@@ -136,8 +136,8 @@ class MonthOverMonthReport extends FannieReportPage {
     }
     
     function form_content(){
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $depts = array();
         $q = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
         $r = $dbc->exec_statement($q);

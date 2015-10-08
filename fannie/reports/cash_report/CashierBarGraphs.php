@@ -47,9 +47,9 @@ class CashierBarGraphs extends FannieRESTfulPage
 
     public function get_id_handler()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $emp_no = $this->id;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
 
         $query = "";
         $args = array();
@@ -240,4 +240,4 @@ class CashierBarGraphs extends FannieRESTfulPage
 }
 
 FannieDispatch::conditionalExec();
-?>
+

@@ -41,8 +41,8 @@ class ItemLastQuarterReport extends FannieReportPage
 
     public function report_description_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $prod = new ProductsModel($dbc);
         $prod->upc(BarcodeLib::padUPC($this->form->upc));
         $prod->load();
@@ -52,7 +52,8 @@ class ItemLastQuarterReport extends FannieReportPage
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $upc = $this->form->upc;
         $upc = BarcodeLib::padUPC($upc);
@@ -109,7 +110,8 @@ class ItemLastQuarterReport extends FannieReportPage
     public function readinessCheck()
     {
         global $FANNIE_ARCHIVE_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_ARCHIVE_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         if (!$dbc->tableExists('productWeeklyLastQuarter')) {
             $this->error_text = _("You are missing an important table") . " ($FANNIE_ARCHIVE_DB.productWeeklyLastQuarter). ";
             $this->error_text .= " Visit the <a href=\"{$FANNIE_URL}install\">Install Page</a> to create it.";
