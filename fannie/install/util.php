@@ -80,6 +80,9 @@ function check_db_host($host,$dbms)
     if (!function_exists("socket_create")) {
         return true; // test not possible
     }
+    if (empty($host)) {
+        return false;
+    }
 
     $port = 0;
     switch (strtoupper($dbms)) {

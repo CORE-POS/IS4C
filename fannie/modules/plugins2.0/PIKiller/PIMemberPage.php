@@ -110,7 +110,7 @@ class PIMemberPage extends PIKillerPage {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $this->card_no = $this->id;
         if ($this->auth_mode == 'None')
-            return $this->unknown_request_handler();
+            return $this->unknownRequestHandler();
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $note = FormLib::get_form_value('notetext');

@@ -465,6 +465,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $vendorID = FormLib::get('vendor');
         $upc_list = FormLib::get('u', array());
         $inUse = FormLib::get('inUse', 1);
+        $store = FormLib::get('store', 0);
 
         $sort = FormLib::get_form_value('sort','Department');   
         $order = 'dept_name';
@@ -612,6 +613,10 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $query .= ' AND i.inUse=1 ';
         } else {
             $query .= ' AND i.inUse=0 ';
+        }
+        if ($store > 0) {
+            $query .= ' AND i.store_id=? ';
+            $args[] = $store;
         }
         /** finish building query w/ order clause **/
         $query .= 'ORDER BY ' . $order;
@@ -790,6 +795,15 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 Excel
             </label>
         </div>
+        <?php 
+        if ($this->config->get('STORE_MODE') == 'HQ') { 
+            $picker = FormLib::storePicker();
+            echo '<div class="form-group form-inline">
+                <label>Store</label> '
+                . $picker['html']
+                . '</div>';
+        }
+        ?>
         <p> 
             <button type=submit name=submit class="btn btn-default btn-core">Submit</button>
             <button type=reset id="reset-btn" class="btn btn-default btn-reset"

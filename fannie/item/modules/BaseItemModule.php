@@ -1117,12 +1117,28 @@ HTML;
                   old record that used the UPC as a
                   placeholder SKU.
                 */
-                $fixSkuP = $dbc->prepare('
-                    UPDATE vendorItems
-                    SET sku=?
+                $existsP = $dbc->prepare('
+                    SELECT sku
+                    FROM vendorItems
                     WHERE sku=?
+                        AND upc=?
                         AND vendorID=?');
-                $dbc->execute($fixSkuP, array($sku, $upc, $vendorID));
+                $existsR = $dbc->execute($existsP, array($sku, $upc, $vendorID));
+                if ($dbc->numRows($existsR) > 0 && $sku != $upc) {
+                    $delP = $dbc->prepare('
+                        DELETE FROM vendorItems
+                        WHERE sku =?
+                            AND upc=?
+                            AND vendorID=?');
+                    $dbc->execute($delP, array($upc, $upc, $vendorID));
+                } else {
+                    $fixSkuP = $dbc->prepare('
+                        UPDATE vendorItems
+                        SET sku=?
+                        WHERE sku=?
+                            AND vendorID=?');
+                    $dbc->execute($fixSkuP, array($sku, $upc, $vendorID));
+                }
             }
             $vitem->sku($sku);
             $vitem->size($model->size());
