@@ -255,14 +255,11 @@ class BatchReport extends FannieReportPage
         $ret = array();
         $bStart = FormLib::get('date1','');
         $bEnd = FormLib::get('date2','');
-        $batchID = FormLib::get('batchID','0');
-        $inArgs = array();
-        $inClause = '(';
-        foreach ($batchID as $bID) {
-            $inClause .= '?,';
-            $inArgs[] = $bID;
+        $batchID = $this->form->batchID;
+        if (!is_array($batchID)) {
+            $batchID = array($batchID);
         }
-        $inClause = rtrim($inClause,',').')';
+        list($inArgs, $inClause) = $dbc->safeInClause($batchID);
         $batchInfoQ = $dbc->prepare("
             SELECT batchName,
                 startDate AS startDate,
