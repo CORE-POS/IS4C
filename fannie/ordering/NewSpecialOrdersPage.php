@@ -323,7 +323,7 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
 
         $ret .= '<p />';
 
-        $ret .= '<form id="pdfform" action="tagpdf.php" method="get">';
+        $ret .= '<form id="pdfform" action="SpecialOrderTags.php" method="get">';
         $ret .= sprintf('<table class="table table-bordered table-striped tablesorter tablesorter-core">
                     <thead>
                     <tr>

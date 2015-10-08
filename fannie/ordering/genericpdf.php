@@ -35,6 +35,7 @@ if (isset($_REQUEST['upc'])){
     $x = 0;
     $y = 0;
     $date = date("m/d/Y");
+    $signage = new FannieSignage(array());
     for($i=0;$i<4;$i++){
         if ($count % 4 == 0){ 
             $pdf->AddPage();
@@ -89,7 +90,7 @@ if (isset($_REQUEST['upc'])){
         $upc = str_pad($_REQUEST['upc'],11,'0',STR_PAD_LEFT);
         $upc = $_REQUEST['upc'];
 
-        $pdf = FannieSignage::drawBarcode($upc, $pdf, $x+30, $y+95, array('height'=>14,'fontsize'=>8));
+        $pdf = $signage->drawBarcode($upc, $pdf, $x+30, $y+95, array('height'=>14,'fontsize'=>8));
         
         $count++;
     }
