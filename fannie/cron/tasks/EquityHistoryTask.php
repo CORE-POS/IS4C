@@ -213,11 +213,12 @@ Deprecates nightly.equity.php.';
                   the whole history to figure out when the tier was reached and track
                   any progress toward tier.
                 */
-                $payment_number = $this->numberOfPayments($myplan, $balance);
+                $payment_number = $this->numberOfPayments($myplan, $bal['payments']);
                 $last_threshold_reached = $myplan->initialPayment() + (($payment_number-1)*$myplan->recurringPayment());
+                $historyR = $dbc->execute($historyP, array($account->cardNo()));
                 list($last_payment, $last_date, $next_payment) = $this->analyzePaymentHistory(
                     $dbc,
-                    $historyP,
+                    $historyR,
                     $myplan,
                     $last_threshold_reached
                 );
@@ -230,10 +231,10 @@ Deprecates nightly.equity.php.';
                 // walk forward through due dates from the beginning
                 $basis_date = $last_date;
                 if ($myplan->dueDateBasis() == 0) {
-                    $date->card_no($account->CardNo());
+                    $date->card_no($account->cardNo());
                     $date->load();
                     $basis_date = $date->start_date();
-                    for ($i=0; $i<$payment_number-1; $i++) {
+                    for ($i=1; $i<$payment_number-1; $i++) {
                         $basis_date = $this->getNextPaymentDate($myplan, $basis_date);
                     }
                 }
@@ -256,7 +257,7 @@ Deprecates nightly.equity.php.';
             $payment_number++;
         }
 
-        return $payment_number;
+        return $payment_number-1;
     }
 
     /**
@@ -266,14 +267,13 @@ Deprecates nightly.equity.php.';
       (e.g., if a member on a $20 installment plan makes a $25 payemnt, their
       next payment owed will only be $15)
     */
-    private function analyzePaymentHistory($dbc, $historyP, $myplan, $last_threshold_reached)
+    private function analyzePaymentHistory($dbc, $historyR, $myplan, $last_threshold_reached)
     {
         $last_payment = 0;
         $last_date = null;
         $next_payment = $myplan->recurringPayment();
         $sum = 0;
         $reached = false;
-        $historyR = $dbc->execute($historyP, array($myplan->cardNo()));
         while ($historyW = $dbc->fetchRow($historyR)) {
             $sum += $historyW['stockPurchase'];
             if (!$reached && $sum >= $last_threshold_reached) {
@@ -296,21 +296,22 @@ Deprecates nightly.equity.php.';
     */
     private function getNextPaymentDate($myplan, $basis_date)
     {
-        $magnitude = substr($myplan->billingCycle(), 0, strlen($myplan->billingCycle())-1);
-        $frequency = strtoupper(substr($myplan->billingCyle(), -1));
+        $cycle = trim($myplan->billingCycle());
+        $magnitude = substr($cycle, 0, strlen($cycle)-1);
+        $frequency = strtoupper(substr($cycle, -1));
         $ts = strtotime($basis_date);
         switch ($frequency) {
             case 'W':
                 $magnitude *= 7;
                 // intentional fall through
             case 'D':
-                return date('Y-m-d', strtotime(0,0,0,date('n',$ts),date('j',$ts)+$magnitude,date('Y',$ts)));
+                return date('Y-m-d', mktime(0,0,0,date('n',$ts),date('j',$ts)+$magnitude,date('Y',$ts)));
                 break;
             case 'M':
-                return date('Y-m-d', strtotime(0,0,0,date('n',$ts)+$magnitude,date('j',$ts),date('Y',$ts)));
+                return date('Y-m-d', mktime(0,0,0,date('n',$ts)+$magnitude,date('j',$ts),date('Y',$ts)));
                 break;
             case 'Y':
-                return date('Y-m-d', strtotime(0,0,0,date('n',$ts),date('j',$ts),date('Y',$ts)+$magnitude));
+                return date('Y-m-d', mktime(0,0,0,date('n',$ts),date('j',$ts),date('Y',$ts)+$magnitude));
                 break;
         }
 
