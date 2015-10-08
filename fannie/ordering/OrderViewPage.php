@@ -567,11 +567,11 @@ class OrderViewPage extends FannieRESTfulPage
         $ins_array['trans_type'] = "I";
         $ins_array['ItemQtty'] = $num_cases;
 
-        $mempricing = OrderItemLib::memPricing($memNum);
-
         if (!class_exists('OrderItemLib')) {
             include(dirname(__FILE__) . '/OrderItemLib.php');
         }
+
+        $mempricing = OrderItemLib::memPricing($memNum);
 
         $item = OrderItemLib::getItem($upc);
         $item['department'] = OrderItemLib::mapDepartment($item['department']);
@@ -714,17 +714,17 @@ class OrderViewPage extends FannieRESTfulPage
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
 
         $so_order = new SpecialOrdersModel($dbc);
-        $s_order->specialOrderID($orderID);
-        $s_order->firstName('');
-        $s_order->lastName('');
-        $s_order->street('');
-        $s_order->city('');
-        $s_order->state('');
-        $s_order->zip('');
-        $s_order->phone('');
-        $s_order->altPhone('');
-        $s_order->email('');
-        $s_order->save();
+        $so_order->specialOrderID($orderID);
+        $so_order->firstName('');
+        $so_order->lastName('');
+        $so_order->street('');
+        $so_order->city('');
+        $so_order->state('');
+        $so_order->zip('');
+        $so_order->phone('');
+        $so_order->altPhone('');
+        $so_order->email('');
+        $so_order->save();
 
         $dbc->selectDB($this->config->get('OP_DB'));
     }
