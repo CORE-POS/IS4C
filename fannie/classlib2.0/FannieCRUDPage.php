@@ -172,24 +172,9 @@ class FannieCRUDPage extends \FannieRESTfulPage
                 }
             }
         }
-        // find a character column to plug in
-        // a placeholder value
-        $ready = false;
-        foreach ($columns as $col_name => $c) {
-            if ($col_name != $id_col && strstr(strtoupper($c['type']), 'CHAR')) {
-                $obj->$col_name('NEW');
-                $ready = true;
-                break;
-            }
-        }
-        if (!$ready) {
-            foreach ($columns as $col_name => $c) {
-                if ($col_name != $id_col && strstr(strtoupper($c['type']), 'DATE')) {
-                    $obj->$col_name(date('Y-m-d'));
-                    $ready = true;
-                    break;
-                }
-            }
+        list($col_name, $col_val) = $this->findPlaceholder($columns, $id_col);
+        if ($col_name !== false) {
+            $obj->$col_name($col_val);
         }
 
         $saved = $obj->save();
@@ -202,18 +187,32 @@ class FannieCRUDPage extends \FannieRESTfulPage
         return false;
     }
 
+    protected function findPlaceholder($columns, $id_col)
+    {
+        foreach ($columns as $col_name => $c) {
+            if ($col_name != $id_col && strstr(strtoupper($c['type']), 'CHAR')) {
+                return array($col_name, 'NEW');
+            }
+        }
+        foreach ($columns as $col_name => $c) {
+            if ($col_name != $id_col && strstr(strtoupper($c['type']), 'DATE')) {
+                return array($col_name, date('Y-m-d'));
+            }
+        }
+
+        return array(false, false);
+    }
+
     public function delete_id_handler()
     {
         $obj = $this->getCRUDModel();
         $id_col = $this->getIdCol();
         $obj->$id_col($this->id);
         if ($obj->delete()) {
-            header('Location: ' . $_SERVER['PHP_SELF'] . '?flash[]=sDeleted+Entry');
+            return filter_input(INPUT_SERVER, 'PHP_SELF') . '?flash[]=sDeleted+Entry';
         } else {
-            header('Location: ' . $_SERVER['PHP_SELF'] . '?flash[]=dError+Deleting+Entry');
+            return filter_input(INPUT_SERVER, 'PHP_SELF') . '?flash[]=dError+Deleting+Entry';
         }
-
-        return false;
     }
 
     public function get_view()
@@ -302,6 +301,26 @@ class FannieCRUDPage extends \FannieRESTfulPage
             </script>';
 
         return $ret;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $this->model_name = 'FloorSectionsModel';
+        $phpunit->assertEquals('floorSectionID', $this->getIdCol());
+        $phpunit->assertEquals('FloorSectionsModel', get_class($this->getCRUDModel()));
+        $phpunit->assertEquals('name', $this->findPlaceholder($this->model->getColumns(), $this->getIdCol()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        ob_start();
+        $phpunit->assertEquals(false, $this->put_handler());
+        ob_end_clean();
+        $model = new FloorSectionsModel($this->connection);
+        $model->floorSectionID(1);
+        $phpunit->assertEquals(true, $model->load());
+        $this->id = 1;
+        $this->delete_id_handler();
+        $model->reset();
+        $model->floorSectionID(1);
+        $phpunit->assertEquals(false, $model->load());
     }
 }
 
