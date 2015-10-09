@@ -252,7 +252,7 @@ class PaymentPlanEditor extends FannieRESTfulPage
         $this->setForm($values);
         $this->readRoutes();
         $page = $this->get_id_view();
-        $phpunit->assertEquals(false, strstr($page, 'alert-danger'));
+        $phpunit->assertEquals(false, strstr($page, 'plan does not exist'));
 
         $values->_method = 'post';
         $values->id = 1;

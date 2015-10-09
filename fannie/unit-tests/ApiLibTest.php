@@ -63,7 +63,7 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
     public function testStats()
     {
         $this->assertEquals(0, \COREPOS\Fannie\API\lib\Stats::percentGrowth(50, 0));
-        $this->assertEquals(1, \COREPOS\Fannie\API\lib\Stats::percentGrowth(50, 25));
+        $this->assertEquals(100.0, \COREPOS\Fannie\API\lib\Stats::percentGrowth(50, 25));
         
         $points = array(
             array(1, 1),
