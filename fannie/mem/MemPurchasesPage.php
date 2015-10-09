@@ -129,9 +129,9 @@ class MemPurchasesPage extends FannieRESTfulPage
         $this->setForm($form);
         $this->readRoutes();
 
-        $this->assertEquals(true, $this->get_id_handler());
+        $phpunit->assertEquals(true, $this->get_id_handler());
         $page = $this->get_id_view();
-        $this->assertNotEquals(0, strlen($page));
+        $phpunit->assertNotEquals(0, strlen($page));
     }
 
     public function helpContent()

@@ -245,7 +245,7 @@ class PaymentPlanEditor extends FannieRESTfulPage
 
         $model = new EquityPaymentPlansModel($this->connection);
         $model->equityPaymentPlanID(1);
-        $this->assertEquals(true, $model->load());
+        $phpunit->assertEquals(true, $model->load());
 
         $values->_method = 'get';
         $values->id = 1;
@@ -271,14 +271,14 @@ class PaymentPlanEditor extends FannieRESTfulPage
         $model->reset();
         $model->equityPaymentPlanID(1);
         $model->load();
-        $this->assertEquals($values->name, $model->name());
-        $this->assertEquals($values->final, $model->finalBalance());
-        $this->assertEquals($values->initial, $model->initialPayment());
-        $this->assertEquals($values->recurring, $model->recurringPayment());
-        $this->assertEquals($values->cycle, $model->billingCycle());
-        $this->assertEquals($values->basis, $model->dueDateBasis());
-        $this->assertEquals($values->overdue, $model->overDueLimit());
-        $this->assertEquals($values->reason, $model->reasonMask());
+        $phpunit->assertEquals($values->name, $model->name());
+        $phpunit->assertEquals($values->final, $model->finalBalance());
+        $phpunit->assertEquals($values->initial, $model->initialPayment());
+        $phpunit->assertEquals($values->recurring, $model->recurringPayment());
+        $phpunit->assertEquals($values->cycle, $model->billingCycle());
+        $phpunit->assertEquals($values->basis, $model->dueDateBasis());
+        $phpunit->assertEquals($values->overdue, $model->overDueLimit());
+        $phpunit->assertEquals($values->reason, $model->reasonMask());
     }
 
     public function helpContent()
