@@ -178,9 +178,8 @@ class FannieCRUDPage extends \FannieRESTfulPage
         }
 
         $saved = $obj->save();
-        if ($this->verbose) var_dump($saved);
         if ($saved) {
-            echo json_encode(array('error'=>0, 'added'=>1));
+            echo json_encode(array('error'=>0, 'added'=>1, 'id'=>$saved));
         } else {
             echo json_encode(array('error'=>1, 'added'=>0));
         }
@@ -313,9 +312,9 @@ class FannieCRUDPage extends \FannieRESTfulPage
         $phpunit->assertNotEquals(0, strlen($this->get_view()));
         $this->connection->throwOnFailure(true);
         ob_start();
-        $this->verbose = true;
         $phpunit->assertEquals(false, $this->put_handler());
         $json = ob_get_clean();
+        var_dump($json);
         $model = new \FloorSectionsModel($this->connection);
         $model->floorSectionID(1);
         $phpunit->assertEquals(true, $model->load());
