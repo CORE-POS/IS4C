@@ -57,7 +57,7 @@ class PaymentPlanEditor extends FannieRESTfulPage
         $plan->reasonMask($this->reason);
         $plan->save();
 
-        return $_SERVER['PHP_SELF'] . '?id=' . $this->id;
+        return filter_input(INPUT_SERVER, 'PHP_SELF') . '?id=' . $this->id;
     }
 
     public function put_handler()
@@ -69,9 +69,9 @@ class PaymentPlanEditor extends FannieRESTfulPage
         $plan->initialPayment(20);
         $plan->recurringPayment(80);
         $plan->finalBalance(100);
-        $id = $plan->save();
-        if ($id !== false) {
-            return $_SERVER['PHP_SELF'] . '?id=' . $id;
+        $planID = $plan->save();
+        if ($planID !== false) {
+            return filter_input(INPUT_SERVER, 'PHP_SELF') . '?id=' . $planID;
         }
 
         return true;
@@ -209,7 +209,7 @@ class PaymentPlanEditor extends FannieRESTfulPage
                 $plan->name(),
                 $plan->recurringPayment(),
                 $plan->billingCycle(),
-                $_SERVER['PHP_SELF'], $plan->equityPaymentPlanID(),
+                filter_input(INPUT_SERVER, 'PHP_SELF'), $plan->equityPaymentPlanID(),
                 \COREPOS\Fannie\API\lib\FannieUI::editIcon()
             );
         }
@@ -219,6 +219,66 @@ class PaymentPlanEditor extends FannieRESTfulPage
             </p>';
 
         return $ret;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $values = new \COREPOS\common\mvc\ValueContainer();
+        $values->_method = 'get';
+        $this->setForm($values);
+        $this->readRoutes();
+        
+        $page = $this->get_view();
+        $phpunit->assertNotEquals(0, strlen($page));
+
+        $values->_method = 'put';
+        $this->setForm($values);
+        $this->readRoutes();
+        $this->put_handler();
+
+        $values->_method = 'get';
+        $this->setForm($values);
+        $this->readRoutes();
+
+        $newpage = $this->get_view();
+        $phpunit->assertNotEquals($newpage, $page);
+
+        $model = new EquityPaymentPlansModel($this->connection);
+        $model->equityPaymentPlanID(1);
+        $this->assertEquals(true, $model->load());
+
+        $values->_method = 'get';
+        $values->id = 1;
+        $this->setForm($values);
+        $this->readRoutes();
+        $page = $this->get_id_view();
+        $phpunit->assertEquals(false, strstr($page, 'alert-danger'));
+
+        $values->_method = 'post';
+        $values->id = 1;
+        $values->name = 'Test';
+        $values->final = '123';
+        $values->initial = '12';
+        $values->recurring = '23';
+        $values->cycle = '5W';
+        $values->basis = 1;
+        $values->overdue = 90;
+        $values->reason = 4;
+        $this->setForm($values);
+        $this->readRoutes();
+        $this->post_id_name_final_initial_recurring_cycle_basis_overdue_reason_handler();
+
+        $model->reset();
+        $model->equityPaymentPlanID(1);
+        $model->load();
+        $this->assertEquals($values->name, $model->name());
+        $this->assertEquals($values->final, $model->finalBalance());
+        $this->assertEquals($values->initial, $model->initialPayment());
+        $this->assertEquals($values->recurring, $model->recurringPayment());
+        $this->assertEquals($values->cycle, $model->billingCycle());
+        $this->assertEquals($values->basis, $model->dueDateBasis());
+        $this->assertEquals($values->overdue, $model->overDueLimit());
+        $this->assertEquals($values->reason, $model->reasonMask());
     }
 
     public function helpContent()
