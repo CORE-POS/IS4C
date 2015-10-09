@@ -109,12 +109,9 @@ class ItemLastQuarterReport extends FannieReportPage
 
     public function readinessCheck()
     {
-        global $FANNIE_ARCHIVE_DB, $FANNIE_URL;
         $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
-        if (!$dbc->tableExists('productWeeklyLastQuarter')) {
-            $this->error_text = _("You are missing an important table") . " ($FANNIE_ARCHIVE_DB.productWeeklyLastQuarter). ";
-            $this->error_text .= " Visit the <a href=\"{$FANNIE_URL}install\">Install Page</a> to create it.";
+        $dbc->selectDB($this->config->get('ARCHIVE_DB'));
+        if ($this->tableExistsReadinessCheck($this->config->get('ARCHIVE_DB'), 'productWeeklyLastQuarter') === false) {
             return false;
         } else {
             $testQ = 'SELECT upc FROM productWeeklyLastQuarter';

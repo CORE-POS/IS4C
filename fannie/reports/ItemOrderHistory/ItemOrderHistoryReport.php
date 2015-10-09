@@ -126,12 +126,9 @@ class ItemOrderHistoryReport extends FannieReportPage
 
     public function readinessCheck()
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        if (!$dbc->tableExists('PurchaseOrderItems')) {
-            $this->error_text = _("You are missing an important table") . " ($FANNIE_OP_DB.PurchaseOrderItems). ";
-            $this->error_text .= " Visit the <a href=\"{$FANNIE_URL}install\">Install Page</a> to create it.";
+        if ($this->tableExistsReadinessCheck($this->config->get('OP_DB'), 'PurchaseOrderItems') === false) {
             return false;
         } else {
             $testQ = 'SELECT orderID FROM PurchaseOrderItems';
