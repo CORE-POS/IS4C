@@ -104,9 +104,7 @@ class EquityPaymentPlan extends \COREPOS\Fannie\API\member\MemberModule {
             $model->equityPaymentPlanID($plan);
             $errors = $model->save() ? false : true;
         } else {
-            foreach ($model->find() as $p) {
-                $errors = ($model->delete() && !$errors) ? false : true;
-            }
+            $errors = $model->delete() ? false : true;
         }
 
         if ($errors) {
@@ -117,4 +115,3 @@ class EquityPaymentPlan extends \COREPOS\Fannie\API\member\MemberModule {
     }
 }
 
-?>
