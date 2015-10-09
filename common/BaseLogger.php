@@ -286,17 +286,23 @@ class BaseLogger
             $line = isset($frame['line']) ? $frame['line'] : 0;
             $file = isset($frame['file']) ? $frame['file'] : 'Unknown file';
             $args = isset($frame['args']) ? $frame['args'] : array();
-            $function = isset($frame['function']) ? $frame['function'] : 'Unknown function';
-            if (isset($frame['class'])) {
-                $function = $frame['class'] . '::' . $function;
-            }
             $ret .= 'File ' . $file . ', Line ' . $line 
-                . ', function ' . $function;
+                . ', function ' . $this->frameToFunction($frame);
             $lines[] = $ret;
             $counter--;
         }
 
         return $lines;
+    }
+
+    private function frameToFunction($frame)
+    {
+        $function = isset($frame['function']) ? $frame['function'] : 'Unknown function';
+        if (isset($frame['class'])) {
+            $function = $frame['class'] . '::' . $function;
+        }
+
+        return $function;
     }
 
     /**
