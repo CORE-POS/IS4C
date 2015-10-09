@@ -53,6 +53,35 @@ class OrderViewPage extends FannieRESTfulPage
         return parent::preprocess();
     }
 
+    protected function post_orderID_transID_dept_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
+        $upP = $dbc->prepare('
+            UPDATE PendingSpecialOrder
+            SET department=?
+            WHERE order_id=?
+                AND trans_id=?'); 
+        $upR = $dbc->execute($upP, array($this->dept, $this->orderID, $this->transID));
+
+        return $this->get_orderID_items_handler();
+    }
+
+    protected function post_orderID_transID_qty_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
+        $upP = $dbc->prepare('
+            UPDATE PendingSpecialOrder
+            SET quantity=?
+            WHERE order_id=?
+                AND trans_id=?'); 
+        $upR = $dbc->execute($upP, array($this->qty, $this->orderID, $this->transID));
+        $this->reprice($this->orderID, $this->transID);
+
+        return $this->get_orderID_items_handler();
+    }
+
     protected function post_orderID_description_srp_actual_qty_dept_unitPrice_vendor_transID_changed_handler()
     {
         $dbc = $this->connection;
@@ -216,7 +245,7 @@ class OrderViewPage extends FannieRESTfulPage
         try {
             $memNum = $this->form->memNum;
         } catch (Exception $ex) {
-            $memNum = 0;
+            $memNum = '0';
         }
         $canEdit = FannieAuth::validateUserQuiet('ordering_edit');
 
@@ -578,8 +607,8 @@ class OrderViewPage extends FannieRESTfulPage
         $mempricing = OrderItemLib::memPricing($memNum);
 
         $item = OrderItemLib::getItem($upc);
-        $item['department'] = OrderItemLib::mapDepartment($item['department']);
         $qtyReq = OrderItemLib::manualQuantityRequired($item);
+        $item['department'] = OrderItemLib::mapDepartment($item['department']);
         if ($qtyReq !== false) {
             $item['caseSize'] = $qtyReq;
         }
@@ -588,7 +617,7 @@ class OrderViewPage extends FannieRESTfulPage
 
         $ins_array['upc'] = $item['upc'];
         $ins_array['quantity'] = $item['caseSize'];
-        $ins_array['mixMatch'] = substr($item['vendor'], 0, 26);
+        $ins_array['mixMatch'] = substr($item['vendorName'], 0, 26);
         $ins_array['description'] = substr($item['description'], 0, 32) . ' SO';
         $ins_array['department'] = $item['department'];
         $ins_array['discountable'] = $item['discountable'];
@@ -596,7 +625,7 @@ class OrderViewPage extends FannieRESTfulPage
         $ins_array['cost'] = $item['cost'];
         $ins_array['unitPrice'] = $unitPrice;
         $ins_array['total'] = $casePrice * $num_cases;
-        $ins_array['regPrice'] = $casePrice * $num_cases;
+        $ins_array['regPrice'] = $item['normal_price'] * $item['caseSize'] * $num_cases;
 
         $tidP = $dbc->prepare_statement("SELECT MAX(trans_id),MAX(voided),MAX(numflag) 
                 FROM {$TRANS}PendingSpecialOrder WHERE order_id=?");
@@ -955,6 +984,9 @@ HTML;
             $regPrice = $reg;
         }
         $total = $regPrice;
+        if (!class_exists('OrderItemLib')) {
+            include(dirname(__FILE__) . '/OrderItemLib.php');
+        }
         if ($row['discountable'] != 0 && $row['discounttype'] == 0) {
             $mempricing = OrderItemLib::memPricing($row['card_no']);
             // create fake item to re-apply rules for marking up/down
