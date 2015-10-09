@@ -308,7 +308,7 @@ class FannieCRUDPage extends \FannieRESTfulPage
         $this->model_name = 'FloorSectionsModel';
         $phpunit->assertEquals('floorSectionID', $this->getIdCol());
         $phpunit->assertEquals('FloorSectionsModel', get_class($this->getCRUDModel()));
-        $phpunit->assertEquals('name', $this->findPlaceholder($this->model->getColumns(), $this->getIdCol()));
+        $phpunit->assertEquals(array('name', 'NEW'), $this->findPlaceholder($this->model->getColumns(), $this->getIdCol()));
         $phpunit->assertNotEquals(0, strlen($this->get_view()));
         ob_start();
         $phpunit->assertEquals(false, $this->put_handler());
