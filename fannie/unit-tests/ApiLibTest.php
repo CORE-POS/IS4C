@@ -60,5 +60,31 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('1/1/2000', $val);
     }
 
+    public function testStats()
+    {
+        $this->assertEquals(0, \COREPOS\Fannie\API\lib\Stats::percentGrowth(50, 0));
+        $this->assertEquals(1, \COREPOS\Fannie\API\lib\Stats::percentGrowth(50, 25));
+        
+        $points = array(
+            array(1, 1),
+            array(2, 2),
+            array(3, 3),
+            array(4, 4),
+            array(5, 5),
+        );
+        $res = \COREPOS\Fannie\API\lib\Stats::removeOutliers($points);
+        $this->assertEquals(array(array(2,2), array(3,3), array(4,4)), $res);
+        $this->assertEquals(array(), \COREPOS\Fannie\API\lib\Stats::removeOutliers(array()));
+
+        $lsq = \COREPOS\Fannie\API\lib\Stats::leastSquare($points);
+        $this->assertEquals(array('slope'=>1, 'y_intercept'=>1), $lsq);
+
+        $exp = \COREPOS\Fannie\API\lib\Stats::exponentialFit($points);
+        $match = new stdClass();
+        $match->a = 1;
+        $match->b = 1;
+        $this->asssertEquals($match, $exp);
+    }
+
 }
 
