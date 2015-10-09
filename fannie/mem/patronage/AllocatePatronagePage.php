@@ -73,7 +73,7 @@ class AllocatePatronagePage extends FannieRESTfulPage
                 INNER JOIN custdata AS c ON p.cardno=c.CardNo AND c.personNum=1
             WHERE c.Type=\'PC\'';
         $personR = $dbc->query($personQ);
-        $this->insertRecords($dbc, $personR);
+        $this->insertRecords($dbc, $personR, $purchases, $paid, $retained, $amount);
 
         $finishQ = '
             INSERT INTO patronage
@@ -88,7 +88,7 @@ class AllocatePatronagePage extends FannieRESTfulPage
         return true;
     }
 
-    private function insertRecords($dbc, $result)
+    private function insertRecords($dbc, $result, $purchases, $paid, $retained, $amount)
     {
         $assignP = $dbc->prepare('
             UPDATE patronage_workingcopy
