@@ -872,7 +872,7 @@ class FannieReportPage extends FanniePage
                     },
                     array()
                 ),$xlsdata); // prepend
-                $xlsdata = array_merge(array_reduce($this->defaultDescriptionContent(count($date)), 
+                $xlsdata = array_merge(array_reduce($this->defaultDescriptionContent(count($data)), 
                     function($carry, $line) {
                         $carry[] = strip_tags($line);
                         return $carry;
