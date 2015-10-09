@@ -77,7 +77,7 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(array(), \COREPOS\Fannie\API\lib\Stats::removeOutliers(array()));
 
         $lsq = \COREPOS\Fannie\API\lib\Stats::leastSquare($points);
-        $this->assertEquals(array('slope'=>1, 'y_intercept'=>1), $lsq);
+        $this->assertEquals(array('slope'=>1, 'y_intercept'=>0), $lsq);
 
         $exp = \COREPOS\Fannie\API\lib\Stats::exponentialFit($points);
         $match = new stdClass();
