@@ -313,7 +313,7 @@ class FannieCRUDPage extends \FannieRESTfulPage
         ob_start();
         $phpunit->assertEquals(false, $this->put_handler());
         ob_end_clean();
-        $model = new FloorSectionsModel($this->connection);
+        $model = new \FloorSectionsModel($this->connection);
         $model->floorSectionID(1);
         $phpunit->assertEquals(true, $model->load());
         $this->id = 1;
