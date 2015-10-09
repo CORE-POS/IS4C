@@ -213,7 +213,11 @@ class OrderViewPage extends FannieRESTfulPage
         $dbc->selectDB($this->config->get('OP_DB'));
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
         $orderID = $this->orderID;
-        $memNum = FormLib::get('memNum', '0');
+        try {
+            $memNum = $this->form->memNum;
+        } catch (Exception $ex) {
+            $memNum = 0;
+        }
         $canEdit = FannieAuth::validateUserQuiet('ordering_edit');
 
         if (empty($orderID)) {
@@ -1054,6 +1058,20 @@ HTML;
         $this->addScript('orderview.js');
 
         return $ret;
+    }
+
+    public function unitTest($phpunit)
+    {
+        if (!class_exists('SpecialOrderTests', false)) {
+            include(dirname(__FILE__) . '/SpecialOrderTests.php');
+        }
+        $tester = new SpecialOrderTests($this->connection, $this->config, $this->logger);
+        $tester->testCreateOrder($this, $phpunit);
+        $tester->testOrderView($this, $phpunit);
+        $tester->testSetCustomer($this, $phpunit);
+        $tester->testAddItem($this, $phpunit);
+        $tester->testDeleteItem($this, $phpunit);
+        $tester->testEditCustomer($this, $phpunit);
     }
 }
 
