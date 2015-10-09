@@ -83,7 +83,7 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         $match = new stdClass();
         $match->a = 1;
         $match->b = 1;
-        $this->asssertEquals($match, $exp);
+        $this->assertEquals($match, $exp);
     }
 
 }
