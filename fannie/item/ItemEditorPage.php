@@ -527,6 +527,9 @@ class ItemEditorPage extends FanniePage
             $this->add_onload_command("addVendorDialog();\n");
             if ($this->config->get('STORE_MODE') == 'HQ') {
                 $this->addOnloadCommand("\$('#item-editor-form').submit(syncStoreTabs);\n");
+                if ($isNew) { 
+                    $this->addOnloadCommand("\$('.syncable-input:visible').change(syncStoreTabs);\n");
+                }
             }
         }
 
