@@ -116,6 +116,9 @@ class FannieSignage
             if ($row['pricePerUnit'] == '') {
                 $row['pricePerUnit'] = \COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($row['normal_price'], $row['size']);
             }
+            if (!isset($row['signMultiplier'])) {
+                $row['signMultiplier'] = 1;
+            }
 
             if ($row['originName'] != '') {
                 // check for additional origins
@@ -270,8 +273,12 @@ class FannieSignage
                     LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                     LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
-                 WHERE l.batchID IN (' . $ids . ')
-                 ORDER BY brand, description';
+                 WHERE l.batchID IN (' . $ids . ') ';
+        if (\FannieConfig::config('STORE_MODE') == 'HQ') {
+            $query .= ' AND p.store_id=? ';
+            $args[] = \FannieConfig::config('STORE_ID');
+        }
+        $query .= ' ORDER BY brand, description';
 
         return array('query' => $query, 'args' => $args);
     }
