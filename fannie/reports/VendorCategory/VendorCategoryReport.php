@@ -47,6 +47,8 @@ class VendorCategoryReport extends FannieReportPage
                     'Category: ' . $dept->name(),
                     'Margin Target: ' . sprintf('%.2f%%', $dept->margin()*100),
                 );
+            } else {
+                return array();
             }
         } catch (Exception $ex) {
             return array();
