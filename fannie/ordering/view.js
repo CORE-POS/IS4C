@@ -7,9 +7,9 @@ $(document).ready(function(){
 	data: 'action=loadCustomer&orderID='+initoid,
 	cache: false,
 	error: function(e1,e2,e3){
-		windows.alert(e1);
-		windows.alert(e2);
-		windows.alert(e3);
+		window.alert(e1);
+		window.alert(e2);
+		window.alert(e3);
 	},
 	success: function(resp){
 		var tmp = resp.split("`");
@@ -414,7 +414,7 @@ function doSplit(oid,tid){
 	});
 
 	if (dcheck){
-		windows.alert("Item(s) don't have a department set");
+		window.alert("Item(s) don't have a department set");
 		return false;
 	}
 
@@ -438,20 +438,20 @@ function validateAndHome(){
 	});
 
 	if (dcheck){
-		windows.alert("Item(s) don't have a department");
+		window.alert("Item(s) don't have a department");
 		return false;
 	}
 
 	var CtC = $('#ctcselect').val();
 	if (CtC === '2'){
-		windows.alert("Choose Call to Confirm option");
+		window.alert("Choose Call to Confirm option");
 		return false;
 	}
 
 	var nD = $('#nDept').val();
 	var nT = $('#nText').val();
 	if (nT !== "" && nD === '0') {
-		windows.alert("Assign your notes to a department");
+		window.alert("Assign your notes to a department");
 	} else {
 		window.location = $('#redirectURL').val();
     }
