@@ -48,6 +48,9 @@ if ($id !== False){
         FROM shelftags AS s
             INNER JOIN products AS p ON s.upc=p.upc
         WHERE s.id=? ";
+    if (FannieConfig::config('STORE_MODE') == 'HQ') {
+        $query .= ' AND p.store_id=' . ((int)FannieConfig::config('STORE_ID')) . ' ';
+    }
     switch (strtolower(FormLib::get('sort'))) {
         case 'order entered':
             $query .= ' ORDER BY shelftagID';
