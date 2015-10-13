@@ -187,7 +187,7 @@ class GeneralSalesReport extends FannieReportPage
             $sumQty += $row[2];
             $sumSales += $row[1];
         }
-        return array('Total',$sumSales,$sumQty, '', null);
+        return array('Total',number_format($sumSales,2),number_format($sumQty,2), '', null);
     }
 
     public function javascriptContent()
