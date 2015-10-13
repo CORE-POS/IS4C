@@ -55,12 +55,16 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         tr.white td.sub {
             background:#ffffff;
         }
+        tr.blue td.sub{
+            background:#a0c2f2;
+        {
         tr.selection td.sub {
             background:#add8e6;
         }
         td.srp {
             text-decoration: underline;
-        }';
+        }
+        ';
     }
 
     public function get_id_view()
@@ -204,7 +208,10 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             if (isset($batchUPCs[$row['upc']])) {
                 $background = 'selection';
             } elseif ($row['variable_pricing'] == 0) {
-                $background = ($row['normal_price']<$row['rawSRP'])?'red':'green';
+                $background = ($row['normal_price']+0.10<$row['rawSRP'])?'red':'green';
+                if ($row['normal_price']-.10>$row['rawSRP']) {
+                    $background = ($row['normal_price']-.10>$row['rawSRP'])?'blue':'green';
+                }
             }
             if (isset($batchUPCs[$row['upc']])) {
                 $icon = '<span class="glyphicon glyphicon-minus-sign"
