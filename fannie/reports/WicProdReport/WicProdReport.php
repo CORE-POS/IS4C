@@ -95,6 +95,11 @@ class WicProdReport extends FannieReportPage
         return $item;
     }
 
+    public function form_content()
+    {
+        return '<!-- not needed -->';
+    }
+
     public function helpContent()
     {
         return '<p>
