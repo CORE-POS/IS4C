@@ -197,14 +197,14 @@ class VendorDepartmentEditor extends FanniePage {
             <th>&nbsp;</th><th>&nbsp;</th></tr>";
 
         $deptQ = $dbc->prepare_statement("
-            SELECT vendorID,
+            SELECT d.vendorID,
                 deptID,
                 name,
                 margin,
                 testing,
                 posDeptID
-            FROM vendorDepartments
-            WHERE vendorID=?
+            FROM vendorDepartments AS d
+            WHERE d.vendorID=?
             ORDER BY deptID");
         $deptR = $dbc->exec_statement($deptQ,array($id));
         while($row = $dbc->fetch_row($deptR)){
@@ -220,6 +220,10 @@ class VendorDepartmentEditor extends FanniePage {
                         class=\"save-link collapse\">%s</a>
                 </td>
                 <td><a href=\"\" onclick=\"deleteCat(%d,'%s');return false\">%s</a></td>
+                <td><a href=\"../../reports/VendorCategory/VendorCategoryReport.php?id=%d&category=%d\"
+                    title=\"View Items in this Category\">
+                    <span class=\"glyphicon glyphicon-th-list\"></span>
+                    </a></td>
                 </tr>",
                 $row['deptID'],
                 $row['deptID'],
@@ -232,7 +236,9 @@ class VendorDepartmentEditor extends FanniePage {
                 $row['deptID'],
                 \COREPOS\Fannie\API\lib\FannieUI::saveIcon(),
                 $row['deptID'], $row['name'],
-                \COREPOS\Fannie\API\lib\FannieUI::deleteIcon());
+                \COREPOS\Fannie\API\lib\FannieUI::deleteIcon(),
+                $id, $row['deptID'] 
+            );
         }
         $ret .= "</table>";
 
@@ -258,6 +264,5 @@ class VendorDepartmentEditor extends FanniePage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>
