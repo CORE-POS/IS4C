@@ -220,7 +220,8 @@ class ItemMarginModule extends ItemModule
 
         $vendorP = $dbc->prepare('
             SELECT d.margin,
-                n.vendorName
+                n.vendorName,
+                d.name
             FROM products AS p
                 INNER JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID=p.default_vendor_id
                 INNER JOIN vendorDepartments AS d ON v.vendorID=d.vendorID AND v.vendorDept=d.deptID
@@ -232,7 +233,7 @@ class ItemMarginModule extends ItemModule
             $w = $dbc->fetch_row($vendorR);
             $desired_margin = $w['margin'] * 100;
             $ret .= sprintf('Desired margin for this vendor category (%s) is %.2f%%<br />',
-                    $w['vendorName'],
+                    $w['vendorName'] . ':' . $w['name'],
                     $desired_margin);
         }
 
