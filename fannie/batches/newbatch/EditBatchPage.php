@@ -1079,7 +1079,7 @@ class EditBatchPage extends FannieRESTfulPage
         return $ret;
     }
 
-    private function pairedTableBody($result)
+    private function pairedTableBody($dbc, $result)
     {
         $colors = array('#ffffff','#ffffcc');
         $cur = 0;
@@ -1197,7 +1197,7 @@ class EditBatchPage extends FannieRESTfulPage
 
         $ret .= '<table class="table" id="qualifier-table">';
         $ret .= '<tr><th colspan="4">Qualifying Item(s)</th></tr>';
-        $ret .= $this->pairedTableBody($fetchR);
+        $ret .= $this->pairedTableBody($dbc, $fetchR);
         $ret .= "</table>";
 
         $fetchQ = $dbc->prepare_statement("select b.upc,
@@ -1222,7 +1222,7 @@ class EditBatchPage extends FannieRESTfulPage
 
         $ret .= '<table class="table" id="discount-table">';
         $ret .= '<tr><th colspan="4">Discount Item(s)</th></tr>';
-        $ret .= $this->pairedTableBody($fetchR);
+        $ret .= $this->pairedTableBody($dbc, $fetchR);
         $ret .= "</table>";
 
         return $ret;
