@@ -31,7 +31,7 @@ class BatchReport extends FannieReportPage
     protected $header = "Select batch(es)";
     protected $title = "Fannie :: Batch Report";
     protected $report_cache = 'none';
-    protected $report_headers = array('UPC','Description','$','Qty','Location');
+    protected $report_headers = array('UPC','Description','$','Qty','Rings','Location');
     protected $required_fields = array('batchID');
 
     public $description = '[Batch Report] lists sales for items in a sales batch (or group of sales batches).';
@@ -104,7 +104,8 @@ class BatchReport extends FannieReportPage
                 l.floorSectionID,
                 f.name AS location,
                 SUM(d.total) AS sales, "
-                . DTrans::sumQuantity('d') . " AS quantity 
+                . DTrans::sumQuantity('d') . " AS quantity, 
+                SUM(CASE WHEN trans_status IN('','0','R') THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings
             FROM $dlog AS d "
                 . DTrans::joinProducts('d', 'p', 'INNER') . "
             LEFT JOIN prodPhysicalLocation AS l ON l.upc=p.upc
@@ -129,8 +130,9 @@ class BatchReport extends FannieReportPage
             $record = array();
             $record[] = $row['upc'];
             $record[] = $row['description'];
-            $record[] = $row['sales'];
-            $record[] = $row['quantity'];
+            $record[] = sprintf('%.2f',$row['sales']);
+            $record[] = sprintf('%.2f',$row['quantity']);
+            $record[] = $row['rings'];
             $record[] = $row['location'] === null ? '' : $row['location'];
             $ret[] = $record;
         }
