@@ -57,7 +57,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         }
         tr.yellow td.sub{
             background:#ffff96;
-        {
+        }
         tr.selection td.sub {
             background:#add8e6;
         }
@@ -182,6 +182,10 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         }
         if ($filter === false) {
             $query .= " AND p.normal_price <> v.srp ";
+        }
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $query .= ' AND p.store_id=? ';
+            $args[] = $this->config->get('STORE_ID');
         }
 
         $query .= " ORDER BY p.upc";
