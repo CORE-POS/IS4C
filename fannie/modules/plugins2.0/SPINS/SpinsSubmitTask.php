@@ -105,7 +105,7 @@ class SpinsSubmitTask extends FannieTask
                     SUM(d.total) AS dollars,
                     '$lastDay' AS lastDay
                   FROM $dlog AS d
-                    INNER JOIN products AS p ON d.upc=p.upc
+                    " . DTrans::joinProducts('d', 'p', 'INNER') . "
                   WHERE p.Scale = 0
                     AND d.upc > '0000000999999' 
                     AND tdate BETWEEN ? AND ?

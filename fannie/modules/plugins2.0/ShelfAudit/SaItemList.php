@@ -128,7 +128,7 @@ class SaItemList extends SaHandheldPage
                 v.sku,
                 n.vendorName
             FROM ' . $settings['ShelfAuditDB'] . $this->connection->sep() . 'SaList AS s
-                LEFT JOIN products AS p ON s.upc=p.upc
+                ' . DTrans::joinProducts('s') . '
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
             WHERE s.clear=0

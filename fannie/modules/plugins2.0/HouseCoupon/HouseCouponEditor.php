@@ -496,7 +496,7 @@ class HouseCouponEditor extends FanniePage
                 COALESCE(p.description, \'Unknown item\') AS description,
                 h.type
             FROM houseCouponItems AS h
-                LEFT JOIN products AS p ON p.upc=h.upc
+                ' . DTrans::joinProducts('h') . '
             WHERE h.coupID=?';
         if ($hc->minType() == 'MX') {
             $query = "

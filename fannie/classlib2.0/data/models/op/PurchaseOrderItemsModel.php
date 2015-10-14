@@ -101,7 +101,7 @@ different product, this record will still
         $deptP = $dbc->prepare('
             SELECT d.salesCode
             FROM vendorSKUtoPLU AS v
-                INNER JOIN products AS p ON v.upc=p.upc
+                ' . DTrans::joinProducts('v', 'p', 'INNER') . '
                 INNER JOIN departments AS d ON p.department=d.dept_no
             WHERE v.sku=?
                 AND v.vendorID=?');

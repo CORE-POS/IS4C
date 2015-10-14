@@ -166,7 +166,7 @@ class FannieSignage
                     o.name AS originName,
                     o.shortName AS originShortName
                   FROM shelftags AS s
-                    INNER JOIN products AS p ON s.upc=p.upc
+                    ' . DTrans::joinProducts('s', 'p', 'INNER') . '
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                   WHERE s.id=?
                   ORDER BY p.department, s.upc';
@@ -202,7 +202,7 @@ class FannieSignage
                     o.name AS originName,
                     o.shortName AS originShortName
                   FROM batchBarcodes AS s
-                    INNER JOIN products AS p ON s.upc=p.upc
+                    ' . DTrans::joinProducts('s', 'p', 'INNER') . '
                     INNER JOIN batches AS b ON s.batchID=b.batchID
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                   WHERE s.batchID IN (' . $ids . ')
@@ -266,7 +266,7 @@ class FannieSignage
                     o.shortName AS originShortName,
                     b.batchType
                  FROM batchList AS l
-                    LEFT JOIN products AS p ON l.upc=p.upc
+                    ' . DTrans::joinProducts('l', 'p', 'LEFT') . '
                     INNER JOIN batches AS b ON b.batchID=l.batchID
                     LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID
                     LEFT JOIN productUser AS u ON p.upc=u.upc
@@ -274,10 +274,6 @@ class FannieSignage
                     LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                  WHERE l.batchID IN (' . $ids . ') ';
-        if (\FannieConfig::config('STORE_MODE') == 'HQ') {
-            $query .= ' AND (p.store_id=? OR p.store_id IS NULL) ';
-            $args[] = \FannieConfig::config('STORE_ID');
-        }
         $query .= ' ORDER BY brand, description';
 
         return array('query' => $query, 'args' => $args);
@@ -295,7 +291,7 @@ class FannieSignage
                 p.size
             FROM upcLike AS u
                 INNER JOIN likeCodes AS l ON u.likeCode=l.likeCode
-                INNER JOIN products AS p ON u.upc=p.upc
+                ' . DTrans::joinProducts('u', 'p', 'INNER') . '
                 LEFT JOIN productUser AS s ON u.upc=s.upc
             WHERE u.likeCode=?
             ORDER BY u.upc

@@ -28,9 +28,9 @@ class HouseCouponList extends NoInputCorePage
 
     function preprocess()
     {
-        if (isset($_REQUEST['selectlist'])) {
-            if (!empty($_REQUEST['selectlist'])) {
-                CoreLocal::set('strRemembered', $_REQUEST['selectlist']);
+        if (FormLib::get('selectlist', false) !== false) {
+            if (FormLib::get('selectlist', false) != '') {
+                CoreLocal::set('strRemembered', FormLib::get('selectlist'));
                 CoreLocal::set('msgrepeat', 1);
             }
             $this->change_page($this->page_url."gui-modules/pos2.php");
@@ -57,15 +57,15 @@ class HouseCouponList extends NoInputCorePage
             $prefix = '00499999';
         }
 
-        $db = Database::pDataConnect();
+        $dbc = Database::pDataConnect();
         $query = "SELECT h.coupID, h.description
                 FROM houseCoupons AS h
                 WHERE h.description <> ''
-                    AND " . $db->datediff('endDate', $db->now()) . " >= 0
+                    AND " . $dbc->datediff('endDate', $dbc->now()) . " >= 0
                 ORDER BY h.description";
     
-        $result = $db->query($query);
-        $num_rows = $db->num_rows($result);
+        $result = $dbc->query($query);
+        $num_rows = $dbc->num_rows($result);
         ?>
 
         <div class="baseHeight">
@@ -79,7 +79,7 @@ class HouseCouponList extends NoInputCorePage
         <?php
         $selected = "selected";
         for ($i = 0; $i < $num_rows; $i++) {
-            $row = $db->fetch_array($result);
+            $row = $dbc->fetch_array($result);
             printf('<option value="%s" %s>%d. %s</option>',
                     ($prefix . str_pad($row['coupID'], 5, '0', STR_PAD_LEFT)),
                     $selected, ($i+1), $row['description']
@@ -118,8 +118,5 @@ class HouseCouponList extends NoInputCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-    new HouseCouponList();
-}
+AutoLoader::dispatch();
 
-?>

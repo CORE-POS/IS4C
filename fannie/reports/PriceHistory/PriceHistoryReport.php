@@ -109,7 +109,7 @@ class PriceHistoryReport extends FannieReportPage
                     h.modified,
                     p.normal_price 
                 FROM prodPriceHistory AS h 
-                    LEFT JOIN products AS p ON h.upc=p.upc
+                    " . DTrans::joinProducts('h') . "
                 WHERE h.upc = ?
                 ORDER BY h.upc,
                     h.modified DESC";
@@ -122,7 +122,7 @@ class PriceHistoryReport extends FannieReportPage
                     h.modified,
                     p.normal_price 
                 FROM prodPriceHistory AS h 
-                    LEFT JOIN products AS p ON h.upc=p.upc
+                    " . DTrans::joinProducts('h') . "
                 WHERE h.upc = ?
                     AND h.modified BETWEEN ? AND ?
                 ORDER BY h.upc,
@@ -136,7 +136,7 @@ class PriceHistoryReport extends FannieReportPage
                     h.modified,
                     p.normal_price 
                 FROM prodPriceHistory AS h 
-                    LEFT JOIN products AS p ON h.upc=p.upc
+                    " . DTrans::joinProducts('h') . "
                 WHERE department BETWEEN ? AND ?
                     AND h.modified BETWEEN ? AND ?
                 ORDER BY h.upc,
@@ -152,7 +152,7 @@ class PriceHistoryReport extends FannieReportPage
                         h.modified,
                         p.normal_price 
                     FROM prodPriceHistory AS h 
-                        LEFT JOIN products AS p ON h.upc=p.upc
+                        " . DTrans::joinProducts('h') . "
                     WHERE h.upc LIKE ?
                         AND h.modified BETWEEN ? AND ?
                     ORDER BY h.upc,
@@ -166,7 +166,7 @@ class PriceHistoryReport extends FannieReportPage
                         h.modified,
                         p.normal_price 
                     FROM prodPriceHistory AS h 
-                        LEFT JOIN products AS p ON h.upc=p.upc
+                        " . DTrans::joinProducts('h') . "
                     WHERE x.brand LIKE ?
                         AND h.modified BETWEEN ? AND ?
                     ORDER BY h.upc,

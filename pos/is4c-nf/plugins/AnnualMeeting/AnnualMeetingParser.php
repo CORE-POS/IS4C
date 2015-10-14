@@ -40,7 +40,7 @@ class AnnualMeetingParser extends Parser {
                 return true;
             }
         }
-        return talse;
+        return false;
     }
 
     function parse($str)

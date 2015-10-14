@@ -49,7 +49,7 @@ class BadSaleReport extends FannieReportPage
                 CASE WHEN b.startDate > ' . $dbc->curdate() . ' THEN 0 ELSE 1 END AS current
             FROM batches AS b
                 INNER JOIN batchList AS l ON b.batchID=l.batchID
-                INNER JOIN products AS p ON l.upc=p.upc
+                ' . DTrans::joinProducts('l', 'p', 'INNER') . '
             WHERE b.endDate >= ' . $dbc->curdate() . '
                 AND b.discounttype <> 0
                 AND l.salePrice >= p.normal_price';

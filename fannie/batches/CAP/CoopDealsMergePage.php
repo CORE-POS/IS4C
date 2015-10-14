@@ -115,7 +115,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
                 multiplier
             FROM
                 CoopDealsItems as t
-                INNER JOIN products AS p on t.upc = p.upc
+                " . DTrans::joinProducts('t', 'p', 'INNER') . "
                 LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
             WHERE p.inUse=1
                 AND t.price < p.normal_price

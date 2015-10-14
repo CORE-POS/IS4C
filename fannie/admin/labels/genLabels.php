@@ -46,11 +46,8 @@ if ($id !== False){
             p.scale,
             p.numflag
         FROM shelftags AS s
-            INNER JOIN products AS p ON s.upc=p.upc
+            " . DTrans::joinProducts('s', 'p', 'INNER') . "
         WHERE s.id=? ";
-    if (FannieConfig::config('STORE_MODE') == 'HQ') {
-        $query .= ' AND p.store_id=' . ((int)FannieConfig::config('STORE_ID')) . ' ';
-    }
     switch (strtolower(FormLib::get('sort'))) {
         case 'order entered':
             $query .= ' ORDER BY shelftagID';
@@ -102,8 +99,8 @@ elseif ($batchID !== False){
     }
     $batchIDList = substr($batchIDList,0,strlen($batchIDList)-1);
     $testQ = $dbc->prepare_statement("select b.*,p.scale,p.numflag
-        FROM batchBarcodes as b INNER JOIN products AS p
-        ON b.upc=p.upc
+        FROM batchBarcodes as b 
+            " . DTrans::joinProducts('b', 'p', 'INNER') . "
         WHERE b.batchID in ($batchIDList) and b.description <> ''
         ORDER BY b.batchID");
     $result = $dbc->exec_statement($testQ,$args);

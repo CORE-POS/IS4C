@@ -85,7 +85,7 @@ class BatchSignStylesPage extends FannieRESTfulPage
                 l.salePrice,
                 l.signMultiplier
             FROM batchList AS l
-                INNER JOIN products AS p ON l.upc=p.upc 
+                ' . DTrans::joinProducts('l', 'p', 'INNER') . '
                 LEFT JOIN productUser AS u ON l.upc=u.upc
             WHERE l.batchID=? ';
         $args = array($this->id);

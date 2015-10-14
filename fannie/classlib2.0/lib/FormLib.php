@@ -557,7 +557,7 @@ HTML;
         $query = '
             FROM ' . $dlog . ' AS t 
                 LEFT JOIN departments AS d ON t.department=d.dept_no
-                LEFT JOIN products AS p ON t.upc=p.upc 
+                ' . DTrans::joinProducts('t') . '
                 LEFT JOIN MasterSuperDepts AS m ON t.department=m.dept_ID 
                 LEFT JOIN subdepts AS b ON p.subdept=b.subdept_no
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
