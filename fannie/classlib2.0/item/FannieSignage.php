@@ -275,7 +275,7 @@ class FannieSignage
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                  WHERE l.batchID IN (' . $ids . ') ';
         if (\FannieConfig::config('STORE_MODE') == 'HQ') {
-            $query .= ' AND p.store_id=? ';
+            $query .= ' AND (p.store_id=? OR p.store_id IS NULL) ';
             $args[] = \FannieConfig::config('STORE_ID');
         }
         $query .= ' ORDER BY brand, description';
@@ -302,6 +302,7 @@ class FannieSignage
         ');
         $info = $dbc->getRow($likeP, array($code));
         $item['description'] = $info['likeCodeDesc'];
+        $item['brand'] = $info['brand'];
         $item['posDescription'] = $info['likeCodeDesc'];
         $item['nonSalePrice'] = $info['normal_price'];
         $item['scale'] = $info['scale'];
