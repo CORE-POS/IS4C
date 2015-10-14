@@ -76,6 +76,7 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 modified=' . $dbc->now() . '
             WHERE plu=?');
         $product = new ProductsModel($dbc);
+        $prodPricing = FormLib::get('prodPricing') === '' ? false : true;
         $scale_items = array();
         foreach ($linedata as $line) {
             $upc = trim($line[$upc_index]);
@@ -98,10 +99,12 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $itemdesc .= "\n" . $cool;
             }
             $dbc->execute($itemP, array($price, $itemdesc, $upc));
-            $product->upc($upc);
-            foreach ($product->find() as $obj) {
-                $obj->normal_price($price);
-                $obj->save();
+            if ($prodPricing) {
+                $product->upc($upc);
+                foreach ($product->find() as $obj) {
+                    $obj->normal_price($price);
+                    $obj->save();
+                }
             }
 
             $scale_info = array(
@@ -139,6 +142,8 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             );
         }
         $ret .= '</fieldset>';
+        $ret .= '<label><input type="checkbox" name="prodPricing" />
+                    Update POS Product Pricing</label>';
 
         return $ret;
     }
