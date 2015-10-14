@@ -406,8 +406,13 @@ class InstallUtilities extends LibraryClass
                                         WHERE param_key=? AND lane_id=?');
             $exists = $sql->exec_statement($prep, array($key, CoreLocal::get('laneno')));
             if ($sql->num_rows($exists)) {
-                $prep = $sql->prepare_statement('UPDATE parameters SET param_value=?,
-                                        is_array=? WHERE param_key=? AND lane_id=?');
+                $prep = $sql->prepare_statement('
+                    UPDATE parameters 
+                    SET param_value=?,
+                        is_array=?,
+                        store_id=0
+                    WHERE param_key=? 
+                        AND lane_id=?');
                 $saved = $sql->exec_statement($prep, array($value, $save_as_array, $key, CoreLocal::get('laneno')));
             } else {
                 $prep = $sql->prepare_statement('INSERT INTO parameters (store_id, lane_id, param_key,
