@@ -258,7 +258,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 100*$row['desired_margin'],
                 $row['vendorDept'],
                 $row['upc'],
-                ($row['variable_pricing']==1?'checked':''),
+                ($row['variable_pricing']>=1?'checked':''),
                 (isset($batchUPCs[$row['upc']])?'collapse':''), $row['upc'],
                 (!isset($batchUPCs[$row['upc']])?'collapse':''), $row['upc']
             );
