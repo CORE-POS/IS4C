@@ -661,11 +661,13 @@ class FannieReportPage extends FanniePage
                             (strstr($uri, '?') === false ? '?' : '&')
                         );
                     }
+                    $json = FormLib::queryStringtoJSON(filter_input(INPUT_SERVER, 'QUERY_STRING'));
                     $ret .= sprintf('<a href="%s%sexcel=csv">Download CSV</a>
                         &nbsp;&nbsp;&nbsp;&nbsp;
-                        <a href="javascript:history.back();">Back</a>',
+                        <a href="?json=%s">Back</a>',
                         $uri,
-                        (strstr($uri, '?') === false ? '?' : '&')
+                        (strstr($uri, '?') === false ? '?' : '&'),
+                        base64_encode($json)
                     );
                     $ret = array_reduce($this->defaultDescriptionContent(count($data)),
                         function ($carry, $line) {
@@ -1169,6 +1171,9 @@ class FannieReportPage extends FanniePage
                 version of the page
             */
             if ($this->content_function == 'form_content') {
+                if (FormLib::get('json') !== '') {
+                    $this->addOnloadCommand(FormLib::fieldJSONtoJavascript(base64_decode(FormLib::get('json'))));
+                }
                 return parent::drawPage();
             }
 
