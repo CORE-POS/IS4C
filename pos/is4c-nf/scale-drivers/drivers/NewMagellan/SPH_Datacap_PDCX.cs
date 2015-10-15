@@ -42,7 +42,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
     private DsiPDCX ax_control = null;
     private string device_identifier = null;
     private string com_port = "0";
-    protected string server_list = "x1.mercurydev.net;x2.mercurydev.net";
+    protected string server_list = "x1.mercurypay.com;x2.backuppay.com";
     protected int LISTEN_PORT = 8999; // acting as a Datacap stand-in
     protected short CONNECT_TIMEOUT = 60;
     private bool log_xml = true;
