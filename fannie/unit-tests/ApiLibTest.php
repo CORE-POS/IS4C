@@ -83,5 +83,29 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         $this->assertInternalType('object', $exp);
     }
 
+    public function testFannieSignage()
+    {
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $dbc->throwOnFailure(true);
+
+        $signs = new \COREPOS\Fannie\item\FannieSignage(array(), 'shelftags', 1);
+        $signs->setDB($dbc);
+        $this->assertInternalType('array', $signs->loadItems());
+
+        $signs = new \COREPOS\Fannie\item\FannieSignage(array(), 'batchbarcodes', 1);
+        $signs->setDB($dbc);
+        $this->assertInternalType('array', $signs->loadItems());
+
+        $signs = new \COREPOS\Fannie\item\FannieSignage(array(), 'batch', 1);
+        $signs->setDB($dbc);
+        $this->assertInternalType('array', $signs->loadItems());
+
+        foreach (range(0, 3) as $i) {
+            $signs = new \COREPOS\Fannie\item\FannieSignage(array('0000000000111'), '', $i);
+            $signs->setDB($dbc);
+            $this->assertInternalType('array', $signs->loadItems());
+        }
+    }
+
 }
 

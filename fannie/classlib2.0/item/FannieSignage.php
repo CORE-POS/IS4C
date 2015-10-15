@@ -59,14 +59,29 @@ class FannieSignage
         $this->source_id = $source_id;
     }
 
+    protected $connection = null;
+
+    public function setDB($dbc)
+    {
+        $this->connection = $dbc;
+    }
+
+    protected function getDB($dbc)
+    {
+        if (!is_object($this->connection)) {
+            $op_db = \FannieConfig::factory()->get('OP_DB');
+            $this->connection = \FannieDB::get($op_db);
+        }
+        return $this->connection;
+    }
+
     public function loadItems()
     {
         if ($this->source == 'provided') {
             return $this->items;
         }
 
-        $op_db = \FannieConfig::factory()->get('OP_DB');
-        $dbc = \FannieDB::get($op_db);
+        $dbc = $this->getDB();
         if ($this->source == 'shelftags') {
             $sql = $this->listFromShelftags();
         } elseif ($this->source == 'batchbarcodes') {
@@ -166,7 +181,7 @@ class FannieSignage
                     o.name AS originName,
                     o.shortName AS originShortName
                   FROM shelftags AS s
-                    ' . DTrans::joinProducts('s', 'p', 'INNER') . '
+                    ' . \DTrans::joinProducts('s', 'p', 'INNER') . '
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                   WHERE s.id=?
                   ORDER BY p.department, s.upc';
@@ -202,7 +217,7 @@ class FannieSignage
                     o.name AS originName,
                     o.shortName AS originShortName
                   FROM batchBarcodes AS s
-                    ' . DTrans::joinProducts('s', 'p', 'INNER') . '
+                    ' . \DTrans::joinProducts('s', 'p', 'INNER') . '
                     INNER JOIN batches AS b ON s.batchID=b.batchID
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                   WHERE s.batchID IN (' . $ids . ')
@@ -266,7 +281,7 @@ class FannieSignage
                     o.shortName AS originShortName,
                     b.batchType
                  FROM batchList AS l
-                    ' . DTrans::joinProducts('l', 'p', 'LEFT') . '
+                    ' . \DTrans::joinProducts('l', 'p', 'LEFT') . '
                     INNER JOIN batches AS b ON b.batchID=l.batchID
                     LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID
                     LEFT JOIN productUser AS u ON p.upc=u.upc
@@ -291,7 +306,7 @@ class FannieSignage
                 p.size
             FROM upcLike AS u
                 INNER JOIN likeCodes AS l ON u.likeCode=l.likeCode
-                ' . DTrans::joinProducts('u', 'p', 'INNER') . '
+                ' . \DTrans::joinProducts('u', 'p', 'INNER') . '
                 LEFT JOIN productUser AS s ON u.upc=s.upc
             WHERE u.likeCode=?
             ORDER BY u.upc
@@ -622,24 +637,24 @@ class FannieSignage
 
     public function updateItem($upc, $brand, $description)
     {
-        $op_db = \FannieConfig::factory()->get('OP_DB');
         switch (strtolower($this->source)) {
             case 'shelftags':
-                $this->updateShelftagItem($op_db, $upc, $brand, $description);
+                $this->updateShelftagItem($upc, $brand, $description);
                 break;
             case 'batchbarcodes':
-                $this->updateBatchBarocdeItem($op_db, $upc, $brand, $description);
+                $this->updateBatchBarcodeItem($upc, $brand, $description);
                 break;
             case 'batch':
             case '':
-                $this->updateRealItem($op_db, $upc, $brand, $description);
+                $this->updateRealItem($upc, $brand, $description);
                 break;
         }
     }
 
-    protected function updateShelftagItem($dbc, $upc, $brand, $description)
+    protected function updateShelftagItem($upc, $brand, $description)
     {
-        $model = new \ShelftagsModel(\FannieDB::get($dbc));
+        $dbc = $this->getDB();
+        $model = new \ShelftagsModel($dbc);
         $model->id($this->source_id);
         $model->upc(\BarcodeLib::padUPC($upc));
         $model->brand($brand);
@@ -647,8 +662,9 @@ class FannieSignage
         return $model->save();
     }
 
-    protected function updateBatchBarcodeItem($dbc, $upc, $brand, $description)
+    protected function updateBatchBarcodeItem($upc, $brand, $description)
     {
+        $dbc = $this->getDB();
         $args = array($brand, $description, \BarcodeLib::padUPC($upc));
         if (!is_array($this->source_id)) {
             $this->source_id = array($this->source_id);
@@ -667,14 +683,15 @@ class FannieSignage
         return $dbc->execute($prep, $args);
     }
 
-    protected function updateRealItem($dbc, $upc, $brand, $description)
+    protected function updateRealItem($upc, $brand, $description)
     {
-        $model = new \ProductUserModel(\FannieDB::get($dbc));
+        $dbc = $this->getDB();
+        $model = new \ProductUserModel($dbc);
         $model->upc(\BarcodeLib::padUPC($upc));
         $model->brand($brand);
         $model->description($description);
         $model->save();
-        $model = new \ProductsModel(\FannieDB::get($dbc));
+        $model = new \ProductsModel($dbc);
         $model->upc(\BarcodeLib::padUPC($upc));
         foreach ($model->find('store_id') as $obj) {
             $obj->brand($brand);
