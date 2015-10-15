@@ -66,7 +66,7 @@ class FannieSignage
         $this->connection = $dbc;
     }
 
-    protected function getDB($dbc)
+    protected function getDB()
     {
         if (!is_object($this->connection)) {
             $op_db = \FannieConfig::factory()->get('OP_DB');
