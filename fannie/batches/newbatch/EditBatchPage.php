@@ -1101,7 +1101,7 @@ class EditBatchPage extends FannieRESTfulPage
                     <img src=\"{$FANNIE_URL}src/img/buttons/arrow_up.gif\" alt=\"Make Qualifying Item\" />
                     </a>
                 </td>";
-            $ret .= "<td bgcolor=$colors[$cur]><a href=\"\" onclick=\"deleteUPC.call(this, $id, '$fetchW[0]'); return false;\">"
+            $ret .= "<td bgcolor=$colors[$cur]><a href=\"\" onclick=\"deleteUPC.call(this, {$fetchW['batchID']}, '$fetchW[0]'); return false;\">"
                 . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a></td>';
             $ret .= "</tr>";
 
@@ -1175,7 +1175,8 @@ class EditBatchPage extends FannieRESTfulPage
             SELECT b.upc,
                 case when l.likeCode is null then p.description else l.likeCodeDesc end as description,
                 p.normal_price,
-                b.salePrice
+                b.salePrice,
+                b.batchID
             FROM batchList AS b 
                 " . DTrans::joinProducts('b') . "
                 LEFT JOIN likeCodes as l on b.upc = concat('LC'+convert(l.likeCode,char))
@@ -1203,7 +1204,8 @@ class EditBatchPage extends FannieRESTfulPage
             SELECT b.upc,
                 case when l.likeCode is null then p.description else l.likeCodeDesc end as description,
                 p.normal_price,
-                b.salePrice
+                b.salePrice,
+                b.batchID
             FROM batchList AS b 
                 " . DTrans::joinProducts('b') . "
                 LEFT JOIN likeCodes as l on b.upc = concat('LC'+convert(l.likeCode,char))
