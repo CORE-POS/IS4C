@@ -1245,12 +1245,12 @@ class MemberREST
         return array($query, array('%' . $val . '%'));
     }
 
-    public function getPrimary($json)
+    public static function getPrimary($json)
     {
         return array_filter($json['customers'], function($i){ return $i['accountHolder']; });
     }
 
-    public function getHousehold($json)
+    public static function getHousehold($json)
     {
         return array_filter($json['customers'], function($i){ return !$i['accountHolder']; });
     }
