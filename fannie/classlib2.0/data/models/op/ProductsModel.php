@@ -68,7 +68,7 @@ class ProductsModel extends BasicModel
     'wicable'=>array('type'=>'SMALLINT', 'default'=>0),
     'qttyEnforced'=>array('type'=>'TINYINT'),
     'idEnforced'=>array('type'=>'TINYINT'),
-    'cost'=>array('type'=>'MONEY'),
+    'cost'=>array('type'=>'MONEY', 'default'=>0),
     'inUse'=>array('type'=>'TINYINT'),
     'numflag'=>array('type'=>'INT','default'=>0),
     'subdept'=>array('type'=>'SMALLINT'),
