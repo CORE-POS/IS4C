@@ -90,9 +90,25 @@ public class Magellan : DelegateForm
                 Console.WriteLine("Ensure the device is connected and you have permission to access it.");
             }
         }
-        FinishInit();
+        MonitorSerialPorts();
+        UdpListen();
 
         #if CORE_RABBIT
+        factorRabbits();
+        #endif
+    }
+
+    // alternate constructor for specifying
+    // desired modules at compile-time
+    public Magellan(SerialPortHandler[] args)
+    {
+        this.sph = new List<SerialPortHandler>(args);
+        MonitorSerialPorts();
+        UdpListen();
+    }
+
+    private void factorRabbits()
+    {
         try {
             rabbit_factory = new ConnectionFactory();
             rabbit_factory.HostName = "localhost";
@@ -102,21 +118,10 @@ public class Magellan : DelegateForm
         } catch (Exception) {
             mq_available = false;
         }
-        #endif
     }
 
-    // alternate constructor for specifying
-    // desired modules at compile-time
-    public Magellan(SerialPortHandler[] args)
+    private void UdpListen()
     {
-        this.sph = new List<SerialPortHandler>(args);
-        FinishInit();
-    }
-
-    private void FinishInit()
-    {
-        MonitorSerialPorts();
-
         u = new UDPMsgBox(9450);
         u.SetParent(this);
         u.My_Thread.Start();
@@ -126,7 +131,6 @@ public class Magellan : DelegateForm
     {
         var valid = sph.Where(s => s != null);
         valid.ToList().ForEach(s => { s.SPH_Thread.Start(); });
-
     }
 
     public void MsgRecv(string msg)
@@ -210,7 +214,7 @@ public class Magellan : DelegateForm
                 Console.WriteLine(p);
             });
         } catch (NullReferenceException) {
-            // probably means now NewMagellanPorts key in ini.json
+            // probably means no NewMagellanPorts key in ini.json
             // not a fatal problem
         } catch (Exception ex) {
             // unexpected exception
@@ -252,8 +256,8 @@ public class Magellan : DelegateForm
                 Console.WriteLine("Line will be ignored: "+line);
             } else {
 	        var pair = new MagellanConfigPair();
-		pair.port = pieces[0];
-		pair.module = pieces[1];
+                pair.port = pieces[0];
+                pair.module = pieces[1];
                 conf.Add(pair);
                 hs.Add(pieces[0]);
             }
