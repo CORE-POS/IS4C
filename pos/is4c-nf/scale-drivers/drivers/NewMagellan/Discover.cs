@@ -49,7 +49,7 @@ public class Discover
 
     static public void Main(string[] args)
     {
-        var d = new Discover();
+        new Discover();
     }
 }
 

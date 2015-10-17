@@ -85,8 +85,9 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
         <?php
         echo "<head>";
         echo "<title>COREPOS</title>";
+        $charset = CoreLocal::get('CoreCharSet') === '' ? 'utf-8' : CoreLocal::get('CoreCharSet');
         // 18Aug12 EL Add content/charset.
-        echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
+        echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=$charset\" />\n";
         echo "<link rel=\"stylesheet\" type=\"text/css\"
             href=\"{$my_url}/css/pos.css\">";
         // include store css file if it exists
@@ -149,7 +150,7 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
         $form = '
         <div class="inputform ' . (CoreLocal::get("training")==1?'training':'') . '">
             <form name="form" id="formlocal" method="post" autocomplete="off"
-                ' . $action . '
+                ' . $action . '>
             <input name="reginput" value="" onblur="$(\'#reginput\').focus();"
                 type="' . $inputType . '" id="reginput"  />
             </form>

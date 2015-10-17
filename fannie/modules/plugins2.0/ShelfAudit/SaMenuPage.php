@@ -59,21 +59,24 @@ input[type="submit"] {
 </head>
 <body>
 <p>
-<input type="submit" value="Inventory"
-    onclick="location='SaHandheldPage.php';return false;" />
+<a class="btn btn-default btn-lg"
+    href="SaHandheldPage.php" />Inventory</a>
 <hr />
 <!--
 <input type="submit" value="Price Check"
     onclick="location='SaPriceChangePage.php';return false;" />
     -->
-<input type="submit" value="Price Check"
-    onclick="location='../../../item/handheld/ItemStatusPage.php';return false;" />
+<a class="btn btn-default btn-lg"
+    href="SaItemList.php" />Quick List</a>
 <hr />
-<input type="submit" value="Ordering Info"
-    onclick="location='SaOrderingPage.php';return false;" />
+<a class="btn btn-default btn-lg"
+    href="../../../item/handheld/ItemStatusPage.php" />Price Check</a>
 <hr />
-<input type="submit" value="Shelf Location"
-    onclick="location='../../../item/mapping/index.php';return false;" />
+<a class="btn btn-default btn-lg"
+    href="SaOrderingPage.php" />Ordering Info</a>
+<hr />
+<a class="btn btn-default btn-lg"
+    href="../../../item/mapping/index.php" />Shelf Location</a>
 </p>
 </body>
 </html>

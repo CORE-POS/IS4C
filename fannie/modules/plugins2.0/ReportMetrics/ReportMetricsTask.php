@@ -79,6 +79,10 @@ class ReportMetricsTask extends FannieTask
         }
         $msg .= "\n";
 
+        $msg .= $this->archiveStatus($dbc);
+        $msg .= $this->custdataStats($dbc);
+        $msg .= $this->productStats($dbc);
+
         $dbc->selectDB($this->config->get('OP_DB'));
         $res = $dbc->query('
             SELECT COUNT(*) AS total,
@@ -181,6 +185,68 @@ class ReportMetricsTask extends FannieTask
         }
 
         return explode("\n", $data);
+    }
+
+    private function productStats($dbc)
+    {
+        $msg = "Products summary\n";
+        $prodP = $dbc->prepare('SELECT COUNT(*) FROM products');
+        $backP = $dbc->prepare('SELECT COUNT(*) FROM productBackup');
+        $saleP = $dbc->prepare('SELECT COUNT(*) FROM products WHERE discounttype <> 0'); 
+
+        $count = $dbc->getValue($prodP);
+        $msg .= "\t$count items in products\n";
+        $count = $dbc->getValue($backP);
+        $msg .= "\t$count items in backup of products\n";
+        $count = $dbc->getValue($saleP);
+        $msg .= "\t$count items are on sale\n";
+
+        return $msg;
+    }
+
+    private function custdataStats($dbc)
+    {
+        $msg = "Custdata summary\n";
+        $custP = $dbc->prepare('SELECT COUNT(*) FROM custdata WHERE personNum=1');
+        $backP = $dbc->prepare('SELECT COUNT(*) FROM custdataBackup');
+        $memP = $dbc->prepare('SELECT COUNT(*) FROM custdata WHERE personNum=1 AND Type=\'PC\''); 
+
+        $count = $dbc->getValue($custP);
+        $msg .= "\t$count people in custdata\n";
+        $count = $dbc->getValue($backP);
+        $msg .= "\t$count people in backup of custdata\n";
+        $count = $dbc->getValue($memP);
+        $msg .= "\t$count people are active members\n";
+
+        return $msg;
+    }
+
+    private function archiveStatus($dbc)
+    {
+        $prep = $dbc->prepare('
+            SELECT MAX(tdate)
+            FROM dlog_15
+        ');
+        $dlog15 = $dbc->getValue($prep);
+        $prep = $dbc->prepare('
+            SELECT MAX(tdate)
+            FROM dlog_90_view
+        ');
+        $dlog90 = $dbc->getValue($prep);
+        $old_dlog = DTransactionModel::selectDlog(date('Y-m-d', strtotime('100 days ago')), date('Y-m-d', 'yesterday'));
+        $prep = $dbc->prepare('
+            SELECT MAX(tdate)
+            FROM ' . $old_dlog . '
+            WHERE tdate >= ?
+        ');
+        $arch = $dbc->getValue($prep, array(date('Y-m-d', strtotime('7 days ago'))));
+
+        $msg = "Transaction archiving\n";
+        $msg .= "\tdlog_15 max: $dlog15\n";
+        $msg .= "\tdlog_90 max: $dlog90\n";
+        $msg .= "\tarchive max: $arch\n";
+
+        return $msg;
     }
 }
 

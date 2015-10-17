@@ -82,6 +82,11 @@ class WfcHtCsvDump extends FannieReportPage
 
         return $report;
     }
+
+    public function form_content()
+    {
+        return '<!-- no need -->';
+    }
 }
 
 FannieDispatch::conditionalExec();

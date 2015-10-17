@@ -123,32 +123,32 @@ class GumEquityPayoffPage extends FannieRESTfulPage
         $pdf->Ln();
         $pdf->Ln();
 
-        $y = $pdf->GetY();
+        $y_pos = $pdf->GetY();
         $col_width = 30;
         $col1 = 60;
         $col2 = $col1 + $col_width;
         $col3 = $col2 + $col_width;
 
-        $pdf->SetXY($col1, $y);
+        $pdf->SetXY($col1, $y_pos);
         $pdf->Cell($col_width * 3, $line_height, 'Class C Schedule', 0, 0, 'C');
-        $y += $line_height;
+        $y_pos += $line_height;
 
-        $pdf->SetXY($col1, $y);
+        $pdf->SetXY($col1, $y_pos);
         $pdf->Cell($col_width, $line_height, 'Date', 0, 0, 'C');
-        $pdf->SetXY($col2, $y);
+        $pdf->SetXY($col2, $y_pos);
         $pdf->Cell($col_width, $line_height, 'Shares', 0, 0, 'C');
-        $pdf->SetXY($col3, $y);
+        $pdf->SetXY($col3, $y_pos);
         $pdf->Cell($col_width, $line_height, 'Total', 0, 0, 'C');
-        $y += $line_height;
+        $y_pos += $line_height;
 
         foreach($this->all->find('tdate') as $obj) {
-            $pdf->SetXY($col1, $y);
+            $pdf->SetXY($col1, $y_pos);
             $pdf->Cell($col_width, $line_height, date('m/d/Y', strtotime($obj->tdate())), 0, 0, 'C');
-            $pdf->SetXY($col2, $y);
+            $pdf->SetXY($col2, $y_pos);
             $pdf->Cell($col_width, $line_height, $obj->shares(), 0, 0, 'C');
-            $pdf->SetXY($col3, $y);
+            $pdf->SetXY($col3, $y_pos);
             $pdf->Cell($col_width, $line_height, $obj->value(), 0, 0, 'C');
-            $y += $line_height;
+            $y_pos += $line_height;
 
             if ($obj->gumEquityShareID() == $this->id) {
                 break;

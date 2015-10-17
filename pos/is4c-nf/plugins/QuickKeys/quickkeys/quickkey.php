@@ -56,7 +56,7 @@ class quickkey {
        images on buttons instead of text is
        theoretical and not yet tested.
     */
-    function quickkey($t,$o,$i=""){
+    function __construct($t,$o,$i=""){
         $this->title = $t;
         $this->output_text = $o;
         $this->img = $i;

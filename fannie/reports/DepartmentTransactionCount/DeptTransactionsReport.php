@@ -45,8 +45,8 @@ class DeptTransactionsReport extends FannieReportPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
         $deptMulti = FormLib::get('departments', array());
@@ -82,18 +82,8 @@ class DeptTransactionsReport extends FannieReportPage
             }
         }
         if ($buyer != -1) {
-            if (count($deptMulti) > 0) {
-                $querySelected .= ' AND d.department IN (';
-                foreach ($deptMulti as $d) {
-                    $querySelected .= '?,';
-                    $argsSel[] = $d;
-                }
-                $querySelected = substr($querySelected, 0, strlen($querySelected)-1) . ')';
-            } else {
-                $querySelected .= " AND d.department BETWEEN ? AND ?";
-                $argsSel[] = $deptStart;
-                $argsSel[] = $deptEnd;
-            }
+            list($conditional, $argsSel) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $argsSel);
+            $querySelected .= $conditional;
         }
         $querySelected .= " GROUP BY YEAR(tdate), MONTH(tdate), DAY(tdate)";
 

@@ -39,8 +39,8 @@ class TaxForgivenessReport extends FannieReportPage
     {
         $dbc = $this->connection;
         $dbc->setDefaultDB($this->config->get('OP_DB'));
-        $date1 = FormLib::get('date1');
-        $date2 = FormLib::get('date2');
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
 
         $rate_models = new TaxRatesModel($dbc);
         $rates = array();

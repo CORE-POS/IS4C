@@ -56,7 +56,7 @@ class DeptSettingsReport extends FannieReportPage
         $dbc->selectDB($this->config->get('OP_DB'));
         $FANNIE_URL = $this->config->get('URL');
 
-        $super = FormLib::get('submit')=="by_sd" ? 1 : 0;
+        $super = $this->form->submit =="by_sd" ? 1 : 0;
 
         $join = "";
         $where = "";

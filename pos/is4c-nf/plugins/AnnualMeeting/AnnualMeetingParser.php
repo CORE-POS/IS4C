@@ -31,21 +31,16 @@ class AnnualMeetingParser extends Parser {
 
     function check($str)
     {
-        if (strlen($str) < 4) return False;
+        if (strlen($str) < 4) return false;
         $plu = substr($str,0,4);
         if (in_array($plu, $this->plus)){
-            if (strlen($str)==4)
-                return True;
-            elseif(strtoupper($str[4])=='M')
-                return True;
-            elseif(strtoupper($str[4])=='V')
-                return True;
-            elseif(strtoupper($str[4])=='S')
-                return True;
-            elseif(strtoupper($str[4])=='K')
-                return True;
+            if (strlen($str)==4) {
+                return true;
+            } elseif(in_array(strtoupper($str[4]), array('M','V','S','K'))) {
+                return true;
+            }
         }
-        return False;
+        return false;
     }
 
     function parse($str)
@@ -66,8 +61,7 @@ class AnnualMeetingParser extends Parser {
             $plugin_info = new QuickMenus();
             $ret['main_frame'] = $plugin_info->pluginUrl().'/QMDisplay.php';
             return $ret;
-        }
-        else {
+        } else {
             $flag = strtoupper($str[4]);
             $plu = substr($str,0,4);
             $price = ($flag == 'K') ? 5.00 : 20.00;

@@ -48,39 +48,5 @@ card_no is the member, upc is their card.
     }
 
     protected $unique = array('card_no');
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function card_no()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["card_no"])) {
-                return $this->instance["card_no"];
-            } elseif(isset($this->columns["card_no"]["default"])) {
-                return $this->columns["card_no"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["card_no"] = func_get_arg(0);
-        }
-    }
-
-    public function upc()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["upc"])) {
-                return $this->instance["upc"];
-            } elseif(isset($this->columns["upc"]["default"])) {
-                return $this->columns["upc"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["upc"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
-
 }
 

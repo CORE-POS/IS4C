@@ -72,16 +72,16 @@ public class Magellan : DelegateForm
 
         List<MagellanConfigPair> conf = ReadConfig();
         sph = new List<SerialPortHandler>();
-	foreach (var pair in conf) {
+        foreach (var pair in conf) {
             try {
-		if (modules.Any(m => m.Name == pair.module)) {
-		    var type = d.GetType("SPH." + pair.module);
-		    Console.WriteLine(pair.module + ":" + pair.port);
-		    SerialPortHandler s = (SerialPortHandler)Activator.CreateInstance(type, new Object[]{ pair.port });
+                if (modules.Any(m => m.Name == pair.module)) {
+                    var type = d.GetType("SPH." + pair.module);
+                    Console.WriteLine(pair.module + ":" + pair.port);
+                    SerialPortHandler s = (SerialPortHandler)Activator.CreateInstance(type, new Object[]{ pair.port });
                     s.SetParent(this);
                     s.SetVerbose(verbosity);
-		    sph.Add(s);
-		} else {
+                    sph.Add(s);
+                } else {
                     throw new Exception("unknown module: " + pair.module);
                 }
             } catch (Exception ex) {
@@ -90,9 +90,25 @@ public class Magellan : DelegateForm
                 Console.WriteLine("Ensure the device is connected and you have permission to access it.");
             }
         }
-        FinishInit();
+        MonitorSerialPorts();
+        UdpListen();
 
         #if CORE_RABBIT
+        factorRabbits();
+        #endif
+    }
+
+    // alternate constructor for specifying
+    // desired modules at compile-time
+    public Magellan(SerialPortHandler[] args)
+    {
+        this.sph = new List<SerialPortHandler>(args);
+        MonitorSerialPorts();
+        UdpListen();
+    }
+
+    private void factorRabbits()
+    {
         try {
             rabbit_factory = new ConnectionFactory();
             rabbit_factory.HostName = "localhost";
@@ -102,24 +118,10 @@ public class Magellan : DelegateForm
         } catch (Exception) {
             mq_available = false;
         }
-        #endif
     }
 
-    // alternate constructor for specifying
-    // desired modules at compile-time
-    public Magellan(SerialPortHandler[] args)
+    private void UdpListen()
     {
-        this.sph = new List<SerialPortHandler>();
-        foreach (SerialPortHandler s in args) {
-            sph.Add(s);
-        }
-        FinishInit();
-    }
-
-    private void FinishInit()
-    {
-        MonitorSerialPorts();
-
         u = new UDPMsgBox(9450);
         u.SetParent(this);
         u.My_Thread.Start();
@@ -127,10 +129,8 @@ public class Magellan : DelegateForm
 
     private void MonitorSerialPorts()
     {
-        foreach (SerialPortHandler s in sph) {
-            if (s == null) continue;
-            s.SPH_Thread.Start();
-        }
+        var valid = sph.Where(s => s != null);
+        valid.ToList().ForEach(s => { s.SPH_Thread.Start(); });
     }
 
     public void MsgRecv(string msg)
@@ -174,7 +174,7 @@ public class Magellan : DelegateForm
     public void ShutDown()
     {
         try {
-	    sph.ForEach(s => { s.Stop(); });
+            sph.ForEach(s => { s.Stop(); });
             u.Stop();
         }
         catch(Exception ex) {
@@ -196,22 +196,25 @@ public class Magellan : DelegateForm
         try {
             string ini_json = File.ReadAllText(ini_file);
             JObject o = JObject.Parse(ini_json);
-            foreach (var port in o["NewMagellanPorts"]) {
-                if (port["port"] == null) {
-                    Console.WriteLine("Missing the \"port\" setting. JSON:");
-                    Console.WriteLine(port);
-                } else if (port["module"] == null) {
-                    Console.WriteLine("Missing the \"module\" setting. JSON:");
-                    Console.WriteLine(port);
-                } else {
-		    var pair = new MagellanConfigPair();
-		    pair.port = (string)port["port"];
-		    pair.module = (string)port["module"];
-		    conf.Add(pair);
-                }
-            }
+            // filter list to valid entries
+            var valid = o["NewMagellanPorts"].Where(p=> p["port"] != null && p["module"] != null);
+            // map entries to ConfigPair objects
+            var pairs = valid.Select(p => new MagellanConfigPair(){port=(string)p["port"], module=(string)p["module"]});
+            conf = pairs.ToList();
+
+            // print errors for invalid entries
+            o["NewMagellanPorts"].Where(p => p["port"] == null).ToList().ForEach(p => {
+                Console.WriteLine("Missing the \"port\" setting. JSON:");
+                Console.WriteLine(p);
+            });
+
+            // print errors for invalid entries
+            o["NewMagellanPorts"].Where(p => p["module"] == null).ToList().ForEach(p => {
+                Console.WriteLine("Missing the \"module\" setting. JSON:");
+                Console.WriteLine(p);
+            });
         } catch (NullReferenceException) {
-            // probably means now NewMagellanPorts key in ini.json
+            // probably means no NewMagellanPorts key in ini.json
             // not a fatal problem
         } catch (Exception ex) {
             // unexpected exception
@@ -253,8 +256,8 @@ public class Magellan : DelegateForm
                 Console.WriteLine("Line will be ignored: "+line);
             } else {
 	        var pair = new MagellanConfigPair();
-		pair.port = pieces[0];
-		pair.module = pieces[1];
+                pair.port = pieces[0];
+                pair.module = pieces[1];
                 conf.Add(pair);
                 hs.Add(pieces[0]);
             }

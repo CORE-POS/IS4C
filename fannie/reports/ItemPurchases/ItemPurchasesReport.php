@@ -41,10 +41,10 @@ class ItemPurchasesReport extends FannieReportPage
 
     function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $upc = FormLib::get_form_value('upc','0');
         if (is_numeric($upc))
             $upc = BarcodeLib::padUPC($upc);
@@ -122,7 +122,9 @@ class ItemPurchasesReport extends FannieReportPage
         );
     }
     
-    function form_content(){
+    function form_content()
+    {
+        ob_start();
 ?>
 <form method="get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 <div class="col-sm-5">
@@ -152,6 +154,8 @@ class ItemPurchasesReport extends FannieReportPage
 </form>
 <?php
         $this->add_onload_command('$(\'#upc-field\').focus();');
+
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -162,6 +166,5 @@ class ItemPurchasesReport extends FannieReportPage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

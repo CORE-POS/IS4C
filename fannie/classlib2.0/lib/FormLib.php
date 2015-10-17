@@ -52,7 +52,7 @@ class FormLib
     */
     private static function filterCallback($item)
     {
-        return filter_var($item, FILTER_SANITIZE_STRING);
+        return $item;
     }
 
     public static function get_form_value($name, $default='')
@@ -557,7 +557,7 @@ HTML;
         $query = '
             FROM ' . $dlog . ' AS t 
                 LEFT JOIN departments AS d ON t.department=d.dept_no
-                LEFT JOIN products AS p ON t.upc=p.upc 
+                ' . DTrans::joinProducts('t') . '
                 LEFT JOIN MasterSuperDepts AS m ON t.department=m.dept_ID 
                 LEFT JOIN subdepts AS b ON p.subdept=b.subdept_no
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
@@ -745,5 +745,41 @@ HTML;
         }
     }
 
+    /**
+      Convert a query string to a JSON object
+      representing field names and values
+    */
+    public static function queryStringToJSON($str)
+    {
+        $ret = array();
+        $pairs = explode('&', $str);
+        foreach ($pairs as $pair) {
+            list($key, $val) = explode('=', $pair, 2);
+            $ret[$key] = $val;
+        }
+
+        return json_encode($ret);
+    }
+
+    /**
+      Generate javascript that will initialize fields
+      based on names and values in the JSON object
+    */
+    public static function fieldJSONtoJavascript($json)
+    {
+        $arr = json_decode($json, true);
+        if (!is_array($arr)) {
+            return false;
+        }
+        return array_reduce(array_keys($arr), function($carry, $key) use ($arr) {
+            $val = $arr[$key];
+            $carry .= sprintf("if (\$('input[type=\"checkbox\"][name=\"%s\"]').length) {\n", $key);
+            $carry .= sprintf("\$('input[type=\"checkbox\"][name=\"%s\"]').prop('checked',true);\n", $key);
+            $carry .= "} else {\n";
+            $carry .= sprintf("\$('[name=\"%s\"]').filter(':input').val('%s');\n", $key, $val);
+            $carry .= "}\n";
+            return $carry;
+        }, '');
+    }
 }
 

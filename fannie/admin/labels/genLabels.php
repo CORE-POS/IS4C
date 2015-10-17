@@ -46,7 +46,7 @@ if ($id !== False){
             p.scale,
             p.numflag
         FROM shelftags AS s
-            INNER JOIN products AS p ON s.upc=p.upc
+            " . DTrans::joinProducts('s', 'p', 'INNER') . "
         WHERE s.id=? ";
     switch (strtolower(FormLib::get('sort'))) {
         case 'order entered':
@@ -99,8 +99,8 @@ elseif ($batchID !== False){
     }
     $batchIDList = substr($batchIDList,0,strlen($batchIDList)-1);
     $testQ = $dbc->prepare_statement("select b.*,p.scale,p.numflag
-        FROM batchBarcodes as b INNER JOIN products AS p
-        ON b.upc=p.upc
+        FROM batchBarcodes as b 
+            " . DTrans::joinProducts('b', 'p', 'INNER') . "
         WHERE b.batchID in ($batchIDList) and b.description <> ''
         ORDER BY b.batchID");
     $result = $dbc->exec_statement($testQ,$args);
@@ -123,7 +123,16 @@ elseif ($batchID !== False){
 
 }
 
+if (!defined('FPDF_FONTPATH')) {
+  define('FPDF_FONTPATH','font/');
+}
+if (!class_exists('FPDF', false)) {
+    require($FANNIE_ROOT.'src/fpdf/fpdf.php');
+}
+if (!class_exists('FpdfWithBarcode', false)) {
+    include('FpdfWithBarcode.php');
+}
+
 include("pdf_layouts/".$layout.".php");
 $layout($data,$offset);
 
-?>

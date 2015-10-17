@@ -64,7 +64,7 @@ function lookupItem($store,$sec,$subsec,$sh_set,$shelf,$loc){
     global $FANNIE_OP_DB;
     $dbc = FannieDB::get($FANNIE_OP_DB);
     $q = $dbc->prepare_statement("SELECT l.upc,p.description FROM prodPhysicalLocation AS l
-        LEFT JOIN products AS p ON l.upc=p.upc
+        " . DTrans::joinProducts('l') . "
         WHERE l.store_id=? AND section=? AND subsection=?
         AND shelf_set=? AND shelf=? AND location=?");
     $args = array($store,$sec,$subsec,$sh_set,$shelf,$loc);

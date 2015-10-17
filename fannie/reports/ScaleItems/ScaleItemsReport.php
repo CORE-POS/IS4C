@@ -41,8 +41,8 @@ class ScaleItemsReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $model = new ScaleItemsModel($dbc);
 
         $query = "SELECT s.plu,
@@ -107,8 +107,9 @@ class ScaleItemsReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $model = new DepartmentsModel(FannieDB::get($FANNIE_OP_DB));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $model = new DepartmentsModel($dbc);
         $dlist = array();
         foreach($model->find('dept_no') as $dept) {
             $dlist[$dept->dept_no()] = $dept->dept_name();

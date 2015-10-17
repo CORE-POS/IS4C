@@ -26,18 +26,8 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class ObfWeeklyReportV2 extends FannieReportPage
+class ObfWeeklyReportV2 extends ObfWeeklyReport
 {
-    protected $header = 'OBF: Weekly Report';
-    protected $title = 'OBF: Weekly Report';
-
-    public $page_set = 'Plugin :: Open Book Financing';
-    public $report_set = 'Sales Reports';
-    public $description = '[OBF Weekly Report] shows open book financing sales and labor data for a given week.';
-    public $themed = true;
-
-    protected $required_fields = array('weekID');
-    protected $new_tablesorter = false;
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
@@ -53,28 +43,20 @@ class ObfWeeklyReportV2 extends FannieReportPage
         array('', 'Current Year', 'Last Year', '', '', '', '', '', '', ''),
     );
 
+    protected $class_lib = 'ObfLibV2';
 
-    public function report_description_content()
+    public function preprocess()
     {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
-        
-        $week = new ObfWeeksModelV2($dbc);
-        $week->obfWeekID(FormLib::get('weekID'));
-        $week->load();
-        $start_ts = strtotime($week->startDate());
-        $end_ts = mktime(0, 0, 0, date('n', $start_ts), date('j', $start_ts)+6, date('Y', $start_ts));
-
-        return array('Week ' . date('F d, Y', $start_ts) . ' to ' . date('F d, Y', $end_ts));
+        return FannieReportPage::preprocess();
     }
 
     public function fetch_report_data()
     {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
+        $class_lib = $this->class_lib;
+        $dbc = $class_lib::getDB();
         
-        $week = new ObfWeeksModelV2($dbc);
-        $week->obfWeekID(FormLib::get('weekID'));
+        $week = $class_lib::getWeek($dbc);
+        $week->obfWeekID($this->form->weekID);
         $week->load();
 
         $colors = array(
@@ -104,33 +86,8 @@ class ObfWeeklyReportV2 extends FannieReportPage
         $start_ts = strtotime($week->startDate());
         $end_ts = mktime(0, 0, 0, date('n', $start_ts), date('j', $start_ts)+6, date('Y', $start_ts));
 
-        /**
-          Determine which month a given week falls in.
-          If the first and last day of the week are not
-          in the same month, choose whichever month
-          4+ days of the week belong to
-        */
-        $month = false;
-        $year = false;
-        if (date('n', $start_ts) == date('n', $end_ts)) {
-            $month = date('n', $start_ts);
-            $year = date('Y', $start_ts);
-        } else {
-            $split = 0;
-            for ($i=0; $i<7; $i++) {
-                $ts = mktime(0, 0, 0, date('n', $start_ts), date('j', $start_ts)+$i, date('Y', $start_ts));
-                if (date('n', $start_ts) == date('n', $ts)) {
-                    $split++;
-                }
-            }
-            if ($split >= 4) {
-                $month = date('n', $start_ts);
-                $year = date('Y', $start_ts);
-            } else {
-                $month = date('n', $end_ts);
-                $year = date('Y', $end_ts);
-            }
-        }
+        list($year, $month) = $this->findYearMonth($start_ts, $end_ts);
+
         /**
           Use the entire month from the previous calendar year
           as the time period for year-over-year comparisons
@@ -144,152 +101,18 @@ class ObfWeeklyReportV2 extends FannieReportPage
           Sales information is cached to avoid expensive
           aggregate queries
         */
-        $sales = new ObfSalesCacheModelV2($dbc);
+        $sales = $class_lib::getCache($dbc);
         $sales->obfWeekID($week->obfWeekID());
         $sales->actualSales(0, '>');
         $num_cached = $sales->find();
         if (count($num_cached) == 0 || true) {
-            $sales->reset();
-            $sales->obfWeekID($week->obfWeekID());
-            /**
-              Lookup total sales for each category
-              in a given date range
-            */
-            $salesQ = 'SELECT 
-                        m.obfCategoryID as id,
-                        m.superID,
-                        SUM(t.total) AS sales
-                       FROM __table__ AS t
-                        INNER JOIN ' . $FANNIE_OP_DB . $dbc->sep() . 'superdepts AS s
-                            ON t.department=s.dept_ID
-                        INNER JOIN ObfCategorySuperDeptMap AS m
-                            ON s.superID=m.superID
-                        LEFT JOIN ObfCategories AS c
-                            ON m.obfCategoryID=c.obfCategoryID
-                       WHERE c.hasSales=1
-                        AND t.tdate BETWEEN ? AND ?
-                        AND t.trans_type IN (\'I\', \'D\')
-                       GROUP BY m.obfCategoryID, m.superID';
-
-            /**
-              Lookup number of transactions 
-              in a given date range
-            */
-            $transQ = 'SELECT 
-                        YEAR(t.tdate) AS year,
-                        MONTH(t.tdate) AS month,
-                        DAY(t.tdate) AS day,
-                        t.trans_num
-                       FROM __table__ AS t
-                        INNER JOIN ' . $FANNIE_OP_DB . $dbc->sep() . 'superdepts AS s
-                            ON t.department=s.dept_ID
-                        INNER JOIN ObfCategorySuperDeptMap AS m
-                            ON s.superID=m.superID
-                       WHERE 
-                        t.tdate BETWEEN ? AND ?
-                        AND t.trans_type IN (\'I\', \'D\')
-                        AND t.upc <> \'RRR\'
-                       GROUP BY 
-                        YEAR(t.tdate),
-                        MONTH(t.tdate),
-                        DAY(t.tdate),
-                        t.trans_num';
-
-            /**
-              Lookup tables for current week and
-              year-over-year comparison
-            */
-            $dlog1 = DTransactionsModel::selectDlog(date('Y-m-d', $start_ts), date('Y-m-d', $end_ts));
-            $dlog2 = DTransactionsModel::selectDlog(date('Y-m-d', $start_ly), date('Y-m-d', $end_ly));
-            $args = array(date('Y-m-d 00:00:00', $start_ts), date('Y-m-d 23:59:59', $end_ts));
-
-            /**
-              Lookup number of transactions for the current
-              week and save that information if the week
-              is complete
-            */
-            $trans1Q = str_replace('__table__', $dlog1, $transQ);
-            $transP = $dbc->prepare($trans1Q);
-            $transR = $dbc->execute($transP, $args);
-            if (!$future && $transR) {
-                $sales->transactions($dbc->num_rows($transR));
-            } else {
-                $sales->transactions(0);
-            }
-
-            /**
-              Lookup sales for the current week. Actual sales
-              is zeroed out until the week is complete, but
-              the records are saved as placeholders for later
-            */
-            $oneQ = str_replace('__table__', $dlog1, $salesQ);
-            $oneP = $dbc->prepare($oneQ);
-            $oneR = $dbc->execute($oneP, $args);
-            while($w = $dbc->fetch_row($oneR)) {
-                $sales->obfCategoryID($w['id']);
-                $sales->superID($w['superID']);
-                $sales->actualSales($w['sales']);
-                if ($future) {
-                    $sales->actualSales(0);
-                }
-                $labor = new ObfLaborModelV2($dbc);
-                $labor->obfWeekID($week->obfWeekID());
-                $labor->obfCategoryID($w['id']);
-                foreach ($labor->find() as $l) {
-                    $sales->growthTarget($l->growthTarget());
-                }
-                $sales->save();
-            }
-            
-            if (count($num_cached) == 0) {
-                /**
-                  Now lookup year-over-year info
-                  Since it examines a whole month rather than a single
-                  week, we'll take the average and then extend
-                  that out to seven days
-                */
-                $sales->reset();
-                $sales->obfWeekID($week->obfWeekID());
-                $args = array(date('Y-m-d 00:00:00', $start_ly), date('Y-m-d 23:59:59', $end_ly));
-                $num_days = (float)date('t', $start_ly);
-
-                /**
-                  Transactions last year, pro-rated
-                */
-                $trans2Q = str_replace('__table__', $dlog2, $transQ);
-                $transP = $dbc->prepare($trans2Q);
-                $transR = $dbc->execute($transP, $args);
-                if ($transR) {
-                    $month_trans = $dbc->num_rows($transR);
-                    $avg_trans = ($month_trans / $num_days) * 7;
-                    $sales->lastYearTransactions($avg_trans);
-                } else {
-                    $sales->lastYearTransactions(0);
-                }
-
-                /**
-                  Sales last year, pro-rated
-                */
-                $twoQ = str_replace('__table__', $dlog2, $salesQ);
-                $twoP = $dbc->prepare($twoQ);
-                $twoR = $dbc->execute($twoP, $args);
-                while ($w = $dbc->fetch_row($twoR)) {
-                    $sales->obfCategoryID($w['id']);
-                    $sales->superID($w['superID']);
-                    $avg_sales = ($w['sales'] / $num_days) * 7;
-                    $sales->lastYearSales($avg_sales);
-                    if ($future) {
-                        $sales->actualSales(0);
-                        $labor = new ObfLaborModelV2($dbc);
-                        $labor->obfWeekID($week->obfWeekID());
-                        $labor->obfCategoryID($w['id']);
-                        foreach ($labor->find() as $l) {
-                            $sales->growthTarget($l->growthTarget());
-                        }
-                    }
-                    $sales->save();
-                }
-            }
+            $dateInfo = array(
+                'start_ts' => $start_ts,
+                'end_ts' => $end_ts,
+                'start_ly' => $start_ly,
+                'end_ly' => $end_ly,
+            );
+            $this->updateSalesCache($week, $num_cached, $dateInfo);
         }
 
         // record set to return
@@ -376,7 +199,7 @@ class ObfWeeklyReportV2 extends FannieReportPage
                                     s.transactions,
                                     s.lastYearTransactions
                                  FROM ObfSalesCache AS s
-                                    LEFT JOIN ' . $FANNIE_OP_DB . $dbc->sep() . 'superDeptNames
+                                    LEFT JOIN ' . $this->config->get('OP_DB') . $dbc->sep() . 'superDeptNames
                                         AS n ON s.superID=n.superID
                                  WHERE s.obfWeekID=?
                                     AND s.obfCategoryID=?
@@ -449,6 +272,9 @@ class ObfWeeklyReportV2 extends FannieReportPage
         while ($splhWeekW = $dbc->fetch_row($splhWeekR)) {
             $splhWeeks .= sprintf('%d,', $splhWeekW['obfWeekID']);
         }
+        if ($splhWeeks == '(') {
+            $splhWeeks .= '-99999';
+        }
         $splhWeeks = substr($splhWeeks, 0, strlen($splhWeeks)-1) . ')';
         $trendQ = '
             SELECT 
@@ -485,25 +311,25 @@ class ObfWeeklyReportV2 extends FannieReportPage
             /**
               Go through sales records for the category
             */
-            while ($w = $dbc->fetch_row($salesR)) {
-                $proj = ($w['lastYearSales'] * $w['growthTarget']) + $w['lastYearSales'];
+            while ($row = $dbc->fetch_row($salesR)) {
+                $proj = ($row['lastYearSales'] * $row['growthTarget']) + $row['lastYearSales'];
 
-                $trendR = $dbc->execute($trendP, array($category->obfCategoryID(), $w['superID']));
+                $trendR = $dbc->execute($trendP, array($category->obfCategoryID(), $row['superID']));
                 $trend_data = array();
-                $x = 0;
+                $t_count = 0;
                 while ($trendW = $dbc->fetchRow($trendR)) {
-                    $trend_data[] = array($x, $trendW['actualSales']);
-                    $x++;
+                    $trend_data[] = array($t_count, $trendW['actualSales']);
+                    $t_count++;
                 }
-                $trend_data = $this->removeOutliers($trend_data);
-                $exp = $this->exponentialFit($trend_data);
-                $trend1 = exp($exp->a) * exp($exp->b * $x);
+                $trend_data = \COREPOS\Fannie\API\lib\Stats::removeOutliers($trend_data);
+                $exp = \COREPOS\Fannie\API\lib\Stats::exponentialFit($trend_data);
+                $trend1 = exp($exp->a) * exp($exp->b * $t_count);
 
                 $dept_trend += $trend1;
                 $total_sales->trend += $trend1;
 
                 $quarter = $dbc->execute($quarterSalesP, 
-                    array($week->obfQuarterID(), $category->obfCategoryID(), $w['superID'], date('Y-m-d 00:00:00', $end_ts))
+                    array($week->obfQuarterID(), $category->obfCategoryID(), $row['superID'], date('Y-m-d 00:00:00', $end_ts))
                 );
                 if ($dbc->num_rows($quarter) == 0) {
                     $quarter = array('actual'=>0, 'lastYear'=>0, 'plan'=>0, 'trans'=>0, 'ly_trans'=>0);
@@ -516,29 +342,29 @@ class ObfWeeklyReportV2 extends FannieReportPage
                 $total_trans->quarterLastYear = $quarter['ly_trans'];
 
                 $record = array(
-                    $w['super_name'],
-                    number_format($w['lastYearSales'], 0),
+                    $row['super_name'],
+                    number_format($row['lastYearSales'], 0),
                     number_format($proj, 0),
                     number_format($proj, 0), // converts to % of sales
                     number_format($trend1, 0),
-                    number_format($w['actualSales'], 0),
-                    sprintf('%.2f%%', $this->percentGrowth($w['actualSales'], $w['lastYearSales'])),
-                    number_format($w['actualSales'], 0), // converts to % of sales
-                    number_format($w['actualSales'] - $proj, 0),
+                    number_format($row['actualSales'], 0),
+                    sprintf('%.2f%%', $this->percentGrowth($row['actualSales'], $row['lastYearSales'])),
+                    number_format($row['actualSales'], 0), // converts to % of sales
+                    number_format($row['actualSales'] - $proj, 0),
                     number_format($quarter['actual'] - $quarter['plan'], 0),
                     'meta' => FannieReportPage::META_COLOR,
                     'meta_background' => $colors[0],
                     'meta_foreground' => 'black',
                 );
-                $sum[0] += $w['actualSales'];
-                $sum[1] += $w['lastYearSales'];
-                $total_sales->thisYear += $w['actualSales'];
-                $total_sales->lastYear += $w['lastYearSales'];
+                $sum[0] += $row['actualSales'];
+                $sum[1] += $row['lastYearSales'];
+                $total_sales->thisYear += $row['actualSales'];
+                $total_sales->lastYear += $row['lastYearSales'];
                 if ($total_trans->thisYear == 0) {
-                    $total_trans->thisYear = $w['transactions'];
+                    $total_trans->thisYear = $row['transactions'];
                 }
                 if ($total_trans->lastYear == 0) {
-                    $total_trans->lastYear = $w['lastYearTransactions'];
+                    $total_trans->lastYear = $row['lastYearTransactions'];
                 }
                 $total_sales->projected += $proj;
                 $dept_proj += $proj;
@@ -595,9 +421,9 @@ class ObfWeeklyReportV2 extends FannieReportPage
                 array($week->obfLaborQuarterID(), $labor->obfCategoryID(), date('Y-m-d 00:00:00', $end_ts))
             );
             if ($dbc->num_rows($qt_splh)) {
-                $w = $dbc->fetch_row($qt_splh);
-                $quarter['actualSales'] = $w['actualSales'];
-                $quarter['planSales'] = $w['planSales'];
+                $row = $dbc->fetch_row($qt_splh);
+                $quarter['actualSales'] = $row['actualSales'];
+                $quarter['planSales'] = $row['planSales'];
             }
             $qt_average_wage = $quarter['hours'] == 0 ? 0 : $quarter['wages'] / ((float)$quarter['hours']);
             $qt_proj_hours = $quarter['planSales'] / $category->salesPerLaborHourTarget();
@@ -628,7 +454,7 @@ class ObfWeeklyReportV2 extends FannieReportPage
             $total_hours->trend += $trend_hours;
 
             $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($qtd_dept_sales)/($quarter['hours']);
-            $quarter_proj_sph = ($qtd_dept_plan)/($qt_proj_hours);
+            $quarter_proj_sph = ($qt_proj_hours == 0) ? 0 : ($qtd_dept_plan)/($qt_proj_hours);
             $data[] = array(
                 'Sales per Hour',
                 '',
@@ -730,7 +556,7 @@ class ObfWeeklyReportV2 extends FannieReportPage
             $qtd_hours_ou += ($quarter['hours'] - $qt_proj_hours);
 
             $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($total_sales->quarterActual)/($quarter['hours']);
-            $quarter_proj_sph = ($total_sales->quarterProjected)/($qt_proj_hours);
+            $quarter_proj_sph = $qt_proj_hours == 0 ? 0 : ($total_sales->quarterProjected)/($qt_proj_hours);
             $data[] = array(
                 'Sales per Hour',
                 '',
@@ -799,7 +625,7 @@ class ObfWeeklyReportV2 extends FannieReportPage
         );
 
         $quarter_actual_sph = $total_hours->quarterActual == 0 ? 0 : ($total_sales->quarterActual)/($total_hours->quarterActual);
-        $quarter_proj_sph = ($total_sales->quarterProjected)/($total_hours->quarterProjected);
+        $quarter_proj_sph = $total_hours->quarterProjected == 0 ? 0 : ($total_sales->quarterProjected)/($total_hours->quarterProjected);
         $data[] = array(
             'Sales per Hour',
             '',
@@ -910,7 +736,7 @@ class ObfWeeklyReportV2 extends FannieReportPage
             $qtd_hours_ou += ($quarter['hours'] - $qt_proj_hours);
 
             $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($total_sales->quarterActual)/($quarter['hours']);
-            $quarter_proj_sph = ($total_sales->quarterProjected)/($qt_proj_hours);
+            $quarter_proj_sph = $qt_proj_hours == 0 ? 0 : ($total_sales->quarterProjected)/($qt_proj_hours);
             $data[] = array(
                 'Sales per Hour',
                 '',
@@ -963,7 +789,7 @@ class ObfWeeklyReportV2 extends FannieReportPage
         );
 
         $quarter_actual_sph = $total_hours->quarterActual == 0 ? 0 : ($total_sales->quarterActual)/($total_hours->quarterActual);
-        $quarter_proj_sph = ($total_sales->quarterProjected)/($total_hours->quarterProjected);
+        $quarter_proj_sph = $total_hours->quarterProjected == 0 ? 0 : ($total_sales->quarterProjected)/($total_hours->quarterProjected);
         $data[] = array(
             'Sales per Hour',
             '',
@@ -984,7 +810,7 @@ class ObfWeeklyReportV2 extends FannieReportPage
 
         $stockP = $dbc->prepare('
             SELECT SUM(stockPurchase) AS ttl
-            FROM ' . $FANNIE_TRANS_DB . $dbc->sep() . 'stockpurchases
+            FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'stockpurchases
             WHERE tdate BETWEEN ? AND ?
                 AND dept=992
                 AND trans_num NOT LIKE \'1001-30-%\'
@@ -1079,128 +905,6 @@ class ObfWeeklyReportV2 extends FannieReportPage
         );
 
         return $data;
-    }
-
-    public function form_content()
-    {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ObfDatabaseV2']);
-
-        $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="get">';
-        $ret .= '<div class="form-group form-inline">
-            <label>Week Starting</label>: 
-            <select class="form-control" name="weekID">';
-        $model = new ObfWeeksModelV2($dbc);
-        foreach ($model->find('startDate', true) as $week) {
-            $ret .= sprintf('<option value="%d">%s</option>',
-                            $week->obfWeekID(),
-                            date('M, d Y', strtotime($week->startDate()))
-                            . ' - ' . date('M, d Y', strtotime($week->endDate()))
-            );
-        }
-        $ret .= '</select>';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<button type="submit" class="btn btn-default">Get Report</button>';
-        $ret .= '</div>';
-        $ret .= '</form>';
-        $ret .= '<p><button class="btn btn-default"
-                onclick="location=\'ObfIndexPageV2.php\';return false;">Home</button>
-                </p>';
-
-        return $ret;
-    }
-
-    private function percentGrowth($a, $b)
-    {
-        if ($b == 0) {
-            return 0.0;
-        } else {
-            return 100 * ($a - $b) / ((float)$b);
-        }
-    }
-
-    private function leastSquare($points)
-    {
-        $avg_x = 0.0;
-        $avg_y = 0.0;
-        foreach ($points as $p) {
-            $avg_x += $p[0];
-            $avg_y += $p[1];
-        }
-        $avg_x /= (float)count($points);
-        $avg_y /= (float)count($points);
-
-        $numerator = 0.0;
-        $denominator = 0.0;
-        foreach ($points as $p) {
-            $numerator += (($p[0] - $avg_x) * ($p[1] - $avg_y));
-            $denominator += (($p[0] - $avg_x) * ($p[0] - $avg_x));
-        }
-        $slope = $numerator / $denominator;
-        $y_intercept = $avg_y - ($slope * $avg_x);
-
-        return array(
-            'slope' => $slope,
-            'y_intercept' => $y_intercept,
-        );
-    }
-
-    private function exponentialFit($points)
-    {
-        $a_numerator = 
-            (array_reduce($points, function($c,$p){ return $c + (pow($p[0],2)*$p[1]); })
-            * array_reduce($points, function($c,$p){ return $c + ($p[1] * log($p[1])); })) 
-            -
-            (array_reduce($points, function($c,$p){ return $c + ($p[0]*$p[1]); })
-            * array_reduce($points, function($c,$p){ return $c + ($p[0] * $p[1] * log($p[1])); })); 
-
-        $a_denominator = 
-            (array_reduce($points, function($c,$p) { return $c + $p[1]; })
-            * array_reduce($points, function($c,$p) { return $c + (pow($p[0],2)*$p[1]); }))
-            -
-            pow(
-                array_reduce($points, function($c,$p) { return $c + $p[0]*$p[1]; }),
-                2);
-
-        $a = $a_numerator / $a_denominator;
-
-        $b_numerator = 
-            (array_reduce($points, function($c,$p){ return $c + $p[1]; })
-            * array_reduce($points, function($c,$p){ return $c + ($p[0] * $p[1] * log($p[1])); })) 
-            -
-            (array_reduce($points, function($c,$p){ return $c + ($p[0]*$p[1]); })
-            * array_reduce($points, function($c,$p){ return $c + ($p[1] * log($p[1])); })); 
-        $b_denominator = $a_denominator;
-
-        $b = $b_numerator / $b_denominator;
-
-        $ret = new stdClass();
-        $ret->a = $a;
-        $ret->b = $b;
-
-        return $ret;
-    }
-
-    private function removeOutliers($arr)
-    {
-        $min_index = 0;
-        $max_index = 0;
-        for ($i=0; $i<count($arr); $i++) {
-            if ($arr[$i][1] < $arr[$min_index][1]) {
-                $min_index = $i;
-            }
-            if ($arr[$i][1] > $arr[$max_index][1]) {
-                $max_index = $i;
-            }
-        }
-        $ret = array();
-        for ($i=0; $i<count($arr); $i++) {
-            if ($i != $min_index && $i != $max_index) {
-                $ret[] = $arr[$i];
-            }
-        }
-
-        return $ret;
     }
 }
 

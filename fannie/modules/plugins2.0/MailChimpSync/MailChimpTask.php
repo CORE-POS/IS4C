@@ -44,10 +44,11 @@ class MailChimpTask extends FannieTask
             return false;
         }
 
-        if (!class_exists('MailChimp')) {
-            include(dirname(__FILE__) . '/noauto/mailchimp-api-php/src/Mailchimp.php');
+        if (!class_exists('Mailchimp')) {
+            $this->cronMsg('MailChimp library is not installed', FannieLogger::NOTICE);
+            return false;
         }
-        $mc = new MailChimp($APIKEY);
+        $mc = new MailChimpEx($APIKEY);
 
         if ($FANNIE_PLUGIN_SETTINGS['MailChimpMergeVarField'] != 1) {
             $vars = $mc->lists->mergeVars(array($LISTID));

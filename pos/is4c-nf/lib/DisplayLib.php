@@ -50,19 +50,14 @@ static public function printfooter($readOnly=False)
         );
     }
     
-    $modchain = array();
-    foreach($FOOTER_MODULES as $MOD) {
-        $modchain[] = new $MOD();
-    }
+    $modchain = array_map(function($class){ return new $class(); }, $FOOTER_MODULES);
 
     if (!$readOnly) {
         CoreLocal::set("runningTotal",CoreLocal::get("amtdue"));
     }
-
     if (CoreLocal::get("End") == 1 && !$readOnly) {
         CoreLocal::set("runningTotal",-1 * CoreLocal::get("change"));
     }
-    
     if (CoreLocal::get("scale") == 1) {
         $weight = number_format(CoreLocal::get("weight"), 2)."lb.";
     } else {
@@ -71,21 +66,12 @@ static public function printfooter($readOnly=False)
 
     $ret = "<table>";
     $ret .= "<tr class=\"heading\">";
-    $label = $modchain[0]->header_content();
-    $ret .= sprintf('<td class="first %s" style="%s">%s</td>',
-            $modchain[0]->header_css_class, $modchain[0]->header_css,$label);
-    $label = $modchain[1]->header_content();
-    $ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-            $modchain[1]->header_css_class, $modchain[1]->header_css,$label);
-    $label = $modchain[2]->header_content();
-    $ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-            $modchain[2]->header_css_class, $modchain[2]->header_css,$label);
-    $label = $modchain[3]->header_content();
-    $ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-            $modchain[3]->header_css_class, $modchain[3]->header_css,$label);
-    $label = $modchain[4]->header_content();
-    $ret .= sprintf('<td class="total %s" style="%s">%s</td>',
-            $modchain[4]->header_css_class, $modchain[4]->header_css,$label);
+    $classes = array('first', 'reg', 'reg', 'reg', 'total');
+    for ($i=0; $i<count($modchain); $i++) {
+        $label = $modchain[$i]->header_content();
+        $ret .= sprintf('<td class="%s %s" style="%s">%s</td>',
+                $classes[$i], $modchain[$i]->header_css_class, $modchain[$i]->header_css,$label);
+    }
     $ret .= "</tr>";
 
     $special = CoreLocal::get("memSpecial") + CoreLocal::get("staffSpecial");
@@ -123,30 +109,13 @@ static public function printfooter($readOnly=False)
     }
 
     $ret .= "<tr class=\"values\">";
-    $box = $modchain[0]->display_content();
-    $ret .= sprintf('<td class="first %s" style="%s">%s</td>',
-            $modchain[0]->display_css_class,$modchain[0]->display_css,$box);
-    $box = $modchain[1]->display_content();
-    $ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-            $modchain[1]->display_css_class,$modchain[1]->display_css,$box);
-    $box = $modchain[2]->display_content();
-    $ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-            $modchain[2]->display_css_class,$modchain[2]->display_css,$box);
-    $box = $modchain[3]->display_content();
-    $ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
-            $modchain[3]->display_css_class,$modchain[3]->display_css,$box);
-    $box = $modchain[4]->display_content();
-    $ret .= sprintf('<td class="total %s" style="%s">%s</td>',
-            $modchain[4]->display_css_class,$modchain[4]->display_css,$box);
+    for ($i=0; $i<count($modchain); $i++) {
+        $box = $modchain[$i]->display_content();
+        $ret .= sprintf('<td class="%s %s" style="%s">%s</td>',
+                $classes[$i],$modchain[$i]->display_css_class,$modchain[$i]->display_css,$box);
+    }
     $ret .= "</tr>";
     $ret .= "</table>";
-
-    if (!$readOnly) {
-        $ret .= "<form name='hidden'>\n";
-        $ret .= "<input type='hidden' id='ccTermOut' name='ccTermOut' value=\"".CoreLocal::get("ccTermOut")."\">\n";
-        $ret .= "</form>";
-        CoreLocal::set("ccTermOut","idle");
-    }
 
     return $ret;
 }
@@ -323,21 +292,7 @@ static public function printheaderb()
     return $ret;
 }
 
-//-------------------------------------------------------------------//
-
-/**
-  Get a transaction line item
-  @param $field2 typically description
-  @param $field3 comment section. Used for things
-   like "0.59@1.99" on weight items.
-  @param $total the right-hand number
-  @param $field5 flags after the number
-  @param $trans_id value from localtemptrans. Including
-   the trans_id makes the lines selectable via mouseclick
-   (or touchscreen).
-  @return An HTML string
-*/
-static public function printItem($field2, $field3, $total, $field5, $trans_id=-1) 
+static private function itemOnClick($trans_id)
 {
     $onclick = "";
     if ($trans_id != -1) {
@@ -345,32 +300,39 @@ static public function printItem($field2, $field3, $total, $field5, $trans_id=-1
         $diff = $trans_id - $curID;
         if ($diff > 0) {
             $onclick="onclick=\"parseWrapper('D$diff');\"";
-        } else if ($diff < 0) {
+        } else if ($diff < 0){
             $diff *= -1;
             $onclick="onclick=\"parseWrapper('U$diff');\"";
         }
-    }    
+    } 
 
-    if (strlen($total) > 0) {
-        $total = number_format($total, 2);
-    } else {
-        $total = "&nbsp;";
-    }
-    if ($field2 == "") {
-        $field2 = "&nbsp;";
-    }
-    if (trim($field3) == "") {
-        $field3 = "&nbsp;";
-    }
-    if ($field5 == "") {
-        $field5 = "&nbsp;";
-    }
+    return $onclick;
+}
+
+//-------------------------------------------------------------------//
+
+/**
+  Get a transaction line item
+  @param $fields [array] of entries (left-to-right)
+  @param $trans_id value from localtemptrans. Including
+   the trans_id makes the lines selectable via mouseclick
+   (or touchscreen).
+  @return An HTML string
+*/
+static public function printItem($fields, $trans_id=-1) 
+{
+    $onclick = self::itemOnClick($trans_id);
+
+    $total = self::displayableText($fields[2], false, true);
+    $description = self::displayableText($fields[0], false, false);
+    $comments = self::displayableText($fields[1], false, false);
+    $suffix = self::displayableText($fields[3], false, false);
 
     $ret = "<div class=\"item\">";
-    $ret .= "<div $onclick class=\"desc coloredText\">$field2</div>";
-    $ret .= "<div $onclick class=\"comments lightestColorText\">$field3</div>";
+    $ret .= "<div $onclick class=\"desc coloredText\">$description</div>";
+    $ret .= "<div $onclick class=\"comments lightestColorText\">$comments</div>";
     $ret .= "<div $onclick class=\"total lightestColorText\">$total</div>";
-    $ret .= "<div $onclick class=\"suffix lightestColorText\">$field5</div>";
+    $ret .= "<div $onclick class=\"suffix lightestColorText\">$suffix</div>";
     $ret .= "</div>";
     $ret .= "<div style=\"clear:left;\"></div>\n";
 
@@ -383,11 +345,7 @@ static public function printItem($field2, $field3, $total, $field5, $trans_id=-1
   Get a transaction line item in a specific color
   @param $color is a hex color code (do not include a '#')
     (see CSS notes)
-  @param $description typically description
-  @param $comments comment section. Used for things
-   like "0.59@1.99" on weight items.
-  @param $total the right-hand number
-  @param $suffix flags after the number
+  @param $fields [array] of entries (left-to-right)
   @param $trans_id value from localtemptrans. Including
    the trans_id makes the lines selectable via mouseclick
    (or touchscreen).
@@ -402,51 +360,16 @@ static public function printItem($field2, $field3, $total, $field5, $trans_id=-1
   - 000000 => totalLine
   - 800080 => fsLine
 */
-static public function printItemColor($color, $description, $comments, $total, $suffix,$trans_id=-1) 
+static public function printItemColor($color, $fields, $trans_id=-1) 
 {
-    $onclick = "";
-    if ($trans_id != -1) {
-        $curID = CoreLocal::get("currentid");
-        $diff = $trans_id - $curID;
-        if ($diff > 0) {
-            $onclick="onclick=\"parseWrapper('D$diff');\"";
-        } else if ($diff < 0){
-            $diff *= -1;
-            $onclick="onclick=\"parseWrapper('U$diff');\"";
-        }
-    }    
+    $onclick = self::itemOnClick($trans_id);
 
-    if (strlen($total) > 0) {
-        $total = number_format($total, 2);
-    } else {
-        $total = "&nbsp;";
-    }
-    if ($total == 0 && $color == "408080") {
-        $total = "&nbsp;";
-    }
-    if ($description == "") {
-        $description = "&nbsp;";
-    }
-    if (trim($comments) == "") {
-        $comments = "&nbsp;";
-    }
-    if ($suffix == "") {
-        $suffix = "&nbsp;";
-    }
+    $total = self::displayableText($fields[2], true, true);
+    $description = self::displayableText($fields[0], true, false);
+    $comments = self::displayableText($fields[1], true, false);
+    $suffix = self::displayableText($fields[3], true, false);
 
-    $style = '';
-    $class = '';
-    if ($color == '004080') {
-        $class = 'coloredText';
-    } else if ($color == '000000') {
-        $class = 'totalLine';
-    } else if ($color == '800080') {
-        $class = 'fsLine';
-    } else if ($color == '408080') {
-        $class = 'lightColorText';
-    } else {
-        $style = "style=\"color:#$color;\"";
-    }
+    list($class, $style) = self::colorToCSS($color, true);
 
     $ret = "<div class=\"item\">";
     $ret .= "<div $onclick class=\"desc $class\" $style>$description</div>";
@@ -459,17 +382,30 @@ static public function printItemColor($color, $description, $comments, $total, $
     return $ret;
 }
 
+private static function colorToCSS($color, $text=true)
+{
+    if ($color == '004080') {
+        return array($text ? 'coloredText' : 'coloredArea', '');
+    } elseif ($color == '00000') {
+        return array($text ? 'totalLine' : 'totalArea', '');
+    } elseif ($color == '800080') {
+        return array($text ? 'fsLine' : 'fsArea', '');
+    } elseif ($color == '408080') {
+        return array($text ? 'lightColorText' : 'lightColorArea', '');
+    } elseif ($text) {
+        return array('', "style=\"color:#$color;\"");
+    } else {
+        return array('', "style=\"background:#$color;color:#ffffff;\"");
+    }
+}
+
 //----------------------------------------------------------------//
 
 /**
   Get a transaction line item in a specific color
   @param $color is a hex color code (do not include a '#')
     (see CSS notes)
-  @param $description typically description
-  @param $comments comment section. Used for things
-   like "0.59@1.99" on weight items.
-  @param $total the right-hand number
-  @param $suffix flags after the number
+  @param $fields [array] of entries (left-to-right)
   @return An HTML string
 
   CSS Notes:
@@ -481,39 +417,14 @@ static public function printItemColor($color, $description, $comments, $total, $
   - 000000 => totalArea
   - 800080 => fsArea
 */
-static public function printItemColorHilite($color, $description, $comments, $total, $suffix) 
+static public function printItemColorHilite($color, $fields)
 {
-    if (strlen($total) > 0) {
-        $total = number_format($total, 2);
-    } else {
-        $total = "&nbsp;";
-    }
-    if ($total == 0 && $color == "408080") {
-        $total = "&nbsp;";
-    }
-    if ($description == "") {
-        $description="&nbsp;";
-    }
-    if (trim($comments) == "") {
-        $comments="&nbsp;";
-    }
-    if ($suffix == "") {
-        $suffix="&nbsp;";
-    }
+    $total = self::displayableText($fields[2], true, true);
+    $description = self::displayableText($fields[0], true, false);
+    $comments = self::displayableText($fields[1], true, false);
+    $suffix = self::displayableText($fields[3], true, false);
 
-    $style = '';
-    $class = '';
-    if ($color == '004080') {
-        $class = 'coloredArea';
-    } else if ($color == '000000') {
-        $class = 'totalArea';
-    } else if ($color == '800080') {
-        $class = 'fsArea';
-    } else if ($color == '408080') {
-        $class = 'lightColorArea';
-    } else {
-        $style = "style=\"background:#$color;color:#ffffff;\"";
-    }
+    list($class, $style) = self::colorToCSS($color, false);
 
     $ret = "<div class=\"item\">";
     $ret .= "<div class=\"desc $class\" $style>$description</div>";
@@ -524,6 +435,19 @@ static public function printItemColorHilite($color, $description, $comments, $to
     $ret .= "<div style=\"clear:left;\"></div>\n";
 
     return $ret;
+}
+
+private static function displayableText($field, $color=true, $total=true)
+{
+    if ($total === false) {
+        return trim($field) == '' ? '&nbsp;' : $field;
+    } elseif ($field == 0 && $color == "408080") {
+        return "&nbsp;";
+    } elseif (is_numeric($field) && strlen($field) > 0) {
+        return number_format($field, 2);
+    } else {
+        return $field;
+    }
 }
 
 //----------------------------------------------------------------//
@@ -605,41 +529,6 @@ static public function scaledisplaymsg($input="")
     }
 
     return $ret;
-}
-
-/**
-  Display CC terminal state
-  @return HTML string
-*/
-static public function termdisplaymsg()
-{
-    if (!in_array("Paycards",CoreLocal::get("PluginList"))) {
-        return '';
-    } elseif(CoreLocal::get("PaycardsCashierFacing")=="1") {
-        return '';
-    }
-    // style box to look like a little screen
-    $ret = '<div style="background:#ccc;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
-    $rdy = '<div style="background:#0c0;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
-    switch(CoreLocal::get('ccTermState')) {
-        case 'swipe':
-            return $ret.'Slide<br />Card</div>';
-            break;
-        case 'ready':
-            return $rdy.'Ready</div>';
-            break;
-        case 'pin':
-            return $ret.'Enter<br />PIN</div>';
-            break;
-        case 'type':
-            return $ret.'Card<br />Type</div>';
-            break;
-        case 'cashback':
-            return $ret.'Cash<br />Back</div>';
-            break;
-    }
-
-    return '';
 }
 
 /**
@@ -772,25 +661,18 @@ static public function drawItems($top_item, $rows, $highlight)
     $ret = self::printheaderb();
 
     $query = "select count(*) as count from localtemptrans";
-    $db = Database::tDataConnect();
-    $result = $db->query($query);
-    $row = $db->fetch_array($result);
+    $dbc = Database::tDataConnect();
+    $result = $dbc->query($query);
+    $row = $dbc->fetch_array($result);
     $rowCount = $row["count"];
-
-    $last_item = array();
 
     if ($rowCount == 0) {
         $ret .= "<div class=\"centerOffset\">";
         $msg_text = "";
-        if (CoreLocal::get("training") != 1) {
-            for($i=1; $i<=CoreLocal::get("welcomeMsgCount");$i++) {
-                $msg_text .= CoreLocal::get("welcomeMsg".$i)."<br />";
-            }    
-        } else {
-            for($i=1; $i<=CoreLocal::get("trainingMsgCount");$i++) {
-                $msg_text .= CoreLocal::get("trainingMsg".$i)."<br />";
-            }    
-        }
+        $type = CoreLocal::get('training') != 1 ? 'welcomeMsg' : 'trainingMsg';
+        for($i=1; $i<=CoreLocal::get($type . "Count");$i++) {
+            $msg_text .= CoreLocal::get($type.$i)."<br />";
+        }    
         $ret .= self::plainmsg($msg_text);
         $ret .= "</div>";
     } else {
@@ -800,10 +682,9 @@ static public function drawItems($top_item, $rows, $highlight)
                 .($top_item + $rows)." order by trans_id";
         $db_range = Database::tDataConnect();
         $result_range = $db_range->query($query_range);
-        $num_rows = $db_range->num_rows($result_range);
         $screenRecords = array();
-        for ($i = 0; $i < $num_rows; $i++) {
-            $screenRecords[] = $db_range->fetch_array($result_range);
+        while ($row = $db_range->fetchRow($result_range)) {
+            $screenRecords[] = $row;
         }
         /**
           30Oct2014 Andy
@@ -833,57 +714,19 @@ static public function drawItems($top_item, $rows, $highlight)
             $description = $row["description"];
             $total = $row["total"];
             $comment = $row["comment"];
-            $tf = $row["status"];
+            $tf_status = $row["status"];
             $color = $row["lineColor"];
 
             
             if ($trans_id == $highlight) {
-                $ret .= self::printItemColorHilite($color, $description, $comment, $total, $tf);
+                $ret .= self::printItemColorHilite($color, array($description, $comment, $total, $tf_status));
+            } elseif ($color == "004080") {
+                $ret .= self::printItem(array($description, $comment, $total, $tf_status),$trans_id);
             } else {
-                if ($color == "004080") {
-                    $ret .= self::printItem($description, $comment, $total, $tf,$trans_id);
-                } else {
-                    $ret .= self::printItemColor($color, $description, $comment, $total, $tf,$trans_id);
-                }                
-            }
-
-            if (!strstr($description,'Subtotal')) {
-                $fixed_desc = str_replace(":"," ",$description);
-                if (strlen($fixed_desc) > 24) {
-                    $fixed_desc = substr($fixed_desc,0,24);
-                }
-                $fixed_price = empty($total)?'':sprintf('%.2f',$total);
-                $spaces = str_pad('',30-strlen($fixed_desc)-strlen($fixed_price),' ');
-                $last_item[] = $fixed_desc.$spaces.$fixed_price;
-            }
+                $ret .= self::printItemColor($color, array($description, $comment, $total, $tf_status),$trans_id);
+            }                
         }
     }
-
-    /** 11Mar14 Andy
-        Ancient idea about displaying transaction line-items
-        on credit card terminal screen. Current terminal
-        does not even support this functionality.
-
-        I'm leaving the "get last relevant line" implementation
-        for reference.
-    if (is_object($td) && !empty($last_item)) {
-        $due = sprintf('%.2f',CoreLocal::get("amtdue"));
-        $dueline = 'Subtotal'
-            .str_pad('',22-strlen($due),' ')
-            .$due;
-        $items = "";
-        $count = 0;
-        for($i=count($last_item)-1;$i>=0;$i--) {
-            $items = ":".$last_item[$i].$items;
-            $count++;
-            if ($count >= 3) break;
-        }
-        for($i=$count;$i<3;$i++) {
-            $items = ": ".$items;
-        }
-        $td->WriteToScale("display:".$last_item.":".$dueline);
-    }
-    */
 
     return $ret;
 }
@@ -958,90 +801,11 @@ static public function screenDisplay($min, $max)
     while ($row = $dbc->fetch_row($result)) {
         $record = array();
 
-        if ($row['voided'] == 5 || $row['voided'] == 11 || $row['voided'] == 17 || $row['trans_type'] == 'T') {
-            $record['description'] = '';
-        } else {
-            $record['description'] = $row['description'];
-        }
-
-        if ($row['discounttype'] == 3 && $row['trans_status'] == 'V') {
-            $record['comment'] = $row['ItemQtty'] . ' /' . $row['unitPrice'];
-        } elseif ($row['voided'] == 5) {
-            $record['comment'] = 'Discount';
-        } elseif ($row['trans_status'] == 'M') {
-            $record['comment'] = 'Mbr special';
-        } elseif ($row['trans_status'] == 'S') {
-            $record['comment'] = 'Staff special';
-        } elseif ($row['scale'] != 0 && $row['quantity'] != 0 && $row['unitPrice'] != 0.01) {
-            $record['comment'] = $row['quantity'] . ' @ ' . $row['unitPrice'];
-        } elseif (substr($row['upc'], 0, 2) == '002') {
-            $record['comment'] = $row['ItemQtty'] . ' @ ' . $row['regPrice'];
-        } elseif (abs($row['ItemQtty']) > 1 && abs($row['ItemQtty']) > abs($row['quantity']) && $row['discounttype'] != 3 && $row['quantity'] == 1) {
-            $record['comment'] = $row['volume'] . ' for ' . $row['unitPrice'];
-        } elseif (abs($row['ItemQtty']) > 1 && abs($row['ItemQtty']) > abs($row['quantity']) && $row['discounttype'] != 3 && $row['quantity'] != 1) {
-            $record['comment'] = $row['quantity'] . ' @ ' . $row['volume'] . ' for ' . $row['unitPrice'];
-        } elseif (abs($row['ItemQtty']) > 1 && $row['discounttype'] == 3) {
-            $record['comment'] = $row['ItemQtty'] . ' / ' . $row['unitPrice'];
-        } elseif (abs($row['ItemQtty']) > 1) {
-            $record['comment'] = $row['ItemQtty'] . ' @ ' . $row['unitPrice'];
-        } elseif ($row['voided'] == 3) {
-            $record['comment'] = _('Total ');
-        } elseif ($row['voided'] == 5) {
-            $record['comment'] = _('Discount');
-        } elseif ($row['voided'] == 7) {
-            $record['comment'] = '';
-        } elseif ($row['voided'] == 11 || $row['voided'] == 17) {
-            $record['comment'] = $row['upc'];
-        } elseif ($row['matched'] > 0) {
-            $record['comment'] = _('1 w/ vol adj');
-        } elseif ($row['trans_type'] == 'T') {
-            $record['comment'] = $row['description'];
-        } else {
-            $record['comment'] = '';
-        }
-
-        if ($row['voided'] == 3 || $row['voided'] == 5 || $row['voided'] == 7 || $row['voided'] == 11 || $row['voided'] == 17) {
-            $record['total'] = $row['unitPrice'];
-        } elseif ($row['trans_status'] == 'D') {
-            $record['total'] = '';
-        } else {
-            $record['total'] = $row['total'];
-        }
-
-        if ($row['trans_status'] == 'V') {
-            $record['status'] = 'VD';
-        } elseif ($row['trans_status'] == 'R') {
-            $record['status'] = 'RF';
-        } elseif ($row['trans_status'] == 'C') {
-            $record['status'] = 'MC';
-        } elseif ($row['trans_type'] == 'T' && $row['charflag'] == 'PT') {
-            $record['status'] = 'PC';
-        } elseif ($row['tax'] == 1 && $row['foodstamp'] != 0) {
-            $record['status'] = 'TF';
-        } elseif ($row['tax'] == 1 && $row['foodstamp'] == 0) {
-            $record['status'] = 'T';
-        } elseif ($row['tax'] > 1 && $row['foodstamp'] != 0) {
-            $record['status'] = substr($row['tax_description'], 0 , 1) . 'F';
-        } elseif ($row['tax'] > 1 && $row['foodstamp'] == 0) {
-            $record['status'] = substr($row['tax_description'], 0 , 1);
-        } elseif ($row['tax'] == 0 && $row['foodstamp'] != 0) {
-            $record['status'] = 'F';
-        } else {
-            $record['status'] = '';
-        }
-
-        if ($row['trans_status'] == 'V' || $row['trans_type'] == 'T' || $row['trans_status'] == 'R' || $row['trans_status'] == 'M' || $row['voided'] == 17 || $row['trans_status'] == 'J') {
-            $record['lineColor'] = '800000';
-        } elseif (($row['discounttype'] != 0 && ($row['matched'] > 0 || $row['volDiscType'] == 0)) 
-            || $row['voided'] == 2 || $row['voided'] == 6 || $row['voided'] == 4 || $row['voided'] == 5 || $row['voided'] == 10 || $row['voided'] == 22) {
-            $record['lineColor'] = '408080';
-        } elseif ($row['voided'] == 3 || $row['voided'] == 11) {
-            $record['lineColor'] = '000000';
-        } elseif ($row['voided'] == 7) {
-            $record['lineColor'] = '800080';
-        } else {
-            $record['lineColor'] = '004080';
-        }
+        $record['description'] = self::screenDisplayDescription($row);
+        $record['comment'] = self::screenDisplayComment($row);
+        $record['total'] = self::screenDisplayTotal($row);
+        $record['status'] = self::screenDisplayStatus($row);
+        $record['lineColor'] = self::screenDisplayColor($row);
 
         $record['discounttype'] = $row['discounttype'];
         $record['trans_type'] = $row['trans_type'];
@@ -1053,6 +817,106 @@ static public function screenDisplay($min, $max)
     }
 
     return $ret;
+}
+
+static private function screenDisplayColor($row)
+{
+    if ($row['trans_status'] == 'V' || $row['trans_type'] == 'T' || $row['trans_status'] == 'R' || $row['trans_status'] == 'M' || $row['voided'] == 17 || $row['trans_status'] == 'J') {
+        return '800000';
+    } elseif (($row['discounttype'] != 0 && ($row['matched'] > 0 || $row['volDiscType'] == 0)) 
+        || $row['voided'] == 2 || $row['voided'] == 6 || $row['voided'] == 4 || $row['voided'] == 5 || $row['voided'] == 10 || $row['voided'] == 22) {
+        return '408080';
+    } elseif ($row['voided'] == 3 || $row['voided'] == 11) {
+        return '000000';
+    } elseif ($row['voided'] == 7) {
+        return '800080';
+    } else {
+        return '004080';
+    }
+}
+
+static private function screenDisplayDescription($row)
+{
+    if ($row['voided'] == 5 || $row['voided'] == 11 || $row['voided'] == 17 || $row['trans_type'] == 'T') {
+        return '';
+    } else {
+        return $row['description'];
+    }
+}
+
+static private function screenDisplayComment($row)
+{
+    if ($row['discounttype'] == 3 && $row['trans_status'] == 'V') {
+        return $row['ItemQtty'] . ' /' . $row['unitPrice'];
+    } elseif ($row['voided'] == 5) {
+        return 'Discount';
+    } elseif ($row['trans_status'] == 'M') {
+        return 'Mbr special';
+    } elseif ($row['trans_status'] == 'S') {
+        return 'Staff special';
+    } elseif ($row['scale'] != 0 && $row['quantity'] != 0 && $row['unitPrice'] != 0.01) {
+        return $row['quantity'] . ' @ ' . $row['unitPrice'];
+    } elseif (substr($row['upc'], 0, 2) == '002') {
+        return $row['ItemQtty'] . ' @ ' . $row['regPrice'];
+    } elseif (abs($row['ItemQtty']) > 1 && abs($row['ItemQtty']) > abs($row['quantity']) && $row['discounttype'] != 3 && $row['quantity'] == 1) {
+        return $row['volume'] . ' for ' . $row['unitPrice'];
+    } elseif (abs($row['ItemQtty']) > 1 && abs($row['ItemQtty']) > abs($row['quantity']) && $row['discounttype'] != 3 && $row['quantity'] != 1) {
+        return $row['quantity'] . ' @ ' . $row['volume'] . ' for ' . $row['unitPrice'];
+    } elseif (abs($row['ItemQtty']) > 1 && $row['discounttype'] == 3) {
+        return $row['ItemQtty'] . ' / ' . $row['unitPrice'];
+    } elseif (abs($row['ItemQtty']) > 1) {
+        return $row['ItemQtty'] . ' @ ' . $row['unitPrice'];
+    } elseif ($row['voided'] == 3) {
+        return _('Total ');
+    } elseif ($row['voided'] == 5) {
+        return _('Discount');
+    } elseif ($row['voided'] == 7) {
+        return '';
+    } elseif ($row['voided'] == 11 || $row['voided'] == 17) {
+        return $row['upc'];
+    } elseif ($row['matched'] > 0) {
+        return _('1 w/ vol adj');
+    } elseif ($row['trans_type'] == 'T') {
+        return $row['description'];
+    } else {
+        return '';
+    }
+}
+
+static private function screenDisplayTotal($row)
+{
+    if ($row['voided'] == 3 || $row['voided'] == 5 || $row['voided'] == 7 || $row['voided'] == 11 || $row['voided'] == 17) {
+        return $row['unitPrice'];
+    } elseif ($row['trans_status'] == 'D') {
+        return '';
+    } else {
+        return $row['total'];
+    }
+}
+
+static private function screenDisplayStatus($row)
+{
+    if ($row['trans_status'] == 'V') {
+        return 'VD';
+    } elseif ($row['trans_status'] == 'R') {
+        return 'RF';
+    } elseif ($row['trans_status'] == 'C') {
+        return 'MC';
+    } elseif ($row['trans_type'] == 'T' && $row['charflag'] == 'PT') {
+        return 'PC';
+    } elseif ($row['tax'] == 1 && $row['foodstamp'] != 0) {
+        return 'TF';
+    } elseif ($row['tax'] == 1 && $row['foodstamp'] == 0) {
+        return 'T';
+    } elseif ($row['tax'] > 1 && $row['foodstamp'] != 0) {
+        return substr($row['tax_description'], 0 , 1) . 'F';
+    } elseif ($row['tax'] > 1 && $row['foodstamp'] == 0) {
+        return substr($row['tax_description'], 0 , 1);
+    } elseif ($row['tax'] == 0 && $row['foodstamp'] != 0) {
+        return 'F';
+    } else {
+        return '';
+    }
 }
 
 static public function touchScreenScrollButtons($selector='#search')

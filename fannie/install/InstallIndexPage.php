@@ -21,7 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
 if (!file_exists(dirname(__FILE__).'/../config.php')){
     echo "Missing config file!<br />";
     echo "Create a file named config.php in ".realpath(dirname(__FILE__).'/../').'<br />';
@@ -29,7 +28,7 @@ if (!file_exists(dirname(__FILE__).'/../config.php')){
     echo "<div style=\"border: 1px solid black;padding: 5em;\">";
     echo '&lt;?php<br />';
     echo '</div>';  
-    exit;   
+    return false;   
 }
 
 require(dirname(__FILE__).'/../config.php'); 
@@ -178,6 +177,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             echo "<pre>";
             echo '$ cd "' . $FILEPATH . "\"\n";
             echo '$ /path/to/composer.phar update';
+            echo '</pre>';
+            echo '<a href="https://github.com/CORE-POS/IS4C/wiki/Installation#composer">More info about Composer</a>';
             echo '</div>';
         } else {
             $json = file_get_contents(dirname(__FILE__) . '/../../composer.json');
@@ -201,15 +202,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         /**
             Detect databases that are supported
         */
-        $supportedTypes = array();
-        if (extension_loaded('pdo') && extension_loaded('pdo_mysql'))
-            $supportedTypes['PDO_MYSQL'] = 'PDO MySQL';
-        if (extension_loaded('mysqli'))
-            $supportedTypes['MYSQLI'] = 'MySQLi';
-        if (extension_loaded('mysql'))
-            $supportedTypes['MYSQL'] = 'MySQL';
-        if (extension_loaded('mssql'))
-            $supportedTypes['MSSQL'] = 'MSSQL';
+        $supportedTypes = \COREPOS\common\sql\Lib::getDrivers();
 
         if (count($supportedTypes) == 0) {
             echo "<div class=\"alert alert-danger\"><b>Error</b>: no database driver available</div>";
@@ -219,7 +212,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 error, make sure they are enabled in your PHP configuration and try 
                 restarting your web server.';
             echo "</div>";
-            exit;
+            return false;
         }
         $db_keys = array_keys($supportedTypes);
         $defaultDbType = $db_keys[0];
@@ -599,6 +592,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'BatchBarcodesModel',
             'BatchTypeModel',
             'BatchMergeTableModel',
+            'ConsistentProductRulesModel',
             'CoopDealsItemsModel',
             'CronBackupModel',
             'CustdataModel',
@@ -945,4 +939,3 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
 
 FannieDispatch::conditionalExec();
 
-?>

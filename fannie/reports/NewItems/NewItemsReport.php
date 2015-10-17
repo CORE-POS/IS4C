@@ -59,11 +59,11 @@ class NewItemsReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
         $deptMulti = FormLib::get('departments', array());
@@ -83,18 +83,8 @@ class NewItemsReport extends FannieReportPage
             }
         }
         if ($buyer != -1) {
-            if (count($deptMulti) > 0) {
-                $where .= ' AND p.department IN (';
-                foreach ($deptMulti as $d) {
-                    $where .= '?,';
-                    $args[] = $d;
-                }
-                $where = substr($where, 0, strlen($where)-1) . ')';
-            } else {
-                $where .= ' AND p.department BETWEEN ? AND ? ';
-                $args[] = $deptStart;
-                $args[] = $deptEnd;
-            }
+            list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args, 'p');
+            $where .= $conditional;
         }
         $args[] = $date1.' 00:00:00';
         $args[] = $date2.' 23:59:59';
@@ -149,4 +139,3 @@ class NewItemsReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

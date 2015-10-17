@@ -59,7 +59,7 @@ class AuthGroupsPage extends FannieRESTfulPage
         return parent::preprocess();
     }
 
-    public function post_id_authClass_start_end_handler()
+    protected function post_id_authClass_start_end_handler()
     {
         addAuthToGroup($this->id, $this->authClass, $this->start, $this->end);
         header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
@@ -67,7 +67,7 @@ class AuthGroupsPage extends FannieRESTfulPage
         return false;
     }
 
-    public function delete_id_authClass_handler()
+    protected function delete_id_authClass_handler()
     {
         deleteAuthFromGroup($this->id, $this->authClass);
         header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
@@ -75,7 +75,7 @@ class AuthGroupsPage extends FannieRESTfulPage
         return false;
     }
 
-    public function post_id_name_handler()
+    protected function post_id_name_handler()
     {
         addGroup($this->id, $this->name);
         header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
@@ -83,7 +83,7 @@ class AuthGroupsPage extends FannieRESTfulPage
         return false;
     }
 
-    public function post_id_name_newUser_handler()
+    protected function post_id_name_newUser_handler()
     {
         addUserToGroup($this->id, $this->name);
         header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
@@ -91,7 +91,7 @@ class AuthGroupsPage extends FannieRESTfulPage
         return false;
     }
 
-    public function delete_id_name_handler()
+    protected function delete_id_name_handler()
     {
         deleteUserFromGroup($this->id, $this->name);
         header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
@@ -100,7 +100,7 @@ class AuthGroupsPage extends FannieRESTfulPage
     }
 
     
-    public function delete_id_handler()
+    protected function delete_id_handler()
     {
         deleteGroup($this->id);
         header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
@@ -108,32 +108,42 @@ class AuthGroupsPage extends FannieRESTfulPage
         return false;
     }
 
-    public function get_detail_view()
+    protected function get_detail_view()
     {
         return $this->group_form(array(), 'View Details');
     }
 
-    public function get_remove_view()
+    protected function get_remove_view()
     {
         return $this->group_form(array('_method'=>'delete'), 'Delete Group');
     }
 
-    public function get_id_view()
+    protected function get_id_view()
     {
         ob_start();
         detailGroup($this->id);
         return ob_get_clean();
     }
 
-    private function group_form($hidden, $verb)
+    protected function groupSelect()
     {
-        $ret = '<form method="get" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">
+        $this->add_onload_command("\$('select.form-control').focus();\n");
+        $ret = '<div class="form-group">
             <label>Group</label>
             <select name="id" class="form-control">';
         foreach (getGroupList() as $uid => $name) {
             $ret .=  "<option>".$name."</option>";
         }
-        $ret .= '</select>
+        $ret .= '</select></div>';
+
+        return $ret;
+    }
+
+    protected function group_form($hidden, $verb)
+    {
+        $ret = '<form method="get" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">';
+        $ret .= $this->groupSelect();
+        $ret .= '
             <p>
             <button class="btn btn-default" type="submit">' . $verb . '</button>
             </p>';
@@ -144,31 +154,25 @@ class AuthGroupsPage extends FannieRESTfulPage
             $ret .= sprintf('<input type="hidden" name="%s" value="%s" />', $name, $value);
         }
         $ret .= '</form>';
-        $this->add_onload_command("\$('select.form-control').focus();\n");
 
         return $ret;
     }
 
-    public function get_newUser_view()
+    protected function get_newUser_view()
     {
         return $this->user_group_form(array('newUser'=>'1'), 'Add User to Group');
     }
 
-    public function get_removeUser_view()
+    protected function get_removeUser_view()
     {
         return $this->user_group_form(array('_method'=>'delete'), 'Delete User from Group');
     }
 
-    private function user_group_form($hidden, $verb)
+    protected function user_group_form($hidden, $verb)
     {
-        $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">
-            <div class="form-group">
-            <label>Group</label>
-            <select name="id" class="form-control">';
-        foreach (getGroupList() as $uid => $name) {
-            $ret .=  "<option>".$name."</option>";
-        }
-        $ret .= '</select></div>
+        $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">';
+        $ret .= $this->groupSelect();
+        $ret .= '
             <div class="form-group">
             <label>User</label>
             <select name="name" class="form-control">';
@@ -186,12 +190,11 @@ class AuthGroupsPage extends FannieRESTfulPage
             $ret .= sprintf('<input type="hidden" name="%s" value="%s" />', $name, $value);
         }
         $ret .= '</form>';
-        $this->add_onload_command("\$('select.form-control:first').focus();\n");
 
         return $ret;
     }
 
-    public function get_new_view()
+    protected function get_new_view()
     {
         $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">
             <div class="form-group">
@@ -212,21 +215,14 @@ class AuthGroupsPage extends FannieRESTfulPage
         return $ret;
     }
 
-    public function get_newAuth_view()
+    protected function get_newAuth_view()
     {
-        $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">
-            <label>Group</label>
-            <select name="id" class="form-control">';
-        foreach (getGroupList() as $uid => $name) {
-            $ret .=  "<option>".$name."</option>";
-        }
-        $ret .= '</select>
-            <label>Authorization Class</label>
-            <select name="authClass" class="form-control">';
-        foreach (getAuthList() as $name) {
-            $ret .= '<option>' . $name . '</option>';
-        }
-        $ret .= '</select>
+        $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">';
+        $ret .= $this->groupSelect();
+        $ret .= '
+            <label>Authorization Class</label>';
+        $ret .= getAuthSelect();
+        $ret .= '
             <label>Subclass Start</label>
             <input type="text" name="start" value="all" class="form-control" />
             <label>Subclass End</label>
@@ -235,37 +231,28 @@ class AuthGroupsPage extends FannieRESTfulPage
             <button class="btn btn-default" type="submit">Add Authorization</button>
             </p>';
         $ret .= '</form>';
-        $this->add_onload_command("\$('select.form-control:first').focus();\n");
 
         return $ret;
     }
 
-    public function get_removeAuth_view()
+    protected function get_removeAuth_view()
     {
         $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">
-            <input type="hidden" name="_method" value="delete" />
-            <label>Group</label>
-            <select name="id" class="form-control">';
-        foreach (getGroupList() as $uid => $name) {
-            $ret .=  "<option>".$name."</option>";
-        }
-        $ret .= '</select>
-            <label>Authorization Class</label>
-            <select name="authClass" class="form-control">';
-        foreach (getAuthList() as $name) {
-            $ret .= '<option>' . $name . '</option>';
-        }
-        $ret .= '</select>
+            <input type="hidden" name="_method" value="delete" />';
+        $ret .= $this->groupSelect();
+        $ret .= '
+            <label>Authorization Class</label>';
+        $ret .= getAuthSelect();
+        $ret .= '
             <p>
             <button class="btn btn-default" type="submit">Remove Authorization from Group</button>
             </p>';
         $ret .= '</form>';
-        $this->add_onload_command("\$('select.form-control:first').focus();\n");
 
         return $ret;
     }
 
-    public function get_view()
+    protected function get_view()
     {
         ob_start();
         echo '<div class="row container" id="btn-bar">';

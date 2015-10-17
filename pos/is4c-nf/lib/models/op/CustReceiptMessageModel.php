@@ -54,53 +54,5 @@ receipts.
   transaction
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function card_no()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["card_no"])) {
-                return $this->instance["card_no"];
-            } elseif(isset($this->columns["card_no"]["default"])) {
-                return $this->columns["card_no"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["card_no"] = func_get_arg(0);
-        }
-    }
-
-    public function msg_text()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["msg_text"])) {
-                return $this->instance["msg_text"];
-            } elseif(isset($this->columns["msg_text"]["default"])) {
-                return $this->columns["msg_text"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["msg_text"] = func_get_arg(0);
-        }
-    }
-
-    public function modifier_module()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["modifier_module"])) {
-                return $this->instance["modifier_module"];
-            } elseif(isset($this->columns["modifier_module"]["default"])) {
-                return $this->columns["modifier_module"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["modifier_module"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

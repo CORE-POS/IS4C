@@ -75,7 +75,7 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 p.price_rule_id
             FROM vendorSKUtoPLU AS s
                 INNER JOIN vendors AS v ON s.vendorID=v.vendorID
-                INNER JOIN products AS p ON s.upc=p.upc
+                ' . DTrans::joinProducts('s', 'p', 'INNER') . '
             WHERE s.sku=?
                 AND v.vendorName LIKE \'%UNFI%\'');
         $insP = $dbc->prepare('

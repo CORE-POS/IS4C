@@ -304,9 +304,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('0.50 lb',$both['display']);
         $this->assertEquals('4011',$both['upc']);
 
-        $term = DisplayLib::termdisplaymsg();
-        $this->assertInternalType('string',$term);
-
         $list = DisplayLib::listItems(0,0);
         $this->assertInternalType('string',$list);
 
@@ -670,6 +667,78 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         lttLib::verifyRecord(4, $record, $this);
 
         lttLib::clear();
+
+        CoreLocal::set('cashierAge', 17);
+        CoreLocal::set('cashierAgeOverride', 0);
+        list($age_required, $json) = PrehLib::ageCheck(21, array());
+        $this->assertEquals(true, $age_required);
+        $this->assertInternalType('array', $json);
+        CoreLocal::set('cashierAgeOverride', 1);
+        list($age_required, $json) = PrehLib::ageCheck(21, array());
+        $this->assertEquals(true, $age_required);
+        $this->assertInternalType('array', $json);
+        CoreLocal::set('memAge', date('Ymd', strtotime('21 years ago')));
+        list($age_required, $json) = PrehLib::ageCheck(21, array());
+        $this->assertEquals(false, $age_required);
+        $this->assertInternalType('array', $json);
+        CoreLocal::set('memAge', date('Ymd', strtotime('20 years ago')));
+        list($age_required, $json) = PrehLib::ageCheck(21, array());
+        $this->assertEquals(true, $age_required);
+        $this->assertInternalType('array', $json);
+    }
+
+    public function testDiscountModules()
+    {
+        $ten = new DiscountModule(10, 'ten');
+        $fifteen = new DiscountModule(15, 'fifteen');
+
+        // verify stacking discounts
+        CoreLocal::set('percentDiscount', 0);
+        CoreLocal::set('NonStackingDiscounts', 0);
+        DiscountModule::updateDiscount($ten, false);
+        $this->assertEquals(10, CoreLocal::get('percentDiscount'));
+        DiscountModule::updateDiscount($fifteen, false);
+        $this->assertEquals(25, CoreLocal::get('percentDiscount'));
+
+        DiscountModule::transReset();
+
+        // verify non-stacking discounts
+        CoreLocal::set('percentDiscount', 0);
+        CoreLocal::set('NonStackingDiscounts', 1);
+        DiscountModule::updateDiscount($ten, false);
+        $this->assertEquals(10, CoreLocal::get('percentDiscount'));
+        DiscountModule::updateDiscount($fifteen, false);
+        $this->assertEquals(15, CoreLocal::get('percentDiscount'));
+
+        DiscountModule::transReset();
+
+        // verify best non-stacking discount wins
+        CoreLocal::set('percentDiscount', 0);
+        DiscountModule::updateDiscount($fifteen, false);
+        $this->assertEquals(15, CoreLocal::get('percentDiscount'));
+        DiscountModule::updateDiscount($ten, false);
+        $this->assertEquals(15, CoreLocal::get('percentDiscount'));
+
+        DiscountModule::transReset();
+
+        // verify same-name discounts overwrite
+        $one = new DiscountModule(1, 'custdata');
+        $two = new DiscountModule(2, 'custdata');
+        CoreLocal::set('percentDiscount', 0);
+        CoreLocal::set('NonStackingDiscounts', 0);
+        DiscountModule::updateDiscount($one, false);
+        $this->assertEquals(1, CoreLocal::get('percentDiscount'));
+        DiscountModule::updateDiscount($two, false);
+        $this->assertEquals(2, CoreLocal::get('percentDiscount'));
+
+        DiscountModule::transReset();
+
+        // same-name should overwrite in the order called
+        CoreLocal::set('percentDiscount', 0);
+        DiscountModule::updateDiscount($two, false);
+        $this->assertEquals(2, CoreLocal::get('percentDiscount'));
+        DiscountModule::updateDiscount($one, false);
+        $this->assertEquals(1, CoreLocal::get('percentDiscount'));
     }
 
 }

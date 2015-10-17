@@ -444,7 +444,7 @@ function saveSalesCode(val, t_id){
 }
 function addTender(){
     $.ajax({
-        cache:false,
+        type:'post',
         data:'newTender=yes',
         success: function(data){
             $('#mainDisplay').html(data);

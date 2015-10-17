@@ -72,22 +72,8 @@ class AllocatePatronagePage extends FannieRESTfulPage
             FROM patronage_workingcopy AS p
                 INNER JOIN custdata AS c ON p.cardno=c.CardNo AND c.personNum=1
             WHERE c.Type=\'PC\'';
-        $assignP = $dbc->prepare('
-            UPDATE patronage_workingcopy
-            SET tot_pat=?,
-                cash_pat=?,
-                equit_pat=?
-            WHERE cardno=?');
-
         $personR = $dbc->query($personQ);
-        while ($personW = $dbc->fetch_row($personR)) {
-            $share = $personW['net_purch'] / $purchases;
-            $patronage = round($amount * $share, 2);
-            $cash = round($patronage * $paid, 2);
-            $equity = round($patronage * $retained, 2);
-
-            $dbc->execute($assignP, array($patronage, $cash, $equity, $personW['cardno']));
-        }
+        $this->insertRecords($dbc, $personR, $purchases, $paid, $retained, $amount);
 
         $finishQ = '
             INSERT INTO patronage
@@ -102,6 +88,24 @@ class AllocatePatronagePage extends FannieRESTfulPage
         return true;
     }
 
+    private function insertRecords($dbc, $result, $purchases, $paid, $retained, $amount)
+    {
+        $assignP = $dbc->prepare('
+            UPDATE patronage_workingcopy
+            SET tot_pat=?,
+                cash_pat=?,
+                equit_pat=?
+            WHERE cardno=?');
+        while ($personW = $dbc->fetch_row($result)) {
+            $share = $personW['net_purch'] / $purchases;
+            $patronage = round($amount * $share, 2);
+            $cash = round($patronage * $paid, 2);
+            $equity = round($patronage * $retained, 2);
+
+            $dbc->execute($assignP, array($patronage, $cash, $equity, $personW['cardno']));
+        }
+    }
+
     public function post_view()
     {
         return '<div class="alert alert-success">Patronage Allocated to Owners</div>';
@@ -109,7 +113,7 @@ class AllocatePatronagePage extends FannieRESTfulPage
 
     public function get_view()
     {
-        return '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">
+        return '<form method="post">
             <div class="form-group">
                 <label>Total Amount Allocated</label>
                 <div class="input-group">

@@ -206,23 +206,11 @@ class AddCashierPage extends FannieRESTfulPage
 
     public function unitTest($phpunit)
     {
-        $get = $this->get_view();
-        $phpunit->assertNotEquals(0, strlen($get));
-
-        $this->lname = 'test';
-        $this->fname = 'cashier';
-        $this->fes = 20;
-        $this->birthdate = date('Y-m-d');
-        $this->post_fname_lname_fes_birthdate_handler();
-
-        $this->connection->selectDB($this->config->get('OP_DB'));
-        $emp = new EmployeesModel($this->connection);
-        $emp->FirstName($this->fname);
-        $emp->LastName($this->lname);
-        $emp->frontendsecurity($this->fes);
-        $emp->backendsecurity($this->fes);
-        $emp->birthdate($this->birthdate);
-        $phpunit->assertNotEquals(0, count($emp->find()));
+        if (!class_exists('CashierTests', false)) {
+            include(dirname(__FILE__) . '/CashierTests.php');
+        }
+        $tester = new CashierTests($this->connection, $this->config, $this->logger);
+        $tester->testAddCashier($this, $phpunit);
 
         $map = new StoreEmployeeMapModel($this->connection);
         $map->empNo(35);

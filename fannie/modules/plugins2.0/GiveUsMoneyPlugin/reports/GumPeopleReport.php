@@ -112,6 +112,10 @@ class GumPeopleReport extends FannieReportPage
         return array('Total', '', '', '', sprintf('%.2f', $sum), '', '', '', sprintf('%.2f', $mat), sprintf('%.2f', $c));
     }
 
+    public function form_content()
+    {
+        return '<!-- no need -->';
+    }
 
 }
 

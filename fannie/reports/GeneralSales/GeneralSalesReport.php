@@ -58,9 +58,9 @@ class GeneralSalesReport extends FannieReportPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $d1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $d2 = FormLib::get_form_value('date2',date('Y-m-d'));
-        $dept = $_REQUEST['dept'];
+        $d1 = $this->form->date1;
+        $d2 = $this->form->date2;
+        $dept = FormLib::get('dept', 0);
 
         $dlog = DTransactionsModel::selectDlog($d1,$d2);
 
@@ -187,7 +187,7 @@ class GeneralSalesReport extends FannieReportPage
             $sumQty += $row[2];
             $sumSales += $row[1];
         }
-        return array('Total',$sumSales,$sumQty, '', null);
+        return array('Total',number_format($sumSales,2),number_format($sumQty,2), '', null);
     }
 
     public function javascriptContent()
@@ -277,6 +277,7 @@ function drawPieChart()
                 $lastSunday = date("Y-m-d",$ts);
             $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));    
         }
+        ob_start();
         ?>
         <form action=GeneralSalesReport.php method=get class="form-horizontal">
         <div class="row">
@@ -308,6 +309,8 @@ function drawPieChart()
         </p>
         </form>
         <?php
+
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -327,4 +330,3 @@ function drawPieChart()
 
 FannieDispatch::conditionalExec();
 
-?>

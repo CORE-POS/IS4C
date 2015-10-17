@@ -92,6 +92,11 @@ class GumMailingList extends FannieReportPage
         return $data;
     }
 
+    public function form_content()
+    {
+        return '<!-- no need -->';
+    }
+
 }
 
 FannieDispatch::conditionalExec();

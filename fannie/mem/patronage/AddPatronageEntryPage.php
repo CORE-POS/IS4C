@@ -61,13 +61,13 @@ class AddPatronageEntryPage extends FannieRESTfulPage
         );
         $this->success = $dbc->execute($prep, $args);
         if ($this->success) {
-            $p = new PatronageModel($dbc);
-            $p->cardno($this->id);
-            $p->FY(FormLib::get('fy'));
+            $pat = new PatronageModel($dbc);
+            $pat->cardno($this->id);
+            $pat->FY(FormLib::get('fy'));
             $number = GumLib::allocateCheck($patronage, false);
             $dbc = FannieDB::get($FANNIE_OP_DB);
-            $p->check_number($number);
-            $p->save();
+            $pat->check_number($number);
+            $pat->save();
         }
 
         return true;
@@ -121,7 +121,7 @@ class AddPatronageEntryPage extends FannieRESTfulPage
         $cash = round($infoW['cashTotal'] * $ratio, 2);
         $equity = round($infoW['retainedTotal'] * $ratio, 2);
 
-        $ret = '<form method="post" action="' . $_SERVER['PHP_SELF'] . '">
+        $ret = '<form method="post"> 
             <input type="hidden" name="id" value="' . $this->id . '" />
             <input type="hidden" name="fy" value="' . FormLib::get('fy') . '" />
             <div class="form-group">
@@ -151,7 +151,7 @@ class AddPatronageEntryPage extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $this->add_onload_command("\$('input.form-control').focus();\n");
-        $ret = '<form method="get" action="' . $_SERVER['PHP_SELF'] . '">
+        $ret = '<form method="get">
             <div class="form-group">
                 <label>Member #</label>
                 <input type="text" name="id" class="form-control" required />
@@ -160,8 +160,8 @@ class AddPatronageEntryPage extends FannieRESTfulPage
                 <label>FY</label>
                 <select class="form-control" name="fy">';
         $result = $dbc->query('SELECT FY FROM patronage GROUP BY FY ORDER BY FY DESC');
-        while ($w = $dbc->fetch_row($result)) {
-            $ret .= '<option>' . $w['FY'] . '</option>';
+        while ($row = $dbc->fetch_row($result)) {
+            $ret .= '<option>' . $row['FY'] . '</option>';
         }
         $ret .= '</select>
             </div>

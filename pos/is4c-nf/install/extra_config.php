@@ -207,38 +207,12 @@ InstallUtilities::paramSave('printerPort',CoreLocal::get('printerPort'));
     </td>
 </tr>
 <tr>
-    <td><b>Scanner/scale port</b>:</td>
-    <td><?php echo InstallUtilities::installTextField('scalePort', ''); ?></td>
-</tr>
-<tr>
-    <td colspan=2>
-    <p>Path to the scanner scale. Common values are COM1 (windows) and /dev/ttyS0 (linux).</p>
-    </td>
-</tr>
-<tr>
     <td><b>Scanner/scale driver</b>:</td>
     <td><?php echo InstallUtilities::installSelectField('scaleDriver', array('NewMagellan', 'ssd'), 'NewMagellan'); ?></td>
 </tr>
 <tr>
     <td colspan=2>
     <p>The name of your scale driver. Known good values include "ssd" and "NewMagellan".</p>
-    <?php
-    // try to initialize scale driver
-    if (CoreLocal::get("scaleDriver") != ""){
-        $classname = CoreLocal::get("scaleDriver");
-        if (!file_exists('../scale-drivers/php-wrappers/'.$classname.'.php'))
-            echo "<br /><i>Warning: PHP driver file not found</i>";
-        else {
-            if (!class_exists($classname))
-                include('../scale-drivers/php-wrappers/'.$classname.'.php');
-            $instance = new $classname();
-            @$instance->SavePortConfiguration(CoreLocal::get("scalePort"));
-            @$abs_path = substr($_SERVER['SCRIPT_FILENAME'],0,
-                    strlen($_SERVER['SCRIPT_FILENAME'])-strlen('install/extra_config.php')-1);
-            @$instance->SaveDirectoryConfiguration($abs_path);
-        }
-    }
-    ?>
     </td>
 </tr>
 <tr>

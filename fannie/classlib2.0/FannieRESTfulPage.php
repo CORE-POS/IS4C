@@ -99,6 +99,7 @@ class FannieRESTfulPage extends FanniePage
     public function __construct()
     {
         $this->routing_trait = new \COREPOS\common\ui\CoreRESTfulRouter();
+        $this->form = new COREPOS\common\mvc\FormValueContainer();
         parent::__construct();
     }
 
@@ -187,10 +188,12 @@ class FannieRESTfulPage extends FanniePage
         }
     }
 
-    public function addRoute($r)
+    public function addRoute()
     {
-        if (!in_array($r, $this->__routes)) {
-            $this->__routes[] = $r;
+        foreach (func_get_args() as $r) {
+            if (!in_array($r, $this->__routes)) {
+                $this->__routes[] = $r;
+            }
         }
     }
 
@@ -203,7 +206,6 @@ class FannieRESTfulPage extends FanniePage
         return $this->routing_trait->handler($this);
         */
 
-        $this->form = new COREPOS\common\mvc\FormValueContainer();
         $this->readRoutes();
         $handler = $this->__route_stem.'Handler';
         $view = $this->__route_stem.'View';    
@@ -227,7 +229,9 @@ class FannieRESTfulPage extends FanniePage
         } elseif ($ret === false) {
             return false;
         } elseif (is_string($ret)) {
-            header('Location: ' . $ret);
+            if (!headers_sent()) {
+                header('Location: ' . $ret);
+            }
             return false;
         } else {
             // dev error/bug?
@@ -292,8 +296,11 @@ class FannieRESTfulPage extends FanniePage
     {
         $obj = new $class($database_connection);
         foreach($params as $name => $value) {
-            if (method_exists($obj, $name))
+            try {
                 $obj->$name($value);
+            } catch (Exception $ex) {
+                $this->logger->debug($ex);
+            }
         }
         if ($find) {
             return $obj->find($find);

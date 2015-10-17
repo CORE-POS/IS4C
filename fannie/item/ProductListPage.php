@@ -30,12 +30,6 @@ if (!function_exists('addProductAllLanes')) {
 }
 if (!function_exists('login'))
     include($FANNIE_ROOT.'auth/login.php');
-if (!function_exists('HtmlToArray')) {
-    include_once($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
-}
-if (!function_exists('ArrayToCsv')) {
-    include_once($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
-}
 
 class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool 
 {
@@ -85,18 +79,18 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $depts = array();
-        $p = $dbc->prepare_statement('SELECT dept_no,dept_name FROM departments ORDER BY dept_no');
-        $result = $dbc->exec_statement($p);
-        while($w = $dbc->fetch_row($result))
-            $depts[$w[0]] = $w[1];
+        $prep = $dbc->prepare_statement('SELECT dept_no,dept_name FROM departments ORDER BY dept_no');
+        $result = $dbc->exec_statement($prep);
+        while($row = $dbc->fetch_row($result))
+            $depts[$row[0]] = $row[1];
         $taxes = array('-'=>array(0,'NoTax'));
-        $p = $dbc->prepare_statement('SELECT id, description FROM taxrates ORDER BY id');
-        $result = $dbc->exec_statement($p);
-        while($w = $dbc->fetch_row($result)){
-            if ($w['id'] == 1)
+        $prep = $dbc->prepare_statement('SELECT id, description FROM taxrates ORDER BY id');
+        $result = $dbc->exec_statement($prep);
+        while($row = $dbc->fetch_row($result)){
+            if ($row['id'] == 1)
                 $taxes['X'] = array(1,'Regular');
             else
-                $taxes[strtoupper(substr($w[1],0,1))] = array($w[0], $w[1]);
+                $taxes[strtoupper(substr($row[1],0,1))] = array($row[0], $row[1]);
         }
         $local_opts = array('-'=>array(0,'No'));
         $origins = new OriginsModel($dbc);
@@ -335,9 +329,9 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             if ($tax !== '') {
                 $model->tax($tax);
             }
-            $fs = FormLib::get_form_value('fs');
-            if ($fs !== '') {
-                $model->foodstamp($fs);
+            $fsx = FormLib::get_form_value('fs');
+            if ($fsx !== '') {
+                $model->foodstamp($fsx);
             }
             $disc = FormLib::get_form_value('disc');
             if ($disc !== '') {
@@ -471,6 +465,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $vendorID = FormLib::get('vendor');
         $upc_list = FormLib::get('u', array());
         $inUse = FormLib::get('inUse', 1);
+        $store = FormLib::get('store', 0);
 
         $sort = FormLib::get_form_value('sort','Department');   
         $order = 'dept_name';
@@ -495,7 +490,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $page_url = sprintf('ProductListPage.php?supertype=%s&deptStart=%s&deptEnd=%s&deptSub=%s&manufacturer=%s&mtype=%s&vendor=%d',
                 $supertype, $deptStart, $deptEnd, $super, $manufacturer, $mtype, $vendorID);
         if (!$this->excel) {
-            $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post" id="excel-form">
+            $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post" id="excel-form">
                 <input type="hidden" name="supertype" value="' . $supertype . '" />
                 <input type="hidden" name="deptStart" value="' . $deptStart . '" />
                 <input type="hidden" name="deptEnd" value="' . $deptEnd . '" />
@@ -547,16 +542,25 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 LEFT JOIN origins AS o ON i.local=o.originID";
         /** add extra joins if this lookup requires them **/
         if ($supertype == 'dept' && $super !== '') {
-            $query .= ' LEFT JOIN superdepts AS s ON i.department=s.dept_ID ';                
+            if ($super >= 0) {
+                $query .= ' LEFT JOIN superdepts AS s ON i.department=s.dept_ID ';                
+            } elseif ($super == -2) {
+                $query .= ' LEFT JOIN MasterSuperDepts AS s ON i.department=s.dept_ID ';                
+            }
         } elseif ($supertype == 'vendor') {
             $query .= ' LEFT JOIN vendors AS z ON z.vendorName=x.distributor ';
         }
         /** build where clause and parameters based on
             the lookup type **/
+        $query .= ' WHERE 1=1 ';
         $args = array();
         if ($supertype == 'dept' && $super !== '') {
-            $query .= ' WHERE s.superID=? ';
-            $args = array($super);
+            if ($super >= 0) {
+                $query .= ' AND s.superID=? ';
+                $args = array($super);
+            } elseif ($super == -2) {
+                $query .= ' AND s.superID <> 0 ';
+            }
             if ($deptStart != 0 && $deptEnd != 0) {
                 $query .= ' AND i.department BETWEEN ? AND ? ';
                 $args[] = $deptStart;
@@ -578,24 +582,24 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 $query = substr($query, 0, strlen($query)-1) . ')';
             }
         } elseif ($supertype == 'manu' && $mtype == 'prefix') {
-            $query .= ' WHERE i.upc LIKE ? ';
+            $query .= ' AND i.upc LIKE ? ';
             $args = array('%' . $manufacturer . '%');
         } elseif ($supertype == 'manu' && $mtype != 'prefix') {
-            $query .= ' WHERE (i.brand LIKE ? OR x.manufacturer LIKE ?) ';
+            $query .= ' AND (i.brand LIKE ? OR x.manufacturer LIKE ?) ';
             $args = array('%' . $manufacturer . '%','%' . $manufacturer . '%');
         } elseif ($supertype == 'vendor') {
-            $query .= ' WHERE (i.default_vendor_id=? OR z.vendorID=?) ';
+            $query .= ' AND (i.default_vendor_id=? OR z.vendorID=?) ';
             $args = array($vendorID, $vendorID);
         } elseif ($supertype == 'upc') {
-            $in = '';
+            $inp = '';
             foreach ($upc_list as $u) {
-                $in .= '?,';
+                $inp .= '?,';
                 $args[] = $u;
             }
-            $in = substr($in, 0, strlen($in)-1);
-            $query .= ' WHERE i.upc IN (' . $in . ') ';
+            $inp = substr($inp, 0, strlen($inp)-1);
+            $query .= ' AND i.upc IN (' . $inp . ') ';
         } else {
-            $query .= ' WHERE i.department BETWEEN ? AND ? ';
+            $query .= ' AND i.department BETWEEN ? AND ? ';
             $args = array($deptStart, $deptEnd);
             if (is_array($subDepts) && count($subDepts) > 0) {
                 $query .= ' AND i.subdept IN (';
@@ -609,6 +613,10 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $query .= ' AND i.inUse=1 ';
         } else {
             $query .= ' AND i.inUse=0 ';
+        }
+        if ($store > 0) {
+            $query .= ' AND i.store_id=? ';
+            $args[] = $store;
         }
         /** finish building query w/ order clause **/
         $query .= 'ORDER BY ' . $order;
@@ -679,8 +687,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         if ($this->excel){
             header('Content-Type: application/ms-excel');
             header('Content-Disposition: attachment; filename="itemList.csv"');
-            $array = HtmlToArray($ret);
-            $ret = ArrayToCsv($array);
+            $array = \COREPOS\Fannie\API\data\DataConvert::htmlToArray($ret);
+            $ret = \COREPOS\Fannie\API\data\DataConvert::arrayToCsv($array);
         } else {
             $this->add_script('../src/javascript/tablesorter/jquery.tablesorter.min.js');
             $this->add_onload_command("\$('.tablesorter').tablesorter();\n");
@@ -787,6 +795,15 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 Excel
             </label>
         </div>
+        <?php 
+        if ($this->config->get('STORE_MODE') == 'HQ') { 
+            $picker = FormLib::storePicker();
+            echo '<div class="form-group form-inline">
+                <label>Store</label> '
+                . $picker['html']
+                . '</div>';
+        }
+        ?>
         <p> 
             <button type=submit name=submit class="btn btn-default btn-core">Submit</button>
             <button type=reset id="reset-btn" class="btn btn-default btn-reset"

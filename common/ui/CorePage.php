@@ -196,11 +196,11 @@ class CorePage
       Define any javascript needed
       @return A javascript string
     */
-    public function javascript_content()
+    protected function javascript_content()
     {
     }
 
-    public function javascriptContent()
+    protected function javascriptContent()
     {
         return $this->javascript_content();
     }
@@ -243,11 +243,11 @@ class CorePage
       Define any CSS needed
       @return A CSS string
     */
-    public function css_content()
+    protected function css_content()
     {
     }
 
-    public function cssContent()
+    protected function cssContent()
     {
         return $this->css_content();
     }
@@ -270,7 +270,7 @@ class CorePage
       that might prevent the page from working
       properly.
     */
-    public function readinessCheck()
+    protected function readinessCheck()
     {
         return true;
     }
@@ -365,21 +365,7 @@ class CorePage
                 echo $body;
             }
 
-            foreach($this->scripts as $s_url => $s_type) {
-                printf('<script type="%s" src="%s"></script>',
-                    $s_type, $s_url);
-                echo "\n";
-            }
-            
-            $js_content = $this->javascriptContent();
-            if (!empty($js_content) || !empty($this->onload_commands)) {
-                echo '<script type="text/javascript">';
-                echo $js_content;
-                echo "\n\$(document).ready(function(){\n";
-                echo array_reduce($this->onload_commands, function($carry, $oc) { return $carry . $oc . "\n"; }, '');
-                echo "});\n";
-                echo '</script>';
-            }
+            $this->writeJS();
             
             echo array_reduce($this->css_files,
                 function ($carry, $css_url) {
@@ -401,6 +387,25 @@ class CorePage
             echo '</body></html>';
         } else {
             $this->postFlight();
+        }
+    }
+
+    protected function writeJS()
+    {
+        foreach($this->scripts as $s_url => $s_type) {
+            printf('<script type="%s" src="%s"></script>',
+                $s_type, $s_url);
+            echo "\n";
+        }
+
+        $js_content = $this->javascriptContent();
+        if (!empty($js_content) || !empty($this->onload_commands)) {
+            echo '<script type="text/javascript">';
+            echo $js_content;
+            echo "\n\$(document).ready(function(){\n";
+            echo array_reduce($this->onload_commands, function($carry, $oc) { return $carry . $oc . "\n"; }, '');
+            echo "});\n";
+            echo '</script>';
         }
     }
 }

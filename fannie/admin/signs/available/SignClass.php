@@ -23,7 +23,7 @@
 
 class SignClass {
 
-    function SignClass(){
+    function __construct(){
         switch($_REQUEST['action']){
         case 'start':
             echo $this->start_form();

@@ -56,10 +56,12 @@
   <!-- Build Bitmap.dll -->
   <ItemGroup>
     <Bitmap Include="BitmapConverter.cs" />
+    <Bitmap Include="Signature.cs" />
+    <BitmapRef Include="System.Drawing.dll" Condition=" '$(OS)' == 'Unix' " />
   </ItemGroup>
   <Target Name="BitmapLibrary" Inputs="@(Bitmap)" Outputs="Bitmap.dll">
     <Csc Sources="@(Bitmap)" TargetType="library" OutputAssembly="Bitmap.dll" 
-        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" />
+        Platform="$(BuildPlatform)" DisabledWarnings="$(NoWarn)" References="@(BitmapRef)" />
   </Target>
 
   <!-- Build ParallelLayer.dll -->

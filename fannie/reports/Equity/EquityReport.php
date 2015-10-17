@@ -38,16 +38,9 @@ class EquityReport extends FannieReportPage
     protected $header = "Equity Activity Report";
     protected $required_fields = array('memNum');
 
-    public function preprocess()
-    {
-        $this->card_no = FormLib::get('memNum','');
-
-        return parent::preprocess();
-    }
-
     public function report_description_content()
     {
-        return array('Activity for account #'.$this->card_no);
+        return array('Activity for account #'.$this->form->memNum);
     }
 
     public function fetch_report_data()
@@ -70,7 +63,7 @@ class EquityReport extends FannieReportPage
                 $in .= '?,';
             }
             $in = substr($in, 0, strlen($in)-1);
-            $args[] = $this->card_no;
+            $args[] = $this->form->memNum;
 
             $todayQ = '
                 SELECT -total AS stockPurchase,
@@ -101,7 +94,7 @@ class EquityReport extends FannieReportPage
             FROM " . $this->config->get('TRANS_DB') . $dbc->sep() . "stockpurchases AS s 
                 LEFT JOIN departments AS d ON s.dept=d.dept_no
             WHERE s.card_no=?";
-        $args[] = $this->card_no;
+        $args[] = $this->form->memNum;
 
         /** union two queries together if applicable **/
         if ($todayQ) {

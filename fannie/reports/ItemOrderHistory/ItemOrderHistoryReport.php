@@ -42,10 +42,10 @@ class ItemOrderHistoryReport extends FannieReportPage
 
     public function report_description_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $prod = new ProductsModel($dbc);
-        $prod->upc(BarcodeLib::padUPC(FormLib::get('upc')));
+        $prod->upc(BarcodeLib::padUPC($this->form->upc));
         $prod->load();
         $ret = array('Order History For ' . $prod->upc() . ' ' . $prod->description());
         if (FormLib::get('all')) {
@@ -65,10 +65,10 @@ class ItemOrderHistoryReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
-        $upc = FormLib::get('upc');
+        $upc = $this->form->upc;
         $upc = BarcodeLib::padUPC($upc);
 
         $query = 'SELECT i.sku, i.quantity, i.unitCost, i.caseSize,
@@ -126,11 +126,9 @@ class ItemOrderHistoryReport extends FannieReportPage
 
     public function readinessCheck()
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        if (!$dbc->tableExists('PurchaseOrderItems')) {
-            $this->error_text = _("You are missing an important table") . " ($FANNIE_OP_DB.PurchaseOrderItems). ";
-            $this->error_text .= " Visit the <a href=\"{$FANNIE_URL}install\">Install Page</a> to create it.";
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        if ($this->tableExistsReadinessCheck($this->config->get('OP_DB'), 'PurchaseOrderItems') === false) {
             return false;
         } else {
             $testQ = 'SELECT orderID FROM PurchaseOrderItems';

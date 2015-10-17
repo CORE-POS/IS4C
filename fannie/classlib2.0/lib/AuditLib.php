@@ -109,7 +109,7 @@ class AuditLib
             $infoQ = 'SELECT p.department,
                         l.likeCodeDesc 
                       FROM upcLike AS u
-                        INNER JOIN products AS p ON u.upc=p.upc
+                        ' . DTrans::joinProducts('u', 'p', 'INNER') . '
                         LEFT JOIN likeCodes AS l ON u.likeCode=l.likeCode
                       WHERE u.likeCode=?';
             $infoP = $dbc->prepare($infoQ);

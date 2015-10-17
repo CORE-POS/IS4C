@@ -30,9 +30,6 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 include('../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
-include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
-include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
-include($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
 
 $query = $dbc->prepare_statement("SELECT CardNo, 
           LastName, 
@@ -83,7 +80,6 @@ while($row = $dbc->fetch_row($result)){
    $ret[] = $new;
 }
 
-//$xls = ArrayToXls($ret);
-$xls = ArrayToCsv($ret);
+$xls = \COREPOS\Fannie\API\data\DataConvert::arrayToCsv($ret);
 echo $xls;
 ?>

@@ -46,53 +46,5 @@ can be tagged with a subdepartment, but that
 setting doesn\'t go into the final transaction log
         ';
     }
-
-    /* START ACCESSOR FUNCTIONS */
-
-    public function subdept_no()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["subdept_no"])) {
-                return $this->instance["subdept_no"];
-            } elseif(isset($this->columns["subdept_no"]["default"])) {
-                return $this->columns["subdept_no"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["subdept_no"] = func_get_arg(0);
-        }
-    }
-
-    public function subdept_name()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["subdept_name"])) {
-                return $this->instance["subdept_name"];
-            } elseif(isset($this->columns["subdept_name"]["default"])) {
-                return $this->columns["subdept_name"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["subdept_name"] = func_get_arg(0);
-        }
-    }
-
-    public function dept_ID()
-    {
-        if(func_num_args() == 0) {
-            if(isset($this->instance["dept_ID"])) {
-                return $this->instance["dept_ID"];
-            } elseif(isset($this->columns["dept_ID"]["default"])) {
-                return $this->columns["dept_ID"]["default"];
-            } else {
-                return null;
-            }
-        } else {
-            $this->instance["dept_ID"] = func_get_arg(0);
-        }
-    }
-    /* END ACCESSOR FUNCTIONS */
 }
 

@@ -111,7 +111,7 @@ class CostHistoryReport extends FannieReportPage
                     h.modified,
                     p.cost AS current_cost 
                 FROM ProdCostHistory AS h 
-                    LEFT JOIN products AS p ON h.upc=p.upc
+                    " . DTrans::joinProducts('h') . "
                 WHERE h.upc = ?
                 ORDER BY h.upc,
                     h.modified DESC";
@@ -125,7 +125,7 @@ class CostHistoryReport extends FannieReportPage
                     h.modified,
                     p.cost AS current_cost 
                 FROM ProdCostHistory AS h 
-                    LEFT JOIN products AS p ON h.upc=p.upc
+                    " . DTrans::joinProducts('h') . "
                 WHERE h.upc = ?
                     AND h.modified BETWEEN ? AND ?
                 ORDER BY h.upc,
@@ -139,7 +139,7 @@ class CostHistoryReport extends FannieReportPage
                     h.modified,
                     p.cost AS current_cost 
                 FROM ProdCostHistory AS h 
-                    LEFT JOIN products AS p ON h.upc=p.upc
+                    " . DTrans::joinProducts('h') . "
                 WHERE department BETWEEN ? AND ?
                     AND h.modified BETWEEN ? AND ?
                 ORDER BY h.upc,
@@ -155,7 +155,7 @@ class CostHistoryReport extends FannieReportPage
                         h.modified,
                         p.cost AS current_cost 
                     FROM ProdCostHistory AS h 
-                        LEFT JOIN products AS p ON h.upc=p.upc
+                        " . DTrans::joinProducts('h') . "
                     WHERE h.upc LIKE ?
                         AND h.modified BETWEEN ? AND ?
                     ORDER BY h.upc,
@@ -169,7 +169,7 @@ class CostHistoryReport extends FannieReportPage
                         h.modified,
                         p.cost AS current_cost 
                     FROM ProdCostHistory AS h 
-                        LEFT JOIN products AS p ON h.upc=p.upc
+                        " . DTrans::joinProducts('h') . "
                     WHERE p.brand LIKE ?
                         AND h.modified BETWEEN ? AND ?
                     ORDER BY h.upc,

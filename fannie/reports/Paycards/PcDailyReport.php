@@ -57,7 +57,8 @@ class PcDailyReport extends FannieReportPage
     public function fetch_report_data()
     {
         global $FANNIE_TRANS_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
 
         $date_id = date('Ymd', strtotime(FormLib::get('date', date('Y-m-d'))));
 

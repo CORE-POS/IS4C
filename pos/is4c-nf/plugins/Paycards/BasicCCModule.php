@@ -68,7 +68,7 @@ class BasicCCModule
       takes no arguments
       otherwise, do whatever you want here
      */
-    function BasicCCModule(){
+    function __construct(){
         
     }
 

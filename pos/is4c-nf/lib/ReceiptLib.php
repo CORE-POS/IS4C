@@ -53,9 +53,9 @@ static public function writeLine($text)
                instead 
             */
             //if (is_writable(CoreLocal::get("printerPort"))){
-            $fp = fopen(CoreLocal::get("printerPort"), "w");
-            fwrite($fp, $text);
-            fclose($fp);
+            $fptr = fopen(CoreLocal::get("printerPort"), "w");
+            fwrite($fptr, $text);
+            fclose($fptr);
         }
     }
 }
@@ -184,11 +184,11 @@ static public function drawerKick() {
 static public function currentDrawer()
 {
     if (CoreLocal::get('dualDrawerMode') !== 1) return 1;
-    $db = Database::pDataConnect();
+    $dbc = Database::pDataConnect();
     $chkQ = 'SELECT drawer_no FROM drawerowner WHERE emp_no='.CoreLocal::get('CashierNo');
-    $chkR = $db->query($chkQ);
-    if ($db->num_rows($chkR) == 0) return 0;
-    else return array_pop($db->fetch_row($chkR));
+    $chkR = $dbc->query($chkQ);
+    if ($dbc->num_rows($chkR) == 0) return 0;
+    else return array_pop($dbc->fetch_row($chkR));
 }
 
 /**
@@ -198,9 +198,9 @@ static public function currentDrawer()
   @return success True/False
 */
 static public function assignDrawer($emp,$num){
-    $db = Database::pDataConnect();
+    $dbc = Database::pDataConnect();
     $upQ = sprintf('UPDATE drawerowner SET emp_no=%d WHERE drawer_no=%d',$emp,$num);
-    $upR = $db->query($upQ);
+    $upR = $dbc->query($upQ);
     return ($upR !== False) ? True : False;
 }
 
@@ -210,9 +210,9 @@ static public function assignDrawer($emp,$num){
   @return success True/False
 */
 static public function freeDrawer($num){
-    $db = Database::pDataConnect();
+    $dbc = Database::pDataConnect();
     $upQ = sprintf('UPDATE drawerowner SET emp_no=NULL WHERE drawer_no=%d',$num);
-    $upR = $db->query($upQ);
+    $upR = $dbc->query($upQ);
     return ($upR !== False) ? True : False;
 }
 
@@ -222,12 +222,13 @@ static public function freeDrawer($num){
 */
 static public function availableDrawers()
 {
-    $db = Database::pDataConnect();
-    $q = 'SELECT drawer_no FROM drawerowner WHERE emp_no IS NULL ORDER BY drawer_no';
-    $r = $db->query($q);
+    $dbc = Database::pDataConnect();
+    $query = 'SELECT drawer_no FROM drawerowner WHERE emp_no IS NULL ORDER BY drawer_no';
+    $res = $dbc->query($query);
     $ret = array();
-    while($w = $db->fetch_row($r))
-        $ret[] = $w['drawer_no'];
+    while ($row = $dbc->fetch_row($res)) {
+        $ret[] = $row['drawer_no'];
+    }
     return $ret;
 }
 
@@ -632,7 +633,7 @@ static public function normalFont() {
 static public function boldFont() {
     return chr(27).chr(33).chr(9);
 }
-static public function bold()
+static private function initDriver()
 {
     if (!is_object(self::$PRINT_OBJ)) {
         $print_class = CoreLocal::get('ReceiptDriver');
@@ -640,18 +641,15 @@ static public function bold()
             $print_class = 'ESCPOSPrintHandler';
         self::$PRINT_OBJ = new $print_class();
     }
-    
+}
+static public function bold()
+{
+    self::initDriver(); 
     return self::$PRINT_OBJ->TextStyle(true, true);
 }
 static public function unbold()
 {
-    if (!is_object(self::$PRINT_OBJ)) {
-        $print_class = CoreLocal::get('ReceiptDriver');
-        if ($print_class === '' || !class_exists($print_class))
-            $print_class = 'ESCPOSPrintHandler';
-        self::$PRINT_OBJ = new $print_class();
-    }
-    
+    self::initDriver(); 
     return self::$PRINT_OBJ->TextStyle(true, false);
 }
 
@@ -691,33 +689,53 @@ static public function graphedLocalTTL()
     return $str."\n";
 }
 
+static private function getFetch()
+{
+    $FETCH_MOD = CoreLocal::get("RBFetchData");
+    return $FETCH_MOD == '' ? 'DefaultReceiptDataFetch' : $FETCH_MOD;
+}
+
+static private function getFilter()
+{
+    $mod = CoreLocal::get("RBFilter");
+    return $mod == '' ? 'DefaultReceiptFilter' : $mod;
+}
+
+static private function getSort()
+{
+    $mod = CoreLocal::get("RBSort");
+    return $mod == '' ? 'DefaultReceiptSort' : $mod;
+}
+
+static private function getTag()
+{
+    $mod = CoreLocal::get("RBTag");
+    return $mod == '' ? 'DefaultReceiptTag' : $mod;
+}
+
 static public function receiptFromBuilders($reprint=False,$trans_num='')
 {
     $empNo=0;$laneNo=0;$transNo=0;
     list($empNo, $laneNo, $transNo) = explode('-', $trans_num, 3);
 
-    $FETCH_MOD = CoreLocal::get("RBFetchData");
-    if($FETCH_MOD=="") $FETCH_MOD = "DefaultReceiptDataFetch";
+    $FETCH_MOD = self::getFetch();
     $mod = new $FETCH_MOD();
     $data = array();
     $data = $mod->fetch($empNo,$laneNo,$transNo);
 
     // load module configuration
-    $FILTER_MOD = CoreLocal::get("RBFilter");
-    if($FILTER_MOD=="") $FILTER_MOD = "DefaultReceiptFilter";
-    $SORT_MOD = CoreLocal::get("RBSort");
-    if($SORT_MOD=="") $SORT_MOD = "DefaultReceiptSort";
-    $TAG_MOD = CoreLocal::get("RBTag");
-    if($TAG_MOD=="") $TAG_MOD = "DefaultReceiptTag";
+    $FILTER_MOD = self::getFilter();
+    $SORT_MOD = self::getSort();
+    $TAG_MOD = self::getTag();
 
-    $f = new $FILTER_MOD();
-    $recordset = $f->filter($data);
+    $fil = new $FILTER_MOD();
+    $recordset = $fil->filter($data);
 
-    $s = new $SORT_MOD();
-    $recordset = $s->sort($recordset);
+    $sort = new $SORT_MOD();
+    $recordset = $sort->sort($recordset);
 
-    $t = new $TAG_MOD();
-    $recordset = $t->tag($recordset);
+    $tag = new $TAG_MOD();
+    $recordset = $tag->tag($recordset);
 
     $ret = "";
     foreach($recordset as $record){
@@ -864,7 +882,7 @@ static public function twoColumns($col1, $col2) {
         $c1 = trim($col1[$x]);  $c1l = strlen($col1s[$x]);
         $c2 = trim($col2[$x]);  $c2l = strlen($col2s[$x]);
         if( ($c1max+$spacer+$c2l) <= $max) {
-            $text .= $c1 . @str_repeat(" ", ($c1max+$spacer)-$c1l) . $c2 . "\n";
+            $text .= $c1 . str_repeat(" ", ($c1max+$spacer)-$c1l) . $c2 . "\n";
         } else {
             $text .= $c1 . "\n" . str_repeat(" ", $c1max+$spacer) . $c2 . "\n";
         }
@@ -1037,26 +1055,18 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
             }
             $receipt['any'] .= "\n";
     
+            $thanks = _('thank you');
             if (trim(CoreLocal::get("memberID")) != CoreLocal::get("defaultNonMem")) {
-                if (CoreLocal::get("newReceipt")>=1){
-                    $receipt['any'] .= self::$PRINT_OBJ->TextStyle(True,False,True);
-                    $receipt['any'] .= self::$PRINT_OBJ->centerString("thank you - owner ".$member,True);
-                    $receipt['any'] .= self::$PRINT_OBJ->TextStyle(True);
-                    $receipt['any'] .= "\n\n";
-                } else {
-                    $receipt['any'] .= self::$PRINT_OBJ->centerString("Thank You - member ".$member);
-                    $receipt['any'] .= "\n";
-                }
+                $thanks .= _(' - owner ') . $member; 
+            }
+            if (CoreLocal::get("newReceipt")>=1){
+                $receipt['any'] .= self::$PRINT_OBJ->TextStyle(True,False,True);
+                $receipt['any'] .= self::$PRINT_OBJ->centerString($thanks, true);
+                $receipt['any'] .= self::$PRINT_OBJ->TextStyle(True);
+                $receipt['any'] .= "\n\n";
             } else {
-                if (CoreLocal::get("newReceipt")>=1){
-                    $receipt['any'] .= self::$PRINT_OBJ->TextStyle(True,False,True);
-                    $receipt['any'] .= self::$PRINT_OBJ->centerString("thank you",True);
-                    $receipt['any'] .= self::$PRINT_OBJ->TextStyle(True);
-                    $receipt['any'] .= "\n\n";
-                } else {
-                    $receipt['any'] .= self::$PRINT_OBJ->centerString("Thank You!");
-                    $receipt['any'] .= "\n";
-                }
+                $receipt['any'] .= self::$PRINT_OBJ->centerString($thanks);
+                $receipt['any'] .= "\n";
             }
 
             for ($i = 1; $i <= CoreLocal::get("receiptFooterCount"); $i++){

@@ -53,34 +53,7 @@ static private $SQL_CONNECTION = null;
 */
 static public function tDataConnect()
 {
-    if (self::$SQL_CONNECTION === null){
-        /**
-          Add both local databases to the connection object
-        */
-        self::$SQL_CONNECTION = new SQLManager(
-            CoreLocal::get("localhost"),
-            CoreLocal::get("DBMS"),
-            CoreLocal::get("tDatabase"),
-            CoreLocal::get("localUser"),
-            CoreLocal::get("localPass"),
-            false);
-        self::$SQL_CONNECTION->connections[CoreLocal::get('pDatabase')] = self::$SQL_CONNECTION->connections[CoreLocal::get('tDatabase')];
-        /**
-          19Mar2015
-          Temporary measure to support failback
-          using old, non-adodb SQLManager
-        */
-        if (property_exists(self::$SQL_CONNECTION, 'db_types')) {
-            self::$SQL_CONNECTION->db_types[CoreLocal::get('pDatabase')] = strtoupper(CoreLocal::get('DBMS'));
-        }
-    } else {
-        /**
-          Switch connection object to the requested database
-        */
-        self::$SQL_CONNECTION->selectDB(CoreLocal::get('tDatabase'));
-    }    
-
-    return self::$SQL_CONNECTION;
+    return self::getLocalConnection(CoreLocal::get('tDatabase'), CoreLocal::get('pDatabase'));
 }
 
 /**
@@ -89,6 +62,11 @@ static public function tDataConnect()
 */
 static public function pDataConnect()
 {
+    return self::getLocalConnection(CoreLocal::get('pDatabase'), CoreLocal::get('tDatabase'));
+}
+
+static private function getLocalConnection($database1, $database2)
+{
     if (self::$SQL_CONNECTION === null){
         /**
           Add both local databases to the connection object
@@ -96,24 +74,16 @@ static public function pDataConnect()
         self::$SQL_CONNECTION = new SQLManager(
             CoreLocal::get("localhost"),
             CoreLocal::get("DBMS"),
-            CoreLocal::get("pDatabase"),
+            $database1,
             CoreLocal::get("localUser"),
             CoreLocal::get("localPass"),
             false);
-        self::$SQL_CONNECTION->connections[CoreLocal::get('tDatabase')] = self::$SQL_CONNECTION->connections[CoreLocal::get('pDatabase')];
-        /**
-          19Mar2015
-          Temporary measure to support failback
-          using old, non-adodb SQLManager
-        */
-        if (property_exists(self::$SQL_CONNECTION, 'db_types')) {
-            self::$SQL_CONNECTION->db_types[CoreLocal::get('tDatabase')] = strtoupper(CoreLocal::get('DBMS'));
-        }
+        self::$SQL_CONNECTION->connections[$database2] = self::$SQL_CONNECTION->connections[$database1];
     } else {
         /**
           Switch connection object to the requested database
         */
-        self::$SQL_CONNECTION->selectDB(CoreLocal::get('pDatabase'));
+        self::$SQL_CONNECTION->selectDB($database1);
     }
 
     return self::$SQL_CONNECTION;
@@ -349,7 +319,7 @@ static public function LineItemTaxes()
     }
     
     $ret = array();
-    foreach($taxRows as $tr) {
+    foreach ($taxRows as $tr) {
         $ret[] = array(
             'rate_id' => $tr['id'],
             'description' => $tr['description'],
@@ -603,92 +573,19 @@ static public function uploadCCdata()
     // test for success
     $ret = true;
 
-    $req_cols = self::getMatchingColumns($sql,"efsnetRequest");
-    if ($sql->transfer(CoreLocal::get("tDatabase"),
-        "select {$req_cols} from efsnetRequest",
-        CoreLocal::get("mDatabase"),"insert into efsnetRequest ({$req_cols})")) {
-
-        // table contains an autoincrementing column
-        // do not TRUNCATE; that would reset the counter
-        $sql->query("DELETE FROM efsnetRequest",
-            CoreLocal::get("tDatabase"));
-
-        $res_cols = self::getMatchingColumns($sql,"efsnetResponse");
-        $res_success = $sql->transfer(CoreLocal::get("tDatabase"),
-            "select {$res_cols} from efsnetResponse",
-            CoreLocal::get("mDatabase"),
-            "insert into efsnetResponse ({$res_cols})");
-        if ($res_success) {
-            $sql->query("truncate table efsnetResponse",
-                CoreLocal::get("tDatabase"));
-        } else {
-            // transfer failure
-            $ret = false;
-        }
-
-        $mod_cols = self::getMatchingColumns($sql,"efsnetRequestMod");
-        $mod_success = $sql->transfer(CoreLocal::get("tDatabase"),
-            "select {$mod_cols} from efsnetRequestMod",
-            CoreLocal::get("mDatabase"),
-            "insert into efsnetRequestMod ({$mod_cols})");
-        if ($mod_success) {
-            $sql->query("truncate table efsnetRequestMod",
-                CoreLocal::get("tDatabase"));
-        } else {
-            // transfer failure
-            $ret = false;
-        }
-
-        $mod_cols = self::getMatchingColumns($sql,"efsnetTokens");
-        $mod_success = $sql->transfer(CoreLocal::get("tDatabase"),
-            "select {$mod_cols} from efsnetTokens",
-            CoreLocal::get("mDatabase"),
-            "insert into efsnetTokens ({$mod_cols})");
-        if ($mod_success) {
-            $sql->query("truncate table efsnetTokens",
-                CoreLocal::get("tDatabase"));
-        } else {
-            // transfer failure
-            $ret = false;
-        }
-
-    } else if (!$sql->table_exists('efsnetRequest')) {
-        // if for whatever reason the table does not exist,
-        // it's not necessary to treat this as a failure.
-        // if integrated card processing is not in use,
-        // this is not an important enough error to go
-        // to standalone. 
-        $ret = true;
-    }
-
-    if ($sql->table_exists('CapturedSignature')) {
-        $sig_cols = self::getMatchingColumns($sql, 'CapturedSignature');
-        $sig_success = $sql->transfer(CoreLocal::get("tDatabase"),
-            "select {$sig_cols} from CapturedSignature",
-            CoreLocal::get("mDatabase"),
-            "insert into CapturedSignature ({$sig_cols})");
-        if ($sig_success) {
-            $sql->query("truncate table CapturedSignature",
-                CoreLocal::get("tDatabase"));
-        } else {
-            // transfer failure
-            $ret = false;
-        }
-    }
-
-    // newer paycard transactions table
-    if ($sql->table_exists('PaycardTransactions')) {
-        $ptrans_cols = self::getMatchingColumns($sql, 'PaycardTransactions');
-        $ptrans_success = $sql->transfer(CoreLocal::get('tDatabase'),
-                                         "SELECT {$ptrans_cols} FROM PaycardTransactions",
-                                         CoreLocal::get('mDatabase'),
-                                         "INSERT INTO PaycardTransactions ($ptrans_cols)"
-        );
-        if ($ptrans_success) {
-            $sql->query('DELETE FROM PaycardTransactions', CoreLocal::get('tDatabase'));
-        } else {
-            // transfer failure
-            $ret = false;
+    $tables = array('PaycardTransactions', 'CapturedSignature', 'efsnetRequest', 'efsnetRequestMod', 'efsnetResponse', 'efsnetTokens');
+    foreach ($tables as $table) {
+        if ($sql->tableExists($table)) {
+            $cols = self::getMatchingColumns($sql, $table);
+            $success = $sql->transfer(CoreLocal::get('tDatabase'),
+                "SELECT {$cols} FROM {$table}",
+                CoreLocal::get('mDatabase'),
+                "INSERT INTO {$table} ({$cols})"
+            );
+            if ($success) {
+                $sql->query('DELETE FROM ' . $table, CoreLocal::get('tDatabase'));
+            }
+            $ret = $ret & $success;
         }
     }
 

@@ -129,7 +129,8 @@ class CoreRESTfulRouter
         try {
             $method = $this->form->_method;
         } catch (\Exception $ex) {
-            $method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'get';
+            $req = filter_input(INPUTT_SERVER, 'REQUEST_METHOD');
+            $method = $req ? $req : 'get';
         }
 
         return strtolower($method);
@@ -184,20 +185,39 @@ class CoreRESTfulRouter
         }
     }
 
+    private function handlerName($caller, $stem)
+    {
+        if (method_exists($caller, $stem . 'Handler')) {
+            return $stem . 'Handler';
+        } elseif (method_exists($caller, $stem . '_handler')) {
+            return $stem . '_handler';
+        } else {
+            return false;
+        }
+    }
+
+    private function viewName($caller, $stem)
+    {
+        if (method_exists($caller, $stem . 'View')) {
+            return $stem . 'View';
+        } elseif (method_exists($caller, $stem . '_view')) {
+            return $stem . '_view';
+        } else {
+            return false;
+        }
+    }
+
+
     public function handler($caller) 
     {
         $this->form = new \COREPOS\common\mvc\FormValueContainer();
         $this->readRoutes();
-        $handler = $this->__route_stem.'Handler';
-        $view = $this->__route_stem.'View';    
-        $old_handler = $this->__route_stem.'_handler';
-        $old_view = $this->__route_stem.'_view';    
+        $handler = $this->handlerName($caller, $this->__route_stem);
+        $view = $this->viewName($caller, $this->__route_stem);
         $ret = true;
-        if (method_exists($caller, $handler)) {
+        if ($handler !== false) {
             $ret = $caller->$handler();
-        } elseif (method_exists($caller, $old_handler)) {
-            $ret = $caller->$old_handler();
-        } elseif (method_exists($caller, $view) || method_exists($caller, $old_view)) {
+        } elseif ($view !== false) {
             $ret = true;
         } else {
             $ret = $this->unknownRequestHandler();

@@ -74,7 +74,7 @@ function goToPage(the_id){
 
     function body_content()
     {
-        global $FANNIE_URL, $FANNIE_OP_DB, $FANNIE_DEFAULT_PDF;
+        global $FANNIE_OP_DB;
         ob_start();
         ?>
         <div class="col-sm-8">
@@ -92,7 +92,7 @@ function goToPage(the_id){
         <select id=layoutselector class="form-control">
         <?php
         foreach($this->layouts as $l){
-            if ($l == $FANNIE_DEFAULT_PDF)
+            if ($l == $this->config->get('DEFAULT_PDF'))
                 echo "<option selected>".$l."</option>";
             else
                 echo "<option>".$l."</option>";
@@ -133,16 +133,8 @@ function goToPage(the_id){
         $zeroID = $dbc->query('SELECT upc FROM shelftags WHERE id=0');
         array_unshift($rows, array(0,'Default',$dbc->numRows($zeroID)));
 
-        foreach($rows as $row){
-            printf("<tr>
-            <td>%s barcodes/shelftags</td>
-            <td style='text-align:right;'>%d</td>
-            <td><a href=\"\" onclick=\"goToPage('%d');return false;\">Print</a></td>
-            <td><a href=\"DeleteShelfTags.php?id=%d\">Clear</a></td>
-            <td><a href=\"EditShelfTags.php?id=%d\">" . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</td>
-            <td><a href=\"SignFromSearch.php?queueID=%d\">Signs</a></td>
-            </tr>",
-            $row[1],$row[2],$row[0],$row[0],$row[0],$row[0]);
+        foreach ($rows as $row) {
+            $this->printRow($row);
         }
         ?>
         </table>
@@ -156,6 +148,19 @@ function goToPage(the_id){
         <?php
         
         return ob_get_clean();
+    }
+
+    private function printRow($row)
+    {
+        printf("<tr>
+        <td>%s barcodes/shelftags</td>
+        <td style='text-align:right;'>%d</td>
+        <td><a href=\"\" onclick=\"goToPage('%d');return false;\">Print</a></td>
+        <td><a href=\"DeleteShelfTags.php?id=%d\">Clear</a></td>
+        <td><a href=\"EditShelfTags.php?id=%d\">" . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</td>
+        <td><a href=\"SignFromSearch.php?queueID=%d\">Signs</a></td>
+        </tr>",
+        $row[1],$row[2],$row[0],$row[0],$row[0],$row[0]);
     }
 
     public function helpContent()

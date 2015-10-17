@@ -50,6 +50,12 @@ trace is also included. There are some javascript-based URL changes that
 this won't catch, but your browser surely has a fancy javascript console
 available for those. If not, find a better browser.
 <hr />
+<b>Character Set</b>
+<?php
+echo InstallUtilities::installTextField('CoreCharSet', 'utf-8');
+?>
+Change the character set used to display pages. Common values are "utf-8" and "iso-8859-1".
+<hr />
 <input type=submit value="Save Changes" />
 </form>
 </div> <!--    wrapper -->

@@ -46,10 +46,10 @@ class ManufacturerMovementReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $manu = FormLib::get_form_value('manu','');
         $type = FormLib::get_form_value('type','');
         $groupby = FormLib::get_form_value('groupby','upc');
@@ -195,6 +195,7 @@ class ManufacturerMovementReport extends FannieReportPage
     public function form_content()
     {
         global $FANNIE_URL;
+        ob_start();
 ?>
 <form method="get" action="ManufacturerMovementReport.php" class="form-horizontal">
     <div class="col-sm-5">
@@ -258,6 +259,8 @@ class ManufacturerMovementReport extends FannieReportPage
         $ws = $FANNIE_URL . 'ws/';
         $this->add_onload_command("bindAutoComplete('#manu', '$ws', 'brand');\n");
         $this->add_onload_command('$(\'#manu\').focus();');
+
+        return ob_get_clean();
     }
 
     public function helpContent()

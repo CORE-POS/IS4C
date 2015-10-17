@@ -52,23 +52,23 @@ class SaleItemsByDate extends FannieReportPage
         $owner = array();
         $size = array();
         
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         
         //procure batchIDs from 'batches'
-        $query = "select batchID, owner from batches where startDate='{$_REQUEST['startdate']} 00:00:00';";
+        $query = "select batchID, owner from batches where startDate='{$this->form->startdate} 00:00:00';";
         
-        if($_REQUEST['dept'] == 2) {
-            $query = "select batchID, owner from batches where startDate='{$_REQUEST['startdate']} 00:00:00' and (owner='Bulk' or owner='BULK');";
+        if(FormLib::get('dept') == 2) {
+            $query = "select batchID, owner from batches where startDate='{$this->form->startdate} 00:00:00' and (owner='Bulk' or owner='BULK');";
         }
-        if($_REQUEST['dept'] == 3) {
-            $query = "select batchID, owner from batches where startDate='{$_REQUEST['startdate']} 00:00:00' and (owner='Cool' or owner='COOL');";   
+        if(FormLib::get('dept') == 3) {
+            $query = "select batchID, owner from batches where startDate='{$this->form->startdate} 00:00:00' and (owner='Cool' or owner='COOL');";   
         }
-        if($_REQUEST['dept'] == 4){
-            $query = "select batchID, owner from batches where startDate='{$_REQUEST['startdate']} 00:00:00' and (owner='Grocery' or owner='GROCERY');"; 
+        if(FormLib::get('dept') == 4){
+            $query = "select batchID, owner from batches where startDate='{$this->form->startdate} 00:00:00' and (owner='Grocery' or owner='GROCERY');"; 
         }
-        if($_REQUEST['dept'] == 5){
-            $query = "select batchID, owner from batches where startDate='{$_REQUEST['startdate']} 00:00:00' and (owner='HBC');";   
+        if(FormLib::get('dept') == 5){
+            $query = "select batchID, owner from batches where startDate='{$this->form->startdate} 00:00:00' and (owner='HBC');";   
         }
         
         $result = $dbc->query($query);

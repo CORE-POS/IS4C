@@ -82,11 +82,12 @@ class StoreSummaryReportAlt extends FannieReportPage {
 
     function fetch_report_data(){
         global $FANNIE_OP_DB, $FANNIE_COOP_ID;
-        $d1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $d2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $d1 = $this->form->date1;
+        $d2 = $this->form->date2;
         $dept = FormLib::get_form_value('dept',0);
 
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $dtrans = DTransactionsModel::selectDtrans($d1,$d2);
         $datestamp = $dbc->identifier_escape('datetime');
@@ -339,8 +340,8 @@ class StoreSummaryReportAlt extends FannieReportPage {
             'Profit',
             '',
             'Margin %',
-            $taxNames['2'],
-            $taxNames['1']
+            isset($taxNames['2']) ? $taxNames['2'] : 'n/a',
+            isset($taxNames['1']) ? $taxNames['1'] : 'n/a',
         );
         $record['meta'] = FannieReportPage::META_BOLD;
         $data[] = $record;
@@ -378,17 +379,8 @@ class StoreSummaryReportAlt extends FannieReportPage {
 
     function form_content()
     {
-        $lastMonday = "";
-        $lastSunday = "";
-
-        $ts = mktime(0,0,0,date("n"),date("j")-1,date("Y"));
-        while($lastMonday == "" || $lastSunday == ""){
-            if (date("w",$ts) == 1 && $lastSunday != "")
-                $lastMonday = date("Y-m-d",$ts);
-            elseif(date("w",$ts) == 0)
-                $lastSunday = date("Y-m-d",$ts);
-            $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));    
-        }
+        list($lastMonday, $lastSunday) = \COREPOS\Fannie\API\lib\Dates::lastWeek();
+        ob_start();
         ?>
         <form action=StoreSummaryReportAlt.php method=get>
         <div class="col-sm-5">
@@ -423,6 +415,7 @@ class StoreSummaryReportAlt extends FannieReportPage {
         </form>
         <?php
 
+        return ob_get_clean();
     // form_content()
     }
 
@@ -431,4 +424,3 @@ class StoreSummaryReportAlt extends FannieReportPage {
 
 FannieDispatch::conditionalExec();
 
-?>

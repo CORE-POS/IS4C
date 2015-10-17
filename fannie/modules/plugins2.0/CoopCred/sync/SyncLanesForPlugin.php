@@ -83,7 +83,7 @@ class SyncLanesForPlugin extends SyncLanes
             $ret['sending'] = False;
             $ret['messages'] = 'No table given';
             return $ret;
-        } elseif (ereg("[^A-Za-z0-9_]",$table)) {
+        } elseif (preg_match('/^[^A-Za-z0-9_]+$/',$table)) {
             $ret['sending'] = False;
             $ret['messages'] = 'Illegal table name: '.$table;
             return $ret;
@@ -102,7 +102,7 @@ class SyncLanesForPlugin extends SyncLanes
                 $ret['sending'] = False;
                 $ret['messages'] = 'No server database given';
                 return $ret;
-            } elseif (ereg("[^A-Za-z0-9_]",$server_db)) {
+            } elseif (preg_match('/^[^A-Za-z0-9_]+$/',$server_db)) {
                 $ret['sending'] = False;
                 $ret['messages'] = 'Illegal database name: '.$server_db;
                 return $ret;
@@ -111,7 +111,7 @@ class SyncLanesForPlugin extends SyncLanes
                 $ret['sending'] = False;
                 $ret['messages'] = 'No lane database given';
                 return $ret;
-            } elseif (ereg("[^A-Za-z0-9_]",$lane_db)) {
+            } elseif (preg_match('/^[^A-Za-z0-9_]+$/',$lane_db)) {
                 $ret['sending'] = False;
                 $ret['messages'] = 'Illegal database name: '.$lane_db;
                 return $ret;
@@ -288,7 +288,7 @@ class SyncLanesForPlugin extends SyncLanes
             $ret['sending'] = False;
             $ret['messages'] = 'No table given';
             return $ret;
-        } elseif (ereg("[^A-Za-z0-9_]",$table)) {
+        } elseif (preg_match('/^[^A-Za-z0-9_]+$/',$table)) {
             $ret['sending'] = False;
             $ret['messages'] = 'Illegal table name: '.$table;
             return $ret;

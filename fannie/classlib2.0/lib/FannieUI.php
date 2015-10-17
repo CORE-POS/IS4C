@@ -120,6 +120,15 @@ class FannieUI
         return sprintf('<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s">%s</a>',
             \FannieConfig::config('URL'), $date, $trans_num, $trans_num);
     }
+
+    public static function formatDate($date, $format='Y-m-d')
+    {
+        if (strtotime($date) !== false && substr($date, 0, 10) !== '0000-00-00') {
+            return date($format, strtotime($date));
+        } else {
+            return '';
+        }
+    }
 }
 
 }

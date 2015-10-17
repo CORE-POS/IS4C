@@ -43,24 +43,19 @@ class CorrelatedMovementReport extends FannieReportPage
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+        // creates a temporary table so requesting a writable connection
+        // does make sense here
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $depts = FormLib::get('depts', array());
         $upc = FormLib::get('upc');
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $filters = FormLib::get('filters', array());
 
-        $dClause = "";
-        $dArgs = array();
-        foreach($depts as $d){
-            $dClause .= "?,";
-            $dArgs[] = $d;
-        }
-        $dClause = "(".rtrim($dClause,",").")";
-
-        $where = "d.department IN $dClause";
-        $inv = "d.department NOT IN $dClause";
+        list($dClause, $dArgs) = $dbc->safeInClause($depts);
+        $where = "d.department IN ($dClause)";
+        $inv = "d.department NOT IN ($dClause)";
         if ($upc != "") {
             $upc = BarcodeLib::padUPC($upc);
             $where = "d.upc = ?";
@@ -72,7 +67,7 @@ class CorrelatedMovementReport extends FannieReportPage
 
         $filter = "";
         $fArgs = array();
-        if (is_array($filters)){
+        if (is_array($filters) && count($filters) > 0) {
             $fClause = "";
             foreach($filters as $f){
                 $fClause .= "?,";
@@ -144,7 +139,7 @@ class CorrelatedMovementReport extends FannieReportPage
         $line = 'Corresponding sales for: ';
         if (FormLib::get('upc') === '') {
             $line .= 'departments ';
-            foreach(FormLib::get('depts') as $d) {
+            foreach (FormLib::get('depts', array()) as $d) {
                 $line .= $d.', ';
             }
             $line = substr($line, 0, strlen($line)-1);
@@ -205,8 +200,8 @@ function flipover(opt){
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $deptQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
         $deptR = $dbc->exec_statement($deptQ);

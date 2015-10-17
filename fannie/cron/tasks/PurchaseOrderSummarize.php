@@ -76,16 +76,20 @@ last calendar quarter';
                 GROUP BY upc";
         $getR = $sql->query($getQ);
 
+        $this->writeRecords($sql, $target, $getR);
+    }
+
+    private function writeRecords($sql, $target, $result)
+    {
         $insQ = 'INSERT INTO ' . $target . ' (vendorID, sku, totalQty, soldQty, 
                 returnedQty, damagedQty) VALUES (?, ?, ?, ?, ?, ?)';
         $insP = $sql->prepare($insQ);
         $vendorQ = 'SELECT vendorID, sku FROM vendorItems WHERE upc=? ORDER BY vendorID';
         $vendorP = $sql->prepare($vendorQ);
-        while($getW = $sql->fetch_row($getR)) {
+        while($getW = $sql->fetch_row($result)) {
             // there might be a more efficient way of doing this, but checking
             // each UPC against vendorItems will avoid duplicate records
             // where the item is available from multiple vendors
-            echo $getW['upc']."\n";
             $vendorR = $sql->execute($vendorP, array($getW['upc']));
             if ($sql->num_rows($vendorR) > 0) {
                 $vendorW = $sql->fetch_row($vendorR);

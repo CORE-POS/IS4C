@@ -25,4 +25,4 @@ if (isset($_REQUEST['batchID']))
     $url .= '?batchID='.$_REQUEST['batchID'];
 header('Location: '.$url);
 exit;
-?>
+

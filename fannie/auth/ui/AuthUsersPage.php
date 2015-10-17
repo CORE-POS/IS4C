@@ -53,7 +53,7 @@ class AuthUsersPage extends FannieRESTfulPage
         return parent::preprocess();
     }
 
-    public function post_id_reset_handler()
+    protected function post_id_reset_handler()
     {
         $newpass = '';
         srand();
@@ -81,7 +81,7 @@ class AuthUsersPage extends FannieRESTfulPage
         return true;
     }
 
-    public function delete_id_handler()
+    protected function delete_id_handler()
     {
         deleteLogin($this->id);
         header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
@@ -89,7 +89,7 @@ class AuthUsersPage extends FannieRESTfulPage
         return false;
     }
 
-    public function delete_id_authClass_handler()
+    protected function delete_id_authClass_handler()
     {
         deleteAuth($this->id, $this->authClass);
         header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
@@ -97,7 +97,7 @@ class AuthUsersPage extends FannieRESTfulPage
         return false;
     }
 
-    public function post_name_pass1_pass2_handler()
+    protected function post_name_pass1_pass2_handler()
     {
         if ($this->pass1 != $this->pass2) {
             $this->add_onload_command("showBootstrapAlert('form', 'danger', 'Passwords do not match');\n");
@@ -114,7 +114,7 @@ class AuthUsersPage extends FannieRESTfulPage
         }
     }
 
-    public function post_id_authClass_start_end_handler()
+    protected function post_id_authClass_start_end_handler()
     {
         addAuth($this->id, $this->authClass, $this->start, $this->end);
         header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
@@ -122,13 +122,13 @@ class AuthUsersPage extends FannieRESTfulPage
         return false;
     }
 
-    public function post_id_reset_view()
+    protected function post_id_reset_view()
     {
         // handler adds javascript messaging
         return $this->get_view();
     }
 
-    public function get_id_view()
+    protected function get_id_view()
     {
         ob_start();
         showAuths($this->id);
@@ -136,23 +136,23 @@ class AuthUsersPage extends FannieRESTfulPage
         return ob_get_clean();
     }
 
-    public function get_detail_view()
+    protected function get_detail_view()
     {
         return $this->user_form(array(), 'View Authorizations');
     }
 
-    public function get_remove_view()
+    protected function get_remove_view()
     {
         return $this->user_form(array('_method'=>'delete'), 'Delete User');
     }
 
-    public function post_name_pass1_pass2_view()
+    protected function post_name_pass1_pass2_view()
     {
         // handler scripted error messages to run on load
         return $this->get_new_view();
     }
 
-    public function get_new_view()
+    protected function get_new_view()
     {
         $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">
             <div class="form-group">
@@ -176,20 +176,30 @@ class AuthUsersPage extends FannieRESTfulPage
         return $ret;
     }
 
-    public function get_reset_view()
+    protected function get_reset_view()
     {
         return $this->user_form(array('_method'=>'post','reset'=>'1'), 'Reset Password');
     }
 
-    private function user_form($hidden, $verb)
+    private function userSelect()
     {
-        $ret = '<form method="get" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">
+        $this->add_onload_command("\$('select.form-control').focus();\n");
+        $ret = '<div class="form-group">
             <label>Username</label>
             <select name="id" class="form-control">';
         foreach (getUserList() as $uid => $name) {
             $ret .=  "<option>".$name."</option>";
         }
-        $ret .= '</select>
+        $ret .= '</select></div>';
+
+        return $ret;
+    }
+
+    private function user_form($hidden, $verb)
+    {
+        $ret = '<form method="get" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">';
+        $ret .= $this->userSelect();
+        $ret .= '
             <p>
             <button class="btn btn-default" type="submit">' . $verb . '</button>
             </p>';
@@ -200,20 +210,15 @@ class AuthUsersPage extends FannieRESTfulPage
             $ret .= sprintf('<input type="hidden" name="%s" value="%s" />', $name, $value);
         }
         $ret .= '</form>';
-        $this->add_onload_command("\$('select.form-control').focus();\n");
 
         return $ret;
     }
 
-    public function get_newAuth_view()
+    protected function get_newAuth_view()
     {
-        $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">
-            <label>Username</label>
-            <select name="id" class="form-control">';
-        foreach (getUserList() as $uid => $name) {
-            $ret .=  "<option>".$name."</option>";
-        }
-        $ret .= '</select>
+        $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">';
+        $ret .= $this->userSelect();
+        $ret .= '
             <label>Authorization Class</label>
             <select name="authClass" class="form-control">';
         foreach (getAuthList() as $name) {
@@ -228,21 +233,16 @@ class AuthUsersPage extends FannieRESTfulPage
             <button class="btn btn-default" type="submit">Add Authorization</button>
             </p>';
         $ret .= '</form>';
-        $this->add_onload_command("\$('select.form-control:first').focus();\n");
 
         return $ret;
     }
 
-    public function get_removeAuth_view()
+    protected function get_removeAuth_view()
     {
         $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">
-            <input type="hidden" name="_method" value="delete" />
-            <label>Username</label>
-            <select name="id" class="form-control">';
-        foreach (getUserList() as $uid => $name) {
-            $ret .=  "<option>".$name."</option>";
-        }
-        $ret .= '</select>
+            <input type="hidden" name="_method" value="delete" />';
+        $ret .= $this->userSelect();
+        $ret .= '
             <label>Authorization Class</label>
             <select name="authClass" class="form-control">';
         foreach (getAuthList() as $name) {
@@ -253,12 +253,11 @@ class AuthUsersPage extends FannieRESTfulPage
             <button class="btn btn-default" type="submit">Remove Authorization</button>
             </p>';
         $ret .= '</form>';
-        $this->add_onload_command("\$('select.form-control:first').focus();\n");
 
         return $ret;
     }
 
-    public function get_view()
+    protected function get_view()
     {
         ob_start();
         echo '<div class="row container" id="btn-bar">';

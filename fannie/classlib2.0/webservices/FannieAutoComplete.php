@@ -102,12 +102,13 @@ class FannieAutoComplete extends FannieWebService
                 return $ret;
 
             case 'long_brand':
-                $prep = $dbc->prepare('SELECT u.brand
-                                       FROM productUser AS u
-                                        INNER JOIN products AS p ON u.upc=p.upc
-                                       WHERE u.brand LIKE ?
-                                       GROUP BY u.brand
-                                       ORDER BY u.brand');
+                $prep = $dbc->prepare('
+                    SELECT u.brand
+                    FROM productUser AS u
+                        ' . DTrans::joinProducts('u', 'p', 'INNER') . '
+                    WHERE u.brand LIKE ?
+                    GROUP BY u.brand
+                    ORDER BY u.brand');
                 $res = $dbc->execute($prep, array($args->search . '%'));
                 while ($row = $dbc->fetch_row($res)) {
                     $ret[] = $row['brand'];

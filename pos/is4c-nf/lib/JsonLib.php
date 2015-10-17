@@ -149,7 +149,5 @@ static public function prettyJSON($json)
     return $result;
 }
 
-
 }
 
-?>

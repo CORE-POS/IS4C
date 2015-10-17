@@ -48,7 +48,7 @@ class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
                     maxlength="30" value="%s" class="form-control" />
                 <input name="HouseholdMembers_ln[]" placeholder="Last"
                     maxlength="30" value="%s" class="form-control" />
-                <input name="HouseholdMembers_ID[] type="hidden" value="%d" />
+                <input name="HouseholdMembers_ID[]" type="hidden" value="%d" />
                 </div>',
                 $infoW['firstName'],$infoW['lastName'],$infoW['customerID']);
             $count++;

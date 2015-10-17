@@ -34,4 +34,3 @@ if (is_object($sd))
 else
     echo "{}"; // no driver => empty json
 
-?>

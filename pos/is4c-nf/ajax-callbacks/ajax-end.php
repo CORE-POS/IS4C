@@ -128,6 +128,8 @@ if (strlen($receiptType) > 0) {
         $receiptContent = array();
     } elseif ($receiptType == 'suspended' && CoreLocal::get('SuspendReceipt') == 0 && CoreLocal::get('SuspendReceipt') !== '') {
         $receiptContent = array();
+    } elseif ($receiptType == 'ddd' && CoreLocal::get('ShrinkReceipt') == 0 && CoreLocal::get('ShrinkReceipt') !== '') {
+        $receiptContent = array();
     }
 
     $EMAIL_OBJ = new $email_class();

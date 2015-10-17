@@ -39,7 +39,7 @@ class TableExportReport extends FannieReportPage
     public function fetch_report_data()
     {
         $dbc = $this->connection;
-        $class = FormLib::get('id');
+        $class = $this->form->id;
         if (!class_exists($class)) {
             echo 'no class';
             return array();

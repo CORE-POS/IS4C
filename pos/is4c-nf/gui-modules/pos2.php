@@ -34,7 +34,6 @@ class pos2 extends BasicCorePage
         $this->display = "";
 
         $sd = MiscLib::scaleObject();
-        //$st = MiscLib::sigTermObject();
 
         $entered = "";
         if (isset($_REQUEST["reginput"])) {
@@ -132,10 +131,6 @@ class pos2 extends BasicCorePage
                     if (isset($result['udpmsg']) && $result['udpmsg'] !== False){
                         if (is_object($sd))
                             $sd->WriteToScale($result['udpmsg']);
-                        /*
-                        if (is_object($st))
-                            $st->WriteToScale($result['udpmsg']);
-                        */
                     }
                 }
                 else {
@@ -192,7 +187,7 @@ class pos2 extends BasicCorePage
         }
         function parseWrapper(str){
             $('#reginput').val(str);
-            $('#formlocal').submit();
+            submitWrapper();
         }
         var screenLockVar;
         function enableScreenLock(){

@@ -38,7 +38,7 @@ class DefaultReceiptFormat
     /**
       constructor. disables bolding by default
     */
-    public function DefaultReceiptFormat()
+    public function __construct()
     {
         $is_bold = False;
     }

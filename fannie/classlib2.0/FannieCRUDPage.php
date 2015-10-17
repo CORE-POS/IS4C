@@ -130,17 +130,16 @@ class FannieCRUDPage extends \FannieRESTfulPage
         for ($i=0; $i<count($this->id); $i++) {
             $obj->reset();
             $obj->$id_col($this->id[$i]); 
-            array_map(array_keys($columns),
-                function ($col_name) use ($id_col, $obj) {
-                    if ($col_name == $id_col) {
-                        return false;
-                    }
-                    $vals = \FormLib::get($col_name);
-                    if (!is_array($vals) || !isset($vals[$i])) {
-                        return false;
-                    }
-                    $obj->$col_name($vals[$i]);
-                });
+            array_map(function ($col_name) use ($id_col, $obj, $i) {
+                if ($col_name == $id_col) {
+                    return false;
+                }
+                $vals = \FormLib::get($col_name);
+                if (!is_array($vals) || !isset($vals[$i])) {
+                    return false;
+                }
+                $obj->$col_name($vals[$i]);
+            }, array_keys($columns));
             if (!$obj->save()) {
                 $errors++;
             }
@@ -173,34 +172,35 @@ class FannieCRUDPage extends \FannieRESTfulPage
                 }
             }
         }
-        // find a character column to plug in
-        // a placeholder value
-        $ready = false;
-        foreach ($columns as $col_name => $c) {
-            if ($col_name != $id_col && strstr(strtoupper($c['type']), 'CHAR')) {
-                $obj->$col_name('NEW');
-                $ready = true;
-                break;
-            }
-        }
-        if (!$ready) {
-            foreach ($columns as $col_name => $c) {
-                if ($col_name != $id_col && strstr(strtoupper($c['type']), 'DATE')) {
-                    $obj->$col_name(date('Y-m-d'));
-                    $ready = true;
-                    break;
-                }
-            }
+        list($col_name, $col_val) = $this->findPlaceholder($columns, $id_col);
+        if ($col_name !== false) {
+            $obj->$col_name($col_val);
         }
 
         $saved = $obj->save();
         if ($saved) {
-            echo json_encode(array('error'=>0, 'added'=>1));
+            echo json_encode(array('error'=>0, 'added'=>1, 'id'=>$saved));
         } else {
             echo json_encode(array('error'=>1, 'added'=>0));
         }
 
         return false;
+    }
+
+    protected function findPlaceholder($columns, $id_col)
+    {
+        foreach ($columns as $col_name => $c) {
+            if ($col_name != $id_col && strstr(strtoupper($c['type']), 'CHAR')) {
+                return array($col_name, 'NEW');
+            }
+        }
+        foreach ($columns as $col_name => $c) {
+            if ($col_name != $id_col && strstr(strtoupper($c['type']), 'DATE')) {
+                return array($col_name, date('Y-m-d'));
+            }
+        }
+
+        return array(false, false);
     }
 
     public function delete_id_handler()
@@ -209,12 +209,10 @@ class FannieCRUDPage extends \FannieRESTfulPage
         $id_col = $this->getIdCol();
         $obj->$id_col($this->id);
         if ($obj->delete()) {
-            header('Location: ' . $_SERVER['PHP_SELF'] . '?flash[]=sDeleted+Entry');
+            return filter_input(INPUT_SERVER, 'PHP_SELF') . '?flash[]=sDeleted+Entry';
         } else {
-            header('Location: ' . $_SERVER['PHP_SELF'] . '?flash[]=dError+Deleting+Entry');
+            return filter_input(INPUT_SERVER, 'PHP_SELF') . '?flash[]=dError+Deleting+Entry';
         }
-
-        return false;
     }
 
     public function get_view()
@@ -224,22 +222,24 @@ class FannieCRUDPage extends \FannieRESTfulPage
         $columns = $obj->getColumns();
         $ret = '<form class="crud-form" method="post">';
         $ret .= '<div class="flash-div">';
-        foreach (\FormLib::get('flash', array()) as $f) {
-            $css = '';
-            switch (substr($f, 0, 1)) {
-                case 's':
-                    $css = 'alert-success';
-                    break;
-                case 'd':
-                    $css = 'alert-danger';
-                    break;
-            }
-            $ret .= '<div class="alert ' . $css . '" role="alert">' 
-                . substr($f, 1) 
-                . '<button type="button" class="close" data-dismiss="alert">'
-                . '<span>&times;</span></button>'
-                . '</div>';
-        }
+        $ret .= array_reduce(\FormLib::get('flash', array()),
+            function ($carry, $item) {
+                $css = '';
+                switch (substr($item, 0, 1)) {
+                    case 's':
+                        $css = 'alert-success';
+                        break;
+                    case 'd':
+                        $css = 'alert-danger';
+                        break;
+                }
+                $carry .= '<div class="alert ' . $css . '" role="alert">' 
+                    . substr($item, 1) 
+                    . '<button type="button" class="close" data-dismiss="alert">'
+                    . '<span>&times;</span></button>'
+                    . '</div>';
+                return $carry;
+            }, '');
         $ret .= '</div>';
         $ret .= '<table class="table table-bordered">';
         $ret .= '<tr>';
@@ -301,6 +301,29 @@ class FannieCRUDPage extends \FannieRESTfulPage
             </script>';
 
         return $ret;
+    }
+
+    public function unitTest($phpunit)
+    {
+        if (get_class($this) == '\COREPOS\Fannie\API\FannieCRUDPage') {
+            $this->model_name = 'FloorSectionsModel';
+            $phpunit->assertEquals('floorSectionID', $this->getIdCol());
+            $phpunit->assertEquals('FloorSectionsModel', get_class($this->getCRUDModel()));
+            $phpunit->assertEquals(array('name', 'NEW'), $this->findPlaceholder($this->model->getColumns(), $this->getIdCol()));
+            $phpunit->assertNotEquals(0, strlen($this->get_view()));
+            $this->connection->throwOnFailure(true);
+            ob_start();
+            $phpunit->assertEquals(false, $this->put_handler());
+            $json = ob_get_clean();
+            $model = new \FloorSectionsModel($this->connection);
+            $model->floorSectionID(1);
+            $phpunit->assertEquals(true, $model->load());
+            $this->id = 1;
+            $this->delete_id_handler();
+            $model->reset();
+            $model->floorSectionID(1);
+            $phpunit->assertEquals(false, $model->load());
+        }
     }
 }
 

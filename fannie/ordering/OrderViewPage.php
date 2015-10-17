@@ -45,17 +45,86 @@ class OrderViewPage extends FannieRESTfulPage
         $this->__routes[] = 'post<orderID><transID><qty>';
         $this->__routes[] = 'post<orderID><transID><toggleStaff>';
         $this->__routes[] = 'post<orderID><transID><toggleMemType>';
-        $this->__routes[] = 'post<orderID><user><togglePrint>';
+        $this->__routes[] = 'post<orderID><togglePrint>';
         $this->__routes[] = 'post<orderID><noteDept><noteText><addr><addr2><city><state><zip><ph1><ph2><email>';
-        $this->__routes[] = 'post<orderID><transID><description><srp><actual><qty><dept><unitPrice><vendor>';
         $this->__routes[] = 'delete<orderID><transID>';
+        $this->addRoute('post<orderID><description><srp><actual><qty><dept><unitPrice><vendor><transID><changed>');
 
         return parent::preprocess();
     }
 
-    public function post_orderID_user_togglePrint_handler()
+    protected function post_orderID_transID_dept_handler()
     {
-        $user = $this->user;
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
+        $upP = $dbc->prepare('
+            UPDATE PendingSpecialOrder
+            SET department=?
+            WHERE order_id=?
+                AND trans_id=?'); 
+        $upR = $dbc->execute($upP, array($this->dept, $this->orderID, $this->transID));
+
+        return $this->get_orderID_items_handler();
+    }
+
+    protected function post_orderID_transID_qty_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
+        $upP = $dbc->prepare('
+            UPDATE PendingSpecialOrder
+            SET quantity=?
+            WHERE order_id=?
+                AND trans_id=?'); 
+        $upR = $dbc->execute($upP, array($this->qty, $this->orderID, $this->transID));
+        $this->reprice($this->orderID, $this->transID);
+
+        return $this->get_orderID_items_handler();
+    }
+
+    protected function post_orderID_description_srp_actual_qty_dept_unitPrice_vendor_transID_changed_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
+        $basicP = $dbc->prepare('
+            UPDATE PendingSpecialOrder
+            SET description=?,
+                department=?,
+                mixMatch=?,
+                total=?,
+                unitPrice=?,
+                quantity=?
+            WHERE order_id=?
+                AND trans_id=?
+        ');
+        $basicR = $dbc->execute($basicP, array(
+            $this->description,
+            $this->dept,
+            $this->vendor,
+            $this->actual,
+            $this->unit,
+            $this->qty,
+            $this->orderID,
+            $this->transID,
+        ));
+
+        if ($this->changed == 'srp' || $this->changed == 'qty' || $this->changed == 'unit') {
+            $info = $this->reprice($this->orderID, $this->transID, ($this->changed == 'srp' ? $this->srp : false));
+        } else {
+            $info = array('regPrice' => $this->srp, 'total' => $this->actual);
+        }
+
+        $fetchP = $dbc->prepare("SELECT ROUND(100*((regPrice-total)/regPrice),0)
+            FROM PendingSpecialOrder WHERE trans_id=? AND order_id=?");
+        $info['discount'] = $dbc->getValue($fetchP, array($this->transID, $this->orderID));
+        echo json_encode($info);
+
+        return false;
+    }
+
+    protected function post_orderID_togglePrint_handler()
+    {
+        $user = $this->current_user;
         $cachepath = sys_get_temp_dir()."/ordercache/";
         $prints = unserialize(file_get_contents("{$cachepath}{$user}.prints"));
         if (isset($prints[$this->orderID])) {
@@ -63,14 +132,14 @@ class OrderViewPage extends FannieRESTfulPage
         } else {
             $prints[$this->orderID] = array();
         }
-        $fp = fopen("{$cachepath}{$user}.prints",'w');
-        fwrite($fp,serialize($prints));
-        fclose($fp);
+        $fptr = fopen("{$cachepath}{$user}.prints",'w');
+        fwrite($fptr,serialize($prints));
+        fclose($fptr);
 
         return false;
     }
 
-    public function post_orderID_transID_toggleStaff_handler()
+    protected function post_orderID_transID_toggleStaff_handler()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
@@ -85,7 +154,7 @@ class OrderViewPage extends FannieRESTfulPage
         return false;
     }
 
-    public function post_orderID_transID_toggleMemType_handler()
+    protected function post_orderID_transID_toggleMemType_handler()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
@@ -100,37 +169,7 @@ class OrderViewPage extends FannieRESTfulPage
         return false;
     }
 
-    public function post_orderID_transID_qty_handler()
-    {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('TRANS_DB'));
-
-        $upP = $dbc->prepare('
-            UPDATE PendingSpecialOrder 
-            SET quantity=? 
-            WHERE order_id=? 
-                AND trans_id=?');
-        $dbc->execute($upP, array($this->qty, $this->orderID, $this->transID));
-        $info = $this->reprice($this->orderID, $this->transID);
-
-        return $this->get_orderID_items_handler();
-    }
-
-    public function post_orderID_transID_dept_handler()
-    {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('TRANS_DB'));
-        $deptP = $dbc->prepare('
-            UPDATE PendingSpecialOrder
-            SET department=?
-            WHERE order_id=?
-                AND trans_id=?');
-        $deptR = $dbc->execute($deptP, array($this->dept, $this->orderID, $this->transID));
-
-        return $this->get_orderID_items_handler();
-    }
-
-    public function delete_orderID_transID_handler()
+    protected function delete_orderID_transID_handler()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
@@ -143,7 +182,7 @@ class OrderViewPage extends FannieRESTfulPage
         return $this->get_orderID_items_handler();
     }
 
-    public function post_orderID_memNum_upc_cases_handler()
+    protected function post_orderID_memNum_upc_cases_handler()
     {
         if (is_numeric($this->cases)) {
             $this->cases = (int)$this->cases;
@@ -162,12 +201,7 @@ class OrderViewPage extends FannieRESTfulPage
         return false;
     }
 
-    public function post_orderID_transID_description_srp_actual_qty_dept_unitPrice_vendor_handler()
-    {
-
-    }
-
-    public function post_orderID_noteDept_noteText_addr_addr2_city_state_zip_ph1_ph2_email_handler()
+    protected function post_orderID_noteDept_noteText_addr_addr2_city_state_zip_ph1_ph2_email_handler()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
@@ -202,13 +236,17 @@ class OrderViewPage extends FannieRESTfulPage
         return false;
     }
 
-    public function get_orderID_customer_handler()
+    protected function get_orderID_customer_handler()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
         $orderID = $this->orderID;
-        $memNum = FormLib::get('memNum', '0');
+        try {
+            $memNum = $this->form->memNum;
+        } catch (Exception $ex) {
+            $memNum = '0';
+        }
         $canEdit = FannieAuth::validateUserQuiet('ordering_edit');
 
         if (empty($orderID)) {
@@ -216,7 +254,7 @@ class OrderViewPage extends FannieRESTfulPage
         }
 
         $names = array();
-        $pn = 1;
+        $personNum = 1;
         $status_row = array(
             'Type' => 'REG',
             'status' => ''
@@ -230,8 +268,6 @@ class OrderViewPage extends FannieRESTfulPage
 
         // detect member UPC entry
         if ($memNum > 9999999) {
-            $p = $dbc->prepare_statement("SELECT card_no FROM memberCards WHERE upc=?");
-            $r = $dbc->exec_statement($p,array(BarcodeLib::padUPC($memNum)));
             $cards = new MemberCardsModel($dbc);
             $cards->upc(BarcodeLib::padUPC($memNum));
             $memNum = '';
@@ -248,16 +284,16 @@ class OrderViewPage extends FannieRESTfulPage
             if ($dbc->numRows($memR) > 0) {
                 $memW = $dbc->fetchRow($memR);
                 $memNum = $memW['card_no'];
-                $pn = $memW['voided'];
+                $personNum = $memW['voided'];
             }
         } elseif ($memNum == "") {
-            $p = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET card_no=?,voided=0
+            $prep = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET card_no=?,voided=0
                 WHERE order_id=?");
-            $r = $dbc->execute($p,array(0,$orderID));
+            $dbc->execute($prep,array(0,$orderID));
         } else {
-            $p = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET card_no=?
+            $prep = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET card_no=?
                 WHERE order_id=?");
-            $r = $dbc->execute($p,array($memNum,$orderID));
+            $dbc->execute($prep,array($memNum,$orderID));
 
             // clear contact fields if member number changed
             // so that defaults are reloaded from meminfo
@@ -270,16 +306,14 @@ class OrderViewPage extends FannieRESTfulPage
             $dbc->selectDB($this->config->get('OP_DB'));
 
             // look up personnum, correct if it hasn't been set
-            $pQ = $dbc->prepare_statement("SELECT voided FROM {$TRANS}PendingSpecialOrder
+            $pendQ = $dbc->prepare_statement("SELECT voided FROM {$TRANS}PendingSpecialOrder
                 WHERE order_id=?");
-            $pR = $dbc->exec_statement($pQ,array($orderID));
-            $pnW = $dbc->fetch_row($pR);
-            $pn = $pnW['voided'];
-            if ($pn == 0) {
-                $pn = 1;
+            $personNum = $dbc->getValue($pendQ,array($orderID));
+            if ($personNum == 0) {
+                $personNum = 1;
                 $upP = $dbc->prepare_statement("UPDATE {$TRANS}PendingSpecialOrder SET voided=?
                     WHERE order_id=?");
-                $upR = $dbc->exec_statement($upP,array($pn,$orderID));
+                $upR = $dbc->exec_statement($upP,array($personNum,$orderID));
             }
         }
 
@@ -329,23 +363,18 @@ class OrderViewPage extends FannieRESTfulPage
             }
         } 
 
-        $q = $dbc->prepare_statement("SELECT entry_date FROM {$TRANS}SpecialOrderHistory 
+        $prep = $dbc->prepare_statement("SELECT entry_date FROM {$TRANS}SpecialOrderHistory 
                 WHERE order_id=? AND entry_type='CONFIRMED'");
-        $r = $dbc->exec_statement($q, array($orderID));
-        $confirm_date = "";
-        if ($dbc->num_rows($r) > 0) {
-            $w = $dbc->fetchRow($r);
-            $confirm_date = $w['entry_date'];
-        }
+        $confirm_date = $dbc->getValue($prep, array($orderID));
 
         $callback = 2;
         $user = 'Unknown';
         $orderDate = "";
-        $q = $dbc->prepare_statement("SELECT datetime,numflag,mixMatch FROM 
+        $prep = $dbc->prepare_statement("SELECT datetime,numflag,mixMatch FROM 
                 {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id=0");
-        $r = $dbc->exec_statement($q, array($orderID));
-        if ($dbc->num_rows($r) > 0) {
-            list($orderDate,$callback,$user) = $dbc->fetch_row($r);
+        $res = $dbc->exec_statement($prep, array($orderID));
+        if ($dbc->num_rows($res) > 0) {
+            list($orderDate,$callback,$user) = $dbc->fetch_row($res);
         }
 
         $status = array(
@@ -362,7 +391,7 @@ class OrderViewPage extends FannieRESTfulPage
         $ret .= sprintf('<input type="hidden" id="orderID" value="%d" />',$orderID);
         $ret .= '<div class="row form-inline"><div class="col-sm-4 text-left">';
         $ret .= sprintf('<b>Owner Number</b>: <input type="text" size="6"
-                id="memNum" value="%s" class="form-control price-field input-sm" onchange="memNumEntered();"
+                id="memNum" value="%s" class="form-control price-field input-sm" 
                 />',($memNum==0?'':$memNum));
         $ret .= '<br />';
         $ret .= '<b>Owner</b>: '.($status_row['Type']=='PC'?'Yes':'No');
@@ -377,8 +406,7 @@ class OrderViewPage extends FannieRESTfulPage
 
         if ($canEdit) {
             $ret .= '<b>Status</b>: ';
-            $ret .= sprintf('<select id="orderStatus" class="form-control input-sm" 
-                onchange="updateStatus(%d, this.value);">', $orderID);
+            $ret .= '<select id="orderStatus" class="form-control input-sm">';
             foreach($status as $k => $v) {
                 $ret .= sprintf('<option %s value="%d">%s</option>',
                             ($k == $order_status ? 'selected' : ''),
@@ -388,19 +416,18 @@ class OrderViewPage extends FannieRESTfulPage
         }
         $ret .= '</div><div class="col-sm-4 text-right">';
 
-        $ret .= "<a href=\"\" class=\"btn btn-default btn-sm\"
-            onclick=\"validateAndHome();return false;\">Done</a>";
+        $ret .= "<a href=\"\" class=\"btn btn-default btn-sm done-btn\">Done</a>";
         $username = FannieAuth::checkLogin();
         $prints = array();
         $cachepath = sys_get_temp_dir()."/ordercache/";
         if (file_exists("{$cachepath}{$username}.prints")) {
             $prints = unserialize(file_get_contents("{$cachepath}{$username}.prints"));
         } else {
-            $fp = fopen("{$cachepath}{$username}.prints",'w');
-            fwrite($fp,serialize($prints));
-            fclose($fp);
+            $fptr = fopen("{$cachepath}{$username}.prints",'w');
+            fwrite($fptr,serialize($prints));
+            fclose($fptr);
         }
-        $ret .= sprintf('<br />Queue tags <input type="checkbox" %s onclick="togglePrint(\'%s\',%d);" />',
+        $ret .= sprintf('<br />Queue tags <input type="checkbox" %s class="print-cb" />',
                 (isset($prints[$orderID])?'checked':''),
                 $username,$orderID
             );
@@ -414,7 +441,7 @@ class OrderViewPage extends FannieRESTfulPage
         $extra .= "<b>On</b>: ".date("M j, Y g:ia",strtotime($orderDate))."<br />";
         $extra .= '</div><div class="col-sm-6 text-right form-inline">';
         $extra .= '<b>Call to Confirm</b>: ';
-        $extra .= '<select id="ctcselect" class="form-control input-sm" onchange="saveCtC(this.value,'.$orderID.');">';
+        $extra .= '<select id="ctcselect" class="form-control input-sm">'; 
         $extra .= '<option value="2"></option>';
         if ($callback == 1) {
             $extra .= '<option value="1" selected>Yes</option>';    
@@ -428,12 +455,11 @@ class OrderViewPage extends FannieRESTfulPage
         }
         $extra .= '</select><br />';    
         $extra .= '<span id="confDateSpan">'.(!empty($confirm_date)?'Confirmed '.$confirm_date:'Not confirmed')."</span> ";
-        $extra .= '<input type="checkbox" onclick="saveConfirmDate(this.checked,'.$orderID.');" ';
+        $extra .= '<input type="checkbox" id="confirm-date" ';
         if (!empty($confirm_date)) $extra .= "checked";
         $extra .= ' /><br />';
 
-        $extra .= "<a href=\"\" class=\"btn btn-default btn-sm\"
-            onclick=\"validateAndHome();return false;\">Done</a>";
+        $extra .= "<a href=\"\" class=\"btn btn-default btn-sm done-btn\">Done</a>";
         $extra .= '</div></div>';
 
         $ret .= '<table class="table table-bordered">';
@@ -451,12 +477,11 @@ class OrderViewPage extends FannieRESTfulPage
                     /></td>',
                     $orderModel->lastName());
         } else {
-            $ret .= sprintf('<tr><th>Name</th><td colspan="2"><select id="s_personNum"
-                class="form-control input-sm"
-                onchange="savePN(%d,this.value);">',$orderID);
+            $ret .= '<tr><th>Name</th><td colspan="2"><select id="s_personNum"
+                class="form-control input-sm">';
             foreach($names as $p=>$n) {
                 $ret .= sprintf('<option value="%d" %s>%s %s</option>',
-                    $p,($p==$pn?'selected':''),
+                    $p,($p==$personNum?'selected':''),
                     $n[0],$n[1]);
             }
             $ret .= '</select></td>';
@@ -466,16 +491,16 @@ class OrderViewPage extends FannieRESTfulPage
             <select id="nDept" class="form-control input-sm contact-field" 
                 name="noteDept">
             <option value="0">Choose...</option>';
-        $sQ = $dbc->prepare_statement("select superID,super_name from MasterSuperDepts
+        $superQ = $dbc->prepare_statement("select superID,super_name from MasterSuperDepts
             where superID > 0
             group by superID,super_name
             order by super_name");
-        $sR = $dbc->exec_statement($sQ);
-        while($sW = $dbc->fetch_row($sR)) {
+        $superR = $dbc->exec_statement($superQ);
+        while($superW = $dbc->fetch_row($superR)) {
             $ret .= sprintf('<option value="%d" %s>%s</option>',
-                $sW['superID'],
-                ($sW['superID']==$orderModel->noteSuperID()?'selected':''),
-                $sW['super_name']);
+                $superW['superID'],
+                ($superW['superID']==$orderModel->noteSuperID()?'selected':''),
+                $superW['super_name']);
         }
         $ret .= "</select></td></tr>";
 
@@ -563,200 +588,44 @@ class OrderViewPage extends FannieRESTfulPage
         return false;
     }
 
-    private function addUPC($orderID,$memNum,$upc,$num_cases=1)
+    private function addUPC($orderID, $memNum, $upc, $num_cases=1)
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
 
-        $sku = str_pad($upc,6,'0',STR_PAD_LEFT);
-        if (is_numeric($upc)) {
-            $upc = BarcodeLib::padUPC($upc);
-        }
-
-        $manualSKU = false;
-        if (isset($upc[0]) && $upc[0] == "+") {
-            $sku = substr($upc,1);
-            $upc = "zimbabwe"; // string that will not match
-            $manualSKU = true;
-        }
-        
         $ins_array = $this->genericRow($orderID);
         $ins_array['upc'] = "$upc";
-        if ($manualSKU) {
-            $ins_array['upc'] = BarcodeLib::padUPC($sku);
-        }
         $ins_array['card_no'] = "$memNum";
         $ins_array['trans_type'] = "I";
-
-        $caseSize = 1;
-        $vendor = "";
-        $vendor_desc = (!is_numeric($upc)?$upc:"");
-        $srp = 0.00;
-        $vendor_upc = (!is_numeric($upc)?'0000000000000':"");
-        $skuMatch=0;
-        $caseP = $dbc->prepare_statement("
-            SELECT units,
-                vendorName,
-                description,
-                i.srp,
-                i.upc,
-                CASE WHEN i.upc=? THEN 0 ELSE 1 END as skuMatch 
-            FROM vendorItems as i
-                LEFT JOIN vendors AS v ON i.vendorID=v.vendorID 
-            WHERE i.upc=? 
-                OR i.sku=? 
-                OR i.sku=?
-            ORDER BY i.vendorID");
-        $caseR = $dbc->exec_statement($caseP, array($upc,$upc,$sku,'0'.$sku));
-        if ($dbc->num_rows($caseR) > 0) {
-            $row = $dbc->fetch_row($caseR);
-            $caseSize = $row['units'];
-            $vendor = $row['vendorName'];
-            $vendor_desc = $row['description'];
-            $srp = $row['srp'];
-            $vendor_upc = $row['upc'];
-            $skuMatch = $row['skuMatch'];
-        }
-        if (!empty($vendor_upc)) $ins_array['upc'] = "$vendor_upc";
-        if ($skuMatch == 1) {
-            $ins_array['upc'] = "$vendor_upc";
-            $upc = $vendor_upc;
-        }
-        $ins_array['quantity'] = $caseSize;
         $ins_array['ItemQtty'] = $num_cases;
-        $ins_array['mixMatch'] = substr($vendor,0,26);
-        $ins_array['description'] = substr($vendor_desc,0,32)." SO";
 
-        $mempricing = false;
-        if ($memNum != 0 && !empty($memNum)) {
-            $p = $dbc->prepare_statement("SELECT Type,memType FROM custdata WHERE CardNo=?");
-            $r = $dbc->exec_statement($p, array($memNum));
-            $w = $dbc->fetch_row($r);
-            if ($w['Type'] == 'PC') {
-                $mempricing = true;
-            } elseif($w['memType'] == 9) {
-                $mempricing = true;
-            }
+        if (!class_exists('OrderItemLib')) {
+            include(dirname(__FILE__) . '/OrderItemLib.php');
         }
 
-        $pdP = $dbc->prepare_statement("
-            SELECT normal_price,
-                special_price,
-                department,
-                discounttype,
-                description,
-                discount,
-                default_vendor_id
-            FROM products WHERE upc=?");
-        $pdR = $dbc->exec_statement($pdP, array($upc));
-        $qtyReq = False;
-        if ($dbc->num_rows($pdR) > 0) {
-            $pdW = $dbc->fetch_row($pdR);
+        $mempricing = OrderItemLib::memPricing($memNum);
 
-            $ins_array['department'] = $pdW['department'];
-            $ins_array['discountable'] = $pdW['discount'];
-            $mapP = $dbc->prepare_statement("SELECT map_to FROM 
-                    {$TRANS}SpecialOrderDeptMap WHERE dept_ID=?");
-            $mapR = $dbc->exec_statement($mapP, array($pdW['department']));
-            if ($dbc->num_rows($mapR) > 0) {
-                $mapW = $dbc->fetchRow($mapR);
-                $ins_array['department'] = $mapW['map_to'];
-            }
-
-            $superP = $dbc->prepare_statement("SELECT superID 
-                    FROM superdepts WHERE dept_ID=?");
-            $superR = $dbc->exec_statement($superP, array($ins_array['department']));
-            while($superW = $dbc->fetch_row($superR)) {
-                if ($superW[0] == 5) $qtyReq = 3;
-                if ($qtyReq !== false) {
-                    $caseSize = $qtyReq;
-                    $ins_array['quantity'] = $qtyReq;
-                    break;
-                }
-            }
-            
-            // only calculate prices for items that exist in 
-            // vendorItems (i.e., have known case size)
-            $ins_array['discounttype'] = $pdW['discounttype'];
-            if ($dbc->num_rows($caseR) > 0 || true) { // test always do this
-                $ins_array['total'] = $pdW['normal_price']*$caseSize*$num_cases;
-                $ins_array['regPrice'] = $pdW['normal_price']*$caseSize*$num_cases;
-                $ins_array['unitPrice'] = $pdW['normal_price'];
-                if ($pdW['discount'] != 0 && $pdW['discounttype'] == 1) {
-                    /**
-                      Only apply sale pricing from non-closeout batches
-                      At WFC closeout happens to be batch type #11
-                    */
-                    $closeoutP = $dbc->prepare('
-                        SELECT l.upc
-                        FROM batchList AS l
-                            INNER JOIN batches AS b ON l.batchID=b.batchID
-                        WHERE l.upc=?
-                            AND ' . $dbc->curdate() . ' >= b.startDate
-                            AND ' . $dbc->curdate() . ' <= b.endDate
-                            AND b.batchType=11
-                    ');
-                    $closeoutR = $dbc->execute($closeoutP, array($upc));
-                    if ($closeoutR && $dbc->num_rows($closeoutR) == 0) {
-                        $ins_array['total'] = $pdW['special_price']*$caseSize*$num_cases;
-                        $ins_array['unitPrice'] = $pdW['special_price'];
-                    }
-                } elseif ($mempricing){
-                    if ($pdW['discounttype'] == 2) {
-                        $ins_array['total'] = $pdW['special_price']*$caseSize*$num_cases;
-                        $ins_array['unitPrice'] = $pdW['special_price'];
-                    } elseif ($pdW['discounttype'] == 3) {
-                        $ins_array['unitPrice'] = $pdW['normal_price']*(1-$pdW['special_price']);
-                        $ins_array['total'] = $ins_array['unitPrice']*$caseSize*$num_cases;
-                    } elseif ($pdW['discounttype'] == 5) {
-                        $ins_array['unitPrice'] = $pdW['normal_price']-$pdW['special_price'];
-                        $ins_array['total'] = $ins_array['unitPrice']*$caseSize*$num_cases;
-                    }
-
-                    if($pdW['discount'] != 0 && ($pdW['normal_price']*$caseSize*$num_cases*0.85) < $ins_array['total']) {
-                        $ins_array['total'] = $pdW['normal_price']*$caseSize*$num_cases*0.85;
-                        $ins_array['discounttype'] = 0;
-                        $ins_array['unitPrice'] = $pdW['normal_price'];
-                    }
-                }
-            }
-            $ins_array['description'] = substr($pdW['description'],0,32);
-            /**
-              If product has a default vendor, lookup
-              vendor name and add it
-            */
-            if ($pdW['default_vendor_id'] != 0) {
-                $v = new VendorsModel($dbc);
-                $v->vendorID($pdW['default_vendor_id']);
-                if ($v->load()) {
-                    $ins_array['mixMatch'] = substr($v->vendorName(),0,26);
-                }
-            }
-            /**
-              If no vendor name was found, try looking in prodExtra
-            */
-            if (empty($ins_array['mixMatch']) && $dbc->tableExists('prodExtra')) {
-                $distP = $dbc->prepare('
-                    SELECT x.distributor
-                    FROM prodExtra AS x
-                    WHERE x.upc=?
-                ');
-                $distR = $dbc->execute($distP, array($upc));
-                if ($distR && $dbc->num_rows($distR) > 0) {
-                    $distW = $dbc->fetch_row($distR);
-                    $ins_array['mixMatch'] = substr($distW['distributor'],0,26);
-                }
-            }
-        } elseif ($srp != 0) {
-            // use vendor SRP if applicable
-            $ins_array['regPrice'] = $srp*$caseSize*$num_cases;
-            $ins_array['total'] = $srp*$caseSize*$num_cases;
-            $ins_array['unitPrice'] = $srp;
-            if ($mempricing) {
-                $ins_array['total'] *= 0.85;
-            }
+        $item = OrderItemLib::getItem($upc);
+        $qtyReq = OrderItemLib::manualQuantityRequired($item);
+        $item['department'] = OrderItemLib::mapDepartment($item['department']);
+        if ($qtyReq !== false) {
+            $item['caseSize'] = $qtyReq;
         }
+        $unitPrice = OrderItemLib::getUnitPrice($item, $mempricing);
+        $casePrice = OrderItemLib::getCasePrice($item, $mempricing);
+
+        $ins_array['upc'] = $item['upc'];
+        $ins_array['quantity'] = $item['caseSize'];
+        $ins_array['mixMatch'] = substr($item['vendorName'], 0, 26);
+        $ins_array['description'] = substr($item['description'], 0, 32) . ' SO';
+        $ins_array['department'] = $item['department'];
+        $ins_array['discountable'] = $item['discountable'];
+        $ins_array['discounttype'] = $item['discounttype'];
+        $ins_array['cost'] = $item['cost'];
+        $ins_array['unitPrice'] = $unitPrice;
+        $ins_array['total'] = $casePrice * $num_cases;
+        $ins_array['regPrice'] = $item['normal_price'] * $item['caseSize'] * $num_cases;
 
         $tidP = $dbc->prepare_statement("SELECT MAX(trans_id),MAX(voided),MAX(numflag) 
                 FROM {$TRANS}PendingSpecialOrder WHERE order_id=?");
@@ -767,7 +636,7 @@ class OrderViewPage extends FannieRESTfulPage
         $ins_array['numflag'] = $tidW[2];
 
         $dbc->smart_insert("{$TRANS}PendingSpecialOrder",$ins_array);
-        
+
         return array($qtyReq,$ins_array['trans_id'],$ins_array['description']);
     }
 
@@ -810,13 +679,13 @@ class OrderViewPage extends FannieRESTfulPage
         );
 
         $dbc->selectDB($this->config->get('TRANS_DB'));
-        $so = new SpecialOrdersModel($dbc);
-        $so->specialOrderID($orderID);
-        $so->statusFlag($status_vals['status_flag']);
-        $so->subStatus($status_vals['sub_status']);
-        $so->notes(trim($note_vals['notes'],"'"));
-        $so->noteSuperID($note_vals['superID']);
-        $so->save();
+        $s_order = new SpecialOrdersModel($dbc);
+        $s_order->specialOrderID($orderID);
+        $s_order->statusFlag($status_vals['status_flag']);
+        $s_order->subStatus($status_vals['sub_status']);
+        $s_order->notes(trim($note_vals['notes'],"'"));
+        $s_order->noteSuperID($note_vals['superID']);
+        $s_order->save();
         $dbc->selectDB($this->config->get('TRANS_DB')); // switch back to previous
 
         if ($dbc->table_exists($TRANS . 'SpecialOrderStatus')) {
@@ -877,29 +746,29 @@ class OrderViewPage extends FannieRESTfulPage
         $dbc->selectDB($this->config->get('TRANS_DB'));
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
 
-        $so = new SpecialOrdersModel($dbc);
-        $so->specialOrderID($orderID);
-        $so->firstName('');
-        $so->lastName('');
-        $so->street('');
-        $so->city('');
-        $so->state('');
-        $so->zip('');
-        $so->phone('');
-        $so->altPhone('');
-        $so->email('');
-        $so->save();
+        $so_order = new SpecialOrdersModel($dbc);
+        $so_order->specialOrderID($orderID);
+        $so_order->firstName('');
+        $so_order->lastName('');
+        $so_order->street('');
+        $so_order->city('');
+        $so_order->state('');
+        $so_order->zip('');
+        $so_order->phone('');
+        $so_order->altPhone('');
+        $so_order->email('');
+        $so_order->save();
 
         $dbc->selectDB($this->config->get('OP_DB'));
     }
 
-    public function get_orderID_items_handler()
+    protected function get_orderID_items_handler()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         
         $ret = <<<HTML
-<form onsubmit="addUPC();return false;">
+<form> 
 <div class="form-inline">
     <div class="input-group">
         <span class="input-group-addon">UPC</span> 
@@ -913,7 +782,7 @@ class OrderViewPage extends FannieRESTfulPage
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <button type="submit" class="btn btn-default btn-sm">Add Item</button>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <button type="button" class="btn btn-default btn-sm" onclick="searchWindow();return false;">Search</button>
+    <button type="button" class="btn btn-default btn-sm btn-search">Search</button>
 </div>
 </form>
 <p />
@@ -928,14 +797,11 @@ HTML;
         $ret .= '<p />';
         $ret .= '<b><a href="" onclick="$(\'#manualclosebuttons\').toggle();return false;">Manually close order</a></b>';
         $ret .= sprintf('<span id="manualclosebuttons" class="collapse"> as:
-                <a href="" class="btn btn-default"
-                onclick="confirmC(%d,7);return false;">Completed</a>
+                <a href="" class="btn btn-default close-order-btn" data-close="7">Completed</a>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="" class="btn btn-default"
-                onclick="confirmC(%d,8);return false;">Canceled</a>
+                <a href="" class="btn btn-default close-order-btn" data-close="8">Canceled</a>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="" class="btn btn-default"
-                onclick="confirmC(%d,9);return false;">Inquiry</a>
+                <a href="" class="btn btn-default close-order-btn" data-close="9">Inquiry</a>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br />
                 <div class="alert alert-danger">Closing an order means slips for these
                 items will no longer scan at the registers</div></span>',
@@ -952,103 +818,101 @@ HTML;
         $dbc->selectDB($this->config->get('OP_DB'));
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
 
-        $dQ = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments order by dept_no");
-        $dR = $dbc->exec_statement($dQ);
+        $deptP = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments order by dept_no");
+        $deptR = $dbc->exec_statement($deptP);
         $depts = array(0=>'Unassigned');
-        while($dW = $dbc->fetch_row($dR)) {
-            $depts[$dW['dept_no']] = $dW['dept_name'];
+        while($deptW = $dbc->fetch_row($deptR)) {
+            $depts[$deptW['dept_no']] = $deptW['dept_name'];
         }
 
         $ret = '<table class="table table-bordered table-striped">';
         $ret .= '<tr><th>UPC</th><th>SKU</th><th>Description</th><th>Cases</th><th>SRP</th><th>Actual</th><th>Qty</th><th>Dept</th><th>&nbsp;</th></tr>';
-        $q = $dbc->prepare_statement("SELECT o.upc,o.description,total,quantity,department,
+        $prep = $dbc->prepare_statement("SELECT o.upc,o.description,total,quantity,department,
             v.sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch,
             o.trans_id,o.unitPrice,o.memType,o.staff
             FROM {$TRANS}PendingSpecialOrder as o
             left join vendorItems as v on o.upc=v.upc AND vendorID=1
             WHERE order_id=? AND trans_type='I' 
             ORDER BY trans_id DESC");
-        $r = $dbc->exec_statement($q, array($orderID));
-        $num_rows = $dbc->num_rows($r);
+        $res = $dbc->exec_statement($prep, array($orderID));
+        $num_rows = $dbc->num_rows($res);
         $prev_id = 0;
-        while($w = $dbc->fetch_row($r)) {
-            if ($w['trans_id'] == $prev_id) continue;
+        while ($row = $dbc->fetch_row($res)) {
+            if ($row['trans_id'] == $prev_id) continue;
             $ret .= sprintf('
                     <tbody>
                     <tr>
                     <td>%s</td>
                     <td>%s</td>
                     <td><input class="form-control input-sm item-field" name="description"
-                        onchange="saveDesc($(this).val(),%d);return false;" value="%s" /></td>
+                        value="%s" /></td>
                     <td>%d</td>
                     <td><input size="5" class="form-control input-sm price-field item-field" id="srp%d" 
-                        onchange="saveSRP($(this).val(),%d);return false;" name="srp" value="%.2f" /></td>
+                        name="srp" value="%.2f" /></td>
                     <td><input size="5" class="form-control input-sm price-field item-field" id="act%d" 
-                        onchange="savePrice($(this).val(),%d);return false;" value="%.2f" name="actual" /></td>
+                        value="%.2f" name="actual" /></td>
                     <td><input size="4" class="form-control input-sm price-field item-field" 
-                        onchange="saveQty($(this).val(),%d);return false;" value="%.2f" name="qty" /></td>
+                        value="%.2f" name="qty" /></td>
                     <td><select class="form-control input-sm editDept item-field" 
-                        name="dept" onchange="saveDept($(this).val(),%d);return false;">',
-                    $w['upc'],
-                    (!empty($w['sku'])?$w['sku']:'&nbsp;'),
-                    $w['trans_id'],$w['description'],
-                    $w['ItemQtty'],
-                    $w['trans_id'],$w['trans_id'],$w['regPrice'],
-                    $w['trans_id'],$w['trans_id'],$w['total'],
-                    $w['trans_id'],$w['quantity'],
-                    $w['trans_id']
+                        name="dept">',
+                    $row['upc'],
+                    (!empty($row['sku'])?$row['sku']:'&nbsp;'),
+                    $row['description'],
+                    $row['ItemQtty'],
+                    $row['trans_id'],$row['regPrice'],
+                    $row['trans_id'],$row['total'],
+                    $row['quantity']
                 );
             foreach($depts as $id=>$name) {
                 $ret .= sprintf('<option value="%d" %s>%d %s</option>',
                     $id,
-                    ($id==$w['department']?'selected':''),
+                    ($id==$row['department']?'selected':''),
                     $id,$name);
             }
             $ret .= sprintf('</select></td>
-                    <td><a href="" onclick="deleteID(%d,%d);return false;"
-                        class="btn btn-danger btn-xs">%s</a></td>
+                    <td><a href="" data-order="%d" data-trans="%d" 
+                        class="btn btn-danger btn-xs btn-delete">%s</a></td>
                     </tr>',
-                    $orderID,$w['trans_id'],
+                    $orderID,$row['trans_id'],
                     \COREPOS\Fannie\API\lib\FannieUI::deleteIcon()
             );
             $ret .= '<tr>';
             $ret .= sprintf('<td colspan="2" align="right" class="form-inline">Unit Price: 
                 <input type="text" size="4" value="%.2f" id="unitp%d" name="unitPrice"
-                class="form-control input-sm price-field item-field"
-                onchange="saveUnit($(this).val(),%d);" /></td>',
-                $w['unitPrice'],$w['trans_id'],$w['trans_id']);
+                class="form-control input-sm price-field item-field" /></td>',
+                $row['unitPrice'],$row['trans_id']);
             $ret .= sprintf('<td class="form-inline">Supplier: <input type="text" value="%s" size="12" 
                     class="form-control input-sm item-field" name="vendor"
-                    maxlength="26" onchange="saveVendor($(this).val(),%d);" 
-                    /></td>',$w['mixMatch'],$w['trans_id']);
+                    maxlength="26" 
+                    /></td>',$row['mixMatch']);
             $ret .= '<td>Discount</td>';
-            if ($w['discounttype'] == 1 || $w['discounttype'] == 2) {
-                $ret .= '<td id="discPercent'.$w['trans_id'].'">Sale</td>';
-            } else if ($w['regPrice'] != $w['total']) {
-                $ret .= sprintf('<td id="discPercent%d">%d%%</td>',$w['upc'],
-                    round(100*(($w['regPrice']-$w['total'])/$w['regPrice'])));
+            if ($row['discounttype'] == 1 || $row['discounttype'] == 2) {
+                $ret .= '<td class="disc-percent" id="discPercent'.$row['trans_id'].'">Sale</td>';
+            } else if ($row['regPrice'] != $row['total']) {
+                $ret .= sprintf('<td class="disc-percent" id="discPercent%d">%d%%</td>',$row['upc'],
+                    round(100*(($row['regPrice']-$row['total'])/$row['regPrice'])));
             } else {
-                $ret .= '<td id="discPercent'.$w['upc'].'">0%</td>';
+                $ret .= '<td class="disc-percent" id="discPercent'.$row['upc'].'">0%</td>';
             }
             $ret .= sprintf('<td colspan="2">Printed: %s</td>',
-                    ($w['charflag']=='P'?'Yes':'No'));
+                    ($row['charflag']=='P'?'Yes':'No'));
             if ($num_rows > 1) {
                 $ret .= sprintf('<td colspan="2"><a href="" class="btn btn-default btn-sm"
-                    onclick="doSplit(%d,%d);return false;">Split Item to New Order</a><br />
-                    O <input type="checkbox" id="itemChkO" %s onclick="toggleO(%d,%d);" />&nbsp;&nbsp;&nbsp;&nbsp;
-                    A <input type="checkbox" id="itemChkA" %s onclick="toggleA(%d,%d);" />
+                    onclick="orderView.doSplit(%d,%d);return false;">Split Item to New Order</a><br />
+                    O <input type="checkbox" class="itemChkO" %s data-order="%d" data-trans="%d" />&nbsp;&nbsp;&nbsp;&nbsp;
+                    A <input type="checkbox" class="itemChkA" %s data-order="%d" data-trans="%d" />
                     </td>',
-                    $orderID,$w['trans_id'],
-                    ($w['memType']>0?'checked':''),$orderID,$w['trans_id'],
-                    ($w['staff']>0?'checked':''),$orderID,$w['trans_id']);
+                    $orderID,$row['trans_id'],
+                    ($row['memType']>0?'checked':''),$orderID,$row['trans_id'],
+                    ($row['staff']>0?'checked':''),$orderID,$row['trans_id']);
             } else {
                 $ret .= '<td colspan="2"></td>';
             }
             $ret .= '</tr>';
-            $ret .= '<tr><td class="small" colspan="9"><span style="font-size:1;">&nbsp;</span></td></tr>';
-            $ret .= '<input type="hidden" name="transID" value="' . $w['trans_id'] . '" />';
+            $ret .= '<tr><td class="small" colspan="9"><span style="font-size:1;">&nbsp;</span>';
+            $ret .= '<input type="hidden" name="transID" class="item-field" value="' . $row['trans_id'] . '" /></td></tr>';
             $ret .= '</tbody>';
-            $prev_id=$w['trans_id'];
+            $prev_id=$row['trans_id'];
         }
         $ret .= '</table>';
 
@@ -1060,7 +924,7 @@ HTML;
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $ret = '<i>This item ('.$description.') requires a quantity</i><br />';
-        $ret .= "<form onsubmit=\"newQty($orderID,$transID);return false;\">";
+        $ret .= "<form data-order=\"$orderID\" data-trans=\"$transID\">";
         $ret .= '<div class="form-inline">';
         $ret .= '<label>Qty</label>: <input type="text" id="newqty" 
             class="form-control input-sm" value="'.$default.'" maxlength="3" size="4" />';
@@ -1078,19 +942,19 @@ HTML;
         $dbc->selectDB($this->config->get('OP_DB'));
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
         $ret = '<i>This item ('.$description.') requires a department</i><br />';
-        $ret .= "<form onsubmit=\"newDept($orderID,$transID);return false;\">";
+        $ret .= "<form data-order=\"$orderID\" data-trans=\"$transID\">";
         $ret .= '<div class="form-inline">';
         $ret .= '<select id="newdept" class="form-control">';
-        $q = $dbc->prepare_statement("select super_name,
+        $prep = $dbc->prepare_statement("select super_name,
             CASE WHEN MIN(map_to) IS NULL THEN MIN(m.dept_ID) ELSE MIN(map_to) END
             from MasterSuperDepts
             as m left join {$TRANS}SpecialOrderDeptMap as s
             on m.dept_ID=s.dept_ID
             where m.superID > 0
             group by super_name ORDER BY super_name");
-        $r = $dbc->exec_statement($q);
-        while($w = $dbc->fetch_row($r)) {
-            $ret .= sprintf('<option value="%d">%s</option>',$w[1],$w[0]);
+        $res = $dbc->exec_statement($prep);
+        while ($row = $dbc->fetch_row($res)) {
+            $ret .= sprintf('<option value="%d">%s</option>',$row[1],$row[0]);
         }
         $ret .= "</select>";
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -1108,7 +972,7 @@ HTML;
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
 
         $query = $dbc->prepare_statement("SELECT o.unitPrice,o.itemQtty,o.quantity,o.discounttype,
-            c.type,c.memType,o.regPrice,o.total,o.discountable
+            c.type,c.memType,o.regPrice,o.total,o.discountable,o.cost,o.card_no
             FROM {$TRANS}PendingSpecialOrder AS o LEFT JOIN custdata AS c ON
             o.card_no=c.CardNo AND c.personNum=1
             WHERE order_id=? AND trans_id=?");
@@ -1116,12 +980,19 @@ HTML;
         $row = $dbc->fetch_row($response);
 
         $regPrice = $row['itemQtty']*$row['quantity']*$row['unitPrice'];
-        if ($reg) {
+        if ($reg !== false) {
             $regPrice = $reg;
         }
         $total = $regPrice;
-        if (($row['type'] == 'PC' || $row['memType'] == 9) && $row['discountable'] != 0 && $row['discounttype'] == 0) {
-            $total *= 0.85;
+        if (!class_exists('OrderItemLib')) {
+            include(dirname(__FILE__) . '/OrderItemLib.php');
+        }
+        if ($row['discountable'] != 0 && $row['discounttype'] == 0) {
+            $mempricing = OrderItemLib::memPricing($row['card_no']);
+            // create fake item to re-apply rules for marking up/down
+            $item = array('normal_price' => $regPrice, 
+                'cost'=>$row['cost']*$row['itemQtty']*$row['quantity']);
+            $total = OrderItemLib::markUpOrDown($item, $mempricing);
         }
 
         if ($row['unitPrice'] == 0 || $row['quantity'] == 0) {
@@ -1140,15 +1011,24 @@ HTML;
         );
     }
 
-    public function get_view()
+    protected function get_handler()
+    {
+        $orderID = $this->createEmptyOrder();
+
+        return filter_input(INPUT_SERVER, 'PHP_SELF') . '?orderID=' . $orderID;
+    }
+
+    // this shouldn't occur unless something goes wonky creating the new order
+    protected function get_view()
     {
         return '<div class="alert alert-danger">No Order Specified</div>';
     }
 
-    public function get_orderID_view()
+    protected function get_orderID_view()
     {
         $orderID = $this->orderID;
-        $return_path = (isset($_SERVER['HTTP_REFERER']) && strstr($_SERVER['HTTP_REFERER'],'fannie/ordering/NewSpecialOrdersPage.php')) ? $_SERVER['HTTP_REFERER'] : '';
+        $refer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
+        $return_path = ($refer && strstr($refer,'fannie/ordering/NewSpecialOrdersPage.php')) ? $refer : '';
         if (!empty($return_path)) {
             $_SESSION['specialOrderRedirect'] = $return_path;
         } elseif (isset($_SESSION['specialOrderRedirect'])) {
@@ -1164,8 +1044,8 @@ HTML;
         $cachepath = sys_get_temp_dir()."/ordercache/";
         $cachekey = FormLib::get('k');
         if ($cachekey && file_exists($cachepath.$cachekey)) {
-            $fp = fopen($cachepath.$cachekey,'r');
-            while (($buffer = fgets($fp, 4096)) !== false) {
+            $fptr = fopen($cachepath.$cachekey,'r');
+            while (($buffer = fgets($fptr, 4096)) !== false) {
                 if ((int)$buffer == $orderID) $found = True;
                 else if (!$found) $prev = (int)$buffer;
                 else if ($found) {
@@ -1173,7 +1053,7 @@ HTML;
                     break;
                 }
             }
-            fclose($fp);
+            fclose($fptr);
 
             $ret .= '<div class="row">
                 <div class="col-sm-6 text-left">';
@@ -1210,6 +1090,20 @@ HTML;
         $this->addScript('orderview.js');
 
         return $ret;
+    }
+
+    public function unitTest($phpunit)
+    {
+        if (!class_exists('SpecialOrderTests', false)) {
+            include(dirname(__FILE__) . '/SpecialOrderTests.php');
+        }
+        $tester = new SpecialOrderTests($this->connection, $this->config, $this->logger);
+        $tester->testCreateOrder($this, $phpunit);
+        $tester->testOrderView($this, $phpunit);
+        $tester->testSetCustomer($this, $phpunit);
+        $tester->testAddItem($this, $phpunit);
+        $tester->testDeleteItem($this, $phpunit);
+        $tester->testEditCustomer($this, $phpunit);
     }
 }
 

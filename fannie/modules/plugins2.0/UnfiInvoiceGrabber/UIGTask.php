@@ -30,13 +30,17 @@ if (!class_exists('UIGLib')) {
 
 class UIGTask extends FannieTask
 {
+    public $username_field = 'UnfiInvoiceUser';
+    public $password_field = 'UnfiInvoicePass';
+    public $vendor_id = 1;
+
     public function run()
     {
         global $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $UNFI_USERNAME = $FANNIE_PLUGIN_SETTINGS['UnfiInvoiceUser'];
-        $UNFI_PASSWORD = $FANNIE_PLUGIN_SETTINGS['UnfiInvoicePass'];
+        $UNFI_USERNAME = $FANNIE_PLUGIN_SETTINGS[$this->username_field];
+        $UNFI_PASSWORD = $FANNIE_PLUGIN_SETTINGS[$this->password_field];
 
         $LOGIN_URL = 'https://customers.unfi.com/_login/LoginPage/Login.aspx';
         $IFRAME_DOMAIN = 'https://stsuser.unfi.com';
@@ -227,7 +231,7 @@ class UIGTask extends FannieTask
         $temp_dir = sys_get_temp_dir();
         foreach($dates as $date) {
             $good_date = date('Y-m-d', strtotime($date->Text));
-            $doCheck = $dbc->execute($check, array(1, $good_date, $good_date));
+            $doCheck = $dbc->execute($check, array($this->vendor_id, $good_date, $good_date));
             $diff = time() - strtotime($date->Text);
             $repeat = false;
             if ($dbc->num_rows($doCheck) > 0 && $diff > (3 * 24 * 60 * 60)) {
@@ -303,7 +307,7 @@ class UIGTask extends FannieTask
                 fclose($fp);
 
                 $this->cronMsg("Importing invoices for " . $date->Text, FannieLogger::INFO);
-                if (UIGLib::import($filename, 1, $repeat) === true) {
+                if (UIGLib::import($filename, $this->vendor_id, $repeat) === true) {
                     unlink($filename);
                 } else {
                     $this->cronMsg("ERROR: IMPORT FAILED!", FannieLogger::ERROR);

@@ -46,8 +46,8 @@ class DepartmentMovementReport extends FannieReportPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $date1 = FormLib::getDate('date1',date('Y-m-d'));
-        $date2 = FormLib::getDate('date2',date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $deptStart = FormLib::get_form_value('deptStart','');
         $deptEnd = FormLib::get_form_value('deptEnd','');
         $deptMulti = FormLib::get('departments', array());
@@ -321,6 +321,7 @@ class DepartmentMovementReport extends FannieReportPage
 
     function form_content()
     {
+        ob_start();
 ?>
 <form method = "get" action="DepartmentMovementReport.php" class="form-horizontal">
 <div class="row">
@@ -373,6 +374,8 @@ class DepartmentMovementReport extends FannieReportPage
 </form>
 <?php
         $this->addOnloadCommand("\$('#subdepts').closest('.form-group').hide();");
+
+        return ob_get_clean();
     }
 
     public function helpContent()

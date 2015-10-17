@@ -101,36 +101,45 @@ class SQLManager
         $connected = false;
         if (isset($this->connections[$database]) || $new) {
             $connected = $conn->NConnect($server,$username,$password,$database);
+        } elseif ($persistent) {
+            $connected = $conn->PConnect($server,$username,$password,$database);
         } else {
-            if ($persistent) {
-                $connected = $conn->PConnect($server,$username,$password,$database);
-            } else {
-                $connected = $conn->Connect($server,$username,$password,$database);
-            }
+            $connected = $conn->Connect($server,$username,$password,$database);
         }
         $this->connections[$database] = $conn;
 
         $this->last_connection_error = false;
         if (!$connected) {
             $this->last_connect_error = $conn->ErrorMsg();
-            $conn = ADONewConnection($type);
-            $conn->SetFetchMode(ADODB_FETCH_BOTH);
-            $connected = $conn->Connect($server,$username,$password);
-            if ($connected) {
-                $this->last_connection_error = false;
-                $stillok = $conn->Execute("CREATE DATABASE $database");
-                if (!$stillok) {
-                    $this->last_connect_error = $conn->ErrorMsg();
-                    $this->connections[$database] = false;
-                    return false;
-                }
-                $conn->Execute("USE $database");
-                $this->connections[$database] = $conn;
-            } else {
+            return $this->connectAndCreate($server, $type, $username, $password, $database);
+        }
+
+        return true;
+    }
+
+    /**
+      Try connecting without specifying a database
+      and then creating the requested database
+    */
+    private function connectAndCreate($server, $type, $username, $password, $database)
+    {
+        $conn = ADONewConnection($type);
+        $conn->SetFetchMode(ADODB_FETCH_BOTH);
+        $connected = $conn->Connect($server,$username,$password);
+        if ($connected) {
+            $this->last_connection_error = false;
+            $stillok = $conn->Execute("CREATE DATABASE $database");
+            if (!$stillok) {
                 $this->last_connect_error = $conn->ErrorMsg();
                 $this->connections[$database] = false;
                 return false;
             }
+            $conn->Execute("USE $database");
+            $this->connections[$database] = $conn;
+        } else {
+            $this->last_connect_error = $conn->ErrorMsg();
+            $this->connections[$database] = false;
+            return false;
         }
 
         return true;
@@ -279,7 +288,8 @@ class SQLManager
 
         $result = (!is_object($con)) ? false : $con->Execute($query_text,$params);
         if (!$result) {
-            $this->logger($this->failedQueryMsg($query_text, $params, $which_connection));
+            $errorMsg = $this->failedQueryMsg($query_text, $params, $which_connection);
+            $this->logger($errorMsg);
 
             if ($this->throw_on_fail) {
                 throw new \Exception($errorMsg);
@@ -296,7 +306,7 @@ class SQLManager
         }
 
         $errorMsg = $this->error($which_connection);
-        $logMsg = 'Failed Query on ' . $_SERVER['PHP_SELF'] . "\n"
+        $logMsg = 'Failed Query on ' . filter_input(INPUT_SERVER, 'PHP_SELF') . "\n"
                 . $query_text . "\n";
         if (is_array($params)) {
             $logMsg .= 'Parameters: ' . implode("\n", $params);
@@ -325,13 +335,10 @@ class SQLManager
     */
     public function queryAll($query_text)
     {
-        $ret = array_reduce(array_keys($this->connections),
-            function ($carry, $db_name) {
-                $carry[$db_name] = $this->query($query_text,$db_name);
-                return $carry;
-            },
-            array()
-        );
+        $ret = true;
+        foreach ($this->connections as $db_name => $con) {
+            $ret = $this->query($query_text,$db_name);
+        }
 
         return $ret;
     }
@@ -784,19 +791,15 @@ class SQLManager
                 $type = strtolower($this->fieldType($result,$i,$source_db));
                 $row[$i] = $this->sanitizeValue($row[$i], $type);
                 $args[] = $row[$i];
-                if (count($arg_sets) == 0) {
-                    $prep .= '?,';
-                }
                 $big_args[] = $row[$i];
                 $big_values .= '?,';
-            }
-            if (count($arg_sets) == 0) {
-                $prep = substr($prep, 0, strlen($prep)-1) . ')';
             }
             $arg_sets[] = $args;
             $big_values = substr($big_values, 0, strlen($big_values)-1) . '),';
         }
         $big_values = substr($big_values, 0, strlen($big_values)-1);
+        $prep .= str_repeat('?,', count($arg_sets[0]));
+        $prep = substr($prep, 0, strlen($prep)-1) . ')';
 
         /**
           Sending all records as a single query for large
@@ -810,7 +813,7 @@ class SQLManager
             $bigR = $this->execute($big_prep, $big_args, $dest_db);
             return ($bigR) ? true : false;
         } else {
-            return $this->executeAsTransaction($query, $arg_sets, $dest_db);
+            return $this->executeAsTransaction($prep, $arg_sets, $dest_db);
         }
     }
 
@@ -824,7 +827,7 @@ class SQLManager
         $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
         $ret = true;
         $this->startTransaction($which_connection);
-        $statement = $this->prepare($prep, $which_connection);
+        $statement = $this->prepare($query, $which_connection);
         foreach ($arg_sets as $args) {
             if (!$this->execute($statement, $args, $which_connection)) {
                 $ret = false;
@@ -875,6 +878,33 @@ class SQLManager
             $which_connection = $this->default_db;
         }
         $fld = $result_object->FetchField($index);
+        // mysqli puts a integer constant in the type property
+        // ADOdb provides MetaType to convert to relative type
+        $dbtype = $this->connectionType($which_connection);
+        if (strtolower($dbtype) === 'mysqli') {
+            $meta = $this->connections[$which_connection]->MetaType($fld->type);
+            switch ($meta) {
+                case 'C':
+                case 'X':
+                    $fld->type = 'varchar';
+                    break;
+                case 'B':
+                case 'X':
+                    $fld->type= 'blob';
+                    break;
+                case 'D':
+                case 'T':
+                    $fld->type= 'datetime';
+                    break;
+                case 'R':
+                case 'I':
+                    $fld->type= 'int';
+                    break;
+                case 'N':
+                    $fld->type= 'numeric';
+                    break;
+            }
+        }
 
         return $fld->type;
     }
@@ -1123,35 +1153,34 @@ class SQLManager
         return false;
     }
 
+    private function columnBooleanProperty($col, $prop)
+    {
+        if (property_exists($col, $prop) && $col->$prop) {
+            return true;
+        } else if (property_exists($col, $prop) && !$col->$prop) {
+            return false;
+        } else {
+            return null;
+        }
+    }
+
     private function columnToArray($col)
     {
         $info = array();
         $type = strtoupper($col->type);
         if (property_exists($col, 'max_length') && $col->max_length != -1 && substr($type, -3) != 'INT') {
-            if (property_exists($col, 'scale') && $col->scale) {
+            if ($this->columnBooleanProperty($col, 'scale')) {
                 $type .= '(' . $col->max_length . ',' . $col->scale . ')';
             } else {
                 $type .= '(' . $col->max_length . ')';
             }
         }
-        if (property_exists($col, 'unsigned') && $col->unsigned) {
+        if ($this->columnBooleanProperty($col, 'unsigned')) {
             $type .= ' UNSIGNED';
         }
         $info['type'] = $type;
-        if (property_exists($col, 'auto_increment') && $col->auto_increment) {
-            $info['increment'] = true;
-        } else if (property_exists($col, 'auto_increment') && !$col->auto_increment) {
-            $info['increment'] = false;
-        } else {
-            $info['increment'] = null;
-        }
-        if (property_exists($col, 'primary_key') && $col->primary_key) {
-            $info['primary_key'] = true;
-        } else if (property_exists($col, 'primary_key') && !$col->primary_key) {
-            $info['primary_key'] = false;
-        } else {
-            $info['primary_key'] = null;
-        }
+        $info['increment'] = $this->columnBooleanProperty($col, 'auto_increment');
+        $info['primary_key'] = $this->columnBooleanProperty($col, 'primary_key');
 
         if (property_exists($col, 'default_value') && $col->default_value !== 'NULL' && $col->default_value !== null) {
             $info['default'] = $col->default_value;
@@ -1507,6 +1536,8 @@ class SQLManager
         if ($res && $this->numRows($res) > 0) {
             $row = $this->fetchRow($res);
             return $row[0];
+        } elseif ($res && $this->numRows($res) == 0) {
+            return false;
         } else {
             if ($this->throw_on_fail) {
                 throw new \Exception('Record not found');
@@ -1531,6 +1562,8 @@ class SQLManager
         if ($res && $this->numRows($res) > 0) {
             $row = $this->fetchRow($res);
             return $row;
+        } elseif ($res && $this->numRows($res) == 0) {
+            return false;
         } else {
             if ($this->throw_on_fail) {
                 throw new \Exception('Record not found');
@@ -1656,7 +1689,7 @@ class SQLManager
     {
         $def1 = $this->tableDefinition($table1, $which_connection1);
         $def2 = $this->tableDefinition($table2, $which_connection2);
-        $ret = array_reduce(array_key($def1),
+        $ret = array_reduce(array_keys($def1),
             function ($carry, $column_name) use ($def2) {
                 if (isset($def2[$column_name])) {
                     $carry .= $column_name . ',';
@@ -1762,33 +1795,46 @@ class SQLManager
       caches adapters on creation.
     */
     protected $adapters = array();
+    protected $adapter_map = array(
+        'mysql'     => 'COREPOS\common\sql\MysqlAdapter',
+        'mysqli'    => 'COREPOS\common\sql\MysqlAdapter',
+        'pdo_mysql' => 'COREPOS\common\sql\MysqlAdapter',
+        'pdo'       => 'COREPOS\common\sql\MysqlAdapter',
+        'mssql'     => 'COREPOS\common\sql\MssqlAdapter',
+        'pgsql'     => 'COREPOS\common\sql\PgsqlAdapter',
+        'sqlite3'   => 'COREPOS\common\sql\SqliteAdapter',
+    );
+
     protected function getAdapter($type)
     {
         if (isset($adapters[$type])) {
             return $adapters[$type];
         }
-        switch ($type)
-        {
-            case 'mysql':
-            case 'mysqli':
-            case 'pdo_mysql':
-            case 'pdo':
-                $adapters[$type] = new sql\MysqlAdapter();
-                break;
-            case 'mssql':
-                $adapters[$type] = new sql\MssqlAdapter();
-                break;
-            case 'pgsql':
-                $adapters[$type] = new sql\PgsqlAdapter();
-                break;
-            case 'sqlite3':
-                $adapters[$type] = new sql\SqliteAdapter();
-                break;
-            default:
-                throw new \Exception('Unknown database type: ' . $type);
+        if (isset($this->adapter_map[$type])) {
+            $class = $this->adapter_map[$type];
+            $adapters[$type] = new $class();
         }
 
         return $adapters[$type];
+    }
+
+    /**
+      Build an SQL IN clause from an array
+      @param $arr [array] of values
+      @param $args [array, optional] existing query parameter list
+      @param $dummy_value [optional] plug value when the array of values is empty
+      @return [tuple] SQL string of placeholders, array of query parameters
+    */
+    public function safeInClause($arr, $args=array(), $dummy_value=-999999)
+    {
+        if (count($arr) == 0) { 
+            $arr = array($dummy_value);
+        }
+        $args = array_merge($args, $arr);
+        $inStr = str_repeat('?,', count($arr));
+        $inStr = substr($inStr, 0, strlen($inStr)-1);
+
+        return array($inStr, $args);
     }
 }
 

@@ -61,7 +61,7 @@ class HourlyCustomersReport extends FannieReportPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $date = FormLib::get_form_value('date', date('Y-m-d'));
+        $date = $this->form->date;
         $dlog = DTransactionsModel::selectDlog($date);
 
         $hour = $dbc->hour('tdate');

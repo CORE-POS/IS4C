@@ -46,8 +46,8 @@ class BasketLimitedReport extends FannieReportPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $qty = FormLib::get('qty', 1);
 
         $create = $dbc->prepare_statement("CREATE TABLE groupingTempBS (upc VARCHAR(13), quantity double, total decimal(10,2), trans_num varchar(50))");

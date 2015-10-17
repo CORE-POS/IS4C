@@ -26,7 +26,12 @@ using System.Threading;
 using System.Net;
 using System.Net.Sockets;
 using System.Xml;
+using System.Drawing;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
 using CustomForms;
+using BitmapBPP;
 using DSIPDCXLib;
 using AxDSIPDCXLib;
 
@@ -37,7 +42,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
     private DsiPDCX ax_control = null;
     private string device_identifier = null;
     private string com_port = "0";
-    protected string server_list = "x1.mercurydev.net;x2.mercurydev.net";
+    protected string server_list = "x1.mercurypay.com;x2.backuppay.com";
     protected int LISTEN_PORT = 8999; // acting as a Datacap stand-in
     protected short CONNECT_TIMEOUT = 60;
     private bool log_xml = true;
@@ -239,6 +244,18 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                 return null;
             }
             string sigdata = doc.SelectSingleNode("RStream/Signature").Value;
+            List<Point> points = SigDataToPoints(sigdata);
+
+            int ticks = Environment.TickCount;
+            string my_location = AppDomain.CurrentDomain.BaseDirectory;
+            char sep = Path.DirectorySeparatorChar;
+            while (File.Exists(my_location + sep + "ss-output/"  + sep + ticks)) {
+                ticks++;
+            }
+            string filename = my_location + sep + "ss-output"+ sep + ticks + ".bmp";
+            BitmapBPP.Signature sig = new BitmapBPP.Signature(filename, points);
+            parent.MsgSend("TERMBMP" + ticks + ".bmp");
+            
         } catch (Exception) {
             return null;
         }
@@ -256,6 +273,28 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                 return "ISC250";
             default:
                 return device;
+        }
+    }
+
+    protected List<Point> SigDataToPoints(string data)
+    {
+        char[] comma = new char[]{','};
+        char[] colon = new char[]{':'};
+        var pairs = from pair in data.Split(colon) 
+            select pair.Split(comma);
+        var points = from pair in pairs 
+            where pair.Length == 2
+            select new Point(CoordsToInt(pair[0]), CoordsToInt(pair[1]));
+
+        return points.ToList();
+    }
+
+    protected int CoordsToInt(string coord)
+    {
+        if (coord == "#") {
+            return 0;
+        } else {
+            return Int32.Parse(coord);
         }
     }
 }
