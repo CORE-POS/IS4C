@@ -33,6 +33,7 @@ using System.Threading;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 
 #if NEWTONSOFT_JSON
 using Newtonsoft.Json;
@@ -54,6 +55,7 @@ public class Magellan : DelegateForm
     private UDPMsgBox u;
 
     private bool mq_enabled = false;
+    private bool full_udp = false;
 
     #if CORE_RABBIT
     private bool mq_available = true;
@@ -120,6 +122,18 @@ public class Magellan : DelegateForm
         }
     }
 
+
+    private udp_client = null;
+    private UdpClient getClient()
+    {
+        if (udp_client == null) {
+            udp_client = new UdpClient();
+            udp_client.Connect(System.Net.IPAddress.Parse("127.0.0.1"), 9451);
+        }
+
+        return udp_client;
+    }
+
     private void UdpListen()
     {
         u = new UDPMsgBox(9450);
@@ -137,6 +151,8 @@ public class Magellan : DelegateForm
     {
         if (msg == "exit") {
             this.ShutDown();
+        } else if (msg == "full_udp") {
+            full_udp = true;
         } else if (msg == "mq_up" && mq_available) {
             mq_enabled = true;
         } else if (msg == "mq_down") {
@@ -148,7 +164,10 @@ public class Magellan : DelegateForm
 
     public void MsgSend(string msg)
     {
-        if (mq_available && mq_enabled) {
+        if (full_udp) {
+            byte[] body = System.Text.Encoding.UTF8.GetBytes(msg);
+            getClient().Send(body, body.Length); 
+        } else if (mq_available && mq_enabled) {
             #if CORE_RABBIT
             byte[] body = System.Text.Encoding.UTF8.GetBytes(msg);
             rabbit_channel.BasicPublish("", "core-pos", null, body);
