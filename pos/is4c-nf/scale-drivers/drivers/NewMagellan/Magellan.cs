@@ -95,9 +95,7 @@ public class Magellan : DelegateForm
         MonitorSerialPorts();
         UdpListen();
 
-        #if CORE_RABBIT
         factorRabbits();
-        #endif
     }
 
     // alternate constructor for specifying
@@ -111,6 +109,7 @@ public class Magellan : DelegateForm
 
     private void factorRabbits()
     {
+        #if CORE_RABBIT
         try {
             rabbit_factory = new ConnectionFactory();
             rabbit_factory.HostName = "localhost";
@@ -120,10 +119,11 @@ public class Magellan : DelegateForm
         } catch (Exception) {
             mq_available = false;
         }
+        #endif
     }
 
 
-    private udp_client = null;
+    private UdpClient udp_client = null;
     private UdpClient getClient()
     {
         if (udp_client == null) {
