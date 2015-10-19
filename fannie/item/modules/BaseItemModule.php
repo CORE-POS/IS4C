@@ -417,8 +417,8 @@ HTML;
                 $ret .= '
                     <tr>
                         <th>Long Desc.</th>
-                        <td colspan="3">
-                        <input type="text" size="60" name="puser_description"
+                        <td colspan="5">
+                        <input type="text" size="60" name="puser_description" maxlength="255"
                             ' . (!$active_tab ? ' disabled ' : '') . '
                             value="' . $rowItem['ldesc'] . '" class="form-control" />
                         </td>
@@ -1096,6 +1096,23 @@ HTML;
                 }
                 $model->deposit($deposit[$i]);
             }
+
+            /* products.formatted_name is intended to be maintained automatically.
+             * Get all enabled plugins and standard modules of the base.
+             * Run plugins first, then standard modules.
+             */
+            $formatters = FannieAPI::ListModules('ProductNameFormatter');
+            $fmt_name = "";
+            $fn_params = array('index' => $i);
+            foreach($formatters as $formatter_name){
+                $formatter = new $formatter_name();
+                $fmt_name = $formatter->compose($fn_params);
+                if (isset($formatter->this_mod_only) &&
+                    $formatter->this_mod_only) {
+                    break;
+                }
+            }
+            $model->formatted_name($fmt_name);
 
             $model->save();
         }
