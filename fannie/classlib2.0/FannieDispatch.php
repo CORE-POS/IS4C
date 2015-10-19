@@ -87,15 +87,10 @@ class FannieDispatch
       @param $dbc [SQLManager] database connection
       @return [boolean] success / fail
     */
-    static public function logUsage(SQLManager $dbc, $op_db)
+    static protected function logUsage(SQLManager $dbc, $op_db)
     {
         if (php_sapi_name() === 'cli') {
             // don't log cli usage
-            return false;
-        }
-
-        if (!$dbc || !isset($dbc->connections[$op_db]) || $dbc->connections[$op_db] === false) {
-            // database unavailable
             return false;
         }
 
@@ -123,7 +118,22 @@ class FannieDispatch
         return $dbc->execute($prep, $args);
     }
 
-    static public function i18n()
+    /**
+      Lookup custom permissions for a page 
+    */
+    static protected function authOverride(SQLManager $dbc, $op_db, $page_class)
+    {
+        $prep = $dbc->prepare('
+            SELECT authClass
+            FROM PagePermissons
+            WHERE pageClass=?',
+            $op_db);
+        $auth = $dbc->getValue($prep, array($page_class), $op_db);
+
+        return $auth ? $auth : false;
+    }
+
+    static protected function i18n()
     {
         if (function_exists('bindtextdomain') && defined('LC_MESSAGES')) {
             setlocale(LC_MESSAGES, "en_US");
@@ -174,14 +184,22 @@ class FannieDispatch
             self::setErrorHandlers();
             // initialize locale & gettext
             self::i18n();
-            // write URL log
-            self::logUsage($dbc, $op_db);
 
             // draw current page
             $page = basename(filter_input(INPUT_SERVER, 'PHP_SELF'));
             $class = substr($page,0,strlen($page)-4);
             if ($class != 'index' && class_exists($class)) {
                 $obj = new $class();
+                if ($dbc->isConnected($op_db)) {
+                    // write URL log
+                    self::logUsage($dbc, $op_db);
+                    /*
+                    $auth = self::authOverride($dbc, $op_db, $class);
+                    if ($auth) {
+                        $obj->setPermissions($auth);
+                    }
+                    */
+                }
                 $obj->setConfig($config);
                 $obj->setLogger($logger);
                 if (is_a($obj, 'FannieReportPage')) {

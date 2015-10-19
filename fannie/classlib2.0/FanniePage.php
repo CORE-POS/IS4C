@@ -377,5 +377,10 @@ function enableLinea(selector, callback)
             echo '</script>';
         }
     }
+
+    public function setPermissions($p)
+    {
+        $this->auth_classes = array($p);
+    }
 }
 
