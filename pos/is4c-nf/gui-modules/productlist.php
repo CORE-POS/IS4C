@@ -93,10 +93,10 @@ class productlist extends NoInputCorePage
         $results = array();
         $this->boxSize = 1;
         /* Search first with the plugins
-              *  and then with standard modules.
-             * Keep only the first instance of each upc.
-             * Increase the depth of the list from module parameters.
-             */
+         *  and then with standard modules.
+         * Keep only the first instance of each upc.
+         * Increase the depth of the list from module parameters.
+         */
         foreach($modules as $mod_name){
             $mod = new $mod_name();
             $mod_results = $mod->search($entered);
@@ -106,6 +106,9 @@ class productlist extends NoInputCorePage
             }
             if ($mod->result_size > $this->boxSize)
                 $this->boxSize = $mod->result_size;
+            if (isset($mod->this_mod_only) && $mod->this_mod_only) {
+                break;
+            }
         }
 
         $this->temp_result = $results;
@@ -134,13 +137,21 @@ class productlist extends NoInputCorePage
         } else {
             $this->add_onload_command("selectSubmit('#search', '#selectform', '#filter-span')\n");
 
+            // originally 390
+            if (CoreLocal::get('touchscreen')) {
+                $maxSelectWidth = 470;
+            } else {
+                $maxSelectWidth = 530;
+            }
             echo "<div class=\"baseHeight\">"
                 ."<div class=\"listbox\">"
                 ."<form name=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\""
                 ." id=\"selectform\">"
                 ."<select name=\"search\" id=\"search\" "
-                .' style="min-height: 200px; min-width: 220px; max-width: 390px;" '
-                ."size=".$this->boxSize." onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\">";
+                .' style="min-height: 200px; min-width: 220px;'
+                ." max-width: {$maxSelectWidth}px;\""
+                ."size=".$this->boxSize." onblur=\"\$('#search').focus();\" "
+                ."ondblclick=\"document.forms['selectform'].submit();\">";
 
             $selected = "selected";
             foreach($result as $row){
@@ -165,7 +176,7 @@ class productlist extends NoInputCorePage
                     . '</div>';
             }
             echo "<div class=\"listboxText coloredText centerOffset\">"
-                . _("use arrow keys to navigate")
+                . _("use arrow keys") . '<br />' . _("to navigate") . '<br />' . _("the list")
                 . '<p><button type="submit" class="pos-button wide-button coloredArea">
                     OK <span class="smaller">[enter]</span>
                     </button></p>'

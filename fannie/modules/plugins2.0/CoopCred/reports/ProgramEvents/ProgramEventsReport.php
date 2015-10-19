@@ -358,7 +358,7 @@ class ProgramEventsReport extends FannieReportPage {
             "<br />It is relative to the starting day of the report" .
             " and thus may not be meaningful if the opening balance was not zero." .
             "</p>";
-        $ret[] = "<p class='explain'><b><a href='ProgramEventsReport.php?pid=" .
+        $ret[] = "<p class='explain'><b><a href='{$_SERVER['PHP_SELF']}?pid=" .
             $this->programID . "'>" .
             "Start again from the form.</a></b></p>";
         return $ret;
