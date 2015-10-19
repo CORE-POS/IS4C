@@ -221,17 +221,23 @@ class ItemMarginModule extends ItemModule
         $vendorP = $dbc->prepare('
             SELECT d.margin,
                 n.vendorName,
-                d.name
+                d.name,
+                s.margin AS specialMargin
             FROM products AS p
                 INNER JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID=p.default_vendor_id
                 INNER JOIN vendorDepartments AS d ON v.vendorID=d.vendorID AND v.vendorDept=d.deptID
                 INNER JOIN vendors AS n ON v.vendorID=n.vendorID
+                LEFT JOIN VendorSpecificMargins AS s ON p.department=s.deptID AND p.default_vendor_id=s.vendorID
             WHERE p.upc = ?
         ');
         $vendorR = $dbc->execute($vendorP, array($upc));
         if ($vendorR && $dbc->num_rows($vendorR) > 0) {
             $w = $dbc->fetch_row($vendorR);
             $desired_margin = $w['margin'] * 100;
+            if ($w['specialMargin']) {
+                $desired_margin = 100* $w['specialMargin'];
+                $w['name'] = 'Custom';
+            }
             $ret .= sprintf('Desired margin for this vendor category (%s) is %.2f%%<br />',
                     $w['vendorName'] . ':' . $w['name'],
                     $desired_margin);

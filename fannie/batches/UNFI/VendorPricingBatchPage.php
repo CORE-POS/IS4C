@@ -146,7 +146,13 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         $costSQL = Margin::adjustedCostSQL('v.cost', 'b.discountRate', 'b.shippingMarkup');
         $marginSQL = Margin::toMarginSQL($costSQL, 'p.normal_price');
         $p_def = $dbc->tableDefinition('products');
-        $srpSQL = Margin::toPriceSQL($costSQL, 'CASE WHEN s.margin IS NULL OR s.margin=0 THEN d.margin ELSE s.margin END');
+        $marginCase = '
+            CASE 
+                WHEN g.margin IS NOT NULL AND g.margin <> 0 THEN g.margin
+                WHEN s.margin IS NOT NULL AND s.margin <> 0 THEN s.margin
+                ELSE d.margin
+            END';
+        $srpSQL = Margin::toPriceSQL($costSQL, $marginCase);
 
         $query = "SELECT p.upc,
             p.description,
@@ -161,12 +167,13 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             " . $srpSQL . " AS rawSRP,
             v.vendorDept,
             x.variable_pricing,
-            CASE WHEN s.margin IS NULL OR s.margin=0 THEN d.margin ELSE s.margin END AS margin
+            " . $marginCase . " AS margin
             FROM products AS p 
                 INNER JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 INNER JOIN vendors as b ON v.vendorID=b.vendorID
                 LEFT JOIN departments AS d ON p.department=d.dept_no
                 LEFT JOIN vendorDepartments AS s ON v.vendorDept=s.deptID AND v.vendorID=s.vendorID
+                LEFT JOIN VendorSpecificMargins AS g ON p.department=g.deptID AND v.vendorID=g.vendorID
                 LEFT JOIN prodExtra AS x on p.upc=x.upc ";
         $args = array($vendorID);
         if ($superID != 99){
