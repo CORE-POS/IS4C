@@ -56,20 +56,7 @@ class PatronageOverDatesReport extends FannieReportPage
             $this->top_n = FormLib::get_form_value('top_n',0);
         }
 
-        if (FormLib::get_form_value('date1') !== ''){
-            $this->content_function = "report_content";
-
-            /**
-              Check if a non-html format has been requested
-               from the links in the initial display, not the form.
-            */
-            if (FormLib::get_form_value('excel') !== '') {
-                $this->report_format = FormLib::get_form_value('excel');
-                $this->has_menus(False);
-            }
-        }
-
-        return True;
+        return parent::preprocess();
     }
 
     /* Text at the top of the report, below the standard heading.
@@ -91,8 +78,12 @@ class PatronageOverDatesReport extends FannieReportPage
         global $FANNIE_OP_DB, $FANNIE_COOP_ID,
              $FANNIE_TRANS_DB, $FANNIE_URL;
 
-        $d1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $d2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        try {
+            $d1 = $this->form->date1;
+            $d2 = $this->form->date2;
+        } catch (Exception $ex) {
+            return array();
+        }
 
         $dlog = DTransactionsModel::select_dlog($d1,$d2);
 
@@ -109,7 +100,8 @@ class PatronageOverDatesReport extends FannieReportPage
         $total = array();       // Total Spent for desired Range
         $numTran = array();     // Number of transactions for selected Range for each Owner
 
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
 
         $limit = "";
         if ($this->top_n) {

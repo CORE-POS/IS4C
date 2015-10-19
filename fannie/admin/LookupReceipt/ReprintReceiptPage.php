@@ -59,9 +59,13 @@ class ReprintReceiptPage extends FanniePage
 
             if ($trans_num != "") {
                 $temp = explode("-",$trans_num);
-                $emp_no = $temp[0];
-                $register_no=$temp[1];
-                $trans_no=$temp[2];
+                if (count($temp) != 3) {
+                    $emp_no=$reg_no=$trans_no=0;
+                } else {
+                    $emp_no = $temp[0];
+                    $register_no=$temp[1];
+                    $trans_no=$temp[2];
+                }
             }
 
             $dbc = FannieDB::get($FANNIE_OP_DB);

@@ -53,7 +53,7 @@ class ShelfTagQueuesModel extends BasicModel
         $this->reset();
     }
 
-    public function toOptions($selected=0)
+    public function toOptions($selected=0, $id_as_label=false)
     {
         $queues = $this->find('shelfTagQueueID');
         if (count($queues) == 0) {

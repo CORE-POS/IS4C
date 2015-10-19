@@ -754,8 +754,12 @@ HTML;
         $ret = array();
         $pairs = explode('&', $str);
         foreach ($pairs as $pair) {
-            list($key, $val) = explode('=', $pair, 2);
-            $ret[$key] = $val;
+            if (substr($pair, -1) == '=') {
+                $ret[substr($pair, 0, strlen($pair)-1)] = '';
+            } else {
+                list($key, $val) = explode('=', $pair, 2);
+                $ret[$key] = $val;
+            }
         }
 
         return json_encode($ret);

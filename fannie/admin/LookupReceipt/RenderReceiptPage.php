@@ -157,6 +157,9 @@ class RenderReceiptPage extends FannieRESTfulPage
         $year = date('Y',$totime);
         $day = date('j',$totime);
         $transact = explode('-',$trans);
+        if (count($trans) != 3) {
+            return '';
+        }
         $emp_no = $transact[0];
         $trans_no = $transact[2];
         $reg_no = $transact[1];
