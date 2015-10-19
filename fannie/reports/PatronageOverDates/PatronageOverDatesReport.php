@@ -294,18 +294,11 @@ class PatronageOverDatesReport extends FannieReportPage
     }
 
 
-    function form_content(){
-        $lastMonday = "";
-        $lastSunday = "";
+    function form_content()
+    {
+        ob_start();
+        list($lastMonday, $lastSunday) = \COREPOS\Fannie\API\lib\Dates::lastWeek();
 
-        $ts = mktime(0,0,0,date("n"),date("j")-1,date("Y"));
-        while($lastMonday == "" || $lastSunday == ""){
-            if (date("w",$ts) == 1 && $lastSunday != "")
-                $lastMonday = date("Y-m-d",$ts);
-            elseif(date("w",$ts) == 0)
-                $lastSunday = date("Y-m-d",$ts);
-            $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));    
-        }
         ?>
             <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="get" id="form1">
         <!-- Left column -->
@@ -349,6 +342,7 @@ class PatronageOverDatesReport extends FannieReportPage
         </form>
         <?php
         $this->add_onload_command('$(\'#top_n\').focus()');
+        return ob_get_clean();
 
     // form_content()
     }
