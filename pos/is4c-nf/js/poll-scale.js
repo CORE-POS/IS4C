@@ -1,14 +1,17 @@
 var SCALE_REL_PRE = "";
 
-function pollScale(rel_prefix){
-	SCALE_REL_PRE = rel_prefix;
-	$.ajax({url: SCALE_REL_PRE+'ajax-callbacks/ajax-poll-scale.php',
-		type: 'post',
-		cache: false,
-		dataType: 'json',
-		error: scalePollError,
-		success: scalePollSuccess
-	});
+function pollScale(rel_prefix)
+{
+    if (!isNodeWebKit()) {
+        SCALE_REL_PRE = rel_prefix;
+        $.ajax({url: SCALE_REL_PRE+'ajax-callbacks/ajax-poll-scale.php',
+            type: 'post',
+            cache: false,
+            dataType: 'json',
+            error: scalePollError,
+            success: scalePollSuccess
+        });
+    }
 }
 
 function scalePollError(e1,e2,e3){
@@ -66,27 +69,7 @@ function subscribeToQueue(rel_prefix)
     client.heartbeat.incoming = 0;
 
     var message_callback = function(x) {
-        if (x.body.indexOf(":") !== -1) {
-			// data from the cc terminal
-			// run directly; don't include user input
-			if (typeof runParser == 'function') {
-				runParser(encodeURI(x.body), SCALE_REL_PRE);
-            }
-        } else if (/^S1\d+$/.test(x.body)) {
-            $.ajax({url: SCALE_REL_PRE+'ajax-callbacks/ajax-scale.php',
-                type: 'post',
-                cache: false,
-                success: function(resp) {
-                    $('#scaleBottom').html(resp);	
-                }
-            });
-        } else if (/^\d+$/.test(x.body)) {
-			var v = $('#reginput').val();
-            var url = document.URL;
-            parseWrapper(v+x.body);
-        } else {
-            parseWrapper(x.body);
-        }
+        dataCallback(x.body);
     };
 
     var connect_callback = function(x) {
@@ -99,3 +82,44 @@ function subscribeToQueue(rel_prefix)
     client.connect('guest', 'guest', connect_callback, error_callback, '/');
 }
 
+function dataCallback(data)
+{
+    if (data.indexOf(":") !== -1) {
+        // data from the cc terminal
+        // run directly; don't include user input
+        if (typeof runParser == 'function') {
+            runParser(encodeURI(data), SCALE_REL_PRE);
+        }
+    } else if (/^S1\d+$/.test(data)) {
+        $.ajax({url: SCALE_REL_PRE+'ajax-callbacks/ajax-scale.php',
+            type: 'post',
+            cache: false,
+            success: function(resp) {
+                $('#scaleBottom').html(resp);	
+            }
+        });
+    } else if (/^\d+$/.test(data)) {
+        var v = $('#reginput').val();
+        var url = document.URL;
+        parseWrapper(v+data);
+    } else {
+        parseWrapper(data);
+    }
+}
+
+window.nodePassThrough = function(data)
+{
+    dataCallback(data);
+}
+
+function isNodeWebkit()
+{
+    var isNode = (typeof process !== "undefined" && typeof require !== "undefined");
+    if (isNode) {
+        try {
+            return = (typeof require('nw.gui') !== "undefined");
+        } catch(e) {
+            return false;
+        }
+    }
+}

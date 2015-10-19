@@ -27,6 +27,9 @@ if (!class_exists('FannieAPI')) {
 if (!function_exists('updateProductAllLanes')) {
     include('laneUpdates.php');
 }
+if (!function_exists('updateAllLanes')) {
+    include('laneUpdates_WEFC_Toronto.php');
+}
 
 class ItemEditorPage extends FanniePage 
 {
@@ -602,7 +605,12 @@ class ItemEditorPage extends FanniePage
         /* push updates to the lanes */
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        updateProductAllLanes($upc);
+        $FANNIE_COOP_ID = $this->config->get('COOP_ID');
+        if (isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto') {
+            updateAllLanes($upc, array('products','productUser'));
+        } else {
+            updateProductAllLanes($upc);
+        }
 
         if ($audited) {
             $lc = FormLib::get('likeCode', -1);

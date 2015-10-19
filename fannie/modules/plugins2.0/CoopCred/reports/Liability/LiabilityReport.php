@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
-/* TODO 28Feb2015
- * - Format dates in PHP rather than MySQL
+/* TODO 12Sep2015
+ * - Remove deadwood.
+ * - Refine help.
+ * - help to toolbar help.
  */
 
 include(dirname(__FILE__) . '/../../../../../config.php');
@@ -30,14 +32,14 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class MemberSummaryReport extends FannieReportPage
+class LiabilityReport extends FannieReportPage
 {
 
     public $themed = true;
-    public $description = "[Coop Cred Member Summary Report] Coop Cred: Summary of Payments, Purchases and Net for each member of a Program.";
+    public $description = "[Coop Cred Liability Report] Coop Cred: Summary of Inputs, Payments, Purchases and Unspent for each Program.";
     public $report_set = 'CoopCred';
-    protected $title = "Fannie: Coop Cred Program Members Summary Report";
-    protected $header = "Coop Cred Program Members Summary Report";
+    protected $title = "Fannie: Coop Cred Program Liability Report";
+    protected $header = "Coop Cred Program Liability Report";
 
     protected $programID = 0;
     protected $programName = "";
@@ -78,23 +80,30 @@ class MemberSummaryReport extends FannieReportPage
                 $this->add_script("{$FANNIE_URL}src/CalendarControl.js");
                 return True;
             }
+            // 0 means all programs
             $programID = (int)$_REQUEST['programID'];
 
-            $ccpModel = new CCredProgramsModel($dbc);
-            $ccpModel->programID($programID);
-            $prog = array_pop($ccpModel->find());
-            if ($prog != null) {
-                $this->programID = $prog->programID();
-                $this->programName = $prog->programName();
-                $this->programBankID = $prog->bankID();
-                //obs $this->bankID = $prog->bankID();
+            if ($programID > 0) {
+                $ccpModel = new CCredProgramsModel($dbc);
+                $ccpModel->programID($programID);
+                $prog = array_pop($ccpModel->find());
+                if ($prog != null) {
+                    $this->programID = $prog->programID();
+                    $this->programName = $prog->programName();
+                    $this->programBankID = $prog->bankID();
+                    $this->programStartDate = (preg_match("/^[12]\d{3}-\d{2}-\d{2}/",$prog->startDate()))
+                        ? $prog->startDate() : '1970-01-01';
+                } else {
+                    $this->errors[] = "Error: Program ID {$programID} is not known.";
+                    return True;
+                }
             } else {
-                $this->errors[] = "Error: Program ID {$programID} is not known.";
-                return True;
+                $this->programID = $programID;
+                $this->programName = "All Programs";
+                $this->programBankID = 0;
+                $this->programStartDate = '1970-01-01';
             }
 
-            $this->programStartDate = (preg_match("/^[12]\d{3}-\d{2}-\d{2}/",$prog->startDate()))
-                ? $prog->startDate() : '1970-01-01';
 
             $dateFrom = FormLib::get_form_value('date1','');
             $dateTo = FormLib::get_form_value('date2','');
@@ -109,7 +118,7 @@ class MemberSummaryReport extends FannieReportPage
             $this->dbSortOrder = FormLib::get_form_value('dbSortOrder','DESC');
             if ($this->sortable == True) {
                 if ($this->reportType == 'summary') {
-                    $this->sort_column = 1; // 1st column is 0
+                    $this->sort_column = 0; // 1st column is 0
                     $this->sort_direction = 0; // 0=asc 1=desc
                 } else {
                     $this->sort_column = 3; // 1st column is 0
@@ -124,7 +133,8 @@ class MemberSummaryReport extends FannieReportPage
             }
 
             /*
-              Check if a non-html format has been requested
+                Check if a non-html format has been requested.
+                Does FannieReportPage already do this?
             */
             if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
                 $this->report_format = 'xls';
@@ -183,9 +193,10 @@ class MemberSummaryReport extends FannieReportPage
          *  an HTML tag
          */
         $ret = array();
-        $ret[] = sprintf("<H3 class='report'>Coop Cred: Payments,
-            Purchases and Net for the<br />%s Program<br />From %s to %s</H3>",
-            $this->programName,
+        $ret[] = sprintf("<H3 class='report'>Coop Cred: Inputs, Payments,
+            Purchases and Unspent for %s<br />From %s to %s</H3>",
+            (($this->programID == 0) ? "<br />{$this->programName}" :
+                "the<br />{$this->programName} Program"),
             (($this->dateFrom == $this->programStartDate)
                 ? "Program Start"
                 : date("F j, Y",strtotime("$this->dateFrom"))),
@@ -199,17 +210,33 @@ class MemberSummaryReport extends FannieReportPage
         } else {
             $today_time = date("l F j, Y");
             $ret[] = "<p class='explain'>To the end of the day: {$today_time}</p>";
-            //$ret[] = "To the end of the day <b>before</b> this day: {$today_time}</p>";
         }
-        $ret[] = "<p class='explain expfirst'><b>Total</b> of <b>Purchase</b>".
+        $ret[] = "<p class='explain expfirst'><b>Inputs</b>" .
+            " is the amount from sponsors and other contributions." .
+            "</p>";
+        $ret[] = "<p class='explain'><b>Disbursements</b>" .
+            " is the amount transferred from Inputs to Members' accounts." .
+            " It should be the same as Payments." .
+            "</p>";
+        $ret[] = "<p class='explain'><b>Undisbursed</b>" .
+            " is the difference between Inputs and Disbursements." .
+            " It is the amount of Inputs the co-op retains, is still expected to disburse." .
+            "</p>";
+        $ret[] = "<p class='explain'><b>Total</b> of <b>Purchases</b>".
             " at the <a href='#notes' style='text-decoration:underline;'>end</a> of the report".
             " is the retail value of what has been".
             " taken from inventory.</p>";
-        $ret[] = "<p class='explain'><b>Total</b> of <b>Net</b>".
+        $ret[] = "<p class='explain'><b>Total</b> of <b>Unspent</b>".
             " at the <a href='#notes' style='text-decoration:underline;'>end</a> of the report".
             " is the difference between the the amount that has been put in Members'".
             " accounts (Payment) and the amount they have used for purchases.".
-            " It is the amount the Coop is still liable for.<!--br /><br /--></p>";
+            " It is the amount the Coop is still liable for." .
+            "</p>";
+        $ret[] = "<p class='explain'><b>Disbursements minus Payments</b>" .
+            " is the difference between the amount removed (disbursed) from Inputs " .
+            " and the amount added (paid) to Members' accounts. " .
+            " It should be 0." .
+            "</p>";
         $ret[] ="";
         return $ret;
     // /report_description_content()
@@ -231,150 +258,55 @@ class MemberSummaryReport extends FannieReportPage
          */
         $ret = array();
         $args = array();
-        $args[] = $this->programID;
-        $args[] = $this->programID;
-        $args[] = $this->programBankID;
+        $programWhere = "";
+        if ($this->programID != 0) {
+            $programWhere = " AND h.programID = ? ";
+            $args[] = $this->programID;
+        }
         $args[] = "$this->dateFrom 00:00:00";
         $args[] = "$this->dateTo 23:59:59";
-        if ($this->dateTo == date('Y-m-d')) {
+        if (False && $this->dateTo == date('Y-m-d')) {
             $args[] = $this->programID;
             $args[] = $this->programID;
             $args[] = $this->programBankID;
         }
 
-        if ($this->reportType == "detail") {
+        /* 11Sep2015 At the moment I can't think how a "detail" version
+         * would work. Restore from MemberSummary if needed.
+         */
 
-            $this->report_headers = array('Date','When','Member#','Member Name',
-               'Receipt','$ '._('Payment'),'$ '._('Purchase'), '$ '._('Net'));
-
-            $queryPast = " (SELECT a.cardNo AS cardNo,
-                        a.tdate AS OrderDate,
-                        DATE_FORMAT(a.tdate,'%Y %m %d %H:%i') AS 'SortDate',
-                        DATE_FORMAT(a.tdate,'%M %e, %Y %l:%i%p') AS 'When',
-                        a.charges,
-                        a.transNum,
-                        a.payments,
-                        (a.payments - a.charges) AS 'Net',
-                        year(a.tdate) AS tyear, month(a.tdate) AS tmonth, day(a.tdate) AS tday,
-                        c.CardNo AS CCardNo,
-                        c.FirstName AS FirstName,
-                        c.LastName AS LastName
-                    FROM CCredMemberships AS m
-                        JOIN {$FANNIE_OP_DB}{$dbc->sep()}custdata AS c
-                            ON m.cardNo = c.CardNo
-                        JOIN CCredHistory AS a
-                            ON a.cardNo = m.cardNo
-                    WHERE m.programID = ?
-                        AND a.programID = ?
-                        AND m.cardNo != ?
-                        AND (a.tdate BETWEEN ? AND ?))";
-
-            $queryToday = " (SELECT a.cardNo AS cardNo,
-                    a.tdate AS OrderDate,
-                    DATE_FORMAT(a.tdate,'%Y %m %d %H:%i') AS 'SortDate',
-                    DATE_FORMAT(a.tdate,'%M %e, %Y %l:%i%p') AS 'When',
-                    a.charges,
-                    a.trans_num,
-                    a.payments,
-                    (a.payments - a.charges) AS 'Net',
-                    year(a.tdate) AS tyear, month(a.tdate) AS tmonth, day(a.tdate) AS tday,
-                    c.CardNo AS CCardNo,
-                    c.FirstName AS FirstName,
-                    c.LastName AS LastName
-                FROM CCredMemberships AS m
-                    JOIN {$FANNIE_OP_DB}{$dbc->sep()}custdata AS c
-                        ON m.cardNo = c.CardNo
-                    JOIN CCredHistoryToday AS a
-                        ON a.cardNo = m.cardNo
-                WHERE m.programID = ?
-                    AND a.programID = ?
-                    AND m.cardNo != ?)";
-
-            $queryOrder = "\nORDER BY LastName ASC, FirstName, CCardNo, OrderDate {$this->dbSortOrder}";
-            $queryUnion = "\nUNION\n";
-
-            // If the order is DESC and the range includes today then
-            //  the CCredHistoryToday select needs to be first.
-            if ($this->dateTo == date('Y-m-d')) {
-                if ($this->dbSortOrder == 'DESC') {
-                    $args = array();
-                    $args[] = $this->programID;
-                    $args[] = $this->programID;
-                    $args[] = $this->programBankID;
-                    $args[] = $this->programID;
-                    $args[] = $this->programID;
-                    $args[] = $this->programBankID;
-                    $args[] = "$this->dateFrom 00:00:00";
-                    $args[] = "$this->dateTo 23:59:59";
-                    $query = "$queryToday $queryUnion $queryPast $queryOrder";
-                } else {
-                    $args = array();
-                    $args[] = $this->programID;
-                    $args[] = $this->programID;
-                    $args[] = $this->programBankID;
-                    $args[] = "$this->dateFrom 00:00:00";
-                    $args[] = "$this->dateTo 23:59:59";
-                    $args[] = $this->programID;
-                    $args[] = $this->programID;
-                    $args[] = $this->programBankID;
-                    $query = "$queryPast $queryUnion $queryToday $queryOrder";
-                }
-            } else {
-
-                $args = array();
-                $args[] = $this->programID;
-                $args[] = $this->programID;
-                $args[] = $this->programBankID;
-                $args[] = "$this->dateFrom 00:00:00";
-                $args[] = "$this->dateTo 23:59:59";
-                $query = "$queryPast $queryOrder";
-            }
-
-        } elseif ($this->reportType == "summary") {
+        if ($this->reportType == "summary") {
             $this->report_headers = array(
-                'Member#','Member Name',
-                '$ Payments','$ Purchases', '$ Net'
+                'Program',
+                'Program<br />Inputs',
+                'Program<br />Disbursements',
+                'Program<br />Undisbursed',
+                'Member<br />Payments',
+                'Member<br />Purchases',
+                'Member<br />Unspent',
+                'Disbursements -<br />Payments'
             );
-        $query = "(SELECT a.cardNo AS cardNo,
-                    a.tdate AS OrderDate,
-                    SUM(a.charges) AS charges,
-                    SUM(a.payments) AS payments,
-                    SUM(a.payments - a.charges) AS 'Net',
-                    c.CardNo AS CCardNo,
-                    c.FirstName AS FirstName,
-                    c.LastName AS LastName
-                FROM CCredMemberships AS m
-                    JOIN {$FANNIE_OP_DB}{$dbc->sep()}custdata AS c
-                        ON m.cardNo = c.CardNo
-                    JOIN CCredHistory AS a
-                        ON a.cardNo = m.cardNo
-                WHERE m.programID = ?
-                    AND a.programID = ?
-                    AND m.cardNo != ?
-                    AND (a.tdate BETWEEN ? AND ?)
-        GROUP BY c.CardNo)";
-        // If range includes today, need UNION with CCredHistoryToday
-        if ($this->dateTo == date('Y-m-d')) {
-            $query .= "\nUNION";
-            $query .= "\n(SELECT a.cardNo AS cardNo,
-                    a.tdate AS OrderDate,
-                    SUM(a.charges) AS charges,
-                    SUM(a.payments) AS payments,
-                    SUM(a.payments - a.charges) AS 'Net',
-                    c.CardNo AS CCardNo,
-                    c.FirstName AS FirstName,
-                    c.LastName AS LastName
-                FROM CCredMemberships AS m
-                    JOIN {$FANNIE_OP_DB}{$dbc->sep()}custdata AS c
-                        ON m.cardNo = c.CardNo
-                    JOIN CCredHistoryToday AS a
-                        ON a.cardNo = m.cardNo
-                WHERE m.programID = ?
-                    AND a.programID = ?
-                    AND m.cardNo != ?
-        GROUP BY c.CardNo)";
-        }
-        $query .= "\nORDER BY LastName, FirstName, CCardNo";
+            $selectFields = "programID, cardNo, charges, payments, tdate";
+            $todayQuery = "";
+            if ($this->dateTo == date('Y-m-d')) {
+                $todayQuery = " UNION SELECT {$selectFields} FROM CCredHistoryToday";
+            }
+            //c.FirstName, c.LastName,
+            $query = "SELECT h.programID, h.cardNo, h.charges, h.payments, h.tdate,
+                m.isBank,
+                p.programName
+                FROM (SELECT {$selectFields} FROM CCredHistory{$todayQuery}) as h
+                LEFT JOIN CCredPrograms p ON p.programID = h.programID
+                LEFT JOIN CCredMemberships m ON m.cardNo = h.cardNo AND
+                         m.programID = h.programID
+                LEFT JOIN {$FANNIE_OP_DB}{$dbc->sep()}custdata AS c
+                    ON c.CardNo = h.cardNo
+                WHERE 1=1 {$programWhere}
+                AND c.personNum =1
+                AND h.tdate BETWEEN ? AND ?
+                ORDER BY h.programID, h.cardNo";
+
+
         // summary
         }
 
@@ -390,81 +322,101 @@ class MemberSummaryReport extends FannieReportPage
             return $ret;
         }
 
-        if ($this->reportType == "detail") {
-            // Compose the rows of the table.
-            while ($row = $dbc->fetch_array($results)) {
-                // Array of cells of a row in the report table.
-                $record = array();
-                if ($this->reportType == "detail")
-                    $record[] = $row['SortDate'];
-                if ($this->reportType == "detail")
-                    $record[] = $row['When'];
-                //Member Number
-                $record[] = "<a href='../Activity/index.php?memNum={$row['cardNo']}" .
-                    "&amp;programID={$this->programID}'".
-                    " target='_CCR_{$row['cardNo']}' title='Details for this member'>" .
-                    "{$row['cardNo']}</a>";
-                //Member Name
-                $memberName = sprintf("%s, %s", $row['LastName'], $row['FirstName']);
-                $record[] = "<a href='../Activity/index.php?memNum={$row['cardNo']}" .
-                    "&amp;programID={$this->programID}'".
-                    " target='_CCR_{$row['cardNo']}' title='Details for this member'>" .
-                    "{$memberName}</a>";
-                //trans_num
-                if ($this->reportType == "detail") {
-                    $record[] = sprintf("<a href='%sadmin/LookupReceipt/RenderReceiptPage.php?".
-                        "year=%d&month=%d&day=%d&receipt=%s' target='_Receipt'>%s</a>",
-                        "$FANNIE_URL",
-                        $row['tyear'],$row['tmonth'],$row['tday'],
-                        $row['trans_num'], $row['trans_num']);
-                }
-                $record[] = $row['payments'];
-                $record[] = $row['charges'];
-                $record[] = $row['Net'];
-                $ret[] = $record;
-            }
-        // detail
-        }
-
-        /* Summary, consolidating today and before-today rows for the same member.
-         * Compose the rows of the table.
-         * %0.2f doesn't work as expected. To do with negative payments at some point?
-            $record[2] = sprintf("%0.2f",$row['payments']);
+        /* 11Sep2015 At the moment I can't think how a "detail" version
+         * would work. Restore from MemberSummary if needed.
          */
+
+        /*
+                0 'Program',
+                1 'Inputs',
+                2 'Disbursements',
+                3 'Undisbursed',
+                4 'Payments',
+                5 'Purchases',
+                6 'Unspent'
+                7 'Disbursed - Paid'
+            Inputs = banker, CCredHistory.payments > 0
+            Payments = banker, CCredHistory.payments < 0
+
+            Payments = member, .payments > 0
+            Purchases = member, .charges > 0
+
+            Unspent = Payments to members - Purchases by members
+            Undisbursed = Inputs to banker - Payments from banker
+        */
+
         if ($this->reportType == "summary") {
-            $lastCardNo = 0;
-            $record = array();
+            $lastProgramID = 0;
+            $record = array('',0,0,0,0,0,0,0);
             $rowCount = 0;
             while ($row = $dbc->fetch_array($results)) {
-                if ($row['cardNo'] != $lastCardNo && $lastCardNo != 0) {
+                if ($row['programID'] != $lastProgramID && $lastProgramID != 0) {
+                    // Finish the Program row.
+                    $record[2] = ($record[2] * -1); // as positive
+                    $record[3] = ($record[1] - $record[2]);
+                    $record[6] = ($record[4] - $record[5]);
+                    $record[7] = ($record[2] - $record[4]);
+                    for ($i=1 ; $i<count($record) ; $i++) {
+                        $record[$i] = sprintf('%0.2f',$record[$i]);
+                    }
                     $ret[] = $record;
                     // Array of cells of a row in the report table.
-                    $record = array();
+                    $record = array('',0,0,0,0,0,0,0);
                 }
-                if ($row['cardNo'] != $lastCardNo) {
-                    //Member Number
-                    $record[] = "<a href='../Activity/index.php?memNum=" .
-                        "{$row['cardNo']}&amp;programID={$this->programID}'".
-                        " target='_CCR_{$row['cardNo']}' title='Details for this member'>" .
-                        "{$row['cardNo']}</a>";
-                    //Member Name
-                    $memberName = sprintf("%s, %s", $row['LastName'], $row['FirstName']);
-                    $record[] = "<a href='../Activity/index.php?memNum={$row['cardNo']}" .
-                        "&amp;programID={$this->programID}'".
-                        " target='_CCR_{$row['cardNo']}' title='Details for this member'>" .
-                        "{$memberName}</a>";
-                    $record[2] = $row['payments'];
-                    $record[3] = $row['charges'];
-                    $record[4] = $row['Net'];
+                if ($row['programID'] != $lastProgramID) {
+                    //Program
+                    $record[0] = "<a href='../ProgramEvents/ProgramEventsReport.php?programID=" .
+                        "{$row['programID']}" .
+                        "&amp;date1=" . $this->dateFrom .
+                        "&amp;date2=" . $this->dateTo .
+                        "&amp;sortable=True" .
+                        "'" .
+                        " target='_CCP_{$row['programID']}' title='Details for this Program'>" .
+                        "{$row['programID']} {$row['programName']}</a>";
+                    $record[0] .= " <a href='../MemberSummary/MemberSummaryReport.php?programID=" .
+                        "{$row['programID']}" .
+                        "&amp;date1=" . $this->dateFrom .
+                        "&amp;date2=" . $this->dateTo .
+                        "&amp;sortable=True" .
+                        "'" .
+                        " target='_CCM_{$row['programID']}' " .
+                        "title='Details for Members of this Program'>" .
+                        "(members)" .
+                        "</a>";
+                    if ($row['isBank'] == 1) {
+                        if ($row['payments'] > 0) {
+                            $record[1] = $row['payments'];
+                        } else {
+                            $record[2] = $row['payments'];
+                        }
+                    } else {
+                        $record[4] = $row['payments'];
+                        $record[5] = $row['charges'];
+                    }
                 } else {
-                    $record[2] += $row['payments'];
-                    $record[3] += $row['charges'];
-                    $record[4] += $row['Net'];
+                    if ($row['isBank'] == 1) {
+                        if ($row['payments'] > 0) {
+                            $record[1] += $row['payments'];
+                        } else {
+                            $record[2] += $row['payments'];
+                        }
+                    } else {
+                        $record[4] += $row['payments'];
+                        $record[5] += $row['charges'];
+                    }
                 }
-                $lastCardNo = $row['cardNo'];
+                $lastProgramID = $row['programID'];
                 $rowCount++;
             }
             if ($rowCount > 0) {
+                // Finish the last Program row.
+                $record[2] = ($record[2] * -1); // as positive
+                $record[3] = ($record[1] - $record[2]);
+                $record[6] = ($record[4] - $record[5]);
+                $record[7] = ($record[2] - $record[4]);
+                for ($i=1 ; $i<count($record) ; $i++) {
+                    $record[$i] = sprintf('%0.2f',$record[$i]);
+                }
                 $ret[] = $record;
             }
         // summary
@@ -482,10 +434,14 @@ class MemberSummaryReport extends FannieReportPage
     function report_end_content(){
         $ret = array();
         $ret[] = "<p class='explain'><br /><a name='notes'><b>Notes:</b></a></p>";
+        $ret[] = "<p class='explain'><b>Total</b> of <b>Undisbursed</b>" .
+            " is the difference between Total Inputs and Total Disbursements." .
+            " It is the amount of Inputs the co-op retains, is still expected to disburse." .
+            "</p>";
         $ret[] = "<p class='explain'><b>Total</b> of <b>Purchases</b>".
             " is the retail value of what has been".
             " taken from inventory.</p>";
-        $ret[] = "<p class='explain'><b>Total</b> of <b>Net</b>".
+        $ret[] = "<p class='explain'><b>Total</b> of <b>Unspent</b>".
             " is the difference between the the amount that has been put in Members'".
             " accounts (Payment) and the amount they have used for purchases.".
             " It is the amount the Coop is still liable for.</p>";
@@ -498,36 +454,53 @@ class MemberSummaryReport extends FannieReportPage
     
     /**
       Sum the total columns
+                0 'Program',
+                1 'Inputs',
+                2 'Disbursements',
+                3 'Undisbursed',
+                4 'Payments',
+                5 'Purchases',
+                6 'Unspent'
+                7 'Disbursed - Payments'
     */
     function calculate_footers($data){
         $sumPayments = 0.0;
         $sumCharges = 0.0;
-        $sumNet = 0.0;
-        if ($this->reportType == "detail") {
+        $sumUnspent = 0.0;
+        $sumInputs = 0.0;
+        $sumDisbursements = 0.0;
+        $sumUndisbursed = 0.0;
+        $sumDminusP = 0.0;
+
+        if ($this->reportType == "summary") {
             foreach($data as $row) {
-                $sumPayments += (isset($row[5]))?$row[5]:0;
-                $sumCharges += (isset($row[6]))?$row[6]:0;
-                $sumNet += (isset($row[7]))?$row[7]:0;
+                $sumInputs += (isset($row[1]))?$row[1]:0;
+                $sumDisbursements += (isset($row[2]))?$row[2]:0;
+                $sumUndisbursed += (isset($row[3]))?$row[3]:0;
+
+                $sumPayments += (isset($row[4]))?$row[4]:0;
+                $sumCharges += (isset($row[5]))?$row[5]:0;
+                $sumUnspent += (isset($row[6]))?$row[6]:0;
+                $sumDminusP += (isset($row[7]))?$row[7]:0;
             }
             $ret = array();
-            $ret[] = array(null,null,null,null,null,'$ Payments','$ Purchases','$ Net');
-            $ret[] = array('Totals',null,null,null,null,
-                number_format($sumPayments,2),
-                number_format($sumCharges,2),
-                number_format($sumNet,2)
+            $ret[] = array(null,
+                '$ Inputs',
+                '$ Disbursements',
+                '$ Undisbursed',
+                '$ Payments',
+                '$ Purchases',
+                '$ Unspent',
+                '$ Disbursed - Paid'
             );
-        } elseif ($this->reportType == "summary") {
-            foreach($data as $row) {
-                $sumPayments += (isset($row[2]))?$row[2]:0;
-                $sumCharges += (isset($row[3]))?$row[3]:0;
-                $sumNet += (isset($row[4]))?$row[4]:0;
-            }
-            $ret = array();
-            $ret[] = array(null,null,'$ Payments','$ Purchases','$ Net');
-            $ret[] = array('Totals',null,
+            $ret[] = array('Totals',
+                number_format($sumInputs,2),
+                number_format($sumDisbursements,2),
+                number_format($sumUndisbursed,2),
                 number_format($sumPayments,2),
                 number_format($sumCharges,2),
-                number_format($sumNet,2)
+                number_format($sumUnspent,2),
+                number_format($sumDminusP,2)
             );
         }
         return $ret;
@@ -557,7 +530,7 @@ class MemberSummaryReport extends FannieReportPage
 </div><!-- /#main -->
 
 <!-- Bootstrap-coded begins -->
-<form method = "get" action="MemberSummaryReport.php" class="form-horizontal">
+<form method = "get" action="LiabilityReport.php" class="form-horizontal">
 <div class="row">
     <div class="col-sm-6">
         <div class="form-group">
@@ -566,7 +539,7 @@ class MemberSummaryReport extends FannieReportPage
 <?php
 
             echo "<select id='programID' name='programID' class='form-control'>";
-            echo "<option value=''>Choose a Program</option>";
+            echo "<option value='0'>All Programs</option>";
             $ccpModel = new CCredProgramsModel($dbc);
             $today = date('Y-m-d');
             foreach($ccpModel->find() as $prog) {
@@ -600,8 +573,8 @@ class MemberSummaryReport extends FannieReportPage
             <div class="col-sm-8">
                 <input type=text id=date1 name=date1 class="form-control date-field" /><!-- required / -->
                 <p class="explain" style="float:none; margin:0 0 0 0.5em;">Leave
-                    both dates empty to report on the whole life of the program.
-                <br />Leave Start date empty to report from the beginning of the program.
+                    both dates empty to report on the whole life of the program(s).
+                <br />Leave Start date empty to report from the beginning of the program(s).
                 </p>
             </div>
         </div>
@@ -635,7 +608,24 @@ title="Tick to display with sorting from column heads; un-tick for a plain formt
     // /form_content()
     }
 
-// /class MemberSummaryReport
+    public function helpContent()
+    {
+        return '<p>Report liabilities,
+            places where the co-op is still obliged
+            to disburse money or provide goods.
+            </p>
+            <ul>
+                <li>Inputs, money that has been provided by sponsors
+                but not disbursed to members yet.
+                </li>
+                <li>Money that has been transferred (paid) to Program Members
+                that they have not used for purchases (spent) yet.
+                </li>
+            </ul>
+            ';
+    }
+
+// /class LiabilityReport
 }
 
 FannieDispatch::conditionalExec(false);
