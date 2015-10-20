@@ -128,14 +128,14 @@ class CoopDealsMergePage extends FannieRESTfulPage
             FROM batchList AS l
                 INNER JOIN batches AS b ON l.batchID=b.batchID
             WHERE l.upc=?
-                AND b.endDate > ' . $dbc->now()
+                AND b.endDate >= ' . $dbc->curdate()
         );
 
         $allR = $dbc->query('
             SELECT batchID,
                 batchName
             FROM batches
-            WHERE endDate > ' . $dbc->now()
+            WHERE endDate >= ' . $dbc->curdate()
         );
         $opts = array();
         while ($allW = $dbc->fetchRow($allR)) {
