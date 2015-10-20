@@ -306,6 +306,7 @@ public class Magellan : DelegateForm
                 m.ShutDown();
                 exiting = true;
             }
+            Thread.Sleep(500);
         }
     }
 }
