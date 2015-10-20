@@ -43,35 +43,6 @@ class ECheckTender extends TenderModule
                 false,
                 $clearButton
             );
-        } else if( CoreLocal::get("store")=="wfc" && CoreLocal::get("isMember") != 0 && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
-            // This should really be a separate tender 
-            // module for store-specific behavior
-            $db = Database::pDataConnect();
-            $q = sprintf("SELECT card_no FROM custReceiptMessage
-                WHERE card_no=%d AND modifier_module='WfcEquityMessage'",
-                CoreLocal::get('memberID'));
-            $r = $db->query($q);
-            if ($db->num_rows($r) > 0) {
-                return DisplayLib::xboxMsg(
-                    _('member check tender cannot exceed total purchase if equity is owed'),
-                    $clearButton
-                );
-            }
-
-            // multi use
-            if (CoreLocal::get('standalone')==0) {
-                $chkQ = "select trans_num from dlog 
-                    where trans_type='T' and trans_subtype in ('CA','CK') 
-                    and card_no=".((int)CoreLocal::get('memberID'))."
-                    group by trans_num 
-                    having sum(case when trans_subtype='CK' then total else 0 end) < 0 
-                    and sum(Case when trans_subtype='CA' then total else 0 end) > 0";
-                $db = Database::mDataConnect();
-                $chkR = $db->query($chkQ);
-                if ($db->num_rows($chkR) > 0) {
-                    return DisplayLib::xboxMsg(_('already used check over benefit today'), $clearButton);
-                }
-            }
         } else if( CoreLocal::get("isMember") == 0  && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
             return DisplayLib::xboxMsg(_('non-member check tender cannot exceed total purchase'), $clearButton);
         }
