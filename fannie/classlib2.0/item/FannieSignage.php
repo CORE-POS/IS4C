@@ -303,7 +303,8 @@ class FannieSignage
                 p.normal_price,
                 p.scale,
                 p.numflag,
-                p.size
+                p.size,
+                COALESCE(s.signCount, 1) AS signCount
             FROM upcLike AS u
                 INNER JOIN likeCodes AS l ON u.likeCode=l.likeCode
                 ' . \DTrans::joinProducts('u', 'p', 'INNER') . '
@@ -320,6 +321,7 @@ class FannieSignage
         $item['numflag'] = $info['numflag'];
         $item['upc'] = $info['upc'];
         $item['size'] = $info['size'];
+        $item['signCount'] = $info['signCount'];
 
         return $item;
     }
