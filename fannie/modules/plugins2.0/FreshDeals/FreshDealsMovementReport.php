@@ -69,6 +69,7 @@ class FreshDealsMovementReport extends FannieReportPage
         $res = $dbc->execute($prep, $args);
         $data = array();
         $cpt = array();
+        $cpi = array();
         while ($row = $dbc->fetchRow($res)) {
             $data[] = array(
                 $order[$row['upc']],
@@ -78,10 +79,20 @@ class FreshDealsMovementReport extends FannieReportPage
                 sprintf('%.2f', $row['qty']/2),
             );
             $cpt[$order[$row['upc']]] = $row['qty']/2;
+            $cpi[$order[$row['upc']]] = array($row['brand'], $row['description'], $row['upc'], $row['size'], $row['cost'], $row['normal_price']);
         }
 
         $table = '<table class="table small table-bordered">
-            <tr><th>Copy/Paste</th>';
+            <tr><th>Copy/Paste Items</th>';
+        ksort($cpi);
+        foreach ($cpi as $id => $row) {
+            $table .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.2f</td><td>%.2f</td></tr>',
+                $row[0], $row[1], $row[2], $row[3], $row[4], $row[5]);
+        }
+        $table .= '</table>';
+
+        $table .= '<table class="table small table-bordered">
+            <tr><th>Copy/Paste Movement</th>';
         ksort($cpt);
         foreach ($cpt as $id => $qty) {
             $table .= sprintf('<tr><td>%.2f</td></tr>', $qty);
@@ -156,7 +167,10 @@ class FreshDealsMovementReport extends FannieReportPage
             SELECT t.upc,
                 p.brand,
                 p.description,
-                ' . DTrans::sumQuantity('t').' as qty
+                ' . DTrans::sumQuantity('t').' as qty,
+                CASE WHEN p.scale=1 THEN \'LB\' ELSE p.size END AS size,
+                p.cost,
+                p.normal_price
             FROM ' . $dlog . ' AS t
                 ' . DTrans::joinProducts() . '
             WHERE t.upc IN (' . $inStr . ')
