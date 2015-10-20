@@ -69,10 +69,14 @@ class ProductLineReport extends FannieReportPage
             $query .= ' LEFT JOIN FloorSections AS f ON y.floorSectionID=f.floorSectionID ';
         }
         $query .= " 
-            WHERE SUBSTRING(p.upc, 4, 5) = ?
-            ORDER BY p.upc";
+            WHERE SUBSTRING(p.upc, 4, 5) = ? ";
+        $args = array($prefix);
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $query .= ' AND p.store_id=? ';
+            $args[] = $this->config->get('STORE_ID');
+        }
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, array($prefix));
+        $result = $dbc->execute($prep, $args);
         $data = array();
         while ($row = $dbc->fetch_row($result)) {
             $data[] = array(
