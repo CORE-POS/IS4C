@@ -3,7 +3,7 @@
 /**
  * @backupGlobals disabled
  */
-class PluginsTest extends PHPUnit_Framework_TestCase
+class PluginFannieTest extends PHPUnit_Framework_TestCase
 {
     public function testPlugins()
     {

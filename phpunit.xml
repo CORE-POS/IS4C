@@ -7,14 +7,14 @@
             <file>tests/common/WhiteSpaceTest.php</file>
         </testsuite>
         <testsuite name="fannie">
-            <file>fannie/unit-tests/InstallTest.php</file>
+            <file>fannie/unit-tests/InstallFannieTest.php</file>
             <file>fannie/unit-tests/ApiLibTest.php</file>
+            <file>fannie/unit-tests/FannieSQLManagerTest.php</file>
             <file>fannie/unit-tests/LogTest.php</file>
             <file>fannie/unit-tests/MembersTest.php</file>
             <file>fannie/unit-tests/ModelsTest.php</file>
             <file>fannie/unit-tests/PagesTest.php</file>
-            <file>fannie/unit-tests/PluginsTest.php</file>
-            <file>fannie/unit-tests/SQLManagerTest.php</file>
+            <file>fannie/unit-tests/PluginFannieTest.php</file>
             <file>fannie/unit-tests/TasksTest.php</file>
         </testsuite>
         <testsuite name="pos">

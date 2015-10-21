@@ -3,7 +3,7 @@
 /**
  * @backupGlobals disabled
  */
-class SQLManagerTest extends PHPUnit_Framework_TestCase
+class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
 {
     public function testMethods()
     {

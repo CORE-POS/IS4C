@@ -3,7 +3,7 @@
 /**
  * @backupGlobals disabled
  */
-class InstallTest extends PHPUnit_Framework_TestCase
+class InstallFannieTest extends PHPUnit_Framework_TestCase
 {
     public function testInstallOpDB()
     {
