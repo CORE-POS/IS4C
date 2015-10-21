@@ -95,5 +95,51 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, $p->cashed_here(), 'Not marked as cashed');
     }
 
+    public function testEquityHistory()
+    {
+        $config = FannieConfig::factory();
+        $config->set('FANNIE_EQUITY_DEPARTMENTS', '1 2');
+        $logger = new FannieLogger();
+        $dbc = FannieDB::get('unit_test_op');
+
+        // create two test rows in dlog_15
+        $today = date('Y-m-d');
+        $trans_num = '1-1-1';
+        $dlog = new Dlog15Model($dbc);
+        $dlog->tdate($today); 
+        $dlog->trans_num($trans_num);
+        $dlog->department(1);
+        $dlog->total(10);
+        $dlog->card_no(1);
+        $dlog->trans_id(1);
+        $dlog->save();
+        $dlog->trans_id(2);
+        $dlog->save();
+
+        $task = new EquityHistoryTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+
+        // verify test rows were logged
+        $query = 'SELECT SUM(stockPurchase), COUNT(*) FROM stockpurchases WHERE card_no=1';
+        $res = $dbc->query($query);
+        $row = $dbc->fetchRow($res);
+        $this->assertEquals(20, $row[0]);
+        $this->assertEquals(2, $row[1]);
+
+        // add a third test row
+        $dlog->department(2);
+        $dlog->trans_id(3);
+        $dlog->save();
+
+        // verify only the new row is logged
+        $query = 'SELECT SUM(stockPurchase), COUNT(*) FROM stockpurchases WHERE card_no=1';
+        $res = $dbc->query($query);
+        $row = $dbc->fetchRow($res);
+        $this->assertEquals(30, $row[0]);
+        $this->assertEquals(3, $row[1]);
+    }
+
 }
 

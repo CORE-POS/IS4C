@@ -40,13 +40,60 @@ Deprecates nightly.equity.php.';
         'weekday' => '*',
     );
 
+    private $loggedP = null;
+
+    private function isLogged($dbc, $info)
+    {
+        if ($loggedP === null) {
+            $loggedP = $this->logCheckStatement($dbc);
+        }
+        $args = array(
+            $info['tdate'],
+            $info['card_no'],
+            $info['department'],
+            $info['trans_num'],
+        );
+        if ($this->hasTransID($dbc)) {
+            $args[] = $info['trans_id'];
+        }
+        $loggedR = $dbc->execute($loggedP, $args);
+        while ($logW = $dbc->fetchRow($loggedR)) {
+            if ($logW['stockPurchase'] == $info['total']) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function hasTransID($dbc)
+    {
+        $table = $dbc->tableDefinition('stockpurchases');
+        return isset($table['trans_id']);
+    }
+
+    private function logCheckStatement($dbc)
+    {
+        $query = '
+            SELECT stockPurchase
+            FROM stockpurchases
+            WHERE tdate=?
+                AND card_no=?
+                AND dept=?
+                AND trans_num=?'; 
+        if ($this->hasTransID($dbc)) {
+            $query .= ' AND (trans_id=? OR trans_id=0)';
+        }
+
+        return $dbc->prepare($query);
+    }
+
     public function run()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_EQUITY_DEPARTMENTS, $FANNIE_SERVER_DBMS;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = FannieDB::get($this->config->get('TRANS_DB'));
 
         // build department list
-        $ret = preg_match_all("/[0-9]+/",$FANNIE_EQUITY_DEPARTMENTS, $depts);
+        $ret = preg_match_all("/[0-9]+/",$this->config->get('EQUITY_DEPARTMENTS'), $depts);
         $depts = array_pop($depts);
         $dlist = "(";
         $where_args = array();
@@ -63,7 +110,7 @@ Deprecates nightly.equity.php.';
         // lookup AR transactions from past 15 days
         $lookupQ = "SELECT card_no,
                 department, total,
-                tdate, trans_num
+                tdate, trans_num, trans_id
                 FROM dlog_15
                 WHERE department IN $dlist"; 
         $lookupP = $dbc->prepare($lookupQ);
@@ -73,26 +120,19 @@ Deprecates nightly.equity.php.';
                     WHERE tdate=? AND trans_num=? AND card_no=? AND dept=?');
         $addP = $dbc->prepare('INSERT INTO stockpurchases (card_no, stockPurchase, tdate, trans_num, dept)
                             VALUES (?, ?, ?, ?, ?)');
-        while($lookupW = $dbc->fetch_row($lookupR)) {
-            // check whether transaction is already in stockpurchases
-            $checkR = $dbc->execute($checkP, array($lookupW['tdate'], $lookupW['trans_num'], $lookupW['card_no'], $lookupW['department']));
-            if ($dbc->num_rows($checkR) != 0) {
-                $exists = false;
-                while($checkW = $dbc->fetch_row($checkR)) {
-                    if ($checkW['stockPurchase'] == $lookupW['total']) {
-                        $exists = true;
-                        break;
-                    }
-                }
-                if ($exists) {
-                    continue;
-                }
+        $model = new StockpurchasesModel($dbc);
+        while ($lookupW = $dbc->fetch_row($lookupR)) {
+            if ($this->isLogged($dbc, $lookupW)) {
+                continue;
             }
 
-            // add to equity history
-            $try = $dbc->execute($addP, array($lookupW['card_no'], $lookupW['total'], $lookupW['tdate'],
-                                                $lookupW['trans_num'], $lookupW['department']));
-            if ($try === false) {
+            $model->card_no($lookupW['card_no']);
+            $model->stockPurchase($lookupW['total']);
+            $model->tdate($lookupW['tdate']);
+            $model->trans_num($lookupW['trans_num']);
+            $model->dept($lookupW['dept']);
+            $model->trans_id($lookupW['trans_id']);
+            if ($model->save() === false) {
                 $this->cronMsg('Error adding equity entry '.$lookupW['tdate']. ' '.$lookupW['trans_num'], FannieLogger::ERROR);
             }
         }
