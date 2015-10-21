@@ -100,7 +100,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $config = FannieConfig::factory();
         $config->set('FANNIE_EQUITY_DEPARTMENTS', '1 2');
         $logger = new FannieLogger();
-        $dbc = FannieDB::get('unit_test_op');
+        $dbc = FannieDB::get('unit_test_trans');
 
         // create two test rows in dlog_15
         $today = date('Y-m-d');
