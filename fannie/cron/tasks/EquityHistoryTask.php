@@ -44,8 +44,8 @@ Deprecates nightly.equity.php.';
 
     private function isLogged($dbc, $info)
     {
-        if ($loggedP === null) {
-            $loggedP = $this->logCheckStatement($dbc);
+        if ($this->loggedP === null) {
+            $this>loggedP = $this->logCheckStatement($dbc);
         }
         $args = array(
             $info['tdate'],
@@ -56,7 +56,7 @@ Deprecates nightly.equity.php.';
         if ($this->hasTransID($dbc)) {
             $args[] = $info['trans_id'];
         }
-        $loggedR = $dbc->execute($loggedP, $args);
+        $loggedR = $dbc->execute($this->loggedP, $args);
         while ($logW = $dbc->fetchRow($loggedR)) {
             if ($logW['stockPurchase'] == $info['total']) {
                 return true;
