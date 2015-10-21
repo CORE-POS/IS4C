@@ -26,6 +26,8 @@ class PluginFannieTest extends PHPUnit_Framework_TestCase
         $sniffer = null;
         $standard = dirname(__FILE__) . '/CodingStandard/CORE_PSR1/';
         var_dump($_ENV);
+        var_dump(getenv('TRAVIS'));
+        var_dump(getenv('TRAVISCI'));
         if (false && !isset($_ENV['TRAVIS']) && !isset($_ENV['CI']) && class_exists('PHP_CodeSniffer')) {
             $sniffer = new PHP_CodeSniffer();
             $sniffer->initStandard($standard);
