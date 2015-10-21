@@ -156,11 +156,11 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
         } catch (Exception $ex) {}
         ob_end_clean();
         $this->assertEquals(False,$fail);
-        */
 
         $error = $sql->error();
         $this->assertInternalType('string',$error);
         $this->assertNotEquals('',$error);
+        */
 
         /* prepared statements */
         $prep = $sql->prepare_statement("SELECT ? AS testCol");

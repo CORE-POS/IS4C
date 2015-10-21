@@ -126,7 +126,7 @@ class LikeCodeModule extends ItemModule
         $isHQ = FannieConfig::config('STORE_MODE') == 'HQ' ? true : false;
         $stores = new StoresModel($dbc);
         $stores = array_map(
-            array_filter($stores->find(), function($obj){ return $obj->hasItems(); }),
+            array_filter($stores->find(), function($obj){ return $obj->hasOwnItems(); }),
             function($obj){ return $obj->storeID(); });
         $model = new ProductsModel($dbc);
         $model->upc($upc);
