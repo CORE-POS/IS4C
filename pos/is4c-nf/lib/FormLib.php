@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace \COREPOS\pos\lib;
+namespace COREPOS\pos\lib;
  
 // wrapper for backwards compatibility
 class FormLib extends \COREPOS\common\FormLib

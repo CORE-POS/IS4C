@@ -22,6 +22,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\models\BasicModel;
+
 /**
   @class CCredMembershipsModel
 */

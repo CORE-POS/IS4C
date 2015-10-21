@@ -24,7 +24,7 @@
 /**
   @class QuickLookupsModel
 */
-class QuickLookupsModel extends BasicModel
+class QuickLookupsModel extends \COREPOS\pos\lib\models\BasicModel
 {
 
     protected $name = "QuickLookups";
