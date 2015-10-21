@@ -2,6 +2,9 @@
     <logging>
         <log type="coverage-clover" target="build/logs/clover.xml"/>
     </logging>
+    <listeners>
+        <listener class="TestListener" file="tests/TestListener.php"/>
+    </listeners>
     <testsuites>
         <testsuite name="common">
             <file>tests/common/WhiteSpaceTest.php</file>
