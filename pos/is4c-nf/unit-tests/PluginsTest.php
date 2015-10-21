@@ -34,6 +34,10 @@ class PluginsTest extends PHPUnit_Framework_TestCase
                 $file = $name;
                 $name = $tmp;
             }
+            if (class_exists($name, false)) {
+                // class already defined
+                continue;
+            }
             ob_start();
             include($file);
             $output = ob_get_clean();
