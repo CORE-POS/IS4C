@@ -32,4 +32,4 @@ install:
     - mkdir -p build/logs
 
 script:
-    - phpunit -c phpunit.xml
+    - TRAVISCI=true phpunit -c phpunit.xml

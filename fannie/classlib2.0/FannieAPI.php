@@ -420,7 +420,7 @@ class FannieAPI
 
 FannieAPI::init();
 if (function_exists('spl_autoload_register')) {
-    spl_autoload_register(array('FannieAPI','loadClass'));
+    spl_autoload_register(array('FannieAPI','loadClass'), true, true);
     if (file_exists(dirname(__FILE__) . '/../../vendor/autoload.php')) {
         include_once(dirname(__FILE__) . '/../../vendor/autoload.php');
     }
