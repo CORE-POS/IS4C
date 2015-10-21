@@ -2,7 +2,7 @@
 
 class TestListener extends PHPUnit_Framework_BaseTestListener
 {
-    public function startTestSuit(PHPUnit_Framework_TestSuite $suite)
+    public function startTestSuite(PHPUnit_Framework_TestSuite $suite)
     {
         if ($suite->getName() == "pos") {
             var_dump("re-bootstrap");
