@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-if (class_exists('Plugin'), false) {
+if (class_exists('Plugin', false)) {
     $ref = new ReflectionClass('Plugin');
     var_dump($ref->getFileName());
     return;
