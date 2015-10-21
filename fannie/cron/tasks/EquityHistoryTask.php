@@ -130,7 +130,7 @@ Deprecates nightly.equity.php.';
             $model->stockPurchase($lookupW['total']);
             $model->tdate($lookupW['tdate']);
             $model->trans_num($lookupW['trans_num']);
-            $model->dept($lookupW['dept']);
+            $model->dept($lookupW['department']);
             $model->trans_id($lookupW['trans_id']);
             if ($model->save() === false) {
                 $this->cronMsg('Error adding equity entry '.$lookupW['tdate']. ' '.$lookupW['trans_num'], FannieLogger::ERROR);

@@ -32,7 +32,7 @@ install:
 
 script:
     # Common tests
-    - phpunit common/tests/WhiteSpaceTest.php
+    - phpunit tests/common/WhiteSpaceTest.php
     # Back end tests
     # This must run first
     - $F_TEST fannie/unit-tests/InstallTest.php
