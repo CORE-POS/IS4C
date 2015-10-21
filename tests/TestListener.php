@@ -8,7 +8,7 @@ class TestListener extends PHPUnit_Framework_BaseTestListener
             var_dump("re-bootstrap");
             include(dirname(__FILE__) . '/../pos/is4c-nf/unit-tests/bootstrap.php');
         } else {
-            var_dump($suite->getName();
+            var_dump($suite->getName());
         }
     }
 }
