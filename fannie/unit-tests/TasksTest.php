@@ -122,6 +122,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task->run();
 
         // verify test rows were logged
+        $dbc->selectDB('unit_test_trans');
         $query = 'SELECT SUM(stockPurchase), COUNT(*) FROM stockpurchases WHERE card_no=1';
         $res = $dbc->query($query);
         $row = $dbc->fetchRow($res);
@@ -132,8 +133,10 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $dlog->department(2);
         $dlog->trans_id(3);
         $dlog->save();
+        $task->run();
 
         // verify only the new row is logged
+        $dbc->selectDB('unit_test_trans');
         $query = 'SELECT SUM(stockPurchase), COUNT(*) FROM stockpurchases WHERE card_no=1';
         $res = $dbc->query($query);
         $row = $dbc->fetchRow($res);
