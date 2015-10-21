@@ -15,13 +15,12 @@ branches:
     only:
         - master
 
+addons:
+    code_climate:
+        repo_token: 461be60a44fc2293c80a05712a1aa18ff7d12effec9a806d7722435b12ea2bbe
+
 # test both msyqli and PDO 
-# using deprecated mysql should really
-# be discoutraged
 env:
-    global:
-        - F_TEST="phpunit --bootstrap fannie/unit-tests/bootstrap.php"
-        - P_TEST="phpunit --bootstrap pos/is4c-nf/unit-tests/bootstrap.php"
     matrix:
         - DB_DRIVER=pdo_mysql
         - DB_DRIVER=mysqli
@@ -29,40 +28,8 @@ env:
 install:
     - sh fannie/unit-tests/travis-init.sh
     - sh pos/is4c-nf/unit-tests/travis-init.sh
+    - composer require codeclimate/php-test-reporter
+    - mkdir -p build/logs
 
 script:
-    # Common tests
-    - phpunit tests/common/WhiteSpaceTest.php
-    # Back end tests
-    # This must run first
-    - $F_TEST fannie/unit-tests/InstallTest.php
-    # These can run in any order
-    - $F_TEST fannie/unit-tests/ApiLibTest.php
-    - $F_TEST fannie/unit-tests/ItemsTest.php
-    - $F_TEST fannie/unit-tests/LogTest.php
-    - $F_TEST fannie/unit-tests/MembersTest.php
-    - $F_TEST fannie/unit-tests/ModelsTest.php
-    - $F_TEST fannie/unit-tests/PagesTest.php
-    - $F_TEST fannie/unit-tests/PluginsTest.php
-    - $F_TEST fannie/unit-tests/SQLManagerTest.php
-    - $F_TEST fannie/unit-tests/TasksTest.php
-    # Lane tests
-    # This must run first
-    - $P_TEST pos/is4c-nf/unit-tests/InstallTest.php
-    # These can run in any order
-    - $P_TEST pos/is4c-nf/unit-tests/BaseLibsTest.php
-    - $P_TEST pos/is4c-nf/unit-tests/DisplayTest.php
-    - $P_TEST pos/is4c-nf/unit-tests/FooterBoxesTest.php
-    - $P_TEST pos/is4c-nf/unit-tests/KickersTest.php
-    - $P_TEST pos/is4c-nf/unit-tests/LocalStorageTest.php
-    - $P_TEST pos/is4c-nf/unit-tests/PagesTest.php
-    # Test is unreliable in travis environment
-    #- $P_TEST pos/is4c-nf/unit-tests/PaycardsTest.php
-    - $P_TEST pos/is4c-nf/unit-tests/ParsersTest.php
-    - $P_TEST pos/is4c-nf/unit-tests/PluginsTest.php
-    - $P_TEST pos/is4c-nf/unit-tests/ReceiptTest.php
-    - $P_TEST pos/is4c-nf/unit-tests/SQLManagerTest.php
-    - $P_TEST pos/is4c-nf/unit-tests/ScanningTest.php
-    - $P_TEST pos/is4c-nf/unit-tests/SearchTest.php
-    - $P_TEST pos/is4c-nf/unit-tests/TendersTest.php
-    - $P_TEST pos/is4c-nf/unit-tests/TotalActionsTest.php
+    - phpunit -c phpunit.xml

@@ -25,7 +25,7 @@ class PluginsTest extends PHPUnit_Framework_TestCase
 
         $sniffer = null;
         $standard = dirname(__FILE__) . '/CodingStandard/CORE_PSR1/';
-        if (class_exists('PHP_CodeSniffer')) {
+        if (!isset($_ENV['TRAVIS') && !isset($_ENV['CI']) && class_exists('PHP_CodeSniffer')) {
             $sniffer = new PHP_CodeSniffer();
             $sniffer->initStandard($standard);
             $sniffer->cli->setCommandLineValues(array('--report=Json'));

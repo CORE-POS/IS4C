@@ -1,4 +1,7 @@
 <phpunit bootstrap="tests/bootstrap.php">
+    <logging>
+        <log type="coverage-clover" target="build/logs/clover.xml"/>
+    </logging>
     <testsuites>
         <testsuite name="common">
             <file>tests/common/WhiteSpaceTest.php</file>
