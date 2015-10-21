@@ -151,7 +151,7 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
 
         /* bad query on purpose */
         ob_start();
-        $fail = $sql->query("DO NOT SELECT 1");
+        $fail = @$sql->query("DO NOT SELECT 1");
         ob_end_clean();
         $this->assertEquals(False,$fail);
 
