@@ -1,3 +1,5 @@
+![travis-ci](https://travis-ci.org/CORE-POS/IS4C.svg?branch=master)
+
 CORE-POS is the point of sale oriented project under Co-operative
 Operational Retail Environment (CORE). The code is based heavily 
 on IS4C with a focus on greater modularity and collaboration.

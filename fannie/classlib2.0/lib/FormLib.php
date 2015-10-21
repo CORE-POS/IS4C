@@ -24,46 +24,13 @@
 /**
   @class FormLib
 */
-class FormLib 
+class FormLib extends \COREPOS\common\FormLib
 {
-
-    /**
-      Safely fetch a form value
-      @param $name the field name
-      @param $default default value if the form value doesn't exist
-      @return The form value, if available, otherwise the default.
-    */
-    public static function getFormValue($name, $default='')
-    {
-        $val = filter_input(INPUT_GET, $name, FILTER_CALLBACK, array('options'=>array('FormLib', 'filterCallback')));
-        if ($val === null) {
-            $val = filter_input(INPUT_POST, $name, FILTER_CALLBACK, array('options'=>array('FormLib', 'filterCallback')));
-        }
-        if ($val === null) {
-            $val = $default;
-        }
-
-        return $val;
-    }
-
-    /**
-      Using callback style filtering so the form retrieval
-      message can return both strings and arrays of strings.
-    */
-    private static function filterCallback($item)
-    {
-        return $item;
-    }
-
     public static function get_form_value($name, $default='')
     {
         return self::getFormValue($name, $default);
     }
 
-    public static function get($name, $default='')
-    {
-        return self::getFormValue($name, $default);
-    }
 
     /**
       Get form input as a formatted date
