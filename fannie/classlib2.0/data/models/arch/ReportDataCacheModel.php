@@ -38,6 +38,7 @@ class ReportDataCacheModel extends BasicModel
 
     public function createIfNeeded($db_name)
     {
+        var_dump($this->connection->tableExists($db_name . $this->connection->sep() . $this->name));
         return parent::createIfNeeded($db_name);
     }
 
