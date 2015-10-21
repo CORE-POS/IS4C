@@ -13,7 +13,7 @@
             <file>fannie/unit-tests/LogTest.php</file>
             <file>fannie/unit-tests/MembersTest.php</file>
             <file>fannie/unit-tests/ModelsTest.php</file>
-            <file>fannie/unit-tests/PagesTest.php</file>
+            <file>fannie/unit-tests/PagesFannieTest.php</file>
             <file>fannie/unit-tests/PluginFannieTest.php</file>
             <file>fannie/unit-tests/TasksTest.php</file>
         </testsuite>
