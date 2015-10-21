@@ -21,6 +21,7 @@
             <file>fannie/unit-tests/TasksTest.php</file>
         </testsuite>
         <testsuite name="pos">
+        <!--
             <file>pos/is4c-nf/unit-tests/InstallTest.php</file>
             <file>pos/is4c-nf/unit-tests/BaseLibsTest.php</file>
             <file>pos/is4c-nf/unit-tests/DisplayTest.php</file>
@@ -35,6 +36,7 @@
             <file>pos/is4c-nf/unit-tests/SearchTest.php</file>
             <file>pos/is4c-nf/unit-tests/TendersTest.php</file>
             <file>pos/is4c-nf/unit-tests/TotalActionsTest.php</file>
+        -->
         </testsuite>
     </testsuites>
 </phpunit>
