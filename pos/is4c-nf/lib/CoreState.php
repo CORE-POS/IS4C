@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\FormLib;
+
 /**
  @class CoreState
  Setup session variables
@@ -753,7 +755,7 @@ static public function loadParams()
     }
     
     // load global settings first
-    $parameters = new ParametersModel($db);
+    $parameters = new \COREPOS\pos\lib\models\op\ParametersModel($db);
     $parameters->lane_id(0);
     $parameters->store_id(0);
     foreach ($parameters->find() as $global) {

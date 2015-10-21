@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models\op;
+use COREPOS\pos\lib\models\ViewModel;
+
 /**
   @class MemberCardsViewModel
 */
@@ -45,7 +48,7 @@ class MemberCardsViewModel extends ViewModel
     {
         $cardsViewQ = "
             SELECT "
-                . $this->connection->concat("'".CoreLocal::get('memberUpcPrefix')."'",'c.CardNo','') . " AS upc, 
+                . $this->connection->concat("'".\CoreLocal::get('memberUpcPrefix')."'",'c.CardNo','') . " AS upc, 
                 c.CardNo as card_no 
             FROM custdata c";
 

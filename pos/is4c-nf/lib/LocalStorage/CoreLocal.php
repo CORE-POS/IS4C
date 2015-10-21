@@ -148,7 +148,7 @@ class CoreLocal
                         // and gets moved to a dedicated table
                         $db = Database::pDataConnect();
                         if ($db->table_exists('SpecialDeptMap')) {
-                            $mapModel = new SpecialDeptMapModel($db);
+                            $mapModel = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($db);
                             $mapModel->initTable($sconf);
                             InstallUtilities::confRemove($key);
                         }

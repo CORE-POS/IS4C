@@ -508,7 +508,7 @@ static private function getTenderMods($right)
     */
     $tender_table = $dbc->table_definition('tenders');
     if (isset($tender_table['TenderModule'])) {
-        $tender_model = new TendersModel($dbc);
+        $tender_model = new \COREPOS\pos\lib\models\op\TendersModel($dbc);
         $map = $tender_model->getMap();
     }
     if (is_array($map) && isset($map[$right])) {

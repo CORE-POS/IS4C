@@ -967,7 +967,7 @@ class InstallUtilities extends LibraryClass
         /**
           Again backwards. Check lane-specific parameters first
         */
-        $parameters = new ParametersModel($dbc);
+        $parameters = new \COREPOS\pos\lib\models\op\ParametersModel($dbc);
         $parameters->store_id(0);
         $parameters->lane_id($CORE_LOCAL->get('laneno'));
         $checked = array();
@@ -1051,35 +1051,35 @@ class InstallUtilities extends LibraryClass
         }
 
         $models = array(
-            'AutoCouponsModel',
-            'CouponCodesModel',
-            'CustdataModel',
-            'CustomerNotificationsModel',
-            'CustPreferencesModel',
-            'CustReceiptMessageModel',
-            'CustomReceiptModel',
-            'DateRestrictModel',
-            'DepartmentsModel',
-            'DisableCouponModel',
-            'DrawerOwnerModel',
-            'EmployeesModel',
-            'GlobalValuesModel',
-            'HouseCouponsModel',
-            'HouseCouponItemsModel',
-            'HouseVirtualCouponsModel',
-            'IgnoredBarcodesModel',
-            'MasterSuperDeptsModel',
-            'MemberCardsModel',
-            'MemtypeModel',
-            'ParametersModel',
-            'ProductsModel',
-            'ShrinkReasonsModel',
-            'SpecialDeptMapModel',
-            'SubDeptsModel',
-            'TendersModel',
-            'UnpaidArTodayModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\AutoCouponsModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\CouponCodesModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\CustdataModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\CustomerNotificationsModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\CustPreferencesModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\CustReceiptMessageModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\CustomReceiptModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\DateRestrictModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\DepartmentsModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\DisableCouponModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\DrawerOwnerModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\EmployeesModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\GlobalValuesModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\HouseCouponsModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\HouseCouponItemsModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\HouseVirtualCouponsModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\IgnoredBarcodesModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\MasterSuperDeptsModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\MemberCardsModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\MemtypeModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\ParametersModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\ProductsModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\ShrinkReasonsModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\SpecialDeptMapModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\SubDeptsModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\TendersModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\UnpaidArTodayModel',
             // depends on custdata
-            'MemberCardsViewModel',
+            '\\COREPOS\\pos\\lib\\models\\op\\MemberCardsViewModel',
         );
         foreach ($models as $class) {
             $obj = new $class($db);
@@ -1149,31 +1149,31 @@ class InstallUtilities extends LibraryClass
         }
 
         $models = array(
-            'DTransactionsModel',
-            'LocalTransModel',
-            'LocalTransArchiveModel',
-            'LocalTransTodayModel',
-            'LocalTempTransModel',
-            'SuspendedModel',
-            'TaxRatesModel',
-            'CouponAppliedModel',
-            'EfsnetRequestModel',
-            'EfsnetRequestModModel',
-            'EfsnetResponseModel',
-            'EfsnetTokensModel',
-            'PaycardTransactionsModel',
-            'CapturedSignatureModel',
-            'EmvReceiptModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\DTransactionsModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\LocalTransModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\LocalTransArchiveModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\LocalTransTodayModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\LocalTempTransModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\SuspendedModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\TaxRatesModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\CouponAppliedModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\EfsnetRequestModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\EfsnetRequestModModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\EfsnetResponseModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\EfsnetTokensModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\PaycardTransactionsModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\CapturedSignatureModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\EmvReceiptModel',
             // placeholder,
             '__LTT__',
             // Views
-            'CcReceiptViewModel',
-            'MemDiscountAddModel',
-            'MemDiscountRemoveModel',
-            'StaffDiscountAddModel',
-            'StaffDiscountRemoveModel',
-            'ScreenDisplayModel',
-            'TaxViewModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\CcReceiptViewModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\MemDiscountAddModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\MemDiscountRemoveModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\StaffDiscountAddModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\StaffDiscountRemoveModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\ScreenDisplayModel',
+            '\\COREPOS\\pos\\lib\\models\\trans\\TaxViewModel',
         );
         foreach ($models as $class) {
             if ($class == '__LTT__') {

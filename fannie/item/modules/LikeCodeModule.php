@@ -93,7 +93,8 @@ class LikeCodeModule extends ItemModule
         return $ret;
     }
 
-    function SaveFormData($upc){
+    function SaveFormData($upc)
+    {
         $lc = FormLib::get_form_value('likeCode');  
         $dbc = $this->db();
 
@@ -122,15 +123,25 @@ class LikeCodeModule extends ItemModule
            in the like code */
         $upcP = $dbc->prepare_statement('SELECT upc FROM upcLike WHERE likeCode=? AND upc<>?');
         $upcR = $dbc->exec_statement($upcP,array($lc,$upc));
+        $isHQ = FannieConfig::config('STORE_MODE') == 'HQ' ? true : false;
+        $stores = new StoresModel($dbc);
+        $stores = array_map(
+            array_filter($stores->find(), function($obj){ return $obj->hasItems(); }),
+            function($obj){ return $obj->storeID(); });
         $model = new ProductsModel($dbc);
         $model->upc($upc);
-        $model->store_id(1);
         $model->mixmatchcode($lc+500);
-        $model->save();
+        if ($isHQ) {
+            foreach ($stores as $store_id) {
+                $model->store_id($store_id);
+                $model->save();
+            }
+        } else {
+            $model->save();
+        }
         while ($upcW = $dbc->fetch_row($upcR)) {
             $model->reset();
             $model->upc($upcW['upc']);
-            $model->store_id(1);
             $model->normal_price($values['normal_price']);
             $model->pricemethod($values['pricemethod']);
             $model->groupprice($values['groupprice']);
@@ -143,10 +154,17 @@ class LikeCodeModule extends ItemModule
             $model->qttyEnforced($values['qttyEnforced']);
             $model->local($values['local']);
             $model->mixmatchcode($lc+500);
-            $model->save();
+            if ($isHQ) {
+                foreach ($stores as $store_id) {
+                    $model->store_id($store_id);
+                    $model->save();
+                }
+            } else {
+                $model->save();
+            }
             updateProductAllLanes($upcW['upc']);
         }
-        return True;
+        return true;
     }
 
     public function getFormJavascript($upc)

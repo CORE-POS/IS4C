@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models;
+
 /**
   @class BasicModel
 */
@@ -205,7 +207,7 @@ class BasicModel
         if (!$this->create()) {
             $ret['error'] = 1;
             $ret['details'] = $this->connection->error($db_name);
-            $reflect = new ReflectionClass($this);
+            $reflect = new \ReflectionClass($this);
             $ret['query'] = $reflect->getName() . '::create()';
         }
 
@@ -541,17 +543,17 @@ class BasicModel
         /**
 
         */
-        if ($db_name == CoreLocal::get('pDatabase')) {
-            $this->connection = Database::pDataConnect();
-        } else if ($db_name == CoreLocal::get('tDatabase')) {
-            $this->connection = Database::tDataConnect();
+        if ($db_name == \CoreLocal::get('pDatabase')) {
+            $this->connection = \Database::pDataConnect();
+        } else if ($db_name == \CoreLocal::get('tDatabase')) {
+            $this->connection = \Database::tDataConnect();
         } else {
             /**
               Allow for db other than main ones, e.g. for a plugin.
               Force a new connection to avoid messing with the
               one maintained by the Database class
             */
-            $this->connection = new SQLManager(
+            $this->connection = new \SQLManager(
                 $CORE_LOCAL->get("localhost"),
                 $CORE_LOCAL->get("DBMS"),
                 $db_name,
@@ -862,17 +864,17 @@ class $name extends BasicModel\n");
     */
     public function setConnectionByName($db_name)
     {
-        if ($db_name == CoreLocal::get('pDatabase')) {
-            $this->connection = Database::pDataConnect();
-        } else if ($db_name == CoreLocal::get('tDatabase')) {
-            $this->connection = Database::tDataConnect();
+        if ($db_name == \CoreLocal::get('pDatabase')) {
+            $this->connection = \Database::pDataConnect();
+        } else if ($db_name == \CoreLocal::get('tDatabase')) {
+            $this->connection = \Database::tDataConnect();
         } else {
             /**
               Allow for db other than main ones, e.g. for a plugin.
               Force a new connection to avoid messing with the
               one maintained by the Database class
             */
-            $this->connection = new SQLManager(
+            $this->connection = new \SQLManager(
                 $CORE_LOCAL->get("localhost"),
                 $CORE_LOCAL->get("DBMS"),
                 $db_name,
@@ -909,7 +911,7 @@ class $name extends BasicModel\n");
     {
         $valid_op = $this->validateOp($op);
         if ($valid_op === false) {
-            throw new Exception('Invalid operator: ' . $op);
+            throw new \Exception('Invalid operator: ' . $op);
         }
         $this->filters[] = array(
             'left' => $col,
@@ -932,8 +934,8 @@ class $name extends BasicModel\n");
                 }
             }
             if (!isset($this->columns[$name])) {
-                $refl = new ReflectionClass($this);
-                throw new Exception('Invalid accessor: ' . $refl->getName() . ':: ' . $name);
+                $refl = new \ReflectionClass($this);
+                throw new \Exception('Invalid accessor: ' . $refl->getName() . ':: ' . $name);
             }
         }
 
@@ -952,7 +954,7 @@ class $name extends BasicModel\n");
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
 
     include_once(dirname(__FILE__).'/../AutoLoader.php');
-    AutoLoader::loadMap();
+    \AutoLoader::loadMap();
     $obj = new BasicModel(null);
 
     if ($argc > 2 && $argv[1] == '--doc') {

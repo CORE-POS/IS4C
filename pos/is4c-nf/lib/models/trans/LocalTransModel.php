@@ -21,14 +21,17 @@
 
 *********************************************************************************/
 
-if (!class_exists('DTransactionsModel')) {
+namespace COREPOS\pos\lib\models\trans;
+use COREPOS\pos\lib\models\BasicModel;
+
+if (!class_exists('\\COREPOS\\pos\lib\\models\\trans\\LocalTransModel')) {
     include_once(dirname(__FILE__).'/DTransactionsModel.php');
 }
 
 /**
   @class LocalTransModel
 */
-class LocalTransModel extends DTransactionsModel
+class LocalTransModel extends \COREPOS\pos\lib\models\trans\DTransactionsModel
 {
 
     protected $name = "localtrans";

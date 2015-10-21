@@ -380,7 +380,7 @@ $tender_table = $db->table_definition('tenders');
   the schema supports it
 */
 if (isset($tender_table['TenderModule'])) {
-    $model = new TendersModel($db);
+    $model = new \COREPOS\pos\lib\models\op\TendersModel($db);
     $settings = $model->getMap();
 }
 if (!is_array($settings)) $settings = array();
