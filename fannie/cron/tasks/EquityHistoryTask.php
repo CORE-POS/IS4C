@@ -45,7 +45,7 @@ Deprecates nightly.equity.php.';
     private function isLogged($dbc, $info)
     {
         if ($this->loggedP === null) {
-            $this>loggedP = $this->logCheckStatement($dbc);
+            $this->loggedP = $this->logCheckStatement($dbc);
         }
         $args = array(
             $info['tdate'],

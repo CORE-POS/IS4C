@@ -1,0 +1,34 @@
+<phpunit bootstrap="tests/bootstrap.php">
+    <testsuites>
+        <testsuite name="common">
+            <file>tests/common/WhiteSpaceTest.php</file>
+        </testsuite>
+        <testsuite name="fannie">
+            <file>fannie/unit-tests/InstallTest.php</file>
+            <file>fannie/unit-tests/ApiLibTest.php</file>
+            <file>fannie/unit-tests/LogTest.php</file>
+            <file>fannie/unit-tests/MembersTest.php</file>
+            <file>fannie/unit-tests/ModelsTest.php</file>
+            <file>fannie/unit-tests/PagesTest.php</file>
+            <file>fannie/unit-tests/PluginsTest.php</file>
+            <file>fannie/unit-tests/SQLManagerTest.php</file>
+            <file>fannie/unit-tests/TasksTest.php</file>
+        </testsuite>
+        <testsuite name="pos">
+            <file>pos/is4c-nf/unit-tests/InstallTest.php</file>
+            <file>pos/is4c-nf/unit-tests/BaseLibsTest.php</file>
+            <file>pos/is4c-nf/unit-tests/DisplayTest.php</file>
+            <file>pos/is4c-nf/unit-tests/FooterBoxesTest.php</file>
+            <file>pos/is4c-nf/unit-tests/KickersTest.php</file>
+            <file>pos/is4c-nf/unit-tests/LocalStorageTest.php</file>
+            <file>pos/is4c-nf/unit-tests/PagesTest.php</file>
+            <file>pos/is4c-nf/unit-tests/ParsersTest.php</file>
+            <file>pos/is4c-nf/unit-tests/PluginsTest.php</file>
+            <file>pos/is4c-nf/unit-tests/ReceiptTest.php</file>
+            <file>pos/is4c-nf/unit-tests/SQLManagerTest.php</file>
+            <file>pos/is4c-nf/unit-tests/SearchTest.php</file>
+            <file>pos/is4c-nf/unit-tests/TendersTest.php</file>
+            <file>pos/is4c-nf/unit-tests/TotalActionsTest.php</file>
+        </testsuite>
+    </testsuites>
+</phpunit>
