@@ -21,8 +21,8 @@
             <file>fannie/unit-tests/TasksTest.php</file>
 
             <file>pos/is4c-nf/unit-tests/InstallTest.php</file>
-            <file>pos/is4c-nf/unit-tests/BaseLibsTest.php</file>
             <!--
+            <file>pos/is4c-nf/unit-tests/BaseLibsTest.php</file>
             <file>pos/is4c-nf/unit-tests/DisplayTest.php</file>
             <file>pos/is4c-nf/unit-tests/FooterBoxesTest.php</file>
             <file>pos/is4c-nf/unit-tests/KickersTest.php</file>

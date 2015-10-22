@@ -46,7 +46,7 @@ class LogTest extends PHPUnit_Framework_TestCase
         }
 
         $pattern = '/^[A-Za-z]{3} \d+ \d\d:\d\d:\d\d .+ fannie\[\d+\]: \(debug\) test logging$/';
-        $frame = '/^[A-Za-z]{3} \d+ \d\d:\d\d:\d\d .+ fannie\[\d+\]: \(debug\) Frame \#\d+ .*, Line \d+, function \w+(::)?\w+$/';
+        $frame = '/^[A-Za-z]{3} \d+ \d\d:\d\d:\d\d .+ fannie\[\d+\]: \(debug\) Frame \#\d+ .*, Line \d+, function [\w\\\\]+(::)?\w+$/';
 
         // test debug w/ stack trace
         unlink($tempfile);

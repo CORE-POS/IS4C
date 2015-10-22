@@ -16,21 +16,16 @@ class TasksTest extends PHPUnit_Framework_TestCase
 
     public function testTransactionArchiving()
     {
+        $config = FannieConfig::factory();
         $task = new TransArchiveTask();
 
-        /**
-          Point references at the unit test databases
-        */
-        $GLOBALS['FANNIE_OP_DB'] = 'unit_test_op';
-        $GLOBALS['FANNIE_TRANS_DB'] = 'unit_test_trans';
-        $GLOBALS['FANNIE_ARCHIVE_DB'] = 'unit_test_archive';
         $GLOBALS['FANNIE_ARCHIVE_METHOD'] = 'tables';
 
         /**
           Put a record in dtransactions that should trigger
           a new monthly table & view
         */
-        $dtrans = new DTransactionsModel(FannieDB::get('unit_test_trans'));
+        $dtrans = new DTransactionsModel(FannieDB::get($config->get('TRANS_DB')));
         $dtrans->datetime('1901-01-01 00:00:00');
         $dtrans->save();
 
@@ -39,7 +34,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
         /**
           Verify the task created new monthly table & view
         */
-        $archive_db = FannieDB::get('unit_test_archive');
+        $archive_db = FannieDB::get($config->get('ARCHIVE_DB'));
         $archive_table_exists = $archive_db->tableExists('transArchive190101');
         $archive_dlog_exists = $archive_db->tableExists('dlog190101');
         $this->assertEquals(true, $archive_table_exists, 'Monthly archive table not created');
@@ -48,16 +43,17 @@ class TasksTest extends PHPUnit_Framework_TestCase
         /**
           Verify dtransactions was cleared
         */
-        $trans_db = FannieDB::get('unit_test_trans');
+        $trans_db = FannieDB::get($config->get('TRANS_DB'));
         $records = $trans_db->query('SELECT * FROM dtransactions');
         $this->assertEquals(0, $trans_db->num_rows($records), 'dtransactions not cleared');
     }
 
     public function testPatronageChecks()
     {
+        $config = FannieConfig::factory();
         $task = new PatronageCheckTask();
 
-        $dbc = FannieDB::get('unit_test_op');
+        $dbc = FannieDB::get($config->get('OP_DB'));
         $dbc->query('TRUNCATE TABLE patronage');
         $p = new PatronageModel($dbc);
         $p->cardno(1);
@@ -67,7 +63,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $p->cashed_here(0);
         $p->save();
 
-        $dbc = FannieDB::get('unit_test_trans');
+        $dbc = FannieDB::get($config->get('TRANS_DB'));
         $dbc->query('TRUNCATE TABLE dlog_15');
         $d = new DLog15Model($dbc);
         $d->tdate('2000-01-01 00:00:00');
@@ -77,14 +73,9 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $d->card_no(1);
         $d->save();
 
-        /**
-          Point references at the unit test databases
-        */
-        $GLOBALS['FANNIE_OP_DB'] = 'unit_test_op';
-        $GLOBALS['FANNIE_TRANS_DB'] = 'unit_test_trans';
         $task->run();
 
-        $dbc = FannieDB::get('unit_test_op');
+        $dbc = FannieDB::get($config->get('OP_DB'));
         $p->reset();
         $p->cardno(1);
         $p->FY(2000);
@@ -100,7 +91,8 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $config = FannieConfig::factory();
         $config->set('FANNIE_EQUITY_DEPARTMENTS', '1 2');
         $logger = new FannieLogger();
-        $dbc = FannieDB::get('unit_test_trans');
+        $trans_db = $config->get('TRANS_DB');
+        $dbc = FannieDB::get($trans_db);
 
         // create two test rows in dlog_15
         $today = date('Y-m-d');
@@ -122,7 +114,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task->run();
 
         // verify test rows were logged
-        $dbc->selectDB('unit_test_trans');
+        $dbc->selectDB($trans_db);
         $query = 'SELECT SUM(stockPurchase), COUNT(*) FROM stockpurchases WHERE card_no=1';
         $res = $dbc->query($query);
         $row = $dbc->fetchRow($res);
@@ -136,7 +128,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task->run();
 
         // verify only the new row is logged
-        $dbc->selectDB('unit_test_trans');
+        $dbc->selectDB($trans_db);
         $query = 'SELECT SUM(stockPurchase), COUNT(*) FROM stockpurchases WHERE card_no=1';
         $res = $dbc->query($query);
         $row = $dbc->fetchRow($res);

@@ -1282,6 +1282,9 @@ class SQLManager
     {
         $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
         $adapter = $this->getAdapter($this->connectionType($which_connection));
+        if ($adapter == null) {
+            var_dump($which_connection);
+        }
         return $adapter->sep();
     }
 
