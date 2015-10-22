@@ -51,6 +51,7 @@
                 <directory>pos/is4c-nf/plugins</directory>
                 <directory>pos/is4c-nf/test</directory>
                 <directory>pos/is4c-nf/unit-tests</directory>
+                <directory suffix="index.php>fannie</directory>
             </exclude>
         </whitelist>
     </filter>
