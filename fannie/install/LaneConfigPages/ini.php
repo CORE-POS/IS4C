@@ -26,9 +26,7 @@ class FakeLaneSession
 $CORE_LOCAL = new FakeLaneSession();
 
 $CORE_LOCAL->set('laneno', 0);
-if (!isset($FANNIE_SERVER)) {
-    include_once(dirname(__FILE__) . '/../../config.php');
-}
+include(dirname(__FILE__) . '/../../config.php');
 $CORE_LOCAL->set('localhost', $FANNIE_SERVER);
 $CORE_LOCAL->set('DBMS', strtolower(str_replace('_','',$FANNIE_SERVER_DBMS)));
 $CORE_LOCAL->set('localUser', $FANNIE_SERVER_USER);
