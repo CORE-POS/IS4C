@@ -26,7 +26,7 @@ env:
 #        - DB_DRIVER=mysqli
 
 install:
-    - sh fannie/unit-tests/travis-init.sh
+    - sh tests/fannie/travis-init.sh
     - sh pos/is4c-nf/unit-tests/travis-init.sh
     # limit package installation to codeclimate
     - rm composer.json
