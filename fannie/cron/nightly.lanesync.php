@@ -52,6 +52,9 @@ if (!class_exists('FannieAPI')) {
 if (!function_exists('cron_msg')) {
     include($FANNIE_ROOT.'src/cron_msg.php');
 }
+if (!isset($FANNIE_LANES) || !is_array($FANNIE_LANES)) {
+    $FANNIE_LANES = array();
+}
 
 set_time_limit(0);
 

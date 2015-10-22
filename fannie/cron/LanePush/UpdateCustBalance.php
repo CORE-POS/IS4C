@@ -44,6 +44,9 @@ if (!chdir(dirname(__FILE__))){
     echo cron_msg("Error: Can't find directory (lane push)");
     exit;
 }
+if (!isset($FANNIE_LANES) || !is_array($FANNIE_LANES)) {
+    $FANNIE_LANES = array();
+}
 
 set_time_limit(0);
 ini_set('memory_limit','256M');
