@@ -1,5 +1,7 @@
 <?php
-header('Content-type: text/css');
+if (!headers_sent()) {
+    header('Content-type: text/css');
+}
 if (!isset($FANNIE_CSS_BG_COLOR)) {
     include(dirname(__FILE__) . '/../../config.php');
 }

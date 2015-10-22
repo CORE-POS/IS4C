@@ -165,7 +165,7 @@ function render_menu($arr,$depth=0)
 }
 
 if (!isset($FANNIE_MENU) || !is_array($FANNIE_MENU))
-    include($path.'src/defaultmenu.php');
+    include(dirname(__FILE__) . '/defaultmenu.php');
 else
     render_menu(newMenuToOldMenu($FANNIE_MENU));
 echo "</ul>";
