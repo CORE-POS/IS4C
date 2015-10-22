@@ -33,6 +33,12 @@ if (!class_exists('FannieAPI')) {
 if (!class_exists('xmlData')) {
     include($FANNIE_ROOT.'src/xmlData.php');
 }
+if (file_exists($FANNIE_ROOT.'src/Credentials/GoE.wfc.php')) {
+    require_once($FANNIE_ROOT.'src/Credentials/GoE.wfc.php');
+} else {
+    // cannot continue
+    return;
+}
 if (!function_exists('getFailedTrans')) {
     include($FANNIE_ROOT.'src/fetchLib.php');
 }
