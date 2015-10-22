@@ -117,7 +117,7 @@ function isNodeWebkit()
     var isNode = (typeof process !== "undefined" && typeof require !== "undefined");
     if (isNode) {
         try {
-            return = (typeof require('nw.gui') !== "undefined");
+            return (typeof require('nw.gui') !== "undefined");
         } catch(e) {
             return false;
         }
