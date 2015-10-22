@@ -36,4 +36,22 @@
             <file>pos/is4c-nf/unit-tests/TotalActionsTest.php</file>
         </testsuite>
     </testsuites>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">common</directory>
+            <directory suffix=".php">fannie</directory>
+            <directory suffix=".php">pos/is4c-nf</directory>
+            <exclude>
+                <directory>vendor</directory>
+                <directory>common/adodb5</directory>
+                <directory>fannie/src/Excel</directory>
+                <directory>fannie/src/fpdf</directory>
+                <directory>fannie/modules</directory>
+                <directory>fannie/unit-tests</directory>
+                <directory>pos/is4c-nf/plugins</directory>
+                <directory>pos/is4c-nf/test</directory>
+                <directory>pos/is4c-nf/unit-tests</directory>
+            </exclude>
+        </whitelist>
+    </filter>
 </phpunit>
