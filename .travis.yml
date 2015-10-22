@@ -4,7 +4,7 @@ language: php
 # builds on free service. politeness.
 php:
     - "5.6"
-#    - "5.3"
+    - "5.3"
 
 services:
     - mysql
@@ -23,12 +23,11 @@ addons:
 env:
     matrix:
         - DB_DRIVER=pdo_mysql
-#        - DB_DRIVER=mysqli
+        - DB_DRIVER=mysqli
 
 install:
     - sh tests/fannie/travis-init.sh
     - sh tests/pos/travis-init.sh
-    # limit package installation to codeclimate
     - rm composer.json
     - composer init -n
     - composer require codeclimate/php-test-reporter
@@ -37,6 +36,7 @@ install:
 
 script:
     - phpunit -c phpunit.xml
+    - sh tests/acorn.sh
 
 after_script:
     - vendor/bin/test-reporter
