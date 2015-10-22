@@ -96,7 +96,7 @@ if (isset($_REQUEST['upc'])){
     }
 
     $pdf->Output();
-    exit;
+    return;
 }
 
 $page_title = "Fannie :: Special Orders";

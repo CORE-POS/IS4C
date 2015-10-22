@@ -82,7 +82,7 @@ $preload = FannieAPI::listModules('FannieTask');
 $fn = isset($_REQUEST['fn'])?$_REQUEST['fn']:'';
 if ($fn == ''){
     echo "No file specified";
-    exit;
+    return;
 }
 
 if ( checkBase64Encoded($fn) ) {
@@ -93,7 +93,7 @@ if ( checkBase64Encoded($fn) ) {
 
 if (!file_exists($fn) && !class_exists(basename($fn))){
     echo "File: >${fn}< does not exist.";
-    exit;
+    return;
 }
 
 $doc = '';

@@ -23,7 +23,7 @@
 
 if (!chdir(dirname(__FILE__))){
     echo "Error: Can't find directory (suspensions)";
-    exit;
+    return;
 }
 
 include('../../config.php');

@@ -1541,7 +1541,7 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
             echo $doc;
             echo "\n";
         }
-        exit;
+        return 0;
     }
 
     /* Argument signatures, to php, where BasicModel.php is the first:
@@ -1554,7 +1554,7 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         echo "Create new View Model: php BasicModel.php --new-view <Model Name>\n";
         echo "Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename>\n";
         echo "Generate markdown documentation: php BasicModel.php --doc <Model Filename(s)>\n";
-        exit;
+        return 1;
     }
 
     $obj = new BasicModel(null);
@@ -1572,7 +1572,7 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         $obj = new BasicModel(null);
         $as_view = $argv[1] == '--new-view' ? true : false;
         $obj->newModel($modelname, $as_view);
-        exit;
+        return 0;
     }
 
     $classfile = $argv[1];
@@ -1584,21 +1584,21 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
     }
     if (!file_exists($classfile)) {
         echo "Error: file '$classfile' does not exist\n";
-        exit;
+        return 1;
     }
 
     $class = pathinfo($classfile, PATHINFO_FILENAME);
     include($classfile);
     if (!class_exists($class)) {
         echo "Error: class '$class' does not exist\n";
-        exit;
+        return 1;
     }
 
     // A new object of the type named on the command line.
     $obj = new $class(null);
     if (!is_a($obj, 'BasicModel')) {
         echo "Error: invalid class. Must be BasicModel\n";
-        exit;
+        return 1;
     }
 
     // Update Table Structure

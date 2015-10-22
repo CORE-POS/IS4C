@@ -32,7 +32,7 @@ if (!$username){
     $url = $FANNIE_URL."auth/ui/loginform.php";
     $rd = $FANNIE_URL."ordering/clearinghouse.php";
     header("Location: $url?redirect=$rd");
-    exit;
+    return;
 }
 
 

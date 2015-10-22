@@ -138,7 +138,7 @@ if (isset($_REQUEST['toids'])){
     }
 
     $pdf->Output();
-    exit;
+    return;
 }
 
 $page_title = "Fannie :: Special Orders";

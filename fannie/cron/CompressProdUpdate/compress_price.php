@@ -33,7 +33,7 @@
 
 if (!chdir(dirname(__FILE__))){
     echo "Error: Can't find directory (prod update compress price)";
-    exit;
+    return;
 }
 
 include('../../config.php');

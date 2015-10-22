@@ -48,7 +48,7 @@ if (validateUserQuiet('ordering_edit')) {
 }
 
 if (!isset($_REQUEST['action'])) {
-    exit;
+    return;
 }
 
 $orderID = isset($_REQUEST['orderID'])?(int)$_REQUEST['orderID']:'';

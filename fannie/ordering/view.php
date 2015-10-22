@@ -29,7 +29,7 @@ if (!checkLogin()){
     $url = $FANNIE_URL."auth/ui/loginform.php";
     $rd = $FANNIE_URL."ordering/";
     header("Location: $url?redirect=$rd");
-    exit;
+    return;
 }
 
 if (session_id() == '') {

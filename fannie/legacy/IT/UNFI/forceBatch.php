@@ -6,7 +6,7 @@ if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php")
 include('../../db.php');
 
 if (!isset($_GET['batchID'])) {
-    exit;
+    return;
 }
 
 $batchID = $_GET['batchID'];

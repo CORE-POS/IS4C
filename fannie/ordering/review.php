@@ -29,7 +29,7 @@ if (!checkLogin()){
     $url = $FANNIE_URL."auth/ui/loginform.php";
     $rd = $FANNIE_URL."ordering/";
     header("Location: $url?redirect=$rd");
-    exit;
+    return;
 }
 
 $page_title = "Special Order :: Review";
@@ -40,7 +40,7 @@ $orderID = isset($_REQUEST['orderID'])?$_REQUEST['orderID']:'';
 if ($orderID === ''){
     echo 'Error: no order specified';
     include($FANNIE_ROOT.'src/footer.html');
-    exit;
+    return;
 }
 ?>
 <input type="submit" value="Duplicate Order" 

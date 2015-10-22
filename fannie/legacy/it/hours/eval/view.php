@@ -8,20 +8,20 @@ $name = checkLogin();
 $perm = validateUserQuiet('evals');
 if ($name === false && $perm === false){
     header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/it/hours/eval/list.php");
-    exit;
+    return;
 }
 else if ($perm === false){
     echo "Error";
-    exit;
+    return;
 }
 
 if (isset($_REQUEST['getAddForm'])){
     echo addForm();
-    exit;
+    return;
 }
 else if (isset($_REQUEST['getCommentForm'])){
     echo commentForm();
-    exit;
+    return;
 }
 elseif (isset($_REQUEST['addEntry'])){
     $db = hours_dbconnect();
@@ -39,7 +39,7 @@ elseif (isset($_REQUEST['addEntry'])){
     $r = $db->execute($q, array($empID, $type, $score, $month, $year, $pos));
 
     echo getHistory($empID);
-    exit;
+    return;
 }
 elseif (isset($_REQUEST['addComment'])){
     $db = hours_dbconnect();
@@ -52,14 +52,14 @@ elseif (isset($_REQUEST['addComment'])){
     $r = $db->execute($q, array($empID, $comment, $user));
 
     echo getComments($empID);
-    exit;
+    return;
 }
 elseif (isset($_REQUEST['deleteComment'])){
     $db = hours_dbconnect();
     $q = $db->prepare("UPDATE evalComments SET deleted=1 WHERE id=?");
     $r = $db->execute($q, array($_REQUEST['deleteComment']));
     echo getComments($_REQUEST['empID']);
-    exit;
+    return;
 }
 elseif (isset($_REQUEST['delEntry'])){
     $entryID = sprintf("%d",$_REQUEST['delEntry']);
@@ -69,7 +69,7 @@ elseif (isset($_REQUEST['delEntry'])){
     $db->execute($q, array($entryID, $empID));
 
     echo getHistory($empID);
-    exit;
+    return;
 }
 elseif (isset($_REQUEST['saveInfo'])){
     $id = $_REQUEST['id'];
@@ -96,12 +96,12 @@ elseif (isset($_REQUEST['saveInfo'])){
     $db->execute($delQ, array($id));
     $db->execute($insQ, array($id, $pos, $date, $hire, $etype));
     echo "Info saved\nPositions: $pos\nNext Eval: ".trim($date,"'")."\nHire: ".trim($hire,"'");
-    exit;
+    return;
 }
 
 if (!isset($_REQUEST['id'])){
     echo "Error: no employee selected";
-    exit;
+    return;
 }
 
 $empID = sprintf("%d",$_REQUEST['id']);

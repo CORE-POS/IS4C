@@ -31,7 +31,7 @@ if (!$username){
     $url = $FANNIE_URL."auth/ui/loginform.php";
     $rd = $FANNIE_URL."ordering/historical.php";
     header("Location: $url?redirect=$rd");
-    exit;
+    return;
 }
 
 $page_title = "Special Order :: Management";

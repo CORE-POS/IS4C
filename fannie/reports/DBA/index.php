@@ -12,7 +12,7 @@ if (isset($_REQUEST['loadID'])){
     echo $w['reportName'];
     echo '`';
     echo base64_decode($w['reportQuery']);
-    exit;
+    return;
 }
 
 $errors = "";
