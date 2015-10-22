@@ -44,10 +44,12 @@
                 <directory>fannie/legacy</directory>
                 <directory>fannie/install/LaneConfigPages/extra_directory_layer</directory>
                 <directory>fannie/install/LaneConfigPages/lane_install</directory>
+                <directory>fannie/modules</directory>
+                <directory>fannie/per-coop</directory>
+                <directory>fannie/reports/Store-Specific</directory>
                 <directory>fannie/src/Excel</directory>
                 <directory>fannie/src/fpdf</directory>
-                <directory>fannie/modules</directory>
-                <directory>fannie/reports/Store-Specific</directory>
+                <directory>fannie/sync/special</directory>
                 <directory>pos/is4c-nf/plugins</directory>
                 <directory>pos/is4c-nf/test</directory>
                 <directory suffix="index.php">.</directory>

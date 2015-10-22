@@ -11,7 +11,7 @@
 		</div>
 		<div style="float:left; margin-right: 50px;">
 <?php
-if($FANNIE_AUTH_ENABLED){
+if(isset($FANNIE_AUTH_ENABLED) && $FANNIE_AUTH_ENABLED){
 	if (!function_exists("checkLogin")) include(dirname(__FILE__) . '/../auth/login.php');
 	$name = checkLogin();
 	if (!$name){
