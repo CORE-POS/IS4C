@@ -194,7 +194,7 @@ class WicSalesReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_URL;
+        ob_start();
 ?>
 <form method="get" action="WicSalesReport.php" class="form-horizontal">
     <div class="col-sm-5">
@@ -241,6 +241,8 @@ class WicSalesReport extends FannieReportPage
         $ws = $FANNIE_URL . 'ws/';
         $this->add_onload_command("bindAutoComplete('#manu', '$ws', 'brand');\n");
         $this->add_onload_command('$(\'#manu\').focus();');
+
+        return ob_get_clean();
     }
 
     public function helpContent()

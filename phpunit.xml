@@ -47,6 +47,7 @@
                 <directory>fannie/src/Excel</directory>
                 <directory>fannie/src/fpdf</directory>
                 <directory>fannie/modules</directory>
+                <directory>fannie/reports/Store-Specific</directory>
                 <directory>pos/is4c-nf/plugins</directory>
                 <directory>pos/is4c-nf/test</directory>
                 <directory suffix="index.php">.</directory>
