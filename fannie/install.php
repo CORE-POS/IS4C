@@ -1,3 +1,5 @@
 <?php
-header("Location: install/");
-?>
+if (!headers_sent()) {
+    header("Location: install/");
+}
+

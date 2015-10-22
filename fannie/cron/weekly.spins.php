@@ -47,7 +47,11 @@ if (!class_exists('FannieAPI')) {
   SPINS.php needs to define your FTP username and
   password as $SPINS_USER and $SPINS_PW respectively.
 */
-include($FANNIE_ROOT.'src/Credentials/SPINS.php');
+if (file_exists($FANNIE_ROOT.'src/Credentials/SPINS.php')) {
+    include($FANNIE_ROOT.'src/Credentials/SPINS.php');
+} else {
+    return;
+}
 
 $tstamp = time();
 $week = date("W",$tstamp);

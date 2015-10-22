@@ -21,9 +21,16 @@
 
 *********************************************************************************/
 ini_set('display_errors','1');
-include('../config.php'); 
-include('util.php');
-include('db.php');
+include(dirname(__FILE__) '/../config.php'); 
+if (!class_exists('FannieAPI')) {
+    include_once(dirname(__FILE__) . '/../classlib2.0/FannieAPI.php');
+}
+if (!function_exists('confset')) {
+    include(dirname(__FILE__) . '/util.php');
+}
+if (!function_exists('create_if_needed')) {
+    include('db.php');
+}
 $FILEPATH = $FANNIE_ROOT;
 if (isset($_REQUEST['ordering'])){
     $FANNIE_MEMBER_MODULES = array();

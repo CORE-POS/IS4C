@@ -22,12 +22,16 @@
 *********************************************************************************/
 
 //ini_set('display_errors','1');
-include('../config.php');
+include(dirname(__FILE__) '/../config.php'); 
 if (!class_exists('FannieAPI')) {
-         include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-include('util.php');
-include('db.php');
+if (!function_exists('confset')) {
+    include(dirname(__FILE__) . '/util.php');
+}
+if (!function_exists('create_if_needed')) {
+    include('db.php');
+}
 
 /**
     @class InstallMemModDisplayPage
