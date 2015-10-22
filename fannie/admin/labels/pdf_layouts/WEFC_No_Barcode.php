@@ -25,7 +25,9 @@
 if (!defined('FPDF_FONTPATH')) {
   define('FPDF_FONTPATH','font/');
 }
-require($FANNIE_ROOT.'src/fpdf/fpdf.php');
+if (!class_exists('FPDF')) {
+    require(dirname(__FILE__) . '/../../../src/fpdf/fpdf.php');
+}
 
 class WEFC_No_Barcode_PDF extends FPDF {}
 
