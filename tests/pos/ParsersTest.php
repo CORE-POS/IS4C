@@ -364,7 +364,6 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['total'] = 1.00;
         $record['regPrice'] = 1.00;
         $record['ItemQtty'] = 1;
-        echo lttLib::dumpRecord(1);
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
         $v = new Void();
