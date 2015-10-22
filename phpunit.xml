@@ -49,6 +49,8 @@
                 <directory>pos/is4c-nf/test</directory>
                 <directory>pos/is4c-nf/unit-tests</directory>
                 <directory suffix="index.php">.</directory>
+                <file>fannie/cron/members.sync.with.CiviCRM.php</file>
+                <file>fannie/cron/members.update.from.CiviCRM.php</file>
             </exclude>
         </whitelist>
     </filter>
