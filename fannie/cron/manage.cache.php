@@ -42,6 +42,9 @@ if (!function_exists('cron_msg')) {
 set_time_limit(0);
 
 $path = 'cache/cachefiles/daily/';
+if (!file_exists($FANNIE_ROOT . $path)) {
+    return;
+}
 $dh = opendir($FANNIE_ROOT.$path);
 if (!$dh) {
     echo cron_msg("$FANNIE_ROOT.$path does not exist.");
