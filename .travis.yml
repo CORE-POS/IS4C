@@ -27,7 +27,7 @@ env:
 
 install:
     - sh tests/fannie/travis-init.sh
-    - sh pos/is4c-nf/unit-tests/travis-init.sh
+    - sh tests/pos/travis-init.sh
     # limit package installation to codeclimate
     - rm composer.json
     - composer init -n
