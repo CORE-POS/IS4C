@@ -79,7 +79,7 @@ class TsAdminView extends FanniePage {
         $this->emp_no = FormLib::get_form_value('emp_no',0);
         $this->periodID = FormLib::get_form_value('periodID',0);
 
-        if ($this->emp_no == 0 || $this->periodID == 0 || $this->emp_no < 0){
+        if (!headers_sent() && ($this->emp_no == 0 || $this->periodID == 0 || $this->emp_no < 0)){
             header('Location: TsAdminMain.php');
             return False;
         }

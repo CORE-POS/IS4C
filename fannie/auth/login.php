@@ -166,7 +166,9 @@ function logout(){
         $upR = $sql->exec_statement($upP,array($name));
     }
 
-    setcookie('session_data','',0,'/');
+    if (!headers_sent()) {
+        setcookie('session_data','',0,'/');
+    }
     return true;
 }
 

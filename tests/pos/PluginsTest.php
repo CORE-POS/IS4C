@@ -7,7 +7,7 @@ class PluginsTest extends PHPUnit_Framework_TestCase
 {
     public function testAll()
     {
-        $path = dirname(__FILE__) . '/../plugins';
+        $path = dirname(__FILE__) . '/../../pos/is4c-nf/plugins';
         $iter = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path), RecursiveIteratorIterator::CHILD_FIRST, 2);
         // a handful of need to be checked early to avoid duplicate definition
         // since another file includes it

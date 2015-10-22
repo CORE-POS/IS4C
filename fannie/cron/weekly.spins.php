@@ -37,15 +37,21 @@ set_time_limit(0);
 
 $SPINS_SERVER = "ftp.spins.com";
 
-include('../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
 
 /**
   CONFIGURATION:
   SPINS.php needs to define your FTP username and
   password as $SPINS_USER and $SPINS_PW respectively.
 */
-include($FANNIE_ROOT.'src/Credentials/SPINS.php');
+if (file_exists($FANNIE_ROOT.'src/Credentials/SPINS.php')) {
+    include($FANNIE_ROOT.'src/Credentials/SPINS.php');
+} else {
+    return;
+}
 
 $tstamp = time();
 $week = date("W",$tstamp);

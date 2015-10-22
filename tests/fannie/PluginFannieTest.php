@@ -7,7 +7,7 @@ class PluginFannieTest extends PHPUnit_Framework_TestCase
 {
     public function testPlugins()
     {
-        $plugin_path = dirname(__FILE__) . '/../modules/plugins2.0/';
+        $plugin_path = dirname(__FILE__) . '/../../fannie/modules/plugins2.0/';
         $first = array('CwReportDataSource'=>'');
         $files = array();
         foreach (FannieAPI::listFiles($plugin_path) as $file) {
@@ -25,7 +25,7 @@ class PluginFannieTest extends PHPUnit_Framework_TestCase
 
         $sniffer = null;
         $standard = dirname(__FILE__) . '/CodingStandard/CORE_PSR1/';
-        if (getenv('TRAVISCI') === false && class_exists('PHP_CodeSniffer')) {
+        if (getenv('TRAVIS') === false && class_exists('PHP_CodeSniffer')) {
             $sniffer = new PHP_CodeSniffer();
             $sniffer->initStandard($standard);
             $sniffer->cli->setCommandLineValues(array('--report=Json'));

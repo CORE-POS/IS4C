@@ -22,5 +22,6 @@ echo "\$FANNIE_OP_DB = 'unit_test_op';" >> fannie/config.php
 echo "\$FANNIE_TRANS_DB = 'unit_test_trans';" >> fannie/config.php
 echo "\$FANNIE_ARCHIVE_DB = 'unit_test_archive';" >> fannie/config.php
 echo "\$FANNIE_ARCHIVE_METHOD = 'partitions';" >> fannie/config.php
+echo "\$FANNIE_LANES = array();" >> fannie/config.php
 # set database driver based on environment variable
 echo "\$FANNIE_SERVER_DBMS = '$DB_DRIVER';" >> fannie/config.php

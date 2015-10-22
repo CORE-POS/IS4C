@@ -21,13 +21,15 @@
 
 *********************************************************************************/
 
-if (!chdir("CompressProdUpdate")){
+if (!chdir(dirname(__FILE__))){
     echo "Error: Can't find directory (archive prod update)";
     exit;
 }
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
 
 /* HELP
 

@@ -3058,12 +3058,14 @@ error_reporting(E_ERROR | E_WARNING);
 
 //#'C --CONSTANTS { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-require('../config.php');
+include(dirname(__FILE__) . '/../config.php');
 //require('../src/SQLManager.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-require_once($FANNIE_ROOT.'src/cron_msg.php');
+if (!function_exists('cron_msg')) {
+    include($FANNIE_ROOT.'src/cron_msg.php');
+}
 
 /* No limit on PHP execution time.
  * This program does not ordinarily take very long to run.

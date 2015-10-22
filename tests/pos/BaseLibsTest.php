@@ -7,11 +7,9 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
     public function testMiscLib()
     {
-        $here = getcwd();
-        chdir(dirname(__FILE__).'/../gui-modules/');
+        chdir(dirname(__FILE__).'/../../pos/is4c-nf/gui-modules/');
         $rel = MiscLib::baseURL();
         $this->assertEquals('../',$rel);
-        chdir($here);
 
         $this->assertEquals(1, MiscLib::nullwrap(1));
         $this->assertEquals(1.5, MiscLib::nullwrap(1.5));
@@ -187,7 +185,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         */
 
         $ph = new PrintHandler();
-        $file = dirname(__FILE__).'/../graphics/WfcLogo2014.bmp';
+        $file = dirname(__FILE__).'/../../pos/is4c-nf/graphics/WfcLogo2014.bmp';
 
         $this->assertFileExists($file);
         $bitmap = $ph->RenderBitmapFromFile($file);

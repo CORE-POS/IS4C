@@ -1,5 +1,7 @@
 <?php
-require_once($FANNIE_ROOT.'src/Credentials/GoE.wfc.php');
+if (file_exists($FANNIE_ROOT.'src/Credentials/GoE.wfc.php')) {
+    require_once($FANNIE_ROOT.'src/Credentials/GoE.wfc.php');
+}
 
 function getFailedTrans($dateStr,$hour){
     global $sql;

@@ -35,7 +35,7 @@ class FannieItemLaneSync extends FannieWebService
       @param $args array of data
       @return an array of data
     */
-    public function run($args)
+    public function run($args=array())
     {
         $ret = array();
         if (!property_exists($args, 'upc')) {

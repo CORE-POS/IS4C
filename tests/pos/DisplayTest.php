@@ -214,6 +214,9 @@ class DisplayTest extends PHPUnit_Framework_TestCase
             $this->compareArrays($records[$i], $view[$i]);
             $this->compareArrays($spec[$i], $view[$i]);
         }
+
+        CoreState::memberReset();
+        lttLib::clear();
     }
 
     private function compareArrays($one, $two)

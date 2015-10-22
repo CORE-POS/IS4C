@@ -116,6 +116,7 @@ public class SPH_Magellan_Scale : SerialPortHandler
                         System.Console.WriteLine("RECV FROM SCALE: "+buffer);
                     }
                     buffer = this.ParseData(buffer);
+                    last_message = buffer;
                     if (buffer != null) {
                         if (this.verbose_mode > 0) {
                             System.Console.WriteLine("PASS TO POS: "+buffer);
@@ -166,7 +167,6 @@ public class SPH_Magellan_Scale : SerialPortHandler
             if (s == last_message) {
                 Thread.Sleep(200);
             }
-            last_message = s;
 
             /**
               The scale supports two primary commands:

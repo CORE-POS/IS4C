@@ -21,9 +21,13 @@
 
 *********************************************************************************/
 
-include('../config.php'); 
-include_once('../classlib2.0/FannieAPI.php');
-include('util.php');
+include(dirname(__FILE__) . '/../config.php'); 
+if (!class_exists('FannieAPI')) {
+    include_once(dirname(__FILE__) . '/../classlib2.0/FannieAPI.php');
+}
+if (!function_exists('confset')) {
+    include(dirname(__FILE__) . '/util.php');
+}
 
 class InstallThemePage extends \COREPOS\Fannie\API\InstallPage
 {

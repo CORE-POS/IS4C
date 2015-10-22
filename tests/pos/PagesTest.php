@@ -9,7 +9,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
     {
         CoreLocal::set('Debug_Redirects', 1, True);
 
-        $dh = opendir(dirname(__FILE__).'/../gui-modules');
+        $dh = opendir(dirname(__FILE__).'/../../pos/is4c-nf/gui-modules');
         $pages = array();
         while( ($file=readdir($dh)) !== False){
             if ($file[0] == '.') continue;
@@ -19,7 +19,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
         }
 
         foreach($pages as $class => $definition){
-            include_once(dirname(__FILE__).'/../gui-modules/'.$definition);
+            include_once(dirname(__FILE__).'/../../pos/is4c-nf/gui-modules/'.$definition);
 
             // get the default output
             ob_start();

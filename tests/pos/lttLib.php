@@ -32,6 +32,15 @@ class lttLib {
         }
     }
 
+    public static function dumpRecord($trans_id)
+    {
+        $db = Database::tDataConnect();
+        $p = $db->prepare_statement('SELECT * FROM localtemptrans WHERE trans_id=?');
+        ob_start();
+        var_dump($db->getRow($p, array($trans_id)));
+        return ob_get_clean();
+    }
+
     /**
       Get array of all ltt columns with default values
     */

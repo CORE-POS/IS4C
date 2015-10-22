@@ -7,12 +7,13 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
 {
     public function testInstallOpDB()
     {
-        $con = FannieDB::get('unit_test_op');
+        $op_db = FannieConfig::config('OP_DB');
+        $con = FannieDB::get($op_db);
         if (!class_exists('InstallIndexPage')) {
-            include_once(dirname(__FILE__) . '/../install/InstallIndexPage.php');
+            include_once(dirname(__FILE__) . '/../../fannie/install/InstallIndexPage.php');
         }
         $page = new InstallIndexPage();
-        $results = $page->create_op_dbs($con, 'unit_test_op');
+        $results = $page->create_op_dbs($con, $op_db);
         $this->assertNotEmpty($results,'create_op_dbs did not return an array');
         foreach ($results as $result) {
 
@@ -34,12 +35,14 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
 
     public function testInstallTransDB()
     {
-        $con = FannieDB::get('unit_test_trans');
+        $op_db = FannieConfig::config('OP_DB');
+        $trans_db = FannieConfig::config('TRANS_DB');
+        $con = FannieDB::get($trans_db);
         if (!class_exists('InstallIndexPage')) {
-            include_once(dirname(__FILE__) . '/../install/InstallIndexPage.php');
+            include_once(dirname(__FILE__) . '/../../fannie/install/InstallIndexPage.php');
         }
         $page = new InstallIndexPage();
-        $results = $page->create_trans_dbs($con, 'unit_test_trans', 'unit_test_op');
+        $results = $page->create_trans_dbs($con, $trans_db, $op_db);
         $this->assertNotEmpty($results,'create_trans_dbs did not return an array');
         foreach ($results as $result) {
 
@@ -61,12 +64,13 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
 
     public function testInstallArchiveDB()
     {
-        $con = FannieDB::get('unit_test_archive');
+        $arch_db = FannieConfig::config('ARCHIVE_DB');
+        $con = FannieDB::get($arch_db);
         if (!class_exists('InstallIndexPage')) {
-            include_once(dirname(__FILE__) . '/../install/InstallIndexPage.php');
+            include_once(dirname(__FILE__) . '/../../fannie/install/InstallIndexPage.php');
         }
         $page = new InstallIndexPage();
-        $results = $page->create_archive_dbs($con, 'unit_test_archive', 'partitions');
+        $results = $page->create_archive_dbs($con, $arch_db, 'partitions');
         $this->assertNotEmpty($results,'create_trans_dbs did not return an array');
         foreach ($results as $result) {
 
@@ -86,7 +90,7 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
         }
 
         // run a second time so both archive methods are tested
-        $results = $page->create_archive_dbs($con, 'unit_test_archive', 'tables');
+        $results = $page->create_archive_dbs($con, $arch_db, 'tables');
         $this->assertNotEmpty($results,'create_trans_dbs did not return an array');
         foreach ($results as $result) {
 
@@ -108,7 +112,8 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
 
     public function testSampleData()
     {
-        $con = FannieDB::get('unit_test_op');
+        $op_db = FannieConfig::config('OP_DB');
+        $con = FannieDB::get($op_db);
 
         $samples = array(
             'batchType',
