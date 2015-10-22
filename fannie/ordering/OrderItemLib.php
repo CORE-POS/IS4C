@@ -76,9 +76,10 @@ class OrderItemLib
                 COALESCE(v.units, 1) AS caseSize,
                 1 AS stocked,
                 p.default_vendor_id AS vendorID,
-                COALESCE(n.vendorName, \'\') AS vendorName
+                COALESCE(n.vendorName, \'\') AS vendorName,
                 p.upc,
-                COALESCE(v.sku, \'\') AS sku
+                COALESCE(v.sku, \'\') AS sku,
+                p.department
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
@@ -98,7 +99,7 @@ class OrderItemLib
         $prodP = $dbc->prepare('
             SELECT v.brand,
                 v.description,
-                v.SRP AS normal_price
+                v.SRP AS normal_price,
                 0 AS special_price,
                 v.cost,
                 v.saleCost,
@@ -109,7 +110,8 @@ class OrderItemLib
                 v.vendorID,
                 COALESCE(n.vendorName, \'\') AS vendorName,
                 v.upc,
-                v.sku
+                v.sku,
+                0 AS department
             FROM vendorItems AS v 
                 LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
             WHERE v.upc=?
@@ -155,7 +157,8 @@ class OrderItemLib
                 p.default_vendor_id AS vendorID,
                 COALESCE(n.vendorName, \'\') AS vendorName,
                 p.upc,
-                COALESCE(v.sku, \'\') AS sku
+                COALESCE(v.sku, \'\') AS sku,
+                p.department
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
@@ -175,7 +178,7 @@ class OrderItemLib
         $prodP = $dbc->prepare('
             SELECT v.brand,
                 v.description,
-                v.SRP AS normal_price
+                v.SRP AS normal_price,
                 0 AS special_price,
                 v.cost,
                 v.saleCost,
@@ -185,8 +188,9 @@ class OrderItemLib
                 0 AS stocked,
                 v.vendorID,
                 v.upc,
-                v.sku
-                COALESCE(n.vendorName, \'\') AS vendorName
+                v.sku,
+                COALESCE(n.vendorName, \'\') AS vendorName,
+                0 AS department
             FROM vendorItems AS v 
                 LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
             WHERE v.sku LIKE ?
@@ -378,7 +382,7 @@ class OrderItemLib
             'isMember' => false,
         );
         $dbc = self::dbc();
-        $table = FannieConfig::config('TRANS_DB') . $dbc->sep() . 'SpecialOrderDiscounts';
+        $table = FannieConfig::config('TRANS_DB') . $dbc->sep() . 'SpecialOrderMemDiscounts';
         $prep = $dbc->prepare('
             SELECT d.type,
                 d.amount,

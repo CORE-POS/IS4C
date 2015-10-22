@@ -83,10 +83,10 @@ class NonMovementReport extends FannieReportPage {
     {
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
-        $dept1 = FormLib::get_form_value('deptStart',0);
-        $dept2 = FormLib::get_form_value('deptEnd',0);
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
+        $deptStart = FormLib::get_form_value('deptStart',0);
+        $deptEnd = FormLib::get_form_value('deptEnd',0);
         $deptMulti = FormLib::get('departments', array());
 
         $tempName = "TempNoMove";
@@ -116,18 +116,8 @@ class NonMovementReport extends FannieReportPage {
             }
         }
         if ($buyer != -1) {
-            if (count($deptMulti) > 0) {
-                $where .= ' AND p.department IN (';
-                foreach ($deptMulti as $d) {
-                    $where .= '?,';
-                    $args[] = $d;
-                }
-                $where = substr($where, 0, strlen($where)-1) . ')';
-            } else {
-                $where .= ' AND p.department BETWEEN ? AND ? ';
-                $args[] = $dept1;
-                $args[] = $dept2;
-            }
+            list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args, 'p');
+            $where .= $conditional;
         }
 
         $query = "
@@ -189,13 +179,14 @@ class NonMovementReport extends FannieReportPage {
     
     function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
         $deptsR = $dbc->exec_statement($deptsQ);
         $deptsList = "";
         while ($deptsW = $dbc->fetch_array($deptsR))
             $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
+        ob_start();
 ?>
 <form method="get" action="NonMovementReport.php" class="form-horizontal">
     <div class="col-sm-6">
@@ -235,6 +226,7 @@ class NonMovementReport extends FannieReportPage {
     </div>
 </form>
 <?php
+        return ob_get_clean();
     }
 
     public function helpContent()

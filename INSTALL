@@ -7,10 +7,6 @@ Prequisites:
 * PHP 5.3 or greater
 * An SQL server. MySQL 5+ is recommended.
 
-Installing documentation:
-1. Include "documentation" folder somewhere on the webserver
-2. Browse documentation
-
 Install the front end POS:
 1. Include pos/is4c-nf somewhere on the webserver.
 2. Rename pos/is4c-nf/ini.php.dist to pos/is4c-nf/ini.php

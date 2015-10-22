@@ -31,7 +31,7 @@ if (!class_exists('FannieAPI')) {
 */
 class SaHandheldPage extends FanniePage {
     private $section=0;
-    private $current_item_data=array();
+    protected $current_item_data=array();
     private $linea_ios_mode = False;
 
     public $page_set = 'Plugin :: Shelf Audit';
@@ -176,7 +176,6 @@ function update_qty(amt){
     // save new quantity, return cursor to upc input
     var args = 'action=save&upc='+$('#cur_upc').val()+'&qty='+cur;
     $.ajax({
-        url: 'SaHandheldPage.php',
         data: args,
         cache: false,
         error: function(){
@@ -196,7 +195,6 @@ function qty_typed(ev){
     // save new quantity, return cursor to upc input
     var args = 'action=save&upc='+$('#cur_upc').val()+'&qty='+cur;
     $.ajax({
-        url: 'SaHandheldPage.php',
         data: args,
         cache: false,
         error: function(){
@@ -252,13 +250,10 @@ ScannerDevice.registerListener(Device);
         return ob_get_clean();
     }
 
-    function body_content(){
-        ob_start();
-        $elem = '#upc_in';
-        if (isset($this->current_item_data['upc']) && isset($this->current_item_data['desc'])) $elem = '#cur_qty';
-        $this->add_onload_command('$(\'' . $elem . '\').focus();');
+    protected function upcForm($elem)
+    {
         ?>
-<form action="SaHandheldPage.php" method="get" id="upcScanForm">
+<form method="get" id="upcScanForm">
 <a href="SaMenuPage.php">Menu</a><br />
 <div class="form-group form-inline">
     <div class="input-group">
@@ -271,14 +266,11 @@ ScannerDevice.registerListener(Device);
     <button type="submit" class="btn btn-success" id="goBtn">Go</button>
 </div>
 </form>
-<?php
-if (isset($this->current_item_data['upc'])){
-    if (!isset($this->current_item_data['desc'])){
-        echo '<div class="alert alert-danger">Item not found (';
-        echo $this->current_item_data['upc'];
-        echo ')</div>';
-        $this->add_onload_command('doubleBeep();');
-    } else {
+        <?php
+    }
+
+    protected function qtyForm($elem)
+    {
         echo '<p>';
         echo $this->current_item_data['upc'];
         echo ' ';
@@ -296,6 +288,23 @@ if (isset($this->current_item_data['upc'])){
             (($elem=='#cur_qty')?'class="focused form-control input-lg"':'class="form-control input-lg"'),
             $this->current_item_data['upc']
         );
+    }
+
+    function body_content()
+    {
+        ob_start();
+        $elem = '#upc_in';
+        if (isset($this->current_item_data['upc']) && isset($this->current_item_data['desc'])) $elem = '#cur_qty';
+        $this->add_onload_command('$(\'' . $elem . '\').focus();');
+        $this->upcForm($elem);
+if (isset($this->current_item_data['upc'])){
+    if (!isset($this->current_item_data['desc'])){
+        echo '<div class="alert alert-danger">Item not found (';
+        echo $this->current_item_data['upc'];
+        echo ')</div>';
+        $this->add_onload_command('doubleBeep();');
+    } else {
+        $this->qtyForm($elem);
         printf('<button type="button" onclick="update_qty(%d);" class="btn btn-success btn-lg">+%d</button>
             <button type="button" onclick="update_qty(%d);" class="btn btn-danger btn-lg">-%d</button>',
             1,1,-1,1);

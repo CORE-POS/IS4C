@@ -40,10 +40,10 @@ class VendorSalesReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $date1 = FormLib::getDate('date1', date('Y-m-d'));
-        $date2 = FormLib::getDate('date2', date('Y-m-d'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $deptStart = FormLib::get('deptStart', 1);
         $deptEnd = FormLib::get('deptEnd', 1);
         $deptMulti = FormLib::get('departments', array());
@@ -88,18 +88,8 @@ class VendorSalesReport extends FannieReportPage
             }
         }
         if ($buyer != -1) {
-            if (count($deptMulti) > 0) {
-                $query .= ' AND t.department IN (';
-                foreach ($deptMulti as $d) {
-                    $query .= '?,';
-                    $args[] = $d;
-                }
-                $query = substr($query, 0, strlen($query)-1) . ')';
-            } else {
-                $query .= ' AND t.department BETWEEN ? AND ? ';
-                $args[] = $deptStart;
-                $args[] = $deptEnd;
-            }
+            list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args, 't');
+            $query .= $conditional;
         }
         $query .= '
             GROUP BY COALESCE(v.vendorName, x.distributor)

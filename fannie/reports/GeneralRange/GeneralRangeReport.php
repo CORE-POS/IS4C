@@ -48,8 +48,8 @@ class GeneralRangeReport extends FannieReportPage
     {
         $dbc = $this->connection;
         $dbc->setDefaultDB($this->config->get('OP_DB'));
-        $d1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $d2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $d1 = $this->form->date1;
+        $d2 = $this->form->date2;
         $dates = array($d1.' 00:00:00', $d2.' 23:59:59');
         $data = array();
 
@@ -278,6 +278,7 @@ class GeneralRangeReport extends FannieReportPage
     function form_content()
     {
         $start = date('Y-m-d',strtotime('yesterday'));
+        ob_start();
         ?>
         <form method=get>
         <div class="col-sm-5">
@@ -300,6 +301,8 @@ class GeneralRangeReport extends FannieReportPage
         <?php echo FormLib::standardDateFields(); ?>
         </form>
         <?php
+
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -322,6 +325,5 @@ class GeneralRangeReport extends FannieReportPage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

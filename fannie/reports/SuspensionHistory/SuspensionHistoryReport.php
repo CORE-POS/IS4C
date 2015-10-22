@@ -38,30 +38,23 @@ class SuspensionHistoryReport extends FannieReportPage
     protected $report_headers = array('Date', 'Reason', 'User');
     protected $required_fields = array('memNum');
 
-    public function preprocess()
-    {
-        $this->card_no = FormLib::get('memNum','');
-
-        return parent::preprocess();
-    }
-
     public function report_description_content()
     {
-        return array('History for account #'.$this->card_no);
+        return array('History for account #'.$this->form->memNum);
     }
 
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $q = $dbc->prepare_statement("select username,postdate,post,textStr
                 from suspension_history AS s 
                 LEFT JOIN reasoncodes AS r ON
                 s.reasoncode & r.mask > 0
                 WHERE s.cardno=? ORDER BY postdate DESC");
-        $r = $dbc->exec_statement($q,array($this->card_no));
+        $r = $dbc->exec_statement($q,array($this->form->memNum));
         $data = array();
         while($w = $dbc->fetch_row($r)){
             $record = array(

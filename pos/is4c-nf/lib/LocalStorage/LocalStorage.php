@@ -22,7 +22,7 @@ class LocalStorage implements Iterator
     /**
       Constructor
     */
-    public function LocalStorage()
+    public function __construct()
     {
     }
 

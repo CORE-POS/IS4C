@@ -64,7 +64,7 @@ class ItemStatusPage extends FannieRESTfulPage
 
         $tag = new ShelftagsModel($dbc);
         $tag->upc($this->upc);
-        foreach ($tag as $obj) {
+        foreach ($tag->find() as $obj) {
             if ($obj->id() != $this->tagID) {
                 $obj->delete();
             }

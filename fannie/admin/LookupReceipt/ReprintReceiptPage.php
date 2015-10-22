@@ -59,9 +59,13 @@ class ReprintReceiptPage extends FanniePage
 
             if ($trans_num != "") {
                 $temp = explode("-",$trans_num);
-                $emp_no = $temp[0];
-                $register_no=$temp[1];
-                $trans_no=$temp[2];
+                if (count($temp) != 3) {
+                    $emp_no=$reg_no=$trans_no=0;
+                } else {
+                    $emp_no = $temp[0];
+                    $register_no=$temp[1];
+                    $trans_no=$temp[2];
+                }
             }
 
             $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -130,13 +134,13 @@ class ReprintReceiptPage extends FanniePage
               replace with a not-true statements
               otherwise the OR will match everything
             */
-            if ($tender_clause == '( 1=1)') {
+            if ($tender_clause == '( 1=1 AND total <> 0 )') {
                 $tender_clause = '1=0';
             }
 
             $or_clause = '(' . $tender_clause;
             if ($department != "") {
-                $or_clause .= " OR department=? ";
+                $or_clause .= " OR (department=? AND trans_type IN ('I','D')) ";
                 $args[] = $department;
             }
 
@@ -253,10 +257,14 @@ class ReprintReceiptPage extends FanniePage
     function body_content()
     {
         if (!empty($this->results)) {
+            $str = filter_input(INPUT_SERVER, 'QUERY_STRING');
+            $json = FormLib::queryStringToJSON($str);
             $this->results .= '
                 <p>
                     <button type="button" class="btn btn-default"
                         onclick="location=\'ReprintReceiptPage.php\';">New Search</button>
+                    <a href="?json=' . base64_encode($json) . '" class="btn btn-default btn-reset">
+                        Adjust Search</a>
                 </p>';
             return $this->results;
         } else {
@@ -355,6 +363,10 @@ class ReprintReceiptPage extends FanniePage
 </div>
 </form>
         <?php
+        if (FormLib::get('json') !== '') {
+            $init = FormLib::fieldJSONtoJavascript(base64_decode(FormLib::get('json')));
+            $this->addOnloadCommand($init);
+        }
 
         return ob_get_clean();
     }
@@ -373,5 +385,5 @@ class ReprintReceiptPage extends FanniePage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

@@ -21,13 +21,15 @@
 
 *********************************************************************************/
 
-if (!chdir("Suspensions")){
+if (!chdir(dirname(__FILE__))){
     echo "Error: Can't find directory (suspensions)";
     exit;
 }
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
 
 /* HELP
 

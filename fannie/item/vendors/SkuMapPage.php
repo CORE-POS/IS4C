@@ -166,7 +166,7 @@ class SkuMapPage extends FannieRESTfulPage
                 v.description AS vendorDescript,
                 p.description as storeDescript
             FROM vendorSKUtoPLU AS m
-                LEFT JOIN products AS p ON p.upc=m.upc
+                " . DTrans::joinProducts('m') . "
                 LEFT JOIN vendorItems AS v ON v.sku=m.sku AND v.vendorID=m.vendorID
             WHERE m.vendorID = ?
             ORDER BY m.upc

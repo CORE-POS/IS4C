@@ -99,6 +99,7 @@ class BaseItemModule extends ItemModule
         $p = $dbc->prepare($q);
         $r = $dbc->exec_statement($p,array($upc));
         $store_model = new StoresModel($dbc);
+        $store_model->hasOwnItems(1);
         $stores = array();
         foreach ($store_model->find('storeID') as $obj) {
             $stores[$obj->storeID()] = $obj;
@@ -147,6 +148,17 @@ class BaseItemModule extends ItemModule
             if ($dbc->num_rows($lcR) > 0) {
                 $lcW = $dbc->fetch_row($lcR);
                 $likeCode = $lcW['likeCode'];
+            }
+
+            if (FannieConfig::config('STORE_MODE') == 'HQ') {
+                $default_id = array_keys($items);
+                $default_id = $default_id[0];
+                $default_item = $items[$default_id];
+                foreach ($stores as $id => $info) {
+                    if (!isset($items[$id])) {
+                        $items[$id] = $default_item;
+                    }
+                }
             }
         } else {
             // default values for form fields
@@ -405,8 +417,8 @@ HTML;
                 $ret .= '
                     <tr>
                         <th>Long Desc.</th>
-                        <td colspan="3">
-                        <input type="text" size="60" name="puser_description"
+                        <td colspan="5">
+                        <input type="text" size="60" name="puser_description" maxlength="255"
                             ' . (!$active_tab ? ' disabled ' : '') . '
                             value="' . $rowItem['ldesc'] . '" class="form-control" />
                         </td>
@@ -480,7 +492,7 @@ HTML;
 
                 $ret .= '<td class="alert-success" colspan="8">';
                 $ret .= sprintf("<strong>Sale Price:</strong>
-                    %.2f (<em>Batch: <a href=\"%sbatches/newbatch/BatchManagementTool.php?startAt=%d\">%s</a></em>)",
+                    %.2f (<em>Batch: <a href=\"%sbatches/newbatch/EditBatchPage.php?id=%d\">%s</a></em>)",
                     $rowItem['special_price'], FannieConfig::config('URL'), $batch['batchID'], $batch['batchName']);
                 list($date,$time) = explode(' ',$rowItem['end_date']);
                 $ret .= "<strong>End Date:</strong>
@@ -727,20 +739,15 @@ HTML;
 
             $ret = str_replace('{{store_id}}', $store_id, $ret);
             $active_tab = false;
-            if ($new_item || FannieConfig::config('STORE_MODE') != 'HQ') {
+            if (FannieConfig::config('STORE_MODE') != 'HQ') {
                 break;
             }
         }
         $ret .= '</div>';
         // sync button will copy current tab values to all other store tabs
         if (!$new_item && FannieConfig::config('STORE_MODE') == 'HQ') {
-            if (count($items) == count($stores)) {
-                $nav_tabs .= '<li><a href="" onclick="syncStoreTabs(); return false;"
-                    title="Set other stores to match this one">Sync</a></li>';
-            } else {
-                $nav_tabs .= '<li><a href="multistore/IncompleteItemsPage.php?id=' . $upc . '"
-                    title="Add item to other stores">Sync</a></li>';
-            }
+            $nav_tabs .= '<li><label title="Apply update to all stores">
+                <input type="checkbox" id="store-sync" checked /> Sync</label></li>';
         }
         $nav_tabs .= '</ul>';
         // only show the store tabs in HQ mode
@@ -758,8 +765,6 @@ HTML;
     </fieldset>
 </div>
 HTML;
-
-
         $ret .= '</div>'; // end panel-body
         $ret .= '</div>'; // end panel
 
@@ -895,6 +900,9 @@ HTML;
         }
         function syncStoreTabs()
         {
+            if ($('#store-sync').prop('checked') === false) {
+                return true;
+            }
             var store_id = $('.tab-pane.active .store-id:first').val();
             var current = {};
             $('#store-tab-'+store_id+' .syncable-input').each(function(){
@@ -934,6 +942,8 @@ HTML;
                     }
                 }
             });
+
+            return true;
         }
         <?php
 
@@ -1087,6 +1097,23 @@ HTML;
                 $model->deposit($deposit[$i]);
             }
 
+            /* products.formatted_name is intended to be maintained automatically.
+             * Get all enabled plugins and standard modules of the base.
+             * Run plugins first, then standard modules.
+             */
+            $formatters = FannieAPI::ListModules('ProductNameFormatter');
+            $fmt_name = "";
+            $fn_params = array('index' => $i);
+            foreach($formatters as $formatter_name){
+                $formatter = new $formatter_name();
+                $fmt_name = $formatter->compose($fn_params);
+                if (isset($formatter->this_mod_only) &&
+                    $formatter->this_mod_only) {
+                    break;
+                }
+            }
+            $model->formatted_name($fmt_name);
+
             $model->save();
         }
 
@@ -1107,12 +1134,28 @@ HTML;
                   old record that used the UPC as a
                   placeholder SKU.
                 */
-                $fixSkuP = $dbc->prepare('
-                    UPDATE vendorItems
-                    SET sku=?
+                $existsP = $dbc->prepare('
+                    SELECT sku
+                    FROM vendorItems
                     WHERE sku=?
+                        AND upc=?
                         AND vendorID=?');
-                $dbc->execute($fixSkuP, array($sku, $upc, $vendorID));
+                $existsR = $dbc->execute($existsP, array($sku, $upc, $vendorID));
+                if ($dbc->numRows($existsR) > 0 && $sku != $upc) {
+                    $delP = $dbc->prepare('
+                        DELETE FROM vendorItems
+                        WHERE sku =?
+                            AND upc=?
+                            AND vendorID=?');
+                    $dbc->execute($delP, array($upc, $upc, $vendorID));
+                } else {
+                    $fixSkuP = $dbc->prepare('
+                        UPDATE vendorItems
+                        SET sku=?
+                        WHERE sku=?
+                            AND vendorID=?');
+                    $dbc->execute($fixSkuP, array($sku, $upc, $vendorID));
+                }
             }
             $vitem->sku($sku);
             $vitem->size($model->size());
@@ -1247,4 +1290,3 @@ if (basename($_SERVER['SCRIPT_NAME']) == basename(__FILE__)){
     $obj->AjaxCallback();   
 }
 
-?>

@@ -60,25 +60,7 @@ class ChefTecExport
         );
 
         foreach ($items->find() as $obj) {
-            $units = 1.0;
-            $unit_of_measure = $obj->unitSize();
-            if (strstr($obj->unitSize(), ' ')) {
-                list($units, $unit_of_measure) = explode(' ', $obj->unitSize(), 2);
-            }
-            if ($unit_of_measure == '#') {
-                $unit_of_measure = 'lb';
-            } else if ($unit_of_measure == 'FZ') {
-                $unit_of_measure = 'fl oz';
-            }
-            if (strstr($units, '/')) { // 6/12 oz on six pack of soda
-                list($a, $b) = explode('/', $units, 2);
-                $units = $a * $b;
-            }
-            if (strstr($unit_of_measure, '/')) { // space probably omitted
-                preg_match('/([0-9.]+)\/([0-9.]+)(.+)/', $unit_of_measure, $matches);
-                $units = $matches[1] * $matches[2];
-                $unit_of_measure = $matches[3];
-            }
+            list($units, $unit_of_measure) = $this->getUnits($obj);
             echo $obj->sku().',';
             echo '"'.$obj->description().'",';
             echo $order->vendorInvoiceID() . ',';
@@ -91,6 +73,31 @@ class ChefTecExport
             echo '"",'; // alt. unit
             echo "\r\n";
         }
+    }
+
+    private function getUnits($obj)
+    {
+        $units = 1.0;
+        $unit_of_measure = $obj->unitSize();
+        if (strstr($obj->unitSize(), ' ')) {
+            list($units, $unit_of_measure) = explode(' ', $obj->unitSize(), 2);
+        }
+        if ($unit_of_measure == '#') {
+            $unit_of_measure = 'lb';
+        } else if ($unit_of_measure == 'FZ') {
+            $unit_of_measure = 'fl oz';
+        }
+        if (strstr($units, '/')) { // 6/12 oz on six pack of soda
+            list($a, $b) = explode('/', $units, 2);
+            $units = $a * $b;
+        }
+        if (strstr($unit_of_measure, '/')) { // space probably omitted
+            preg_match('/([0-9.]+)\/([0-9.]+)(.+)/', $unit_of_measure, $matches);
+            $units = $matches[1] * $matches[2];
+            $unit_of_measure = $matches[3];
+        }
+
+        return array($units, $unit_of_measure);
     }
 }
 

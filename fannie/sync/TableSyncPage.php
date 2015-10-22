@@ -33,90 +33,55 @@
  * Using fannie/sync/special/* is one way to effect this.
  *
  */
-include('../config.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
-class TableSyncPage extends FanniePage {
-
+class TableSyncPage extends FanniePage 
+{
     protected $title = "Fannie : Sync Data";
     protected $header = "Syncing data";
     public $themed = true;
 
-    private $errors = array();
+    private $errors = '';
     private $results = '';
 
-    function preprocess(){  
-        global $FANNIE_OP_DB, $FANNIE_LANES;
-        $table = FormLib::get_form_value('tablename','');
-        $othertable = FormLib::get_form_value('othertable','');
+    function preprocess()
+    {  
+        $table = FormLib::get('tablename','');
+        $othertable = FormLib::get('othertable','');
 
-        if ($table === '' && $othertable !== '')
+        if ($table === '' && $othertable !== '') {
             $table = $othertable;
-
-        if (empty($table)) {
-            $this->errors[] = "Error: no table was specified";
-
-            return true;
-        } elseif (preg_match('/[^A-Za-z0-9_]/', $table)){
-            $this->errors[] = "Error: \"$table\" contains illegal characters";
-
-            return true;
         }
 
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $sync = \COREPOS\Fannie\API\data\SyncLanes::pushTable($table);
 
-        $this->results = "<p>Syncing table $table <ul>";
-
-        if (file_exists("special/$table.php")){
-            ob_start();
-            include("special/$table.php");
-            $this->results .= ob_get_clean();
+        $this->results = "<p>Syncing table $table <br />";
+        if ($sync['sending'] === true) {
+            $this->results .= $sync['messages'];
+        } else {
+            $this->errors .= $sync['messages'];
         }
-        else {
-            $i = 1;
-            foreach ($FANNIE_LANES as $lane){
-                $dbc->add_connection($lane['host'],$lane['type'],
-                    $lane['op'],$lane['user'],$lane['pw']);
-
-                if ($dbc->connections[$lane['op']]){
-                    $dbc->query("TRUNCATE TABLE $table",$lane['op']);
-                    $success = $dbc->transfer($FANNIE_OP_DB,
-                               "SELECT * FROM $table",
-                               $lane['op'],
-                               "INSERT INTO $table");
-                    $dbc->close($lane['op']);
-                    if ($success){
-                        $this->results .= "<li>Lane ".$i." ({$lane['host']}) completed successfully</li>";
-                    }
-                    else {
-                        $this->errors[] = "Lane ".$i." ({$lane['host']}) completed but with some errors";
-                    }
-                }
-                else {
-                    $this->errors[] = "Lane ".$i." ({$lane['host']}) couldn't connect to lane";
-                }
-                $i++;
-            }
-        }
-
-        $this->results .= "</ul></p>";
+        $this->results .= '</p>';
         
-        return True;
+        return true;
     }
 
-    function body_content(){
+    function body_content()
+    {
         $ret = '';
-        if (count($this->errors) > 0){
-            $ret .= '<blockquote><ul>';
-            foreach($this->errors as $e)
-                $ret .= '<li>'.$e.'</li>';  
-            $ret .= '</ul><a href="SyncIndexPage.php">Try Again</a></blockquote>';
+        if (strlen($this->errors) > 0) {
+            $ret .= '<blockquote>';
+            $ret .= $this->errors;
+            $ret .= '<a href="SyncIndexPage.php">Try Again</a></blockquote>';
         }
         $ret .= $this->results;
+
         return $ret;
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

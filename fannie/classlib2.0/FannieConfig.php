@@ -85,5 +85,16 @@ class FannieConfig
         return $obj->get($name, $default);
     }
 
+    /**
+      This method is provided solely for manipulating the
+      environment during unit tests. Values set this way
+      will not be stored permanently or persist beyond
+      the end of the current script
+    */
+    public function set($name, $value)
+    {
+        $this->vars[$name] = $value;
+    }
+
 }
 

@@ -61,28 +61,28 @@ class PriceReduction extends FannieReportPage
         $roundSRP = array();
         
         // Connect
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         // Create List of Items
         $query = "SELECT P.upc, P.description, P.cost, P.normal_price, P.department, 
                 P.modified, V.vendorDept, V.vendorID, D.margin as uMarg, D.vendorID, 
                 D.deptID, S.margin as dMarg, P.auto_par
-                FROM is4c_op.products as P
+                FROM products as P
                 LEFT JOIN vendorItems as V ON P.upc = V.upc AND P.default_vendor_id = V.vendorID
                 LEFT JOIN vendorDepartments as D ON (V.vendorID = D.vendorID) AND (D.deptID = V.vendorDept) 
                 LEFT JOIN departments as S ON (P.department = S.dept_no)
                 WHERE P.inUse = 1 AND P.price_rule_id = 0
                     AND P.cost <> 0 ";
                     
-        if ($_POST['dept'] == 1) {
+        if (FormLib::get('dept') == 1) {
             $query .= " AND (P.department >= 1 AND P.department <= 25) OR (P.department >= 239 AND P.department <= 259) ";
-        } else if ($_POST['dept'] == 2) {
+        } else if (FormLib::get('dept') == 2) {
             $query .= " AND (P.department >= 26 AND P.department <= 59) ";
-        } else if ($_POST['dept'] == 3) {
+        } else if (FormLib::get('dept') == 3) {
             $query .= " AND (P.department >= 151 AND P.department <= 191) ";
-        } else if ($_POST['dept'] == 4) {
+        } else if (FormLib::get('dept') == 4) {
             $query .= " AND (P.department >= 86 AND P.department <= 128) ";
-        } else if ($_POST['dept'] == 5) {
+        } else if (FormLib::get('dept') == 5) {
             $query .= " AND (P.department >= 240 AND P.department <= 250) ";
         }
             
@@ -110,17 +110,17 @@ class PriceReduction extends FannieReportPage
         $rounder = new \COREPOS\Fannie\API\item\PriceRounder();
         // Calculations
         for($i=0; $i<count($upc); $i++) {
-            $marg[] = ($price[$i] - $cost[$i]) / $price[$i];
+            $marg[] = $price[$i] == 0 ? 0 : ($price[$i] - $cost[$i]) / $price[$i];
             $devMarg[] = $marg[$i] - $deptMarg[$i];
             $desiredPrice = 0;
-            $desiredPrice = $cost[$i] / (1 - $deptMarg[$i]);
+            $desiredPrice = $deptMarg[$i] == 1 ? 0 : $cost[$i] / (1 - $deptMarg[$i]);
             $srp[] = $desiredPrice;
             $roundSRP[] = $rounder->round($desiredPrice);
             $devPrice[] = $price[$i] - $srp[$i];
         }
     
         for ($i = 0; $i < count($upc); $i++){
-            if( ($upc[$i] != NULL) && ($srp[$i] > 0) && ($devPrice[$i] > 0) && ($devMarg[$i] >= $_POST['degree']) ) {
+            if( ($upc[$i] != NULL) && ($srp[$i] > 0) && ($devPrice[$i] > 0) && ($devMarg[$i] >= $this->form->degree) ) {
                 $item[] = array(
                     $upc[$i],
                     $desc[$i],

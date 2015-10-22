@@ -219,7 +219,7 @@ class EditBatchPage extends FannieRESTfulPage
                 p.normal_price
             FROM likeCodes AS l
                 INNER JOIN upcLike AS u ON l.likeCode=u.likeCode
-                INNER JOIN products AS p ON u.upc=p.upc
+                ' . DTrans::joinProducts('u', 'p', 'INNER') . '
             WHERE l.likeCode=?
             ORDER BY p.normal_price
         ');
@@ -296,7 +296,7 @@ class EditBatchPage extends FannieRESTfulPage
             else z.vendorName end as vendor,
             l.batchID
             from batchList as l
-                inner join products as p on l.upc=p.upc
+                " . DTrans::joinProducts('l', 'p', 'INNER') . "
                 left join prodExtra as x on l.upc=x.upc
                 left join vendorItems as v on l.upc=v.upc AND p.default_vendor_id=v.vendorID
                 left join vendors as z on p.default_vendor_id=z.vendorID
@@ -595,7 +595,7 @@ class EditBatchPage extends FannieRESTfulPage
         $query = '
             SELECT b.upc
             FROM batchList AS b
-                INNER JOIN products AS p ON b.upc=p.upc
+                ' . DTrans::joinProducts('b', 'p', 'INNER') . '
             WHERE b.batchID=?
                 AND b.salePrice=p.normal_price
             GROUP BY b.upc';
@@ -787,12 +787,7 @@ class EditBatchPage extends FannieRESTfulPage
                 y.shelf,
                 p.brand
             FROM batchList AS b 
-                LEFT JOIN products AS p ON b.upc = p.upc ";
-        if ($this->config->get('STORE_MODE') == 'HQ') {
-            $fetchQ .= " AND p.store_id=? ";
-            $fetchArgs[] = $this->config->get('STORE_ID');
-        }
-        $fetchQ .= "
+                " . DTrans::joinProducts('b') . "
                 LEFT JOIN likeCodes AS l ON b.upc = CONCAT('LC',CONVERT(l.likeCode,CHAR))
                 LEFT JOIN batchCutPaste AS c ON b.upc=c.upc AND b.batchID=c.batchID
                 LEFT JOIN prodPhysicalLocation AS y ON b.upc=y.upc
@@ -807,8 +802,9 @@ class EditBatchPage extends FannieRESTfulPage
                     p.normal_price,b.salePrice,
                     CASE WHEN c.upc IS NULL then 0 ELSE 1 END as isCut,
                     b.quantity,b.pricemethod
-                    from batchList as b left join products as p on
-                    b.upc = p.upc left join likeCodes as l on
+                    from batchList as b 
+                        " . DTrans::joinProducts('b') . "
+                        left join likeCodes as l on
                     b.upc = 'LC'+convert(varchar,l.likecode)
                     left join batchCutPaste as c ON
                     b.upc=c.upc AND b.batchID=c.batchID
@@ -1079,7 +1075,7 @@ class EditBatchPage extends FannieRESTfulPage
         return $ret;
     }
 
-    private function pairedTableBody($result)
+    private function pairedTableBody($dbc, $result)
     {
         $colors = array('#ffffff','#ffffcc');
         $cur = 0;
@@ -1105,7 +1101,7 @@ class EditBatchPage extends FannieRESTfulPage
                     <img src=\"{$FANNIE_URL}src/img/buttons/arrow_up.gif\" alt=\"Make Qualifying Item\" />
                     </a>
                 </td>";
-            $ret .= "<td bgcolor=$colors[$cur]><a href=\"\" onclick=\"deleteUPC.call(this, $id, '$fetchW[0]'); return false;\">"
+            $ret .= "<td bgcolor=$colors[$cur]><a href=\"\" onclick=\"deleteUPC.call(this, {$fetchW['batchID']}, '$fetchW[0]'); return false;\">"
                 . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a></td>';
             $ret .= "</tr>";
 
@@ -1175,21 +1171,25 @@ class EditBatchPage extends FannieRESTfulPage
             $ret .= "<div class=\"alert alert-warning\">Add items first</div>";
         }
 
-        $fetchQ = $dbc->prepare_statement("select b.upc,
-                case when l.likeCode is null then p.description
-                else l.likeCodeDesc end as description,
-                p.normal_price,b.salePrice
-                from batchList as b left join products as p on
-                b.upc = p.upc left join likeCodes as l on
-                b.upc = concat('LC'+convert(l.likeCode,char))
-                where b.batchID = ? AND b.salePrice >= 0");
+        $fetchQ = $dbc->prepare_statement("
+            SELECT b.upc,
+                case when l.likeCode is null then p.description else l.likeCodeDesc end as description,
+                p.normal_price,
+                b.salePrice,
+                b.batchID
+            FROM batchList AS b 
+                " . DTrans::joinProducts('b') . "
+                LEFT JOIN likeCodes as l on b.upc = concat('LC'+convert(l.likeCode,char))
+            WHERE b.batchID = ? 
+                AND b.salePrice >= 0");
         if ($FANNIE_SERVER_DBMS == "MSSQL"){
             $fetchQ = $dbc->prepare_statement("select b.upc,
                     case when l.likecode is null then p.description
                     else l.likecodedesc end as description,
                     p.normal_price,b.salePrice
-                    from batchList as b left join products as p on
-                    b.upc = p.upc left join likeCodes as l on
+                    from batchList as b 
+                        " . DTrans::joinProducts('b') . "
+                        left join likeCodes as l on
                     b.upc = 'LC'+convert(varchar,l.likecode)
                     where b.batchID = ? AND b.salePrice >= 0");
         }
@@ -1197,24 +1197,28 @@ class EditBatchPage extends FannieRESTfulPage
 
         $ret .= '<table class="table" id="qualifier-table">';
         $ret .= '<tr><th colspan="4">Qualifying Item(s)</th></tr>';
-        $ret .= $this->pairedTableBody($fetchR);
+        $ret .= $this->pairedTableBody($dbc, $fetchR);
         $ret .= "</table>";
 
-        $fetchQ = $dbc->prepare_statement("select b.upc,
-                case when l.likecode is null then p.description
-                else l.likecodedesc end as description,
-                p.normal_price,b.salePrice
-                from batchList as b left join products as p on
-                b.upc = p.upc left join likeCodes as l on
-                b.upc = concat('LC',convert(l.likecode,char))
-                where b.batchID = ? AND b.salePrice < 0");
+        $fetchQ = $dbc->prepare_statement("
+            SELECT b.upc,
+                case when l.likeCode is null then p.description else l.likeCodeDesc end as description,
+                p.normal_price,
+                b.salePrice,
+                b.batchID
+            FROM batchList AS b 
+                " . DTrans::joinProducts('b') . "
+                LEFT JOIN likeCodes as l on b.upc = concat('LC'+convert(l.likeCode,char))
+            WHERE b.batchID = ? 
+                AND b.salePrice < 0");
         if ($FANNIE_SERVER_DBMS == "MSSQL"){
             $fetchQ = $dbc->prepare_statement("select b.upc,
                     case when l.likecode is null then p.description
                     else l.likecodedesc end as description,
                     p.normal_price,b.salePrice
-                    from batchList as b left join products as p on
-                    b.upc = p.upc left join likeCodes as l on
+                    from batchList as b 
+                        " . DTrans::joinProducts('b') . "
+                        left join likeCodes as l on
                     b.upc = 'LC'+convert(varchar,l.likecode)
                     where b.batchID = ? AND b.salePrice < 0");
         }
@@ -1222,7 +1226,7 @@ class EditBatchPage extends FannieRESTfulPage
 
         $ret .= '<table class="table" id="discount-table">';
         $ret .= '<tr><th colspan="4">Discount Item(s)</th></tr>';
-        $ret .= $this->pairedTableBody($fetchR);
+        $ret .= $this->pairedTableBody($dbc, $fetchR);
         $ret .= "</table>";
 
         return $ret;

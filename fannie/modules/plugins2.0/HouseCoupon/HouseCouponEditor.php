@@ -403,7 +403,6 @@ class HouseCouponEditor extends FanniePage
             '%B' => 'Percent Discount (Coupon discount OR member discount)',
             '%D'=>'Percent Discount (Department)',
             'PD'=>'Percent Discount (Anytime)',
-            '%C'=>'Percent Discount (Capped)',
             'AD'=>'All Discount (Department)',
         );
         $ret .= '<div class="row">
@@ -497,7 +496,7 @@ class HouseCouponEditor extends FanniePage
                 COALESCE(p.description, \'Unknown item\') AS description,
                 h.type
             FROM houseCouponItems AS h
-                LEFT JOIN products AS p ON p.upc=h.upc
+                ' . DTrans::joinProducts('h') . '
             WHERE h.coupID=?';
         if ($hc->minType() == 'MX') {
             $query = "

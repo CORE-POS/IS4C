@@ -143,6 +143,8 @@ class FannieReportPage extends FanniePage
     */
     protected $chart_data_columns = array();
 
+    protected $form;
+
     /** 
         Assign meta constant(s) to a row's "meta" field
         for special behavior.
@@ -182,6 +184,7 @@ class FannieReportPage extends FanniePage
         }
 
         if ($all_fields) {
+            $this->form = new \COREPOS\common\mvc\FormValueContainer();
             $this->content_function = 'report_content'; 
             if ($this->config->get('WINDOW_DRESSING')) {
                 $this->has_menus(true);
@@ -552,11 +555,12 @@ class FannieReportPage extends FanniePage
         "date2" are detected automatically.
       @return array of description lines
     */
-    protected function defaultDescriptionContent($datefields=array())
+    protected function defaultDescriptionContent($rowcount, $datefields=array())
     {
         $ret = array();
         $ret[] = $this->header;
         $ret[] = _('Report generated') . ' ' . date('l, F j, Y g:iA');
+        $ret[] = 'Returned ' . $rowcount . ' rows';
         $dt1 = false;
         $dt2 = false;
         if (count($datefields) == 1) {
@@ -657,13 +661,15 @@ class FannieReportPage extends FanniePage
                             (strstr($uri, '?') === false ? '?' : '&')
                         );
                     }
+                    $json = FormLib::queryStringtoJSON(filter_input(INPUT_SERVER, 'QUERY_STRING'));
                     $ret .= sprintf('<a href="%s%sexcel=csv">Download CSV</a>
                         &nbsp;&nbsp;&nbsp;&nbsp;
-                        <a href="javascript:history.back();">Back</a>',
+                        <a href="?json=%s">Back</a>',
                         $uri,
-                        (strstr($uri, '?') === false ? '?' : '&')
+                        (strstr($uri, '?') === false ? '?' : '&'),
+                        base64_encode($json)
                     );
-                    $ret = array_reduce($this->defaultDescriptionContent(),
+                    $ret = array_reduce($this->defaultDescriptionContent(count($data)),
                         function ($carry, $line) {
                             return $carry . (substr($line,0,1)=='<'?'':'<br />').$line;
                         },
@@ -685,7 +691,7 @@ class FannieReportPage extends FanniePage
                 }
                 break;
             case 'csv':
-                foreach ($this->defaultDescriptionContent() as $line) {
+                foreach ($this->defaultDescriptionContent(count($data)) as $line) {
                     $ret .= $this->csvLine(array(strip_tags($line)));
                 }
                 foreach ($this->report_description_content() as $line) {
@@ -868,7 +874,7 @@ class FannieReportPage extends FanniePage
                     },
                     array()
                 ),$xlsdata); // prepend
-                $xlsdata = array_merge(array_reduce($this->defaultDescriptionContent(), 
+                $xlsdata = array_merge(array_reduce($this->defaultDescriptionContent(count($data)), 
                     function($carry, $line) {
                         $carry[] = strip_tags($line);
                         return $carry;
@@ -1133,6 +1139,22 @@ class FannieReportPage extends FanniePage
     }
 
     /**
+      Set the form value container
+      @param [ValueContainer] $f
+      Accepts a generic ValueContainer instead of a FormValueContainer
+      so that unit tests can inject preset values 
+    */
+    public function setForm(COREPOS\common\mvc\ValueContainer $f)
+    {
+        $this->form = $f;
+    }
+
+    public function requiredFields()
+    {
+        return $this->required_fields;
+    }
+
+    /**
       Check for input and display the page
     */
     function drawPage()
@@ -1149,6 +1171,9 @@ class FannieReportPage extends FanniePage
                 version of the page
             */
             if ($this->content_function == 'form_content') {
+                if (FormLib::get('json') !== '') {
+                    $this->addOnloadCommand(FormLib::fieldJSONtoJavascript(base64_decode(FormLib::get('json'))));
+                }
                 return parent::drawPage();
             }
 

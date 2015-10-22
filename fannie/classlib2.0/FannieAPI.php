@@ -47,6 +47,72 @@ class FannieAPI
     }
 
     /**
+      Idea: use one shared file w/ map of class
+      names to definition files. Manage file locking
+      more granularly than with sessions.
+    */
+    static private function mapFile()
+    {
+        return sys_get_temp_dir() . '/fannie.class.map';
+    }
+
+    /**
+      Get the map from cache.
+      Acquires a shared lock to read the file.
+    */
+    static private function getCachedMap()
+    {
+        $fn = self::mapFile();
+        $fp = fopen($fn, 'r');
+        if (flock($fp, LOCK_SH)) {
+            $map = file_get_contents($fn);
+            flock($fp, LOCK_UN);
+            fclose($fp);
+            $map = json_decode($map, true);
+            if (is_array($map)) {
+                return $map;
+            } else {
+                return self::initMap();
+            }
+        } else {
+            fclose($fp);
+            return self::initMap();
+        }
+    }
+
+    /**
+      Initialize shared map if it does not exist
+    */
+    static private function initMap()
+    {
+        $map = array('FannieClassMap' => array());
+        $map['FannieClassMap']['SQLManager'] = realpath(dirname(__FILE__).'/../src/SQLManager.php');
+        $map['FannieClassMap']['FPDF'] = realpath(dirname(__FILE__).'/../src/fpdf/fpdf.php');
+        return self::writeCachedMap($map);
+    }
+
+    /**
+      Write updated map to cache.
+      Acquires an exclusive lock to write the file.
+    */
+    static private function writeCachedMap($map)
+    {
+        $fn = self::mapFile();
+        $fp = fopen($fn, 'a');
+        if (flock($fp, LOCK_EX)) {
+            ftruncate($fp, 0);
+            fwrite($fp, json_encode($map));
+            fflush($fp);
+            flock($fp, LOCK_UN);
+            fclose($fp);
+            return true;
+        }  else {
+            fclose($fp);
+            return false;
+        }
+    }
+
+    /**
       Load definition for given class
       @param $name the class name
     */
@@ -70,7 +136,6 @@ class FannieAPI
 
             include_once($map[$name]);
         } else {
-
             /**
               There's a namespace involved
               If the prefix is COREPOS\Fannie\API, look for class
@@ -86,7 +151,7 @@ class FannieAPI
                 if ($found) {
                     include_once($found);
                     $_SESSION['FannieClassMap'][$name] = $found;
-                }
+                } 
                 return;
             }
 
@@ -120,6 +185,8 @@ class FannieAPI
                 $file = $path . str_replace('\\', DIRECTORY_SEPARATOR, substr($class, strlen($namespace))) . '.php';
                 if (file_exists($file)) {
                     return $file;
+                } else {
+                    throw new Exception('Invalid class in COREPOS namespace: ' . $class);
                 }
             }
         }
@@ -353,7 +420,7 @@ class FannieAPI
 
 FannieAPI::init();
 if (function_exists('spl_autoload_register')) {
-    spl_autoload_register(array('FannieAPI','loadClass'));
+    spl_autoload_register(array('FannieAPI','loadClass'), true, true);
     if (file_exists(dirname(__FILE__) . '/../../vendor/autoload.php')) {
         include_once(dirname(__FILE__) . '/../../vendor/autoload.php');
     }

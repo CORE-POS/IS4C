@@ -51,8 +51,8 @@ class VoidedTransactionsReport extends FannieReportPage
             ORDER BY tdate
         ');
         $res = $dbc->execute($prep, array(
-            FormLib::get('date1') . ' 00:00:00',
-            FormLib::get('date2') . ' 23:59:59',
+            $this->form->date1 . ' 00:00:00',
+            $this->form->date2 . ' 23:59:59',
         ));
         $data = array();
         while ($row = $dbc->fetchRow($res)) {

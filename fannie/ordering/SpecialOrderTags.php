@@ -67,6 +67,7 @@ class SpecialOrderTags extends FannieRESTfulPage
             WHERE trans_id=? AND order_id=?");
         $idP = $dbc->prepare_statement("SELECT trans_id FROM {$TRANS}PendingSpecialOrder WHERE
             trans_id > 0 AND order_id=? ORDER BY trans_id");
+        $signage = new \COREPOS\Fannie\API\item\FannieSignage(array());
         foreach($this->toIDs as $toid){
             if ($count % 4 == 0){ 
                 $pdf->AddPage();
@@ -147,7 +148,7 @@ class SpecialOrderTags extends FannieRESTfulPage
             
             $upc = "454".str_pad($oid,6,'0',STR_PAD_LEFT).str_pad($tid,2,'0',STR_PAD_LEFT);
 
-            $pdf = FannieSignage::drawBarcode($upc, $pdf, $x+30, $y+95, array('height'=>14,'fontsize'=>8));
+            $pdf = $signage->drawBarcode($upc, $pdf, $x+30, $y+95, array('height'=>14,'fontsize'=>8));
 
             $count++;
         }

@@ -502,26 +502,6 @@ class HouseCoupon extends SpecialUPC
             case "F": // completely flat; no scaling for weight
                 $value = $infoW["discountValue"];
                 break;
-            case "%C": // capped percent discount
-                /**
-                  This is a little messy to cram two different values
-                  into one number. The decimal portion is the discount
-                  percentage; the integer portion is the maximum 
-                  discountable total. The latter is the discount cap
-                  expressed in a way that will be an integer more often.
-
-                  Example:
-                  A 5 percent discount capped at $2.50 => 50.05
-                */
-                Database::getsubtotals();
-                $max = floor($infoW['discountValue']);
-                $percentage = $infoW['discountValue'] - $max;
-                // because the overall value is capped, I'm using
-                // the actual transaction total rather than discountableTotal
-                $total = CoreLocal::get('runningTotal') - CoreLocal::get('transDiscount');
-                $amount = $total > $max ? $max : $total;
-                $value = $percentage * $amount;
-                break;
             case "%": // percent discount on all items
                 Database::getsubtotals();
                 $value = $infoW["discountValue"] * CoreLocal::get("discountableTotal");
@@ -582,16 +562,13 @@ class HouseCoupon extends SpecialUPC
                 // still need to add a line-item with the coupon UPC to the
                 // transaction to track usage
                 $value = 0;
-                $description = $ttlPD . ' % Discount Coupon';
+                $description = $couponPD . ' % Discount Coupon';
                 break;
             case 'OD': // override customer percent discount
                    // rather than add line-item
                 $couponPD = $infoW['discountValue'] * 100;
-                // apply new discount to session & transaction
-                CoreLocal::set('percentDiscount', $couponPD);
-                $transDB = Database::tDataConnect();
-                $transDB->query(sprintf('UPDATE localtemptrans SET percentDiscount=%f', $couponPD));
-
+                DiscountModule::updateDiscount(new DiscountModule(0, 'custdata'));
+                DiscountModule::updateDiscount(new DiscountModule($couponPD, 'HouseCoupon'));
                 // still need to add a line-item with the coupon UPC to the
                 // transaction to track usage
                 $value = 0;

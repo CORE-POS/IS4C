@@ -69,8 +69,8 @@ class RecentSalesReport extends FannieReportPage
 
     public function report_description_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $prod = new ProductsModel($dbc);
         $prod->upc(BarcodeLib::padUPC(FormLib::get('upc')));
         $prod->load();
@@ -83,15 +83,15 @@ class RecentSalesReport extends FannieReportPage
         return $ret;
     }
 
-    protected function defaultDescriptionContent($datefields=array())
+    protected function defaultDescriptionContent($rowcount, $datefields=array())
     {
         return array(); // override
     }
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $dates = array();
         $stamp = strtotime('yesterday');

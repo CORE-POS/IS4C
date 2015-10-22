@@ -1464,23 +1464,27 @@ class $name extends " . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
       @param $selected [PK value] marks one of the tags
         as selected.
     */
-    public function toOptions($selected=0)
+    public function toOptions($selected=0, $id_as_label=false)
     {
         if (count($this->unique) != 1) {
             return '';
         }
         $id_col = $this->unique[0];
-        // use first non-ID column for the label
-        $label_col = array_keys($this->columns);
-        foreach ($label_col as $col) {
-            if ($col != $id_col) {
-                $label_col = $col;
-                break;
+        if ($id_as_label) {
+            $label_col = $id_col;
+        } else {
+            // use first non-ID column for the label
+            $label_col = array_keys($this->columns);
+            foreach ($label_col as $col) {
+                if ($col != $id_col) {
+                    $label_col = $col;
+                    break;
+                }
             }
         }
         $ret = '';
         foreach ($this->find($label_col) as $obj) {
-            $ret .= sprintf('<option %s value="%d">%s</option>',
+            $ret .= sprintf('<option %s value="%s">%s</option>',
                     $selected == $obj->$id_col() ? 'selected' : '',
                     $obj->$id_col(),
                     $obj->$label_col()

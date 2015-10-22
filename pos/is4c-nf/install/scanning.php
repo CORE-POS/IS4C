@@ -310,7 +310,7 @@ save 5%.
 $sdepts = AutoLoader::listModules('SpecialDept');
 $db = Database::pDataConnect();
 $specialDeptMapExists = $db->table_exists('SpecialDeptMap');
-$mapModel = new SpecialDeptMapModel($db);
+$mapModel = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($db);
 $sconf = CoreLocal::get('SpecialDeptMap');
 /**
   If a mapping exists and the new table is available,

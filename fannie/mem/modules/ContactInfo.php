@@ -58,10 +58,13 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         $ret .= ' <span class="label primaryBackground">Last Name</span>';
         $ret .= sprintf('<input name="ContactInfo_ln" maxlength="30"
                 value="%s" class="form-control" />',$primary['lastName']);
-        $ret .= sprintf(' <a href="MemPurchasesPage.php?id=%d">View Receipts</a>',
+        $ret .= sprintf(' <a href="MemPurchasesPage.php?id=%d">Receipts</a>',
                     $memNum);
-        $ret .= sprintf(' |  <a href="../reports/Patronage/MemberPatronageReport.php?id=%d">View Patronage</a>',
+        $ret .= sprintf(' |  <a href="../reports/Patronage/MemberPatronageReport.php?id=%d">Patronage</a>',
                     $memNum);
+        $ret .= sprintf(' |  <a href="../ordering/NewSpecialOrdersPage.php?card_no=%d">Special Orders</a>',
+                    $memNum);
+        $ret .= '</div>';
         $ret .= '</div>';
 
         $ret .= '<div class="form-group form-inline">';

@@ -24,46 +24,13 @@
 /**
   @class FormLib
 */
-class FormLib 
+class FormLib extends \COREPOS\common\FormLib
 {
-
-    /**
-      Safely fetch a form value
-      @param $name the field name
-      @param $default default value if the form value doesn't exist
-      @return The form value, if available, otherwise the default.
-    */
-    public static function getFormValue($name, $default='')
-    {
-        $val = filter_input(INPUT_GET, $name, FILTER_CALLBACK, array('options'=>array('FormLib', 'filterCallback')));
-        if ($val === null) {
-            $val = filter_input(INPUT_POST, $name, FILTER_CALLBACK, array('options'=>array('FormLib', 'filterCallback')));
-        }
-        if ($val === null) {
-            $val = $default;
-        }
-
-        return $val;
-    }
-
-    /**
-      Using callback style filtering so the form retrieval
-      message can return both strings and arrays of strings.
-    */
-    private static function filterCallback($item)
-    {
-        return $item;
-    }
-
     public static function get_form_value($name, $default='')
     {
         return self::getFormValue($name, $default);
     }
 
-    public static function get($name, $default='')
-    {
-        return self::getFormValue($name, $default);
-    }
 
     /**
       Get form input as a formatted date
@@ -557,7 +524,7 @@ HTML;
         $query = '
             FROM ' . $dlog . ' AS t 
                 LEFT JOIN departments AS d ON t.department=d.dept_no
-                LEFT JOIN products AS p ON t.upc=p.upc 
+                ' . DTrans::joinProducts('t') . '
                 LEFT JOIN MasterSuperDepts AS m ON t.department=m.dept_ID 
                 LEFT JOIN subdepts AS b ON p.subdept=b.subdept_no
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
@@ -745,5 +712,45 @@ HTML;
         }
     }
 
+    /**
+      Convert a query string to a JSON object
+      representing field names and values
+    */
+    public static function queryStringToJSON($str)
+    {
+        $ret = array();
+        $pairs = explode('&', $str);
+        foreach ($pairs as $pair) {
+            if (substr($pair, -1) == '=') {
+                $ret[substr($pair, 0, strlen($pair)-1)] = '';
+            } else {
+                list($key, $val) = explode('=', $pair, 2);
+                $ret[$key] = $val;
+            }
+        }
+
+        return json_encode($ret);
+    }
+
+    /**
+      Generate javascript that will initialize fields
+      based on names and values in the JSON object
+    */
+    public static function fieldJSONtoJavascript($json)
+    {
+        $arr = json_decode($json, true);
+        if (!is_array($arr)) {
+            return false;
+        }
+        return array_reduce(array_keys($arr), function($carry, $key) use ($arr) {
+            $val = $arr[$key];
+            $carry .= sprintf("if (\$('input[type=\"checkbox\"][name=\"%s\"]').length) {\n", $key);
+            $carry .= sprintf("\$('input[type=\"checkbox\"][name=\"%s\"]').prop('checked',true);\n", $key);
+            $carry .= "} else {\n";
+            $carry .= sprintf("\$('[name=\"%s\"]').filter(':input').val('%s');\n", $key, $val);
+            $carry .= "}\n";
+            return $carry;
+        }, '');
+    }
 }
 

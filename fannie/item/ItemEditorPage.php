@@ -27,6 +27,9 @@ if (!class_exists('FannieAPI')) {
 if (!function_exists('updateProductAllLanes')) {
     include('laneUpdates.php');
 }
+if (!function_exists('updateAllLanes')) {
+    include('laneUpdates_WEFC_Toronto.php');
+}
 
 class ItemEditorPage extends FanniePage 
 {
@@ -215,25 +218,28 @@ class ItemEditorPage extends FanniePage
                         FROM products as p inner join 
                         vendorItems as v ON p.upc=v.upc 
                         left join prodExtra as x on p.upc=x.upc 
-                        WHERE v.sku LIKE ?
-                            AND p.store_id=? ";
+                        WHERE v.sku LIKE ? ";
                     $args[] = '%'.$upc;
-                    $args[] = $store_id;
                     if (!$inUseFlag) {
                         $query .= ' AND inUse=1 ';
+                    }
+                    if ($this->config->get('STORE_MODE') == 'HQ') {
+                        $query .= " AND p.store_id=? ";
+                        $args[] = $store_id;
                     }
                     break;
                 case 'Brand Prefix':
                     $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
                         FROM products as p left join 
                         prodExtra as x on p.upc=x.upc 
-                        WHERE p.upc like ?
-                            AND p.store_id=?
-                        ORDER BY p.upc";
+                        WHERE p.upc like ? ";
                     $args[] = '%'.$upc.'%';
-                    $args[] = $store_id;
                     if (!$inUseFlag) {
                         $query .= ' AND inUse=1 ';
+                    }
+                    if ($this->config->get('STORE_MODE') == 'HQ') {
+                        $query .= " AND p.store_id=? ";
+                        $args[] = $store_id;
                     }
                     break;
                 case 'UPC':
@@ -242,25 +248,28 @@ class ItemEditorPage extends FanniePage
                     $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
                         FROM products as p left join 
                         prodExtra as x on p.upc=x.upc 
-                        WHERE p.upc = ?
-                            AND p.store_id=?
-                        ORDER BY p.description";
+                        WHERE p.upc = ? ";
                     $args[] = $upc;
-                    $args[] = $store_id;
+                    if ($this->config->get('STORE_MODE') == 'HQ') {
+                        $query .= " AND p.store_id=? ";
+                        $args[] = $store_id;
+                    }
                     break;
             }
         } else {
             $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
                 FROM products AS p LEFT JOIN 
                 prodExtra AS x ON p.upc=x.upc
-                WHERE description LIKE ? 
-                    AND p.store_id=? ";
+                WHERE description LIKE ? ";
+            $args[] = '%'.$upc.'%';    
             if (!$inUseFlag) {
                 $query .= ' AND inUse=1 ';
             }
+            if ($this->config->get('STORE_MODE') == 'HQ') {
+                $query .= " AND p.store_id=? ";
+                $args[] = $store_id;
+            }
             $query .= " ORDER BY description";
-            $args[] = '%'.$upc.'%';    
-            $args[] = $store_id;
         }
 
         $query = $dbc->addSelectLimit($query, 500);
@@ -422,7 +431,7 @@ class ItemEditorPage extends FanniePage
         }
 
         // remove action so form cannot be submitted by pressing enter
-        $ret = '<form action="' . ($authorized ? $_SERVER['PHP_SELF'] : '') . '" method="post">';
+        $ret = '<form id="item-editor-form" action="' . ($authorized ? $_SERVER['PHP_SELF'] : '') . '" method="post">';
         $ret .= '<div class="container"><div id="alert-area">';
 
         uasort($FANNIE_PRODUCT_MODULES, array('ItemEditorPage', 'sortModules'));
@@ -519,6 +528,12 @@ class ItemEditorPage extends FanniePage
             $this->add_onload_command("bindAutoComplete('.unit-of-measure', '$ws', 'unit');\n");
             $this->add_onload_command("\$('.unit-of-measure').autocomplete('option', 'minLength', 1);\n");
             $this->add_onload_command("addVendorDialog();\n");
+            if ($this->config->get('STORE_MODE') == 'HQ') {
+                $this->addOnloadCommand("\$('#item-editor-form').submit(syncStoreTabs);\n");
+                if ($isNew) { 
+                    $this->addOnloadCommand("\$('.syncable-input:visible').change(syncStoreTabs);\n");
+                }
+            }
         }
 
         if (isset($shown['ItemMarginModule'])) {
@@ -590,7 +605,12 @@ class ItemEditorPage extends FanniePage
         /* push updates to the lanes */
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        updateProductAllLanes($upc);
+        $FANNIE_COOP_ID = $this->config->get('COOP_ID');
+        if (isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto') {
+            updateAllLanes($upc, array('products','productUser'));
+        } else {
+            updateProductAllLanes($upc);
+        }
 
         if ($audited) {
             $lc = FormLib::get('likeCode', -1);

@@ -21,14 +21,17 @@
 
 *********************************************************************************/
 
-if (!class_exists('LocalTransModel')) {
+namespace COREPOS\pos\lib\models\trans;
+use COREPOS\pos\lib\models\BasicModel;
+
+if (!class_exists('\\COREPOS\\pos\lib\\models\\trans\\LocalTransModel')) {
     include_once(dirname(__FILE__).'/LocalTransModel.php');
 }
 
 /**
   @class SuspendedModel
 */
-class SuspendedModel extends LocalTransModel
+class SuspendedModel extends \COREPOS\pos\lib\models\trans\LocalTransModel
 {
 
     protected $name = "suspended";

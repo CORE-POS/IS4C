@@ -35,7 +35,7 @@ class CWCouponReport extends FannieReportPage
     public $report_set = 'Membership';
     protected $header = 'Coupon Impact on Member Shopping';
     protected $title = 'Coupon Impact on Member Shopping';
-    protected $required_fields = array('coupon-id');
+    protected $required_fields = array('coupon_id', 'date1', 'date2');
     protected $report_headers = array('Mem#', 'Date', 'Trans#', 'Coupon Amount', 'Coupon Basket',
         '', 'Prev 1', 'Prev 2', 'Prev 3', 'Prev 4', 'Prev 5', 'Prev Avg.',
         '', 'Next 1', 'Next 2', 'Next 3', 'Next 4', 'Next 5', 'Next Avg.');
@@ -44,13 +44,17 @@ class CWCouponReport extends FannieReportPage
     {
         $dbc = $this->connection;
 
-        $dlog = DTransactionsModel::selectDlog(FormLib::get('date1'), FormLib::get('date2'));
+        try {
+            $dlog = DTransactionsModel::selectDlog($this->form->date1, $this->form->date2);
 
-        $args = array(
-            '00499999' . str_pad(FormLib::get('coupon-id'), 5, '0', STR_PAD_LEFT),
-            FormLib::get('date1') . ' 00:00:00',
-            FormLib::get('date2') . ' 23:59:59',
-        );
+            $args = array(
+                '00499999' . str_pad($this->form->coupon_id, 5, '0', STR_PAD_LEFT),
+                $this->form->date1 . ' 00:00:00',
+                $this->form->date2 . ' 23:59:59',
+            );
+        } catch (Exception $ex) {
+            return array();
+        }
         $prep = $dbc->prepare(
             'SELECT d.card_no,
                 d.trans_num,
@@ -189,7 +193,7 @@ class CWCouponReport extends FannieReportPage
         $ret = '<form method="get">
             <div class="col-sm-5">
                 <label>Coupon</label>
-                <select name="coupon-id" class="form-control">';
+                <select name="coupon_id" class="form-control">';
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $hc = new HouseCouponsModel($dbc);

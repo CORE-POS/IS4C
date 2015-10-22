@@ -90,7 +90,7 @@ class CoopDealsReviewPage extends FanniePage
                     ''
                 ) . " AS batch
             FROM CoopDealsItems as t
-                INNER JOIN products AS p on t.upc = p.upc
+                " . DTrans::joinProducts('t', 'p', 'INNER') . "
                 LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
             WHERE p.inUse=1
                 AND t.dealSet=?
@@ -183,7 +183,7 @@ class CoopDealsReviewPage extends FanniePage
                 CASE WHEN s.super_name IS NULL THEN 'sale' ELSE s.super_name END as batch,
                 t.abtpr as subbatch
             FROM CoopDealsItems as t
-                INNER JOIN products AS p on t.upc = p.upc
+                " . DTrans::joinProducts('t', 'p', 'INNER') . "
                 LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
             WHERE t.dealSet=?
                 AND p.inUse=1

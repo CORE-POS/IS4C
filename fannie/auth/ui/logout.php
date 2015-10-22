@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
-require('../login.php');
-include("../../config.php");
+include(dirname(__FILE__) . "/../../config.php");
+if (!function_exists('login')) {
+    require(dirname(__FILE__) . '/../login.php');
+}
 
 $current_user = checkLogin();
 

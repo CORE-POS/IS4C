@@ -21,15 +21,27 @@
 
 *********************************************************************************/
 
-if (!chdir("CC")){
+if (!chdir(dirname(__FILE__))){
     echo "Error: Can't find directory (CC)";
     exit;
 }
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/xmlData.php');
-include($FANNIE_ROOT.'src/fetchLib.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
+if (!class_exists('xmlData')) {
+    include($FANNIE_ROOT.'src/xmlData.php');
+}
+if (file_exists($FANNIE_ROOT.'src/Credentials/GoE.wfc.php')) {
+    require_once($FANNIE_ROOT.'src/Credentials/GoE.wfc.php');
+} else {
+    // cannot continue
+    return;
+}
+if (!function_exists('getFailedTrans')) {
+    include($FANNIE_ROOT.'src/fetchLib.php');
+}
 
 /* HELP
 

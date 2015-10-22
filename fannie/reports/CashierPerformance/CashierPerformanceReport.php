@@ -46,8 +46,8 @@ class CashierPerformanceReport extends FannieReportPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $emp_no = FormLib::get('emp_no', false);
 
         $dtrans = DTransactionsModel::selectDTrans($date1,$date2);
@@ -120,7 +120,7 @@ class CashierPerformanceReport extends FannieReportPage
             $minutes = $time / 60.0;
             $record[] = $trans;
             $record[] = sprintf('%.2f', $time / 60.0);
-            $record[] = sprintf('%.2f', $row['rings'] / $minutes);
+            $record[] = sprintf('%.2f', $this->safeDivide($row['rings'], $minutes));
             $data[] = $record;
         }
 
@@ -165,6 +165,7 @@ class CashierPerformanceReport extends FannieReportPage
     function form_content()
     {
         global $FANNIE_URL;
+        ob_start();
 ?>
 <form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 <div class="col-sm-4">
@@ -195,6 +196,7 @@ class CashierPerformanceReport extends FannieReportPage
 </div>
 </form>
 <?php
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -222,6 +224,5 @@ class CashierPerformanceReport extends FannieReportPage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

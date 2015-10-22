@@ -754,7 +754,8 @@ function showBatchDisplay($id,$orderby='ORDER BY b.listID DESC'){
             p.normal_price,b.salePrice,
             b.quantity
             from batchList as b left outer join products as p on
-            b.upc = p.upc left outer join likeCodes as l on
+            b.upc = p.upc and p.store_id=1 
+            left outer join likeCodes as l on
             b.upc = concat('LC',convert(l.likeCode,char))
             where b.batchID = ? $safe_order");
     $fetchR = $sql->execute($fetchQ, array($id));

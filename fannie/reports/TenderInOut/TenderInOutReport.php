@@ -49,11 +49,11 @@ class TenderInOutReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $code = FormLib::get('tendercode');
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
@@ -95,8 +95,8 @@ class TenderInOutReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $tenders = array();
         $p = $dbc->prepare_statement("SELECT TenderCode,TenderName FROM tenders ORDER BY TenderName");
         $r = $dbc->exec_statement($p);

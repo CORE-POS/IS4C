@@ -77,7 +77,7 @@ class DiscountModule
             foreach ($current_discounts as $obj) {
                 if (CoreLocal::get('NonStackingDiscounts') && $obj->percentage() > $new_effective_discount) {
                     $new_effective_discount = $obj->percentage();
-                } else {
+                } elseif (CoreLocal::get('NonStackingDiscounts') == 0) {
                     $new_effective_discount += $obj->percentage();
                 }
             }

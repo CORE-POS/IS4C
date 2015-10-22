@@ -202,15 +202,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         /**
             Detect databases that are supported
         */
-        $supportedTypes = array();
-        if (extension_loaded('pdo') && extension_loaded('pdo_mysql'))
-            $supportedTypes['PDO_MYSQL'] = 'PDO MySQL';
-        if (extension_loaded('mysqli'))
-            $supportedTypes['MYSQLI'] = 'MySQLi';
-        if (extension_loaded('mysql'))
-            $supportedTypes['MYSQL'] = 'MySQL';
-        if (extension_loaded('mssql'))
-            $supportedTypes['MSSQL'] = 'MSSQL';
+        $supportedTypes = \COREPOS\common\sql\Lib::getDrivers();
 
         if (count($supportedTypes) == 0) {
             echo "<div class=\"alert alert-danger\"><b>Error</b>: no database driver available</div>";
@@ -600,6 +592,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'BatchBarcodesModel',
             'BatchTypeModel',
             'BatchMergeTableModel',
+            'ConsistentProductRulesModel',
             'CoopDealsItemsModel',
             'CronBackupModel',
             'CustdataModel',
@@ -634,6 +627,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'OriginCountryModel',
             'OriginStateProvModel',
             'OriginCustomRegionModel',
+            'PagePermissionsModel',
             'ParametersModel',
             'PatronageModel',
             'PriceRulesModel',
@@ -676,6 +670,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             'VendorContactModel',
             'VendorDeliveriesModel',
             'VendorItemsModel',
+            'VendorSpecificMarginsModel',
             'VendorSRPsModel',
             'VendorSKUtoPLUModel',
             'VendorBreakdownsModel',

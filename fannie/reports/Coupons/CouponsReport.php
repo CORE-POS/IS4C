@@ -54,8 +54,8 @@ class CouponsReport extends FannieReportPage {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $d1 = FormLib::get('date1', date('Y-m-d'));
-        $d2 = FormLib::get('date2', date('Y-m-d'));
+        $d1 = $this->form->date1;
+        $d2 = $this->form->date2;
 
         $dlog = DTransactionsModel::selectDlog($d1,$d2);
 
@@ -83,18 +83,7 @@ class CouponsReport extends FannieReportPage {
 
     public function form_content()
     {
-        $lastMonday = "";
-        $lastSunday = "";
-
-        $ts = mktime(0,0,0,date("n"),date("j")-1,date("Y"));
-        while($lastMonday == "" || $lastSunday == "") {
-            if (date("w",$ts) == 1 && $lastSunday != "") {
-                $lastMonday = date("Y-m-d",$ts);
-            } elseif(date("w",$ts) == 0) {
-                $lastSunday = date("Y-m-d",$ts);
-            }
-            $ts = mktime(0,0,0,date("n",$ts),date("j",$ts)-1,date("Y",$ts));    
-        }
+        list($lastMonday, $lastSunday) = \COREPOS\Fannie\API\lib\Dates::lastWeek();
 
         ob_start();
         ?>
@@ -140,4 +129,3 @@ class CouponsReport extends FannieReportPage {
 
 FannieDispatch::conditionalExec();
 
-?>

@@ -53,7 +53,7 @@ class EquityLiveBalanceModel extends SpanningViewModel
                     THEN a.payments
                     WHEN b.card_no IS NOT NULL
                     THEN b.totPayments
-                    END AS payments,
+                END AS payments,
                 CASE WHEN a.startdate IS NULL THEN b.startdate
                     ELSE a.startdate END AS startdate
             FROM ' . $meminfo . ' AS m 

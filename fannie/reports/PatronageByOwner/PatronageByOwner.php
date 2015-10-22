@@ -51,15 +51,14 @@ class PatronageByOwner extends FannieReportPage
         $avg = array();         // Average Basket
         $numTran = array();     // Number of transactions for selected Range for each Owner
         
-        global $FANNIE_TRANS_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
         
         $query = "SELECT card_no, sum(unitPrice*quantity) as T  
                 FROM dlog_90_view
                 WHERE upc != 0
                 GROUP BY card_no 
-                ORDER BY T desc limit {$_POST['num']}
-                ;";
+                ORDER BY T desc limit " . ((int)$this->form->num);
         $result = $dbc->query($query);
         while ($row = $dbc->fetch_row($result)) {
             $id[] = count($card_no);

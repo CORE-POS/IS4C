@@ -61,6 +61,7 @@ class BatchSignStylesPage extends FannieRESTfulPage
         $mult[1] = 'Normal';
         $mult['-1'] = '$X off';
         $mult['-2'] = 'X% off';
+        $mult['-3'] = 'BOGO';
 
         return $mult;
     }
@@ -78,13 +79,13 @@ class BatchSignStylesPage extends FannieRESTfulPage
     {
         $query = '
             SELECT l.upc,
-                COALESCE(u.brand,p.brand) AS brand,
-                COALESCE(u.description, p.description) AS description,
+                CASE WHEN u.brand IS NOT NULL AND u.brand <> \'\' THEN u.brand ELSE p.brand END as brand,
+                CASE WHEN u.description IS NOT NULL AND u.description <> \'\' THEN u.description ELSE p.description END as description,
                 p.normal_price,
                 l.salePrice,
                 l.signMultiplier
             FROM batchList AS l
-                INNER JOIN products AS p ON l.upc=p.upc 
+                ' . DTrans::joinProducts('l', 'p', 'INNER') . '
                 LEFT JOIN productUser AS u ON l.upc=u.upc
             WHERE l.batchID=? ';
         $args = array($this->id);
@@ -92,8 +93,35 @@ class BatchSignStylesPage extends FannieRESTfulPage
             $query .= ' AND p.store_id=? ';
             $args[] = $this->config->get('STORE_ID');
         }
+        $query .= ' ORDER BY l.upc';
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep, $args);
+        $rows = array();
+        while ($row = $this->connection->fetchRow($res)) {
+            $rows[] = $row;
+        }
+
+        $query = '
+            SELECT l.upc,
+                \'\' AS brand,
+                c.likeCodeDesc AS description,
+                0 AS normal_price,
+                l.salePrice,
+                l.signMultiplier
+            FROM batchList AS l
+                LEFT JOIN likeCodes AS c ON l.upc=' . $this->connection->concat("'LC'", 'c.likeCode', '') . '
+            WHERE l.batchID=? 
+                AND l.upc LIKE \'LC%\'';
+        $args = array($this->id);
+        $prep = $this->connection->prepare($query);
+        $res = $this->connection->execute($prep, $args);
+        while ($row = $this->connection->fetchRow($res)) {
+            $rows[] = $row;
+        }
+        $args = array($this->id);
+        while ($row = $this->connection->fetchRow($res)) {
+            $rows[] = $row;
+        }
 
         $ret = '<form method="post">
             <table class="table table-bordered"><thead><tr>
@@ -102,7 +130,7 @@ class BatchSignStylesPage extends FannieRESTfulPage
             </tr></thead><tbody>';
 
         $styles = $this->getStyles();
-        while ($row = $this->connection->fetchRow($res)) {
+        foreach ($rows as $row) {
             $ret .= sprintf('<tr>
                 <td>%s</td>
                 <td>%s</td>

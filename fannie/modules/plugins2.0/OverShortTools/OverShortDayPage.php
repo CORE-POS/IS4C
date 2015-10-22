@@ -80,6 +80,17 @@ class OverShortDayPage extends FanniePage
             if ($store != 0) {
                 $args[] = $store;
             }
+
+            /**
+              Mode toggles how totals are calculated. Cashier mode lists totals for
+              each cashier. Drawer mode lists a total for each register. Some of the code that
+              follows (and underlying database) uses "emp_no" when it really means "whichever 
+              identifier we're grouping by".
+            */
+            $mode = FormLib::get('mode', 'cashier');
+            $name_field = $mode == 'cashier' ? 'e.firstname' : $dbc->concat("'Register '", 'd.register_no', '');
+            $id_field = $mode == 'cashier' ? 'd.emp_no' : 'd.register_no';
+            $id_field_name = $mode == 'cashier' ? 'emp_no' : 'register_no';
             
             $empsR = null;
             if (FormLib::get_form_value('emp_no') !== ''){
@@ -89,18 +100,23 @@ class OverShortDayPage extends FanniePage
                     WHERE emp_no=?";
                 $empsP = $dbc->prepare_statement($empsQ);
                 $empsR = $dbc->exec_statement($empsP,array(FormLib::get_form_value('emp_no')));
-            }
-            else {
+            } else {
                 /* determine who worked that day (and their first names) */
-                $empsQ = "select e.firstname,d.emp_no from $dlog as d,$FANNIE_OP_DB".$dbc->sep()."employees as e 
+                $empsQ = "
+                    SELECT $name_field,
+                        $id_field 
+                    FROM $dlog AS d
+                        LEFT JOIN $FANNIE_OP_DB".$dbc->sep()."employees AS e ON d.emp_no=e.emp_no
                     WHERE d.tdate BETWEEN ? AND ? 
                         AND trans_type='T' 
-                        AND d.emp_no = e.emp_no
                         AND d.upc NOT IN ('0049999900001', '0049999900002')";
                 if ($store != 0) {
                     $empsQ .= ' AND d.store_id = ? ';
                 }
-                $empsQ .= " GROUP BY d.emp_no,e.firstname order by e.firstname";
+                $empsQ .= " 
+                    GROUP BY $id_field,
+                        $name_field 
+                    ORDER BY $name_field";
                 $empsP = $dbc->prepare_statement($empsQ);
                 $empsR=$dbc->exec_statement($empsP,$args);
             }
@@ -155,7 +171,7 @@ class OverShortDayPage extends FanniePage
 
             /* get cash, check, and credit totals for each employee
             print them in a table along with input boxes for over/short */
-            $q = "SELECT -1*sum(total) AS total,emp_no,
+            $q = "SELECT -1*sum(total) AS total,$id_field,
                 CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END
                 AS trans_subtype
                 FROM $dlog AS d
@@ -166,10 +182,10 @@ class OverShortDayPage extends FanniePage
                 $q .= ' AND d.store_id = ? ';
             }
             if (FormLib::get_form_value('emp_no') !== ''){
-                $q .= ' AND emp_no=? ';
+                $q .= ' AND ' . $id_field . '=? ';
                 $args[] = FormLib::get_form_value('emp_no');
             }
-            $q .= "GROUP BY emp_no,
+            $q .= "GROUP BY $id_field,
                 CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END";
             $p = $dbc->prepare_statement($q);
             $r = $dbc->exec_statement($p, $args);
@@ -178,7 +194,7 @@ class OverShortDayPage extends FanniePage
                 if (in_array($w['trans_subtype'], OverShortTools::$EXCLUDE_TENDERS)) {
                     continue;
                 }
-                $tender_info[$w['trans_subtype']]['perEmp'][$w['emp_no']] = $w['total'];
+                $tender_info[$w['trans_subtype']]['perEmp'][$w[1]] = $w['total'];
             }
 
             $noteP = $dbc->prepare_statement('SELECT note FROM dailyNotes WHERE emp_no=? AND date=?');
@@ -546,6 +562,10 @@ body, table, td, th {
         <form style='margin-top:1.0em;' id="osForm" onsubmit="setdate(); return false;" >
         <div class="form-group form-inline">
         <label>Date</label>:<input class="form-control date-field" type=text id=date name=arg />
+        <select class="form-control" name="mode">
+            <option value="cashier">Cashier</option>
+            <option value="drawer">Drawer</option>
+        </select>
         <?php
         $_REQUEST['store'] = 1;
         $sp = FormLib::storePicker();

@@ -72,13 +72,16 @@ class AutoLoader extends LibraryClass
             }
         } elseif (!isset($map[$name]) && strpos($name, '\\') > 0) {
             $pieces = explode('\\', $name);
+            $s = DIRECTORY_SEPARATOR;
             if (count($pieces) > 2 && $pieces[0] == 'COREPOS' && $pieces[1] == 'common') {
-                $s = DIRECTORY_SEPARATOR;
                 $path = dirname(__FILE__) . $s . '..' . $s . '..' . $s . '..' . $s . 'common' . $s;
-                for ($i=2; $i<count($pieces)-1; $i++) {
-                    $path .= $pieces[$i] . $s;
+                $path .= self::arrayToPath(array_slice($pieces, 2));
+                if (file_exists($path)) {
+                    $map[$name] = $path;
                 }
-                $path .= $pieces[count($pieces)-1] . '.php';
+            } elseif (count($pieces) > 2 && $pieces[0] == 'COREPOS' && $pieces[1] == 'pos') {
+                $path = dirname(__FILE__) . $s . '..' . $s;
+                $path .= self::arrayToPath(array_slice($pieces, 2));
                 if (file_exists($path)) {
                     $map[$name] = $path;
                 }
@@ -99,6 +102,13 @@ class AutoLoader extends LibraryClass
 
             include_once($map[$name]);
         }
+    }
+
+    private static function arrayToPath($arr)
+    {
+        $ret = array_reduce($arr, function($carry, $item){ return $carry . $item . DIRECTORY_SEPARATOR; });
+
+        return substr($ret, 0, strlen($ret)-1) . '.php';
     }
 
     /**
@@ -328,7 +338,7 @@ class AutoLoader extends LibraryClass
 }
 
 if (function_exists('spl_autoload_register')){
-    spl_autoload_register(array('AutoLoader','loadClass'));
+    spl_autoload_register(array('AutoLoader','loadClass'), true, true);
 }
 else {
     function __autoload($name){
@@ -338,7 +348,7 @@ else {
 
 // add composer classes if present
 if (file_exists(dirname(__FILE__) . '/../../../vendor/autoload.php')) {
-    include(dirname(__FILE__) . '/../../../vendor/autoload.php');
+    include_once(dirname(__FILE__) . '/../../../vendor/autoload.php');
 }
 
 /** 

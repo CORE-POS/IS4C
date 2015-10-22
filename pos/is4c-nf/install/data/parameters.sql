@@ -1,5 +1,5 @@
 (0,0,'mServer','127.0.0.1',0)
-(0,0,'mDBMS','mysql',0)
+(0,0,'mDBMS','mysqli',0)
 (0,0,'mUser','root',0)
 (0,0,'mPass','',0)
 (0,0,'mDatabase','core_trans',0)

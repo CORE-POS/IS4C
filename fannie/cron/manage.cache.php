@@ -34,12 +34,17 @@
 
 */
 
-include('../config.php');
-include($FANNIE_ROOT.'src/cron_msg.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!function_exists('cron_msg')) {
+    include($FANNIE_ROOT.'src/cron_msg.php');
+}
 
 set_time_limit(0);
 
 $path = 'cache/cachefiles/daily/';
+if (!file_exists($FANNIE_ROOT . $path)) {
+    return;
+}
 $dh = opendir($FANNIE_ROOT.$path);
 if (!$dh) {
     echo cron_msg("$FANNIE_ROOT.$path does not exist.");

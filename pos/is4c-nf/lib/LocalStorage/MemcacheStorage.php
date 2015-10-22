@@ -38,7 +38,7 @@ class MemcacheStorage extends LocalStorage
 
     private $con;
 
-    public function MemcacheStorage(){
+    public function __construct(){
         $this->con = new Memcache();
         $this->con->connect('127.0.0.1',11211);
     }

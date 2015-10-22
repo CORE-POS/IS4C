@@ -41,7 +41,7 @@ class PcDetailReport extends FannieReportPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
-        $dateID = date('Ymd', strtotime(FormLib::get('date')));
+        $dateID = date('Ymd', strtotime($this->form->date));
 
         $query = '
             SELECT requestDatetime,

@@ -44,8 +44,8 @@ class ChartOfAccountsReport extends FannieReportPage
     {
         $dbc = $this->connection;
         $dbc->setDefaultDB($this->config->get('OP_DB'));
-        $d1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $d2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $d1 = $this->form->date1;
+        $d2 = $this->form->date2;
         $dates = array($d1.' 00:00:00', $d2.' 23:59:59');
         $today = date('Ymd');
         $data = array();
@@ -172,6 +172,7 @@ class ChartOfAccountsReport extends FannieReportPage
 
     function form_content()
     {
+        ob_start();
         ?>
         <form method=get>
         <div>
@@ -186,6 +187,7 @@ class ChartOfAccountsReport extends FannieReportPage
         </div>
         </form>
         <?php
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -210,6 +212,5 @@ class ChartOfAccountsReport extends FannieReportPage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

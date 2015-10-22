@@ -31,13 +31,15 @@
    ends up having a ton of entries.
 */
 
-if (!chdir("CompressProdUpdate")){
+if (!chdir(dirname(__FILE__))){
     echo "Error: Can't find directory (prod update compress dept)";
     exit;
 }
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
 
 set_time_limit(0);
 ini_set('memory_limit','256M');

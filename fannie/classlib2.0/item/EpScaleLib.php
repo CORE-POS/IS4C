@@ -45,13 +45,6 @@ class EpScaleLib
         if ($item_info['RecordType'] == 'WriteOneItem') {
             return self::getAddItemLine($item_info) . $scale_fields;
         } else {
-            $line = self::getAddItemLine($item_info);
-            return 'CCOSPIC' . substr($line, 7) . $scale_fields;
-            /**
-              Docs say you don't have to send all fields with
-              a change but it throws weird errors if I just send
-              the changed fields.
-            */
             return self::getUpdateItemLine($item_info) . $scale_fields;
         }
 
@@ -88,7 +81,7 @@ class EpScaleLib
         $line .= 'DS3' . '0' . chr(253);
         $line .= 'DN4' . chr(253);
         $line .= 'DS4' . '0' . chr(253);
-        $line .= 'UPR' . (isset($item_info['Price']) ? floor(100*$item_info['Price']) : '0') . chr(253);
+        $line .= 'UPR' . (isset($item_info['Price']) ? round(100*$item_info['Price']) : '0') . chr(253);
         $line .= 'EPR' . '0' . chr(253);
         $line .= 'FWT' . (isset($item_info['NetWeight']) ? $item_info['NetWeight'] : '0') . chr(253);
         if ($item_info['Type'] == 'Random Weight') {
@@ -146,7 +139,13 @@ class EpScaleLib
                         $line .= 'UPC' . '002' . str_pad($item_info[$key],4,'0',STR_PAD_LEFT) . '000000' . chr(253);
                         break;
                     case 'Description':
-                        $line .= 'DN1' . $item_info[$key] . chr(253);
+                        if (strstr($item_info[$key], "\n")) {
+                            list($line1, $line2) = explode("\n", $item_info[$key]);
+                            $line .= 'DN1' . $line1 . chr(253);
+                            $line .= 'DN2' . $line2 . chr(253);
+                        } else {
+                            $line .= 'DN1' . $item_info[$key] . chr(253);
+                        }
                         break;
                     case 'ReportingClass':
                         $line .= 'CCL' . $item_info[$key] . chr(253);
@@ -160,7 +159,7 @@ class EpScaleLib
                         $line .= 'SLI' . $item_info[$key] . chr(253) . 'SLT0' . chr(253);
                         break;
                     case 'Price':
-                        $line .= 'UPR' . floor(100*$item_info[$key]) . chr(253);
+                        $line .= 'UPR' . round(100*$item_info[$key]) . chr(253);
                         break;
                     case 'Type':
                         if ($item_info[$key] == 'Random Weight') {

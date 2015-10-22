@@ -207,7 +207,7 @@ class ProdUserModule extends ItemModule
 
         $lcP = $dbc->prepare('SELECT u.upc
                             FROM upcLike AS u
-                                INNER JOIN products AS p ON u.upc=p.upc
+                                ' . DTrans::joinProducts('u', 'p', 'INNER') . '
                             WHERE u.likeCode IN (
                                 SELECT l.likeCode
                                 FROM upcLike AS l

@@ -67,8 +67,8 @@ class SalesAndTaxTodayReport extends \COREPOS\Fannie\API\FannieReportTool
 
     function preprocess()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         // Should let fanadmin, cashier in but keep lydia out.
         // But it doesn't.
         //$this->auth_classes[] = 'salesbyhour';
@@ -102,7 +102,8 @@ class SalesAndTaxTodayReport extends \COREPOS\Fannie\API\FannieReportTool
     function body_content()
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_COOP_ID;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $today = date("Y-m-d");
         $table = 'dlog';    // i.e. dlog. dlog_15 if $today is before today.
         $ddiff = 0; // i.e. 0. -n if $today is before today.

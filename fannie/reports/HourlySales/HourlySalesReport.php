@@ -79,7 +79,7 @@ class HourlySalesReport extends FannieReportPage
 
         if ($this->report_format == 'html') {
             $ret[] = sprintf(' <a href="../HourlyTrans/HourlyTransReport.php?%s">Transaction Counts for Same Period</a>', 
-                            $_SERVER['QUERY_STRING']);
+                            filter_input(INPUT_SERVER, 'QUERY_STRING'));
         }
 
         return $ret;
@@ -110,8 +110,8 @@ class HourlySalesReport extends FannieReportPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $date1 = FormLib::get('date1', date('Y-m-d'));
-        $date2 = FormLib::get('date2', date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
         $deptMulti = FormLib::get('departments', array());
@@ -132,18 +132,8 @@ class HourlySalesReport extends FannieReportPage
             }
         }
         if ($buyer != -1) {
-            if (count($deptMulti) > 0) {
-                $where .= ' AND d.department IN (';
-                foreach ($deptMulti as $d) {
-                    $where .= '?,';
-                    $args[] = $d;
-                }
-                $where = substr($where, 0, strlen($where)-1) . ')';
-            } else {
-                $where .= ' AND d.department BETWEEN ? AND ? ';
-                $args[] = $deptStart;
-                $args[] = $deptEnd;
-            }
+            list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args);
+            $where .= $conditional;
         }
 
         $date_selector = 'year(tdate), month(tdate), day(tdate)';

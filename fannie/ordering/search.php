@@ -65,7 +65,13 @@ if (isset($_REQUEST['q'])){
     echo '<input type="submit" onclick="window.close();" value="Close" />';
 
     echo '<div id="one" style="display:block;">';
-    $itemP = $dbc->prepare_statement("SELECT upc,description FROM products WHERE description LIKE ? OR upc=?
+    $itemP = $dbc->prepare_statement("
+        SELECT upc,
+            description 
+        FROM products 
+        WHERE description LIKE ? OR upc=?
+        GROUP BY upc,
+            description
         ORDER BY description");
     $itemR = $dbc->exec_statement($itemP,array('%'.$_REQUEST['q'].'%', $_REQUEST['q']));
     if ($dbc->num_rows($itemR) == 0)
@@ -97,9 +103,12 @@ if (isset($_REQUEST['q'])){
     echo '</div>';
 
     echo '<div id="three" style="display:none;">';
-    $brandP = $dbc->prepare_statement("SELECT x.manufacturer FROM prodExtra AS x INNER JOIN products AS p ON
-        x.upc=p.upc WHERE x.manufacturer LIKE ? GROUP BY x.manufacturer
-        ORDER BY x.manufacturer");
+    $brandP = $dbc->prepare_statement("
+        SELECT p.brand 
+        FROM products AS p 
+        WHERE p.brand LIKE ? 
+        GROUP BY p.brand
+        ORDER BY p.brand");
     $brandR = $dbc->exec_statement($brandP,array('%'.$_REQUEST['q'].'%'));
     if ($dbc->num_rows($brandR) == 0)
         echo 'No matching brands';
@@ -107,17 +116,21 @@ if (isset($_REQUEST['q'])){
         echo '<ul>';
         while($brandW = $dbc->fetch_row($brandR)){
             printf('<li><a href="search.php?brand=%s">%s</a></li>',
-                base64_encode($brandW['manufacturer']),
-                $brandW['manufacturer']);
+                base64_encode($brandW['brand']),
+                $brandW['brand']);
         }
         echo '</ul>';
     }
     echo '</div>';
-}
-else if (isset($_REQUEST['brand'])){
-    $q = $dbc->prepare_statement("SELECT p.upc,p.description FROM products AS p
-        INNER JOIN prodExtra AS x ON p.upc=x.upc WHERE
-        x.manufacturer=? ORDER by p.description");
+} elseif (isset($_REQUEST['brand'])){
+    $q = $dbc->prepare_statement("
+        SELECT p.upc,
+            p.description 
+        FROM products AS p
+        WHERE p.brand=? 
+        GROUP BY p.upc,
+            p.description
+        ORDER by p.description");
     $r = $dbc->exec_statement($q, array(base64_decode($_REQUEST['brand'])));
     printf("<b>%s items</b>",base64_decode($_REQUEST['brand']));
     echo '<ul>';
@@ -126,8 +139,7 @@ else if (isset($_REQUEST['brand'])){
             $itemW['upc'],$itemW['description']);
     }
     echo '</ul>';
-}
-else {
+} else {
     echo '<form action="search.php" method="get">
         <input type="text" name="q" id="q" />
         <input type="submit" value="Search" /> 
@@ -136,4 +148,3 @@ else {
         </form>';
 }
 
-?>

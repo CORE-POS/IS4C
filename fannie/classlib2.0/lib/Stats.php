@@ -70,7 +70,7 @@ class Stats
                 array_reduce($points, function($c,$p) { return $c + $p[0]*$p[1]; }),
                 2);
 
-        $ret->a = $a_numerator / $a_denominator;
+        $ret->a = ($a_denominator != 0) ? $a_numerator / $a_denominator : 0;
 
         $b_numerator = 
             (array_reduce($points, function($c,$p){ return $c + $p[1]; })
@@ -80,7 +80,7 @@ class Stats
             * array_reduce($points, function($c,$p){ return $c + ($p[1] * log($p[1])); })); 
         $b_denominator = $a_denominator;
 
-        $ret->b = $b_numerator / $b_denominator;
+        $ret->b = ($b_denominator != 0) ? $b_numerator / $b_denominator : 0;
 
         return $ret;
     }

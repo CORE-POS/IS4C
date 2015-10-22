@@ -288,7 +288,8 @@ class SQLManager
 
         $result = (!is_object($con)) ? false : $con->Execute($query_text,$params);
         if (!$result) {
-            $this->logger($this->failedQueryMsg($query_text, $params, $which_connection));
+            $errorMsg = $this->failedQueryMsg($query_text, $params, $which_connection);
+            $this->logger($errorMsg);
 
             if ($this->throw_on_fail) {
                 throw new \Exception($errorMsg);
@@ -877,6 +878,33 @@ class SQLManager
             $which_connection = $this->default_db;
         }
         $fld = $result_object->FetchField($index);
+        // mysqli puts a integer constant in the type property
+        // ADOdb provides MetaType to convert to relative type
+        $dbtype = $this->connectionType($which_connection);
+        if (strtolower($dbtype) === 'mysqli') {
+            $meta = $this->connections[$which_connection]->MetaType($fld->type);
+            switch ($meta) {
+                case 'C':
+                case 'X':
+                    $fld->type = 'varchar';
+                    break;
+                case 'B':
+                case 'X':
+                    $fld->type= 'blob';
+                    break;
+                case 'D':
+                case 'T':
+                    $fld->type= 'datetime';
+                    break;
+                case 'R':
+                case 'I':
+                    $fld->type= 'int';
+                    break;
+                case 'N':
+                    $fld->type= 'numeric';
+                    break;
+            }
+        }
 
         return $fld->type;
     }
@@ -1254,6 +1282,9 @@ class SQLManager
     {
         $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
         $adapter = $this->getAdapter($this->connectionType($which_connection));
+        if ($adapter == null) {
+            var_dump($which_connection);
+        }
         return $adapter->sep();
     }
 
@@ -1508,6 +1539,8 @@ class SQLManager
         if ($res && $this->numRows($res) > 0) {
             $row = $this->fetchRow($res);
             return $row[0];
+        } elseif ($res && $this->numRows($res) == 0) {
+            return false;
         } else {
             if ($this->throw_on_fail) {
                 throw new \Exception('Record not found');
@@ -1532,6 +1565,8 @@ class SQLManager
         if ($res && $this->numRows($res) > 0) {
             $row = $this->fetchRow($res);
             return $row;
+        } elseif ($res && $this->numRows($res) == 0) {
+            return false;
         } else {
             if ($this->throw_on_fail) {
                 throw new \Exception('Record not found');
@@ -1786,17 +1821,23 @@ class SQLManager
         return $adapters[$type];
     }
 
-    public function arrayToParams($arr) 
+    /**
+      Build an SQL IN clause from an array
+      @param $arr [array] of values
+      @param $args [array, optional] existing query parameter list
+      @param $dummy_value [optional] plug value when the array of values is empty
+      @return [tuple] SQL string of placeholders, array of query parameters
+    */
+    public function safeInClause($arr, $args=array(), $dummy_value=-999999)
     {
-        $str = '';
-        $args = array();
-        foreach($arr as $entry) {
-            $str .= '?,';
-            $args[] = $entry;
+        if (count($arr) == 0) { 
+            $arr = array($dummy_value);
         }
-        $str = substr($str, 0, strlen($str)-1);
+        $args = array_merge($args, $arr);
+        $inStr = str_repeat('?,', count($arr));
+        $inStr = substr($inStr, 0, strlen($inStr)-1);
 
-        return array('in'=>$str, 'args'=>$args);
+        return array($inStr, $args);
     }
 }
 

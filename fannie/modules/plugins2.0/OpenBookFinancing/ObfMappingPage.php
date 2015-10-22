@@ -61,7 +61,7 @@ class ObfMappingPage extends FannieRESTfulPage
         $map->superID($this->add);
         $map->save();
 
-        header('Location: ' . $_SERVER['PHP_SELF']);
+        header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
 
         return false;
 
@@ -93,7 +93,7 @@ class ObfMappingPage extends FannieRESTfulPage
             }
         }
 
-        header('Location: ' . $_SERVER['PHP_SELF']);
+        header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
 
         return false;
     }
@@ -118,7 +118,7 @@ class ObfMappingPage extends FannieRESTfulPage
         }
 
         $ret = '<div class="col-sm-5">';
-        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+        $ret .= '<form method="post">';
         $ret .= '<table class="table">';
         $ret .= '<tr>
                  </tr>';
@@ -153,7 +153,7 @@ class ObfMappingPage extends FannieRESTfulPage
         $ret .= '</div>';
         $ret .= '<div class="col-sm-5">';
         $ret .= '<div class="panel panel-default"><div class="panel-body">';
-        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">
+        $ret .= '<form method="post">
                     <div class="form-group form-inline">';
         $ret .= '<label>Add</label> <select name="add" class="form-control">';
         foreach ($sdepts as $id => $name) {

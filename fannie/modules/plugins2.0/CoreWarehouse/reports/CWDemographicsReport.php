@@ -221,8 +221,12 @@ class CWDemographicsReport extends FannieReportPage {
         $this->footer_count++;
         return $ret;
     }
+
+    public function form_content()
+    {
+        return '<!-- no need -->';
+    }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

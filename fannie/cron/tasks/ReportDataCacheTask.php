@@ -51,8 +51,9 @@ Replaces nightly.tablecache.php';
         $chk = $sql->query("INSERT INTO batchMergeTable
                         SELECT b.startDate,b.endDate,p.upc,p.description,b.batchID
                         FROM batches AS b LEFT JOIN batchList AS l
-                        ON b.batchID=l.batchID INNER JOIN products AS p
-                        ON p.upc = l.upc");
+                        ON b.batchID=l.batchID 
+                            " . DTrans::joinProducts('l', 'p', 'INNER')
+                        );
         if ($chk === false) {
             $this->cronMsg("Could not load batch reporting data for UPCs", FannieLogger::WARNING);
         }
@@ -60,8 +61,8 @@ Replaces nightly.tablecache.php';
                         SELECT b.startDate, b.endDate, p.upc, p.description, b.batchID
                         FROM batchList AS l LEFT JOIN batches AS b
                         ON b.batchID=l.batchID INNER JOIN upcLike AS u
-                        ON l.upc = " . $sql->concat("'LC'", $sql->convert('u.likeCode', 'CHAR'), '')
-                        . " INNER JOIN products AS p ON u.upc=p.upc
+                        ON l.upc = " . $sql->concat("'LC'", $sql->convert('u.likeCode', 'CHAR'), '') . "
+                        " . DTrans::joinProducts('u', 'p', 'INNER') . "
                         WHERE p.upc IS NOT NULL");
         if ($chk === false) {
             $this->cronMsg("Could not load batch reporting data for likecodes", FannieLogger::WARNING);

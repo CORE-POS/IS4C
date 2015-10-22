@@ -309,6 +309,8 @@ class VendorIndexPage extends FanniePage {
             $ret .= $num." subcategories";
             $ret .= "<br />";
             $ret .= "<a href=\"VendorDepartmentEditor.php?vid=$id\">View or Edit vendor-specific margin(s)</a>";
+            $ret .= "<br />";
+            $ret .= "<a href=\"VendorMarginsPage.php?id=$id\">And Even More Margins</a>";
             $ret .= '<p />';
             $ret .= "<a href=\"VendorDepartmentUploadPage.php?vid=$id\">Upload Subcategory List</a>";
         }
@@ -469,6 +471,7 @@ class VendorIndexPage extends FanniePage {
         <?php
 
         $this->add_script('index.js');
+        $this->addOnloadCommand("\$('#vendorselect').focus();\n");
 
         return ob_get_clean();
     }
@@ -518,6 +521,5 @@ class VendorIndexPage extends FanniePage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

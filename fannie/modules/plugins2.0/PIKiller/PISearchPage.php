@@ -47,7 +47,7 @@ class PISearchPage extends PIKillerPage {
 
     public function get_id_first_last_handler()
     {
-        if (empty($this->id) && empty($this->last)) {
+        if (empty($this->id) && empty($this->last) && empty($this->first)) {
             return true; // invalid search  
         }
             

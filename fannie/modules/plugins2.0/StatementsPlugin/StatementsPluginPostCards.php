@@ -54,7 +54,7 @@ class StatementsPluginPostCards extends FannieRESTfulPage
             $account = \COREPOS\Fannie\API\member\MemberREST::get($card_no);
             $pdf->AddPage();
 
-            $pdf->SetXY(2.75,1.45);
+            $pdf->SetXY(3.00,1.45);
             foreach ($account['customers'] as $c) {
                 if ($c['accountHolder']) {
                     $pdf->Cell(2,0.25,$c['firstName'] . ' ' . $c['lastName'],"",1,"L");
@@ -62,14 +62,14 @@ class StatementsPluginPostCards extends FannieRESTfulPage
                 }
             }
 
-            $pdf->SetX(2.75);
+            $pdf->SetX(3.00);
             $pdf->Cell(2,0.25,$account['addressFirstLine'],"",1,"L");
             if ($account['addressSecondLine']) {
-                $pdf->SetX(2.75);
+                $pdf->SetX(3.00);
                 $pdf->Cell(2,0.25,$account['addressSecondLine'],"",1,"L");
             }
     
-            $pdf->SetX(2.75);
+            $pdf->SetX(3.00);
             $str = $account['city'].", ".$account['state']." ".$account['zip'];
             $pdf->Cell(2,0.25,$str,"",1,"L");
         }

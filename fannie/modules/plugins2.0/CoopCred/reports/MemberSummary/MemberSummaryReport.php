@@ -489,7 +489,7 @@ class MemberSummaryReport extends FannieReportPage
             " is the difference between the the amount that has been put in Members'".
             " accounts (Payment) and the amount they have used for purchases.".
             " It is the amount the Coop is still liable for.</p>";
-        $ret[] = "<p class='explain'><b><a href='MemberSummaryReport.php?pid=" .
+        $ret[] = "<p class='explain'><b><a href='{$_SERVER['PHP_SELF']}?pid=" .
             $this->programID . "'>" .
             "Start again from the form.</a></b></p>";
         return $ret;

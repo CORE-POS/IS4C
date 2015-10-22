@@ -120,6 +120,10 @@ class memlist extends NoInputCorePage
         // we have exactly one row and 
         // don't need to confirm any further
         if ($memberID !== false && $personNum !== false) {
+            $callback = $this->getCallbackAction($memberID);
+            if ($callback != false) {
+                $callback->apply();
+            }
             if ($memberID == CoreLocal::get('defaultNonMem')) {
                 $personNum = 1;
             }
@@ -152,6 +156,37 @@ class memlist extends NoInputCorePage
         return true;
 
     } // END preprocess() FUNCTION
+
+    /**
+      Check for a registered callback that runs when
+      a given member number is applied
+    */
+    private function getCallbackAction($card_no)
+    {
+        $dbc = Database::pDataConnect();
+        if (!$dbc->tableExists('CustomerNotifications')) {
+            echo 'no notifications';
+            return false;
+        }
+        $prep = $dbc->prepare("
+            SELECT message,
+                modifierModule
+            FROM CustomerNotifications
+            WHERE type='callback'
+                AND cardNo=?"
+        );
+        $res = $dbc->getRow($prep, array($card_no));
+        if ($res === false || !class_exists($res['modifierModule']) || !is_subclass_of($res['modifierModule'], 'MemTotalAction')) {
+            return false;
+        }
+
+        $class = $res['modifierModule'];
+        $obj = new $class();
+        $obj->setMember($card_no);
+        $obj->setMessage($res['message']);
+
+        return $obj;
+    }
 
     // WEFC_Toronto: If a Member Card # was entered when the choice from the list was made,
     // add the memberCards record.

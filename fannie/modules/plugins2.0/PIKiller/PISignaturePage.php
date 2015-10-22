@@ -28,6 +28,21 @@ if (!class_exists('FannieAPI')) {
 
 class PISignaturePage extends FannieRESTfulPage 
 {
+    protected $header = 'Sign Subscription Agreement';
+    protected $title = 'Sign Subscription Agreement';
+
+    public function preprocess()
+    {
+        $this->addRoute('get<done>');
+        return parent::preprocess();
+    }
+
+    protected function get_done_view()
+    {
+        return '<div class="alert alert-success">Thank You</div>'
+            . $this->get_view();
+    }
+
     protected function post_id_handler()
     {
         $png = $this->padToPng($this->form->sig);
@@ -43,9 +58,25 @@ class PISignaturePage extends FannieRESTfulPage
         $pdf->AddPage();;
         $pdf->AutoFill($mem);
         $out = $pdf->Output($this->outputFile(), 'F');
+        $this->emailAgreement($mem, file_get_contents($this->outputFile()));
         unlink($png);
 
-        return 'PIDocumentsPage.php?id=' . $this->id;
+        return '?done=1';
+    }
+
+    private function emailAgreement($mem, $pdf)
+    {
+        $primary = \COREPOS\Fannie\API\Member\MemberREST::getPrimary($mem);
+        if (filter_var($primary[0]['email'], FILTER_VALIDATE_EMAIL)) {
+            $mail = new PHPMailer();
+            $mail->From = 'info@wholefoods.coop';
+            $mail->FromName = 'Whole Foods Co-op';
+            $mail->AddAddress($primary[0]['email']);
+            $mail->Subject = 'Subscription Agreement';
+            $mail->Body = 'A copy of your subscription agreement is attached.';
+            $mail->AddStringAttachment($pdf, 'wfc.pdf', 'base64', 'application/pdf');
+            $mail->Send();
+        }
     }
 
     private function outputFile()
@@ -119,6 +150,7 @@ class PISignaturePage extends FannieRESTfulPage
         $this->addScript('../../../src/javascript/signature_pad-1.5.0/signature_pad.js');
         $this->addScript('sig.js');
         $mem = \COREPOS\Fannie\API\member\MemberREST::get($this->id);
+        $primary = \COREPOS\Fannie\API\Member\MemberREST::getPrimary($mem);
         if ($mem === false) {
             return '<div class="alert alert-danger">Owner not found</div>' . $this->get_view();
         }
@@ -126,7 +158,7 @@ class PISignaturePage extends FannieRESTfulPage
             <p>
                 <label>Owner</label>
                 <input type="hidden" name="id" value="' . $this->id . '" />
-                ' . $mem['cardNo'] . '
+                ' . $mem['cardNo'] . ' ' . $primary[0]['firstName'] . ' ' . $primary[0]['lastName'] . '
             </p>
             <p id="sign-p">
                 <label>Sign Here</label>

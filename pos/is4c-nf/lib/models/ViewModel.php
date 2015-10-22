@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models;
+
 /**
   @class ViewModel
 */
@@ -114,10 +116,10 @@ class ViewModel extends BasicModel
         );
         echo "==========================================\n";
 
-        if ($db_name == CoreLocal::get('pDatabase')) {
-            $this->connection = Database::pDataConnect();
-        } else if ($db_name == CoreLocal::get('tDatabase')) {
-            $this->connection = Database::tDataConnect();
+        if ($db_name == \CoreLocal::get('pDatabase')) {
+            $this->connection = \Database::pDataConnect();
+        } else if ($db_name == \CoreLocal::get('tDatabase')) {
+            $this->connection = \Database::tDataConnect();
         } else {
             echo "Error: Unknown database ($db_name)";
             return false;

@@ -42,8 +42,7 @@ class SpecialOrdersMenu extends FanniePage
     <li><a href="OldSpecialOrdersPage.php">Old Orders</a></li>
     </ul>
 </li>
-<li><a href="receivingReport.php">Receiving Report</a></li>
-<li><a href="muzak.php">Muzak</a></li>
+<li><a href="SoReceivingReport.php">Receiving Report</a></li>
 </ul>
 HTML;
     }

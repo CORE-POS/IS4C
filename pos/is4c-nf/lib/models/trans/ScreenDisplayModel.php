@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\models\trans;
+use COREPOS\pos\lib\models\ViewModel;
+
 /**
   @class ScreenDisplayModel
 */

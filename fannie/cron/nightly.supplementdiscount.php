@@ -47,10 +47,14 @@ $discount_day = "Monday";
 // $discount_day = "Saturday";
 // ************************************
 
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('cron_msg')) {
+    include($FANNIE_ROOT.'src/cron_msg.php');
+}
 
-include('../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/cron_msg.php');
 set_time_limit(0);
 
 $today = date('l');
@@ -64,13 +68,11 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
     
 if ($today == $discount_day) {
     $sql->query("INSERT INTO autoCoupons VALUES(999,'Supplement Discount')");
-    echo cron_msg("It's $discount_day. Supplement discount applied.")
+    echo cron_msg("It's $discount_day. Supplement discount applied.");
 } elseif ($today == $discount_day_after) {
     $sql->query("DELETE FROM autoCoupons WHERE coupID = 999");
-    echo cron_msg("It's $discount_day_after.  Supplement discount removed.")
+    echo cron_msg("It's $discount_day_after.  Supplement discount removed.");
 } else {
     echo cron_msg("No discounts to apply.");
 }
 
-
-?>

@@ -265,7 +265,7 @@ class UPC extends Parser
         */
         $deptmods = CoreLocal::get('SpecialDeptMap');
         if (!is_array($deptmods) && $db->table_exists('SpecialDeptMap')) {
-            $model = new SpecialDeptMapModel($db);
+            $model = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($db);
             $deptmods = $model->buildMap();
             CoreLocal::set('SpecialDeptMap', $deptmods);
         }
@@ -334,21 +334,8 @@ class UPC extends Parser
                 return $ret;
             }
 
-            if (CoreLocal::get("cashierAge") < 18 && CoreLocal::get("cashierAgeOverride") != 1){
-                $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=AgeApproveAdminLogin";
-                return $ret;
-            }
-
-            if (CoreLocal::get("memAge")=="") {
-                CoreLocal::set("memAge",date('Ymd'));
-            }
-            $ts = strtotime(CoreLocal::get("memAge"));
-            $required_age = $row['idEnforced'];
-            $of_age_on_day = mktime(0, 0, 0, date('n', $ts), date('j', $ts), date('Y', $ts) + $required_age);
-            $today = strtotime( date('Y-m-d') );
-            if ($of_age_on_day > $today) {
-                $ret['udpmsg'] = 'twoPairs';
-                $ret['main_frame'] = $my_url.'gui-modules/requestInfo.php?class=UPC';
+            list($bad_age, $ret) = PrehLib::ageCheck($row['idEnforced'], $ret);
+            if ($bad_age === true) {
                 return $ret;
             }
         }
@@ -490,7 +477,7 @@ class UPC extends Parser
         $row['numflag'] = isset($row["local"])?$row["local"]:0;
         $row['description'] = str_replace("'","",$row['description']);
 
-        list($tax, $foodstamp, $discountable) = $this->applyToggles($row['tax'], $row['foodstamp'], $row['discount']);
+        list($tax, $foodstamp, $discountable) = PrehLib::applyToggles($row['tax'], $row['foodstamp'], $row['discount']);
         $row['tax'] = $tax;
         $row['foodstamp'] = $foodstamp;
         $row['discount'] = $discountable;
@@ -680,7 +667,7 @@ class UPC extends Parser
         $scale = 0;
         if ($row["scale"] != 0) $scale = 1;
 
-        list($tax, $foodstamp, $discountable) = $this->applyToggles($row['tax'], $row['foodstamp'], $row['discount']);
+        list($tax, $foodstamp, $discountable) = PrehLib::applyToggles($row['tax'], $row['foodstamp'], $row['discount']);
 
         $discounttype = MiscLib::nullwrap($row["discounttype"]);
 
@@ -743,26 +730,6 @@ class UPC extends Parser
         else $entered = substr($entered, 0, 6)."0000".$p6;
 
         return $entered;
-    }
-
-    public function applyToggles($tax, $foodstamp, $discount)
-    {
-        if (CoreLocal::get("toggletax") != 0) {
-            $tax = ($tax==0) ? 1 : 0;
-            CoreLocal::set("toggletax",0);
-        }
-
-        if (CoreLocal::get("togglefoodstamp") != 0){
-            CoreLocal::set("togglefoodstamp",0);
-            $foodstamp = ($foodstamp==0) ? 1 : 0;
-        }
-
-        if (CoreLocal::get("toggleDiscountable") == 1) {
-            CoreLocal::set("toggleDiscountable",0);
-            $discount = ($discount == 0) ? 1 : 0;
-        }
-
-        return array($tax, $foodstamp, $discount);
     }
 
     public function sanitizeUPC($entered)

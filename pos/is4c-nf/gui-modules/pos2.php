@@ -187,7 +187,7 @@ class pos2 extends BasicCorePage
         }
         function parseWrapper(str){
             $('#reginput').val(str);
-            $('#formlocal').submit();
+            submitWrapper();
         }
         var screenLockVar;
         function enableScreenLock(){

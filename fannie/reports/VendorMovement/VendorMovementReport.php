@@ -38,10 +38,10 @@ class VendorMovementReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $vendor = FormLib::get_form_value('vendor','');
         $groupby = FormLib::get_form_value('groupby','upc');
 
@@ -187,6 +187,7 @@ class VendorMovementReport extends FannieReportPage
     public function form_content()
     {
         $this->addScript('../../item/autocomplete.js');
+        ob_start();
 ?>
 <form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 <div class="col-sm-5">
@@ -230,6 +231,8 @@ class VendorMovementReport extends FannieReportPage
         $auto_url = $this->config->URL . 'ws/';
         $this->add_onload_command("bindAutoComplete('#vendor', '$auto_url', 'vendor');\n");
         $this->add_onload_command('$(\'#vendor\').focus();');
+
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -241,6 +244,5 @@ class VendorMovementReport extends FannieReportPage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

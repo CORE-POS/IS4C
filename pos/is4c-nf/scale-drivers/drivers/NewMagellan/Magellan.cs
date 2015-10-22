@@ -33,6 +33,7 @@ using System.Threading;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 
 #if NEWTONSOFT_JSON
 using Newtonsoft.Json;
@@ -54,6 +55,7 @@ public class Magellan : DelegateForm
     private UDPMsgBox u;
 
     private bool mq_enabled = false;
+    private bool full_udp = false;
 
     #if CORE_RABBIT
     private bool mq_available = true;
@@ -90,8 +92,23 @@ public class Magellan : DelegateForm
                 Console.WriteLine("Ensure the device is connected and you have permission to access it.");
             }
         }
-        FinishInit();
+        MonitorSerialPorts();
+        UdpListen();
 
+        factorRabbits();
+    }
+
+    // alternate constructor for specifying
+    // desired modules at compile-time
+    public Magellan(SerialPortHandler[] args)
+    {
+        this.sph = new List<SerialPortHandler>(args);
+        MonitorSerialPorts();
+        UdpListen();
+    }
+
+    private void factorRabbits()
+    {
         #if CORE_RABBIT
         try {
             rabbit_factory = new ConnectionFactory();
@@ -105,18 +122,20 @@ public class Magellan : DelegateForm
         #endif
     }
 
-    // alternate constructor for specifying
-    // desired modules at compile-time
-    public Magellan(SerialPortHandler[] args)
+
+    private UdpClient udp_client = null;
+    private UdpClient getClient()
     {
-        this.sph = new List<SerialPortHandler>(args);
-        FinishInit();
+        if (udp_client == null) {
+            udp_client = new UdpClient();
+            udp_client.Connect(System.Net.IPAddress.Parse("127.0.0.1"), 9451);
+        }
+
+        return udp_client;
     }
 
-    private void FinishInit()
+    private void UdpListen()
     {
-        MonitorSerialPorts();
-
         u = new UDPMsgBox(9450);
         u.SetParent(this);
         u.My_Thread.Start();
@@ -126,13 +145,14 @@ public class Magellan : DelegateForm
     {
         var valid = sph.Where(s => s != null);
         valid.ToList().ForEach(s => { s.SPH_Thread.Start(); });
-
     }
 
     public void MsgRecv(string msg)
     {
         if (msg == "exit") {
             this.ShutDown();
+        } else if (msg == "full_udp") {
+            full_udp = true;
         } else if (msg == "mq_up" && mq_available) {
             mq_enabled = true;
         } else if (msg == "mq_down") {
@@ -144,7 +164,10 @@ public class Magellan : DelegateForm
 
     public void MsgSend(string msg)
     {
-        if (mq_available && mq_enabled) {
+        if (full_udp) {
+            byte[] body = System.Text.Encoding.UTF8.GetBytes(msg);
+            getClient().Send(body, body.Length); 
+        } else if (mq_available && mq_enabled) {
             #if CORE_RABBIT
             byte[] body = System.Text.Encoding.UTF8.GetBytes(msg);
             rabbit_channel.BasicPublish("", "core-pos", null, body);
@@ -210,7 +233,7 @@ public class Magellan : DelegateForm
                 Console.WriteLine(p);
             });
         } catch (NullReferenceException) {
-            // probably means now NewMagellanPorts key in ini.json
+            // probably means no NewMagellanPorts key in ini.json
             // not a fatal problem
         } catch (Exception ex) {
             // unexpected exception
@@ -252,8 +275,8 @@ public class Magellan : DelegateForm
                 Console.WriteLine("Line will be ignored: "+line);
             } else {
 	        var pair = new MagellanConfigPair();
-		pair.port = pieces[0];
-		pair.module = pieces[1];
+                pair.port = pieces[0];
+                pair.module = pieces[1];
                 conf.Add(pair);
                 hs.Add(pieces[0]);
             }
@@ -274,16 +297,8 @@ public class Magellan : DelegateForm
                 }
             }
         }
-        Magellan m = new Magellan(verbosity);
-        bool exiting = false;
-        while (!exiting) {
-            string user_in = Console.ReadLine();
-            if (user_in == "exit") {
-                Console.WriteLine("stopping");
-                m.ShutDown();
-                exiting = true;
-            }
-        }
+        new Magellan(verbosity);
+        Thread.Sleep(Timeout.Infinite);
     }
 }
 

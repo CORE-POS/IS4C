@@ -21,14 +21,16 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\FormLib;
+
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class mgrlogin extends NoInputCorePage 
 {
 
     function preprocess(){
-        if (isset($_REQUEST['input'])){
-            $arr = $this->mgrauthenticate($_REQUEST['input']);
+        if (FormLib::get('input') !== '') {
+            $arr = $this->mgrauthenticate(FormLib::get('input'));
             echo JsonLib::array_to_json($arr);
             return False;
         } else {
@@ -49,7 +51,7 @@ class mgrlogin extends NoInputCorePage
                 passwd = $('#userPassword').val();
             }
             $.ajax({
-                url: '<?php echo $_SERVER['PHP_SELF']; ?>',
+                url: '<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>',
                 data: 'input='+passwd,
                 type: 'get',
                 cache: false,
@@ -129,7 +131,7 @@ class mgrlogin extends NoInputCorePage
             return $ret;
         }
 
-        $db = Database::pDataConnect();
+        $dbc = Database::pDataConnect();
         $priv = sprintf("%d",CoreLocal::get("SecurityCancel"));
         $args = array($priv, $password, $password);
         $query = '
@@ -140,17 +142,17 @@ class mgrlogin extends NoInputCorePage
             WHERE EmpActive = 1 
                 AND frontendsecurity >= ?
                 AND (CashierPassword = ? OR AdminPassword = ?)';
-        $prep = $db->prepare($query);
-        $result = $db->execute($prep, $args);
-        $num_rows = $db->num_rows($result);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, $args);
+        $num_rows = $dbc->num_rows($result);
 
         if ($num_rows != 0) {
             $this->cancelorder();
             $ret['cancelOrder'] = true;
             $ret['trans_num'] = ReceiptLib::receiptNumber();
 
-            $db = Database::tDataConnect();
-            $db->query("update localtemptrans set trans_status = 'X'");
+            $dbc = Database::tDataConnect();
+            $dbc->query("update localtemptrans set trans_status = 'X'");
             TransRecord::finalizeTransaction(true);
 
             if (CoreLocal::get('LoudLogins') == 1) {

@@ -39,14 +39,9 @@ class LineItemDiscount extends Parser
 
         // this is the currently selected item
         $transID = CoreLocal::get("currentid");
+        $row = PrehLib::peekItem(true, $transID);
 
-        // get info about the current item
-        $db = Database::tDataConnect();
-        $q = "SELECT trans_type,discounttype,department,regPrice,quantity 
-            FROM localtemptrans WHERE trans_id=".((int)$transID);
-        $r = $db->query($q);
-
-        if ($db->num_rows($r) == 0){
+        if ($row === false) {
             // this shouldn't happen unless there's some weird session problem
             $ret['output'] = DisplayLib::boxMsg(
                 _("Item not found"),
@@ -55,8 +50,7 @@ class LineItemDiscount extends Parser
                 DisplayLib::standardClearButton()
             );
         } else {
-            $w = $db->fetch_row($r);
-            if ($w['trans_type'] != 'I' && $w['trans_type'] != 'D') {
+            if ($row['trans_type'] != 'I' && $row['trans_type'] != 'D') {
                 // only items & open rings are discountable
                 $ret['output'] = DisplayLib::boxMsg(
                     _("Line is not discountable"),
@@ -64,7 +58,7 @@ class LineItemDiscount extends Parser
                     false,
                     DisplayLib::standardClearButton()
                 );
-            } else if ($w['discounttype'] != 0) {
+            } elseif ($row['discounttype'] != 0) {
                 // for simplicity, sale items cannot be discounted
                 // this also prevents using this function more than
                 // once on a single item
@@ -96,15 +90,16 @@ class LineItemDiscount extends Parser
                     CoreLocal::get("LineItemDiscountMem"),
                     CoreLocal::get("LineItemDiscountNonMem"),
                     $transID);
-                $discR = $db->query($discQ);
+                $dbc = Database::tDataConnect();
+                $discR = $dbc->query($discQ);
 
                 // add notification line for nonMem discount
-                TransRecord::adddiscount($w['regPrice']*$w['quantity']*CoreLocal::get("LineItemDiscountNonMem"),
-                    $w['department']);
+                TransRecord::adddiscount($row['regPrice']*$row['quantity']*CoreLocal::get("LineItemDiscountNonMem"),
+                    $row['department']);
 
                 // footer should be redrawn since savings and totals
                 // have changed. Output is the list of items
-                $ret['redraw_footer'] = True;
+                $ret['redraw_footer'] = true;
                 $ret['output'] = DisplayLib::lastpage();
             }
         }

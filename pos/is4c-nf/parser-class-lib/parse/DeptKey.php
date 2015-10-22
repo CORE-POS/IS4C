@@ -75,7 +75,7 @@ class DeptKey extends Parser
         $deptmods = CoreLocal::get('SpecialDeptMap');
         $db = Database::pDataConnect();
         if (!is_array($deptmods) && $db->table_exists('SpecialDeptMap')) {
-            $model = new SpecialDeptMapModel($db);
+            $model = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($db);
             $deptmods = $model->buildMap();
             CoreLocal::set('SpecialDeptMap', $deptmods);
         }

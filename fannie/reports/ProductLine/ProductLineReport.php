@@ -39,10 +39,11 @@ class ProductLineReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        $prefix = FormLib::get('prefix');
+        $prefix = $this->form->prefix;
         $prefix = str_pad($prefix, '0', 5, STR_PAD_LEFT);
 
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         if ($dbc->tableExists('FloorSections')) {
             $loc_col = 'f.name AS floorSection';
@@ -68,10 +69,14 @@ class ProductLineReport extends FannieReportPage
             $query .= ' LEFT JOIN FloorSections AS f ON y.floorSectionID=f.floorSectionID ';
         }
         $query .= " 
-            WHERE SUBSTRING(p.upc, 4, 5) = ?
-            ORDER BY p.upc";
+            WHERE SUBSTRING(p.upc, 4, 5) = ? ";
+        $args = array($prefix);
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $query .= ' AND p.store_id=? ';
+            $args[] = $this->config->get('STORE_ID');
+        }
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, array($prefix));
+        $result = $dbc->execute($prep, $args);
         $data = array();
         while ($row = $dbc->fetch_row($result)) {
             $data[] = array(
@@ -87,6 +92,11 @@ class ProductLineReport extends FannieReportPage
         }
 
         return $data;
+    }
+
+    public function form_content()
+    {
+        return 'No direct entries allowed on this report';
     }
 }
 

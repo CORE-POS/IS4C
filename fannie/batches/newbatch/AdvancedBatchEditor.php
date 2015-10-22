@@ -114,28 +114,7 @@ class AdvancedBatchEditor extends FannieRESTfulPage
                 $item->groupSalePrice($item->salePrice());
             }
             $prod = $dbc->getRow($prodP, array($item->upc()));
-            $ret .= sprintf('
-                <tr>
-                    <td>%s<input type="hidden" name="upc[]" value="%s" /></td>
-                    <td>%s</td>
-                    <td>%s</td>
-                    <td><input type="text" class="form-control price-field input-sm"
-                        value="%.2f" name="price[]" /></td>
-                    <td><input type="text" class="form-control price-field input-sm"
-                        value="%.2f" name="groupPrice[]" /></td>
-                    <td><input type="text" class="form-control price-field input-sm"
-                        value="%d" name="priceMethod[]" /></td>
-                    <td><input type="text" class="form-control price-field input-sm"
-                        value="%d" name="quantity[]" /></td>
-                </tr>',
-                $item->upc(), $item->upc(),
-                $prod['brand'],
-                $prod['description'],
-                $item->salePrice(),
-                $item->groupSalePrice(),
-                $item->pricemethod(),
-                $item->quantity()
-            );
+            $ret .= $this->printRow($item);
         }
         $ret .= '</tbody></table>
             <p>
@@ -147,6 +126,32 @@ class AdvancedBatchEditor extends FannieRESTfulPage
         $this->addOnloadCommand("\$('.table input.form-control:first').focus();\n");
 
         return $ret;
+    }
+
+    private function printRow($item)
+    {
+        return sprintf('
+            <tr>
+                <td>%s<input type="hidden" name="upc[]" value="%s" /></td>
+                <td>%s</td>
+                <td>%s</td>
+                <td><input type="text" class="form-control price-field input-sm"
+                    value="%.2f" name="price[]" /></td>
+                <td><input type="text" class="form-control price-field input-sm"
+                    value="%.2f" name="groupPrice[]" /></td>
+                <td><input type="text" class="form-control price-field input-sm"
+                    value="%d" name="priceMethod[]" /></td>
+                <td><input type="text" class="form-control price-field input-sm"
+                    value="%d" name="quantity[]" /></td>
+            </tr>',
+            $item->upc(), $item->upc(),
+            $prod['brand'],
+            $prod['description'],
+            $item->salePrice(),
+            $item->groupSalePrice(),
+            $item->pricemethod(),
+            $item->quantity()
+        );
     }
 
     /**

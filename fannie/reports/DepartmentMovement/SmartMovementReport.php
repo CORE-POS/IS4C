@@ -98,8 +98,8 @@ class SmartMovementReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $query = '';
         $from_where = FormLib::standardItemFromWhere();
         switch ($this->mode) {

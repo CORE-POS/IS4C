@@ -96,7 +96,10 @@ class GumLoanReport extends FannieReportPage
         return array('Total', sprintf('%.2f', $sum), '', sprintf('%.2f', $due), '', '');
     }
 
-
+    public function form_content()
+    {
+        return '<!-- no need -->';
+    }
 }
 
 FannieDispatch::conditionalExec();

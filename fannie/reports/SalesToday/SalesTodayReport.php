@@ -44,8 +44,8 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
 
     public function preprocess()
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $this->selected = (isset($_GET['super']))?$_GET['super']:-1;
 
         /* Populate an array of superdepartments from which to
@@ -68,7 +68,7 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
         $this->header = '';
 
         $this->has_menus(True);
-        $this->add_script($FANNIE_URL.'src/javascript/d3.js/d3.v3.min.js');
+        $this->add_script($this->config->get('URL').'src/javascript/d3.js/d3.v3.min.js');
 
         return True;
 
@@ -77,8 +77,9 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
 
     public function body_content()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        global $FANNIE_TRANS_DB;
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
 
         $today = date("Y-m-d");
 
@@ -301,4 +302,3 @@ function drawLineGraph(data, xrange, yrange)
 
 FannieDispatch::conditionalExec();
 
-?>

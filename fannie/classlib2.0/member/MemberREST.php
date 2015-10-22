@@ -264,6 +264,9 @@ class MemberREST
                     }
                 }
             }
+        } else {
+            // plug a value so the returned structure is complete
+            $ret['customerAccountID'] = 0;
         }
 
         return $ret;
@@ -355,6 +358,8 @@ class MemberREST
                 }
                 if (isset($row['customerAccountID'])) {
                     $account['customerAccountID'] = $row['customerAccountID'];
+                } else {
+                    $account['customerAccountID'] = 0;
                 }
 
                 $account['customers'] = array();
@@ -1240,12 +1245,12 @@ class MemberREST
         return array($query, array('%' . $val . '%'));
     }
 
-    public function getPrimary($json)
+    public static function getPrimary($json)
     {
         return array_filter($json['customers'], function($i){ return $i['accountHolder']; });
     }
 
-    public function getHousehold($json)
+    public static function getHousehold($json)
     {
         return array_filter($json['customers'], function($i){ return !$i['accountHolder']; });
     }

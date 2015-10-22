@@ -18,13 +18,13 @@ class WeeklySalesReport extends FannieReportPage
 
     public function fetch_report_data()
     {
-        global $FANNIE_OP_DB;
-        $date1 = FormLib::getDate('date1', date('Y-m-d'));
-        $date2 = FormLib::getDate('date2', date('Y-m-d'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $m = new MasterSuperDeptsModel($dbc);
         $m->superID(0);
         $dept_list = '?,';

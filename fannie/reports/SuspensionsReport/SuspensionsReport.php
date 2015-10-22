@@ -42,10 +42,10 @@ class SuspensionsReport extends FannieReportPage
 
     function fetch_report_data()
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $date1 = $this->form->date1;
+        $date2 = $this->form->date2;
         $code = FormLib::get_form_value('reason','0');
 
         $args = array($date1 . ' 00:00:00', $date2 . ' 23:59:59');
@@ -111,8 +111,8 @@ class SuspensionsReport extends FannieReportPage
 
     function report_description_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $reason = 'Any Reason';
         $mask = FormLib::get('reason', 0);
         if ($mask != 0) {
@@ -131,9 +131,10 @@ class SuspensionsReport extends FannieReportPage
     
     function form_content()
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $codes = new ReasoncodesModel($dbc);
+        ob_start();
 ?>
 <form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 <div class="col-sm-4">
@@ -175,6 +176,7 @@ class SuspensionsReport extends FannieReportPage
 </div>
 </form>
 <?php
+        return ob_get_clean();
     }
 
     public function helpContent()
@@ -186,6 +188,5 @@ class SuspensionsReport extends FannieReportPage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

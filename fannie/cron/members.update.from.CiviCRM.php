@@ -725,11 +725,17 @@ error_reporting(E_ERROR | E_WARNING);
 
 //'C --CONSTANTS { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-include('../config.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('cron_msg')) {
+    include($FANNIE_ROOT.'src/cron_msg.php');
+}
 // Connection id's, etc.
-include('../config_wefc.php');
-include('../src/SQLManager.php');
-include($FANNIE_ROOT.'src/cron_msg.php');
+if (file_exists('../config_wefc.php')) {
+    include('../config_wefc.php');
+}
 
 // What does this do?
 set_time_limit(0);

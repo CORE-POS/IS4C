@@ -31,7 +31,7 @@ class BatchReport extends FannieReportPage
     protected $header = "Select batch(es)";
     protected $title = "Fannie :: Batch Report";
     protected $report_cache = 'none';
-    protected $report_headers = array('UPC','Description','$','Qty','Location');
+    protected $report_headers = array('UPC','Description','$','Qty','Rings','Location');
     protected $required_fields = array('batchID');
 
     public $description = '[Batch Report] lists sales for items in a sales batch (or group of sales batches).';
@@ -51,7 +51,10 @@ class BatchReport extends FannieReportPage
           Assemble argument array and appropriate string
           for an IN clause in a prepared statement
         */
-        $batchID = FormLib::get_form_value('batchID','0');
+        $batchID = $this->form->batchID;
+        if (!is_array($batchID)) {
+            $batchID = array($batchID);
+        }
         $inArgs = array();
         $inClause = '(';
         $upcs = array();
@@ -93,12 +96,7 @@ class BatchReport extends FannieReportPage
         $bStart .= ' 00:00:00';
         $bEnd .= ' 23:59:59';
         $reportArgs = array($bStart, $bEnd);
-        $in_sql = '';
-        foreach ($upcs as $upc) {
-            $in_sql .= '?,';
-            $reportArgs[] = $upc;
-        }
-        $in_sql = substr($in_sql, 0, strlen($in_sql)-1);
+        list($in_sql, $reportArgs) = $dbc->safeInClause($upcs, $reportArgs);
 
         $salesBatchQ ="
             SELECT d.upc, 
@@ -106,7 +104,8 @@ class BatchReport extends FannieReportPage
                 l.floorSectionID,
                 f.name AS location,
                 SUM(d.total) AS sales, "
-                . DTrans::sumQuantity('d') . " AS quantity 
+                . DTrans::sumQuantity('d') . " AS quantity, 
+                SUM(CASE WHEN trans_status IN('','0','R') THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings
             FROM $dlog AS d "
                 . DTrans::joinProducts('d', 'p', 'INNER') . "
             LEFT JOIN prodPhysicalLocation AS l ON l.upc=p.upc
@@ -131,8 +130,9 @@ class BatchReport extends FannieReportPage
             $record = array();
             $record[] = $row['upc'];
             $record[] = $row['description'];
-            $record[] = $row['sales'];
-            $record[] = $row['quantity'];
+            $record[] = sprintf('%.2f',$row['sales']);
+            $record[] = sprintf('%.2f',$row['quantity']);
+            $record[] = $row['rings'];
             $record[] = $row['location'] === null ? '' : $row['location'];
             $ret[] = $record;
         }
@@ -187,6 +187,8 @@ class BatchReport extends FannieReportPage
                 (($filter1==$typeW[0])?'selected':''),
                 $typeW[0],$typeW[1]);
         }
+
+        ob_start();
 
         echo '<div class="form-inline">';
         echo "<label>Filters</label> ";
@@ -243,6 +245,8 @@ class BatchReport extends FannieReportPage
         echo '</div>';
 
         echo '</form>';
+
+        return ob_get_clean();
     }
 
     function report_description_content()
@@ -253,20 +257,17 @@ class BatchReport extends FannieReportPage
         $ret = array();
         $bStart = FormLib::get('date1','');
         $bEnd = FormLib::get('date2','');
-        $batchID = FormLib::get('batchID','0');
-        $inArgs = array();
-        $inClause = '(';
-        foreach ($batchID as $bID) {
-            $inClause .= '?,';
-            $inArgs[] = $bID;
+        $batchID = $this->form->batchID;
+        if (!is_array($batchID)) {
+            $batchID = array($batchID);
         }
-        $inClause = rtrim($inClause,',').')';
+        list($inClause, $inArgs) = $dbc->safeInClause($batchID);
         $batchInfoQ = $dbc->prepare("
             SELECT batchName,
                 startDate AS startDate,
                 endDate AS endDate 
             FROM batches 
-            WHERE batchID IN $inClause");
+            WHERE batchID IN ($inClause)");
         $batchInfoR = $dbc->execute($batchInfoQ,$inArgs);
         $bName = "";
         while ($batchInfoW = $dbc->fetchRow($batchInfoR)) {
@@ -315,4 +316,3 @@ class BatchReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

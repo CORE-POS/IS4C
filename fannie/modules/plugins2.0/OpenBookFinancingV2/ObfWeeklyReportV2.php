@@ -56,7 +56,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $dbc = $class_lib::getDB();
         
         $week = $class_lib::getWeek($dbc);
-        $week->obfWeekID(FormLib::get('weekID'));
+        $week->obfWeekID($this->form->weekID);
         $week->load();
 
         $colors = array(
@@ -272,6 +272,9 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         while ($splhWeekW = $dbc->fetch_row($splhWeekR)) {
             $splhWeeks .= sprintf('%d,', $splhWeekW['obfWeekID']);
         }
+        if ($splhWeeks == '(') {
+            $splhWeeks .= '-99999';
+        }
         $splhWeeks = substr($splhWeeks, 0, strlen($splhWeeks)-1) . ')';
         $trendQ = '
             SELECT 
@@ -451,7 +454,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $total_hours->trend += $trend_hours;
 
             $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($qtd_dept_sales)/($quarter['hours']);
-            $quarter_proj_sph = ($qtd_dept_plan)/($qt_proj_hours);
+            $quarter_proj_sph = ($qt_proj_hours == 0) ? 0 : ($qtd_dept_plan)/($qt_proj_hours);
             $data[] = array(
                 'Sales per Hour',
                 '',
@@ -553,7 +556,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $qtd_hours_ou += ($quarter['hours'] - $qt_proj_hours);
 
             $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($total_sales->quarterActual)/($quarter['hours']);
-            $quarter_proj_sph = ($total_sales->quarterProjected)/($qt_proj_hours);
+            $quarter_proj_sph = $qt_proj_hours == 0 ? 0 : ($total_sales->quarterProjected)/($qt_proj_hours);
             $data[] = array(
                 'Sales per Hour',
                 '',
@@ -622,7 +625,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         );
 
         $quarter_actual_sph = $total_hours->quarterActual == 0 ? 0 : ($total_sales->quarterActual)/($total_hours->quarterActual);
-        $quarter_proj_sph = ($total_sales->quarterProjected)/($total_hours->quarterProjected);
+        $quarter_proj_sph = $total_hours->quarterProjected == 0 ? 0 : ($total_sales->quarterProjected)/($total_hours->quarterProjected);
         $data[] = array(
             'Sales per Hour',
             '',
@@ -733,7 +736,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $qtd_hours_ou += ($quarter['hours'] - $qt_proj_hours);
 
             $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($total_sales->quarterActual)/($quarter['hours']);
-            $quarter_proj_sph = ($total_sales->quarterProjected)/($qt_proj_hours);
+            $quarter_proj_sph = $qt_proj_hours == 0 ? 0 : ($total_sales->quarterProjected)/($qt_proj_hours);
             $data[] = array(
                 'Sales per Hour',
                 '',
@@ -786,7 +789,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         );
 
         $quarter_actual_sph = $total_hours->quarterActual == 0 ? 0 : ($total_sales->quarterActual)/($total_hours->quarterActual);
-        $quarter_proj_sph = ($total_sales->quarterProjected)/($total_hours->quarterProjected);
+        $quarter_proj_sph = $total_hours->quarterProjected == 0 ? 0 : ($total_sales->quarterProjected)/($total_hours->quarterProjected);
         $data[] = array(
             'Sales per Hour',
             '',

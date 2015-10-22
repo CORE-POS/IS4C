@@ -60,19 +60,7 @@ class AccessProgramReceipt extends ReceiptMessage
         $ret .= ReceiptLib::centerString('Owner Signature') . "\n";
 
         if (CoreLocal::get('standalone') == 0) {
-            $db_name = CoreLocal::get('ServerOpDB');
-            $db = Database::mDataConnect();
-            $query = 'SELECT street, zip, phone, email_1, email_2
-                      FROM ' . $db_name . $db->sep() . 'meminfo
-                      WHERE card_no = ' . ((int)CoreLocal::get('memberID'));
-            $result = $db->query($query);
-            if ($db->num_rows($result) > 0) {
-                $row = $db->fetch_row($result);
-                $ret .= _('Owner Address: ') . str_replace("\n", ", ", $row['street']) . "\n";
-                $ret .= _('Zip Code: ') . $row['zip'] . "\n";
-                $ret .= _('Owner Phone(s): ') . $row['phone'] . ' ' . $row['email_2'] . "\n";
-                $ret .= _('Owner Email: ') . $row['email_1'] . "\n";
-            }
+            $ret .= $this->memAddress();
         }
 
         $ret .= "\n";
@@ -83,7 +71,7 @@ class AccessProgramReceipt extends ReceiptMessage
         $ret .= ReceiptLib::centerString(str_repeat('_', 30)) . "\n";
         $ret .= ReceiptLib::centerString('Manager Signature') . "\n";
 
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
         $query = sprintf('SELECT MAX(numflag) FROM localtemptrans
                         WHERE upc=\'ACCESS\'
                             AND emp_no=%d
@@ -93,12 +81,32 @@ class AccessProgramReceipt extends ReceiptMessage
         if ($reprint) {
             $query = str_replace('localtemptrans', 'localtranstoday', $query);
         }
-        $result = $db->query($query);
-        if ($db->num_rows($result) > 0) {
-            $row = $db->fetch_row($result);
+        $result = $dbc->query($query);
+        if ($dbc->num_rows($result) > 0) {
+            $row = $dbc->fetch_row($result);
             if ($row[0] != 0) {
                 $ret .= 'Program No: ' . $row[0] . "\n";
             }
+        }
+
+        return $ret;
+    }
+
+    private function memAddress()
+    {
+        $db_name = CoreLocal::get('ServerOpDB');
+        $ret = '';
+        $dbc = Database::mDataConnect();
+        $query = 'SELECT street, zip, phone, email_1, email_2
+                  FROM ' . $db_name . $dbc->sep() . 'meminfo
+                  WHERE card_no = ' . ((int)CoreLocal::get('memberID'));
+        $result = $dbc->query($query);
+        if ($dbc->num_rows($result) > 0) {
+            $row = $dbc->fetch_row($result);
+            $ret .= _('Owner Address: ') . str_replace("\n", ", ", $row['street']) . "\n";
+            $ret .= _('Zip Code: ') . $row['zip'] . "\n";
+            $ret .= _('Owner Phone(s): ') . $row['phone'] . ' ' . $row['email_2'] . "\n";
+            $ret .= _('Owner Email: ') . $row['email_1'] . "\n";
         }
 
         return $ret;

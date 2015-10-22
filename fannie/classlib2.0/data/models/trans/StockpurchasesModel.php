@@ -36,6 +36,7 @@ class StockpurchasesModel extends BasicModel
     'stockPurchase' => array('type'=>'MONEY'),
     'tdate' => array('type'=>'DATETIME'),
     'trans_num' => array('type'=>'VARCHAR(50)'),
+    'trans_id' => array('type'=>'INT', 'default'=>0),
     'dept' => array('type'=>'INT')
     );
 
