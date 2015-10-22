@@ -28,8 +28,15 @@ env:
 install:
     - sh fannie/unit-tests/travis-init.sh
     - sh pos/is4c-nf/unit-tests/travis-init.sh
-#    - composer require codeclimate/php-test-reporter
-#    - mkdir -p build/logs
+    # limit package installation to codeclimate
+    - rm composer.json
+    - composer init -n
+    - composer require codeclimate/php-test-reporter
+    - mkdir -p build/logs
 
 script:
     - TRAVISCI=true phpunit -c phpunit.xml
+
+after_script:
+    - vendor/bin/test-reporter
+
