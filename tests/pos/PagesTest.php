@@ -19,7 +19,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
         }
 
         foreach($pages as $class => $definition){
-            include_once(dirname(__FILE__).'/../gui-modules/'.$definition);
+            include_once(dirname(__FILE__).'/../../pos/is4c-nf/gui-modules/'.$definition);
 
             // get the default output
             ob_start();
