@@ -44,6 +44,8 @@ if (isset($_REQUEST['ordering'])){
     $saveStr = rtrim($saveStr,',').")";
     echo "<blockquote><i>Order Updated</i></blockquote>";
     confset('FANNIE_MEMBER_MODULES',$saveStr);
+} elseif (!isset($FANNIE_MEMBER_MODULES)) {
+    $FANNIE_MEMBER_MODULES = array();
 }
 ?>
 <form action=memModDisplay.php method=post>

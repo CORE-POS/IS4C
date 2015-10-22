@@ -10,7 +10,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         chdir(dirname(__FILE__).'/../../pos/is4c-nf/gui-modules/');
         $rel = MiscLib::baseURL();
         $this->assertEquals('../',$rel);
-        chdir($here);
 
         $this->assertEquals(1, MiscLib::nullwrap(1));
         $this->assertEquals(1.5, MiscLib::nullwrap(1.5));
