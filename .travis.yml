@@ -33,6 +33,7 @@ install:
     - composer init -n
     - composer require codeclimate/php-test-reporter
     - mkdir -p build/logs
+    - npm install acorn
 
 script:
     - phpunit -c phpunit.xml
