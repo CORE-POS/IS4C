@@ -66,7 +66,7 @@ class WicProdReport extends FannieReportPage
                     LEFT JOIN FloorSections AS fs ON fs.floorSectionID=pl.floorSectionID
                 WHERE p.inUse=1
                     AND p.wicable=1
-                ;";o
+                ;";
         $result = $dbc->query($query);
         while ($row = $dbc->fetch_row($result)) {
             $item[$row['upc']][0] = $row['upc'];
