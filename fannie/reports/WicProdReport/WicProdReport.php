@@ -33,7 +33,7 @@ class WicProdReport extends FannieReportPage
     public $themed = true;
 
     protected $report_headers = array('UPC', 'Brand', 'Description', 'Vendor', 
-                                'Cost', 'Retail', 'Current Margin', 'Movement');
+                                'Cost', 'Retail', 'location');
     protected $sort_direction = 1;
     protected $title = "Fannie : WIC Product Report";
     protected $header = "WIC Product Report";
@@ -47,8 +47,6 @@ class WicProdReport extends FannieReportPage
         $vendor = array();
         $cost = array();
         $price = array();
-        $marg = array();
-        $movement = array();
         
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -59,15 +57,16 @@ class WicProdReport extends FannieReportPage
                     p.normal_price,
                     p.cost, 
                     v.vendorName, 
-                    p.auto_par,
-                    ((p.normal_price - p.cost) / p.normal_price) AS margin
+                    fs.name
                 FROM products AS p
                     LEFT JOIN productUser AS pu ON pu.upc=p.upc
                     LEFT JOIN vendorItems AS vi ON vi.upc=p.upc
                     LEFT JOIN vendors AS v ON v.vendorID=vi.vendorID
+                    LEFT JOIN prodPhysicalLocation AS pl ON pl.upc=p.upc
+                    LEFT JOIN FloorSections AS fs ON fs.floorSectionID=pl.floorSectionID
                 WHERE p.inUse=1
                     AND p.wicable=1
-                ;";
+                ;";o
         $result = $dbc->query($query);
         while ($row = $dbc->fetch_row($result)) {
             $item[$row['upc']][0] = $row['upc'];
@@ -82,8 +81,7 @@ class WicProdReport extends FannieReportPage
             
             $item[$row['upc']][4] = $row['cost'];
             $item[$row['upc']][5] = $row['normal_price'];
-            $item[$row['upc']][6] = $row['margin'];
-            $item[$row['upc']][7] = $row['auto_par'];
+            $item[$row['upc']][6] = $row['name'];
         }
         if (mysql_errno() > 0) {
             echo mysql_errno() . ": " . mysql_error(). "<br>";
@@ -93,11 +91,6 @@ class WicProdReport extends FannieReportPage
     
         sort($item);
         return $item;
-    }
-
-    public function form_content()
-    {
-        return '<!-- not needed -->';
     }
 
     public function helpContent()
