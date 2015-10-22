@@ -32,11 +32,15 @@
 
 */
 
-include('../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/cron_msg.php');
+include(dirname(__FILE__) . '/../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('cron_msg')) {
+    include($FANNIE_ROOT.'src/cron_msg.php');
+}
 
-if (!chdir("LanePush")){
+if (!chdir(dirname(__FILE__))){
     echo cron_msg("Error: Can't find directory (lane push)");
     exit;
 }

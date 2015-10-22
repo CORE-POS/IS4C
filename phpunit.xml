@@ -7,6 +7,7 @@
             <file>tests/common/WhiteSpaceTest.php</file>
         </testsuite>
         <testsuite name="main">
+            <!--
             <file>fannie/unit-tests/InstallFannieTest.php</file>
             <file>fannie/unit-tests/ApiLibTest.php</file>
             <file>fannie/unit-tests/FannieSQLManagerTest.php</file>
@@ -17,7 +18,6 @@
             <file>fannie/unit-tests/PluginFannieTest.php</file>
             <file>fannie/unit-tests/TasksTest.php</file>
 
-            <!--
             <file>pos/is4c-nf/unit-tests/InstallTest.php</file>
             <file>pos/is4c-nf/unit-tests/BaseLibsTest.php</file>
             <file>pos/is4c-nf/unit-tests/DisplayTest.php</file>

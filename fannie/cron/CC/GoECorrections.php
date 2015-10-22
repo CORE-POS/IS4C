@@ -27,9 +27,15 @@ if (!chdir(dirname(__FILE__))){
 }
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/xmlData.php');
-include($FANNIE_ROOT.'src/fetchLib.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
+if (!class_exists('xmlData')) {
+    include($FANNIE_ROOT.'src/xmlData.php');
+}
+if (!function_exists('getFailedTrans')) {
+    include($FANNIE_ROOT.'src/fetchLib.php');
+}
 
 /* HELP
 

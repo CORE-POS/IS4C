@@ -47,9 +47,13 @@
 // set class alias so lines don't get too long
 use \COREPOS\Fannie\API\data\SyncLanes as SyncLanes;
 
-include('../config.php');
-include_once($FANNIE_ROOT.'src/cron_msg.php');
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('cron_msg')) {
+    include($FANNIE_ROOT.'src/cron_msg.php');
+}
 
 set_time_limit(0);
 
