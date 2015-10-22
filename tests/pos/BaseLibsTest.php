@@ -145,7 +145,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'Authenticate',
             'PreParser',
             'Parser',
-            'SQLManager',
+            '\\COREPOS\\pos\\lib\\SQLManager',
             'BasicCorePage',
             'TenderModule',
             'DisplayLib',

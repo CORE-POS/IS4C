@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+
 /**
   Autoloader doesn't know about COREPOS\Common yet
 */

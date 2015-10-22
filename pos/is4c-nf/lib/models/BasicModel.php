@@ -553,7 +553,7 @@ class BasicModel
               Force a new connection to avoid messing with the
               one maintained by the Database class
             */
-            $this->connection = new \SQLManager(
+            $this->connection = new \COREPOS\pos\lib\SQLManager(
                 $CORE_LOCAL->get("localhost"),
                 $CORE_LOCAL->get("DBMS"),
                 $db_name,
@@ -876,7 +876,7 @@ class $name extends BasicModel\n");
               Force a new connection to avoid messing with the
               one maintained by the Database class
             */
-            $this->connection = new \SQLManager(
+            $this->connection = new \COREPOS\pos\lib\SQLManager(
                 $CORE_LOCAL->get("localhost"),
                 $CORE_LOCAL->get("DBMS"),
                 $db_name,

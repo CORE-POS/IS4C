@@ -601,7 +601,7 @@ class InstallUtilities extends LibraryClass
                 ini_set('mssql.connect_timeout',1);
             }
             ob_start();
-            $sql =  @ new SQLManager($host,$type,$db,$user,$pw);
+            $sql =  @ new \COREPOS\pos\lib\SQLManager($host,$type,$db,$user,$pw);
             ob_end_clean();
         } catch(Exception $ex) {}
 
