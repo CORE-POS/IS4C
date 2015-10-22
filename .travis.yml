@@ -35,7 +35,7 @@ install:
     - mkdir -p build/logs
 
 script:
-    - TRAVISCI=true phpunit -c phpunit.xml
+    - phpunit -c phpunit.xml
 
 after_script:
     - vendor/bin/test-reporter
