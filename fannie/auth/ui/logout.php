@@ -22,7 +22,9 @@
 *********************************************************************************/
 
 include(dirname(__FILE__) . "/../../config.php");
-require(dirname(__FILE__) . '/../login.php');
+if (!function_exists('login')) {
+    require(dirname(__FILE__) . '/../login.php');
+}
 
 $current_user = checkLogin();
 
