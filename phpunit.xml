@@ -7,7 +7,6 @@
             <file>tests/common/WhiteSpaceTest.php</file>
         </testsuite>
         <testsuite name="main">
-            <!--
             <file>fannie/unit-tests/InstallFannieTest.php</file>
             <file>fannie/unit-tests/ApiLibTest.php</file>
             <file>fannie/unit-tests/FannieSQLManagerTest.php</file>
@@ -32,7 +31,6 @@
             <file>pos/is4c-nf/unit-tests/SearchTest.php</file>
             <file>pos/is4c-nf/unit-tests/TendersTest.php</file>
             <file>pos/is4c-nf/unit-tests/TotalActionsTest.php</file>
-            -->
         </testsuite>
     </testsuites>
     <filter>
