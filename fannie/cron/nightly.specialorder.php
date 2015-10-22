@@ -43,13 +43,15 @@ set_time_limit(0);
 
 // clean cache
 $cachepath = sys_get_temp_dir()."/ordercache/";
-$dh = opendir($cachepath);
-while (($file = readdir($dh)) !== false) {
-    if ($file == "." || $file == "..") continue;
-    if (!is_file($cachepath.$file)) continue;
-    unlink($cachepath.$file);
+if (file_exists($cachepath)) {
+    $dh = opendir($cachepath);
+    while (($file = readdir($dh)) !== false) {
+        if ($file == "." || $file == "..") continue;
+        if (!is_file($cachepath.$file)) continue;
+        unlink($cachepath.$file);
+    }
+    closedir($dh);
 }
-closedir($dh);
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
         $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
