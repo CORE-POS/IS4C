@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-if (!chdir("CC")){
+if (!chdir(dirname(__FILE__))){
     echo "Error: Can't find directory (CC)";
     exit;
 }
