@@ -10,7 +10,7 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
         $op_db = FannieConfig::config('OP_DB');
         $con = FannieDB::get($op_db);
         if (!class_exists('InstallIndexPage')) {
-            include_once(dirname(__FILE__) . '/../install/InstallIndexPage.php');
+            include_once(dirname(__FILE__) . '/../../fannie/install/InstallIndexPage.php');
         }
         $page = new InstallIndexPage();
         $results = $page->create_op_dbs($con, $op_db);
@@ -39,7 +39,7 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
         $trans_db = FannieConfig::config('TRANS_DB');
         $con = FannieDB::get($trans_db);
         if (!class_exists('InstallIndexPage')) {
-            include_once(dirname(__FILE__) . '/../install/InstallIndexPage.php');
+            include_once(dirname(__FILE__) . '/../../fannie/install/InstallIndexPage.php');
         }
         $page = new InstallIndexPage();
         $results = $page->create_trans_dbs($con, $trans_db, $op_db);
@@ -67,7 +67,7 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
         $arch_db = FannieConfig::config('ARCHIVE_DB');
         $con = FannieDB::get($arch_db);
         if (!class_exists('InstallIndexPage')) {
-            include_once(dirname(__FILE__) . '/../install/InstallIndexPage.php');
+            include_once(dirname(__FILE__) . '/../../fannie/install/InstallIndexPage.php');
         }
         $page = new InstallIndexPage();
         $results = $page->create_archive_dbs($con, $arch_db, 'partitions');
