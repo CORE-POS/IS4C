@@ -50,6 +50,9 @@ if (!class_exists('FannieAPI')) {
 if (!function_exists('cron_msg')) {
     include($FANNIE_ROOT.'src/cron_msg.php');
 }
+if (!isset($FANNIE_AR_DEPARTMENTS) || empty($FANNIE_AR_DEPARTMENTS)) {
+    return;
+}
 
 set_time_limit(0);
 

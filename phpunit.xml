@@ -51,6 +51,7 @@
                 <directory suffix="index.php">.</directory>
                 <file>fannie/cron/members.sync.with.CiviCRM.php</file>
                 <file>fannie/cron/members.update.from.CiviCRM.php</file>
+                <file>fannie/cron/nightly.db.backup.php</file>
             </exclude>
         </whitelist>
     </filter>
