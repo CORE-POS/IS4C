@@ -53,7 +53,7 @@
                 <directory>pos/is4c-nf/ajax-callbacks</directory>
                 <directory>pos/is4c-nf/gui-class-lib</directory>
                 <directory>pos/is4c-nf/gui-modules</directory>
-                <directory>pos/is4c-nf/install</directory>
+                <directory>pos/is4c-nf/lib</directory>
                 <directory>pos/is4c-nf/plugins</directory>
                 <directory>pos/is4c-nf/test</directory>
                 <directory suffix="index.php">.</directory>
