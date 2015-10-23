@@ -36,7 +36,7 @@ install:
 
 script:
     - phpunit -c phpunit.xml
-    - sh tests/acorn.sh
+#    - sh tests/acorn.sh
 
 after_script:
     - vendor/bin/test-reporter
