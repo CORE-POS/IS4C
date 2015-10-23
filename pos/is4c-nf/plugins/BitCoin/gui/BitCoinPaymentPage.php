@@ -85,7 +85,6 @@ class BitCoinPaymentPage extends InputCorePage
         if (isset($_REQUEST['amount'])) {
             $payment = $this->initPayment($_REQUEST['amount']);
             if ($payment === false) {
-                exit;
                 CoreLocal::set('boxMsg', 'Error initializing Bitcoin payment');
                 $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
                 return false;
