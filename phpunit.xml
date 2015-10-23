@@ -37,7 +37,7 @@
         <whitelist processUncoveredFilesFromWhitelist="true">
             <directory suffix=".php">common</directory>
             <directory suffix=".php">fannie</directory>
-            <!--<directory suffix=".php">pos/is4c-nf</directory>-->
+            <directory suffix=".php">pos/is4c-nf</directory>
             <exclude>
                 <directory>vendor</directory>
                 <directory>common/adodb5</directory>
@@ -50,6 +50,11 @@
                 <directory>fannie/src/Excel</directory>
                 <directory>fannie/src/fpdf</directory>
                 <directory>fannie/sync/special</directory>
+                <directory>pos/is4c-nf/ajax-callbacks</directory>
+                <directory>pos/is4c-nf/gui-class-lib</directory>
+                <directory>pos/is4c-nf/gui-modules</directory>
+                <directory>pos/is4c-nf/install</directory>
+                <directory>pos/is4c-nf/lib</directory>
                 <directory>pos/is4c-nf/plugins</directory>
                 <directory>pos/is4c-nf/test</directory>
                 <directory suffix="index.php">.</directory>
