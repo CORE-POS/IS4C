@@ -50,6 +50,7 @@
                 <directory>fannie/src/Excel</directory>
                 <directory>fannie/src/fpdf</directory>
                 <directory>fannie/sync/special</directory>
+                <directory>pos/is4c-nf/ajax-callbacks</directory>
                 <directory>pos/is4c-nf/lib/FooterBoxes</directory>
                 <directory>pos/is4c-nf/lib/Kickers</directory>
                 <directory>pos/is4c-nf/lib/LocalStorage</directory>
