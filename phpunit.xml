@@ -45,7 +45,7 @@
                 <directory>fannie/install/LaneConfigPages/extra_directory_layer</directory>
                 <directory>fannie/install/LaneConfigPages/lane_install</directory>
                 <directory>fannie/modules</directory>
-                <directory>fannie/per-coop</directory>
+                <directory>fannie/per_coop</directory>
                 <directory>fannie/reports/Store-Specific</directory>
                 <directory>fannie/src/Excel</directory>
                 <directory>fannie/src/fpdf</directory>
