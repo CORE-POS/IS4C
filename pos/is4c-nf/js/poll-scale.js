@@ -2,7 +2,7 @@ var SCALE_REL_PRE = "";
 
 function pollScale(rel_prefix)
 {
-    if (!isNodeWebKit()) {
+    if (typeof isNodeWebKit === 'function' && !isNodeWebKit()) {
         SCALE_REL_PRE = rel_prefix;
         $.ajax({url: SCALE_REL_PRE+'ajax-callbacks/ajax-poll-scale.php',
             type: 'post',
