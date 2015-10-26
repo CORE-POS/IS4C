@@ -21,7 +21,9 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+use COREPOS\pos\lib\FormLib;
+
+include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class WicTenderPage extends BasicCorePage 
 {
@@ -86,11 +88,11 @@ class WicTenderPage extends BasicCorePage
                     if (!is_numeric($inp)) {
                         $this->box_color="errorColoredArea";
                         $this->errMsg = 'Invalid amount';
-                    } elseif ($inp - CoreLocal::get('amtdue') > 0.005) {
+                    } elseif (($inp/100) - CoreLocal::get('amtdue') > 0.005) {
                         $this->box_color="errorColoredArea";
                         $this->errMsg = 'Max amount is ' . CoreLocal::get('amtdue');
                     } else {
-                        $tender = MiscLib::truncate2($amt*100) . 'WI';
+                        $tender = $inp . 'WT';
                         CoreLocal::set('strRemembered', $tender);
                         CoreLocal::set('msgrepeat', 1);
                         $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php');
@@ -136,7 +138,7 @@ class WicTenderPage extends BasicCorePage
     private function amountForm()
     {
         return '<span class="larger">
-            Enter Amount
+            ' . ($this->errMsg ? $this->errMsg : 'Enter Amount') . '
             </span><br />
             <p>
             [clear] to go back
@@ -146,7 +148,7 @@ class WicTenderPage extends BasicCorePage
     private function issueForm()
     {
         return '<span class="larger">
-            Issue Date
+            ' . ($this->errMsg ? $this->errMsg : 'Issue Date') . '
             </span><br />
             <p>
             enter issue date MMDDYYYY or [clear] to cancel
@@ -156,7 +158,7 @@ class WicTenderPage extends BasicCorePage
     private function expiresForm()
     {
         return '<span class="larger">
-            Expiration Date
+            ' . ($this->errMsg ? $this->errMsg : 'Expiration Date') . '
             </span><br />
             <p>
             enter expiration date MMDDYYYY or [clear] to go back

@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
+include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class WicMenuPage extends NoInputCorePage 
 {
@@ -39,9 +39,9 @@ class WicMenuPage extends NoInputCorePage
                     $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php');
                     return false;
                 case 'WICT':
-                    $tender = MiscLib::truncate2(100*CoreLocal::get('amtdue')) . 'WI';
-                    CoreLocal::set('strRemembered', $tender);
-                    CoreLocal::set('msgrepeat', 1);
+                    $plugin = new WicPlugin();
+                    $this->change_page($plugin->pluginURL() . '/WicTenderPage.php');
+                    return false;
                     break;
                 case 'CL':
                 default:
@@ -56,7 +56,7 @@ class WicMenuPage extends NoInputCorePage
     
     function head_content(){
         ?>
-        <script type="text/javascript" src="../../../js/selectSubmit.js"></script>
+        <script type="text/javascript" src="../../js/selectSubmit.js"></script>
         <?php
         $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
         $this->add_onload_command("\$('#selectlist').focus();\n");
@@ -68,7 +68,7 @@ class WicMenuPage extends NoInputCorePage
         ?>
         <div class="baseHeight">
         <div class="centeredDisplay colored rounded">
-        <span class="larger">WIC Menu</span>
+        <span class="larger">WIC Mode is <?php echo CoreLocal::get('WicMode') ? 'ON' : 'OFF'; ?></span>
         <form name="selectform" method="post" id="selectform"
             action="<?php echo $_SERVER['PHP_SELF']; ?>">
         <?php if (CoreLocal::get('touchscreen')) { ?>
@@ -81,9 +81,9 @@ class WicMenuPage extends NoInputCorePage
             onblur="$('#selectlist').focus()">
         <?php
         if (CoreLocal::get('WicMode')) {
-            echo '<option value="WICOFF">Exit WIC Mode</option>';
+            echo '<option value="WICOFF" selected>Exit WIC Mode</option>';
         } else {
-            echo '<option value="WICON">Enter WIC Mode</option>';
+            echo '<option value="WICON" selected>Enter WIC Mode</option>';
         }
         ?>
             <option value="WICT">Tender WIC</option>

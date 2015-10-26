@@ -29,7 +29,7 @@ class WicParser extends Parser
     {
         if (CoreLocal::get('WicMode') && is_numeric($str) && strlen($str) < 15 && !$this->wicUPC($str)) {
             $this->mode = 'upc';
-        } elseif (CoreLocal::get('WicMode') && preg_match('/\d+DP\d+/', $str) {
+        } elseif (CoreLocal::get('WicMode') && preg_match('/\d+DP\d+/', $str)) {
             $this->mode = 'openring';
         } elseif ($str == 'WIC') {
             $this->mode = 'menu';
@@ -43,16 +43,16 @@ class WicParser extends Parser
     public function parse($str)
     {
         $ret = $this->default_json();
+        $plugin = new WicPlugin();
         switch ($this->mode) {
             case 'upc':
-                $ret['output'] = DisplayLib::boxMsg(_('item is not WIC eligible'));
+                $ret['main_frame'] = $plugin->pluginURL() . '/WicOverridePage.php?upc=' . $str;
                 return $ret;
             case 'openring':
                 $ret['output'] = DisplayLib::boxMsg(_('not allowed in WIC mode'));
                 return $ret;
             case 'menu':
-                $plugin = new WicPlugin();
-                $ret['main_frame'] = $plugin->pluginURL() . 'WicMenuPage.php';
+                $ret['main_frame'] = $plugin->pluginURL() . '/WicMenuPage.php';
                 return $ret;
         }
 
@@ -61,6 +61,10 @@ class WicParser extends Parser
 
     private function wicUPC($str)
     {
+        $arr = CoreLocal::get('WicOverride');
+        if (is_array($arr) && in_array(ltrim($str, '0'), $arr)) {
+            return true;
+        }
         $upc = substr('0000000000000' . $str, -13);
         $dbc = Database::pDataConnect();
         $itemP = $dbc->prepare('SELECT wicable FROM products WHERE upc=?');

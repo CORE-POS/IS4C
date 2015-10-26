@@ -27,5 +27,11 @@ class WicPlugin extends Plugin
     );
 
     public $plugin_description = 'A plugin for accepting WIC payments';
+
+    public function plugin_transaction_reset()
+    {
+        CoreLocal::set('WicMode', false);
+        CoreLocal::set('WicOverride', array());
+    }
 }
 
