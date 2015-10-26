@@ -13,7 +13,7 @@ if (FormLib::get('excel') !== '') {
 $cached_output = \COREPOS\Fannie\API\data\DataCache::getFile("monthly");
 if ($cached_output){
     echo $cached_output;
-    exit;
+    return;
 }
 
 ob_start();

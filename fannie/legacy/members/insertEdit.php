@@ -9,7 +9,7 @@ include_once($FANNIE_ROOT.'auth/login.php');
 if (!validateUserQuiet('editmembers') && !validateUserQuiet('editmembers_csc') && !validateUserQuiet('viewmembers')){
     $url = $FANNIE_URL.'auth/ui/loginform.php?redirect='.$_SERVER['PHP_SELF'];
     header('Location: '.$url);
-    exit;
+    return;
 }
 //include('../db.php');
 

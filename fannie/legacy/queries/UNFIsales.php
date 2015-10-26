@@ -153,7 +153,7 @@ if (isset($_REQUEST['upcs'])){
     }    
 
     $pdf->Output();
-    exit;
+    return;
 }
 
 $subQ = "select superID,super_name from superDeptNames

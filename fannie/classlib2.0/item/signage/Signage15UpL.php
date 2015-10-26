@@ -74,7 +74,6 @@ class Signage15UpL extends \COREPOS\Fannie\API\item\FannieSignage
                     $pdf->Rect($left + ($width*$column), $y, $left + ($width*$column) + $effective_width, $pdf->GetY(), 'F');
                     $font_shrink++;
                     if ($font_shrink >= $this->SMALL_FONT) {
-                        var_dump($item['brand']); var_dump($pdf->GetY()-$y);exit;
                         break;
                     }
                     $pdf->SetFontSize($this->SMALL_FONT - $font_shrink);

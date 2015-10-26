@@ -190,7 +190,7 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
 
     if ($argc < 2) {
         echo "Usage: php FannieTask.php <Task Class Name>\n";    
-        exit;
+        return 1;
     }
 
     include(dirname(__FILE__).'/../config.php');
@@ -207,13 +207,13 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
     $class = $argv[1];
     if (!class_exists($class)) {
         echo "Error: class '$class' does not exist\n";
-        exit;
+        return 1;
     }
 
     $obj = new $class();
     if (!is_a($obj, 'FannieTask')) {
         echo "Error: invalid class. Must be subclass of FannieTask\n";
-        exit;
+        return 1;
     }
 
     if (is_numeric($config->get('TASK_THRESHOLD'))) {

@@ -48,7 +48,7 @@ if (!file_exists($FANNIE_ROOT . $path)) {
 $dh = opendir($FANNIE_ROOT.$path);
 if (!$dh) {
     echo cron_msg("$FANNIE_ROOT.$path does not exist.");
-    exit;
+    return;
 }
 while ( ($file = readdir($dh)) !== False){
     if (is_file($FANNIE_ROOT.$path.$file))
@@ -62,7 +62,7 @@ if (date('j') == 1){
     $dh = opendir($FANNIE_ROOT.$path);
     if (!$dh) {
         echo cron_msg("$FANNIE_ROOT.$path does not exist.");
-        exit;
+        return;
     }
     while ( ($file = readdir($dh)) !== False){
         if (is_file($FANNIE_ROOT.$path.$file))

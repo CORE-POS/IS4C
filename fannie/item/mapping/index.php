@@ -30,7 +30,7 @@ if (isset($_REQUEST['ajax'])){
     foreach($req as $key){
         if (!isset($_REQUEST[$key]) || !is_numeric($_REQUEST[$key])){
             echo json_encode(array('errors'=>'invalid request '));
-            exit;
+            return;
         }
     }
     $store = $_REQUEST['store_id'];
@@ -47,7 +47,7 @@ if (isset($_REQUEST['ajax'])){
     case 'set':
         if (!isset($_REQUEST['upc']) || !is_numeric($_REQUEST['upc'])){
             echo json_encode(array('errors'=>'invalid request'));
-            exit;
+            return;
         }
         saveItem($store,$section,$subsection,$shelfset,$shelf,$location,$_REQUEST['upc']);
         $output = lookupItem($store,$section,$subsection,$shelfset,$shelf,$location+1);
@@ -57,7 +57,7 @@ if (isset($_REQUEST['ajax'])){
         echo json_encode(array('errors'=>'invalid request'));
         break;
     }
-    exit;
+    return;
 }
 
 function lookupItem($store,$sec,$subsec,$sh_set,$shelf,$loc){

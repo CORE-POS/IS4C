@@ -71,7 +71,7 @@ static private function getLocalConnection($database1, $database2)
         /**
           Add both local databases to the connection object
         */
-        self::$SQL_CONNECTION = new SQLManager(
+        self::$SQL_CONNECTION = new \COREPOS\pos\lib\SQLManager(
             CoreLocal::get("localhost"),
             CoreLocal::get("DBMS"),
             $database1,
@@ -95,7 +95,7 @@ static private function getLocalConnection($database1, $database2)
 */
 static public function mDataConnect()
 {
-    $sql = new SQLManager(CoreLocal::get("mServer"),CoreLocal::get("mDBMS"),CoreLocal::get("mDatabase"),
+    $sql = new \COREPOS\pos\lib\SQLManager(CoreLocal::get("mServer"),CoreLocal::get("mDBMS"),CoreLocal::get("mDatabase"),
                   CoreLocal::get("mUser"),CoreLocal::get("mPass"),false,true);
 
     return $sql;

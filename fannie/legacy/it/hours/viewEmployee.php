@@ -42,7 +42,7 @@ $deptR = $sql->exec_statement($deptQ, array($empID));
 $deptW = $sql->fetch_row($deptR);
 if ($deptW['department'] >= 998){
     header("Location: {$FANNIE_URL}legacy/it/hours/viewEmployeeSalary.php?id=$empID");
-    exit;
+    return;
 }
 
 echo "<html><head><title>View</title>";

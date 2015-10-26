@@ -52,6 +52,8 @@ $_REQUEST['ref'] = ReceiptLib::receiptNumber();
 TransRecord::finalizeTransaction(true);
 ob_start();
 include(realpath(dirname(__FILE__).'/ajax-end.php'));
-header("Location: ".MiscLib::base_url()."gui-modules/pos2.php");
 ob_end_clean();
+if (!headers_send()) {
+    header("Location: ".MiscLib::base_url()."gui-modules/pos2.php");
+}
 

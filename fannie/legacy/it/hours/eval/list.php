@@ -8,11 +8,11 @@ $name = checkLogin();
 $perm = validateUserQuiet('evals');
 if ($name === false && $perm === false){
     header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/it/hours/eval/list.php");
-    exit;
+    return;
 }
 else if ($perm === false){
     echo "Error";
-    exit;
+    return;
 }
 
 $db = hours_dbconnect();

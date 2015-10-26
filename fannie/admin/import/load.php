@@ -68,7 +68,7 @@ if (!isset($_REQUEST['lc_col'])){
     echo '</table>';
     echo '<input type="submit" value="Continue" />';
     echo '</form>';
-    exit;
+    return;
 }
 
 $LC = (isset($_REQUEST['lc_col'])) ? (int)$_REQUEST['lc_col'] : 0;

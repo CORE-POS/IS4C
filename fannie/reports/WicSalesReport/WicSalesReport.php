@@ -48,18 +48,17 @@ class WicSalesReport extends FannieReportPage
     {
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
-        $manu = FormLib::get_form_value('manu','');
-        $type = FormLib::get_form_value('type','');
+        try {
+            $date1 = $this->form->date1;
+            $date2 = $this->form->date2;
+        } catch (Exception $ex) {
+            return array();
+        }
         $groupby = FormLib::get_form_value('groupby','upc');
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
 
         $type_condition = "p.wicable=1";
-        $args = array('%'.$manu.'%');
-        if ($type == 'prefix')
-            $type_condition = 't.upc LIKE ?';
 
         $query = "";
         $args[] = $date1.' 00:00:00';
@@ -194,7 +193,7 @@ class WicSalesReport extends FannieReportPage
 
     public function form_content()
     {
-        global $FANNIE_URL;
+        ob_start();
 ?>
 <form method="get" action="WicSalesReport.php" class="form-horizontal">
     <div class="col-sm-5">
@@ -237,10 +236,12 @@ class WicSalesReport extends FannieReportPage
     </div>
 </form>
 <?php
-        $this->add_script($FANNIE_URL . 'item/autocomplete.js');
-        $ws = $FANNIE_URL . 'ws/';
+        $this->add_script($this->config->get('URL') . 'item/autocomplete.js');
+        $ws = $this->config->get('URL') . 'ws/';
         $this->add_onload_command("bindAutoComplete('#manu', '$ws', 'brand');\n");
         $this->add_onload_command('$(\'#manu\').focus();');
+
+        return ob_get_clean();
     }
 
     public function helpContent()

@@ -274,7 +274,7 @@ function itemParse($upc){
                 if(!($DatabaseResult = $dbc->query($Query)))
                 {
                     print("The chained-selector query failed!<br>\n");
-                    exit();
+                    return;
                 }
 
                 while($row = $dbc->fetch_object($DatabaseResult))
@@ -775,7 +775,7 @@ function itemParse($upc){
             if(!($DatabaseResult = $dbc->query($Query)))
             {
                 print("The query failed!<br>\n");
-                exit();
+                return;
             }
             while($row = $dbc->fetch_object($DatabaseResult))
             {

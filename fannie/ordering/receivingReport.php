@@ -20,5 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-header('Location: SoReceivingReport.php');
+if (!headers_sent()) {
+    header('Location: SoReceivingReport.php');
+}
 

@@ -578,7 +578,7 @@ static private $paycardDB = null;
 static public function paycard_db()
 {
     if (self::$paycardDB === null){
-        self::$paycardDB = new SQLManager('127.0.0.1',CoreLocal::get('DBMS'),
+        self::$paycardDB = new \COREPOS\pos\lib\SQLManager('127.0.0.1',CoreLocal::get('DBMS'),
                 CoreLocal::get('tDatabase'),CoreLocal::get('localUser'),
                 CoreLocal::get('localPass'));
     }

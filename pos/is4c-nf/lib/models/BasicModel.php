@@ -553,7 +553,7 @@ class BasicModel
               Force a new connection to avoid messing with the
               one maintained by the Database class
             */
-            $this->connection = new \SQLManager(
+            $this->connection = new \COREPOS\pos\lib\SQLManager(
                 $CORE_LOCAL->get("localhost"),
                 $CORE_LOCAL->get("DBMS"),
                 $db_name,
@@ -805,6 +805,8 @@ class BasicModel
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\models\BasicModel;
+
 /**
   @class $name
 */
@@ -874,7 +876,7 @@ class $name extends BasicModel\n");
               Force a new connection to avoid messing with the
               one maintained by the Database class
             */
-            $this->connection = new \SQLManager(
+            $this->connection = new \COREPOS\pos\lib\SQLManager(
                 $CORE_LOCAL->get("localhost"),
                 $CORE_LOCAL->get("DBMS"),
                 $db_name,
@@ -999,7 +1001,7 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
             echo $doc;
             echo "\n";
         }
-        exit;
+        return 0;
     }
 
     /* Argument signatures, to php, where BasicModel.php is the first:
@@ -1010,7 +1012,7 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         echo "Create new Model: php BasicModel.php --new <Model Name>\n";
         echo "Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename>\n";
         echo "Generate markdown documentation: php BasicModel.php --doc <Model Filename(s)>\n";
-        exit;
+        return 0;
     }
 
     // Create new Model
@@ -1025,7 +1027,7 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
         echo "Generating Model '$modelname'\n";
         $obj = new BasicModel(null);
         $obj->newModel($modelname);
-        exit;
+        return 0;
     }
 
     $classfile = $argv[1];
@@ -1037,21 +1039,21 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
     }
     if (!file_exists($classfile)) {
         echo "Error: file '$classfile' does not exist\n";
-        exit;
+        return 1;
     }
 
     $class = pathinfo($classfile, PATHINFO_FILENAME);
     include($classfile);
     if (!class_exists($class)) {
         echo "Error: class '$class' does not exist\n";
-        exit;
+        return 1;
     }
 
     // A new object of the type named on the command line.
     $obj = new $class(null);
     if (!is_a($obj, 'BasicModel')) {
         echo "Error: invalid class. Must be BasicModel\n";
-        exit;
+        return 1;
     }
 
     // Update Table Structure

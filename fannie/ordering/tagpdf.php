@@ -20,8 +20,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('checkLogin')) {
+    include($FANNIE_ROOT.'auth/login.php');
+}
 $dbc = FannieDB::get($FANNIE_OP_DB);
 $TRANS = $FANNIE_TRANS_DB.$dbc->sep();
 
@@ -138,7 +143,7 @@ if (isset($_REQUEST['toids'])){
     }
 
     $pdf->Output();
-    exit;
+    return;
 }
 
 $page_title = "Fannie :: Special Orders";
@@ -162,7 +167,6 @@ else {
     echo '<input type="checkbox" id="sa" onclick="toggleChecked(this.checked);" />';
     echo '<label for="sa"><b>Select All</b></label>';
     echo '<table cellspacing="0" cellpadding="4" border="1">';
-    include($FANNIE_ROOT.'auth/login.php');
     $username = checkLogin();
     $cachepath = sys_get_temp_dir()."/ordercache/";
     if (file_exists("{$cachepath}{$username}.prints")){

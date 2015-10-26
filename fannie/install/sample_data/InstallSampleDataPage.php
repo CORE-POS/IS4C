@@ -22,12 +22,16 @@
 *********************************************************************************/
 
 ini_set('display_errors','1');
-include('../../config.php'); 
-if(!class_exists('SQLManager'))
-    include($FANNIE_ROOT.'src/SQLManager.php');
-include('../util.php');
-include('../db.php');
-include_once('../../classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) . '/../../config.php'); 
+if (!class_exists('FannieAPI')) {
+    include_once(dirnam(__FILE__) . '/../../classlib2.0/FannieAPI.php');
+}
+if (!function_exists('confset')) {
+    include(dirname(__FILE__) . '/util.php');
+}
+if (!function_exists('create_if_needed')) {
+    include(dirname(__FILE__) . '/db.php');
+}
 
 /**
     @class InstallSampleDataPage

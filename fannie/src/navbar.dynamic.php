@@ -4,9 +4,6 @@
 
 -->
 
-<!-- 6Oct13 EL This is redundant if this file is included by header.html -->
-<!-- link rel="stylesheet" href="<?php echo $path; ?>src/style.css" type="text/css" media="screen" title="no title" charset="utf-8" -->
-
 <?php
 global $FANNIE_MENU, $FANNIE_NAV_POSITION;
 if ( isset($FANNIE_NAV_POSITION) && $FANNIE_NAV_POSITION == "top" ) {
@@ -165,7 +162,7 @@ function render_menu($arr,$depth=0)
 }
 
 if (!isset($FANNIE_MENU) || !is_array($FANNIE_MENU))
-    include($path.'src/defaultmenu.php');
+    include(dirname(__FILE__) . '/defaultmenu.php');
 else
     render_menu(newMenuToOldMenu($FANNIE_MENU));
 echo "</ul>";

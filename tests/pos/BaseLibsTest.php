@@ -36,10 +36,10 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
     public function testDatabase()
     {
         $db = Database::tDataConnect();
-        $this->assertInstanceOf('SQLManager', $db);
+        $this->assertInstanceOf('\\COREPOS\\pos\\lib\\SQLManager', $db);
         $this->assertEquals(CoreLocal::get('tDatabase'), $db->default_db);
         $db = Database::pDataConnect();
-        $this->assertInstanceOf('SQLManager', $db);
+        $this->assertInstanceOf('\\COREPOS\\pos\\lib\\SQLManager', $db);
         $this->assertEquals(CoreLocal::get('pDatabase'), $db->default_db);
 
         $this->assertEquals(1, Database::gettransno(-1)); // not a real emp_no
@@ -145,7 +145,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'Authenticate',
             'PreParser',
             'Parser',
-            'SQLManager',
             'BasicCorePage',
             'TenderModule',
             'DisplayLib',

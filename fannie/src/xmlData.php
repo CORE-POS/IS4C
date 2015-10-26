@@ -1,4 +1,5 @@
 <?php
+if (!class_exists('xmlData', false)) {
 
 class xmlData {
 
@@ -80,4 +81,5 @@ class xmlData {
     }
 }
 
-?>
+}
+

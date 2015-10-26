@@ -47,10 +47,12 @@ if (MiscLib::pingport('127.0.0.1:15674', 'not a database')) {
   Go to login screen if no one is signed in
   Go to lock screen if someone is signed in
 */
-$my_url = MiscLib::base_url();
-if (CoreLocal::get('LoggedIn') == 0) {
-    header("Location: {$my_url}gui-modules/login2.php");
-} else {
-    header("Location: {$my_url}gui-modules/login3.php");
+if (!headers_sent()) {
+    $my_url = MiscLib::base_url();
+    if (CoreLocal::get('LoggedIn') == 0) {
+        header("Location: {$my_url}gui-modules/login2.php");
+    } else {
+        header("Location: {$my_url}gui-modules/login3.php");
+    }
 }
 

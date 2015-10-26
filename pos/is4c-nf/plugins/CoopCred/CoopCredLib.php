@@ -329,7 +329,7 @@ static private $SQL_CONNECTION = null;
             /**
               Create the connection object and add all local databases to it.
             */
-            self::$SQL_CONNECTION = new SQLManager($CORE_LOCAL->get("localhost"),
+            self::$SQL_CONNECTION = new \COREPOS\pos\lib\SQLManager($CORE_LOCAL->get("localhost"),
                 $CORE_LOCAL->get("DBMS"),
                 $CORE_LOCAL->get("tDatabase"),
                 $CORE_LOCAL->get("localUser"),$CORE_LOCAL->get("localPass"),
