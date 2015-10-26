@@ -38,9 +38,9 @@ class FormLib
     */
     public static function getFormValue($name, $default='')
     {
-        $val = filter_input(INPUT_GET, $name, FILTER_CALLBACK, array('options'=>array('FormLib', 'filterCallback')));
+        $val = filter_input(INPUT_GET, $name, FILTER_CALLBACK, array('options'=>array('COREPOS\\common\\FormLib', 'filterCallback')));
         if ($val === null) {
-            $val = filter_input(INPUT_POST, $name, FILTER_CALLBACK, array('options'=>array('FormLib', 'filterCallback')));
+            $val = filter_input(INPUT_POST, $name, FILTER_CALLBACK, array('options'=>array('COREPOS\\common\\FormLib', 'filterCallback')));
         }
         if ($val === null) {
             $val = $default;
