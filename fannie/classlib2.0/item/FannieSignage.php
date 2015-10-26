@@ -356,8 +356,12 @@ class FannieSignage
                     LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                     LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
-                 WHERE p.upc IN (' . $ids . ')
-                 ORDER BY p.department, p.upc';
+                 WHERE p.upc IN (' . $ids . ') ';
+        if (FannieConfig::config('STORE_MODE') == 'HQ') {
+            $query .= ' AND p.store_id=? ';
+            $args[] = FannieConfig::config('STORE_ID');
+        }
+        $query .= 'ORDER BY p.department, p.upc';
 
         return array('query' => $query, 'args' => $args);
     }
@@ -396,8 +400,12 @@ class FannieSignage
                     LEFT JOIN batches AS b ON l.batchID=b.batchID
                  WHERE p.upc IN (' . $ids . ')
                     AND b.discounttype = 0
-                    AND b.startDate >= ' . $dbc->curdate() . '
-                 ORDER BY p.department, p.upc';
+                    AND b.startDate >= ' . $dbc->curdate() . ' ';
+        if (FannieConfig::config('STORE_MODE') == 'HQ') {
+            $query .= ' AND p.store_id=? ';
+            $args[] = FannieConfig::config('STORE_ID');
+        }
+        $query .= 'ORDER BY p.department, p.upc';
 
         return array('query' => $query, 'args' => $args);
     }
@@ -433,8 +441,12 @@ class FannieSignage
                     LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                     LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
-                 WHERE p.upc IN (' . $ids . ')
-                         ORDER BY p.department, p.upc';
+                 WHERE p.upc IN (' . $ids . ') ';
+        if (FannieConfig::config('STORE_MODE') == 'HQ') {
+            $query .= ' AND p.store_id=? ';
+            $args[] = FannieConfig::config('STORE_ID');
+        }
+        $query .= 'ORDER BY p.department, p.upc';
 
         return array('query' => $query, 'args' => $args);
     }
@@ -474,8 +486,12 @@ class FannieSignage
                     LEFT JOIN batches AS b ON l.batchID=b.batchID
                  WHERE p.upc IN (' . $ids . ')
                     AND b.discounttype <> 0
-                    AND b.startDate > ' . $dbc->now() . '
-                 ORDER BY p.department, p.upc';
+                    AND b.startDate > ' . $dbc->now() . ' ';
+        if (FannieConfig::config('STORE_MODE') == 'HQ') {
+            $query .= ' AND p.store_id=? ';
+            $args[] = FannieConfig::config('STORE_ID');
+        }
+        $query .= 'ORDER BY p.department, p.upc';
 
         return array('query' => $query, 'args' => $args);
     }
