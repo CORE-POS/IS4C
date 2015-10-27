@@ -60,7 +60,7 @@ class FannieAuth
             return false;
         }
 
-        $sql = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
+        $sql = FannieDB::getReadOnly(FannieConfig::factory()->get('OP_DB'));
         if (!$sql->isConnected()) {
             return false;
         }
@@ -160,7 +160,7 @@ class FannieAuth
         }
 
         $uid = self::getUID($name);
-        $dbc = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
+        $dbc = FannieDB::getReadOnly(FannieConfig::factory()->get('OP_DB'));
         $query = $dbc->prepare("
             SELECT MIN(sub_start) AS lowerBound,
                 MAX(sub_end) AS upperBound
@@ -192,7 +192,7 @@ class FannieAuth
             return false;
         }
 
-        $dbc = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
+        $dbc = FannieDB::getReadOnly(FannieConfig::factory()->get('OP_DB'));
         $query = $dbc->prepare("
             SELECT MIN(sub_start) AS lowerBound,
                 MAX(sub_end) AS upperBound
@@ -236,7 +236,7 @@ class FannieAuth
         if (!$uid) {
             return false;
         }
-        $sql = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
+        $sql = FannieDB::getReadOnly(FannieConfig::factory()->get('OP_DB'));
         $checkQ = $sql->prepare_statement("select * from userPrivs where uid=? and auth_class=? and
                  ((? between sub_start and sub_end) or (sub_start='all' and sub_end='all'))");
         $checkR = $sql->exec_statement($checkQ,array($uid,$auth_class,$sub));
@@ -257,7 +257,7 @@ class FannieAuth
     */
     static private function checkGroupAuth($user, $auth, $sub='all')
     {
-        $sql = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
+        $sql = FannieDB::getReadOnly(FannieConfig::factory()->get('OP_DB'));
         if (!self::isAlphaNumeric($user) || !self::isAlphaNumeric($auth) ||
             !self::isAlphaNumeric($sub)) {
             return false;
@@ -297,7 +297,7 @@ class FannieAuth
             }
         }
 
-        $sql = FannieDB::get(FannieConfig::factory()->get('OP_DB'));
+        $sql = FannieDB::getReadOnly(FannieConfig::factory()->get('OP_DB'));
         $fetchQ = $sql->prepare_statement("select uid from Users where name=?");
         $fetchR = $sql->exec_statement($fetchQ,array($name));
         if ($sql->num_rows($fetchR) == 0) {

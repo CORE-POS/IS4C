@@ -775,7 +775,7 @@ class MemberREST
     public static function search($json, $limit=0, $minimal=false)
     {
         $config = \FannieConfig::factory();
-        $dbc = \FannieDB::get($config->get('OP_DB'));
+        $dbc = \FannieDB::getReadOnly($config->get('OP_DB'));
 
         if ($config->get('CUST_SCHEMA') == 1 && $dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
             return self::searchAccount($dbc, $json, $limit, $minimal);
@@ -1085,7 +1085,7 @@ class MemberREST
     public static function nextAccount($id)
     {
         $config = \FannieConfig::factory();
-        $dbc = \FannieDB::get($config->get('OP_DB'));
+        $dbc = \FannieDB::getReadOnly($config->get('OP_DB'));
         if ($config->get('CUST_SCHEMA') == 1 && $dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
             $query = 'SELECT MIN(cardNo) FROM customerAccounts WHERE cardNo > ?';
         } else {
@@ -1103,7 +1103,7 @@ class MemberREST
     public static function prevAccount($id)
     {
         $config = \FannieConfig::factory();
-        $dbc = \FannieDB::get($config->get('OP_DB'));
+        $dbc = \FannieDB::getReadOnly($config->get('OP_DB'));
         if ($config->get('CUST_SCHEMA') == 1 && $dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
             $query = 'SELECT MAX(cardNo) FROM customerAccounts WHERE cardNo < ?';
         } else {
@@ -1121,7 +1121,7 @@ class MemberREST
     public static function autoComplete($field, $val)
     {
         $config = \FannieConfig::factory();
-        $dbc = \FannieDB::get($config->get('OP_DB'));
+        $dbc = \FannieDB::getReadOnly($config->get('OP_DB'));
         if (strtolower($field) == 'mfirstname') {
             list($query, $args) = self::autoCompleteFirstName($val);
         } elseif (strtolower($field) == 'mlastname') {
