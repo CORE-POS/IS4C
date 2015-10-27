@@ -187,7 +187,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'FooterBox',
             'Plugin',
             'PrintHandler',
-            '\\COREPOS\\common\\ui\\CorePage',
         );
 
         foreach($required_classes as $class){
