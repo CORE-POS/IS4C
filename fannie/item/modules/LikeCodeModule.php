@@ -113,7 +113,7 @@ class LikeCodeModule extends ItemModule
 
         /* get values for current item */
         $valuesP = $dbc->prepare_statement('SELECT normal_price,pricemethod,groupprice,quantity,
-            department,scale,tax,foodstamp,discount,qttyEnforced,local
+            department,scale,tax,foodstamp,discount,qttyEnforced,local,wicable
             FROM products WHERE upc=?');
         $valuesR = $dbc->exec_statement($valuesP,array($upc));  
         if ($dbc->num_rows($valuesR) == 0) return False;
@@ -153,6 +153,7 @@ class LikeCodeModule extends ItemModule
             $model->discount($values['discount']);
             $model->qttyEnforced($values['qttyEnforced']);
             $model->local($values['local']);
+            $model->wicable($values['wicable']);
             $model->mixmatchcode($lc+500);
             if ($isHQ) {
                 foreach ($stores as $store_id) {
