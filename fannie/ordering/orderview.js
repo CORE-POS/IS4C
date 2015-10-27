@@ -91,6 +91,9 @@ var orderView = (function($) {
         $('#orderStatus').change(function() {
             mod.updateStatus($('#orderID').val(), $(this).val());
         });
+        $('#orderStore').change(function() {
+            mod.updateStore($('#orderID').val(), $(this).val());
+        });
         $('.print-cb').change(function() {
             mod.togglePrint($('#orderID').val());
         });
@@ -308,6 +311,14 @@ var orderView = (function($) {
         }
         });
     };
+    mod.updateStore = function updateStore(oid, val)
+    {
+        $.ajax({
+            url: 'ajax-calls.php',
+            type: 'post',
+            data: 'action=UpdateStore&orderID='+oid+'&val='+val
+        });
+    }
 
     return mod;
 

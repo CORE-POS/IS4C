@@ -469,3 +469,10 @@ function updateStatus(oid,val){
 	}
 	});
 }
+function updateStore(oid,val){
+	$.ajax({
+	url: 'ajax-calls.php',
+	type: 'post',
+	data: 'action=UpdateStore&orderID='+oid+'&val='+val
+	});
+}

@@ -46,6 +46,7 @@ class SpecialOrdersModel extends BasicModel
     'phone' => array('type'=>'VARCHAR(30)'),
     'altPhone' => array('type'=>'VARCHAR(30)'),
     'email' => array('type'=>'VARCHAR(50)'),
+    'storeID' => array('type'=>'INT'),
     );
 
     public function doc()
