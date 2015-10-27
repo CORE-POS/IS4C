@@ -137,6 +137,19 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         Database::setglobalvalue('CashierNo',1);
         $fail = Authenticate::checkPassword('invalid password');
         $this->assertEquals(false, $fail);
+
+        $this->assertEquals(false, Authenticate::checkPermission('56', 50));
+        $this->assertEquals(false, Authenticate::checkPermission('56', 21));
+        $this->assertEquals(true, Authenticate::checkPermission('56', 20));
+        $this->assertEquals(true, Authenticate::checkPermission('56', 10));
+
+        $this->assertEquals(false, Authenticate::getEmployeeByPassword('asdf'));
+        $this->assertInternalType('array', Authenticate::getEmployeeByPassword('56'));
+        $this->assertEquals(false, Authenticate::getEmployeeByNumber(75));
+        $this->assertInternalType('array', Authenticate::getEmployeeByNumber(56));
+
+        $this->assertEquals(0, Authenticate::getPermission(55));
+        $this->assertEquals(20, Authenticate::getPermission(56));
     }
 
     public function testAutoLoader()

@@ -95,20 +95,8 @@ class adminlogin extends NoInputCorePage
             }
             else {
                 $db = Database::pDataConnect();
-                $query = "
-                    SELECT emp_no, 
-                        FirstName, 
-                        LastName 
-                    FROM employees 
-                    where EmpActive = 1 
-                        AND frontendsecurity >= ?
-                        AND (CashierPassword = ? OR AdminPassword = ?)";
-                $args = array($class::$adminLoginLevel, $passwd, $passwd);
-                $prep = $db->prepare($query);
-                $result = $db->execute($prep, $args);
-                $num_rows = $db->num_rows($result);
-                if ($num_rows != 0) {
-                    $row = $db->fetch_row($result);
+                if (Authenticate::checkPermission($passwd, $class::$adminLoginLevel)) {
+                    $row = Authenticate::getEmployeeByPassword($passwd);
                     TransRecord::add_log_record(array(
                         'upc' => $row['emp_no'],
                         'description' => substr($class::$adminLoginMsg . ' ' . $row['FirstName'],0,30),

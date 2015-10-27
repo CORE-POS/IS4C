@@ -58,16 +58,8 @@ class PaycardTransListPage extends NoInputCorePage
         if (CoreLocal::get('standalone') == 0) {
 
             $emp = CoreLocal::get('CashierNo');
-            $db = Database::pDataConnect();
-            $empQ = 'SELECT frontendsecurity FROM employees WHERE emp_no=' . ((int)$emp);
-            $empR = $db->query($empQ);
-            $supervisor = false;
-            if ($db->num_rows($empR) > 0) {
-                $empW = $db->fetch_row($empR);
-                if ($empW['frontendsecurity'] >= 30) {
-                    $supervisor = true;
-                }
-            }
+            $sec = Authenticate::getPermission($emp);
+            $supervisor = $sec >= 30 : true : false;
 
             $db = Database::mDataConnect();
             $otherQ = 'SELECT MIN(datetime) as dt, amount, PAN, refNum,

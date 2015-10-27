@@ -58,19 +58,7 @@ class cablist extends NoInputCorePage
     
     function body_content()
     {
-        $db = Database::pDataConnect();
-        $query = "
-            SELECT frontendsecurity 
-            FROM employees 
-            WHERE emp_no=?";
-        $prep = $db->prepare($query);
-        $result = $db->execute($prep, array(CoreLocal::get('CashierNo')));
-        $fes = 0;
-        if ($db->num_rows($result) > 0) {
-            $row = $db->fetch_row($result);
-            $fes = $row['frontendsecurity'];
-        }
-
+        $fes = Authenticate::getPermission(CoreLocal::get('CashierNo'));
         /* if front end security >= 25, pull all
          * available receipts; other wise, just
          * current cashier's receipt */
