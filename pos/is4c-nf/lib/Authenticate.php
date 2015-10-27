@@ -155,7 +155,7 @@ static public function getEmployeeByPassword($password)
         FROM employees
         WHERE EmpActive=1 
             AND (CashierPassword=? OR AdminPassword=?)');
-    return $dbc->getValue($prep, array($password, $password));
+    return $dbc->getRow($prep, array($password, $password));
 }
 
 static public function getEmployeeByNumber($emp_no)
@@ -166,7 +166,7 @@ static public function getEmployeeByNumber($emp_no)
         FROM employees
         WHERE EmpActive=1 
             AND emp_no=?');
-    return $dbc->getValue($prep, array($emp_no));
+    return $dbc->getRow($prep, array($emp_no));
 }
 
 static public function getPermission($emp_no)
