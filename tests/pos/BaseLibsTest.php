@@ -127,10 +127,25 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         Database::setglobalvalue('CashierNo',1);
         $pass = Authenticate::checkPassword('9999');
         $this->assertEquals(True, $pass);
+
+        Database::setglobalvalue('LoggedIn',0);
+        Database::setglobalvalue('CashierNo',1);
+        $pass = Authenticate::checkPassword('56');
+        $this->assertEquals(True, $pass);
+
+        Database::setglobalvalue('LoggedIn',0);
+        Database::setglobalvalue('CashierNo',1);
+        $fail = Authenticate::checkPassword('invalid password');
+        $this->assertEquals(false, $fail);
     }
 
     public function testAutoLoader()
     {
+        // get codepath where session var is not array
+        CoreLocal::set('ClassLookup', false);
+        AutoLoader::loadClass('LocalStorage');
+        $this->assertEquals(true, class_exists('LocalStorage', false));
+
         AutoLoader::loadMap();
         $class_map = CoreLocal::get('ClassLookup');
         $this->assertInternalType('array', $class_map);
@@ -158,7 +173,8 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'LocalStorage',
             'FooterBox',
             'Plugin',
-            'PrintHandler'
+            'PrintHandler',
+            '\\COREPOS\\common\\ui\\CorePage',
         );
 
         foreach($required_classes as $class){
@@ -172,6 +188,36 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         foreach($mods as $m){
             $obj = new $m();
             $this->assertInstanceOf('Parser',$obj);
+        }
+
+        $listable = array(
+            'DiscountType',
+            'FooterBox',
+            'Kicker',
+            'Parser',
+            'PreParser',
+            'PriceMethod',
+            'SpecialUPC',
+            'SpecialDept',
+            'TenderModule',
+            'TenderReport',
+            'DefaultReceiptDataFetch',
+            'DefaultReceiptFilter',
+            'DefaultReceiptSort',
+            'DefaultReceiptTag',
+            'DefaultReceiptSavings',
+            'ReceiptMessage',
+            'CustomerReceiptMessage',
+            'ProductSearch',
+            'DiscountModule',
+            'PrintHandler',
+            'TotalAction',
+            'VariableWeightReWrite',
+            'ItemNotFound',
+        );
+        foreach ($listable as $base_class) {
+            $mods = AutoLoader::listModules($base_class);
+            $this->assertInternalType('array',$mods);
         }
     }
 
@@ -214,6 +260,10 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $str = CoreState::getCustomerPref('asdf');
         $this->assertInternalType('string',$str);
         $this->assertEquals('',$str);
+
+        // non-numeric age converts to zero
+        CoreState::cashierLogin(false, 'z');
+        $this->assertEquals(0, CoreLocal::get('cashierAge'));
     }
 
     public function testDisplayLib()
