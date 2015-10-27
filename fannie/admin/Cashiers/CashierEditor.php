@@ -91,8 +91,7 @@ class CashierEditor extends FanniePage {
 
     function body_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
         $ret = '';
         if (!empty($this->messages)){
             $ret .= '<blockquote style="background: solid 1x black; 
@@ -185,5 +184,5 @@ class CashierEditor extends FanniePage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

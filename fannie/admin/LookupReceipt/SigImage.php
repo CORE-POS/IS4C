@@ -46,7 +46,7 @@ class SigImage
     public function draw_page()
     {
         include(dirname(__FILE__).'/../../config.php');
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = FannieDB::getReadOnly($FANNIE_TRANS_DB);
 
         $id = FormLib::get('id', 0);
         $prep = $dbc->prepare('SELECT filetype, filecontents FROM CapturedSignature WHERE capturedSignatureID=?');

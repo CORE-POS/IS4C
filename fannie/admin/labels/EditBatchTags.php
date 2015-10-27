@@ -100,8 +100,7 @@ class EditBatchTags extends FanniePage {
     }
 
     function body_content(){
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
 
         $ret = "<form method=post>";
         $ret .= "<table class=\"table table-striped\">";

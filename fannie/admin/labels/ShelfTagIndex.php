@@ -111,7 +111,7 @@ function goToPage(the_id){
         <table class="table">
         <?php
 
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::getReadOnly($FANNIE_OP_DB);
         $query = $dbc->prepare("
             SELECT s.shelfTagQueueID, 
                 s.description, 

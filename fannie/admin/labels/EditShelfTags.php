@@ -126,8 +126,7 @@ class EditShelfTags extends FannieRESTfulPage
 
     public function get_id_view()
     {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
+        $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
 
         $template = <<<HTML
 <form action=EditShelfTags.php method=post>
@@ -237,8 +236,7 @@ HTML;
 
     public function delete_id_upc_view()
     {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
+        $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
 
         $tag = new ShelftagsModel($dbc);
         $tag->id($this->id);

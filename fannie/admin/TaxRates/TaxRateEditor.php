@@ -80,8 +80,7 @@ class TaxRateEditor extends FannieRESTfulPage
 
     function get_view()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
         $model = new TaxRatesModel($dbc);
 
         $ret = '<div id="alert-area"></div>';

@@ -71,8 +71,7 @@ class CreateTagsByDept extends FanniePage {
 
     function body_content()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
         $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
         $deptsR = $dbc->exec_statement($deptsQ);
         $deptsList = "";

@@ -38,7 +38,7 @@ $data = array();
 $id = FormLib::get_form_value('id',False);
 $batchID = FormLib::get_form_value('batchID',False);
 
-$dbc = FannieDB::get($FANNIE_OP_DB);
+$dbc = FannieDB::getReadOnly($FANNIE_OP_DB);
 
 if ($id !== False){
     $query = "
