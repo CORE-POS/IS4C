@@ -59,7 +59,7 @@ class PaycardTransListPage extends NoInputCorePage
 
             $emp = CoreLocal::get('CashierNo');
             $sec = Authenticate::getPermission($emp);
-            $supervisor = $sec >= 30 : true : false;
+            $supervisor = $sec >= 30 ? true : false;
 
             $db = Database::mDataConnect();
             $otherQ = 'SELECT MIN(datetime) as dt, amount, PAN, refNum,
