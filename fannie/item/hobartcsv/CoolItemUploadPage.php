@@ -98,7 +98,7 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             } else {
                 $itemdesc .= "\n" . $cool;
             }
-            $dbc->execute($itemP, array($price, $itemdesc, $upc));
+            $dbc->execute($saveP, array($price, $itemdesc, $upc));
             if ($prodPricing) {
                 $product->upc($upc);
                 foreach ($product->find() as $obj) {
@@ -125,7 +125,7 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         return true;
     }
 
-    public function result_content()
+    public function results_content()
     {
         return '<div class="alert alert-success">Import complete</div>';
     }
