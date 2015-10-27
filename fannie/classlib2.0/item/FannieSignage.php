@@ -357,9 +357,9 @@ class FannieSignage
                     LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                  WHERE p.upc IN (' . $ids . ') ';
-        if (FannieConfig::config('STORE_MODE') == 'HQ') {
+        if (\FannieConfig::config('STORE_MODE') == 'HQ') {
             $query .= ' AND p.store_id=? ';
-            $args[] = FannieConfig::config('STORE_ID');
+            $args[] = \FannieConfig::config('STORE_ID');
         }
         $query .= 'ORDER BY p.department, p.upc';
 
@@ -401,9 +401,9 @@ class FannieSignage
                  WHERE p.upc IN (' . $ids . ')
                     AND b.discounttype = 0
                     AND b.startDate >= ' . $dbc->curdate() . ' ';
-        if (FannieConfig::config('STORE_MODE') == 'HQ') {
+        if (\FannieConfig::config('STORE_MODE') == 'HQ') {
             $query .= ' AND p.store_id=? ';
-            $args[] = FannieConfig::config('STORE_ID');
+            $args[] = \FannieConfig::config('STORE_ID');
         }
         $query .= 'ORDER BY p.department, p.upc';
 
@@ -442,9 +442,9 @@ class FannieSignage
                     LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                  WHERE p.upc IN (' . $ids . ') ';
-        if (FannieConfig::config('STORE_MODE') == 'HQ') {
+        if (\FannieConfig::config('STORE_MODE') == 'HQ') {
             $query .= ' AND p.store_id=? ';
-            $args[] = FannieConfig::config('STORE_ID');
+            $args[] = \FannieConfig::config('STORE_ID');
         }
         $query .= 'ORDER BY p.department, p.upc';
 
@@ -487,9 +487,9 @@ class FannieSignage
                  WHERE p.upc IN (' . $ids . ')
                     AND b.discounttype <> 0
                     AND b.startDate > ' . $dbc->now() . ' ';
-        if (FannieConfig::config('STORE_MODE') == 'HQ') {
+        if (\FannieConfig::config('STORE_MODE') == 'HQ') {
             $query .= ' AND p.store_id=? ';
-            $args[] = FannieConfig::config('STORE_ID');
+            $args[] = \FannieConfig::config('STORE_ID');
         }
         $query .= 'ORDER BY p.department, p.upc';
 
