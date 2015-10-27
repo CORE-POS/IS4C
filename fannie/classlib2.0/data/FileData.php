@@ -127,7 +127,7 @@ class FileData
         for ($i=1; $i<=$rows; $i++) {
             $new = array_map(function ($j) use ($i, &$sheet) {
                 return $sheet->getCellByColumnAndRow($j, $i)->getValue();
-            }, range(0, $j));
+            }, range(0, $cols));
             /*
             $new = array();
             for($j=0; $j<=$cols; $j++) {
