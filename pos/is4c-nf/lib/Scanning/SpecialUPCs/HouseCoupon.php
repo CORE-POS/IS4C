@@ -374,7 +374,7 @@ class HouseCoupon extends SpecialUPC
                                WHERE card_no=" . CoreLocal::get("memberID") . " and
                                upc='$upc'");
             if ($mDB->num_rows($mRes) > 0) {
-                $mRow = $mDB->fetch_row($mR);
+                $mRow = $mDB->fetch_row($mRes);
                 $uses = $mRow['quantity'];
                 if ($uses >= $infoW["limit"]) {
                     return $this->errorOrQuiet(_('coupon already used<br />on this membership'), false);
