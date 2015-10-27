@@ -95,6 +95,7 @@ class WicTenderPage extends BasicCorePage
                         $tender = $inp . 'WT';
                         CoreLocal::set('strRemembered', $tender);
                         CoreLocal::set('msgrepeat', 1);
+                        CoreLocal::set('RepeatAgain', true);
                         $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php');
                         return false;
                     }
