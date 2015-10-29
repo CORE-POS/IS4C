@@ -275,16 +275,8 @@ public class Magellan : DelegateForm
                 }
             }
         }
-        Magellan m = new Magellan(verbosity);
-        bool exiting = false;
-        while (!exiting) {
-            string user_in = Console.ReadLine();
-            if (user_in == "exit") {
-                Console.WriteLine("stopping");
-                m.ShutDown();
-                exiting = true;
-            }
-        }
+        m = new Magellan(verbosity);
+        Thread.Sleep(Timeout.Infinite);
     }
 }
 
