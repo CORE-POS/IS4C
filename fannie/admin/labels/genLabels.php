@@ -40,14 +40,18 @@ $batchID = FormLib::get_form_value('batchID',False);
 
 $dbc = FannieDB::getReadOnly($FANNIE_OP_DB);
 
-if ($id !== False){
+if ($id !== False) {
+    if (!is_array($id)) {
+        $id = array($id);
+    }
+    list($inStr, $args) = $dbc->safeInClause($id);
     $query = "
         SELECT s.*,
             p.scale,
             p.numflag
         FROM shelftags AS s
             " . DTrans::joinProducts('s', 'p', 'INNER') . "
-        WHERE s.id=? ";
+        WHERE s.id IN ($inStr) ";
     switch (strtolower(FormLib::get('sort'))) {
         case 'order entered':
             $query .= ' ORDER BY shelftagID';
@@ -61,7 +65,7 @@ if ($id !== False){
             break;
     }
     $prep = $dbc->prepare($query);
-    $result = $dbc->exec_statement($prep,array($id));
+    $result = $dbc->exec_statement($prep, $args);
 
     while ($row = $dbc->fetch_row($result)) {
         $count = 1;

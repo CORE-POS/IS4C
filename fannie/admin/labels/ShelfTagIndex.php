@@ -68,6 +68,15 @@ function goToPage(the_id){
     tagwindow=window.open (url, "Shelftags", "location=0,status=1,scrollbars=1,width=800,height=1100");
     tagwindow.moveTo(750,10);
 }
+function printMany(){
+    var url = 'genLabels.php?';
+    url += $('.print-many').serialize();
+    url += '&offset='+$('#offset').val();
+    url += '&layout='+$('#layoutselector').val();
+    url += '&sort='+$('#tag-sort').val();
+    tagwindow=window.open (url, "Shelftags", "location=0,status=1,scrollbars=1,width=800,height=1100");
+    tagwindow.moveTo(750,10);
+}
         <?php
         return ob_get_clean();
     }
@@ -138,6 +147,9 @@ function goToPage(the_id){
         }
         ?>
         </table>
+        <p>
+            <a href="" onclick="printMany(); return false;" class="btn btn-default">Print Selected</a> 
+        </p>
         </div>
 
         <div class="col-sm-3">
@@ -159,8 +171,9 @@ function goToPage(the_id){
         <td><a href=\"DeleteShelfTags.php?id=%d\">Clear</a></td>
         <td><a href=\"EditShelfTags.php?id=%d\">" . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</td>
         <td><a href=\"SignFromSearch.php?queueID=%d\">Signs</a></td>
+        <td><input type=\"checkbox\" name=\"id[]\" value=\"%d\" class=\"print-many\" /></td> 
         </tr>",
-        $row[1],$row[2],$row[0],$row[0],$row[0],$row[0]);
+        $row[1],$row[2],$row[0],$row[0],$row[0],$row[0], $row[0]);
     }
 
     public function helpContent()
