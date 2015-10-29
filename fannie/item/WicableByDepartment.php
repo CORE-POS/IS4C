@@ -52,6 +52,8 @@ class WicableByDepartment extends FannieRESTfulPage
         $row = $dbc->fetchRow($res);
         if (mysql_errno() > 0) {
             echo mysql_errno() . ": " . mysql_error(). "<br>";
+        } else {
+            echo "Items for department " . $_GET['id'] . " are now wicable.";
         }
     }
     
@@ -67,7 +69,7 @@ class WicableByDepartment extends FannieRESTfulPage
             $row['dept_no'] . ' - ' . $row['dept_name'] . 
             '</p>
             <p>
-            <a href="?confirm=1&id=' . $upc . '" class="btn btn-default">Yes, make items WIC</a>
+            <a href="?confirm=1&id=' . $_GET['id'] . '" class="btn btn-default">Yes, make items WIC</a>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <a href="WicableByDepartment.php" class="btn btn-default">No, keep items as they are</a>
             </p>';
