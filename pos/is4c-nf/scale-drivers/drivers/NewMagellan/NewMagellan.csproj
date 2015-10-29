@@ -106,6 +106,7 @@
   <ItemGroup>
     <SPH Include="SerialPortHandler.cs" />
     <SPH Include="SPH_Magellan_Scale.cs" />
+    <SPH Include="SPH_Magellan_Classic.cs" />
     <SPH Include="SPH_SignAndPay_USB.cs" />
     <SPH Include="SPH_SignAndPay_Auto.cs" />
     <SPH Include="SPH_SignAndPay_Native.cs" />
