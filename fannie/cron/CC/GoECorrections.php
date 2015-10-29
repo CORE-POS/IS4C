@@ -37,6 +37,7 @@ if (file_exists($FANNIE_ROOT.'src/Credentials/GoE.wfc.php')) {
     require_once($FANNIE_ROOT.'src/Credentials/GoE.wfc.php');
 } else {
     // cannot continue
+    echo 'missing credentials file';
     return;
 }
 if (!function_exists('getFailedTrans')) {
@@ -56,6 +57,9 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
         $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $stack = getFailedTrans(date("Y-m-d"),date("G")-1);
+if (count($stack) != 0) {
+    echo 'Voids may be needed; email should go out!';
+}
 
 $void_ids = array();
 foreach($stack as $refNum){
@@ -68,5 +72,3 @@ if (count($void_ids) > 0){
     dovoid($void_ids);
 }
 
-
-?>
