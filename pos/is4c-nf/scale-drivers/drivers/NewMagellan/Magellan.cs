@@ -275,7 +275,7 @@ public class Magellan : DelegateForm
                 }
             }
         }
-        m = new Magellan(verbosity);
+        new Magellan(verbosity);
         Thread.Sleep(Timeout.Infinite);
     }
 }
