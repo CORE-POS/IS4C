@@ -39,8 +39,13 @@ class WicMenuPage extends NoInputCorePage
                     $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php');
                     return false;
                 case 'WICT':
-                    $plugin = new WicPlugin();
-                    $this->change_page($plugin->pluginURL() . '/WicTenderPage.php');
+                    if (CoreLocal::get('ttlflag') == 0) {
+                        CoreLocal::set('boxMsg', _('transaction must be totaled before tender can be accepted'));
+                        $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
+                    } else {
+                        $plugin = new WicPlugin();
+                        $this->change_page($plugin->pluginURL() . '/WicTenderPage.php');
+                    }
                     return false;
                     break;
                 case 'CL':

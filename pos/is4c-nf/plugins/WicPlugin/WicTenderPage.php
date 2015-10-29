@@ -47,30 +47,34 @@ class WicTenderPage extends BasicCorePage
 
             switch ($this->step) {
                 case 0:
-                    if (strlen($inp) != 8 || !is_numeric($inp)) {
+                    if (strlen($inp) != 6 || !is_numeric($inp)) {
                         $this->box_color="errorColoredArea";
-                        $this->errMsg = 'Invalid Date: MMDDYYYY';
+                        $this->errMsg = 'Invalid Date: MMDDYY';
                     } else {
-                        $stamp = mktime(0, 0, 0, substr($inp, 0, 2), substr($inp, 2, 2), substr($inp, -4));
+                        $stamp = mktime(0, 0, 0, substr($inp, 0, 2), substr($inp, 2, 2), 2000+substr($inp, -2));
                         $today = mktime(0, 0, 0, date('n'), date('j'), date('Y'));
                         if ($stamp > $today) {
                             $this->box_color="errorColoredArea";
-                            $this->errMsg = 'Note valid until ' . date('m/d/Y', $stamp);
+                            $this->errMsg = 'Not valid until ' . date('m/d/Y', $stamp);
                         } else {
                             $this->step++;
                         }
                     }
                     break;
                 case 1:
-                    if (strlen($inp) != 8 || !is_numeric($inp)) {
+                    if (strlen($inp) != 6 || !is_numeric($inp)) {
                         $this->box_color="errorColoredArea";
-                        $this->errMsg = 'Invalid Date: MMDDYYYY';
+                        $this->errMsg = 'Invalid Date: MMDDYY';
                     } else {
-                        $stamp = mktime(0, 0, 0, substr($inp, 0, 2), substr($inp, 2, 2), substr($inp, -4));
+                        $stamp = mktime(0, 0, 0, substr($inp, 0, 2), substr($inp, 2, 2), 2000+substr($inp, -2));
                         $today = mktime(0, 0, 0, date('n'), date('j'), date('Y'));
+                        $issue = mktime(0, 0, 0, date('n', $stamp), date('j', $stamp)-30, date('Y', $stamp));
                         if ($stamp < $today) {
                             $this->box_color="errorColoredArea";
                             $this->errMsg = 'Expired ' . date('m/d/Y', $stamp);
+                        } elseif ($issue > $today) {
+                            $this->box_color="errorColoredArea";
+                            $this->errMsg = 'Not valid until ' . date('m/d/Y', $issue);
                         } else {
                             $this->step++;
                         }
@@ -152,7 +156,7 @@ class WicTenderPage extends BasicCorePage
             ' . ($this->errMsg ? $this->errMsg : 'Issue Date') . '
             </span><br />
             <p>
-            enter issue date MMDDYYYY or [clear] to cancel
+            enter issue date MMDDYY or [clear] to cancel
             </p>';
     }
 
@@ -162,7 +166,7 @@ class WicTenderPage extends BasicCorePage
             ' . ($this->errMsg ? $this->errMsg : 'Expiration Date') . '
             </span><br />
             <p>
-            enter expiration date MMDDYYYY or [clear] to go back
+            enter expiration date MMDDYY or [clear] to go back
             </p>';
     }
 
