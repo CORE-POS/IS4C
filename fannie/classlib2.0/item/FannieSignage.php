@@ -799,7 +799,12 @@ class FannieSignage
         if ($regPrice == 0) {
             return sprintf('%.2f', $price);
         } elseif ($multiplier == -1) {
-            return sprintf('$%.2f OFF', self::dollarsOff($price, $regPrice));
+            $off = self::dollarsOff($price, $regPrice);
+            if (substr(sprintf('%.2f', $off), -2) == '00') {
+                return sprintf('$%d OFF', $off);
+            } else {
+                return sprintf('$%.2f OFF', $off);
+            }
         } elseif ($multiplier == -2) {
             return self::percentOff($price, $regPrice);
         } elseif ($multiplier == -3) {
