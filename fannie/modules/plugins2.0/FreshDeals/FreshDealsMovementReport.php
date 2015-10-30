@@ -87,7 +87,7 @@ class FreshDealsMovementReport extends FannieReportPage
         ksort($cpi);
         foreach ($cpi as $id => $row) {
             $table .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.2f</td><td>%.2f</td></tr>',
-                $row[0], $row[1], $row[2], $row[3], $row[4], $row[5]);
+                $row[0], $row[1], $row[3], $row[2], $row[4], $row[5]);
         }
         $table .= '</table>';
 
