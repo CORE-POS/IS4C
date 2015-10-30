@@ -1029,6 +1029,11 @@ class EditBatchPage extends FannieRESTfulPage
         }
         $ret .= "</table>";
         $ret .= "<input type=hidden id=currentBatchID value=$id />";
+        if ($dbc->numRows($fetchR) > 0) {
+            $ret .= '<p>
+                <a href="BatchImportExportPage.php?id=' . $id . '">Export as JSON</a>
+                </p>';
+        }
         
         return $ret;
     }
