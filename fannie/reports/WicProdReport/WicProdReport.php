@@ -1,4 +1,4 @@
- <?php
+<?php
 /*******************************************************************************
 
     Copyright 2013 Whole Foods Co-op
@@ -81,14 +81,9 @@ class WicProdReport extends FannieReportPage
             
             $item[$row['upc']][4] = $row['cost'];
             $item[$row['upc']][5] = $row['normal_price'];
-            $item[$row['upc']][6] = $row['name'];
-        }
-        if (mysql_errno() > 0) {
-            echo mysql_errno() . ": " . mysql_error(). "<br>";
+            $item[$row['upc']][6] = $row['name'] ? $row['name'] : '';
         }
 
-        echo count($item) . " WIC-able items found in system.<BR>";
-    
         sort($item);
         return $item;
     }
