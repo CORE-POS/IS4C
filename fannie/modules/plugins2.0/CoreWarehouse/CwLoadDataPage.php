@@ -131,24 +131,24 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
                 if (!isset($argv[$i+1])){
                     print_cli_help();
                     echo "Missing start month\n";
-                    exit;   
+                    return 1;   
                 }
                 elseif(!isset($argv[$i+2])){
                     print_cli_help();
                     echo "Missing start year\n";
-                    exit;   
+                    return 1;   
                 }
                 $start = array($argv[$i+1],$argv[$i+2]);
                 $i+=2;
                 if ($start[0] < 1 || $start[0] > 12){
                     print_cli_help();
                     echo "Invalid start month\n";
-                    exit;   
+                    return 1;   
                 }
                 elseif ($start[1] < 1950 || $start[1] > date('Y')){
                     print_cli_help();
                     echo "Invalid start year\n";
-                    exit;   
+                    return 1;   
                 }
                 break;
             case '-e':
@@ -156,24 +156,24 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
                 if (!isset($argv[$i+1])){
                     print_cli_help();
                     echo "Missing end month\n";
-                    exit;   
+                    return 1;   
                 }
                 elseif(!isset($argv[$i+2])){
                     print_cli_help();
                     echo "Missing end year\n";
-                    exit;   
+                    return 1;   
                 }
                 $end = array($argv[$i+1],$argv[$i+2]);
                 $i+=2;
                 if ($end[0] < 1 || $end[0] > 12){
                     print_cli_help();
                     echo "Invalid start month\n";
-                    exit;   
+                    return 1;   
                 }
                 elseif ($end[1] < 1950 || $end[1] > date('Y')){
                     print_cli_help();
                     echo "Invalid start year\n";
-                    exit;   
+                    return 1;   
                 }
                 break;
             case '-m':
@@ -181,14 +181,14 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
                 if (!isset($argv[$i+1])){
                     print_cli_help();
                     echo "No file given\n";
-                    exit;
+                    return 1;   
                 }
                 $file = $argv[$i+1];
                 $i+=1;
                 if (!file_exists($file)){
                     print_cli_help();
                     echo "File does not exist: $file\n";
-                    exit;
+                    return 1;   
                 }
                 $file = basename($file);
                 break;
@@ -197,7 +197,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
                 if (!isset($argv[$i+1])){
                     print_cli_help();
                     echo "No date provided\n";
-                    exit;
+                    return 1;   
                 }
                 $date = $argv[$i+1];
                 $i+=1;
@@ -205,7 +205,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
                 if (count($tmp) != 3){
                     print_cli_help();
                     echo "Date format is YYYY-MM-DD\n";
-                    exit;
+                    return 1;   
                 }
                 $date = array($tmp[0],$tmp[1],$tmp[2]);
                 break;
@@ -218,7 +218,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
             case '--help':
             default:
                 print_cli_help();
-                exit;
+                return 0;   
                 break;
             }
         }
@@ -226,12 +226,12 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
         if (!$all && !$file){
             print_cli_help();
             echo "Must specify model file or use option -a for 'all'\n";
-            exit;
+            return 1;   
         }
         if (empty($start) && empty($date)){
             print_cli_help();
             echo "Either date or Start & end month is required\n";
-            exit;
+            return 1;   
         }
         if (empty($end)){
             $end = array(date('n'),date('Y'));

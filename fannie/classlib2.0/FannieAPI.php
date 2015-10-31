@@ -118,7 +118,7 @@ class FannieAPI
     */
     static public function loadClass($name)
     {
-        $map = $_SESSION['FannieClassMap'];
+        $map = isset($_SESSION['FannieClassMap']) ? $_SESSION['FannieClassMap'] : array();
 
         // class map should be array
         // of class_name => file_name

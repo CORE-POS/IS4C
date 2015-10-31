@@ -55,7 +55,7 @@ $num = count($FANNIE_MEMBER_MODULES);
 if ($num == 0){
     echo "<i>Error: no modules enabled</i><br />";
     echo '<a href="mem.php">Back to Member Settings</a>';
-    exit;
+    return;
 }
 for ($i=1;$i<=$num;$i++){
     echo "#$i: <select name=\"ordering[]\">";

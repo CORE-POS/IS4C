@@ -105,7 +105,7 @@ class FannieAutoComplete extends FannieWebService
                 $prep = $dbc->prepare('
                     SELECT u.brand
                     FROM productUser AS u
-                        ' . DTrans::joinProducts('u', 'p', 'INNER') . '
+                        ' . \DTrans::joinProducts('u', 'p', 'INNER') . '
                     WHERE u.brand LIKE ?
                     GROUP BY u.brand
                     ORDER BY u.brand');

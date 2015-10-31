@@ -109,8 +109,8 @@ function postBilling(){
     }
 
     function get_id_handler(){
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
-        $sql = FannieDB::get($FANNIE_OP_DB);
+        global $FANNIE_TRANS_DB;
+        $sql = FannieDB::getReadOnly($ths->config->get('OP_DB'));
 
         $account = \COREPOS\Fannie\API\member\MemberREST::get($this->id);
         $query = "SELECT n.balance

@@ -108,7 +108,7 @@ $id = (isset($_GET['id']))?$_GET['id']:0;
 
 if (!isset($_REQUEST['windows']) && !isset($_REQUEST['upc'])){
     header("Location: /git/fannie/admin/labels/genLabels.php?layout=WFC%20New&offset={$_REQUEST['offset']}&id=".$_REQUEST['id']);
-    exit;
+    return;
 }
 
 $rows = array();

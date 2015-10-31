@@ -31,14 +31,7 @@ class adminlist extends NoInputCorePage
     function preprocess()
     {
         $me = CoreLocal::get('CashierNo');    
-        $this->security = 0;
-        $db = Database::pDataConnect();
-        $chk = $db->prepare_statement('SELECT frontendsecurity FROM employees WHERE emp_no=?');
-        $res = $db->exec_statement($chk, array($me));
-        if ($db->num_rows($res) > 0){
-            $row = $db->fetch_row($res);
-            $this->security = $row['frontendsecurity'];
-        }
+        $this->security = Authenticate::getPermission($me);
 
         if (isset($_REQUEST['selectlist'])){
             if (!FormLib::validateToken()) {

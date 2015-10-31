@@ -9,7 +9,7 @@ Get barcodes for UPC: <input type=text name=upc />
 <input type=submit value="Generate PDF" />
 </form>
 <?php
-exit;
+return;
 }
 
 define('FPDF_FONTPATH','font/');

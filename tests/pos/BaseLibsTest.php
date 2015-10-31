@@ -36,10 +36,10 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
     public function testDatabase()
     {
         $db = Database::tDataConnect();
-        $this->assertInstanceOf('SQLManager', $db);
+        $this->assertInstanceOf('\\COREPOS\\pos\\lib\\SQLManager', $db);
         $this->assertEquals(CoreLocal::get('tDatabase'), $db->default_db);
         $db = Database::pDataConnect();
-        $this->assertInstanceOf('SQLManager', $db);
+        $this->assertInstanceOf('\\COREPOS\\pos\\lib\\SQLManager', $db);
         $this->assertEquals(CoreLocal::get('pDatabase'), $db->default_db);
 
         $this->assertEquals(1, Database::gettransno(-1)); // not a real emp_no
@@ -127,10 +127,38 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         Database::setglobalvalue('CashierNo',1);
         $pass = Authenticate::checkPassword('9999');
         $this->assertEquals(True, $pass);
+
+        Database::setglobalvalue('LoggedIn',0);
+        Database::setglobalvalue('CashierNo',1);
+        $pass = Authenticate::checkPassword('56');
+        $this->assertEquals(True, $pass);
+
+        Database::setglobalvalue('LoggedIn',0);
+        Database::setglobalvalue('CashierNo',1);
+        $fail = Authenticate::checkPassword('invalid password');
+        $this->assertEquals(false, $fail);
+
+        $this->assertEquals(false, Authenticate::checkPermission('56', 50));
+        $this->assertEquals(false, Authenticate::checkPermission('56', 21));
+        $this->assertEquals(true, Authenticate::checkPermission('56', 20));
+        $this->assertEquals(true, Authenticate::checkPermission('56', 10));
+
+        $this->assertEquals(false, Authenticate::getEmployeeByPassword('asdf'));
+        $this->assertInternalType('array', Authenticate::getEmployeeByPassword('56'));
+        $this->assertEquals(false, Authenticate::getEmployeeByNumber(75));
+        $this->assertInternalType('array', Authenticate::getEmployeeByNumber(56));
+
+        $this->assertEquals(0, Authenticate::getPermission(55));
+        $this->assertEquals(20, Authenticate::getPermission(56));
     }
 
     public function testAutoLoader()
     {
+        // get codepath where session var is not array
+        CoreLocal::set('ClassLookup', false);
+        AutoLoader::loadClass('LocalStorage');
+        $this->assertEquals(true, class_exists('LocalStorage', false));
+
         AutoLoader::loadMap();
         $class_map = CoreLocal::get('ClassLookup');
         $this->assertInternalType('array', $class_map);
@@ -145,7 +173,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'Authenticate',
             'PreParser',
             'Parser',
-            'SQLManager',
             'BasicCorePage',
             'TenderModule',
             'DisplayLib',
@@ -159,7 +186,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'LocalStorage',
             'FooterBox',
             'Plugin',
-            'PrintHandler'
+            'PrintHandler',
         );
 
         foreach($required_classes as $class){
@@ -173,6 +200,36 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         foreach($mods as $m){
             $obj = new $m();
             $this->assertInstanceOf('Parser',$obj);
+        }
+
+        $listable = array(
+            'DiscountType',
+            'FooterBox',
+            'Kicker',
+            'Parser',
+            'PreParser',
+            'PriceMethod',
+            'SpecialUPC',
+            'SpecialDept',
+            'TenderModule',
+            'TenderReport',
+            'DefaultReceiptDataFetch',
+            'DefaultReceiptFilter',
+            'DefaultReceiptSort',
+            'DefaultReceiptTag',
+            'DefaultReceiptSavings',
+            'ReceiptMessage',
+            'CustomerReceiptMessage',
+            'ProductSearch',
+            'DiscountModule',
+            'PrintHandler',
+            'TotalAction',
+            'VariableWeightReWrite',
+            'ItemNotFound',
+        );
+        foreach ($listable as $base_class) {
+            $mods = AutoLoader::listModules($base_class);
+            $this->assertInternalType('array',$mods);
         }
     }
 
@@ -215,6 +272,10 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $str = CoreState::getCustomerPref('asdf');
         $this->assertInternalType('string',$str);
         $this->assertEquals('',$str);
+
+        // non-numeric age converts to zero
+        CoreState::cashierLogin(false, 'z');
+        $this->assertEquals(0, CoreLocal::get('cashierAge'));
     }
 
     public function testDisplayLib()

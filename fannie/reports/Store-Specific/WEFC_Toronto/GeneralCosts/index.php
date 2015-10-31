@@ -161,7 +161,7 @@ if (isset($_REQUEST['submit'])){
     }
     else {
         print "<br />Form variable 'dept' value >{$dept}< is unknown.";
-        exit;
+        return;
     }
 
     // Array in which totals used in the report are accumulated.

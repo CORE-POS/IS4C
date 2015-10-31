@@ -137,11 +137,11 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
                 $pdf->Cell($effective_width, 6, strtoupper($datestr), 0, 1, 'R');
             }
 
-            if ($item['originShortName'] != '' || $item['signMultiplier'] < 0) {
+            if ($item['originShortName'] != '' || isset($item['nonSalePrice'])) {
                 $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - $top - 10));
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $text = ($item['originShortName'] != '') ? $item['originShortName'] : sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
-                $pdf->Cell($effective_width, 20, $text, 0, 1, 'L');
+                $pdf->Cell($effective_width, 6, $text, 0, 1, 'L');
             }
 
             $count++;

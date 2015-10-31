@@ -4,7 +4,7 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class RenderReceiptPage extends FannieRESTfulPage 
+class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage 
 {
     protected $window_dressing = true;
 
@@ -220,7 +220,8 @@ class RenderReceiptPage extends FannieRESTfulPage
     {
         global $FANNIE_TRANS_DB, $FANNIE_COOP_ID;
 
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
         $prep = $dbc->prepare_statement($query); 
         $results = $dbc->exec_statement($prep,$args);
         $number_cols = $dbc->num_fields($results);
@@ -306,7 +307,8 @@ class RenderReceiptPage extends FannieRESTfulPage
     {
         global $FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB;
         $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
 
         $dateInt = str_replace("-","",$date1);
         list($emp,$reg,$trans) = explode("-",$transNum);
@@ -367,13 +369,13 @@ class RenderReceiptPage extends FannieRESTfulPage
 
     private function signatures($tdate, $transNum)
     {
-        global $FANNIE_TRANS_DB;
         if (strstr($tdate, ' ')) {
             list($tdate, $time) = explode(' ', $tdate, 2);
         }
         list($emp,$reg,$trans) = explode('-', $transNum);
 
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
         $lookupQ = 'SELECT capturedSignatureID 
                     FROM CapturedSignature
                     WHERE tdate BETWEEN ? AND ?

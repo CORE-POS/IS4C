@@ -23,7 +23,7 @@
 
 if (!chdir(dirname(__FILE__))){
     echo "Error: Can't find directory (archive prod update)";
-    exit;
+    return;
 }
 
 include('../../config.php');

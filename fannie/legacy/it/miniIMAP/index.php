@@ -12,7 +12,7 @@ if (isset($_REQUEST['logout'])){
     setcookie("minimap-user","",time()-3600);
     setcookie("minimap-session","",time()-3600);
     header("Location: index.php");
-    exit;
+    return;
 }
 if (!isset($_COOKIE["minimap-user"])){
     if (!isset($_REQUEST['login'])){
@@ -41,7 +41,7 @@ if (!isset($_COOKIE["minimap-user"])){
             header("Location: index.php");
         }
     }
-    exit;
+    return;
 }
 
 $user = $_COOKIE["minimap-user"];
@@ -51,7 +51,7 @@ $mb = imap_open($server,$user,$pass);
 if (isset($_REQUEST['attach'])){
     $mb = imap_open($server.$_REQUEST['mbox'],$user,$pass);
     stream_attachment($mb,$_REQUEST['num'],$_REQUEST['sub'],base64_decode($_REQUEST['fname']));
-    exit;
+    return;
 }
 
 $output = "<html><head>
@@ -146,7 +146,7 @@ else if (isset($_REQUEST['mode'])){
         imap_mail_move($mb,$_REQUEST['num'],$trash_folder);
         imap_expunge($mb);
         header("Location: index.php?folder=".$_REQUEST['mbox']);
-        exit;
+        return;
     }
 
     $h = imap_headerinfo($mb,$_REQUEST['num']);

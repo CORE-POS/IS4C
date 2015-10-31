@@ -58,7 +58,7 @@ class InactiveMemSearch extends MemberLookup {
             if (CoreLocal::get('InactiveMemUsage') == 1) {
                 $key = CoreLocal::get('defaultNonMem').'::'.$count;
             } else {
-                $key = $w['CardNo'].'::'.$row['personNum'];
+                $key = $row['CardNo'].'::'.$row['personNum'];
                 $inactives[] = $row['CardNo'];
             }
             $val = $row['CardNo'].'(CSC) '.$row['LastName'].', '.$row['FirstName'];

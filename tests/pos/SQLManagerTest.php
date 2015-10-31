@@ -9,7 +9,7 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
         $sql = Database::pDataConnect();
 
         /* test create connection */
-        $this->assertInstanceOf('SQLManager',$sql);
+        $this->assertInstanceOf('\\COREPOS\\pos\\lib\\SQLManager', $sql);
         $this->assertObjectHasAttribute('connections',$sql);
         $this->assertInternalType('array',$sql->connections);
         $this->assertArrayHasKey(CoreLocal::get('pDatabase'),$sql->connections);

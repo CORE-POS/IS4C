@@ -601,7 +601,7 @@ class InstallUtilities extends LibraryClass
                 ini_set('mssql.connect_timeout',1);
             }
             ob_start();
-            $sql =  @ new SQLManager($host,$type,$db,$user,$pw);
+            $sql =  @ new \COREPOS\pos\lib\SQLManager($host,$type,$db,$user,$pw);
             ob_end_clean();
         } catch(Exception $ex) {}
 
@@ -2852,16 +2852,16 @@ class InstallUtilities extends LibraryClass
         }
 
         $models = array(
-            'DTransactionsModel',
-            'SuspendedModel',
-            'EfsnetRequestModel',
-            'EfsnetRequestModModel',
-            'EfsnetResponseModel',
-            'EfsnetTokensModel',
-            'PaycardTransactionsModel',
-            'CapturedSignatureModel',
+            '\COREPOS\pos\lib\models\trans\DTransactionsModel',
+            '\COREPOS\pos\lib\models\trans\SuspendedModel',
+            '\COREPOS\pos\lib\models\trans\EfsnetRequestModel',
+            '\COREPOS\pos\lib\models\trans\EfsnetRequestModModel',
+            '\COREPOS\pos\lib\models\trans\EfsnetResponseModel',
+            '\COREPOS\pos\lib\models\trans\EfsnetTokensModel',
+            '\COREPOS\pos\lib\models\trans\PaycardTransactionsModel',
+            '\COREPOS\pos\lib\models\trans\CapturedSignatureModel',
             // Views
-            'CcReceiptViewModel',
+            '\COREPOS\pos\lib\models\trans\CcReceiptViewModel',
         );
         foreach ($models as $class) {
             $obj = new $class($db);

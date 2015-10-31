@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class ReprintReceiptPage extends FanniePage 
+class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage 
 {
 
     protected $title = 'Fannie :: Lookup Receipt';
@@ -37,9 +37,15 @@ class ReprintReceiptPage extends FanniePage
 
     private $results = '';
 
-    function preprocess()
+    public function preprocess()
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
+        $this->addRoute('get<date>');
+        return parent::preprocess();
+    }
+
+    function get_date_handler()
+    {
+        global $FANNIE_TRANS_DB;
         if (FormLib::get_form_value('submit', false) !== false) {
             $date = FormLib::get_form_value('date','');
             $date2 = FormLib::get_form_value('date2','');
@@ -68,7 +74,8 @@ class ReprintReceiptPage extends FanniePage
                 }
             }
 
-            $dbc = FannieDB::get($FANNIE_OP_DB);
+            $dbc = $this->connection;
+            $dbc->selectDB($this->config->get('OP_DB'));
             $dlog = $FANNIE_TRANS_DB . $dbc->sep() . "transarchive";
             $query = "SELECT 
                 year(datetime) AS year,
@@ -165,9 +172,9 @@ class ReprintReceiptPage extends FanniePage
             if (!empty($trans_num) && !empty($date)) {
                 header("Location: RenderReceiptPage.php?date=$date&receipt=$trans_num");
                 return false;
-            } else if ($dbc->num_rows($result) == 0) {
+            } elseif ($dbc->num_rows($result) == 0) {
                 $this->results = "<b>No receipts match the given criteria</b>";
-            } else if ($dbc->num_rows($result) == 1){
+            } elseif ($dbc->num_rows($result) == 1){
                 $row = $dbc->fetch_row($result);
                 $year = $row[0];
                 $month = $row[1];
@@ -254,7 +261,7 @@ class ReprintReceiptPage extends FanniePage
         ';
     }
 
-    function body_content()
+    function get_date_view()
     {
         if (!empty($this->results)) {
             $str = filter_input(INPUT_SERVER, 'QUERY_STRING');
@@ -272,10 +279,9 @@ class ReprintReceiptPage extends FanniePage
         }
     }
 
-    function form_content()
+    function get_view()
     {
-        global $FANNIE_OP_DB,$FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
         $depts = "<option value=\"\">Select one...</option>";
         $prep = $dbc->prepare_statement("SELECT dept_no,dept_name from departments order by dept_name");
         $res = $dbc->exec_statement($prep);
@@ -284,7 +290,7 @@ class ReprintReceiptPage extends FanniePage
         }
         ob_start();
         ?>
-<form action=ReprintReceiptPage.php method=get>
+<form action=ReprintReceiptPage.php method="get">
 <div class="container"> 
 <div class="row form-group form-inline">
     <label>Date*</label>

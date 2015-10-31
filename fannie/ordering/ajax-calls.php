@@ -35,9 +35,13 @@
   new SpecialOrders table is used for lookups.
 */
 
-include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include($FANNIE_ROOT.'auth/login.php');
+include(dirname(__FILE__) . '/../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (!function_exists('checkLogin')) {
+    include($FANNIE_ROOT.'auth/login.php');
+}
 
 $dbc = FannieDB::get($FANNIE_OP_DB);
 $TRANS = $FANNIE_TRANS_DB.$dbc->sep();
@@ -48,7 +52,7 @@ if (validateUserQuiet('ordering_edit')) {
 }
 
 if (!isset($_REQUEST['action'])) {
-    exit;
+    return;
 }
 
 $orderID = isset($_REQUEST['orderID'])?(int)$_REQUEST['orderID']:'';
@@ -330,6 +334,13 @@ switch ($_REQUEST['action']) {
             $dbc->exec_statement($p, array($_REQUEST['val'],$timestamp,$orderID));
         }
         echo date("m/d/Y");
+        break;
+    case 'UpdateStore':
+        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $soModel = new SpecialOrdersModel($dbc);
+        $soModel->specialOrderID($orderID);
+        $soModel->storeID($_REQUEST['val']);
+        $soModel->save();
         break;
     case 'saveNoteDept':
         $dbc = FannieDB::get($FANNIE_TRANS_DB);
@@ -1168,16 +1179,24 @@ function getCustomerForm($orderID,$memNum="0")
     }
     $ret .= '</td>';
 
+    $ret .= '<td valign="top">';
     if ($canEdit) {
-        $ret .= '<td valign="top"><b>Status</b>: ';
+        $ret .= '<b>Status</b>: ';
         $ret .= sprintf('<select id="orderStatus" onchange="updateStatus(%d, this.value);">', $orderID);
         foreach($status as $k => $v) {
             $ret .= sprintf('<option %s value="%d">%s</option>',
                         ($k == $order_status ? 'selected' : ''),
                         $k, $v);
         }
-        $ret .= '</select></td>';
+        $ret .= '</select><p />';
     }
+    $ret .= '<b>Store</b>: ';
+    $ret .= sprintf('<select onchange="updateStore(%d, this.value);">', $orderID);
+    $stores = new StoresModel($dbc);
+    $ret .= '<option value="0">Choose...</option>';
+    $ret .= $stores->toOptions($orderModel->storeID());
+    $ret .= '</select>';
+    $ret .= '</td>';
 
     $ret .= '<td align="right" valign="top">';
     $ret .= "<input type=\"submit\" value=\"Done\"

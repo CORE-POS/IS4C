@@ -412,8 +412,14 @@ class OrderViewPage extends FannieRESTfulPage
                             ($k == $order_status ? 'selected' : ''),
                             $k, $v);
             }
-            $ret .= '</select>';
+            $ret .= '</select><p />';
         }
+        $ret .= '<b>Store</b>: ';
+        $ret .= '<select id="orderStore" class="form-control input-sm">';
+        $ret .= '<option value="0">Choose...</option>';
+        $stores = new StoresModel($dbc);
+        $ret .= $stores->toOptions($orderModel->storeID());
+        $ret .= '</select>';
         $ret .= '</div><div class="col-sm-4 text-right">';
 
         $ret .= "<a href=\"\" class=\"btn btn-default btn-sm done-btn\">Done</a>";

@@ -74,7 +74,6 @@ class Signage15UpL extends \COREPOS\Fannie\API\item\FannieSignage
                     $pdf->Rect($left + ($width*$column), $y, $left + ($width*$column) + $effective_width, $pdf->GetY(), 'F');
                     $font_shrink++;
                     if ($font_shrink >= $this->SMALL_FONT) {
-                        var_dump($item['brand']); var_dump($pdf->GetY()-$y);exit;
                         break;
                     }
                     $pdf->SetFontSize($this->SMALL_FONT - $font_shrink);
@@ -154,7 +153,7 @@ class Signage15UpL extends \COREPOS\Fannie\API\item\FannieSignage
                 $pdf->Cell($effective_width, 20, strtoupper($datestr), 0, 1, 'R');
             }
 
-            if ($item['originShortName'] != '' || $item['signMultiplier'] < 0) {
+            if ($item['originShortName'] != '' || isset($item['nonSalePrice'])) {
                 $pdf->SetXY($left + ($width*$column), $top + ($height*$row) + ($height - 33));
                 $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                 $text = ($item['originShortName'] != '') ? $item['originShortName'] : sprintf('Regular Price: $%.2f', $item['nonSalePrice']);

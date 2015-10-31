@@ -71,8 +71,7 @@ class DeleteTenderPage extends FanniePage
     }
     
     function form_content(){
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
         $ret = "<div class=\"well\">Be careful. Deleting a tender could make a mess.
             If you run into problems, re-add the tender using
             the same two-character code.</div>";

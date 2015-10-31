@@ -21,7 +21,7 @@ body {
 <form action=extra_data.php method=post>
 <div class="alert success"><b>
 <?php
-$db = new SQLManager(CoreLocal::get('localhost'),
+$db = new \COREPOS\pos\lib\SQLManager(CoreLocal::get('localhost'),
     CoreLocal::get('DBMS'),
     CoreLocal::get('pDatabase'),
     CoreLocal::get('localUser'),

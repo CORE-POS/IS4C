@@ -45,7 +45,7 @@ class BatchShelfTags extends FanniePage {
     }
 
     function body_content(){
-        global $FANNIE_OP_DB, $FANNIE_URL, $FANNIE_DEFAULT_PDF;
+        global $FANNIE_URL, $FANNIE_DEFAULT_PDF;
         ob_start();
         ?>
         <ul class="nav nav-tabs" role="tablist">
@@ -59,7 +59,7 @@ class BatchShelfTags extends FanniePage {
         //echo "<form action=barcodenew.php method=get>";
         $ret .= "<label>Select batch(es*) to be printed</label>";
         
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
         $fetchQ = $dbc->prepare_statement("select b.batchID,b.batchName
               from batches as b left join
               batchBarcodes as c on b.batchID = c.batchID
@@ -112,6 +112,5 @@ class BatchShelfTags extends FanniePage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

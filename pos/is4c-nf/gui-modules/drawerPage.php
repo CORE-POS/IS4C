@@ -33,17 +33,11 @@ class drawerPage extends NoInputCorePage
     {
         $this->my_drawer = ReceiptLib::currentDrawer();
         $this->available = ReceiptLib::availableDrawers();
-        $this->is_admin = False;
+        $this->is_admin = false;
         $db = Database::pDataConnect();
-        $chk = $db->query('
-            SELECT frontendsecurity 
-            FROM employees 
-            WHERE emp_no=' . ((int)CoreLocal::get('CashierNo'))
-        );
-        if ($db->num_rows($chk) > 0){
-            $w = $db->fetch_row($chk);
-            $sec = $w['frontendsecurity'];
-            if ($sec >= 30) $this->is_admin = True;
+        $sec = Authenticate::getPermission(CoreLocal::get('CashierNo'));
+        if ($sec >= 30) {
+            $this->is_admin = true;
         }
 
         if (isset($_REQUEST['selectlist'])){

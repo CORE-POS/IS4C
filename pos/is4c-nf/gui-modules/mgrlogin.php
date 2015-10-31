@@ -131,22 +131,8 @@ class mgrlogin extends NoInputCorePage
             return $ret;
         }
 
-        $dbc = Database::pDataConnect();
         $priv = sprintf("%d",CoreLocal::get("SecurityCancel"));
-        $args = array($priv, $password, $password);
-        $query = '
-            SELECT emp_no, 
-                FirstName, 
-                LastName 
-            FROM employees 
-            WHERE EmpActive = 1 
-                AND frontendsecurity >= ?
-                AND (CashierPassword = ? OR AdminPassword = ?)';
-        $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, $args);
-        $num_rows = $dbc->num_rows($result);
-
-        if ($num_rows != 0) {
+        if (Authenticate::checkPermission($password, $priv)) {
             $this->cancelorder();
             $ret['cancelOrder'] = true;
             $ret['trans_num'] = ReceiptLib::receiptNumber();

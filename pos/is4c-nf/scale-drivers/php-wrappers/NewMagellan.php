@@ -143,7 +143,7 @@ class NewMagellan extends ScaleDriverWrapper {
             unlink($readdir."/".$fn);
         }
         closedir($dh);
-        $this->WriteToScale('rePoll');
+        //$this->WriteToScale('rePoll');
     }
 
     /* just wraps UDP send because commands 

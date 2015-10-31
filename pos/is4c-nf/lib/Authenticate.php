@@ -137,5 +137,47 @@ static public function checkPassword($password, $activity=1)
     return true;
 }
 
+static public function checkPermission($password, $level)
+{
+    $emp = self::getEmployeeByPassword($password);
+    if ($emp !== false && $emp['frontendsecurity'] >= $level) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static public function getEmployeeByPassword($password)
+{
+    $dbc = Database::pDataConnect();
+    $prep = $dbc->prepare('
+        SELECT *
+        FROM employees
+        WHERE EmpActive=1 
+            AND (CashierPassword=? OR AdminPassword=?)');
+    return $dbc->getRow($prep, array($password, $password));
+}
+
+static public function getEmployeeByNumber($emp_no)
+{
+    $dbc = Database::pDataConnect();
+    $prep = $dbc->prepare('
+        SELECT *
+        FROM employees
+        WHERE EmpActive=1 
+            AND emp_no=?');
+    return $dbc->getRow($prep, array($emp_no));
+}
+
+static public function getPermission($emp_no)
+{
+    $emp = self::getEmployeeByNumber($emp_no);
+    if ($emp !== false) {
+        return $emp['frontendsecurity'];
+    } else {
+        return 0;
+    }
+}
+
 } // end class Authenticate
 

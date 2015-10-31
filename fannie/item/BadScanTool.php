@@ -83,7 +83,6 @@ class BadScanTool extends FannieRESTfulPage
                 WHERE t.trans_type='L' AND t.description='BADSCAN'
                 AND t.upc NOT LIKE '% %'
                 AND t.upc NOT LIKE '00000000000%'
-                AND t.upc LIKE '0%'
                 AND (t.upc NOT LIKE '00000000%' OR p.upc IS NOT NULL OR v.upc IS NOT NULL)";
         if ($this->date_restrict) {
             $query .= ' AND datetime >= ' . date('\'Y-m-d 00:00:00\'', strtotime('-8 days'));

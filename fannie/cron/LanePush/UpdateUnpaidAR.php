@@ -40,7 +40,7 @@ if (!function_exists('cron_msg')) {
 
 if (!chdir(dirname(__FILE__))){
     echo "Error: Can't find directory (lane push)";
-    exit;
+    return;
 }
 
 if (!isset($FANNIE_LANES) || !is_array($FANNIE_LANES)) {
@@ -59,7 +59,7 @@ $fetchQ = "SELECT card_no,recent_payments FROM unpaid_ar_today WHERE mark=1";
 $fetchR = $sql->query($fetchQ);
 if ($fetchR === False) {
     echo cron_msg("Failed: $fetchQ");
-    exit;
+    return;
 }
 while($fetchW = $sql->fetch_row($fetchR))
     $data[$fetchW['card_no']] = $fetchW['recent_payments'];

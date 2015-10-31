@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class SignFromSearch extends FannieRESTfulPage 
+class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage 
 {
 
     protected $title = 'Fannie - Signage';
@@ -296,8 +296,7 @@ class SignFromSearch extends FannieRESTfulPage
 
     public function get_view()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
 
         $batchQ = 'SELECT batchID, 
                     batchName,
@@ -344,5 +343,5 @@ class SignFromSearch extends FannieRESTfulPage
 
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

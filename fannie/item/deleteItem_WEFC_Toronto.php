@@ -49,12 +49,12 @@ include($FANNIE_ROOT.'auth/login.php');
 $name = checkLogin();
 if (!$name){
     header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}item/deleteItem_WEFC_Toronto.php");
-    exit;
+    return;
 }
 $user = validateUserQuiet('delete_items');
 if (!$user){
     echo "Not allowed";
-    exit;
+    return;
 }
 
 include('prodFunction_WEFC_Toronto.php');

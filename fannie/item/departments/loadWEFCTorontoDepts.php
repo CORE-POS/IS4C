@@ -128,7 +128,7 @@ if ( isset($_REQUEST['dept_csv']) && $_REQUEST['dept_csv'] != "" ) {
     $VENDOR_ID = getVendorID(basename($_SERVER['SCRIPT_FILENAME']));
     if ($VENDOR_ID === False){
         echo "Error: no vendor has this load script";
-        exit;
+        return;
     }
     */
     $PRICEFILE_USE_SPLITS = False;

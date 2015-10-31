@@ -415,14 +415,14 @@ descriptions should be DB-legal syntax (e.g., no spaces). A rate of
 <?php
 $rates = array();
 if ($gotDBs == 2) {
-    $sql = new SQLManager(CoreLocal::get('localhost'),
+    $sql = new \COREPOS\pos\lib\SQLManager(CoreLocal::get('localhost'),
             CoreLocal::get('DBMS'),
             CoreLocal::get('tDatabase'),
             CoreLocal::get('localUser'),
             CoreLocal::get('localPass'));
     if (CoreLocal::get('laneno') == 0 && CoreLocal::get('laneno') !== '') {
         // server-side rate table is in op database
-        $sql = new SQLManager(CoreLocal::get('localhost'),
+        $sql = new \COREPOS\pos\lib\SQLManager(CoreLocal::get('localhost'),
                 CoreLocal::get('DBMS'),
                 CoreLocal::get('pDatabase'),
                 CoreLocal::get('localUser'),

@@ -75,8 +75,7 @@ class CreateTagsByManu extends FanniePage {
     }
 
     function body_content(){
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
 
         $qmodel = new ShelfTagQueuesModel($dbc);
         $deptSubList = $qmodel->toOptions();
