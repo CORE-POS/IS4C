@@ -134,8 +134,10 @@ class WicTenderPage extends BasicCorePage
             case 1:
                 return $this->expiresForm();
             case 2:
-                return $this->sigForm();
+                return $this->priceForm();
             case 3:
+                return $this->sigForm();
+            case 4:
                 return $this->amountForm();
         }
     }
@@ -167,6 +169,16 @@ class WicTenderPage extends BasicCorePage
             </span><br />
             <p>
             enter expiration date MMDDYY or [clear] to go back
+            </p>';
+    }
+    
+    private function priceForm()
+    {
+        return '<span class="larger">
+            Expiration Date
+            </span><br />
+            <p>
+            Write Price on Voucher or [clear] to go back
             </p>';
     }
 
