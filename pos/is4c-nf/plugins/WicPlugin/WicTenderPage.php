@@ -175,7 +175,7 @@ class WicTenderPage extends BasicCorePage
     private function priceForm()
     {
         return '<span class="larger">
-            Expiration Date
+            Write Price on WIC Voucher
             </span><br />
             <p>
             Write Price on Voucher or [clear] to go back
