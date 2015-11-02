@@ -66,12 +66,10 @@ class GeneralSalesReport extends FannieReportPage
 
         $superR = $dbc->query('SELECT dept_ID FROM MasterSuperDepts WHERE superID=0');
         $omitDepts = array();
-        $omitVals = '';
         while ($superW = $dbc->fetch_row($superR)) {
             $omitDepts[] = $superW['dept_ID'];
-            $omitVals .= '?,';
         }
-        $omitVals = substr($omitVals, 0, strlen($omitVals)-1);
+        list($omitVals, $omitDepts) = $dbc->safeInClause($omitDepts);
 
         $sales = "SELECT d.Dept_name,sum(t.total),
                 sum(case when unitPrice=0.01 THEN 1 else t.quantity END),
@@ -90,12 +88,12 @@ class GeneralSalesReport extends FannieReportPage
                 sum(t.total),sum(CASE WHEN unitPrice=0.01 then 1 else t.quantity END),
                 CASE WHEN s.superID IS NULL THEN r.superID ELSE s.superID end,
                 CASE WHEN s.super_name IS NULL THEN r.super_name ELSE s.super_name END
-                FROM $dlog AS t LEFT JOIN
-                products AS p ON t.upc=p.upc LEFT JOIN
-                departments AS d ON d.dept_no=t.department LEFT JOIN
-                departments AS e ON p.department=e.dept_no LEFT JOIN
-                MasterSuperDepts AS s ON s.dept_ID=p.department LEFT JOIN
-                MasterSuperDepts AS r ON r.dept_ID=t.department
+                FROM $dlog AS t 
+                    " . DTrans::joinProducts() . " AND p.upc <> '0000000000000'
+                    LEFT JOIN departments AS d ON d.dept_no=t.department 
+                    LEFT JOIN departments AS e ON p.department=e.dept_no 
+                    LEFT JOIN MasterSuperDepts AS s ON s.dept_ID=p.department 
+                    LEFT JOIN MasterSuperDepts AS r ON r.dept_ID=t.department
                 WHERE
                     t.trans_type IN ('I', 'D')
                     AND (s.superID > 0 OR (s.superID IS NULL AND r.superID > 0)
