@@ -50,6 +50,7 @@ class LogTest extends PHPUnit_Framework_TestCase
 
         // test debug w/ stack trace
         unlink($tempfile);
+        $context['verbose'] = true;
         $logger->debug($message, $context);
         $output = file_get_contents($tempfile);
         $lines = explode("\n", $output);

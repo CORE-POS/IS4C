@@ -233,6 +233,9 @@ class BaseLogger
         if (isset($context['logfile'])) {
             $file = $context['logfile'];
         }
+        if (isset($context['verbose'])) {
+            $verbose_debug = true;
+        }
         if ($file) {
             $fptr = fopen($file, 'a');
             fwrite($fptr, $this->rfcLogLine($message, $int_level) . "\n");

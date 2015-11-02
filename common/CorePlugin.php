@@ -87,14 +87,7 @@ class CorePlugin
     public static function memberOf($file, $exclude='plugins')
     {
         $file = realpath($file);
-        $sep = '/';
-        if (strstr($file,'/')) {
-            $sep = '/';
-        } elseif (strstr($file,'\\')) {
-            $sep = '\\';
-        } else {
-            return false;
-        }
+        $sep = DIRECTORY_SEPARATOR;
 
         $dirs = explode($sep, $file);
         for($i=0;$i<count($dirs);$i++) {

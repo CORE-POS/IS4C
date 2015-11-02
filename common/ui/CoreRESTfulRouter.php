@@ -114,10 +114,11 @@ class CoreRESTfulRouter
 
     private function hasParams($params)
     {
+        $form = $this->form;
         return array_reduce(
             $params, 
-            function($carry, $item) {
-                return $carry && isset($this->form->$item);
+            function($carry, $item) use ($form) {
+                return $carry && isset($form->$item);
             },
             true
         );
@@ -163,6 +164,8 @@ class CoreRESTfulRouter
                         $try_routes[count($params)] = array();
                     }
                     $try_routes[count($params)][] = $route;
+                } elseif ($params === false) {
+                    $try_routes[0] = array($route);
                 }
             }
         }

@@ -7,6 +7,8 @@
             <file>tests/common/WhiteSpaceTest.php</file>
         </testsuite>
         <testsuite name="main">
+            <file>tests/common/CommonTest.php</file>
+
             <file>tests/fannie/InstallFannieTest.php</file>
             <file>tests/fannie/ApiLibTest.php</file>
             <file>tests/fannie/FannieSQLManagerTest.php</file>
