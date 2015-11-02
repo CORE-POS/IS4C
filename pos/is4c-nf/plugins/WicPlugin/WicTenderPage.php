@@ -81,6 +81,7 @@ class WicTenderPage extends BasicCorePage
                     }
                     break;
                 case 2:
+                case 3:
                     if ($inp !== '') {
                         $this->box_color="errorColoredArea";
                         $this->errMsg = '[enter] to continue';
@@ -88,7 +89,7 @@ class WicTenderPage extends BasicCorePage
                         $this->step++;
                     }
                     break;
-                case 3:
+                case 4:
                     if (!is_numeric($inp)) {
                         $this->box_color="errorColoredArea";
                         $this->errMsg = 'Invalid amount';
