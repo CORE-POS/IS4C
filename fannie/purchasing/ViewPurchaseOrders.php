@@ -73,13 +73,22 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $model = new PurchaseOrderModel(FannieDB::get($FANNIE_OP_DB));
         $model->orderID($this->id);
         $model->placed($this->setPlaced);
-        if ($this->setPlaced == 1)
+        if ($this->setPlaced == 1) {
             $model->placedDate(date('Y-m-d H:m:s'));
-        else
-            $model->placedDate(null);
+        } else {
+            $model->placedDate(0);
+        }
         $model->save();
+
+        $poi = new PurchaseOrderItemsModel($this->connection);
+        $poi->orderID($this->id);
+        $cache = new InventoryCacheModel($this->connection);
+        foreach ($poi->find() as $item) {
+            $cache->recalculateOrdered($item->internalUPC(), 1);
+        }
         echo ($this->setPlaced == 1) ? $model->placedDate() : 'n/a';
-        return False;
+
+        return false;
     }
 
     function get_pending_handler(){
@@ -288,14 +297,17 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $ret .= '</div><div class="col-sm-6">';
         if (!$order->placed()) {
             $ret .= '<button class="btn btn-default"
-                onclick="location=\'EditOnePurchaseOrder.php?id=' . $order->vendorID() . '\'; return false;">Add Items</button>';
+                onclick="location=\'EditOnePurchaseOrder.php?id=' . $this->id . '\'; return false;">Add Items</button>';
+            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+            $ret .= '<a class="btn btn-default collapse" id="receiveBtn"
+                href="ViewPurchaseOrders.php?id=' . $this->id . '&receive=1">Receive Order</a>';
             $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
             $ret .= '<button class="btn btn-default" onclick="deleteOrder(' . $this->id . '); return false;">Delete Order</button>';
         } else {
             $ret .= '<a class="btn btn-default"
                 href="ManualPurchaseOrderPage.php?id=' . $order->vendorID() . '&adjust=' . $this->id . '">Edit Order</a>';
             $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<a class="btn btn-default"
+            $ret .= '<a class="btn btn-default id="receiveBtn"
                 href="ViewPurchaseOrders.php?id=' . $this->id . '&receive=1">Receive Order</a>';
             $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
             $ret .= '<a class="btn btn-default"
@@ -318,7 +330,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
             <th>Rec. Qty</th><th>Rec. Cost</th></tr></thead><tbody>';
         foreach($model->find() as $obj){
             $css = '';
-            if ($obj->receivedQty() == 0 && $obj->quantity() != 0) {
+            if ($order->placed() == 0) {
+            } elseif ($obj->receivedQty() == 0 && $obj->quantity() != 0) {
                 $css = 'class="danger"';
             } elseif ($obj->receivedQty() < $obj->quantity()) {
                 $css = 'class="warning"';
@@ -348,7 +361,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
                     $obj->unitSize(), $obj->caseSize(),
                     $obj->quantity(),
                     ($obj->quantity() * $obj->caseSize() * $obj->unitCost()),
-                    date('Y-m-d', strtotime($obj->receivedDate())),
+                    strtotime($obj->receivedDate()) ? date('Y-m-d', strtotime($obj->receivedDate())) : 'n/a',
                     $obj->receivedQty(),
                     $obj->receivedTotalCost()
             );

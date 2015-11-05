@@ -41,6 +41,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
         $this->__routes[] = 'get<id><search>';
         $this->__routes[] = 'get<id><sku><qty>';
         $this->__routes[] = 'get<id><sku><index>';
+        $this->__routes[] = 'get<vendorID>';
         return parent::preprocess();
     }
 
@@ -48,7 +49,8 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
       AJAX call: ?id=<vendor ID>&search=<search string>
       Find vendor items based on search string
     */
-    function get_id_search_handler(){
+    function get_id_search_handler()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $ret = array(); 
@@ -66,12 +68,13 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
             'unitSize' => $w['size'],   
             'caseSize' => $w['units'],
             'unitCost' => sprintf('%.2f',$w['cost']),
-            'caseCost' => sprintf('%.2f',$w['cost']*$w['units'])
+            'caseCost' => sprintf('%.2f',$w['cost']*$w['units']),
+            'cases' => 1,
             );
             $ret[] = $result;
         }
         if (count($ret) > 0){
-            echo json_encode($ret);
+            $this->mergeSearchResult($ret);
             return false;
         }
 
@@ -87,12 +90,13 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
             'unitSize' => $w['size'],   
             'caseSize' => $w['units'],
             'unitCost' => sprintf('%.2f',$w['cost']),
-            'caseCost' => sprintf('%.2f',$w['cost']*$w['units'])
+            'caseCost' => sprintf('%.2f',$w['cost']*$w['units']),
+            'cases' => 1,
             );
             $ret[] = $result;
         }
         if (count($ret) > 0){
-            echo json_encode($ret);
+            $this->mergeSearchResult($ret);
             return False;
         }
 
@@ -111,12 +115,13 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
             'unitSize' => $w['size'],   
             'caseSize' => $w['units'],
             'unitCost' => sprintf('%.2f',$w['cost']),
-            'caseCost' => sprintf('%.2f',$w['cost']*$w['units'])
+            'caseCost' => sprintf('%.2f',$w['cost']*$w['units']),
+            'cases' => 1,
             );
             $ret[] = $result;
         }
         if (count($ret) > 0){
-            echo json_encode($ret);
+            $this->mergeSearchResult($ret);
             return False;
         }
 
@@ -124,17 +129,26 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
         return False;
     }
 
+    private function mergeSearchResult($ret)
+    {
+
+    }
+
     /**
-      AJAX call: ?id=<vendor ID>&sku=<vendor SKU>&qty=<# of cases>
+      AJAX call: ?id=<order ID>&sku=<vendor SKU>&qty=<# of cases>
       Add the given SKU & qty to the order
     */
-    function get_id_sku_qty_handler(){
+    function get_id_sku_qty_handler()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $orderID = $this->getOrderID($this->id, FannieAuth::getUID($this->current_user));
+        $orderID = $this->id;
+        $order = new PurchaseOrderModel($dbc);
+        $order->orderID($orderID);
+        $order->load();
 
         $vitem = new VendorItemsModel($dbc);
-        $vitem->vendorID($this->id);
+        $vitem->vendorID($order->vendorID());
         $vitem->sku($this->sku);
         $vitem->load();
 
@@ -179,14 +193,13 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $orderID = $this->getOrderID($this->id, FannieAuth::getUID($this->current_user));
 
         $ret = array(
             'qty' => 0,
             'index' => $this->index,
         );
         $item = new PurchaseOrderItemsModel($dbc);
-        $item->orderID($orderID);
+        $item->orderID($this->id);
         $item->sku($this->sku);
         if ($item->load()) {
             $ret['qty'] = $item->quantity();
@@ -201,13 +214,18 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
       Main page. Vendor is selected. Find/create order
       based on vendorID & userID
     */
-    function get_id_view(){
+    function get_id_view()
+    {
         global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
         $vendorID = $this->id;
         $userID = FannieAuth::getUID($this->current_user);
-        $orderID = $this->getOrderID($vendorID, $userID);
+        $orderID = $this->id;
+        $order = new PurchaseOrderModel($dbc);
+        $order->orderID($orderID);
+        $order->load();
+        $vendorID = $order->vendorID();
 
-        $dbc = FannieDB::get($FANNIE_OP_DB);
         $q = 'SELECT vendorName, 
             sum(case when i.orderID is null then 0 else 1 END) as rows, 
             MAX(creationDate) as date,
@@ -247,7 +265,8 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
         $ret .= '</div>';
         $ret .= '<p><div id="SearchResults"></div></p>';
 
-        $ret .= sprintf('<input type="hidden" id="id" value="%d" />',$this->id);
+        $ret .= sprintf('<input type="hidden" id="vendor-id" value="%d" />',$vendorID);
+        $ret .= sprintf('<input type="hidden" id="order-id" value="%d" />',$orderID);
 
         $this->add_onload_command("\$('#searchField').focus();\n");
         $this->add_script('js/editone.js');
@@ -255,10 +274,19 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
         return $ret;
     }
 
+    protected function get_vendorID_handler()
+    {
+        $userID = FannieAuth::getUID($this->current_user);
+        $orderID = $this->getOrderID($this->vendorID, $userID);
+
+        return filter_input(INPUT_SERVER, 'PHP_SELF') . '?id=' . $orderID;
+    }
+
     /**
       Utility: find orderID from vendorID and userID
     */
-    private function getOrderID($vendorID, $userID){
+    private function getOrderID($vendorID, $userID)
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $orderQ = 'SELECT orderID FROM PurchaseOrder WHERE
@@ -269,8 +297,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
         if ($dbc->num_rows($orderR) > 0){
             $row = $dbc->fetch_row($orderR);
             return $row['orderID'];
-        }
-        else {
+        } else {
             $insQ = 'INSERT INTO PurchaseOrder (vendorID, creationDate,
                 placed, userID) VALUES (?, '.$dbc->now().', 0, ?)';
             $insP = $dbc->prepare_statement($insQ);
@@ -282,7 +309,8 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
     /**
       First page. Show vendor list.
     */
-    function get_view(){
+    function get_view()
+    {
         global $FANNIE_OP_DB;
         $model = new VendorsModel(FannieDB::get($FANNIE_OP_DB));
         $ret = '';
@@ -316,4 +344,3 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 
 FannieDispatch::conditionalExec();
 
-?>

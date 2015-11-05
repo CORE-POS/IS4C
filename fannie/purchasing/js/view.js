@@ -32,10 +32,14 @@ function fetchPage(pager) {
 
 function togglePlaced(orderID){
 	var dataStr = 'id='+orderID+'&setPlaced=';
-	if ($('#placedCheckbox').prop('checked'))
+    console.log($('#receiveBtn').length);
+	if ($('#placedCheckbox').prop('checked')) {
 		dataStr += '1';
-	else
+        $('#receiveBtn').show();
+	} else {
 		dataStr += '0';
+        $('#receiveBtn').hide();
+    }
 
 	$.ajax({
 		url: 'ViewPurchaseOrders.php?',

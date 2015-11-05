@@ -1,7 +1,7 @@
 function itemSearch(){
 	if ($('#searchField').val()=='') return false;
 
-	var dstr = 'id='+$('#id').val();
+	var dstr = 'id='+$('#vendor-id').val();
 	dstr += '&search='+$('#searchField').val();
 	$('#searchField').val('');
 
@@ -32,7 +32,7 @@ function markInCurrentOrder(data)
 	for(var i=0; i<data.length;i++){
         $.ajax({
             url: 'EditOnePurchaseOrder.php',
-            data: 'id='+$('#id').val()+'&sku='+data[i].sku+'&index='+i,
+            data: 'id='+$('#order-id').val()+'&sku='+data[i].sku+'&index='+i,
             dataType: 'json',
             success: function(result) {
                 if (result.qty != 0) {
@@ -89,7 +89,7 @@ function oneResultForm(obj, resultNum){
 }
 
 function saveItem(resultNum){
-	var dstr = 'id='+$('#id').val();
+	var dstr = 'id='+$('#order-id').val();
 	dstr += '&sku='+$('#srSKU'+resultNum).html();
 	dstr += '&qty='+$('#srQty'+resultNum).val();
     saveQty = $('#srQty'+resultNum).val();
