@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2010 Whole Foods Co-op.
+    Copyright 2015 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,9 +21,20 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','Off');
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-echo DisplayLib::printfooter();
+class AjaxScale extends AjaxCallback
+{
+    protected $encoding = 'plain';
 
-?>
+    public function ajax($input=array())
+    {
+        $input = isset($_REQUEST['input'])?$_REQUEST['input']:'';
+        $display = DisplayLib::scaledisplaymsg($input);
+
+        return is_array($display) ? $display['display'] : $display;
+    }
+}
+
+AjaxScale::run();
+

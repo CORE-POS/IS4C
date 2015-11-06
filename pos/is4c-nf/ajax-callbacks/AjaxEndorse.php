@@ -23,22 +23,47 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-/**
-  @class AjaxCabReceipt
-*/
-class AjaxCabReceipt extends AjaxCallback
+class AjaxEndorse extends AjaxCallback
 {
     protected $encoding = 'plain';
 
     public function ajax($input=array())
     {
-        CoreLocal::set("cabReference",$_REQUEST['input']);
-        $receipt = ReceiptLib::printReceipt('cab', CoreLocal::get('cabReference'));
-        ReceiptLib::writeLine($receipt);
+        $endorseType = isset($_REQUEST['type']) ? $_REQUEST['type'] : '';
+        $amount = isset($_REQUEST['amount']) ? $_REQUEST['amount'] : '';
+        if (strlen($endorseType) > 0) {
+
+            // close session so if printer hangs
+            // this script won't lock the session file
+            if (session_id() != '')
+                session_write_close();
+
+            switch ($endorseType) {
+
+                case "check":
+                    ReceiptLib::frank($amount);
+                    break;
+
+                case "giftcert":
+                    ReceiptLib::frankgiftcert($amount);
+                    break;
+
+                case "stock":
+                    ReceiptLib::frankstock($amount);
+                    break;
+
+                case "classreg":
+                    ReceiptLib::frankclassreg();
+                    break;
+
+                default:
+                    break;
+            }
+        }
 
         return 'Done';
     }
 }
 
-AjaxCabReceipt::run();
+AjaxEndorse::run();
 

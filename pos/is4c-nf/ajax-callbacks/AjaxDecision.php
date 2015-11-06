@@ -32,7 +32,7 @@ class AjaxDecision extends AjaxCallback
 {
     protected $encoding = 'json';
 
-    protected function ajax()
+    public function ajax($input=array())
     {
         $decision = strtoupper(FormLib::get('input', 'CL'));
 
@@ -42,12 +42,6 @@ class AjaxDecision extends AjaxCallback
             'cleared'=>false,
         );
 
-        $repeat_cmd = CoreLocal::get('strEntered');
-        $requested_cmd = FormLib::get('cmd');
-        if (!empty($requested_cmd)) {
-            $repeat_cmd = $requested_cmd;
-        }
-
         if ($decision == "CL") {
             CoreLocal::set("msgrepeat",0);
             CoreLocal::set("lastRepeat",'');
@@ -55,13 +49,6 @@ class AjaxDecision extends AjaxCallback
             CoreLocal::set("togglefoodstamp",0);
             CoreLocal::set("RepeatAgain", false);
             $ret['cleared'] = true;
-        } elseif (strlen($decision) > 0) {
-
-            CoreLocal::set("msgrepeat",1);
-            CoreLocal::set("strRemembered", $repeat_cmd);
-        } else {
-            CoreLocal::set("msgrepeat",1);
-            CoreLocal::set("strRemembered", $repeat_cmd);
         }
 
         return $ret;

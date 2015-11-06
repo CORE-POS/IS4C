@@ -35,7 +35,7 @@ class cablist extends NoInputCorePage
             var ref = $('#selectlist').val();
             if (ref != ""){
                 $.ajax({
-                    url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-cabreceipt.php',
+                    url: '<?php echo $this->page_url; ?>ajax-callbacks/AjaxCabReceipt.php',
                     type: 'get',
                     cache: false,
                     data: 'input='+ref,

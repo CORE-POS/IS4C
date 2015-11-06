@@ -91,7 +91,7 @@ function dataCallback(data)
             runParser(encodeURI(data), SCALE_REL_PRE);
         }
     } else if (/^S1\d+$/.test(data)) {
-        $.ajax({url: SCALE_REL_PRE+'ajax-callbacks/ajax-scale.php',
+        $.ajax({url: SCALE_REL_PRE+'ajax-callbacks/AjaxScale.php',
             type: 'post',
             cache: false,
             success: function(resp) {

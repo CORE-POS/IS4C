@@ -3,7 +3,7 @@ var CORE_JS_PREFIX = "";
 function runParser(input_str,rel_prefix){
 	CORE_JS_PREFIX = rel_prefix;
 	$.ajax({
-		url: CORE_JS_PREFIX+'ajax-callbacks/ajax-parser.php',
+		url: CORE_JS_PREFIX+'ajax-callbacks/AjaxParser.php',
 		type: 'GET',
 		data: "input="+input_str,
 		dataType: "json",

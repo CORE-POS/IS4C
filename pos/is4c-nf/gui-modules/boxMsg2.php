@@ -34,7 +34,7 @@ class boxMsg2 extends BasicCorePage
             var endorseAmt = $('#endorseAmt').val();
             var cmd = $('#repeat-cmd').val();
             $.ajax({
-                url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-decision.php',
+                url: '<?php echo $this->page_url; ?>ajax-callbacks/AjaxDecision.php',
                 type: 'get',
                 data: 'input='+str,
                 dataType: 'json',
@@ -42,7 +42,7 @@ class boxMsg2 extends BasicCorePage
                 success: function(data){
                     if (!data.cleared && endorseType != ''){
                         $.ajax({
-                            url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-endorse.php',
+                            url: '<?php echo $this->page_url; ?>ajax-callbacks/AjaxEndorse.php',
                             type: 'get',
                             data: 'type='+endorseType+'&amount='+endorseAmt,
                             cache: false,

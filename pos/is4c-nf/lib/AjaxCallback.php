@@ -33,7 +33,7 @@ class AjaxCallback
         return $this->encoding;
     }
 
-    protected function ajax()
+    public function ajax($input=array())
     {
 
     }

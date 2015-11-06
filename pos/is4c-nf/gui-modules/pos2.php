@@ -27,12 +27,30 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class pos2 extends BasicCorePage 
 {
-    var $display;
+    private $display;
 
     function preprocess()
     {
         $this->display = "";
 
+        $ajax = new AjaxParser();
+        $ajax->enablePageDrawing(false);
+        $json = $ajax->ajax();
+        $redirect = $this->doRedirect($json);
+        if ($redirect !== false) {
+            $this->change_page($redirect);
+            return false;
+        }
+        $this->setOutput($json);
+        $this->registerRetry($json);
+        $this->registerPrintJob($json);
+        if (CoreLocal::get('CustomerDisplay') === true) {
+            $this->loadCustomerDisplay();
+        }
+
+        return true;
+
+        /*
         $sd = MiscLib::scaleObject();
 
         $entered = "";
@@ -44,11 +62,14 @@ class pos2 extends BasicCorePage
 
         if ($entered == "RI") $entered = CoreLocal::get("strEntered");
 
+        $repeated = false;
         if (CoreLocal::get("msgrepeat") == 1 && $entered != "CL") {
             $entered = CoreLocal::get("strRemembered");
             CoreLocal::set('strRemembered', '');
+            $repeated = true;
         } elseif (isset($_REQUEST['repeat'])) {
             CoreLocal::set('msgrepeat', 1);
+            $repeated = true;
         }
         CoreLocal::set("strEntered",$entered);
 
@@ -56,11 +77,8 @@ class pos2 extends BasicCorePage
         if ($entered != ""){
 
             if (in_array("Paycards",CoreLocal::get("PluginList"))){
-                /* this breaks the model a bit, but I'm putting
-                 * putting the CC parser first manually to minimize
-                 * code that potentially handles the PAN */
                 if(CoreLocal::get("PaycardsCashierFacing")=="1" && substr($entered,0,9) == "PANCACHE:"){
-                    /* cashier-facing device behavior; run card immediately */
+                    // cashier-facing device behavior; run card immediately 
                     $entered = substr($entered,9);
                     CoreLocal::set("CachePanEncBlock",$entered);
                 }
@@ -77,12 +95,6 @@ class pos2 extends BasicCorePage
                 CoreLocal::set("multiple",0);
             }
 
-            /* FIRST PARSE CHAIN:
-             * Objects belong in the first parse chain if they
-             * modify the entered string, but do not process it
-             * This chain should be used for checking prefixes/suffixes
-             * to set up appropriate session variables.
-             */
             $parser_lib_path = $this->page_url."parser-class-lib/";
             if (!is_array(CoreLocal::get("preparse_chain")))
                 CoreLocal::set("preparse_chain",PreParser::get_preparse_chain());
@@ -97,12 +109,6 @@ class pos2 extends BasicCorePage
             }
 
             if ($entered != "" && $entered != "PAYCARD"){
-                /* 
-                 * SECOND PARSE CHAIN
-                 * these parser objects should process any input
-                 * completely. The return value of parse() determines
-                 * whether to call lastpage() [list the items on screen]
-                 */
                 if (!is_array(CoreLocal::get("parse_chain")))
                     CoreLocal::set("parse_chain",Parser::get_parse_chain());
 
@@ -111,7 +117,7 @@ class pos2 extends BasicCorePage
                     if (!class_exists($cn)) continue;
                     $p = new $cn();
                     if ($p->check($entered)){
-                        $result = $p->parse($entered);
+                        $result = $p->parse($entered, $repeat);
                         break;
                     }
                 }
@@ -171,6 +177,47 @@ class pos2 extends BasicCorePage
         }
 
         return true;
+        */
+    }
+
+    private function doRedirect($json)
+    {
+        if (isset($json['main_frame']) && $json['main_frame'] != false) {
+            return $json['main_frame'];
+        } else {
+            return false;
+        }
+    }
+
+    private function setOutput($json)
+    {
+        if (isset($json['output']) && !empty($json['output'])) {
+            $this->display = $json['output'];
+        }
+    }
+
+    private function registerRetry($json)
+    {
+        if (isset($json['retry']) && $json['retry'] != false) {
+            $this->add_onload_command("setTimeout(\"inputRetry('".$json['retry']."');\", 150);\n");
+        }
+    }
+
+    private function registerPrintJob($json)
+    {
+        if (isset($json['receipt']) && $json['receipt'] != false) {
+            $ref = isset($json['trans_num']) ? $json['trans_num'] : ReceiptLib::mostRecentReceipt();
+            $this->add_onload_command("receiptFetch('" . $json['receipt'] . "', '" . $ref . "');\n");
+        }
+    }
+
+    private function loadCustomerDisplay()
+    {
+        if (CoreLocal::get('CustomerDisplay') === true) {
+            $child_url = MiscLib::baseURL() . 'gui-modules/posCustDisplay.php';
+            $this->add_onload_command("setCustomerURL('{$child_url}');\n");
+            $this->add_onload_command("reloadCustomerDisplay();\n");
+        }
     }
 
     function head_content()
