@@ -22,13 +22,20 @@
 *********************************************************************************/
 
 ini_set('display_errors','Off');
+$entered = "";
+if (isset($_REQUEST["input"])) {
+    $entered = strtoupper(trim($_REQUEST["input"]));
+}
+header('Location: AjaxParser.php?input=' . $entered);
+
+/*
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $sd = MiscLib::scaleObject();
 
-/*
- * MAIN PARSING BEGINS
- */
+//
+// MAIN PARSING BEGINS
+//
 $entered = "";
 if (isset($_REQUEST["input"])) {
     $entered = strtoupper(trim($_REQUEST["input"]));
@@ -46,15 +53,12 @@ CoreLocal::set("strEntered",$entered);
 $json = "";
 
 if ($entered != ""){
-    /* this breaks the model a bit, but I'm putting
-     * putting the CC parser first manually to minimize
-     * code that potentially handles the PAN */
+    // this breaks the model a bit, but I'm putting
+    // putting the CC parser first manually to minimize
+    // code that potentially handles the PAN 
     if (in_array("Paycards",CoreLocal::get("PluginList"))){
-        /* this breaks the model a bit, but I'm putting
-         * putting the CC parser first manually to minimize
-         * code that potentially handles the PAN */
         if(CoreLocal::get("PaycardsCashierFacing")=="1" && substr($entered,0,9) == "PANCACHE:"){
-            /* cashier-facing device behavior; run card immediately */
+            // cashier-facing device behavior; run card immediately 
             $entered = substr($entered,9);
             CoreLocal::set("CachePanEncBlock",$entered);
         }
@@ -71,12 +75,11 @@ if ($entered != ""){
     CoreLocal::set("quantity",0);
     CoreLocal::set("multiple",0);
 
-    /* FIRST PARSE CHAIN:
-     * Objects belong in the first parse chain if they
-     * modify the entered string, but do not process it
-     * This chain should be used for checking prefixes/suffixes
-     * to set up appropriate session variables.
-     */
+    // FIRST PARSE CHAIN:
+    // Objects belong in the first parse chain if they
+    // modify the entered string, but do not process it
+    // This chain should be used for checking prefixes/suffixes
+    // to set up appropriate session variables.
     $parser_lib_path = MiscLib::base_url()."parser-class-lib/";
     if (!is_array(CoreLocal::get("preparse_chain")))
         CoreLocal::set("preparse_chain",PreParser::get_preparse_chain());
@@ -91,12 +94,10 @@ if ($entered != ""){
     }
 
     if ($entered != "" && $entered != "PAYCARD"){
-        /* 
-         * SECOND PARSE CHAIN
-         * these parser objects should process any input
-         * completely. The return value of parse() determines
-         * whether to call lastpage() [list the items on screen]
-         */
+        // SECOND PARSE CHAIN
+        // these parser objects should process any input
+        // completely. The return value of parse() determines
+        // whether to call lastpage() [list the items on screen]
         if (!is_array(CoreLocal::get("parse_chain")))
             CoreLocal::set("parse_chain",Parser::get_parse_chain());
 
@@ -160,5 +161,5 @@ else {
     }
     echo JsonLib::array_to_json($json);
 }
+*/
 
-?>

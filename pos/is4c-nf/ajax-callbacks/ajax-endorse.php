@@ -22,39 +22,8 @@
 *********************************************************************************/
 
 ini_set('display_errors','Off');
-include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $endorseType = isset($_REQUEST['type']) ? $_REQUEST['type'] : '';
 $amount = isset($_REQUEST['amount']) ? $_REQUEST['amount'] : '';
+header('Location: AjaxEndorse.php?type=' . $type . '&amount=' . $amount);
 
-if (strlen($endorseType) > 0) {
-
-    // close session so if printer hangs
-    // this script won't lock the session file
-    if (session_id() != '')
-        session_write_close();
-
-    switch ($endorseType) {
-
-        case "check":
-            ReceiptLib::frank($amount);
-            break;
-
-        case "giftcert":
-            ReceiptLib::frankgiftcert($amount);
-            break;
-
-        case "stock":
-            ReceiptLib::frankstock($amount);
-            break;
-
-        case "classreg":
-            ReceiptLib::frankclassreg();
-            break;
-
-        default:
-            break;
-    }
-}
-echo "Done";
-?>

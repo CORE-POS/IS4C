@@ -22,21 +22,6 @@
 *********************************************************************************/
 
 ini_set('display_errors','Off');
-include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
-
-$decision = isset($_REQUEST['input'])?strtoupper(trim($_REQUEST["input"])):'CL';
-
-$ret = array('dest_page'=>MiscLib::base_url().'gui-modules/pos2.php',
-        'endorse'=>false, 'cleared'=>false);
-
-if ($decision == "CL") {
-    CoreLocal::set("msgrepeat",0);
-    CoreLocal::set("lastRepeat",'');
-    CoreLocal::set("toggletax",0);
-    CoreLocal::set("togglefoodstamp",0);
-    CoreLocal::set("RepeatAgain", false);
-    $ret['cleared'] = true;
-}
-
-echo JsonLib::array_to_json($ret);
+$decision = isset($_REQUEST['input'])?strtoupper(trim($_REQUEST["input"])):'';
+header('Location: AjaxDecision.php?input=' . $decision);
 

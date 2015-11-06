@@ -35,7 +35,7 @@ class pos2 extends BasicCorePage
 
         $ajax = new AjaxParser();
         $ajax->enablePageDrawing(false);
-        $json = $ajax->ajax();
+        $json = $ajax->ajax(array('field'=>'reginput'));
         $redirect = $this->doRedirect($json);
         if ($redirect !== false) {
             $this->change_page($redirect);
