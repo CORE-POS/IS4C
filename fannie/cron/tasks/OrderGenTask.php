@@ -36,17 +36,37 @@ class OrderGenTask extends FannieTask
         'weekday' => '*',
     );
 
+    private $silent = false;
+    public function setSilent($s)
+    {
+        $this->silent = $s;
+    }
+
+    private $vendors = array();
+    public function setVendors($v)
+    {
+        $this->vendors = $v;
+    }
+
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $curP = $dbc->prepare('SELECT onHand FROM InventoryCache WHERE upc=? AND storeID=? AND baseCount > 0');
+        $curP = $dbc->prepare('SELECT onHand,cacheEnd FROM InventoryCache WHERE upc=? AND storeID=? AND baseCount > 0');
         $catalogP = $dbc->prepare('SELECT * FROM vendorItems WHERE upc=? AND vendorID=?');
         $costP = $dbc->prepare('SELECT cost FROM products WHERE upc=? AND store_id=?');
+        $dtP = $dbc->prepare('
+            SELECT ' . DTrans::sumQuantity() . '
+            FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'dlog
+            WHERE tdate > ?
+                AND upc=?
+                AND store_id=?
+                AND trans_status <> \'R\'');
         /**
           Look up all items that have a count and
           compare current [estimated] inventory to
           the par value
         */
+        list($inStr, $args) = $dbc->safeInClause($this->vendors);
         $prep = $dbc->prepare('
             SELECT i.upc,
                 i.storeID,
@@ -55,11 +75,17 @@ class OrderGenTask extends FannieTask
             FROM InventoryCounts AS i
                 INNER JOIN products AS p ON i.upc=p.upc AND i.storeID=p.store_id
             WHERE i.mostRecent=1
+                AND p.default_vendor_id IN (' . $inStr . ')
             ORDER BY p.default_vendor_id, i.upc, i.storeID, i.countDate DESC');
-        $res = $dbc->execute($prep);
+        $res = $dbc->execute($prep, $args);
         $orders = array();
         while ($row = $dbc->fetchRow($res)) {
-            $cur = $dbc->getValue($curP, array($row['upc'],$row['storeID']));
+            $cache = $dbc->getRow($curP, array($row['upc'],$row['storeID']));
+            if ($cache === false) {
+                continue;
+            }
+            $sales = $dbc->getValue($dtP, array($cache['cacheEnd'], $row['upc'], $row['storeID']));
+            $cur = $sales ? $cache['onHand'] - $sales : $cache['onHand'];
             if ($cur !== false && $cur < $row['par']) {
                 /**
                   Allocate a purchase order to hold this vendors'
@@ -104,29 +130,31 @@ class OrderGenTask extends FannieTask
             }
         }
 
-        /**
-          Fire off email notifications
-        */
-        $deptP = $dbc->prepare('
-            SELECT e.emailAddress
-            FROM PurchaseOrderItems AS i
-                INNER JOIN products AS p ON p.upc=i.upc
-                INNER JOIN superdepts AS s ON p.department=s.dept_ID
-                INNER JOIN superDeptEmails AS e ON s.superID=e.superID
-            WHERE orderID=?
-            GROUP BY e.emailAddress');
-        foreach ($orders as $oid) {
-            $sendTo = array();
-            $deptR = $dbc->execute($deptP, array($oid));
-            while ($deptW = $dbc->fetchRow($deptR)) {
-                $sendTo[] = $deptW['emailAddress'];
-            }
-            $sendTo = 'andy@wholefoods.coop';
-            if (count($sendTo) > 0) {
-                $msg_body = 'Created new order' . "\n";
-                $msg_body .= "http://" . 'key' . '/' . $this->config->get('URL')
-                    . 'purchasing/ViewPurchaseOrders.php?id=' . $oid . "\n";
-                mail($sendTo, 'Generated Purchase Order', $msg_body);
+        if (!$this->silent) {
+            /**
+              Fire off email notifications
+            */
+            $deptP = $dbc->prepare('
+                SELECT e.emailAddress
+                FROM PurchaseOrderItems AS i
+                    INNER JOIN products AS p ON p.upc=i.internalUPC
+                    INNER JOIN superdepts AS s ON p.department=s.dept_ID
+                    INNER JOIN superDeptEmails AS e ON s.superID=e.superID
+                WHERE orderID=?
+                GROUP BY e.emailAddress');
+            foreach ($orders as $oid) {
+                $sendTo = array();
+                $deptR = $dbc->execute($deptP, array($oid));
+                while ($deptW = $dbc->fetchRow($deptR)) {
+                    $sendTo[] = $deptW['emailAddress'];
+                }
+                $sendTo = 'andy@wholefoods.coop';
+                if (count($sendTo) > 0) {
+                    $msg_body = 'Created new order' . "\n";
+                    $msg_body .= "http://" . 'key' . '/' . $this->config->get('URL')
+                        . 'purchasing/ViewPurchaseOrders.php?id=' . $oid . "\n";
+                    mail($sendTo, 'Generated Purchase Order', $msg_body);
+                }
             }
         }
     }

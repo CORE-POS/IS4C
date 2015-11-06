@@ -38,15 +38,54 @@ class PurchasingIndexPage extends FannieRESTfulPage {
 
     function put_handler()
     {
-        if (!class_exists('OrderGenTask')) {
-            include(dirname(__FILE__) . '/../cron/tasks/OrderGenTask.php');
-        }
-        $task = new OrderGenTask();
-        $task->setConfig($this->config);
-        $task->setLogger($this->logger);
-        $task->run();
+        try {
+            $vendors = $this->form->vendors;
+            if (count($vendors) == 0) {
+                throw new Exception('At least one vendor required');
+            }
+            if (!class_exists('OrderGenTask')) {
+                include(dirname(__FILE__) . '/../cron/tasks/OrderGenTask.php');
+            }
+            $task = new OrderGenTask();
+            $task->setConfig($this->config);
+            $task->setLogger($this->logger);
+            $task->setSilent(true);
+            $task->setVendors($vendors);
+            $task->run();
 
-        return 'ViewPurchaseOrders.php?init=pending';
+            return 'ViewPurchaseOrders.php?init=pending';
+        } catch (Exception $ex) {
+            return true;
+        }
+    }
+
+    function put_view()
+    {
+        $res = $this->connection->query('
+            SELECT v.vendorID, v.vendorName
+            FROM vendors AS v
+                INNER JOIN vendorItems AS i ON v.vendorID=i.vendorID
+                INNER JOIN InventoryCache AS c ON i.upc=c.upc
+            GROUP BY v.vendorID, v.vendorName
+            ORDER BY v.vendorName');
+        $ret = '<form>
+            <input type="hidden" name="_method" value="put" />
+            <table class="table table-bordered table-striped">
+            <tr><th>Vendor</th><th>Include</th>';
+        while ($row = $this->connection->fetchRow($res)) {
+            $ret .= sprintf('<tr>
+                <td>%s</td>
+                <td><input type="checkbox" name="vendors[]" value="%d" />
+                </tr>',
+                $row['vendorName'], $row['vendorID']);
+        }
+        $ret .= '</table>
+            <p>
+                <button type="submit" class="btn btn-default">Generate Orders</button>
+            </p>
+        </form>';
+
+        return $ret;
     }
 
     function get_view()

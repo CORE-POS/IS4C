@@ -46,13 +46,7 @@ class InventoryTask extends FannieTask
             INSERT INTO InventoryCache
                 (upc, storeID, cacheStart, cacheEnd, baseCount, ordered, sold, shrunk)
             VALUES
-                (?, ?, ?, ?, ?, ?, ?)');
-
-        $orderP = $dbc->prepare('
-            SELECT SUM(caseSize * receivedQty) AS qty
-            FROM PurchaseOrderItems
-            WHERE internalUPC=?
-                AND receivedDate >= ?');
+                (?, ?, ?, ?, ?, ?, ?, ?)');
 
         $countR = $dbc->query('
             SELECT upc,
@@ -68,29 +62,30 @@ class InventoryTask extends FannieTask
             if ($last[0] == $row['upc'] && $last[1] == $row['storeID']) {
                 continue;
             }
-            $last = array($row['upc'], $row['storeID']);
+            $last = array($row['upc'], $row['storeID'], $row['countDate']);
 
-            $dlog = DTransactions::selectDLog($row['countDate'], date('Y-m-d', strtotime('yesterday')));
+            $dlog = DTransactionsModel::selectDLog($row['countDate'], date('Y-m-d', strtotime('yesterday')));
             $salesP = $dbc->prepare('
                 SELECT d.upc,
                     d.store_id,
                     ' . DTrans::sumQuantity('d') . ' AS qty
-                FROM ' . $sales . ' AS d
+                FROM ' . $dlog . ' AS d
                     ' . DTrans::joinProducts('d', 'p', 'INNER') . '
                 WHERE p.default_vendor_id > 0
                     AND d.trans_status <> \'R\'
                     AND d.upc=?
                     AND d.store_id=?
+                    AND d.tdate >= ?
+                    AND d.charflag <> \'SO\'
                 GROUP BY d.upc,
                     d.store_id
                 HAVING qty > 0');
             $sales = $dbc->getRow($salesP, $last);
-            $sales = $sales ? $sales['qty'] : 0;
+            $sales = $sales && $sales['qty'] ? $sales['qty'] : 0;
 
-            $orders = $dbc->getRow($orderP, array($row['upc']));
-            $orders ? $orders['qty'] : 0;
+            $orders = InventoryCacheModel::calculateOrdered($dbc, $row['upc'], $row['countDate']);
 
-            $dtrans = DTransactions::selectDTrans($row['countDate'], date('Y-m-d', strtotime('yesterday')));
+            $dtrans = DTransactionsModel::selectDTrans($row['countDate'], date('Y-m-d', strtotime('yesterday')));
             $shrinkP = $dbc->prepare('
                 SELECT d.upc,
                     d.store_id,
@@ -100,6 +95,7 @@ class InventoryTask extends FannieTask
                     AND ' . DTrans::isNotTesting('d') . '
                     AND d.upc=?
                     AND d.store_id=?
+                    AND d.datetime >= ?
                 GROUP BY d.upc,
                     d.store_id');
             $shrink = $dbc->getRow($shrinkP, $last);
@@ -109,12 +105,13 @@ class InventoryTask extends FannieTask
                 $row['upc'],
                 $row['storeID'],
                 $row['countDate'],
-                date('Y-m-d', strtotime('yesterday')),
+                date('Y-m-d 23:59:59', strtotime('yesterday')),
                 $row['count'],
                 $orders,
                 $sales,
                 $shrink,
             );
+            $insR = $dbc->execute($insP, $args);
         }
 
         $dbc->query('
