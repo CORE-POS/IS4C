@@ -47,6 +47,8 @@ class pos2 extends BasicCorePage
         if (CoreLocal::get("msgrepeat") == 1 && $entered != "CL") {
             $entered = CoreLocal::get("strRemembered");
             CoreLocal::set('strRemembered', '');
+        } elseif (isset($_REQUEST['repeat'])) {
+            CoreLocal::set('msgrepeat', 1);
         }
         CoreLocal::set("strEntered",$entered);
 

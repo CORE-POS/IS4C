@@ -37,9 +37,13 @@ class ECheckVerifyPage extends NoInputCorePage
 
                 return false;
             } else {
-                CoreLocal::set('strRemembered', ($amount*100) . $opt);
-                CoreLocal::set('msgrepeat', 1);
-                $this->change_page($this->page_url."gui-modules/pos2.php");
+                $inp = ($amount*100) . $opt;
+                $this->change_page(
+                    $this->page_url
+                        ."gui-modules/pos2.php?reginput="
+                        . urlencode($inp)
+                        . '&repeat=1'
+                );
 
                 return false;
             }
