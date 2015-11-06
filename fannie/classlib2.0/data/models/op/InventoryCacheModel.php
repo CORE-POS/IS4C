@@ -26,7 +26,6 @@
 */
 class InventoryCacheModel extends BasicModel
 {
-
     protected $name = "InventoryCache";
     protected $preferred_db = 'op';
 
@@ -49,6 +48,44 @@ class InventoryCacheModel extends BasicModel
             $this->unique = array('upc', 'storeID');
         }
         parent::__construct($con);
+    }
+
+    private static $orderStmt = null;
+    private static function orderStatement($dbc)
+    {
+        if (self::$orderStmt === null) {
+            self::$orderStmt = $dbc->prepare('
+                SELECT 
+                    SUM(caseSize * (CASE WHEN receivedQty IS NULL THEN quantity ELSE receivedQty END)) AS qty
+                FROM PurchaseOrderItems AS i
+                    INNER JOIN PurchaseOrder AS o ON i.orderID=o.orderID
+                WHERE internalUPC=?
+                    AND placedDate IS NOT NULL
+                    AND placedDate >= ?');
+        }
+
+        return self::$orderStmt;
+    }
+
+    public static function calculateOrdered($dbc, $upc, $date)
+    {
+        $orderP = self::orderStatement($dbc);
+        $ordered = $dbc->getValue($orderP, array($upc, $date));
+
+        return $ordered ? $ordered : 0;
+    }
+
+    public function recalculateOrdered($upc, $storeID)
+    {
+        $obj = new InventoryCacheModel($this->connection);
+        $obj->upc($upc);
+        $obj->storeID(1);
+        if ($obj->load()) {
+            $orders = InventoryCacheModel::calculateOrdered($this->connection, $upc, $obj->cacheStart());
+            $obj->ordered($orders);
+            $obj->onHand($obj->baseCount() + $obj->ordered() - $obj->sold() - $obj->shrunk());
+            $obj->save();
+        }
     }
 }
 
