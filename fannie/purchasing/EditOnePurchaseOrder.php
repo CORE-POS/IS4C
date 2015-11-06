@@ -42,6 +42,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
         $this->__routes[] = 'get<id><sku><qty>';
         $this->__routes[] = 'get<id><sku><index>';
         $this->__routes[] = 'get<vendorID>';
+        $this->__routes[] = 'post<id><sku><case><qty>';
         return parent::preprocess();
     }
 
@@ -131,7 +132,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 
     private function mergeSearchResult($ret)
     {
-
+        echo json_encode($ret);
     }
 
     /**
@@ -210,6 +211,28 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
         return false;
     }
 
+    protected function post_id_sku_case_qty_handler()
+    {
+        $poi = new PurchaseOrderItemsModel($this->connection);
+        $poi->orderID($this->id);
+        for ($i=0; $i<count($this->sku); $i++) {
+            $poi->sku($this->sku[$i]);
+            if (isset($this->case[$i])) {
+                $poi->caseSize($this->case[$i]);
+            }
+            if (isset($this->qty[$i])) {
+                $poi->quantity($this->qty[$i]);
+            }
+            $poi->save();
+        }
+
+        $ret = array();
+        $ret['table'] = $this->itemListTab($this->id);
+        echo json_encode($ret);
+
+        return false;
+    }
+
     /**
       Main page. Vendor is selected. Find/create order
       based on vendorID & userID
@@ -248,28 +271,108 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
         $ret .= ' Est. cost: $<span id="orderInfoCost">'.sprintf('%.2f',$w['estimatedCost']).'</span>';
         $ret .= '</div><hr />';
 
-        $ret .= '<div id="ItemSearch">';
-        $ret .= '<form class="form-inline" action="" onsubmit="itemSearch();return false;">';
-        $ret .= '<div class="form-group">';
-        $ret .= '<label class="control-label">UPC/SKU</label><input class="form-control" type="text" id="searchField" />';
+        $ret .= '<ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+                <a href="#item-wrapper" aria-controls="item-wrapper" role="tab" data-toggle="tab">
+                    Item Search
+                </a>
+            </li> 
+            <li role="presentation">
+                <a href="#list-wrapper" aria-controls="list-wrapper" role="tab" data-toggle="tab">
+                    Item List
+                </a>
+            </li> 
+            <li>
+                <a href="PurchasingIndexPage.php">Home</a>
+            </li>
+            <li>
+                <a href="ViewPurchaseOrders.php?id=' . $orderID . '">View Order</a>
+            </li>
+        </ul>
+        <p>
+        <div class="tab-content">';
+
+        $ret .= '<div id="item-wrapper" role="tabpanel" class="tab-pane active">';
+        $ret .= $this->itemSearchTab($orderID);
         $ret .= '</div>';
-        $ret .= '<div class="form-group">';
-        $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<button type="submit" class="btn btn-default">Search</button>';
-        $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<button type="button" class="btn btn-default" onclick="location=\'PurchasingIndexPage.php\'; return false;">Home</button>';
-        $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<button type="button" class="btn btn-default" onclick="location=\'ViewPurchaseOrders.php?id=' . $orderID . '\'; return false;">View Order</button>';
+        $ret .= '<div id="list-wrapper" role="tabpanel" class="tab-pane">';
+        $ret .= $this->itemListTab($orderID);
         $ret .= '</div>';
-        $ret .= '</form>';
-        $ret .= '</div>';
-        $ret .= '<p><div id="SearchResults"></div></p>';
+        $ret .= '</div></p>';
 
         $ret .= sprintf('<input type="hidden" id="vendor-id" value="%d" />',$vendorID);
         $ret .= sprintf('<input type="hidden" id="order-id" value="%d" />',$orderID);
 
         $this->add_onload_command("\$('#searchField').focus();\n");
         $this->add_script('js/editone.js');
+
+        return $ret;
+    }
+
+    private function itemSearchTab($orderID)
+    {
+        return '
+            <div id="ItemSearch">
+                <form class="form-inline" action="" onsubmit="itemSearch();return false;">
+                    <div class="form-group">
+                        <label class="control-label">UPC/SKU</label>
+                        <input class="form-control" type="text" id="searchField" />
+                    </div>
+                    <div class="form-group">
+                        &nbsp;&nbsp;&nbsp;
+                        <button type="submit" class="btn btn-default">Search</button>
+                    </div>
+                </form>
+            </div>
+            <p>
+                <div id="SearchResults"></div>
+            </p>';
+    }
+
+    private function itemListTab($orderID)
+    {
+        $poi = new PurchaseOrderItemsModel($this->connection);
+        $poi->orderID($orderID);
+        $poi->load();
+
+        $ret = '
+            <table class="table table-bordered table-striped">
+            <tr>
+                <th>SKU</th>
+                <th>UPC</th>
+                <th>Brand</th>
+                <th>Description</th>
+                <th>Size</th>
+                <th>Units/Case</th>
+                <th>Cases</th>
+                <th>Est. Cost</th>
+            </tr>';
+        foreach ($poi->find() as $item) {
+            $ret .= sprintf('<tr>
+                <td>%s<input type="hidden" name="sku[]" value="%s" /></td>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%s</td>
+                <td><input type="text" class="form-control" name="case[]" value="%s" /></td>
+                <td><input type="text" class="form-control" name="qty[]" value="%s" /></td>
+                <td>%.2f</td>
+                </tr>',
+                $item->sku(), $item->sku(),
+                \COREPOS\Fannie\API\lib\FannieUI::itemEditorLink($item->internalUPC()),
+                $item->brand(),
+                $item->description(),
+                $item->unitSize(),
+                $item->caseSize(),
+                $item->quantity(),
+                $item->unitCost() * $item->caseSize() * $item->quantity()
+            );
+        }
+        $ret .= '</table>
+            <p>
+                <a href="" onclick="updateList(); return false;"
+                    class="btn btn-default">Save</a>
+            </p>';
 
         return $ret;
     }

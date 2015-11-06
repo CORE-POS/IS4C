@@ -114,3 +114,22 @@ function saveItem(resultNum){
 		}
 	});
 }
+
+function updateList()
+{
+    var dstr = 'id=' + $('#order-id').val();
+    dstr += '&' + $('#list-wrapper input').serialize();
+    $.ajax({
+        url: 'EditOnePurchaseOrder.php',
+        dataType: 'json',
+        type: 'post',
+        data: dstr,
+        success: function(resp) {
+            if (resp.table) {
+                $('#list-wrapper').html(resp.table);
+                showBootstrapAlert('#list-wrapper', 'success', 'Updated Order');
+            }
+        }
+    });
+}
+

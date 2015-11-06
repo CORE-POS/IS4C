@@ -36,7 +36,21 @@ class PurchasingIndexPage extends FannieRESTfulPage {
 
     protected $must_authenticate = True;
 
-    function get_view(){
+    function put_handler()
+    {
+        if (!class_exists('OrderGenTask')) {
+            include(dirname(__FILE__) . '/../cron/tasks/OrderGenTask.php');
+        }
+        $task = new OrderGenTask();
+        $task->setConfig($this->config);
+        $task->setLogger($this->logger);
+        $task->run();
+
+        return 'ViewPurchaseOrders.php?init=pending';
+    }
+
+    function get_view()
+    {
 
         return '<ul>
             <li><a href="ViewPurchaseOrders.php">View Orders</a>
@@ -54,6 +68,7 @@ class PurchasingIndexPage extends FannieRESTfulPage {
                 <ul>
                 <li><a href="EditOnePurchaseOrder.php">By Vendor</a></li>
                 <li><a href="EditManyPurchaseOrders.php">By Item</a></li>
+                <li><a href="?_method=put">Generate Orders</a></li>
                 </ul>
             </li>
             <li>Reports
