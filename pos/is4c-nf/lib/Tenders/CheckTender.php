@@ -99,7 +99,7 @@ class CheckTender extends TenderModule
     public function add()
     {
         // count rebate and travelers as regular checks
-        if (CoreLocal::get("store")=="wfc" && ($this->tender_code == "TV" || $this->tender_code == "RC" || $this->tender_code='WT')){
+        if (CoreLocal::get("store")=="wfc" && ($this->tender_code == "TV" || $this->tender_code == "RC")){
             $this->tender_code = "CK";
         }
         parent::add();

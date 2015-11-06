@@ -27,12 +27,7 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 $decision = isset($_REQUEST['input'])?strtoupper(trim($_REQUEST["input"])):'CL';
 
 $ret = array('dest_page'=>MiscLib::base_url().'gui-modules/pos2.php',
-        'endorse'=>False, 'cleared'=>False);
-
-$repeat_cmd = CoreLocal::get('strEntered');
-if (isset($_REQUEST['cmd']) && !empty($_REQUEST['cmd'])) {
-    $repeat_cmd = $_REQUEST['cmd'];
-}
+        'endorse'=>false, 'cleared'=>false);
 
 if ($decision == "CL") {
     CoreLocal::set("msgrepeat",0);
@@ -41,13 +36,6 @@ if ($decision == "CL") {
     CoreLocal::set("togglefoodstamp",0);
     CoreLocal::set("RepeatAgain", false);
     $ret['cleared'] = true;
-} elseif (strlen($decision) > 0) {
-
-    CoreLocal::set("msgrepeat",1);
-    CoreLocal::set("strRemembered", $repeat_cmd);
-} else {
-    CoreLocal::set("msgrepeat",1);
-    CoreLocal::set("strRemembered", $repeat_cmd);
 }
 
 echo JsonLib::array_to_json($ret);

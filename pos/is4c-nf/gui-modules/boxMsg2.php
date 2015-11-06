@@ -36,7 +36,7 @@ class boxMsg2 extends BasicCorePage
             $.ajax({
                 url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-decision.php',
                 type: 'get',
-                data: 'input='+str+'&cmd='+encodeURIComponent(cmd),
+                data: 'input='+str,
                 dataType: 'json',
                 cache: false,
                 success: function(data){
@@ -52,7 +52,12 @@ class boxMsg2 extends BasicCorePage
                         });
                     }
                     else {
-                        location = data.dest_page;
+                        var changeTo = data.dest_page;
+                        if (!data.cleared) {
+                            changeTo += "?reginput=" + encodeURIComponent(cmd);
+                            changeTo += "&repeat=1";
+                        }
+                        window.location = changeTo;
                     }
                 }
             });
@@ -69,13 +74,16 @@ class boxMsg2 extends BasicCorePage
           Bounce through this page and back to pos2.php. This lets
           TenderModules use the msgrepeat feature during input parsing.
         */
-        if (isset($_REQUEST['autoconfirm'])){
-            CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));
-            CoreLocal::set('msgrepeat', 1);
-            $this->change_page(MiscLib::base_url().'gui-modules/pos2.php');
-            return False;
+        if (isset($_REQUEST['autoconfirm'])) {
+            $this->change_page(
+                MiscLib::base_url()
+                .'gui-modules/pos2.php'
+                . '?reginput==' .urlencode(CoreLocal::get('strEntered'))
+                . '&repeat=1'
+            );
+            return false;
         }
-        return True;
+        return true;
     }
 
     function body_content()

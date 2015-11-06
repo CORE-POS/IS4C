@@ -91,8 +91,6 @@ class undo_confirm extends BasicCorePage
             switch(strtoupper($_REQUEST['reginput'])){
             case 'CL':
                 // cancel the transaction instead
-                CoreLocal::set("msgrepeat",1);
-                CoreLocal::set("strRemembered","CN");
 
                 /**
                   Unify emp_no & trans_no records in the
@@ -117,13 +115,11 @@ class undo_confirm extends BasicCorePage
                             emp_no<>'.((int)$emp_no).' OR
                             trans_no<>'.((int)$trans_no));
 
-                $this->change_page($this->page_url."gui-modules/pos2.php");
+                $this->change_page($this->page_url."gui-modules/pos2.php?reginput=CN&repeat=1");
                 return False;
                 break;
             case '':
                 // use zero cash to finish transaction
-                CoreLocal::set("msgrepeat",1);
-                CoreLocal::set("strRemembered","0CA");
 
                 /**
                   Unify emp_no & trans_no records in the
@@ -144,7 +140,7 @@ class undo_confirm extends BasicCorePage
                             emp_no<>'.((int)$emp_no).' OR
                             trans_no<>'.((int)$trans_no));
 
-                $this->change_page($this->page_url."gui-modules/pos2.php");
+                $this->change_page($this->page_url."gui-modules/pos2.php?reginput=0CA&repeat=1");
                 return False;
                 break;
             case 'U':

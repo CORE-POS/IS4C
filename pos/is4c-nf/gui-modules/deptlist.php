@@ -51,12 +51,15 @@ class deptlist extends NoInputCorePage
                 // Redirect to main screen
                 $input = CoreLocal::get("departmentAmount")."DP".$entered."0";
                 $qty = CoreLocal::get("quantity");
-                if ($qty != "" & $qty != 1 & $qty != 0)
+                if ($qty != "" & $qty != 1 & $qty != 0) {
                     $input = $qty."*".$input;
-                CoreLocal::set("msgrepeat",1);
-                CoreLocal::set("strRemembered",$input);
-                $this->change_page($this->page_url."gui-modules/pos2.php");
-                return False;
+                }
+                $this->change_page(
+                    $this->page_url
+                    . "gui-modules/pos2.php"
+                    . '?reginput=' . $input
+                    . '&repeat=1');
+                return false;
             }
         }
         return True;

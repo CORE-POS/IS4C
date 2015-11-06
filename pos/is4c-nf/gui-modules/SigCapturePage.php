@@ -85,15 +85,16 @@ class SigCapturePage extends BasicCorePage
                 UdpComm::udpSend('termReset');
 
                 return false;
-            } else if ($_REQUEST['reginput'] == '') {
+            } elseif ($_REQUEST['reginput'] == '') {
                 if (isset($_REQUEST['bmpfile']) && file_exists($_REQUEST['bmpfile'])) {
 
                     // this should have been set already, but if we have sufficient info
                     // we can make sure it's correct.
+                    $qstr = '';
                     if (isset($_REQUEST['amt']) && !empty($_REQUEST['amt']) && isset($_REQUEST['code']) && !empty($_REQUEST['code'])) {
-                        CoreLocal::set('strRemembered', (100*$_REQUEST['amt']) . $_REQUEST['code']);
+                        $qstr = '?reginput=' . urlencode((100*$_REQUEST['amt']) . $_REQUEST['code'])
+                            . '&repeat=1';
                     }
-                    CoreLocal::set('msgrepeat', 1);
 
                     $bmp = file_get_contents($_REQUEST['bmpfile']);
                     $format = 'BMP';
@@ -147,7 +148,7 @@ class SigCapturePage extends BasicCorePage
 
                     unlink($_REQUEST['bmpfile']);
 
-                    $this->change_page($this->page_url.'gui-modules/pos2.php');
+                    $this->change_page($this->page_url.'gui-modules/pos2.php' . $qstr);
 
                     return false;
 

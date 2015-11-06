@@ -98,10 +98,12 @@ class WicTenderPage extends BasicCorePage
                         $this->errMsg = 'Max amount is ' . CoreLocal::get('amtdue');
                     } else {
                         $tender = $inp . 'WT';
-                        CoreLocal::set('strRemembered', $tender);
-                        CoreLocal::set('msgrepeat', 1);
                         CoreLocal::set('RepeatAgain', true);
-                        $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php');
+                        $this->change_page(
+                            MiscLib::baseURL() 
+                            . 'gui-modules/pos2.php'
+                            . '?reginput=' . urlencode($tender)
+                            . '&repeat=1');
                         return false;
                     }
                     break;

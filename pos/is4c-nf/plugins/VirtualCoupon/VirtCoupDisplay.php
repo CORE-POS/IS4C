@@ -49,9 +49,11 @@ class VirtCoupDisplay extends NoInputCorePage
             }
             else if (is_numeric($input)){
                 $upc = "00499999".str_pad((int)$input,5,'0',STR_PAD_LEFT);
-                CoreLocal::set("msgrepeat",1);
-                CoreLocal::set("strRemembered",$upc);
-                $this->change_page($this->page_url."gui-modules/pos2.php");
+                $this->change_page(
+                    $this->page_url 
+                    . "gui-modules/pos2.php"
+                    . '?reginput=' . urlencode($upc)
+                    . '&repeat=1');
                 return False;
             }
         } 

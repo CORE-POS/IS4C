@@ -36,9 +36,8 @@ class LineItemDiscountAdminLogin
     static public function adminLoginCallback($success)
     {
         if ($success) {
-            CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));
-            CoreLocal::set('msgrepeat', 1);
-            return true;
+            $inp = urlencode(CoreLocal::get('strEntered'));
+            return MiscLib::baseURL() . 'gui-modules/pos2.php?reginput=' . $inp . '&repeat=1';
         } else {
             return false;
         }

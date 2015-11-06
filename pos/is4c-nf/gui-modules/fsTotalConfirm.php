@@ -66,37 +66,6 @@ class fsTotalConfirm extends NoInputCorePage
 
                 return false;
             }
-        } else if (isset($_REQUEST['tendertype'])) {
-            $this->tendertype = $_REQUEST['tendertype'];
-            $valid_input = false;
-            $in = $_REQUEST['tenderamt'];
-            if (empty($in)) {
-                if ($this->tendertype == 'EF') {
-                    CoreLocal::set("strRemembered",100*CoreLocal::get("fsEligible")."EF");        
-                } else {
-                    CoreLocal::set("strRemembered",100*CoreLocal::get("runningTotal")."EC");        
-                }
-                CoreLocal::set("msgrepeat",1);
-                $valid_input = true;
-            } else if (is_numeric($in)) {
-                if ($this->tendertype == 'EF' && $in > (100*CoreLocal::get("fsEligible"))) {
-                    $valid_input = false;
-                } else {
-                    CoreLocal::set("strRemembered",$in.$this->tendertype);
-                    CoreLocal::set("msgrepeat",1);
-                    $valid_input = true;
-                }
-            } else if (strtoupper($in) == "CL") {
-                CoreLocal::set("strRemembered","");
-                CoreLocal::set("msgrepeat",0);
-                $valid_input = true;
-            }
-
-            if ($valid_input) {
-                $this->change_page($this->page_url."gui-modules/pos2.php");
-
-                return false;
-            }
         }
 
         return true;
@@ -144,16 +113,6 @@ class fsTotalConfirm extends NoInputCorePage
                 <img src="<?php echo $stem; ?>up.png" width="16" height="16" />
             </button>
             <?php } ?>
-        <?php } else { ?>
-            <input type="text" id="tenderamt" 
-                name="tenderamt" onblur="$('#tenderamt').focus();" />
-            <br />
-            <span class="larger">Press [enter] to tender 
-            $<?php printf("%.2f",($this->tendertype=='EF'?CoreLocal::get("fsEligible"):CoreLocal::get("runningTotal"))); ?>
-            as <?php echo ($this->tendertype=="EF"?"EBT Food":"EBT Cash") ?>
-            or input a different amount</span>
-            <br />
-            <input type="hidden" name="tendertype" value="<?php echo $this->tendertype?>" />
         <?php } ?>
         <p>
             <button class="pos-button" type="submit">Select [enter]</button>

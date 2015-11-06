@@ -31,11 +31,11 @@ class HouseCouponList extends NoInputCorePage
     function preprocess()
     {
         if (FormLib::get('selectlist', false) !== false) {
+            $qstr = '';
             if (FormLib::get('selectlist', false) != '') {
-                CoreLocal::set('strRemembered', FormLib::get('selectlist'));
-                CoreLocal::set('msgrepeat', 1);
+                $qstr .= '?reginput=' . urlencode(FormLib::get('selectlist')) . '&repeat=1';
             }
-            $this->change_page($this->page_url."gui-modules/pos2.php");
+            $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
 
             return false;
         }

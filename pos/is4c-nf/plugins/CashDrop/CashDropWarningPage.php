@@ -32,12 +32,10 @@ class CashDropWarningPage extends InputCorePage
             $in = strtoupper($_REQUEST['reginput']);
             if ($in != '' && $in != 'CL') return True;
 
-            CoreLocal::set("msgrepeat",1);
-            CoreLocal::set("strRemembered",CoreLocal::get('cashDropSaveInput'));
             CoreLocal::set('cashDropSaveInput','');
-
-            $this->change_page($this->page_url."gui-modules/pos2.php");
-            return False;
+            $qstr = '?reginput=' . urlencode(CoreLocal::get('cashDropSaveInput')) . '&repeat=1';
+            $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
+            return false;
         }
         return True;
     }

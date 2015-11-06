@@ -49,15 +49,17 @@ class WicOverridePage extends BasicCorePage
                     AND frontendsecurity >= ?
                     AND (CashierPassword=? OR AdminPassword=?)');
             if ($dbc->getValue($empP, array(30, $inp, $inp)) !== false) {
-                CoreLocal::set('strRemembered', $this->upc);
-                CoreLocal::set('msgrepeat', 1);
                 $arr = CoreLocal::get('WicOverride');
                 if (!is_array($arr)) {
                     $arr = array();
                 }
                 $arr[] = ltrim($this->upc, '0');
                 CoreLocal::set('WicOverride', $arr);
-                $this->change_page(MiscLib::baseURL() . 'gui-modules/pos2.php');
+                $this->change_page(
+                    MiscLib::baseURL() 
+                    . 'gui-modules/pos2.php'
+                    . '?reginput=' . urlencode($this->upc)
+                    . '&repeat=1');
                 return false;
             } else {
                 $this->box_color = 'errorColoredArea';

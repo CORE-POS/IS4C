@@ -36,9 +36,6 @@ class UnpaidAR extends BasicCorePage
             $dec = $_REQUEST['reginput'];
             $amt = CoreLocal::get("old_ar_balance");
 
-            CoreLocal::set("msgrepeat",0);
-            CoreLocal::set("strRemembered","");
-
             if (strtoupper($dec) == "CL"){
                 if (CoreLocal::get('memType') == 0){
                     PrehLib::setMember(CoreLocal::get("defaultNonMem"), 1);
@@ -49,19 +46,22 @@ class UnpaidAR extends BasicCorePage
             elseif ($dec == "" || strtoupper($dec) == "BQ"){
                 if (strtoupper($dec)=="BQ")
                     $amt = CoreLocal::get("balance");
-                CoreLocal::set("strRemembered", ($amt*100)."DP{$AR_department}0");
-                CoreLocal::set("msgrepeat",1);
+                $inp = ($amt*100)."DP{$AR_department}0";
                 $memtype = CoreLocal::get("memType");
                 $type = CoreLocal::get("Type");
                 if ($memtype == 1 || $memtype == 3 || $type == "INACT"){
                     CoreLocal::set("isMember",1);
                     PrehLib::ttl();
                 }
-                $this->change_page($this->page_url."gui-modules/pos2.php");
-                return False;
+                $this->change_page(
+                    $this->page_url
+                    . "gui-modules/pos2.php"
+                    . '?reginput=' . $inp
+                    . '&repeat=1');
+                return false;
             }
         }
-        return True;
+        return true;
     }
 
     function head_content()

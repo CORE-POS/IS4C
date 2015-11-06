@@ -50,11 +50,13 @@ class productlist extends NoInputCorePage
         }
 
         // picked an item from the list
-        if (is_numeric($entered) && strlen($entered) == 13){
-            CoreLocal::set("msgrepeat",1);
-            CoreLocal::set("strRemembered",$entered);
-            $this->change_page($this->page_url."gui-modules/pos2.php");
-            return False;
+        if (is_numeric($entered) && strlen($entered) == 13) {
+            $this->change_page(
+                $this->page_url
+                . "gui-modules/pos2.php"
+                . '?reginput=' . urlencode($entered)
+                . '&repeat=1');
+            return false;
         }
 
         if (is_numeric($entered)) {

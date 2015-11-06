@@ -109,9 +109,7 @@ class BitCoinPaymentPage extends InputCorePage
         // add tender and return to main screen
         if (isset($_REQUEST['finish'])) {
             TransRecord::addtender('BITCOIN', CoreLocal::get('BitCoinTender'), -1*$_REQUEST['finish']);
-            CoreLocal::set('strRemembered', 'TO');
-            CoreLocal::set('msgrepeat', 1);
-            $this->change_page(MiscLib::baseURL()."gui-modules/pos2.php");
+            $this->change_page(MiscLib::baseURL()."gui-modules/pos2.php?reginput=TO&repeat=1");
             return false;
         }
 

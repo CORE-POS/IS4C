@@ -30,26 +30,16 @@ class PaidOutComment extends NoInputCorePage
     {
         if (isset($_REQUEST["selectlist"])){
             $input = $_REQUEST["selectlist"];
-            if ($input == "CL"){
-                CoreLocal::set("msgrepeat",0);
-                CoreLocal::set("strRemembered","");
-                CoreLocal::set("refundComment","");
-            }
-            else if ($input == "Other"){
-                return True;
-            }
-            else {
+            $qstr = '';
+            if ($input == "Other"){
+                return true;
+            } elseif ($input != 'CL') {
                 $input = str_replace("'","",$input);
-                CoreLocal::set("strRemembered",CoreLocal::get("refundComment"));
-                // add comment calls additem(), which wipes
-                // out refundComment; save it
+                $qstr = '?reginput=' . $input . '&repeat=1';
                 TransRecord::addcomment("PO: ".$input);
-                CoreLocal::set("refundComment",CoreLocal::get("strRemembered"));
-                CoreLocal::set("msgrepeat",1);
-                //CoreLocal::set("refund",1);
             }
-            $this->change_page($this->page_url."gui-modules/pos2.php");
-            return False;
+            $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
+            return false;
         }
         return True;
     }

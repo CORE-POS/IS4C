@@ -87,10 +87,10 @@ class PaycardEmvSuccess extends BasicCorePage
                   record 
                 */
                 $peek = PrehLib::peekItem(true);
+                $qstr = '';
                 if ($mode == PaycardLib::PAYCARD_MODE_AUTH || 
                     ($peek !== false && isset($peek['trans_type']) && $peek['trans_type'] == 'T')) {
-                    CoreLocal::set("strRemembered","TO");
-                    CoreLocal::set("msgrepeat",1);
+                    $qstr = '?reginput=TO&repeat=1';
                     CoreLocal::set('paycardTendered', true);
                 } else {
                     TransRecord::debugLog('Not Tendering Out (mode): ' . print_r($mode, true));
@@ -105,7 +105,7 @@ class PaycardEmvSuccess extends BasicCorePage
                 }
                 PaycardLib::paycard_reset();
 
-                $this->change_page($this->page_url."gui-modules/pos2.php");
+                $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
 
                 return false;
             } elseif ($mode == PaycardLib::PAYCARD_MODE_AUTH && $input == "VD" 

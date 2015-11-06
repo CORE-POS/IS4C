@@ -104,9 +104,8 @@ class PriceCheckPage extends NoInputCorePage
 
             // user hit enter and there is a valid UPC present
             if (isset($_REQUEST['reginput']) && $_REQUEST['reginput']=='' && $this->found){
-                CoreLocal::set("msgrepeat",1);
-                CoreLocal::set("strRemembered",$this->upc);
-                $this->change_page($this->page_url."gui-modules/pos2.php");
+                $qstr = '?reginput=' . urlencode($this->upc) . '&repeat=1';
+                $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
 
                 return false;
             }

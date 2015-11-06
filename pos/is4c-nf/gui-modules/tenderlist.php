@@ -50,10 +50,12 @@ class tenderlist extends NoInputCorePage
                 // to be the next POS entry
                 // Redirect to main screen
                 $input = CoreLocal::get("tenderTotal").$entered;
-                CoreLocal::set("msgrepeat",1);
-                CoreLocal::set("strRemembered",$input);
-                $this->change_page($this->page_url."gui-modules/pos2.php");
-                return False;
+                $this->change_page(
+                    $this->page_url
+                    . "gui-modules/pos2.php"
+                    . '?reginput=' . urlencode($input)
+                    . '&repeat=1');
+                return false;
             }
         }
         return True;

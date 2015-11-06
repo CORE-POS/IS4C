@@ -53,9 +53,11 @@ class tenderlist_coopCred extends NoInputCorePage
                  * Redirect to main screen
                  */
                 $input = $CORE_LOCAL->get("tenderTotal").$entered;
-                $CORE_LOCAL->set("msgrepeat",1);
-                $CORE_LOCAL->set("strRemembered",$input);
-                $this->change_page($this->page_url."gui-modules/pos2.php");
+                $this->change_page(
+                    $this->page_url
+                    ."gui-modules/pos2.php"
+                    . '?reginput=' . urlencode($input)
+                    . '&repeat=1');
                 return False;
             }
         }

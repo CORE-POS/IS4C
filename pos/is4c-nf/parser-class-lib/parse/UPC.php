@@ -813,9 +813,8 @@ class UPC extends Parser
     {
         if ((is_numeric($info) && strlen($info)==8) || $info == 1){
             CoreLocal::set("memAge",$info);
-            CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));
-            CoreLocal::set('msgrepeat', 1);
-            return True;
+            $inp = urlencode(CoreLocal::get('strEntered'));
+            return MiscLib::baseURL() . 'gui-modules/pos2.php?reginput=' . $inp . '&repeat=1';
         }
         return False;
     }

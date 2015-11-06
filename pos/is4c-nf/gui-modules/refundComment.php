@@ -30,24 +30,24 @@ class RefundComment extends NoInputCorePage
     {
         if (isset($_REQUEST["selectlist"])){
             $input = $_REQUEST["selectlist"];
+            $qstr = '';
             if ($input == "CL" || $input == ''){
-                CoreLocal::set("msgrepeat",0);
-                CoreLocal::set("strRemembered","");
                 CoreLocal::set("refundComment","");
             } elseif ($input == "Other"){
                 return True;
             } else {
                 $input = str_replace("'","",$input);
-                CoreLocal::set("strRemembered",CoreLocal::get("refundComment"));
+                $output = CoreLocal::get("refundComment");
+                $qstr = '?reginput=' . urlencode($output) . '&repeat=1';
+
                 // add comment calls additem(), which wipes
                 // out refundComment; save it
                 TransRecord::addcomment("RF: ".$input);
-                CoreLocal::set("refundComment",CoreLocal::get("strRemembered"));
-                CoreLocal::set("msgrepeat",1);
+                CoreLocal::set("refundComment", $output);
                 CoreLocal::set("refund",1);
             }
-            $this->change_page($this->page_url."gui-modules/pos2.php");
-            return False;
+            $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
+            return false;
         }
         return True;
     }

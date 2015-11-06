@@ -67,16 +67,13 @@ class QMDisplay extends NoInputCorePage
 
         if (count($_POST) > 0){
             $output = "";
+            $qstr = '';
             if ($_REQUEST["clear"] == 0) {
                 $value = $_REQUEST['ddQKselect'];
 
-                if ($value === '') {
-                    CoreLocal::set("msgrepeat",0);
-                    CoreLocal::set("strRemembered",'');
-                } else {
+                if ($value !== '') {
                     $output = CoreLocal::get("qmInput").$value;
-                    CoreLocal::set("msgrepeat",1);
-                    CoreLocal::set("strRemembered",$output);
+                    $qstr = '?reginput=' . urlencode($output) . '&repeat=1';
                     CoreLocal::set("currentid",CoreLocal::get("qmCurrentId"));
                 }
                 if (!FormLib::validateToken() && is_numeric($value)) {
@@ -87,7 +84,7 @@ class QMDisplay extends NoInputCorePage
                 CoreLocal::set("qmNumber",substr($output,2));
                 return True;
             } else {
-                $this->change_page($this->page_url."gui-modules/pos2.php");
+                $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
             }
             return False;
         }

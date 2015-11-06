@@ -89,5 +89,14 @@ class GiftCertificateTender extends TenderModule
 
         return MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$this->amount;
     }
+
+    public function add()
+    {
+        // rewrite WIC as checks
+        if (CoreLocal::get("store")=="wfc" && $this->tender_code='WT'){
+            $this->tender_code = "CK";
+        }
+        parent::add();
+    }
 }
 

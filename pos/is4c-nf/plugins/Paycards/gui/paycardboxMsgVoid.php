@@ -35,11 +35,9 @@ class paycardboxMsgVoid extends PaycardProcessPage {
             // CL always exits
             if( $input == "CL") {
                 PaycardLib::paycard_reset();
-                CoreLocal::set("msgrepeat",1);
-                CoreLocal::set("strRemembered",'TO');
                 CoreLocal::set("toggletax",0);
                 CoreLocal::set("togglefoodstamp",0);
-                $this->change_page($this->page_url."gui-modules/pos2.php");
+                $this->change_page($this->page_url."gui-modules/pos2.php?reginput=TO&repeat=1");
                 return False;
             }
     

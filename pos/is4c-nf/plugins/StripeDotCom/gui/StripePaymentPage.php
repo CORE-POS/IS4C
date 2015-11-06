@@ -142,9 +142,7 @@ class StripePaymentPage extends InputCorePage
                 return false;
             } else {
                 TransRecord::addtender('BITCOIN', CoreLocal::get('StripeBitCoinTender'), -1*$_REQUEST['finishamount']);
-                CoreLocal::set('strRemembered', 'TO');
-                CoreLocal::set('msgrepeat', 1);
-                $this->change_page(MiscLib::baseURL()."gui-modules/pos2.php");
+                $this->change_page(MiscLib::baseURL()."gui-modules/pos2.php?reginput=TO&repeat=1");
                 return false;
             }
         }

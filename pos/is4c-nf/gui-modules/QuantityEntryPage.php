@@ -129,9 +129,12 @@ class QuantityEntryPage extends BasicCorePage
                 $plu = $input_string;
             }
             CoreLocal::set("qttyvalid",1);
-            CoreLocal::set("strRemembered", $prefix . $qtty . '*' . $plu);
-            CoreLocal::set("msgrepeat",1);
-            $this->change_page($this->page_url."gui-modules/pos2.php");
+            $inp = $prefix . $qtty . '*' . $plu;
+            $this->change_page(
+                $this->page_url
+                . "gui-modules/pos2.php"
+                . '?reginput=' . $inp
+                . '&repeat=1');
 
             return false;
         }

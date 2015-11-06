@@ -50,9 +50,11 @@ class checklist extends NoInputCorePage
                 // to be the next POS entry
                 // Redirect to main screen
                 $input = CoreLocal::get("tenderTotal")."CQ".$entered;
-                CoreLocal::set("msgrepeat",1);
-                CoreLocal::set("strRemembered",$input);
-                $this->change_page($this->page_url."gui-modules/pos2.php");
+                $this->change_page(
+                    $this->page_url 
+                    . "gui-modules/pos2.php"
+                    . '?reginput=' . $input
+                    . '&repeat=1');
                 return False;
             }
         }
