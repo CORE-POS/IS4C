@@ -39,22 +39,23 @@ class OrderGenTask extends FannieTask
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $curP = $dbc->prepare('SELECT onHand FROM InventoryCache WHERE upc=? AND storeID=?');
+        $curP = $dbc->prepare('SELECT onHand FROM InventoryCache WHERE upc=? AND storeID=? AND baseCount > 0');
         $catalogP = $dbc->prepare('SELECT * FROM vendorItems WHERE upc=? AND vendorID=?');
+        $costP = $dbc->prepare('SELECT cost FROM products WHERE upc=? AND store_id=?');
         /**
           Look up all items that have a count and
           compare current [estimated] inventory to
           the par value
         */
         $prep = $dbc->prepare('
-            SELECT i.upc
+            SELECT i.upc,
                 i.storeID,
                 i.par,
                 p.default_vendor_id AS vid
             FROM InventoryCounts AS i
                 INNER JOIN products AS p ON i.upc=p.upc AND i.storeID=p.store_id
             WHERE i.mostRecent=1
-            ORDER BY p.defaultVendorID, i.upc, i.storeID, i.countDate DESC');
+            ORDER BY p.default_vendor_id, i.upc, i.storeID, i.countDate DESC');
         $res = $dbc->execute($prep);
         $orders = array();
         while ($row = $dbc->fetchRow($res)) {
@@ -85,11 +86,15 @@ class OrderGenTask extends FannieTask
                 while (($cases*$itemR['units']) + $cur < $row['par']) {
                     $cases++;
                 }
-                $poi = new PurhcaseOrderItemsModel($dbc);
+                $poi = new PurchaseOrderItemsModel($dbc);
                 $poi->orderID($orders[$row['vid']]);
                 $poi->sku($itemR['sku']);
                 $poi->quantity($cases);
                 $poi->unitCost($itemR['saleCost'] ? $itemR['saleCost'] : $itemR['cost']);
+                if ($poi->unitCost() == 0) {
+                    $cost = $dbc->getValue($costP, array($row['upc'], $row['storeID']));
+                    $poi->unitCost($cost);
+                }
                 $poi->caseSize($itemR['units']);
                 $poi->unitSize($itemR['size']);
                 $poi->brand($itemR['brand']);
@@ -116,9 +121,10 @@ class OrderGenTask extends FannieTask
             while ($deptW = $dbc->fetchRow($deptR)) {
                 $sendTo[] = $deptW['emailAddress'];
             }
+            $sendTo = 'andy@wholefoods.coop';
             if (count($sendTo) > 0) {
                 $msg_body = 'Created new order' . "\n";
-                $msg_body .= "http://" . $_SERVER['SERVER_NAME'] . '/' . $this->config->get('URL')
+                $msg_body .= "http://" . 'key' . '/' . $this->config->get('URL')
                     . 'purchasing/ViewPurchaseOrders.php?id=' . $oid . "\n";
                 mail($sendTo, 'Generated Purchase Order', $msg_body);
             }
