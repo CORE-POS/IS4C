@@ -828,7 +828,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
     function create_archive_dbs($con, $archive_db_name, $archive_method) 
     {
         $ret = array();
-        foreach ($this->getArchiveModels() as $class) {
+        foreach ($this->getArchiveModels($archive_method) as $class) {
             $obj = new $class($con);
             if (method_exists($obj, 'setDate')) {
                 $obj->setDate(date('Y'), date('m'));
