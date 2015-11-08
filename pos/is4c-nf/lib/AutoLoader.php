@@ -221,6 +221,7 @@ class AutoLoader extends LibraryClass
                 $map = Plugin::pluginMap($path,$map);
                 break;
             case 'BasicModel':
+            case 'COREPOS\pos\lib\models\BasicModel':
                 $path = realpath(dirname(__FILE__).'/models');
                 $map = Plugin::pluginMap($path,$map);
                 break;
@@ -247,8 +248,13 @@ class AutoLoader extends LibraryClass
 
             ob_start();
             if (!class_exists($name)) { 
-                ob_end_clean();
-                continue;
+                $ns_class = self::fileToFullClass($file);
+                if (class_exists($ns_class, false)) {
+                    $name = $ns_class;
+                } else {
+                    ob_end_clean();
+                    continue;
+                }
             }
 
             if (strstr($file,'plugins')) {
@@ -267,6 +273,21 @@ class AutoLoader extends LibraryClass
         }
 
         return $ret;
+    }
+
+    static private function fileToFullClass($file)
+    {
+        $file = realpath($file);
+        if (substr($file, -4) == '.php') {
+            $file = substr($file, 0, strlen($file)-4);
+        }
+
+        $path = realpath(dirname(__FILE__) . '/../') . DIRECTORY_SEPARATOR;
+        $file = str_replace($path, '', $file);
+        $nss = array_reduce(explode(DIRECTORY_SEPARATOR, $file),
+            function ($carry, $item) { return $carry . '\\' . $item; });
+
+        return 'COREPOS\\pos' . $nss;
     }
 
     /**

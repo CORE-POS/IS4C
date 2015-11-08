@@ -22,11 +22,14 @@ body {
 // apply selected update
 if (isset($_REQUEST['mupdate'])) {
     $updateClass = $_REQUEST['mupdate'];
+    if (strstr($updateClass, '-')) {
+        $updateClass = str_replace('-', '\\', $updateClass);
+    }
     echo '<div style="border: solid 1px #999; padding:10px;">';
     echo 'Attempting to update model: "'.$updateClass.'"<br />';
     if (!class_exists($updateClass)) {
         echo 'Error: class not found<br />';
-    } elseif(!is_subclass_of($updateClass, 'BasicModel')) {
+    } elseif(!is_subclass_of($updateClass, 'COREPOS\\pos\\lib\\models\\BasicModel')) {
         echo 'Error: not a valid model<br />';    
     } else {
         $updateModel = new $updateClass(null);
@@ -35,7 +38,7 @@ if (isset($_REQUEST['mupdate'])) {
             echo 'Error: requested database unknown';
         } else {
             ob_start();
-            $changes = $updateModel->normalize($db_name, BasicModel::NORMALIZE_MODE_APPLY, true);
+            $changes = $updateModel->normalize($db_name, COREPOS\pos\lib\models\BasicModel::NORMALIZE_MODE_APPLY, true);
             $details = ob_get_clean();
             if ($changes === false) {
                 echo 'An error occurred.';
@@ -51,15 +54,15 @@ if (isset($_REQUEST['mupdate'])) {
 }
 
 // list available updates
-$cmd = new ReflectionClass('BasicModel');
+$cmd = new ReflectionClass('COREPOS\pos\lib\models\BasicModel');
 $cmd = $cmd->getFileName();
-$mods = AutoLoader::listModules('BasicModel');
+$mods = AutoLoader::listModules('COREPOS\pos\lib\models\BasicModel');
 $adds = 0;
 $unknowns = 0;
 $errors = 0;
 echo '<ul>';
 foreach ($mods as $class) {
-    if ($class == 'ViewModel') {
+    if ($class == 'ViewModel' || $class == 'COREPOS\\pos\\lib\\models\\ViewModel') {
         // just a helper subclass not an
         // actual structure
         continue;
@@ -75,7 +78,7 @@ foreach ($mods as $class) {
     }
 
     ob_start();
-    $changes = $model->normalize($db_name, BasicModel::NORMALIZE_MODE_CHECK);
+    $changes = $model->normalize($db_name, COREPOS\pos\lib\models\BasicModel::NORMALIZE_MODE_CHECK);
     $details = ob_get_clean();
 
     if ($changes === false) {
@@ -89,6 +92,7 @@ foreach ($mods as $class) {
         $unknowns += $changes;
     }
 
+    $noslash_class = str_replace('\\', '-', $class);
     if ($changes > 0) {
         printf(' <a href="" onclick="$(\'#mDetails%s\').toggle();return false;"
             >Details</a><br /><pre style="display:none;" id="mDetails%s">%s</pre><br />
@@ -96,13 +100,13 @@ foreach ($mods as $class) {
             or run the following command:<br />
             <pre>php %s --update %s %s</pre>
             </li>',
-            $class, $class, $details, $class,
+            $noslash_class, $noslash_class, $details, $noslash_class,
             $cmd, $db_name, $class
             );
     } else if ($changes < 0 || $changes === false) {
         printf(' <a href="" onclick="$(\'#mDetails%s\').toggle();return false;"
             >Details</a><br /><pre style="display:none;" id="mDetails%s">%s</pre></li>',
-            $class, $class, $details
+            $noslash_class, $noslash_class, $details
         );
     }
 }
