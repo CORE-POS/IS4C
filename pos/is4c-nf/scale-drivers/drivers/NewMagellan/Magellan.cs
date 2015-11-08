@@ -154,21 +154,17 @@ public class Magellan : DelegateForm
             rabbit_channel.BasicPublish("", "core-pos", null, body);
             #endif
         } else {
-            int ticks = Environment.TickCount;
+            string filename = System.Guid.NewGuid().ToString();
             string my_location = AppDomain.CurrentDomain.BaseDirectory;
             char sep = Path.DirectorySeparatorChar;
-            while (File.Exists(my_location + sep + "ss-output/"  + sep + ticks)) {
-                ticks++;
-            }
 
-            TextWriter sw = new StreamWriter(my_location + sep + "ss-output/" +sep+"tmp"+sep+ticks);
+            TextWriter sw = new StreamWriter(my_location + sep + "ss-output/" +sep+"tmp"+sep+filename);
             sw = TextWriter.Synchronized(sw);
             sw.WriteLine(msg);
             sw.Close();
-            File.Move(my_location+sep+"ss-output/" +sep+"tmp"+sep+ticks,
-                  my_location+sep+"ss-output/" +sep+ticks);
+            File.Move(my_location+sep+"ss-output/" +sep+"tmp"+sep+filename,
+                  my_location+sep+"ss-output/" +sep+filename);
         }
-
     }
 
     public void ShutDown()
