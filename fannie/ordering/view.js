@@ -309,7 +309,7 @@ function togglePrint(username,oid){
     silentSave(dstr);
 }
 function toggleO(oid,tid){
-	var dstr = 'action=UpdateItemO&orderID='+oid+'&transID='+tid,
+	var dstr = 'action=UpdateItemO&orderID='+oid+'&transID='+tid;
     silentSave(dstr);
 }
 function toggleA(oid,tid){
