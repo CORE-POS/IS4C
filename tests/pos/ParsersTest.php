@@ -57,7 +57,11 @@ class ParsersTest extends PHPUnit_Framework_TestCase
             'FN123'        => '123',
             'DN123'        => '123',
             '1TN123'    => '123',
-            'invalid'    => 'invalid'
+            'invalid'    => 'invalid',
+            '123NR'     => '123',
+            'NR123'     => '123',
+            'CMWHARF'   => 'CMWHARF',
+            'RF123VD'   => 'RF123VD',
         );
 
         $chain = PreParser::get_preparse_chain();
@@ -69,6 +73,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
                 if ($chk){
                     $input = $obj->parse($input);
                 }
+                // just for coverage; not vital functionality
+                $this->assertNotEquals(0, strlen($obj->doc()));
             }
             $this->assertEquals($output, $input);
         }

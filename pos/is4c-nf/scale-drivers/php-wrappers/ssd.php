@@ -22,59 +22,6 @@
 
 class ssd extends ScaleDriverWrapper {
 
-    function SavePortConfiguration($portName){
-        $rel = MiscLib::base_url();
-
-        if (!file_exists($rel."scale-drivers/drivers/rs232/ssd.conf")) return;
-
-        /* read in config file */
-        $fp = fopen($rel."scale-drivers/drivers/rs232/ssd.conf","r");
-        $lines = array();
-        while(!feof($fp)) $lines[] = fgets($fp);
-        fclose($fp);
-
-        /* replace SerialPort config */
-        $fp = fopen($rel."scale-drivers/drivers/rs232/ssd.conf","w");
-        foreach($lines as $l){
-            if (strstr($l,"SerialPort ") === False) fwrite($fp,$l);
-            else {
-                fwrite($fp,sprintf('SerialPort %s',$portName));
-                fwrite($fp,"\n");
-            }
-        }
-        fclose($fp);
-    }
-
-    function SaveDirectoryConfiguration($absPath){
-        $rel = MiscLib::base_url();
-
-        if (!file_exists($rel."scale-drivers/drivers/rs232/ssd.conf")) return;
-
-        /* read in config file */
-        $fp = fopen($rel."scale-drivers/drivers/rs232/ssd.conf","r");
-
-        $lines = array();
-        while(!feof($fp)) $lines[] = fgets($fp);
-        fclose($fp);
-
-        /* replace file location config */
-        $fp = fopen($rel."scale-drivers/drivers/rs232/ssd.conf","w");
-        foreach($lines as $l){
-            if (strstr($l,"ScannerFile ") !== False){
-                fwrite($fp,sprintf('ScannerFile %s',
-                    $absPath."scale-drivers/drivers/rs232/scale"));
-                fwrite($fp,"\n");
-            }
-            elseif (strstr($l,"ScaleFile ") !== False){
-                fwrite($fp,sprintf('ScaleFile %s',
-                    $absPath."scale-drivers/drivers/rs232/scanner"));
-                fwrite($fp,"\n");
-            }
-            else fwrite($fp,$l);
-        }
-        fclose($fp);
-    }
-
     function ReadFromScale(){
         $rel = MiscLib::base_url();
 

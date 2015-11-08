@@ -48,32 +48,6 @@ class ScaleDriverWrapper
         return 'poll-scale.js';
     }
 
-    /**
-      This method updates the driver code
-      or configuration with the specified port name.
-      @param $portName a serial port device name
-       e.g., /dev/ttyS0 or COM1
-      <b>Not used much</b>
-      In practice it's kind of a mess. The driver code
-      has to be browser-writable for this to work
-      and in many cases the driver also needs to be
-      recompiled. Browser-based driver configuration
-      just doesn't work very well, so if your
-      implementation skips this method that's probably
-      fine.
-    */
-    public function SavePortConfiguration($portName){}
-    
-    /** 
-       This method updates the driver code or configuration
-       with the specified path
-       @param $absPath is the top of IT CORE, should have
-       trailing slash
-       <b>not used much</b>
-       See the SavePortConfiguration() method for details.
-    */
-    public function SaveDirectoryConfiguration($absPath){}
-
     /** 
        Reads available scale and scanner input
        Function should print a JSON object with two fields:
