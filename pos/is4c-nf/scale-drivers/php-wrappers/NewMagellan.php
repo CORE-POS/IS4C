@@ -76,8 +76,15 @@ class NewMagellan extends ScaleDriverWrapper {
 
     function ReadFromScale()
     {
-        $rel = MiscLib::base_url();
+        // do not process any scale input while 
+        // transaction is ending
+        if (CoreLocal::get('End') != 0) {
+            usleep(100);
+            echo '{}';
+            return;
+        }
 
+        $rel = MiscLib::base_url();
         $readfile = $rel.'scale-drivers/drivers/NewMagellan/scanner-scale';
         $readdir = $rel.'scale-drivers/drivers/NewMagellan/ss-output';
         $scale_display = "";
