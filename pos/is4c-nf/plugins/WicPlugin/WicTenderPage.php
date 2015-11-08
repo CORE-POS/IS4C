@@ -47,38 +47,10 @@ class WicTenderPage extends BasicCorePage
 
             switch ($this->step) {
                 case 0:
-                    if (strlen($inp) != 6 || !is_numeric($inp)) {
-                        $this->box_color="errorColoredArea";
-                        $this->errMsg = 'Invalid Date: MMDDYY';
-                    } else {
-                        $stamp = mktime(0, 0, 0, substr($inp, 0, 2), substr($inp, 2, 2), 2000+substr($inp, -2));
-                        $today = mktime(0, 0, 0, date('n'), date('j'), date('Y'));
-                        if ($stamp > $today) {
-                            $this->box_color="errorColoredArea";
-                            $this->errMsg = 'Not valid until ' . date('m/d/Y', $stamp);
-                        } else {
-                            $this->step++;
-                        }
-                    }
+                    $this->handleDateInput($inp, true, false);
                     break;
                 case 1:
-                    if (strlen($inp) != 6 || !is_numeric($inp)) {
-                        $this->box_color="errorColoredArea";
-                        $this->errMsg = 'Invalid Date: MMDDYY';
-                    } else {
-                        $stamp = mktime(0, 0, 0, substr($inp, 0, 2), substr($inp, 2, 2), 2000+substr($inp, -2));
-                        $today = mktime(0, 0, 0, date('n'), date('j'), date('Y'));
-                        $issue = mktime(0, 0, 0, date('n', $stamp), date('j', $stamp)-30, date('Y', $stamp));
-                        if ($stamp < $today) {
-                            $this->box_color="errorColoredArea";
-                            $this->errMsg = 'Expired ' . date('m/d/Y', $stamp);
-                        } elseif ($issue > $today) {
-                            $this->box_color="errorColoredArea";
-                            $this->errMsg = 'Not valid until ' . date('m/d/Y', $issue);
-                        } else {
-                            $this->step++;
-                        }
-                    }
+                    $this->handleDateInput($inp, false, true);
                     break;
                 case 2:
                 case 3:
@@ -90,13 +62,7 @@ class WicTenderPage extends BasicCorePage
                     }
                     break;
                 case 4:
-                    if (!is_numeric($inp)) {
-                        $this->box_color="errorColoredArea";
-                        $this->errMsg = 'Invalid amount';
-                    } elseif (($inp/100) - CoreLocal::get('amtdue') > 0.005) {
-                        $this->box_color="errorColoredArea";
-                        $this->errMsg = 'Max amount is ' . CoreLocal::get('amtdue');
-                    } else {
+                    if ($this->validateAmount($inp)) {
                         $tender = $inp . 'WT';
                         CoreLocal::set('RepeatAgain', true);
                         $this->change_page(
@@ -111,6 +77,41 @@ class WicTenderPage extends BasicCorePage
         }
 
         return true;
+    }
+
+    private function validateAmount($inp)
+    {
+        if (!is_numeric($inp)) {
+            $this->box_color="errorColoredArea";
+            $this->errMsg = 'Invalid amount';
+            return false;
+        } elseif (($inp/100) - CoreLocal::get('amtdue') > 0.005) {
+            $this->box_color="errorColoredArea";
+            $this->errMsg = 'Max amount is ' . CoreLocal::get('amtdue');
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private function handleDateInput($inp, $issue=true, $expire=false)
+    {
+        if (strlen($inp) != 6 || !is_numeric($inp)) {
+            $this->box_color="errorColoredArea";
+            $this->errMsg = 'Invalid Date: MMDDYY';
+        } else {
+            $stamp = mktime(0, 0, 0, substr($inp, 0, 2), substr($inp, 2, 2), 2000+substr($inp, -2));
+            $today = mktime(0, 0, 0, date('n'), date('j'), date('Y'));
+            if ($issue && $stamp > $today) {
+                $this->box_color="errorColoredArea";
+                $this->errMsg = 'Not valid until ' . date('m/d/Y', $stamp);
+            } elseif ($expire && $stamp < $today) {
+                $this->box_color="errorColoredArea";
+                $this->errMsg = 'Expired ' . date('m/d/Y', $stamp);
+            } else {
+                $this->step++;
+            }
+        }
     }
 
     public function body_content()

@@ -22,6 +22,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\FormLib;
+
 class StripeQrCode {}
 
 if (!file_exists(dirname(__FILE__) . '/../../../../../vendor/endroid/qrcode/src/Endroid/QrCode')) {
@@ -47,12 +49,12 @@ if (!class_exists('\\Endroid\\QrCode\\QrCode')) {
     include(dirname(__FILE__) . '/../../../../../vendor/endroid/qrcode/src/Endroid/QrCode/QrCode.php');
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__) && isset($_REQUEST['data'])) {
+if (basename($_SERVER['PHP_SELF']) == basename(__FILE__) && FormLib:get('data') !== '') {
     header('Content-Type: image/png');
-    $data = base64_decode($_REQUEST['data']);
-    $qr = new \Endroid\QrCode\QrCode();
-    $qr->setText($data);
-    $qr->setSize(280);
-    $qr->setPadding(10);
-    $qr->render();
+    $data = base64_decode(FormLib::get('data'));
+    $qr_code = new \Endroid\QrCode\QrCode();
+    $qr_code->setText($data);
+    $qr_code->setSize(280);
+    $qr_code->setPadding(10);
+    $qr_code->render();
 }

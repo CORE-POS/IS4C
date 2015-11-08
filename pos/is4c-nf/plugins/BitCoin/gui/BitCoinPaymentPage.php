@@ -155,7 +155,7 @@ function monitorPaymentStatus(payment_id)
         ?>
         <div class="baseHeight">
         <span class="larger">Scan to complete payment</span><br />
-        <img src="BitCoinQrCode.php?data=<?php echo base64_encode($this->payment_url); ?>" 
+        <img src="../../StripeDotCom/gui/StripeQrCode.php?data=<?php echo base64_encode($this->payment_url); ?>" 
             alt="Scan to make payment" />
         <br />
         <span clas="smaller">[clear] to cancel</span>

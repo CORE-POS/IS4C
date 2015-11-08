@@ -22,6 +22,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\FormLib;
+
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class StripePaymentPage extends InputCorePage 
@@ -30,86 +32,66 @@ class StripePaymentPage extends InputCorePage
     private $payment_url;
     private $payment_amount;
 
-    private function initPayment($amount)
+    private function getCurlHandle($url, $postdata)
     {
         $apikey = CoreLocal::get('training') ? CoreLocal::get('StripeTestKey') : CoreLocal::get('StripeLiveKey');
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://api.stripe.com/v1/bitcoin/receivers');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $curl_handle = curl_init();
+        curl_setopt($curl_handle, CURLOPT_URL, 'https://api.stripe.com/v1/bitcoin/receivers');
+        curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl_handle, CURLOPT_TIMEOUT,10);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($curl_handle, CURLOPT_HEADER, false);
+        curl_setopt($curl_handle, CURLOPT_POST, true);
+        curl_setopt($curl_handle, CURLOPT_POSTFIELDS, $postdata);
+        curl_setopt($curl_handle, CURLOPT_HTTPHEADER, array(
+            'Authorization: Bearer ' . $apikey,
+        ));
+    }
+
+    private function initPayment($amount)
+    {
         $postdata = 
               'amount=' . floor($amount*100) 
             . '&currency=' . CoreLocal::get('StripeCurrency')
             . '&email=test@example.com';
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'Authorization: Bearer ' . $apikey,
-        ));
+        $curl_handle = $this->getCurlHandle('https://api.stripe.com/v1/bitcoin/receivers', $postdata);
 
-        $response = curl_exec($ch);
+        return $this->curlExec($curl_handle);
+    }
+
+    private function curlExec($curl_handle)
+    {
+        $response = curl_exec($curl_handle);
+        $errNo = curl_errno($curl_handle);
+        $status = curl_getinfo($curl_handle, CURLINFO_HTTP_CODE);
+
         if ($response === false) {
             return false;
         }
-
-        $errNo = curl_errno($ch);
-        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($errNo != 0 || $status != 200) {
             return false;
         }
-
         $json = json_decode($response, true);
-        if (!is_array($json)) {
-            return false;
-        } else {
-            return $json;
-        }
+
+        return is_array($json) ? $json : false;
     }
 
     private function finalizePayment($id, $amount)
     {
-        $apikey = CoreLocal::get('training') ? CoreLocal::get('StripeTestKey') : CoreLocal::get('StripeLiveKey');
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://api.stripe.com/v1/charges');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl_handle, CURLOPT_TIMEOUT,10);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_POST, true);
         $postdata = 
               'amount=' . floor($amount*100) 
             . '&currency=' . CoreLocal::get('StripeCurrency')
             . '&source=' . $id;
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'Authorization: Bearer ' . $apikey,
-        ));
+        $curl_handle = $this->getCurlHandle('https://api.stripe.com/v1/charges', $postdata);
 
-        $response = curl_exec($ch);
-        if ($response === false) {
-            return false;
-        }
-
-        $errNo = curl_errno($ch);
-        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($errNo != 0 || $status != 200) {
-            return false;
-        }
-
-        $json = json_decode($response, true);
-        if (!is_array($json) || !isset($json['paid']) || !$json['paid']) {
-            return false;
-        } else {
-            return $json;
-        }
+        return $this->curlExec($curl_handle);
     }
 
     function preprocess()
     {
         // initialize the payment on bitcoinpay.com
         // when page first loads
-        if (isset($_REQUEST['amount'])) {
-            $payment = $this->initPayment($_REQUEST['amount']);
+        if (FormLib::get('amount') !== '') {
+            $payment = $this->initPayment(FormLib::get('amount'));
             if ($payment === false) {
                 CoreLocal::set('boxMsg', 'Error initializing Bitcoin payment');
                 $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
@@ -117,14 +99,14 @@ class StripePaymentPage extends InputCorePage
             }
             $this->payment_id = $payment['id'];
             $this->payment_url = $payment['bitcoin_uri'];
-            $this->payment_amount = $_REQUEST['amount'];
+            $this->payment_amount = FormLib::get('amount');
 
             return true;
         }
 
         // Check for clear button to cancel request
-        if (isset($_REQUEST['reginput'])) {
-            $input = strtoupper(trim($_REQUEST['reginput']));
+        if (FormLib::get('reginput') !== '') {
+            $input = strtoupper(trim(FormLib::get('reginput')));
             // CL always exits
             if ($input == "CL") {
                 $this->change_page(MiscLib::baseURL()."gui-modules/pos2.php");
@@ -134,14 +116,14 @@ class StripePaymentPage extends InputCorePage
 
         // Check for payment complete notification
         // add tender and return to main screen
-        if (isset($_REQUEST['finish'])) {
-            $finalize = $this->finalizePayment($_REQUEST['finish'], $_REQUEST['finishamount']);
+        if (FormLib::get('finish') !== '') {
+            $finalize = $this->finalizePayment(FormLib::get('finish'), FormLib::get('finishamount'));
             if ($finalize === false) {
                 CoreLocal::set('boxMsg', 'Error finalizing Bitcoin payment');
                 $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
                 return false;
             } else {
-                TransRecord::addtender('BITCOIN', CoreLocal::get('StripeBitCoinTender'), -1*$_REQUEST['finishamount']);
+                TransRecord::addtender('BITCOIN', CoreLocal::get('StripeBitCoinTender'), -1*FormLib::get('finishamount'));
                 $this->change_page(MiscLib::baseURL()."gui-modules/pos2.php?reginput=TO&repeat=1");
                 return false;
             }

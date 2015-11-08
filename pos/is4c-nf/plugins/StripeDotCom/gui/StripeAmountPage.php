@@ -26,7 +26,8 @@ include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class StripeAmountPage extends BasicCorePage 
 {
-    private $amt = 0;
+    protected $amt = 0;
+    protected $pay_page = 'StripePaymentPage.php';
 
     function preprocess()
     {
@@ -42,7 +43,7 @@ class StripeAmountPage extends BasicCorePage
 
                 return false;
             } elseif ($input == "") {
-                $this->change_page('StripePaymentPage.php?amount=' . CoreLocal::get('amtdue'));
+                $this->change_page($this->pay_page . '?amount=' . CoreLocal::get('amtdue'));
                 return false;
             } elseif ($input != "" && substr($input,-2) != "CL") {
                 // any other input is an alternate amount
@@ -52,7 +53,7 @@ class StripeAmountPage extends BasicCorePage
                     $this->amt = MiscLib::truncate2($this->amt / 100.00);
                 }
                 if ($this->validateAmount($this->amt)) {
-                    $this->change_page('StripePaymentPage.php?amount=' . $this->amt);
+                    $this->change_page($this->pay_page . '?amount=' . $this->amt);
                     return false;
                 }
             }
@@ -61,7 +62,7 @@ class StripeAmountPage extends BasicCorePage
         return true;
     }
 
-    private function validateAmount($amt)
+    protected function validateAmount($amt)
     {
         $due = CoreLocal::get("amtdue");
         if (!is_numeric($amt) || abs($amt) < 0.005) {
