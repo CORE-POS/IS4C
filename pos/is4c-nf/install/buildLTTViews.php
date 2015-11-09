@@ -368,7 +368,7 @@ function fsTaxStr($desc, $rates)
 
 function convertOrCast($dbms, $expr)
 {
-    if (strstr($type, 'mssql')) {
+    if (strstr($dbms, 'mssql')) {
         return 'CONVERT(NUMERIC(10,2), ' . $expr . ')';
     } else {
         return 'CAST(' . $expr . ' AS DECIMAL(10,2))';
