@@ -148,7 +148,7 @@ function updateDropAmount(d){
 	var ones = Number($('#dropAmountTotal').html());
 	$('.denom').each(function(){
 		var denom = $(this).val();
-		if (denom === "1.00"){}
+		if (denom === "1.00"){
 		} else if (denom == "Checks") {
 			ones -= Number($('#dropAmountChecks').html());
 		} else {
