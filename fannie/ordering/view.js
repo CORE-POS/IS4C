@@ -106,17 +106,6 @@ function deleteID(orderID,transID){
 	}
 	});
 }
-function deleteUPC(orderID,upc){
-	$.ajax({
-	url: 'ajax-calls.php',
-	type: 'post',
-	data: 'action=deleteUPC&orderID='+orderID+'&upc='+upc,
-	cache: false,
-	success: function(resp){
-		$('#itemDiv').html(resp);
-	}
-	});
-}
 function saveDesc(new_desc,tid){
 	var oid = $('#orderID').val();
 	$.ajax({
