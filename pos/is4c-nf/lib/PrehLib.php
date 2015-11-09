@@ -240,6 +240,40 @@ static public function setAltMemMsg($store, $member, $personNumber, $row, $charg
     //return $ret;
 }
 
+static private function defaultMemMsg($member, $row)
+{
+    /**
+      Determine what string is shown in the upper
+      left of the screen to indicate the current member
+    */
+    $memMsg = '#' . $member;
+    if (!empty($row['blueLine'])) {
+        $memMsg = $row['blueLine'];
+    }
+    $chargeOk = self::chargeOk();
+    if (CoreLocal::get("balance") != 0 && $member != CoreLocal::get("defaultNonMem")) {
+        $memMsg .= _(" AR");
+    }
+    if (CoreLocal::get("SSI") == 1) {
+        $memMsg .= " #";
+    }
+    $conn = Database::pDataConnect();
+    if ($conn->tableExists('CustomerNotifications')) {
+        $blQ = '
+            SELECT message
+            FROM CustomerNotifications
+            WHERE cardNo=' . ((int)$member) . '
+                AND type=\'blueline\'
+            ORDER BY message';
+        $blR = $conn->query($blQ);
+        while ($blW = $conn->fetchRow($blR)) {
+            $memMsg .= ' ' . $blW['message'];
+        }
+    }
+
+    return $memMsg;
+}
+
 /**
   Assign a member number to a transaction
   @param $member CardNo from custdata
@@ -285,7 +319,6 @@ static public function setMember($member, $personNumber, $row=array())
     $row = $conn->fetch_row($result);
 
     CoreLocal::set("memberID",$member);
-
     CoreLocal::set("memType",$row["memType"]);
     CoreLocal::set("lname",$row["LastName"]);
     CoreLocal::set("fname",$row["FirstName"]);
@@ -318,34 +351,7 @@ static public function setMember($member, $personNumber, $row=array())
         CoreLocal::set("staffSpecial", 0);
     }
 
-    /**
-      Determine what string is shown in the upper
-      left of the screen to indicate the current member
-    */
-    $memMsg = '#' . $member;
-    if (!empty($row['blueLine'])) {
-        $memMsg = $row['blueLine'];
-    }
-    $chargeOk = self::chargeOk();
-    if (CoreLocal::get("balance") != 0 && $member != CoreLocal::get("defaultNonMem")) {
-        $memMsg .= _(" AR");
-    }
-    if (CoreLocal::get("SSI") == 1) {
-        $memMsg .= " #";
-    }
-    if ($conn->tableExists('CustomerNotifications')) {
-        $blQ = '
-            SELECT message
-            FROM CustomerNotifications
-            WHERE cardNo=' . ((int)$member) . '
-                AND type=\'blueline\'
-            ORDER BY message';
-        $blR = $conn->query($blQ);
-        while ($blW = $conn->fetchRow($blR)) {
-            $memMsg .= ' ' . $blW['message'];
-        }
-    }
-    CoreLocal::set("memMsg",$memMsg);
+    CoreLocal::set("memMsg", self::defaultMemMsg($member, $row));
     self::setAltMemMsg(CoreLocal::get("store"), $member, $personNumber, $row, $chargeOk);
 
     /**
@@ -584,27 +590,40 @@ static public function tender($right, $strl)
 
     // see if transaction has ended
     if (CoreLocal::get("amtdue") <= 0.005) {
-
-        CoreLocal::set("change",-1 * CoreLocal::get("amtdue"));
-        $cash_return = CoreLocal::get("change");
-        TransRecord::addchange($cash_return, $tender_object->ChangeType(), $tender_object->ChangeMsg());
-                    
-        CoreLocal::set("End",1);
-        $ret['receipt'] = 'full';
-        $ret['output'] = DisplayLib::printReceiptFooter();
-        TransRecord::finalizeTransaction();
+        $ret = self::tenderEndsTransaction($tender_object, $ret);
     } else {
-        CoreLocal::set("change",0);
-        CoreLocal::set("fntlflag",0);
-        Database::setglobalvalue("FntlFlag", 0);
-        $chk = self::ttl();
-        if ($chk === true) {
-            $ret['output'] = DisplayLib::lastpage();
-        } else {
-            $ret['main_frame'] = $chk;
-        }
+        $ret = self::tenderContinuesTransaction($ret);
     }
     $ret['redraw_footer'] = true;
+
+    return $ret;
+}
+
+private static function tenderEndsTransaction($tender_object, $ret)
+{
+    CoreLocal::set("change",-1 * CoreLocal::get("amtdue"));
+    $cash_return = CoreLocal::get("change");
+    TransRecord::addchange($cash_return, $tender_object->ChangeType(), $tender_object->ChangeMsg());
+                
+    CoreLocal::set("End",1);
+    $ret['receipt'] = 'full';
+    $ret['output'] = DisplayLib::printReceiptFooter();
+    TransRecord::finalizeTransaction();
+
+    return $ret;
+}
+
+private static function tenderContinuesTransaction($ret)
+{
+    CoreLocal::set("change",0);
+    CoreLocal::set("fntlflag",0);
+    Database::setglobalvalue("FntlFlag", 0);
+    $chk = self::ttl();
+    if ($chk === true) {
+        $ret['output'] = DisplayLib::lastpage();
+    } else {
+        $ret['main_frame'] = $chk;
+    }
 
     return $ret;
 }
@@ -654,31 +673,10 @@ static public function deptkey($price, $dept,$ret=array())
     }
     $discount = $discount * CoreLocal::get('quantity');
 
-    $query = "SELECT dept_no,
-        dept_name,
-        dept_tax,
-        dept_fs,
-        dept_limit,
-        dept_minimum,
-        dept_discount,";
     $dbc = Database::pDataConnect();
-    $table = $dbc->table_definition('departments');
-    if (isset($table['dept_see_id'])) {
-        $query .= 'dept_see_id,';
-    } else {
-        $query .= '0 as dept_see_id,';
-    }
-    if (isset($table['memberOnly'])) {
-        $query .= 'memberOnly';
-    } else {
-        $query .= '0 AS memberOnly';
-    }
-    $query .= " FROM departments 
-                WHERE dept_no = " . ((int)$dept);
-    $result = $dbc->query($query);
+    $row = self::getDepartment($dbc, $dept);
 
-    $num_rows = $dbc->num_rows($result);
-    if ($num_rows == 0) {
+    if ($row === false) {
         $ret['output'] = DisplayLib::boxMsg(
             _("department unknown"),
             '',
@@ -688,10 +686,8 @@ static public function deptkey($price, $dept,$ret=array())
         $ret['udpmsg'] = 'errorBeep';
         CoreLocal::set("quantity",1);
     } elseif ($ringAsCoupon) {
-        $row = $dbc->fetch_array($result);
         $ret = self::deptCouponRing($row, $price, $ret);
     } else {
-        $row = $dbc->fetch_array($result);
         $my_url = MiscLib::baseURL();
 
         if ($row['dept_see_id'] > 0) {
@@ -708,6 +704,33 @@ static public function deptkey($price, $dept,$ret=array())
     CoreLocal::set("itemPD",0);
 
     return $ret;
+}
+
+static private function getDepartment($dbc, $dept)
+{
+    $query = "SELECT dept_no,
+        dept_name,
+        dept_tax,
+        dept_fs,
+        dept_limit,
+        dept_minimum,
+        dept_discount,";
+    $table = $dbc->table_definition('departments');
+    if (isset($table['dept_see_id'])) {
+        $query .= 'dept_see_id,';
+    } else {
+        $query .= '0 as dept_see_id,';
+    }
+    if (isset($table['memberOnly'])) {
+        $query .= 'memberOnly';
+    } else {
+        $query .= '0 AS memberOnly';
+    }
+    $query .= " FROM departments 
+                WHERE dept_no = " . ((int)$dept);
+    $result = $dbc->query($query);
+
+    return $dbc->numRows($result) === 0 ? false : $dbc->fetchRow($result);
 }
 
 static private function deptCouponRing($dept, $price, $ret)
@@ -761,11 +784,12 @@ static private function deptCouponRing($dept, $price, $ret)
     return $ret;
 }
 
-static private function deptOpenRing($dept, $price, $discount, $ret)
+static private function memberOnlyDept($dept, $ret)
 {
     /**
       Enforce memberOnly flag
     */
+    $modified = false;
     if ($dept['memberOnly'] > 0) {
         switch ($dept['memberOnly']) {
             case 1: // member only, no override
@@ -776,7 +800,7 @@ static private function deptOpenRing($dept, $price, $discount, $ret)
                                         false,
                                         array('Member Search [ID]' => 'parseWrapper(\'ID\');', 'Dismiss [clear]' => 'parseWrapper(\'CL\');')
                                     ));
-                    return $ret;
+                    $modified = true;
                 }
                 break; 
             case 2: // member only, can override
@@ -787,8 +811,8 @@ static private function deptOpenRing($dept, $price, $discount, $ret)
                             '[enter] to continue, [clear] to cancel'
                         ));
                         CoreLocal::set('lastRepeat', 'memberOnlyDept');
-                        $ret['main_frame'] = $my_url . 'gui-modules/boxMsg2.php';
-                        return $ret;
+                        $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/boxMsg2.php';
+                        $modified = true;
                     } else if (CoreLocal::get('lastRepeat') == 'memberOnlyDept') {
                         CoreLocal::set('lastRepeat', '');
                     }
@@ -802,7 +826,7 @@ static private function deptOpenRing($dept, $price, $discount, $ret)
                                         false,
                                         array('Member Search [ID]' => 'parseWrapper(\'ID\');', 'Dismiss [clear]' => 'parseWrapper(\'CL\');')
                                     ));
-                    return $ret;
+                    $modified = true;
                 } else if (CoreLocal::get('memberID') == CoreLocal::get('defaultNonMem')) {
                     $ret['output'] = DisplayLib::boxMsg(_(
                                         _('Department not allowed with this member'),
@@ -810,10 +834,20 @@ static private function deptOpenRing($dept, $price, $discount, $ret)
                                         false,
                                         DisplayLib::standardClearButton()
                                     ));
-                    return $ret;
+                    $modified = true;
                 }
                 break;
         }
+    }
+
+    return array($ret, $modified);
+}
+
+static private function deptOpenRing($dept, $price, $discount, $ret)
+{
+    list($ret, $memberOnly) = self::memberOnlyDept($dept, $ret);
+    if ($memberOnly === true) {
+        return $ret;
     }
 
     $deptmax = $dept['dept_limit'] ? $dept['dept_limit'] : 0;
@@ -824,28 +858,22 @@ static private function deptOpenRing($dept, $price, $discount, $ret)
     $deptDiscount = $dept["dept_discount"];
     list($tax, $foodstamp, $deptDiscount) = self::applyToggles($tax, $foodstamp, $deptDiscount);
 
+    $minMaxButtons = array(
+        'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+        'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+    );
+    // remove Confirm button/text if hard limits enforced
+    if (CoreLocal::get('OpenRingHardMinMax')) {
+        array_shift($minMaxButtons);
+    }
+
     if ($price > $deptmax && (CoreLocal::get('OpenRingHardMinMax') || CoreLocal::get("msgrepeat") == 0)) {
         CoreLocal::set("boxMsg","$".$price." "._("is greater than department limit"));
-        $maxButtons = array(
-            'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-            'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-        );
-        // remove Confirm button/text if hard limits enforced
-        if (CoreLocal::get('OpenRingHardMinMax')) {
-            array_shift($maxButtons);
-        }
-        CoreLocal::set('boxMsgButtons', $maxButtons);
+        CoreLocal::set('boxMsgButtons', $minMaxButtons);
         $ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
     } elseif ($price < $deptmin && (CoreLocal::get('OpenRingHardMinMax') || CoreLocal::get("msgrepeat") == 0)) {
         CoreLocal::set("boxMsg","$".$price." "._("is lower than department minimum"));
-        $minButtons = array(
-            'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-            'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-        );
-        if (CoreLocal::get('OpenRingHardMinMax')) {
-            array_shift($minButtons);
-        }
-        CoreLocal::set('boxMsgButtons', $minButtons);
+        CoreLocal::set('boxMsgButtons', $minMaxButtons);
         $ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
     } else {
         if (CoreLocal::get("casediscount") > 0) {
@@ -904,6 +932,32 @@ static private function addRemoveDiscountViews()
     }
 }
 
+static private function runTotalActions()
+{
+    $ttlHooks = CoreLocal::get('TotalActions');
+    if (is_array($ttlHooks)) {
+        foreach($ttlHooks as $ttl_class) {
+            if ("$ttl_class" == "") {
+                continue;
+            }
+            if (!class_exists($ttl_class)) {
+                CoreLocal::set("boxMsg",sprintf("TotalActions class %s doesn't exist.", $ttl_class));
+                CoreLocal::set('boxMsgButtons', array(
+                    'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+                ));
+                return MiscLib::baseURL()."gui-modules/boxMsg2.php?quiet=1";
+            }
+            $mod = new $ttl_class();
+            $result = $mod->apply();
+            if ($result !== true && is_string($result)) {
+                return $result; // redirect URL
+            }
+        }
+    }
+
+    return true;
+}
+
 /**
   Total the transaction
   @return
@@ -936,25 +990,10 @@ static public function ttl()
     // Refresh totals after staff and member discounts.
     Database::getsubtotals();
 
-    $ttlHooks = CoreLocal::get('TotalActions');
-    if (is_array($ttlHooks)) {
-        foreach($ttlHooks as $ttl_class) {
-            if ("$ttl_class" == "") {
-                continue;
-            }
-            if (!class_exists($ttl_class)) {
-                CoreLocal::set("boxMsg",sprintf("TotalActions class %s doesn't exist.", $ttl_class));
-                CoreLocal::set('boxMsgButtons', array(
-                    'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-                ));
-                return MiscLib::baseURL()."gui-modules/boxMsg2.php?quiet=1";
-            }
-            $mod = new $ttl_class();
-            $result = $mod->apply();
-            if ($result !== true && is_string($result)) {
-                return $result; // redirect URL
-            }
-        }
+    $ttlHooks = self::runTotalActions();
+    if ($ttlHooks !== true) {
+        // follow redirect
+        return $ttlHooks;
     }
 
     // Refresh totals after total actions
