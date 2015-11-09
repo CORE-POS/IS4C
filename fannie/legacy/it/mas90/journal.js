@@ -282,13 +282,13 @@ function resumOtherIncome(){
 		document.getElementById('jCreditSupplies').innerHTML = supplies;
 	}
 
-	var class = Number(document.getElementById('inputClass').value);
-	if (class < 0){
-		document.getElementById('jDebitClass').innerHTML = class*-1;
+	var classIn = Number(document.getElementById('inputClass').value);
+	if (classIn < 0){
+		document.getElementById('jDebitClass').innerHTML = classIn*-1;
 		document.getElementById('jCreditClass').innerHTML = "&nbsp;";
 	}
 	else{
-		document.getElementById('jCreditClass').innerHTML = class;
+		document.getElementById('jCreditClass').innerHTML = classIn;
 		document.getElementById('jDebitClass').innerHTML = "&nbsp;";
 	}
 
@@ -421,7 +421,7 @@ function saveOther(date){
 	var misc1 = document.getElementById('inputMisc1').value;
 	var misc2 = document.getElementById('inputMisc2').value;
 	var supplies = document.getElementById('inputSupplies').value;
-	var class = document.getElementById('inputClass').value;
+	var classIn = document.getElementById('inputClass').value;
 	var found = document.getElementById('inputFound').value;
 	var totes = document.getElementById('inputTotes').value;
 
@@ -435,7 +435,7 @@ function saveOther(date){
 	sendStr += "801"+":"+misc1+";";
 	sendStr += "802"+":"+misc2+";";
 	sendStr += "600"+":"+supplies+";";
-	sendStr += "708"+":"+class+";";
+	sendStr += "708"+":"+classIn+";";
 	sendStr += "700"+":"+totes+";";
 	sendStr += "FOUND"+":"+found;
 
