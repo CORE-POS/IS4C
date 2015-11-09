@@ -1,4 +1,4 @@
-functon saveBtField(action, val, bid, elem, orig)
+function saveBtField(action, val, bid, elem, orig)
 {
     $.ajax({
         url: 'BatchTypeEditor.php',
