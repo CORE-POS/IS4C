@@ -216,7 +216,7 @@ function buildLTTViewsGeneric($db, $type, $errors=array())
     $createStr .= 
     convertOrCast($type, "(sum(case when trans_subtype = 'FS' or trans_subtype = 'EF' then total else 0 end))") . " as fsTendered,
     " . convertOrCast($type, "(sum(case when foodstamp = 1 and discountable = 0 then total else 0 end))") . " as fsNoDiscTTL,
-    " . convertOrCast($Type, "(sum(case when foodstamp = 1 and discountable <> 0 then total else 0 end))") . " as fsDiscTTL,
+    " . convertOrCast($type, "(sum(case when foodstamp = 1 and discountable <> 0 then total else 0 end))") . " as fsDiscTTL,
     (case when (max(percentDiscount) is null or max(percentDiscount) < 0) then 0.00 else max(" . convertOrCast($type, 'percentDiscount') . ") end) as percentDiscount,
     " . convertOrCast($type, "(sum(case when numflag=1 THEN total ELSE 0 END))") . " as localTotal,
     " . convertOrCast($type, "(sum(case when trans_status='V' THEN -total ELSE 0 END))") . " as voidTotal,
