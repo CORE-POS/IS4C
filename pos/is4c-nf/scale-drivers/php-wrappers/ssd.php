@@ -22,16 +22,10 @@
 
 class ssd extends ScaleDriverWrapper {
 
-    function ReadFromScale(){
-        $rel = MiscLib::base_url();
-
-        $scale_data = file_get_contents($rel.'scale-drivers/drivers/rs232/scale');
-        $fp = fopen($rel.'scale-drivers/drivers/rs232/scale','w');
-        fclose($fp);
-
-        $scan_data = file_get_contents($rel.'scale-drivers/drivers/rs232/scanner');
-        $fp = fopen($rel.'scale-drivers/drivers/rs232/scanner','w');
-        fclose($fp);
+    function ReadFromScale()
+    {
+        $scale_data = $this->getFile('scale');
+        $scan_data = $this->getFile('scanner');
     
         $scale_display = '';
         $scans = array();
@@ -54,38 +48,52 @@ class ssd extends ScaleDriverWrapper {
         else echo "{}";
     }
 
-    function WriteToScale($str){
-        $port = CoreLocal::get("scalePort");
+    private function getFile($filename)
+    {
+        $rel = MiscLib::base_url();
+        $scale_data = file_get_contents($rel.'scale-drivers/drivers/rs232/' . $filename);
+        $fp = fopen($rel.'scale-drivers/drivers/rs232/' . $filename,'w');
+        fclose($fp);
 
+        return $scale_data;
+    }
+
+    function WriteToScale($str)
+    {
         switch(strtolower($str)){
         case 'goodbeep':
-            system('echo -e "S334\r" > '.$port);
+            $this->sendCmd('S334');
             break;
         case 'errorbeep':
-            system('echo -e "S334\r" > '.$port);
+            $this->sendCmd('S334');
             usleep(100);
-            system('echo -e "S334\r" > '.$port);
+            $this->sendCmd('S334');
             usleep(100);
-            system('echo -e "S334\r" > '.$port);
+            $this->sendCmd('S334');
             break;
         case 'twopairs':
-            system('echo -e "S334\r" > '.$port);
+            $this->sendCmd('S334');
             usleep(100);
-            system('echo -e "S334\r" > '.$port);
+            $this->sendCmd('S334');
             usleep(300);
-            system('echo -e "S334\r" > '.$port);
+            $this->sendCmd('S334');
             usleep(100);
-            system('echo -e "S334\r" > '.$port);
+            $this->sendCmd('S334');
             break;
         case 'repoll':
-            system('echo -e "S14\r" > '.$port);
+            $this->sendCmd('S14');
             break;
         case 'wakeup':
-            system('echo -e "S11\r" > '.$port);
-            system('echo -e "S14\r" > '.$port);
+            $this->sendCmd('S11');
+            $this->sendCmd('S14');
             break;
         }
     }
+
+    private function sendCmd($cmd)
+    {
+        $port = CoreLocal::get("scalePort");
+        system('echo -e "' . $cmd . '\r" > '.$port);
+    }
 }
 
-?>

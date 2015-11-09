@@ -103,29 +103,9 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
     //css_content()
     }
 
-    //  redefined to return them.
-    /**
-      Define any javascript needed
-      @return A javascript string
-    function javascript_content(){
-        $js="";
-        return $js;
-    }
-    */
-
-    function body_content()
+    private function detectPath()
     {
-        include('../config.php'); 
-        ob_start();
-
-        echo showInstallTabs('Necessities');
-        $self = basename($_SERVER['PHP_SELF']);
-
-        echo "<form action='$self' method='post'>";
-        if (!$this->themed) {
-            echo "<h1 class='install'>{$this->header}</h1>";
-        }
-
+        $self = basename(filter_input(INPUT_SERVER, 'PHP_SELF'));
         // Path detection: Establish ../../
         $FILEPATH = rtrim(__FILE__,"$self");
         if (DIRECTORY_SEPARATOR == '\\') {
@@ -136,29 +116,37 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         $URL = rtrim($URL,'/');
         $FILEPATH = rtrim($FILEPATH,'install');
         $URL = rtrim($URL,'install');
-        $FANNIE_ROOT = $FILEPATH;
-        $FANNIE_URL = $URL;
 
+        return array($FILEPATH, $URL);
+    }
+
+    private function runningAs()
+    {
         if (function_exists('posix_getpwuid')) {
             $chk = posix_getpwuid(posix_getuid());
-            echo "PHP is running as: ".$chk['name']."<br />";
+            return "PHP is running as: ".$chk['name']."<br />";
         } else {
-            echo "PHP is (probably) running as: ".get_current_user()."<br />";
+            return "PHP is (probably) running as: ".get_current_user()."<br />";
         }
 
-        if (is_writable($FILEPATH.'config.php')) {
-            confset('FANNIE_ROOT',"'$FILEPATH'");
-            confset('FANNIE_URL',"'$URL'");
+    }
+
+    private function canSave($FANNIE_ROOT, $FANNIE_URL)
+    {
+        if (is_writable($FANNIE_ROOT.'config.php')) {
+            confset('FANNIE_ROOT',"'$FANNIE_ROOT'");
+            confset('FANNIE_URL',"'$FANNIE_URL'");
             echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
             echo "<hr />";
+            return true;
         } else {
             echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
             echo "<div class=\"well\">";
-            echo "config.php ({$FILEPATH}config.php) is Fannie's main configuration file.";
+            echo "config.php ({$FANNIE_ROOT}config.php) is Fannie's main configuration file.";
             echo "<ul>";
             echo "<li>If this file exists, ensure it is writable by the user running PHP (see above)";
-            echo "<li>If the file does not exist, copy config.dist.php ({$FILEPATH}config.dist.php) to config.php";
-            echo "<li>If neither file exists, create a new config.php ({$FILEPATH}config.php) containing:";
+            echo "<li>If the file does not exist, copy config.dist.php ({$FANNIE_ROOT}config.dist.php) to config.php";
+            echo "<li>If neither file exists, create a new config.php ({$FANNIE_ROOT}config.php) containing:";
             echo "</ul>";
             echo "<pre>
 &lt;?php
@@ -167,15 +155,18 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             echo "</div>";
             echo '<button type="submit" class="btn btn-default">Refresh this page</button>';
             echo "</form>";
-            return ob_get_clean();
+            return false;
         }
+    }
 
+    private function checkComposer($FANNIE_ROOT)
+    {
         if (!is_dir(dirname(__FILE__) . '/../../vendor')) {
             echo "<div class=\"alert alert-warning\"><b>Warning</b>: dependencies appear to be missing.</div>";
             echo '<div class=\"well\">';
             echo 'Install <a href="https://getcomposer.org/">Composer</a> then run ';
             echo "<pre>";
-            echo '$ cd "' . $FILEPATH . "\"\n";
+            echo '$ cd "' . $FANNIE_ROOT . "\"\n";
             echo '$ /path/to/composer.phar update';
             echo '</pre>';
             echo '<a href="https://github.com/CORE-POS/IS4C/wiki/Installation#composer">More info about Composer</a>';
@@ -193,11 +184,49 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             if ($missing) {
                 echo '<div class="well">Install dependencies by running';
                 echo "<pre>";
-                echo '$ cd "' . substr($FILEPATH, 0, strlen($FILEPATH)-7) . "\"\n";
+                echo '$ cd "' . substr($FANNIE_ROOT, 0, strlen($FANNIE_ROOT)-7) . "\"\n";
                 echo '$ /path/to/composer.phar update';
                 echo '</pre></div>';
             }
         }
+    }
+
+    private function dbErrors($arr)
+    {
+        return array_reduce(
+            array_filter($arr, function($i) { return $i['error'] != 0; }),
+            function ($carry, $item) { return $carry . $item . '<br />'; }
+        );
+    }
+
+    private function readLaneForm($FANNIE_LANES, $i, $field, $prefix)
+    {
+        if (FormLib::get($prefix . $i) !== '') {
+            $FANNIE_LANES[$i][$field] = FormLib::get($prefix . $i);
+        }
+    }
+
+    function body_content()
+    {
+        include('../config.php'); 
+        ob_start();
+
+        echo showInstallTabs('Necessities');
+
+        echo "<form method='post'>";
+        if (!$this->themed) {
+            echo "<h1 class='install'>{$this->header}</h1>";
+        }
+
+        list($FANNIE_ROOT, $FANNIE_URL) = $this->detectPath();
+
+        echo $this->runningAs();
+
+        if (!$this->canSave($FANNIE_ROOT, $FANNIE_URL)) {
+            return ob_get_clean();
+        }
+
+        $this->checkComposer();
 
         /**
             Detect databases that are supported
@@ -255,10 +284,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             echo "<div class=\"alert alert-success\">Testing Operational DB connection succeeded</div>";
             $msgs = $this->create_op_dbs($sql, $FANNIE_OP_DB);
             $createdOps = true;
-            foreach ($msgs as $msg) {
-                if ($msg['error'] == 0) continue;
-                echo $msg['error_msg'] . '<br />';
-            }
+            echo $this->dbErrors($msgs);
         }
 
         $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
@@ -270,10 +296,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         } else {
             echo "<div class=\"alert alert-success\">Testing Transaction DB connection succeeded</div>";
             $msgs = $this->create_trans_dbs($sql, $FANNIE_TRANS_DB, $FANNIE_OP_DB);
-            foreach ($msgs as $msg) {
-                if ($msg['error'] == 0) continue;
-                echo $msg['error_msg'] . '<br />';
-            }
+            echo $this->dbErrors($msgs);
             $createdTrans = true;
         }
         if ($createdOps && $createdTrans) {
@@ -306,10 +329,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         } else {
             echo "<div class=\"alert alert-success\">Testing Archive DB connection succeeded</div>";
             $msgs = $this->create_archive_dbs($sql, $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD);
-            foreach ($msgs as $msg) {
-                if ($msg['error'] == 0) continue;
-                echo $msg['error_msg'] . '<br />';
-            }
+            echo $this->dbErrors($msgs);
             $this->add_onload_command('$(\'#archiveConfTable\').hide();');
         }
         ?>
@@ -318,7 +338,9 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         Number of lanes
         <?php
         if (!isset($FANNIE_NUM_LANES)) $FANNIE_NUM_LANES = 0;
-        if (isset($_REQUEST['FANNIE_NUM_LANES'])) $FANNIE_NUM_LANES = $_REQUEST['FANNIE_NUM_LANES'];
+        if (FormLib::get('FANNIE_NUM_LANES') !== '') {
+            $FANNIE_NUM_LANES = FormLib::get('FANNIE_NUM_LANES');
+        }
         confset('FANNIE_NUM_LANES',"$FANNIE_NUM_LANES");
         echo "<input type=text name=FANNIE_NUM_LANES value=\"$FANNIE_NUM_LANES\" size=3 />";
         ?>
@@ -352,12 +374,12 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             $conf .= 'array(';
 
             if (!isset($FANNIE_LANES[$i]['host'])) $FANNIE_LANES[$i]['host'] = '127.0.0.1';
-            if (isset($_REQUEST["LANE_HOST_$i"])){ $FANNIE_LANES[$i]['host'] = $_REQUEST["LANE_HOST_$i"]; }
+            $FANNIE_LANES = $this->readLaneForm($FANNIE_LANES, $i, 'host', 'LANE_HOST_');
             $conf .= "'host'=>'{$FANNIE_LANES[$i]['host']}',";
             echo "Lane ".($i+1)." Database Host: <input type=text name=LANE_HOST_$i value=\"{$FANNIE_LANES[$i]['host']}\" /><br />";
             
             if (!isset($FANNIE_LANES[$i]['type'])) $FANNIE_LANES[$i]['type'] = $defaultDbType;
-            if (isset($_REQUEST["LANE_TYPE_$i"])) $FANNIE_LANES[$i]['type'] = $_REQUEST["LANE_TYPE_$i"];
+            $FANNIE_LANES = $this->readLaneForm($FANNIE_LANES, $i, 'type', 'LANE_TYPE_');
             $conf .= "'type'=>'{$FANNIE_LANES[$i]['type']}',";
             echo "Lane ".($i+1)." Database Type: <select name=LANE_TYPE_$i>";
             foreach ($supportedTypes as $val=>$label){
@@ -369,22 +391,22 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             echo "</select><br />";
 
             if (!isset($FANNIE_LANES[$i]['user'])) $FANNIE_LANES[$i]['user'] = 'root';
-            if (isset($_REQUEST["LANE_USER_$i"])) $FANNIE_LANES[$i]['user'] = $_REQUEST["LANE_USER_$i"];
+            $FANNIE_LANES = $this->readLaneForm($FANNIE_LANES, $i, 'user', 'LANE_USER_');
             $conf .= "'user'=>'{$FANNIE_LANES[$i]['user']}',";
             echo "Lane ".($i+1)." Database Username: <input type=text name=LANE_USER_$i value=\"{$FANNIE_LANES[$i]['user']}\" /><br />";
 
             if (!isset($FANNIE_LANES[$i]['pw'])) $FANNIE_LANES[$i]['pw'] = '';
-            if (isset($_REQUEST["LANE_PW_$i"])) $FANNIE_LANES[$i]['pw'] = $_REQUEST["LANE_PW_$i"];
+            $FANNIE_LANES = $this->readLaneForm($FANNIE_LANES, $i, 'pw', 'LANE_PW_');
             $conf .= "'pw'=>'{$FANNIE_LANES[$i]['pw']}',";
             echo "Lane ".($i+1)." Database Password: <input type=password name=LANE_PW_$i value=\"{$FANNIE_LANES[$i]['pw']}\" /><br />";
 
             if (!isset($FANNIE_LANES[$i]['op'])) $FANNIE_LANES[$i]['op'] = 'opdata';
-            if (isset($_REQUEST["LANE_OP_$i"])) $FANNIE_LANES[$i]['op'] = $_REQUEST["LANE_OP_$i"];
+            $FANNIE_LANES = $this->readLaneForm($FANNIE_LANES, $i, 'op', 'LANE_OP_');
             $conf .= "'op'=>'{$FANNIE_LANES[$i]['op']}',";
             echo "Lane ".($i+1)." Operational DB: <input type=text name=LANE_OP_$i value=\"{$FANNIE_LANES[$i]['op']}\" /><br />";
 
             if (!isset($FANNIE_LANES[$i]['trans'])) $FANNIE_LANES[$i]['trans'] = 'translog';
-            if (isset($_REQUEST["LANE_TRANS_$i"])) $FANNIE_LANES[$i]['trans'] = $_REQUEST["LANE_TRANS_$i"];
+            $FANNIE_LANES = $this->readLaneForm($FANNIE_LANES, $i, 'trans', 'LANE_TRANS_');
             $conf .= "'trans'=>'{$FANNIE_LANES[$i]['trans']}'";
             echo "Lane ".($i+1)." Transaction DB: <input type=text name=LANE_TRANS_$i value=\"{$FANNIE_LANES[$i]['trans']}\" /><br />";
 
@@ -578,115 +600,115 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
     // body_content()
     }
 
+    private $op_models = array(
+        // TABLES
+        'AutoCouponsModel',
+        'BatchesModel',
+        'BatchListModel',
+        'BatchCutPasteModel',
+        'BatchBarcodesModel',
+        'BatchTypeModel',
+        'BatchMergeTableModel',
+        'ConsistentProductRulesModel',
+        'CoopDealsItemsModel',
+        'CronBackupModel',
+        'CustdataModel',
+        'CustdataBackupModel',
+        'CustAvailablePrefsModel',
+        'CustPreferencesModel',
+        'CustReceiptMessageModel',
+        'CustomerAccountSuspensionsModel',
+        'CustomerNotificationsModel',
+        'CustomReceiptModel',
+        'CustomReportsModel',
+        'DateRestrictModel',
+        'DepartmentsModel',
+        'DisableCouponModel',
+        'EmployeesModel',
+        'EquityPaymentPlansModel',
+        'EquityPaymentPlanAccountsModel',
+        'FloorSectionsModel',
+        'HouseCouponsModel',
+        'HouseCouponItemsModel',
+        'HouseVirtualCouponsModel',
+        'InventoryCountsModel',
+        'LikeCodesModel',
+        'UpcLikeModel',
+        'MemberCardsModel',
+        'MemberNotesModel',
+        'MemDatesModel',
+        'MeminfoModel',
+        'MemtypeModel',
+        'MemContactModel',
+        'MemContactPrefsModel',
+        'OriginsModel',
+        'OriginCountryModel',
+        'OriginStateProvModel',
+        'OriginCustomRegionModel',
+        'PagePermissionsModel',
+        'ParametersModel',
+        'PatronageModel',
+        'PriceRulesModel',
+        'PriceRuleTypesModel',
+        'ProductsModel',
+        'ProductBackupModel',
+        'ProductUserModel',
+        'ProductOriginsMapModel',
+        'ProdExtraModel',
+        'ProdFlagsModel',
+        'ProdPhysicalLocationModel',
+        'ProdUpdateModel',
+        'ProdDepartmentHistoryModel',
+        'ProdCostHistoryModel',
+        'ProdPriceHistoryModel',
+        'PurchaseOrderModel',
+        'PurchaseOrderItemsModel',
+        'PurchaseOrderSummaryModel',
+        'ReasoncodesModel',
+        'ScaleItemsModel',
+        'ServiceScalesModel',
+        'ServiceScaleItemMapModel',
+        'ShelftagsModel',
+        'ShelfTagQueuesModel',
+        'ShrinkReasonsModel',
+        'SpecialDeptMapModel',
+        'SubDeptsModel',
+        'SuperDeptsModel',
+        'SuperDeptEmailsModel',
+        'SuperDeptNamesModel',
+        'StoresModel',
+        'StoreBatchMapModel',
+        'StoreEmployeeMapModel',
+        'SuspensionsModel',
+        'SuspensionHistoryModel',
+        'TaxRatesModel',
+        'TendersModel',
+        'UsageStatsModel',
+        'VendorsModel',
+        'VendorContactModel',
+        'VendorDeliveriesModel',
+        'VendorItemsModel',
+        'VendorSpecificMarginsModel',
+        'VendorSRPsModel',
+        'VendorSKUtoPLUModel',
+        'VendorBreakdownsModel',
+        'VendorDepartmentsModel',
+        'UsersModel',
+        'UserPrivsModel',
+        'UserKnownPrivsModel',
+        'UserGroupsModel',
+        'UserGroupPrivsModel',
+        'UserSessionsModel',
+        // VIEWS
+        'SuperMinIdViewModel',
+        'MasterSuperDeptsModel',
+    );
 
     public function create_op_dbs($con, $op_db_name)
     {
         $ret = array();
 
-        $models = array(
-            // TABLES
-            'AutoCouponsModel',
-            'BatchesModel',
-            'BatchListModel',
-            'BatchCutPasteModel',
-            'BatchBarcodesModel',
-            'BatchTypeModel',
-            'BatchMergeTableModel',
-            'ConsistentProductRulesModel',
-            'CoopDealsItemsModel',
-            'CronBackupModel',
-            'CustdataModel',
-            'CustdataBackupModel',
-            'CustAvailablePrefsModel',
-            'CustPreferencesModel',
-            'CustReceiptMessageModel',
-            'CustomerAccountSuspensionsModel',
-            'CustomerNotificationsModel',
-            'CustomReceiptModel',
-            'CustomReportsModel',
-            'DateRestrictModel',
-            'DepartmentsModel',
-            'DisableCouponModel',
-            'EmployeesModel',
-            'EquityPaymentPlansModel',
-            'EquityPaymentPlanAccountsModel',
-            'FloorSectionsModel',
-            'HouseCouponsModel',
-            'HouseCouponItemsModel',
-            'HouseVirtualCouponsModel',
-            'InventoryCountsModel',
-            'LikeCodesModel',
-            'UpcLikeModel',
-            'MemberCardsModel',
-            'MemberNotesModel',
-            'MemDatesModel',
-            'MeminfoModel',
-            'MemtypeModel',
-            'MemContactModel',
-            'MemContactPrefsModel',
-            'OriginsModel',
-            'OriginCountryModel',
-            'OriginStateProvModel',
-            'OriginCustomRegionModel',
-            'PagePermissionsModel',
-            'ParametersModel',
-            'PatronageModel',
-            'PriceRulesModel',
-            'PriceRuleTypesModel',
-            'ProductsModel',
-            'ProductBackupModel',
-            'ProductUserModel',
-            'ProductOriginsMapModel',
-            'ProdExtraModel',
-            'ProdFlagsModel',
-            'ProdPhysicalLocationModel',
-            'ProdUpdateModel',
-            'ProdDepartmentHistoryModel',
-            'ProdCostHistoryModel',
-            'ProdPriceHistoryModel',
-            'PurchaseOrderModel',
-            'PurchaseOrderItemsModel',
-            'PurchaseOrderSummaryModel',
-            'ReasoncodesModel',
-            'ScaleItemsModel',
-            'ServiceScalesModel',
-            'ServiceScaleItemMapModel',
-            'ShelftagsModel',
-            'ShelfTagQueuesModel',
-            'ShrinkReasonsModel',
-            'SpecialDeptMapModel',
-            'SubDeptsModel',
-            'SuperDeptsModel',
-            'SuperDeptEmailsModel',
-            'SuperDeptNamesModel',
-            'StoresModel',
-            'StoreBatchMapModel',
-            'StoreEmployeeMapModel',
-            'SuspensionsModel',
-            'SuspensionHistoryModel',
-            'TaxRatesModel',
-            'TendersModel',
-            'UsageStatsModel',
-            'VendorsModel',
-            'VendorContactModel',
-            'VendorDeliveriesModel',
-            'VendorItemsModel',
-            'VendorSpecificMarginsModel',
-            'VendorSRPsModel',
-            'VendorSKUtoPLUModel',
-            'VendorBreakdownsModel',
-            'VendorDepartmentsModel',
-            'UsersModel',
-            'UserPrivsModel',
-            'UserKnownPrivsModel',
-            'UserGroupsModel',
-            'UserGroupPrivsModel',
-            'UserSessionsModel',
-            // VIEWS
-            'SuperMinIdViewModel',
-            'MasterSuperDeptsModel',
-        );
-        foreach ($models as $class) {
+        foreach ($this->op_models as $class) {
             $obj = new $class($con);
             $ret[] = $obj->createIfNeeded($op_db_name);
         }
@@ -698,57 +720,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             $rules->save();
         }
 
-        /**
-          @deprecated 22Jan14
-          Somewhat deprecated. Others' code may rely on this
-          so it's still created
-          @update 06Nov14
-          All uses are checked first for existence. Not necessary
-          to create on new install.
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$op_db_name,
-                'deptMargin','op');
-        */
-
-        /**
-          @deprecated 22Jan14
-          Only used for legacy pages
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'unfi','op');
-        */
-
-        /**
-          @deprecated 22Jan14
-          memtype has sufficient columns now
-          table kept around until confirming it can be deleted
-          @update 06Nov14
-          No longer needs to be created on new installs
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'memdefaults','op');
-        */
-
-        /**
-          @deprecated 06Nov14 andy
-          origins table has name fields removing need for view
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'originName','op');
-        */
-
-        /**
-          @deprecated 06Nov14 andy
-          Relates to old, never finished email statement/invoice function
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'emailLog','op');
-        */
-
-        /**
-          @deprecated 06Nov14 andy
-          Relates to old, pre-BasicModel update mechanism
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-                'UpdateLog','op');
-        */
-
         $ret[] = dropDeprecatedStructure($con, $op_db_name, 'expingMems', true);
-
         $ret[] = dropDeprecatedStructure($con, $op_db_name, 'expingMems_thisMonth', true);
 
         return $ret;
@@ -756,66 +728,60 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
     // create_op_dbs()
     }
 
+    private $trans_models = array(
+        // TABLES
+        'DTransactionsModel',
+        'TransArchiveModel',
+        'SuspendedModel',
+        'DLog15Model',
+        'ArHistoryModel',
+        'ArHistoryBackupModel',
+        'ArHistorySumModel',
+        'ArEomSummaryModel',
+        'CapturedSignatureModel',
+        'CashPerformDayModel',
+        'EfsnetRequestModel',
+        'EfsnetRequestModModel',
+        'EfsnetResponseModel',
+        'EfsnetTokensModel',
+        'EquityHistorySumModel',
+        'PaycardTransactionsModel',
+        'SpecialOrdersModel',
+        'SpecialOrderDeptMapModel',
+        'SpecialOrderHistoryModel',
+        'PendingSpecialOrderModel',
+        'CompleteSpecialOrderModel',
+        'StockpurchasesModel',
+        'VoidTransHistoryModel',
+        // VIEWS
+        'DLogModel',
+        'DLog90ViewModel',
+        'ArHistoryTodayModel', // requires dlog
+        'ArHistoryTodaySumModel', //requires dlog
+        'CcReceiptViewModel',
+        'StockSumTodayModel', // requires dlog
+        'SuspendedTodayModel',
+        'TenderTapeGenericModel', // requires dlog
+        'UnpaidArBalancesModel',
+        'UnpaidArTodayModel', // requires ar_history_today_sum, unpaid_ar_balances
+        'ArLiveBalanceModel', // requires ar_history_today_sum
+        'EquityLiveBalanceModel', // requires stockSumToday
+        'MemChargeBalanceModel', // requires ar_live_balance,
+        'HouseCouponThisMonthModel', // requires dlog_90_view
+    );
+
     public function create_trans_dbs($con, $trans_db_name, $op_db_name)
     {
         require(dirname(__FILE__).'/../config.php'); 
 
         $ret = array();
-        $models = array(
-            // TABLES
-            'DTransactionsModel',
-            'TransArchiveModel',
-            'SuspendedModel',
-            'DLog15Model',
-            'ArHistoryModel',
-            'ArHistoryBackupModel',
-            'ArHistorySumModel',
-            'ArEomSummaryModel',
-            'CapturedSignatureModel',
-            'CashPerformDayModel',
-            'EfsnetRequestModel',
-            'EfsnetRequestModModel',
-            'EfsnetResponseModel',
-            'EfsnetTokensModel',
-            'EquityHistorySumModel',
-            'PaycardTransactionsModel',
-            'SpecialOrdersModel',
-            'SpecialOrderDeptMapModel',
-            'SpecialOrderHistoryModel',
-            'PendingSpecialOrderModel',
-            'CompleteSpecialOrderModel',
-            'StockpurchasesModel',
-            'VoidTransHistoryModel',
-            // VIEWS
-            'DLogModel',
-            'DLog90ViewModel',
-            'ArHistoryTodayModel', // requires dlog
-            'ArHistoryTodaySumModel', //requires dlog
-            'CcReceiptViewModel',
-            'StockSumTodayModel', // requires dlog
-            'SuspendedTodayModel',
-            'TenderTapeGenericModel', // requires dlog
-            'UnpaidArBalancesModel',
-            'UnpaidArTodayModel', // requires ar_history_today_sum, unpaid_ar_balances
-            'ArLiveBalanceModel', // requires ar_history_today_sum
-            'EquityLiveBalanceModel', // requires stockSumToday
-            'MemChargeBalanceModel', // requires ar_live_balance,
-            'HouseCouponThisMonthModel', // requires dlog_90_view
-        );
-        foreach ($models as $class) {
+        foreach ($this->trans_models as $class) {
             $obj = new $class($con);
             if (method_exists($obj, 'addExtraDB')) {
                 $obj->addExtraDB($op_db_name);
             }
             $ret[] = $obj->createIfNeeded($trans_db_name);
         }
-
-        /**
-          @deprecated 7Nov14
-          Not used lane side
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'alog','trans');
-        */
 
         $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvDelivery', false);
         $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvDeliveryLM', false);
@@ -833,63 +799,21 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'Inventory', true);
         $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvCache', false);
         
-        /**
-          @deprecated 7Nov14
-          No longer used lane side
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'lane_config','trans');
-        */
-
         return $ret;
 
     // create_trans_dbs()
     }
 
-    function create_dlogs($con){
-        require(dirname(__FILE__).'/../config.php'); 
+    private $archive_models = array(
+        'ReportDataCacheModel',
+        'WeeksLastQuarterModel',
+        'ProductWeeklyLastQuarterModel',
+        'ProductSummaryLastQuarterModel',
+    );
 
-        $ret = array();
-
-        /**
-          @deprecated 10Nov2014
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'dheader','trans');
-        */
-
-        /**
-          @deprecated 10Nov2014
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'dddItems','trans');
-        */
-
-        /**
-          @deprecated 21Jan14
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'CashPerformDay_cache','trans');
-        */
-
-        /**
-          14Nov2014 Andy
-          Not sure this is the correct way to cache & compare
-          product UPCs with vendor SKUs
-        $ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-                'skuMovementSummary','trans');
-        */
-
-        return $ret;
-
-    // create_dlogs()
-    }
-
-    function create_archive_dbs($con, $archive_db_name, $archive_method) 
+    private function getArchiveModels($archive_method)
     {
-        $ret = array();
-        $models = array(
-            'ReportDataCacheModel',
-            'WeeksLastQuarterModel',
-            'ProductWeeklyLastQuarterModel',
-            'ProductSummaryLastQuarterModel',
-        );
+        $models = $this->archive_models;
         if ($archive_method == 'partitions') {
             $models[] = 'BigArchiveModel';
             $models[] = 'DLogBigModel';
@@ -897,40 +821,20 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             $models[] = 'MonthlyArchiveModel';
             $models[] = 'MonthlyDLogModel';
         }
-        foreach ($models as $class) {
+
+        return $models;
+    }
+
+    function create_archive_dbs($con, $archive_db_name, $archive_method) 
+    {
+        $ret = array();
+        foreach ($this->getArchiveModels($archive_method) as $class) {
             $obj = new $class($con);
             if (method_exists($obj, 'setDate')) {
                 $obj->setDate(date('Y'), date('m'));
             }
             $ret[] = $obj->createIfNeeded($archive_db_name);
         }
-
-        /**
-          14Nov2014 Andy
-          Removing these structures. Duplicates for most exist
-          in the CoreWarehouse database. 
-        $dbms = strtoupper($con->dbms_name()); // code below expect capitalization
-        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
-                'sumUpcSalesByDay','arch');
-        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
-                'sumRingSalesByDay','arch');
-        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
-                'vRingSalesToday','arch');
-        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
-                'sumDeptSalesByDay','arch');
-        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
-                'vDeptSalesToday','arch');
-        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
-                'sumFlaggedSalesByDay','arch');
-        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
-                'sumMemSalesByDay','arch');
-        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
-                'sumMemTypeSalesByDay','arch');
-        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
-                'sumTendersByDay','arch');
-        $ret[] = create_if_needed($con,$dbms,$archive_db_name,
-                'sumDiscountsByDay','arch');
-        */
 
         return $ret;
 

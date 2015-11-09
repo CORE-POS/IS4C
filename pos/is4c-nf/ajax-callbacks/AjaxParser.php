@@ -57,6 +57,7 @@ class AjaxParser extends AjaxCallback
         CoreLocal::set("strEntered",$entered);
 
         $json = array();
+        $sd = MiscLib::scaleObject();
         if ($entered != "") {
             /* this breaks the model a bit, but I'm putting
              * putting the CC parser first manually to minimize

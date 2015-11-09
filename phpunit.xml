@@ -1,4 +1,4 @@
-<phpunit bootstrap="tests/bootstrap.php">
+<phpunit bootstrap="tests/bootstrap.php"> 
     <logging>
         <log type="coverage-clover" target="build/logs/clover.xml"/>
     </logging>
@@ -20,6 +20,7 @@
             <file>tests/common/CommonTest.php</file>
 
             <file>tests/pos/InstallTest.php</file>
+            <file>tests/pos/AjaxTest.php</file>
             <file>tests/pos/BaseLibsTest.php</file>
             <file>tests/pos/DisplayTest.php</file>
             <file>tests/pos/FooterBoxesTest.php</file>

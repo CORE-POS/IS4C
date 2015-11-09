@@ -1,78 +1,37 @@
-function saveDesc(val,bid){
-    var elem = $(this);
-    var orig = this.defaultValue;
+function saveBtField(action, val, bid, elem, orig)
+{
     $.ajax({
         url: 'BatchTypeEditor.php',
         cache: false,
         type: 'post',
-        data: 'saveDesc='+val+'&bid='+bid,
+        data: action+'='+val+'&bid='+bid,
         dataType: 'json',
         success: function(data){
             showBootstrapPopover(elem, orig, data.error);
         }
     });
+
+}
+function saveDesc(val,bid){
+    saveBtField('saveDesc', val, bid, $(this), this.defaultValue);
 }
 function saveType(val,bid){
-    var elem = $(this);
-    var orig = this.defaultValue;
-    $.ajax({
-        url: 'BatchTypeEditor.php',
-        cache: false,
-        type: 'post',
-        data: 'saveType='+val+'&bid='+bid,
-        dataType: 'json',
-        success: function(data){
-            showBootstrapPopover(elem, orig, data.error);
-        }
-    });
+    saveBtField('saveType', val, bid, $(this), this.defaultValue);
 }
 function saveDated(bid){
-    var elem = $(this);
     var val = 0;
     if ($(this).prop('checked')) {
         val = 1;
     }
-    var orig = this.defaultValue;
-    $.ajax({
-        url: 'BatchTypeEditor.php',
-        cache: false,
-        type: 'post',
-        data: 'saveDated='+val+'&bid='+bid,
-        dataType: 'json',
-        success: function(data){
-            showBootstrapPopover(elem, orig, data.error);
-        }
-    });
+    saveBtField('saveDated', val, bid, $(this), this.defaultValue);
 }
 function saveSO(bid){
-    var elem = $(this);
     var val = 0;
     if ($(this).prop('checked')) {
         val = 1;
     }
-    var orig = this.defaultValue;
-    $.ajax({
-        url: 'BatchTypeEditor.php',
-        cache: false,
-        type: 'post',
-        data: 'saveSO='+val+'&bid='+bid,
-        dataType: 'json',
-        success: function(data){
-            showBootstrapPopover(elem, orig, data.error);
-        }
-    });
+    saveBtField('saveSO', val, bid, $(this), this.defaultValue);
 }
 function saveUI(val,bid){
-    var elem = $(this);
-    var orig = this.defaultValue;
-    $.ajax({
-        url: 'BatchTypeEditor.php',
-        cache: false,
-        type: 'post',
-        data: 'saveUI='+val+'&bid='+bid,
-        dataType: 'json',
-        success: function(data){
-            showBootstrapPopover(elem, orig, data.error);
-        }
-    });
+    saveBtField('saveUI', val, bid, $(this), this.defaultValue);
 }

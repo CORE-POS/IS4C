@@ -32,7 +32,11 @@ class AjaxCabReceipt extends AjaxCallback
 
     public function ajax($input=array())
     {
-        CoreLocal::set("cabReference",$_REQUEST['input']);
+        if (isset($_REQUEST['input'])) {
+            CoreLocal::set("cabReference",$_REQUEST['input']);
+        } elseif (isset($input['cab-reference'])) {
+            CoreLocal::set('cabReference', $input['cab-reference']);
+        }
         $receipt = ReceiptLib::printReceipt('cab', CoreLocal::get('cabReference'));
         ReceiptLib::writeLine($receipt);
 

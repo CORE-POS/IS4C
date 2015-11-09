@@ -115,7 +115,7 @@ function cutItem(upc, batchID, userID, cutOp)
     $.ajax({
         type: 'post',
         data: dataStr,
-        success: function(resp)
+        success: function()
         {
             if (cutOp) {
                 $('#doCut'+upc).hide();
@@ -218,8 +218,6 @@ function saveTransLimit(batchID)
     $.ajax({
         type: 'post',
         data: 'id='+batchID+'&limit='+newLimit,
-        success: function(resp) {
-        }
     });
 }
 

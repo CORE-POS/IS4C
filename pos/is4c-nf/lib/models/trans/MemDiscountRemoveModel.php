@@ -120,10 +120,10 @@ member discounts if needed.
 
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False)
     {
-        if ($db_name == CoreLocal::get('pDatabase')) {
-            $this->connection = Database::pDataConnect();
-        } else if ($db_name == CoreLocal::get('tDatabase')) {
-            $this->connection = Database::tDataConnect();
+        if ($db_name == \CoreLocal::get('pDatabase')) {
+            $this->connection = \Database::pDataConnect();
+        } else if ($db_name == \CoreLocal::get('tDatabase')) {
+            $this->connection = \Database::tDataConnect();
         } else {
             echo "Error: Unknown database ($db_name)";
             return false;
