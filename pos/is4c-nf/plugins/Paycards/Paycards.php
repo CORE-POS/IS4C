@@ -203,6 +203,11 @@ messages from POS?',
     public function plugin_transaction_reset()
     {
         CoreLocal::set('paycardTendered', false);
+        CoreLocal::set("CachePanEncBlock","");
+        CoreLocal::set("CachePinEncBlock","");
+        CoreLocal::set("CacheCardType","");
+        CoreLocal::set("CacheCardCashBack",0);
+        PaycardLib::paycard_reset();
     }
 
 }
