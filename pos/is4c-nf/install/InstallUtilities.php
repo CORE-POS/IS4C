@@ -42,6 +42,25 @@ class InstallUtilities extends LibraryClass
         }
     }
 
+    static private function initWritableFile($filename, $template)
+    {
+
+        $fptr = fopen($filename,'w');
+        if ($fptr) {
+            if ($template !== False) {
+                switch($template) {
+                    case 'PHP':
+                        fwrite($fptr,"<?php\n");
+                        break;
+                    case 'JSON':
+                        fwrite($fptr, CoreLocal::convertIniPhpToJson());
+                        break;
+                }
+            }
+            fclose($fptr);
+        }
+    }
+
     static public function checkWritable($filename, $optional=False, $template=False)
     {
         $basename = basename($filename);
@@ -49,36 +68,25 @@ class InstallUtilities extends LibraryClass
         $status = ($optional) ? 'Optional' : 'Warning';
 
         if (!file_exists($filename) && !$optional) {
-            $fp = fopen($filename,'w');
-            if ($fp) {
-                if ($template !== False) {
-                    switch($template) {
-                        case 'PHP':
-                            fwrite($fp,"<?php\n");
-                            break;
-                        case 'JSON':
-                            fwrite($fp, CoreLocal::convertIniPhpToJson());
-                            break;
-                    }
-                }
-                fclose($fp);
-            }
+            self::initWritableFile($filename, $template);
         }
+
+        $real_file = realpath(dirname($filename)) . DIRECTORY_SEPARATOR . $basename;
 
         if (!file_exists($filename)) {
             echo "<span style=\"color:$failure;\"><b>$status</b>: $basename does not exist</span><br />";
             if (!$optional) {
                 echo "<b>Advice</b>: <div style=\"font-face:mono;background:#ccc;padding:8px;\">
-                    touch \"".realpath(dirname($filename))."/".basename($filename)."\"<br />
-                    chown ".self::whoami()." \"".realpath(dirname($filename))."/".basename($filename)."\"</div>";
+                    touch \"". $real_file ."\"<br />
+                    chown ".self::whoami()." \"". $real_file ."\"</div>";
             }
         } elseif (is_writable($filename)) {
             echo "<span style=\"color:green;\">$basename is writeable</span><br />";
         } else {
             echo "<span style=\"color:red;\"><b>Warning</b>: $basename is not writeable</span><br />";
             echo "<b>Advice</b>: <div style=\"font-face:mono;background:#ccc;padding:8px;\">
-                chown ".self::whoami()." \"".realpath(dirname($filename))."/".basename($filename)."\"<br />
-                chmod 600 \"".realpath(dirname($filename))."/".basename($filename)."\"</div>";
+                chown ".self::whoami()." \"". $real_file ."\"<br />
+                chmod 600 \"". $real_file ."\"</div>";
         }
     }
 
@@ -123,6 +131,47 @@ class InstallUtilities extends LibraryClass
         }
     }
 
+    static private function addOpenTag($str)
+    {
+        if (strstr($str,'<?php') === false) {
+            $str = "<?php\n" . $str;
+        }
+        return $str;
+    }
+
+    static private function rewritePhpSetting($key, $value, $content, $file)
+    {
+        $orig_setting = '|\$CORE_LOCAL->set\([\'"]'.$key.'[\'"],\s*(.+)\);[\r\n]|';
+        $new_setting = "\$CORE_LOCAL->set('{$key}',{$value}, True);\n";
+        $found = false;
+        $new = preg_replace($orig_setting, $new_setting, $content,
+                    -1, $found);
+
+        if ($found) {
+            preg_match($orig_setting, $content, $matches);
+            if ($matches[1] === $value.', True') {// found with exact same value
+                return true;    // no need to bother rewriting it
+            } elseif ($writeable_global) {
+                return file_put_contents($file, $new) ? true : false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    static private function addPhpSetting($key, $value, $content, $file)
+    {
+        $new_setting = "\$CORE_LOCAL->set('{$key}',{$value}, True);\n";
+        $found = false;
+        $new = preg_replace("|(\?>)?\s*$|", $new_setting.'?>', $content,
+                        1, $found);
+        if (preg_match('/^<\?php[^\s]/', $new)) {
+            $new = preg_replace('/^<\?php/', "<?php\n", $new);
+        }
+
+        return file_put_contents($file, $new) ? true : false;
+    }
+
     /**
       Save entry to ini.php or ini-local.php.
       This is called by confsave() if ini.php exists.
@@ -151,80 +200,23 @@ class InstallUtilities extends LibraryClass
         if (!$writeable_global && !$writeable_local)
             return false;
 
-        $found_global = $found_local = false;
-        $written_global = $written_local = false;
-        $added_global = $added_local = false;
-
-        $orig_setting = '|\$CORE_LOCAL->set\([\'"]'.$key.'[\'"],\s*(.+)\);[\r\n]|';
-        $new_setting = "\$CORE_LOCAL->set('{$key}',{$value}, True);\n";
-
         $orig_global = file_get_contents($path_global);
-        if (strstr($orig_global,'<?php') === false) {
-            $orig_global = "<?php\n".$orig_global;
-        }
+        $orig_global = self::addOpenTag($orig_global);
         $orig_local = $writeable_local ? file_get_contents($path_local) : '';
-        if ($writeable_local && strstr($orig_local,'<?php') === false) {
-            $orig_local = "<?php\n".$orig_local;
-        }
+        $orig_local = self::addOpenTag($orig_local);
 
-        $new_global = preg_replace($orig_setting, $new_setting, $orig_global,
-                    -1, $found_global);
-        $new_local = preg_replace($orig_setting, $new_setting, $orig_local,
-                        -1, $found_local);
-        if ($found_global) {
-            preg_match($orig_setting, $orig_global, $matches);
-            if ($matches[1] === $value.', True') {// found with exact same value
-                $written_global = True;    // no need to bother rewriting it
-            } elseif ($writeable_global) {
-                $written_global = file_put_contents($path_global, $new_global);
-            }
-        }
+        $written_global = self::rewritePhpSetting($key, $value, $orig_global, $path_global);
+        $written_local = self::rewritePhpSetting($key, $value, $orig_local, $path_local);
 
-        if ($found_local) {
-            preg_match($orig_setting, $orig_local, $matches);
-            if ($matches[1] === $value.', True') {// found with exact same value
-                $written_local = True;    // no need to bother rewriting it
-            } elseif ($writeable_local) {
-                $written_local = file_put_contents($path_local, $new_local);
-            }
-        }
-
-        if ($found_local && !$written_local) {
-            return false;    // ini-local.php is overriding ini.php with bad data!
-        }
         if ($written_global || $written_local) {
             return true;    // successfully written somewhere relevant
         }
 
-        if (!$found_global && !$found_local) {
-            $append_path = ($prefer_local? $path_local : $path_global);
-            $append_path = ($writeable_local? $append_path : $path_global);
-            $append_path = ($writeable_global? $append_path : $path_local);
-        } elseif (!$found_local && $writeable_local) {
-            $append_path = $path_local;
-        }
-        if ($append_path === $path_global) {
-            $new_global = preg_replace("|(\?>)?\s*$|", $new_setting.'?>', $orig_global,
-                            1, $found_global);
-            // make sure new setting isn't right up against
-            // the opening php tag
-            if (preg_match('/^<\?php[^\s]/', $new_global)) {
-                $new_global = preg_replace('/^<\?php/', "<?php\n", $new_global);
-            }
-            $added_global = file_put_contents($append_path, $new_global);
+        if (!$writeable_local || !$prefer_local) {
+            return self::addPhpSetting($key, $value, $orig_global, $path_global);
         } else {
-            $new_local = preg_replace("|(\?>)?\s*$|", $new_setting.'?>', $orig_local,
-                            1, $found_local);
-            if (preg_match('/^<\?php[^\s]/', $new_local)) {
-                $new_local = preg_replace('/^<\?php/', "<?php\n", $new_local);
-            }
-            $added_local = file_put_contents($append_path, $new_local);
+            return self::addPhpSetting($key, $value, $orig_local, $path_local);
         }
-        if ($added_global || $added_local){
-            return true;    // successfully appended somewhere relevant
-        }
-
-        return false;    // didn't manage to write anywhere!
     }
 
     /**
@@ -312,10 +304,11 @@ class InstallUtilities extends LibraryClass
         $ret = false;
 
         $orig_setting = '|\$CORE_LOCAL->set\([\'"]'.$key.'[\'"],\s*(.+)\);[\r\n]|';
-        $current_conf = ($local) ? file_get_contents($path_local) : file_get_contents($path_global);
+        $file = $local ? $path_local : $path_global;
+        $current_conf = file_get_contents($file);
         if (preg_match($orig_setting, $current_conf) == 1) {
             $removed = preg_replace($orig_setting, '', $current_conf);
-            $ret = file_put_contents($local ? $path_local : $path_global, $removed);
+            $ret = file_put_contents($file, $removed);
         }
 
         return ($ret === false) ? false : true;
@@ -365,18 +358,8 @@ class InstallUtilities extends LibraryClass
         }
     }
 
-    /**
-      Save value to the parameters table.
-    */
-    static public function paramSave($key, $value) 
+    static private function paramValueToArray($value)
     {
-        $sql = self::dbTestConnect(
-                CoreLocal::get('localhost'),
-                CoreLocal::get('DBMS'),
-                CoreLocal::get('pDatabase'),
-                CoreLocal::get('localUser'),
-                CoreLocal::get('localPass'));
-
         $save_as_array = 0;
         if (is_array($value) && count($value) > 0 && isset($value[0])) {
             // normal array (probably)
@@ -399,6 +382,50 @@ class InstallUtilities extends LibraryClass
             $value = '';
             $save_as_array = 1;
         }
+
+        return array($value, $save_as_array);
+    }
+
+    static private function paramValueToPhp($value, $save_as_array)
+    {
+        // tweak value for safe output to ini.php
+        if ($save_as_array === 1 && $value !== '') {
+            $saveStr = 'array(';
+            foreach(explode(',', $value) as $entry) {
+                if (strstr($entry, '=>')) {
+                    list($k, $v) = explode('=>', $entry, 2);
+                    $saveStr .= "'".$k."'=>'".$v."',";
+                } else {
+                    $saveStr .= "'".$entry."',";
+                }
+            }
+            $value = substr($saveStr, 0, strlen($saveStr)-1).')';
+        } elseif ($save_as_array === 1 && $value === '') {
+            $value = 'array()';
+        } elseif (strtoupper($value) === 'TRUE'){
+            $value = 'True';
+        } elseif (strtoupper($value) === 'FALSE'){
+            $value = 'False';
+        } elseif (!is_numeric($value) || (strlen($value)>1 && substr($value,0,1) == '0')) {
+            $value = "'".$value."'";
+        }
+
+        return $value;
+    }
+
+    /**
+      Save value to the parameters table.
+    */
+    static public function paramSave($key, $value) 
+    {
+        $sql = self::dbTestConnect(
+                CoreLocal::get('localhost'),
+                CoreLocal::get('DBMS'),
+                CoreLocal::get('pDatabase'),
+                CoreLocal::get('localUser'),
+                CoreLocal::get('localPass'));
+
+        list($value, $save_as_array) = self::paramValueToArray($value);
 
         $saved = false;
         if ($sql !== false) {
@@ -423,29 +450,7 @@ class InstallUtilities extends LibraryClass
 
         // maintain ini.php value too
         if (self::confExists($key)) {
-            // tweak value for safe output to ini.php
-            if ($save_as_array == 1 && $value !== '') {
-                $saveStr = 'array(';
-                foreach(explode(',', $value) as $entry) {
-                    if (strstr($entry, '=>')) {
-                        list($k, $v) = explode('=>', $entry, 2);
-                        $saveStr .= "'".$k."'=>'".$v."',";
-                    } else {
-                        $saveStr .= "'".$entry."',";
-                    }
-                }
-                $value = substr($saveStr, 0, strlen($saveStr)-1).')';
-            } else if ($save_as_array == 1 && $value === '') {
-                $value = 'array()';
-            } else if (strtoupper($value) === 'TRUE'){
-                $value = 'True';
-            } else if (strtoupper($value) === 'FALSE'){
-                $value = 'False';
-            } else if (!is_numeric($value) || (strlen($value)>1 && substr($value,0,1) == '0')) {
-                $value = "'".$value."'";
-            }
-
-            self::confsave($key, $value);
+            self::confsave($key, self::paramValueToPhp($value));
         }
 
         return ($saved) ? true : false;
@@ -1030,6 +1035,38 @@ class InstallUtilities extends LibraryClass
         }
     }
 
+    private static $op_models = array(
+        '\\COREPOS\\pos\\lib\\models\\op\\AutoCouponsModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\CouponCodesModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\CustdataModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\CustomerNotificationsModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\CustPreferencesModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\CustReceiptMessageModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\CustomReceiptModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\DateRestrictModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\DepartmentsModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\DisableCouponModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\DrawerOwnerModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\EmployeesModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\GlobalValuesModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\HouseCouponsModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\HouseCouponItemsModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\HouseVirtualCouponsModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\IgnoredBarcodesModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\MasterSuperDeptsModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\MemberCardsModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\MemtypeModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\ParametersModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\ProductsModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\ShrinkReasonsModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\SpecialDeptMapModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\SubDeptsModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\TendersModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\UnpaidArTodayModel',
+        // depends on custdata
+        '\\COREPOS\\pos\\lib\\models\\op\\MemberCardsViewModel',
+    );
+
     /**
       Create opdata tables and views
       @param $db [SQLManager] database connection
@@ -1039,7 +1076,6 @@ class InstallUtilities extends LibraryClass
     public static function createOpDBs($db, $name)
     {
         $errors = array();
-
         if (CoreLocal::get('laneno') == 0) {
             $errors[] = array(
                 'struct' => 'No structures created for lane #0',
@@ -1050,38 +1086,7 @@ class InstallUtilities extends LibraryClass
             return $errors;
         }
 
-        $models = array(
-            '\\COREPOS\\pos\\lib\\models\\op\\AutoCouponsModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\CouponCodesModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\CustdataModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\CustomerNotificationsModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\CustPreferencesModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\CustReceiptMessageModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\CustomReceiptModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\DateRestrictModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\DepartmentsModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\DisableCouponModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\DrawerOwnerModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\EmployeesModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\GlobalValuesModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\HouseCouponsModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\HouseCouponItemsModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\HouseVirtualCouponsModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\IgnoredBarcodesModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\MasterSuperDeptsModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\MemberCardsModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\MemtypeModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\ParametersModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\ProductsModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\ShrinkReasonsModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\SpecialDeptMapModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\SubDeptsModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\TendersModel',
-            '\\COREPOS\\pos\\lib\\models\\op\\UnpaidArTodayModel',
-            // depends on custdata
-            '\\COREPOS\\pos\\lib\\models\\op\\MemberCardsViewModel',
-        );
-        foreach ($models as $class) {
+        foreach (self::$op_models as $class) {
             $obj = new $class($db);
             $errors[] = $obj->createIfNeeded($name);
         }
@@ -1095,7 +1100,7 @@ class InstallUtilities extends LibraryClass
 
         foreach ($sample_data as $table) {
             $chk = $db->query('SELECT * FROM ' . $table, $name);
-            if (!$db->fetch_row($chk)){
+            if ($db->numRows($chk) === 0) {
                 $loaded = self::loadSampleData($db, $table, true);
                 if (!$loaded) {
                     $errors[] = array(
@@ -1119,6 +1124,34 @@ class InstallUtilities extends LibraryClass
         
         return $errors;
     }
+
+    private static $trans_models = array(
+        '\\COREPOS\\pos\\lib\\models\\trans\\DTransactionsModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\LocalTransModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\LocalTransArchiveModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\LocalTransTodayModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\LocalTempTransModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\SuspendedModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\TaxRatesModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\CouponAppliedModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\EfsnetRequestModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\EfsnetRequestModModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\EfsnetResponseModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\EfsnetTokensModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\PaycardTransactionsModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\CapturedSignatureModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\EmvReceiptModel',
+        // placeholder,
+        '__LTT__',
+        // Views
+        '\\COREPOS\\pos\\lib\\models\\trans\\CcReceiptViewModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\MemDiscountAddModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\MemDiscountRemoveModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\StaffDiscountAddModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\StaffDiscountRemoveModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\ScreenDisplayModel',
+        '\\COREPOS\\pos\\lib\\models\\trans\\TaxViewModel',
+    );
 
     /**
       Create translog tables and views
@@ -1148,34 +1181,7 @@ class InstallUtilities extends LibraryClass
             include(dirname(__FILE__) . '/buildLTTViews.php');
         }
 
-        $models = array(
-            '\\COREPOS\\pos\\lib\\models\\trans\\DTransactionsModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\LocalTransModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\LocalTransArchiveModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\LocalTransTodayModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\LocalTempTransModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\SuspendedModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\TaxRatesModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\CouponAppliedModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\EfsnetRequestModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\EfsnetRequestModModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\EfsnetResponseModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\EfsnetTokensModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\PaycardTransactionsModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\CapturedSignatureModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\EmvReceiptModel',
-            // placeholder,
-            '__LTT__',
-            // Views
-            '\\COREPOS\\pos\\lib\\models\\trans\\CcReceiptViewModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\MemDiscountAddModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\MemDiscountRemoveModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\StaffDiscountAddModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\StaffDiscountRemoveModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\ScreenDisplayModel',
-            '\\COREPOS\\pos\\lib\\models\\trans\\TaxViewModel',
-        );
-        foreach ($models as $class) {
+        foreach (self::$trans_models as $class) {
             if ($class == '__LTT__') {
                 $errors = buildLTTViews($db,$type,$errors);
                 continue;
@@ -1250,77 +1256,12 @@ class InstallUtilities extends LibraryClass
             on l.tax = t.id
             where voided <> 5 and UPC <> 'TAX'
             AND trans_type <> 'L'";
-        if($type == 'mssql'){
-            $lttR = "CREATE view ltt_receipt as 
-                select
-                l.description,
-                case 
-                    when voided = 5 
-                        then 'Discount'
-                    when trans_status = 'M'
-                        then 'Mbr special'
-                    when trans_status = 'S'
-                        then 'Staff special'
-                    when unitPrice = 0.01
-                        then ''
-                    when scale <> 0 and quantity <> 0 
-                        then quantity+ ' @ '+ unitPrice
-                    when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
-                        then volume+ ' /'+ unitPrice
-                    when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
-                        then Quantity+ ' @ '+Volume+ ' /'+ unitPrice
-                    when abs(itemQtty) > 1 and discounttype = 3
-                        then ItemQtty+ ' /'+ UnitPrice
-                    when abs(itemQtty) > 1
-                        then quantity+' @ '+unitPrice
-                    when matched > 0
-                        then '1 w/ vol adj'
-                    else ''
-                end
-                as comment,
-                total,
-                case 
-                    when trans_status = 'V' 
-                        then 'VD'
-                    when trans_status = 'R'
-                        then 'RF'
-                    when tax = 1 and foodstamp <> 0
-                        then 'TF'
-                    when tax = 1 and foodstamp = 0
-                        then 'T' 
-                    WHEN (tax > 1 and foodstamp <> 0)
-                        THEN LEFT(t.description,1)+'F'
-                    WHEN (tax > 1 and foodstamp = 0)
-                        THEN LEFT(t.description,1)
-                    when tax = 0 and foodstamp <> 0
-                        then 'F'
-                    when tax = 0 and foodstamp = 0
-                        then '' 
-                end
-                as Status,
-                trans_type,
-                unitPrice,
-                trans_id
-                CASE 
-                    WHEN upc = 'DISCOUNT' THEN (
-                    SELECT MAX(trans_id) FROM localtemptrans WHERE voided=3
-                    )-1
-                    WHEN trans_type = 'T' THEN trans_id+99999    
-                    ELSE trans_id
-                END AS trans_id
-                from localtemptrans as l
-                left join taxrates as t
-                on l.tax = t.id
-                where voided <> 5 and UPC <> 'TAX'
-                AND trans_type <> 'L'
-                order by trans_id";
-        }
         self::dbStructureModify($db,'ltt_receipt','DROP VIEW ltt_receipt',$errors);
         if(!$db->table_exists('ltt_receipt',$name)){
             self::dbStructureModify($db,'ltt_receipt',$lttR,$errors);
         }
 
-        $rV = "CREATE view receipt as
+        $receiptV = "CREATE VIEW receipt AS
             select
             case 
                 when trans_type = 'T'
@@ -1354,7 +1295,7 @@ class InstallUtilities extends LibraryClass
             from ltt_receipt
             order by trans_id";
         if($type == 'mssql'){
-            $rV = "CREATE  view receipt as
+            $receiptV = "CREATE  VIEW receipt AS
             select top 100 percent
             case 
                 when trans_type = 'T'
@@ -1392,221 +1333,22 @@ class InstallUtilities extends LibraryClass
             order by sequence";
         }
         elseif($type == 'pdolite'){
-            $rV = str_replace('right(','str_right(',$rV);
-            $rV = str_replace('FORMAT(','ROUND(',$rV);
+            $receiptV = str_replace('right(','str_right(',$receiptV);
+            $receiptV = str_replace('FORMAT(','ROUND(',$receiptV);
         }
 
         if(!$db->table_exists('receipt',$name)){
-            self::dbStructureModify($db,'receipt',$rV,$errors);
+            self::dbStructureModify($db,'receipt',$receiptV,$errors);
         }
 
-        $rplttR = "CREATE view rp_ltt_receipt as 
-            select
-            register_no,
-            emp_no,
-            trans_no,
-            l.description as description,
-            case 
-                when voided = 5 
-                    then 'Discount'
-                when trans_status = 'M'
-                    then 'Mbr special'
-                when trans_status = 'S'
-                    then 'Staff special'
-                when unitPrice = 0.01
-                    then ''
-                when scale <> 0 and quantity <> 0 
-                    then ".$db->concat('quantity', "' @ '", 'unitPrice','')."
-                when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
-                    then ".$db->concat('volume', "' / '", 'unitPrice','')."
-                when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
-                    then ".$db->concat('quantity', "' @ '", 'volume', "' /'", 'unitPrice','')."
-                when abs(itemQtty) > 1 and discounttype = 3
-                    then ".$db->concat('ItemQtty', "' / '", 'unitPrice','')."
-                when abs(itemQtty) > 1
-                    then ".$db->concat('quantity', "' @ '", 'unitPrice','')."
-                when matched > 0
-                    then '1 w/ vol adj'
-                else ''
-            end
-            as comment,
-            total,
-            case 
-                when trans_status = 'V' 
-                    then 'VD'
-                when trans_status = 'R'
-                    then 'RF'
-                WHEN (tax = 1 and foodstamp <> 0)
-                    THEN 'TF'
-                WHEN (tax = 1 and foodstamp = 0)
-                    THEN 'T' 
-                WHEN (tax > 1 and foodstamp <> 0)
-                    THEN ".$db->concat('SUBSTR(t.description,1,1)',"'F'",'')."
-                WHEN (tax > 1 and foodstamp = 0)
-                    THEN SUBSTR(t.description,1,1)
-                when tax = 0 and foodstamp <> 0
-                    then 'F'
-                when tax = 0 and foodstamp = 0
-                    then '' 
-            end
-            as Status,
-            trans_type,
-            unitPrice,
-            voided,
-            trans_id
-            from localtranstoday as l
-            left join taxrates as t
-            on l.tax = t.id
-            where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
-            AND trans_type <> 'L'
-            AND datetime >= CURRENT_DATE
-            order by emp_no, trans_no, trans_id";
-        if($type == 'mssql'){
-            $rplttR = "CREATE view rp_ltt_receipt as 
-                select
-                register_no,
-                emp_no,
-                trans_no,
-                description,
-                case 
-                    when voided = 5 
-                        then 'Discount'
-                    when trans_status = 'M'
-                        then 'Mbr special'
-                    when trans_status = 'S'
-                        then 'Staff special'
-                    when unitPrice = 0.01
-                        then ''
-                    when scale <> 0 and quantity <> 0 
-                        then quantity+ ' @ '+ unitPrice
-                    when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
-                        then volume+ ' /'+ unitPrice
-                    when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
-                        then Quantity+ ' @ '+ Volume+ ' /'+ unitPrice
-                    when abs(itemQtty) > 1 and discounttype = 3
-                        then ItemQtty+' /'+ UnitPrice
-                    when abs(itemQtty) > 1
-                        then quantity+ ' @ '+ unitPrice
-                    when matched > 0
-                        then '1 w/ vol adj'
-                    else ''
-                end
-                as comment,
-                total,
-                case 
-                    when trans_status = 'V' 
-                        then 'VD'
-                    when trans_status = 'R'
-                        then 'RF'
-                    WHEN (tax = 1 and foodstamp <> 0)
-                        THEN 'TF'
-                    WHEN (tax = 1 and foodstamp = 0)
-                        THEN 'T' 
-                    WHEN (tax > 1 and foodstamp <> 0)
-                        THEN LEFT(t.description,1)+'F'
-                    WHEN (tax > 1 and foodstamp = 0)
-                        THEN LEFT(t.description,1)
-                    when tax = 0 and foodstamp <> 0
-                        then 'F'
-                    when tax = 0 and foodstamp = 0
-                        then '' 
-                end
-                as Status,
-                trans_type,
-                unitPrice,
-                voided,
-                trans_id
-                from localtranstoday as l
-                left join taxrates as t
-                on l.tax = t.id
-                where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
-                AND trans_type <> 'L'
-                AND datetime >= CURRENT_DATE
-                order by emp_no, trans_no, trans_id";
-        }
+        $rplttR = str_replace('ltt_receipt', 'rp_ltt_receipt', $lttR);
         self::dbStructureModify($db,'rp_ltt_receipt','DROP VIEW rp_ltt_receipt',$errors);
         if(!$db->table_exists('rp_ltt_receipt',$name)){
             self::dbStructureModify($db,'rp_ltt_receipt',$rplttR,$errors);
         }
 
-        $rprV = "CREATE view rp_receipt  as
-            select
-            register_no,
-            emp_no,
-            trans_no,
-            case 
-                when trans_type = 'T'
-                    then     ".$db->concat( "SUBSTR(".$db->concat('UPPER(TRIM(description))','space(44)','').", 1, 44)" 
-                        , "right(".$db->concat( 'space(8)', 'FORMAT(-1 * total, 2)','').", 8)" 
-                        , "right(".$db->concat( 'space(4)', 'status','').", 4)",'')."
-                when voided = 3 
-                    then     ".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
-                        , 'space(9)'
-                        , "'TOTAL'"
-                        , 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)','')."
-                when voided = 2
-                    then     description
-                when voided = 4
-                    then     description
-                when voided = 6
-                    then     description
-                when voided = 7 or voided = 17
-                    then     ".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
-                        , 'space(14)'
-                        , 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)'
-                        , 'right('.$db->concat( 'space(4)', 'status','').', 4)','')."
-                else
-                    ".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
-                    , "' '" 
-                    , "SUBSTR(".$db->concat('comment', 'space(13)','').", 1, 13)"
-                    , 'right('.$db->concat('space(8)', 'FORMAT(total, 2)','').', 8)'
-                    , 'right('.$db->concat('space(4)', 'status','').', 4)','')."
-            end
-            as linetoprint,
-            trans_id
-            from rp_ltt_receipt";
-        if($type == 'mssql'){
-            $rprV = "CREATE view rp_receipt  as
-            select
-            register_no,
-            emp_no,
-            trans_no,
-            case 
-                when trans_type = 'T'
-                    then     right((space(44) + upper(rtrim(Description))), 44) 
-                        + right((space(8) + convert(varchar, (-1 * Total))), 8) 
-                        + right((space(4) + status), 4)
-                when voided = 3 
-                    then     left(Description + space(30), 30) 
-                        + space(9) 
-                        + 'TOTAL' 
-                        + right(space(8) + convert(varchar, UnitPrice), 8)
-                when voided = 2
-                    then     description
-                when voided = 4
-                    then     description
-                when voided = 6
-                    then     description
-                when voided = 7 or voided = 17
-                    then     left(Description + space(30), 30) 
-                        + space(14) 
-                        + right(space(8) + convert(varchar, UnitPrice), 8) 
-                        + right(space(4) + status, 4)
-                else
-                    left(Description + space(30), 30)
-                    + ' ' 
-                    + left(Comment + space(13), 13) 
-                    + right(space(8) + convert(varchar, Total), 8) 
-                    + right(space(4) + status, 4)
-            end
-            as linetoprint,
-            trans_id
-            from rp_ltt_receipt";
-        }
-        elseif($type == 'pdolite'){
-            $rprV = str_replace('right(','str_right(',$rprV);
-            $rprV = str_replace('FORMAT(','ROUND(',$rprV);
-        }
+        $rprV = str_replace('VIEW receipt AS', 'VIEW rp_receipt AS', $receiptV);
+        $rprV = str_replace('ltt_receipt', 'rp_ltt_receipt', $rprV);
         if(!$db->table_exists('rp_receipt',$name)){
             self::dbStructureModify($db,'rp_receipt',$rprV,$errors);
         }
@@ -1627,7 +1369,7 @@ class InstallUtilities extends LibraryClass
         $mysql_collation = $mysql_collation[0];
 
 
-        $lttG = "CREATE  view ltt_grouped as
+        $lttG = "CREATE  VIEW ltt_grouped AS
         select     upc,description,trans_type,trans_subtype,sum(itemQtty)as itemqtty,
             discounttype,volume,
             trans_status,
@@ -1688,7 +1430,7 @@ class InstallUtilities extends LibraryClass
             case when trans_status='d' or scale=1 then trans_id else scale end
         having CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2))<>0";
         if($type == 'mssql'){
-            $lttG = "CREATE   view ltt_grouped as
+            $lttG = "CREATE   VIEW ltt_grouped AS
             select     upc,description,trans_type,trans_subtype,sum(itemQtty)as itemqtty,
                 discounttype,volume,
                 trans_status,
@@ -1754,7 +1496,7 @@ class InstallUtilities extends LibraryClass
             self::dbStructureModify($db,'ltt_grouped',$lttG,$errors);
         }
 
-        $lttreorderG = "CREATE   view ltt_receipt_reorder_g as
+        $lttreorderG = "CREATE VIEW ltt_receipt_reorder_g AS
         select 
         l.description as description,
         case 
@@ -1836,7 +1578,7 @@ class InstallUtilities extends LibraryClass
         '' as trans_subtype";
 
         if($type == 'mssql'){
-            $lttreorderG = "CREATE view ltt_receipt_reorder_g as
+            $lttreorderG = "CREATE VIEW ltt_receipt_reorder_g AS
             select top 100 percent
             l.description,
             case 
@@ -1920,7 +1662,7 @@ class InstallUtilities extends LibraryClass
             self::dbStructureModify($db,'ltt_receipt_reorder_g',$lttreorderG,$errors);
         }
 
-        $reorderG = "CREATE   view receipt_reorder_g as
+        $reorderG = "CREATE VIEW receipt_reorder_g AS
             select 
             case 
                 when trans_type = 'T' 
@@ -1976,7 +1718,7 @@ class InstallUtilities extends LibraryClass
             order by sequence";
         
         if($type == 'mssql'){
-            $reorderG = "CREATE view receipt_reorder_g as
+            $reorderG = "CREATE VIEW receipt_reorder_g AS
             select top 100 percent
             case 
                 when trans_type = 'T' 
@@ -2036,7 +1778,7 @@ class InstallUtilities extends LibraryClass
         }
 
 
-        $unionsG = "CREATE view receipt_reorder_unions_g as
+        $unionsG = "CREATE VIEW receipt_reorder_unions_g AS
         select linetoprint,
         sequence,dept_name,1 as ordered,upc
         from receipt_reorder_g
@@ -2120,7 +1862,7 @@ class InstallUtilities extends LibraryClass
         from subtotals where runningTotal <> 0 ";
 
         if($type == 'mssql'){
-            $unionsG = "CREATE view receipt_reorder_unions_g as
+            $unionsG = "CREATE VIEW receipt_reorder_unions_g AS
             select linetoprint,
             sequence,dept_name,1 as ordered,upc
             from receipt_reorder_g
@@ -2204,632 +1946,27 @@ class InstallUtilities extends LibraryClass
             self::dbStructureModify($db,'receipt_reorder_unions_g',$unionsG,$errors);
         }
 
-        $rplttG = "CREATE     view rp_ltt_grouped as
-            select     register_no,emp_no,trans_no,card_no,
-                upc,description,trans_type,trans_subtype,sum(itemQtty)as itemqtty,
-                discounttype,volume,
-                trans_status,
-                case when voided=1 then 0 else voided end as voided,
-                department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
-                scale,
-                sum(unitprice) as unitprice, 
-                CAST(sum(total) AS decimal(10,2)) as total,
-                sum(regPrice) as regPrice,tax,foodstamp,
-                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
-            from localtranstoday
-            where description not like '** YOU SAVED %' and trans_status = 'M'
-            AND datetime >= CURRENT_DATE
-            group by register_no,emp_no,trans_no,card_no,
-                upc,description,trans_type,trans_subtype,discounttype,volume,
-                trans_status,
-                department,scale,case when voided=1 then 0 else voided end,
-                matched,tax,foodstamp,
-                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end
-
-            union all
-
-            select     register_no,emp_no,trans_no,card_no,
-                upc,case when numflag=1 then ".$db->concat('description',"'*'",'')." else description end as description,
-                trans_type,trans_subtype,sum(itemQtty)as itemqtty,discounttype,volume,
-                trans_status,
-                case when voided=1 then 0 else voided end as voided,
-                department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
-                scale,unitprice,CAST(sum(total) AS decimal(10,2)) as total,regPrice,tax,foodstamp,
-                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
-            from localtranstoday
-            where description not like '** YOU SAVED %' and trans_status !='M'
-            AND datetime >= CURRENT_DATE
-            AND trans_type <> 'L'
-            group by register_no,emp_no,trans_no,card_no,
-                upc,description,trans_type,trans_subtype,discounttype,volume,
-                trans_status,
-                department,scale,case when voided=1 then 0 else voided end,
-                unitprice,regPrice,matched,tax,foodstamp,
-                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end
-
-            union all
-
-            select     register_no,emp_no,trans_no,card_no,
-                upc,
-                case when discounttype=1 then
-                ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE ' . $mysql_collation,"'  <'",'')."
-                when discounttype=2 then
-                ".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20)) COLLATE ' . $mysql_collation,"'  Member Special <'",'')."
-                end as description,
-                trans_type,'0' as trans_subtype,0 as itemQtty,discounttype,volume,
-                'D' as trans_status,
-                2 as voided,
-                department,0 as quantity,matched,min(trans_id)+1 as trans_id,
-                scale,0 as unitprice,
-                0 as total,
-                0 as regPrice,0 as tax,0 as foodstamp,
-                case when trans_status='d' or scale=1 then trans_id else scale end as grouper
-            from localtranstoday
-            where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
-            AND datetime >= CURRENT_DATE
-            AND trans_type <> 'L'
-            group by register_no,emp_no,trans_no,card_no,
-                upc,description,trans_type,trans_subtype,discounttype,volume,
-                department,scale,matched,
-                case when trans_status='d' or scale=1 then trans_id else scale end
-            having CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2))<>0";
-        if($type == 'mssql'){
-            $rplttG = "CREATE      view rp_ltt_grouped as
-            select     register_no,emp_no,trans_no,card_no,
-                upc,description,trans_type,trans_subtype,sum(itemQtty)as itemqtty,
-                discounttype,volume,
-                trans_status,
-                case when voided=1 then 0 else voided end as voided,
-                department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
-                scale,
-                sum(unitprice) as unitprice, 
-                sum(total) as total,
-                sum(regPrice) as regPrice,tax,foodstamp,
-                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
-            from localtranstoday
-            where description not like '** YOU SAVED %' and trans_status = 'M'
-            AND datetime >= CURRENT_DATE
-            group by register_no,emp_no,trans_no,card_no,
-                upc,description,trans_type,trans_subtype,discounttype,volume,
-                trans_status,
-                department,scale,case when voided=1 then 0 else voided end,
-                matched,tax,foodstamp,
-                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end
-
-            union all
-
-            select     register_no,emp_no,trans_no,card_no,
-                upc,case when numflag=1 then description+'*' else description end as description,
-                trans_type,trans_subtype,sum(itemQtty)as itemqtty,discounttype,volume,
-                trans_status,
-                case when voided=1 then 0 else voided end as voided,
-                department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
-                scale,unitprice,sum(total) as total,regPrice,tax,foodstamp,
-                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
-            from localtranstoday
-            where description not like '** YOU SAVED %' and trans_status !='M'
-            AND datetime >= CURRENT_DATE
-            AND trans_type <> 'L'
-            group by register_no,emp_no,trans_no,card_no,
-                upc,description,trans_type,trans_subtype,discounttype,volume,
-                trans_status,
-                department,scale,case when voided=1 then 0 else voided end,
-                unitprice,regPrice,matched,tax,foodstamp,
-                case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end
-
-            union all
-
-            select     register_no,emp_no,trans_no,card_no,
-                upc,
-                case when discounttype=1 then
-                ' > YOU SAVED $'+convert(varchar(20),convert(money,sum(quantity*regprice-quantity*unitprice)))+'  <'
-                when discounttype=2 then
-                ' > YOU SAVED $'+convert(varchar(20),convert(money,sum(quantity*regprice-quantity*unitprice)))+'  Member Special <'
-                end as description,
-                trans_type,'0' as trans_subtype,0 as itemQtty,discounttype,volume,
-                'D' as trans_status,
-                2 as voided,
-                department,0 as quantity,matched,min(trans_id)+1 as trans_id,
-                scale,0 as unitprice,
-                0 as total,
-                0 as regPrice,0 as tax,0 as foodstamp,
-                case when trans_status='d' or scale=1 then trans_id else scale end as grouper
-            from localtranstoday
-            where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
-            AND datetime >= CURRENT_DATE
-            AND trans_type <> 'L'
-            group by register_no,emp_no,trans_no,card_no,
-                upc,description,trans_type,trans_subtype,discounttype,volume,
-                department,scale,matched,
-                case when trans_status='d' or scale=1 then trans_id else scale end
-            having convert(money,sum(quantity*regprice-quantity*unitprice))<>0";
-        }    
+        $rplttG = str_replace('VIEW ltt_grouped AS', 'VIEW rp_ltt_grouped AS', $lttG);
         self::dbStructureModify($db,'rp_ltt_grouped','DROP VIEW rp_ltt_grouped',$errors);
         if(!$db->table_exists('rp_ltt_grouped',$name)){
             self::dbStructureModify($db,'rp_ltt_grouped',$rplttG,$errors);
         }
 
-        $rpreorderG = "CREATE    view rp_ltt_receipt_reorder_g as
-            select 
-            register_no,emp_no,trans_no,card_no,
-            l.description as description,
-            case 
-                when voided = 5 
-                    then 'Discount'
-                when trans_status = 'M'
-                    then 'Mbr special'
-                when trans_status = 'S'
-                    then 'Staff special'
-                when unitPrice = 0.01
-                    then ''
-                when scale <> 0 and quantity <> 0 
-                    then ".$db->concat('CAST(quantity AS char)',"' @ '",'CAST(unitPrice AS char)','')."
-                when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
-                    then ".$db->concat('CAST(volume AS char)',"' / '",'CAST(unitPrice AS char)','')."
-                when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
-                    then ".$db->concat('CAST(quantity AS char)',"' @ '",'CAST(volume AS char)',"' /'",'CAST(unitPrice AS char)','')."
-                when abs(itemQtty) > 1 and discounttype = 3
-                    then ".$db->concat('CAST(ItemQtty AS char)',"' / '",'CAST(unitPrice AS char)','')."
-                when abs(itemQtty) > 1
-                    then ".$db->concat('CAST(quantity AS char)',"' @ '",'CAST(unitPrice AS char)','')."
-                when matched > 0
-                    then '1 w/ vol adj'
-                else ''
-            end
-            as comment,
-            total,
-            case 
-                when trans_status = 'V' 
-                    then 'VD'
-                when trans_status = 'R'
-                    then 'RF'
-                WHEN (tax = 1 and foodstamp <> 0)
-                    THEN 'TF'
-                WHEN (tax = 1 and foodstamp = 0)
-                    THEN 'T' 
-                WHEN (tax > 1 and foodstamp <> 0)
-                    THEN ".$db->concat('SUBSTR(t.description,1,1)',"'F'",'')."
-                WHEN (tax > 1 and foodstamp = 0)
-                    THEN SUBSTR(t.description,1,1)
-                when tax = 0 and foodstamp <> 0
-                    then 'F'
-                when tax = 0 and foodstamp = 0
-                    then '' 
-            end
-            as status,
-            trans_type,
-            unitPrice,
-            voided,
-            trans_id + 1000 as sequence,
-            department,
-            upc,
-            trans_subtype
-            from rp_ltt_grouped as l
-            left join taxrates as t
-            on l.tax=t.id
-            where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
-            AND trans_type <> 'L'
-            and not (trans_status='M' and total=CAST('0.00' AS decimal))
-
-            union all
-
-            select
-            0 as register_no, 0 as emp_no,0 as trans_no,0 as card_no,
-            '  ' as description,
-            ' ' as comment,
-            0 as total,
-            ' ' as Status,
-            ' ' as trans_type,
-            0 as unitPrice,
-            0 as voided,
-            999 as sequence,
-            '' as department,
-            '' as upc,
-            '' as trans_subtype";
-        if($type == 'mssql'){
-            $rpreorderG = "CREATE     view rp_ltt_receipt_reorder_g as
-            select top 100 percent
-            register_no,emp_no,trans_no,card_no,
-            l.description,
-            case 
-                when voided = 5 
-                    then 'Discount'
-                when trans_status = 'M'
-                    then 'Mbr special'
-                when trans_status = 'S'
-                    then 'Staff special'
-                when unitPrice = 0.01
-                    then ''
-                when scale <> 0 and quantity <> 0 
-                    then convert(varchar, quantity) + ' @ ' + convert(varchar, unitPrice)
-                when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
-                    then convert(varchar, volume) + ' /' + convert(varchar, unitPrice)
-                when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
-                    then convert(varchar, Quantity) + ' @ ' + convert(varchar, Volume) + ' /' + convert(varchar, unitPrice)
-                when abs(itemQtty) > 1 and discounttype = 3
-                    then convert(varchar,ItemQtty) + ' /' + convert(varchar, UnitPrice)
-                when abs(itemQtty) > 1
-                    then convert(varchar, quantity) + ' @ ' + convert(varchar, unitPrice)    
-                when matched > 0
-                    then '1 w/ vol adj'
-                else ''
-            end
-            as comment,
-            total,
-            case 
-                when trans_status = 'V' 
-                    then 'VD'
-                when trans_status = 'R'
-                    then 'RF'
-                WHEN (tax = 1 and foodstamp <> 0)
-                    THEN 'TF'
-                WHEN (tax = 1 and foodstamp = 0)
-                    THEN 'T' 
-                WHEN (tax > 1 and foodstamp <> 0)
-                    THEN LEFT(t.description,1)+'F'
-                WHEN (tax > 1 and foodstamp = 0)
-                    THEN LEFT(t.description,1)
-                when tax = 0 and foodstamp <> 0
-                    then 'F'
-                when tax = 0 and foodstamp = 0
-                    then '' 
-            end
-            as Status,
-            trans_type,
-            unitPrice,
-            voided,
-            trans_id + 1000 as sequence,
-            department,
-            upc,
-            trans_subtype
-            from rp_ltt_grouped as l
-            left join taxrates as t
-            on l.tax=t.id
-            where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
-            AND trans_type <> 'L'
-            and not (trans_status='M' and total=convert(money,'0.00'))
-
-            union all
-
-            select
-            0 as register_no, 0 as emp_no,0 as trans_no,0 as card_no,
-            '  ' as description,
-            ' ' as comment,
-            0 as total,
-            ' ' as Status,
-            ' ' as trans_type,
-            0 as unitPrice,
-            0 as voided,
-            999 as sequence,
-            '' as department,
-            '' as upc,
-            '' as trans_subtype";
-        }    
+        $rpreorderG = str_replace('VIEW ltt_receipt_reorder_g AS', 'VIEW rp_ltt_receipt_reorder_g AS', $lttreorderG);
+        $rpreorderG = str_replace('ltt_grouped', 'rp_ltt_grouped', $rpreorderG);
         self::dbStructureModify($db,'rp_ltt_receipt_reorder_g','DROP VIEW rp_ltt_receipt_reorder_g',$errors);
         if(!$db->table_exists("rp_ltt_receipt_reorder_g",$name)){
             self::dbStructureModify($db,'rp_ltt_receipt_reorder_g',$rpreorderG,$errors);
         }
         
-        $rpG = "CREATE    view rp_receipt_reorder_g as
-            select 
-            register_no,emp_no,trans_no,card_no,
-            case 
-                when trans_type = 'T' 
-                    then     
-                        case when trans_subtype = 'CP' and upc<>'0'
-                        then    ".$db->concat(
-                            "SUBSTR(".$db->concat('description','space(30)','').",1,30)",
-                            "' '",
-                            "SUBSTR(".$db->concat('comment','space(12)','').",1,12)",
-                            "right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
-                            "right(".$db->concat('space(4)','status','').",4)",'')." 
-                        else     ".$db->concat( 
-                            "right(".$db->concat('space(44)','upper(description)','').",44)", 
-                            "right(".$db->concat('space(8)','CAST((-1*total) AS char)','').",8)",
-                            "right(".$db->concat('space(4)','status','').",4)",'')." 
-                        end 
-                when voided = 3 
-                    then     ".$db->concat( 
-                        "SUBSTR(".$db->concat('description','space(30)','').",1,30)",
-                        "space(9)", 
-                        "'TOTAL'", 
-                        "right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",'')."
-                when voided = 2
-                    then     description
-                when voided = 4
-                    then     description
-                when voided = 6
-                    then     description
-                when voided = 7 or voided = 17
-                    then     ".$db->concat(
-                        "SUBSTR(".$db->concat('description','space(30)','').",1,30)",
-                        "space(14)", 
-                        "right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",
-                        "right(".$db->concat('space(4)','status','').",4)",'')." 
-                when sequence < 1000
-                    then     description
-                else
-                    ".$db->concat(
-                        "SUBSTR(".$db->concat('description','space(30)','').",1,30)",
-                        "' '",
-                        "SUBSTR(".$db->concat('comment','space(12)','').",1,12)",
-                        "right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
-                        "right(".$db->concat('space(4)','status','').",4)",'')." 
-            end
-            as linetoprint,
-            sequence,
-            department,
-            super_name as dept_name,
-            case when trans_subtype='CM' or voided in (10,17)
-                then 'CM' else trans_type
-            end
-            as trans_type,
-            upc
-
-            from rp_ltt_receipt_reorder_g r
-            left outer join ".CoreLocal::get('pDatabase').".MasterSuperDepts d 
-            on r.department=d.dept_ID
-            where r.total<>0 or r.unitPrice=0
-            order by register_no,emp_no,trans_no,card_no,sequence";
-        if($type == 'mssql'){
-            $rpG = "CREATE     view rp_receipt_reorder_g as
-            select top 100 percent
-            register_no,emp_no,trans_no,card_no,
-            case 
-                when trans_type = 'T' 
-                    then     
-                        case when trans_subtype = 'CP' and upc<>'0'
-                        then    left(Description + space(30), 30)
-                            + ' ' 
-                            + left(Comment + space(12), 12) 
-                            + right(space(8) + convert(varchar, Total), 8) 
-                            + right(space(4) + status, 4) 
-                        else     right((space(44) + upper(rtrim(Description))), 44) 
-                            + right((space(8) + convert(varchar, (-1 * Total))), 8) 
-                            + right((space(4) + status), 4) 
-                        end 
-                when voided = 3 
-                    then     left(Description + space(30), 30) 
-                        + space(9) 
-                        + 'TOTAL' 
-                        + right(space(8) + convert(varchar, UnitPrice), 8)
-                when voided = 2
-                    then     description
-                when voided = 4
-                    then     description
-                when voided = 6
-                    then     description
-                when voided = 7 or voided = 17
-                    then     left(Description + space(30), 30) 
-                        + space(14) 
-                        + right(space(8) + convert(varchar, UnitPrice), 8) 
-                        + right(space(4) + status, 4)
-                when sequence < 1000
-                    then     description
-                else
-                    left(Description + space(30), 30)
-                    + ' ' 
-                    + left(Comment + space(12), 12) 
-                    + right(space(8) + convert(varchar, Total), 8) 
-                    + right(space(4) + status, 4)
-            end
-            as linetoprint,
-            sequence,
-            department,
-            dept_name,
-            case when trans_subtype='CM' or voided in (10,17)
-                then 'CM' else trans_type
-            end
-            as trans_type,
-            upc
-
-            from rp_ltt_receipt_reorder_g r
-            left outer join ".CoreLocal::get('pDatabase').".dbo.MasterSuperDepts d 
-            on r.department=d.dept_ID
-            where r.total<>0 or r.unitprice=0
-            order by register_no,emp_no,trans_no,card_no,sequence";
-        }
-        elseif($type == 'pdolite'){
-            $rpG = str_replace('right(','str_right(',$rpG);
-        }
+        $rpG = str_replace('VIEW receipt_reorder_g AS', 'VIEW rp_receipt_reorder_g AS', $reorderG);
+        $rpG = str_replace('ltt_receipt_reorder_g', 'rp_ltt_receipt_reorder_g', $rpG);
         if(!$db->table_exists('rp_receipt_reorder_g',$name)){
             self::dbStructureModify($db,'rp_receipt_reorder_g',$rpG,$errors);
         }
 
-        $rpunionsG = "CREATE     view rp_receipt_reorder_unions_g as
-            select linetoprint,
-            emp_no,register_no,trans_no,
-            sequence,dept_name,1 as ordered,upc
-            from rp_receipt_reorder_g
-            where (department<>0 or trans_type='CM')
-            and linetoprint not like 'member discount%'
-
-            union all
-
-            select replace(replace(r1.linetoprint,'** T',' = T'),' **',' = ') as linetoprint,
-            r1.emp_no,r1.register_no,r1.trans_no,
-            r1.sequence,r2.dept_name,1 as ordered,r2.upc
-            from rp_receipt_reorder_g r1 join rp_receipt_reorder_g r2 on r1.sequence+1=r2.sequence
-            and r1.register_no=r2.register_no and r1.emp_no=r2.emp_no and r1.trans_no=r2.trans_no
-            where r1.linetoprint like '** T%' and r2.dept_name is not null and r1.linetoprint<>'** Tare Weight 0 **'
-
-            union all
-
-            select
-            ".$db->concat(
-            "SUBSTR(".$db->concat("'** '","trim(CAST(percentDiscount AS char))","'% Discount Applied **'",'space(30)','').",1,30)",
-            "' '", 
-            "space(13)",
-            "right(".$db->concat('space(8)',"CAST((-1*transDiscount) AS char)",'').",8)",
-            "space(4)",'')." as linetoprint,
-            emp_no,register_no,trans_no,
-            0 as sequence,null as dept_name,2 as ordered,
-            '' as upc
-            from rp_subtotals
-            where percentDiscount<>0
-
-            union all
-
-            select linetoprint,
-            emp_no,register_no,trans_no,
-            sequence,null as dept_name,2 as ordered,upc
-            from rp_receipt_reorder_g
-            where linetoprint like 'member discount%'
-
-            union all
-
-            select 
-            ".$db->concat(
-            "right(".$db->concat('space(44)',"'SUBTOTAL'",'').",44)",
-            "right(".$db->concat('space(8)',"CAST(round(l.runningTotal-s.taxTotal-l.tenderTotal,2) AS char)",'').",8)",
-            'space(4)','')." as linetoprint,
-            l.emp_no,l.register_no,l.trans_no,
-            1 as sequence,null as dept_name,3 as ordered,'' as upc
-            from rp_lttsummary as l, rp_subtotals as s
-            WHERE l.emp_no = s.emp_no and
-            l.register_no = s.register_no and
-            l.trans_no = s.trans_no
-
-            union all
-
-            select 
-            ".$db->concat(
-            "right(".$db->concat('space(44)',"'TAX'",'').",44)",
-            "right(".$db->concat('space(8)',"CAST(round(taxTotal,2) AS char)",'').",8)", 
-            "space(4)",'')." as linetoprint,
-            emp_no,register_no,trans_no,
-            2 as sequence,null as dept_name,3 as ordered,'' as upc
-            from rp_subtotals
-
-            union all
-
-            select 
-            ".$db->concat(
-            "right(".$db->concat('space(44)',"'TOTAL'",'').",44)",
-            "right(".$db->concat('space(8)',"CAST(runningTotal-tenderTotal AS char)",'').",8)", 
-            'space(4)','')." as linetoprint,
-            emp_no,register_no,trans_no,
-            3 as sequence,null as dept_name,3 as ordered,'' as upc
-            from rp_lttsummary
-
-            union all
-
-            select linetoprint,
-            emp_no,register_no,trans_no,
-            sequence,dept_name,4 as ordered,upc
-            from rp_receipt_reorder_g
-            where (trans_type='T' and department = 0)
-            or (department = 0 and linetoprint like '%Coupon%')
-
-            union all
-
-            select 
-            ".$db->concat(
-            "right(".$db->concat('space(44)',"'CURRENT AMOUNT DUE'",'').",44)",
-            "right(".$db->concat('space(8)',"CAST(runningTotal-transDiscount AS char)",'').",8)", 
-            "space(4)",'')." as linetoprint,
-            emp_no,register_no,trans_no,
-            5 as sequence,
-            null as dept_name,
-            5 as ordered,'' as upc
-            from rp_subtotals where runningTotal <> 0 ";
-        if($type == 'mssql'){
-            $rpunionsG = "CREATE view rp_receipt_reorder_unions_g as
-            select linetoprint,
-            emp_no,register_no,trans_no,
-            sequence,dept_name,1 as ordered,upc
-            from rp_receipt_reorder_g
-            where (department<>0 or trans_type='CM')
-            and linetoprint not like 'member discount%'
-
-            union all
-
-            select replace(replace(r1.linetoprint,'** T',' = T'),' **',' = ') as linetoprint,
-            r1.emp_no,r1.register_no,r1.trans_no,
-            r1.[sequence],r2.dept_name,1 as ordered,r2.upc
-            from rp_receipt_reorder_g r1 join rp_receipt_reorder_g r2 on r1.[sequence]+1=r2.[sequence]
-            and r1.emp_no=r2.emp_no and r1.register_no=r2.register_no and r1.trans_no=r2.trans_no
-            where r1.linetoprint like '** T%' and r2.dept_name is not null and r1.linetoprint<>'** Tare Weight 0 **'
-
-            union all
-
-            select
-            left('** '+rtrim(convert(char,percentdiscount))+'% Discount Applied **' + space(30), 30)
-            + ' ' 
-            + left('' + space(13), 13) 
-            + right(space(8) + convert(varchar, (-1*transDiscount)), 8) 
-            + right(space(4) + '', 4),
-            emp_no,register_no,trans_no,
-            0 as sequence,null as dept_name,2 as ordered,
-            '' as upc
-            from rp_subtotals
-            where percentdiscount<>0
-
-            union all
-
-            select linetoprint,
-            emp_no,register_no,trans_no,
-            sequence,null as dept_name,2 as ordered,upc
-            from rp_receipt_reorder_g
-            where linetoprint like 'member discount%'
-
-            union all
-
-            select 
-            right((space(44) + upper(rtrim('SUBTOTAL'))), 44) 
-            + right((space(8) + convert(varchar,l.runningTotal-s.taxTotal-l.tenderTotal)),8)
-            + right((space(4) + ''), 4) as linetoprint,
-            l.emp_no,l.register_no,l.trans_no,
-            1 as sequence,null as dept_name,3 as ordered,'' as upc
-            from rp_lttsummary as l, rp_subtotals as s
-            WHERE l.emp_no = s.emp_no and
-            l.register_no = s.register_no and
-            l.trans_no = s.trans_no
-
-            union all
-
-            select 
-            right((space(44) + upper(rtrim('TAX'))), 44) 
-            + right((space(8) + convert(varchar,taxtotal)), 8) 
-            + right((space(4) + ''), 4) as linetoprint,
-            emp_no,register_no,trans_no,
-            2 as sequence,null as dept_name,3 as ordered,'' as upc
-            from rp_subtotals
-
-            union all
-
-            select 
-            right((space(44) + upper(rtrim('TOTAL'))), 44) 
-            + right((space(8) +convert(varchar,runningtotal-tendertotal)),8)
-            + right((space(4) + ''), 4) as linetoprint,
-            emp_no,register_no,trans_no,
-            3 as sequence,null as dept_name,3 as ordered,'' as upc
-            from rp_lttsummary
-
-            union all
-
-            select linetoprint,
-            emp_no,register_no,trans_no,
-            sequence,dept_name,4 as ordered,upc
-            from rp_receipt_reorder_g
-            where (trans_type='T' and department = 0)
-            or (department = 0 and linetoprint like '%Coupon%')
-
-            union all
-
-            select 
-            right((space(44) + upper(rtrim('Current Amount Due'))), 44) 
-            +right((space(8) + convert(varchar,subtotal)),8)
-            + right((space(4) + ''), 4) as linetoprint,
-            emp_no,register_no,trans_no,
-            5 as sequence,
-            null as dept_name,
-            5 as ordered,'' as upc
-            from rp_subtotals where runningtotal <> 0"; 
-        }
-        elseif($type == 'pdolite'){
-            $rpunionsG = str_replace('right(','str_right(',$rpunionsG);
-        }
+        $rpunionsG = str_replace('VIEW receipt_reorder_unions_g AS', 'VIEW rp_receipt_reorder_unions_g AS', $unionsG);
+        $rpunionsG = str_replace('receipt_reorder_g', 'rp_receipt_reorder_g', $rpunionsG);
         if(!$db->table_exists('rp_receipt_reorder_unions_g',$name)){
             self::dbStructureModify($db,'rp_receipt_reorder_unions_g',$rpunionsG,$errors);
         }
