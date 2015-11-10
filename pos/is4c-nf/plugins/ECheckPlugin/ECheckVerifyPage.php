@@ -55,6 +55,7 @@ class ECheckVerifyPage extends NoInputCorePage
     function head_content()
     {
         ?>
+        <script type="text/javascript" src="../../js/singleSubmit.js"></script>
         <script type="text/javascript" >
         var prevKey = -1;
         var prevPrevKey = -1;
@@ -107,6 +108,7 @@ class ECheckVerifyPage extends NoInputCorePage
         </div>
         <?php
         $this->add_onload_command("\$('#selectlist').focus();\n");
+        $this->add_onload_command("singleSubmit.restrict('#selectform');\n");
         $this->add_onload_command("\$('#selectlist').keypress(processkeypress);\n");
     } // END body_content() FUNCTION
 }
