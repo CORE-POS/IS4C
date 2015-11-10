@@ -61,25 +61,6 @@ class PdfPrintHandler extends PrintHandler
     }
 
     /**
-     Center a string of text
-     @param $text the text
-     @param $big boolean using larger font
-     @return a printable string
-
-     Replaces old center(), centerString(),
-     and centerBig() functions. 
-    */
-    function centerString($text,$big=false){
-        $width = ($big) ? 30 : 59;
-
-        $blank = str_repeat(" ", $width);
-        $text = trim($text);
-        $lead = (int) (($width - strlen($text)) / 2);
-        $newline = substr($blank, 0, $lead).$text;
-        return $newline;
-    }
-    
-    /**
       Add font style command
         @param $altFont use alternate font
       @param $bold use bold font
