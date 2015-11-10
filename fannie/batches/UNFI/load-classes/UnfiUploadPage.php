@@ -106,19 +106,25 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     protected $use_splits = false;
     protected $use_js = true;
+    protected $vendor_name = 'UNFI';
+
+    protected function getVendorID()
+    {
+        $idP = $this->connection->prepare_statement("SELECT vendorID FROM vendors WHERE vendorName=? ORDER BY vendorID");
+        $vid = $this->connection->getValue($idP, array($this->vendor_name));
+
+        return $vid;
+    }
 
     function process_file($linedata)
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $idP = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
-        $idR = $dbc->exec_statement($idP);
-        if ($dbc->num_rows($idR) == 0){
+        $VENDOR_ID = $this->getVendorID();
+        if ($VENDOR_ID === false) {
             $this->error_details = 'Cannot find vendor';
-            return False;
+            return false;
         }
-        $idW = $dbc->fetchRow($idR);
-        $VENDOR_ID = $idW['vendorID'];
 
         $SKU = $this->get_column_index('sku');
         $BRAND = $this->get_column_index('brand');
@@ -229,12 +235,9 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             // occasional > $1,000 item
             $brand = str_replace("'","",$brand);
             $description = str_replace("'","",$description);
-            $reg = str_replace('$',"",$reg);
-            $reg = str_replace(",","",$reg);
-            $net = str_replace('$',"",$net);
-            $net = str_replace(",","",$net);
-            $srp = str_replace('$',"",$srp);
-            $srp = str_replace(",","",$srp);
+            $reg = $this->sanitizePrice($reg);
+            $net = $this->sanitizePrice($net);
+            $srp = $this->sanitizePrice($srp);
 
             // sale price isn't really a discount
             if ($reg == $net) {
@@ -251,16 +254,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
             $srp = $rounder->round($srp);
 
-            // set organic flag on OG1 (100%) or OG2 (95%)
-            $organic_flag = 0;
-            if (strstr($prodInfo, 'OG2') || strstr($prodInfo, 'OG1')) {
-                $organic_flag = 17;
-            }
-            // set gluten-free flag on g
-            $gf_flag = 0;
-            if (strstr($prodInfo, 'g')) {
-                $gf_flag = 18;
-            }
+            list($organic_flag, $gf_flag) = $this->getFlags($prodInfo);
 
             // need unit cost, not case cost
             $reg_unit = $reg / $qty;
@@ -297,19 +291,38 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         return true;
     }
 
+    protected function sanitizePrice($reg)
+    {
+        $reg = str_replace('$',"",$reg);
+        return str_replace(",","",$reg);
+    }
+
+    protected function getFlags($prodInfo)
+    {
+        // set organic flag on OG1 (100%) or OG2 (95%)
+        $organic_flag = 0;
+        if (strstr($prodInfo, 'OG2') || strstr($prodInfo, 'OG1')) {
+            $organic_flag = 17;
+        }
+        // set gluten-free flag on g
+        $gf_flag = 0;
+        if (strstr($prodInfo, 'g')) {
+            $gf_flag = 18;
+        }
+
+        return array($organic_flag, $gf_flag);
+    }
+
     /* clear tables before processing */
     function split_start(){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $idP = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
-        $idR = $dbc->exec_statement($idP);
-        if ($dbc->num_rows($idR) == 0){
+        $VENDOR_ID = $this->getVendorID();
+        if ($VENDOR_ID === false) {
             $this->error_details = 'Cannot find vendor';
-            return False;
+            return false;
         }
-        $idW = $dbc->fetchRow($idR);
-        $VENDOR_ID = $idW['vendorID'];
 
         $viP = $dbc->prepare_statement("DELETE FROM vendorItems WHERE vendorID=?");
         $vsP = $dbc->prepare_statement("DELETE FROM vendorSRPs WHERE vendorID=?");
@@ -322,15 +335,14 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         return '<input type="checkbox" name="rm_cds" checked /> Remove check digits';
     }
 
-    function results_content(){
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+    function results_content()
+    {
         $ret = "<p>Price data import complete</p>";
-        $ret .= '<p><a href="'.$_SERVER['PHP_SELF'].'">Upload Another</a></p>';
+        $ret .= '<p><a href="'.filter_input(INPUT_SEVER, 'PHP_SELF').'">Upload Another</a></p>';
 
         return $ret;
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
