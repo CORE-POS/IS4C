@@ -125,6 +125,14 @@ class MemMailList extends FannieReportPage
         </select>
     </div>
     <div class="form-group">
+        <label>Format</label>
+        <select name="excel" class="form-control">
+            <option value="csv">Excel (CSV)</option> 
+            <option value="csv">Excel (XLS)</option> 
+            <option value="html">Web page</option>
+        </select>
+    </div>
+    <div class="form-group">
         <button type="submit" class="btn btn-default">Get List</button>
     </div>
 </form>
