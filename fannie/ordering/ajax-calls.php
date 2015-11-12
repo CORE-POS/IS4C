@@ -1779,6 +1779,7 @@ function saveContactField($orderID, $field, $val, $legacy_field)
     $soModel->$field($val);
     $soModel->save();
     $dbc = FannieDB::get($FANNIE_OP_DB);
+    $TRANS = $FANNIE_TRANS_DB . $dbc->sep();
     if (canSaveAddress($orderID) == true) {
         $p = $dbc->prepare_statement("
             UPDATE {$TRANS}SpecialOrderContact
