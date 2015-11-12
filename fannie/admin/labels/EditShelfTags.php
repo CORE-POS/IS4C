@@ -41,8 +41,36 @@ class EditShelfTags extends FannieRESTfulPage
         $this->__routes[] = 'delete<id><upc>';
         $this->__routes[] = 'delete<id><upc><confirm>';
         $this->__routes[] = 'post<newID><oldID><upc>';
+        $this->__routes[] = 'get<id><reprice>';
 
         return parent::preprocess();
+    }
+
+    protected function get_id_reprice_handler()
+    {
+        $tags = new ShelftagsModel($this->connection);
+        $tags->id($this->id);
+        $priceP = $this->connection->prepare('
+            SELECT normal_price
+            FROM products
+            WHERE upc=?');
+        foreach ($tags->find() as $tag) {
+            $current_price = $this->connection->getValue($priceP, array($tag->upc()));
+            if ($current_price !== false) {
+                $tag->normal_price($current_price);
+                $ppo = \COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($current_price, $tag->size());
+                $tag->pricePerUnit($ppo);
+                $tag->save();
+            }
+        }
+
+        return true;
+    }
+
+    protected function get_id_reprice_view()
+    {
+        return '<div class="alert alert-success">Updated Prices</div>'
+            . $this->get_id_view();
     }
 
     public function post_id_handler()
@@ -227,7 +255,9 @@ HTML;
         $ret .= "<input type=hidden name=id value=\"".$this->id."\" />";
         $ret .= '<p>';
         $ret .= "<button type=submit name=submit value=\"1\" 
-            class=\"btn btn-default\">Update Shelftags</button>";
+            class=\"btn btn-default btn-core\">Update Shelftags</button>
+            <a href=\"?id=" . $this->id . "&reprice=1\" 
+            class=\"btn btn-default btn-reset\">Use Current Pricing</a>";
         $ret .= '</p>';
         $ret .= "</form>";
 
