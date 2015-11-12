@@ -1061,7 +1061,7 @@ class ObfWeeklyReport extends FannieReportPage
           long-term labor, this value is needed to calculate
           long-term SPLH correctly.
         */
-        $quarterSplhP = $dbc->prepare('SELECT SUM(c.actualSales) AS actualSales,
+        $this->quarterSplhP = $dbc->prepare('SELECT SUM(c.actualSales) AS actualSales,
                                             SUM(c.lastYearSales * (1+c.growthTarget)) AS planSales
                                         FROM ObfLabor AS l
                                             INNER JOIN ObfWeeks AS w ON l.obfWeekID=w.obfWeekID
