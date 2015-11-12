@@ -23,7 +23,6 @@
 
 class AllLanesItemModule extends ItemModule 
 {
-
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
         $FANNIE_LANES = FannieConfig::config('LANES');
@@ -35,45 +34,64 @@ class AllLanesItemModule extends ItemModule
                 Lane Status
                 </a></div>";
         $css = ($expand_mode == 1) ? '' : ' collapse';
-        $ret .= '<div id="AllLanesFieldsetContent" class="panel-body' . $css . '">';
-        
-        for($i=0;$i<count($FANNIE_LANES);$i++){
-            $f = $FANNIE_LANES[$i];
-            $sql = new SQLManager($f['host'],$f['type'],$f['op'],$f['user'],$f['pw']);
-            if (!is_object($sql) || $sql->connections[$f['op']] === False){
-                $ret .= "<li class=\"alert-danger\">Can't connect to lane ".($i+1)."</li>";
-                continue;
-            }
-            $prep = $sql->prepare_statement($queryItem);
-            $resultItem = $sql->exec_statement($prep,array($upc));
-            $num = $sql->num_rows($resultItem);
-
-            if ($num == 0){
-                $ret .= "<li class=\"alert-danger\">Item <strong>$upc</strong> not found on Lane ".($i+1)."</li>";
-            }
-            else if ($num > 1){
-                $ret .= "<li class=\"alert-danger\">Item <strong>$upc</strong> found multiple times on Lane ".($i+1);
-                $ret .= '<ul>';
-                while ($rowItem = $sql->fetch_array($resultItem)){
-                    $ret .= "<li>{$rowItem['upc']} {$rowItem['description']}</li>";
-                }
-                $ret .= '</ul></li>';
-            }
-            else {
-                $rowItem = $sql->fetch_array($resultItem);
-                $ret .= "<li>Item <span style=\"color:red;\">$upc</span> on Lane ".($i+1)."<ul>";
-                $ret .= "<li>Price: {$rowItem['normal_price']}</li>";
-                if ($rowItem['discounttype'] <> 0){
-                    $ret .= "<li class=\"alert-success\">ON SALE: {$rowItem['special_price']}</li>";
-                }
-                $ret .= "</ul></li>";
-            }
-        }
-        $ret .= '</ul>';
+        $ret .= '<div id="AllLanesFieldsetContent" class="panel-body' . $css . '"><ul>';
         $ret .= '</div>';
+
         $ret .= '</div>';
         return $ret;
     }
+
+    public function getFormJavascript($upc)
+    {
+        $script = <<<JAVASCRIPT
+function pollLanes() {
+    if (window.$) {
+        $(document).ready(function(){
+            var req = {
+                jsonrpc: '2.0',
+                method: '\\\\COREPOS\\\\Fannie\\\\API\\\\webservices\\\\FannieLaneStatusService',
+                id: new Date().getTime(),
+                params: { upc: {{UPC}} }
+            };
+            $.ajax({
+                url: '../ws/',
+                type: 'post',
+                data: JSON.stringify(req),
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function(resp) {
+                    for (var i=0; i<resp.result.length; i++) {
+                        var lane = resp.result[i];
+                        var elem = $('<li>');
+                        if (lane.online === false) {
+                            elem.addClass('alert-danger').html('Cannot connect to lane ' + (i+1));
+                        } else if (lane.itemFound === 0) {
+                            elem.addClass('alert-danger').html('Item not found on lane ' + (i+1));
+                        } else {
+                            if (lane.itemFound > 1) {
+                                elem.AddClass('alert-danger').html('Item found multiple items on lane ' + (i+1));
+                            } else {
+                                elem.html('Item <span style="color:red;">' + lane.itemUPC + '</span> on lane ' + (i+1));
+                            }
+                            var sublist = $('<ul>');
+                            sublist.append($('<li>').html('Price: ' + lane.itemPrice));
+                            if (lane.itemOnSale) {
+                                sublist.append($('<li>').addClass('alert-success').html('On Sale: ' + lane.itemSalePrice));
+                            }
+                            elem.append(sublist);
+                        }
+                        $('#AllLanesFieldsetContent ul:first').append(elem);
+                    }
+                }
+            });
+        });
+    } else { 
+        setTimeout(pollLanes, 50);
+    }
+}
+pollLanes();
+JAVASCRIPT;
+        return str_replace('{{UPC}}', ltrim($upc, '0'), $script);
+    }
 }
 
-?>
