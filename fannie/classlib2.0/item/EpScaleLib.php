@@ -73,10 +73,13 @@ class EpScaleLib
         $line = 'CCOSPIA' . chr(253);
         $line .= 'PNO' . $item_info['PLU'] . chr(253);
         $line .= 'UPC' . '002' . str_pad($item_info['PLU'],4,'0',STR_PAD_LEFT) . '000000' . chr(253);
-        $line .= 'DN1' . (isset($item_info['Description']) ? $item_info['Description'] : '') . chr(253);
+        $desc = (isset($item_info['Description'])) ? $item_info['Description'] : '';
+        $line .= self::wrapDescription($desc, 22);
         $line .= 'DS1' . '0' . chr(253);
-        $line .= 'DN2' . chr(253);
-        $line .= 'DS2' . '0' . chr(253);
+        if (!strstr($line, 'DN2')) {
+            $line .= 'DN2' . chr(253);
+            $line .= 'DS2' . '0' . chr(253);
+        }
         $line .= 'DN3' . chr(253);
         $line .= 'DS3' . '0' . chr(253);
         $line .= 'DN4' . chr(253);
@@ -143,6 +146,8 @@ class EpScaleLib
                             list($line1, $line2) = explode("\n", $item_info[$key]);
                             $line .= 'DN1' . $line1 . chr(253);
                             $line .= 'DN2' . $line2 . chr(253);
+                        } elseif (strlen($item_info[$key]) > 22) {
+                            $line .= self::wrapDescription($item_info[$key], 22);
                         } else {
                             $line .= 'DN1' . $item_info[$key] . chr(253);
                         }
@@ -150,7 +155,8 @@ class EpScaleLib
                     case 'ReportingClass':
                         $line .= 'CCL' . $item_info[$key] . chr(253);
                     case 'Label':
-                        $line .= 'FL1' . $item_info[$key] . chr(253);
+                        /** disabled 11Nov2015 - doesn't syncing seems broken **/
+                        //$line .= 'FL1' . $item_info[$key] . chr(253);
                         break;
                     case 'Tare':
                         $line .= 'UTA' . floor(100*$item_info[$key]) .'0' . chr(253);
@@ -179,6 +185,16 @@ class EpScaleLib
         }
 
         return $line;
+    }
+
+    static private function wrapDescription($desc, $length, $limit=2)
+    {
+        $desc = wordwrap($desc, $length); 
+        $lines = explode("\n", $desc);
+        $keys = array_filter(array_keys($lines), function($i) { return $i<$limit; });
+        return array_reduce($keys, function($carry, $key) use ($lines) {
+            return $carry . 'DN' . ($key+1) . $lines[$key] . chr(253);
+        });
     }
 
     /**
