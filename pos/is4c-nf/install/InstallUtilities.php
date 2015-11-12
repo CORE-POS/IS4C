@@ -685,8 +685,15 @@ class InstallUtilities extends LibraryClass
     {
         if ($name == 'op') {
             return CoreLocal::get('pDatabase');
-        } else if ($name == 'trans') {
+        } elseif ($name == 'trans') {
             return CoreLocal::get('tDatabase');
+        } elseif (substr($name, 0, 7) == 'plugin:') {
+            $pluginDbKey = substr($name, 7);
+            if (CoreLocal::get("$pluginDbKey",'') !== '') {
+                return CoreLocal::get("$pluginDbKey");
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
