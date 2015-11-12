@@ -58,7 +58,7 @@ if (strpos($FANNIE_SERVER, ':') > 0) {
 }
 $cmd = 'mysqldump'
     . ' -u ' . escapeshellarg($FANNIE_SERVER_USER)
-    . ' -p' . escapeshellarg($FANNIE_SERVER_PW)
+    . (empty($FANNIE_SERVER_PW) ? '' : ' -p' . escapeshellarg($FANNIE_SERVER_PW))
     . ' -h ' . escapeshellarg($host)
     . ' -P ' . escapeshellarg($port)
     . ' -w ' . escapeshellarg('store_id=' . ((int)$FANNIE_STORE_ID))
