@@ -25,3 +25,4 @@ echo "\$FANNIE_ARCHIVE_METHOD = 'partitions';" >> fannie/config.php
 echo "\$FANNIE_LANES = array();" >> fannie/config.php
 # set database driver based on environment variable
 echo "\$FANNIE_SERVER_DBMS = '$DB_DRIVER';" >> fannie/config.php
+echo "\$FANNIE_STORE_ID = '1';" >> fannie/config.php
