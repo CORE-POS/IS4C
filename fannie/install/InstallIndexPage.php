@@ -204,6 +204,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         if (FormLib::get($prefix . $i) !== '') {
             $FANNIE_LANES[$i][$field] = FormLib::get($prefix . $i);
         }
+
+        return $FANNIE_LANES;
     }
 
     function body_content()
