@@ -49,6 +49,7 @@ class login2 extends BasicPage
 
             if (Authenticate::checkPassword($passwd)) {
                 Database::testremote();
+                UdpComm::udpSend("termReset");
                 $sd = MiscLib::scaleObject();
                 if (is_object($sd)) {
                     $sd->ReadReset();
