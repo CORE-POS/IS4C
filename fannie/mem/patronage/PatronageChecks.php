@@ -100,12 +100,15 @@ class PatronageChecks extends FannieRESTfulPage
         $query = $dbc->prepare('
             SELECT p.cardno,
                 p.cash_pat,
+                p.equit_pat,
+                p.net_purch,
                 m.zip,
                 p.check_number
             FROM patronage AS p
                 INNER JOIN meminfo AS m ON p.cardno=m.card_no
                 INNER JOIN custdata AS c ON p.cardno=c.CardNo AND c.personNum=1
             WHERE p.FY=?
+                AND p.cash_pat > 0
             ORDER BY m.zip,
                 c.LastName,
                 c.FirstName');
@@ -142,6 +145,8 @@ class PatronageChecks extends FannieRESTfulPage
             $pdf->AddPage();
             $pdf->Image('rebate_body.png', 10, 0, 190);
             $check = new GumCheckTemplate($custdata, $meminfo, $w['cash_pat'], 'Rebate ' . $fy, $w['check_number']);
+            $check->addBankLine('Net Purchases: $' . number_format($w['net_purch'], 2));
+            $check->addBankLine('Retained Equity: $' . number_format($w['equit_pat'], 2));
             $check->renderAsPDF($pdf);
             if ($pdf->PageNo() == $per_page) {
                 $filename .= '-' . substr($w['zip'], 0, 5) . '.pdf';
@@ -153,10 +158,12 @@ class PatronageChecks extends FannieRESTfulPage
                 $pdf->SetMargins(6.35, 6.35, 6.35); // quarter-inch margins
                 $pdf->SetAutoPageBreak(false);
             }
+            break;
         }
 
         $filename .= '-End.pdf';
-        $pdf->Output('/tmp/' . $filename, 'F');
+        //$pdf->Output('/tmp/' . $filename, 'F');
+        $pdf->Output('test.pdf', 'I');
         $this->files[] = $filename;
 
         return true;

@@ -39,6 +39,11 @@ class GumCheckTemplate
 
     private $routing_no = 'xxxxxxxxxx';
     private $checking_no = 'yyyyyyyyyyyy';
+
+    public function addBankLine($line)
+    {
+        $this->bank_address[] = $line;
+    }
     
     public function __construct($custdata, $meminfo, $amount, $memo='', $check_number=false, $date=false)
     {
@@ -222,7 +227,7 @@ class GumCheckTemplate
         $pdf->Cell(30, $line_height, str_pad(number_format($this->amount, 2), 25, '*', STR_PAD_LEFT), 0, 0, 'R');
 
         $pdf->SetFont('Arial', '', 10);
-        $pdf->SetXY($check_left_x, $check_top_y + (6*$line_height));
+        $pdf->SetXY($check_left_x, $check_top_y + (7*$line_height));
         $pdf->Cell(0, $line_height, 'This check void after 90 days', 0, 1, 'C');
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->Cell(0, $line_height, $this->amount_as_words.'   ', 0, 1, 'R');
