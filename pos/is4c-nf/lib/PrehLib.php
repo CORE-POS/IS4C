@@ -602,6 +602,8 @@ static public function tender($right, $strl)
 private static function tenderEndsTransaction($tender_object, $ret)
 {
     CoreLocal::set("change",-1 * CoreLocal::get("amtdue"));
+    CoreLocal::set('strEntered', '');
+    CoreLocal::set('msgrepeat', 0);
     $cash_return = CoreLocal::get("change");
     TransRecord::addchange($cash_return, $tender_object->ChangeType(), $tender_object->ChangeMsg());
                 
