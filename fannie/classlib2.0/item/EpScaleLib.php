@@ -62,8 +62,9 @@ class EpScaleLib
         $et_line .= 'PNO' . $item_info['PLU'] . chr(253);
         $et_line .= 'INO' . $item_info['PLU'] . chr(253);
         $item_info['ExpandedText'] = str_replace("\r", '', $item_info['ExpandedText']);
-        $item_info['ExpandedText'] = str_replace("\n", '<br>', $item_info['ExpandedText']);
-        $et_line .= 'ITE' . $item_info['ExpandedText'] . chr(253);
+        $lines = explode("\n", $item_info['ExpandedText']);
+        $lines = array_reduce($lines, function($carry, $line){ return $carry . str_pad($line, 30); });
+        $et_line .= 'ITE' . $lines . chr(253);
 
         return $et_line;
     }
