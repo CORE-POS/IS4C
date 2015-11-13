@@ -55,7 +55,7 @@ class ProductsModel extends BasicModel
     'scaleprice'=>array('type'=>'MONEY'),
     'mixmatchcode'=>array('type'=>'VARCHAR(13)'),
     'modified'=>array('type'=>'DATETIME'),
-    'advertised'=>array('type'=>'TINYINT'),
+    'batchID'=>array('type'=>'TINYINT', 'replaces'=>'advertised'),
     'tareweight'=>array('type'=>'DOUBLE'),
     'discount'=>array('type'=>'SMALLINT'),
     'discounttype'=>array('type'=>'TINYINT'),

@@ -38,7 +38,7 @@ if (!class_exists("LocalStorage")) {
 class SessionStorage extends LocalStorage 
 {
     public function __construct(){
-        if(ini_get('session.auto_start')==0 && !headers_sent()) {
+        if(php_sapi_name() !== 'cli' && ini_get('session.auto_start')==0 && !headers_sent()) {
             @session_start();
         }
     }

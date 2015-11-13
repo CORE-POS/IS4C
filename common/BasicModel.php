@@ -207,6 +207,7 @@ class BasicModel
                 }
             }
             if (!isset($this->columns[$name])) {
+                $refl = new \ReflectionClass($this);
                 throw new \Exception('Invalid accessor: ' . $name);
             }
         }
@@ -415,8 +416,10 @@ class BasicModel
         $this->fq_name = $db_name . $this->connection->sep() . $this->name;
         $ret = array('db'=>$db_name,'struct'=>$this->name,'error'=>0,'error_msg'=>'');
         if (!$this->create()) {
-            $ret['error'] = 3;
-            $ret['error_msg'] = $this->connection->error($db_name);
+            $ret['error'] = 1;
+            $ret['details'] = $this->connection->error($db_name);
+            $reflect = new \ReflectionClass($this);
+            $ret['query'] = $reflect->getName() . '::create()';
         }
 
         return $ret;
@@ -852,10 +855,11 @@ class BasicModel
         $new_columns = array();
         $unknown = array();
         $recase_columns = array();
+        $lowercase_this = array_map(function($i){ return strtolower($i); }, array_keys($this->columns));
 
-        $recase_columns = array_merge($array, $this->normalizeChangeCase($db_name, $mode));
-        $recase_columns = array_merge($array, $this->normalizeRename($db_name, $mode));
-        $recase_columns = array_merge($array, $this->normalizeColumnAttributes($db_name, $mode));
+        $recase_columns = array_merge($recase_columns, $this->normalizeChangeCase($db_name, $mode));
+        $recase_columns = array_merge($recase_columns, $this->normalizeRename($db_name, $mode));
+        $recase_columns = array_merge($recase_columns, $this->normalizeColumnAttributes($db_name, $mode));
 
         $new_columns = array_filter(array_keys($this->columns),
             function ($col_name) use ($current) {
@@ -1145,6 +1149,7 @@ class BasicModel
 *********************************************************************************/
         ',
     );
+    protected $new_model_namespace = '\\COREPOS\\common\\';
 
     public function newModel($name, $as_view=false)
     {
@@ -1155,7 +1160,7 @@ class BasicModel
 /**
   @class $name
 */
-class $name extends \\COREPOS\\common\\" . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
+class $name extends " . $this->new_model_namespace . ($as_view ? 'ViewModel' : 'BasicModel') . "\n");
         fwrite($fptr,"{\n");
         fwrite($fptr,"\n");
         fwrite($fptr,"    protected \$name = \"".substr($name,0,strlen($name)-5)."\";\n");
@@ -1294,6 +1299,22 @@ class $name extends \\COREPOS\\common\\" . ($as_view ? 'ViewModel' : 'BasicModel
     {
     }
 
+    protected function findFileClass($file)
+    {
+        $defined = get_declared_classes();
+        $end = '\\' . basename($file);
+        $end = substr($end, 0, strlen($end)-4);
+        $match = array_filter($defined, function($i) use ($end) {
+            return $end == substr($i, -1*strlen($end));
+        });
+        
+        $ret = false;
+        if (count($match) == 1) {
+            $ret = array_pop($match);
+        }
+        return $ret;
+    }
+
     /* Argument signatures, to php, where BasicModel.php is the first:
      * 2 args: Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
      * 3 args: Create new Model: php BasicModel.php --new <Model Name>\n";
@@ -1343,13 +1364,16 @@ class $name extends \\COREPOS\\common\\" . ($as_view ? 'ViewModel' : 'BasicModel
         $class = pathinfo($classfile, PATHINFO_FILENAME);
         include($classfile);
         if (!class_exists($class)) {
-            echo "Error: class '$class' does not exist\n";
-            return 1;
+            $class = $this->findFileClass($classfile);
+            if ($class === false) {
+                echo "Error: class '$class' does not exist\n";
+                return 1;
+            }
         }
 
         // A new object of the type named on the command line.
         $obj = new $class(null);
-        if (!is_a($obj, 'BasicModel')) {
+        if (!is_a($obj, '\\COREPOS\\common\\BasicModel')) {
             echo "Error: invalid class. Must be BasicModel\n";
             return 1;
         }
@@ -1432,7 +1456,7 @@ class $name extends \\COREPOS\\common\\" . ($as_view ? 'ViewModel' : 'BasicModel
     }
 }
 
-if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
+if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__) && isset($argc) && isset($argv)) {
     $obj = new BasicModel(null);
     $obj->cli($argc, $argv);
 }
