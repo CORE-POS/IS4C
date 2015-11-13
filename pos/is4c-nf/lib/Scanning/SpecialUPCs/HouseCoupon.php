@@ -421,6 +421,17 @@ class HouseCoupon extends SpecialUPC
                 $valW = $transDB->fetch_row($valR);
                 $value = $valW[0] * $infoW["discountValue"];
                 break;
+            case 'BG': // BOGO
+                $valQ = 'SELECT SUM(l.total) '
+                        . $this->baseSQL($transDB, $coupID, 'upc') . "
+                        and h.type in ('BOTH', 'DISCOUNT')";
+                $valP = $transDB->prepare($valQ);
+                $value = $transDB->getValue($valP);
+                $value = MiscLib::truncate2($value/2);
+                if ($value > 0 && $value > $infoW['discountValue']) {
+                    $value = $infoW['discountValue'];
+                }
+                break;
             case "P": // discount price
                 // query to get the item's department and current value
                 // current value minus the discount price is how much to
