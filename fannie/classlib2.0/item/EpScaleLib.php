@@ -189,9 +189,9 @@ class EpScaleLib
 
     static private function wrapDescription($desc, $length, $limit=2)
     {
-        $desc = wordwrap($desc, $length); 
+        $desc = wordwrap($desc, $length, "\n", true); 
         $lines = explode("\n", $desc);
-        $keys = array_filter(array_keys($lines), function($i) { return $i<$limit; });
+        $keys = array_filter(array_keys($lines), function($i) use ($limit) { return $i<$limit; });
         return array_reduce($keys, function($carry, $key) use ($lines) {
             return $carry . 'DN' . ($key+1) . $lines[$key] . chr(253);
         });
