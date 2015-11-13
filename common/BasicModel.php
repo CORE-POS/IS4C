@@ -415,7 +415,8 @@ class BasicModel
     {
         $this->fq_name = $db_name . $this->connection->sep() . $this->name;
         $ret = array('db'=>$db_name,'struct'=>$this->name,'error'=>0,'error_msg'=>'');
-        if (!$this->create()) {
+        $exists = $this->connection->tableExists($this->fq_name);
+        if (!$exists && !$this->create()) {
             $ret['error'] = 1;
             $ret['details'] = $this->connection->error($db_name);
             $reflect = new \ReflectionClass($this);
