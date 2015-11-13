@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\FormLib;
+
 /* this module is intended for re-use. Just set 
  * Pass the name of a class with the
  * static properties: 
@@ -39,79 +41,43 @@ include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class TarePromptInputPage extends NoInputCorePage 
 {
-
-    private $request_header = '';
-    private $request_msg = '';
-
-    function preprocess(){
+    function preprocess()
+    {
         // get calling class (required)
-        $class = isset($_REQUEST['class']) ? $_REQUEST['class'] : '';
-        $item = isset($_REQUEST['item']) ? $_REQUEST['item'] : '';
+        $item = FormLib::get('item');
         $pos_home = MiscLib::base_url().'gui-modules/pos2.php';
-        if ($class === '' || !class_exists($class)){
+        if ($item === '') {
             $this->change_page($pos_home);
-            return False;
+            return false;
         }
-        // make sure calling class implements required
-        // method and properties
-        try {
-            $method = new ReflectionMethod($class, 'requestTareCallback');
-            if (!$method->isStatic() || !$method->isPublic())
-                throw new Exception('bad method requestTareCallback');
-            $property = new ReflectionProperty($class, 'requestTareMsg');
-            if (!$property->isStatic() || !$property->isPublic())
-                throw new Exception('bad property requestTareMsg');
-            $property = new ReflectionProperty($class, 'requestTareHeader');
-            if (!$property->isStatic() || !$property->isPublic())
-                throw new Exception('bad property requestTareHeader');
-        }
-        catch (Exception $e){
-            $this->change_page($pos_home);
-            return False;
-        }
-
-        $this->request_header = $class::$requestTareHeader;
-        $this->request_msg = $class::$requestTareMsg;
 
         // info was submitted
-        if (isset($_REQUEST['input'])){
-            $reginput = strtoupper($_REQUEST['input']);
+        if (FormLib::get('input', false) !== false) {
+            $reginput = strtoupper(FormLib::get('input'));
             if ($reginput == 'CL'){
                 // clear; go home
                 $this->change_page($pos_home);
-                return False;
+                return false;
             } else {
+
                 if ($reginput === '' || $reginput === '0'){
                     // blank. enter default tare.
                     if (CoreLocal::get('DefaultTare') > 0) {
                         $reginput = CoreLocal::get('DefaultTare')*100;
                     } else {
-                        CoreLocal::set('tarezero', Ture);
+                        CoreLocal::set('tarezero', true);
                         $this->change_page($pos_home.'?reginput='.$item);
-                        return False;
+                        return false;
                     }
-                }
-                // give info to callback function
-                $result = $class::requestTareCallback($reginput, $item);
-                if ($result === True){
-                    // accepted. go home
-                    $this->change_page($pos_home.'?reginput=\''.$item.'\'');
-                    return False;
-                }
-                elseif ($result === False){
-                    // input rejected. try again
-                    $this->result_header = 'invalid entry';
-                    return True;
-                }
-                else {
-                    // callback wants to navigate to
-                    // another page
-                    $this->change_page($result);
-                    return False;
+                } 
+                if (is_numeric($reginput)) {
+                    TransRecord::addTare($reginput);
+                    $this->change_page($pos_home.'?reginput='.$item);
+                    return false;
                 }
             }
         }
-        return True;
+        return true;
     }
 
     function body_content(){
@@ -119,15 +85,14 @@ class TarePromptInputPage extends NoInputCorePage
         <div class="baseHeight">
         <div class="colored centeredDisplay">
         <span class="larger">
-        <?php echo $this->request_header; ?>
+        Enter Tare
         </span>
         <form name="form" method="post" autocomplete="off" action="<?php echo $_SERVER['PHP_SELF']; ?>">
         <input type="text" id="reginput" name='input' tabindex="0" onblur="$('#input').focus()" />
-        <input type="hidden" name="class" value="<?php echo $_REQUEST['class']; ?>" />
-        <input type="hidden" name="item" value="<?php echo $_REQUEST['item']; ?>" />
+        <input type="hidden" name="item" value="<?php echo FormLib::get('item'); ?>" />
         </form>
         <p>
-        <?php echo $this->request_msg; ?>
+        Type tare weight or enter for default
         </p>
         </div>
         </div>
@@ -138,7 +103,5 @@ class TarePromptInputPage extends NoInputCorePage
 
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new TarePropmtInputPage();
+AutoLoader::dispatch();
 
-?>
