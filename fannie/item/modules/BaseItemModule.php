@@ -28,11 +28,8 @@ if (!class_exists('FannieAPI')) {
 class BaseItemModule extends ItemModule 
 {
 
-    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
+    private function getBarcodeType($upc)
     {
-        $FANNIE_PRODUCT_MODULES = FannieConfig::config('PRODUCT_MODULES', array());
-        $upc = BarcodeLib::padUPC($upc);
-
         $trimmed = ltrim($upc, '0');
         $barcode_type = '';
         if (strlen($trimmed) == '12') {
@@ -47,6 +44,72 @@ class BaseItemModule extends ItemModule
         } else {
             $barcode_type = 'PLU';
         }
+
+        return $barcode_type;
+    }
+
+    private function getStores()
+    {
+        $store_model = new StoresModel($this->db());
+        $store_model->hasOwnItems(1);
+        $stores = array();
+        foreach ($store_model->find('storeID') as $obj) {
+            $stores[$obj->storeID()] = $obj;
+        }
+
+        return $stores;
+    }
+
+    private function prevNextItem($upc, $department)
+    {
+        /* find previous and next items in department */
+        $dbc = $this->db();
+        $prevP = $dbc->prepare('SELECT upc FROM products WHERE department=? AND upc < ? ORDER BY upc DESC');
+        $nextP = $dbc->prepare('SELECT upc FROM products WHERE department=? AND upc > ? ORDER BY upc');
+        $prevUPC = $dbc->getValue($prevP, array($department, $upc));
+        $nextUPC = $dbc->getValue($nextP, array($department, $upc));
+
+        return array($prevUPC, $nextUPC);
+    }
+
+    private function getVendorName($vendorID)
+    {
+        $dbc = $this->db();
+        $prep = $dbc->prepare('SELECT vendorName FROM vendors WHERE vendorID=?');
+        $name = $dbc->getValue($prep, array($vendorID));
+
+        return ($name === false) ? '' : $name;
+    }
+
+    /**
+      Look for items with a similar UPC to guess what
+      department this item goes in. If found, use 
+      department settings to fill in some defaults
+    */
+    private function guessDepartment($upc)
+    {
+        $dbc = $this->db();
+        $search = substr($upc,0,12);
+        $searchP = $dbc->prepare('SELECT department FROM products WHERE upc LIKE ?');
+        $department = 0;
+        while (strlen($search) >= 8) {
+            $searchR = $dbc->execute($searchP,array($search.'%'));
+            if ($dbc->numRows($searchR) > 0) {
+                $searchW = $dbc->fetchRow($searchR);
+                $department = $searchW['department'];
+                break;
+            }
+            $search = substr($search,0,strlen($search)-1);
+        }
+
+        return $department;
+    }
+
+    public function showEditForm($upc, $display_mode=1, $expand_mode=1)
+    {
+        $FANNIE_PRODUCT_MODULES = FannieConfig::config('PRODUCT_MODULES', array());
+        $upc = BarcodeLib::padUPC($upc);
+        $barcode_type = $this->getBarcodeType($upc);
 
         $ret = '<div id="BaseItemFieldset" class="panel panel-default">';
 
@@ -98,17 +161,12 @@ class BaseItemModule extends ItemModule
         }
         $p = $dbc->prepare($q);
         $r = $dbc->exec_statement($p,array($upc));
-        $store_model = new StoresModel($dbc);
-        $store_model->hasOwnItems(1);
-        $stores = array();
-        foreach ($store_model->find('storeID') as $obj) {
-            $stores[$obj->storeID()] = $obj;
-        }
+        $stores = $this->getStores();
         $items = array();
         $rowItem = array();
-        $prevUPC = False;
-        $nextUPC = False;
-        $likeCode = False;
+        $prevUPC = false;
+        $nextUPC = false;
+        $likeCode = false;
         if ($dbc->num_rows($r) > 0) {
             //existing item
             while ($w = $dbc->fetch_row($r)) {
@@ -116,32 +174,10 @@ class BaseItemModule extends ItemModule
                 $rowItem = $w;
             }
 
-            /**
-              Lookup default vendor & normalize
-            */
-            $product = new ProductsModel($dbc);
-            $product->upc($upc);
-            $product->load();
-            $vendor = new VendorsModel($dbc);
-            $vendor->vendorID($product->default_vendor_id());
-            if ($vendor->load()) {
-                $rowItem['distributor'] = $vendor->vendorName();
-            }
+            $rowItem['distributor'] = $this->getVendorName($rowItem['default_vendor_id']);
 
             /* find previous and next items in department */
-            $pnP = $dbc->prepare_statement('SELECT upc FROM products WHERE department=? ORDER BY upc');
-            $pnR = $dbc->exec_statement($pnP,array($product->department()));
-            $passed_it = False;
-            while($pnW = $dbc->fetch_row($pnR)){
-                if (!$passed_it && $upc != $pnW[0])
-                    $prevUPC = $pnW[0];
-                else if (!$passed_it && $upc == $pnW[0])
-                    $passed_it = True;
-                else if ($passed_it){
-                    $nextUPC = $pnW[0];
-                    break;      
-                }
-            }
+            list($prevUPC, $nextUPC) = $this->prevNextItem($rowItem['department'], $upc);
 
             $lcP = $dbc->prepare_statement('SELECT likeCode FROM upcLike WHERE upc=?');
             $lcR = $dbc->exec_statement($lcP,array($upc));
@@ -243,39 +279,19 @@ class BaseItemModule extends ItemModule
                 }
             }
 
-            /**
-              Look for items with a similar UPC to guess what
-              department this item goes in. If found, use 
-              department settings to fill in some defaults
-            */
-            $rowItem['department'] = 0;
-            $search = substr($upc,0,12);
-            $searchP = $dbc->prepare('SELECT department FROM products WHERE upc LIKE ?');
-            while (strlen($search) >= 8) {
-                $searchR = $dbc->execute($searchP,array($search.'%'));
-                if ($dbc->numRows($searchR) > 0) {
-                    $searchW = $dbc->fetchRow($searchR);
-                    $rowItem['department'] = $searchW['department'];
-                    break;
-                }
-                $search = substr($search,0,strlen($search)-1);
-            }
+            $rowItem['department'] = $this->guessDepartment($upc);
             /**
               If no match is found, pick the most
               commonly used department
             */
             if ($rowItem['department'] == 0) {
-                $commonQ = '
+                $commonP = $dbc->prepare('
                     SELECT department,
                         COUNT(*)
                     FROM products
                     GROUP BY department
-                    ORDER BY COUNT(*) DESC';
-                $commonR = $dbc->query($commonQ);
-                if ($commonR && $dbc->numRows($commonR)) {
-                    $commonW = $dbc->fetchRow($commonR);
-                    $rowItem['department'] = $commonW['department'];
-                }
+                    ORDER BY COUNT(*) DESC');
+                $rowItem['department'] = $dbc->getValue($commonP);
             }
             /**
               Get defaults for chosen department
@@ -439,11 +455,7 @@ HTML;
             */
             $normalizedVendorID = false;
             if (isset($rowItem['default_vendor_id']) && $rowItem['default_vendor_id'] <> 0) {
-                $normalizedVendor = new VendorsModel($dbc);
-                $normalizedVendor->vendorID($rowItem['default_vendor_id']);
-                if ($normalizedVendor->load()) {
-                    $normalizedVendorID = $normalizedVendor->vendorID();
-                }
+                $normalizedVendorID = $rowItem['default_vendor_id'];
             }
             /**
               Use a <select> box if the current vendor corresponds to a valid
@@ -456,11 +468,11 @@ HTML;
                             class="chosen-select form-control vendor_field syncable-input"
                             onchange="vendorChanged(this.value);">';
                 $ret .= '<option value="0">Select a vendor</option>';
-                $vendors = new VendorsModel($dbc);
-                foreach ($vendors->find('vendorName') as $v) {
+                $vendR = $dbc->query('SELECT vendorID, vendorName FROM vendors ORDER BY vendorName');
+                while ($vendW = $dbc->fetchRow($vendR)) {
                     $ret .= sprintf('<option %s>%s</option>',
-                                ($v->vendorID() == $normalizedVendorID ? 'selected' : ''),
-                                $v->vendorName());
+                                ($vendW['vendorID'] == $normalizedVendorID ? 'selected' : ''),
+                                $vendW['vendorName']);
                 }
                 $ret .= '</select>';
             } else {
@@ -558,14 +570,19 @@ HTML;
                     class="form-control chosen-select syncable-input" 
                     onchange="chainSuperDepartment(\'../ws/\', this.value, {dept_start:\'#department{{store_id}}\', callback:function(){$(\'#department{{store_id}}\').trigger(\'chosen:updated\');baseItemChainSubs({{store_id}});}});">';
             $names = new SuperDeptNamesModel($dbc);
+            $superQ = 'SELECT superID, super_name FROM superDeptNames';
+            $superArgs = array();
             if (is_array($range_limit) && count($range_limit) == 2) {
-                $names->superID($range_limit[0], '>=');
-                $names->superID($range_limit[1], '<=');
+                $superArgs = $range_limit;
+                $superQ .= ' WHERE superID BETWEEN ? AND ? ';
             }
-            foreach ($names->find('superID') as $obj) {
+            $superQ .= ' ORDER BY superID';
+            $superP = $dbc->prepare($superQ);
+            $superR = $dbc->execute($superP, $superArgs);
+            while ($superW = $dbc->fetchRow($superR)) {
                 $ret .= sprintf('<option %s value="%d">%s</option>',
-                        $obj->superID() == $superID ? 'selected' : '',
-                        $obj->superID(), $obj->super_name());
+                        $superW['superID'] == $superID ? 'selected' : '',
+                        $superW['superID'], $superW['super_name']);
             }
             $ret .= '</select>
                 <select name="department[]" id="department{{store_id}}" 
