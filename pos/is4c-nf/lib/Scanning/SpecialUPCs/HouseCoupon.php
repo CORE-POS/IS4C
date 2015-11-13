@@ -422,11 +422,16 @@ class HouseCoupon extends SpecialUPC
                 $value = $valW[0] * $infoW["discountValue"];
                 break;
             case 'BG': // BOGO
-                $valQ = 'SELECT SUM(l.total) '
+                $valQ = 'SELECT SUM(l.total), SUM(l.quantity) '
                         . $this->baseSQL($transDB, $coupID, 'upc') . "
                         and h.type in ('BOTH', 'DISCOUNT')";
                 $valP = $transDB->prepare($valQ);
-                $value = $transDB->getValue($valP);
+                $valW = $transDB->getRow($valP);
+                $value = $valW[0];
+                $qty = $valW[1];
+                if ($qty % 2 != 0) {
+                    $value -= ($value/$qty);
+                }
                 $value = MiscLib::truncate2($value/2);
                 if ($value > 0 && $value > $infoW['discountValue']) {
                     $value = $infoW['discountValue'];

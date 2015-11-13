@@ -125,41 +125,9 @@ class UPC extends Parser
         $my_url = MiscLib::base_url();
         $ret = $this->default_json();
 
-        /* force cashiers to enter a comment on refunds */
-        if (CoreLocal::get("refund")==1 && CoreLocal::get("refundComment") == ""){
-            $ret['udpmsg'] = 'twoPairs';
-            if (CoreLocal::get("SecurityRefund") > 20){
-                $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=RefundAdminLogin";
-            }
-            else
-                $ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
-            CoreLocal::set("refundComment",CoreLocal::get("strEntered"));
+        $ret = $this->genericSecurity($ret);
+        if ($ret['main_frame'] != '') {
             return $ret;
-        }
-        if (CoreLocal::get('itemPD') > 0 && CoreLocal::get('SecurityLineItemDiscount') == 30 && CoreLocal::get('msgrepeat')==0){
-            $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=LineItemDiscountAdminLogin";
-            return $ret;
-        }
-
-        /**
-          11Sep14 Andy
-          Disabled until keypress double form submission is
-          fixed on paycard confirmation screen. Depending on
-          sequence can case flag to be raised, cleared, and
-          re-raised leading to spurrious error notifications
-        */
-        if (false && CoreLocal::get('paycardTendered')) {
-            if (CoreLocal::get('msgrepeat') == 0 || CoreLocal::get('lastRepeat') != 'paycardAlreadyApplied') {
-                CoreLocal::set('boxMsg', 'Card already tendered<br />
-                                            Confirm adding more items');
-                CoreLocal::set('lastRepeat', 'paycardAlreadyApplied');
-                $ret['main_frame'] = $my_url . 'gui-modules/boxMsg2.php';
-
-                return $ret;
-            } else if (CoreLocal::get('lastRepeat') == 'paycardAlreadyApplied') {
-                CoreLocal::set('lastRepeat', '');
-                CoreLocal::set('paycardTendered', false);
-            }
         }
 
         $upc = $this->sanitizeUPC($entered);
@@ -171,64 +139,13 @@ class UPC extends Parser
 
         list($scaleStickerItem,$scalepriceUPC,$scalepricEAN) = $this->rewriteScaleSticker($upc);
 
+        $result = $this->lookupItem($upc);
         $db = Database::pDataConnect();
-        $table = $db->table_definition('products');
-        $query = "SELECT inUse,upc,description,normal_price,scale,deposit,
-            qttyEnforced,department,local,cost,tax,foodstamp,discount,
-            discounttype,specialpricemethod,special_price,groupprice,
-            pricemethod,quantity,specialgroupprice,specialquantity,
-            mixmatchcode,idEnforced,tareweight,scaleprice";
-        // New column 16Apr14
-        if (isset($table['line_item_discountable'])) {
-            $query .= ', line_item_discountable';
-        } else {
-            $query .= ', 1 AS line_item_discountable';
-        }
-        // New column 16Apr14
-        if (isset($table['formatted_name'])) {
-            $query .= ', formatted_name';
-        } else {
-            $query .= ', \'\' AS formatted_name';
-        }
-        // New column 25Nov14
-        if (isset($table['special_limit'])) {
-            $query .= ', special_limit';
-        } else {
-            $query .= ', 0 AS special_limit';
-        }
-        $query .= " FROM products WHERE upc = '".$upc."'";
-        $result = $db->query($query);
         $num_rows = $db->num_rows($result);
 
         /* check for special upcs that aren't really products */
         if ($num_rows == 0){
-            $objs = CoreLocal::get("SpecialUpcClasses");
-            foreach($objs as $class_name){
-                $instance = new $class_name();
-                if ($instance->isSpecial($upc)){
-                    return $instance->handle($upc,$ret);
-                }
-            }
-            // no match; not a product, not special
-            if ($db->table_exists('IgnoredBarcodes')) {
-                // lookup UPC in tabe of ignored barcodes
-                // this just suppresses any error message from
-                // coming back
-                $query = 'SELECT upc FROM IgnoredBarcodes WHERE upc=\'' . $upc . "'";
-                $result = $db->query($query);
-                if ($result && $db->num_rows($result)) {
-                    return $this->default_json();
-                }
-            }
-            
-            $handler = CoreLocal::get('ItemNotFound');
-            if ($handler === '' || !class_exists($handler)) {
-                $handler = 'ItemNotFound';
-            }
-            $obj = new $handler();
-            $ret = $obj->handle($upc, $ret);
-
-            return $ret;
+            return $this->nonProductUPCs($upc);
         }
 
         /* product exists
@@ -288,43 +205,20 @@ class UPC extends Parser
           weighed here. Scalable items that cost one cent are ignored as a special
           case; they're normally entered by keying a quantity multiplier
         */
-        if ($num_rows > 0 && $row['scale'] == 1 
-            && CoreLocal::get("lastWeight") > 0 && CoreLocal::get("weight") > 0
-            && abs(CoreLocal::get("weight") - CoreLocal::get("lastWeight")) < 0.0005
-            && !$scaleStickerItem && abs($row['normal_price']) > 0.01){
-            if (CoreLocal::get('msgrepeat') == 0){
-                CoreLocal::set("strEntered",$row["upc"]);
-                CoreLocal::set("boxMsg","<b>Same weight as last item</b>");
-                CoreLocal::set('boxMsgButtons', array(
-                    'Confirm Weight [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-                    'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-                ));
-                $ret['main_frame'] = $my_url."gui-modules/boxMsg2.php?quiet=1";
-                return $ret;
-            }
+        if ($this->duplicateWeight($row, $scaleStickerItem)) {
+            CoreLocal::set("strEntered",$row["upc"]);
+            CoreLocal::set("boxMsg","<b>Same weight as last item</b>");
+            CoreLocal::set('boxMsgButtons', array(
+                'Confirm Weight [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
+                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            ));
+            $ret['main_frame'] = $my_url."gui-modules/boxMsg2.php?quiet=1";
+            return $ret;
         }
 
         if ($row["idEnforced"] > 0){
 
-            $restrictQ = "SELECT upc,dept_ID FROM dateRestrict WHERE
-                ( upc='{$row['upc']}' AND
-                  ( ".$db->datediff($db->now(),'restrict_date')."=0 OR
-                    ".$db->dayofweek($db->now())."=restrict_dow
-                  ) AND
-                  ( (restrict_start IS NULL AND restrict_end IS NULL) OR
-                    ".$db->curtime()." BETWEEN restrict_start AND restrict_end
-                  )
-                 ) OR 
-                ( dept_ID='{$row['department']}' AND
-                  ( ".$db->datediff($db->now(),'restrict_date')."=0 OR
-                    ".$db->dayofweek($db->now())."=restrict_dow
-                  ) AND
-                  ( (restrict_start IS NULL AND restrict_end IS NULL) OR
-                    ".$db->curtime()." BETWEEN restrict_start AND restrict_end
-                  )
-                )";
-            $restrictR = $db->query($restrictQ);
-            if ($db->num_rows($restrictR) > 0){
+            if ($this->isDateRestricted($row)) {
                 $ret['output'] = DisplayLib::boxMsg(
                     _('product cannot be sold right now'),
                     _('Date Restriction'),
@@ -348,7 +242,7 @@ class UPC extends Parser
             if (strstr($peek,"** Tare Weight") === False)
                 TransRecord::addTare($row['tareweight']*100);
         } elseif ($row['scale'] != 0 && !CoreLocal::get("tare") && Plugin::isEnabled('PromptForTare') && !CoreLocal::get("tarezero")) {
-            $ret['main_frame'] = $my_url.'plugins/PromptForTare/TarePromptInputPage.php?class=UPC&item='.$entered;
+            $ret['main_frame'] = $my_url.'plugins/PromptForTare/TarePromptInputPage.php?item='.$entered;
             return $ret;
         } else {
             CoreLocal::set('tarezero', False);
@@ -428,38 +322,6 @@ class UPC extends Parser
                 false,
                 DisplayLib::standardClearButton()
             );
-            return $ret;
-        }
-
-        /* wedge I assume
-           I don't like this being hard-coded, but since these UPCs
-           are entries in products they can't go in a SpecialUPC
-           object (unless SpecialUPC checks take place on every
-           scan, but that's more overhead than I want on such a common
-           operation
-        */
-        if ($upc == "0000000008010" && CoreLocal::get("msgrepeat") == 0) {
-            CoreLocal::set("boxMsg","<b>".$total." gift certificate</b><br />
-                "._("insert document"));
-            CoreLocal::set('boxMsgButtons', array(
-                'Endorse [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-            ));
-            $ret["main_frame"] = $my_url."gui-modules/boxMsg2.php?endorse=giftcert&endorseAmt=".$total;
-            return $ret;
-        }
-
-        /* wedge I assume
-           see 0000000008010 above
-        */
-        if ($upc == "0000000008011" && CoreLocal::get("msgrepeat") == 0) {
-            CoreLocal::set("boxMsg","<b>".$total." class registration</b><br />
-                "._("insert form"));
-            CoreLocal::set('boxMsgButtons', array(
-                'Endorse [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-                'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-            ));
-            $ret["main_frame"] = $my_url."gui-modules/boxMsg2.php?endorse=classreg&endorseAmt=".$total;
             return $ret;
         }
 
@@ -819,15 +681,129 @@ class UPC extends Parser
         return False;
     }
 
-    public static $requestTareHeader = 'Enter Tare';
-    public static $requestTareMsg = 'Type tare weight or eneter for default';
-    public static function requestTareCallback($tare, $in_item) {
-        if (is_numeric($tare)) {
-            TransRecord::addTare($tare);
-            $ret_url = '../../gui-modules/pos2.php?reginput='.$in_item;
-            return $ret_url;
+    private function genericSecurity($ret)
+    {
+        $my_url = MiscLib::base_url();
+        /* force cashiers to enter a comment on refunds */
+        if (CoreLocal::get("refund")==1 && CoreLocal::get("refundComment") == ""){
+            $ret['udpmsg'] = 'twoPairs';
+            if (CoreLocal::get("SecurityRefund") > 20){
+                $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=RefundAdminLogin";
+            } else {
+                $ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
+            }
+            CoreLocal::set("refundComment",CoreLocal::get("strEntered"));
+            return $ret;
         }
-        return False;
+        if (CoreLocal::get('itemPD') > 0 && CoreLocal::get('SecurityLineItemDiscount') == 30 && CoreLocal::get('msgrepeat')==0){
+            $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=LineItemDiscountAdminLogin";
+            return $ret;
+        }
+
+        return $ret;
+    }
+
+    private function duplicateWeight($row, $scaleStickerItem)
+    {
+        if ($row['scale'] == 1 
+            && CoreLocal::get("lastWeight") > 0 && CoreLocal::get("weight") > 0
+            && abs(CoreLocal::get("weight") - CoreLocal::get("lastWeight")) < 0.0005
+            && !$scaleStickerItem && abs($row['normal_price']) > 0.01
+            && CoreLocal::get('msgrepeat') == 0) {
+            return true;
+        } else  {
+            return false;
+        }
+    }
+
+    private function isDateRestricted($row)
+    {
+        $dbc = Database::pDataConnect();
+        $restrictQ = "SELECT upc,dept_ID FROM dateRestrict WHERE
+            ( upc='{$row['upc']}' AND
+              ( ".$dbc->datediff($dbc->now(),'restrict_date')."=0 OR
+                ".$dbc->dayofweek($dbc->now())."=restrict_dow
+              ) AND
+              ( (restrict_start IS NULL AND restrict_end IS NULL) OR
+                ".$dbc->curtime()." BETWEEN restrict_start AND restrict_end
+              )
+             ) OR 
+            ( dept_ID='{$row['department']}' AND
+              ( ".$dbc->datediff($dbc->now(),'restrict_date')."=0 OR
+                ".$dbc->dayofweek($dbc->now())."=restrict_dow
+              ) AND
+              ( (restrict_start IS NULL AND restrict_end IS NULL) OR
+                ".$dbc->curtime()." BETWEEN restrict_start AND restrict_end
+              )
+            )";
+        $restrictR = $dbc->query($restrictQ);
+        return $dbc->numRows($restrictR) > 0 ? true : false;
+    }
+
+    private function nonProductUPCs($upc)
+    {
+        $dbc = Database::pDataConnect();
+        $objs = CoreLocal::get("SpecialUpcClasses");
+        foreach($objs as $class_name){
+            $instance = new $class_name();
+            if ($instance->isSpecial($upc)){
+                return $instance->handle($upc,$ret);
+            }
+        }
+
+        // no match; not a product, not special
+        if ($dbc->table_exists('IgnoredBarcodes')) {
+            // lookup UPC in tabe of ignored barcodes
+            // this just suppresses any error message from
+            // coming back
+            $query = 'SELECT upc FROM IgnoredBarcodes WHERE upc=\'' . $upc . "'";
+            $result = $dbc->query($query);
+            if ($result && $dbc->num_rows($result)) {
+                return $this->default_json();
+            }
+        }
+        
+        $handler = CoreLocal::get('ItemNotFound');
+        if ($handler === '' || !class_exists($handler)) {
+            $handler = 'ItemNotFound';
+        }
+        $obj = new $handler();
+        $ret = $obj->handle($upc, $ret);
+
+        return $ret;
+    }
+
+    private function lookupItem($upc)
+    {
+        $dbc = Database::pDataConnect();
+        $table = $dbc->table_definition('products');
+        $query = "SELECT inUse,upc,description,normal_price,scale,deposit,
+            qttyEnforced,department,local,cost,tax,foodstamp,discount,
+            discounttype,specialpricemethod,special_price,groupprice,
+            pricemethod,quantity,specialgroupprice,specialquantity,
+            mixmatchcode,idEnforced,tareweight,scaleprice";
+        // New column 16Apr14
+        if (isset($table['line_item_discountable'])) {
+            $query .= ', line_item_discountable';
+        } else {
+            $query .= ', 1 AS line_item_discountable';
+        }
+        // New column 16Apr14
+        if (isset($table['formatted_name'])) {
+            $query .= ', formatted_name';
+        } else {
+            $query .= ', \'\' AS formatted_name';
+        }
+        // New column 25Nov14
+        if (isset($table['special_limit'])) {
+            $query .= ', special_limit';
+        } else {
+            $query .= ', 0 AS special_limit';
+        }
+        $query .= " FROM products WHERE upc = '".$upc."'";
+        $result = $dbc->query($query);
+
+        return $result;
     }
 
     function doc(){
