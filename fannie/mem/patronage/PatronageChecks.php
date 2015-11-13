@@ -158,12 +158,10 @@ class PatronageChecks extends FannieRESTfulPage
                 $pdf->SetMargins(6.35, 6.35, 6.35); // quarter-inch margins
                 $pdf->SetAutoPageBreak(false);
             }
-            break;
         }
 
         $filename .= '-End.pdf';
-        //$pdf->Output('/tmp/' . $filename, 'F');
-        $pdf->Output('test.pdf', 'I');
+        $pdf->Output('/tmp/' . $filename, 'F');
         $this->files[] = $filename;
 
         return true;
