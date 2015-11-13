@@ -66,6 +66,8 @@ class PurchasingIndexPage extends FannieRESTfulPage {
             FROM vendors AS v
                 INNER JOIN vendorItems AS i ON v.vendorID=i.vendorID
                 INNER JOIN InventoryCache AS c ON i.upc=c.upc
+                INNER JOIN products AS p ON c.upc=p.upc AND c.storeID=p.store_id
+            WHERE i.vendorID=p.default_vendor_id
             GROUP BY v.vendorID, v.vendorName
             ORDER BY v.vendorName');
         $ret = '<form>
