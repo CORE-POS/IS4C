@@ -83,6 +83,12 @@ function goToMargins() {
         $('#actionForm').submit();
     }
 }
+function goToCoupons() {
+    if (getItems()) {
+        $('#actionForm').attr('action', '../modules/plugins2.0/HouseCoupon/HouseCouponEditor.php');
+        $('#actionForm').submit();
+    }
+}
 function goToSync() {
     if (getItems()) {
         $('#actionForm').attr('action', 'hobartcsv/SyncFromSearch.php');

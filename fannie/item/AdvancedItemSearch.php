@@ -1313,6 +1313,8 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $ret .= '<p><button class="btn btn-default btn-xs" type="submit" 
             onclick="goToMargins();">Margins</button></p>';
         $ret .= '<p><button class="btn btn-default btn-xs" type="submit" 
+            onclick="goToCoupons();">Store Coupons</button></p>';
+        $ret .= '<p><button class="btn btn-default btn-xs" type="submit" 
             onclick="goToSync();">Scale Sync</button></p>';
         $ret .= '</div>';
         $ret .= '</div>';

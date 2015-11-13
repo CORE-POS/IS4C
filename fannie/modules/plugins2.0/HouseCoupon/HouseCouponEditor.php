@@ -101,7 +101,19 @@ class HouseCouponEditor extends FanniePage
             echo $this->couponItemTable($id);
 
             return false;
-
+        } elseif (FormLib::get('u', '') !== '') {
+            $this->display_function = 'addUPCs';
+        } elseif (FormLib::get('add-to-coupon') !== '') {
+            $hci = new HouseCouponItemsModel($this->connection);
+            $hci->coupID(FormLib::get('add-to-coupon'));
+            $hci->type(FormLib::get('add-to-as'));
+            foreach (FormLib::get('add-to-upc') as $upc) {
+                $upc = BarcodeLib::padUPC($upc);
+                $hci->upc($upc);
+                $hci->save();
+            }
+            header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?edit_id=' . $hci->coupID());
+            return false;
         } elseif (FormLib::get_form_value('edit_id','') !== '') {
             $this->coupon_id = (int)FormLib::get_form_value('edit_id',0);
             $this->display_function = 'editCoupon';
@@ -532,6 +544,45 @@ class HouseCouponEditor extends FanniePage
                 $w['type'],
                 $w['upc']);
         }
+
+        return $ret;
+    }
+
+    protected function addUPCs()
+    {
+        $ret = '<h3>Add Items to Coupon</h3>
+            <form method="post">
+            <div class="form-group">
+                <label>Coupon</label>
+                <select class="form-control" name="add-to-coupon">
+                    <option value="">Select...</option>';
+        $dbc = $this->connection;
+        $coupons = new HouseCouponsModel($dbc);
+        foreach ($coupons->find() as $coupon) {
+            $ret .= sprintf('<option value="%d">%s</option>', $coupon->coupID(), $coupon->description());
+        }
+        $ret .= '</select></div>
+            <div class="form-group">
+                <label>As</label>
+                <select class="form-control" name="add-to-as">
+                    <option>BOTH</option>
+                    <option>QUALIFIER</option>
+                    <option>DISCOUNT</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-default">Add Items</button>
+            </div>
+            <table class="table table-bordered">';
+        $upcs = FormLib::get('u', array());
+        $prep = $dbc->prepare('SELECT description FROM products WHERE upc=?');
+        foreach ($upcs as $upc) {
+            $upc = BarcodeLib::padUPC($upc);
+            $desc = $dbc->getValue($prep, array($upc));
+            $ret .= '<tr><td>' . $upc . '</td><td>' . $desc . '</td></tr>';
+            $ret .= '<input type="hidden" name="add-to-upc[]" value="' . $upc . '" />';
+        }
+        $ret .= '</table></form>';
 
         return $ret;
     }
