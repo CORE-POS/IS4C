@@ -59,7 +59,7 @@ class ItemFlagsModule extends ItemModule
             $args[] = FannieConfig::config('STORE_ID');
         }
         $p = $dbc->prepare_statement($q);
-        $r = $dbc->exec_statement($p,array($upc));
+        $r = $dbc->exec_statement($p,$args);
         
         if ($dbc->num_rows($r) == 0){
             // item does not exist
