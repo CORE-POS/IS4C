@@ -32,6 +32,7 @@ class InvCountPage extends FannieRESTfulPage
     protected $title = 'Inventory Counts';
     protected $must_authenticate = true;
     protected $enable_linea = true;
+    public $description = '[Inventory Counts] shows live inventory figures as well as manages hand counts and pars.';
 
     public function preprocess()
     {
@@ -161,9 +162,11 @@ class InvCountPage extends FannieRESTfulPage
                 AND p.store_id=1 ';
         $args = array($this->vendor);
         try {
-            $args[] = $this->form->super;
-            $query = str_replace('AS p', 'AS p INNER JOIN superdepts AS s ON p.department=s.dept_ID', $query);
-            $query .= ' AND s.superID=? ';
+            if ($this->form->super !== '') {
+                $args[] = $this->form->super;
+                $query = str_replace('AS p', 'AS p INNER JOIN superdepts AS s ON p.department=s.dept_ID', $query);
+                $query .= ' AND s.superID=? ';
+            }
         } catch (Exception $ex){}
         $query .= ' ORDER BY p.upc';
         $prep = $this->connection->prepare($query);

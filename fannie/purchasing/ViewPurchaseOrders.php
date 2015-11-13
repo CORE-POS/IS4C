@@ -503,7 +503,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
                 <td><input type="text" class="form-control" name="receiveCost" value="%.2f" /></td>
                 <td><button type="submit" class="btn btn-default">Add New Item</button><input type="hidden" name="id" value="%d" /></td>
                 </tr>',
-                $this->sku, $this->sku,
+                $item->sku(), $item->sku(),
                 $item->upc(),
                 $item->brand(),
                 $item->description(),
@@ -538,7 +538,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
                 <td><input type="text" class="form-control" name="cost" value="%.2f" /></td>
                 <td><button type="submit" class="btn btn-default">Save</button><input type="hidden" name="id" value="%d" /></td>
                 </tr>',
-                $this->sku, $this->sku,
+                $model->sku(), $model->sku(),
                 $model->internalUPC(),
                 $model->brand(),
                 $model->description(),
