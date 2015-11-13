@@ -52,7 +52,12 @@ class ItemFlagsModule extends ItemModule
             FROM products AS p, 
                 prodFlags AS f
             WHERE p.upc=?
+                " . (FannieConfig::config('STORE_MODE') == 'HQ' ? ' AND p.store_id=? ' : '') . "
                 AND f.active=1";
+        $args = array($upc);
+        if (FannieConfig::config('STORE_MODE') == 'HQ') {
+            $args[] = FannieConfig::config('STORE_ID');
+        }
         $p = $dbc->prepare_statement($q);
         $r = $dbc->exec_statement($p,array($upc));
         
