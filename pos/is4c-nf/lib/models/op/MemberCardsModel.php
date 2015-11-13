@@ -38,7 +38,7 @@ class MemberCardsModel extends BasicModel
     
     protected $columns = array(
     'card_no' => array('type'=>'INT','primary_key'=>True,'default'=>0),
-    'upc' => array('type'=>'VARCHAR(13)','primary_key'=>True,'default'=>'')
+    'upc' => array('type'=>'VARCHAR(13)','primary_key'=>True,'default'=>"''")
     );
 
     public function doc()
