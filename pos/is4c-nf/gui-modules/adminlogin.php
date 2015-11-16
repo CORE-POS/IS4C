@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\FormLib;
+
 /* this module is intended for re-use. 
  * Pass the name of a class with the
  * static properties: 
@@ -39,81 +41,67 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class adminlogin extends NoInputCorePage 
 {
-    var $box_color;
-    var $msg;
-    var $heading;
+    private $box_color;
+    private $msg;
+    private $heading;
+
+    private function getClass()
+    {
+        $class = FormLib::get('class');
+        // make sure calling class implements required
+        // method and properties
+        $method = new ReflectionMethod($class, 'adminLoginCallback');
+        if (!$method->isStatic() || !$method->isPublic())
+            throw new Exception('bad method adminLoginCallback');
+        $property = new ReflectionProperty($class, 'adminLoginMsg');
+        if (!$property->isStatic() || !$property->isPublic())
+            throw new Exception('bad property adminLoginMsg');
+        $property = new ReflectionProperty($class, 'adminLoginLevel');
+        if (!$property->isStatic() || !$property->isPublic())
+            throw new Exception('bad property adminLoginLevel');
+
+        return $class;
+    }
 
     function preprocess()
     {
         $this->box_color="coloredArea";
         $this->msg = _("enter admin password");
 
-        // get calling class (required)
-        $class = isset($_REQUEST['class']) ? $_REQUEST['class'] : '';
         $pos_home = MiscLib::base_url().'gui-modules/pos2.php';
-        if ($class === '' || !class_exists($class)){
-            $this->change_page($pos_home);
-            return False;
-        }
-        // make sure calling class implements required
-        // method and properties
+        // get calling class (required)
         try {
-            $method = new ReflectionMethod($class, 'adminLoginCallback');
-            if (!$method->isStatic() || !$method->isPublic())
-                throw new Exception('bad method adminLoginCallback');
-            $property = new ReflectionProperty($class, 'adminLoginMsg');
-            if (!$property->isStatic() || !$property->isPublic())
-                throw new Exception('bad property adminLoginMsg');
-            $property = new ReflectionProperty($class, 'adminLoginLevel');
-            if (!$property->isStatic() || !$property->isPublic())
-                throw new Exception('bad property adminLoginLevel');
+            $class = $this->getClass();
+        } catch (Exception $ex) {
+            $class = '';
         }
-        catch (Exception $e){
+        if ($class === '' || !class_exists($class)){
             $this->change_page($pos_home);
             return False;
         }
 
         $this->heading = $class::$adminLoginMsg;
 
-        if (isset($_REQUEST['reginput']) || isset($_REQUEST['userPassword'])){
-
-            $passwd = '';
-            if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])) {
-                $passwd = $_REQUEST['reginput'];
-            } else if (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword'])) {
-                $passwd = $_REQUEST['userPassword'];
+        if (FormLib::get('reginput') !== '' || FormLib::get('userPassword') !== '') {
+            $passwd = FormLib::get('reginput');
+            if ($passwd === '') {
+                $passwd = FormLib::get('userPassword');
             }
 
-            if (strtoupper($passwd) == "CL"){
-                $class::adminLoginCallback(False);
+            if (strtoupper($passwd) == "CL") {
+                $class::adminLoginCallback(false);
                 $this->change_page($this->page_url."gui-modules/pos2.php");
-                return False;    
-            }
-            else if (empty($passwd)){
+                return false;    
+            } elseif (empty($passwd)) {
                 $this->box_color="errorColoredArea";
                 $this->msg = _("re-enter admin password");
-            }
-            else {
+            } else {
                 $db = Database::pDataConnect();
                 if (Authenticate::checkPermission($passwd, $class::$adminLoginLevel)) {
-                    $row = Authenticate::getEmployeeByPassword($passwd);
-                    TransRecord::add_log_record(array(
-                        'upc' => $row['emp_no'],
-                        'description' => substr($class::$adminLoginMsg . ' ' . $row['FirstName'],0,30),
-                        'charflag' => 'PW',
-                        'num_flag' => $row['emp_no']
-                    ));
-                    if (CoreLocal::get('LoudLogins') == 1) {
-                        UdpComm::udpSend('twoPairs');
-                    }
-                    $result = $class::adminLoginCallback(True);
-                    if ($result === True)
-                        $this->change_page(MiscLib::base_url().'gui-modules/pos2.php');
-                    else
-                        $this->change_page($result);
-                    return False;
-                }
-                else {
+                    $this->approvedAction($class, $passwd);
+
+                    return false;
+                } else {
                     $this->box_color="errorColoredArea";
                     $this->msg = _("re-enter admin password");
 
@@ -123,19 +111,40 @@ class adminlogin extends NoInputCorePage
                         'charflag' => 'PW'
                     ));
 
-                    if (CoreLocal::get('LoudLogins') == 1) {
-                        UdpComm::udpSend('errorBeep');
-                    }
+                    $this->beep();
                 }
             }
         } else {
             // beep on initial page load
-            if (CoreLocal::get('LoudLogins') == 1) {
-                UdpComm::udpSend('twoPairs');
-            }
+            $this->beep();
         }
 
-        return True;
+        return true;
+    }
+
+    private function beep()
+    {
+        if (CoreLocal::get('LoudLogins') == 1) {
+            UdpComm::udpSend('errorBeep');
+        }
+    }
+
+    private function approvedAction($class, $passwd)
+    {
+        $row = Authenticate::getEmployeeByPassword($passwd);
+        TransRecord::add_log_record(array(
+            'upc' => $row['emp_no'],
+            'description' => substr($class::$adminLoginMsg . ' ' . $row['FirstName'],0,30),
+            'charflag' => 'PW',
+            'num_flag' => $row['emp_no']
+        ));
+        $this->beep();
+        $result = $class::adminLoginCallback(True);
+        if ($result === true) {
+            $this->change_page(MiscLib::base_url().'gui-modules/pos2.php');
+        } else {
+            $this->change_page($result);
+        }
     }
 
     function head_content(){
@@ -155,7 +164,7 @@ class adminlogin extends NoInputCorePage
             autocomplete="off" action="<?php echo $_SERVER['PHP_SELF']; ?>">
         <input type="password" id="userPassword" name="userPassword" tabindex="0" onblur="$('#userPassword').focus();" />
         <input type="hidden" name="reginput" id="reginput" value="" />
-        <input type="hidden" name="class" value="<?php echo $_REQUEST['class']; ?>" />
+        <input type="hidden" name="class" value="<?php echo FormLib::get('class'); ?>" />
         </form>
         <p>
         <?php echo $this->msg ?>
@@ -165,11 +174,7 @@ class adminlogin extends NoInputCorePage
         <?php
         $this->add_onload_command("\$('#userPassword').focus();");
     } // END true_body() FUNCTION
-
-
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new adminlogin();
+AutoLoader::dispatch();
 
-?>
