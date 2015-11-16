@@ -56,6 +56,18 @@ class InvCountPage extends FannieRESTfulPage
         return 'InvCountPage.php?id=' . $this->id;
     }
 
+    private function savePar($upc, $storeID, $par)
+    {
+        $inv = new InventoryCountsModel($this->connection);
+        $inv->upc($upc);
+        $inv->storeID($storeID);
+        $inv->mostRecent(1);
+        foreach ($inv->find() as $i) {
+            $i->par($par);
+            $i->save();
+        }
+    }
+
     private function saveEntry($upc, $storeID, $count, $par)
     {
         $inv = new InventoryCountsModel($this->connection);
@@ -98,6 +110,9 @@ class InvCountPage extends FannieRESTfulPage
             $storeID = FormLib::get('storeID', 1);
             for ($i=0; $i<count($upc); $i++) {
                 if (!isset($count[$i]) || $count[$i] === '') {
+                    if (isset($par[$i]) && is_numeric($par[$i])) {
+                        $this->savePar($upc[$i], $storeID, $par[$i]);
+                    }
                     continue;
                 }
                 if (!isset($par[$i]) || $par[$i] === '') {
