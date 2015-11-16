@@ -86,6 +86,12 @@ class paycardboxMsgAuth extends PaycardProcessPage {
         return False;
     }
 
+    function head_conent()
+    {
+        $url = MiscLib::baseURL();
+        echo '<script type="text/javascript" src="' . $url . '/js/singleSubmit.js"></script>';
+    }
+
     function body_content()
     {
         ?>
@@ -157,8 +163,9 @@ class paycardboxMsgAuth extends PaycardProcessPage {
         ?>
         </div>
         <?php
+        $this->add_onload_command("singleSubmit.restrict('#formlocal');\n");
     }
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new paycardboxMsgAuth();
+AutoLoader::dispatch();
+
