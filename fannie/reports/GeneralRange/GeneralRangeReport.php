@@ -60,7 +60,7 @@ class GeneralRangeReport extends FannieReportPage
             'Tax' => 0.0,
         );
 
-        $dlog = DTransactionsModel::selectDlog($d1);
+        $dlog = DTransactionsModel::selectDlog($d1,$d2);
         $tenderQ = $dbc->prepare("
             SELECT TenderName,
                 COUNT(d.total) AS num,

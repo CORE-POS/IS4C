@@ -78,7 +78,7 @@ class boxMsg2 extends BasicCorePage
             $this->change_page(
                 MiscLib::base_url()
                 .'gui-modules/pos2.php'
-                . '?reginput==' .urlencode(CoreLocal::get('strEntered'))
+                . '?reginput=' .urlencode(CoreLocal::get('strEntered'))
                 . '&repeat=1'
             );
             return false;
