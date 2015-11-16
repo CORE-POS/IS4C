@@ -91,6 +91,7 @@ class SyncFromSearch extends FannieRESTfulPage
                     // batch out changes @ 10 items / file
                     if (count($all_items) >= 10) {
                         \COREPOS\Fannie\API\item\HobartDgwLib::writeItemsToScales($all_items, array($scale));
+                        \COREPOS\Fannie\API\item\EpScaleLib::writeItemsToScales($all_items, array($scale));
                         $all_items = array();
                     }
                 } else {
@@ -101,6 +102,7 @@ class SyncFromSearch extends FannieRESTfulPage
 
             if (count($all_items) > 0) {
                 \COREPOS\Fannie\API\item\HobartDgwLib::writeItemsToScales($all_items, array($scale));
+                \COREPOS\Fannie\API\item\EpScaleLib::writeItemsToScales($all_items, array($scale));
             }
         } // end loop on scales
         $this->sent_status = ob_get_clean();
@@ -152,6 +154,7 @@ class SyncFromSearch extends FannieRESTfulPage
                 }
 
                 \COREPOS\Fannie\API\item\HobartDgwLib::writeItemsToScales($item_info, array($scale));
+                \COREPOS\Fannie\API\item\EpScaleLib::writeItemsToScales($item_info, array($scale));
             }
 
             echo '{error:0}';
