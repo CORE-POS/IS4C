@@ -164,7 +164,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, CoreLocal::get('receiptToggle'));
         $out = $obj->parse('NR');
         $this->assertEquals(0, CoreLocal::get('receiptToggle'));
-        $this->assertEquals('/pos2.php', substr($out['main_frame'], -8));
+        $this->assertEquals('/pos2.php', substr($out['main_frame'], -9));
     }
 
     function testSteering()
@@ -183,11 +183,11 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $obj->check('PVASDF');
         $out = $obj->parse('PVASDF');
         $this->assertEquals('/productlist.php', substr($out['main_frame'], -16));
-        $this->assertEquals('pvsearch', 'ASDF');
+        $this->assertEquals('ASDF', CoreLocal::get('pvsearch'));
         $obj->check('TESTPV');
         $out = $obj->parse('TESTPV');
         $this->assertEquals('/productlist.php', substr($out['main_frame'], -16));
-        $this->assertEquals('pvsearch', 'TEST');
+        $this->assertEquals('TEST', CoreLocal::get('pvsearch'));
 
         CoreLocal::set('LastID', 1);
         $obj->check('UNDO');
@@ -219,11 +219,11 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $obj->check('RP');
         $out = $obj->parse('RP');
         $this->assertEquals(1, CoreLocal::get('receiptToggle'));
-        $this->assertEquals('/pos2.php', substr($out['main_frame'], -8));
+        $this->assertEquals('/pos2.php', substr($out['main_frame'], -9));
         $obj->check('RP');
         $out = $obj->parse('RP');
         $this->assertEquals(0, CoreLocal::get('receiptToggle'));
-        $this->assertEquals('/pos2.php', substr($out['main_frame'], -8));
+        $this->assertEquals('/pos2.php', substr($out['main_frame'], -9));
         CoreLocal::set('LastID', 0);
 
         $obj->check('ID');
