@@ -196,23 +196,23 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('LastID', 0);
         $obj->check('UNDO');
         $out = $obj->parse('UNDO');
-        $this->assertEquals('=UndoAdminLogin', substr($ret['main_frame'], -15));
+        $this->assertEquals('=UndoAdminLogin', substr($out['main_frame'], -15));
 
         $obj->check('SK');
         $out = $obj->parse('SK');
-        $this->assertEquals('/DDDReason.php', substr($ret['main_frame'], -14));
+        $this->assertEquals('/DDDReason.php', substr($out['main_frame'], -14));
         $obj->check('DDD');
         $out = $obj->parse('DDD');
-        $this->assertEquals('/DDDReason.php', substr($ret['main_frame'], -14));
+        $this->assertEquals('/DDDReason.php', substr($out['main_frame'], -14));
 
         CoreLocal::set('SecuritySR', 21);
         $obj->check('MG');
         $out = $obj->parse('MG');
-        $this->assertEquals('=SusResAdminLogin', substr($ret['main_frame'], -17));
+        $this->assertEquals('=SusResAdminLogin', substr($out['main_frame'], -17));
         CoreLocal::set('SecuritySR', 0);
         $obj->check('MG');
         $out = $obj->parse('MG');
-        $this->assertEquals('/adminlogin.php', substr($ret['main_frame'], -15));
+        $this->assertEquals('/adminlogin.php', substr($out['main_frame'], -15));
 
         CoreLocal::set('LastID', 1);
         CoreLocal::set('receiptToggle', 0);
@@ -241,7 +241,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('LastID', 0);
         $obj->check('NS');
         $out = $obj->parse('NS');
-        $this->assertEquals('/nslogin.php', substr($ret['main_frame'], -12));
+        $this->assertEquals('/nslogin.php', substr($out['main_frame'], -12));
 
         $obj->check('GD');
         $out = $obj->parse('GD');
@@ -266,7 +266,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $obj = new ScrollItems();
         foreach ($inputs as $input) {
             $this->assertEquals(true, $obj->check($input));
-            $this->assertNotEquals(0, strlen($obj->parse($input)));
+            $out = $obj->parse($input);
+            $this->assertNotEquals(0, strlen($out['output']));
         }
     }
 
