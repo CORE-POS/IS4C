@@ -212,7 +212,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('SecuritySR', 0);
         $obj->check('MG');
         $out = $obj->parse('MG');
-        $this->assertEquals('/adminlogin.php', substr($out['main_frame'], -15));
+        $this->assertEquals('/adminlist.php', substr($out['main_frame'], -14));
 
         CoreLocal::set('LastID', 1);
         CoreLocal::set('receiptToggle', 0);
