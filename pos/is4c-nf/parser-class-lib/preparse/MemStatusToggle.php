@@ -22,21 +22,22 @@
 *********************************************************************************/
 
 class MemStatusToggle extends PreParser {
-    var $tfd;
-    var $remainder;
 
     function check($str)
     {
         // Andy: theory is this shortcircuits steering
         return false;
+        /*
         if (substr($str,0,4) == "MSTG"){
             return True;
         }
         return False;    
+        */
     }
 
     function parse($str)
     {
+        /*
         $remainder = "";
         if (substr($str,0,4) == "MSTG"){
             if (CoreLocal::get("memType") != 1 || CoreLocal::get("memType") != 2) {
@@ -48,6 +49,9 @@ class MemStatusToggle extends PreParser {
             }
         }
         return $remainder;    
+        */
+
+        return $str;
     }
 
     function doc(){

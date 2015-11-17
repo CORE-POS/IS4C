@@ -89,6 +89,40 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, CoreLocal::get('toggleDiscountable'));
     }
 
+    function testCaseDiscount()
+    {
+        $obj = new CaseDiscount();
+        $this->assertEquals(true, $obj->check('10CT4011'));
+
+        $out = $obj->parse('11CT4011');
+        $this->assertEquals('cdinvalid', $out);
+
+        CoreLocal::set('isStaff', 0);
+        CoreLocal::set('SSI', 0);
+        CoreLocal::set('isMember', 0);
+        $out = $obj->parse('10CT4011');
+        $this->assertEquals('4011', $out);
+        $this->assertEquals(5, CoreLocal::get('casediscount'));
+
+        CoreLocal::set('isMember', 1);
+        $out = $obj->parse('10CT4011');
+        $this->assertEquals('4011', $out);
+        $this->assertEquals(10, CoreLocal::get('casediscount'));
+
+        CoreLocal::set('SSI', 1);
+        $out = $obj->parse('10CT4011');
+        $this->assertEquals('cdSSINA', $out);
+
+        CoreLocal::set('isStaff', 1);
+        $out = $obj->parse('10CT4011');
+        $this->assertEquals('cdStaffNA', $out);
+
+        CoreLocal::set('isStaff', 0);
+        CoreLocal::set('SSI', 0);
+        CoreLocal::set('isMember', 0);
+        CoreLocal::set('casediscount', 0);
+    }
+
     function testParsers()
     {
         /* inputs and expected outputs */
@@ -107,9 +141,180 @@ class ParsersTest extends PHPUnit_Framework_TestCase
                     $actual = $obj->parse($input);
                     break;
                 }
+                $this->assertInternalType('string', $obj->doc());
             }
             $this->assertEquals($output, $actual);
         }
+    }
+
+    function testWakeup()
+    {
+        $obj = new Wakeup();
+        $this->assertEquals(true, $obj->check('WAKEUP'));
+
+        $out = $obj->parse('WAKEUP');
+        $this->assertEquals('rePoll', $out['udpmsg']);
+    }
+
+    function testToggleReceipt()
+    {
+        $obj = new ToggleReceipt();
+        CoreLocal::set('receiptToggle', 0);
+        $obj->parse('NR');
+        $this->assertEquals(1, CoreLocal::get('receiptToggle'));
+        $out = $obj->parse('NR');
+        $this->assertEquals(0, CoreLocal::get('receiptToggle'));
+        $this->assertEquals('/pos2.php', substr($out['main_frame'], -8));
+    }
+
+    function testSteering()
+    {
+        $obj = new Steering();
+
+        CoreLocal::set('LastID', 1);
+        $obj->check('CAB');
+        $out = $obj->parse('CAB');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('LastID', 0);
+        $obj->check('CAB');
+        $out = $obj->parse('CAB');
+        $this->assertEquals('/cablist.php', substr($out['main_frame'], -12));
+
+        $obj->check('PVASDF');
+        $out = $obj->parse('PVASDF');
+        $this->assertEquals('/productlist.php', substr($out['main_frame'], -16));
+        $this->assertEquals('pvsearch', 'ASDF');
+        $obj->check('TESTPV');
+        $out = $obj->parse('TESTPV');
+        $this->assertEquals('/productlist.php', substr($out['main_frame'], -16));
+        $this->assertEquals('pvsearch', 'TEST');
+
+        CoreLocal::set('LastID', 1);
+        $obj->check('UNDO');
+        $out = $obj->parse('UNDO');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('LastID', 0);
+        $obj->check('UNDO');
+        $out = $obj->parse('UNDO');
+        $this->assertEquals('=UndoAdminLogin', substr($ret['main_frame'], -15));
+
+        $obj->check('SK');
+        $out = $obj->parse('SK');
+        $this->assertEquals('/DDDReason.php', substr($ret['main_frame'], -14));
+        $obj->check('DDD');
+        $out = $obj->parse('DDD');
+        $this->assertEquals('/DDDReason.php', substr($ret['main_frame'], -14));
+
+        CoreLocal::set('SecuritySR', 21);
+        $obj->check('MG');
+        $out = $obj->parse('MG');
+        $this->assertEquals('=SusResAdminLogin', substr($ret['main_frame'], -17));
+        CoreLocal::set('SecuritySR', 0);
+        $obj->check('MG');
+        $out = $obj->parse('MG');
+        $this->assertEquals('/adminlogin.php', substr($ret['main_frame'], -15));
+
+        CoreLocal::set('LastID', 1);
+        CoreLocal::set('receiptToggle', 0);
+        $obj->check('RP');
+        $out = $obj->parse('RP');
+        $this->assertEquals(1, CoreLocal::get('receiptToggle'));
+        $this->assertEquals('/pos2.php', substr($out['main_frame'], -8));
+        $obj->check('RP');
+        $out = $obj->parse('RP');
+        $this->assertEquals(0, CoreLocal::get('receiptToggle'));
+        $this->assertEquals('/pos2.php', substr($out['main_frame'], -8));
+        CoreLocal::set('LastID', 0);
+
+        $obj->check('ID');
+        $out = $obj->parse('ID');
+        $this->assertEquals('/memlist.php', substr($out['main_frame'], -12));
+
+        $obj->check('DDM');
+        $out = $obj->parse('DDM');
+        $this->assertEquals('/drawerPage.php', substr($out['main_frame'], -15));
+
+        CoreLocal::set('LastID', 1);
+        $obj->check('NS');
+        $out = $obj->parse('NS');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('LastID', 0);
+        $obj->check('NS');
+        $out = $obj->parse('NS');
+        $this->assertEquals('/nslogin.php', substr($ret['main_frame'], -12));
+
+        $obj->check('GD');
+        $out = $obj->parse('GD');
+        $this->assertEquals('/giftcardlist.php', substr($out['main_frame'], -17));
+
+        $obj->check('IC');
+        $out = $obj->parse('IC');
+        $this->assertEquals('/HouseCouponList.php', substr($out['main_frame'], -20));
+
+        $obj->check('CN');
+        $out = $obj->parse('CN');
+        $this->assertEquals('/mgrlogin.php', substr($out['main_frame'], -13));
+
+        $obj->check('PO');
+        $out = $obj->parse('PO');
+        $this->assertEquals('=PriceOverrideAdminLogin', substr($out['main_frame'], -24));
+    }
+
+    function testScrollItems()
+    {
+        $inputs = array('D', 'U', 'D5', 'U5');
+        $obj = new ScrollItems();
+        foreach ($inputs as $input) {
+            $this->assertEquals(true, $obj->check($input));
+            $this->assertNotEquals(0, strlen($obj->parse($input)));
+        }
+    }
+
+    function testScaleInput()
+    {
+        $obj = new ScaleInput();
+        $out = $obj->parse('S111234');
+        $this->assertEquals(1, CoreLocal::get('scale'));
+        $this->assertEquals(12.34, CoreLocal::get('weight'));
+        $this->assertEquals('S111234', $out['scale']);
+
+        $out = $obj->parse('S143');
+        $this->assertEquals(0, CoreLocal::get('scale'));
+        $this->assertEquals('S143', $out['scale']);
+    }
+
+    function testPartialReceipt()
+    {
+        $obj = new PartialReceipt();
+        $out = $obj->parse('PP');
+        $this->assertEquals('partial', $out['receipt']);
+        $this->assertNotEquals(0, strlen($out['output']));
+    }
+
+    function testLock()
+    {
+        $obj = new Lock();
+        $out = $obj->parse('LOCK');
+        $this->assertEquals('/login3.php', substr($out['main_frame'], -11));
+    }
+
+    function testBalanceCheck()
+    {
+        $obj = new BalanceCheck();
+        $this->assertEquals(true, $obj->check('BQ'));
+        $out = $obj->parse('BQ');
+        $this->assertNotEquals(0, strlen($out['output']));
+    }
+
+    function testClear()
+    {
+        $obj = new Clear();
+        $out = $obj->parse('CL');
+        $this->assertEquals(0, CoreLocal::get('msgrepeat'));
+        $this->assertEquals('', CoreLocal::get('strRemembered'));
+        $this->assertEquals(0, CoreLocal::get('SNR'));
+        $this->assertEquals(0, CoreLocal::get('refund'));
+        $this->assertEquals('/pos2.php', substr($out['main_frame'], -9));
     }
 
     function testItemsEntry()

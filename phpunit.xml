@@ -29,6 +29,7 @@
             <file>tests/pos/PagesTest.php</file>
             <file>tests/pos/ParsersTest.php</file>
             <file>tests/pos/PluginsTest.php</file>
+            <file>tests/pos/PosModelsTest.php</file>
             <file>tests/pos/ReceiptTest.php</file>
             <file>tests/pos/SQLManagerTest.php</file>
             <file>tests/pos/ScaleTest.php</file>
@@ -42,6 +43,7 @@
             <directory suffix=".php">common</directory>
             <directory suffix=".php">fannie</directory>
             <directory suffix=".php">pos/is4c-nf</directory>
+            <directory suffix=".php">pos/is4c-nf/plugins/Paycards/</directory>
             <exclude>
                 <directory>vendor</directory>
                 <directory>common/adodb5</directory>

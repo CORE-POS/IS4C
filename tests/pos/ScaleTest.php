@@ -31,6 +31,10 @@ class ScaleTest extends PHPUnit_Framework_TestCase
         file_put_contents($ss_output, 'foo');
         $nm->ReadReset();
         $this->assertEquals(false, file_exists($ss_output));
+
+        ob_start();
+        $nm->ReadFromScale();
+        $this->assertEquals('{}', ob_get_clean());
     }
 }
 
