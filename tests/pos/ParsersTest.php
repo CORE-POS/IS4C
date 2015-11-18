@@ -1,6 +1,9 @@
 <?php
 include(dirname(__FILE__).'/../../pos/is4c-nf/parser-class-lib/PreParser.php');
 include(dirname(__FILE__).'/../../pos/is4c-nf/parser-class-lib/Parser.php');
+if (!class_exists('lttLib')) {
+    include(dirname(__FILE__) . '/lttLib.php');
+}
 
 /**
  * @backupGlobals disabled
@@ -98,6 +101,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $obj = new CCMenu();
         $this->assertEquals(true, $obj->check('CC'));
         $this->assertEquals('QM1', $obj->parse('CC'));
+        CoreLocal::set('PluginList', $plugins);
     }
 
     function testCaseDiscount()
@@ -472,7 +476,9 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, $out['redraw_footer']);
         $this->assertEquals('0', CoreLocal::get('memberID'));
         $out = $m->parse('1ID');
+        CoreLocal::set('verifyName', 1);
         $this->assertEquals('/memlist.php', substr($out['main_frame'], -12));
+        CoreState::memberReset();
     }
 
     function testLock()
@@ -485,6 +491,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     function testDonationKey()
     {
         $d = new DonationKey();
+        CoreLocal::set('roundUpDept', 1);
         $this->assertEquals(true, $d->check('RU'));
         $this->assertEquals(true, $d->check('2RU'));
         $dbc = Database::tDataConnect();
@@ -493,7 +500,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $prep = $dbc->prepare('SELECT SUM(total) FROM localtemptrans');
         $this->assertEquals(1, $dbc->getValue($prep));
         lttLib::clear();
-        $out = $d->parse('2RU');
+        $out = $d->parse('200RU');
         $prep = $dbc->prepare('SELECT SUM(total) FROM localtemptrans');
         $this->assertEquals(2, $dbc->getValue($prep));
         lttLib::clear();
