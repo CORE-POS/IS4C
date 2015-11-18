@@ -114,9 +114,10 @@ static public function memberID($member_number)
   @param $row a record from custdata
   @param $chargeOk whether member can store-charge purchases
 */
-static public function setAltMemMsg($store, $member, $personNumber, $row, $chargeOk) 
+static public function setAltMemMsg($store, $member, $personNumber, $row)
 {
     if ($store == 'WEFC_Toronto') {
+        $chargeOk = self::chargeOk();
     /* Doesn't quite allow for StoreCharge/PrePay for regular members
      * either instead of or in addition to CoopCred
      */
@@ -352,7 +353,7 @@ static public function setMember($member, $personNumber, $row=array())
     }
 
     CoreLocal::set("memMsg", self::defaultMemMsg($member, $row));
-    self::setAltMemMsg(CoreLocal::get("store"), $member, $personNumber, $row, $chargeOk);
+    self::setAltMemMsg(CoreLocal::get("store"), $member, $personNumber, $row);
 
     /**
       Set member number and attributes

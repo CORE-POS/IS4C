@@ -791,16 +791,7 @@ class InstallUtilities extends LibraryClass
                 $current_value = (int)$current_value;
             }
         } else if ($quoted && !is_array($current_value)) {
-            // quoted must not contain single quotes
-            $current_value = str_replace("'", '', $current_value);
-            // must not start with backslash
-            while (strlen($current_value) > 0 && substr($current_value, 0, 1) == "\\") {
-                $current_value = substr($current_value, 1);
-            }
-            // must not end with backslash
-            while (strlen($current_value) > 0 && substr($current_value, -1) == "\\") {
-                $current_value = substr($current_value, 0, strlen($current_value)-1);
-            }
+            $current_value = self::sanitizeString($current_value);
         }
 
         CoreLocal::set($name, $current_value);
@@ -873,25 +864,7 @@ class InstallUtilities extends LibraryClass
         }
 
         // sanitize values:
-        if (!$is_array && !$quoted) {
-            // unquoted must be a number or boolean
-            if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value) !== 'false') {
-                $current_value = (int)$current_value;
-            }
-        } else if (!$is_array && $quoted) {
-            // quoted must not contain single quotes
-            $current_value = str_replace("'", '', $current_value);
-            // must not start with backslash
-            while (strlen($current_value) > 0 && substr($current_value, 0, 1) == "\\") {
-                $current_value = substr($current_value, 1);
-            }
-            // must not end with backslash
-            while (strlen($current_value) > 0 && substr($current_value, -1) == "\\") {
-                $current_value = substr($current_value, 0, strlen($current_value)-1);
-            }
-        } else if ($is_array && !is_array($current_value)) {
-            $current_value = $default_value;
-        }
+        $current_value = self::sanitizeValue($current_value, $is_array, $quoted);
         
         CoreLocal::set($name, $current_value);
         self::writeInput($name, $current_value, $storage);
@@ -960,6 +933,60 @@ class InstallUtilities extends LibraryClass
 
         return $ret;
     }
+
+    private static function sanitizeValue($current_value, $is_array, $quoted)
+    {
+        if (!$is_array && !$quoted) {
+            // unquoted must be a number or boolean
+            if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value) !== 'false') {
+                $current_value = (int)$current_value;
+            }
+        } else if (!$is_array && $quoted) {
+            $current_value = self::sanitizeString($current_value);
+        } else if ($is_array && !is_array($current_value)) {
+            $current_value = $default_value;
+        }
+
+        return $current_value;
+    }
+
+    private static function sanitizeString($current_value)
+    {
+        // quoted must not contain single quotes
+        $current_value = str_replace("'", '', $current_value);
+        // must not start with backslash
+        while (strlen($current_value) > 0 && substr($current_value, 0, 1) == "\\") {
+            $current_value = substr($current_value, 1);
+        }
+        // must not end with backslash
+        while (strlen($current_value) > 0 && substr($current_value, -1) == "\\") {
+            $current_value = substr($current_value, 0, strlen($current_value)-1);
+        }
+
+        return $current_value;
+    }
+
+    private static function checkParameter($param, $checked, $wrong)
+    {
+        $p_value = $param->materializeValue();
+        $checked[$param->param_key()] = true;
+        $i_value = $CORE_LOCAL->get($param->param_key());
+        if (isset($checked[$param->param_key()])) {
+            // setting has a lane-specific parameters
+        } elseif (is_numeric($i_value) && is_numeric($p_value) && $i_value == $p_value) {
+            // allow loose comparison on numbers
+            // i.e., permit integer 1 equal string '1'
+        } elseif ($p_value !== $i_value) {
+            printf('<span style="color:red;">Setting mismatch for</span>
+                <a href="" onclick="$(this).next().toggle(); return false;">%s</a>
+                <span style="display:none;"> parameters says %s, ini.php says %s</span></p>',
+                $param->param_key(), print_r($p_value, true), print_r($i_value, true)
+            );
+            $wrong[$param->param_key()] = $p_value;
+        }
+
+        return array($checked, $wrong);
+    }
     
     public static function validateConfiguration()
     {
@@ -985,22 +1012,7 @@ class InstallUtilities extends LibraryClass
         $checked = array();
         $wrong = array();
         foreach ($parameters->find() as $param) {
-            $p_value = $param->materializeValue();
-            $checked[$param->param_key()] = true;
-            $i_value = $CORE_LOCAL->get($param->param_key());
-            if (is_numeric($i_value) && is_numeric($p_value) && $i_value == $p_value) {
-                // allow loose comparison on numbers
-                // i.e., permit integer 1 equal string '1'
-                continue;
-            }
-            if ($p_value !== $i_value) {
-                printf('<span style="color:red;">Setting mismatch for</span>
-                    <a href="" onclick="$(this).next().toggle(); return false;">%s</a>
-                    <span style="display:none;"> parameters says %s, ini.php says %s</span></p>',
-                    $param->param_key(), print_r($p_value, true), print_r($i_value, true)
-                );
-                $wrong[$param->param_key()] = $p_value;
-            }
+            list($checked, $wrong) = self::checkParamter($param, $checked, $wrong);
         }
 
         /**
@@ -1010,26 +1022,7 @@ class InstallUtilities extends LibraryClass
         $parameters->store_id(0);
         $parameters->lane_id(0);
         foreach ($parameters->find() as $param) {
-            if (isset($checked[$param->param_key()])) {
-                // setting has a lane-specific parameters
-                // value. no need to check this one.
-                continue;
-            }
-            $p_value = $param->materializeValue();
-            $i_value = $CORE_LOCAL->get($param->param_key());
-            if (is_numeric($i_value) && is_numeric($p_value) && $i_value == $p_value) {
-                // allow loose comparison on numbers
-                // i.e., permit integer 1 equal string '1'
-                continue;
-            }
-            if ($p_value !== $i_value) {
-                printf('<p>Setting mismatch for 
-                    <a href="" onclick=$(this).next.toggle();return false;">%s</a>
-                    <span style="display:none;"> parameters says %s, ini.php says %s</span></p>',
-                    $param->param_key(), print_r($p_value, true), print_r($i_value, true)
-                );
-                $wrong[$param->param_key()] = $p_value;
-            }
+            list($checked, $wrong) = self::checkParamter($param, $checked, $wrong);
         }
 
         /**

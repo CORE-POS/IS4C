@@ -18,6 +18,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         foreach($chain as $class){
             $instance = new $class();
             $this->assertInstanceOf('PreParser',$instance);
+            // just for coverage; not vital functionality
+            $this->assertNotEquals(0, strlen($instance->doc()));
         }
 
         $chain = Parser::get_parse_chain();
@@ -26,6 +28,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         foreach($chain as $class){
             $instance = new $class();
             $this->assertInstanceOf('Parser',$instance);
+            // just for coverage; not vital functionality
+            $this->assertNotEquals(0, strlen($instance->doc()));
         }
     }
 
@@ -73,8 +77,6 @@ class ParsersTest extends PHPUnit_Framework_TestCase
                 if ($chk){
                     $input = $obj->parse($input);
                 }
-                // just for coverage; not vital functionality
-                $this->assertNotEquals(0, strlen($obj->doc()));
             }
             $this->assertEquals($output, $input);
         }
@@ -152,7 +154,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
             foreach($chain as $class){
                 $obj = new $class();
                 $chk = $obj->check($input);
-                $this->assertInternalType('boolean',$chk);
+                $this->assertInternalType('boolean',$chk, $class . ' returns non-boolean');
                 if ($chk){
                     $actual = $obj->parse($input);
                     break;
@@ -221,11 +223,11 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     function testTenderKey()
     {
         $tk = new TenderKey();
-        $this->assertEquals(true, $tk->parse('TT'));
+        $this->assertEquals(true, $tk->check('TT'));
         $out = $tk->parse('TT');
         $this->assertEquals('/tenderlist.php', substr($out['main_frame'], -15));
 
-        $this->assertEquals(true, $tk->parse('100TT'));
+        $this->assertEquals(true, $tk->check('100TT'));
         $out = $tk->parse('100TT');
         $this->assertEquals('/tenderlist.php', substr($out['main_frame'], -15));
         $this->assertEquals(100, CoreLocal::get('tenderTotal'));
@@ -414,8 +416,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     function testRepeatKey()
     {
         $rk = new RepeatKey();
-        $this->assertEquals(true, $rk->parse('*'));
-        $this->assertEquals(true, $rk->parse('*2'));
+        $this->assertEquals(true, $rk->check('*'));
+        $this->assertEquals(true, $rk->check('*2'));
         lttLib::clear();
         $out = $this->parse('*');
         $this->assertNotEquals(0, strlen($out['output']));
@@ -526,7 +528,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $d = new DeptKey();
         CoreLocal::set('refund', 1);
         $out = $d->parse('1.00DP');
-        $this->assertEquals('/deptlist.php', substr($out['main_frame'], -15));
+        $this->assertEquals('/deptlist.php', substr($out['main_frame'], -13));
         $this->assertEquals('RF100', CoreLocal::get('departmentAmount'));
         CoreLocal::set('refundComment', '');
         CoreLocal::set('SecurityRefund', 21);
@@ -581,6 +583,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('togglefoodstamp',0);
         CoreLocal::set('toggleDiscountable',0);
         CoreLocal::set('nd',0);
+        CoreLocal::set('memType', 0);
 
         // test regular price item
         lttLib::clear();

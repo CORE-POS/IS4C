@@ -92,7 +92,9 @@ function postBilling(){
                 'customers' => array(
                     array('accountHolder'=>1),
                 ), 
-            )
+            ),
+            0,
+            true
         );
         foreach ($accounts as $account) {
             $ret .= sprintf('<option %s value="%d">%d %s</option>',

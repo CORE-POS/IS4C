@@ -38,14 +38,14 @@ class ScaleTest extends PHPUnit_Framework_TestCase
 
         $ssd = new ssd();
         $dir = dirname(__FILE__) . '/../../pos/is4c-nf/scale-drivers/drivers/rs232/';
-        file_put_contents($file . 'scale', 'S110123');
+        file_put_contents($dir . 'scale', 'S110123');
         ob_start();
         $ssd->ReadFromScale();
         $read = ob_get_clean();
         $this->assertInternalType('array', $read);
         $this->assertArrayHasKey('scale', $read);
         $this->assertNotEquals(0, strlen($read['scale']));
-        file_put_contents($file . 'scale', 'S110123');
+        file_put_contents($dir . 'scale', 'S110123');
         ob_start();
         $ssd->ReadFromScale();
         $read = ob_get_clean();
