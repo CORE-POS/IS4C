@@ -419,11 +419,11 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, $rk->check('*'));
         $this->assertEquals(true, $rk->check('*2'));
         lttLib::clear();
-        $out = $this->parse('*');
+        $out = $rk->parse('*');
         $this->assertNotEquals(0, strlen($out['output']));
         $upc = new UPC();
         $upc->parse('666');
-        $out = $this->parse('*');
+        $out = $rk->parse('*');
         $this->assertNotEquals(0, strlen($out['output']));
         $dbc = Database::tDataConnect();
         $query = 'SELECT * FROM localtemptrans WHERE upc=\'0000000000666\'';
@@ -431,7 +431,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(2, $dbc->numRows($res));
         lttLib::clear();
         $upc->parse('666');
-        $out = $this->parse('*2');
+        $out = $rk->parse('*2');
         $this->assertNotEquals(0, strlen($out['output']));
         $dbc = Database::tDataConnect();
         $query = 'SELECT * FROM localtemptrans WHERE upc=\'0000000000666\'';
