@@ -89,6 +89,15 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, CoreLocal::get('toggleDiscountable'));
     }
 
+    function testCcMenu()
+    {
+        $plugins = CoreLocal::get('PluginList');
+        CoreLocal::set('PluginList', array('Paycards'));
+        $obj = new CCMenu();
+        $this->assertEquals(true, $obj->check('CC'));
+        $this->assertEquals('QM1', $obj->parse('CC'));
+    }
+
     function testCaseDiscount()
     {
         $obj = new CaseDiscount();
@@ -121,6 +130,13 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('SSI', 0);
         CoreLocal::set('isMember', 0);
         CoreLocal::set('casediscount', 0);
+    }
+
+    function testMemStatusToggle()
+    {
+        $obj = new MemStatusToggle();
+        $this->assertEquals(false, $obj->check('foo'));
+        $this->assertEquals('foo', $obj->parse('foo'));
     }
 
     function testParsers()
@@ -165,6 +181,54 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $obj->parse('NR');
         $this->assertEquals(0, CoreLocal::get('receiptToggle'));
         $this->assertEquals('/pos2.php', substr($out['main_frame'], -9));
+    }
+
+    function testTotals()
+    {
+        $t = new Totals();
+
+        $out = $t->parse('FNTL');
+        $this->assertEquals('/fsTotalConfirm.php', substr($out['main_frame'], -19));
+        $out = $t->parse('TETL');
+        $this->assertEquals('=Totals', substr($out['main_frame'], -7));
+        lttLib::clear();
+        $out = $t->parse('FTTL');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $this->assertEquals(true, $out['redraw_footer']);
+        lttLib::clear();
+        $out = $t->parse('TL');
+        $this->assertEquals('/memlist.php', substr($out['main_frame'], -12));
+        lttLib::clear();
+        PrehLib::setMember(1, 1);
+        $out = $t->parse('TL');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $this->assertEquals(true, $out['redraw_footer']);
+        lttLib::clear();
+        $out = $t->parse('WICTL');
+        $this->assertNotEquals(0, strlen($out['output']));
+    }
+
+    function testTenderOut()
+    {
+        $to = new TenderOut();
+        $this->assertEquals(true, $to->check('TO'));
+
+        CoreLocal::set('LastID', 0);
+        $out = $to->parse('TO');
+        $this->assertNotEquals(0, strlen($out['output']));
+    }
+
+    function testTenderKey()
+    {
+        $tk = new TenderKey();
+        $this->assertEquals(true, $tk->parse('TT'));
+        $out = $tk->parse('TT');
+        $this->assertEquals('/tenderlist.php', substr($out['main_frame'], -15));
+
+        $this->assertEquals(true, $tk->parse('100TT'));
+        $out = $tk->parse('100TT');
+        $this->assertEquals('/tenderlist.php', substr($out['main_frame'], -15));
+        $this->assertEquals(100, CoreLocal::get('tenderTotal'));
     }
 
     function testSteering()
@@ -225,6 +289,9 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(0, CoreLocal::get('receiptToggle'));
         $this->assertEquals('/pos2.php', substr($out['main_frame'], -9));
         CoreLocal::set('LastID', 0);
+        $obj->check('RP');
+        $out = $obj->parse('RP');
+        $this->assertNotEquals(0, strlen($out['output']));
 
         $obj->check('ID');
         $out = $obj->parse('ID');
@@ -258,6 +325,66 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $obj->check('PO');
         $out = $obj->parse('PO');
         $this->assertEquals('=PriceOverrideAdminLogin', substr($out['main_frame'], -24));
+
+        CoreLocal::set('memType', 1);
+        $obj->check('MSTG');
+        $out = $obj->parse('MSTG');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('memType', 0);
+        CoreLocal::set('SecuritySR', 21);
+        $obj->check('MSTG');
+        $out = $obj->parse('MSTG');
+        $this->assertEquals('=MemStatusAdminLogin', substr($out['main_frame'], -20));
+        CoreLocal::set('SecuritySR', 0);
+        $obj->check('MSTG');
+        $out = $obj->parse('MSTG');
+        $this->assertNotEquals(0, strlen($out['output']));
+
+        CoreLocal::set('LastID', 1);
+        $obj->check('SS');
+        $out = $obj->parse('SS');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $obj->check('SO');
+        $out = $obj->parse('SO');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('LastID', 0);
+        CoreLocal::set('LoggedIn', 1);
+        $obj->check('SS');
+        $out = $obj->parse('SS');
+        $this->assertEquals('login.php', substr($out['main_frame'], -9));
+        $this->assertEquals(0, CoreLocal::get('LoggedIn'));
+        CoreLocal::set('LastID', 0);
+        CoreLocal::set('LoggedIn', 1);
+        $obj->check('SO');
+        $out = $obj->parse('SO');
+        $this->assertEquals('login.php', substr($out['main_frame'], -9));
+        $this->assertEquals(0, CoreLocal::get('LoggedIn'));
+        // may have created log records when signing out
+        lttLib::clear();
+    }
+
+    function testStackableDiscount()
+    {
+        $sd = new StackableDiscount();
+        $this->assertEquals(false, $sd->check('ZSD'));
+        CoreLocal::set('tenderTotal', 1);
+        $this->assertEquals(true, $sd->check('100SD'));
+        $out = $sd->parse('100SD');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('tenderTotal', 0);
+        $this->assertEquals(true, $sd->check('100SD'));
+        $out = $sd->parse('100SD');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $this->assertEquals(true, $sd->check('-1SD'));
+        $out = $sd->parse('-1SD');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('percentDiscount', 5);
+        $this->assertEquals(true, $sd->check('5SD'));
+        $out = $sd->parse('5SD');
+        $this->assertEquals(10, CoreLocal::get('percentDiscount'));
+        CoreLocal::set('percentDiscount', 0);
+        // may have subtotal'd
+        lttLib::clear();
     }
 
     function testScrollItems()
@@ -284,12 +411,66 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('S143', $out['scale']);
     }
 
+    function testRepeatKey()
+    {
+        $rk = new RepeatKey();
+        $this->assertEquals(true, $rk->parse('*'));
+        $this->assertEquals(true, $rk->parse('*2'));
+        lttLib::clear();
+        $out = $this->parse('*');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $upc = new UPC();
+        $upc->parse('666');
+        $out = $this->parse('*');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $dbc = Database::tDataConnect();
+        $query = 'SELECT * FROM localtemptrans WHERE upc=\'0000000000666\'';
+        $res = $dbc->query($query);
+        $this->assertEquals(2, $dbc->numRows($res));
+        lttLib::clear();
+        $upc->parse('666');
+        $out = $this->parse('*2');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $dbc = Database::tDataConnect();
+        $query = 'SELECT * FROM localtemptrans WHERE upc=\'0000000000666\'';
+        $res = $dbc->query($query);
+        $this->assertEquals(2, $dbc->numRows($res));
+        $prep = $dbc->prepare('SELECT SUM(quantity) FROM localtemptrans WHERE upc=\'0000000000666\'');
+        $this->assertEquals(3, $dbc->getValue($prep));
+        lttLib::clear();
+    }
+
+    function testRRR()
+    {
+        $r = new RRR();
+        $this->assertEquals(true, $r->check('RRR'));
+        $this->assertEquals(true, $r->check('2*RRR'));
+        CoreLocal::set('LastID', 0);
+        $out = $r->parse('RRR');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $out = $r->parse('2*RRR');
+        $this->assertNotEquals(0, strlen($out['output']));
+        lttLib::clear();
+    }
+
     function testPartialReceipt()
     {
         $obj = new PartialReceipt();
         $out = $obj->parse('PP');
         $this->assertEquals('partial', $out['receipt']);
         $this->assertNotEquals(0, strlen($out['output']));
+    }
+
+    function testMemberID()
+    {
+        $m = new MemberID();
+        $this->assertEquals(true, $m->check('1ID'));
+        $out = $m->parse('0ID');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $this->assertEquals(true, $out['redraw_footer']);
+        $this->assertEquals('0', CoreLocal::get('memberID'));
+        $out = $m->parse('1ID');
+        $this->assertEquals('/memlist.php', substr($out['main_frame'], -12));
     }
 
     function testLock()
@@ -299,12 +480,83 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('/login3.php', substr($out['main_frame'], -11));
     }
 
+    function testDonationKey()
+    {
+        $d = new DonationKey();
+        $this->assertEquals(true, $d->check('RU'));
+        $this->assertEquals(true, $d->check('2RU'));
+        $dbc = Database::tDataConnect();
+        lttLib::clear();
+        $out = $d->parse('RU');
+        $prep = $dbc->prepare('SELECT SUM(total) FROM localtemptrans');
+        $this->assertEquals(1, $dbc->getValue($prep));
+        lttLib::clear();
+        $out = $d->parse('2RU');
+        $prep = $dbc->prepare('SELECT SUM(total) FROM localtemptrans');
+        $this->assertEquals(2, $dbc->getValue($prep));
+        lttLib::clear();
+    }
+
+    function testDiscountApplied()
+    {
+        $sd = new DiscountApplied();
+        $this->assertEquals(false, $sd->check('ZDA'));
+        CoreLocal::set('tenderTotal', 1);
+        $this->assertEquals(true, $sd->check('100DA'));
+        $out = $sd->parse('100DA');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('tenderTotal', 0);
+        $this->assertEquals(true, $sd->check('100DA'));
+        $out = $sd->parse('100DA');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $this->assertEquals(true, $sd->check('-1DA'));
+        $out = $sd->parse('-1DA');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('percentDiscount', 4);
+        $this->assertEquals(true, $sd->check('5DA'));
+        $out = $sd->parse('5DA');
+        $this->assertEquals(5, CoreLocal::get('percentDiscount'));
+        CoreLocal::set('percentDiscount', 0);
+        // may have subtotal'd
+        lttLib::clear();
+    }
+
+    function testDeptKey()
+    {
+        $d = new DeptKey();
+        CoreLocal::set('refund', 1);
+        $out = $d->parse('1.00DP');
+        $this->assertEquals('/deptlist.php', substr($out['main_frame'], -15));
+        $this->assertEquals('RF100', CoreLocal::get('departmentAmount'));
+        CoreLocal::set('refundComment', '');
+        CoreLocal::set('SecurityRefund', 21);
+        $out = $d->parse('100DP10');
+        $this->assertEquals('=RefundAdminLogin', substr($out['main_frame'], -17));
+        CoreLocal::set('SecurityRefund', 0);
+        $out = $d->parse('100DP10');
+        $this->assertEquals('/refundComment.php', substr($out['main_frame'], -18));
+        CoreLocal::set('refund', 0);
+    }
+
     function testBalanceCheck()
     {
         $obj = new BalanceCheck();
         $this->assertEquals(true, $obj->check('BQ'));
         $out = $obj->parse('BQ');
         $this->assertNotEquals(0, strlen($out['output']));
+    }
+
+    function testComment()
+    {
+        $cm = new Comment();
+        lttLib::clear();
+        $out = $cm->parse('CMTEST');
+        $dbc = Database::tDataConnect();
+        $prep = $dbc->prepare('SELECT description FROM localtemptrans');
+        $this->assertEquals('TEST', $dbc->getValue($prep));
+        $out = $cm->parse('CM');
+        $this->assertEquals('/bigComment.php', substr($out['main_frame'], -15));
+        lttLib::clear();
     }
 
     function testClear()
@@ -657,5 +909,23 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::verifyRecord(1, $record, $this);
 
         lttLib::clear();
+    }
+
+    // mostly for coverage's sake
+    function testBaseClasses()
+    {
+        $parser = new Parser();
+        $pre = new PreParser();
+        $post = new PostParser();
+
+        $pre->check('');
+        $pre->parse('');
+        $pre->doc();
+
+        $this->assertEquals(array(), $post->parse(array()));
+        $this->assertInternalType('array', PostParser::getPostParseChain());
+
+        $parser->check('');
+        $parser->parse('');
     }
 }
