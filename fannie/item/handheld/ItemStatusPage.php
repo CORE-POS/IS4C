@@ -126,7 +126,6 @@ class ItemStatusPage extends FannieRESTfulPage
 
         $ret .= '<p><strong>Brand</strong>: ' . $product->brand();
         $ret .= ', <strong>Desc.</strong>: ' . $product->description();
-        $vendor->vendorName();
         $ret .= ', <strong>Vendor</strong>:'; 
         if ($vendor->vendorName() != 'UNFI') {
             $ret .= '<span class="alert-danger">' . $vendor->vendorName() . '</span></p>';
