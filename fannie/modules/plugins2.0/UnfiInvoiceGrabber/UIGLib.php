@@ -47,8 +47,8 @@ class UIGLib
         $create = $dbc->prepare('INSERT INTO PurchaseOrder (vendorID, creationDate, placed,
                             placedDate, userID, vendorOrderID, vendorInvoiceID) VALUES
                             (?, ?, 1, ?, 0, ?, ?)');
-        $find = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? AND userID=0
-                            AND vendorInvoiceID=?');
+        $find = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? AND vendorInvoiceID=?');
+        $findPO = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? AND vendorOrderID=?');
         $plu = $dbc->prepare('SELECT upc FROM vendorSKUtoPLU WHERE vendorID=? AND sku LIKE ?');
         $clear = $dbc->prepare('DELETE FROM PurchaseOrderItems WHERE orderID=?');
 
@@ -80,6 +80,8 @@ class UIGLib
                     $idW = $dbc->fetch_row($idR);
                     $id = $idW['orderID'];
                     $dbc->execute($clear, array($id));
+                } else {
+                    $id = $dbc->execute($findPO, array($vendorID, $header_info['vendorOrderID']));
                 }
                 if (!$id) {
                     // date has not been downloaded before OR
