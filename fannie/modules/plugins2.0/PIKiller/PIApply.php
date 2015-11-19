@@ -68,6 +68,13 @@ class PIApply extends FannieRESTfulPage
                 ),
             ),
         );
+        foreach ($json['houseHold'] as $hh) {
+            $rest['customers'][] = array(
+                'accountHolder' => 0,
+                'firstName' => $hh[0],
+                'lastName' => $hh[1],
+            );
+        }
         \COREPOS\Fannie\API\member\MemberREST::post($json['card_no'], $rest);
         header('Location: PIMemberPage.php?id=' . $json['card_no']);
 
