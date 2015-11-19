@@ -92,6 +92,14 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, CoreLocal::get('toggletax'));
         $this->assertEquals(1, CoreLocal::get('togglefoodstamp'));
         $this->assertEquals(1, CoreLocal::get('toggleDiscountable'));
+
+        CoreLocal::set('itemPD', 0);
+        CoreLocal::set('multiple', 0);
+        CoreLocal::set('quantity', 0);
+        CoreLocal::set('refund', 0);
+        CoreLocal::set('toggletax', 0);
+        CoreLocal::set('togglefoodstamp', 0);
+        CoreLocal::set('toggleDiscountable', 0);
     }
 
     function testCcMenu()
