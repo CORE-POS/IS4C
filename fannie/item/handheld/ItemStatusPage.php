@@ -127,6 +127,12 @@ class ItemStatusPage extends FannieRESTfulPage
         $ret .= '<p><strong>Brand</strong>: ' . $product->brand();
         $ret .= ', <strong>Desc.</strong>: ' . $product->description();
         $ret .= ', <strong>Vendor</strong><span class="text-danger">: ' . $vendor->vendorName() . '</span></p>';
+        
+        if ($vendor != UNFI) {
+            $ret .= ', <strong>Vendor</strong><span class="text-danger">: ' . $vendor->vendorName() . '</span></p>';
+        } else {
+            $ret .= ', <strong>Vendor</strong>: ' . $vendor->vendorName() . '</p>';
+        }
 
         $ret .= '<p><strong>Price</strong>: $' . sprintf('%.2f', $product->normal_price());
         if ($product->discounttype() > 0) {
