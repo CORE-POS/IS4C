@@ -1,36 +1,26 @@
 <?php
 /*******************************************************************************
-
     Copyright 2001, 2004 Wedge Community Co-op
-
     This file is part of IT CORE.
-
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-
     IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-
     You should have received a copy of the GNU General Public License
     in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
 *********************************************************************************/
-
 use COREPOS\pos\lib\FormLib;
-
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
-
 class WicTenderPage extends BasicCorePage 
 {
     private $step = 0;
     private $box_color="coloredArea";
     private $errMsg;
-
     public function preprocess()
     {
         if (FormLib::get('reginput', false) !== false) {
@@ -44,7 +34,6 @@ class WicTenderPage extends BasicCorePage
                 $this->step--;
                 return true;
             }
-
             switch ($this->step) {
                 case 0:
                     $this->handleDateInput($inp, true, false);
@@ -75,10 +64,8 @@ class WicTenderPage extends BasicCorePage
                     break;
             }
         }
-
         return true;
     }
-
     private function validateAmount($inp)
     {
         if (!is_numeric($inp)) {
@@ -93,7 +80,6 @@ class WicTenderPage extends BasicCorePage
             return true;
         }
     }
-
     private function handleDateInput($inp, $issue=true, $expire=false)
     {
         if (strlen($inp) != 6 || !is_numeric($inp)) {
@@ -113,7 +99,6 @@ class WicTenderPage extends BasicCorePage
             }
         }
     }
-
     public function body_content()
     {
         $this->input_header();
@@ -129,7 +114,6 @@ class WicTenderPage extends BasicCorePage
         echo "</div>";
         $this->add_onload_command("\$('<input type=\"hidden\" name=\"step\">').val(" . $this->step . ").appendTo('#formlocal');\n");
     }
-
     private function stepContent()
     {
         switch ($this->step) {
@@ -145,7 +129,6 @@ class WicTenderPage extends BasicCorePage
                 return $this->amountForm();
         }
     }
-
     private function amountForm()
     {
         return '<span class="larger">
@@ -155,7 +138,6 @@ class WicTenderPage extends BasicCorePage
             [clear] to go back
             </p>';
     }
-
     private function issueForm()
     {
         return '<span class="larger">
@@ -165,7 +147,6 @@ class WicTenderPage extends BasicCorePage
             enter issue date MMDDYY or [clear] to cancel
             </p>';
     }
-
     private function expiresForm()
     {
         return '<span class="larger">
@@ -185,7 +166,6 @@ class WicTenderPage extends BasicCorePage
             Write Price on Voucher or [clear] to go back
             </p>';
     }
-
     private function sigForm()
     {
         return '<span class="larger">
@@ -196,7 +176,5 @@ class WicTenderPage extends BasicCorePage
             </p>';
     }
 }
-
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
     new WicTenderPage();
-
