@@ -247,14 +247,12 @@ class AutoLoader extends LibraryClass
             }
 
             ob_start();
-            if (!class_exists($name)) { 
-                $ns_class = self::fileToFullClass($file);
-                if (class_exists($ns_class, false)) {
-                    $name = $ns_class;
-                } else {
-                    ob_end_clean();
-                    continue;
-                }
+            $ns_class = self::fileToFullClass($file);
+            if (class_exists($ns_class)) {
+                $name = $ns_class;
+            } elseif (!class_exists($name)) { 
+                ob_end_clean();
+                continue;
             }
 
             if (strstr($file,'plugins')) {

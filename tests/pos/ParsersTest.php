@@ -487,6 +487,15 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('verifyName', 1);
         $out = $m->parse('1ID');
         $this->assertEquals('/memlist.php?idSearch=1', substr($out['main_frame'], -23));
+        CoreLocal::set('memberID', 1);
+        CoreLocal::set('defaultNonMem', 99999);
+        CoreLocal::set('RestrictDefaultNonMem', 1);
+        $out = $m->parse('99999ID');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreState::memberReset();
+        $out = $m->parse('99999ID');
+        $this->assertEquals('/memlist.php?idSearch=99999', substr($out['main_frame'], -27));
+        CoreLocal::set('RestrictDefaultNonMem', 0);
         CoreState::memberReset();
     }
 
@@ -544,9 +553,11 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     {
         $d = new DeptKey();
         CoreLocal::set('refund', 1);
+        CoreLocal::set('SpecialDeptMap', false);
         $out = $d->parse('1.00DP');
         $this->assertEquals('/deptlist.php', substr($out['main_frame'], -13));
         $this->assertEquals('RF100', CoreLocal::get('departmentAmount'));
+        $this->assertInternalType('array', CoreLocal::get('SpecialDeptMap'));
         CoreLocal::set('refundComment', '');
         CoreLocal::set('SecurityRefund', 21);
         $out = $d->parse('100DP10');
@@ -587,6 +598,25 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(0, CoreLocal::get('SNR'));
         $this->assertEquals(0, CoreLocal::get('refund'));
         $this->assertEquals('/pos2.php', substr($out['main_frame'], -9));
+    }
+
+    function testCheckKey()
+    {
+        $obj = new CheckKey();
+        $out = $obj->parse('100CQ');
+        $this->assertEquals(100, CoreLocal::get('tenderTotal'));
+        $this->assertEquals('/checklist.php', substr($out['main_frame'], -14));
+    }
+
+    function testCaseDiscMsgs()
+    {
+        $obj = new CaseDiscMsgs();
+        $inputs = array('cdinvalid', 'cdStaffNA', 'cdSSINA');
+        foreach ($inputs as $input) {
+            $this->assertEquals(true, $obj->check($input));
+            $out = $obj->parse($input);
+            $this->assertNotEquals(0, strlen($out['output']));
+        }
     }
 
     function testItemsEntry()
