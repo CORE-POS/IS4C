@@ -41,14 +41,14 @@ class ScaleTest extends PHPUnit_Framework_TestCase
         file_put_contents($dir . 'scale', 'S110123');
         ob_start();
         $ssd->ReadFromScale();
-        $read = ob_get_clean();
+        $read = json_decode(ob_get_clean(), true);
         $this->assertInternalType('array', $read);
         $this->assertArrayHasKey('scale', $read);
         $this->assertNotEquals(0, strlen($read['scale']));
         file_put_contents($dir . 'scanner', '12345');
         ob_start();
         $ssd->ReadFromScale();
-        $read = ob_get_clean();
+        $read = json_decode(ob_get_clean(), true);
         $this->assertInternalType('array', $read);
         $this->assertArrayHasKey('scans', $read);
         $this->assertEquals('12345', $read['scans']);

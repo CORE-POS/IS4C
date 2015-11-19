@@ -41,6 +41,25 @@ class lttLib {
         return ob_get_clean();
     }
 
+    public static function console($header='')
+    {
+        echo "-------------------------------\n";
+        echo $header . "\n";
+        $db = Database::tDataConnect();
+        $r = $db->query('SELECT datetime, upc, description, quantity, total, trans_id FROM localtemptrans');
+        while ($w = $db->fetchRow($r)) {
+            printf("%s\t%s\t%s\t%.2f\t%.2f\t%d\n",
+                $w['datetime'],
+                $w['upc'],
+                $w['description'],
+                $w['quantity'],
+                $w['total'],
+                $w['trans_id']);
+        }
+        echo "-------------------------------\n";
+    }
+
+
     /**
       Get array of all ltt columns with default values
     */
