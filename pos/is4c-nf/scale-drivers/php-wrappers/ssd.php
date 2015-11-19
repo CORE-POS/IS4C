@@ -50,8 +50,9 @@ class ssd extends ScaleDriverWrapper {
 
     private function getFile($filename)
     {
-        $scale_data = file_get_contents(dirname(__FILE__) . '/' . $filename);
-        $fp = fopen($rel.'scale-drivers/drivers/rs232/' . $filename,'w');
+        $file = dirname(__FILE__) . '/../drivers/rs232/' . $filename;
+        $scale_data = file_get_contents($file);
+        $fp = fopen($file, 'w');
         fclose($fp);
 
         return $scale_data;

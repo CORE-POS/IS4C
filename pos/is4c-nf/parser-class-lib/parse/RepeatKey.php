@@ -44,6 +44,7 @@ class RepeatKey extends Parser
             CoreLocal::set('quantity', $multiplier);
             CoreLocal::set('multiple', 1);
             $ret = $upcP->parse($peek['upc']);
+            CoreLocal::set('multiple', 0);
             return $ret;
         } else {
             $json = $this->default_json();

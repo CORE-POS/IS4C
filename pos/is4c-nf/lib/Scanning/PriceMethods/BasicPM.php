@@ -37,7 +37,10 @@ class BasicPM extends PriceMethod
 
     function addItem($row, $quantity, $priceObj)
     {
-        if ($quantity == 0) return False;
+        if ($quantity == 0) {
+            $this->error_msg = 'Quantity cannot be zero';
+            return false;
+        }
 
         // enforce limit on discounting sale items
         $dsi = CoreLocal::get('DiscountableSaleItems');
