@@ -113,7 +113,7 @@ class QMDisplay extends NoInputCorePage
             */
             $db = Database::pDataConnect();
             if ($db->table_exists('QuickLookups')) {
-                $model = new QuickLookupsModel($db);
+                $model = new COREPOS\pos\plugins\QuickMenus\QuickLookupsModel($db);
                 $model->lookupSet(CoreLocal::get('qmNumber'));
                 foreach($model->find(array('sequence', 'label')) as $obj) {
                     $my_menu[$obj->label()] = $obj->action();
