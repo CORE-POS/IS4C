@@ -277,7 +277,7 @@ class AutoLoader extends LibraryClass
     }
 
     static private $blacklist = array();
-    static private function blacklist($class)
+    static public function blacklist($class)
     {
         if (!in_array($class, self::$blacklist)) {
             self::$blacklist[] = $class;
