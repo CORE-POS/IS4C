@@ -245,6 +245,9 @@ class AutoLoader extends LibraryClass
                 if ($include_base) $ret[] = $name;
                 continue;
             }
+            if (in_array($name, self::$blacklist)) {
+                continue;
+            }
 
             ob_start();
             $ns_class = self::fileToFullClass($file);
@@ -271,6 +274,14 @@ class AutoLoader extends LibraryClass
         }
 
         return $ret;
+    }
+
+    static private $blacklist = array();
+    static private function blacklist($class)
+    {
+        if (!in_array($class, self::$blacklist)) {
+            self::$blacklist[] = $class;
+        }
     }
 
     static private function fileToFullClass($file)
