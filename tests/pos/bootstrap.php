@@ -11,4 +11,6 @@ include(dirname(__FILE__).'/../../pos/is4c-nf/lib/AutoLoader.php');
 AutoLoader::loadMap();
 CoreState::loadParams();
 AutoLoader::blacklist('CoopCred');
+AutoLoader::blacklist('CoopCredMembershipModel');
+AutoLoader::blacklist('CoopCredProgramsModel');
 
