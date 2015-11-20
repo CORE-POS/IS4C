@@ -350,19 +350,15 @@ static public function emptyQueue()
 */
 static public function addtax() 
 {
-    if (true){
-        self::addRecord(array(
-            'upc' => 'TAX',
-            'description' => 'Tax',
-            'trans_type' => 'A',
-            'total' => CoreLocal::get('taxTotal'),
-        ));
-        return;
-    }
+    self::addRecord(array(
+        'upc' => 'TAX',
+        'description' => 'Tax',
+        'trans_type' => 'A',
+        'total' => CoreLocal::get('taxTotal'),
+    ));
 
     /* line-item taxes in transaction
        intentionally disabled for now
-    */
 
     $db = Database::tDataConnect();
     $q = "SELECT id, description, taxTotal, fsTaxable, fsTaxTotal, foodstampTender, taxrate
@@ -392,7 +388,7 @@ static public function addtax()
             'tax' => $w['id'],
         ));
     }
-
+    */
 }
 
 /**
@@ -544,9 +540,6 @@ static public function addfsTaxExempt()
 */
 static public function discountnotify($strl) 
 {
-    if ($strl == 10.01) {
-        $strL = 10;
-    }
     self::addRecord(array(
         'description' => '** ' . $strl . '% Discount Applied **',
         'trans_type' => '0',

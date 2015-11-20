@@ -52,6 +52,21 @@ class ScaleTest extends PHPUnit_Framework_TestCase
         $this->assertInternalType('array', $read);
         $this->assertArrayHasKey('scans', $read);
         $this->assertEquals('12345', $read['scans']);
+
+        $cur = CoreLocal::get('scalePort');
+        $fn = tempnam(sys_get_temp_dir(), 'ssd');
+        CoreLocal::set('scalePort', $fn);
+        foreach (array('goodBeep', 'errorBeep', 'twoPairs') as $cmd) {
+            $ssd->WriteToScale($cmd);
+            $nm->WriteToScale($cmd);
+            $this->assertEquals("S334\r", rtrim(file_get_contents($fn), "\n"));
+        }
+        foreach (array('rePoll', 'wakeup') as $cmd) {
+            $ssd->WriteToScale($cmd);
+            $nm->WriteToScale($cmd);
+            $this->assertEquals("S14\r", rtrim(file_get_contents($fn), "\n"));
+        }
+        CoreLocal::set('scalePort', $cur);
     }
 }
 

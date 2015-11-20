@@ -408,7 +408,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         if (!class_exists('lttLib')) include ('lttLib.php');
         lttLib::clear();
 
-        CoreLocal::set('infoRecordQueue',array());
+        CoreLocal::set('infoRecordQueue','not-array');
         TransRecord::addQueued('1234567890123','UNIT TEST',1,'UT',1.99);
         $queue = CoreLocal::get('infoRecordQueue');
         $this->assertInternalType('array',$queue);
@@ -440,6 +440,10 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $record['trans_status'] = 'D';
         lttLib::verifyRecord(1, $record, $this);
 
+        CoreLocal::set('infoRecordQueue','not-array');
+        TransRecord::emptyQueue();
+        $this->assertInternalType('array', CoreLocal::get('infoRecordQueue'));
+
         lttLib::clear();
 
         CoreLocal::set('taxTotal',1.23);
@@ -463,6 +467,18 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         lttLib::clear();
 
+        TransRecord::addFlaggedTender('UT TENDER','UT',2.34,7,'TF');
+        $record = lttLib::genericRecord();
+        $record['description'] = 'UT TENDER';
+        $record['trans_type'] = 'T';
+        $record['trans_subtype'] = 'UT';
+        $record['total'] = 2.34;
+        $record['numflag'] = 7;
+        $record['charflag'] = 'TF';
+        lttLib::verifyRecord(1, $record, $this);
+
+        lttLib::clear();
+
         TransRecord::addcomment('UNIT TEST COMMENT');
         $record = lttLib::genericRecord();
         $record['description'] = 'UNIT TEST COMMENT';
@@ -473,9 +489,20 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         lttLib::clear();
 
-        TransRecord::addchange(3.14,'UT');
+        // trim comment to 30 characters
+        TransRecord::addcomment('1234567890123456789012345678901');
         $record = lttLib::genericRecord();
-        $record['description'] = 'Change';
+        $record['description'] = '123456789012345678901234567890';
+        $record['trans_type'] = 'C';
+        $record['trans_subtype'] = 'CM';
+        $record['trans_status'] = 'D';
+        lttLib::verifyRecord(1, $record, $this);
+
+        lttLib::clear();
+
+        TransRecord::addchange(3.14,'UT','MoneyBack');
+        $record = lttLib::genericRecord();
+        $record['description'] = 'MoneyBack';
         $record['trans_type'] = 'T';
         $record['trans_subtype'] = 'UT';
         $record['total'] = 3.14;
@@ -483,6 +510,15 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         lttLib::verifyRecord(1, $record, $this);
 
         lttLib::clear();
+
+        TransRecord::addchange(3.14,'','');
+        $record = lttLib::genericRecord();
+        $record['description'] = 'Change';
+        $record['trans_type'] = 'T';
+        $record['trans_subtype'] = 'CA';
+        $record['total'] = 3.14;
+        $record['voided'] = 8;
+        lttLib::verifyRecord(1, $record, $this);
 
         TransRecord::addfsones(3);
         $record = lttLib::genericRecord();
@@ -496,13 +532,15 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
 
         TransRecord::adddiscount(5.45,25);
+        CoreLocal::set('itemPD', 5);
         $record = lttLib::genericRecord();
-        $record['description'] = '** YOU SAVED $5.45 **';
+        $record['description'] = '** YOU SAVED $5.45 (5%) **';
         $record['trans_type'] = 'I';
         $record['trans_status'] = 'D';
         $record['department'] = 25;
         $record['voided'] = 2;
         lttLib::verifyRecord(1, $record, $this);
+        CoreLocal::set('itemPD', 0);
 
         lttLib::clear();
 

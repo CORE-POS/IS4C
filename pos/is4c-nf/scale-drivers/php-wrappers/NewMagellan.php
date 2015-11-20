@@ -51,8 +51,11 @@ class NewMagellan extends ScaleDriverWrapper {
         if (!empty($scale_display)) $output['scale'] = $scale_display;
         if (!empty($scans)) $output['scans'] = ltrim($scans[0],'0');
 
-        if (!empty($output)) echo JsonLib::array_to_json($output);
-        else echo "{}";
+        if (!empty($output)) {
+            echo JsonLib::array_to_json($output);
+        } else {
+            echo "{}";
+        }
     }
 
     function ReadReset(){

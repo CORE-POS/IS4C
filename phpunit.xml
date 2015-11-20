@@ -34,6 +34,7 @@
             <file>tests/pos/ReceiptTest.php</file>
             <file>tests/pos/SQLManagerTest.php</file>
             <file>tests/pos/ScaleTest.php</file>
+            <file>tests/pos/Scanning.php</file>
             <file>tests/pos/SearchTest.php</file>
             <file>tests/pos/TendersTest.php</file>
             <file>tests/pos/TotalActionsTest.php</file>

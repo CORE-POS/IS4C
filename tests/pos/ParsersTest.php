@@ -245,6 +245,54 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(100, CoreLocal::get('tenderTotal'));
     }
 
+    function testSigTermCommands()
+    {
+        $st = new SigTermCommands();
+
+        $this->assertEquals(true, $st->check('TERMAUTOENABLE'));
+        $this->assertEquals('direct', CoreLocal::get('PaycardsStateChange'));
+        $this->assertEquals(true, $st->check('TERMAUTODISABLE'));
+        $this->assertEquals('coordinated', CoreLocal::get('PaycardsStateChange'));
+
+        $this->assertEquals(true, $st->check('TERMMANUAL'));
+        $this->assertEquals(true, CoreLocal::get('paycard_keyed'));
+
+        $this->assertEquals(true, $st->check('PANCACHE:FAKE'));
+        CoreLocal::set('PaycardsAllowEBT', 1);
+        $this->assertEquals(true, $st->check('PANCACHE:FAKE'));
+        $this->assertEquals('FAKE', CoreLocal::get('CachePanEncBlock'));
+
+        $this->assertEquals(true, $st->check('PINCACHE:1234'));
+        $this->assertEquals('1234', CoreLocal::get('CachePinEncBlock'));
+        $this->assertEquals('ready', CoreLocal::get('ccTermState'));
+
+        $this->assertEquals(true, $st->check('VAUTH:1234'));
+        $this->assertEquals('1234', CoreLocal::get('paycard_voiceauthcode'));
+        $this->assertEquals(true, $st->check('EBTAUTH:1234'));
+        $this->assertEquals('1234', CoreLocal::get('ebt_authcode'));
+        $this->assertEquals(true, $st->check('EBTV:1234'));
+        $this->assertEquals('1234', CoreLocal::get('ebt_vnum'));
+
+        $this->assertEquals(true, $st->check('TERMCB:99999'));
+        $out = $st->parse('TERMCB:99999');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $this->assertEquals(true, $st->check('TERMCB:0'));
+        $out = $st->parse('TERMCB:0');
+        $this->assertEquals(0, strlen($out['output']));
+
+        $this->assertEquals(true, $st->check('CCFROMCACHE'));
+        $out = $st->parse('CCFROMCACHE');
+        $this->assertEquals('FAKE', $out['retry']);
+
+        foreach (array('TERMRESET', 'TERMREBOOT', 'TERMCLEARALL') as $cmd) {
+            CoreLocal::set('CachePanEncBlock', 'FAKE');
+            CoreLocal::set('ccTermState', 'FOO');
+            $this->assertEquals(true, $st->check($cmd));
+            $this->assertEquals('', CoreLocal::get('CachePanEncBlock'));
+            $this->assertEquals('swipe', CoreLocal::get('ccTermState'));
+        }
+    }
+
     function testSteering()
     {
         $obj = new Steering();
@@ -522,6 +570,9 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $d->parse('200RU');
         $prep = $dbc->prepare('SELECT SUM(total) FROM localtemptrans');
         $this->assertEquals(2, $dbc->getValue($prep));
+        CoreLocal::set('roundUpDept', '');
+        $this->parse('RU');
+        $this->assertEquals('roundUpDept', 701);
         lttLib::clear();
     }
 
@@ -629,7 +680,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(0.01, CoreLocal::get('tare'));
         $out = $tare->parse('100TW');
         $this->assertEquals(1, CoreLocal::get('tare'));
-        $out = $tare->parse('1000TW');
+        $out = $tare->parse('10000TW');
         $this->assertNotEquals(0, strlen($out['output']));
         CoreLocal::set('weight', 0.5);
         $out = $tare->parse('100TW');

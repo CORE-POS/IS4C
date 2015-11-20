@@ -22,6 +22,8 @@ class ScanningTest extends PHPUnit_Framework_TestCase
             $this->assertContains($d, $all);
         }
 
+        $all[] = 'DiscountType';
+
         foreach($all as $class){
             $obj = new $class();
             $this->assertInstanceOf('DiscountType',$obj);
@@ -189,6 +191,10 @@ class ScanningTest extends PHPUnit_Framework_TestCase
             include (dirname(__FILE__) . '/lttLib.php');
         }
         lttLib::clear();
+
+        $pm = new PriceMethod();
+        $this->assertEquals(true, $pm->addItem(array(), 1, array());
+        $this->assertEquals('', $pm->errorInfo());
 
         $db = Database::pDataConnect();
         $q = "SELECT * FROM products WHERE upc='0000000000111'";
@@ -483,27 +489,36 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         }
 
         $cc = new CouponCode();
-        $this->assertEquals(True,$cc->is_special('0051234512345'));
-        $this->assertEquals(True,$cc->is_special('0991234512345'));
-        $this->assertEquals(False,$cc->is_special('0001234512345'));
+        $this->assertEquals(True,$cc->isSpecial('0051234512345'));
+        $this->assertEquals(True,$cc->isSpecial('0991234512345'));
+        $this->assertEquals(False,$cc->isSpecial('0001234512345'));
 
         $dat = new DatabarCoupon();
-        $this->assertEquals(True,$dat->is_special('811012345678901'));
-        $this->assertEquals(False,$dat->is_special('8110123456790'));
-        $this->assertEquals(False,$dat->is_special('0001234512345'));
+        $this->assertEquals(True,$dat->isSpecial('811012345678901'));
+        $this->assertEquals(False,$dat->isSpecial('8110123456790'));
+        $this->assertEquals(False,$dat->isSpecial('0001234512345'));
 
         $hc = new HouseCoupon();
-        $this->assertEquals(True,$hc->is_special('0049999900001'));
-        $this->assertEquals(False,$hc->is_special('0001234512345'));
+        $this->assertEquals(True,$hc->isSpecial('0049999900001'));
+        $this->assertEquals(False,$hc->isSpecial('0001234512345'));
 
         $mp = new MagicPLU();
-        $this->assertEquals(True,$mp->is_special('0000000008005'));
-        $this->assertEquals(True,$mp->is_special('0000000008006'));
-        $this->assertEquals(False,$mp->is_special('0001234512345'));
+        $this->assertEquals(True,$mp->isSpecial('0000000008005'));
+        $this->assertEquals(True,$mp->isSpecial('0000000008006'));
+        $this->assertEquals(False,$mp->isSpecial('0001234512345'));
 
         $so = new SpecialOrder();
-        $this->assertEquals(True,$so->is_special('0045400010001'));
-        $this->assertEquals(False,$so->is_special('0001234512345'));
+        $this->assertEquals(true, $so->isSpecial('0045400010001'));
+        $this->assertEquals(false, $so->isSpecial('0001234512345'));
+        $out = $so->handle('0045400000000', array());
+        $this->assertNotEquals(0, strlen($out['output']));
+        $out = $so->handle('0045400010001', array());
+        $this->assertNotEquals(0, strlen($out['output']));
+
+        $s = new SpecialUPC();
+        $this->assertEquals(false, $s->isSpecial('foo'));
+        $this->assertEquals(false, $s->is_special('foo'));
+        $this->assertEquals(null, $s->handle('foo'));
     }
 
     public function testCouponCode()
@@ -717,6 +732,13 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
     public function testSpecialDepts()
     {
+        $sd = new SpecialDept();
+        $this->assertEquals('Documentation Needed!', $sd->help_text());
+        $arr = $sd->register(1, 'not-array');
+        $expect = array(1 => array('SpecialDept'));
+        $this->assertEquals($expect, $arr);
+        $this->assertEquals(array(), $sd->handle(1, 1, array()));
+
         $defaults = array(
             'ArWarnDept',
             'AutoReprintDept',
@@ -738,6 +760,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
             $this->assertArrayHasKey(1,$map);
             $this->assertInternalType('array',$map[1]);
             $this->assertContains($class,$map[1]);
+            $this->assertNotEquals(0, strlen($obj->help_text()));
         }
 
         CoreLocal::set('msgrepeat',0);
@@ -823,4 +846,22 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertInternalType('string',$json['main_frame']);
         $this->assertEmpty($json['main_frame']);
     }
+
+    function testVariableReWrite()
+    {
+        $v = new VariableWeightReWrite();
+        $this->assertEquals('foo', $v->translate('foo'));
+
+        $nocheck = '0021234500000';
+        $check =   '021234500000X';
+
+        $v = new ItemNumberOnlyReWrite();
+        $this->assertEquals('0000000012345', $v->translate($nocheck));
+        $this->assertEquals('0000000012345', $v->translate($check, true));
+
+        $v = new ZeroedPriceReWrite();
+        $this->assertEquals('0021234500000', $v->translate($nocheck));
+        $this->assertEquals('0212345000000', $v->translate($check, true));
+    }
+
 }
