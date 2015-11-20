@@ -84,7 +84,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
 
         CoreLocal::set('amtdue', 1.99);
         $this->assertEquals(1.99, $t1->defaultTotal());
-        $this->assertEquals(true, strstr($t1->defaultPrompt(), '1.99'));
+        $this->assertEquals('?quiet=1', substr($t1->defaultPrompt(), -8)); 
 
         CoreLocal::set('LastID', 0);
         $out = $t1->errorCheck();
@@ -113,6 +113,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
 
         CoreLocal::set('ttlflag', 0);
         CoreLocal::set('LastID', 0);
+        CoreLocal::set('amtdue', 0);
 
         CoreLocal::set('msgrepeat', 0);
         $out = $t2->preReqCheck();
@@ -187,7 +188,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
 
         CoreLocal::set('approvetender', 0);
         $out = $st->preReqCheck();
-        $this->assertEquals('=ManagerApproveTender', substr($out, -22));
+        $this->assertEquals('=ManagerApproveTender', substr($out, -21));
         $this->assertEquals(1, CoreLocal::get('approvetender'));
         $out = $st->preReqCheck();
         $this->assertEquals(true, $st->preReqCheck());
