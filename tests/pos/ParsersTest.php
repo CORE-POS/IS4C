@@ -571,7 +571,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $prep = $dbc->prepare('SELECT SUM(total) FROM localtemptrans');
         $this->assertEquals(2, $dbc->getValue($prep));
         CoreLocal::set('roundUpDept', '');
-        $this->parse('RU');
+        $d->parse('RU');
         $this->assertEquals('roundUpDept', 701);
         lttLib::clear();
     }
