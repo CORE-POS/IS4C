@@ -32,6 +32,7 @@ class CCredProgramsModel extends BasicModel
 
     // The actual name of the table.
     protected $name = 'CCredPrograms';
+    protected $preferred_db = 'plugin:CoopCredLaneDatabase';
 
     protected $columns = array(
         'programID' => array('type'=>'SMALLINT(6)', 'default'=>0, 'primary_key'=>True,
