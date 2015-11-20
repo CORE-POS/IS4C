@@ -20,6 +20,7 @@
             <file>tests/common/CommonTest.php</file>
 
             <file>tests/pos/InstallTest.php</file>
+            <file>tests/pos/AdminLoginTest.php</file>
             <file>tests/pos/AjaxTest.php</file>
             <file>tests/pos/BaseLibsTest.php</file>
             <file>tests/pos/DisplayTest.php</file>

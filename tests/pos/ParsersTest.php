@@ -619,6 +619,26 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    function testAutoTare()
+    {
+        $tare = new AutoTare();
+        $this->assertEquals(true, $tare->check('TW'));
+        $this->assertEquals(true, $tare->check('5TW'));
+        CoreLocal::set('weight', 0);
+        $out = $tare->parse('TW');
+        $this->assertEquals(0.01, CoreLocal::get('tare'));
+        $out = $tare->parse('100TW');
+        $this->assertEquals(1, CoreLocal::get('tare'));
+        $out = $tare->parse('1000TW');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('weight', 0.5);
+        $out = $tare->parse('100TW');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('weight', 0);
+        CoreLocal::set('tare', 0);
+        lttLib::clear();
+    }
+
     function testItemsEntry()
     {
         CoreLocal::set('mfcoupon',0);
