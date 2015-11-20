@@ -193,7 +193,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
 
         $pm = new PriceMethod();
-        $this->assertEquals(true, $pm->addItem(array(), 1, array());
+        $this->assertEquals(true, $pm->addItem(array(), 1, array()));
         $this->assertEquals('', $pm->errorInfo());
 
         $db = Database::pDataConnect();
