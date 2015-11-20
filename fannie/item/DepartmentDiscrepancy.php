@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-include(dirname(__FILE__) . '/../../config.php');
+include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
@@ -180,11 +180,11 @@ class DepartmentDiscrepancy extends FanniePage
             $ret .= "<tr><td><a href=\"http://key/git/fannie/item/ItemEditorPage.php?searchupc={$upc[$i]}\">{$upc[$i]}</a></td>";
             $ret .= "<td>" . $desc[$i] . "</td>";
             $ret .= "<td><b>" . $taxType . "</b></td>";
-            $ret .= "<td><input type=\"radio\" name=\"tax{$i}\" id=\"tax{$i}\" value=\"tax0\" required>no tax ";
-            $ret .= "<input type=\"radio\" name=\"tax{$i}\" id=\"tax{$i}\" value=\"tax1\" required>regular tax ";
-            $ret .= "<input type=\"radio\" name=\"tax{$i}\" id=\"tax{$i}\" value=\"tax2\" required>deli tax ";
-            $ret .= "<input type=\"radio\" name=\"tax{$i}\" id=\"tax{$i}\" value=\"noChange\" required>do not change </tr>";
-            $ret .= "<input type=\"hidden\" name=\"upc{$i}\" value=\"{$upc[$i]}\">";
+            $ret .= "<td><input type=\"radio\" name=\"tax{$i}\" id=\"tax{$i}\" value=\"tax0\" required>no tax </td>";
+            $ret .= "<td><input type=\"radio\" name=\"tax{$i}\" id=\"tax{$i}\" value=\"tax1\" required>regular tax </td>";
+            $ret .= "<td><input type=\"radio\" name=\"tax{$i}\" id=\"tax{$i}\" value=\"tax2\" required>deli tax </td>";
+            $ret .= "<td><input type=\"radio\" name=\"tax{$i}\" id=\"tax{$i}\" value=\"noChange\" required>do not change </tr>";
+            $ret .= "<td><input type=\"hidden\" name=\"upc{$i}\" value=\"{$upc[$i]}\">";
         }
         $ret .= "</table>";
         $ret .= "<input type=\"hidden\" name=\"iTax\" id=\"iTax\" value=\" " . count($upc) . " \">";
@@ -222,10 +222,10 @@ class DepartmentDiscrepancy extends FanniePage
             $ret .= "<tr><td><a href=\"http://key/git/fannie/item/ItemEditorPage.php?searchupc={$upc2[$i]}\">{$upc2[$i]}</a></td>";
             $ret .= "<td>" . $desc2[$i] . "</td>";
             $ret .= "<td><b>" . $fsType . "</b></td>";
-            $ret .= "<td><input type=\"radio\" name=\"fs{$i}\" id=\"fs{$i}\" value=\"fs0\"required>not foodstamp-able ";
-            $ret .= "<input type=\"radio\" name=\"fs{$i}\" id=\"fs{$i}\" value=\"fs1\"required>make foodstamp-able";
-            $ret .= "<input type=\"radio\" name=\"fs{$i}\" id=\"fs{$i}\" value=\"noChange\"required>do not change </tr>";
-            $ret .= "<input type=\"hidden\" name=\"plu{$i}\" value=\"{$upc2[$i]}\">";
+            $ret .= "<td><input type=\"radio\" name=\"fs{$i}\" id=\"fs{$i}\" value=\"fs0\"required>not foodstamp-able </td>";
+            $ret .= "<td><input type=\"radio\" name=\"fs{$i}\" id=\"fs{$i}\" value=\"fs1\"required>make foodstamp-able </td>";
+            $ret .= "<td><input type=\"radio\" name=\"fs{$i}\" id=\"fs{$i}\" value=\"noChange\"required>do not change </tr>";
+            $ret .= "<td><input type=\"hidden\" name=\"plu{$i}\" value=\"{$upc2[$i]}\">";
         }
         $ret .= "</table>";
         $ret .= "<input type=\"hidden\" name=\"iFs\" id=\"iFs\" value=\" " . count($upc2) . " \">";
