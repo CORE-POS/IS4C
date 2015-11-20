@@ -194,7 +194,8 @@ class EpScaleLib
         $lines = explode("\n", $desc);
         $keys = array_filter(array_keys($lines), function($i) use ($limit) { return $i<$limit; });
         return array_reduce($keys, function($carry, $key) use ($lines) {
-            return $carry . 'DN' . ($key+1) . $lines[$key] . chr(253);
+            return $carry . 'DN' . ($key+1) . $lines[$key] . chr(253)
+                . 'DS' . ($key+1) . '0' . chr(253);
         });
     }
 
