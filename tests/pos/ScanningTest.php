@@ -518,7 +518,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $s = new SpecialUPC();
         $this->assertEquals(false, $s->isSpecial('foo'));
         $this->assertEquals(false, $s->is_special('foo'));
-        $this->assertEquals(null, $s->handle('foo'));
+        $this->assertEquals(null, $s->handle('foo', array()));
     }
 
     public function testCouponCode()

@@ -41,7 +41,7 @@ class SpecialDept
     */
     public function help_text()
     {
-        return $help_summary;
+        return $this->help_summary;
     }
     
     /**
