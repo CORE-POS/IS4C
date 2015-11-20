@@ -85,14 +85,16 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         if (!class_exists('lttLib')) {
             include(dirname(__FILE__) . '/lttLib.php');
         }
+        $db = Database::mDataConnect();
+        $db->query('truncate table suspended');
         lttLib::clear();
         $record = lttLib::genericRecord(); 
         $record['upc'] = '0000000000000';
         $record['description'] = uniqid('TEST-');
         TransRecord::addRecord($record);
         SuspendLib::suspendorder();
+        $this->assertEquals(1, SuspendLib::checksuspended());
 
-        $db = Database::mDataConnect();
         $query = "
             SELECT *
             FROM suspended
