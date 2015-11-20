@@ -533,8 +533,9 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         lttLib::clear();
 
-        TransRecord::adddiscount(5.45,25);
         CoreLocal::set('itemPD', 5);
+        TransRecord::adddiscount(5.45,25);
+        CoreLocal::set('itemPD', 0);
         $record = lttLib::genericRecord();
         $record['description'] = '** YOU SAVED $5.45 (5%) **';
         $record['trans_type'] = 'I';
@@ -542,7 +543,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $record['department'] = 25;
         $record['voided'] = 2;
         lttLib::verifyRecord(1, $record, $this);
-        CoreLocal::set('itemPD', 0);
 
         lttLib::clear();
 
