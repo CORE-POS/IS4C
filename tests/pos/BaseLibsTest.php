@@ -520,6 +520,8 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $record['voided'] = 8;
         lttLib::verifyRecord(1, $record, $this);
 
+        lttLib::clear();
+
         TransRecord::addfsones(3);
         $record = lttLib::genericRecord();
         $record['description'] = 'FS Change';

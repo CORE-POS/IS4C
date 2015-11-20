@@ -572,7 +572,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(2, $dbc->getValue($prep));
         CoreLocal::set('roundUpDept', '');
         $d->parse('RU');
-        $this->assertEquals('roundUpDept', 701);
+        $this->assertEquals(701, CoreLocal::get('roundUpDept'));
         lttLib::clear();
     }
 
