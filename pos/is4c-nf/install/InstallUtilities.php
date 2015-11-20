@@ -1012,7 +1012,7 @@ class InstallUtilities extends LibraryClass
         $checked = array();
         $wrong = array();
         foreach ($parameters->find() as $param) {
-            list($checked, $wrong) = self::checkParamter($param, $checked, $wrong);
+            list($checked, $wrong) = self::checkParameter($param, $checked, $wrong);
         }
 
         /**
@@ -1022,7 +1022,7 @@ class InstallUtilities extends LibraryClass
         $parameters->store_id(0);
         $parameters->lane_id(0);
         foreach ($parameters->find() as $param) {
-            list($checked, $wrong) = self::checkParamter($param, $checked, $wrong);
+            list($checked, $wrong) = self::checkParameter($param, $checked, $wrong);
         }
 
         /**
