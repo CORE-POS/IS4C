@@ -154,10 +154,10 @@ class TendersTest extends PHPUnit_Framework_TestCase
     {
         $sc = new SignedStoreChargeTender('CA', 1);
         CoreLocal::set('msgrepeat', 0);
-        $this->assertEquals('&code=CA', substr($out->preReqCheck(), -8));
+        $this->assertEquals('&code=CA', substr($sc->preReqCheck(), -8));
         CoreLocal::set('msgrepeat', 1);
         CoreLocal::set('lastRepeat', 'signStoreCharge');
-        $this->assertEquals(true, $out->preReqCheck());
+        $this->assertEquals(true, $sc->preReqCheck());
     }
 
     function testNoDefaultAmountTender()
