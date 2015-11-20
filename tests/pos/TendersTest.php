@@ -191,7 +191,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('=ManagerApproveTender', substr($out, -21));
         $this->assertEquals(1, CoreLocal::get('approvetender'));
         $out = $st->preReqCheck();
-        $this->assertEquals(true, $st->preReqCheck());
+        $this->assertEquals(true, $out);
         $this->assertEquals(0, CoreLocal::get('approvetender'));
     }
 
