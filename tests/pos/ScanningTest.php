@@ -845,6 +845,8 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('main_frame',$json);
         $this->assertInternalType('string',$json['main_frame']);
         $this->assertEmpty($json['main_frame']);
+
+        CoreLocal::set('memberID', '0');
     }
 
     function testVariableReWrite()
