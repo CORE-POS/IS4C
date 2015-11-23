@@ -131,6 +131,11 @@ class VariableItems extends FannieReportPage
         </p>';
     }
 
+    public function form_content()
+    {
+        return '<!-- not needed for this report -->';
+    }
+
 }
 
 FannieDispatch::conditionalExec();
