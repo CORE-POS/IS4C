@@ -80,6 +80,7 @@ class VariableItems extends FannieReportPage
             ORDER BY p.department, p.brand
         ;";
         $result = $dbc->query($query);
+        $upc = array();
         while ($row = $dbc->fetch_row($result)) {
             $upc[] = $row['upc'];
             $brand[] = $row['brand'];
@@ -108,6 +109,7 @@ class VariableItems extends FannieReportPage
         
         echo count($upc) . " variable items found in POS (in use).<br>";
         
+        $item = array();
         for ($i=0; $i<count($upc); $i++) {
             $item[$i][0] = $upc[$i];
             $item[$i][1] = $brand[$i];
