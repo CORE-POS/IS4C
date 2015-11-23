@@ -38,7 +38,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         $m = new GenericSigSlipMessage();
         $this->assertNotEquals(0, strlen($m->message(1, '1-1-1', true)));
 
-        $m = new GCBalanceMessage();
+        $m = new GCBalanceReceiptMessage();
         CoreLocal::set('paycard_response', array('Balance' => 5));
         $this->assertNotEquals(0, strlen($m->standalone_receipt('1-1-1')));
         CoreLocal::set('paycard_response', '');
