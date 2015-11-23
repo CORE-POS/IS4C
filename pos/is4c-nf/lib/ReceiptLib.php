@@ -188,7 +188,10 @@ static public function currentDrawer()
     $chkQ = 'SELECT drawer_no FROM drawerowner WHERE emp_no='.CoreLocal::get('CashierNo');
     $chkR = $dbc->query($chkQ);
     if ($dbc->num_rows($chkR) == 0) return 0;
-    else return array_pop($dbc->fetch_row($chkR));
+    else {
+        $chkW = $dbc->fetchRow($checkR);
+        return $chkW['drawer_no'];
+    }
 }
 
 /**
