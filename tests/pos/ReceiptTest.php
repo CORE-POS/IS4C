@@ -31,6 +31,17 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
             $receipt = $obj->standalone_receipt('1-1-1', false);
             $this->assertInternalType('string', $receipt);
         }
+
+        $m = new StoreCreditIssuedReceiptMesage();
+        $this->assertNotEquals(0, strlen($m->message(1, '1-1-1', true)));
+
+        $m = new GenericSigSlipMessage();
+        $this->assertNotEquals(0, strlen($m->message(1, '1-1-1', true)));
+
+        $m = new GCBalanceMessage();
+        CoreLocal::set('paycard_response', array('Balance' => 5));
+        $this->assertNotEquals(0, strlen($m->standalone_receipt('1-1-1')));
+        CoreLocal::set('paycard_response', '');
     }
 
     public function testTags()
@@ -316,19 +327,6 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
     {
         $obj = new DefaultReceiptDataFetch();
         $this->assertNotEquals(false, $obj->fetch(1, 1, 1));
-    }
-
-    public function testMessages()
-    {
-        $m = new StoreCreditIssuedReceiptMesage();
-        $this->assertNotEquals(0, strlen($m->message(1, '1-1-1', true)));
-
-        $m = new GenericSigSlipMessage();
-        $this->assertNotEquals(0, strlen($m->message(1, '1-1-1', true)));
-
-        $m = new GCBalanceMessage();
-        CoreLocal::set('paycard_response', array('Balance' => 5));
-        $this->assertNotEquals(0, strlen($m->standalone_receipt('1-1-1')));
     }
 
     public function testHtml()
