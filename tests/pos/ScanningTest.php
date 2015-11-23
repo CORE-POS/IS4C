@@ -85,6 +85,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $norm = new EveryoneSale();
         $row['specialquantity'] = 5;
         $row['upc'] = '0000000004011';
+        $row['mixmatchcode'] = '';
         $info = $norm->priceInfo($row, 1);
         $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
@@ -922,7 +923,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $brd = new PaidOutDept();
         CoreLocal::set('msgrepeat', 0);
         $json = $brd->handle(10, 1, array());
-        $this->assertEquals('100DP10', CoreLocal::get('strEntered'));
+        $this->assertEquals('-100DP10', CoreLocal::get('strEntered'));
         $this->assertEquals('/PaidOutComment.php', substr($json['main_frame'], -19));
         CoreLocal::set('msgrepeat', 0);
         CoreLocal::set('strEntered', '');

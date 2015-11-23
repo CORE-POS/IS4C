@@ -189,7 +189,7 @@ static public function currentDrawer()
     $chkR = $dbc->query($chkQ);
     if ($dbc->num_rows($chkR) == 0) return 0;
     else {
-        $chkW = $dbc->fetchRow($checkR);
+        $chkW = $dbc->fetchRow($chkR);
         return $chkW['drawer_no'];
     }
 }
