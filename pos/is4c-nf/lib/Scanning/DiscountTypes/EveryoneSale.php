@@ -68,7 +68,8 @@ class EveryoneSale extends DiscountType
             $chkR = $tdb->query($chkQ);
             $prevSales = 0;
             if ($tdb->num_rows($chkR) > 0) {
-                $prevSales = array_pop($tdb->fetch_row($chkR));
+                $chkW = $tdb->fetchRow($chkR);
+                $prevSales = $chkW[0];
             }
 
             if ($prevSales >= $row['specialquantity']) {
