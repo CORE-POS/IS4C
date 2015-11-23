@@ -51,9 +51,10 @@ class OrderGenTask extends FannieTask
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $curP = $dbc->prepare('SELECT onHand,cacheEnd FROM InventoryCache WHERE upc=? AND storeID=? AND baseCount > 0');
+        $curP = $dbc->prepare('SELECT onHand,cacheEnd FROM InventoryCache WHERE upc=? AND storeID=? AND baseCount >= 0');
         $catalogP = $dbc->prepare('SELECT * FROM vendorItems WHERE upc=? AND vendorID=?');
         $costP = $dbc->prepare('SELECT cost FROM products WHERE upc=? AND store_id=?');
+        $prodP = $dbc->prepare('SELECT * FROM products WHERE upc=? AND store_id=?');
         $dtP = $dbc->prepare('
             SELECT ' . DTrans::sumQuantity() . '
             FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'dlog
@@ -101,7 +102,18 @@ class OrderGenTask extends FannieTask
                 $itemR = $dbc->getRow($catalogP, array($row['upc'], $row['vid']));
                 // no catalog entry to create an order
                 if ($itemR === false || $itemR['units'] <= 0) {
-                    continue;
+                    $itemR['sku'] = $row['upc'];
+                    $prodW = $dbc->getRow($prodP, array($row['upc'], $row['storeID']));
+                    if ($prodW === false) {
+                        continue;
+                    } else {
+                        $itemR['brand'] = $prodW['brand'];
+                        $itemR['description'] = $prodW['description'];
+                        $itemR['cost'] = $prodW['cost'];
+                        $itemR['saleCost'] = 0;
+                        $itemR['size'] = $prodW['size'];
+                        $itemR['units'] = 1;
+                    }
                 }
 
                 /**
