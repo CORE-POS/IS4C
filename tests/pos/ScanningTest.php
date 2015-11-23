@@ -40,7 +40,8 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('itemPD',0);
         $row = array('normal_price'=>1.99,'special_price'=>'1.49',
                 'specialpricemethod'=>0,
-                'specialquantity'=>0, 'line_item_discountable'=>1);
+                'specialquantity'=>0, 'line_item_discountable'=>1,
+                'department'=>1);
 
         $norm = new DiscountType();
         $info = $norm->priceInfo($row, 1);
