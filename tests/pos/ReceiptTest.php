@@ -32,7 +32,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
             $this->assertInternalType('string', $receipt);
         }
 
-        $m = new StoreCreditIssuedReceiptMesage();
+        $m = new StoreCreditIssuedReceiptMessage();
         $this->assertNotEquals(0, strlen($m->message(1, '1-1-1', true)));
 
         $m = new GenericSigSlipMessage();
