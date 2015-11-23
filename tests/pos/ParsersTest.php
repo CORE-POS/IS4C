@@ -1031,6 +1031,14 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
     }
 
+    function testUPC()
+    {
+        $u = new UPC();
+        foreach (array(UPC::SCANNED_PREFIX, UPC::MACRO_PREFIX, UPC::HID_PREFIX, UPC::GS1_PREFIX) as $prefix) {
+            $this->assertEquals(true, $u->check($prefix . '4011'));
+        }
+    }
+
     // mostly for coverage's sake
     function testBaseClasses()
     {

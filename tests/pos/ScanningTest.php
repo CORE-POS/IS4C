@@ -42,6 +42,16 @@ class ScanningTest extends PHPUnit_Framework_TestCase
                 'specialpricemethod'=>0,
                 'specialquantity'=>0, 'line_item_discountable'=>1);
 
+        $norm = new DiscountType();
+        $info = $norm->priceInfo($row, 1);
+        $this->assertInternalType('array',$info);
+        $this->assertArrayHasKey('regPrice',$info);
+        $this->assertArrayHasKey('unitPrice',$info);
+        $this->assertArrayHasKey('discount',$info);
+        $this->assertArrayHasKey('memDiscount',$info);
+        $norm->addDiscountLine();
+        lttLib::clear();
+
         $norm = new NormalPricing();
         $info = $norm->priceInfo($row, 1);
         $this->assertInternalType('array',$info);
@@ -72,6 +82,23 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(False,$norm->isMemberOnly());
         $this->assertEquals(False,$norm->isStaffOnly());
 
+        $norm = new EveryoneSale();
+        $row['specialquantity'] = 5;
+        $info = $norm->priceInfo($row, 1);
+        $this->assertInternalType('array',$info);
+        $this->assertArrayHasKey('regPrice',$info);
+        $this->assertArrayHasKey('unitPrice',$info);
+        $this->assertArrayHasKey('discount',$info);
+        $this->assertArrayHasKey('memDiscount',$info);
+        $this->assertEquals(1.99,$info['regPrice']);
+        $this->assertEquals(1.49,$info['unitPrice']);
+        $this->assertEquals(0.50,$info['discount']);
+        $this->assertEquals(0,$info['memDiscount']);
+        $this->assertEquals(True,$norm->isSale());
+        $this->assertEquals(False,$norm->isMemberOnly());
+        $this->assertEquals(False,$norm->isStaffOnly());
+        $row['specialquantity'] = 0;
+
         CoreLocal::set('isMember',1);
         $norm = new MemberSale();
         $info = $norm->priceInfo($row, 1);
@@ -91,6 +118,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('isStaff',1);
         $norm = new StaffSale();
         $info = $norm->priceInfo($row, 1);
+        $this->assertEquals($info, $norm->priceInfo($row, 1));
         $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
         $this->assertArrayHasKey('unitPrice',$info);
@@ -103,10 +131,13 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(True,$norm->isSale());
         $this->assertEquals(False,$norm->isMemberOnly());
         $this->assertEquals(True,$norm->isStaffOnly());
+        $norm->addDiscountLine();
+        lttLib::clear();
 
         $row['special_price'] = 0.10;
         $norm = new SlidingMemSale();
         $info = $norm->priceInfo($row, 1);
+        $this->assertEquals($info, $norm->priceInfo($row, 1));
         $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
         $this->assertArrayHasKey('unitPrice',$info);
@@ -119,9 +150,12 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(True,$norm->isSale());
         $this->assertEquals(True,$norm->isMemberOnly());
         $this->assertEquals(False,$norm->isStaffOnly());
+        $norm->addDiscountLine();
+        lttLib::clear();
 
         $norm = new PercentMemSale();
         $info = $norm->priceInfo($row, 1);
+        $this->assertEquals($info, $norm->priceInfo($row, 1));
         $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
         $this->assertArrayHasKey('unitPrice',$info);
@@ -134,6 +168,8 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(True,$norm->isSale());
         $this->assertEquals(True,$norm->isMemberOnly());
         $this->assertEquals(False,$norm->isStaffOnly());
+        $norm->addDiscountLine();
+        lttLib::clear();
 
         CoreLocal::set('isMember',0);
         CoreLocal::set('isStaff',0);
@@ -202,7 +238,31 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $row = $db->fetch_row($r);
         $discount = new NormalPricing();
         $discount->priceInfo($row, 1);
+
         $pm = new BasicPM();
+        $this->assertEquals(false, $pm->addItem($row, 0, $discount));
+        $pm->addItem($row, 1, $discount);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0000000000111';
+        $record['description'] = 'WYNDMERE 5-8 DRAM BOTTLE';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = '';
+        $record['trans_status'] = '';
+        $record['department'] = 103;
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = 1.65;
+        $record['total'] = 1.65;
+        $record['regPrice'] = 1.65;
+        $record['tax'] = 1;
+        $record['discountable'] = 1;
+        $record['mixMatch'] = '499';
+        lttLib::verifyRecord(1, $record, $this);
+
+        lttLib::clear();
+
+        $pm = new NoDiscOnSalesPM();
+        $this->assertEquals(false, $pm->addItem($row, 0, $discount));
         $pm->addItem($row, 1, $discount);
         $record = lttLib::genericRecord();
         $record['upc'] = '0000000000111';
@@ -743,7 +803,9 @@ class ScanningTest extends PHPUnit_Framework_TestCase
             'ArWarnDept',
             'AutoReprintDept',
             'EquityEndorseDept',
-            'EquityWarnDept'
+            'EquityWarnDept',
+            'BottleReturnDept',
+            'PaidOutDept',
         );
 
         $all = AutoLoader::ListModules('SpecialDept',False);
@@ -847,6 +909,22 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEmpty($json['main_frame']);
 
         CoreLocal::set('memberID', '0');
+
+        $brd = new BottleReturnDept();
+        CoreLocal::set('msgrepeat', 0);
+        $json = $brd->handle(10, 1, array());
+        $this->assertEquals('-100DP10', CoreLocal::get('strEntered'));
+        $this->assertEquals('?autoconfirm=1', substr($json['main_frame'], -14));
+        CoreLocal::set('msgrepeat', 0);
+        CoreLocal::set('strEntered', '');
+
+        $brd = new PaidOutDept();
+        CoreLocal::set('msgrepeat', 0);
+        $json = $brd->handle(10, 1, array());
+        $this->assertEquals('100DP10', CoreLocal::get('strEntered'));
+        $this->assertEquals('/PaidOutComment.php', substr($json['main_frame'], -19));
+        CoreLocal::set('msgrepeat', 0);
+        CoreLocal::set('strEntered', '');
     }
 
     function testVariableReWrite()

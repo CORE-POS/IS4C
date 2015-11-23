@@ -717,6 +717,7 @@ static public function receiptFromBuilders($reprint=False,$trans_num='')
 {
     $empNo=0;$laneNo=0;$transNo=0;
     list($empNo, $laneNo, $transNo) = explode('-', $trans_num, 3);
+    self::initDriver();
 
     $FETCH_MOD = self::getFetch();
     $mod = new $FETCH_MOD();

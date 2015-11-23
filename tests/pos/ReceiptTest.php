@@ -10,7 +10,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
     */
     public function testMessages()
     {
-        $mods = AutoLoader::listModules('ReceiptMessage');
+        $mods = AutoLoader::listModules('ReceiptMessage', true);
         $db = Database::tDataConnect();
 
         foreach($mods as $message_class) {
@@ -33,6 +33,114 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    public function testTags()
+    {
+        $rowset = array(
+            0 => array('trans_type'=>'T', 'department'=>0),
+        );
+        $tag = new DefaultReceiptTag();
+        
+        $out = $tag->tag($rowset);
+        $this->assertEquals('Tender', $out[0]['tag']);
+
+        $rowset[0]['department'] = 1;
+        $out = $tag->tag($rowset);
+        $this->assertEquals('Item', $out[0]['tag']);
+
+        $rowset[0]['trans_type'] = 'I';
+        $out = $tag->tag($rowset);
+        $this->assertEquals('Item', $out[0]['tag']);
+
+        $rowset[0]['trans_type'] = 'D';
+        $out = $tag->tag($rowset);
+        $this->assertEquals('Item', $out[0]['tag']);
+
+        $rowset[0]['trans_type'] = 'H';
+        $out = $tag->tag($rowset);
+        $this->assertEquals('Other', $out[0]['tag']);
+
+        $rowset[0]['trans_type'] = '0';
+        $out = $tag->tag($rowset);
+        $this->assertEquals('Other', $out[0]['tag']);
+
+        $rowset[0]['trans_type'] = 'Default Tag';
+        $out = $tag->tag($rowset);
+        $this->assertEquals('Total', $out[0]['tag']);
+    }
+
+    public function testSavings()
+    {
+        foreach (array('DefaultReceiptSavings', 'SeparateReceiptSavings') as $class) {
+            $obj = new $class();
+            $this->assertEquals('', $obj->savingsMessage('1-1-1'));
+        }
+    }
+
+    public function testFormatters()
+    {
+        $item = array('upc'=>'TOTAL', 'total'=>'-1.00');
+        $f = new TotalReceiptFormat();
+        $this->assertEquals(str_repeat(' ', 39) . 'TOTAL   -1.00', $f->format($item));
+        $item['upc'] = 'SUBTOTAL';
+        $this->assertEquals(str_repeat(' ', 36) . 'SUBTOTAL   -1.00', $f->format($item));
+        $item['upc'] = 'TAX';
+        $this->assertEquals(str_repeat(' ', 41) . 'TAX   -1.00', $f->format($item));
+        $item['percentDiscount'] = 10;
+        $item['upc'] = 'DISCOUNT';
+        $this->assertEquals('** 10% Discount Applied **' . str_repeat(' ', 18) . '   -1.00', $f->format($item));
+
+        $f = new TenderReceiptFormat();
+        $item['description'] = 'Cash';
+        $this->assertEquals(str_repeat(' ', 40) . 'Cash    1.00', $f->format($item));
+
+        $f = new OtherReceiptFormat();
+        $item['trans_type'] = '0';
+        $item['description'] = '** FOO';
+        $this->assertEquals(' = foo', $f->format($item));
+        $item['trans_type'] = 'H';
+        $this->assertEquals('** FOO', $f->format($item));
+
+        $f = new DefaultReceiptFormat();
+        $this->assertEquals('', $f->format($item));
+
+        $f = new ItemReceiptFormat();
+        $item['trans_type'] = 'D';
+        $item['description'] = 'OPEN';
+        $item['total'] = '1.00';
+        $item['trans_status'] = 'V';
+        $this->assertEquals('OPEN' . str_repeat(' ', 40) . '    1.00  VD', $f->format($item));
+        $item['trans_status'] = 'R';
+        $this->assertEquals('OPEN' . str_repeat(' ', 40) . '    1.00  RF', $f->format($item));
+        $item['trans_status'] = '';
+        $item['tax'] = 1;
+        $item['foodstamp'] = 1;
+        $this->assertEquals('OPEN' . str_repeat(' ', 40) . '    1.00  TF', $f->format($item));
+        $item['trans_type'] = 'I';
+        $item['trans_status'] = 'D';
+        $item['description'] = '** FOO';
+        $this->assertEquals(' > foo< ', $f->format($item));
+        $item['description'] = 'ITEM';
+        $item['trans_status'] = 'M';
+        $this->assertEquals('ITEM' . str_repeat(' ', 26) . 'Owner Special     1.00    ', $f->format($item));
+        $item['trans_status'] = '';
+        $item['numflag'] = 'SO';
+        $item['charflag'] = 'SO';
+        $this->assertEquals('ITEM' . str_repeat(' ', 40) . '    1.00  TF', $f->format($item));
+        $item['charflag'] = '';
+        $item['scale'] = 1;
+        $item['quantity'] = 1;
+        $item['unitPrice'] = 1;
+        $this->assertEquals('ITEM' . str_repeat(' ', 26) . '1.00 @ 1.00   ' . '    1.00  TF', $f->format($item));
+        $item['scale'] = 0;
+        $item['quantity'] = 2;
+        $item['ItemQtty'] = 2;
+        $this->assertEquals('ITEM' . str_repeat(' ', 26) . '2 @ 0.50' . str_repeat(' ', 6) . '    1.00  TF', $f->format($item));
+        $item['quantity'] = 0;
+        $item['ItemQtty'] = 0;
+        $item['matched'] = 1;
+        $this->assertEquals('ITEM' . str_repeat(' ', 26) . 'w/ vol adj' .str_repeat(' ', 4) . '    1.00  TF', $f->format($item));
+    }
+
     public function testCustMessages()
     {
         $mods = AutoLoader::listModules('CustomerReceiptMessage');
@@ -48,6 +156,16 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
                 $this->assertInternalType('string', $output);
             }
         }
+
+        $mod = new WfcEquityMessage();
+        $str = str_repeat('-', 13) . '100.00 == line2';
+        CoreLocal::set('equityNoticeAmt', 100.00);
+        $out = $mod->message($str);
+        $this->assertEquals(str_repeat(' ', 17) . "EQUITY BALANCE DUE \$0.00\n" . str_repeat(' ', 23) . "PAID IN FULL\n", $out);
+        CoreLocal::set('equityNoticeAmt', 0);
+
+        $mod = new CustomerReceiptMessage();
+        $this->assertEquals('foo', $mod->message('foo'));
     }
 
     public function testDataFetch()
@@ -194,5 +312,65 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    public function testFetch()
+    {
+        $obj = new DefaultReceiptDataFetch();
+        $this->assertNotEquals(false, $obj->fetch(1, 1, 1));
+    }
+
+    public function testMessages()
+    {
+        $m = new StoreCreditIssuedReceiptMesage();
+        $this->assertNotEquals(0, strlen($m->message(1, '1-1-1', true)));
+
+        $m = new GenericSigSlipMessage();
+        $this->assertNotEquals(0, strlen($m->message(1, '1-1-1', true)));
+
+        $m = new GCBalanceMessage();
+        CoreLocal::set('paycard_response', array('Balance' => 5));
+        $this->assertNotEquals(0, strlen($m->standalone_receipt('1-1-1')));
+    }
+
+    public function testHtml()
+    {
+        $obj = new DefaultHtmlEmail();
+        $this->assertEquals('', $obj->receiptHeader());
+        $this->assertEquals('', $obj->receiptFooter());
+    }
+
+    public function testLib()
+    {
+        $ck = ReceiptLib::center_check('foo');
+        $this->assertEquals(str_repeat(' ', 28) . 'foo', $ck);
+
+        ReceiptLib::endorse('foo');
+
+        CoreLocal::set('dualDrawerMode', 1);
+        ReceiptLib::freeDrawer(1);
+        ReceiptLib::freeDrawer(2);
+        $this->assertEquals(0, ReceiptLib::currentDrawer());
+        $emp = CoreLocal::get('CashierNo');
+        CoreLocal::set('CashierNo', 1);
+        $this->assertEquals(true, ReceiptLib::assignDrawer(1, 2));
+        $this->assertEquals(2, ReceiptLib::currentDrawer());
+        ReceiptLib::drawerKick();
+        ReceiptLib::freeDrawer(2);
+        CoreLocal::set('CashierNo', $emp);
+
+        $this->assertNotEquals(0, strlen(ReceiptLib::printChargeFooterCust(mktime(), '1-1-1')));
+        $this->assertNotEquals(0, strlen(ReceiptLib::printChargeFooterStore(mktime(), '1-1-1')));
+        $this->assertNotEquals(0, strlen(ReceiptLib::printCabCoupon(mktime(), '1-1-1')));
+        ReceiptLib::frank(1);
+        ReceiptLib::frankgiftcert(1);
+        ReceiptLib::frankstock(1);
+        ReceiptLib::frankclassreg(1);
+        $this->assertEquals(chr(27).chr(33).chr(5), ReceiptLib::normalFont());
+        $this->assertEquals(chr(27).chr(33).chr(9), ReceiptLib::boldFont());
+        $this->assertNotEquals(0, strlen(ReceiptLib::receiptFromBuilders(false, '1-1-1')));
+
+        $this->assertEquals(array('any'=>'','print'=>''), ReceiptLib::memReceiptMessages(1));
+        $this->assertEquals('EmailPrintHandler', ReceiptLib::emailReceiptMod());
+        $this->assertEquals(false, ReceiptLib::mostRecentReceipt());
+    }
 }
 
