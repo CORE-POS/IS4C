@@ -63,25 +63,13 @@ class InventoryTask extends FannieTask
                 continue;
             }
             $last = array($row['upc'], $row['storeID'], $row['countDate']);
-
-            $dlog = DTransactionsModel::selectDLog($row['countDate'], date('Y-m-d', strtotime('yesterday')));
-            $salesP = $dbc->prepare('
-                SELECT d.upc,
-                    d.store_id,
-                    ' . DTrans::sumQuantity('d') . ' AS qty
-                FROM ' . $dlog . ' AS d
-                    ' . DTrans::joinProducts('d', 'p', 'INNER') . '
-                WHERE p.default_vendor_id > 0
-                    AND d.trans_status <> \'R\'
-                    AND d.upc=?
-                    AND d.store_id=?
-                    AND d.tdate >= ?
-                    AND d.charflag <> \'SO\'
-                GROUP BY d.upc,
-                    d.store_id
-                HAVING qty > 0');
-            $sales = $dbc->getRow($salesP, $last);
-            $sales = $sales && $sales['qty'] ? $sales['qty'] : 0;
+            $sales = 0;
+            $sales += $this->getSales($dbc, $last);
+            $bdInfo = COREPOS\Fannie\API\item\InventoryLib::isBreakdown($dbc, $row['upc']);
+            if ($bdInfo) {
+                $bdSales = $this->getSales($dbc, array($bdInfo['upc'], $row['storeID'], $row['countDate']));
+                $sales += ($bdInfo['units'] * $bdSales);
+            }
 
             $orders = InventoryCacheModel::calculateOrdered($dbc, $row['upc'], $row['countDate']);
 
@@ -118,6 +106,30 @@ class InventoryTask extends FannieTask
             UPDATE InventoryCache
             SET onHand = baseCount + ordered - sold - shrunk
         ');
+    }
+
+    private function getSales($dbc, $args)
+    {
+        $dlog = DTransactionsModel::selectDLog($args[2], date('Y-m-d', strtotime('yesterday')));
+        $salesP = $dbc->prepare('
+            SELECT d.upc,
+                d.store_id,
+                ' . DTrans::sumQuantity('d') . ' AS qty
+            FROM ' . $dlog . ' AS d
+                ' . DTrans::joinProducts('d', 'p', 'INNER') . '
+            WHERE p.default_vendor_id > 0
+                AND d.trans_status <> \'R\'
+                AND d.upc=?
+                AND d.store_id=?
+                AND d.tdate >= ?
+                AND d.charflag <> \'SO\'
+            GROUP BY d.upc,
+                d.store_id
+            HAVING qty > 0');
+        $sales = $dbc->getRow($salesP, $args);
+        $sales = $sales && $sales['qty'] ? $sales['qty'] : 0;
+
+        return $sales;
     }
 }
 

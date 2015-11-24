@@ -100,6 +100,18 @@ class OrderGenTask extends FannieTask
                     $orders[$row['vid']] = $poID;
                 }
                 $itemR = $dbc->getRow($catalogP, array($row['upc'], $row['vid']));
+
+                // If the item is a breakdown, get its source package
+                // and multiply the case size to reflect total brokendown units
+                $bdInfo = COREPOS\Fannie\API\item\InventoryLib::isBreakdown($dbc, $row['upc']);
+                if ($bdInfo) {
+                    $itemR2 = $dbc->getRow($catalogP, array($bdInfo['upc'], $row['vid']));
+                    if ($itemR2) {
+                        $itemR = $itemR2;
+                        $itemR['units'] *= $bdInfo['units'];
+                    }
+                }
+
                 // no catalog entry to create an order
                 if ($itemR === false || $itemR['units'] <= 0) {
                     $itemR['sku'] = $row['upc'];
