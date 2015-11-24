@@ -5,6 +5,21 @@
 class PagesTest extends PHPUnit_Framework_TestCase
 {
 
+    public function testLib()
+    {
+        $classes = array('BasicCorePage', 'InputCorePage', 'NoInputCorePage');
+        foreach ($classes as $class) {
+            $obj = new $class();
+            $this->assertNotEquals(0, strlen($obj->getHeader()));
+            $this->assertNotEquals(0, strlen($obj->getFooter()));
+        }
+
+        $obj = new BasicCorePage();
+        $obj->mask_input(true);
+        $this->assetEquals(true, strstr($obj->getHeader(), 'type="password"'));
+        $obj->mask_input(false);
+    }
+
     public function testDrawing()
     {
         CoreLocal::set('Debug_Redirects', 1, True);

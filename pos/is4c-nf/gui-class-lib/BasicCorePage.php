@@ -421,4 +421,3 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
 
 */
 
-?>

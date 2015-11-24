@@ -57,4 +57,3 @@ class NoInputCorePage extends BasicCorePage
     }
 }
 
-?>
