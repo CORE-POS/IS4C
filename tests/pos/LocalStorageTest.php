@@ -67,4 +67,12 @@ class LocalStorageTest extends PHPUnit_Framework_TestCase
         }
 
     }
+
+    public function testCoreLocal()
+    {
+        CoreLocal::refresh();
+        CoreLocal::migrateSettings();
+        $json = CoreLocal::convertIniPhpToJson();
+        $this->assertInternalType('array', json_decode($json, true));
+    }
 }

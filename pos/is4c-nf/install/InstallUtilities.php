@@ -1093,6 +1093,7 @@ class InstallUtilities extends LibraryClass
         
         $sample_data = array(
             'couponcodes',
+            'customReceipt',
             'globalvalues',
             'parameters',
             'tenders',

@@ -43,6 +43,8 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(array(1,2), MiscLib::getNumbers('1, 2'));
 
         $this->assertEquals(12.34, MiscLib::centStrToDouble('1234'));
+        $this->assertEquals(0, MiscLib::centStrToDouble(''));
+        $this->assertEquals(-12.34, MiscLib::centStrToDouble('-1234'));
     }
 
     public function testDatabase()
@@ -124,7 +126,10 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         }
         $db->query('truncate table suspended');
 
+        $p = CoreLocal::set('PluginList');
+        CoreLocal::set('PluginList', array('Paycards'));
         $this->assertEquals(1, Database::testremote());
+        CoreLocal::set('PluginList', $p);
     }
 
     public function testAuthenticate()
@@ -297,6 +302,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
     public function testDisplayLib()
     {
+        CoreLocal::set('FooterModules', ''); // force re-init
         $footer = DisplayLib::printfooter();
         $this->assertInternalType('string',$footer);
         $this->assertNotEmpty($footer);
@@ -380,6 +386,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('0.50 lb',$both['display']);
         $this->assertEquals('4011',$both['upc']);
 
+        CoreLocal::set('screenLines', ''); // force re-init
         $list = DisplayLib::listItems(0,0);
         $this->assertInternalType('string',$list);
 
@@ -389,6 +396,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $draw = DisplayLib::drawItems(0,11,0);
         $this->assertInternalType('string',$draw);
 
+        CoreLocal::set('screenLines', ''); // force re-init
         $lp = DisplayLib::lastpage();
         $this->assertInternalType('string',$lp);
 

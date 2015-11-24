@@ -371,5 +371,11 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(array('any'=>'','print'=>''), ReceiptLib::memReceiptMessages(1));
         $this->assertEquals('EmailPrintHandler', ReceiptLib::emailReceiptMod());
     }
+
+    public function testTenderReport()
+    {
+        $out = TenderReport::get();
+        $this->assertNotEquals(0, strlen($out));
+    }
 }
 
