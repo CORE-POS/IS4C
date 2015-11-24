@@ -39,6 +39,7 @@ class VendorBreakdownsModel extends BasicModel
 
     public function getSplit($size)
     {
+        $size = strtoupper($size);
         $split_factor = false;
         $unit_size = '';
         if (preg_match('/^\d+$/', $size)) {
