@@ -126,7 +126,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         }
         $db->query('truncate table suspended');
 
-        $p = CoreLocal::set('PluginList');
+        $p = CoreLocal::get('PluginList');
         CoreLocal::set('PluginList', array('Paycards'));
         $this->assertEquals(1, Database::testremote());
         CoreLocal::set('PluginList', $p);

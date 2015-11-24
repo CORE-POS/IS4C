@@ -38,6 +38,9 @@ class DefaultTenderReport extends TenderReport {
 static public function get()
 {
     $DESIRED_TENDERS = CoreLocal::get("TRDesiredTenders");
+    if (!is_array($DESIRED_TENDERS)) {
+        $DESIRED_TENDERS = array();
+    }
 
     $db_a = Database::mDataConnect();
 

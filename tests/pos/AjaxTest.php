@@ -11,9 +11,11 @@ class AjaxTest extends PHPUnit_Framework_TestCase
         $obj->run();
 
         ob_start();
+        CoreLocal::set('cabReference', '1-1-1');
         AjaxCallback::unitTest('AjaxCabReceipt');
         $output = ob_get_clean();
         $this->assertEquals('Done', $output);
+        CoreLocal::set('cabReference', '');
         ob_start();
         AjaxCallback::unitTest('AjaxDecision');
         $output = ob_get_clean();
