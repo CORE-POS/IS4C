@@ -110,6 +110,8 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(' = foo', $f->format($item));
         $item['trans_type'] = 'H';
         $this->assertEquals('** FOO', $f->format($item));
+        $item['trans_type'] = 'Z';
+        $this->assertEquals('', $f->format($item));
 
         $f = new DefaultReceiptFormat();
         $this->assertEquals('', $f->format($item));

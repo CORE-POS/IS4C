@@ -20,6 +20,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1.99, MiscLib::truncate2(1.99));
         $this->assertEquals(1.99, MiscLib::truncate2("1.99"));
         $this->assertEquals(1.35, MiscLib::truncate2("1.345"));
+        $this->assertEquals(0.00, MiscLib::truncate2(""));
 
         $hostCheck = MiscLib::pingport(CoreLocal::get('localhost'),CoreLocal::get('DBMS'));
         $this->assertInternalType('integer', $hostCheck);
@@ -31,6 +32,17 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         if ($scale !== 0){
             $this->assertInstanceOf('ScaleDriverWrapper', $scale);
         }
+
+        MiscLib::goodBeep();
+        MiscLib::rePoll();
+        MiscLib::twoPairs();
+
+        $this->assertEquals(array(1,2), MiscLib::getNumbers(array(1,2)));
+        $this->assertEquals(array(1,2), MiscLib::getNumbers('1,2'));
+        $this->assertEquals(array(1,2), MiscLib::getNumbers('1 2'));
+        $this->assertEquals(array(1,2), MiscLib::getNumbers('1, 2'));
+
+        $this->assertEquals(12.34, MiscLib::centStrToDouble('1234'));
     }
 
     public function testDatabase()
@@ -110,6 +122,9 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             $this->assertArrayHasKey($column, $row, 'Suspended missing ' . $column);
             $this->assertEquals($value, $row[$column], 'Suspended mismatch on column ' . $column);
         }
+        $db->query('truncate table suspended');
+
+        $this->assertEquals(1, Database::testremote());
     }
 
     public function testAuthenticate()
@@ -841,6 +856,18 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         DiscountModule::updateDiscount($one, false);
         $this->assertEquals(1, CoreLocal::get('percentDiscount'));
     }
+    
+    public function testNotifier()
+    {
+        $n = new Notifier();
+        $this->assertEquals('', $n->draw());
+        $n->transactionReset();
+    }
 
+    public function testItemNotFound()
+    {
+        $inf = new ItemNotFound();
+        $this->assertNotEquals('', $inf->handle('4011', array()));
+    }
 }
 

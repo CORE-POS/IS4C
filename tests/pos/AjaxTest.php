@@ -4,6 +4,13 @@
  */
 class AjaxTest extends PHPUnit_Framework_TestCase
 {
+    public function testBase()
+    {
+        $obj = new AjaxCallback();
+        $this->assertEquals('json', $obj->encoding());
+        $obj->run();
+    }
+    
     public function testParser()
     {
         $ajax = new AjaxParser();

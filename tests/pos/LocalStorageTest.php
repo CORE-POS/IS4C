@@ -60,6 +60,10 @@ class LocalStorageTest extends PHPUnit_Framework_TestCase
             $this->assertInternalType('boolean',$isNot);
             $this->assertEquals(True,$is);
             $this->assertEquals(False,$isNot);
+
+            foreach ($obj as $key => $val) {
+                // is iterable
+            }
         }
 
     }

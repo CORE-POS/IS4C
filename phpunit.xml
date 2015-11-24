@@ -31,6 +31,7 @@
             <file>tests/pos/ParsersTest.php</file>
             <file>tests/pos/PluginsTest.php</file>
             <file>tests/pos/PosModelsTest.php</file>
+            <file>tests/pos/PrintHandlersTest.php</file>
             <file>tests/pos/ReceiptTest.php</file>
             <file>tests/pos/SQLManagerTest.php</file>
             <file>tests/pos/ScaleTest.php</file>
