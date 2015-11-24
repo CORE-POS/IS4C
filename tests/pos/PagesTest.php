@@ -16,7 +16,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
 
         $obj = new BasicCorePage();
         $obj->hide_input(true);
-        $this->assetEquals(true, strstr($obj->getHeader(), 'type="password"'));
+        $this->assertEquals(true, strstr($obj->getHeader(), 'type="password"'));
         $obj->hide_input(false);
     }
 
