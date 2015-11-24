@@ -9,14 +9,18 @@ class PagesTest extends PHPUnit_Framework_TestCase
     {
         $classes = array('BasicCorePage', 'InputCorePage', 'NoInputCorePage');
         foreach ($classes as $class) {
+            ob_start();
             $obj = new $class();
+            $no_draw = ob_get_clean();
             $this->assertNotEquals(0, strlen($obj->getHeader()));
             $this->assertNotEquals(0, strlen($obj->getFooter()));
         }
 
-        $obj = new BasicCorePage();
+        ob_start();
+        $obj = new InputCorePage();
+        $no_draw = ob_get_clean();
         $obj->hide_input(true);
-        $this->assertEquals(true, strstr($obj->getHeader(), 'type="password"'));
+        $this->assertEquals(true, (false !== strpos($obj->getHeader(), 'type="password"')));
         $obj->hide_input(false);
     }
 
