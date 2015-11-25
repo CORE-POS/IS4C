@@ -75,6 +75,7 @@ class BasicModel
     protected $meta_types = array(
         'MONEY' => array('default'=>'DECIMAL(10,2)','mssql'=>'MONEY'),
         'BIGINT UNSIGNED' => array('default'=>'BIGINT UNSIGNED', 'mssql'=>'BIGINT'),
+        'REAL' => array('default'=>'DOUBLE'),
     );
 
     /**
