@@ -1190,6 +1190,7 @@ class InstallUtilities extends LibraryClass
             $obj = new $class($db);
             $errors[] = $obj->createIfNeeded($name);
         }
+        var_dump($errors);
         
         /**
           Not using models for receipt views. Hopefully many of these
