@@ -80,11 +80,11 @@ class BigGroupPM extends PriceMethod
 
         // count existing sets
         $matches = 0;
-        $mQ = "SELECT sum(matched) FROM localtemptrans WHERE
+        $matchQ = "SELECT sum(matched) FROM localtemptrans WHERE
             left(mixmatch,11)='{$stem}_'";
-        $mR = $dbt->query($mQ);
-        if ($dbt->num_rows($mR) > 0)
-            $matches = array_pop($dbt->fetch_row($mR));
+        $matchR = $dbt->query($matchQ);
+        if ($dbt->num_rows($matchR) > 0)
+            $matches = array_pop($dbt->fetch_row($matchR));
         $sets -= $matches;
 
         // this means the current item
@@ -162,4 +162,3 @@ class BigGroupPM extends PriceMethod
     }
 }
 
-?>

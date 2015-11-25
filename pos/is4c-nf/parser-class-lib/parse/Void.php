@@ -62,9 +62,9 @@ class Void extends Parser
                 DisplayLib::standardClearButton()
             );
         } else {
-            $id = CoreLocal::get("currentid");
+            $trans_id = CoreLocal::get("currentid");
 
-            $status = PrehLib::checkstatus($id);
+            $status = PrehLib::checkstatus($trans_id);
             $this->discounttype = $status['discounttype'];
             $this->discountable = $status['discountable'];
             $this->caseprice = $status['caseprice'];
@@ -82,7 +82,7 @@ class Void extends Parser
             */
             if ($status['voided'] == 2) {
                 // void preceeding item
-                $ret = $this->voiditem($id - 1, $ret);
+                $ret = $this->voiditem($trans_id - 1, $ret);
             } else if ($status['voided'] == 3 || $status['voided'] == 6 || $status['voided'] == 8) {
                 $ret['output'] = DisplayLib::boxMsg(
                     _("Cannot void this entry"),
@@ -102,7 +102,7 @@ class Void extends Parser
                     DisplayLib::standardClearButton()
                 );
             } else {
-                $ret = $this->voiditem($id, $ret);
+                $ret = $this->voiditem($trans_id, $ret);
             }
         }
 
@@ -141,9 +141,9 @@ class Void extends Parser
                       WHERE
                         trans_id = " . ((int)$item_num);
 
-            $db = Database::tDataConnect();
-            $result = $db->query($query);
-            $num_rows = $db->num_rows($result);
+            $dbc = Database::tDataConnect();
+            $result = $dbc->query($query);
+            $num_rows = $dbc->num_rows($result);
 
             if ($num_rows == 0) {
                 $json['output'] = DisplayLib::boxMsg(
@@ -154,7 +154,7 @@ class Void extends Parser
                 );
                 return $json;
             } else {
-                $row = $db->fetch_array($result);
+                $row = $dbc->fetch_array($result);
 
                 $this->discounttype = $row['discounttype'];
                 $this->discountable = $row['discountable'];
@@ -211,9 +211,9 @@ class Void extends Parser
             department,regPrice,tax,volDiscType,volume,mixMatch,matched,
             trans_status
                    from localtemptrans where trans_id = ".$item_num;
-        $db = Database::tDataConnect();
-        $result = $db->query($query);
-        $row = $db->fetch_array($result);
+        $dbc = Database::tDataConnect();
+        $result = $dbc->query($query);
+        $row = $dbc->fetch_array($result);
 
         $upc = $row["upc"];
         $VolSpecial = $row["VolSpecial"];
@@ -237,7 +237,7 @@ class Void extends Parser
         $cost = -1 * $row['cost'];
         $numflag = $row["numflag"];
         $charflag = $row["charflag"];
-        $mm = $row['mixMatch'];
+        $mixmatch = $row['mixMatch'];
         $matched = $row['matched'];
 
         $foodstamp = 0;
@@ -269,8 +269,8 @@ class Void extends Parser
           the transaction. Restrict voids if cash is involved.
         */
         if (CoreLocal::get("tenderTotal") < 0 && (-1 * $total) > CoreLocal::get("runningTotal") - CoreLocal::get("taxTotal")) {
-            $cash = $db->query("SELECT total FROM localtemptrans WHERE trans_subtype='CA' AND total <> 0");
-            if ($db->num_rows($cash) > 0) {
+            $cash = $dbc->query("SELECT total FROM localtemptrans WHERE trans_subtype='CA' AND total <> 0");
+            if ($dbc->num_rows($cash) > 0) {
                 $json['output'] = DisplayLib::boxMsg(
                     _("Item already paid for"),
                     '',
@@ -282,7 +282,7 @@ class Void extends Parser
         }
 
         $update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
-        $db->query($update);
+        $dbc->query($update);
 
         TransRecord::addRecord(array(
             'upc' => $upc, 
@@ -306,7 +306,7 @@ class Void extends Parser
             'volDiscType' => $row["volDiscType"], 
             'volume' => $row["volume"], 
             'VolSpecial' => $VolSpecial, 
-            'mixMatch' => $mm, 
+            'mixMatch' => $mixmatch, 
             'matched' => $matched, 
             'voided' => 1, 
             'cost' => $cost, 
@@ -365,7 +365,7 @@ class Void extends Parser
             }
         }
 
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
 
         $query = "SELECT SUM(ItemQtty) AS voidable, 
                     SUM(quantity) AS vquantity,
@@ -378,8 +378,8 @@ class Void extends Parser
         }
         $query .= ' GROUP BY upc';
 
-        $result = $db->query($query);
-        $num_rows = $db->num_rows($result);
+        $result = $dbc->query($query);
+        $num_rows = $dbc->num_rows($result);
         if ($num_rows == 0 ) {
             $json['output'] = DisplayLib::boxMsg(
                 _("Item not found: ") . $upc,
@@ -390,7 +390,7 @@ class Void extends Parser
             return $json;
         }
 
-        $row = $db->fetch_array($result);
+        $row = $dbc->fetch_array($result);
 
         if (($row["scale"] == 1) && $weight > 0) {
             $quantity = $weight - CoreLocal::get("tare");
@@ -476,8 +476,8 @@ class Void extends Parser
             $query_upc .= ' AND voided=0 ORDER BY total';
         }
 
-        $result = $db->query($query_upc);
-        $row = $db->fetch_array($result);
+        $result = $dbc->query($query_upc);
+        $row = $dbc->fetch_array($result);
 
         $foodstamp = MiscLib::nullwrap($row["foodstamp"]);
         $discounttype = MiscLib::nullwrap($row["discounttype"]);
@@ -501,10 +501,10 @@ class Void extends Parser
         } elseif (((CoreLocal::get("isMember") == 1 && $row["discounttype"] == 2) || 
             (CoreLocal::get("isStaff") != 0 && $row["discounttype"] == 4)) && 
             ($row["unitPrice"] == $row["regPrice"])) {
-            $db_p = Database::pDataConnect();
+            $dbc_p = Database::pDataConnect();
             $query_p = "select special_price from products where upc = '".$upc."'";
-            $result_p = $db_p->query($query_p);
-            $row_p = $db_p->fetch_array($result_p);
+            $result_p = $dbc_p->query($query_p);
+            $row_p = $dbc_p->fetch_array($result_p);
             
             $unitPrice = $row_p["special_price"];
         }
@@ -542,10 +542,10 @@ class Void extends Parser
             }
         }
     
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
         if (CoreLocal::get("tenderTotal") < 0 && (-1 * $total) > CoreLocal::get("runningTotal") - CoreLocal::get("taxTotal")) {
-            $cash = $db->query("SELECT total FROM localtemptrans WHERE trans_subtype='CA' AND total <> 0");
-            if ($db->num_rows($cash) > 0) {
+            $cash = $dbc->query("SELECT total FROM localtemptrans WHERE trans_subtype='CA' AND total <> 0");
+            if ($dbc->num_rows($cash) > 0) {
                 $json['output'] = DisplayLib::boxMsg(
                     _("Item already paid for"),
                     '',
@@ -558,7 +558,7 @@ class Void extends Parser
         if ($quantity != 0) {
 
             $update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
-            $db->query($update);
+            $dbc->query($update);
 
             TransRecord::addRecord(array(
                 'upc' => $upc, 
@@ -594,31 +594,40 @@ class Void extends Parser
                 CoreLocal::set("ttlflag",0);
             }
 
-            $db = Database::pDataConnect();
-            $chk = $db->query("SELECT deposit FROM products WHERE upc='$upc'");
-            if ($db->num_rows($chk) > 0) {
-                $w = $db->fetch_row($chk);
-                $dpt = $w['deposit'];
-                if ($dpt <= 0) {
-                    return $json; // no deposit found
-                }
-                $db = Database::tDataConnect();
-                $dupc = str_pad((int)$dpt,13,'0',STR_PAD_LEFT);
-                $id = $db->query(sprintf("SELECT trans_id FROM localtemptrans
-                    WHERE upc='%s' AND voided=0 AND quantity=%d",
-                    $dupc,(-1*$quantity)));
-                if ($db->num_rows($id) > 0) {
-                    $w = $db->fetch_row($id);
-                    $trans_id = $w['trans_id'];
-                    // pass an empty array instead of $json so
-                    // voiding the deposit doesn't result in an error
-                    // message. 
-                    $this->voidupc((-1*$quantity)."*".$dupc, array(), $trans_id);
-                }
-            }
+            $this->voidDeposit($upc, $quantity);
         }
 
         return $json;
+    }
+
+    private function voidDeposit($upc, $quantity)
+    {
+        $dbc = Database::pDataConnect();
+        $chk = $dbc->query("SELECT deposit FROM products WHERE upc='$upc'");
+        if ($dbc->num_rows($chk) > 0) {
+            $row = $dbc->fetch_row($chk);
+            $dpt = $row['deposit'];
+            if ($dpt <= 0) {
+                return false; // no deposit found
+            }
+            $dbc = Database::tDataConnect();
+            $dupc = str_pad((int)$dpt,13,'0',STR_PAD_LEFT);
+            $trans_id = $dbc->query(sprintf("SELECT trans_id FROM localtemptrans
+                WHERE upc='%s' AND voided=0 AND quantity=%d",
+                $dupc,(-1*$quantity)));
+            if ($dbc->num_rows($trans_id) > 0) {
+                $row = $dbc->fetch_row($trans_id);
+                $trans_id = $row['trans_id'];
+                // pass an empty array instead of $json so
+                // voiding the deposit doesn't result in an error
+                // message. 
+                $this->voidupc((-1*$quantity)."*".$dupc, array(), $trans_id);
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static $adminLoginMsg = 'Void Limit Exceeded. Login to continue.';
@@ -652,5 +661,3 @@ class Void extends Parser
     }
 }
 
-
-?>

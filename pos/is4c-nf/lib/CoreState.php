@@ -678,11 +678,11 @@ static public function loadData()
  */
 static public function customReceipt()
 {
-    $db = Database::pDataConnect(); 
+    $dbc = Database::pDataConnect(); 
     $headerQ = "select text,type,seq from customReceipt order by seq";
-    $headerR = $db->query($headerQ);
+    $headerR = $dbc->query($headerQ);
     $counts = array();
-    while($headerW = $db->fetch_row($headerR)) {
+    while($headerW = $dbc->fetch_row($headerR)) {
         $typeStr = $headerW['type'];
         $numeral = $headerW['seq']+1;
         $text = $headerW['text'];
@@ -714,20 +714,13 @@ static public function getCustomerPref($key)
         return '';
     }
 
-    $db = Database::pDataConnect();
-    $q = sprintf('SELECT pref_value FROM custPreferences WHERE
-        card_no=%d AND pref_key=\'%s\'',
-        CoreLocal::get('memberID'),$key);
-    $r = $db->query($q);
-    if ($r === False) {
-        return '';
-    }
-    if ($db->num_rows($r) == 0) {
-        return '';
-    }
+    $dbc = Database::pDataConnect();
+    $prep = $dbc->prepare('SELECT pref_value FROM custPreferences WHERE
+        card_no=? AND pref_key=?');
+    $args = array(CoreLocal::get('memberID'),$key);
+    $val = $dbc->getValue($prep, $args);
 
-    $row = $db->fetch_row($r);
-    return $row['pref_value'];
+    return $val === false ? '' : $val;
 }
 
 static public function cashierLogin($transno=False, $age=0)
@@ -746,11 +739,11 @@ static public function cashierLogin($transno=False, $age=0)
 
 static public function loadParams()
 {
-    $db = Database::pDataConnect();
+    $dbc = Database::pDataConnect();
 
     // newer & optional table. should not fail
     // if it's missing
-    if (!$db->table_exists('parameters')) {
+    if (!$dbc->table_exists('parameters')) {
         return;
     }
     

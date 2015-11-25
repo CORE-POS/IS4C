@@ -213,52 +213,10 @@ static public function getAllIPs()
     $ret = array();
     if (strstr(strtoupper(PHP_OS), 'WIN')) {
         // windows
-        $cmd = "ipconfig.exe";
-        exec($cmd, $output_lines, $retval);
-        foreach ($output_lines as $line) {
-            if (preg_match('/IP Address[\. ]+?: ([\d\.]+)/', $line, $matches)) {
-                $ret[] = $matches[1];
-            } elseif (preg_match('/IPv4 Address[\. ]+?: ([\d\.]+)/', $line, $matches)) {
-                $ret[] = $matches[1];
-            }
-        }
+        $ret = self::getWindowsIPs();
     } else {
         // unix-y system
-        $cmd = '/sbin/ifconfig';
-        $count = 0;
-        // try to locate ifconfig
-        while (!file_exists($cmd)) {
-            switch ($count) {
-                case 0:
-                    $cmd = '/usr/sbin/ifconfig';
-                    break;
-                case 1:
-                    $cmd = '/usr/bin/ifconfig';
-                    break;
-                case 2:
-                    $cmd = '/bin/ifconfig';
-                    break;
-                case 3:
-                    $cmd = '/usr/local/sbin/ifconfig';
-                    break;
-                case 4:
-                    $cmd = '/usr/local/bin/ifconfig';
-                    break;
-            }
-            $count++;
-            // give up; hope $PATH is correct
-            if ($count <= 5) {
-                $cmd = 'ifconfig';
-                break;
-            }
-        }
-
-        exec($cmd, $output_lines, $retval);
-        foreach ($output_lines as $line) {
-            if (preg_match('/inet addr:([\d\.]+?) /', $line, $matches)) {
-                $ret[] = $matches[1];
-            }
-        }
+        $ret = self::getLinuxIPs();
     }
 
     /**
@@ -273,6 +231,13 @@ static public function getAllIPs()
         }
     }
     
+    $ret = self::globalIPs($ret);
+
+    return $ret;
+}
+
+static private function globalIPs($ret)
+{
     /**
       $_SERVER may simply contain an IP address
     */
@@ -290,6 +255,44 @@ static public function getAllIPs()
         $resolved = gethostbyname($sname);
         if (preg_match('/^[\d\.+]$/', $resolved) && !in_array($resolved, $ret)) {
             $ret[] = $resolved;
+        }
+    }
+
+    return $ret;
+}
+
+static private function getWindowsIPs()
+{
+    $cmd = "ipconfig.exe";
+    exec($cmd, $output_lines, $retval);
+    $ret = array();
+    foreach ($output_lines as $line) {
+        if (preg_match('/IP Address[\. ]+?: ([\d\.]+)/', $line, $matches)) {
+            $ret[] = $matches[1];
+        } elseif (preg_match('/IPv4 Address[\. ]+?: ([\d\.]+)/', $line, $matches)) {
+            $ret[] = $matches[1];
+        }
+    }
+
+    return $ret;
+}
+
+static private function getLinuxIPs()
+{
+    $bins = array('/sbin/', '/usr/sbin/', '/usr/bin/', '/bin/', '/usr/local/sbin/', '/usr/local/bin/');
+    $bins = array_filter($bins, function($i){ return file_exists($i . 'ifconfig'); });
+    if (count($bins) > 0) {
+        $cmd = array_shift($bins) . 'ifconfig';
+    } else {
+        // give up; hope $PATH is correct
+        $cmd = 'ifconfig';
+    }
+
+    exec($cmd, $output_lines, $retval);
+    $ret = array();
+    foreach ($output_lines as $line) {
+        if (preg_match('/inet addr:([\d\.]+?) /', $line, $matches)) {
+            $ret[] = $matches[1];
         }
     }
 

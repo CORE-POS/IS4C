@@ -140,4 +140,3 @@ class MoreThanQttyPM extends PriceMethod {
     }
 }
 
-?>

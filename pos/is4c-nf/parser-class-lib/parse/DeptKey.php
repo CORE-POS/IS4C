@@ -33,23 +33,29 @@ class DeptKey extends Parser
         return false;
     }
 
-    public function parse($str)
+    private function strToPieces($str)
     {
-        $my_url = MiscLib::base_url();
-
         $split = explode("DP",$str);
         $dept = $split[1];
         $amt = $split[0];
         if (strstr($amt, '.')) {
             $amt = round($amt * 100);
         }
+
+        return array($amt, $dept);
+    }
+
+    public function parse($str)
+    {
+        $my_url = MiscLib::base_url();
         $ret = $this->default_json();
+        list($amt, $dept) = $this->strToPieces($str);
 
         /**
           This "if" is the new addition to trigger the
           department select screen
         */
-        if (empty($split[1])) {
+        if (empty($dept)) {
             // no department specified, just amount followed by DP
             
             // maintain refund if needed
@@ -62,7 +68,7 @@ class DeptKey extends Parser
 
             // go to the department select screen
             $ret['main_frame'] = $my_url.'gui-modules/deptlist.php';
-        } else if (CoreLocal::get("refund")==1 && CoreLocal::get("refundComment") == "") {
+        } elseif (CoreLocal::get("refund")==1 && CoreLocal::get("refundComment") == "") {
             if (CoreLocal::get("SecurityRefund") > 20) {
                 $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=RefundAdminLogin";
             } else {
@@ -72,23 +78,37 @@ class DeptKey extends Parser
         }
 
         /* apply any appropriate special dept modules */
+        $deptmods = $this->getMods();
+        $index = (int)($dept/10);
+        $ret = $this->applyMods($deptmods, $index, $ret);
+        
+        if (!$ret['main_frame']) {
+            $ret = PrehLib::deptkey($amt, $dept, $ret);
+        }
+
+        return $ret;
+    }
+
+    private function getMods()
+    {
         $deptmods = CoreLocal::get('SpecialDeptMap');
-        $db = Database::pDataConnect();
-        if (!is_array($deptmods) && $db->table_exists('SpecialDeptMap')) {
-            $model = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($db);
+        $dbc = Database::pDataConnect();
+        if (!is_array($deptmods) && $dbc->table_exists('SpecialDeptMap')) {
+            $model = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($dbc);
             $deptmods = $model->buildMap();
             CoreLocal::set('SpecialDeptMap', $deptmods);
         }
-        $index = (int)($dept/10);
+
+        return $deptmods;
+    }
+
+    private function applyMods($deptmods, $index, $ret)
+    {
         if (is_array($deptmods) && isset($deptmods[$index])) {
             foreach($deptmods[$index] as $mod) {
                 $obj = new $mod();
                 $ret = $obj->handle($dept,$amt/100,$ret);
             }
-        }
-        
-        if (!$ret['main_frame']) {
-            $ret = PrehLib::deptkey($amt, $dept, $ret);
         }
 
         return $ret;

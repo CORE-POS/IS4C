@@ -21,24 +21,25 @@
 
 *********************************************************************************/
 
-class DefaultTender extends Parser {
-
-    function check($str){
+class DefaultTender extends Parser 
+{
+    public function check($str){
         if (!is_numeric(substr($str,-2)) && 
-            is_numeric(substr($str,0,strlen($str)-2)))
-            return True;
-        elseif (strlen($str) == 2 && !is_numeric($str)){
-            $db = Database::pDataConnect();
-            $q = "SELECT TenderCode FROM tenders WHERE TenderCode='$str'";
-            $r = $db->query($q);
-            if ($db->num_rows($r) > 0)
-                return True;
+            is_numeric(substr($str,0,strlen($str)-2))) {
+            return true;
+        } elseif (strlen($str) == 2 && !is_numeric($str)){
+            $dbc = Database::pDataConnect();
+            $res = $dbc->query("SELECT TenderCode FROM tenders WHERE TenderCode='$str'");
+            if ($dbc->num_rows($res) > 0) {
+                return true;
+            }
         }
-        return False;
+        return false;
     }
 
     function parse($str)
     {
+        $ret = $this->default_json();
         /**
           If customer card is available, prevent other tenders
           unless specficially allowed (e.g., coupons).
@@ -54,7 +55,6 @@ class DefaultTender extends Parser {
                     'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
                 ));
                 CoreLocal::set('strEntered', 'CCFROMCACHE');
-                $ret = $this->default_json();
                 $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/boxMsg2.php';
 
                 return $ret;
@@ -64,51 +64,36 @@ class DefaultTender extends Parser {
         if (strlen($str) > 2){
             $left = substr($str,0,strlen($str)-2);
             $right = substr($str,-2);
-            $ret = PrehLib::tender($right,$left);
-            return $ret;
-        }
-        else {
-            $ret = $this->default_json();
-
+            return PrehLib::tender($right,$left);
+        } else {
             $base_object = new TenderModule($str, False);
-            $tender_object = 0;
+            $objs = array($base_object);
             $map = CoreLocal::get("TenderMap");
             if (is_array($map) && isset($map[$str])){
                 $class = $map[$str];
                 $tender_object = new $class($str, False);
+                $objs[] = $tender_object;
             }
 
-            $errors = $base_object->ErrorCheck();
-            if ($errors !== True){
-                $ret['output'] = $errors;
-                return $ret;
-            }
-
-            if (is_object($tender_object)){
-                $errors = $tender_object->ErrorCheck();
-                if ($errors !== True){
+            foreach ($objs as $object) {
+                $errors = $object->ErrorCheck();
+                if ($errors !== true){
                     $ret['output'] = $errors;
                     return $ret;
                 }
             }
-        
-            if (is_object($tender_object) && !$tender_object->AllowDefault()){
-                $ret['output'] = $tender_object->DisabledPrompt();
-                return $ret;
-            }
-            elseif(is_object($tender_object) && $tender_object->AllowDefault()){
-                CoreLocal::set('RepeatAgain', true);
-                $ret['main_frame'] = $tender_object->DefaultPrompt();
-                return $ret;
-            }
-            else if ($base_object->AllowDefault()){
-                CoreLocal::set('RepeatAgain', true);
-                $ret['main_frame'] = $base_object->DefaultPrompt();
-                return $ret;
-            }
-            else {
-                $ret['output'] = $base_object->DisabledPrompt();
-                return $ret;
+            
+            $objs = array_reverse($objs);
+
+            foreach ($objs as $object) {
+                if (!$object->AllowDefault()) {
+                    $ret['output'] = $object->DisabledPrompt();
+                    return $ret;
+                } else {
+                    CoreLocal::set('RepeatAgain', true);
+                    $ret['main_frame'] = $object->DefaultPrompt();
+                    return $ret;
+                }
             }
         }
     }
@@ -136,4 +121,3 @@ class DefaultTender extends Parser {
     }
 }
 
-?>

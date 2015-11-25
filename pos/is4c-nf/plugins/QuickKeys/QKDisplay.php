@@ -131,34 +131,10 @@ class QKDisplay extends NoInputCorePage
         $this->add_onload_command("setSelected(7);");
 
         echo "<div class=\"baseHeight\">";
-        echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">";
+        echo "<form action=\"" . filter_input(INPUT_SERVER,"PHP_SELF") ."\" method=\"post\">";
 
-        $db = Database::pDataConnect();
-        $my_keys = array();
-        /**
-          First search for entries in the QuickLookups table
-        */
-        if ($db->table_exists('QuickLookups')) {
-            $prep = $db->prepare('
-                SELECT label,
-                    action
-                FROM QuickLookups
-                WHERE lookupSet = ?
-                ORDER BY sequence');
-            $args = array(CoreLocal::get('qkNumber'));
-            $res = $db->execute($prep, $args);
-            while ($row = $db->fetch_row($res)) {
-                $my_keys[] = new quickkey($row['label'], $row['action']);
-            }
-        }
-
-        /**
-          If none are found, then fall back to including numbered files
-        */
-        if (count($my_keys) == 0) {
-            include(realpath(dirname(__FILE__)."/quickkeys/keys/"
-                .CoreLocal::get("qkNumber").".php"));
-        }
+        $launcher = new QuickKeysLauncher();
+        $my_keys = $launcher->getKeys(CoreLocal::get('qkNumber'));
 
         $num_pages = ceil(count($my_keys)/9.0);
         $page = $this->offset % $num_pages;
@@ -220,7 +196,5 @@ class QKDisplay extends NoInputCorePage
 
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new QKDisplay();
+AutoLoader::dispatch();
 
-?>

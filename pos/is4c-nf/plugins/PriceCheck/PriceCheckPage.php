@@ -21,11 +21,11 @@
 
 *********************************************************************************/
 
+use \COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class PriceCheckPage extends NoInputCorePage 
 {
-
     private $upc;
     private $found;
     private $pricing;
@@ -37,34 +37,23 @@ class PriceCheckPage extends NoInputCorePage
         $this->pricing = array('sale'=>false,'actual_price'=>'','memPrice'=>'',
             'description','department','regular_price');
 
-        if (isset($_REQUEST['reginput']) && strtoupper($_REQUEST['reginput'])=="CL") {
+        if (strtoupper(FormLib::get('reginput') == 'CL')) {
             // cancel
             $this->change_page($this->page_url."gui-modules/pos2.php");
 
             return false;
-        } else if (isset($_REQUEST['reginput']) || isset($_REQUEST['upc'])) {
+        } elseif (FormLib::get('reginput') != '' || FormLib::get('upc') != '') {
             // use reginput as UPC unless it's empty
-            $this->upc = isset($_REQUEST['reginput']) ? $_REQUEST['reginput'] : '';
-            if ($this->upc == '' && isset($_REQUEST['upc']))
-                $this->upc = $_REQUEST['upc'];
+            $this->upc = FormLib::get('reginput');
+            if ($this->upc == '') {
+                $this->upc = FormLib::get('upc');
+            }
             $this->upc = str_pad($this->upc,13,'0',STR_PAD_LEFT);
 
-            $db = Database::pDataConnect();
-            $query = "select inUse,upc,description,normal_price,scale,deposit,
-                qttyEnforced,department,local,cost,tax,foodstamp,discount,
-                discounttype,specialpricemethod,special_price,groupprice,
-                pricemethod,quantity,specialgroupprice,specialquantity,
-                mixmatchcode,idEnforced,tareweight,d.dept_name
-                from products, departments d where department = d.dept_no
-                AND upc = ?";
-            $prep = $db->prepare($query);
-            $result = $db->execute($prep, array($this->upc));
-            $num_rows = $db->num_rows($result);
-
             // lookup item info
-            if ($num_rows > 0) {
+            $row = $this->getItem();
+            if ($row !== false) {
                 $this->found = true;
-                $row = $db->fetch_row($result);
 
                 $discounttype = MiscLib::nullwrap($row["discounttype"]);
                 $DiscountObject = null;
@@ -103,7 +92,7 @@ class PriceCheckPage extends NoInputCorePage
             }
 
             // user hit enter and there is a valid UPC present
-            if (isset($_REQUEST['reginput']) && $_REQUEST['reginput']=='' && $this->found){
+            if (FormLib::get('reginput', false) === '' && $this->found) {
                 $qstr = '?reginput=' . urlencode($this->upc) . '&repeat=1';
                 $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
 
@@ -112,6 +101,22 @@ class PriceCheckPage extends NoInputCorePage
         }
 
         return true;
+    }
+
+    private function getItem()
+    {
+        $dbc = Database::pDataConnect();
+        $query = "select inUse,upc,description,normal_price,scale,deposit,
+            qttyEnforced,department,local,cost,tax,foodstamp,discount,
+            discounttype,specialpricemethod,special_price,groupprice,
+            pricemethod,quantity,specialgroupprice,specialquantity,
+            mixmatchcode,idEnforced,tareweight,d.dept_name
+            from products, departments d where department = d.dept_no
+            AND upc = ?";
+        $prep = $dbc->prepare($query);
+        $result = $dbc->getRow($prep, array($this->upc));
+
+        return $result;
     }
 
     function head_content()
@@ -160,7 +165,7 @@ class PriceCheckPage extends NoInputCorePage
         <?php echo $info ?>
         </span><br />
         <form name="form" id="formlocal" method="post" 
-            autocomplete="off" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+            autocomplete="off" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <input type="text" name="reginput" tabindex="0" 
             onblur="$('#reginput').focus();" id="reginput" />
         <input type="hidden" name="upc" value="<?php echo $this->upc; ?>" />
@@ -175,8 +180,5 @@ class PriceCheckPage extends NoInputCorePage
 
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
-    new PriceCheckPage();
-}
+AutoLoader::dispatch();
 
-?>

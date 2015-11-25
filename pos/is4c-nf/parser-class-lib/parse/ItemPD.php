@@ -43,9 +43,9 @@ class ItemPD extends Parser
             );
         } else {
             $str = CoreLocal::get("currentid");
-            $pd = substr($str,0,strlen($str)-2);
+            $item_pd = substr($str,0,strlen($str)-2);
 
-            $ret['output'] = $this->discountitem($str,$pd);
+            $ret['output'] = $this->discountitem($str,$item_pd);
         }
         if (empty($ret['output'])){
             $ret['output'] = DisplayPage::lastpage();
@@ -58,16 +58,16 @@ class ItemPD extends Parser
         return $ret;
     }
 
-    function discountitem($item_num,$pd) 
+    function discountitem($item_num,$item_pd) 
     {
 
         if ($item_num) {
             $query = "select upc, quantity, ItemQtty, foodstamp, total, voided, charflag from localtemptrans where "
                 ."trans_id = ".$item_num;
 
-            $db = Database::tDataConnect();
-            $result = $db->query($query);
-            $num_rows = $db->num_rows($result);
+            $dbc = Database::tDataConnect();
+            $result = $dbc->query($query);
+            $num_rows = $dbc->num_rows($result);
 
             if ($num_rows == 0) {
                 return DisplayLib::boxMsg(
@@ -77,7 +77,7 @@ class ItemPD extends Parser
                     DisplayLib::standardClearButton()
                 );
             } else {
-                $row = $db->fetch_array($result);
+                $row = $dbc->fetch_array($result);
 
                 if (!$row["upc"] || strlen($row["upc"]) < 1 || $row['charflag'] == 'SO') {
                     return DisplayLib::boxMsg(
@@ -87,14 +87,14 @@ class ItemPD extends Parser
                         DisplayLib::standardClearButton()
                     );
                 } else {
-                    return $this->discountupc($row["ItemQtty"]."*".$row["upc"],$item_num,$pd);
+                    return $this->discountupc($row["ItemQtty"]."*".$row["upc"],$item_num,$item_pd);
                 }
             }
         }
         return "";
     }    
 
-    function discountupc($upc,$item_num=-1,$pd=0) 
+    function discountupc($upc,$item_num=-1,$item_pd=0) 
     {
 
         $lastpageflag = 1;
@@ -137,14 +137,14 @@ class ItemPD extends Parser
 
         if ($upc == "stop") return DisplayLib::inputUnknown();
 
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
 
         $query = "select sum(ItemQtty) as voidable, sum(quantity) as vquantity, max(scale) as scale, "
             ."max(volDiscType) as volDiscType from localtemptrans where upc = '".$upc
             ."' and unitPrice = ".$scaleprice." and discounttype <> 3 group by upc";
 
-        $result = $db->query($query);
-        $num_rows = $db->num_rows($result);
+        $result = $dbc->query($query);
+        $num_rows = $dbc->num_rows($result);
         if ($num_rows == 0 ){
             return DisplayLib::boxMsg(
                 _("Item not found: ") . $upc,
@@ -154,7 +154,7 @@ class ItemPD extends Parser
             );
         }
 
-        $row = $db->fetch_array($result);
+        $row = $dbc->fetch_array($result);
 
         if (($row["scale"] == 1) && $weight > 0) {
             $quantity = $weight - CoreLocal::get("tare");
@@ -176,8 +176,8 @@ class ItemPD extends Parser
             from localtemptrans where upc = '".$upc."' and unitPrice = "
              .$scaleprice." and trans_id=$item_num";
 
-        $result = $db->query($query_upc);
-        $row = $db->fetch_array($result);
+        $result = $dbc->query($query_upc);
+        $row = $dbc->fetch_array($result);
 
         $ItemQtty = $row["ItemQtty"];
         $foodstamp = MiscLib::nullwrap($row["foodstamp"]);
@@ -194,10 +194,10 @@ class ItemPD extends Parser
         elseif (((CoreLocal::get("isMember") == 1 && $row["discounttype"] == 2) || 
             (CoreLocal::get("isStaff") != 0 && $row["discounttype"] == 4)) && 
             ($row["unitPrice"] == $row["regPrice"])) {
-            $db_p = Database::pDataConnect();
+            $dbc_p = Database::pDataConnect();
             $query_p = "select special_price from products where upc = '".$upc."'";
-            $result_p = $db_p->query($query_p);
-            $row_p = $db_p->fetch_array($result_p);
+            $result_p = $dbc_p->query($query_p);
+            $row_p = $dbc_p->fetch_array($result_p);
             
             $unitPrice = $row_p["special_price"];
         
@@ -247,10 +247,10 @@ class ItemPD extends Parser
                 CoreLocal::set("ttlflag",0);
             }
 
-            $db = Database::pDataConnect();
-            $chk = $db->query("SELECT deposit FROM products WHERE upc='$upc'");
-            if ($db->num_rows($chk) > 0){
-                $dpt = array_pop($db->fetch_row($chk));
+            $dbc = Database::pDataConnect();
+            $chk = $dbc->query("SELECT deposit FROM products WHERE upc='$upc'");
+            if ($dbc->num_rows($chk) > 0){
+                $dpt = array_pop($dbc->fetch_row($chk));
                 if ($dpt > 0){
                     $dupc = (int)$dpt;
                     return $this->voidupc((-1*$quantity)."*".$dupc,True);
