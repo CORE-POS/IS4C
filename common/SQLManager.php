@@ -74,7 +74,9 @@ class SQLManager
         $this->connections=array();
         $this->default_db = $database;
         $this->addConnection($server,$type,$database,$username,$password,$persistent,$new);
-        $this->query('USE ' . $this->identifierEscape($database));
+        if ($this->isConnected($database)) {
+            $this->query('USE ' . $this->identifierEscape($database));
+        }
     }
 
     /** Add another connection
