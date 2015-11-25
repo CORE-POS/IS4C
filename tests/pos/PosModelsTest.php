@@ -15,8 +15,12 @@ class PosModelsTest extends PHPUnit_Framework_TestCase
             $this->assertInternalType('string', $obj->doc());
             if (substr($class, 0, 26) == 'COREPOS\\pos\\lib\\models\\op\\') {
                 $dbname = CoreLocal::get('pDatabase');
+                $dbc =  Database::pDataConnect();
+                $obj->setConnection($dbc);
             } elseif (substr($class, 0, 29) == 'COREPOS\\pos\\lib\\models\\trans\\') {
                 $dbname = CoreLocal::get('tDatabase');
+                $dbc =  Database::tDataConnect();
+                $obj->setConnection($dbc);
             } else {
                 continue;
             }
