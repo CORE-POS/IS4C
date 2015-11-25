@@ -36,19 +36,26 @@ class WicTenderReport extends FannieReportPage
     protected $sort_direction = 1;
     protected $title = "Fannie : WIC Tender Report";
     protected $header = "WIC Tender Report";
-    protected $required_fields = array('date1');
+    protected $required_fields = array('date1', 'date2');
+
     public function fetch_report_data()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
+        try {
+            $date1 = $this->form->date1;
+            $date2 = $this->form->date2;
+        catch (Exception $ex) {
+            return array();
+        }
         
         /* Count WIC transactions */
         $query = "
             SELECT count(description) as count 
             FROM dlog_90_view
             WHERE description='WIC'
-            AND tdate>= '" . $_GET['date1'] . 
-                " 00:00:00' and tdate<='" . $_GET['date2'] . " 23:59:59';
+            AND tdate>= '" . $date1 . 
+                " 00:00:00' and tdate<='" . $date2 . " 23:59:59';
             ";
         $result = $dbc->query($query);
         while ($row = $dbc->fetch_row($result)) {
@@ -68,8 +75,8 @@ class WicTenderReport extends FannieReportPage
                 SUM(CASE WHEN d.trans_subtype=\'WT\' THEN 1 ELSE 0 END) as usedWic
             FROM dlog_90_view AS d
                 LEFT JOIN is4c_op.products AS p ON p.upc=d.upc AND p.store_id=d.store_id
-            WHERE d.tdate BETWEEN \'' . $_GET['date1'] . ' 00:00:00\'
-                AND \'' . $_GET['date2'] . ' 23:59:59\'
+            WHERE d.tdate BETWEEN \'' . $date1 . ' 00:00:00\'
+                AND \'' . $date2 . ' 23:59:59\'
             GROUP BY YEAR(tdate),
                 MONTH(tdate),
                 DAY(tdate),
@@ -139,8 +146,8 @@ class WicTenderReport extends FannieReportPage
                 p.wicable=1 
                 and ((p.department<200 and p.department>220)
                     or p.department<500)
-                and d.tdate>= '" . $_GET['date1'] . 
-                " 00:00:00' and d.tdate<='" . $_GET['date2'] . " 23:59:59';
+                and d.tdate>= '" . $date1 . 
+                " 00:00:00' and d.tdate<='" . $date2 . " 23:59:59';
                 ";
             $result = $dbc->query($query);
             $count = 0;
