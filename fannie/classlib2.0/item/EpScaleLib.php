@@ -61,12 +61,19 @@ class EpScaleLib
         $et_line .= 'SAD' . $scale_model->epScaleAddress() . chr(253);
         $et_line .= 'PNO' . $item_info['PLU'] . chr(253);
         $et_line .= 'INO' . $item_info['PLU'] . chr(253);
-        $item_info['ExpandedText'] = str_replace("\r", '', $item_info['ExpandedText']);
-        $lines = explode("\n", $item_info['ExpandedText']);
-        $lines = array_reduce($lines, function($carry, $line){ return $carry . str_pad($line, 30); });
-        $et_line .= 'ITE' . $lines . chr(253);
+        $et_line .= 'ITE' . self::expandedText($item_info['ExpandedText']) . chr(253);
 
         return $et_line;
+    }
+
+    static private function expandedText($text)
+    {
+        $text = str_replace("\r", '', $text);
+        $ret = '';
+        foreach (explode("\n", $text) as $line) {
+            $ret .= wordwrap($line, 35, "\n") . "\n";
+        }
+        return str_replace("\n", '<br>', $ret);
     }
 
     static private function getAddItemLine($item_info)
