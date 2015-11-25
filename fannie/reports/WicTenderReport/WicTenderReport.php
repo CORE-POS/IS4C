@@ -74,7 +74,7 @@ class WicTenderReport extends FannieReportPage
                 trans_num,
                 SUM(CASE WHEN d.trans_subtype=\'WT\' THEN 1 ELSE 0 END) as usedWic
             FROM dlog_90_view AS d
-                LEFT JOIN is4c_op.products AS p ON p.upc=d.upc AND p.store_id=d.store_id
+                LEFT JOIN ' . $this->config->get('OP_DB') . $dbc->sep() . 'products AS p ON p.upc=d.upc AND p.store_id=d.store_id
             WHERE d.tdate BETWEEN \'' . $date1 . ' 00:00:00\'
                 AND \'' . $date2 . ' 23:59:59\'
             GROUP BY YEAR(tdate),
