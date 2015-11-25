@@ -45,7 +45,7 @@ class WicTenderReport extends FannieReportPage
         try {
             $date1 = $this->form->date1;
             $date2 = $this->form->date2;
-        catch (Exception $ex) {
+        } catch (Exception $ex) {
             return array();
         }
         
