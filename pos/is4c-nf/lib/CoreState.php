@@ -748,7 +748,7 @@ static public function loadParams()
     }
     
     // load global settings first
-    $parameters = new \COREPOS\pos\lib\models\op\ParametersModel($db);
+    $parameters = new \COREPOS\pos\lib\models\op\ParametersModel($dbc);
     $parameters->lane_id(0);
     $parameters->store_id(0);
     foreach ($parameters->find() as $global) {

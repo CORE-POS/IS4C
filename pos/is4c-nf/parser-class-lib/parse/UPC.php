@@ -182,7 +182,7 @@ class UPC extends Parser
         */
         $deptmods = CoreLocal::get('SpecialDeptMap');
         if (!is_array($deptmods) && $dbc->table_exists('SpecialDeptMap')) {
-            $model = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($db);
+            $model = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($dbc);
             $deptmods = $model->buildMap();
             CoreLocal::set('SpecialDeptMap', $deptmods);
         }

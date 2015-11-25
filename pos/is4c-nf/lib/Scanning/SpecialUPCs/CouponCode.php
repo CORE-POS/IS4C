@@ -94,7 +94,7 @@ class CouponCode extends SpecialUPC
         $dbc = Database::pDataConnect();
         $query = "select Value,Qty from couponcodes where Code = '".$val."'";
         $result = $dbc->query($query);
-        return $dbc->fetchRow($res);
+        return $dbc->fetchRow($result);
     }
     
     private function checkLimits($upc, $json)
