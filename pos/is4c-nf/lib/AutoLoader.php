@@ -74,13 +74,13 @@ class AutoLoader extends LibraryClass
             $pieces = explode('\\', $name);
             $sep = DIRECTORY_SEPARATOR;
             if (count($pieces) > 2 && $pieces[0] == 'COREPOS' && $pieces[1] == 'common') {
-                $path = dirname(__FILE__) . $sep . '..' . $sep . '..' . $sep . '..' . $sep . 'common' . $s;
+                $path = dirname(__FILE__) . $sep . '..' . $sep . '..' . $sep . '..' . $sep . 'common' . $sep;
                 $path .= self::arrayToPath(array_slice($pieces, 2));
                 if (file_exists($path)) {
                     $map[$name] = $path;
                 }
             } elseif (count($pieces) > 2 && $pieces[0] == 'COREPOS' && $pieces[1] == 'pos') {
-                $path = dirname(__FILE__) . $sep . '..' . $s;
+                $path = dirname(__FILE__) . $sep . '..' . $sep;
                 $path .= self::arrayToPath(array_slice($pieces, 2));
                 if (file_exists($path)) {
                     $map[$name] = $path;
