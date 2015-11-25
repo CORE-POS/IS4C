@@ -1183,7 +1183,7 @@ class SQLManager
         $info['increment'] = $this->columnBooleanProperty($col, 'auto_increment');
         $info['primary_key'] = $this->columnBooleanProperty($col, 'primary_key');
 
-        if (property_exists($col, 'default_value') && $col->default_value !== 'NULL' && $col->default_value !== null) {
+        if (property_exists($col, 'default_value') && $col->default_value !== 'NULL' && $col->default_value !== null && !$info['increment']) {
             $info['default'] = $col->default_value;
         } else {
             $info['default'] = null;
