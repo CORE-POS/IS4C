@@ -230,6 +230,11 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('LastID', 0);
         $out = $to->parse('TO');
         $this->assertNotEquals(0, strlen($out['output']));
+
+        lttLib::clear();
+        PrehLib::deptkey(10, 100);
+        $out = $to->parse('TO');
+        $this->assertNotEquals(0, strlen($out['output']));
     }
 
     function testTenderKey()
@@ -266,6 +271,39 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('1234', CoreLocal::get('CachePinEncBlock'));
         $this->assertEquals('ready', CoreLocal::get('ccTermState'));
 
+        $this->assertEquals(true, $st->check('TERM:CREDIT'));
+        $this->assertEquals('CREDIT', CoreLocal::get('CacheCardType'));
+        $this->assertEquals('ready', CoreLocal::get('ccTermState'));
+        $this->assertEquals(true, $st->check('TERM:DEBIT'));
+        $this->assertEquals('DEBIT', CoreLocal::get('CacheCardType'));
+        $this->assertEquals('pin', CoreLocal::get('ccTermState'));
+        CoreLocal::set('PaycardsOfferCashBack', 1);
+        $this->assertEquals(true, $st->check('TERM:DEBIT'));
+        $this->assertEquals('DEBIT', CoreLocal::get('CacheCardType'));
+        $this->assertEquals('cashback', CoreLocal::get('ccTermState'));
+        CoreLocal::set('PaycardsOfferCashBack', 2);
+        CoreLocal::set('isMember', 0);
+        $this->assertEquals(true, $st->check('TERM:DEBIT'));
+        $this->assertEquals('DEBIT', CoreLocal::get('CacheCardType'));
+        $this->assertEquals('pin', CoreLocal::get('ccTermState'));
+        CoreLocal::set('isMember', 1);
+        $this->assertEquals(true, $st->check('TERM:DEBIT'));
+        $this->assertEquals('DEBIT', CoreLocal::get('CacheCardType'));
+        $this->assertEquals('cashback', CoreLocal::get('ccTermState'));
+        CoreLocal::set('isMember', 0);
+        CoreLocal::set('PaycardsOfferCashBack', '');
+        $this->assertEquals(true, $st->check('TERM:EBTFOOD'));
+        $this->assertEquals('EBTFOOD', CoreLocal::get('CacheCardType'));
+        $this->assertEquals('pin', CoreLocal::get('ccTermState'));
+        $this->assertEquals(true, $st->check('TERM:EBTCASH'));
+        $this->assertEquals('EBTCASH', CoreLocal::get('CacheCardType'));
+        $this->assertEquals('pin', CoreLocal::get('ccTermState'));
+        CoreLocal::set('PaycardsOfferCashBack', 1);
+        $this->assertEquals(true, $st->check('TERM:EBTCASH'));
+        $this->assertEquals('EBTCASH', CoreLocal::get('CacheCardType'));
+        $this->assertEquals('cashback', CoreLocal::get('ccTermState'));
+        CoreLocal::set('PaycardsOfferCashBack', '');
+
         $this->assertEquals(true, $st->check('VAUTH:1234'));
         $this->assertEquals('1234', CoreLocal::get('paycard_voiceauthcode'));
         $this->assertEquals(true, $st->check('EBTAUTH:1234'));
@@ -291,6 +329,19 @@ class ParsersTest extends PHPUnit_Framework_TestCase
             $this->assertEquals('', CoreLocal::get('CachePanEncBlock'));
             $this->assertEquals('swipe', CoreLocal::get('ccTermState'));
         }
+    }
+
+    function testReceiptCoupon()
+    {
+        $rc = new ReceiptCoupon();
+        $one = 'RC209901001';
+        $two = 'RC200001001';
+        $this->assertEquals(true, $rc->check($one));
+        $this->assertEquals(true, $rc->check($two));
+        $out = $rc->parse($one);
+        $this->assertNotEquals(0, strlen($out['output']));
+        $out = $rc->parse($two);
+        $this->assertNotEquals(0, strlen($out['output']));
     }
 
     function testSteering()

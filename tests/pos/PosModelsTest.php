@@ -13,6 +13,16 @@ class PosModelsTest extends PHPUnit_Framework_TestCase
             // this just improves coverage; the doc method isn't
             // user-facing functionality
             $this->assertInternalType('string', $obj->doc());
+            if (substr($class, 0, 26) == 'COREPOS\\pos\\lib\\models\\op\\') {
+                $dbname = CoreLocal::get('pDatabase');
+            } elseif (substr($class, 0, 29) == 'COREPOS\\pos\\lib\\models\\trans\\') {
+                $dbname = CoreLocal::get('tDatabase');
+            } else {
+                continue;
+            }
+            ob_start();
+            $this->assertEquals(0, $obj->normalize($dbname), "$class is not normalized");
+            ob_get_clean();
         }
     }
 

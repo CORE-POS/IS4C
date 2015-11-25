@@ -55,9 +55,69 @@ class CommonTest extends PHPUnit_Framework_TestCase
         ob_start();
         $page->drawPage();
         $this->assertNotEquals('', ob_get_clean());
+        ob_start();
+        $page->draw_page();
+        $this->assertNotEquals('', ob_get_clean());
+        $this->assertEquals(null, $page->errorContent());
 
         $router = new \COREPOS\common\ui\CoreRESTfulRouter();
         $router->unitTest($this);
+        $router->addRoute('get<id><id2>');
+        ob_start();
+        $this->assertEquals(false, $router->handler($page));
+        ob_get_clean();
+    }
+
+    public function testLogger()
+    {
+        $bl = new \COREPOS\common\BaseLogger();
+        $this->assertEquals(false, $bl->verboseDebugging());
+        $this->assertEquals('/dev/null/', $bl->getLoLocation(0));
+        $bl->log(0, ''); // interface method
+        $bl->setRemoteSyslog('127.0.0.1');
+    }
+
+    public function testModel()
+    {
+        $m = new \COREPOS\common\BasicModel(null);
+        $this->assertEquals(null, $m->db());
+        $this->assertEquals('', $m->preferredDB());
+        $m->setConfig(null);
+        $m->setConnection(null);
+        try {
+            $m->foo();
+        } catch (Exception $ex) {
+            $this->assertEquals(true, $ex instanceof Exception);
+        }
+        $this->assertEquals(false, $m->load());
+        $this->assertEquals(array(), $m->getColumns());
+        $this->assertEquals(null, $m->getName());
+        $this->assertEquals(null, $m->getFullQualifiedName());
+        $m->setFindLimit(100);
+        $this->assertEquals(false, $m->delete());
+
+        ob_start();
+        $this->assertEquals(false, $m->normalize('foo', 99));
+        ob_get_clean();
+
+        $here = getcwd();
+        chdir(sys_get_temp_dir());
+        $m->newModel('FooBarTestModel');
+        $this->assertEquals(true, file_exists('FooBarTestModel.php'));
+        include('FooBarTestModel.php');
+        $this->assertEquals(true, class_exists('FooBarTestModel', false));
+        //unlink('FooBarTestModel.php');
+        chdir($here);
+
+        $this->assertEquals('[]', $m->toJSON());
+        $this->assertEquals('', $m->toOptions());
+        $this->assertNotEquals(0, strlen($m->columnsDoc()));
+        $this->assertEquals(array(), $m->getModels());
+        $m->setConnectionByName('foo'); // interface method
+
+        ob_start();
+        $this->assertEquals(1, $m->cli(0, array()));
+        ob_get_clean();
     }
 
     public function testSQL()
@@ -65,6 +125,7 @@ class CommonTest extends PHPUnit_Framework_TestCase
         include(dirname(__FILE__) . '/../../fannie/config.php');
         $dbc = new \COREPOS\common\SQLManager($FANNIE_SERVER, $FANNIE_SERVER_DBMS, $FANNIE_OP_DB, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW, true);
         $dbc->throwOnFailure(true);
+        $this->assertEquals($FANNIE_OP_DB, $dbc->defaultDatabase());
 
         $this->assertEquals(false, $dbc->addConnection($FANNIE_SERVER, '', $FANNIE_TRANS_DB, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW));
         $this->assertEquals(true, $dbc->addConnection($FANNIE_SERVER, $FANNIE_SERVER_DBMS, $FANNIE_TRANS_DB, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW));
@@ -129,6 +190,9 @@ class CommonTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($badDef, $dbc->tableDefinition('dtransactions'));
         $this->assertEquals(true, $dbc->clearTableCache());
         $this->assertNotEquals($badDef, $dbc->tableDefinition('dtransactions'));
+
+        $this->assertNotEquals(false, $dbc->getMatchingColumns('dlog', $FANNIE_TRANS_DB, 'dlog', $FANNIE_TRANS_DB));
+        $this->assertEquals(false, $dbc->getMatchingColumns('SpecialOrderDeptMap', $FANNIE_TRANS_DB, 'dlog', $FANNIE_TRANS_DB));
     }
 }
 
