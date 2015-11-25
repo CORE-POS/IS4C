@@ -41,6 +41,21 @@ class WicTenderReport extends FannieReportPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
+        
+        /* Count WIC transactions */
+        $query = "
+            SELECT count(description) as count 
+            FROM dlog_90_view
+            WHERE description='WIC'
+            AND tdate>= '" . $_GET['date1'] . 
+                "' and tdate<='" . $_GET['date2'] . "';
+            ";
+        $result = $dbc->query($query);
+        while ($row = $dbc->fetch_row($result)) {
+            echo $row['count'] . " <strong>WIC transactions</strong> occured during this period.";
+        }
+        
+        /* Find Tender Type for each transaction */
         $query = "SELECT d.upc,
             CASE WHEN d.description='credit card' 
                 or d.description='cash' 
@@ -75,6 +90,8 @@ class WicTenderReport extends FannieReportPage
                     $tmpTender[$i] = $tender;
                 }
             }
+            
+            /* Find sum of sales per item purchased with WIC and Non-WIC */
             $query = "
             select d.trans_no, 
                 d.upc, 
@@ -92,22 +109,30 @@ class WicTenderReport extends FannieReportPage
                 or d.description='gift card'
                 ) 
                 and d.tdate>='2015-11-09 00:00:00'
-                and (p.department>200 and p.department>220)
+                and (p.department<200 and p.department>220)
                     or p.department<500
                 and d.tdate>= '" . $_GET['date1'] . 
-                "' and d.tdate<='" . $_GET['date2'] . "';";
+                "' and d.tdate<='" . $_GET['date2'] . "';
+                ";
             $result = $dbc->query($query);
+            $count = 0;
             while ($row = $dbc->fetch_row($result)) {
                if ( array_search($row['upc'], $item[0]) != NULL) {
                     if ( $tmpTender[$count] == 'WIC' ) {
-                        $wicTend[ array_search($row['upc'], $item[0]) ] += $row['quantity'];
+                        $item[2][ array_search($row['upc'], $item[0]) ] += $row['quantity'];
                     } else {
-                        $otherTend[ array_search($row['upc'], $item[0]) ] += $row['quantity'];
+                        $item[3][ array_search($row['upc'], $item[0]) ] += $row['quantity'];
                     }        
                 } else {
                     $item[0][] = $row['upc'];
                     $item[1][] = $row['description'];
-                    $item[2][] = sprintf("%01.2f", $row['quantity']);
+                    
+                    if ( $tmpTender[$count] == 'WIC' ) {
+                        $item[2][ array_search($row['upc'], $item[0]) ] += $row['quantity'];
+                    } else {
+                        $item[3][ array_search($row['upc'], $item[0]) ] += $row['quantity'];
+                    }        
+                    
                 }
                 $count++;
             }
