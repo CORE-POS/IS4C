@@ -56,21 +56,7 @@ class PriceCheckPage extends NoInputCorePage
                 $this->found = true;
 
                 $discounttype = MiscLib::nullwrap($row["discounttype"]);
-                $DiscountObject = null;
-                // see UPC parser for explanation
-                $DTClasses = CoreLocal::get("DiscountTypeClasses");
-                if ($row['discounttype'] < 64 && isset(DiscountType::$MAP[$row['discounttype']])) {
-                    $class = DiscountType::$MAP[$row['discounttype']];
-                    $DiscountObject = new $class();
-                } else if ($row['discounttype'] > 64 && isset($DTClasses[($row['discounttype']-64)])) {
-                    $class = $DTClasses[($row['discounttype'])-64];
-                    $DiscountObject = new $class();
-                } else {
-                    // If the requested discounttype isn't available,
-                    // fallback to normal pricing. Debatable whether
-                    // this should be a hard error.
-                    $DiscountObject = new NormalPricing();
-                }
+                $DiscountObject = $this->getDiscountType($discounttype);
 
                 if ($DiscountObject->isSale()) {
                     $this->pricing['sale'] = true;
@@ -103,6 +89,25 @@ class PriceCheckPage extends NoInputCorePage
         return true;
     }
 
+    private function getDiscountType($discounttype)
+    {
+        $DTClasses = CoreLocal::get("DiscountTypeClasses");
+        if ($discounttype < 64 && isset(DiscountType::$MAP[$discounttype])) {
+            $class = DiscountType::$MAP[$row['discounttype']];
+            $DiscountObject = new $class();
+        } else if ($discounttype > 64 && isset($DTClasses[($discounttype-64)])) {
+            $class = $DTClasses[($discounttype)-64];
+            $DiscountObject = new $class();
+        } else {
+            // If the requested discounttype isn't available,
+            // fallback to normal pricing. Debatable whether
+            // this should be a hard error.
+            $DiscountObject = new NormalPricing();
+        }
+
+        return $DiscountObject;
+    }
+
     private function getItem()
     {
         $dbc = Database::pDataConnect();
@@ -125,6 +130,32 @@ class PriceCheckPage extends NoInputCorePage
         $this->scanner_scale_polling(true);
     }
 
+    private function noUpcText()
+    {
+        $info = _("not a valid item");
+        $inst = array(
+            _("[scan] another item"),
+            _("[clear] to cancel"),
+        );
+    }
+
+    private function upcText()
+    {
+        $info = $this->pricing['description'] . '<br />'
+                . $this->pricing['department'] . '<br />'
+                . _("Current Price") . ": " . $this->pricing['actual_price'] . '<br />'
+                . _("Regular Price") . ": " . $this->pricing['regular_price'];
+        if (!empty($this->pricing['memPrice'])) {
+            $info .= "<br />(" . _("Member Price") . ": " . $this->pricing['memPrice'] . ")";
+        }
+        
+        $inst = array(
+            _("[scan] another item"),
+            _("[enter] to ring this item"),
+            _("[clear] to cancel"),
+        );
+    }
+
     function body_content()
     {
         $this->add_onload_command("\$('#reginput').focus();\n");
@@ -135,27 +166,11 @@ class PriceCheckPage extends NoInputCorePage
         );
         if (!empty($this->upc)) {
             if (!$this->found) {
-                $info = _("not a valid item");
-                $inst = array(
-                    _("[scan] another item"),
-                    _("[clear] to cancel"),
-                );
+                $this->noUpcText();
                 $this->upc = "";
                 MiscLib::errorBeep();                
             } else {
-                $info = $this->pricing['description'] . '<br />'
-                        . $this->pricing['department'] . '<br />'
-                        . _("Current Price") . ": " . $this->pricing['actual_price'] . '<br />'
-                        . _("Regular Price") . ": " . $this->pricing['regular_price'];
-                if (!empty($this->pricing['memPrice'])) {
-                    $info .= "<br />(" . _("Member Price") . ": " . $this->pricing['memPrice'] . ")";
-                }
-                
-                $inst = array(
-                    _("[scan] another item"),
-                    _("[enter] to ring this item"),
-                    _("[clear] to cancel"),
-                );
+                $this->upcText();
             }
         }
         ?>

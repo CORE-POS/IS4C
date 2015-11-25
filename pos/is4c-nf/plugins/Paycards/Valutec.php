@@ -107,31 +107,14 @@ class Valutec extends BasicCCModule
         return $json;
     }
 
-    /* doSend()
-     * Process the paycard request and return
-     * an error value as defined in paycardLib.php.
-     *
-     * On success, return PaycardLib::PAYCARD_ERR_OK.
-     * On failure, return anything else and set any
-     * error messages to be displayed in
-     * CoreLocal::["boxMsg"].
-     */
-    public function doSend($type)
-    {
-        switch ($type) {
-            case PaycardLib::PAYCARD_MODE_ACTIVATE:
-            case PaycardLib::PAYCARD_MODE_ADDVALUE:
-            case PaycardLib::PAYCARD_MODE_AUTH: 
-                return $this->send_auth();
-            case PaycardLib::PAYCARD_MODE_VOID:
-            case PaycardLib::PAYCARD_MODE_VOIDITEM:
-                return $this->send_void();
-            case PaycardLib::PAYCARD_MODE_BALANCE:
-                return $this->send_balance();
-            default:
-                return $this->setErrorMsg(0);
-        }
-    }
+    protected $sendByType = array(
+        PaycardLib::PAYCARD_MODE_ACTIVATE => 'send_auth',
+        PaycardLib::PAYCARD_MODE_ADDVALUE => 'send_auth',
+        PaycardLib::PAYCARD_MODE_AUTH => 'send_auth',
+        PaycardLib::PAYCARD_MODE_VOID => 'send_void',
+        PaycardLib::PAYCARD_MODE_VOIDITEM => 'send_void',
+        PaycardLib::PAYCARD_MODE_BALANCE => 'send_balance',
+    );
 
     /* cleanup()
      * This function is called when doSend() returns
@@ -181,8 +164,8 @@ class Valutec extends BasicCCModule
             case PaycardLib::PAYCARD_MODE_VOID:
             case PaycardLib::PAYCARD_MODE_VOIDITEM:
                 CoreLocal::set("autoReprint",1);
-                $v = new Void();
-                $v->voidid(CoreLocal::get("paycard_id"), array());
+                $void = new Void();
+                $void->voidid(CoreLocal::get("paycard_id"), array());
                 $resp = CoreLocal::get("paycard_response");
                 CoreLocal::set("boxMsg","<b>Voided</b><font size=-1>
                                            <p>New balance: $" . $resp["Balance"] . "
@@ -420,20 +403,14 @@ class Valutec extends BasicCCModule
         return $this->curlSend($getData,'GET');
     }
 
-    public function handleResponse($authResult)
-    {
-        switch (CoreLocal::get("paycard_mode")) {
-            case PaycardLib::PAYCARD_MODE_AUTH:
-            case PaycardLib::PAYCARD_MODE_ACTIVATE:
-            case PaycardLib::PAYCARD_MODE_ADDVALUE:
-                return $this->handleResponseAuth($authResult);
-            case PaycardLib::PAYCARD_MODE_VOID:
-            case PaycardLib::PAYCARD_MODE_VOIDITEM:
-                return $this->handleResponseVoid($authResult);
-            case PaycardLib::PAYCARD_MODE_BALANCE:
-                return $this->handleResponseBalance($authResult);
-        }
-    }
+    protected $respondByType = array(
+        PaycardLib::PAYCARD_MODE_ACTIVATE => 'handleResponseAuth',
+        PaycardLib::PAYCARD_MODE_ADDVALUE => 'handleResponseAuth',
+        PaycardLib::PAYCARD_MODE_AUTH => 'handleResponseAuth',
+        PaycardLib::PAYCARD_MODE_VOID => 'handleResponseVoid',
+        PaycardLib::PAYCARD_MODE_VOIDITEM => 'handleResponseVoid',
+        PaycardLib::PAYCARD_MODE_BALANCE => 'handleResponseBalance',
+    );
 
     private function handleResponseAuth($authResult)
     {

@@ -23,7 +23,8 @@
 
 class DefaultTender extends Parser 
 {
-    public function check($str){
+    public function check($str)
+    {
         if (!is_numeric(substr($str,-2)) && 
             is_numeric(substr($str,0,strlen($str)-2))) {
             return true;
@@ -37,9 +38,8 @@ class DefaultTender extends Parser
         return false;
     }
 
-    function parse($str)
+    private function blocked($str)
     {
-        $ret = $this->default_json();
         /**
           If customer card is available, prevent other tenders
           unless specficially allowed (e.g., coupons).
@@ -59,6 +59,18 @@ class DefaultTender extends Parser
 
                 return $ret;
             }
+        }
+
+        return $false;
+    }
+
+    function parse($str)
+    {
+        $ret = $this->default_json();
+
+        $block = $this->blocked($str);
+        if ($block !== false) {
+            return $block;
         }
 
         if (strlen($str) > 2){

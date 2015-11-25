@@ -108,10 +108,8 @@ signs in
 static public function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $strtransstatus, $intdepartment, $dblquantity, $dblunitPrice, $dbltotal, $dblregPrice, $intscale, $inttax, $intfoodstamp, $dbldiscount, $dblmemDiscount, $intdiscountable, $intdiscounttype, $dblItemQtty, $intvolDiscType, $intvolume, $dblVolSpecial, $intmixMatch, $intmatched, $intvoided, $cost=0, $numflag=0, $charflag='') 
 {
     //$dbltotal = MiscLib::truncate2(str_replace(",", "", $dbltotal)); replaced by apbw 7/27/05 with the next 4 lines -- to fix thousands place errors
-    $dbltotal = str_replace(",", "", $dbltotal);        
-    $dbltotal = number_format($dbltotal, 2, '.', '');
-    $dblunitPrice = str_replace(",", "", $dblunitPrice);
-    $dblunitPrice = number_format($dblunitPrice, 2, '.', '');
+    $dbltotal = self::formatDouble($dbltotal);
+    $dblunitPrice = self::formatDouble($dblunitPrice);
 
     // do not clear refund flag when adding an informational log record
     if ($strtransType != 'L' && CoreLocal::get("refund") == 1) {
@@ -133,14 +131,6 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
         }
     }
 
-    $intregisterno = CoreLocal::get("laneno");
-    $intempno = CoreLocal::get("CashierNo");
-    $inttransno = CoreLocal::get("transno");
-    $strCardNo = CoreLocal::get("memberID");
-    $memType = CoreLocal::get("memType");
-    $staff = CoreLocal::get("isStaff");
-    $percentDiscount = CoreLocal::get("percentDiscount");
-
     $dbc = Database::tDataConnect();
 
     $datetimestamp = "";
@@ -152,19 +142,13 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 
     CoreLocal::set("LastID",CoreLocal::get("LastID") + 1);
 
-    $trans_id = CoreLocal::get("LastID");
-
-    if (strlen($strdescription) > 30) {
-        $strdescription = substr($strdescription, 0, 30);
-    }
-
     $values = array(
         'datetime'    => $datetimestamp,
-        'register_no'    => $intregisterno,
-        'emp_no'    => $intempno,
-        'trans_no'    => MiscLib::nullwrap($inttransno),
+        'register_no'    => CoreLocal::get('laneno'),
+        'emp_no'    => CoreLocal::get('CashierNo'),
+        'trans_no'    => MiscLib::nullwrap(CoreLocal::get('transno')),
         'upc'        => MiscLib::nullwrap($strupc),
-        'description'    => $strdescription,
+        'description'    => substr($strdescription, 0, 30),
         'trans_type'    => MiscLib::nullwrap($strtransType),
         'trans_subtype'    => MiscLib::nullwrap($strtranssubType, true),
         'trans_status'    => MiscLib::nullwrap($strtransstatus, true),
@@ -188,17 +172,13 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
         'mixMatch'    => MiscLib::nullwrap($intmixMatch),
         'matched'    => MiscLib::nullwrap($intmatched),
         'voided'    => MiscLib::nullwrap($intvoided),
-        'memType'    => MiscLib::nullwrap($memType),
-        'staff'        => MiscLib::nullwrap($staff),
-        'percentDiscount'=> MiscLib::nullwrap($percentDiscount),
+        'memType'    => MiscLib::nullwrap(CoreLocal::get('memType')),
+        'staff'        => MiscLib::nullwrap(CoreLocal::get('isStaff')),
+        'percentDiscount'=> MiscLib::nullwrap(CoreLocal::get('percentDiscount')),
         'numflag'    => MiscLib::nullwrap($numflag),
         'charflag'    => $charflag,
-        'card_no'    => (string)$strCardNo
+        'card_no'    => (string)CoreLocal::get('memberID'),
         );
-    if (CoreLocal::get("DBMS") == "mssql" && CoreLocal::get("store") == "wfc") {
-        unset($values["staff"]);
-        $values["isStaff"] = MiscLib::nullwrap($staff);
-    }
 
     $dbc->smart_insert("localtemptrans",$values);
 
@@ -213,6 +193,13 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
     if ($intscale == 1) {
         CoreLocal::set("lastWeight",$dblquantity);
     }
+}
+
+private static function formatDouble($dbl)
+{
+    $dbl = str_replace(",", "", $dbl);
+    $dbl = number_format($dbl, 2, '.', '');
+    return $dbl;
 }
 
 private static $default_record = array(

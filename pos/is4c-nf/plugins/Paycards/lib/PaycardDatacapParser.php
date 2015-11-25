@@ -36,32 +36,27 @@
 */
 class PaycardDatacapParser extends Parser 
 {
+    private $valid = array(
+        'DATACAP',
+        'DATACAPEMV',
+        'DATACAPCC',
+        'DATACAPDC',
+        'DATACAPEF',
+        'DATACAPEC',
+        'DATACAPGD',
+        'PVDATACAPGD',
+        'PVDATACAPEF',
+        'PVDATACAPEC',
+        'ACDATACAPGD',
+        'AVDATACAPGD',
+    );
+
     public function check($str)
     {
-        if ($str == 'DATACAP') {
+        if (in_array($str, $this->valid)) {
             return true;
-        } elseif ($str == 'DATACAPEMV') {
-            return true;
-        } elseif ($str == 'DATACAPCC') {
-            return true;
-        } elseif ($str == 'DATACAPDC') {
-            return true;
-        } elseif ($str == 'DATACAPEF') {
-            return true;
-        } elseif ($str == 'DATACAPEC') {
-            return true;
-        } elseif ($str == 'DATACAPGD') {
-            return true;
-        } elseif ($str == 'PVDATACAPGD') {
-            return true;
-        } elseif ($str == 'PVDATACAPEF') {
-            return true;
-        } elseif ($str == 'PVDATACAPEC') {
-            return true;
-        } elseif ($str == 'ACDATACAPGD') {
-            return true;
-        } elseif ($str == 'AVDATACAPGD') {
-            return true;
+        } else {
+            return false;
         }
     }
 
@@ -71,30 +66,24 @@ class PaycardDatacapParser extends Parser
         $plugin_info = new Paycards();
         $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvPage.php';
         Database::getsubtotals();
+        CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
+        CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
+        CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
         switch ($str) {
             case 'DATACAP':
                 $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvMenu.php';
                 break; 
             case 'DATACAPEMV': 
-                CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
                 CoreLocal::set('CacheCardType', 'EMV');
-                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
-                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
                 break;
             case 'DATACAPCC':
-                CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
                 CoreLocal::set('CacheCardType', 'CREDIT');
-                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
-                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
                 break;
             case 'DATACAPDC':
-                CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
                 if (CoreLocal::get('CacheCardCashBack')) {
                     CoreLocal::set('paycard_amount', CoreLocal::get('amtdue') + CoreLocal::get('CacheCardCashBack'));
                 }
                 CoreLocal::set('CacheCardType', 'DEBIT');
-                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
-                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
                 break;
             case 'DATACAPEF':
                 if (CoreLocal::get('fntlflag') == 0) {
@@ -109,22 +98,15 @@ class PaycardDatacapParser extends Parser
                 }
                 CoreLocal::set('paycard_amount', CoreLocal::get('fsEligible'));
                 CoreLocal::set('CacheCardType', 'EBTFOOD');
-                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
-                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
                 break;
             case 'DATACAPEC':
-                CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
                 if (CoreLocal::get('CacheCardCashBack')) {
                     CoreLocal::set('paycard_amount', CoreLocal::get('amtdue') + CoreLocal::get('CacheCardCashBack'));
                 }
                 CoreLocal::set('CacheCardType', 'EBTCASH');
-                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
-                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
                 break;
             case 'DATACAPGD':
-                CoreLocal::set('paycard_amount', CoreLocal::get('amtdue'));
                 CoreLocal::set('CacheCardType', 'GIFT');
-                CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_AUTH);
                 CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_GIFT);
                 break;
             case 'PVDATACAPGD':
@@ -136,13 +118,11 @@ class PaycardDatacapParser extends Parser
             case 'PVDATACAPEF':
                 CoreLocal::set('CacheCardType', 'EBTFOOD');
                 CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
-                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
                 $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvBalance.php';
                 break;
             case 'PVDATACAPEC':
                 CoreLocal::set('CacheCardType', 'EBTCASH');
                 CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_BALANCE);
-                CoreLocal::set('paycard_type', PaycardLib::PAYCARD_TYPE_CREDIT);
                 $ret['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvBalance.php';
                 break;
             case 'ACDATACAPGD':

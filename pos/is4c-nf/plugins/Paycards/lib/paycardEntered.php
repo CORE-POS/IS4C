@@ -26,40 +26,30 @@ if (!class_exists("PaycardLib"))
 
 class paycardEntered extends Parser 
 {
-    var $swipestr;
-    var $swipetype;
-    var $manual;
+    private $swipetype;
+    private $manual;
 
-    function check($str){
+    function check($str)
+    {
         if (substr($str,-1,1) == "?"){
-            $this->swipestr = $str;
             $this->swipetype = PaycardLib::PAYCARD_TYPE_UNKNOWN;
-            $this->manual = False;
-            return True;
+            $this->manual = false;
+            return true;
         } elseif (substr($str,0,8) == "02E60080" || substr($str,0,7)=="2E60080" || substr($str, 0, 5) == "23.0%" || substr($str, 0, 5) == "23.0;") {
-            $this->swipestr = $str;
             $this->swipetype = PaycardLib::PAYCARD_TYPE_ENCRYPTED;
-            $this->manual = False;
-            return True;
-        }
-        elseif (is_numeric($str) && strlen($str) >= 16){
-            $this->swipestr = $str;
+            $this->manual = false;
+            return true;
+        } elseif ((is_numeric($str) && strlen($str) >= 16) || (is_numeric(substr($str,2)) && strlen($str) >= 18)) {
             $this->swipetype = PaycardLib::PAYCARD_TYPE_UNKNOWN;
-            $this->manual = True;
-            return True;
-        }
-        elseif (is_numeric(substr($str,2)) && strlen($str) >= 18){
-            $this->swipestr = $str;
-            $this->swipetype = PaycardLib::PAYCARD_TYPE_UNKNOWN;
-            $this->manual = True;
-            return True;
+            $this->manual = true;
+            return true;
         }
         return False;
     }
 
-    function parse($str){
+    function parse($str)
+    {
         $ret = array();
-        $str = $this->swipestr;
         if( substr($str,0,2) == "PV") {
             $ret = $this->paycard_entered(PaycardLib::PAYCARD_MODE_BALANCE, substr($str,2), $this->manual, $this->swipetype);
         } else if( substr($str,0,2) == "AV") {
@@ -69,9 +59,12 @@ class paycardEntered extends Parser
         } else {
             $ret = $this->paycard_entered(PaycardLib::PAYCARD_MODE_AUTH, $str, $this->manual, $this->swipetype);
         }
+
         // if successful, paycard_entered() redirects to a confirmation page and exit()s; if we're still here, there was an error, so reset all data
-        if ($ret['main_frame'] == false)
+        if ($ret['main_frame'] === false) {
             PaycardLib::paycard_reset();
+        }
+
         return $ret;
     }
 
@@ -225,4 +218,3 @@ class paycardEntered extends Parser
     }
 }
 
-?>

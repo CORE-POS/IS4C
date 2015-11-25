@@ -27,7 +27,6 @@ include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 class PaycardEmvBalance extends PaycardProcessPage 
 {
     private $prompt = false;
-    private $id = false;
     private $run_transaction = false;
 
     function preprocess()
