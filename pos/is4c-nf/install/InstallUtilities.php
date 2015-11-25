@@ -970,7 +970,7 @@ class InstallUtilities extends LibraryClass
     {
         $p_value = $param->materializeValue();
         $checked[$param->param_key()] = true;
-        $i_value = $CORE_LOCAL->get($param->param_key());
+        $i_value = CoreLocal::get($param->param_key());
         if (isset($checked[$param->param_key()])) {
             // setting has a lane-specific parameters
         } elseif (is_numeric($i_value) && is_numeric($p_value) && $i_value == $p_value) {
