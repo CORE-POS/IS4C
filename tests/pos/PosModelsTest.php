@@ -21,6 +21,7 @@ class PosModelsTest extends PHPUnit_Framework_TestCase
                 continue;
             }
             ob_start();
+            $obj->whichDB($dbname);
             $n = $obj->normalize($dbname);
             $out = ob_get_clean();
             $this->assertEquals(0, $n, "$class is not normalized: $out");
