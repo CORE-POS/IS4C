@@ -141,7 +141,7 @@ class WicTenderReport extends FannieReportPage
                 d.description, 
                 d.quantity
             from dlog_90_view as d 
-                INNER join is4c_op.products as p on p.upc=d.upc AND p.store_id=d.store_id
+                INNER JOIN ' . $this->config->get('OP_DB') . $dbc->sep() . 'products AS p ON p.upc=d.upc AND p.store_id=d.store_id
             where 
                 p.wicable=1 
                 and ((p.department<200 and p.department>220)
