@@ -141,14 +141,15 @@ class PaycardProcessPage extends BasicCorePage
         <?php
     }
 
-    protected function emvResponseHandler($xml)
+    protected function emvResponseHandler($xml, $balance=false)
     {
         $e2e = new MercuryE2E();
         $json = array();
         $plugin_info = new Paycards();
         $json['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvSuccess.php';
         $json['receipt'] = false;
-        $success = $e2e->handleResponseDataCap($xml);
+        $func = $balance ? 'handleResponseDataCapBalance' : 'handleResponseDataCap';
+        $success = $e2e->$func($xml);
         if ($success === PaycardLib::PAYCARD_ERR_OK) {
             $json = $e2e->cleanup($json);
             CoreLocal::set("strEntered","");

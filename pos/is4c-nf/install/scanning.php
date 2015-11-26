@@ -1,4 +1,5 @@
 <?php
+use COREPOS\pos\lib\FormLib;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 include('../ini.php');
@@ -107,10 +108,10 @@ body {
     <?php
     // try to find a sane default automatically
     $default = array();
-    $db = Database::pDataConnect();
-    $lookup = $db->query("SELECT dept_no FROM departments WHERE dept_name LIKE '%EQUIT%'");
-    if ($lookup && $db->num_rows($lookup) > 0) {
-        while ($row = $db->fetch_row($lookup)) {
+    $dbc = Database::pDataConnect();
+    $lookup = $dbc->query("SELECT dept_no FROM departments WHERE dept_name LIKE '%EQUIT%'");
+    if ($lookup && $dbc->num_rows($lookup) > 0) {
+        while ($row = $dbc->fetch_row($lookup)) {
             $default[] = $row['dept_no'];
         }
     }
@@ -136,10 +137,10 @@ body {
     <?php
     // try to find a sane default automatically
     $default = array();
-    $db = Database::pDataConnect();
-    $lookup = $db->query("SELECT dept_no FROM departments WHERE dept_name LIKE '%PAYMENT%'");
-    if ($lookup && $db->num_rows($lookup) > 0) {
-        while ($row = $db->fetch_row($lookup)) {
+    $dbc = Database::pDataConnect();
+    $lookup = $dbc->query("SELECT dept_no FROM departments WHERE dept_name LIKE '%PAYMENT%'");
+    if ($lookup && $dbc->num_rows($lookup) > 0) {
+        while ($row = $dbc->fetch_row($lookup)) {
             $default[] = $row['dept_no'];
         }
     }
@@ -155,10 +156,10 @@ body {
     <?php
     // try to find a sane default automatically
     $default = 701;
-    $db = Database::pDataConnect();
-    $lookup = $db->query("SELECT dept_no FROM departments WHERE dept_name LIKE '%DONAT%'");
-    if ($lookup && $db->num_rows($lookup) > 0) {
-        $row = $db->fetch_row($lookup);
+    $dbc = Database::pDataConnect();
+    $lookup = $dbc->query("SELECT dept_no FROM departments WHERE dept_name LIKE '%DONAT%'");
+    if ($lookup && $dbc->num_rows($lookup) > 0) {
+        $row = $dbc->fetch_row($lookup);
         $default = $row['dept_no'];
     }
     echo InstallUtilities::installTextField('roundUpDept', $default);
@@ -183,9 +184,9 @@ foreach (DiscountType::$MAP as $id => $name) {
 <tr><td>
 <b>Custom Discount Mapping</b>:</td><td>
 <?php
-if (isset($_REQUEST['DT_MODS'])) {
+if (is_array(FormLib::get('DT_MODS'))) {
     $new_val = array();
-    foreach ($_REQUEST['DT_MODS'] as $r) {
+    foreach (FormLib::get('DT_MODS') as $r) {
         if ($r !== '' && !in_array($r, DiscountType::$MAP)) {
             $new_val[] = $r;
         }
@@ -240,9 +241,9 @@ foreach (PriceMethod::$MAP as $id => $name) {
 <tr><td>
 <b>Custom Method Mapping</b>:</td><td>
 <?php
-if (isset($_REQUEST['PM_MODS'])) {
+if (is_array(FormLib::get('PM_MODS'))) {
     $new_val = array();
-    foreach ($_REQUEST['PM_MODS'] as $r) {
+    foreach (FormLib::get('PM_MODS') as $r) {
         if ($r !== '' && !in_array($r, PriceMethod::$MAP)) {
             $new_val[] = $r;
         }
@@ -283,7 +284,7 @@ InstallUtilities::paramSave('PriceMethodClasses',$save);
 <tr><td>
 <b>Sale Items Are Discountable</b>:</td><td>
 <?php
-if (isset($_REQUEST['SALEDISC'])) CoreLocal::set('DiscountableSaleItems',$_REQUEST['SALEDISC']);
+if (FormLib::get('SALEDISC') !== '') CoreLocal::set('DiscountableSaleItems', FormLib::get('SALEDISC'));
 if (CoreLocal::get('DiscountableSaleItems') === '') CoreLocal::set('DiscountableSaleItems', 1);
 echo '<select name="SALEDISC">';
 if (CoreLocal::get('DiscountableSaleItems') == 0) {
@@ -308,9 +309,9 @@ save 5%.
 <tr><td>
 <?php
 $sdepts = AutoLoader::listModules('SpecialDept');
-$db = Database::pDataConnect();
-$specialDeptMapExists = $db->table_exists('SpecialDeptMap');
-$mapModel = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($db);
+$dbc = Database::pDataConnect();
+$specialDeptMapExists = $dbc->table_exists('SpecialDeptMap');
+$mapModel = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($dbc);
 $sconf = CoreLocal::get('SpecialDeptMap');
 /**
   If a mapping exists and the new table is available,
@@ -327,18 +328,20 @@ if (is_array($sconf) && $specialDeptMapExists) {
     }
 }
 if (!is_array($sconf)) $sconf = array();
-if (isset($_REQUEST['SDEPT_MAP_LIST'])) {
+if (is_array(FormLib::get('SDEPT_MAP_LIST'))) {
     if ($specialDeptMapExists) {
-        $db->query('TRUNCATE TABLE SpecialDeptMap');
+        $dbc->query('TRUNCATE TABLE SpecialDeptMap');
     } else {
         $sconf = array();
     }
-    for ($i=0;$i<count($_REQUEST['SDEPT_MAP_NAME']);$i++) {
-        if (!isset($_REQUEST['SDEPT_MAP_LIST'][$i])) continue;
-        if (empty($_REQUEST['SDEPT_MAP_LIST'][$i])) continue;
+    $SDEPT_MAP_LIST = FormLib::get('SDEPT_MAP_LIST');
+    $SDEPT_MAP_NAME = FormLib::get('SDEPT_MAP_NAME');
+    for ($i=0;$i<count($SDEPT_MAP_NAME);$i++) {
+        if (!isset($SDEPT_MAP_LIST[$i])) continue;
+        if (empty($SDEPT_MAP_LIST[$i])) continue;
 
-        $class = $_REQUEST['SDEPT_MAP_NAME'][$i];
-        $ids = preg_split('/\D+/',$_REQUEST['SDEPT_MAP_LIST'][$i]);
+        $class = $SDEPT_MAP_NAME[$i];
+        $ids = preg_split('/\D+/',$SDEPT_MAP_LIST[$i]);
         foreach ($ids as $id) {
             if ($specialDeptMapExists) {
                 $mapModel->reset();

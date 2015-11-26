@@ -30,32 +30,26 @@ class RAFC_Kicker extends Kicker
 
     public function doKick($trans_num)
     {
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
 
         $query = "select trans_id from localtemptrans where 
             (trans_subtype = 'CA' and total <> 0)
             OR (trans_subtype = 'DC' and total <> 0)
             OR (trans_subtype = 'CK' and total <> 0)";
 
-        $result = $db->query($query);
-        $num_rows = $db->num_rows($result);
+        $result = $dbc->query($query);
+        $num_rows = $dbc->num_rows($result);
 
         $ret = ($num_rows > 0) ? true : false;
 
-        // use session to override default behavior
-        // based on specific cashier actions rather
-        // than transaction state
-        $override = CoreLocal::get('kickOverride');
-        CoreLocal::set('kickOverride',false);
-        if ($override === true) $ret = true;
-
-        return $ret;
+        return ($ret || $this->sessionOverride());
     }
 
     public function kickOnSignIn() 
     {
         return false;
     }
+
     public function kickOnSignOut()
     {
         return false;

@@ -1,4 +1,5 @@
 <?php
+use COREPOS\pos\lib\FormLib;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 include('../ini.php');
@@ -20,8 +21,8 @@ body {
 <h2>IT CORE Lane Installation: Database Updates</h2>
 <?php
 // apply selected update
-if (isset($_REQUEST['mupdate'])) {
-    $updateClass = $_REQUEST['mupdate'];
+if (FormLib::get('mupdate') !== '') {
+    $updateClass = FormLib::get('mupdate');
     if (strstr($updateClass, '-')) {
         $updateClass = str_replace('-', '\\', $updateClass);
     }
