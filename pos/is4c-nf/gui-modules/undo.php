@@ -25,7 +25,7 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class undo extends NoInputCorePage 
 {
-    var $msg;
+    private $msg;
 
     function body_content()
     {
@@ -35,7 +35,7 @@ class undo extends NoInputCorePage
         <span class="larger">
         <?php echo $this->msg ?>
         </span><br />
-        <form name="form" method='post' autocomplete="off" action="<?php echo $_SERVER["PHP_SELF"]; ?>">
+        <form name="form" method='post' autocomplete="off" action="<?php echo filter_input(INPUT_SERVER, "PHP_SELF"); ?>">
         <input type="text" name="reginput" id="reginput" tabindex="0" onblur="($'#reginput').focus();" >
         </form>
         <p>
@@ -87,11 +87,11 @@ class undo extends NoInputCorePage
                 return True;
             }
 
-            $db = 0;
+            $dbc = 0;
             $query = "";
             if ($register_no == CoreLocal::get("laneno")){
                 // look up transation locally
-                $db = Database::tDataConnect();
+                $dbc = Database::tDataConnect();
                 $query = "select upc, description, trans_type, trans_subtype,
                     trans_status, department, quantity, scale, unitPrice,
                     total, regPrice, tax, foodstamp, discount, memDiscount,
@@ -100,7 +100,7 @@ class undo extends NoInputCorePage
                     matched, card_no, trans_id
                     from localtranstoday where register_no = $register_no
                     and emp_no = $emp_no and trans_no = $old_trans_no
-                    and datetime >= " . $db->curdate() . "
+                    and datetime >= " . $dbc->curdate() . "
                     and trans_status <> 'X'
                     order by trans_id";
             }
@@ -112,7 +112,7 @@ class undo extends NoInputCorePage
             }
             else {
                 // look up transaction remotely
-                $db = Database::mDataConnect();
+                $dbc = Database::mDataConnect();
                 $query = "select upc, description, trans_type, trans_subtype,
                     trans_status, department, quantity, scale, unitPrice,
                     total, regPrice, tax, foodstamp, discount, memDiscount,
@@ -121,14 +121,14 @@ class undo extends NoInputCorePage
                     matched, card_no, trans_id
                     from dtransactions where register_no = $register_no
                     and emp_no = $emp_no and trans_no = $old_trans_no
-                    and datetime >= " . $db->curdate() . "
+                    and datetime >= " . $dbc->curdate() . "
                     and trans_status <> 'X'
                     order by trans_id";
             }
 
-            $result = $db->query($query);
+            $result = $dbc->query($query);
             // transaction not found
-            if ($db->num_rows($result) < 1){
+            if ($dbc->num_rows($result) < 1){
                 $this->box_color="errorColoredArea";
                 $this->msg = "Transaction not found";
                 return True;
@@ -142,7 +142,7 @@ class undo extends NoInputCorePage
             /* rebuild the transaction, line by line, in reverse */
             $card_no = 0;
             TransRecord::addcomment("VOIDING TRANSACTION $trans_num");
-            while ($row = $db->fetch_array($result)){
+            while ($row = $dbc->fetch_array($result)){
                 $card_no = $row["card_no"];
 
                 if ($row["upc"] == "TAX"){
@@ -203,5 +203,5 @@ class undo extends NoInputCorePage
     }
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new undo();
+AutoLoader::dispatch();
+

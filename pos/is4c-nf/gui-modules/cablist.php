@@ -70,15 +70,15 @@ class cablist extends NoInputCorePage
             ." group by register_no, emp_no, trans_no
             having sum((case when trans_type='T' THEN -1*total ELSE 0 end)) >= 30
             order by register_no,emp_no,trans_no desc";
-            $db = Database::tDataConnect();
+            $dbc = Database::tDataConnect();
             if (CoreLocal::get("standalone") == 0) {
                 $query = str_replace("localtranstoday","dtransactions",$query);
-                $db = Database::mDataConnect();
+                $dbc = Database::mDataConnect();
             }
-            $result = $db->query($query);
+            $result = $dbc->query($query);
 
         } else {
-            $db = Database::tDataConnect();
+            $dbc = Database::tDataConnect();
 
             $query = "
                 SELECT emp_no, 
@@ -88,18 +88,18 @@ class cablist extends NoInputCorePage
                 FROM localtranstoday 
                 WHERE register_no = ?
                     AND emp_no = ?
-                    AND datetime >= " . $db->curdate() . "
+                    AND datetime >= " . $dbc->curdate() . "
                 GROUP BY register_no, 
                     emp_no, 
                     trans_no
                 HAVING SUM((CASE WHEN trans_type='T' THEN -1*total ELSE 0 END)) >= 30
                 ORDER BY trans_no desc";
             $args = array(CoreLocal::get('laneno'), CoreLocal::get('CashierNo'));
-            $prep = $db->prepare($query);
-            $result = $db->execute($prep, $args);
+            $prep = $dbc->prepare($query);
+            $result = $dbc->execute($prep, $args);
         }
 
-        $num_rows = $db->num_rows($result);
+        $num_rows = $dbc->num_rows($result);
         ?>
 
         <div class="baseHeight">
@@ -111,7 +111,7 @@ class cablist extends NoInputCorePage
         <?php
         $selected = "selected";
         for ($i = 0; $i < $num_rows; $i++) {
-            $row = $db->fetch_array($result);
+            $row = $dbc->fetch_array($result);
             echo "<option value='".$row["emp_no"]."-".$row["register_no"]."-".$row["trans_no"]."'";
             echo $selected;
             echo ">lane ".substr(100 + $row["register_no"], -2)." Cashier ".$row["emp_no"]
@@ -153,7 +153,5 @@ class cablist extends NoInputCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new cablist();
+AutoLoader::dispatch();
 
-?>

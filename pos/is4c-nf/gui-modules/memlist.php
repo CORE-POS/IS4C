@@ -40,7 +40,6 @@ class memlist extends NoInputCorePage
     private $temp_result;
     private $temp_num_rows;
     private $entered;
-    private $db;
     private $temp_message = '';
 
     private $results = array();
@@ -237,7 +236,8 @@ class memlist extends NoInputCorePage
         $message = $this->temp_message;
 
         echo "<div class=\"baseHeight\">"
-            ."<form id=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\">";
+            ."<form id=\"selectform\" method=\"post\" action=\""
+            .filter_input(INPUT_SERVER, 'PHP_SELF') . "\">";
 
         // First check for a problem found in preprocess.
         if ($message != "") {
@@ -310,8 +310,8 @@ class memlist extends NoInputCorePage
                     } else {
                         $noticeR = $dbc->execute($noticeP, array($id)); 
                         $notice = '';
-                        while ($w = $dbc->fetchRow($noticeR)) {
-                            $notice .= ' ' . $w['message'];
+                        while ($row = $dbc->fetchRow($noticeR)) {
+                            $notice .= ' ' . $row['message'];
                         }
                         $notice_cache[$id] = $notice;
                         $label .= $notice;
@@ -345,8 +345,5 @@ class memlist extends NoInputCorePage
 // /class memlist
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-    new memlist();
-}
+AutoLoader::dispatch();
 
-?>

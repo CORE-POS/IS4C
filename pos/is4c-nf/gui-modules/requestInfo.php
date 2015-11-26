@@ -116,7 +116,8 @@ class requestInfo extends NoInputCorePage
         <span class="larger">
         <?php echo $this->request_header; ?>
         </span>
-        <form name="form" method="post" autocomplete="off" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+        <form name="form" method="post" autocomplete="off" 
+            action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <input type="text" id="reginput" name='input' tabindex="0" onblur="$('#input').focus()" />
         <input type="hidden" name="class" value="<?php echo $_REQUEST['class']; ?>" />
         </form>
@@ -132,7 +133,5 @@ class requestInfo extends NoInputCorePage
 
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new requestInfo();
+AutoLoader::dispatch();
 
-?>

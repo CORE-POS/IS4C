@@ -105,10 +105,10 @@ class undo_confirm extends BasicCorePage
                   cashier or the current cashier.
                 */
                 Database::loadglobalvalues();
-                $db = Database::tDataConnect();
+                $dbc = Database::tDataConnect();
                 $emp_no = CoreLocal::get('CashierNo');
                 $trans_no = CoreLocal::get('transno');
-                $db->query('UPDATE localtemptrans SET
+                $dbc->query('UPDATE localtemptrans SET
                             emp_no='.((int)$emp_no).',
                             trans_no='.((int)$trans_no).'
                             WHERE
@@ -130,10 +130,10 @@ class undo_confirm extends BasicCorePage
                   logged in cashier's values will be restored
                   via Database::loadglobalvalues().
                 */
-                $db = Database::tDataConnect();
+                $dbc = Database::tDataConnect();
                 $emp_no = CoreLocal::get('CashierNo');
                 $trans_no = CoreLocal::get('transno');
-                $db->query('UPDATE localtemptrans SET
+                $dbc->query('UPDATE localtemptrans SET
                             emp_no='.((int)$emp_no).',
                             trans_no='.((int)$trans_no).'
                             WHERE
@@ -150,8 +150,8 @@ class undo_confirm extends BasicCorePage
                 // just use the parser module here
                 // for simplicity; all its really
                 // doing is updating a couple session vars
-                $si = new ScrollItems();
-                $json = $si->parse($_REQUEST['reginput']);
+                $scroll = new ScrollItems();
+                $json = $scroll->parse($_REQUEST['reginput']);
                 $this->msg = $json['output'];
                 break;
             default:
@@ -162,5 +162,5 @@ class undo_confirm extends BasicCorePage
     }
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new undo_confirm();
+AutoLoader::dispatch();
+

@@ -30,8 +30,8 @@ class adminlist extends NoInputCorePage
     private $security;
     function preprocess()
     {
-        $me = CoreLocal::get('CashierNo');    
-        $this->security = Authenticate::getPermission($me);
+        $emp = CoreLocal::get('CashierNo');    
+        $this->security = Authenticate::getPermission($emp);
 
         if (isset($_REQUEST['selectlist'])){
             if (!FormLib::validateToken()) {
@@ -133,7 +133,7 @@ class adminlist extends NoInputCorePage
         <div class="centeredDisplay colored rounded">
             <span class="larger"><?php echo _("administrative tasks"); ?></span>
             <br />
-        <form id="selectform" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+        <form id="selectform" method="post" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <?php if (CoreLocal::get('touchscreen')) { ?>
         <button type="button" class="pos-button coloredArea"
             onclick="scrollDown('#selectlist');">
@@ -180,6 +180,5 @@ class adminlist extends NoInputCorePage
 
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new adminlist();
-?>
+AutoLoader::dispatch();
+

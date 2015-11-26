@@ -61,16 +61,16 @@ class suspendedlist extends NoInputCorePage
             ." WHERE datetime >= " . date("'Y-m-d 00:00:00'")
             ." GROUP BY register_no, emp_no, trans_no";
 
-        $db_a = Database::tDataConnect();
+        $dbc_a = Database::tDataConnect();
         $result = "";
         if (CoreLocal::get("standalone") == 1) {
-            $result = $db_a->query($query_local);
+            $result = $dbc_a->query($query_local);
         } else {
-            $db_a = Database::mDataConnect();
-            $result = $db_a->query($query_local);
+            $dbc_a = Database::mDataConnect();
+            $result = $dbc_a->query($query_local);
         }
 
-        $num_rows = $result ? $db_a->num_rows($result) : 0;
+        $num_rows = $result ? $dbc_a->num_rows($result) : 0;
         
         /* if there are suspended transactions available, 
          * store the result and row count as class variables
@@ -82,7 +82,7 @@ class suspendedlist extends NoInputCorePage
         if ($num_rows > 0){
             $this->temp_result = $result;
             $this->temp_num_rows = $num_rows;
-            $this->temp_db = $db_a;
+            $this->temp_db = $dbc_a;
 
             return true;
         } else {
@@ -99,17 +99,18 @@ class suspendedlist extends NoInputCorePage
     {
         $num_rows = $this->temp_num_rows;
         $result = $this->temp_result;
-        $db = $this->temp_db;
+        $dbc = $this->temp_db;
 
         echo "<div class=\"baseHeight\">"
             ."<div class=\"listbox\">"
-            ."<form id=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\">\n"
+            ."<form id=\"selectform\" method=\"post\" action=\""
+            .filter_input(INPUT_SERVER, 'PHP_SELF') . "\">\n"
             ."<select name=\"selectlist\" size=\"15\" onblur=\"\$('#selectlist').focus();\"
                 id=\"selectlist\">";
 
         $selected = "selected";
         for ($i = 0; $i < $num_rows; $i++) {
-            $row = $db->fetch_array($result);
+            $row = $dbc->fetch_array($result);
             echo "<option value='".$row["register_no"]."::".$row["emp_no"]."::".$row["trans_no"]."' ".$selected
                 ."> lane ".substr(100 + $row["register_no"], -2)." Cashier ".substr(100 + $row["emp_no"], -2)
                 ." #".$row["trans_no"]." -- $".$row["total"]."\n";
@@ -144,16 +145,16 @@ class suspendedlist extends NoInputCorePage
         $query_del = "DELETE FROM suspended WHERE register_no = ".$reg." AND emp_no = "
             .$emp." AND trans_no = ".$trans;
 
-        $db_a = Database::tDataConnect();
+        $dbc_a = Database::tDataConnect();
         $success = false;
 
         // use SQLManager's transfer method when not in stand alone mode
         // to eliminate the cross server query - andy 8/31/07
         if (CoreLocal::get("standalone") == 0){
-            $db_a->add_connection(CoreLocal::get("mServer"),CoreLocal::get("mDBMS"),
+            $dbc_a->add_connection(CoreLocal::get("mServer"),CoreLocal::get("mDBMS"),
                 CoreLocal::get("mDatabase"),CoreLocal::get("mUser"),CoreLocal::get("mPass"));
 
-            $cols = Database::getMatchingColumns($db_a, "localtemptrans", "suspended");
+            $cols = Database::getMatchingColumns($dbc_a, "localtemptrans", "suspended");
             // localtemptrans might not actually be empty; let trans_id
             // populate via autoincrement rather than copying it from
             // the suspended table
@@ -169,17 +170,17 @@ class suspendedlist extends NoInputCorePage
                             AND trans_no = $trans
                             AND datetime >= " . date("'Y-m-d 00:00:00'") . "
                         ORDER BY trans_id";
-            $success = $db_a->transfer(CoreLocal::get("mDatabase"),$remoteQ,
+            $success = $dbc_a->transfer(CoreLocal::get("mDatabase"),$remoteQ,
                 CoreLocal::get("tDatabase"),"insert into localtemptrans ({$cols})");
             if ($success) {
-                $db_a->query($query_del,CoreLocal::get("mDatabase"));
+                $dbc_a->query($query_del,CoreLocal::get("mDatabase"));
             }
-            $db_a->close(CoreLocal::get("mDatabase"), true);
+            $dbc_a->close(CoreLocal::get("mDatabase"), true);
         } else {    
             // localtemptrans might not actually be empty; let trans_id
             // populate via autoincrement rather than copying it from
             // the suspended table
-            $def = $db_a->table_definition('localtemptrans');
+            $def = $dbc_a->table_definition('localtemptrans');
             $cols = '';
             foreach($def as $name=>$info){
                 if ($name == 'trans_id') continue;
@@ -195,16 +196,16 @@ class suspendedlist extends NoInputCorePage
                             AND trans_no = $trans
                             AND datetime >= " . date("'Y-m-d 00:00:00'") . "
                         ORDER BY trans_id";
-            $success = $db_a->query("insert into localtemptrans ({$cols}) ".$localQ);
+            $success = $dbc_a->query("insert into localtemptrans ({$cols}) ".$localQ);
             if ($success) {
-                $db_a->query($query_del);
+                $dbc_a->query($query_del);
             }
         }
 
         $query_update = "update localtemptrans set register_no = ".CoreLocal::get("laneno").", emp_no = ".CoreLocal::get("CashierNo")
             .", trans_no = ".CoreLocal::get("transno");
 
-        $db_a->query($query_update);
+        $dbc_a->query($query_update);
 
         /**
           Add a log record after succesfully

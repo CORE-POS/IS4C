@@ -89,7 +89,7 @@ class nslogin extends NoInputCorePage
         <?php echo $this->heading ?>
         </span><br />
         <form name="form" id="nsform" method="post" autocomplete="off" 
-            action="<?php echo $_SERVER['PHP_SELF']; ?>">
+            action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <input type="password" name="userPassword" tabindex="0" 
             onblur="$('#userPassword').focus();" id="userPassword" />
         <input type="hidden" id="reginput" name="reginput" value="" />
@@ -105,8 +105,5 @@ class nslogin extends NoInputCorePage
 
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-    new nslogin();
-}
+AutoLoader::dispatch();
 
-?>

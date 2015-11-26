@@ -92,7 +92,7 @@ class fsTotalConfirm extends NoInputCorePage
         <?php if (empty($this->tendertype)) { ?>
         <span class="larger">Customer is using the</span>
         <?php } ?>
-        <form id="selectform" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+        <form id="selectform" method="post" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
 
         <?php if (empty($this->tendertype)) { ?>
             <?php $stem = MiscLib::baseURL() . 'graphics/'; ?>
@@ -134,8 +134,5 @@ class fsTotalConfirm extends NoInputCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-    new fsTotalConfirm();
-}
+AutoLoader::dispatch();
 
-?>

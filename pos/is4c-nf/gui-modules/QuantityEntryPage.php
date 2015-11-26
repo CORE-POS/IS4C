@@ -186,8 +186,5 @@ class QuantityEntryPage extends BasicCorePage
     } // END true_body() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-    new QuantityEntryPage();
-}
+AutoLoader::dispatch();
 
-?>

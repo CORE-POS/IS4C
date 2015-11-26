@@ -50,9 +50,9 @@ class login2 extends BasicCorePage
             if (Authenticate::checkPassword($passwd)) {
                 Database::testremote();
                 UdpComm::udpSend("termReset");
-                $sd = MiscLib::scaleObject();
-                if (is_object($sd)) {
-                    $sd->ReadReset();
+                $sdObj = MiscLib::scaleObject();
+                if (is_object($sdObj)) {
+                    $sdObj->ReadReset();
                 }
 
                 /**
@@ -140,7 +140,7 @@ class login2 extends BasicCorePage
         <div class="box <?php echo $this->box_css_class; ?> rounded">
                 <b><?php echo _("log in"); ?></b>
                 <form id="formlocal" name="form" method="post" autocomplete="off" 
-                    action="<?php echo $_SERVER['PHP_SELF']; ?>">
+                    action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
                 <input type="password" name="userPassword" size="20" tabindex="0" 
                     onblur="$('#userPassword').focus();" id="userPassword" >
                 <input type="hidden" name="reginput" id="reginput" value="" />
@@ -168,8 +168,5 @@ class login2 extends BasicCorePage
 
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-    new login2();
-}
+AutoLoader::dispatch();
 
-?>

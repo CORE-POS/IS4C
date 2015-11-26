@@ -25,7 +25,6 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class login3 extends BasicCorePage 
 {
-
     var $color;
     var $img;
     var $msg;
@@ -87,7 +86,5 @@ class login3 extends BasicCorePage
 
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new login3();
+AutoLoader::dispatch();
 
-?>

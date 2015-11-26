@@ -69,7 +69,7 @@ class rplist extends NoInputCorePage
     
     function body_content()
     {
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
         $query = "
             SELECT register_no, 
                 emp_no, 
@@ -81,28 +81,27 @@ class rplist extends NoInputCorePage
             FROM localtranstoday 
             WHERE register_no = ?
                 AND emp_no = ?
-                AND datetime >= " . $db->curdate() . "
+                AND datetime >= " . $dbc->curdate() . "
             GROUP BY register_no, 
                 emp_no, 
                 trans_no 
             ORDER BY trans_no DESC";
         $args = array(CoreLocal::get('laneno'), CoreLocal::get('CashierNo')); 
-        $prep = $db->prepare($query);
-        $result = $db->execute($prep, $args);
-        $num_rows = $db->num_rows($result);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, $args);
+        $num_rows = $dbc->num_rows($result);
         ?>
 
         <div class="baseHeight">
         <div class="listbox">
         <form name="selectform" method="post" id="selectform" 
-            action="<?php echo $_SERVER['PHP_SELF']; ?>" >
+            action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>" >
         <select name="selectlist" size="15" id="selectlist"
             onblur="$('#selectlist').focus()" >
 
         <?php
         $selected = "selected";
-        for ($i = 0; $i < $num_rows; $i++) {
-            $row = $db->fetch_array($result);
+        while ($row = $dbc->fetchRow($result)) {
             echo "<option value='".$row["register_no"]."::".$row["emp_no"]."::".$row["trans_no"]."'";
             echo $selected;
             echo ">lane ".substr(100 + $row["register_no"], -2)." Cashier ".substr(100 + $row["emp_no"], -2)
@@ -142,7 +141,5 @@ class rplist extends NoInputCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new rplist();
+AutoLoader::dispatch();
 
-?>

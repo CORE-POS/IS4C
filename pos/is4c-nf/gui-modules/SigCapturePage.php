@@ -212,7 +212,5 @@ class SigCapturePage extends BasicCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new SigCapturePage();
+AutoLoader::dispatch();
 
-?>

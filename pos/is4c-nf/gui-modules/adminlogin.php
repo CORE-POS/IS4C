@@ -96,7 +96,7 @@ class adminlogin extends NoInputCorePage
                 $this->box_color="errorColoredArea";
                 $this->msg = _("re-enter admin password");
             } else {
-                $db = Database::pDataConnect();
+                $dbc = Database::pDataConnect();
                 if (Authenticate::checkPermission($passwd, $class::$adminLoginLevel)) {
                     $this->approvedAction($class, $passwd);
 
@@ -161,7 +161,7 @@ class adminlogin extends NoInputCorePage
         <?php echo $this->heading ?>
         </span><br />
         <form name="form" id="formlocal" method="post" 
-            autocomplete="off" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+            autocomplete="off" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <input type="password" id="userPassword" name="userPassword" tabindex="0" onblur="$('#userPassword').focus();" />
         <input type="hidden" name="reginput" id="reginput" value="" />
         <input type="hidden" name="class" value="<?php echo FormLib::get('class'); ?>" />

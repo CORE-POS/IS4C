@@ -34,7 +34,6 @@ class drawerPage extends NoInputCorePage
         $this->my_drawer = ReceiptLib::currentDrawer();
         $this->available = ReceiptLib::availableDrawers();
         $this->is_admin = false;
-        $db = Database::pDataConnect();
         $sec = Authenticate::getPermission(CoreLocal::get('CashierNo'));
         if ($sec >= 30) {
             $this->is_admin = true;
@@ -106,13 +105,13 @@ class drawerPage extends NoInputCorePage
         if ($this->my_drawer == 0)
             $msg = 'You do not have a drawer';
         $num_drawers = (CoreLocal::get('dualDrawerMode')===1) ? 2 : 1;
-        $db = Database::pDataConnect();
+        $dbc = Database::pDataConnect();
         ?>
         <div class="baseHeight">
         <div class="centeredDisplay colored">
             <span class="larger"><?php echo $msg; ?></span>
             <br />
-        <form id="selectform" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+        <form id="selectform" method="post" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <select name="selectlist" id="selectlist" onblur="$('#selectlist').focus();">
         <option value=''>
         <?php 
@@ -121,9 +120,9 @@ class drawerPage extends NoInputCorePage
                 $nameQ = 'SELECT FirstName FROM drawerowner as d
                     LEFT JOIN employees AS e ON e.emp_no=d.emp_no
                     WHERE d.drawer_no='.($i+1);
-                $name = $db->query($nameQ);
-                if ($db->num_rows($name) > 0)
-                    $name = array_pop($db->fetch_row($name));
+                $name = $dbc->query($nameQ);
+                if ($dbc->num_rows($name) > 0)
+                    $name = array_pop($dbc->fetch_row($name));
                 if (empty($name)) $name = 'Unassigned';
                 printf('<option value="TO%d">Take over drawer #%d (%s)</option>',
                     ($i+1),($i+1),$name);
@@ -151,6 +150,5 @@ class drawerPage extends NoInputCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new drawerPage();
-?>
+AutoLoader::dispatch();
+
