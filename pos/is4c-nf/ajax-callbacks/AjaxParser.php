@@ -57,7 +57,7 @@ class AjaxParser extends AjaxCallback
         CoreLocal::set("strEntered",$entered);
 
         $json = array();
-        $sd = MiscLib::scaleObject();
+        $sdObj = MiscLib::scaleObject();
         if ($entered != "") {
             /* this breaks the model a bit, but I'm putting
              * putting the CC parser first manually to minimize
@@ -72,9 +72,9 @@ class AjaxParser extends AjaxCallback
                     CoreLocal::set("CachePanEncBlock",$entered);
                 }
 
-                $pe = new paycardEntered();
-                if ($pe->check($entered)){
-                    $valid = $pe->parse($entered);
+                $pce = new paycardEntered();
+                if ($pce->check($entered)){
+                    $valid = $pce->parse($entered);
                     $entered = "PAYCARD";
                     CoreLocal::set("strEntered","");
                     $json = $valid;
@@ -97,9 +97,9 @@ class AjaxParser extends AjaxCallback
 
         foreach (CoreLocal::get("preparse_chain") as $cn){
             if (!class_exists($cn)) continue;
-            $p = new $cn();
-            if ($p->check($entered))
-                $entered = $p->parse($entered);
+            $pre = new $cn();
+            if ($pre->check($entered))
+                $entered = $pre->parse($entered);
                 if (!$entered || $entered == "")
                     break;
         }
@@ -117,9 +117,9 @@ class AjaxParser extends AjaxCallback
             $result = False;
             foreach (CoreLocal::get("parse_chain") as $cn){
                 if (!class_exists($cn)) continue;
-                $p = new $cn();
-                if ($p->check($entered)){
-                    $result = $p->parse($entered);
+                $parse = new $cn();
+                if ($parse->check($entered)){
+                    $result = $parse->parse($entered);
                     break;
                 }
             }
@@ -138,8 +138,8 @@ class AjaxParser extends AjaxCallback
 
                 $json = $result;
                 if (isset($result['udpmsg']) && $result['udpmsg'] !== False){
-                    if (is_object($sd))
-                        $sd->WriteToScale($result['udpmsg']);
+                    if (is_object($sdObj))
+                        $sdObj->WriteToScale($result['udpmsg']);
                 }
             } else {
                 $arr = array(
@@ -147,8 +147,8 @@ class AjaxParser extends AjaxCallback
                     'target'=>'.baseHeight',
                     'output'=>DisplayLib::inputUnknown());
                 $json = $arr;
-                if (is_object($sd))
-                    $sd->WriteToScale('errorBeep');
+                if (is_object($sdObj))
+                    $sdObj->WriteToScale('errorBeep');
             }
         }
 

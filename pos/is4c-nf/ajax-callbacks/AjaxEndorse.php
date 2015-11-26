@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class AjaxEndorse extends AjaxCallback
@@ -29,8 +30,8 @@ class AjaxEndorse extends AjaxCallback
 
     public function ajax($input=array())
     {
-        $endorseType = isset($_REQUEST['type']) ? $_REQUEST['type'] : '';
-        $amount = isset($_REQUEST['amount']) ? $_REQUEST['amount'] : '';
+        $endorseType = FormLib::get('type', '');
+        $amount = FormLib::get('amount', '');
         if (strlen($endorseType) > 0) {
 
             // close session so if printer hangs
