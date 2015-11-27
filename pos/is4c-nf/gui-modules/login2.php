@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 AutoLoader::LoadMap();
 CoreState::loadParams();
@@ -31,23 +32,28 @@ class login2 extends BasicCorePage
     private $box_css_class;
     private $msg;
 
+    private function getPassword()
+    {
+        $passwd = FormLib::get('reginput');
+        if ($passwd !== '') {
+            UdpComm::udpSend('goodBeep');
+        } else {
+            $passwd = FormLib::get('userPassword');
+        }
+
+        return $passwd;
+    }
+
     public function preprocess()
     {
         $this->box_css_class = 'coloredArea';
         $this->msg = _('please enter your password');
         $this->body_class = '';
 
-        if (isset($_REQUEST['reginput']) || isset($_REQUEST['userPassword'])) {
-
-            $passwd = '';
-            if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])) {
-                $passwd = $_REQUEST['reginput'];
-                UdpComm::udpSend('goodBeep');
-            } elseif (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword'])) {
-                $passwd = $_REQUEST['userPassword'];
-            }
-
+        if (FormLib::get('reginput', false) !== false || FormLib::get('userPassword', false) !== false) {
+            $passwd = $this->getPassword();
             if (Authenticate::checkPassword($passwd)) {
+
                 Database::testremote();
                 UdpComm::udpSend("termReset");
                 $sdObj = MiscLib::scaleObject();

@@ -21,13 +21,65 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class drawerPage extends NoInputCorePage 
 {
-    var $is_admin;
-    var $my_drawer;
-    var $available;
+    private $is_admin = false;
+    private $my_drawer = 0;
+    private $available = array();
+
+    private function giveUp()
+    {
+        if (empty($this->available) && !$this->is_admin && $this->my_drawer == 0){
+            // no drawer available and not admin
+            // sign out and go back to main login screen
+            Database::setglobalvalue("LoggedIn", 0);
+            CoreLocal::set("LoggedIn",0);
+            CoreLocal::set("training",0);
+            CoreLocal::set("gui-scale","no");
+            $this->change_page($this->page_url."gui-modules/login2.php");
+        } else {
+            $this->change_page($this->page_url."gui-modules/pos2.php");
+        }
+
+        return false;
+    }
+
+    private function takeOver($new_drawer)
+    {
+        // take over a drawer
+        if ($this->my_drawer != 0){
+            // free up the current drawer if it exists
+            ReceiptLib::drawerKick();
+            ReceiptLib::freeDrawer($this->my_drawer);
+        }
+        // switch to the requested drawer
+        ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$new_drawer);
+        ReceiptLib::drawerKick();
+        $this->my_drawer = $new_drawer;
+    }
+
+    private function switchDrawer($new_drawer)
+    {
+        foreach($this->available as $id){
+            // verify the requested drawer is available
+            if ($new_drawer == $id){
+                if ($this->my_drawer != 0){
+                    // free up the current drawer if it exists
+                    ReceiptLib::drawerKick();
+                    ReceiptLib::freeDrawer($this->my_drawer);
+                }
+                // switch to the requested drawer
+                ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$new_drawer);
+                ReceiptLib::drawerKick();
+                $this->my_drawer = $new_drawer;
+
+                break;
+            }
+        }
+    }
 
     function preprocess()
     {
@@ -39,57 +91,19 @@ class drawerPage extends NoInputCorePage
             $this->is_admin = true;
         }
 
-        if (isset($_REQUEST['selectlist'])){
-            if (empty($_REQUEST['selectlist'])){
-                if (empty($this->available) && !$this->is_admin && $this->my_drawer == 0){
-                    // no drawer available and not admin
-                    // sign out and go back to main login screen
-                    Database::setglobalvalue("LoggedIn", 0);
-                    CoreLocal::set("LoggedIn",0);
-                    CoreLocal::set("training",0);
-                    CoreLocal::set("gui-scale","no");
-                    $this->change_page($this->page_url."gui-modules/login2.php");
-                }
-                else {
-                    $this->change_page($this->page_url."gui-modules/pos2.php");
-                }
-                return False;
+        if (FormLib::get('selectlist', false) !== false) {
+            $choice = FormLib::get('selectlist');
+            if (empty($choice)) {
+                return $this->giveUp();
             }
-            if (substr($_REQUEST['selectlist'],0,2) == 'TO' && $this->is_admin){
-                // take over a drawer
-                $new_drawer = substr($_REQUEST['selectlist'],2);
-                if ($this->my_drawer != 0){
-                    // free up the current drawer if it exists
-                    ReceiptLib::drawerKick();
-                    ReceiptLib::freeDrawer($this->my_drawer);
-                }
-                // switch to the requested drawer
-                ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$new_drawer);
-                ReceiptLib::drawerKick();
-                $this->my_drawer = $new_drawer;
-            }
-            elseif (substr($_REQUEST['selectlist'],0,2) == 'SW'){
-                // switch to available drawer    
-                $new_drawer = substr($_REQUEST['selectlist'],2);
-                foreach($this->available as $id){
-                    // verify the requested drawer is available
-                    if ($new_drawer == $id){
-                        if ($this->my_drawer != 0){
-                            // free up the current drawer if it exists
-                            ReceiptLib::drawerKick();
-                            ReceiptLib::freeDrawer($this->my_drawer);
-                        }
-                        // switch to the requested drawer
-                        ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$new_drawer);
-                        ReceiptLib::drawerKick();
-                        $this->my_drawer = $new_drawer;
-
-                        break;
-                    }
-                }
+            if (substr($choice,0,2) == 'TO' && $this->is_admin){
+                $this->takeOver(substr($choice, 2));
+            } elseif (substr($choice,0,2) == 'SW') {
+                $this->switchDrawer(substr($choice, 2));
             }
         }
-        return True;
+
+        return true;
     }
 
     function head_content()
@@ -148,6 +162,16 @@ class drawerPage extends NoInputCorePage
         $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
         $this->add_onload_command("\$('#selectlist').focus();");
     } // END body_content() FUNCTION
+
+    public function unitTest($phpunit)
+    {
+        ob_start();
+        $phpunit->assertEquals(false, $this->giveUp());
+        $this->switchDrawer(1);
+        $this->takeOver(1);
+        $phpunit->assertEquals(1, $this->my_drawer);
+        ob_get_clean();
+    }
 }
 
 AutoLoader::dispatch();

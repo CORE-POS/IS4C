@@ -22,7 +22,6 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\FormLib;
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class adminlist extends NoInputCorePage 
@@ -33,90 +32,95 @@ class adminlist extends NoInputCorePage
         $emp = CoreLocal::get('CashierNo');    
         $this->security = Authenticate::getPermission($emp);
 
-        if (isset($_REQUEST['selectlist'])){
+        if (FormLib::get('selectlist', false) !== false) {
+            $choice = FormLib::get('selectlist');
             if (!FormLib::validateToken()) {
                 return false;
             }
-            if (empty($_REQUEST['selectlist'])){
+            if (empty($choice)) {
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
-            }
-            elseif ($_REQUEST['selectlist'] == 'SUSPEND'){
-                Database::getsubtotals();
-                if (CoreLocal::get("LastID") == 0) {
-                    CoreLocal::set("boxMsg",_("no transaction in progress"));
-                    CoreLocal::set('boxMsgButtons', array(
-                        'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-                    ));
-                    $this->change_page($this->page_url."gui-modules/boxMsg2.php");
-                    return False;
-                }
-                else {
-                    // ajax call to end transaction
-                    // and print receipt
-                    $ref = SuspendLib::suspendorder();
-                    $this->add_onload_command("\$.ajax({
-                        type:'post',
-                        url:'{$this->page_url}ajax-callbacks/ajax-end.php',
-                        cache: false,
-                        data: 'receiptType=suspended&ref={$ref}',
-                        dataType: 'json',
-                        success: function(data){
-                            \$.ajax({
-                            type:'post',
-                            url:'{$this->page_url}ajax-callbacks/ajax-transaction-sync.php',
-                            cache: false,
-                            success: function(data){
-                                location='{$this->page_url}gui-modules/pos2.php';
-                            },
-                            error: function(e1){
-                                location='{$this->page_url}gui-modules/pos2.php';
-                            }
-                            });
-                        },
-                        error: function(e1){
-                            location='{$this->page_url}gui-modules/pos2.php';
-                        }
-                        });");
-                    return True;
-                }
-            }
-            else if ($_REQUEST['selectlist'] == 'RESUME'){
-                Database::getsubtotals();
-                if (CoreLocal::get("LastID") != 0) {
-                    CoreLocal::set("boxMsg",_("transaction in progress"));
-                    CoreLocal::set('boxMsgButtons', array(
-                        'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-                    ));
-                    $this->change_page($this->page_url."gui-modules/boxMsg2.php");
-                }
-                elseif (SuspendLib::checksuspended() == 0) {
-                    CoreLocal::set("boxMsg",_("no suspended transaction"));
-                    CoreLocal::set('boxMsgButtons', array(
-                        'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-                    ));
-                    CoreLocal::set("strRemembered","");
-                    $this->change_page($this->page_url."gui-modules/boxMsg2.php");
-                }
-                else {
-                    $this->change_page($this->page_url."gui-modules/suspendedlist.php");
-                }
-                return False;
-            }
-            else if ($_REQUEST['selectlist'] == 'TR'){
+            } elseif ($choice == 'SUSPEND') {
+                return $this->suspendTransaction();
+            } elseif ($choice == 'RESUME') {
+                return $this->resumeTransaction();
+            } elseif ($choice == 'TR') {
                 TenderReport::printReport();
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
-            }
-            else if ($_REQUEST['selectlist'] == 'OTR' && $this->security >= 30){
+            } elseif ($choice == 'OTR' && $this->security >= 30){
                 $this->change_page($this->page_url.'gui-modules/requestInfo.php?class=AnyTenderReportRequest');
                 return False;
-            } elseif ($_REQUEST['selectlist'] == 'UNDO' && $this->security >= 30){
+            } elseif ($choice == 'UNDO' && $this->security >= 30){
                 $this->change_page($this->page_url . 'gui-modules/undo.php');
                 return false;
             }
         }
         return True;
+    }
+
+    private function suspendTransaction()
+    {
+        Database::getsubtotals();
+        if (CoreLocal::get("LastID") == 0) {
+            CoreLocal::set("boxMsg",_("no transaction in progress"));
+            CoreLocal::set('boxMsgButtons', array(
+                'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            ));
+            $this->change_page($this->page_url."gui-modules/boxMsg2.php");
+            return False;
+        } else {
+            // ajax call to end transaction
+            // and print receipt
+            $ref = SuspendLib::suspendorder();
+            $this->add_onload_command("\$.ajax({
+                type:'post',
+                url:'{$this->page_url}ajax-callbacks/ajax-end.php',
+                cache: false,
+                data: 'receiptType=suspended&ref={$ref}',
+                dataType: 'json',
+                success: function(data){
+                    \$.ajax({
+                    type:'post',
+                    url:'{$this->page_url}ajax-callbacks/ajax-transaction-sync.php',
+                    cache: false,
+                    success: function(data){
+                        location='{$this->page_url}gui-modules/pos2.php';
+                    },
+                    error: function(e1){
+                        location='{$this->page_url}gui-modules/pos2.php';
+                    }
+                    });
+                },
+                error: function(e1){
+                    location='{$this->page_url}gui-modules/pos2.php';
+                }
+                });");
+            return True;
+        }
+    }
+
+    private function resumeTransaction()
+    {
+        Database::getsubtotals();
+        if (CoreLocal::get("LastID") != 0) {
+            CoreLocal::set("boxMsg",_("transaction in progress"));
+            CoreLocal::set('boxMsgButtons', array(
+                'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            ));
+            $this->change_page($this->page_url."gui-modules/boxMsg2.php");
+        } elseif (SuspendLib::checksuspended() == 0) {
+            CoreLocal::set("boxMsg",_("no suspended transaction"));
+            CoreLocal::set('boxMsgButtons', array(
+                'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            ));
+            CoreLocal::set("strRemembered","");
+            $this->change_page($this->page_url."gui-modules/boxMsg2.php");
+        } else {
+            $this->change_page($this->page_url."gui-modules/suspendedlist.php");
+        }
+
+        return false;
     }
 
     function head_content(){

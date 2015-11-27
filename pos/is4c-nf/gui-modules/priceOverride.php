@@ -40,7 +40,7 @@ class PriceOverride extends NoInputCorePage {
         if ($dbc->num_rows($res)==0){
             // current record cannot be repriced
             $this->change_page($this->page_url."gui-modules/pos2.php");
-            return False;
+            return false;
         }
         $row = $dbc->fetch_row($res);
         $this->description = $row['description'];
@@ -51,39 +51,50 @@ class PriceOverride extends NoInputCorePage {
 
             if ($input == "CL"){
                 if ($this->price == "$0.00"){
-                    $query = sprintf("UPDATE localtemptrans SET trans_type='L',
-                                trans_subtype='OG',charflag='PO',total=0
-                                WHERE trans_id=".(int)$line_id);
-                    $res = $dbc->query($query);
+                    $this->markZeroRecord($line_id);
                 }
                 // override canceled; go home
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
-            } else if (is_numeric($input) && $input != 0){
-                $cents = 0;
-                $dollars = 0;
-                if (strlen($input)==1 || strlen($input)==2)
-                    $cents = $input;
-                else {
-                    $cents = substr($input,-2);
-                    $dollars = substr($input,0,strlen($input)-2);
-                }
-                $ttl = ((int)$dollars) + ((int)$cents / 100.0);
-                $ttl = number_format($ttl,2);
-                if ($row['department'] == CoreLocal::get("BottleReturnDept"))
-                    $ttl = $ttl * -1;
-                    
-                $query = sprintf("UPDATE localtemptrans SET unitPrice=%.2f, regPrice=%.2f,
-                    total = quantity*%.2f, charflag='PO'
-                    WHERE trans_id=%d",$ttl,$ttl,$ttl,$line_id);
-                $res = $dbc->query($query);    
-
+            } elseif (is_numeric($input) && $input != 0){
+                $this->rePrice($input);
                 $this->change_page($this->page_url."gui-modules/pos2.php");
-                return False;
+                return false;
             }
         }
 
         return True;
+    }
+
+    private function markZeroRecord($line_id)
+    {
+        $dbc = Database::tDataConnect();
+        $query = sprintf("UPDATE localtemptrans SET trans_type='L',
+                    trans_subtype='OG',charflag='PO',total=0
+                    WHERE trans_id=".(int)$line_id);
+        $res = $dbc->query($query);
+    }
+
+    private function rePrice($input)
+    {
+        $dbc = Database::tDataConnect();
+        $cents = 0;
+        $dollars = 0;
+        if (strlen($input)==1 || strlen($input)==2)
+            $cents = $input;
+        else {
+            $cents = substr($input,-2);
+            $dollars = substr($input,0,strlen($input)-2);
+        }
+        $ttl = ((int)$dollars) + ((int)$cents / 100.0);
+        $ttl = number_format($ttl,2);
+        if ($row['department'] == CoreLocal::get("BottleReturnDept"))
+            $ttl = $ttl * -1;
+            
+        $query = sprintf("UPDATE localtemptrans SET unitPrice=%.2f, regPrice=%.2f,
+            total = quantity*%.2f, charflag='PO'
+            WHERE trans_id=%d",$ttl,$ttl,$ttl,$line_id);
+        $res = $dbc->query($query);    
     }
     
     function body_content() 

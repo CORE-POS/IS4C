@@ -25,32 +25,37 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class login3 extends BasicCorePage 
 {
-    var $color;
-    var $img;
-    var $msg;
+    private $color;
+    private $img;
+    private $msg;
 
     protected $mask_input = True;
+
+    private function getPassword()
+    {
+        $passwd = FormLib::get('reginput');
+        if ($passwd === '') {
+            $passwd = FormLib::get('scannerInput');
+            if ($passwd !== '') {
+                UdpComm::udpSend('goodBeep');
+            }
+        }
+
+        return $passwd;
+    }
 
     function preprocess(){
         $this->color = "coloredArea";
         $this->img = $this->page_url."graphics/key-icon.png";
         $this->msg = _("please enter password");
-        if (isset($_REQUEST['reginput']) || isset($_REQUEST['scannerInput'])){
+        if (FormLib::get('reginput', false) !== false || FormLib::get('scannerInput', false) !== false) {
 
-            $passwd = '';
-            if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])){
-                $passwd = $_REQUEST['reginput'];
-            }
-            elseif (isset($_REQUEST['scannerInput']) && !empty($_REQUEST['scannerInput'])){
-                $passwd = $_REQUEST['scannerInput'];
-                UdpComm::udpSend('goodBeep');
-            }
+            $passwd = $this->getPassword();
 
             if (Authenticate::checkPassword($passwd,4)){
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
-            }
-            else {
+            } else {
                 $this->color = "errorColoredArea";
                 $this->img = $this->page_url."graphics/redkey4.gif";
                 $this->msg = _("Password Invalid, Please Re-Enter");

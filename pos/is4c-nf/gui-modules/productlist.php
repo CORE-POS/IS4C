@@ -31,6 +31,27 @@ class productlist extends NoInputCorePage
     private $temp_num_rows;
     private $boxSize;
 
+    private function adjustUPC($entered)
+    {
+        // expand UPC-E to UPC-A
+        if (substr($entered, 0, 1) == 0 && strlen($entered) == 7) {
+            $parser = new UPC();
+            $entered = $parser->expandUPCE($entered);
+        }
+
+        // UPCs should be length 13 w/ at least one leading zero
+        if (strlen($entered) == 13 && substr($entered, 0, 1) != 0) 
+            $entered = "0".substr($entered, 0, 12);
+        else 
+            $entered = substr("0000000000000".$entered, -13);
+
+        // zero out the price field of scale UPCs
+        if (substr($entered, 0, 3) == "002")
+            $entered = substr($entered, 0, 8)."00000";
+
+        return $entered;
+    }
+
     function preprocess()
     {
         $entered = "";
@@ -60,21 +81,7 @@ class productlist extends NoInputCorePage
         }
 
         if (is_numeric($entered)) {
-            // expand UPC-E to UPC-A
-            if (substr($entered, 0, 1) == 0 && strlen($entered) == 7) {
-                $parser = new UPC();
-                $entered = $parser->expandUPCE($entered);
-            }
-
-            // UPCs should be length 13 w/ at least one leading zero
-            if (strlen($entered) == 13 && substr($entered, 0, 1) != 0) 
-                $entered = "0".substr($entered, 0, 12);
-            else 
-                $entered = substr("0000000000000".$entered, -13);
-
-            // zero out the price field of scale UPCs
-            if (substr($entered, 0, 3) == "002")
-                $entered = substr($entered, 0, 8)."00000";
+            $entered = $this->adjustUPC($entered);
         }
 
         /* Get all enabled plugins and standard modules of the base. */

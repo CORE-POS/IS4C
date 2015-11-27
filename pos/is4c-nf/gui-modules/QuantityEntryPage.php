@@ -58,6 +58,24 @@ class QuantityEntryPage extends BasicCorePage
     const MODE_INTEGER = 0;
     const MODE_PRECISE = 1;
 
+    private function getPrefixes($input_string)
+    {
+        $plu = '';
+        $prefix = '';
+        // trim numeric characters from right side of
+        // input. what remains, if anything, should be
+        // prefixes to the UPC
+        $matched = preg_match('/^(\D*)(\d+)$/', $input_string, $matches);
+        if ($matched) {
+            $prefix = $matches[1];
+            $plu = $matches[2];
+        } else {
+            $plu = $input_string;
+        }
+
+        return array($plu, $prefix);
+    }
+
     function preprocess()
     {
         $this->box_color="coloredArea";
@@ -67,11 +85,7 @@ class QuantityEntryPage extends BasicCorePage
             $this->msg = _('precision weight required');
         }
 
-        if (!isset($_REQUEST['reginput'])) {
-            return true;
-        }
-
-        $qtty = strtoupper(trim($_REQUEST["reginput"]));
+        $qtty = strtoupper(trim(FormLib::get('reginput')));
         if ($qtty == "CL") {
             /**
               Clear cancels
@@ -88,18 +102,7 @@ class QuantityEntryPage extends BasicCorePage
             }
 
             $input_string = FormLib::get('entered-item');
-            $plu = '';
-            $prefix = '';
-            // trim numeric characters from right side of
-            // input. what remains, if anything, should be
-            // prefixes to the UPC
-            $matched = preg_match('/^(\D*)(\d+)$/', $input_string, $matches);
-            if ($matched) {
-                $prefix = $matches[1];
-                $plu = $matches[2];
-            } else {
-                $plu = $input_string;
-            }
+            list($plu, $prefix) = $this->getPrefixes($input_string);
             CoreLocal::set("qttyvalid",1);
             $inp = $prefix . $qtty . '*' . $plu;
             $this->change_page(
@@ -109,12 +112,12 @@ class QuantityEntryPage extends BasicCorePage
                 . '&repeat=1');
 
             return false;
-        }
-
-        $this->box_color="errorColoredArea";
-        $this->msg = _("invalid quantity");
-        if ($mode == self::MODE_PRECISE) {
-            $this->msg = _('invalid precision weight');
+        } elseif ($qtty !== '') {
+            $this->box_color="errorColoredArea";
+            $this->msg = _("invalid quantity");
+            if ($mode == self::MODE_PRECISE) {
+                $this->msg = _('invalid precision weight');
+            }
         }
 
         return true;

@@ -49,6 +49,7 @@ class pos2 extends BasicCorePage
         }
 
         return true;
+    }
 
         /*
         $sd = MiscLib::scaleObject();
@@ -178,7 +179,6 @@ class pos2 extends BasicCorePage
 
         return true;
         */
-    }
 
     private function doRedirect($json)
     {
@@ -309,8 +309,9 @@ class pos2 extends BasicCorePage
             $lines = 11;
         }
         $this->input_header('action="pos2.php" onsubmit="return submitWrapper();"');
-        if (CoreLocal::get("timeout") != "")
+        if (CoreLocal::get("timeout") != "") {
             $this->add_onload_command("enableScreenLock();\n");
+        }
         $this->add_onload_command("\$('#reginput').keydown(function(ev){
                     switch(ev.which){
                     case 33:
@@ -333,18 +334,12 @@ class pos2 extends BasicCorePage
                         return getScaleWeight();
                     }
                 });\n");
-        /*
-        if (CoreLocal::get("msgrepeat") == 1)
-            $this->add_onload_command("submitWrapper();");
-        */
-        ?>
-        <div class="baseHeight">
-        <?php
+
+        echo '<div class="baseHeight">';
 
         CoreLocal::set("quantity",0);
         CoreLocal::set("multiple",0);
         CoreLocal::set("casediscount",0);
-
         // set memberID if not set already
         if (!CoreLocal::get("memberID")) {
             CoreLocal::set("memberID","0");
@@ -356,11 +351,11 @@ class pos2 extends BasicCorePage
             echo DisplayLib::plainmsg(CoreLocal::get("plainmsg"));
             CoreLocal::set("plainmsg",0);
             echo "</div>";
-        }
-        elseif (!empty($this->display))
+        } elseif (!empty($this->display)) {
             echo $this->display;
-        else
+        } else {
             echo DisplayLib::lastpage();
+        }
 
         echo "</div>"; // end base height
 
@@ -369,43 +364,46 @@ class pos2 extends BasicCorePage
         echo "</div>";
 
         if (CoreLocal::get("touchscreen")) {
-            echo '<div style="text-align: center;">
-            <button type="submit" 
-                class="quick_button pos-button coloredBorder"
-                style="margin: 0 10px 0 0;"
-                onclick="parseWrapper(\'QO1001\');">
-                Items
-            </button>
-            <button type="submit"
-                class="quick_button pos-button coloredBorder"
-                style="margin: 0 10px 0 0;"
-                onclick="parseWrapper(\'QO1002\');">
-                Total
-            </button>
-            <button type="submit" 
-                class="quick_button pos-button coloredBorder"
-                style="margin: 0 10px 0 0;"
-                onclick="parseWrapper(\'QO1003\');">
-                Member
-            </button>
-            <button type="submit" 
-                class="quick_button pos-button coloredBorder"
-                style="margin: 0 10px 0 0;"
-                onclick="parseWrapper(\'QO1004\');">
-                Tender
-            </button>
-            <button type="submit"
-                class="quick_button pos-button coloredBorder"
-                style="margin: 0 10px 0 0;"
-                onclick="parseWrapper(\'QO1005\');">
-                Misc
-            </button>
-            </div>';
+            $this->touchScreenKeys();
         }
     } // END body_content() FUNCTION
+
+    private function touchScreenKeys()
+    {
+        echo '<div style="text-align: center;">
+        <button type="submit" 
+            class="quick_button pos-button coloredBorder"
+            style="margin: 0 10px 0 0;"
+            onclick="parseWrapper(\'QO1001\');">
+            Items
+        </button>
+        <button type="submit"
+            class="quick_button pos-button coloredBorder"
+            style="margin: 0 10px 0 0;"
+            onclick="parseWrapper(\'QO1002\');">
+            Total
+        </button>
+        <button type="submit" 
+            class="quick_button pos-button coloredBorder"
+            style="margin: 0 10px 0 0;"
+            onclick="parseWrapper(\'QO1003\');">
+            Member
+        </button>
+        <button type="submit" 
+            class="quick_button pos-button coloredBorder"
+            style="margin: 0 10px 0 0;"
+            onclick="parseWrapper(\'QO1004\');">
+            Tender
+        </button>
+        <button type="submit"
+            class="quick_button pos-button coloredBorder"
+            style="margin: 0 10px 0 0;"
+            onclick="parseWrapper(\'QO1005\');">
+            Misc
+        </button>
+        </div>';
+    }
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new pos2();
+AutoLoader::dispatch();
 
-?>

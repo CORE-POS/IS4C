@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class nslogin extends NoInputCorePage 
@@ -30,20 +31,25 @@ class nslogin extends NoInputCorePage
     private $heading;
     private $msg;
 
+    private function getPassword()
+    {
+        $ret = FormLib::get('reginput');
+        if ($ret === '') {
+            $ret = FormLib::get('userPassword');
+        }
+
+        return $ret;
+    }
+
     function preprocess()
     {
         $this->color ="coloredArea";
         $this->heading = _("enter password");
         $this->msg = _("confirm no sales");
 
-        if (isset($_REQUEST['reginput']) || isset($_REQUEST['userPassword'])) {
+        if (FormLib::get('reginput', false) !== false || FormLib::get('userPassword', false) !== false) {
 
-            $passwd = '';
-            if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])) {
-                $passwd = $_REQUEST['reginput'];
-            } elseif (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword'])) {
-                $passwd = $_REQUEST['userPassword'];
-            }
+            $passwd = $this->getPassword();
 
             if (strtoupper($passwd) == "CL") {
                 $this->change_page($this->page_url."gui-modules/pos2.php");

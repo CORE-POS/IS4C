@@ -70,8 +70,8 @@ class rplist extends NoInputCorePage
         $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
         $this->add_onload_command("\$('#selectlist').focus();\n");
     }
-    
-    function body_content()
+
+    private function getTransactions()
     {
         $dbc = Database::tDataConnect();
         $query = "
@@ -93,9 +93,17 @@ class rplist extends NoInputCorePage
         $args = array(CoreLocal::get('laneno'), CoreLocal::get('CashierNo')); 
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
-        $num_rows = $dbc->num_rows($result);
-        ?>
+        $ret = array();
+        while ($row = $dbc->fetchRow($result)) {
+            $ret[] = $row;
+        }
 
+        return $ret;
+    }
+    
+    function body_content()
+    {
+        ?>
         <div class="baseHeight">
         <div class="listbox">
         <form name="selectform" method="post" id="selectform" 
@@ -105,7 +113,7 @@ class rplist extends NoInputCorePage
 
         <?php
         $selected = "selected";
-        while ($row = $dbc->fetchRow($result)) {
+        foreach ($this->getTransactions() as $row) {
             echo "<option value='".$row["register_no"]."::".$row["emp_no"]."::".$row["trans_no"]."'";
             echo $selected;
             echo ">lane ".substr(100 + $row["register_no"], -2)." Cashier ".substr(100 + $row["emp_no"], -2)

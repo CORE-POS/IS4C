@@ -55,8 +55,8 @@ class cablist extends NoInputCorePage
         $this->add_onload_command("selectSubmit('#selectlist', '#selectform', false, true)\n");
         $this->add_onload_command("\$('#selectlist').focus();\n");
     }
-    
-    function body_content()
+
+    private function getTransactions()
     {
         $fes = Authenticate::getPermission(CoreLocal::get('CashierNo'));
         /* if front end security >= 25, pull all
@@ -99,7 +99,18 @@ class cablist extends NoInputCorePage
             $result = $dbc->execute($prep, $args);
         }
 
-        $num_rows = $dbc->num_rows($result);
+        $ret = array();
+        while ($row = $dbc->fetchRow($result)) {
+            $ret[] = $row;
+        }
+
+        return $ret;
+    }
+    
+    function body_content()
+    {
+        $trans = $this->getTransactions();
+        $num_rows = count($trans);
         ?>
 
         <div class="baseHeight">
@@ -110,8 +121,7 @@ class cablist extends NoInputCorePage
 
         <?php
         $selected = "selected";
-        for ($i = 0; $i < $num_rows; $i++) {
-            $row = $dbc->fetch_array($result);
+        foreach ($trans as $row) {
             echo "<option value='".$row["emp_no"]."-".$row["register_no"]."-".$row["trans_no"]."'";
             echo $selected;
             echo ">lane ".substr(100 + $row["register_no"], -2)." Cashier ".$row["emp_no"]
