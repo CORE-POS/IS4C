@@ -743,55 +743,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         lttLib::clear();
 
-        CoreLocal::set('percentDiscount',5);
-        CoreLocal::set('transDiscount',0.51);
-        CoreLocal::set('taxTotal',1.45);
-        CoreLocal::set('fsTaxExempt',1.11);
-        CoreLocal::set('amtdue',9.55);
-        // should add four records
-        PrehLib::finalttl();
-
-        // verify discount record
-        $record = lttLib::genericRecord();
-        $record['description'] = 'Discount';
-        $record['trans_type'] = 'C';
-        $record['trans_status'] = 'D';
-        $record['unitPrice'] = -0.51;
-        $record['voided'] = 5;
-        lttLib::verifyRecord(1, $record, $this);
-
-        // verify subtotal record
-        $record = lttLib::genericRecord();
-        $record['upc'] = 'Subtotal';
-        $record['description'] = 'Subtotal';
-        $record['trans_type'] = 'C';
-        $record['trans_status'] = 'D';
-        $record['unitPrice'] = 0.34;
-        $record['voided'] = 11;
-        lttLib::verifyRecord(2, $record, $this);
-
-        // verify fs tax exempt record
-        $record = lttLib::genericRecord();
-        $record['upc'] = 'Tax';
-        $record['description'] = 'FS Taxable';
-        $record['trans_type'] = 'C';
-        $record['trans_status'] = 'D';
-        $record['unitPrice'] = 1.11;
-        $record['voided'] = 7;
-        lttLib::verifyRecord(3, $record, $this);
-
-        // verify total record
-        $record = lttLib::genericRecord();
-        $record['upc'] = 'Total';
-        $record['description'] = 'Total';
-        $record['trans_type'] = 'C';
-        $record['trans_status'] = 'D';
-        $record['unitPrice'] = 9.55;
-        $record['voided'] = 11;
-        lttLib::verifyRecord(4, $record, $this);
-
-        lttLib::clear();
-
         CoreLocal::set('cashierAge', 17);
         CoreLocal::set('cashierAgeOverride', 0);
         list($age_required, $json) = PrehLib::ageCheck(21, array());
