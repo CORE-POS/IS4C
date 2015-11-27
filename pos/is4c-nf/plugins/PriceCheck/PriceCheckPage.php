@@ -26,17 +26,19 @@ include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class PriceCheckPage extends NoInputCorePage 
 {
-    private $upc;
-    private $found;
-    private $pricing;
+    private $upc = '';
+    private $found = false;
+    private $pricing = array(
+        'sale'=>false,
+        'actual_price'=>'',
+        'memPrice'=>'',
+        'description'=>'',
+        'department'=>'',
+        'regular_price'=>'',
+    );
 
     function preprocess()
     {
-        $this->upc = "";
-        $this->found = false;
-        $this->pricing = array('sale'=>false,'actual_price'=>'','memPrice'=>'',
-            'description','department','regular_price');
-
         if (strtoupper(FormLib::get('reginput') == 'CL')) {
             // cancel
             $this->change_page($this->page_url."gui-modules/pos2.php");
@@ -55,22 +57,7 @@ class PriceCheckPage extends NoInputCorePage
             if ($row !== false) {
                 $this->found = true;
 
-                $discounttype = MiscLib::nullwrap($row["discounttype"]);
-                $DiscountObject = $this->getDiscountType($discounttype);
-
-                if ($DiscountObject->isSale()) {
-                    $this->pricing['sale'] = true;
-                }
-                $info = $DiscountObject->priceInfo($row,1);
-                $this->pricing['actual_price'] = sprintf('$%.2f%s',
-                    $info['unitPrice'],($row['scale']>0?' /lb':''));
-                $this->pricing['regular_price'] = sprintf('$%.2f%s',
-                    $info['regPrice'],($row['scale']>0?' /lb':''));
-                if ($info['memDiscount'] > 0) {
-                    $this->pricing['memPrice'] = sprintf('$%.2f%s',
-                        ($info['unitPrice']-$info['memDiscount']),
-                        ($row['scale']>0?' /lb':''));
-                }
+                $this->formatPricing($row);
                 $this->pricing['description'] = $row['description'];
                 $this->pricing['department'] = $row['dept_name'];
 
@@ -87,6 +74,26 @@ class PriceCheckPage extends NoInputCorePage
         }
 
         return true;
+    }
+
+    private function formatPricing($row)
+    {
+        $discounttype = MiscLib::nullwrap($row["discounttype"]);
+        $DiscountObject = $this->getDiscountType($discounttype);
+
+        if ($DiscountObject->isSale()) {
+            $this->pricing['sale'] = true;
+        }
+        $info = $DiscountObject->priceInfo($row,1);
+        $this->pricing['actual_price'] = sprintf('$%.2f%s',
+            $info['unitPrice'],($row['scale']>0?' /lb':''));
+        $this->pricing['regular_price'] = sprintf('$%.2f%s',
+            $info['regPrice'],($row['scale']>0?' /lb':''));
+        if ($info['memDiscount'] > 0) {
+            $this->pricing['memPrice'] = sprintf('$%.2f%s',
+                ($info['unitPrice']-$info['memDiscount']),
+                ($row['scale']>0?' /lb':''));
+        }
     }
 
     private function getDiscountType($discounttype)

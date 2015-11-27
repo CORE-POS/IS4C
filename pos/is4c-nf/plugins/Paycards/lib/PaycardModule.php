@@ -25,40 +25,28 @@ class PaycardModule
 {
     public static function ccEntered($validate, $json)
     {
-        $enabled = PaycardDialogs::enabledCheck();
-        if ($enabled !== true) {
-            $json['output'] = $enabled;
+        $this->trans_pan['pan'] = CoreLocal::get("paycard_PAN");
+        try {
+            $enabled = PaycardDialogs::enabledCheck();
+            // error checks based on processing mode
+            switch (CoreLocal::get("paycard_mode")) {
+                case PaycardLib::PAYCARD_MODE_VOID:
+                    // use the card number to find the trans_id
+                    $pan4 = substr($this->trans_pan['pan'],-4);
+                    $trans = array(CoreLocal::get('CashierNo'), CoreLocal::get('laneno'), CoreLocal::get('transno'));
+                    $result = PaycardDialogs::voidableCheck($pan4, $trans);
+                    return $this->paycard_void($result,$trans[1],$trans[2],$json);
+
+                case PaycardLib::PAYCARD_MODE_AUTH:
+                    if ($validate) {
+                        $valid = PaycardDialogs::validateCard($this->trans_pan['pan']);
+                    }
+                    return PaycardLib::setupAuthJson($json);
+            } // switch mode
+        } catch (Exception $ex) {
+            $json['output'] = $ex->getMessage();
             return $json;
         }
-
-        $this->trans_pan['pan'] = CoreLocal::get("paycard_PAN");
-
-        // error checks based on processing mode
-        switch (CoreLocal::get("paycard_mode")) {
-            case PaycardLib::PAYCARD_MODE_VOID:
-                // use the card number to find the trans_id
-                $pan4 = substr($this->trans_pan['pan'],-4);
-                $trans = array(CoreLocal::get('CashierNo'), CoreLocal::get('laneno'), CoreLocal::get('transno'));
-                list($success, $result) = PaycardDialogs::voidableCheck($pan4, $trans);
-                if ($success === true) {
-                    return $this->paycard_void($result,$trans[1],$trans[2],$json);
-                } else {
-                    $json['output'] = $result;
-                    return $json;
-                }
-                break;
-
-            case PaycardLib::PAYCARD_MODE_AUTH:
-                if ($validate) {
-                    $valid = PaycardDialogs::validateCard($this->trans_pan['pan']);
-                    if ($valid !== true) {
-                        $json['output'] = $valid;
-                        return $json;
-                    }
-                }
-                return PaycardLib::setupAuthJson($json);
-                break;
-        } // switch mode
 
         // if we're still here, it's an error
         PaycardLib::paycard_reset();
@@ -70,13 +58,6 @@ class PaycardModule
     {
         $this->voidTrans = "";
         $this->voidRef = "";
-        // situation checking
-        $enabled = PaycardDialogs::enabledCheck();
-        if ($enabled !== true) {
-            $json['output'] = $enabled;
-
-            return $json;
-        }
 
         // initialize
         $cashier = CoreLocal::get("CashierNo");
@@ -84,38 +65,19 @@ class PaycardModule
         $trans = CoreLocal::get("transno");
         if ($laneNo != -1) $lane = $laneNo;
         if ($transNo != -1) $trans = $transNo;
-        list($success, $request) = PaycardDialogs::getRequest(array($cashier, $lane, $trans), $transID);
-        if ($success === false) {
-            $json['output'] = $request;
+        try {
+            $enabled = PaycardDialogs::enabledCheck();
+            $request = PaycardDialogs::getRequest(array($cashier, $lane, $trans), $transID);
+            $response = PaycardDialogs::getResponse(array($cashier, $lane, $trans), $transID);
+            // look up any previous successful voids
+            $eligible = PaycardDialogs::notVoided(array($cashier, $lane, $trans), $transID);
+            $lineitem = PaycardDialogs::getTenderLine(array($cashier, $lane, $trans), $transID);
+            $valid = PaycardDialogs::validateVoid($request, $response, $lineitem, $transID);
+        } catch (Exception $ex) {
+            $json['output'] = $ex->getMessage();
             return $json;
         }
     
-        list($success, $response) = PaycardDialogs::getResponse(array($cashier, $lane, $trans), $transID);
-        if ($success === false) {
-            $json['output'] = $response;
-            return $json;
-        }
-
-        // look up any previous successful voids
-        $eligible = PaycardDialogs::notVoided(array($cashier, $lane, $trans), $transID);
-        if ($eligible === false) {
-            $json['output'] = $eligible;
-            return $json;
-        }
-
-        // look up the transaction tender line-item
-        list($success, $lineitem) = PaycardDialogs::getTenderLine(array($cashier, $lane, $trans), $transID);
-        if ($success === false) {
-            $json['output'] = $lineitem;
-            return $json;
-        }
-
-        $valid = PaycardDialogs::validateVoid($request, $response, $lineitem, $transID);
-        if ($valid !== true) {
-            $json['output'] = $valid;
-            return $json;
-        }
-
         // save the details
         CoreLocal::set("paycard_amount",self::isReturn($request['mode']) ? -1*$request['amount'] :  $request['amount']);
         CoreLocal::set("paycard_id",$transID);

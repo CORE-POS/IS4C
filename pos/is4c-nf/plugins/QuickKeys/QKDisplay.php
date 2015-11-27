@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class QKDisplay extends NoInputCorePage 
@@ -52,18 +53,14 @@ class QKDisplay extends NoInputCorePage
             (prevKey == 99 || prevKey == 67) ){
                 document.getElementById('doClear').value='1';
                 document.forms[0].submit();
-            }
-            else if (jsKey >= 49 && jsKey <= 57){
+            } else if (jsKey >= 49 && jsKey <= 57){
                 setSelected(jsKey-48);
-            }
-            else if (jsKey >= 97 && jsKey <= 105){
+            } else if (jsKey >= 97 && jsKey <= 105){
                 setSelected(jsKey-96);
-            }
-            else if (jsKey == 33 || jsKey == 38){
+            } else if (jsKey == 33 || jsKey == 38){
                 location = 
                     '<?php echo $this->plugin_url; ?>QKDisplay.php?offset=<?php echo ($this->offset - 1)?>';
-            }
-            else if (jsKey == 34 || jsKey == 40){
+            } else if (jsKey == 34 || jsKey == 40){
                 location = 
                     '<?php echo $this->plugin_url; ?>QKDisplay.php?offset=<?php echo ($this->offset + 1)?>';
             }
@@ -96,19 +93,19 @@ class QKDisplay extends NoInputCorePage
         $plugin_info = new QuickKeys();
         $this->plugin_url = $plugin_info->pluginUrl().'/';
 
-        $this->offset = isset($_REQUEST['offset'])?$_REQUEST['offset']:0;
+        $this->offset = FormLib::get('offset', 0);
 
-        if (count($_POST) > 0){
+        if (FormLib::get('quickkey_submit', false) !== false) {
             $output = "";
             $qstr = '';
-            if ($_REQUEST["clear"] == 0){
+            if (FormLib::get("clear") == 0) {
                 // submit process changes line break
                 // depending on platform
                 // apostrophes pick up slashes
-                $choice = str_replace("\r","",$_REQUEST["quickkey_submit"]);
+                $choice = str_replace("\r","",FormLib::get("quickkey_submit"));
                 $choice = stripslashes($choice);
 
-                $value = $_REQUEST[md5($choice)];
+                $value = FormLib::get(md5($choice));
 
                 $output = CoreLocal::get("qkInput").$value;
                 $qstr = '?reginput=' . urlencode($output) . '&repeat=1';
@@ -121,9 +118,9 @@ class QKDisplay extends NoInputCorePage
             } else {
                 $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
             }
-            return False;
+            return false;
         }
-        return True;
+        return true;
     } // END preprocess() FUNCTION
 
     function body_content()
@@ -147,19 +144,10 @@ class QKDisplay extends NoInputCorePage
             if ($count % 3 == 0) {
                 if ($count != 0) {
                     if ($num_pages > 1 && $count == 3){
-                        echo "<div class=\"qkArrowBox\">";
-                        echo '<button type=submit class="qkArrow pos-button coloredBorder"
-                            onclick="location=\'' . $this->plugin_url . 'QKDisplay.php?offset='. ($page-1) . '\'; return false;">
-                            Up</button>';
-                        echo "</div>";
+                        $this->pageButton('Up', $page-1);
                     }
                     if ($count == 6) {
-                        echo "<div class=\"qkArrowBox\">";
-                        echo '<button type="submit" class="pos-button errorColoredArea"
-                            onclick="$(\'#doClear\').val(1);">
-                            Cancel <span class="smaller">[clear]</span>
-                        </button>';
-                        echo "</div>";
+                        $this->clearButton('qkArrowBox');
                         $clearButton = true;
                     }
                     echo "</div>";
@@ -173,26 +161,35 @@ class QKDisplay extends NoInputCorePage
             if ($count > 8) break;
         }
         if (!$clearButton) {
-            echo "<div class=\"qkBox\"><div>";
-            echo '<button type="submit" class="quick_button pos-button errorColoredArea"
-                onclick="$(\'#doClear\').val(1);">
-                Cancel <span class="smaller">[clear]</span>
-            </button>';
-            echo "</div></div>";
+            $this->clearButton('qkBox');
+            echo "</div>";
         }
         if ($num_pages > 1) {
-            echo "<div class=\"qkArrowBox\">";
-            echo '<button type=submit class="qkArrow pos-button coloredBorder"
-                onclick="location=\'' . $this->plugin_url . 'QKDisplay.php?offset='. ($page+1) . '\'; return false;">
-                Down</button>';
-            echo "</div>";
-
+            $this->pageButton('Down', $page+1);
         }
         echo "</div>";
         echo "<input type=\"hidden\" value=\"0\" name=\"clear\" id=\"doClear\" />";    
         echo "</form>";
         echo "</div>";
     } // END body_content() FUNCTION
+
+    private function clearButton($class)
+    {
+        echo "<div class=\"{$class}\"><div>";
+        echo '<button type="submit" class="quick_button pos-button errorColoredArea"
+            onclick="$(\'#doClear\').val(1);">
+            Cancel <span class="smaller">[clear]</span>
+        </button></div>';
+    }
+
+    private function pageButton($title, $offset)
+    {
+        echo "<div class=\"qkArrowBox\">";
+        echo '<button type=submit class="qkArrow pos-button coloredBorder"
+            onclick="location=\'' . $this->plugin_url . 'QKDisplay.php?offset='. ($offset) . '\'; return false;">
+            ' . $title . '</button>';
+        echo "</div>";
+    }
 
 }
 

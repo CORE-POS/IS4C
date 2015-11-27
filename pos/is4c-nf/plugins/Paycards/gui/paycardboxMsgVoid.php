@@ -43,32 +43,30 @@ class paycardboxMsgVoid extends PaycardProcessPage {
     
             $continue = false;
             // when voiding tenders, the input must be an FEC's passcode
-            if( CoreLocal::get("paycard_mode") == PaycardLib::PAYCARD_MODE_VOID && $input != "" && substr($input,-2) != "CL") {
-                $db = Database::pDataConnect();
+            if (CoreLocal::get("paycard_mode") == PaycardLib::PAYCARD_MODE_VOID && $input != "" && substr($input,-2) != "CL") {
                 if (Authenticate::checkPermission($input, 11)) {
                     CoreLocal::set("adminP",$input);
                     $continue = true;
                 }
             }
             // when voiding items, no code is necessary, only confirmation
-            if( CoreLocal::get("paycard_mode") != PaycardLib::PAYCARD_MODE_VOID && $input == "")
+            if (CoreLocal::get("paycard_mode") != PaycardLib::PAYCARD_MODE_VOID && $input == "")
                 $continue = true;
             // go?
-            if( $continue) {
+            if ($continue) {
                 // send the request, then disable the form
                 $this->add_onload_command('paycard_submitWrapper();');
                 $this->action = "onsubmit=\"return false;\"";
             }
             // if we're still here, display prompt again
-        } // post?
-        else if (CoreLocal::get("paycard_mode") == PaycardLib::PAYCARD_MODE_AUTH){
+        } elseif (CoreLocal::get("paycard_mode") == PaycardLib::PAYCARD_MODE_AUTH) {
             // call paycard_void on first load to set up
             // transaction and check for problems
-            $id = CoreLocal::get("paycard_id");
+            $trans_id = CoreLocal::get("paycard_id");
             foreach(CoreLocal::get("RegisteredPaycardClasses") as $rpc){
                 $myObj = new $rpc();
                 if ($myObj->handlesType(CoreLocal::get("paycard_type"))){
-                    $ret = $myObj->paycard_void($id);
+                    $ret = $myObj->paycard_void($trans_id);
                     if (isset($ret['output']) && !empty($ret['output'])){
                         CoreLocal::set("boxMsg",$ret['output']);
                         $this->change_page($this->page_url."gui-modules/boxMsg2.php");

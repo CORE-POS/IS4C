@@ -118,6 +118,37 @@ class PaycardLib {
         array('min'=>5077080, 'max'=>5077089, 'issuer'=>"EBT (WI)",  'accepted'=>'ebt'),
         array('min'=>5053490, 'max'=>5053499, 'issuer'=>"EBT (WY)",  'accepted'=>'ebt'),
     );
+    
+    static private $bin19s = array(
+        array('min'=>7019208, 'max'=>7019208,  'issuer'=>"Co-op Gift", 'accepted'=>true), // NCGA gift cards
+        array('min'=>7018525, 'max'=>7018525,  'issuer'=>"Valutec Gift", 'accepted'=>false), // valutec test cards (linked to test merchant/terminal ID)
+        array('min'=>6050110, 'max'=>6050110,  'issuer'=>"Co-Plus Gift Card", 'accepted'=>true),
+        array('min'=>6014530, 'max'=>6014539,  'issuer'=>"EBT (IL)",   'accepted'=>'ebt'),
+        array('min'=>6274850, 'max'=>6274859,  'issuer'=>"EBT (IA)",   'accepted'=>'ebt'),
+        array('min'=>5077030, 'max'=>5077039,  'issuer'=>"EBT (ME)",   'accepted'=>'ebt'),
+        array('min'=>6004860, 'max'=>6004869,  'issuer'=>"EBT (NY)",   'accepted'=>'ebt'),
+        array('min'=>6007600, 'max'=>6007609,  'issuer'=>"EBT (PA)",   'accepted'=>'ebt'),
+        array('min'=>6104700, 'max'=>6104709,  'issuer'=>"EBT (SC)",   'accepted'=>'ebt'),
+        array('min'=>6100980, 'max'=>6100989,  'issuer'=>"EBT (TX)",   'accepted'=>'ebt'),
+    );
+
+static private function identifyBin($bin_range, $iin, $ebt_accept)
+{
+    $accepted = true;
+    $issuer = 'Unknown';
+    foreach ($bin_ranges as $range) {
+        if ($iin >= $range['min'] && $iin <= $range['max']) {
+            $issuer = $range['issuer'];
+            $accepted = $range['accepted'];
+            if ($accepted === 'ebt') {
+                $accepted = $ebt_accept;
+            }
+            break;
+        }
+    }
+
+    return array($accepted, $issuer);
+}
 
 // identify payment card type, issuer and acceptance based on card number
 // individual functions are based on this one
@@ -156,33 +187,13 @@ static public function paycard_info($pan)
     $test = false;
     if ($len >= 13 && $len <= 16) {
         $type = self::PAYCARD_TYPE_CREDIT;
-        foreach (self::$bin_ranges as $range) {
-            if ($iin >= $range['min'] && $iin <= $range['max']) {
-                $issuer = $range['issuer'];
-                $accepted = $range['accepted'];
-                if ($accepted === 'ebt') {
-                    $accepted = $ebt_accept;
-                }
-                break;
-            }
-        }
+        list($accepted, $issuer) = self::identifyBin(self::$bin_ranges, $iin, $ebt_accept);
     } elseif ($len == 18) {
         if(      $iin>=6008900 && $iin<=6008909) { $issuer="EBT (CT)";   $accepted=$ebt_accept; }
         else if( $iin>=6008750 && $iin<=6008759) { $issuer="EBT (MA)";   $accepted=$ebt_accept; }
-    } elseif ( $len == 19) {
+    } elseif ($len == 19) {
         $type = self::PAYCARD_TYPE_GIFT;
-        if(      $iin>=7019208 && $iin<=7019208) { $issuer="Co-op Gift"; $accepted=true; } // NCGA gift cards
-        else if( $iin>=7018525 && $iin<=7018525) { $issuer="Valutec Gift"; $test=true; } // valutec test cards (linked to test merchant/terminal ID)
-        else if ($iin>=6050110 && $iin<=6050110) {
-            $issuer="Co-Plus Gift Card"; $accepted=true;
-        }
-        else if( $iin>=6014530 && $iin<=6014539) { $issuer="EBT (IL)";   $accepted=$ebt_accept; }
-        else if( $iin>=6274850 && $iin<=6274859) { $issuer="EBT (IA)";   $accepted=$ebt_accept; }
-        else if( $iin>=5077030 && $iin<=5077039) { $issuer="EBT (ME)";   $accepted=$ebt_accept; }
-        else if( $iin>=6004860 && $iin<=6004869) { $issuer="EBT (NY)";   $accepted=$ebt_accept; }
-        else if( $iin>=6007600 && $iin<=6007609) { $issuer="EBT (PA)";   $accepted=$ebt_accept; }
-        else if( $iin>=6104700 && $iin<=6104709) { $issuer="EBT (SC)";   $accepted=$ebt_accept; }
-        else if( $iin>=6100980 && $iin<=6100989) { $issuer="EBT (TX)";   $accepted=$ebt_accept; }
+        list($accepted, $issuer) = self::identifyBin(self::$bin19s, $iin, $ebt_accept);
     } elseif (substr($pan,0,8) == "02E60080" || substr($pan, 0, 5) == "23.0%" || substr($pan, 0, 5) == "23.0;") {
         $type = self::PAYCARD_TYPE_ENCRYPTED;
         $accepted = true;
@@ -375,6 +386,96 @@ static public function paycard_validExpiration($exp) {
 } // paycard_validExpiration()
 
 
+static private function getTracks($data)
+{
+    $tr1 = false;
+    $weirdTr1 = false;
+    $tr2 = false;
+    $tr3 = false;
+
+    // track types are identified by start-sentinel values, but all track types end in '?'
+    $tracks = explode('?', $data);
+    foreach( $tracks as $track) {
+        if (substr($track,0,1) == '%') {  // track1 start-sentinel
+            if (substr($track,1,1) != 'B') {  // payment cards must have format code 'B'
+                $weirdTr1 = substr($track,1);
+                //return -1; // unknown track1 format code
+            } else if( $tr1 === false) {
+                $tr1 = substr($track,1);
+            } else {
+                throw new Exception(-2); // there should only be one track with the track1 start-sentinel
+            }
+        } else if( substr($track,0,1) == ';') {  // track2/3 start sentinel
+            if( $tr2 === false) {
+                $tr2 = substr($track,1);
+            } else if( $tr3 === false) {
+                $tr3 = substr($track,1);
+            } else {
+                throw new Exception(-3); // there should only be one or two tracks with the track2/3 start-sentinel
+            }
+        } else if (substr($track,0,1) == "T"){
+            // tender amount. not really a standard
+            // sentinel, but need the value sent
+            // from cc-terminal if in case it differs
+            $amt = str_pad(substr($track,1),3,'0',STR_PAD_LEFT);
+            $amt = substr($amt,0,strlen($amt)-2).".".substr($amt,-2);    
+            CoreLocal::set("paycard_amount",$amt);
+        }
+        // ignore tracks with unrecognized start sentinels
+        // readers often put E? or something similar if they have trouble reading,
+        // even when they also provide entire usable tracks
+    } // foreach magstripe track
+
+    return array($tr1, $tr2, $tr3);
+}
+
+static private function parseTrack1($tr1)
+{
+    $pan = false;
+    $exp = false;
+    $name = false;
+    $tr1a = explode('^', $tr1);
+    if( count($tr1a) != 3)
+        throw new Exception(-5); // can't parse track1
+    $pan = substr($tr1a[0],1);
+    $exp = substr($tr1a[2],2,2) . substr($tr1a[2],0,2); // month and year are reversed on the track data
+    $tr1name = explode('/', $tr1a[1]);
+    if( count($tr1name) == 1) {
+        $name = trim($tr1a[1]);
+    } else {
+        $name = "";
+        for( $x=1; isset($tr1name[$x]); $x++)
+            $name .= trim($tr1name[$x]) . " ";
+        $name = trim($name . trim($tr1name[0]));
+    }
+
+    return array($pan, $exp, $name);
+}
+
+private function parseTrack2($tr2)
+{
+    $pan = false;
+    $exp = false;
+    $name = false;
+    $tr2a = explode('=', $tr2);
+    if( count($tr2a) != 2)
+        throw new Exception(-6); // can't parse track2
+    // if we don't have track1, just use track2's data
+    if( !$tr1) {
+        $pan = $tr2a[0];
+        $exp = substr($tr2a[1],2,2) . substr($tr2a[1],0,2); // month and year are reversed on the track data
+        $name = "Customer";
+    } else {
+        // if we have both, make sure they match
+        if( $tr2a[0] != $pan)
+            throw new Exception(-7); // PAN mismatch
+        else if( (substr($tr2a[1],2,2).substr($tr2a[1],0,2)) != $exp)
+            throw new Exception(-8); // exp mismatch
+    }
+
+    return array($pan, $exp, $name);
+}
+
 /**
   Extract information from a magnetic stripe
   @param $data the stripe data
@@ -395,93 +496,33 @@ static public function paycard_validExpiration($exp) {
 static public function paycard_magstripe($data) 
 {
     // initialize
-    $tr1 = false;
-    $weirdTr1 = false;
-    $tr2 = false;
-    $tr3 = false;
-    $pan = false;
-    $exp = false;
-    $name = false;
-    
-    // track types are identified by start-sentinel values, but all track types end in '?'
-    $tracks = explode('?', $data);
-    foreach( $tracks as $track) {
-        if( substr($track,0,1) == '%') {  // track1 start-sentinel
-            if( substr($track,1,1) != 'B') {  // payment cards must have format code 'B'
-                $weirdTr1 = substr($track,1);
-                //return -1; // unknown track1 format code
-            } else if( $tr1 === false) {
-                $tr1 = substr($track,1);
-            } else {
-                return -2; // there should only be one track with the track1 start-sentinel
-            }
-        } else if( substr($track,0,1) == ';') {  // track2/3 start sentinel
-            if( $tr2 === false) {
-                $tr2 = substr($track,1);
-            } else if( $tr3 === false) {
-                $tr3 = substr($track,1);
-            } else {
-                return -3; // there should only be one or two tracks with the track2/3 start-sentinel
-            }
+    try {
+        list($tr1, $tr2, $tr3) = self::getTracks($data);
+        $pan = false;
+        $exp = false;
+        $name = false;
+        
+        // if we have track1, parse it
+        if ($tr1) {
+            list($pan, $exp, $name) = self::parseTrack1($tr1);
         }
-        else if (substr($track,0,1) == "T"){
-            // tender amount. not really a standard
-            // sentinel, but need the value sent
-            // from cc-terminal if in case it differs
-            $amt = str_pad(substr($track,1),3,'0',STR_PAD_LEFT);
-            $amt = substr($amt,0,strlen($amt)-2).".".substr($amt,-2);    
-            CoreLocal::set("paycard_amount",$amt);
+        
+        // if we have track2, parse it
+        if ($tr2) {
+            list($pan, $exp, $name) = self::parseTrack2($tr2);
         }
-        // ignore tracks with unrecognized start sentinels
-        // readers often put E? or something similar if they have trouble reading,
-        // even when they also provide entire usable tracks
-    } // foreach magstripe track
-    
-    // if we have track1, parse it
-    if( $tr1) {
-        $tr1a = explode('^', $tr1);
-        if( count($tr1a) != 3)
-            return -5; // can't parse track1
-        $pan = substr($tr1a[0],1);
-        $exp = substr($tr1a[2],2,2) . substr($tr1a[2],0,2); // month and year are reversed on the track data
-        $tr1name = explode('/', $tr1a[1]);
-        if( count($tr1name) == 1) {
-            $name = trim($tr1a[1]);
-        } else {
-            $name = "";
-            for( $x=1; isset($tr1name[$x]); $x++)
-                $name .= trim($tr1name[$x]) . " ";
-            $name = trim($name . trim($tr1name[0]));
-        }
-    }
-    
-    // if we have track2, parse it
-    if( $tr2) {
-        $tr2a = explode('=', $tr2);
-        if( count($tr2a) != 2)
-            return -6; // can't parse track2
-        // if we don't have track1, just use track2's data
-        if( !$tr1) {
-            $pan = $tr2a[0];
-            $exp = substr($tr2a[1],2,2) . substr($tr2a[1],0,2); // month and year are reversed on the track data
-            $name = "Customer";
-        } else {
-            // if we have both, make sure they match
-            if( $tr2a[0] != $pan)
-                return -7; // PAN mismatch
-            else if( (substr($tr2a[1],2,2).substr($tr2a[1],0,2)) != $exp)
-                return -8; // exp mismatch
-        }
+    } catch (Exception $ex) {
+        return $ex->getMessage();
     }
 
-    if ($tr3){
+    if ($tr3) {
         // format not well documented, very
         // basic check for validity
         if (strstr($tr3,"=")) $tr3 = false;
     }
     
     // if we never got what we need (no track1 or track2), fail
-    if( !$pan || !$exp)
+    if (!$pan || !$exp)
         return -4;
     
     // ok

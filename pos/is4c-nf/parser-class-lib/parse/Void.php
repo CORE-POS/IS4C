@@ -41,78 +41,73 @@ class Void extends Parser
     {
         $ret = $this->default_json();
     
-        if (is_numeric(CoreLocal::get('VoidLimit')) && CoreLocal::get('VoidLimit') > 0){
-            Database::getsubtotals();
-            if (CoreLocal::get('voidTotal') > CoreLocal::get('VoidLimit') && CoreLocal::get('voidOverride') != 1) {
-                CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));
-                CoreLocal::set('voidOverride', 0);
-                $ret['main_frame'] = MiscLib::base_url().'gui-modules/adminlogin.php?class=Void';
-                return $ret;
-            }
-        }
-
-
-        if (strlen($str) > 2) {
-            $ret = $this->voidupc(substr($str,2), $ret);
-        } elseif (CoreLocal::get("currentid") == 0) {
-            $ret['output'] = DisplayLib::boxMsg(
-                _("No Item on Order"),
-                '',
-                false,
-                DisplayLib::standardClearButton()
-            );
-        } else {
-            $trans_id = CoreLocal::get("currentid");
-
-            $status = PrehLib::checkstatus($trans_id);
-            $this->discounttype = $status['discounttype'];
-            $this->discountable = $status['discountable'];
-            $this->caseprice = $status['caseprice'];
-            $this->scaleprice = $status['scaleprice'];
-
-            /**
-              Voided values:
-                2 => "you saved" line
-                3 => subtotal line
-                4 => discount notice
-                5 => % Discount line
-                6 => tare weight, case disc notice,
-                8 => FS change, regular change
-                10 => tax exempt
-            */
-            if ($status['voided'] == 2) {
-                // void preceeding item
-                $ret = $this->voiditem($trans_id - 1, $ret);
-            } else if ($status['voided'] == 3 || $status['voided'] == 6 || $status['voided'] == 8) {
+        try {
+            $this->checkVoidLimit(0);
+            if (strlen($str) > 2) {
+                $ret = $this->voidupc(substr($str,2), $ret);
+            } elseif (CoreLocal::get("currentid") == 0) {
                 $ret['output'] = DisplayLib::boxMsg(
-                    _("Cannot void this entry"),
-                    '',
-                    false,
-                    DisplayLib::standardClearButton()
-                );
-            } else if ($status['voided'] == 4 || $status['voided'] == 5) {
-                PrehLib::percentDiscount(0);
-            } else if ($status['voided'] == 10) {
-                TransRecord::reverseTaxExempt();
-            } else if ($status['status'] == "V") {
-                $ret['output'] = DisplayLib::boxMsg(
-                    _("Item already voided"),
+                    _("No Item on Order"),
                     '',
                     false,
                     DisplayLib::standardClearButton()
                 );
             } else {
-                $ret = $this->voiditem($trans_id, $ret);
+                $trans_id = CoreLocal::get("currentid");
+
+                $status = $this->checkstatus($trans_id);
+                $this->discounttype = $status['discounttype'];
+                $this->discountable = $status['discountable'];
+                $this->caseprice = $status['caseprice'];
+                $this->scaleprice = $status['scaleprice'];
+
+                /**
+                  Voided values:
+                    2 => "you saved" line
+                    3 => subtotal line
+                    4 => discount notice
+                    5 => % Discount line
+                    6 => tare weight, case disc notice,
+                    8 => FS change, regular change
+                    10 => tax exempt
+                */
+                if ($status['voided'] == 2) {
+                    // void preceeding item
+                    $ret = $this->voiditem($trans_id - 1, $ret);
+                } else if ($status['voided'] == 3 || $status['voided'] == 6 || $status['voided'] == 8) {
+                    $ret['output'] = DisplayLib::boxMsg(
+                        _("Cannot void this entry"),
+                        '',
+                        false,
+                        DisplayLib::standardClearButton()
+                    );
+                } else if ($status['voided'] == 4 || $status['voided'] == 5) {
+                    PrehLib::percentDiscount(0);
+                } else if ($status['voided'] == 10) {
+                    TransRecord::reverseTaxExempt();
+                } else if ($status['status'] == "V") {
+                    $ret['output'] = DisplayLib::boxMsg(
+                        _("Item already voided"),
+                        '',
+                        false,
+                        DisplayLib::standardClearButton()
+                    );
+                } else {
+                    $ret = $this->voiditem($trans_id, $ret);
+                }
             }
+
+            if (empty($ret['output']) && empty($ret['main_frame'])) {
+                $ret['output'] = DisplayLib::lastpage();
+                $ret['redraw_footer'] = true;
+                $ret['udpmsg'] = 'goodBeep';
+            } elseif (empty($ret['main_frame'])) {
+                $ret['udpmsg'] = 'errorBeep';
+            }
+        } catch (Exception $ex) {
+            $ret['main_frame'] = $ex->getMessage();
         }
 
-        if (empty($ret['output']) && empty($ret['main_frame'])) {
-            $ret['output'] = DisplayLib::lastpage();
-            $ret['redraw_footer'] = true;
-            $ret['udpmsg'] = 'goodBeep';
-        } elseif (empty($ret['main_frame'])) {
-            $ret['udpmsg'] = 'errorBeep';
-        }
 
         return $ret;
     }
@@ -127,25 +122,9 @@ class Void extends Parser
     public function voiditem($item_num, $json)
     {
         if ($item_num) {
-            $query = "SELECT upc, 
-                        quantity, 
-                        ItemQtty, 
-                        foodstamp, 
-                        discountable,
-                        total, 
-                        voided, 
-                        charflag, 
-                        discounttype,
-                        trans_type
-                      FROM localtemptrans 
-                      WHERE
-                        trans_id = " . ((int)$item_num);
+            $row = $this->getLine($item_num);
 
-            $dbc = Database::tDataConnect();
-            $result = $dbc->query($query);
-            $num_rows = $dbc->num_rows($result);
-
-            if ($num_rows == 0) {
+            if (!$row) {
                 $json['output'] = DisplayLib::boxMsg(
                     _("Item not found"),
                     '',
@@ -154,8 +133,6 @@ class Void extends Parser
                 );
                 return $json;
             } else {
-                $row = $dbc->fetch_array($result);
-
                 $this->discounttype = $row['discounttype'];
                 $this->discountable = $row['discountable'];
 
@@ -193,6 +170,19 @@ class Void extends Parser
         }
     }
 
+    private function getLine($item_num)
+    {
+        $query = "select upc,VolSpecial,quantity,trans_subtype,unitPrice,
+            discount,memDiscount,discountable,scale,numflag,charflag,
+            foodstamp,discounttype,total,cost,description,trans_type,
+            department,regPrice,tax,volDiscType,volume,mixMatch,matched,
+            trans_status,ItemQtty,voided
+                   from localtemptrans where trans_id = ".$item_num;
+        $dbc = Database::tDataConnect();
+        $result = $dbc->query($query);
+        return $dbc->fetch_array($result);
+    }
+
     /**
       Void record by trans_id
       @param $item_num [int] trans_id
@@ -205,15 +195,7 @@ class Void extends Parser
     */
     public function voidid($item_num, $json)
     {
-        $query = "select upc,VolSpecial,quantity,trans_subtype,unitPrice,
-            discount,memDiscount,discountable,scale,numflag,charflag,
-            foodstamp,discounttype,total,cost,description,trans_type,
-            department,regPrice,tax,volDiscType,volume,mixMatch,matched,
-            trans_status
-                   from localtemptrans where trans_id = ".$item_num;
-        $dbc = Database::tDataConnect();
-        $result = $dbc->query($query);
-        $row = $dbc->fetch_array($result);
+        $row = $this->getLine($item_num);
 
         $upc = $row["upc"];
         $VolSpecial = $row["VolSpecial"];
@@ -247,94 +229,63 @@ class Void extends Parser
 
         $discounttype = MiscLib::nullwrap($row["discounttype"]);
 
-        /**
-          Check if the voiding item will exceed the limit. If so,
-          prompt for admin password. For baffling reasons, the
-          void amount $row['total'] is postive on open rings
-        */
-        if ($row['trans_type'] == 'D' && is_numeric(CoreLocal::get('VoidLimit')) && CoreLocal::get('VoidLimit') > 0) {
-            $currentTotal = CoreLocal::get('voidTotal');
-            if ($currentTotal + $row['total'] > CoreLocal::get('VoidLimit') && CoreLocal::get('voidOverride') != 1) {
-                CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));
-                CoreLocal::set('voidOverride', 0);
-                $json['main_frame'] = MiscLib::base_url().'gui-modules/adminlogin.php?class=Void';
-
-                return $json;
+        try {
+            if ($row['trans_type'] == 'D') {
+                $this->checkVoidLimit($row['total']);
             }
-        }
+            $this->checkTendered($total);
+            $update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
+            $dbc->query($update);
 
-        /**
-          tenderTotal => tenders have been applied
-          Amount to be voided is greater than remaining balance of
-          the transaction. Restrict voids if cash is involved.
-        */
-        if (CoreLocal::get("tenderTotal") < 0 && (-1 * $total) > CoreLocal::get("runningTotal") - CoreLocal::get("taxTotal")) {
-            $cash = $dbc->query("SELECT total FROM localtemptrans WHERE trans_subtype='CA' AND total <> 0");
-            if ($dbc->num_rows($cash) > 0) {
-                $json['output'] = DisplayLib::boxMsg(
-                    _("Item already paid for"),
-                    '',
-                    false,
-                    DisplayLib::standardClearButton()
-                );
-                return $json;
+            TransRecord::addRecord(array(
+                'upc' => $upc, 
+                'description' => $row["description"], 
+                'trans_type' => $row["trans_type"], 
+                'trans_subtype' => $row["trans_subtype"], 
+                'trans_status' => "V", 
+                'department' => $row["department"], 
+                'quantity' => $quantity, 
+                'unitPrice' => $unitPrice, 
+                'total' => $total, 
+                'regPrice' => $row["regPrice"], 
+                'scale' => $scale, 
+                'tax' => $row["tax"], 
+                'foodstamp' => $foodstamp, 
+                'discount' => $discount, 
+                'memDiscount' => $memDiscount, 
+                'discountable' => $discountable, 
+                'discounttype' => $discounttype, 
+                'ItemQtty' => $quantity, 
+                'volDiscType' => $row["volDiscType"], 
+                'volume' => $row["volume"], 
+                'VolSpecial' => $VolSpecial, 
+                'mixMatch' => $mixmatch, 
+                'matched' => $matched, 
+                'voided' => 1, 
+                'cost' => $cost, 
+                'numflag' => $numflag, 
+                'charflag' => $charflag
+            ));
+
+            if ($row["trans_type"] != "T") {
+                CoreLocal::set("ttlflag",0);
+            } else {
+                PrehLib::ttl();
             }
-        }
 
-        $update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
-        $dbc->query($update);
-
-        TransRecord::addRecord(array(
-            'upc' => $upc, 
-            'description' => $row["description"], 
-            'trans_type' => $row["trans_type"], 
-            'trans_subtype' => $row["trans_subtype"], 
-            'trans_status' => "V", 
-            'department' => $row["department"], 
-            'quantity' => $quantity, 
-            'unitPrice' => $unitPrice, 
-            'total' => $total, 
-            'regPrice' => $row["regPrice"], 
-            'scale' => $scale, 
-            'tax' => $row["tax"], 
-            'foodstamp' => $foodstamp, 
-            'discount' => $discount, 
-            'memDiscount' => $memDiscount, 
-            'discountable' => $discountable, 
-            'discounttype' => $discounttype, 
-            'ItemQtty' => $quantity, 
-            'volDiscType' => $row["volDiscType"], 
-            'volume' => $row["volume"], 
-            'VolSpecial' => $VolSpecial, 
-            'mixMatch' => $mixmatch, 
-            'matched' => $matched, 
-            'voided' => 1, 
-            'cost' => $cost, 
-            'numflag' => $numflag, 
-            'charflag' => $charflag
-        ));
-
-        if ($row["trans_type"] != "T") {
-            CoreLocal::set("ttlflag",0);
-        } else {
-            PrehLib::ttl();
+        } catch (Exception $ex) {
+            if ($ex->getCode() == 0) {
+                $json['output'] = $ex->getMessage();
+            } elseif ($ex->getCode() == 1) {
+                $json['main_frame'] = $ex->getMessage();
+            }
         }
 
         return $json;
     }
 
-    /**
-      Void the given UPC
-      @param $upc [string] upc to void. Optionally including quantity and asterisk
-      @param $item_num [int] trans_id of record to void. Optional.
-      @param $json parser return value structure
-    */
-    public function voidupc($upc, $json, $item_num=-1)
+    private function upcQuantity($upc)
     {
-        $lastpageflag = 1;
-        $deliflag = false;
-        $quantity = 0;
-
         /**
           If UPC contains an asterisk, extract quantity
           and validate input. Otherwise use quantity 1.
@@ -342,8 +293,7 @@ class Void extends Parser
         if (strstr($upc, '*')) {
             list($quantity, $upc) = explode('*', $upc, 2);
             if ($quantity === '' || $upc === '' || !is_numeric($quantity) || !is_numeric($upc)) {
-                $json['output'] = DisplayLib::inputUnknown();
-                return $json;
+                throw new Exception(DisplayLib::inputUnknown());
             } else {
                 $weight = 0;
             }
@@ -351,7 +301,12 @@ class Void extends Parser
             $quantity = 1;
             $weight = CoreLocal::get("weight");
         }
+        
+        return array($upc, $quantity, $weight);
+    }
 
+    private function scaleUPC($upc)
+    {
         $scaleprice = 0;
         if (is_numeric($upc)) {
             $upc = substr("0000000000000" . $upc, -13);
@@ -365,6 +320,11 @@ class Void extends Parser
             }
         }
 
+        return array($upc, $scaleprice, $deliflag);
+    }
+
+    private function findUPC($upc, $deliflag, $scaleprice)
+    {
         $dbc = Database::tDataConnect();
 
         $query = "SELECT SUM(ItemQtty) AS voidable, 
@@ -381,65 +341,56 @@ class Void extends Parser
         $result = $dbc->query($query);
         $num_rows = $dbc->num_rows($result);
         if ($num_rows == 0 ) {
-            $json['output'] = DisplayLib::boxMsg(
+            throw new Exception(DisplayLib::boxMsg(
                 _("Item not found: ") . $upc,
                 '',
                 false,
                 DisplayLib::standardClearButton()
-            );
-            return $json;
+            ));
         }
 
-        $row = $dbc->fetch_array($result);
+        return $dbc->fetch_array($result);
+    }
 
-        if (($row["scale"] == 1) && $weight > 0) {
-            $quantity = $weight - CoreLocal::get("tare");
-            CoreLocal::set("tare", 0);
-        }
-
-        $volDiscType = $row["volDiscType"];
-        $voidable = MiscLib::nullwrap($row["voidable"]);
-
-        $VolSpecial = 0;
-        $volume = 0;
-        $scale = MiscLib::nullwrap($row["scale"]);
-
+    private function checkUpcQuantities($voidable, $quantity, $scale)
+    {
         if ($voidable == 0 && $quantity == 1) {
-            $json['output'] = DisplayLib::boxMsg(
+            throw new Exception(DisplayLib::boxMsg(
                 _("Item already voided"),
                 '',
                 false,
                 DisplayLib::standardClearButton()
-            );
-            return $json;
+            ));
         } elseif ($voidable == 0 && $quantity > 1) {
-            $json['output'] = DisplayLib::boxMsg(
+            throw new Exception(DisplayLib::boxMsg(
                 _("Items already voided"),
                 '',
                 false,
                 DisplayLib::standardClearButton()
-            );
-            return $json;
+            ));
         } elseif ($scale == 1 && $quantity < 0) {
-            $json['output'] = DisplayLib::boxMsg(
+            throw new Exception(DisplayLib::boxMsg(
                 _("tare weight cannot be greater than item weight"),
                 '',
                 false,
                 DisplayLib::standardClearButton()
-            );
-            return $json;
-        } elseif ($voidable < $quantity && $row["scale"] == 1) {
+            ));
+        } elseif ($voidable < $quantity && $scale == 1) {
             $message = _("Void request exceeds")."<br />"._("weight of item rung in")."<p><b>".
                 sprintf(_("You can void up to %.2f lb"),$row['voidable'])."</b>";
-            $json['output'] = DisplayLib::boxMsg($message, '', false, DisplayLib::standardClearButton());
-            return $json;
+            throw new Exception(DisplayLib::boxMsg($message, '', false, DisplayLib::standardClearButton()));
         } elseif ($voidable < $quantity) {
             $message = _("Void request exceeds")."<br />"._("number of items rung in")."<p><b>".
                 sprintf(_("You can void up to %d"),$row['voidable'])."</b>";
-            $json['output'] = DisplayLib::boxMsg($message, '', false, DisplayLib::standardClearButton());
-            return $json;
+            throw new Exception(DisplayLib::boxMsg($message, '', false, DisplayLib::standardClearButton()));
         }
 
+        return true;
+    }
+
+    private function findUpcLine($upc, $scaleprice, $deliflag, $item_num)
+    {
+        $dbc = Database::tDataConnect();
         //----------------------Void Item------------------
         $query_upc = "SELECT 
                         ItemQtty,
@@ -477,18 +428,11 @@ class Void extends Parser
         }
 
         $result = $dbc->query($query_upc);
-        $row = $dbc->fetch_array($result);
+        return $dbc->fetch_array($result);
+    }
 
-        $foodstamp = MiscLib::nullwrap($row["foodstamp"]);
-        $discounttype = MiscLib::nullwrap($row["discounttype"]);
-        $mixMatch = MiscLib::nullwrap($row["mixMatch"]);
-        $matched = -1 * $row['matched'];
-        $item_num = $row['trans_id'];
-        $cost = $row['cost'];
-        $numflag = $row['numflag'];
-        $charflag = $row['charflag'];
-    
-        $unitPrice = $row["unitPrice"];
+    private function adjustUnitPrice($upc, $row)
+    {
         /**
           11Jun14 Andy
           Convert unitPrice to/from sale price based on
@@ -508,25 +452,12 @@ class Void extends Parser
             
             $unitPrice = $row_p["special_price"];
         }
-                
-        $discount = -1 * $row["discount"];
-        $memDiscount = -1 * $row["memDiscount"];
-        $discountable = $row["discountable"];
-        $quantity = -1 * $quantity;
-        $total = $quantity * $unitPrice;
-        if ($row['unitPrice'] == 0) {
-            $total = $quantity * $row['total'];
-        } elseif ($row['total'] != $total && $row['scale'] == 1) {
-            /**
-              If the total does not match quantity times unit price,
-              the cashier probably manually specified a quantity
-              i.e., VD{qty}*{upc}. This is probably OK for non-weight
-              items. Each record should be the same and voiding multiple
-              in one line will usually be fine.
-            */
-            $total = -1*$row['total'];
-        }
 
+        return $unitPrice;
+    }
+
+    private function checkVoidLimit($total)
+    {
         /**
           Check if the voiding item will exceed the limit. If so,
           prompt for admin password. 
@@ -536,65 +467,133 @@ class Void extends Parser
             if ($currentTotal + (-1*$total) > CoreLocal::get('VoidLimit') && CoreLocal::get('voidOverride') != 1) {
                 CoreLocal::set('strRemembered', CoreLocal::get('strEntered'));
                 CoreLocal::set('voidOverride', 0);
-                $json['main_frame'] = MiscLib::base_url().'gui-modules/adminlogin.php?class=Void';
-
-                return $json;
+                throw new Exception(MiscLib::base_url().'gui-modules/adminlogin.php?class=Void', 1);
             }
         }
-    
-        $dbc = Database::tDataConnect();
+    }
+
+    private function checkTendered($total)
+    {
         if (CoreLocal::get("tenderTotal") < 0 && (-1 * $total) > CoreLocal::get("runningTotal") - CoreLocal::get("taxTotal")) {
+            $dbc = Database::tDataConnect();
             $cash = $dbc->query("SELECT total FROM localtemptrans WHERE trans_subtype='CA' AND total <> 0");
             if ($dbc->num_rows($cash) > 0) {
-                $json['output'] = DisplayLib::boxMsg(
+                throw new Exception(DisplayLib::boxMsg(
                     _("Item already paid for"),
                     '',
                     false,
                     DisplayLib::standardClearButton()
-                );
-                return $json;
+                ));
             }
         }
-        if ($quantity != 0) {
+    }
 
-            $update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
-            $dbc->query($update);
+    /**
+      Void the given UPC
+      @param $upc [string] upc to void. Optionally including quantity and asterisk
+      @param $item_num [int] trans_id of record to void. Optional.
+      @param $json parser return value structure
+    */
+    public function voidupc($upc, $json, $item_num=-1)
+    {
+        $lastpageflag = 1;
+        $deliflag = false;
+        $quantity = 0;
 
-            TransRecord::addRecord(array(
-                'upc' => $upc, 
-                'description' => $row["description"], 
-                'trans_type' => $row["trans_type"], 
-                'trans_subtype' => $row["trans_subtype"], 
-                'trans_status' => "V", 
-                'department' => $row["department"], 
-                'quantity' => $quantity, 
-                'unitPrice' => $unitPrice, 
-                'total' => $total, 
-                'regPrice' => $row["regPrice"], 
-                'scale' => $scale, 
-                'tax' => $row["tax"], 
-                'foodstamp' => $foodstamp, 
-                'discount' => $discount, 
-                'memDiscount' => $memDiscount, 
-                'discountable' => $discountable, 
-                'discounttype' => $discounttype, 
-                'ItemQtty' => $quantity, 
-                'volDiscType' => $volDiscType,
-                'volume' => $volume,
-                'VolSpecial' => $VolSpecial, 
-                'mixMatch' => $mixMatch, 
-                'matched' => $matched,
-                'voided' => 1, 
-                'cost' => $cost, 
-                'numflag' => $numflag, 
-                'charflag' => $charflag
-            ));
+        try {
+            list($upc, $quantity, $weight) = $this->upcQuantity($upc);
+            list($upc, $scaleprice, $deliflag) = $this->scaleUPC($upc);
+            $row = $this->findUPC($upc, $deliflag, $scaleprice);
 
-            if ($row["trans_type"] != "T") {
-                CoreLocal::set("ttlflag",0);
+            if (($row["scale"] == 1) && $weight > 0) {
+                $quantity = $weight - CoreLocal::get("tare");
+                CoreLocal::set("tare", 0);
             }
+            $volDiscType = $row["volDiscType"];
+            $voidable = MiscLib::nullwrap($row["voidable"]);
+            $VolSpecial = 0;
+            $volume = 0;
+            $scale = MiscLib::nullwrap($row["scale"]);
+            $this->checkUpcQuantities($voidable, $quantity, $scale);
 
-            $this->voidDeposit($upc, $quantity);
+            $row = $this->findUpcLine($upc, $scaleprice, $deliflag, $item_num);
+            $foodstamp = MiscLib::nullwrap($row["foodstamp"]);
+            $discounttype = MiscLib::nullwrap($row["discounttype"]);
+            $mixMatch = MiscLib::nullwrap($row["mixMatch"]);
+            $matched = -1 * $row['matched'];
+            $item_num = $row['trans_id'];
+            $cost = $row['cost'];
+            $numflag = $row['numflag'];
+            $charflag = $row['charflag'];
+            $unitPrice = $this->adjustUnitPrice($row['unitPrice']);
+            $discount = -1 * $row["discount"];
+            $memDiscount = -1 * $row["memDiscount"];
+            $discountable = $row["discountable"];
+            $quantity = -1 * $quantity;
+            $total = $quantity * $unitPrice;
+            if ($row['unitPrice'] == 0) {
+                $total = $quantity * $row['total'];
+            } elseif ($row['total'] != $total && $row['scale'] == 1) {
+                /**
+                  If the total does not match quantity times unit price,
+                  the cashier probably manually specified a quantity
+                  i.e., VD{qty}*{upc}. This is probably OK for non-weight
+                  items. Each record should be the same and voiding multiple
+                  in one line will usually be fine.
+                */
+                $total = -1*$row['total'];
+            }
+            $this->checkVoidLimit($total);
+            $this->checkTendered($total);
+
+            if ($quantity != 0) {
+                $dbc = Database::tDataConnect();
+
+                $update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
+                $dbc->query($update);
+
+                TransRecord::addRecord(array(
+                    'upc' => $upc, 
+                    'description' => $row["description"], 
+                    'trans_type' => $row["trans_type"], 
+                    'trans_subtype' => $row["trans_subtype"], 
+                    'trans_status' => "V", 
+                    'department' => $row["department"], 
+                    'quantity' => $quantity, 
+                    'unitPrice' => $unitPrice, 
+                    'total' => $total, 
+                    'regPrice' => $row["regPrice"], 
+                    'scale' => $scale, 
+                    'tax' => $row["tax"], 
+                    'foodstamp' => $foodstamp, 
+                    'discount' => $discount, 
+                    'memDiscount' => $memDiscount, 
+                    'discountable' => $discountable, 
+                    'discounttype' => $discounttype, 
+                    'ItemQtty' => $quantity, 
+                    'volDiscType' => $volDiscType,
+                    'volume' => $volume,
+                    'VolSpecial' => $VolSpecial, 
+                    'mixMatch' => $mixMatch, 
+                    'matched' => $matched,
+                    'voided' => 1, 
+                    'cost' => $cost, 
+                    'numflag' => $numflag, 
+                    'charflag' => $charflag
+                ));
+
+                if ($row["trans_type"] != "T") {
+                    CoreLocal::set("ttlflag",0);
+                }
+
+                $this->voidDeposit($upc, $quantity);
+            }
+        } catch (Exception $ex) {
+            if ($ex->getCode() == 0) {
+                $json['output'] = $ex->getMessage();
+            } elseif ($ex->getCode() == 1) {
+                $json['main_frame'] = $ex->getMessage();
+            }
         }
 
         return $json;
@@ -658,6 +657,59 @@ class Void extends Parser
                 open department ring</td>
             </tr>
             </table>";
+    }
+
+    /**
+      Check if an item is voided or a refund
+      @param $num item trans_id in localtemptrans
+      @return array of status information with keys:
+       - voided (int)
+       - scaleprice (numeric)
+       - discountable (int)
+       - discounttype (int)
+       - caseprice (numeric)
+       - refund (boolean)
+       - status (string)
+    */
+    private function checkstatus($num) 
+    {
+        $ret = array(
+            'voided' => 0,
+            'scaleprice' => 0,
+            'discountable' => 0,
+            'discounttype' => 0,
+            'caseprice' => 0,
+            'refund' => false,
+            'status' => ''
+        );
+
+        $query = "select voided,unitPrice,discountable,
+            discounttype,trans_status
+            from localtemptrans where trans_id = ".((int)$num);
+
+        $dbc = Database::tDataConnect();
+        $result = $dbc->query($query);
+
+        if ($result && $dbc->numRows($result) > 0) {
+            $row = $dbc->fetch_array($result);
+
+            $ret['voided'] = $row['voided'];
+            $ret['scaleprice'] = $row['unitPrice'];
+            $ret['discountable'] = $row['discountable'];
+            $ret['discounttype'] = $row['discounttype'];
+            $ret['caseprice'] = $row['unitPrice'];
+
+            if ($row["trans_status"] == "V") {
+                $ret['status'] = 'V';
+            } elseif ($row["trans_status"] == "R") {
+                CoreLocal::set("refund",1);
+                CoreLocal::set("autoReprint",1);
+                $ret['status'] = 'R';
+                $ret['refund'] = true;
+            }
+        }
+        
+        return $ret;
     }
 }
 

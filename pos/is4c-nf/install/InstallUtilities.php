@@ -456,6 +456,112 @@ class InstallUtilities extends LibraryClass
         return ($saved) ? true : false;
     }
 
+    static private function loadFromSql($sql, $table)
+    {
+        $loaded = 0;
+        echo "from data/$table.sql<br>\n";
+        $fptr = fopen(dirname(__FILE__) . "/data/$table.sql","r");
+        $success = true;
+        while($line = fgets($fptr)) {
+            $query = "INSERT INTO $table VALUES $line";
+            $try = $sql->query("INSERT INTO $table VALUES $line");
+            if ($try === false) {
+                $error = $sql->error();
+                $success = false;
+                echo "<br><small style='color:red;'>"
+                    . (strlen($error)? $error : 'Unknown error')
+                    . " executing:<br><code>$query</code></small><br>\n";
+            } else {
+                if(++$loaded % 50 === 0) {
+                    echo "<br>\n";
+                    flush();
+                }
+                echo ".";
+            }
+        }
+        fclose($fptr);
+        echo ($success? ' success!' : "<br>\n'$table' load " . ($loaded? 'partial success;' : 'failed;'))
+            . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
+
+        return $success;
+    }
+
+    static private function loadFromCsv($sql, $table, $path)
+    {
+        $LOCAL = 'LOCAL';
+        if (CoreLocal::get('localhost') == '127.0.0.1' || CoreLocal::get('localhost') == 'localhost') {
+            $LOCAL = '';
+        }
+        $query = "LOAD DATA $LOCAL INFILE
+                '$path'
+                INTO TABLE $table
+                FIELDS TERMINATED BY ','
+                ESCAPED BY '\\\\'
+                OPTIONALLY ENCLOSED BY '\"'
+                LINES TERMINATED BY '\\r\\n'";
+        $prep = $sql->prepare_statement($query);
+        $try = $sql->exec_statement($prep);
+        if ($try === false) {
+            $error = $sql->error();
+            echo "<br><span style='color:red;'>"
+                . (strlen($error)? $error : 'Unknown error')
+                . " executing:<br><code>$query</code><br></span><br>\n";
+        }
+
+        return $try;
+    }
+
+    static private function loadCsvLines($sql, $table, $path)
+    {
+        $loaded = 0;
+        echo "line-by-line<br>\n";
+        $fptr = fopen($path, 'r');
+        $stmt = false;
+        $success = false;
+        while(!feof($fptr)) {
+            $line = fgetcsv($fptr);
+            if (!is_array($line)) continue;
+            if ($stmt === false) {
+                $query = 'INSERT INTO '.$table.' VALUES (';
+                foreach($line as $field) {
+                    $query .= '?,';
+                }
+                $query = substr($query,0,strlen($query)-1).')';
+                $stmt = $sql->prepare_statement($query);
+                if ($stmt === false) {
+                    $error = $sql->error();
+                    $success = false;
+                    echo "<br><span style='color:red;'>"
+                        . (strlen($error)? $error : 'Unknown error')
+                        . " preparing:<br><code>$query</code></span><br>\n";
+                    break;
+                }
+            }
+            $try = $sql->exec_statement($stmt, $line);
+            if ($try === false) {
+                $error = $sql->error();
+                $success = false;
+                echo "<br><span style='color:red;'>"
+                    . (strlen($error)? $error : 'Unknown error')
+                    . " executing:<br><code>$query</code><br>("
+                    . "'" . join("', '", $line) . "')"
+                    . ' [' . count($line) . ' operands]'
+                    . "</span><br>\n";
+            } else {
+                if(++$loaded % 100 === 0) {
+                    echo "<br>\n";
+                    flush();
+                }
+                echo ".";
+            }
+        }
+        fclose($fptr);
+        echo ($success? ' success!' : "<br>\n'$table' load " . ($loaded? 'partial success;' : 'failed;'))
+            . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
+
+        return $success;
+    }
+
     /**
       Load sample data into the table
       @param $sql [SQLManager object] connected to database
@@ -466,46 +572,20 @@ class InstallUtilities extends LibraryClass
     static public function loadSampleData($sql, $table, $quiet=false)
     {
         $success = true; 
-        $loaded = 0;
         ob_start();
         echo "Loading `$table` ";
         if (file_exists(dirname(__FILE__) . "/data/$table.sql")) {
-            echo "from data/$table.sql<br>\n";
-            $fp = fopen(dirname(__FILE__) . "/data/$table.sql","r");
-            while($line = fgets($fp)) {
-                $query = "INSERT INTO $table VALUES $line";
-                $try = $sql->query("INSERT INTO $table VALUES $line");
-                if ($try === false) {
-                    $error = $sql->error();
-                    $success = false;
-                    echo "<br><small style='color:red;'>"
-                        . (strlen($error)? $error : 'Unknown error')
-                        . " executing:<br><code>$query</code></small><br>\n";
-                } else {
-                    if(++$loaded % 50 === 0) {
-                        echo "<br>\n";
-                        flush();
-                    }
-                    echo ".";
-                }
-            }
-            fclose($fp);
-            echo ($success? ' success!' : "<br>\n'$table' load " . ($loaded? 'partial success;' : 'failed;'))
-                . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
-        } else if (file_exists(dirname(__FILE__) . "/data/$table.csv")) {
+            $success = self::loadFromSql($sql, $table);
+        } elseif (file_exists(dirname(__FILE__) . "/data/$table.csv")) {
             echo "from data/$table.csv ";
-            $LOCAL = 'LOCAL';
-            if (CoreLocal::get('localhost') == '127.0.0.1' || CoreLocal::get('localhost') == 'localhost') {
-                $LOCAL = '';
-            }
             $path = realpath(dirname(__FILE__) . "/data/$table.csv");
             /**
               Handle symlinks on windows by checking if the first line
               of the file contains the name of another CSV file.
             */
             if (MiscLib::win32()) {
-                $fp = fopen($path, 'r');
-                $first_line = trim(fgets($fp));
+                $fptr = fopen($path, 'r');
+                $first_line = trim(fgets($fptr));
                 if (substr($first_line, -4) == '.csv') {
                     $path = realpath(substr($first_line, 3));
                     if (!file_exists($path)) {
@@ -516,73 +596,18 @@ class InstallUtilities extends LibraryClass
                         return false;
                     }
                 }
-                fclose($fp);
+                fclose($fptr);
                 $path = str_replace('\\', '/', $path);
             }
-            $query = "LOAD DATA $LOCAL INFILE
-                    '$path'
-                    INTO TABLE $table
-                    FIELDS TERMINATED BY ','
-                    ESCAPED BY '\\\\'
-                    OPTIONALLY ENCLOSED BY '\"'
-                    LINES TERMINATED BY '\\r\\n'";
-            $prep = $sql->prepare_statement($query);
-            $try = $sql->exec_statement($prep);
-            if ($try === false) {
-                $error = $sql->error();
-                echo "<br><span style='color:red;'>"
-                    . (strlen($error)? $error : 'Unknown error')
-                    . " executing:<br><code>$query</code><br></span><br>\n";
-            }
+            $try = self::loadFromCsv($sql, $table, $path);
             /** alternate implementation
             for non-mysql and/or LOAD DATA LOCAL
             not allowed */
             if ($try !== false) {
                 echo "succeeded!<br>\n";
+                $success = true;
             } else {
-                echo "line-by-line<br>\n";
-                $fp = fopen($path, 'r');
-                $stmt = false;
-                while(!feof($fp)) {
-                    $line = fgetcsv($fp);
-                    if (!is_array($line)) continue;
-                    if ($stmt === false) {
-                        $query = 'INSERT INTO '.$table.' VALUES (';
-                        foreach($line as $field) {
-                            $query .= '?,';
-                        }
-                        $query = substr($query,0,strlen($query)-1).')';
-                        $stmt = $sql->prepare_statement($query);
-                        if ($stmt === false) {
-                            $error = $sql->error();
-                            $success = false;
-                            echo "<br><span style='color:red;'>"
-                                . (strlen($error)? $error : 'Unknown error')
-                                . " preparing:<br><code>$query</code></span><br>\n";
-                            break;
-                        }
-                    }
-                    $try = $sql->exec_statement($stmt, $line);
-                    if ($try === false) {
-                        $error = $sql->error();
-                        $success = false;
-                        echo "<br><span style='color:red;'>"
-                            . (strlen($error)? $error : 'Unknown error')
-                            . " executing:<br><code>$query</code><br>("
-                            . "'" . join("', '", $line) . "')"
-                            . ' [' . count($line) . ' operands]'
-                            . "</span><br>\n";
-                    } else {
-                        if(++$loaded % 100 === 0) {
-                            echo "<br>\n";
-                            flush();
-                        }
-                        echo ".";
-                    }
-                }
-                fclose($fp);
-                echo ($success? ' success!' : "<br>\n'$table' load " . ($loaded? 'partial success;' : 'failed;'))
-                    . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
+                $success = self::loadCsvLines($sql, $table, $path);
             }
         } else {
             echo "<br><span style='color:red;'>Table data not found in either {$table}.sql or {$table}.csv</span><br>\n";
@@ -605,9 +630,7 @@ class InstallUtilities extends LibraryClass
             } elseif ($type == 'mssql') {
                 ini_set('mssql.connect_timeout',1);
             }
-            ob_start();
-            $sql =  @ new \COREPOS\pos\lib\SQLManager($host,$type,$db,$user,$pw);
-            ob_end_clean();
+            $sql =  new \COREPOS\pos\lib\SQLManager($host,$type,$db,$user,$pw);
         } catch(Exception $ex) {}
 
         if ($sql === false || $sql->isConnected($db) === false) {
@@ -2006,6 +2029,14 @@ class InstallUtilities extends LibraryClass
             $errors[] = $obj->createIfNeeded($name);
         }
 
+        $errors = self::createDlog($db, $name, $errors);
+        $errors = self::createTTG($db, $name, $errors);
+
+        return $errors;
+    }
+
+    private static function createDlog($db, $name, $errors)
+    {
         $dlogQ = "CREATE VIEW dlog AS
             SELECT datetime AS tdate,
                 register_no,
@@ -2049,6 +2080,11 @@ class InstallUtilities extends LibraryClass
             $errors = InstallUtilities::dbStructureModify($db,'dlog',$dlogQ,$errors);
         }
 
+        return $errors;
+    }
+
+    private static function createTTG($db, $name, $errors)
+    {
         $ttG = "
             CREATE VIEW TenderTapeGeneric AS
             SELECT tdate, 
