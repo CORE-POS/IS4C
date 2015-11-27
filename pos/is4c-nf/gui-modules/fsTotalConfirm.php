@@ -25,43 +25,34 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class fsTotalConfirm extends NoInputCorePage 
 {
-
     private $tendertype;
+
+    private function subtotal($choice)
+    {
+        if ($choice == 'EF') {
+            $chk = PrehLib::fsEligible();
+        } else {
+            $chk = PrehLib::ttl();
+        }
+
+        if ($chk !== true) {
+            $this->change_page($chk);
+        } else {
+            $this->tendertype = $choice;
+            $this->change_page($this->page_url."gui-modules/pos2.php");
+        }
+
+        return false;
+    }
 
     function preprocess()
     {
         $this->tendertype = "";
         if (isset($_REQUEST["selectlist"])) {
             $choice = $_REQUEST["selectlist"];
-            if ($choice == "EF") {
-                $chk = PrehLib::fsEligible();
-                if ($chk !== true) {
-                    $this->change_page($chk);
-
-                    return false;
-                }
-                // 13Feb13 Andy
-                // Disable option to enter tender here by returning immediately    
-                // to pos2.php. Should be conigurable or have secondary
-                // functionality removed entirely
-                $this->tendertype = 'EF';
-                $this->change_page($this->page_url."gui-modules/pos2.php");
-
-                return false;
-            } else if ($choice == "EC") {
-                $chk = PrehLib::ttl();
-                if ($chk !== true) {
-                    $this->change_page($chk);
-
-                    return false;
-                }
-                // 13Feb13 Andy
-                // Disabled option; see above
-                $this->tendertype = 'EC';
-                $this->change_page($this->page_url."gui-modules/pos2.php");
-
-                return false;
-            } else if ($choice == '') {
+            if ($choice == "EF" || $choic == 'EC') {
+                return $this->subtotal($choice);
+            } elseif ($choice == '') {
                 $this->change_page($this->page_url."gui-modules/pos2.php");
 
                 return false;

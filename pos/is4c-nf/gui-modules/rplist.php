@@ -25,30 +25,34 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class rplist extends NoInputCorePage 
 {
+    private function printReceipt($trans)
+    {
+        $print_class = CoreLocal::get('ReceiptDriver');
+        if ($print_class === '' || !class_exists($print_class)) {
+            $print_class = 'ESCPOSPrintHandler';
+        }
+        $PRINT_OBJ = new $print_class();
+        $receipt = ReceiptLib::printReceipt('reprint', $trans);
+        if (session_id() != '') {
+            session_write_close();
+        }
+        if(is_array($receipt)) {
+            if (!empty($receipt['any'])) {
+                $PRINT_OBJ->writeLine($receipt['any']);
+            }
+            if (!empty($receipt['print'])) {
+                $PRINT_OBJ->writeLine($receipt['print']);
+            }
+        } elseif(!empty($receipt)) {
+            $PRINT_OBJ->writeLine($receipt);
+        }
+    }
 
     function preprocess()
     {
         if (isset($_REQUEST['selectlist'])) {
             if (!empty($_REQUEST['selectlist'])) {
-                $print_class = CoreLocal::get('ReceiptDriver');
-                if ($print_class === '' || !class_exists($print_class)) {
-                    $print_class = 'ESCPOSPrintHandler';
-                }
-                $PRINT_OBJ = new $print_class();
-                $receipt = ReceiptLib::printReceipt('reprint', $_REQUEST['selectlist']);
-                if (session_id() != '') {
-                    session_write_close();
-                }
-                if(is_array($receipt)) {
-                    if (!empty($receipt['any'])) {
-                        $PRINT_OBJ->writeLine($receipt['any']);
-                    }
-                    if (!empty($receipt['print'])) {
-                        $PRINT_OBJ->writeLine($receipt['print']);
-                    }
-                } elseif(!empty($receipt)) {
-                    $PRINT_OBJ->writeLine($receipt);
-                }
+                $this->printReceipt($_REQUEST['selectlist']);
             }
             $this->change_page($this->page_url."gui-modules/pos2.php");
 
@@ -139,6 +143,11 @@ class rplist extends NoInputCorePage
 
         <?php
     } // END body_content() FUNCTION
+
+    public function unitTest($phpunit)
+    {
+        $this->printReceipt('1-1-1'); // just coverage
+    }
 }
 
 AutoLoader::dispatch();

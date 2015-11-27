@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 /* wraps around an undone transaction to limit editing options
@@ -29,8 +30,8 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 */
 class undo_confirm extends BasicCorePage 
 {
-    var $box_color;
-    var $msg;
+    private $box_color;
+    private $msg;
 
     function body_content()
     {
@@ -87,78 +88,104 @@ class undo_confirm extends BasicCorePage
     function preprocess()
     {
         $this->msg = "";
-        if (isset($_REQUEST['reginput'])){
-            switch(strtoupper($_REQUEST['reginput'])){
-            case 'CL':
-                // cancel the transaction instead
-
-                /**
-                  Unify emp_no & trans_no records in the
-                  database. Logging records from authentication
-                  may have different values. This step normalizes
-                  the transaction. In this case I'm restoring
-                  the logged in cashier's info immediately
-                  and assigning the entire transaction to that
-                  cashier. This is simpler than the case below
-                  and since it's canceled it doesn't matter if
-                  the tender records are assigned to the original
-                  cashier or the current cashier.
-                */
-                Database::loadglobalvalues();
-                $dbc = Database::tDataConnect();
-                $emp_no = CoreLocal::get('CashierNo');
-                $trans_no = CoreLocal::get('transno');
-                $dbc->query('UPDATE localtemptrans SET
-                            emp_no='.((int)$emp_no).',
-                            trans_no='.((int)$trans_no).'
-                            WHERE
-                            emp_no<>'.((int)$emp_no).' OR
-                            trans_no<>'.((int)$trans_no));
-
-                $this->change_page($this->page_url."gui-modules/pos2.php?reginput=CN&repeat=1");
-                return False;
-                break;
-            case '':
-                // use zero cash to finish transaction
-
-                /**
-                  Unify emp_no & trans_no records in the
-                  database. Logging records from authentication
-                  may have different values. This step
-                  normalizes the transaction. When ajax-end.php
-                  runs to close the transaction, the actual
-                  logged in cashier's values will be restored
-                  via Database::loadglobalvalues().
-                */
-                $dbc = Database::tDataConnect();
-                $emp_no = CoreLocal::get('CashierNo');
-                $trans_no = CoreLocal::get('transno');
-                $dbc->query('UPDATE localtemptrans SET
-                            emp_no='.((int)$emp_no).',
-                            trans_no='.((int)$trans_no).'
-                            WHERE
-                            emp_no<>'.((int)$emp_no).' OR
-                            trans_no<>'.((int)$trans_no));
-
-                $this->change_page($this->page_url."gui-modules/pos2.php?reginput=0CA&repeat=1");
-                return False;
-                break;
-            case 'U':
-            case 'U11':
-            case 'D':
-            case 'D11':
-                // just use the parser module here
-                // for simplicity; all its really
-                // doing is updating a couple session vars
-                $scroll = new ScrollItems();
-                $json = $scroll->parse($_REQUEST['reginput']);
-                $this->msg = $json['output'];
-                break;
-            default:
-                break;
+        if (FormLib::get('reginput', false) !== false) {
+            $input = strtoupper(FormLib::get('reginput'));
+            switch($input) {
+                case 'CL':
+                    return $this->cancel();
+                case '':
+                    return $this->confirm();
+                case 'U':
+                case 'U11':
+                case 'D':
+                case 'D11':
+                    $this->msg = $this->scroll($input);
+                    break;
+                default:
+                    break;
             }
         }
-        return True;
+
+        return true;
+    }
+
+    private function assignTransaction()
+    {
+        $dbc = Database::tDataConnect();
+        $emp_no = CoreLocal::get('CashierNo');
+        $trans_no = CoreLocal::get('transno');
+        $dbc->query('UPDATE localtemptrans SET
+                    emp_no='.((int)$emp_no).',
+                    trans_no='.((int)$trans_no).'
+                    WHERE
+                    emp_no<>'.((int)$emp_no).' OR
+                    trans_no<>'.((int)$trans_no));
+    }
+
+    private function cancel()
+    {
+        // cancel the transaction instead
+
+        /**
+          Unify emp_no & trans_no records in the
+          database. Logging records from authentication
+          may have different values. This step normalizes
+          the transaction. In this case I'm restoring
+          the logged in cashier's info immediately
+          and assigning the entire transaction to that
+          cashier. This is simpler than the case below
+          and since it's canceled it doesn't matter if
+          the tender records are assigned to the original
+          cashier or the current cashier.
+        */
+        Database::loadglobalvalues();
+        $this->assignTransaction();
+        $this->change_page($this->page_url."gui-modules/pos2.php?reginput=CN&repeat=1");
+
+        return false;
+    }
+
+    private function confirm()
+    {
+        // use zero cash to finish transaction
+
+        /**
+          Unify emp_no & trans_no records in the
+          database. Logging records from authentication
+          may have different values. This step
+          normalizes the transaction. When ajax-end.php
+          runs to close the transaction, the actual
+          logged in cashier's values will be restored
+          via Database::loadglobalvalues().
+        */
+        $this->assignTransaction();
+        $this->change_page($this->page_url."gui-modules/pos2.php?reginput=0CA&repeat=1");
+
+        return false;
+    }
+
+    private function scroll($dir)
+    {
+        // just use the parser module here
+        // for simplicity; all its really
+        // doing is updating a couple session vars
+        $scroll = new ScrollItems();
+        $json = $scroll->parse($dir);
+        return $json['output'];
+    }
+
+    public function unitTest($phpunit)
+    {
+        $scrolled = $this->scroll('D2');
+        ob_start();
+        $this->body_content();
+        $body = ob_get_clean();
+        $phpunit->assertNotEquals(0, strlen($scrolled));
+        $phpunit->assertNotEquals(0, strlen($body));
+        ob_start();
+        $phpunit->assertEquals(false, $this->confirm());
+        $phpunit->assertEquals(false, $this->cancel());
+        ob_get_clean();
     }
 }
 

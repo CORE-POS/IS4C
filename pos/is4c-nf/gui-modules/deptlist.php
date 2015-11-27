@@ -25,6 +25,39 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class deptlist extends NoInputCorePage 
 {
+    private function handleInput($entered)
+    {
+        $entered = strtoupper($entered);
+
+        if ($entered == "" || $entered == "CL"){
+            // should be empty string
+            // javascript causes this input if the
+            // user presses CL{enter}
+            // Redirect to main screen
+            CoreLocal::set("departmentAmount","0");    
+            $this->change_page($this->page_url."gui-modules/pos2.php");
+            return false;
+        }
+
+        if (is_numeric($entered)){ 
+            // built department input string and set it
+            // to be the next POS entry
+            // Redirect to main screen
+            $input = CoreLocal::get("departmentAmount")."DP".$entered."0";
+            $qty = CoreLocal::get("quantity");
+            if ($qty != "" & $qty != 1 & $qty != 0) {
+                $input = $qty."*".$input;
+            }
+            $this->change_page(
+                $this->page_url
+                . "gui-modules/pos2.php"
+                . '?reginput=' . $input
+                . '&repeat=1');
+            return false;
+        }
+
+        return true;
+    }
 
     /**
       Input processing function
@@ -33,36 +66,9 @@ class deptlist extends NoInputCorePage
     {
         // a selection was made
         if (isset($_REQUEST['search'])){
-            $entered = strtoupper($_REQUEST['search']);
-
-            if ($entered == "" || $entered == "CL"){
-                // should be empty string
-                // javascript causes this input if the
-                // user presses CL{enter}
-                // Redirect to main screen
-                CoreLocal::set("departmentAmount","0");    
-                $this->change_page($this->page_url."gui-modules/pos2.php");
-                return False;
-            }
-
-            if (is_numeric($entered)){ 
-                // built department input string and set it
-                // to be the next POS entry
-                // Redirect to main screen
-                $input = CoreLocal::get("departmentAmount")."DP".$entered."0";
-                $qty = CoreLocal::get("quantity");
-                if ($qty != "" & $qty != 1 & $qty != 0) {
-                    $input = $qty."*".$input;
-                }
-                $this->change_page(
-                    $this->page_url
-                    . "gui-modules/pos2.php"
-                    . '?reginput=' . $input
-                    . '&repeat=1');
-                return false;
-            }
+            return $this->handleInput($_REQUEST['search']);
         }
-        return True;
+        return true;
     } // END preprocess() FUNCTION
 
     /**
@@ -129,9 +135,16 @@ class deptlist extends NoInputCorePage
         $this->add_onload_command("\$('#search').focus();\n");
     } // END body_content() FUNCTION
 
+    public function unitTest($phpunit)
+    {
+        ob_start();
+        $phpunit->assertEquals(false, $this->handleInput(''));
+        $phpunit->assertEquals(false, $this->handleInput('CL'));
+        $phpunit->assertEquals(false, $this->handleInput('7'));
+        $phpunit->assertEquals(true, $this->handleInput('z'));
+        ob_get_clean();
+    }
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new deptlist();
+AutoLoader::dispatch();
 
-?>

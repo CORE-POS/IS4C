@@ -43,7 +43,53 @@ class requestInfo extends NoInputCorePage
     private $request_header = '';
     private $request_msg = '';
 
-    function preprocess(){
+    private function validateClass($class)
+    {
+        $method = new ReflectionMethod($class, 'requestInfoCallback');
+        if (!$method->isStatic() || !$method->isPublic())
+            throw new Exception('bad method requestInfoCallback');
+        $property = new ReflectionProperty($class, 'requestInfoMsg');
+        if (!$property->isStatic() || !$property->isPublic())
+            throw new Exception('bad property requestInfoMsg');
+        $property = new ReflectionProperty($class, 'requestInfoHeader');
+        if (!$property->isStatic() || !$property->isPublic())
+            throw new Exception('bad property requestInfoHeader');
+
+        return true;
+    }
+
+    private function handleInput($reginput, $class, $pos_home)
+    {
+        $reginput = strtoupper($reginput);
+        if ($reginput == 'CL') {
+            // clear; go home
+            $this->change_page($pos_home);
+            return false;
+        } elseif ($reginput === '') {
+            // blank. stay at prompt
+            return true;
+        } else {
+            // give info to callback function
+            $result = $class::requestInfoCallback($reginput);
+            if ($result === true) {
+                // accepted. go home
+                $this->change_page($pos_home);
+                return false;
+            } elseif ($result === false) {
+                // input rejected. try again
+                $this->result_header = 'invalid entry';
+                return true;
+            } else {
+                // callback wants to navigate to
+                // another page
+                $this->change_page($result);
+                return false;
+            }
+        }
+    }
+
+    public function preprocess()
+    {
         // get calling class (required)
         $class = isset($_REQUEST['class']) ? $_REQUEST['class'] : '';
         $pos_home = MiscLib::base_url().'gui-modules/pos2.php';
@@ -54,19 +100,11 @@ class requestInfo extends NoInputCorePage
         // make sure calling class implements required
         // method and properties
         try {
-            $method = new ReflectionMethod($class, 'requestInfoCallback');
-            if (!$method->isStatic() || !$method->isPublic())
-                throw new Exception('bad method requestInfoCallback');
-            $property = new ReflectionProperty($class, 'requestInfoMsg');
-            if (!$property->isStatic() || !$property->isPublic())
-                throw new Exception('bad property requestInfoMsg');
-            $property = new ReflectionProperty($class, 'requestInfoHeader');
-            if (!$property->isStatic() || !$property->isPublic())
-                throw new Exception('bad property requestInfoHeader');
+            $this->validateClass($class);
         }
         catch (Exception $e){
             $this->change_page($pos_home);
-            return False;
+            return false;
         }
 
         $this->request_header = $class::$requestInfoHeader;
@@ -74,38 +112,10 @@ class requestInfo extends NoInputCorePage
 
         // info was submitted
         if (isset($_REQUEST['input'])){
-            $reginput = strtoupper($_REQUEST['input']);
-            if ($reginput == 'CL'){
-                // clear; go home
-                $this->change_page($pos_home);
-                return False;
-            }
-            elseif ($reginput === ''){
-                // blank. stay at prompt
-                return True;
-            }
-            else {
-                // give info to callback function
-                $result = $class::requestInfoCallback($reginput);
-                if ($result === True){
-                    // accepted. go home
-                    $this->change_page($pos_home);
-                    return False;
-                }
-                elseif ($result === False){
-                    // input rejected. try again
-                    $this->result_header = 'invalid entry';
-                    return True;
-                }
-                else {
-                    // callback wants to navigate to
-                    // another page
-                    $this->change_page($result);
-                    return False;
-                }
-            }
+            return $this->handleInput($_REQUEST['input'], $class, $pos_home);
         }
-        return True;
+
+        return true;
     }
 
     function body_content()
@@ -130,6 +140,21 @@ class requestInfo extends NoInputCorePage
         <?php
         $this->add_onload_command("\$('#reginput').focus();");
     } // END true_body() FUNCTION
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertEquals(true, $this->validateClass('AnyTenderReportRequest'));
+        ob_start();
+        $phpunit->assertEquals(false, $this->handleInput('CL', 'AnyTenderReportRequest', ''));
+        $phpunit->assertEquals(true, $this->handleInput('', 'AnyTenderReportRequest', ''));
+        $phpunit->assertEquals(false, $this->handleInput('asdf', 'AnyTenderReportRequest', ''));
+        $phpunit->assertEquals(true, $this->handleInput('1', 'AnyTenderReportRequest', ''));
+        ob_get_clean();
+        ob_start();
+        $this->body_content();
+        $body = ob_get_clean();
+        $phpunit->assertNotEquals(0, strlen($body));
+    }
 
 }
 

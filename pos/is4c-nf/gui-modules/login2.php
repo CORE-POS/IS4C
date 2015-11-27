@@ -55,38 +55,12 @@ class login2 extends BasicCorePage
                     $sdObj->ReadReset();
                 }
 
-                /**
-                  Find a drawer for the cashier
-                */
-                $my_drawer = ReceiptLib::currentDrawer();
-                if ($my_drawer == 0) {
-                    $available = ReceiptLib::availableDrawers();    
-                    if (count($available) > 0) { 
-                        ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$available[0]);
-                        $my_drawer = $available[0];
-                    }
-                } else {
-                    ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$my_drawer);
-                }
-
+                $my_drawer = $this->getDrawer();
                 TransRecord::addLogRecord(array(
                     'upc' => 'SIGNIN',
                     'description' => 'Sign In Emp#' . CoreLocal::get('CashierNo'),
                 ));
-
-                /**
-                  Use Kicker object to determine whether the drawer should open
-                  The first line is just a failsafe in case the setting has not
-                  been configured.
-                */
-                if (session_id() != '') {
-                    session_write_close();
-                }
-                $kicker_class = (CoreLocal::get("kickerModule")=="") ? 'Kicker' : CoreLocal::get('kickerModule');
-                $kicker_object = new $kicker_class();
-                if ($kicker_object->kickOnSignIn()) {
-                    ReceiptLib::drawerKick();
-                }
+                $this->kick();
 
                 if ($my_drawer == 0) {
                     $this->change_page($this->page_url."gui-modules/drawerPage.php");
@@ -165,6 +139,48 @@ class login2 extends BasicCorePage
         </form>
         <?php
     } // END true_body() FUNCTION
+
+    private function getDrawer()
+    {
+        /**
+          Find a drawer for the cashier
+        */
+        $my_drawer = ReceiptLib::currentDrawer();
+        if ($my_drawer == 0) {
+            $available = ReceiptLib::availableDrawers();    
+            if (count($available) > 0) { 
+                ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$available[0]);
+                $my_drawer = $available[0];
+            }
+        } else {
+            ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$my_drawer);
+        }
+
+        return $my_drawer;
+    }
+
+    private function kick()
+    {
+        /**
+          Use Kicker object to determine whether the drawer should open
+          The first line is just a failsafe in case the setting has not
+          been configured.
+        */
+        if (session_id() != '') {
+            session_write_close();
+        }
+        $kicker_class = (CoreLocal::get("kickerModule")=="") ? 'Kicker' : CoreLocal::get('kickerModule');
+        $kicker_object = new $kicker_class();
+        if ($kicker_object->kickOnSignIn()) {
+            ReceiptLib::drawerKick();
+        }
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertEquals(1, $this->getDrawer());
+        $this->kick(); // coverage
+    }
 
 }
 

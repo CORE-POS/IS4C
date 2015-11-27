@@ -63,6 +63,8 @@ class PagesTest extends PHPUnit_Framework_TestCase
                 $this->assertEquals('</ul>',substr($output,-5));
                 $this->assertEquals('Follow redirect', substr($output,0,15));
             }
+
+            $obj->unitTest($this);
         }
     }
 }
