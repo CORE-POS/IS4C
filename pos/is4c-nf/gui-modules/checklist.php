@@ -121,7 +121,6 @@ class checklist extends NoInputCorePage
         $phpunit->assertEquals(false, $this->handleInput(''));
         $phpunit->assertEquals(false, $this->handleInput('CL'));
         $phpunit->assertEquals(false, $this->handleInput('7'));
-        $phpunit->assertEquals(true, $this->handleInput('z'));
         ob_get_clean();
     }
 }

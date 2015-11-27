@@ -159,18 +159,9 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
         echo str_replace('{{FORM}}', $form, $this->commonHeader());
     }
 
-    protected function commonHeader()
+    protected function dateJS()
     {
-        $my_url = $this->page_url;
-        $this->add_onload_command("betterDate();\n\$('#reginput').focus();");
-        
-        // this needs to be configurable; just fixing
-        // a giant PHP warning for the moment
-        $time = strftime("%m/%d/%y %I:%M %p", time());
-
-        CoreLocal::set("repeatable",0);
-        ob_start();
-        ?>
+        return <<<JAVASCRIPT
         <script type="text/javascript">
         function betterDate() {
             var myNow = new Date();
@@ -197,6 +188,22 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
             setTimeout(betterDate,20000);
         }
         </script>
+JAVASCRIPT;
+    }
+
+    protected function commonHeader()
+    {
+        $my_url = $this->page_url;
+        $this->add_onload_command("betterDate();\n\$('#reginput').focus();");
+        
+        // this needs to be configurable; just fixing
+        // a giant PHP warning for the moment
+        $time = strftime("%m/%d/%y %I:%M %p", time());
+
+        CoreLocal::set("repeatable",0);
+        ob_start();
+        echo $this->dateJS();
+        ?>
         <div id="inputArea">
             {{FORM}}
             <div class="notices coloredText <?php echo (CoreLocal::get("training")==1?'training':''); ?>">
@@ -204,18 +211,15 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
             if (CoreLocal::get("training") == 1) {
                 echo "<span class=\"text\">"._("training")." </span>"
                      ."<img alt=\"training\" src='{$my_url}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
-            }
-            elseif (CoreLocal::get("standalone") == 0) {
+            } elseif (CoreLocal::get("standalone") == 0) {
                 echo "<img alt=\"online\" src='{$my_url}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
-            }
-            else {
+            } else {
                 echo "<span class=\"text\">stand alone</span>"
                      ."<img alt=\"standalone\" src='{$my_url}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
             }
             if (CoreLocal::get("receiptToggle")==1){
                 echo "<img id=\"receipticon\" alt=\"receipt\" src='{$my_url}graphics/receipt.gif'>&nbsp;&nbsp;&nbsp;";
-            }
-            else {
+            } else {
                 echo "<img id=\"receipticon\" alt=\"no receipt\" src='{$my_url}graphics/noreceipt.gif'>&nbsp;&nbsp;&nbsp;";
             }
             if (CoreLocal::get("CCintegrate") == 1 && CoreLocal::get("training") == 0) {

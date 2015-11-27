@@ -38,26 +38,73 @@ class AjaxParser extends AjaxCallback
         $this->draw_page_parts = $p;
     }
 
-    public function ajax($input=array())
+    private function runPreParsers($entered)
     {
-        $in_field = 'input';
-        if (isset($input['field'])) {
-            $in_field = $input['field'];
+        /* FIRST PARSE CHAIN:
+         * Objects belong in the first parse chain if they
+         * modify the entered string, but do not process it
+         * This chain should be used for checking prefixes/suffixes
+         * to set up appropriate session variables.
+         */
+        $parser_lib_path = MiscLib::base_url()."parser-class-lib/";
+        if (!is_array(CoreLocal::get("preparse_chain")))
+            CoreLocal::set("preparse_chain",PreParser::get_preparse_chain());
+
+        foreach (CoreLocal::get("preparse_chain") as $cn){
+            if (!class_exists($cn)) continue;
+            $pre = new $cn();
+            if ($pre->check($entered))
+                $entered = $pre->parse($entered);
+                if (!$entered || $entered == "")
+                    break;
         }
-        $entered = strtoupper(trim(FormLib::get($in_field)));
-        if (substr($entered, -2) == "CL") $entered = "CL";
 
-        if ($entered == "RI") $entered = CoreLocal::get("strEntered");
+        return $entered;
+    }
 
-        if (CoreLocal::get("msgrepeat") == 1 && $entered != "CL") {
-            $entered = CoreLocal::get("strRemembered");
-        } elseif (FormLib::get('repeat')) {
-            CoreLocal::set('msgrepeat', 1);
+    private function runParsers($entered)
+    {
+        /* 
+         * SECOND PARSE CHAIN
+         * these parser objects should process any input
+         * completely. The return value of parse() determines
+         * whether to call lastpage() [list the items on screen]
+         */
+        if (!is_array(CoreLocal::get("parse_chain")))
+            CoreLocal::set("parse_chain",Parser::get_parse_chain());
+
+        $result = False;
+        foreach (CoreLocal::get("parse_chain") as $cn){
+            if (!class_exists($cn)) continue;
+            $parse = new $cn();
+            if ($parse->check($entered)){
+                $result = $parse->parse($entered);
+                break;
+            }
         }
-        CoreLocal::set("strEntered",$entered);
 
-        $json = array();
-        $sdObj = MiscLib::scaleObject();
+        return $result;
+    }
+
+    private function runPostParsers($result)
+    {
+        // postparse chain: modify result
+        if (!is_array(CoreLocal::get("postparse_chain"))) {
+            CoreLocal::set("postparse_chain",PostParser::getPostParseChain());
+        }
+        foreach (CoreLocal::get('postparse_chain') as $class) {
+            if (!class_exists($class)) {
+                continue;
+            }
+            $obj = new $class();
+            $result = $obj->parse($result);
+        }
+
+        return $result;
+    }
+
+    private function handlePaycards($entered, $json)
+    {
         if ($entered != "") {
             /* this breaks the model a bit, but I'm putting
              * putting the CC parser first manually to minimize
@@ -82,64 +129,44 @@ class AjaxParser extends AjaxCallback
             }
         }
 
+        return array($entered, $json);
+    }
+
+    public function ajax($input=array())
+    {
+        $in_field = 'input';
+        if (isset($input['field'])) {
+            $in_field = $input['field'];
+        }
+        $entered = strtoupper(trim(FormLib::get($in_field)));
+        if (substr($entered, -2) == "CL") $entered = "CL";
+
+        if ($entered == "RI") $entered = CoreLocal::get("strEntered");
+
+        if (CoreLocal::get("msgrepeat") == 1 && $entered != "CL") {
+            $entered = CoreLocal::get("strRemembered");
+        } elseif (FormLib::get('repeat')) {
+            CoreLocal::set('msgrepeat', 1);
+        }
+        CoreLocal::set("strEntered",$entered);
+
+        $json = array();
+        $sdObj = MiscLib::scaleObject();
+        list($entered, $json) = $this->handlePaycards($entered, $json);
+
         CoreLocal::set("quantity",0);
         CoreLocal::set("multiple",0);
 
-        /* FIRST PARSE CHAIN:
-         * Objects belong in the first parse chain if they
-         * modify the entered string, but do not process it
-         * This chain should be used for checking prefixes/suffixes
-         * to set up appropriate session variables.
-         */
-        $parser_lib_path = MiscLib::base_url()."parser-class-lib/";
-        if (!is_array(CoreLocal::get("preparse_chain")))
-            CoreLocal::set("preparse_chain",PreParser::get_preparse_chain());
-
-        foreach (CoreLocal::get("preparse_chain") as $cn){
-            if (!class_exists($cn)) continue;
-            $pre = new $cn();
-            if ($pre->check($entered))
-                $entered = $pre->parse($entered);
-                if (!$entered || $entered == "")
-                    break;
-        }
+        $entered = $this->runPreParsers($entered);
 
         if ($entered != "" && $entered != "PAYCARD") {
-            /* 
-             * SECOND PARSE CHAIN
-             * these parser objects should process any input
-             * completely. The return value of parse() determines
-             * whether to call lastpage() [list the items on screen]
-             */
-            if (!is_array(CoreLocal::get("parse_chain")))
-                CoreLocal::set("parse_chain",Parser::get_parse_chain());
-
-            $result = False;
-            foreach (CoreLocal::get("parse_chain") as $cn){
-                if (!class_exists($cn)) continue;
-                $parse = new $cn();
-                if ($parse->check($entered)){
-                    $result = $parse->parse($entered);
-                    break;
-                }
-            }
+            $result = $this->runParsers($entered);
             if ($result && is_array($result)) {
-                // postparse chain: modify result
-                if (!is_array(CoreLocal::get("postparse_chain"))) {
-                    CoreLocal::set("postparse_chain",PostParser::getPostParseChain());
-                }
-                foreach (CoreLocal::get('postparse_chain') as $class) {
-                    if (!class_exists($class)) {
-                        continue;
-                    }
-                    $obj = new $class();
-                    $result = $obj->parse($result);
-                }
+                $result = $this->runPostParsers($result);
 
                 $json = $result;
-                if (isset($result['udpmsg']) && $result['udpmsg'] !== False){
-                    if (is_object($sdObj))
-                        $sdObj->WriteToScale($result['udpmsg']);
+                if (isset($result['udpmsg']) && $result['udpmsg'] !== False && is_object($sdObj)){
+                    $sdObj->WriteToScale($result['udpmsg']);
                 }
             } else {
                 $arr = array(
