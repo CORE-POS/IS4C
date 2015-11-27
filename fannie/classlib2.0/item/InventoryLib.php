@@ -38,7 +38,7 @@ class InventoryLib
             WHERE v.upc=?');
         $bdInfo = $dbc->getRow($bdP, array($upc));
         if ($recurse && $bdInfo && ($bdInfo['units'] == 1 || $bdInfo['units'] == null)) {
-            $model = new VendorBreakdownsModel($dbc);
+            $model = new \VendorBreakdownsModel($dbc);
             $model->vendorID($bdInfo['vendorID']);
             $model->sku($bdInfo['sku']);
             if ($model->initUnits()) {
