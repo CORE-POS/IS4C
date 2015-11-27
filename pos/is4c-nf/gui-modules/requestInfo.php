@@ -147,7 +147,7 @@ class requestInfo extends NoInputCorePage
         ob_start();
         $phpunit->assertEquals(false, $this->handleInput('CL', 'AnyTenderReportRequest', ''));
         $phpunit->assertEquals(true, $this->handleInput('', 'AnyTenderReportRequest', ''));
-        $phpunit->assertEquals(false, $this->handleInput('asdf', 'AnyTenderReportRequest', ''));
+        $phpunit->assertEquals(true, $this->handleInput('asdf', 'AnyTenderReportRequest', ''));
         $phpunit->assertEquals(true, $this->handleInput('1', 'AnyTenderReportRequest', ''));
         ob_get_clean();
         ob_start();
