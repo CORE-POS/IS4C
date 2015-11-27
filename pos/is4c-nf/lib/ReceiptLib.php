@@ -1171,7 +1171,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
             $receipt = self::printCabCoupon($dateTimeStamp, $ref);
             CoreLocal::set("cabReference","");
         } else {
-            $receipt = self::simpleReceipt($receipt, $where);
+            $receipt = self::simpleReceipt($receipt, $arg1, $where);
         }
     }
 
@@ -1223,7 +1223,7 @@ static private function cutReceipt($receipt, $second)
     return $receipt;
 }
 
-static private function simpleReceipt($receipt, $where)
+static private function simpleReceipt($receipt, $arg1, $where)
 {
     /***** jqh 09/29/05 if receipt isn't full, then display receipt in old style *****/
     $query="select linetoprint from rp_receipt WHERE " . $where . ' ORDER BY trans_id';

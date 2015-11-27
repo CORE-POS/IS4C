@@ -309,6 +309,7 @@ class Void extends Parser
     private function scaleUPC($upc)
     {
         $scaleprice = 0;
+        $deliflag = false;
         if (is_numeric($upc)) {
             $upc = substr("0000000000000" . $upc, -13);
             if (substr($upc, 0, 3) == "002" && substr($upc, -5) != "00000") {
@@ -434,6 +435,7 @@ class Void extends Parser
 
     private function adjustUnitPrice($upc, $row)
     {
+        $unitPrice = $row['unitPrice'];
         /**
           11Jun14 Andy
           Convert unitPrice to/from sale price based on
@@ -526,7 +528,7 @@ class Void extends Parser
             $cost = $row['cost'];
             $numflag = $row['numflag'];
             $charflag = $row['charflag'];
-            $unitPrice = $this->adjustUnitPrice($row['unitPrice']);
+            $unitPrice = $this->adjustUnitPrice($upc, $row['unitPrice']);
             $discount = -1 * $row["discount"];
             $memDiscount = -1 * $row["memDiscount"];
             $discountable = $row["discountable"];

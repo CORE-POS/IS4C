@@ -130,14 +130,14 @@ class PrintHandler {
                 $oldMask = 1 << (7 - ($c % 8));
                 $newByte = ($tallDots ? $c : ($c + $c + $c));
                 // top or only byte
-                $b = $this->bitMagic(0, $oldRowBytes, $c);
+                $b = $this->bitMagic(0, array($oldData, $oldInfo, $oldRowBytes), $c);
                 $newData[$newByte + 0] = chr($b);
                 if (!$tallDots) {
                     // middle byte
-                    $b = $this->bitMagic(8, $oldRowBytes, $c);
+                    $b = $this->bitMagic(8, array($oldData, $oldInfo, $oldRowBytes), $c);
                     $newData[$newByte + 1] = chr($b);
                     // bottom byte
-                    $b = $this->bitMagic(16, $oldRowBytes, $c);
+                    $b = $this->bitMagic(16, array($oldData, $oldInfo, $oldRowBytes), $c);
                     $newData[$newByte + 2] = chr($b);
                 }
             }
@@ -150,9 +150,10 @@ class PrintHandler {
       No idea what this really does but it was repeated
       three times above
     */
-    private function bitMagic($base, $oldRowBytes, $c)
+    private function bitMagic($base, $oldInfo, $c)
     {
         $byte = 0;
+        list($oldData, $oldMask, $oldRowBytes) = $oldInfo;
         for ($r = $base;  $r < $base+8;  $r++) {
             $oldByte = ($r * $oldRowBytes) + ($c >> 3); // (int)($c / 8)
             if (ord($oldData[$oldByte]) & $oldMask)
