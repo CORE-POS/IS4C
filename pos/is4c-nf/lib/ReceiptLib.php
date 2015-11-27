@@ -990,7 +990,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
                     + CoreLocal::get("memSpecial"), 2));
         } else {
             CoreLocal::set("yousaved",CoreLocal::get("discounttotal"));
-            CoreLocal::set("couldhavesaved",number_format(CoreLocal::get("memSpecial"), 2));
+            CoreLocal::set("couldhavesaved",number_format(CoreLocal::get("memSpecial") == '' ? 0 : CoreLocal::get('memSpecial'), 2));
             CoreLocal::set("specials",CoreLocal::get("discounttotal"));
         }
     }

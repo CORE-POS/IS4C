@@ -35,6 +35,7 @@
  * page or True to go to pos2.php.
  */
 
+use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class requestInfo extends NoInputCorePage 
@@ -129,7 +130,7 @@ class requestInfo extends NoInputCorePage
         <form name="form" method="post" autocomplete="off" 
             action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <input type="text" id="reginput" name='input' tabindex="0" onblur="$('#input').focus()" />
-        <input type="hidden" name="class" value="<?php echo $_REQUEST['class']; ?>" />
+        <input type="hidden" name="class" value="<?php echo FormLib::get('class'); ?>" />
         </form>
         <p>
         <?php echo $this->request_msg; ?>
@@ -148,7 +149,7 @@ class requestInfo extends NoInputCorePage
         $phpunit->assertEquals(false, $this->handleInput('CL', 'AnyTenderReportRequest', ''));
         $phpunit->assertEquals(true, $this->handleInput('', 'AnyTenderReportRequest', ''));
         $phpunit->assertEquals(true, $this->handleInput('asdf', 'AnyTenderReportRequest', ''));
-        $phpunit->assertEquals(true, $this->handleInput('1', 'AnyTenderReportRequest', ''));
+        $phpunit->assertEquals(false, $this->handleInput('1', 'AnyTenderReportRequest', ''));
         ob_get_clean();
         ob_start();
         $this->body_content();
