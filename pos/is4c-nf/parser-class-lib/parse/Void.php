@@ -234,6 +234,7 @@ class Void extends Parser
                 $this->checkVoidLimit($row['total']);
             }
             $this->checkTendered($total);
+            $dbc = Database::tDataConnect();
             $update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
             $dbc->query($update);
 
