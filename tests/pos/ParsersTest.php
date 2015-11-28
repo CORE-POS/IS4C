@@ -535,9 +535,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $rk->parse('*');
         $this->assertNotEquals(0, strlen($out['output']));
         $upc->parse('666');
-        lttLib::console('added UPC');
         $out = $rk->parse('*');
-        lttLib::console('repeated UPC');
         $this->assertNotEquals(0, strlen($out['output']));
         $query = 'SELECT * FROM localtemptrans WHERE upc=\'0000000000666\'';
         $res = $dbc->query($query);
@@ -614,7 +612,6 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $dbc = Database::tDataConnect();
         lttLib::clear();
         $out = $d->parse('RU');
-        lttLib::console('donated');
         $prep = $dbc->prepare('SELECT SUM(total) FROM localtemptrans');
         $this->assertEquals(1, $dbc->getValue($prep));
         lttLib::clear();
