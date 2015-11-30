@@ -131,7 +131,7 @@ class SiteMap extends FannieRESTfulPage
 
     public function unitTest($phpunit)
     {
-        $this->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
     }
 }
 
