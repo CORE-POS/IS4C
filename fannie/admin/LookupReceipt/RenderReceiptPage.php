@@ -420,7 +420,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $this->setForm($form);
         $phpunit->assertNotEquals(0, strlen($this->get_view()));
         $phpunit->assertNotEquals(0, strlen($this->getHeader()));
-        $phpunit->assertNotEquals(0, strlen($this->getFoote()));
+        $phpunit->assertNotEquals(0, strlen($this->getFooter()));
     }
 
 }
