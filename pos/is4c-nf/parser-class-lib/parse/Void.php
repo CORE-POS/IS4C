@@ -528,7 +528,7 @@ class Void extends Parser
             $cost = $row['cost'];
             $numflag = $row['numflag'];
             $charflag = $row['charflag'];
-            $unitPrice = $this->adjustUnitPrice($upc, $row['unitPrice']);
+            $unitPrice = $this->adjustUnitPrice($upc, $row);
             $discount = -1 * $row["discount"];
             $memDiscount = -1 * $row["memDiscount"];
             $discountable = $row["discountable"];
