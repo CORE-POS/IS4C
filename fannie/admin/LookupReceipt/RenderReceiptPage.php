@@ -415,10 +415,10 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $form->month = date('n');
         $form->day = date('j');
         $this->setForm($form);
-        $phpunit->assertNotEquals(0, strlen($this->get_view));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
         $form->date = date('Y-m-d');
         $this->setForm($form);
-        $phpunit->assertNotEquals(0, strlen($this->get_view));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
         $phpunit->assertNotEquals(0, strlen($this->getHeader()));
         $phpunit->assertNotEquals(0, strlen($this->getFoote()));
     }
