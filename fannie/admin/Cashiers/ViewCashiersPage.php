@@ -153,12 +153,12 @@ function deleteEmp(emp_no,filter){
         $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
         $form = new COREPOS\common\mvc\ValueContainer();
         $this->setForm($form);
-        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
         $form->filter = 0;
         foreach (array('num','name','pass','fes') as $order) {
             $form->order = $order;
             $this->setForm($form);
-            $phpunit->assertNotEquals(0, strlen($this->body_content()));
+            $phpunit->assertNotEquals(0, strlen($this->get_view()));
         }
     }
 }
