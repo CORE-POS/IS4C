@@ -100,7 +100,7 @@ class VendorPricingIndex extends FanniePage {
 
     public function unitTest($phpunit)
     {
-        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
     }
 }
 
