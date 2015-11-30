@@ -62,8 +62,12 @@ class CapSalesIndexPage extends FanniePage
             create a price change batch if necessary.</p>
             <p>The unifying thread here is NCG-related.</p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

@@ -212,6 +212,16 @@ function postBilling(){
             that lack specialized tooling.
             </p>'; 
     }
+
+    public function unitTest($phpunit)
+    {
+        $phunit->assertNotEquals(0, strlen($this->javascript_content()));
+        $phunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->id = 1;
+        ob_start();
+        $phpunit->assertEquals(false, $this->get_id_handler());
+        $phunit->assertNotEquals(0, strlen(ob_get_clean()));
+    }
 }
 
 FannieDispatch::conditionalExec();

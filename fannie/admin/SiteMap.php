@@ -128,6 +128,11 @@ class SiteMap extends FannieRESTfulPage
             vast majority do not. This is provided to ensure users can locate
             most everything regardless of how the menus are set up.</p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->assertNotEquals(0, strlen($this->get_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

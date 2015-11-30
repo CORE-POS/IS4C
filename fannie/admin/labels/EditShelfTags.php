@@ -331,6 +331,11 @@ HTML;
             This is for quick fine-tuning before printing tags.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
 FannieDispatch::conditionalExec();

@@ -341,6 +341,20 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             </p>';
     }
 
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->u = array(BarcodeLib::padUPC('4011'));
+        $this->setForm($form);
+        $phpunit->asertEquals(true, $this->post_u_handler());
+        $phpunit->assertNotEquals(0, strlen($this->post_u_view()));
+        $form->batch = 1;
+        $this->setForm($form);
+        $phpunit->asertEquals(true, $this->get_batch_handler());
+        $phpunit->assertNotEquals(0, strlen($this->get_batch_view()));
+    }
+
 }
 
 FannieDispatch::conditionalExec();

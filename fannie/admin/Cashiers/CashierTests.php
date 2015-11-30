@@ -10,6 +10,11 @@ class CashierTests extends \COREPOS\Fannie\API\test\TestWrapper
         $get = $this->runRESTfulPage($page, $form);
         $phpunit->assertNotEquals(0, strlen($get));
 
+        $form->flash = base64_encode('test message');
+        $page->setForm($form);
+        $get = $this->runRESTfulPage($page, $form);
+        $phpunit->assertNotEquals(0, strlen($get));
+
         $form->_method = 'post';
         $form->lname = 'test';
         $form->fname = 'cashier';

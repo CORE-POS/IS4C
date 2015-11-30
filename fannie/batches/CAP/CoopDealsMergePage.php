@@ -208,7 +208,13 @@ html;
             batch.</p>
             ';
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->added = 'foo';
+        $phpunit->assertNotEquals(0, strlen($this->get_added_view()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
