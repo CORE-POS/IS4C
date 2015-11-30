@@ -114,7 +114,7 @@ class AdvancedBatchEditor extends FannieRESTfulPage
                 $item->groupSalePrice($item->salePrice());
             }
             $prod = $dbc->getRow($prodP, array($item->upc()));
-            $ret .= $this->printRow($item);
+            $ret .= $this->printRow($item, $prod);
         }
         $ret .= '</tbody></table>
             <p>
@@ -128,7 +128,7 @@ class AdvancedBatchEditor extends FannieRESTfulPage
         return $ret;
     }
 
-    private function printRow($item)
+    private function printRow($item, $prod)
     {
         return sprintf('
             <tr>
