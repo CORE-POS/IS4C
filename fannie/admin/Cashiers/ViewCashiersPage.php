@@ -150,7 +150,7 @@ function deleteEmp(emp_no,filter){
 
     public function unitTest($phpunit)
     {
-        $this->assertNotEquals(0, strlen($this->javascript_content()));
+        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
         $form = new COREPOS\common\mvc\ValueContainer();
         $this->setForm($form);
         $phpunit->assertNotEquals(0, strlen($this->body_content()));
