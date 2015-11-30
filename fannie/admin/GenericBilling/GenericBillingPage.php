@@ -215,12 +215,12 @@ function postBilling(){
 
     public function unitTest($phpunit)
     {
-        $phunit->assertNotEquals(0, strlen($this->javascript_content()));
-        $phunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
         $this->id = 1;
         ob_start();
         $phpunit->assertEquals(false, $this->get_id_handler());
-        $phunit->assertNotEquals(0, strlen(ob_get_clean()));
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
     }
 }
 
