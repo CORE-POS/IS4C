@@ -22,9 +22,13 @@ class RawReceipt extends FannieReportPage
             $this->report_headers[] = $name;
         }
 
-        list($emp, $reg, $trans) = explode('-', FormLib::get('trans'), 3);
-        $date = FormLib::get('date');
-        $table = DTransactionsModel::selectDtrans($date);
+        try {
+            list($emp, $reg, $trans) = explode('-', $this->form->trans, 3);
+            $date = $this->form->date;
+            $table = DTransactionsModel::selectDtrans($date);
+        } catch (Exception $ex) {
+            return array();
+        }
 
         $query = $dbc->prepare('
             SELECT *
@@ -50,6 +54,14 @@ class RawReceipt extends FannieReportPage
         }
 
         return $data;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $this->form = new COREPOS\common\mvc\ValueContainer();
+        $this->form->date = date('Y-m-d');
+        $this->form->trans = '1-1-1';
+        $phpunit->assertInternalType('array', $this->fetch_report_data());
     }
 }
 

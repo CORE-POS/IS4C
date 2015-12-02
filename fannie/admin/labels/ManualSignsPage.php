@@ -182,6 +182,11 @@ HTML;
             first row are automatically copied through to the other rows.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

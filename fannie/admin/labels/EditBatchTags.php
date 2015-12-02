@@ -167,6 +167,7 @@ class EditBatchTags extends FanniePage {
     public function unitTest($phpunit)
     {
         $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $phpunit->assertNotEquals(0, strlen($this->css_content()));
     }
 }
 

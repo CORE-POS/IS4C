@@ -107,5 +107,77 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    public function testConfig()
+    {
+        $config = FannieConfig::factory();
+        $this->assertEquals($config->get('OP_DB'), $config->get('FANNIE_OP_DB'));
+        $this->assertEquals($config->get('OP_DB'), FannieConfig::config('OP_DB'));
+        $this->assertEquals($config->get('OP_DB'), $config->OP_DB);
+        $json = $config->toJSON();
+        $this->assertNotEquals(null, json_decode($json));
+    }
+
+    public function testTask()
+    {
+        $logger = new FannieLogger();
+        $task = new FannieTask();
+        $task->setThreshold(99);
+        $task->setLogger($logger);
+        $task->setConfig(FannieConfig::factory());
+        $task->setOptions(null);
+        $task->setArguments(null);
+        $task->run();
+        $task->cronMsg('foo');
+        $argv = array('-v', '--verbose', '-h', '1', '--host=1', 'something', 'else');
+        $opt = $task->lazyGetOpt($argv);
+        $expect = array(
+            'options' => array(
+                '-v' => true,
+                '--verbose' => true,
+                '-h' => '1',
+                '--host' => '1',
+            ),
+            'arguments' => array(
+                'something',
+                'else',
+            ),
+        );
+        $this->assertEquals($expect, $opt);
+    }
+
+    public function testDTrans()
+    {
+        $out = DTrans::parameterize(array('emp_no'=>1,'trans_no'=>2));
+        $expect = array(
+            'columnString' => 'emp_no,trans_no',
+            'valueString' => '?,?',
+            'arguments' => array(1,2),
+        );
+        $this->assertEquals($expect, $out);
+
+        $this->assertNotEquals(0, strlen(DTrans::isNotTesting('d')));
+        $this->assertNotEquals(0, strlen(DTrans::isTesting('d')));
+        $this->assertNotEquals(0, strlen(DTrans::isCanceled('d')));
+        $this->assertNotEquals(0, strlen(DTrans::isValid('d')));
+        $this->assertNotEquals(0, strlen(DTrans::isStoreID(0, 'd')));
+        $this->assertNotEquals(0, strlen(DTrans::isStoreID(1, 'd')));
+        $this->assertNotEquals(0, strlen(DTrans::sumQuantity('d')));
+        $this->assertNotEquals(0, strlen(DTrans::joinProducts('d','p','left')));
+        $this->assertNotEquals(0, strlen(DTrans::joinProducts('d','p','right')));
+        $this->assertNotEquals(0, strlen(DTrans::joinProducts('d','p','inner')));
+        $this->assertNotEquals(0, strlen(DTrans::joinDepartments('d','p')));
+        $this->assertNotEquals(0, strlen(DTrans::joinCustomerAccount('d','p')));
+        $this->assertNotEquals(0, strlen(DTrans::joinTenders('d','p')));
+    }
+
+    public function testDispatch()
+    {
+        $logger = new FannieLogger();
+        FannieDispatch::setLogger($logger);
+        FannieDispatch::errorHandler(1, 'foo');
+        FannieDispatch::exceptionHandler(new Exception('foo'));
+        FannieDispatch::catchFatal();
+    }
+
 }
 

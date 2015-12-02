@@ -49,6 +49,7 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
     public function testPages()
     {
         $pages = FannieAPI::listModules('FanniePage', true);
+        $pages[] = 'COREPOS\\Fannie\\API\\FannieCRUDPage';
         $config = FannieConfig::factory();
         $logger = new FannieLogger();
         $op_db = $config->get('OP_DB');
@@ -76,6 +77,23 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
 
             $obj->unitTest($this);
         }
+    }
+
+    public function testBase()
+    {
+        $obj = new FanniePage();
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $op_db = $config->get('OP_DB');
+        $dbc = FannieDB::get($op_db);
+        $obj->setConfig($config);
+        $obj->setLogger($logger);
+        $dbc->selectDB($op_db);
+        $obj->setConnection($dbc);
+        
+        $this->assertEquals($obj->getHeader(), $obj->get_header());
+        $this->assertEquals($obj->getFooter(), $obj->get_footer());
+        $this->assertEquals($obj->checkAuth(), $obj->check_auth());
     }
 }
 

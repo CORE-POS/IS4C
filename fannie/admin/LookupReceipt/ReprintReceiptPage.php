@@ -47,7 +47,7 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
     {
         global $FANNIE_TRANS_DB;
         if (FormLib::get_form_value('submit', false) !== false) {
-            $date = FormLib::get_form_value('date','');
+            $date = $this->date;
             $date2 = FormLib::get_form_value('date2','');
             if ($date === '' && $date2 !== '') {
                 // only one date is supplied and it's
@@ -275,7 +275,7 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
                 </p>';
             return $this->results;
         } else {
-            return $this->form_content();
+            return $this->get_view();
         }
     }
 
@@ -388,6 +388,17 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
                 <li>If you have a receipt number, you don\'t need to specify a lane or cashier number</li>
                 <li>ALL fields are optional. You can specify a tender type without an amount (or vice versa)</li>
             </ul>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->css_content()));
+        $phpunit->assertNotEquals(0, strlen($this->get_date_view()));
+        $this->date = date('Y-m-d');
+        $phpunit->assertEquals(true, $this->preprocess());
+        // other code path after handler runs
+        $phpunit->assertNotEquals(0, strlen($this->get_date_view()));
     }
 }
 
