@@ -32,6 +32,7 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
     protected $SMALLEST_FONT = 12;
 
     protected $font = 'Arial';
+    protected $alt_font = 'Arial';
 
     public function drawPDF()
     {
