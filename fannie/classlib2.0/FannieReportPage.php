@@ -823,8 +823,10 @@ class FannieReportPage extends FanniePage
                 }
                 break;
             case 'csv':
-                header('Content-Type: application/ms-excel');
-                header('Content-Disposition: attachment; filename="'.$this->header.'.csv"');
+                if (!headers_sent()) {
+                    header('Content-Type: application/ms-excel');
+                    header('Content-Disposition: attachment; filename="'.$this->header.'.csv"');
+                }
                 foreach($this->report_end_content() as $line) {
                     $ret .= $this->csvLine(array(strip_tags($line)));
                 }
