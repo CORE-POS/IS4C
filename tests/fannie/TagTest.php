@@ -22,7 +22,6 @@ class TagTest extends PHPUnit_Framework_TestCase
             array(
                 'normal_price' => 1.99,
                 'description' => 'foo',
-                'posDescription' => 'bar',
                 'brand' => 'bar',
                 'units' => 1,
                 'size' => 1,
@@ -53,6 +52,7 @@ class TagTest extends PHPUnit_Framework_TestCase
             array(
                 'normal_price' => 1.99,
                 'description' => 'foo',
+                'posDescription' => 'bar',
                 'brand' => 'bar',
                 'units' => 1,
                 'size' => 1,

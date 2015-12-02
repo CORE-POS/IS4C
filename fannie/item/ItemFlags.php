@@ -94,6 +94,7 @@ class ItemFlags extends FanniePage {
     {
         global $FANNIE_OP_DB;
         global $FANNIE_COOP_ID;
+        ob_start();
         // If there were errors in preprocess().
         if (count($this->msgs) > 0){
             echo '<ul>';
@@ -169,6 +170,7 @@ class ItemFlags extends FanniePage {
         echo '</div>'; // end col-sm-4
         echo '</div>'; // end row
         echo '</form>';
+        return ob_get_clean();
     }
 
     public function helpContent()
