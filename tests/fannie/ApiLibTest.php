@@ -132,10 +132,10 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         $opt = $task->lazyGetOpt($argv);
         $expect = array(
             'options' => array(
-                '-v' => true,
-                '--verbose' => true,
-                '-h' => '1',
-                '--host' => '1',
+                'v' => true,
+                'verbose' => true,
+                'h' => '1',
+                'host' => '1',
             ),
             'arguments' => array(
                 'something',

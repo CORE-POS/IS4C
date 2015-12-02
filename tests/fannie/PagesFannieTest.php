@@ -92,8 +92,11 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         $obj->setConnection($dbc);
         
         $this->assertEquals($obj->getHeader(), $obj->get_header());
-        $this->assertEquals($obj->getFooter(), $obj->get_footer());
         $this->assertEquals($obj->checkAuth(), $obj->check_auth());
+
+        // lists page-draw time. may differ across runs
+        $this->assertNotEquals(0, $obj->getFooter());
+        $this->assertNotEquals(0, $obj->get_footer());
     }
 }
 
