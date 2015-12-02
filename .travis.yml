@@ -35,9 +35,10 @@ install:
     - npm install acorn
 
 script:
-    - phpunit -c phpunit.xml
+    - phpunit -v -c phpunit.xml
     - sh tests/acorn.sh
 
 after_script:
+    - cat build/logs/clover.xml
     - vendor/bin/test-reporter
 
