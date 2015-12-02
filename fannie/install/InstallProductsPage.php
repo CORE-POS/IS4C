@@ -281,7 +281,7 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         ?>
         <label>Default Account Coding</label>
         <?php
-        $mods = array('\COREPOS\Fannie\API\item\Accounting', '\COREPOS\Fannie\API\item\StandardAccounting');
+        $mods = array('COREPOS\Fannie\API\item\Accounting', 'COREPOS\Fannie\API\item\StandardAccounting');
         $mods = array_merge($mods, FannieAPI::listModules('\COREPOS\Fannie\API\item\Accounting'));
         echo installSelectField('FANNIE_ACCOUNTING_MODULE', $FANNIE_ACCOUNTING_MODULE, $mods);
         ?>

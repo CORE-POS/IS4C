@@ -95,7 +95,3 @@ class WfcProduceSingle extends \COREPOS\Fannie\API\item\FannieSignage
 
 }
 
-namespace {
-    class WfcProduceSingle extends \COREPOS\Fannie\API\item\signage\WfcProduceSingle {}
-}
-

@@ -59,7 +59,7 @@ if (isset($_REQUEST['toids'])){
         WHERE trans_id=? AND order_id=?");
     $idP = $dbc->prepare_statement("SELECT trans_id FROM {$TRANS}PendingSpecialOrder WHERE
         trans_id > 0 AND order_id=? ORDER BY trans_id");
-    $signage = new FannieSignage(array());
+    $signage = new COREPOS\Fannie\API\item\FannieSignage(array());
     foreach($_REQUEST['toids'] as $toid){
         if ($count % 4 == 0){ 
             $pdf->AddPage();

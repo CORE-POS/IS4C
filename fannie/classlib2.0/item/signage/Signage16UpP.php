@@ -173,7 +173,3 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
 }
 
-namespace {
-    class Signage16UpP extends \COREPOS\Fannie\API\item\signage\Signage16UpP {}
-}
-

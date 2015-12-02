@@ -117,7 +117,3 @@ class RailSigns4x8P extends \COREPOS\Fannie\API\item\FannieSignage
 
 }
 
-namespace {
-    class RailSigns4x8P extends \COREPOS\Fannie\API\item\signage\RailSigns4x8P {}
-}
-

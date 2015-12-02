@@ -227,13 +227,7 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
     {
         $ret = '';
         $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post" id="signform">';
-        $mods = FannieAPI::listModules('FannieSignage');
-        $others = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
-        foreach ($others as $o) {
-            if (!in_array($o, $mods)) {
-                $mods[] = $o;
-            }
-        }
+        $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
         sort($mods);
         $ret .= '<div class="form-group form-inline">';
         $ret .= '<label>Layout</label>: 

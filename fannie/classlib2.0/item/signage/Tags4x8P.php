@@ -116,7 +116,3 @@ class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
 
 }
 
-namespace {
-    class Tags4x8P extends \COREPOS\Fannie\API\item\signage\Tags4x8P {}
-}
-
