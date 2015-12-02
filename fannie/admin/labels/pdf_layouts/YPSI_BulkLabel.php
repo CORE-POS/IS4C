@@ -28,11 +28,11 @@ if (!class_exists('FPDF')) {
     require(dirname(__FILE__) . '/../../../src/fpdf/fpdf.php');
 }
 
-class YPSI_BulkLabel extends FPDF {}
+class YPSI_BulkLabel_PDF extends FPDF {}
 
 function YPSI_BulkLabel($data,$offset=0){
 
-$pdf=new YPSI_BulkLabel('P','mm','Letter'); //start new instance of PDF
+$pdf=new YPSI_BulkLabel_PDF('P','mm','Letter'); //start new instance of PDF
 $pdf->Open(); //open new PDF Document
 $pdf->SetTopMargin(40);  //Set top margin of the page
 $pdf->SetLeftMargin(5);  //Set left margin of the page
