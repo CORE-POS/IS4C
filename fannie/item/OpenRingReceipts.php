@@ -36,6 +36,7 @@ class OpenRingReceipts extends FannieRESTfulPage
     both an open ring and a UPC that did not scan. These are likely items that need
     to be entered into POS.';
     public $themed = true;
+    private $receipts = array();
 
     public function preprocess()
     {
