@@ -89,7 +89,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
             echo "0";
         } else {
             $row = $dbc->fetch_row($result);
-            echo sprintf('%.4f', ($row['totalPrice'] - $row['totalCost']) / $row['totalPrice'] * 100);
+            echo sprintf('%.4f', $row['totalPrice']==0 ? 0 : ($row['totalPrice'] - $row['totalCost']) / $row['totalPrice'] * 100);
         }
 
         return false;

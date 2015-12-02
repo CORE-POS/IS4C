@@ -67,6 +67,8 @@ class TagTest extends PHPUnit_Framework_TestCase
                 'nonSalePrice' => 2.99,
                 'signMultiplier' => 1,
                 'signCount' => 1,
+                'originName' => '',
+                'originShortName' => '',
             ),
         );
         $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
