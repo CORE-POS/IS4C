@@ -397,6 +397,7 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $phpunit->assertNotEquals(0, strlen($this->get_date_view()));
         $this->date = date('Y-m-d');
         $phpunit->assertEquals(true, $this->preprocess());
+        $phpunit->assertEquals(true, $this->get_date_handler());
         // other code path after handler runs
         $phpunit->assertNotEquals(0, strlen($this->get_date_view()));
     }

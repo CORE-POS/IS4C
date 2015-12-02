@@ -97,6 +97,22 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         // lists page-draw time. may differ across runs
         $this->assertNotEquals(0, $obj->getFooter());
         $this->assertNotEquals(0, $obj->get_footer());
+
+        $obj = new FannieReportPage();
+        $obj->setConfig($config);
+        $obj->setLogger($logger);
+        $dbc->selectDB($op_db);
+        $obj->setConnection($dbc);
+        $obj->unitTest($this);
+    }
+
+    public function testMisc()
+    {
+        if (!class_exists('SigImage')) {
+            include(dirname(__FILE__) . '/../../fannie/admin/LookupReceipt/SigImage.php');
+        }
+        $s = new SigImage();
+        $s->unitTest($this);
     }
 }
 

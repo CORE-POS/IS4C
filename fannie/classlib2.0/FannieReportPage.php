@@ -609,7 +609,9 @@ class FannieReportPage extends FanniePage
     */
     public function fetch_report_data()
     {
-        return array();
+        return array(
+            array('2000-01-01', '1-1-1', '1234567890123', 'Sample Data'),
+        );
     }
 
     /**
@@ -1251,9 +1253,18 @@ class FannieReportPage extends FanniePage
     // drawPage()
     }
 
-    function draw_page ()
+    function draw_page()
     {
         $this->drawPage();
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->bodyContent()));
+        foreach (array('html', 'csv') as $format) {
+            $this->report_format = $format;
+            $phpunit->assertNotEquals(0, strlen($this->report_content()));
+        }
     }
 
 }
