@@ -689,7 +689,6 @@ function reCalc(upc, price, cost, deptID, superID) {
         $this->upcs = '["' . $this->upc . '"]';
         $this->newprices = '["' . $this->newprice . '"]';
         ob_start();
-        ob_start();
         $phpunit->assertEquals(false, $this->post_upcs_superID_newprices_handler());
         ob_get_clean();
     }

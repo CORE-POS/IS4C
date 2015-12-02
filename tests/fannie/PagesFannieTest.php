@@ -66,7 +66,7 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
 
             ob_start();
             $pre = $obj->preprocess();
-            ob_end_clean();
+            ob_get_clean();
             $this->assertInternalType('boolean',$pre);
 
             $help = $obj->helpContent();
