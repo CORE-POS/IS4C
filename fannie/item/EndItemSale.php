@@ -111,8 +111,13 @@ class EndItemSale extends FannieRESTfulPage {
             </p>';
     }
 
+    public function unitTest($phpunit)
+    {
+        $this->id = '4011';
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+    }
+
 }
 
 FannieDispatch::conditionalExec();
 
-?>

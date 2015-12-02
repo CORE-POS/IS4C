@@ -284,6 +284,18 @@ class OpenRingReceipts extends FannieRESTfulPage
             a product has not been entered into POS.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->date1 = date('Y-m-d');
+        $this->date2 = date('Y-m-d');
+        $phpunit->assertNotEquals(0, strlen($this->get_date1_date2_view()));
+        $this->upc = '0000000004011';
+        $phpunit->assertNotEquals(0, strlen($this->get_upc_date1_date2_view()));
+        $phpunit->assertEquals(true, $this->get_date1_date2_handler());
+        $phpunit->assertEquals(true, $this->get_upc_date1_date2_handler());
+    }
 }
 
 FannieDispatch::conditionalExec();

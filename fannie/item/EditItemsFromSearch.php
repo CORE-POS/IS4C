@@ -367,6 +367,17 @@ function updateAll(val, selector) {
             Clicking the save button when finished is required.
             </p>';
     }
+    
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
+        $this->u = 'foo';
+        $phpunit->assertEquals(false, $this->post_u_handler());
+        $this->u = '4011';
+        $phpunit->assertEquals(true, $this->post_u_handler());
+        $phpunit->assertNotEquals(0, strlen($this->post_u_view()));
+        $phpunit->assertNotEquals(0, strlen($this->post_save_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

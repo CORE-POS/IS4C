@@ -45,5 +45,36 @@ class TagTest extends PHPUnit_Framework_TestCase
             ob_get_clean();
         }
     }
+
+    public function testSigns()
+    {
+        $sample = array(
+            array(
+                'normal_price' => 1.99,
+                'description' => 'foo',
+                'brand' => 'bar',
+                'units' => 1,
+                'size' => 1,
+                'sku' => '12345',
+                'pricePerUnit' => 1.99,
+                'upc' => '0000000000000',
+                'vendor' => 'baz',
+                'scale' => 0,
+                'numflag' => 0,
+                'startDate' => '2000-01-01',
+                'endDate' => '2000-01-01',
+                'nonSalePrice' => 2.99,
+                'signMultiplier' => 1,
+                'signCount' => 1,
+            ),
+        );
+        $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
+        foreach ($mods as $class) {
+            $obj = new $class($sample, 'provided');
+            ob_start();
+            $obj->drawPDF();
+            ob_get_clean();
+        }
+    }
 }
 

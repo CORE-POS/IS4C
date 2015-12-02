@@ -180,8 +180,13 @@ class ItemFlags extends FanniePage {
             gluten-free or organic.</p>';
     }
 
+    public function unitTest($phpunit)
+    {
+        $this->msgs = array('foo');
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
+
 }
 
 FannieDispatch::conditionalExec();
 
-?>

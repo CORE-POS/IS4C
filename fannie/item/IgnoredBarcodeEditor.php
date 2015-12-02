@@ -195,6 +195,11 @@ class IgnoredBarcodeEditor extends FannieRESTfulPage
             stickers or packaging when items are intended to be entered by PLU.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

@@ -58,6 +58,14 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
 
         $val = FormLib::getDate('someKey', '1/1/2000', 'n/j/Y');
         $this->assertEquals('1/1/2000', $val);
+
+        $val = new COREPOS\common\mvc\ValueContainer();
+        $val->foo = 'bar';
+        $this->assertEquals('bar', FormLib::extract($val, 'foo', 'baz'));
+        $this->assertEquals('baz', FormLib::extract($val, 'notfoo', 'baz'));
+
+        $this->assertEquals(false, FormLib::fieldJSONtoJavascript(5));
+        $this->assertNotEquals(0, strlen(FormLib::fieldJSONtoJavascript('{"foo":"bar"}')));
     }
 
     public function testStats()
@@ -177,6 +185,24 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         FannieDispatch::errorHandler(1, 'foo');
         FannieDispatch::exceptionHandler(new Exception('foo'));
         FannieDispatch::catchFatal();
+    }
+
+    public function testMargin()
+    {
+        $this->assertEquals(108, COREPOS\Fannie\API\item\Margin::adjustedCost(100, 0.10, 0.20));
+        $this->assertEquals(0, COREPOS\Fannie\API\item\Margin::toMargin(0, 0));
+        $this->assertEquals(50, COREPOS\Fannie\API\item\Margin::toMargin(5, 10, array(100, 0)));
+        $this->assertEquals('(0)', COREPOS\Fannie\API\item\Margin::toMarginSQL(0, 0));
+        $this->assertEquals(1, COREPOS\Fannie\API\item\Margin::toPrice(1, 1));
+        $this->assertEquals(10, COREPOS\Fannie\API\item\Margin::toPrice(5, 0.5));
+        $this->assertEquals('(foo)', COREPOS\Fannie\API\item\Margin::toPriceSQL('foo', 1));
+    }
+
+    public function testBarcode()
+    {
+        $this->assertEquals('0123456789012', BarcodeLib::trimCheckDigit('1234567890128'));
+        $this->assertEquals('0012345678901', BarcodeLib::trimCheckDigit('123456789012'));
+        $this->assertEquals('0000000004011', BarcodeLib::trimCheckDigit('4011'));
     }
 
 }

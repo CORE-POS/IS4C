@@ -658,6 +658,38 @@ function reCalc(upc, price, cost, deptID, superID) {
             or super department level.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
+        $this->u = 'foo';
+        $phpunit->assertEquals(false, $this->post_u_handler());
+        $this->u = '4011';
+        $phpunit->assertEquals(true, $this->post_u_handler());
+        $phpunit->assertNotEquals(0, strlen($this->post_u_view()));
+
+        $this->upc = '0000000004011';
+        $this->deptID = 1;
+        $this->newprice = 1;
+        ob_start();
+        $phpunit->assertEquals(false, $phpunit->get_upc_deptID_newprice_handler());
+        ob_get_clean();
+
+        $this->upcs = array($this->upc);
+        $this->newprices = array($this->newprice);
+        ob_start();
+        $phpunit->assertEquals(false, $phpunit->post_upcs_deptID_newprices_handler());
+        ob_get_clean();
+
+        $this->superID = 1;
+        ob_start();
+        $phpunit->assertEquals(false, $phpunit->get_upc_superID_newprice_handler());
+        ob_get_clean();
+
+        ob_start();
+        $phpunit->assertEquals(false, $phpunit->post_upcs_superID_newprices_handler());
+        ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec();

@@ -104,6 +104,13 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         $dbc->selectDB($op_db);
         $obj->setConnection($dbc);
         $obj->baseUnitTest($this);
+
+        $obj = new COREPOS\Fannie\API\FannieCRUDPage();
+        $obj->setConfig($config);
+        $obj->setLogger($logger);
+        $dbc->selectDB($op_db);
+        $obj->setConnection($dbc);
+        $obj->baseUnitTest($this);
     }
 
     public function testMisc()
