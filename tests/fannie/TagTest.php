@@ -39,7 +39,7 @@ class TagTest extends PHPUnit_Framework_TestCase
             if (!function_exists($func)) {
                 include(dirname(__FILE__) . '/../../fannie/admin/labels/pdf_layouts/' . $func . '.php');
             }
-            $this->assertEquals(true, class_exists($func . '_PDF', false));
+            $this->assertEquals(true, class_exists($func . '_PDF', false), 'Missing class for ' . $func);
             ob_start();
             $func($sample);
             ob_get_clean();

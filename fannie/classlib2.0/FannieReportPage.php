@@ -1258,9 +1258,9 @@ class FannieReportPage extends FanniePage
         $this->drawPage();
     }
 
-    public function unitTest($phpunit)
+    public function baseUnitTest($phpunit)
     {
-        $phpunit->assertNotEquals(0, strlen($this->bodyContent()));
+        $this->bodyContent();
         foreach (array('html', 'csv') as $format) {
             $this->report_format = $format;
             $phpunit->assertNotEquals(0, strlen($this->report_content()));
