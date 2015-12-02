@@ -1309,44 +1309,44 @@ class EditBatchPage extends FannieRESTfulPage
         $phpunit->assertNotEquals(0, strlen($this->get_id_paste_view()));
 
         ob_start();
-        $this->assertEquals(false, $this->post_id_trim_handler());
+        $phpunit->assertEquals(false, $this->post_id_trim_handler());
         ob_get_clean();
 
         $this->upc = '0000000004011';
         ob_start();
-        $this->assertEquals(false, $this->post_id_upc_swap_handler());
+        $phpunit->assertEquals(false, $this->post_id_upc_swap_handler());
         ob_get_clean();
 
         ob_start();
-        $this->assertEquals(false, $this->delete_id_upc_handler());
+        $phpunit->assertEquals(false, $this->delete_id_upc_handler());
         ob_get_clean();
 
         $this->limit = 1;
-        $this->assertEquals(false, $this->post_id_limit_handler());
+        $phpunit->assertEquals(false, $this->post_id_limit_handler());
 
         ob_start();
-        $this->assertEquals(false, $this->post_id_unsale_handler());
+        $phpunit->assertEquals(false, $this->post_id_unsale_handler());
         ob_get_clean();
 
         ob_start();
-        $this->assertEquals(false, $this->post_id_force_handler());
+        $phpunit->assertEquals(false, $this->post_id_force_handler());
         ob_get_clean();
 
         ob_start();
-        $this->assertEquals(false, $this->post_id_autotag_handler());
+        $phpunit->assertEquals(false, $this->post_id_autotag_handler());
         ob_get_clean();
 
         $this->addUPC = $this->upc;
         ob_start();
-        $this->assertEquals(false, $this->post_id_addUPC_handler());
+        $phpunit->assertEquals(false, $this->post_id_addUPC_handler());
         ob_get_clean();
 
         $this->addLC = 1;
         ob_start();
-        $this->assertEquals(false, $this->post_id_addLC_handler());
+        $phpunit->assertEquals(false, $this->post_id_addLC_handler());
         ob_get_clean();
 
-        $this->assertEquals(true, $this->get_id_paste_handler());
+        $phpunit->assertEquals(true, $this->get_id_paste_handler());
     }
 }
 
