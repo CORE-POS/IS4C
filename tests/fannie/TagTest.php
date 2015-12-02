@@ -76,7 +76,7 @@ class TagTest extends PHPUnit_Framework_TestCase
             $obj = new $class($sample, 'provided');
             ob_start();
             $obj->drawPDF();
-            ob_get_clean();
+            $this->assertNotEquals(0, strlen(ob_get_clean()));
         }
     }
 }
