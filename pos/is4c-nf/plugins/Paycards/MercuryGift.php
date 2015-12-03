@@ -75,7 +75,7 @@ class MercuryGift extends BasicCCModule
 
             // check card data for anything else
             if ($validate) {
-                $valid = PaycardDialogs::validateCard(CoreLocal::get('paycard_PAN'), false);
+                $valid = PaycardDialogs::validateCard(CoreLocal::get('paycard_PAN'), false, false);
             }
         } catch (Exception $ex) {
             $json['output'] = $ex->getMessage();

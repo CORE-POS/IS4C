@@ -37,9 +37,9 @@ class PaycardDialogs
         }
     }
 
-    public static function validateCard($pan, $expirable=true)
+    public static function validateCard($pan, $expirable=true, $luhn=true)
     {
-        if (PaycardLib::paycard_validNumber($pan) != 1) {
+        if ($luhn && PaycardLib::paycard_validNumber($pan) != 1) {
             PaycardLib::paycard_reset();
             throw new Exception(PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
                 "Invalid Card Number",

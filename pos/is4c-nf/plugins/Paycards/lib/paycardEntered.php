@@ -173,7 +173,7 @@ class paycardEntered extends Parser
 
             /* check card type. Credit is default. */
             $type = CoreLocal::get("CacheCardType");
-            if ($type == ''){
+            if ($type == '' && CoreLocal::get('paycard_type') !== PaycardLib::PAYCARD_TYPE_GIFT) {
                 $type = 'CREDIT';
                 CoreLocal::set("CacheCardType","CREDIT");
             }
