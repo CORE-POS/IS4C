@@ -93,7 +93,7 @@ class MemberPreferences extends FannieRESTfulPage
     public function get_id_view()
     {
         if ($this->id == 0) {
-            return get_view();
+            return '<div class="alert alert-danger">No member specified</div>';
         }
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
