@@ -222,7 +222,7 @@ class PluRangePage extends FannieRESTfulPage
 
     public function unitTest($phpunit)
     {
-        $phpunit->assertNotEqual(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
         $this->length = 10;
         ob_start();
         $phpunit->assertEquals(false, $this->get_length_number_handler());
@@ -239,7 +239,7 @@ class PluRangePage extends FannieRESTfulPage
         ob_start();
         $phpunit->assertEquals(true, $this->get_length_number_handler());
         ob_get_clean();
-        $phpunit->assertNotEqual(0, strlen($this->get_length_number_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_length_number_view()));
     }
 
 }
