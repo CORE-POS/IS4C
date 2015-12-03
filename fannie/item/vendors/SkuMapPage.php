@@ -252,6 +252,15 @@ class SkuMapPage extends FannieRESTfulPage
             preserves SKU => UPC relationships through that rebuild.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->id = 1;
+        $phpunit->assertNotEquals(0, strlen($this->delete_id_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_id_apply_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_id_sku_plu_view()));
+        $phpunit->assertNotEquals(0, strlen($this->css_content()));
+    }
 }
 
 FannieDispatch::conditionalExec();

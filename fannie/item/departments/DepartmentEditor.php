@@ -321,7 +321,15 @@ class DepartmentEditor extends FanniePage {
             accounting team and the operational team want to categorize items and
             sales differently.</p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        ob_start();
+        $this->ajaxResponse('deptDisplay');
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

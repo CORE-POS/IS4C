@@ -192,6 +192,11 @@ class ShrinkEditor extends FannieRESTfulPage
             be relevant for tax accounting.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->post_id_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

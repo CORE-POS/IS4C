@@ -234,6 +234,16 @@ HTML;
             be relevant for tax accounting.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->id = 'foo';
+        $phpunit->assertEquals(true, $this->get_id_handler());
+        $this->id = '4011';
+        $phpunit->assertEquals(true, $this->get_id_handler());
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

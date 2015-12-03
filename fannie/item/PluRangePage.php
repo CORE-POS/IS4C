@@ -102,6 +102,7 @@ class PluRangePage extends FannieRESTfulPage
             return false;
         } else if ($this->number > 15) {
             echo $this->number . ' is too many; range max is 15';
+            return false;
         }
 
         $min = '1' . str_repeat('0', $this->length-1);
@@ -217,6 +218,28 @@ class PluRangePage extends FannieRESTfulPage
             three will attempt to find three <em>consecutive</em>
             PLU numbers that are not in use.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEqual(0, strlen($this->get_view()));
+        $this->length = 10;
+        ob_start();
+        $phpunit->assertEquals(false, $this->get_length_number_handler());
+        ob_get_clean();
+        $this->length = 4;
+        ob_start();
+        $phpunit->assertEquals(false, $this->get_length_number_handler());
+        ob_get_clean();
+        $this->number = 99;
+        ob_start();
+        $phpunit->assertEquals(false, $this->get_length_number_handler());
+        ob_get_clean();
+        $this->number = 1;
+        ob_start();
+        $phpunit->assertEquals(true, $this->get_length_number_handler());
+        ob_get_clean();
+        $phpunit->assertNotEqual(0, strlen($this->get_length_number_view()));
     }
 
 }

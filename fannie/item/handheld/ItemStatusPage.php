@@ -295,6 +295,13 @@ class ItemStatusPage extends FannieRESTfulPage
             does not fit well on small screens.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->id = 4011;
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();
