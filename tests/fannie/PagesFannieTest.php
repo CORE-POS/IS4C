@@ -111,6 +111,23 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         $dbc->selectDB($op_db);
         $obj->setConnection($dbc);
         $obj->baseUnitTest($this);
+
+        $obj = new COREPOS\Fannie\API\InstallPage();
+        $obj->setConfig($config);
+        $obj->setLogger($logger);
+        $dbc->selectDB($op_db);
+        $obj->setConnection($dbc);
+        $obj->baseUnitTest($this);
+        $obj->themed = true;
+        $this->assertNotEquals(0, strlen($obj->getHeader()));
+        $this->assertNotEquals(0, strlen($obj->getFooter()));
+        $config->set('FANNIE_WINDOW_DRESSING', true);
+        $obj->themed = false;
+        $this->assertNotEquals(0, strlen($obj->getHeader()));
+        $this->assertNotEquals(0, strlen($obj->getFooter()));
+        $config->set('FANNIE_WINDOW_DRESSING', false);
+        $this->assertNotEquals(0, strlen($obj->getHeader()));
+        $this->assertNotEquals(0, strlen($obj->getFooter()));
     }
 
     public function testMisc()

@@ -205,5 +205,30 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('0000000004011', BarcodeLib::trimCheckDigit('4011'));
     }
 
+    public function testDataConvert()
+    {
+        $table = '<table><tr><td>1</td><td>2</td></tr></table>';
+        $this->assertEquals(array(array(1,2)), COREPOS\Fannie\API\data\DataConvert::htmlToArray($table));
+        $this->assertEquals("\"1\",\"2\"\r\n", COREPOS\Fannie\API\data\DataConvert::arrayToCsv(array(array(1,2))));
+
+        $this->assertEquals(true, COREPOS\Fannie\API\data\DataConvert::excelSupport());
+        $this->assertEquals('xls', substr(COREPOS\Fannie\API\data\DataConvert::excelFilExtension(),0,3));
+        $this->assertNotEquals(0, strlen(COREPOS\Fannie\API\data\DataConvert::arrayToExcel(array(array(1,2)))));
+
+    }
+
+    public function testFannieUI()
+    {
+        $this->assertNotEquals(0, strlen(COREPOS\Fannie\API\lib\FannieUI::editIcon()));
+        $this->assertNotEquals(0, strlen(COREPOS\Fannie\API\lib\FannieUI::saveIcon()));
+        $this->assertNotEquals(0, strlen(COREPOS\Fannie\API\lib\FannieUI::deleteIcon()));
+        $this->assertNotEquals(0, strlen(COREPOS\Fannie\API\lib\FannieUI::loadingBar()));
+        $this->assertNotEquals(0, strlen(COREPOS\Fannie\API\lib\FannieUI::tableSortIcons()));
+        $this->assertNotEquals(0, strlen(COREPOS\Fannie\API\lib\FannieUI::itemEditorLink('4011')));
+        $this->assertNotEquals(0, strlen(COREPOS\Fannie\API\lib\FannieUI::receiptLink('2000-01-01','1-1-1')));
+
+        $this->assertEquals('', COREPOS\Fannie\API\lib\FannieUI::formatDate('0000-00-00'));
+        $this->assertEquals(date('m.d.Y'), COREPOS\Fannie\API\lib\FannieUI::formatDate(date('Y-m-d'), 'm.d.Y'));
+    }
 }
 

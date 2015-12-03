@@ -287,7 +287,6 @@ class FannieAPI
                 $directories[] = dirname(__FILE__).'/../reports/';
                 $directories[] = dirname(__FILE__).'/../purchasing/reports/';
                 break;
-            case 'FannieReportTool':
             case '\COREPOS\Fannie\API\FannieReportTool':
                 $directories[] = dirname(__FILE__).'/../reports/';
                 break;

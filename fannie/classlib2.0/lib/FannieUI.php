@@ -133,7 +133,3 @@ class FannieUI
 
 }
 
-namespace {
-    class FannieUI extends \COREPOS\Fannie\API\lib\FannieUI {}
-}
-

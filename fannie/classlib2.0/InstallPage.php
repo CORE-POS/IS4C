@@ -91,8 +91,3 @@ class InstallPage extends \FanniePage
 
 }
 
-namespace 
-{
-    class InstallPage extends \COREPOS\Fannie\API\InstallPage {}
-}
-

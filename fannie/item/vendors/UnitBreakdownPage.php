@@ -259,7 +259,7 @@ class UnitBreakdownPage extends FannieRESTfulPage
                 $row['vendorDescript'],
                 $row['storeDescript'],
                 $this->id, $row['sku'], $row['upc'],
-                $row['upc'], FannieUI::deleteIcon()
+                $row['upc'], COREPOS\Fannie\API\lib\FannieUI::deleteIcon()
             );
 
         }
