@@ -220,14 +220,18 @@ class InvCountPage extends FannieRESTfulPage
                 \COREPOS\Fannie\API\lib\FannieUI::itemEditorLink($row['upc']), $row['upc'],
                 $row['brand'],
                 $row['description'],
-                ($info ? $info['countDate'] : 'n/a'),
+                ($info ? '<a href="DateCountPage.php?id=' . $row['upc'] . '">' . $info['countDate'] . '</a>' : 'n/a'),
                 ($info ? $info['count'] : 'n/a'),
                 ($info ? $info['par'] : 'n/a'),
                 ($info ? $info['par'] : '0')
             );
         }
         $ret .= '</table>
-            <p><button type="submit" class="btn btn-default">Save</button></p>
+            <p>
+                <button type="submit" class="btn btn-default">Save</button>
+                <a href="DateCountPage.php?vendor=' . $this->vendor . '"
+                    class="btn btn-default btn-reset">Adjust Dates</a>
+            </p>
             </form>';
 
         return $ret;
