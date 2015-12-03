@@ -344,7 +344,7 @@ class SyncFromSearch extends FannieRESTfulPage
 
     public function unitTest($phpunit)
     {
-        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
+        $phpunit->assertNotEquals(0, strlen($this->javascriptContent()));
         $this->u = 'foo';
         ob_start();
         $phpunit->assertEquals(false, $this->post_u_handler());
