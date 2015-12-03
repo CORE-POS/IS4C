@@ -234,9 +234,11 @@ class UIGTask extends FannieTask
             $doCheck = $dbc->execute($check, array($this->vendor_id, $good_date, $good_date));
             $diff = time() - strtotime($date->Text);
             $repeat = false;
-            if ($dbc->num_rows($doCheck) > 0 && $diff > (3 * 24 * 60 * 60)) {
+            if ($dbc->num_rows($doCheck) > 0 && $diff > (7 * 24 * 60 * 60)) {
                 continue;
-            } elseif ($dbc->num_rows($doCheck) > 0 && $diff > (30 * 24 * 60 * 60)) {
+            } elseif ($diff > (30 * 24 * 60 *60)) {
+                continue;
+            } elseif ($dbc->num_rows($doCheck) > 0) {
                 $repeat = true;
             }
 
