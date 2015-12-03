@@ -80,8 +80,8 @@ class UIGLib
                     $idW = $dbc->fetch_row($idR);
                     $id = $idW['orderID'];
                     $dbc->execute($clear, array($id));
-                } else {
-                    $id = $dbc->execute($findPO, array($vendorID, $header_info['vendorOrderID']));
+                } elseif (!empty($header_info['vendorOrderID'])) {
+                    $id = $dbc->getValue($findPO, array($vendorID, $header_info['vendorOrderID']));
                 }
                 if (!$id) {
                     // date has not been downloaded before OR

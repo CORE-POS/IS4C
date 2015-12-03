@@ -236,7 +236,7 @@ class UIGTask extends FannieTask
             $repeat = false;
             if ($dbc->num_rows($doCheck) > 0 && $diff > (3 * 24 * 60 * 60)) {
                 continue;
-            } else if ($dbc->num_rows($doCheck) > 0) {
+            } elseif ($dbc->num_rows($doCheck) > 0 && $diff > (30 * 24 * 60 * 60)) {
                 $repeat = true;
             }
 
