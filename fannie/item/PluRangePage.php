@@ -228,6 +228,7 @@ class PluRangePage extends FannieRESTfulPage
         $phpunit->assertEquals(false, $this->get_length_number_handler());
         ob_get_clean();
         $this->length = 4;
+        $this->number = 0;
         ob_start();
         $phpunit->assertEquals(false, $this->get_length_number_handler());
         ob_get_clean();
