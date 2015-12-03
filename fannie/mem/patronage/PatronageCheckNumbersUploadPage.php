@@ -50,6 +50,12 @@ class PatronageCheckNumbersUploadPage extends \COREPOS\Fannie\API\FannieUploadPa
             'default' => 1,
             'required' => false
         ),
+        'amount' => array(
+            'name' => 'amount',
+            'display_name' => 'Cashed Amount',
+            'default' => 1,
+            'required' => false
+        ),
     );
 
     private $stats = array('imported'=>0, 'errors'=>array());
@@ -61,6 +67,7 @@ class PatronageCheckNumbersUploadPage extends \COREPOS\Fannie\API\FannieUploadPa
 
         $cn_index = $this->get_column_index('check_no');
         $td_index = $this->get_column_index('tdate');
+        $amt_index = $this->get_column_index('amount');
 
         $p = new PatronageModel($dbc);
         foreach ($linedata as $line) {
@@ -101,6 +108,12 @@ class PatronageCheckNumbersUploadPage extends \COREPOS\Fannie\API\FannieUploadPa
                         $this->stats['errors'][] = $dbc->error();
                     }
                 }
+
+                if ($amt_index && $line[$amt_index] && $line[$amt_index] != $obj->cash_pat()) {
+                    $this->stats['errors'][] = 'Check #' . $check_no
+                        . ' issued for ' . $obj->cash_pat()
+                        . ' and cashed for ' . $line[$amt_index];
+                }
             }
         }
 
@@ -131,7 +144,14 @@ class PatronageCheckNumbersUploadPage extends \COREPOS\Fannie\API\FannieUploadPa
 
         return $ret;
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->form_content()));
+        $this->stats['errors'][] = 'an error';
+        $phpunit->assertNotEquals(0, strlen($this->results_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
