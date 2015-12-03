@@ -326,7 +326,7 @@ class DepartmentEditor extends FanniePage {
     {
         $phpunit->assertNotEquals(0, strlen($this->body_content()));
         ob_start();
-        $this->ajaxResponse('deptDisplay');
+        $this->ajax_response('deptDisplay');
         $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
     }
 }
