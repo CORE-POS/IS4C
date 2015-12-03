@@ -85,6 +85,12 @@ class VendorMarginsPage extends FannieRESTfulPage
 
         return $ret;
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->id = 1;
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

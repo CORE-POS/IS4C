@@ -341,6 +341,18 @@ class SyncFromSearch extends FannieRESTfulPage
             </p>';
 
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->javascriptContent()));
+        $this->u = 'foo';
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_u_handler());
+        $this->u = '4011';
+        $phpunit->assertEquals(true, $this->post_u_handler());
+        ob_get_clean();
+        $phpunit->assertNotEquals(0, strlen($this->post_u_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

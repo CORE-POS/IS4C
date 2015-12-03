@@ -155,6 +155,11 @@ class IncompleteItemsPage extends FannieRESTfulPage
             item per store.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

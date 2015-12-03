@@ -52,6 +52,11 @@ class ShrinkIndex extends FannieRESTfulPage
             may result in a tax credit.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

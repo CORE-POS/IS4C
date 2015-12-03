@@ -403,6 +403,17 @@ class InvCountPage extends FannieRESTfulPage
             ';
     }
 
+    public function unitTest($phpunit)
+    {
+        $this->id = '4011';
+        $this->vendor = 1;
+        $this->live = 1;
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_vendor_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_live_view()));
+    }
+
 }
 
 FannieDispatch::conditionalExec();
