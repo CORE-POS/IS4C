@@ -66,7 +66,7 @@ class paycardEntered extends Parser
         return $ret;
     }
 
-    private function checkTotal($mode)
+    private function checkTotal($mode, $type)
     {
         // error checks based on transaction
         if ($mode == PaycardLib::PAYCARD_MODE_AUTH) {
@@ -123,7 +123,7 @@ class paycardEntered extends Parser
         CoreLocal::set("paycard_manual",($manual ? 1 : 0));
 
         try {
-            $this->checkTotal($mode);
+            $this->checkTotal($mode, $type);
 
             // check for pre-validation override
             if (strtoupper(substr($card,0,1)) == 'O') {

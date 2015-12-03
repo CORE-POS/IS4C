@@ -136,7 +136,7 @@ static private function identifyBin($bin_range, $iin, $ebt_accept)
 {
     $accepted = true;
     $issuer = 'Unknown';
-    foreach ($bin_ranges as $range) {
+    foreach ($bin_range as $range) {
         if ($iin >= $range['min'] && $iin <= $range['max']) {
             $issuer = $range['issuer'];
             $accepted = $range['accepted'];
@@ -452,7 +452,7 @@ static private function parseTrack1($tr1)
     return array($pan, $exp, $name);
 }
 
-private function parseTrack2($tr2)
+static private function parseTrack2($tr2, $tr1)
 {
     $pan = false;
     $exp = false;
@@ -509,7 +509,7 @@ static public function paycard_magstripe($data)
         
         // if we have track2, parse it
         if ($tr2) {
-            list($pan, $exp, $name) = self::parseTrack2($tr2);
+            list($pan, $exp, $name) = self::parseTrack2($tr2, $tr1);
         }
     } catch (Exception $ex) {
         return $ex->getMessage();
@@ -632,11 +632,10 @@ static private $paycardDB = null;
 
 static public function paycard_db()
 {
-    if (self::$paycardDB === null){
-        self::$paycardDB = new \COREPOS\pos\lib\SQLManager('127.0.0.1',CoreLocal::get('DBMS'),
-                CoreLocal::get('tDatabase'),CoreLocal::get('localUser'),
-                CoreLocal::get('localPass'));
+    if (self::$paycardDB === null) {
+        self::$paycardDB = Database::tDataConnect();
     }
+
     return self::$paycardDB;
 }
 

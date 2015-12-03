@@ -175,6 +175,8 @@ class Valutec extends BasicCCModule
      */
     public function paycard_void($transID,$laneNo=-1,$transNo=-1,$json=array()) 
     {
+        $this->voidTrans = "";
+        $this->voidRef = "";
         $ret = self::ccVoid($transID, $laneNo, $transNo, $json);
 
         // save the details

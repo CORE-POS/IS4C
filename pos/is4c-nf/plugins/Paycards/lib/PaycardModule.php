@@ -23,23 +23,22 @@
 
 class PaycardModule
 {
-    public static function ccEntered($validate, $json)
+    public static function ccEntered($pan, $validate, $json)
     {
-        $this->trans_pan['pan'] = CoreLocal::get("paycard_PAN");
         try {
             $enabled = PaycardDialogs::enabledCheck();
             // error checks based on processing mode
             switch (CoreLocal::get("paycard_mode")) {
                 case PaycardLib::PAYCARD_MODE_VOID:
                     // use the card number to find the trans_id
-                    $pan4 = substr($this->trans_pan['pan'],-4);
+                    $pan4 = substr($pan,-4);
                     $trans = array(CoreLocal::get('CashierNo'), CoreLocal::get('laneno'), CoreLocal::get('transno'));
                     $result = PaycardDialogs::voidableCheck($pan4, $trans);
-                    return $this->paycard_void($result,$trans[1],$trans[2],$json);
+                    return self::ccVoid($result,$trans[1],$trans[2],$json);
 
                 case PaycardLib::PAYCARD_MODE_AUTH:
                     if ($validate) {
-                        $valid = PaycardDialogs::validateCard($this->trans_pan['pan']);
+                        $valid = PaycardDialogs::validateCard($pan);
                     }
                     return PaycardLib::setupAuthJson($json);
             } // switch mode
@@ -56,9 +55,6 @@ class PaycardModule
 
     public static function ccVoid($transID,$laneNo=-1,$transNo=-1,$json=array()) 
     {
-        $this->voidTrans = "";
-        $this->voidRef = "";
-
         // initialize
         $cashier = CoreLocal::get("CashierNo");
         $lane = CoreLocal::get("laneno");
@@ -114,7 +110,7 @@ class PaycardModule
                             The transaction did not go through");
                 return PaycardLib::PAYCARD_ERR_PROC;
             }    
-            return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_COMM);
+            return true;
         }
 
         return false;

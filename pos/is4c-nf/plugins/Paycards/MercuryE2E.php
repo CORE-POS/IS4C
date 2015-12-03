@@ -77,7 +77,8 @@ class MercuryE2E extends BasicCCModule
             }
         }
 
-        return PaycardModule::ccEntered(false, $json);
+        $pan = str_repeat('*', 12) . $e2e['Last4'];
+        return PaycardModule::ccEntered($pan, false, $json);
     }
 
     /**
@@ -85,6 +86,8 @@ class MercuryE2E extends BasicCCModule
     */
     public function paycard_void($transID,$laneNo=-1,$transNo=-1,$json=array()) 
     {
+        $this->voidTrans = "";
+        $this->voidRef = "";
         $json = PaycardModule::ccVoid($transID, $laneNo, $transNo, $json);
         CoreLocal::set("paycard_type",PaycardLib::PAYCARD_TYPE_ENCRYPTED);
     

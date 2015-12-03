@@ -57,11 +57,14 @@ class FirstData extends BasicCCModule {
 
     function entered($validate,$json)
     {
-        return PaycardModule::ccEntered($validate, $json);
+        $this->trans_pan['pan'] = CoreLocal::get("paycard_PAN");
+        return PaycardModule::ccEntered($this->trans_pan['pan'], $validate, $json);
     }
 
     function paycard_void($transID,$laneNo=-1,$transNo=-1,$json=array()) 
     {
+        $this->voidTrans = "";
+        $this->voidRef = "";
         return PaycardModule::ccVoid($transID, $laneNo, $transNo, $json);
     }
 
