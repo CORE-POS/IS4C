@@ -140,6 +140,15 @@ class MemberPreferences extends FannieRESTfulPage
             settings are managed on this page.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->id = 0;
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+        $this->id = 1;
+        $phpunit->assertEquals(true, $this->get_id_handler());
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

@@ -37,22 +37,18 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     protected $preview_opts = array(
         'upc' => array(
-            'name' => 'upc',
-            'display_name' => 'UPC',
+            'display_name' => 'UPC*',
             'default' => 0,
             'required' => true
         ),
         'price' => array(
-            'name' => 'price',
-            'display_name' => 'Max Price',
+            'display_name' => 'Max Price*',
             'default' => 13,
             'required' => true
         ),
         'sku' => array(
-            'name' => 'sku',
             'display_name' => 'SKU',
             'default' => 3,
-            'required' => False
         ),
     );
 

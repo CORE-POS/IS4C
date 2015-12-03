@@ -67,8 +67,8 @@ class FannieUploadPage extends \FanniePage
         'example' => array(
             'name' => 'upc',
             'display_name' => 'UPC',
-            'default' => 7,
-            'required' => true,
+            'default' => 0,
+            'required' => false,
         ),
     );
 
@@ -101,6 +101,24 @@ class FannieUploadPage extends \FanniePage
     */
     protected $use_js = false;
 
+    private function finishPreviewOpts()
+    {
+        foreach ($this->preview_opts as $k=>$v) {
+            if (!isset($this->preview_opts[$k]['name'])) {
+                $this->preview_opts[$k]['name'] = $k;
+            }
+            if (!isset($this->preview_opts[$k]['display_name'])) {
+                $this->preview_opts[$k]['display_name'] = $this->preview_opts[$k]['name'];
+            }
+            if (!isset($this->preview_opts[$k]['required'])) {
+                $this->preview_opts[$k]['required'] = false;
+            }
+            if (!isset($this->preview_opts[$k]['default'])) {
+                $this->preview_opts[$k]['default'] = -1;
+            }
+        }
+    }
+
     /**
       Handle pre-display tasks such as input processing
       @return
@@ -110,6 +128,7 @@ class FannieUploadPage extends \FanniePage
     public function preprocess()
     {
         $col_select = \FormLib::get_form_value('cs','');
+        $this->finishPreviewOpts();
 
         if (isset($_FILES[$this->upload_field_name])) {
             /* file upload submitted */

@@ -60,6 +60,7 @@ class MemMailList extends FannieReportPage
 
          switch (FormLib::get('type')) {
              case 'Members':
+             default:
                 $query .= "c.Type='PC'
                   AND (end_date > ".$dbc->now()." 
                     or end_date = '' 
@@ -137,6 +138,12 @@ class MemMailList extends FannieReportPage
     </div>
 </form>
 HTML;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->form_content()));
+        $phpunit->assertInternalType('array', $this->fetch_report_data());
     }
 }
 

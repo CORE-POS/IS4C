@@ -300,7 +300,26 @@ class MemArEquitySwapTool extends FanniePage {
             member\'s equity (if by-laws permit).
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->errors = 'foo';
+        $this->mode = 'init';
+        $phpunit->assertEquals('foo', $this->body_content());
+        $this->errors = '';
+        $this->depts = array(1 => 'Dept', 2 => 'Other Dept');
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $this->errors = 'foo';
+        $this->mode = 'confirm';
+        $phpunit->assertEquals('foo', $this->body_content());
+        $this->amount = 1;
+        $this->dept1 = 1;
+        $this->dept2 = 2;
+        $this->cn = 1;
+        $this->name = 'JoeyJoeJoe';
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

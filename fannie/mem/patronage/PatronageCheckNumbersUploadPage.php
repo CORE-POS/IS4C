@@ -39,22 +39,17 @@ class PatronageCheckNumbersUploadPage extends \COREPOS\Fannie\API\FannieUploadPa
 
     protected $preview_opts = array(
         'check_no' => array(
-            'name' => 'check_no',
             'display_name' => 'Check Number',
             'default' => 0,
             'required' => true
         ),
         'tdate' => array(
-            'name' => 'tdate',
             'display_name' => 'Date',
             'default' => 1,
-            'required' => false
         ),
         'amount' => array(
-            'name' => 'amount',
             'display_name' => 'Cashed Amount',
-            'default' => 1,
-            'required' => false
+            'default' => 2,
         ),
     );
 

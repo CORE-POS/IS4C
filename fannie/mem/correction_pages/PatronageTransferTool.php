@@ -278,8 +278,24 @@ class PatronageTransferTool extends FanniePage {
             just the total of the products on the receipt.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->errors = 'foo';
+        $this->mode = 'init';
+        $phpunit->assertEquals('foo', $this->body_content());
+        $this->errors = '';
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $this->errors = 'foo';
+        $this->mode = 'confirm';
+        $phpunit->assertEquals('foo', $this->body_content());
+        $this->amt = 1;
+        $this->cn1 = 1;
+        $this->cn2 = 2;
+        $this->name2 = 'JoeyJoeJoe';
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

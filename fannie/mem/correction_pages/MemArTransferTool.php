@@ -321,8 +321,27 @@ class MemArTransferTool extends FanniePage {
             <em>decrease</em> Bob\'s balance by $20.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->errors = 'foo';
+        $this->mode = 'init';
+        $phpunit->assertEquals('foo', $this->body_content());
+        $this->errors = '';
+        $this->depts = array(1 => 'Dept', 2 => 'Other Dept');
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $this->errors = 'foo';
+        $this->mode = 'confirm';
+        $phpunit->assertEquals('foo', $this->body_content());
+        $this->amount = 1;
+        $this->dept = 1;
+        $this->cn1 = 1;
+        $this->cn2 = 2;
+        $this->name1 = 'JoeyJoeJoe';
+        $this->name2 = 'JoeyJoeJoe';
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

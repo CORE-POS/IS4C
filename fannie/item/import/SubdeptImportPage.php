@@ -43,22 +43,19 @@ class SubdeptImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     protected $preview_opts = array(
         'sn' => array(
-            'name' => 'sn',
             'display_name' => 'SubDept #',
             'default' => 0,
-            'required' => True
+            'required' => true
         ),
         'desc' => array(
-            'name' => 'desc',
             'display_name' => 'Name',
             'default' => 1,
-            'required' => True
+            'required' => true
         ),
         'dn' => array(
-            'name' => 'dn',
             'display_name' => 'Dept #',
             'default' => 2,
-            'required' => True
+            'required' => true
         )
     );
 
