@@ -181,8 +181,8 @@ function deletecoupon(upc){
 
     public function unitTest($phpunit)
     {
-        $phpunit->assertNotEquals(0, stren($this->get_view()));
-        $phpunit->assertNotEquals(0, stren($this->javascript_content()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
         $this->id = 1;
         ob_start();
         $phpunit->assertEquals(false, $this->post_id_handler());
