@@ -212,7 +212,7 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         $this->assertEquals("\"1\",\"2\"\r\n", COREPOS\Fannie\API\data\DataConvert::arrayToCsv(array(array(1,2))));
 
         $this->assertEquals(true, COREPOS\Fannie\API\data\DataConvert::excelSupport());
-        $this->assertEquals('xls', substr(COREPOS\Fannie\API\data\DataConvert::excelFilExtension(),0,3));
+        $this->assertEquals('xls', substr(COREPOS\Fannie\API\data\DataConvert::excelFileExtension(),0,3));
         $this->assertNotEquals(0, strlen(COREPOS\Fannie\API\data\DataConvert::arrayToExcel(array(array(1,2)))));
 
     }
