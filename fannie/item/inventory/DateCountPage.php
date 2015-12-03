@@ -135,10 +135,10 @@ class DateCountPage extends FannieRESTfulPage
     {
         $this->id = '4011';
         $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
-        $phpunit->assertNotEquals(0, strlen($this->post_id_view()));
+        $phpunit->assertNotEquals(0, strlen($this->post_id_handler()));
         $this->vendor = 1;
         $phpunit->assertNotEquals(0, strlen($this->get_vendor_view()));
-        $phpunit->assertNotEquals(0, strlen($this->post_vendor_view()));
+        $phpunit->assertNotEquals(0, strlen($this->post_vendor_handler()));
     }
 }
 
