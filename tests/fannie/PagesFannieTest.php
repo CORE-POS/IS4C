@@ -117,6 +117,7 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         $obj->setLogger($logger);
         $dbc->selectDB($op_db);
         $obj->setConnection($dbc);
+        /*
         $obj->themed = true;
         $this->assertNotEquals(0, strlen($obj->getHeader()));
         $this->assertNotEquals(0, strlen($obj->getFooter()));
@@ -127,6 +128,7 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         $config->set('FANNIE_WINDOW_DRESSING', false);
         $this->assertNotEquals(0, strlen($obj->getHeader()));
         $this->assertNotEquals(0, strlen($obj->getFooter()));
+        */
     }
 
     public function testMisc()
