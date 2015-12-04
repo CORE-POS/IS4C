@@ -106,6 +106,7 @@ class PatronageCheckNumbersUploadPage extends \COREPOS\Fannie\API\FannieUploadPa
 
                 if ($amt_index && $line[$amt_index] && $line[$amt_index] != $obj->cash_pat()) {
                     $this->stats['errors'][] = 'Check #' . $check_no
+                        . ' member #' . $obj->cardno() 
                         . ' issued for ' . $obj->cash_pat()
                         . ' and cashed for ' . $line[$amt_index];
                 }
@@ -126,18 +127,7 @@ class PatronageCheckNumbersUploadPage extends \COREPOS\Fannie\API\FannieUploadPa
 
     function results_content()
     {
-        $ret = '
-            <p>Import Complete</p>
-            <div class="alert alert-success">' . $this->stats['imported'] . ' records imported</div>';
-        if ($this->stats['errors']) {
-            $ret .= '<div class="alert alert-error"><ul>';
-            foreach ($this->stats['errors'] as $error) {
-                $ret .= '<li>' . $error . '</li>';
-            }
-            $ret .= '</ul></div>';
-        }
-
-        return $ret;
+        return $this->simpleStats($this->stats);
     }
 
     public function unitTest($phpunit)

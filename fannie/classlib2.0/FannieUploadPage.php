@@ -763,6 +763,22 @@ class FannieUploadPage extends \FanniePage
         return \COREPOS\Fannie\API\data\FileData::xlsxToArray($this->upload_file_name, $limit);
     }
 
+    protected function simpleStats($stats)
+    {
+        $ret = '
+            <p>Import Complete</p>
+            <div class="alert alert-success">' . $stats['imported'] . ' records imported</div>';
+        if ($stats['errors']) {
+            $ret .= '<div class="alert alert-error"><ul>';
+            foreach ($stats['errors'] as $error) {
+                $ret .= '<li>' . $error . '</li>';
+            }
+            $ret .= '</ul></div>';
+        }
+
+        return $ret;
+    }
+
     public function helpContent()
     {
         return '
