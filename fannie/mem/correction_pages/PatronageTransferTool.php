@@ -289,6 +289,7 @@ class PatronageTransferTool extends FanniePage {
         $this->errors = 'foo';
         $this->mode = 'confirm';
         $phpunit->assertEquals('foo', $this->body_content());
+        $this->errors = '';
         $this->amt = 1;
         $this->cn1 = 1;
         $this->cn2 = 2;

@@ -332,6 +332,7 @@ class MemEquityTransferTool extends FanniePage {
         $this->errors = 'foo';
         $this->mode = 'confirm';
         $phpunit->assertEquals('foo', $this->body_content());
+        $this->errors = '';
         $this->amount = 1;
         $this->dept = 1;
         $this->cn1 = 1;

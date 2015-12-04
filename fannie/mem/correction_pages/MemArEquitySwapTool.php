@@ -312,6 +312,7 @@ class MemArEquitySwapTool extends FanniePage {
         $this->errors = 'foo';
         $this->mode = 'confirm';
         $phpunit->assertEquals('foo', $this->body_content());
+        $this->errors = '';
         $this->amount = 1;
         $this->dept1 = 1;
         $this->dept2 = 2;
