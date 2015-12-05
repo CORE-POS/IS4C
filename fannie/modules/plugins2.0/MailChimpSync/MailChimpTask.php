@@ -28,6 +28,47 @@ if (!class_exists('FannieAPI')) {
 
 class MailChimpTask extends FannieTask
 {
+    private function getSettings()
+    {
+        $FANNIE_PLUGIN_SETTINGS = $this->config->get('PLUGIN_SETTINGS');
+        $APIKEY='a92f83d3e5f7fe52d4579e7902c6491d-us8';
+        $LISTID='54100d18af';
+        $APIKEY = $FANNIE_PLUGIN_SETTINGS['MailChimpApiKey'];
+        $LISTID = $FANNIE_PLUGIN_SETTINGS['MailChimpListID'];
+
+        return array($APIKEY, $LISTID);
+    }
+
+    private function initMergeVars($chimp, $LISTID)
+    {
+        $vars = $chimp->lists->mergeVars(array($LISTID));
+        $field_id = false;
+        if ($vars['data']) {
+            $current = array_pop($vars['data']);
+            foreach ($current['merge_vars'] as $index => $info) {
+                if ($info['tag'] == 'CARDNO') {
+                    $field_id = $info['id'];
+                    break;
+                }
+            }
+
+            if ($field_id !== false) {
+                echo 'Found member# field' . "\n";
+            } else {
+                echo 'Adding member# field' . "\n";
+                $new = $chimp->lists->mergeVarAdd($LISTID, 'CARDNO', 'Owner Number', array('field_type'=>'number','public'=>false));
+                $field_id = $new['id'];
+            }
+        }
+
+        if ($field_id === false) {
+            $this->cronMsg('Error: could not locate / create owner number field!', FannieLogger::NOTICE);
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     public function run()
     {
         global $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS, $argv;
@@ -35,10 +76,7 @@ class MailChimpTask extends FannieTask
         $custdata = new CustdataModel($dbc);
         $meminfo = new MeminfoModel($dbc);
 
-        $APIKEY='a92f83d3e5f7fe52d4579e7902c6491d-us8';
-        $LISTID='54100d18af';
-        $APIKEY = $FANNIE_PLUGIN_SETTINGS['MailChimpApiKey'];
-        $LISTID = $FANNIE_PLUGIN_SETTINGS['MailChimpListID'];
+        list($APIKEY, $LISTID) = $this->getSettings();
         if (empty($APIKEY) || empty($LISTID)) {
             $this->cronMsg('Missing API key or List ID', FannieLogger::NOTICE);
             return false;
@@ -48,33 +86,10 @@ class MailChimpTask extends FannieTask
             $this->cronMsg('MailChimp library is not installed', FannieLogger::NOTICE);
             return false;
         }
-        $mc = new MailChimpEx($APIKEY);
+        $chimp = new MailChimpEx($APIKEY);
 
-        if ($FANNIE_PLUGIN_SETTINGS['MailChimpMergeVarField'] != 1) {
-            $vars = $mc->lists->mergeVars(array($LISTID));
-            $field_id = false;
-            if ($vars['data']) {
-                $current = array_pop($vars['data']);
-                foreach ($current['merge_vars'] as $index => $info) {
-                    if ($info['tag'] == 'CARDNO') {
-                        $field_id = $info['id'];
-                        break;
-                    }
-                }
-
-                if ($field_id !== false) {
-                    echo 'Found member# field' . "\n";
-                } else {
-                    echo 'Adding member# field' . "\n";
-                    $new = $mc->lists->mergeVarAdd($LISTID, 'CARDNO', 'Owner Number', array('field_type'=>'number','public'=>false));
-                    $field_id = $new['id'];
-                }
-            }
-
-            if ($field_id === false) {
-                $this->cronMsg('Error: could not locate / create owner number field!', FannieLogger::NOTICE);
-                return false;
-            }
+        if ($FANNIE_PLUGIN_SETTINGS['MailChimpMergeVarField'] != 1 && $this->initMergeVars($chimp, $LISTID) === false) {
+            return false;
         } // end create owner number field if needed
 
         $statuses = array('subscribed', 'unsubscribed', 'cleaned');
@@ -87,7 +102,7 @@ class MailChimpTask extends FannieTask
 
             $this->cronMsg('==== Checking ' . $status . ' emails ====', FannieLogger::INFO);
 
-            $full_list = $mc->lists->export($LISTID, $status);
+            $full_list = $chimp->lists->export($LISTID, $status);
             $headers = array_shift($full_list);
             $columns = array();
             foreach ($headers as $index => $name) {
@@ -104,8 +119,8 @@ class MailChimpTask extends FannieTask
                 $line_count++;
                 $card_no = $record[$columns['OWNER NUMBER']];
                 $email = $record[$columns['EMAIL ADDRESS']];
-                $fn = $record[$columns['FIRST NAME']];
-                $ln = $record[$columns['LAST NAME']];
+                $fname = $record[$columns['FIRST NAME']];
+                $lname = $record[$columns['LAST NAME']];
                 $changed = isset($columns['LAST_CHANGED']) && isset($record[$columns['LAST_CHANGED']]) ? $record[$columns['LAST_CHANGED']] : 0;
 
                 /** MailChimp has a POS member number tag **/
@@ -136,14 +151,14 @@ class MailChimpTask extends FannieTask
                                 $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s, POS is newer",
                                 $meminfo->email_1(), $email), FannieLogger::INFO);
                             }
-                            if (strtoupper(trim($custdata->FirstName())) != strtoupper($fn)) {
+                            if (strtoupper(trim($custdata->FirstName())) != strtoupper($fname)) {
                                 $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s",
-                                    $custdata->FirstName(), $fn), FannieLogger::INFO);
+                                    $custdata->FirstName(), $fname), FannieLogger::INFO);
                                 $update['FNAME'] = trim($custdata->FirstName());
                             }
-                            if (strtoupper(trim($custdata->LastName())) != strtoupper($ln)) {
+                            if (strtoupper(trim($custdata->LastName())) != strtoupper($lname)) {
                                 $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s",
-                                    $custdata->LastName(), $ln), FannieLogger::INFO);
+                                    $custdata->LastName(), $lname), FannieLogger::INFO);
                                 $update['LNAME'] = trim($custdata->LastName());
                             }
                             if (count($update) > 0) {
@@ -153,10 +168,9 @@ class MailChimpTask extends FannieTask
                                 );
                                 $this->cronMsg(sprintf("Updating name field(s) for member #%d", $card_no), FannieLogger::INFO);
                                 try {
-                                    $mc->lists->updateMember($LISTID, $email_struct, $update, '', false);
+                                    $chimp->lists->updateMember($LISTID, $email_struct, $update, '', false);
                                 } catch (Exception $ex) {
                                     echo $ex;
-                                    var_dump($update);
                                 }
                                 sleep(1);
                             }
@@ -201,8 +215,8 @@ class MailChimpTask extends FannieTask
                                 $update['CARDNO'] = $matches[0]->card_no();
                             } else {
                                 $custdata->reset();
-                                $custdata->FirstName($fn);
-                                $custdata->LastName($ln);
+                                $custdata->FirstName($fname);
+                                $custdata->LastName($lname);
                                 $custdata->personNum(1);
                                 $custdata->Type('PC');
                                 $matches = $custdata->find();
@@ -218,7 +232,7 @@ class MailChimpTask extends FannieTask
                                     'leid' => $record[$columns['LEID']],
                                 );
                                 $this->cronMsg("Assigning member # to account " . $email, FannieLogger::INFO);
-                                $mc->lists->updateMember($LISTID, $email_struct, $update, '', false);
+                                $chimp->lists->updateMember($LISTID, $email_struct, $update, '', false);
                                 sleep(1);
                                 $memlist .= sprintf('%d,', $update['CARDNO']);
                             }
@@ -260,10 +274,15 @@ class MailChimpTask extends FannieTask
 
         } // foreach list status
 
-        /**
-          Removed bounced from the MailChimp list now that
-          POS has been updated
-        */
+        $this->removeBounces($chimp, $LISTID, $this->removalBatch($cleans, $columns));
+
+        $this->addNew($chimp, $LISTID, $dbc, $memlist);
+
+        return true;
+    }
+
+    private function removalBatch($cleans, $columns) 
+    {
         $removal_batch = array();
         foreach ($cleans as $record) {
             if (empty($record[$columns['EMAIL ADDRESS']])) {
@@ -276,11 +295,24 @@ class MailChimpTask extends FannieTask
             );
             $removal_batch[] = $email_struct;
         }
+
+        return $removal_batch;
+    }
+
+    private function removeBounces($chimp, $LISTID, $removal_batch)
+    {
+        /**
+          Removed bounced from the MailChimp list now that
+          POS has been updated
+        */
         if (count($removal_batch) > 0) {
             $this->cronMsg(sprintf('Removing %d addresses with status "cleaned"', count($removal_batch)), FannieLogger::INFO);
-            $result = $mc->lists->batchUnsubscribe($LISTID, $removal_batch, true, false, false);
+            $result = $chimp->lists->batchUnsubscribe($LISTID, $removal_batch, true, false, false);
         }
+    }
 
+    private function addNew($chimp, $LISTID, $dbc, $memlist)
+    {
         /**
           Finally, find new members and add them to MailChimp
         */
@@ -319,11 +351,8 @@ class MailChimpTask extends FannieTask
         }
         if (count($add_batch) > 0) {
             $this->cronMsg(sprintf('Adding %d new members', count($add_batch)), FannieLogger::INFO);
-            $added = $mc->lists->batchSubscribe($LISTID, $add_batch, false, true);
-
+            $added = $chimp->lists->batchSubscribe($LISTID, $add_batch, false, true);
         }
-
-        return true;
     }
 
 }

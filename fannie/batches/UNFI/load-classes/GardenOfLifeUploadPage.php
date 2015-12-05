@@ -37,37 +37,30 @@ class GardenOfLifeUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     protected $preview_opts = array(
         'upc' => array(
-            'name' => 'upc',
             'display_name' => 'UPC *',
             'default' => 7,
             'required' => true
         ),
         'desc' => array(
-            'name' => 'desc',
             'display_name' => 'Description *',
             'default' => 0,
             'required' => true
         ),
         'sku' => array(
-            'name' => 'sku',
             'display_name' => 'SKU *',
             'default' => 6,
             'required' => true
         ),
         'cost' => array(
-            'name' => 'cost',
             'display_name' => 'Case Cost (Reg) *',
             'default' => 8,
             'required' => true
         ),
         'size' => array(
-            'name' => 'size',
             'display_name' => 'Unit Size',
             'default' => 4,
-            'required' => false
         ),
         'type' => array(
-            'name' => 'type',
             'display_name' => 'Unit Type',
             'default' => 5,
             'required' => true
@@ -241,14 +234,13 @@ class GardenOfLifeUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     function preview_content()
     {
-        return '';  
         return '<input type="checkbox" name="rm_cds" checked /> Remove check digits';
     }
 
     function results_content()
     {
         $ret = "<p>Price data import complete</p>";
-        $ret .= '<p><a href="'.$_SERVER['PHP_SELF'].'">Upload Another</a></p>';
+        $ret .= '<p><a href="'.filter_input(INPUT_SERVER, 'PHP_SELF').'">Upload Another</a></p>';
 
         return $ret;
     }
