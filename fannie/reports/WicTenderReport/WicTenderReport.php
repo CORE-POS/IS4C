@@ -132,6 +132,7 @@ class WicTenderReport extends FannieReportPage
                     } else {
                         $item[3][ array_search($row['upc'], $item[0]) ] += $row['quantity'];
                     }        
+                    
                 }
                 $count++;
             }
