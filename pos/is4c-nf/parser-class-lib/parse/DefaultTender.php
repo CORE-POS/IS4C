@@ -61,7 +61,7 @@ class DefaultTender extends Parser
             }
         }
 
-        return $false;
+        return false;
     }
 
     function parse($str)
