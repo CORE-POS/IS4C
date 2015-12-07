@@ -107,7 +107,7 @@ class ExtraInfoModule extends ItemModule
             $pm->local($this->form->local);
             $pm->inUse($this->form->inUse);
             $pm->idEnforced($this->form->idReq);
-            $pm->enableLogging(false;
+            $pm->enableLogging(false);
             $r1 = $pm->save();
 
             return $r1 === false ? false : true;
