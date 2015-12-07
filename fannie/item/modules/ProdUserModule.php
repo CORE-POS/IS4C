@@ -228,6 +228,7 @@ class ProdUserModule extends ItemModule
             $prod->upc($item);
             $prod->store_id(1);
             $prod->current_origin_id($origin);
+            $prod->enableLogging(false);
             $prod->save();
 
             $dbc->execute($mapP, array($item));

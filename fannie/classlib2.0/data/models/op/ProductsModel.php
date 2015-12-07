@@ -334,6 +334,12 @@ it won\'t *do* anything.
         return parent::load();
     }
 
+    private $log_updates = true;
+    public function enableLogging($e)
+    {
+        $this->log_updates = $e;
+    }
+
     public function save()
     {
         // using save() to update lane-side product records
@@ -355,7 +361,7 @@ it won\'t *do* anything.
         // call parent method to save the product record,
         // then add a corresponding prodUpdate record
         $try = parent::save();
-        if ($try && !$lane_push && $this->connection->tableExists('prodUpdate')) {
+        if ($try && !$lane_push && $this->log_updates && $this->connection->tableExists('prodUpdate')) {
             $update = new ProdUpdateModel($this->connection);
             $update->upc($this->upc());
             $update->logUpdate(ProdUpdateModel::UPDATE_EDIT);

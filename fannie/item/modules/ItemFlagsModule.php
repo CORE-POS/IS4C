@@ -125,6 +125,7 @@ class ItemFlagsModule extends ItemModule
         $model->upc($upc);
         $model->store_id(1);
         $model->numflag($numflag);
+        $model->enableLogging(false);
         $saved = $model->save();
 
         return $saved ? true : false;

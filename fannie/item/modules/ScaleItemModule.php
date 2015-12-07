@@ -218,6 +218,7 @@ class ScaleItemModule extends ItemModule
             $p->store_id(1);
             if($p->load()) {
                 $p->Scale(0);
+                $p->enableLogging(false);
                 $p->save();
             }
         }

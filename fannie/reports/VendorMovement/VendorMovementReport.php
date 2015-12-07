@@ -36,21 +36,12 @@ class VendorMovementReport extends FannieReportPage
     protected $header = "Vendor Movement Report";
     protected $required_fields = array('date1', 'date2');
 
-    public function fetch_report_data()
+    private function getQuery($groupby, $dlog)
     {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
-        $date1 = $this->form->date1;
-        $date2 = $this->form->date2;
-        $vendor = FormLib::get_form_value('vendor','');
-        $groupby = FormLib::get_form_value('groupby','upc');
-
-        $dlog = DTransactionsModel::selectDlog($date1,$date2);
-
-        $query = "";
         switch ($groupby) {
             case 'upc':
-                $query = "
+            default:
+                return "
                     SELECT t.upc,
                         COALESCE(p.brand, x.manufacturer) AS brand,
                         p.description, "
@@ -74,9 +65,8 @@ class VendorMovementReport extends FannieReportPage
                         d.dept_name,
                         s.super_name
                     ORDER BY SUM(t.total) DESC";
-                break;
             case 'date':
-                $query = "
+                return "
                     SELECT YEAR(t.tdate) AS year,
                         MONTH(t.tdate) AS month,
                         DAY(t.tdate) AS day, "
@@ -96,7 +86,7 @@ class VendorMovementReport extends FannieReportPage
                         DAY(t.tdate)";
                 break;
             case 'dept':
-                $query = "
+                return "
                     SELECT d.dept_no,
                         d.dept_name, "
                         . DTrans::sumQuantity('t') . " AS qty,
@@ -116,12 +106,30 @@ class VendorMovementReport extends FannieReportPage
                     ORDER BY SUM(t.total) DESC";
                 break;
         }
-        $args = array('%'.$vendor.'%','%'.$vendor.'%',$date1.' 00:00:00',$date2.' 23:59:59');
-        $prep = $dbc->prepare_statement($query);
+    }
 
-        $result = $dbc->exec_statement($prep,$args);
+    public function fetch_report_data()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        try {
+            $date1 = $this->form->date1;
+            $date2 = $this->form->date2;
+            $vendor = $this->form->vendor;
+            $groupby = $this->form->groupby;
+        } catch (Exception $ex) {
+            return array();
+        }
+
+        $dlog = DTransactionsModel::selectDlog($date1,$date2);
+
+        $query = $this->getQuery($groupby, $dbc);
+        $args = array('%'.$vendor.'%','%'.$vendor.'%',$date1.' 00:00:00',$date2.' 23:59:59');
+        $prep = $dbc->prepare($query);
+
+        $result = $dbc->execute($prep,$args);
         $ret = array();
-        while ($row = $dbc->fetch_array($result)) {
+        while ($row = $dbc->fetchRow($result)) {
             $record = array();
             if ($groupby == "date") {
                 $record[] = $row['month'] . '/' . $row['day'] . '/' . $row['year'];
@@ -140,6 +148,18 @@ class VendorMovementReport extends FannieReportPage
 
         return $ret;
     }
+
+    private function getSums($q, $t)
+    {
+        $sumQty = 0.0;
+        $sumSales = 0.0;
+        foreach ($data as $row) {
+            $sumQty += $row[$q];
+            $sumSales += $row[$t];
+        }
+
+        return array($sumQty, $sumSales);
+    }
     
     public function calculate_footers($data)
     {
@@ -151,34 +171,19 @@ class VendorMovementReport extends FannieReportPage
             case 8:
                 $this->report_headers = array('UPC','Brand','Description','Qty','$',
                     'Dept#','Department','Super');
-                $sumQty = 0.0;
-                $sumSales = 0.0;
-                foreach ($data as $row) {
-                    $sumQty += $row[3];
-                    $sumSales += $row[4];
-                }
+                list($sumQty, $sumSales) = $this->getSums(3, 4);
 
                 return array('Total',null,null,$sumQty,$sumSales,null,null,null);
 
             case 5:
                 $this->report_headers = array('Dept#','Department','Qty','$','Super');
-                $sumQty = 0.0;
-                $sumSales = 0.0;
-                foreach ($data as $row) {
-                    $sumQty += $row[2];
-                    $sumSales += $row[3];
-                }
+                list($sumQty, $sumSales) = $this->getSums(2, 3);
 
                 return array('Total',null,$sumQty,$sumSales,null);
 
             case 3:
                 $this->report_headers = array('Date','Qty','$');
-                $sumQty = 0.0;
-                $sumSales = 0.0;
-                foreach ($data as $row) {
-                    $sumQty += $row[1];
-                    $sumSales += $row[2];
-                }
+                list($sumQty, $sumSales) = $this->getSums(1, 2);
 
                 return array('Total',$sumQty,$sumSales);
         }
@@ -189,7 +194,7 @@ class VendorMovementReport extends FannieReportPage
         $this->addScript('../../item/autocomplete.js');
         ob_start();
 ?>
-<form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+<form method = "get" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
 <div class="col-sm-5">
     <div class="form-group">
         <label>Vendor</label>
@@ -241,6 +246,19 @@ class VendorMovementReport extends FannieReportPage
             Lists product movement for products from a given
             vendor during the specified date range.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->date1 = date('Y-m-d');
+        $form->date2 = date('Y-m-d');
+        $form->vendor = 'foo';
+        foreach (array('upc', 'date', 'dept') as $col) {
+            $form->groupby = $col;
+            $this->setForm($form);
+            $phpunit->assertInternalType('array', $this->fetch_report_data());
+        }
     }
 }
 
