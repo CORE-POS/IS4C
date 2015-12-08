@@ -81,9 +81,9 @@ class EditItemsFromSearch extends FannieRESTfulPage
                 }
             }
 
-            $model = $model->setBinaryFlag($model, $upc, 'fs', 'foodstamp');
-            $model = $model->setBinaryFlag($model, $upc, 'disc', 'discount');
-            $model = $model->setBinaryFlag($model, $upc, 'scale', 'scale');
+            $model = $this->setBinaryFlag($model, $upc, 'fs', 'foodstamp');
+            $model = $this->setBinaryFlag($model, $upc, 'disc', 'discount');
+            $model = $this->setBinaryFlag($model, $upc, 'scale', 'scale');
             $model->modified(date('Y-m-d H:i:s'));
 
             $try = $model->save();
@@ -122,10 +122,10 @@ class EditItemsFromSearch extends FannieRESTfulPage
             $model->$column(0);
         }
 
-        return 0;
+        return $model;
     }
 
-    private function updatProdExtra($dbc, $upc, $brand, $vendor)
+    private function updateProdExtra($dbc, $upc, $brand, $vendor)
     {
         $extra = new ProdExtraModel($dbc);
         $extra->upc($upc);
