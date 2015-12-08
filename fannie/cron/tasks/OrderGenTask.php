@@ -48,9 +48,31 @@ class OrderGenTask extends FannieTask
         $this->vendors = $v;
     }
 
+    private function freshenCache($dbc)
+    {
+        $items = $dbc->query('
+            SELECT i.upc,
+                i.storeID,
+                i.count,
+                i.countDate
+            FROM InventoryCounts AS i
+                LEFT JOIN InventoryCache AS c ON i.upc=c.upc AND i.storeID=c.storeID
+            WHERE i.mostRecent=1
+                AND c.upc IS NULL'); 
+        $ins = $dbc->prepare('
+            INSERT INTO InventoryCache
+                (upc, storeID, cacheStart, cacheEnd, baseCount, ordered, sold, shrunk, onHand)
+            VALUES (?, ?, ?, ?, ?, 0, 0, 0, ?)');
+        while ($row = $dbc->fetchRow($items)) {
+            $args = array($row['upc'], $row['storeID'], $row['countDate'], $row['countDate'], $row['count'], $row['count']);
+            $dbc->execute($ins, $args);
+        }
+    }
+
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $this->freshenCache($dbc);
         $curP = $dbc->prepare('SELECT onHand,cacheEnd FROM InventoryCache WHERE upc=? AND storeID=? AND baseCount >= 0');
         $catalogP = $dbc->prepare('SELECT * FROM vendorItems WHERE upc=? AND vendorID=?');
         $costP = $dbc->prepare('SELECT cost FROM products WHERE upc=? AND store_id=?');
