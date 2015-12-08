@@ -1231,7 +1231,7 @@ HTML;
         $vitem->sku($sku);
         $vitem->size($product->size());
         $vitem->description($product->description());
-        $vitem->brand($model->brand());
+        $vitem->brand($product->brand());
         $vitem->units($caseSize);
         $vitem->cost($product->cost());
         return $vitem->save();
