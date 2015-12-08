@@ -123,7 +123,7 @@ class VendorMovementReport extends FannieReportPage
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
 
-        $query = $this->getQuery($groupby, $dbc);
+        $query = $this->getQuery($groupby, $dlog);
         $args = array('%'.$vendor.'%','%'.$vendor.'%',$date1.' 00:00:00',$date2.' 23:59:59');
         $prep = $dbc->prepare($query);
 
