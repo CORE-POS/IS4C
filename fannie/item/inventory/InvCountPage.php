@@ -155,8 +155,10 @@ class InvCountPage extends FannieRESTfulPage
         $query = '
             SELECT p.upc,
                 p.brand,
-                p.description
+                p.description,
+                v.sku
             FROM products AS p
+            LEFT JOIN vendorItems AS v ON v.upc=p.upc
             WHERE p.default_vendor_id=?
                 AND p.inUse=1
                 AND p.store_id=1 ';
@@ -175,6 +177,7 @@ class InvCountPage extends FannieRESTfulPage
             <table class="table table-bordered table-striped small">
             <tr>
                 <th>UPC</th>
+                <th>SKU</th>
                 <th>Brand</th>
                 <th>Description</th>
                 <th>Last Counted</th>
@@ -198,6 +201,7 @@ class InvCountPage extends FannieRESTfulPage
                 </tr>',
                 (!$info ? 'class="warning"' : ''),
                 \COREPOS\Fannie\API\lib\FannieUI::itemEditorLink($row['upc']), $row['upc'],
+                $row['sku'],
                 $row['brand'],
                 $row['description'],
                 ($info ? $info['countDate'] : 'n/a'),
