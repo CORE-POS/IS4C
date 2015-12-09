@@ -165,14 +165,19 @@ class FreshDealsMovementReport extends FannieReportPage
         $inStr = substr($inStr, 0, strlen($inStr)-1);
         $query = '
             SELECT t.upc,
-                p.brand,
-                p.description,
+                COALESCE(u.brand, p.brand) AS brand,
+                COALESCE(u.description, p.description) AS description,
                 ' . DTrans::sumQuantity('t').' as qty,
-                CASE WHEN p.scale=1 THEN \'LB\' ELSE p.size END AS size,
+                CASE 
+                    WHEN p.scale=1 THEN \'LB\' 
+                    ELSE CASE WHEN p.size IS NULL OR p.size=\'\' OR p.size=\'0\' THEN v.size ELSE p.size END
+                END AS size,
                 p.cost,
                 p.normal_price
             FROM ' . $dlog . ' AS t
                 ' . DTrans::joinProducts() . '
+                LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                LEFT JOIN productUser AS u ON p.upc=u.upc
             WHERE t.upc IN (' . $inStr . ')
                 AND t.tdate BETWEEN ? AND ?
             GROUP BY t.upc,
