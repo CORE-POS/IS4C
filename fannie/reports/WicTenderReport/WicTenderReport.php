@@ -187,6 +187,18 @@ class WicTenderReport extends FannieReportPage
             return $data;
     }
 
+    public function calculate_footers($data)
+    {
+        $sums = array(0, 0);
+        foreach ($data as $row) {
+            $sums[0] += $row[2];
+            $sums[1] += $row[3];
+        }
+
+        return array('Total', null, $sums[0], $sums[1]);
+    }
+
+
     public function form_content()
     {
         return '<form method="get" action="WicTenderReport.php" id="form1">
