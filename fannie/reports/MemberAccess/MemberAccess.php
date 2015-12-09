@@ -107,6 +107,11 @@ class MemberAccess extends FannieReportPage
         return $item;
     }
 
+    public function form_content()
+    {
+        return '<!-- not required -->';
+    }
+
     public function helpContent()
     {
         return '<p>Show member numbers of accounts that 
