@@ -69,33 +69,16 @@ class DepartmentMovementReport extends FannieReportPage
         $filter_condition = 't.department BETWEEN ? AND ?';
         $args = array($deptStart,$deptEnd);
         if (count($deptMulti) > 0) {
-            $filter_condition = 't.department IN (';
-            $args = array();
-            foreach ($deptMulti as $d) {
-                $filter_condition .= '?,';
-                $args[] = $d;
-            }
-            $filter_condition = substr($filter_condition, 0, strlen($filter_condition)-1) . ')';
+            list($inStr, $args) = $dbc->safeInClause($deptMulti);
+            $filter_condition = 't.department IN (' . $inStr . ') ';
         }
         if ($buyer !== "" && $buyer > 0) {
             $filter_condition .= ' AND s.superID=? ';
             $args[] = $buyer;
-            /*
-            $superR = $dbc->execute($superP, array($buyer));
-            $filter_condition = 't.department IN (';
-            $args = array();
-            while ($superW = $dbc->fetch_row($superR)) {
-                $filter_condition .= '?,';
-                $args[] = $superW['dept_ID'];
-            }
-            $filter_condition = substr($filter_condition, 0, strlen($filter_condition)-1) . ')';
-            $filter_condition .= ' AND s.superID=?';
-            $args[] = $buyer;
-            */
-        } else if ($buyer !== "" && $buyer == -1) {
+        } elseif ($buyer !== "" && $buyer == -1) {
             $filter_condition = "1=1";
             $args = array();
-        } else if ($buyer !== "" && $buyer == -2){
+        } elseif ($buyer !== "" && $buyer == -2){
             $superR = $dbc->execute($superP, array(0));
             $filter_condition = 't.department NOT IN (0,';
             $args = array();
