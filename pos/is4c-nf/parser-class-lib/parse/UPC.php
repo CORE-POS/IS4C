@@ -137,7 +137,7 @@ class UPC extends Parser
             $quantity = 1;
         }
 
-        list($scaleStickerItem,$scalepriceUPC,$scalepricEAN) = $this->rewriteScaleSticker($upc);
+        list($upc,$scaleStickerItem,$scalepriceUPC,$scalepricEAN) = $this->rewriteScaleSticker($upc);
 
         $result = $this->lookupItem($upc);
         $dbc = Database::pDataConnect();
@@ -666,7 +666,7 @@ class UPC extends Parser
             if ($upc == "0020006000000" || $upc == "0020010000000") $scalepriceUPC *= -1;
         }
 
-        return array($scaleStickerItem, $scalepriceUPC, $scalepriceEAN);
+        return array($upc, $scaleStickerItem, $scalepriceUPC, $scalepriceEAN);
     }
 
     public static $requestInfoHeader = 'customer age';
