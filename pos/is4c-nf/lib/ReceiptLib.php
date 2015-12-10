@@ -567,7 +567,7 @@ static public function chargeBalance($receipt, $program="charge", $trans_num='')
     );
 
     $dbc = Database::tDataConnect();
-    list($emp, $reg, $trans) = explode('-', $trans_num, 3);
+    list($emp, $reg, $trans) = self::parseRef($trans_num);
     $ar_depts = MiscLib::getNumbers(CoreLocal::get('ArDepartments'));
     $checkQ = "SELECT trans_id 
                FROM localtranstoday 
@@ -719,7 +719,7 @@ static private function getTag()
 static public function receiptFromBuilders($reprint=False,$trans_num='')
 {
     $empNo=0;$laneNo=0;$transNo=0;
-    list($empNo, $laneNo, $transNo) = explode('-', $trans_num, 3);
+    list($empNo, $laneNo, $transNo) = self::parseRef($trans_num);
     self::initDriver();
 
     $FETCH_MOD = self::getFetch();
@@ -773,7 +773,7 @@ static public function receiptDetail($reprint=false, $trans_num='')
 
     $detail = "";
     $empNo=0; $laneNo=0; $transNo=0;
-    list($empNo, $laneNo, $transNo) = explode('-', $trans_num, 3);
+    list($empNo, $laneNo, $transNo) = self::parseRef($trans_num);
         
     if (CoreLocal::get("newReceipt") == 0 ) {
         // if old style has been specifically requested 
@@ -898,7 +898,7 @@ static public function twoColumns($col1, $col2) {
     return $text;
 }
 
-static private function parseRef($ref)
+static public function parseRef($ref)
 {
     $emp=$reg=$trans=0;
     if (strstr($ref, '-')) {
