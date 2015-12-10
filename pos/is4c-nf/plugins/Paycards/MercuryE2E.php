@@ -1095,6 +1095,7 @@ class MercuryE2E extends BasicCCModule
         $request->setMode('VoidSaleByRecordNo');
 
         $password = $this->getPw();
+        $transID = CoreLocal::get("paycard_id");
         $this->voidTrans = $transID;
         $this->voidRef = CoreLocal::get("paycard_trans");
 
@@ -1112,6 +1113,7 @@ class MercuryE2E extends BasicCCModule
         }
 
         $type = 'Credit';
+        $mode = 'VoidSaleByRecordNo';
         if (substr($res['mode'],0,6)=='Debit_') {
             $type = 'Debit';
             if (substr($res['mode'],-5)=="_Sale") {
@@ -1142,6 +1144,8 @@ class MercuryE2E extends BasicCCModule
             "http://www.mercurypay.com");
                 
         $this->GATEWAY = $this->getWsUrl($domain);
+
+        $this->last_request = $request;
 
         return $this->curlSend($soaptext,'SOAP');
     }
