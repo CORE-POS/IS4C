@@ -53,6 +53,8 @@ class memlist extends NoInputCorePage
             $entered = FormLib::get('idSearch');
         } elseif (FormLib::get('search', false) !== false) {
             $entered = FormLib::get('search');
+        } else {
+            return false;
         }
 
         if (substr($entered, -2) == "ID") {
