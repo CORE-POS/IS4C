@@ -45,7 +45,7 @@ class WFCFixup extends PreParser {
         } elseif ($as_upc == '0049999900047') {
             $this->remainder = '0049999900048';
             return true;
-        } elseif ($str == 'DP9020') {
+        } elseif ($str == 'FS') {
             $this->remainder = 'WIC';
             return true;
         }
