@@ -145,7 +145,7 @@ class UPC extends Parser
 
         /* check for special upcs that aren't really products */
         if ($num_rows == 0){
-            return $this->nonProductUPCs($upc);
+            return $this->nonProductUPCs($upc, $ret);
         }
 
         /* product exists
@@ -740,7 +740,7 @@ class UPC extends Parser
         return $dbc->numRows($restrictR) > 0 ? true : false;
     }
 
-    private function nonProductUPCs($upc)
+    private function nonProductUPCs($upc, $ret)
     {
         $dbc = Database::pDataConnect();
         $objs = CoreLocal::get("SpecialUpcClasses");
