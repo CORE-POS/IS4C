@@ -156,7 +156,6 @@ class MercuryGift extends BasicCCModule
                 break;
             case PaycardLib::PAYCARD_MODE_ADDVALUE:
             case PaycardLib::PAYCARD_MODE_ACTIVATE:
-                CoreLocal::set("autoReprint",1);
                 $ttl = CoreLocal::get("paycard_amount");
                 PrehLib::deptkey($ttl*100,9020);
                 $resp = CoreLocal::get("paycard_response");    
@@ -167,7 +166,6 @@ class MercuryGift extends BasicCCModule
                 );
                 break;
             case PaycardLib::PAYCARD_MODE_AUTH:
-                CoreLocal::set("autoReprint",1);
                 $amt = "".(-1*(CoreLocal::get("paycard_amount")));
                 $record_id = $this->last_paycard_transaction_id;
                 $charflag = ($record_id != 0) ? 'PT' : '';
@@ -183,7 +181,6 @@ class MercuryGift extends BasicCCModule
                 break;
             case PaycardLib::PAYCARD_MODE_VOID:
             case PaycardLib::PAYCARD_MODE_VOIDITEM:
-                CoreLocal::set("autoReprint",1);
                 $v = new Void();
                 $v->voidid(CoreLocal::get("paycard_id"), array());
                 $resp = CoreLocal::get("paycard_response");
