@@ -112,7 +112,7 @@ window.nodePassThrough = function(data)
     dataCallback(data);
 }
 
-function isNodeWebkit()
+function isNodeWebKit()
 {
     var isNode = (typeof process !== "undefined" && typeof require !== "undefined");
     if (isNode) {
