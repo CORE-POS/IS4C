@@ -70,7 +70,6 @@ class DefaultReceiptDataFetch
                 AND datetime >= " . $sql->curdate() . "
                 ORDER BY trans_id DESC",$empNo,$laneNo,$transNo);
         }
-        $sql = Database::tDataConnect();
         $result = $sql->query($query);
 
         return $result;
