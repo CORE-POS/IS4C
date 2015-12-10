@@ -47,7 +47,12 @@ class boxMsg2 extends BasicCorePage
                             data: 'type='+endorseType+'&amount='+endorseAmt,
                             cache: false,
                             success: function(){
-                                location = data.dest_page;
+                                var changeTo = data.dest_page;
+                                if (!data.cleared) {
+                                    changeTo += "?reginput=" + encodeURIComponent(cmd);
+                                    changeTo += "&repeat=1";
+                                }
+                                window.location = changeTo;
                             }
                         });
                     }
