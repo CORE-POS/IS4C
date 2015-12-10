@@ -294,6 +294,8 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
 
     $time = self::build_time($dateTimeStamp);
     $time = str_replace(" ","     ",$time);
+    list($emp, $reg, $trans) = self::parseRef($ref);
+    $ref = $emp . '-' . $reg . '-' . $trans;
     $spaces = 55 - strlen($time) - strlen($ref);
     $receipt .= $time.str_repeat(' ',$spaces).$ref."\n";
             
