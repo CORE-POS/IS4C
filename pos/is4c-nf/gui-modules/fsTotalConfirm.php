@@ -50,7 +50,7 @@ class fsTotalConfirm extends NoInputCorePage
         $this->tendertype = "";
         if (isset($_REQUEST["selectlist"])) {
             $choice = $_REQUEST["selectlist"];
-            if ($choice == "EF" || $choic == 'EC') {
+            if ($choice == "EF" || $choice == 'EC') {
                 return $this->subtotal($choice);
             } elseif ($choice == '') {
                 $this->change_page($this->page_url."gui-modules/pos2.php");
