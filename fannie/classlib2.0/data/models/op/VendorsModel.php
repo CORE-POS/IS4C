@@ -42,6 +42,7 @@ class VendorsModel extends BasicModel
     'website' => array('type'=>'VARCHAR(100)'),
     'notes' => array('type'=>'TEXT'),
     'localOriginID' => array('type'=>'INT', 'default'=>0),
+    'inactive' => array('type'=>'TINYINT', 'default'=>0),
     );
 
     public function hookAddColumnvendorAbbreviation()
@@ -50,6 +51,12 @@ class VendorsModel extends BasicModel
             UPDATE vendors
             SET vendorAbbreviation=LEFT(vendorName, 10)';
         $this->connection->query($query);
+    }
+
+    public function toOptions($selected=0, $id_as_label=false)
+    {
+        $this->inactive(0);
+        return parent::toOptions($selected, $id_as_label);
     }
 
     public function doc()
