@@ -151,7 +151,7 @@ class InstallUtilities extends LibraryClass
             preg_match($orig_setting, $content, $matches);
             if ($matches[1] === $value.', True') {// found with exact same value
                 return true;    // no need to bother rewriting it
-            } elseif ($writeable_global) {
+            } elseif (is_writable($file)) {
                 return file_put_contents($file, $new) ? true : false;
             }
         } else {
