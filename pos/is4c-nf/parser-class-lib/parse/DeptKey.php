@@ -79,8 +79,7 @@ class DeptKey extends Parser
 
         /* apply any appropriate special dept modules */
         $deptmods = $this->getMods();
-        $index = (int)($dept/10);
-        $ret = $this->applyMods($deptmods, $index, $ret);
+        $ret = $this->applyMods($deptmods, $dept, $amt, $ret);
         
         if (!$ret['main_frame']) {
             $ret = PrehLib::deptkey($amt, $dept, $ret);
@@ -102,8 +101,9 @@ class DeptKey extends Parser
         return $deptmods;
     }
 
-    private function applyMods($deptmods, $index, $ret)
+    private function applyMods($deptmods, $dept, $amt, $ret)
     {
+        $index = (int)($dept/10);
         if (is_array($deptmods) && isset($deptmods[$index])) {
             foreach($deptmods[$index] as $mod) {
                 $obj = new $mod();
