@@ -1259,7 +1259,7 @@ static private function simpleReceipt($receipt, $arg1, $where)
     }
     elseif ($arg1 == "suspended") {
         $receipt .= $dashes.self::centerString("*  T R A N S A C T I O N  S U S P E N D E D  *").$dashes
-                 .self::centerString($ref);
+                 .self::mostRecentReceipt();
     }
 
     return $receipt;
