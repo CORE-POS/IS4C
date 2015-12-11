@@ -473,7 +473,7 @@ class MercuryE2E extends BasicCCModule
             $msgXml .= '<TranType>EBT</TranType>';
             if ($request->type == 'EBTFOOD') {
                 CoreLocal::set('EbtFsBalance', 'unknown');
-                $request->msgXml .= '<CardType>Foodstamp</CardType>';
+                $msgXml .= '<CardType>Foodstamp</CardType>';
             } else if ($request->type == 'EBTCASH') {
                 $msgXml .= '<CardType>Cash</CardType>';
                 CoreLocal::set('EbtCaBalance', 'unknown');
