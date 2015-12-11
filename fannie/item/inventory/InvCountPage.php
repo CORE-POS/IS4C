@@ -216,6 +216,7 @@ class InvCountPage extends FannieRESTfulPage
                 <td>%s</td>
                 <td>%s</td>
                 <td>%s</td>
+                <td>%s</td>
                 <td><input type="text" class="form-control input-sm" value="" name="count[]" /></td>
                 <td><input type="text" class="form-control input-sm" value="%s" name="par[]" /></td>
                 </tr>',
