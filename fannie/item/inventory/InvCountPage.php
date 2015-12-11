@@ -173,7 +173,7 @@ class InvCountPage extends FannieRESTfulPage
                 p.description,
                 v.sku
             FROM products AS p
-            LEFT JOIN vendorItems AS v ON v.upc=p.upc
+                LEFT JOIN vendorItems AS v ON v.upc=p.upc AND v.vendorID=p.default_vendor_id
             WHERE p.default_vendor_id=?
                 AND p.inUse=1
                 AND p.store_id=1 ';
