@@ -129,11 +129,11 @@ class DepartmentDiscrepancy extends FanniePage
         
         echo "<a href=\"http://localhost/IS4C/fannie/item/DepartmentDiscrepancy.php?dept=";
         echo $dp_no[$key - 1];
-        echo "\">PREV </a>";
+        echo "\" class=\"btn btn-default\">PREV </a>&nbsp;";
         
         echo "<a href=\"http://localhost/IS4C/fannie/item/DepartmentDiscrepancy.php?dept=";
         echo $dp_no[$key + 1];
-        echo "\">NEXT </a><br>";
+        echo "\" class=\"btn btn-default\">NEXT </a><br>";
         
         
         
