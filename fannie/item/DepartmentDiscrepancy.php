@@ -86,6 +86,7 @@ class DepartmentDiscrepancy extends FanniePage
         }
         
         echo $_GET['iFs'] . " selected items have been updated.";
+        echo "<p><a href=\"DepartmentDiscrepancy.php\" role=\"button\">Back to Select Department</a></p>";
     }
     
     public function get_tax_change_content() 
@@ -111,14 +112,36 @@ class DepartmentDiscrepancy extends FanniePage
             }
         }
         echo $_GET['iTax'] . " selected items have been updated.";
-        
-        
+        echo "<p><a href=\"DepartmentDiscrepancy.php\" role=\"button\">Back to Select Department</a></p>";
     }
 
     public function get_dept_content() 
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
+        
+        $query = "SELECT dept_no, dept_name FROM departments GROUP BY dept_no ORDER BY dept_no;";
+        $result = $dbc->query($query);
+        while ($row = $dbc->fetch_row($result)) {
+            $dp_no[] = $row['dept_no'];
+        }
+        $key = array_search($_GET['dept'], $dp_no);
+        
+        echo "<a href=\"http://localhost/IS4C/fannie/item/DepartmentDiscrepancy.php?dept=";
+        echo $dp_no[$key - 1];
+        echo "\" class=\"btn btn-default\">PREV </a>&nbsp;";
+        
+        echo "<a href=\"http://localhost/IS4C/fannie/item/DepartmentDiscrepancy.php?dept=";
+        echo $dp_no[$key + 1];
+        echo "\" class=\"btn btn-default\">NEXT </a><br>";
+        
+        
+        
+        $query = "SELECT department FROM products GROUP BY department";
+        $result = $dbc->query($query);
+        while ($row = $dbc->fetch_row($result)) {
+            $department[] = $row['department'];
+        }
         $query = "select SUM(CASE WHEN tax=0 THEN 1 ELSE 0 END) as tax0,  
                     SUM(CASE WHEN tax=1 THEN 1 ELSE 0 END) as tax1,     
                     SUM(CASE WHEN tax=2 THEN 1 ELSE 0 END) as tax2,     
@@ -148,6 +171,8 @@ class DepartmentDiscrepancy extends FanniePage
             $fs1 . " items foodstamp-able<br>" . 
             "</div>";
             
+            
+            
         //* Check for items not following tax pattern
         $query = "select * from products where department={$_GET['dept']} and tax=";
         if ( ($tax0 < $tax1 && $tax0 != 0) || ($tax0 < $tax2 && $tax0 != 0) ) {
@@ -168,7 +193,7 @@ class DepartmentDiscrepancy extends FanniePage
             $tax[] = $row['tax'];
         }
         
-        $ret = "<form method=\"get\">";
+        $ret .= "<form method=\"get\">";
         $ret .= "<table class=\"table table-striped\">
             <th>UPC</th>
             <th>Description</th>
@@ -231,6 +256,7 @@ class DepartmentDiscrepancy extends FanniePage
         $ret .= "<input type=\"hidden\" name=\"iFs\" id=\"iFs\" value=\" " . count($upc2) . " \">";
         $ret .= "<input class=\"btn btn-default\" type=\"submit\" value=\"Update Foodstamp Values\">";
         $ret .= "</form>";
+        $ret .= "<p><a href=\"DepartmentDiscrepancy.php\" role=\"button\">Back to Select Department</a></p>";
         
         return $ret;
     }
