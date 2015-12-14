@@ -40,6 +40,7 @@ class PaycardDatacapParser extends Parser
         'DATACAP',
         'DATACAPEMV',
         'DATACAPCC',
+        'DATACAPCCAUTO',
         'DATACAPDC',
         'DATACAPEF',
         'DATACAPEC',
@@ -78,6 +79,10 @@ class PaycardDatacapParser extends Parser
                 break;
             case 'DATACAPCC':
                 CoreLocal::set('CacheCardType', 'CREDIT');
+                break;
+            case 'DATACAPCCAUTO':
+                CoreLocal::set('CacheCardType', 'CREDIT');
+                $ret['main_frame'] .= '?reginput=';
                 break;
             case 'DATACAPDC':
                 if (CoreLocal::get('CacheCardCashBack')) {
