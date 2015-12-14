@@ -143,10 +143,10 @@ class AjaxParser extends AjaxCallback
 
         if ($entered == "RI") $entered = CoreLocal::get("strEntered");
 
-        if (CoreLocal::get("msgrepeat") == 1 && $entered != "CL") {
-            $entered = CoreLocal::get("strRemembered");
-        } elseif (FormLib::get('repeat')) {
+        if (FormLib::get('repeat')) {
             CoreLocal::set('msgrepeat', 1);
+        } elseif (CoreLocal::get("msgrepeat") == 1 && $entered != "CL") {
+            $entered = CoreLocal::get("strRemembered");
         }
         CoreLocal::set("strEntered",$entered);
 

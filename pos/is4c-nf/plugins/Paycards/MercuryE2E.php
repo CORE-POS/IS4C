@@ -182,7 +182,7 @@ class MercuryE2E extends BasicCCModule
 
         if ($responseCode == 1) {
             $amt = $xml->get_first("AUTHORIZE");
-            $this->handlePartial($amt);
+            $this->handlePartial($amt, $request);
         }
 
         if ($authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200) {
@@ -986,7 +986,7 @@ class MercuryE2E extends BasicCCModule
         /** handle partial auth **/
         if ($responseCode == 1) {
             $amt = $xml->query('/RStream/TranResponse/Amount/Authorize');
-            $this->handlePartial($amt);
+            $this->handlePartial($amt, $request);
         }
 
         $pan = $xml->query('/RStream/TranResponse/AcctNo');
@@ -1548,7 +1548,7 @@ class MercuryE2E extends BasicCCModule
         return $host;
     }
 
-    private function handlePartial($amt)
+    private function handlePartial($amt, $request)
     {
         if ($amt != abs(CoreLocal::get("paycard_amount"))) {
             $request->changeAmount($amt);

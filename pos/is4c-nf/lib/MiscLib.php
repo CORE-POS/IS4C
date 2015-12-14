@@ -106,7 +106,7 @@ static public function truncate2($num)
 */
 static public function pingport($host, $dbms)
 {
-    $port = strstr($dbms,'mysql') ? 3306 : 1433;    
+    $port = strstr(strtolower($dbms),'mysql') ? 3306 : 1433;    
     if (strstr($host,":")) {
         list($host,$port) = explode(":",$host);
     }
