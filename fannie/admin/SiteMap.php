@@ -57,7 +57,11 @@ class SiteMap extends FannieRESTfulPage
                 continue;
             }
             $reflect = new ReflectionClass($obj);
-            $url = $FANNIE_URL . str_replace($FANNIE_ROOT, '', $reflect->getFileName());
+            $file = $reflect->getFileName();
+            if (DIRECTORY_SEPARATOR == '\\') {
+                $file = str_replace(DIRECTORY_SEPARATOR, '/', $file);
+            }
+            $url = $FANNIE_URL . str_replace($FANNIE_ROOT, '', $file);
             if (!isset($sets[$obj->page_set])) {
                 $sets[$obj->page_set] = array();
             }
