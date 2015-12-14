@@ -253,7 +253,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             while (File.Exists(my_location + sep + "ss-output/"  + sep + ticks)) {
                 ticks++;
             }
-            string filename = my_location + sep + "ss-output"+ sep + "tmp" + ticks + ".bmp";
+            string filename = my_location + sep + "ss-output"+ sep + "tmp" + sep + ticks + ".bmp";
             BitmapBPP.Signature sig = new BitmapBPP.Signature(filename, points);
             parent.MsgSend("TERMBMP" + ticks + ".bmp");
             
