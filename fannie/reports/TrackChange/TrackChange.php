@@ -65,6 +65,7 @@ class TrackChange extends FannieReportPage
             GROUP BY pu.modified;";
         $result = $dbc->query($query);
         $summary_desc = '';
+        $desc = array();
         while ($row = $dbc->fetch_row($result)) {
             $desc[] = $row['description'];
             $salePrice[] = $row['salePrice'];
