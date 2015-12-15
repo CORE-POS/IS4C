@@ -127,11 +127,11 @@ class DepartmentDiscrepancy extends FanniePage
         }
         $key = array_search($_GET['dept'], $dp_no);
         
-        echo "<a href=\"http://localhost/IS4C/fannie/item/DepartmentDiscrepancy.php?dept=";
+        echo "<a href=\"http://key/git/fannie/item/DepartmentDiscrepancy.php?dept=";
         echo $dp_no[$key - 1];
         echo "\" class=\"btn btn-default\">PREV </a>&nbsp;";
         
-        echo "<a href=\"http://localhost/IS4C/fannie/item/DepartmentDiscrepancy.php?dept=";
+        echo "<a href=\"http://key/git/fannie/item/DepartmentDiscrepancy.php?dept=";
         echo $dp_no[$key + 1];
         echo "\" class=\"btn btn-default\">NEXT </a><br>";
         
