@@ -64,6 +64,7 @@ class TrackChange extends FannieReportPage
             WHERE pu.upc='{$upc}'
             GROUP BY pu.modified;";
         $result = $dbc->query($query);
+        $summary_desc = '';
         while ($row = $dbc->fetch_row($result)) {
             $desc[] = $row['description'];
             $salePrice[] = $row['salePrice'];
@@ -76,8 +77,11 @@ class TrackChange extends FannieReportPage
             $name[] = $row['name'];
             $realName[] = $row['real_name'];
             $uid[] = $row['uid'];
+            if ($summary_desc === '') {
+                $summary_desc = $row['description'];
+            }
         }     
-        echo "Changes made to " . $upc . " <B>" . $desc[max(array_keys($desc))] . "<br>";
+        echo "Changes made to " . $upc . " <B>" . $summary_desc . '</B><br />';
         
         $item = array( array() );
         for ($i=0; $i<count($desc); $i++) {
