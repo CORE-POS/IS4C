@@ -44,10 +44,10 @@ class CashDropParser extends Parser {
         if (substr($str,0,8) == 'DROPDROP'){
             // repeat cashier's input, if any
             if (strlen($str) > 8) {
-                $json['retry'] = substr($str, 8);
+                $ret['retry'] = substr($str, 8);
             }
             // redraw right side of the screen
-            $json['scale'] = true; 
+            $ret['scale'] = true; 
 
             return $ret;
         }
