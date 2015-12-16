@@ -70,6 +70,11 @@ class PaycardEmvPage extends PaycardProcessPage
         } elseif (isset($_REQUEST['xml-resp'])) {
             $xml = $_REQUEST['xml-resp'];
             $this->emvResponseHandler($xml);
+            if (isset($_REQUEST['err-info'])) {
+                $fp = fopen(dirname(__FILE__) . '/../resp.xml', 'a');
+                fwrite($fp, $_REQUEST['err-info'] . "\n\n");
+                fclose($fp);
+            }
             return false;
         } // post?
 
@@ -78,6 +83,8 @@ class PaycardEmvPage extends PaycardProcessPage
 
     function head_content()
     {
+        $url = MiscLib::baseURL();
+        echo '<script type="text/javascript" src="' . $url . '/js/singleSubmit.js"></script>';
         if (!$this->run_transaction) {
             return '';
         }
@@ -107,12 +114,19 @@ function emvSubmit()
             $('body').append(f);
             $('#js-form').submit();
         },
-        error: function(resp) {
+        error: function(xhr, stat, err) {
             // display error to user?
             // go to dedicated error page?
             $('div.baseHeight').html('Finishing transaction');
             var f = $('<form id="js-form"></form>');
-            f.append($('<input type="hidden" name="xml-resp" />').val(resp));
+            if (xhr.responseXml != null) {
+                f.append($('<input type="hidden" name="xml-resp" />').val(xhr.responseXml));
+            } else if (xhr.responseText != null) {
+                f.append($('<input type="hidden" name="xml-resp" />').val(xhr.responseText));
+            } else {
+                f.append($('<input type="hidden" name="xml-resp" />').val(''));
+            }
+            f.append($('<input type="hidden" name="err-info" />').val(JSON.stringify(xhr)+'-'+stat+'-'+err));
             $('body').append(f);
             $('#js-form').submit();
         }
@@ -213,6 +227,7 @@ function emvSubmit()
         ?>
         </div>
         <?php
+        $this->add_onload_command("singleSubmit.restrict('#formlocal');\n");
     }
 }
 
