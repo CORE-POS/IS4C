@@ -49,6 +49,7 @@ class TrackChange extends FannieReportPage
         $dbc->selectDB($this->config->get('OP_DB'));
         $query = "SELECT pu.description,
                 pu.salePrice,
+                pu.price,
                 pu.cost,
                 pu.dept,
                 pu.tax,
@@ -69,6 +70,7 @@ class TrackChange extends FannieReportPage
         while ($row = $dbc->fetch_row($result)) {
             $desc[] = $row['description'];
             $salePrice[] = $row['salePrice'];
+            $price[] = $row['price'];
             $cost[] = $row['cost'];
             $dept[] = $row['pudept'];
             $tax[] = $row['tax'];
@@ -95,7 +97,7 @@ class TrackChange extends FannieReportPage
                 
             ) {
                 $item[$i][0] = $desc[$i];
-                $item[$i][1] = $cost[$i];
+                $item[$i][1] = $price[$i];
                 $item[$i][2] = $salePrice[$i];
                 $item[$i][3] = $cost[$i];
                 $item[$i][4] = $dept[$i];
