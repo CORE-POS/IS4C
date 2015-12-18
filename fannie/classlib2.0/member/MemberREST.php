@@ -853,6 +853,19 @@ class MemberREST
     }
 
     /**
+      Replace non-digit characters with wildcards so that
+      phone number format doesn't matter
+    */
+    private function searchablePhone($phone)
+    {
+        $phone = preg_replace('/[^0-9]/', '%', $phone);
+        $phone = '%' . $phone . '%';
+        $phone = preg_replace('/%+/', '%', $phone);
+
+        return $phone;
+    }
+
+    /**
       Search using newer tables
     */
     private static function searchAccount($dbc, $json, $limit=0, $minimal=false)
@@ -881,6 +894,7 @@ class MemberREST
                 $params[] = $j['accountHolder'];
             }
             if (isset($j['phone'])) {
+                $j['phone'] = self::searchablePhone($j['phone']);
                 $query .= ' AND (c.phone LIKE ? OR c.altPhone LIKE ?) ';
                 $params[] = '%' . $j['phone'] . '%';
                 $params[] = '%' . $j['phone'] . '%';
@@ -938,7 +952,7 @@ class MemberREST
     private static function searchCustdata($dbc, $json, $limit=0, $minimal=false)
     {
         $query = '
-            SELECT c.CardNo,
+            SELECT c.CardNo AS cardNo,
                 c.FirstName,
                 c.LastName
             FROM custdata AS c
@@ -973,6 +987,7 @@ class MemberREST
                 }
             }
             if (isset($j['phone'])) {
+                $j['phone'] = self::searchablePhone($j['phone']);
                 $query .= ' AND (m.phone LIKE ? OR m.email_2 LIKE ?) ';
                 $params[] = '%' . $j['phone'] . '%';
                 $params[] = '%' . $j['phone'] . '%';
@@ -995,25 +1010,91 @@ class MemberREST
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $params);
         $ret = array();
+        $ids = array();
         while ($row = $dbc->fetchRow($res)) {
             // this is not efficient
-            $ret[] = self::searchResult($row, $minimal);
+            if ($minimal) {
+                $ret[] = self::searchResult($row, $minimal);
+            } else {
+                $ids[] = $row['cardNo'];
+            }
+
             if ($limit > 0 && count($ret) >= $limit) {
                 break;
             }
         }
+        if (!$minimal) {
+            $ret = self::fastSearchResults($dbc, $ids);
+        }
 
         return $ret;
+    }
+
+    private static function fastSearchResults($dbc, $ids)
+    {
+        list($inStr, $args) = $dbc->safeInClause($ids);
+        $config = \FannieConfig::factory();
+        if ($config->get('CUST_SCHEMA') == 1 && $dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
+            $accountP = $dbc->prepare('SELECT * FROM CustomerAccounts WHERE cardNo IN (' . $inStr . ')');
+            $nameP = $dbc->prepare('SELECT * FROM Customers WHERE cardNo IN ('. $inStr . ')');
+        } else {
+            $account = new \CustomerAccountsModel($dbc);
+            $accountP = $dbc->prepare(str_replace('?', $inStr, $account->migrateQuery()));
+            $customer = new \CustomersModel($dbc);
+            $nameP = $dbc->prepare(str_replace('?', $inStr, $customer->migrateQuery()));
+        }
+        $ret = array();
+        $res = $dbc->execute($accountP, $args);
+        while ($row = $dbc->fetchRow($res)) {
+            $ret[$row['cardNo']] = array(
+                'cardNo' => $row['cardNo'],
+                'memberStatus' => $row['memberStatus'],
+                'activeStatus' => $row['activeStatus'],
+                'customerTypeID' => $row['customerTypeID'],
+                'chargeBalance' => $row['chargeBalance'],
+                'idCardUPC' => $row['idCardUPC'],
+                'startDate' => $row['startDate'],
+                'endDate' => $row['endDate'],
+                'addressFirstLine' => $row['addressFirstLine'],
+                'city' => $row['city'],
+                'state' => $row['state'],
+                'zip' => $row['zip'],
+                'contactAllowed' => $row['contactAllowed'],
+                'customers' => array(),
+            );
+        }
+        $res = $dbc->execute($nameP, $args);
+        while ($row = $dbc->fetchRow($res)) {
+            $ret[$row['cardNo']]['customers'][] = array(
+                'accountHolder' => $row['accountHolder'],
+                'firstName' => $row['firstName'],
+                'lastName' => $row['lastName'],
+                'chargeAllowed' => $row['chargeAllowed'],
+                'checksAllowed' => $row['checksAllowed'],
+                'discount' => $row['discount'],
+                'staff' => $row['staff'],
+                'phone' => $row['phone'],
+                'altPhone' => $row['altPhone'],
+                'email' => $row['email'],
+                'lowIncomeBenefits' => $row['lowIncomeBenefits'],
+            );
+        }
+        $dekey = array();
+        foreach ($ret as $card_no => $json) {
+            $dekey[] = $json;
+        }
+
+        return $dekey;
     }
     
     private static function searchResult($row, $minimal)
     {
         if ($minimal) {
             return array(
-                'cardNo' => $row['CardNo'],
+                'cardNo' => $row['cardNo'],
                 'customers' => array(
                     array(
-                        'cardNo' => $row['CardNo'],
+                        'cardNo' => $row['cardNo'],
                         'firstName' => $row['FirstName'],
                         'lastName' => $row['LastName'],
                     ),
@@ -1050,7 +1131,7 @@ class MemberREST
         $config = \FannieConfig::factory();
         $dbc = \FannieDB::getReadOnly($config->get('OP_DB'));
         if ($config->get('CUST_SCHEMA') == 1 && $dbc->tableExists('CustomerAccounts') && $dbc->tableExists('Customers')) {
-            $query = 'SELECT ' . $func . '(cardNo) FROM customerAccounts WHERE cardNo ' . $op . ' ?';
+            $query = 'SELECT ' . $func . '(cardNo) FROM CustomerAccounts WHERE cardNo ' . $op . ' ?';
         } else {
             $query = 'SELECT ' . $func . '(CardNo) FROM custdata WHERE CardNo ' . $op . ' ?';
         }

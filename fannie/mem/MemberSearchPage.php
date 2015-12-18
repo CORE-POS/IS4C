@@ -185,17 +185,44 @@ class MemberSearchPage extends FanniePage {
         if (empty($this->results)) {
             $ret .= "<div class=\"alert alert-danger\">Error: No matching member found</div>";
         } else {
-            $ret .= '<div class="well"><h3>Multiple Results</h3>';
             $list = '';
             foreach ($this->results as $cn => $name) {
                 if (strlen($list) > 1900) break; // avoid excessively long URLs
                 $list .= '&l[]='.$cn;
             }
-            $ret .= "<ul>";
-            foreach ($this->results as $cn => $name) {
-                $ret .= "<li><a href=\"MemberEditor.php?memNum=$cn$list\">$cn $name</a></li>";
+            $ret .= '<div class="panel panel-default">
+                <div class="panel-heading">Multiple Results</div>
+                <div class="panel-body">';
+            $ret .= '<table class="tablesorter"><thead>';
+            $ret .= '<tr><th>Mem#</th><th>Last Name</th><th>First Name</th>
+                <th>Address</th><th>City</th><th>State</th><th>Zip</th></tr>
+                </thead><tbody>';
+            foreach ($this->results as $account) {
+                foreach ($account['customers'] as $name) {
+                    $ret .= sprintf('<tr>
+                            <td><a href="MemberEditor.php?memNum=%s%s">%d</a></td>
+                            <td>%s</td>
+                            <td>%s</td>
+                            <td>%s</td>
+                            <td>%s</td>
+                            <td>%s</td>
+                            <td>%s</td>
+                            </tr>',
+                            $account['cardNo'], $list, $account['cardNo'],
+                            $name['lastName'],
+                            $name['firstName'],
+                            $account['addressFirstLine'],
+                            $account['city'],
+                            $account['state'],
+                            $account['zip']
+                        );
+                }
             }
-            $ret .= "</ul></div>";
+            $ret .= "</tbody></table>";
+            $ret .= "</div></div>";
+            $this->add_css_file('../src/javascript/tablesorter/themes/blue/style.css');
+            $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.js');
+            $this->add_onload_command('$(\'.tablesorter\').tablesorter();');
         }
 
         return $ret;
@@ -210,7 +237,5 @@ class MemberSearchPage extends FanniePage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
-
-?>
+FannieDispatch::conditionalExec();
 
