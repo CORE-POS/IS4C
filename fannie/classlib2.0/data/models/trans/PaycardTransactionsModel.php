@@ -31,7 +31,7 @@ class PaycardTransactionsModel extends BasicModel
     protected $preferred_db = 'trans';
 
     protected $columns = array(
-    'paycardTransactionID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
+    'paycardTransactionID' => array('type'=>'INT', 'index'=>true),
     'dateID' => array('type'=>'INT', 'index'=>true),
     'empNo' => array('type'=>'INT'),
     'registerNo' => array('type'=>'INT', 'index'=>true),
