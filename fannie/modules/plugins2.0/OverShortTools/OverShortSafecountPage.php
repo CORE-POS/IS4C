@@ -115,6 +115,9 @@ class OverShortSafecountPage extends FanniePage {
             $startDate = $temp[0];
             $endDate = $temp[1];
         }
+        if (trim($startDate) === '' || trim($endDate) === '') {
+            return "Invalid Dates";
+        }
 
         $holding = array('changeOrder'=>array(),
                 'openSafeCount'=>array(),
