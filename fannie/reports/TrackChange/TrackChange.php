@@ -72,7 +72,7 @@ class TrackChange extends FannieReportPage
             $salePrice[] = $row['salePrice'];
             $price[] = $row['price'];
             $cost[] = $row['cost'];
-            $dept[] = $row['pudept'];
+            $dept[] = $row['dept'];
             $tax[] = $row['tax'];
             $fs[] = $row['fs'];
             $scale[] = $row['scale'];
@@ -94,6 +94,7 @@ class TrackChange extends FannieReportPage
                 || $tax[$i] != $tax[$i-1]
                 || $fs[$i] != $fs[$i-1]
                 || $scale[$i] != $scale[$i-1]
+                || $desc[$i] != $desc[$i-1]
                 
             ) {
                 $item[$i][0] = $desc[$i];
