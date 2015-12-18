@@ -856,7 +856,7 @@ class MemberREST
       Replace non-digit characters with wildcards so that
       phone number format doesn't matter
     */
-    private function searchablePhone($phone)
+    private static function searchablePhone($phone)
     {
         $phone = preg_replace('/[^0-9]/', '%', $phone);
         $phone = '%' . $phone . '%';
