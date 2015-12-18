@@ -118,6 +118,7 @@ class DepartmentMovementReport extends FannieReportPage
         switch($groupby) {
             case 'PLU':
                 $query = "SELECT t.upc,
+                      p.brand,
                       CASE WHEN p.description IS NULL THEN t.description ELSE p.description END as description, 
                       SUM(CASE WHEN trans_status IN('','0','R') THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings,"
                       . DTrans::sumQuantity('t')." as qty,
@@ -244,8 +245,8 @@ class DepartmentMovementReport extends FannieReportPage
           how the data is grouped
         */
         switch(count($data[0])) {
-            case 9:
-                $this->report_headers = array('UPC','Description','Rings','Qty','$',
+            case 10:
+                $this->report_headers = array('UPC','Brand','Description','Rings','Qty','$',
                     'Dept#','Department','Subdept','Vendor');
                 $this->sort_column = 4;
                 $this->sort_direction = 1;
