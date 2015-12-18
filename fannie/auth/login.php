@@ -296,25 +296,6 @@ function checkLogin(){
   return $name;
 }
 
-function showUsers(){
-  if (!validateUser('admin')){
-    return false;
-  }
-  echo "Displaying current users";
-  echo "<table class=\"table\">";
-  echo "<tr><th>Name</th><th>User ID</th></tr>";
-  $sql = dbconnect();
-  $usersQ = $sql->prepare_statement("select name,uid from Users order by name");
-  $usersR = $sql->exec_statement($usersQ);
-  while ($row = $sql->fetch_array($usersR)){
-    echo "<tr>";
-    echo "<td>$row[0]</td>";
-    echo "<td>$row[1]</td>";
-    echo "</tr>";
-  }
-  echo "</table>";
-}
-
 function getUserList()
 {
     $sql = dbconnect();

@@ -142,33 +142,26 @@ function deleteAuth($name,$auth_class){
 
 function showAuths($name){
   if (!isAlphanumeric($name)){
-    echo "Invalid name<p />";
-    return false;
+    return array();
   }
   
   if (!validateUser('admin')){
-    return false;
+    return array();
   }
 
   $uid = getUID($name);
   if (!$uid){
-    echo "No such user '$name'<p />";
-    return false;
+    return array();
   }
-  echo "Showing authorizations for $name";
-  echo "<table class=\"table\">";
-  echo "<th>Authorization class</th><th>Subclass start</th><th>Subclass end</th>";
-  echo "</tr>";
   $sql = dbconnect();
   $fetchQ = $sql->prepare_statement("select auth_class,sub_start,sub_end from userPrivs where uid=?");
   $fetchR = $sql->exec_statement($fetchQ,array($uid));
+  $ret = array();
   while ($row = $sql->fetch_array($fetchR)){
-    echo "<tr>";
-    echo "<td>$row[0]</td><td>$row[1]</td><td>$row[2]</td>";
-    echo "</tr>";
+    $ret[] = array($row[0], $row[1], $row[2]);
   }
-  echo "</table>";
-  return true;
+
+  return $ret;
 }
 
 function showClasses(){
