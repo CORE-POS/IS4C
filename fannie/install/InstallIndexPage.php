@@ -228,7 +228,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             return ob_get_clean();
         }
 
-        $this->checkComposer();
+        $this->checkComposer($FANNIE_ROOT);
 
         /**
             Detect databases that are supported
@@ -698,6 +698,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'VendorSKUtoPLUModel',
         'VendorBreakdownsModel',
         'VendorDepartmentsModel',
+        'UpdateAccountLogModel',
+        'UpdateCustomerLogModel',
         'UsersModel',
         'UserPrivsModel',
         'UserKnownPrivsModel',

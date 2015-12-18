@@ -220,11 +220,18 @@ class CustomersModel extends BasicModel
             $lane_push = true;
         }
 
-        if ($this->record_changed && !$lane_push) {
+        $changed = $this->record_changed;
+        if ($changed && !$lane_push) {
             $this->modified(date('Y-m-d H:i:s'));
         }
+        $saved = parent::save();
 
-        return parent::save();
+        if ($saved && $changed && !$lane_push) {
+            $log = new UpdateCustomerLogModel($this->connection);
+            $log->log($this);
+        }
+
+        return $saved;
     }
 }
 
