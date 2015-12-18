@@ -38,29 +38,6 @@ class SaItemList extends SaHandheldPage
         $dbc = $this->connection;
         $settings = $this->config->get('PLUGIN_SETTINGS');
 
-        if (FormLib::get('action') === 'save') {
-            $upc = FormLib::get('upc');
-            $qty = FormLib::get('qty');
-            $dbc->selectDB($settings['ShelfAuditDB']);
-            $model = new SaListModel($dbc);
-            $model->upc(BarcodeLib::padUPC($upc));
-            $model->clear(0);
-            $entries = $model->find('date', true);
-            if (count($entries) > 0) {
-                $entries[0]->tdate(date('Y-m-d H:i:s'));
-                $entries[0]->quantity($qty);
-                $entries[0]->save();
-            } else {
-                $model->tdate(date('Y-m-d H:i:s'));
-                $model->quantity($qty);
-                $model->save();
-            }
-
-            echo $qty;
-            echo 'quantity updated';
-            return false;
-        }
-
         if (FormLib::get('clear') === '1') {
             $table = $settings['ShelfAuditDB'] . $dbc->sep() . 'SaList';
             $res = $dbc->query('
@@ -87,6 +64,20 @@ class SaItemList extends SaHandheldPage
             if ($row) {
                 $this->current_item_data['desc'] = $row['brand'] . ' ' . $row['description'] . ' ' . $row['size'];
                 $this->current_item_data['qty'] = $row['qty'];
+                $dbc->selectDB($settings['ShelfAuditDB']);
+                $model = new SaListModel($dbc);
+                $model->upc($upc);
+                $model->clear(0);
+                $entries = $model->find('date', true);
+                if (count($entries) > 0) {
+                    $entries[0]->tdate(date('Y-m-d H:i:s'));
+                    $entries[0]->quantity(1);
+                    $entries[0]->save();
+                } else {
+                    $model->tdate(date('Y-m-d H:i:s'));
+                    $model->quantity(1);
+                    $model->save();
+                }
             }
         }
         return true;
@@ -100,18 +91,11 @@ class SaItemList extends SaHandheldPage
         $this->addOnloadCommand("enableLinea('#upc_in');\n");
         ob_start();
         $this->upcForm($elem);
-        $this->addOnloadCommand("\$('form:first div.form-inline').append('<a class=\"btn btn-default\" href=\"?list=1\">View List</a>');");
         if (isset($this->current_item_data['upc']) && !isset($this->current_item_data['desc'])) {
             echo '<div class="alert alert-danger">Item not found (' 
                 . $this->current_item_data['upc'] . ')</div>'; 
-        } elseif (isset($this->current_item_data['upc'])) {
-            $this->qtyForm($elem);
-            // prevent additive behavior. new qty here overwrites previous
-            $this->addOnloadCommand("\$('#old-qty').html(0);\n");
-            echo '</div>';
-        } elseif (FormLib::get('list') !== '') {
-            echo $this->getList();
-        }
+        } 
+        echo $this->getList();
 
         return ob_get_clean();
     }
@@ -119,6 +103,7 @@ class SaItemList extends SaHandheldPage
     private function getList()
     {
         $settings = $this->config->get('PLUGIN_SETTINGS');
+        $this->connection->selectDB($this->config->get('OP_DB'));
         $prep = $this->connection->prepare('
             SELECT s.upc,
                 p.brand,
@@ -158,11 +143,11 @@ class SaItemList extends SaHandheldPage
                 <td>%s</td>
                 <td>%d</td>
                 </tr>',
+                $row['brand'],
+                $row['description'],
                 $row['upc'],
                 $row['sku'],
                 $row['vendorName'],
-                $row['brand'],
-                $row['description'],
                 $row['size'],
                 $row['qty']
             ); 
