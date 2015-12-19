@@ -106,7 +106,7 @@ class DatabarCoupon extends SpecialUPC
         // second required item
         $second_req = array();
         $req_rules_code = 1;
-        $duplicate_prefix_flag = false;
+        $dupe_prefix_flag = false;
         if (isset($upc[$pos]) && $upc[$pos] == "1") {
             $pos += 1;
 
@@ -128,7 +128,7 @@ class DatabarCoupon extends SpecialUPC
             $pos += 1;
             if ($sm_length == 15) { // 9+6
                 $second_req['man_id'] = $first_req['man_id'];
-                $duplicate_prefix_flag = true;
+                $dupe_prefix_flag = true;
             } else {
                 $second_req['man_id'] = substr($upc,$pos,$sm_length);
                 $pos += $sm_length;
@@ -159,7 +159,7 @@ class DatabarCoupon extends SpecialUPC
             $pos += 1;
             if ($tm_length == 15) { // 9+6
                 $third_req['man_id'] = $first_req['man_id'];
-                $duplicate_prefix_flag = true;
+                $dupe_prefix_flag = true;
             } else {
                 $third_req['man_id'] = substr($upc,$pos,$tm_length);
                 $pos += $tm_length;
@@ -170,7 +170,7 @@ class DatabarCoupon extends SpecialUPC
             }
         }
 
-        if ($duplicate_prefix_flag) {
+        if ($dupe_prefix_flag) {
             $first_req['man_id'] .= $first_req['family'];
             $second_req['man_id'] .= $second_req['family'];
             $third_req['man_id'] .= $third_req['family'];
@@ -182,13 +182,13 @@ class DatabarCoupon extends SpecialUPC
             $expires = substr($upc,$pos,6);
             $pos += 6;
 
-            $y = "20".substr($expires,0,2);
-            $m = substr($expires,2,2);
-            $d = substr($expires,4,2);
+            $year = "20".substr($expires,0,2);
+            $month = substr($expires,2,2);
+            $day = substr($expires,4,2);
 
-            $tstamp = mktime(23,59,59,$m,$d,$y);
+            $tstamp = mktime(23,59,59,$month,$day,$year);
             if ($tstamp < time()) {
-                $json['output'] = DisplayLib::boxMsg("Coupon expired $m/$d/$y");
+                $json['output'] = DisplayLib::boxMsg("Coupon expired " . date('m/d/Y', $tstamp));
                 return $json;
             }
         }
@@ -395,27 +395,13 @@ class DatabarCoupon extends SpecialUPC
     */
     private function validateRequirement(&$req, &$json)
     {
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
 
         /* simple case first; just wants total transaction value 
            no company prefixing
         */
         if ($req['code'] == 2) {
-            $q = "SELECT SUM(total) FROM localtemptrans WHERE
-                trans_type IN ('I','D','M')";
-            $r = $db->query($q);
-            $ttl_required = MiscLib::truncate2($req['value'] / 100.00);
-            if ($db->num_rows($r) == 0) {
-                $json['output'] = DisplayLib::boxMsg("Coupon requires transaction of at least \$$ttl_required");
-                return false;
-            }
-
-            $w = $dbc->fetch_row($r);
-            if ($w[0] < $ttl_required) {
-                $json['output'] = DisplayLib::boxMsg("Coupon requires transaction of at least \$$ttl_required");
-                return false;
-            }
-            return true;
+            return $this->validateTransactionTotal($req, $json);
         }
 
         $query = sprintf("SELECT
@@ -427,42 +413,22 @@ class DatabarCoupon extends SpecialUPC
             FROM localtemptrans WHERE
             substring(upc,2,%d) = '%s'",
             strlen($req['man_id']),$req['man_id']);
-        $result = $db->query($query);
+        $result = $dbc->query($query);
 
-        if ($db->num_rows($result) <= 0) {
+        if ($dbc->num_rows($result) <= 0) {
             $json['output'] = DisplayLib::boxMsg("Coupon requirements not met");
             return false;
         }
-        $row = $db->fetch_row($result);
+        $row = $dbc->fetch_row($result);
         $req['price'] = $row['price'];
 
         switch($req['code']) {
             case '0': // various qtty requirements
             case '3':
             case '4':
-                $available_qty = $row['qty'] - ($row['couponqtty'] * $req['value']);
-                if ($available_qty < $req['value']) {
-                    // Coupon requirement not met
-                    if ($row['couponqtty'] > 0) {
-                        $json['output'] = DisplayLib::boxMsg("Coupon already applied");
-                    } else {
-                        $json['output'] = DisplayLib::boxMsg("Coupon requires ".$req['value']." items");
-                    }
-                    return false;
-                }
-                break;
+                return $this->validateQty($row['qty'], $req, $json);
             case '1':
-                $available_ttl = $row['total'] - ($row['couponqtty'] * $req['value']);
-                if ($available_ttl < $req['value']) {
-                    // Coupon requirement not met
-                    if ($row['couponqtty'] > 0) {
-                        $json['output'] = DisplayLib::boxMsg("Coupon already applied");
-                    } else {
-                        $json['output'] = DisplayLib::boxMsg("Coupon requires ".$req['value']." items");
-                    }
-                    return false;
-                }
-                break;
+                return $this->validateQty($row['total'], $req, $json);
             case '9':
                 $json['output'] = DisplayLib::boxMsg("Tender coupon manually");
                 return false;
@@ -472,6 +438,42 @@ class DatabarCoupon extends SpecialUPC
         }
 
         return true; // requirement validated
+    }
+
+    private function validateTransactionTotal(&$req, &$json)
+    {
+        $dbc = Database::tDataConnect();
+        $chkQ = "SELECT SUM(total) FROM localtemptrans WHERE
+            trans_type IN ('I','D','M')";
+        $chkR = $dbc->query($chkQ);
+        $ttl_required = MiscLib::truncate2($req['value'] / 100.00);
+        if ($dbc->num_rows($chkR) == 0) {
+            $json['output'] = DisplayLib::boxMsg("Coupon requires transaction of at least \$$ttl_required");
+            return false;
+        }
+
+        $chkW = $dbc->fetch_row($chkR);
+        if ($chkW[0] < $ttl_required) {
+            $json['output'] = DisplayLib::boxMsg("Coupon requires transaction of at least \$$ttl_required");
+            return false;
+        }
+        return true;
+    }
+
+    private function validateQty($qty, &$req, &$json)
+    {
+        $available_qty = $qty - ($row['couponqtty'] * $req['value']);
+        if ($available_qty < $req['value']) {
+            // Coupon requirement not met
+            if ($row['couponqtty'] > 0) {
+                $json['output'] = DisplayLib::boxMsg("Coupon already applied");
+            } else {
+                $json['output'] = DisplayLib::boxMsg("Coupon requires ".$req['value']." items");
+            }
+            return false;
+        }
+
+        return true;
     }
 
 }

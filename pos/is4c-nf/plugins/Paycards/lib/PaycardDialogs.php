@@ -27,36 +27,36 @@ class PaycardDialogs
     {
         if (CoreLocal::get('CCintegrate') != 1) {
             PaycardLib::paycard_reset();
-            return PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,
+            throw new Exception(PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,
                                              "Card Integration Disabled",
                                              "Please process credit cards in standalone",
                                              "[clear] to cancel"
-            );
+            ));
         } else {
             return true;
         }
     }
 
-    public static function validateCard($pan, $expirable=true)
+    public static function validateCard($pan, $expirable=true, $luhn=true)
     {
-        if (PaycardLib::paycard_validNumber($pan) != 1) {
+        if ($luhn && PaycardLib::paycard_validNumber($pan) != 1) {
             PaycardLib::paycard_reset();
-            return PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
+            throw new Exception(PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
                 "Invalid Card Number",
                 "Swipe again or type in manually",
-                "[clear] to cancel");
+                "[clear] to cancel"));
         } elseif (!PaycardLib::paycard_accepted($pan)) {
             PaycardLib::paycard_reset();
-            return PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
+            throw new Exception(PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
                 "Unsupported Card Type",
                 "We cannot process " . CoreLocal::get("paycard_issuer") . " cards",
-                "[clear] to cancel");
+                "[clear] to cancel"));
         } elseif ($expirable && PaycardLib::paycard_validExpiration(CoreLocal::get("paycard_exp")) != 1) {
             PaycardLib::paycard_reset();
-            return PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
+            throw new Exception(PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
                 "Invalid Expiration Date",
                 "The expiration date has passed or was not recognized",
-                "[clear] to cancel");
+                "[clear] to cancel"));
         }
 
         return true;
@@ -81,21 +81,21 @@ class PaycardDialogs
         $num = PaycardLib::paycard_db_num_rows($search);
         if ($num < 1) {
             PaycardLib::paycard_reset();
-            return array(false, PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
+            throw new Exception(PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
                                                          "Card Not Used",
                                                          "That card number was not used in this transaction",
                                                          "[clear] to cancel"
             ));
         } else if ($num > 1) {
             PaycardLib::paycard_reset();
-            return array(false, PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
+            throw new Exception(PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_CREDIT,
                                                          "Multiple Uses",
                                                          "That card number was used more than once in this transaction; select the payment and press VOID",
                                                          "[clear] to cancel"
             ));
         }
         $payment = PaycardLib::paycard_db_fetch_row($search);
-        return array(true, $payment['transID']);
+        return $payment['transID'];
     }
 
     public static function invalidMode()
@@ -123,7 +123,7 @@ class PaycardDialogs
                     AND registerNo=" . $trans[1] . "
                     AND transNo=" . $trans[2] . " 
                     AND transID=" . $id;
-        // @deprecated table 5May14
+        // @deprecated table 6May14
         if (!$dbTrans->table_exists('PaycardTransactions')) {
             $sql = "SELECT live,PAN,mode,amount,name FROM efsnetRequest 
                 WHERE ".$dbTrans->identifier_escape('date')."='".$today."' AND cashierNo=".$trans[0]." AND 
@@ -133,14 +133,14 @@ class PaycardDialogs
         $num = PaycardLib::paycard_db_num_rows($search);
         if ($num < 1) {
             PaycardLib::paycard_reset();
-            return array(false, PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
+            throw new Exception(PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
                                                          "Internal Error",
                                                          "Card request not found, unable to void",
                                                          "[clear] to cancel"
             ));
-        } else if ($num > 1) {
+        } elseif ($num > 1) {
             PaycardLib::paycard_reset();
-            return array(false, PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
+            throw new Exception(PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
                                                           "Internal Error",
                                                           "Card request not distinct, unable to void",
                                                           "[clear] to cancel"
@@ -148,7 +148,7 @@ class PaycardDialogs
         }
         $request = PaycardLib::paycard_db_fetch_row($search);
 
-        return array(true, $request);
+        return $request;
     }
 
     public static function getResponse($trans, $id)
@@ -177,21 +177,21 @@ class PaycardDialogs
 
         if ($num < 1) {
             PaycardLib::paycard_reset();
-            return array(false, PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
+            throw new Exception(PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
                                                          "Internal Error",
                                                          "Card response not found, unable to void",
                                                          "[clear] to cancel"
             ));
         } elseif ($num > 1) {
             PaycardLib::paycard_reset();
-            return array(false, PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
+            throw new Exception(PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
                                                          "Internal Error",
                                                          "Card response not distinct, unable to void",
                                                          "[clear] to cancel"
             ));
         }
         $response = PaycardLib::paycard_db_fetch_row($search);
-        return array(true, $response);
+        return $response;
     }
 
     public static function getTenderLine($trans, $id)
@@ -215,7 +215,7 @@ class PaycardDialogs
             $num = PaycardLib::paycard_db_num_rows($search);
             if ($num != 1) {
                 PaycardLib::paycard_reset();
-                return array(false, PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
+                throw new Exception(PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
                                                              "Internal Error",
                                                              "Transaction item not found, unable to void",
                                                              "[clear] to cancel"
@@ -223,14 +223,14 @@ class PaycardDialogs
             }
         } elseif ($num > 1) {
             PaycardLib::paycard_reset();
-            return array(false, PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
+            throw new Exception(PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
                                                          "Internal Error",
                                                          "Transaction item not distinct, unable to void",
                                                          "[clear] to cancel"
             ));
         }
         $lineitem = PaycardLib::paycard_db_fetch_row($search);
-        return array(true, $lineitem);
+        return $lineitem;
     }
 
     public static function notVoided($trans, $id)
@@ -258,11 +258,11 @@ class PaycardDialogs
         $voided = PaycardLib::paycard_db_num_rows($search);
         if ($voided > 0) {
             PaycardLib::paycard_reset();
-            return PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
+            throw new Exception(PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
                                                          "Unable to Void",
                                                          "Card transaction already voided",
                                                          "[clear] to cancel"
-            );
+            ));
         } else {
             return true;
         }
@@ -310,8 +310,8 @@ class PaycardDialogs
         }
 
         if ($error !== false) {
-            return PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
-                              $err_header, $error, $buttons);
+            throw new Exception(PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT,
+                              $err_header, $error, $buttons));
         } else {
             return true;
         }

@@ -180,8 +180,12 @@ class SubDeptEditor extends FanniePage
             <p>This field is not supported much in the current release
             although local customizations or plugins may differ.</p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

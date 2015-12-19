@@ -42,8 +42,12 @@ class SpecialOrderTags extends FannieRESTfulPage
         $dbc->selectDB($this->config->get('OP_DB'));
         $TRANS = $this->config->get('TRANS_DB').$dbc->sep();
 
-        define('FPDF_FONTPATH','font/');
-        include(dirname(__FILE__) . '/../src/fpdf/fpdf.php');
+        if (!defined('FPDF_PATH')) {
+            define('FPDF_FONTPATH','font/');
+        }
+        if (!class_exists('FPDF')) {
+            include(dirname(__FILE__) . '/../src/fpdf/fpdf.php');
+        }
 
         $pdf=new FPDF('P','mm','Letter'); //start new instance of PDF
         $pdf->Open(); //open new PDF Document
@@ -68,7 +72,7 @@ class SpecialOrderTags extends FannieRESTfulPage
         $idP = $dbc->prepare_statement("SELECT trans_id FROM {$TRANS}PendingSpecialOrder WHERE
             trans_id > 0 AND order_id=? ORDER BY trans_id");
         $signage = new \COREPOS\Fannie\API\item\FannieSignage(array());
-        foreach($this->toIDs as $toid){
+        foreach ($this->toIDs as $toid){
             if ($count % 4 == 0){ 
                 $pdf->AddPage();
                 $pdf->SetDrawColor(0,0,0);
@@ -84,18 +88,17 @@ class SpecialOrderTags extends FannieRESTfulPage
             $tid = $tmp[0];
             $oid = $tmp[1];
 
-            $r = $dbc->exec_statement($infoP, array($tid, $oid));
-            $w = $dbc->fetch_row($r);
+            $row = $dbc->getRow($infoP, array($tid, $oid));
 
             // flag item as "printed"
-            $r2 = $dbc->exec_statement($flagP, array($tid, $oid));
+            $res2 = $dbc->exec_statement($flagP, array($tid, $oid));
 
-            $r3 = $dbc->exec_statement($idP, array($oid));
+            $res3 = $dbc->exec_statement($idP, array($oid));
             $o_count = 0;
             $rel_id = 1;
-            while($w3 = $dbc->fetch_row($r3)){
+            while ($row3 = $dbc->fetch_row($res3)){
                 $o_count++;
-                if ($w3['trans_id'] == $tid)
+                if ($row3['trans_id'] == $tid)
                     $rel_id = $o_count;
             }
 
@@ -103,45 +106,44 @@ class SpecialOrderTags extends FannieRESTfulPage
             $pdf->Text($x+85,$y,"$rel_id / $o_count");
 
             $pdf->SetFont('Arial','B','24');
-            $pdf->Cell(100,10,$w['name'],0,1,'C');
+            $pdf->Cell(100,10,$row['name'],0,1,'C');
             $pdf->SetFont('Arial','','12');
             $pdf->SetX($x);
-            $pdf->Cell(100,8,$w['fname'],0,1,'C');
+            $pdf->Cell(100,8,$row['fname'],0,1,'C');
             $pdf->SetX($x);
-            if ($w['card_no'] != 0){
-                $pdf->Cell(100,8,"Owner #".$w['card_no'],0,1,'C');
+            if ($row['card_no'] != 0){
+                $pdf->Cell(100,8,"Owner #".$row['card_no'],0,1,'C');
                 $pdf->SetX($x);
             }
 
             $pdf->SetFont('Arial','','16');
-            $pdf->Cell(100,9,$w['description'],0,1,'C');
+            $pdf->Cell(100,9,$row['description'],0,1,'C');
             $pdf->SetX($x);
-            $pdf->Cell(100,9,"Cases: ".$w['ItemQtty'].' - '.$w['quantity'],0,1,'C');
+            $pdf->Cell(100,9,"Cases: ".$row['ItemQtty'].' - '.$row['quantity'],0,1,'C');
             $pdf->SetX($x);
             $pdf->SetFont('Arial','B','16');
-            $pdf->Cell(100,9,sprintf("Total: \$%.2f",$w['total']),0,1,'C');
+            $pdf->Cell(100,9,sprintf("Total: \$%.2f",$row['total']),0,1,'C');
             $pdf->SetFont('Arial','','12');
             $pdf->SetX($x);
-            if ($w['discounttype'] == 1 || $w['discounttype'] == 2){
+            if ($row['discounttype'] == 1 || $row['discounttype'] == 2){
                 $pdf->Cell(100,9,'Sale Price',0,1,'C');
                 $pdf->SetX($x);
 
-            }
-            elseif ($w['regPrice']-$w['total'] > 0){
-                $percent = round(100 * (($w['regPrice']-$w['total'])/$w['regPrice']));
+            } elseif ($row['regPrice']-$row['total'] > 0){
+                $percent = round(100 * (($row['regPrice']-$row['total'])/$row['regPrice']));
                 $pdf->Cell(100,9,sprintf("Owner Savings: \$%.2f (%d%%)",
-                        $w['regPrice'] - $w['total'],$percent),0,1,'C');
+                        $row['regPrice'] - $row['total'],$percent),0,1,'C');
                 $pdf->SetX($x);
             }
             $pdf->Cell(100,6,"Tag Date: ".$date,0,1,'C');
             $pdf->SetX($x);
-            $pdf->Cell(50,6,"Dept #".$w['department'],0,0,'R');
+            $pdf->Cell(50,6,"Dept #".$row['department'],0,0,'R');
             $pdf->SetFont('Arial','B','12');
             $pdf->SetX($x+50);
-            $pdf->Cell(50,6,$w['vendorName'],0,1,'L');
+            $pdf->Cell(50,6,$row['vendorName'],0,1,'L');
             $pdf->SetFont('Arial','','12');
             $pdf->SetX($x);
-            $pdf->Cell(100,6,"Ph: ".$w['phone'],0,1,'C');
+            $pdf->Cell(100,6,"Ph: ".$row['phone'],0,1,'C');
             $pdf->SetXY($x,$y+85);
             $pdf->Cell(160,10,"Notes: _________________________________");  
             $pdf->SetX($x);
@@ -158,15 +160,9 @@ class SpecialOrderTags extends FannieRESTfulPage
         return false;
     }
 
-    public function get_view()
+    public function javascript_content()
     {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
-        $TRANS = $this->config->get('TRANS_DB').$dbc->sep();
-        $oids = FormLib::get('oids', array());
-        if (!is_array($oids) || count($oids) == 0) {
-            return '<div class="alert alert-danger">No order(s) selected</div>';
-        }
+        ob_start();
         ?>
         <script type="text/javascript">
         function toggleChecked(status){
@@ -176,19 +172,41 @@ class SpecialOrderTags extends FannieRESTfulPage
         }
         </script>
         <?php
-        echo '<form method="get">';
-        echo '<input type="checkbox" id="sa" onclick="toggleChecked(this.checked);" />';
-        echo '<label for="sa"><b>Select All</b></label>';
-        echo '<table class="table table-bordered table-striped small">';
+
+        return ob_get_clean();
+    }
+
+    private function getQueuedIDs($oids)
+    {
         $username = FannieAuth::checkLogin();
         $cachepath = sys_get_temp_dir()."/ordercache/";
         if (file_exists("{$cachepath}{$username}.prints")){
             $prints = unserialize(file_get_contents("{$cachepath}{$username}.prints"));
             foreach($prints as $oid=>$data){
-                if (!in_array($oid,$_REQUEST['oids']))
-                    $_REQUEST['oids'][] = $oid;
+                if (!in_array($oid,$oids)) {
+                    $oids[] = $oid;
+                }
             }
         }
+
+        return $oids;
+    }
+
+    public function get_view()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $TRANS = $this->config->get('TRANS_DB').$dbc->sep();
+        $oids = FormLib::get('oids', array());
+        if (!is_array($oids) || count($oids) == 0) {
+            return '<div class="alert alert-danger">No order(s) selected</div>';
+        }
+        ob_start();
+        echo '<form method="get">';
+        echo '<input type="checkbox" id="sa" onclick="toggleChecked(this.checked);" />';
+        echo '<label for="sa"><b>Select All</b></label>';
+        echo '<table class="table table-bordered table-striped small">';
+        $oids = $this->getQueuedIDs($oids);
         $infoP = $dbc->prepare_statement("SELECT min(datetime) as orderDate,sum(total) as value,
             count(*)-1 as items,
             CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name
@@ -198,28 +216,26 @@ class SpecialOrderTags extends FannieRESTfulPage
             WHERE p.order_id=?");
         $itemP = $dbc->prepare_statement("SELECT description,department,quantity,ItemQtty,total,trans_id
             FROM {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id > 0");
-        foreach($_REQUEST['oids'] as $oid){
-            $r = $dbc->exec_statement($infoP, array($oid));
-            $w = $dbc->fetch_row($r);
+        foreach ($oids as $oid) {
+            $row = $dbc->getRow($infoP, array($oid));
             printf('<tr><td colspan="2">Order #%d (%s, %s)</td><td>Amt: $%.2f</td>
                 <td>Items: %d</td><td>&nbsp;</td></tr>',
-                $oid,$w['orderDate'],$w['name'],$w['value'],$w['items']);
+                $oid,$row['orderDate'],$row['name'],$row['value'],$row['items']);
 
-            $r = $dbc->exec_statement($itemP, array($oid));
-            while($w = $dbc->fetch_row($r)){
-                if ($w['department']==0){
+            $res = $dbc->exec_statement($itemP, array($oid));
+            while ($row = $dbc->fetch_row($res)){
+                if ($row['department']==0){
                     echo '<tr><td>&nbsp;</td>';
                     echo '<td colspan="4">';
-                    echo 'No department set for: '.$w['description'];
+                    echo 'No department set for: '.$row['description'];
                     echo '</td></tr>';
-                }
-                else {
+                } else {
                     printf('<tr><td>&nbsp;</td><td>%s (%d)</td><td>%d x %d</td>
                     <td>$%.2f</td>
                     <td><input type="checkbox" class="cbox" name="toIDs[]" value="%d:%d" /></td>
                     </tr>',
-                    $w['description'],$w['department'],$w['ItemQtty'],$w['quantity'],
-                    $w['total'],$w['trans_id'],$oid);
+                    $row['description'],$row['department'],$row['ItemQtty'],$row['quantity'],
+                    $row['total'],$row['trans_id'],$oid);
                 }
             }
         }
@@ -228,6 +244,18 @@ class SpecialOrderTags extends FannieRESTfulPage
         echo '<button type="submit" class="btn btn-default">Print Tags</button>';
         echo '</p>';
         echo '</form>';
+
+        return ob_get_clean();
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertInternalType('array', $this->getQueuedIDs(array()));
+        $this->toIDs = array(1);
+        ob_start();
+        $phpunit->assertEquals(false, $this->get_toIDs_handler());
     }
 }
 

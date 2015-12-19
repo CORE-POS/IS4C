@@ -40,22 +40,17 @@ class VendorDepartmentUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     protected $preview_opts = array(
         'deptID' => array(
-            'name' => 'deptID',
             'display_name' => 'Subcategory Number *',
             'default' => 0,
             'required' => true
         ),
         'name' => array(
-            'name' => 'name',
             'display_name' => 'Subcategory Name',
             'default' => 1,
-            'required' => false
         ),
         'margin' => array(
-            'name' => 'margin',
             'display_name' => 'Margin (%)',
             'default' => 2,
-            'required' => false,
         ),
     );
 

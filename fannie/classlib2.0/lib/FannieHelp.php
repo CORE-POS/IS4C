@@ -69,7 +69,3 @@ class FannieHelp {
 
 }
 
-namespace {
-    class FannieHelp extends \COREPOS\Fannie\API\lib\FannieHelp {}
-}
-

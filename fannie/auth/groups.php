@@ -210,25 +210,6 @@ function deleteAuthFromGroup($group,$auth){
   return true;
 }
 
-/* showGroups()
-   prints a table of all the groups
-*/
-function showGroups(){
-  $sql = dbconnect();
-  
-  $fetchQ = $sql->prepare_statement("select distinct gid, name from userGroups order by name");
-  $fetchR = $sql->exec_statement($fetchQ);
-
-  echo "<table class=\"table\">";
-  echo "<tr><th>Group ID</th><th>Group Name</th></tr>";
-  while ($row=$sql->fetch_array($fetchR)){
-    echo "<tr><td>$row[0]</td><td>$row[1]</td></tr>";
-  }
-  echo "</table>";
-  
-  return true;
-}
-
 function getGroupList(){
     $sql = dbconnect();
     $ret = array();
@@ -250,26 +231,28 @@ function detailGroup($group){
   }
 
   $sql = dbconnect();
+  $ret = array(
+    'gid' => 0,
+    'name' => $group,
+    'users' => array(),
+    'auths' => array(),
+  );
   
   $usersQ = $sql->prepare_statement("select gid,username from userGroups where name=? order by username");
   $usersR = $sql->exec_statement($usersQ,array($group));
   
   $gid = 0;
-  echo "<table class=\"table\">";
-  echo "<tr><th>Users</th></tr>";
   while ($row = $sql->fetch_array($usersR)){
-    $gid = $row[0];
-    echo "<tr><td>$row[1]</td></tr>";
+    $ret['gid'] = $row[0];
+    $ret['users'][] = $row[1];
   }
-  echo "</table>";
 
   $authsQ = $sql->prepare_statement("select auth,sub_start,sub_end from userGroupPrivs where gid=? order by auth");
-  $authsR = $sql->exec_statement($authsQ,array($gid));
-  echo "<table class=\"table\">";
-  echo "<tr><th>Authorization Class</th><th>Subclass start</th><th>Subclass End</th></tr>";
+  $authsR = $sql->exec_statement($authsQ,array($ret['gid']));
   while ($row = $sql->fetch_array($authsR)){
-    echo "<tr><td>$row[0]</td><td>$row[1]</td><td>$row[2]</td></tr>";
+    $ret['auths'][] = array($row[0], $row[1], $row[2]);
   }
-  echo "</table>";
+
+  return $ret;
 }
 

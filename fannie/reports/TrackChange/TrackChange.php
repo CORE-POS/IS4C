@@ -40,6 +40,11 @@ class TrackChange extends FannieReportPage
 
     public function fetch_report_data()
     {        
+        try {
+            $upc = $this->form->upc;
+        } catch (Exception $ex) {
+            return array();
+        }
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $query = "SELECT pu.description,
@@ -57,9 +62,11 @@ class TrackChange extends FannieReportPage
                 pu.upc
             FROM prodUpdate as pu
             LEFT JOIN Users as u on u.uid=pu.user
-            WHERE pu.upc='{$_GET['upc']}'
+            WHERE pu.upc='{$upc}'
             GROUP BY pu.modified;";
         $result = $dbc->query($query);
+        $summary_desc = '';
+        $desc = array();
         while ($row = $dbc->fetch_row($result)) {
             $desc[] = $row['description'];
             $salePrice[] = $row['salePrice'];
@@ -73,8 +80,11 @@ class TrackChange extends FannieReportPage
             $name[] = $row['name'];
             $realName[] = $row['real_name'];
             $uid[] = $row['uid'];
+            if ($summary_desc === '') {
+                $summary_desc = $row['description'];
+            }
         }     
-        echo "Changes made to " . $_GET['upc'] . " <B>" . $desc[max(array_keys($desc))] . "<br>";
+        echo "Changes made to " . $upc . " <B>" . $summary_desc . '</B><br />';
         
         $item = array( array() );
         for ($i=0; $i<count($desc); $i++) {

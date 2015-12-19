@@ -39,7 +39,7 @@ class Kicker
         if (CoreLocal::get('training') == 1) {
             return false;
         }
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
 
         $query = "SELECT trans_id   
                   FROM localtranstoday 
@@ -47,8 +47,8 @@ class Kicker
                     (trans_subtype = 'CA' and total <> 0)
                     AND " . $this->refToWhere($trans_num);
 
-        $result = $db->query($query);
-        $num_rows = $db->num_rows($result);
+        $result = $dbc->query($query);
+        $num_rows = $dbc->num_rows($result);
 
         return ($num_rows > 0) ? true : false;
     }
@@ -86,6 +86,17 @@ class Kicker
         }
 
         return true;
+    }
+
+    protected function sessionOverride()
+    {
+        // use session to override default behavior
+        // based on specific cashier actions rather
+        // than transaction state
+        $override = CoreLocal::get('kickOverride');
+        CoreLocal::set('kickOverride',false);
+
+        return $override ? true : false;
     }
 }
 

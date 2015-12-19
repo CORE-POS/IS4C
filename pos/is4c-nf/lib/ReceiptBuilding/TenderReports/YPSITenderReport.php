@@ -27,31 +27,20 @@
 */
 
 class YPSITenderReport extends TenderReport {
-    static public function get()
-    {
+
+static public function get()
+{
 
     $db_a = Database::mDataConnect();
     $shiftCutoff = date('Y-m-d 00:00:00');
     $excl = " AND emp_no <> 9999 ";
-    // $lookup = $db_a->query("SELECT MAX(datetime) FROM dtransactions 
-    //     WHERE DATE(datetime) = CURDATE() AND upc='ENDOFSHIFT' AND 
-    //     register_no=".CoreLocal::get('laneno'));
-    // if ($db_a->num_rows($lookup) > 0){
-    //     $row = $db_a->fetch_row($lookup);
-    //     if ($row[0] != '') $shiftCutoff = $row[0];
-    // }
-    // TransRecord::add_log_record(array('upc'=>'ENDOFSHIFT'));
 
     $DESIRED_TENDERS = CoreLocal::get("TRDesiredTenders");
 
     $db_a = Database::mDataConnect();
 
-    $blank = "             ";
-    $fieldNames = "  ".substr("Time".$blank, 0, 13)
-            .substr("Lane".$blank, 0, 9)
-            .substr("Trans #".$blank, 0, 12)
-            .substr("Change".$blank, 0, 14)
-            .substr("Amount".$blank, 0, 14)."\n";
+    $blank = self::standardBlank();
+    $fieldNames = self::standardFieldNames();
     $ref = ReceiptLib::centerString(trim(CoreLocal::get("CashierNo"))." ".trim(CoreLocal::get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
     $receipt = "";
 
@@ -127,16 +116,10 @@ class YPSITenderReport extends TenderReport {
         $sum = 0;
 
         for ($i = 0; $i < $num_rows; $i++) {
-            // if (((CoreLocal::get("store") == "harvest-cb") || (CoreLocal::get("store") == "harvest-jp")) && ($tender_code == "PE" || $tender_code == "BU" || $tender_code == "EL" || $tender_code == "PY" || $tender_code == "TV")) $itemize = 1;
-            // else $itemize = 0;
             $row = $db_a->fetch_array($result);
             $timeStamp = self::timeStamp($row["tdate"]);
             if ($itemize == 1) {
-                $receipt .= "  ".substr($timeStamp.$blank, 0, 13)
-                .substr($row["register_no"].$blank, 0, 9)
-                .substr($row["trans_no"].$blank, 0, 8)
-                .substr($blank.number_format("0", 2), -10)
-                .substr($blank.number_format($row["tender"], 2), -14)."\n";
+                $receipt .= self::standardLine($row['tdate'], $row['register_no'], $row['trans_no'], $row['tender']);
             }
             $sum += $row["tender"];
         }
@@ -145,7 +128,6 @@ class YPSITenderReport extends TenderReport {
 
         $receipt .= substr($blank.$blank.$blank."Count: ".$num_rows."  Total: ".number_format($sum,2), -56)."\n";
         $receipt .= str_repeat("\n", 4);
-//        $receipt .= chr(27).chr(105);
     }
 
     return $receipt.chr(27).chr(105);
@@ -229,4 +211,3 @@ function trTotal($k, $label,$i=False)
     return $ret;
 }
 
-?>

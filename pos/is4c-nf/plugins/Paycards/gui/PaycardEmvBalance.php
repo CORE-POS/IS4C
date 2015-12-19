@@ -27,7 +27,6 @@ include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 class PaycardEmvBalance extends PaycardProcessPage 
 {
     private $prompt = false;
-    private $id = false;
     private $run_transaction = false;
 
     function preprocess()
@@ -51,25 +50,7 @@ class PaycardEmvBalance extends PaycardProcessPage
             // if we're still here, we haven't accepted a valid amount yet; display prompt again
         } elseif (isset($_REQUEST['xml-resp'])) {
             $xml = $_REQUEST['xml-resp'];
-            $e2e = new MercuryE2E();
-            $json = array();
-            $plugin_info = new Paycards();
-            $json['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvSuccess.php';
-            $json['receipt'] = false;
-            $success = $e2e->handleResponseDataCapBalance($xml);
-            if ($success === PaycardLib::PAYCARD_ERR_OK) {
-                $json = $e2e->cleanup($json);
-                CoreLocal::set("strEntered","");
-                CoreLocal::set("strRemembered","");
-                CoreLocal::set("msgrepeat",0);
-                if ($json['receipt']) {
-                    $json['main_frame'] .= '?receipt=' . $json['receipt'];
-                }
-            } else {
-                CoreLocal::set("msgrepeat",0);
-                $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
-            }
-            header('Location: ' . $json['main_frame']);
+            $this->emvResponseHandler($xml, true);
             return false;
         }
 

@@ -37,13 +37,14 @@ SPH.dll: DelegateForm.dll USBLayer.dll ParallelLayer.dll SerialPortHandler.cs SP
         SPH_SignAndPay_USB.cs SPH_SignAndPay_Auto.cs SPH_SignAndPay_Native.cs \
 		SPH_Parallel_Writer.cs SPH_IngenicoRBA_Common.cs SPH_IngenicoRBA_IP.cs \
 		SPH_IngenicoRBA_USB.cs SPH_IngenicoRBA_RS232.cs SPH_Datacap_IPTran.cs \
-		Bitmap.dll
+		SPH_Magellan_Classic.cs SPH_Magellan_Locking.cs Bitmap.dll
 	$(CC) -define:MONO -target:library $(BASE_LIBS) \
 		-r:DelegateForm.dll -r:USBLayer.dll -r:ParallelLayer.dll -r:Bitmap.dll \
 		-out:SPH.dll \
 		SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_Parallel_Writer.cs SPH_IngenicoRBA_IP.cs \
         SPH_SignAndPay_USB.cs SPH_SignAndPay_Auto.cs SPH_SignAndPay_Native.cs \
-		SPH_IngenicoRBA_USB.cs SPH_IngenicoRBA_RS232.cs SPH_IngenicoRBA_Common.cs
+		SPH_IngenicoRBA_USB.cs SPH_IngenicoRBA_RS232.cs SPH_IngenicoRBA_Common.cs \
+		SPH_Magellan_Classic.cs SPH_Magellan_Locking.cs
 
 Magellan.dll: DelegateForm.dll SPH.dll UDPMsgBox.dll Discover.dll Magellan.cs
 	$(CC) -target:library $(BASE_LIBS) -r:SPH.dll -r:DelegateForm.dll -r:Discover.dll -r:UDPMsgBox.dll -out:Magellan.dll Magellan.cs

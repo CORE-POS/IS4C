@@ -39,12 +39,7 @@ class SigTermCommands extends Parser
             } else {
                 UdpComm::udpSend("termReboot");
             }
-            CoreLocal::set("paycard_keyed", false);
-            CoreLocal::set("CachePanEncBlock","");
-            CoreLocal::set("CachePinEncBlock","");
-            CoreLocal::set("CacheCardType","");
-            CoreLocal::set("CacheCardCashBack",0);
-            CoreLocal::set('ccTermState','swipe');
+            $this->stateReset();
 
             return true;
 
@@ -97,11 +92,7 @@ class SigTermCommands extends Parser
             return true;
 
         } else if ($str == "TERMCLEARALL") {
-            CoreLocal::set("CachePanEncBlock","");
-            CoreLocal::set("CachePinEncBlock","");
-            CoreLocal::set("CacheCardType","");
-            CoreLocal::set("CacheCardCashBack",0);
-            CoreLocal::set('ccTermState', 'swipe');
+            $this->stateReset();
 
             return true;
         } elseif ($str == 'TERMAUTOENABLE') {
@@ -240,6 +231,16 @@ class SigTermCommands extends Parser
         }
 
         return $ret;
+    }
+
+    private function stateReset()
+    {
+        CoreLocal::set("paycard_keyed", false);
+        CoreLocal::set("CachePanEncBlock","");
+        CoreLocal::set("CachePinEncBlock","");
+        CoreLocal::set("CacheCardType","");
+        CoreLocal::set("CacheCardCashBack",0);
+        CoreLocal::set('ccTermState', 'swipe');
     }
 
     function doc()

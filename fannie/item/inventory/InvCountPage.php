@@ -56,6 +56,18 @@ class InvCountPage extends FannieRESTfulPage
         return 'InvCountPage.php?id=' . $this->id;
     }
 
+    private function savePar($upc, $storeID, $par)
+    {
+        $inv = new InventoryCountsModel($this->connection);
+        $inv->upc($upc);
+        $inv->storeID($storeID);
+        $inv->mostRecent(1);
+        foreach ($inv->find() as $i) {
+            $i->par($par);
+            $i->save();
+        }
+    }
+
     private function saveEntry($upc, $storeID, $count, $par)
     {
         $inv = new InventoryCountsModel($this->connection);
@@ -98,6 +110,9 @@ class InvCountPage extends FannieRESTfulPage
             $storeID = FormLib::get('storeID', 1);
             for ($i=0; $i<count($upc); $i++) {
                 if (!isset($count[$i]) || $count[$i] === '') {
+                    if (isset($par[$i]) && is_numeric($par[$i])) {
+                        $this->savePar($upc[$i], $storeID, $par[$i]);
+                    }
                     continue;
                 }
                 if (!isset($par[$i]) || $par[$i] === '') {
@@ -158,7 +173,7 @@ class InvCountPage extends FannieRESTfulPage
                 p.description,
                 v.sku
             FROM products AS p
-            LEFT JOIN vendorItems AS v ON v.upc=p.upc
+                LEFT JOIN vendorItems AS v ON v.upc=p.upc AND v.vendorID=p.default_vendor_id
             WHERE p.default_vendor_id=?
                 AND p.inUse=1
                 AND p.store_id=1 ';
@@ -188,9 +203,15 @@ class InvCountPage extends FannieRESTfulPage
             </tr>';
         $res = $this->connection->execute($prep, $args);
         while ($row = $this->connection->fetchRow($res)) {
+            // omit items that have a breakdown. only the breakdown
+            // should have a count & par
+            if ($this->isBreakable($row['upc'], $this->vendor)) {
+                continue;
+            }
             $info = $this->getMostRecent($row['upc']);
             $ret .= sprintf('<tr %s>
                 <td>%s<input type="hidden" name="upc[]" value="%s" /></td>
+                <td>%s</td>
                 <td>%s</td>
                 <td>%s</td>
                 <td>%s</td>
@@ -204,17 +225,41 @@ class InvCountPage extends FannieRESTfulPage
                 $row['sku'],
                 $row['brand'],
                 $row['description'],
-                ($info ? $info['countDate'] : 'n/a'),
+                ($info ? '<a href="DateCountPage.php?id=' . $row['upc'] . '">' . $info['countDate'] . '</a>' : 'n/a'),
                 ($info ? $info['count'] : 'n/a'),
                 ($info ? $info['par'] : 'n/a'),
                 ($info ? $info['par'] : '0')
             );
         }
         $ret .= '</table>
-            <p><button type="submit" class="btn btn-default">Save</button></p>
+            <p>
+                <button type="submit" class="btn btn-default">Save</button>
+                <a href="DateCountPage.php?vendor=' . $this->vendor . '"
+                    class="btn btn-default btn-reset">Adjust Dates</a>
+            </p>
             </form>';
 
         return $ret;
+    }
+
+    private $bdP = null;
+    /**
+      Item can be broken down into several sale-able units
+    */
+    private function isBreakable($upc, $vendorID)
+    {
+        if ($this->bdP === null) {
+            $this->bdP = $this->connection->prepare('
+                SELECT v.upc
+                FROM VendorBreakdowns AS v
+                    INNER JOIN vendorItems AS i ON v.sku=i.sku AND v.vendorID=i.vendorID
+                WHERE i.upc=?
+                    AND v.vendorID=?');
+        }
+
+        $ret = $this->connection->getValue($this->bdP, array($upc, $vendorID));
+
+        return $ret === false ? false : true;
     }
 
     protected function get_live_view()
@@ -252,6 +297,9 @@ class InvCountPage extends FannieRESTfulPage
             <th>Total Inventory</th>
             </tr>';
         while ($row = $this->connection->fetchRow($res)) {
+            if ($this->isBreakable($row['upc'], $this->live)) {
+                continue;
+            }
             $adj = $this->connection->getValue($today, array($row['upc']));
             if ($adj) {
                 $row['sold'] += $adj;
@@ -362,6 +410,17 @@ class InvCountPage extends FannieRESTfulPage
             </div>
         </div>
             ';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $this->id = '4011';
+        $this->vendor = 1;
+        $this->live = 1;
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_vendor_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_live_view()));
     }
 
 }

@@ -62,24 +62,16 @@ class EditItemsFromSearch extends FannieRESTfulPage
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $vlookup = new VendorsModel($dbc);
-        for($i=0; $i<count($upcs); $i++) {
+        for ($i=0; $i<count($upcs); $i++) {
             $model = new ProductsModel($dbc);
             $upc = BarcodeLib::padUPC($upcs[$i]);
             $model->upc($upc);
             $model->store_id(1);
             
-            if (isset($dept[$i])) {
-                $model->department($dept[$i]);
-            }
-            if (isset($tax[$i])) {
-                $model->tax($tax[$i]);
-            }
-            if (isset($local[$i])) {
-                $model->local($local[$i]);
-            }
-            if (isset($brand[$i])) {
-                $model->brand($brand[$i]);
-            }
+            $model = $this->setArrayValue($model, 'department', $dept, $i);
+            $model = $this->setArrayValue($model, 'tax', $tax, $i);
+            $model = $this->setArrayValue($model, 'local', $local, $i);
+            $model = $this->setArrayValue($model, 'brand', $brand, $i);
             if (isset($vendor[$i])) {
                 $vlookup->reset();
                 $vlookup->vendorName($vendor[$i]);
@@ -89,21 +81,9 @@ class EditItemsFromSearch extends FannieRESTfulPage
                 }
             }
 
-            if (in_array($upc, FormLib::get('fs', array()))) {
-                $model->foodstamp(1);
-            } else {
-                $model->foodstamp(0);
-            }
-            if (in_array($upc, FormLib::get('disc', array()))) {
-                $model->discount(1);
-            } else {
-                $model->discount(0);
-            }
-            if (in_array($upc, FormLib::get('scale', array()))) {
-                $model->scale(1);
-            } else {
-                $model->scale(0);
-            }
+            $model = $this->setBinaryFlag($model, $upc, 'fs', 'foodstamp');
+            $model = $this->setBinaryFlag($model, $upc, 'disc', 'discount');
+            $model = $this->setBinaryFlag($model, $upc, 'scale', 'scale');
             $model->modified(date('Y-m-d H:i:s'));
 
             $try = $model->save();
@@ -114,21 +94,44 @@ class EditItemsFromSearch extends FannieRESTfulPage
             }
 
             if ((isset($vendor[$i]) && $vendor[$i] != '') || (isset($brand[$i]) && $brand[$i] != '')) {
-                $extra = new ProdExtraModel($dbc);
-                $extra->upc($upc);
-                if (isset($vendor[$i]) && $vendor[$i] != '') {
-                    $extra->distributor($vendor[$i]);
-                }
-                if (isset($brand[$i]) && $brand[$i] != '') {
-                    $extra->manufacturer($brand[$i]);
-                }
-                $extra->save();
+                $this->updateProdExtra($dbc, $upc,
+                    isset($brand[$i]) ? $brand[$i] : '',
+                    isset($vendor[$i]) ? $vendor[$i] : '');
             }
 
             $this->upcs[] = $upc;
         }
 
         return true;
+    }
+
+    private function setArrayValue($model, $column, $arr, $index)
+    {
+        if (isset($arr[$index])) {
+            $model->$column($arr[$index]);
+        }
+
+        return $model;
+    }
+
+    private function setBinaryFlag($model, $upc, $field, $column)
+    {
+        if (in_array($upc, FormLib::get($field, array()))) {
+            $model->$column(1);
+        } else {
+            $model->$column(0);
+        }
+
+        return $model;
+    }
+
+    private function updateProdExtra($dbc, $upc, $brand, $vendor)
+    {
+        $extra = new ProdExtraModel($dbc);
+        $extra->upc($upc);
+        $extra->distributor($vendor);
+        $extra->manufacturer($brand);
+        $extra->save();
     }
 
     function post_save_view()
@@ -166,27 +169,80 @@ class EditItemsFromSearch extends FannieRESTfulPage
         }
     }
 
-    function post_u_view()
+    private function getTaxes($dbc)
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
-        $ret = '';
-
-        $dbc = FannieDB::get($FANNIE_OP_DB);
         $taxes = array(0 => 'NoTax');
         $taxerates = $dbc->query('SELECT id, description FROM taxrates');
         while($row = $dbc->fetch_row($taxerates)) {
             $taxes[$row['id']] = $row['description'];
         }
 
-        $locales = array(0 => 'No');
-        $origin = new OriginsModel($dbc);
-        $locales = array_merge($locales, $origin->getLocalOrigins());
+        return $taxes;
+    } 
 
+    private function getDepts($dbc)
+    {
         $depts = array();
         $deptlist = $dbc->query('SELECT dept_no, dept_name FROM departments ORDER BY dept_no');
         while($row = $dbc->fetch_row($deptlist)) {
             $depts[$row['dept_no']] = $row['dept_name'];
         }
+
+        return $depts;
+    }
+
+    private function getBrandOpts($dbc)
+    {
+        $ret = '<option value=""></option>';
+        $brands = $dbc->query('
+            SELECT brand 
+            FROM vendorItems 
+            WHERE brand IS NOT NULL AND brand <> \'\' 
+            GROUP BY brand 
+            
+            UNION 
+
+            SELECT brand 
+            FROM products 
+            WHERE brand IS NOT NULL AND brand <> \'\' 
+            GROUP BY brand 
+            
+            
+            ORDER BY brand');
+        while($row = $dbc->fetch_row($brands)) {
+            $ret .= '<option>' . $row['brand'] . '</option>';
+        }
+
+        return $ret;
+    }
+
+    private function arrayToOpts($arr, $selected=-999, $id_label=false)
+    {
+        $opts = '';
+        foreach ($arr as $num => $name) {
+            if ($id_label === true) {
+                $name = $num . ' ' . $name;
+            }
+            $opts .= sprintf('<option %s value="%d">%s</option>',
+                                ($num == $selected ? 'selected' : ''),
+                                $num, $name);
+        }
+
+        return $opts;
+    }
+
+    function post_u_view()
+    {
+        global $FANNIE_OP_DB, $FANNIE_URL;
+        $ret = '';
+
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $locales = array(0 => 'No');
+        $origin = new OriginsModel($dbc);
+        $locales = array_merge($locales, $origin->getLocalOrigins());
+        $taxes = $this->getTaxes($dbc);
+        $depts = $this->getDepts($dbc);
 
         $ret .= '<form action="EditItemsFromSearch.php" method="post">';
         $ret .= '<table class="table small">';
@@ -211,25 +267,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
           solution but this can at least start normalizing that data
         */
         $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.brandField\');">';
-        $ret .= '<option value=""></option>';
-        $brands = $dbc->query('
-            SELECT brand 
-            FROM vendorItems 
-            WHERE brand IS NOT NULL AND brand <> \'\' 
-            GROUP BY brand 
-            
-            UNION 
-
-            SELECT brand 
-            FROM products 
-            WHERE brand IS NOT NULL AND brand <> \'\' 
-            GROUP BY brand 
-            
-            
-            ORDER BY brand');
-        while($row = $dbc->fetch_row($brands)) {
-            $ret .= '<option>' . $row['brand'] . '</option>';
-        }
+        $ret .= $this->getBrandOpts($dbc);
         $ret .= '</select></td>';
 
         /**
@@ -245,15 +283,11 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $ret .= '</select></td>';
 
         $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.deptSelect\');">';
-        foreach($depts as $num => $name) {
-            $ret .= sprintf('<option value="%d">%d %s</option>', $num, $num, $name);
-        }
+        $ret .= $this->arrayToOpts($depts, -999, true);
         $ret .= '</select></td>';
 
         $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.taxSelect\');">';
-        foreach($taxes as $num => $name) {
-            $ret .= sprintf('<option value="%d">%s</option>', $num, $name);
-        }
+        $ret .= $this->arrayToOpts($taxes);
         $ret .= '</select></td>';
 
         $ret .= '<td><input type="checkbox" onchange="toggleAll(this, \'.fsCheckBox\');" /></td>';
@@ -261,9 +295,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $ret .= '<td><input type="checkbox" onchange="toggleAll(this, \'.discCheckBox\');" /></td>';
 
         $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.localSelect\');">';
-        foreach($locales as $num => $name) {
-            $ret .= sprintf('<option value="%d">%s</option>', $num, $name);
-        }
+        $ret .= $this->arrayToOpts($locales);
         $ret .= '</select></td>';
 
         $ret .= '</tr>';
@@ -280,24 +312,9 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
         while($row = $dbc->fetch_row($result)) {
-            $deptOpts = '';
-            foreach($depts as $num => $name) {
-                $deptOpts .= sprintf('<option %s value="%d">%d %s</option>',
-                                    ($num == $row['department'] ? 'selected' : ''),
-                                    $num, $num, $name);
-            }
-            $taxOpts = '';
-            foreach($taxes as $num => $name) {
-                $taxOpts .= sprintf('<option %s value="%d">%s</option>',
-                                    ($num == $row['tax'] ? 'selected' : ''),
-                                    $num, $name);
-            }
-            $localOpts = '';
-            foreach($locales as $num => $name) {
-                $localOpts .= sprintf('<option %s value="%d">%s</option>',
-                                    ($num == $row['local'] ? 'selected' : ''),
-                                    $num, $name);
-            }
+            $deptOpts = $this->arrayToOpts($depts, $row['department'], true);
+            $taxOpts = $this->arrayToOpts($taxes, $row['tax']);
+            $localOpts = $this->arrayToOpts($locales, $row['local']);
             $ret .= sprintf('<tr>
                             <td>
                                 <a href="ItemEditorPage.php?searchupc=%s" target="_edit%s">%s</a>
@@ -366,6 +383,17 @@ function updateAll(val, selector) {
             only change the product. Changes are not instantaneous.
             Clicking the save button when finished is required.
             </p>';
+    }
+    
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
+        $this->u = 'foo';
+        $phpunit->assertEquals(false, $this->post_u_handler());
+        $this->u = '4011';
+        $phpunit->assertEquals(true, $this->post_u_handler());
+        $phpunit->assertNotEquals(0, strlen($this->post_u_view()));
+        $phpunit->assertNotEquals(0, strlen($this->post_save_view()));
     }
 }
 

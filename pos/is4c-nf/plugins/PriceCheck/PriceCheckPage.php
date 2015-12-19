@@ -21,81 +21,43 @@
 
 *********************************************************************************/
 
+use \COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class PriceCheckPage extends NoInputCorePage 
 {
-
-    private $upc;
-    private $found;
-    private $pricing;
+    private $upc = '';
+    private $found = false;
+    private $pricing = array(
+        'sale'=>false,
+        'actual_price'=>'',
+        'memPrice'=>'',
+        'description'=>'',
+        'department'=>'',
+        'regular_price'=>'',
+    );
 
     function preprocess()
     {
-        $this->upc = "";
-        $this->found = false;
-        $this->pricing = array('sale'=>false,'actual_price'=>'','memPrice'=>'',
-            'description','department','regular_price');
-
-        if (isset($_REQUEST['reginput']) && strtoupper($_REQUEST['reginput'])=="CL") {
+        if (strtoupper(FormLib::get('reginput') == 'CL')) {
             // cancel
             $this->change_page($this->page_url."gui-modules/pos2.php");
 
             return false;
-        } else if (isset($_REQUEST['reginput']) || isset($_REQUEST['upc'])) {
+        } elseif (FormLib::get('reginput') != '' || FormLib::get('upc') != '') {
             // use reginput as UPC unless it's empty
-            $this->upc = isset($_REQUEST['reginput']) ? $_REQUEST['reginput'] : '';
-            if ($this->upc == '' && isset($_REQUEST['upc']))
-                $this->upc = $_REQUEST['upc'];
+            $this->upc = FormLib::get('reginput');
+            if ($this->upc == '') {
+                $this->upc = FormLib::get('upc');
+            }
             $this->upc = str_pad($this->upc,13,'0',STR_PAD_LEFT);
 
-            $db = Database::pDataConnect();
-            $query = "select inUse,upc,description,normal_price,scale,deposit,
-                qttyEnforced,department,local,cost,tax,foodstamp,discount,
-                discounttype,specialpricemethod,special_price,groupprice,
-                pricemethod,quantity,specialgroupprice,specialquantity,
-                mixmatchcode,idEnforced,tareweight,d.dept_name
-                from products, departments d where department = d.dept_no
-                AND upc = ?";
-            $prep = $db->prepare($query);
-            $result = $db->execute($prep, array($this->upc));
-            $num_rows = $db->num_rows($result);
-
             // lookup item info
-            if ($num_rows > 0) {
+            $row = $this->getItem();
+            if ($row !== false) {
                 $this->found = true;
-                $row = $db->fetch_row($result);
 
-                $discounttype = MiscLib::nullwrap($row["discounttype"]);
-                $DiscountObject = null;
-                // see UPC parser for explanation
-                $DTClasses = CoreLocal::get("DiscountTypeClasses");
-                if ($row['discounttype'] < 64 && isset(DiscountType::$MAP[$row['discounttype']])) {
-                    $class = DiscountType::$MAP[$row['discounttype']];
-                    $DiscountObject = new $class();
-                } else if ($row['discounttype'] > 64 && isset($DTClasses[($row['discounttype']-64)])) {
-                    $class = $DTClasses[($row['discounttype'])-64];
-                    $DiscountObject = new $class();
-                } else {
-                    // If the requested discounttype isn't available,
-                    // fallback to normal pricing. Debatable whether
-                    // this should be a hard error.
-                    $DiscountObject = new NormalPricing();
-                }
-
-                if ($DiscountObject->isSale()) {
-                    $this->pricing['sale'] = true;
-                }
-                $info = $DiscountObject->priceInfo($row,1);
-                $this->pricing['actual_price'] = sprintf('$%.2f%s',
-                    $info['unitPrice'],($row['scale']>0?' /lb':''));
-                $this->pricing['regular_price'] = sprintf('$%.2f%s',
-                    $info['regPrice'],($row['scale']>0?' /lb':''));
-                if ($info['memDiscount'] > 0) {
-                    $this->pricing['memPrice'] = sprintf('$%.2f%s',
-                        ($info['unitPrice']-$info['memDiscount']),
-                        ($row['scale']>0?' /lb':''));
-                }
+                $this->formatPricing($row);
                 $this->pricing['description'] = $row['description'];
                 $this->pricing['department'] = $row['dept_name'];
 
@@ -103,7 +65,7 @@ class PriceCheckPage extends NoInputCorePage
             }
 
             // user hit enter and there is a valid UPC present
-            if (isset($_REQUEST['reginput']) && $_REQUEST['reginput']=='' && $this->found){
+            if (FormLib::get('reginput', false) === '' && $this->found) {
                 $qstr = '?reginput=' . urlencode($this->upc) . '&repeat=1';
                 $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
 
@@ -114,10 +76,91 @@ class PriceCheckPage extends NoInputCorePage
         return true;
     }
 
+    private function formatPricing($row)
+    {
+        $discounttype = MiscLib::nullwrap($row["discounttype"]);
+        $DiscountObject = $this->getDiscountType($discounttype);
+
+        if ($DiscountObject->isSale()) {
+            $this->pricing['sale'] = true;
+        }
+        $info = $DiscountObject->priceInfo($row,1);
+        $this->pricing['actual_price'] = sprintf('$%.2f%s',
+            $info['unitPrice'],($row['scale']>0?' /lb':''));
+        $this->pricing['regular_price'] = sprintf('$%.2f%s',
+            $info['regPrice'],($row['scale']>0?' /lb':''));
+        if ($info['memDiscount'] > 0) {
+            $this->pricing['memPrice'] = sprintf('$%.2f%s',
+                ($info['unitPrice']-$info['memDiscount']),
+                ($row['scale']>0?' /lb':''));
+        }
+    }
+
+    private function getDiscountType($discounttype)
+    {
+        $DTClasses = CoreLocal::get("DiscountTypeClasses");
+        if ($discounttype < 64 && isset(DiscountType::$MAP[$discounttype])) {
+            $class = DiscountType::$MAP[$row['discounttype']];
+            $DiscountObject = new $class();
+        } else if ($discounttype > 64 && isset($DTClasses[($discounttype-64)])) {
+            $class = $DTClasses[($discounttype)-64];
+            $DiscountObject = new $class();
+        } else {
+            // If the requested discounttype isn't available,
+            // fallback to normal pricing. Debatable whether
+            // this should be a hard error.
+            $DiscountObject = new NormalPricing();
+        }
+
+        return $DiscountObject;
+    }
+
+    private function getItem()
+    {
+        $dbc = Database::pDataConnect();
+        $query = "select inUse,upc,description,normal_price,scale,deposit,
+            qttyEnforced,department,local,cost,tax,foodstamp,discount,
+            discounttype,specialpricemethod,special_price,groupprice,
+            pricemethod,quantity,specialgroupprice,specialquantity,
+            mixmatchcode,idEnforced,tareweight,d.dept_name
+            from products, departments d where department = d.dept_no
+            AND upc = ?";
+        $prep = $dbc->prepare($query);
+        $result = $dbc->getRow($prep, array($this->upc));
+
+        return $result;
+    }
+
     function head_content()
     {
         $this->default_parsewrapper_js();
         $this->scanner_scale_polling(true);
+    }
+
+    private function noUpcText()
+    {
+        $info = _("not a valid item");
+        $inst = array(
+            _("[scan] another item"),
+            _("[clear] to cancel"),
+        );
+    }
+
+    private function upcText()
+    {
+        $info = $this->pricing['description'] . '<br />'
+                . $this->pricing['department'] . '<br />'
+                . _("Current Price") . ": " . $this->pricing['actual_price'] . '<br />'
+                . _("Regular Price") . ": " . $this->pricing['regular_price'];
+        if (!empty($this->pricing['memPrice'])) {
+            $info .= "<br />(" . _("Member Price") . ": " . $this->pricing['memPrice'] . ")";
+        }
+        
+        $inst = array(
+            _("[scan] another item"),
+            _("[enter] to ring this item"),
+            _("[clear] to cancel"),
+        );
     }
 
     function body_content()
@@ -130,27 +173,11 @@ class PriceCheckPage extends NoInputCorePage
         );
         if (!empty($this->upc)) {
             if (!$this->found) {
-                $info = _("not a valid item");
-                $inst = array(
-                    _("[scan] another item"),
-                    _("[clear] to cancel"),
-                );
+                $this->noUpcText();
                 $this->upc = "";
                 MiscLib::errorBeep();                
             } else {
-                $info = $this->pricing['description'] . '<br />'
-                        . $this->pricing['department'] . '<br />'
-                        . _("Current Price") . ": " . $this->pricing['actual_price'] . '<br />'
-                        . _("Regular Price") . ": " . $this->pricing['regular_price'];
-                if (!empty($this->pricing['memPrice'])) {
-                    $info .= "<br />(" . _("Member Price") . ": " . $this->pricing['memPrice'] . ")";
-                }
-                
-                $inst = array(
-                    _("[scan] another item"),
-                    _("[enter] to ring this item"),
-                    _("[clear] to cancel"),
-                );
+                $this->upcText();
             }
         }
         ?>
@@ -160,7 +187,7 @@ class PriceCheckPage extends NoInputCorePage
         <?php echo $info ?>
         </span><br />
         <form name="form" id="formlocal" method="post" 
-            autocomplete="off" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+            autocomplete="off" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <input type="text" name="reginput" tabindex="0" 
             onblur="$('#reginput').focus();" id="reginput" />
         <input type="hidden" name="upc" value="<?php echo $this->upc; ?>" />
@@ -175,8 +202,5 @@ class PriceCheckPage extends NoInputCorePage
 
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
-    new PriceCheckPage();
-}
+AutoLoader::dispatch();
 
-?>

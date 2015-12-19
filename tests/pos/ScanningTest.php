@@ -22,6 +22,8 @@ class ScanningTest extends PHPUnit_Framework_TestCase
             $this->assertContains($d, $all);
         }
 
+        $all[] = 'DiscountType';
+
         foreach($all as $class){
             $obj = new $class();
             $this->assertInstanceOf('DiscountType',$obj);
@@ -38,7 +40,18 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('itemPD',0);
         $row = array('normal_price'=>1.99,'special_price'=>'1.49',
                 'specialpricemethod'=>0,
-                'specialquantity'=>0, 'line_item_discountable'=>1);
+                'specialquantity'=>0, 'line_item_discountable'=>1,
+                'department'=>1);
+
+        $norm = new DiscountType();
+        $info = $norm->priceInfo($row, 1);
+        $this->assertInternalType('array',$info);
+        $this->assertArrayHasKey('regPrice',$info);
+        $this->assertArrayHasKey('unitPrice',$info);
+        $this->assertArrayHasKey('discount',$info);
+        $this->assertArrayHasKey('memDiscount',$info);
+        $norm->addDiscountLine();
+        lttLib::clear();
 
         $norm = new NormalPricing();
         $info = $norm->priceInfo($row, 1);
@@ -70,6 +83,25 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(False,$norm->isMemberOnly());
         $this->assertEquals(False,$norm->isStaffOnly());
 
+        $norm = new EveryoneSale();
+        $row['specialquantity'] = 5;
+        $row['upc'] = '0000000004011';
+        $row['mixmatchcode'] = '';
+        $info = $norm->priceInfo($row, 1);
+        $this->assertInternalType('array',$info);
+        $this->assertArrayHasKey('regPrice',$info);
+        $this->assertArrayHasKey('unitPrice',$info);
+        $this->assertArrayHasKey('discount',$info);
+        $this->assertArrayHasKey('memDiscount',$info);
+        $this->assertEquals(1.99,$info['regPrice']);
+        $this->assertEquals(1.49,$info['unitPrice']);
+        $this->assertEquals(0.50,$info['discount']);
+        $this->assertEquals(0,$info['memDiscount']);
+        $this->assertEquals(True,$norm->isSale());
+        $this->assertEquals(False,$norm->isMemberOnly());
+        $this->assertEquals(False,$norm->isStaffOnly());
+        $row['specialquantity'] = 0;
+
         CoreLocal::set('isMember',1);
         $norm = new MemberSale();
         $info = $norm->priceInfo($row, 1);
@@ -89,6 +121,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('isStaff',1);
         $norm = new StaffSale();
         $info = $norm->priceInfo($row, 1);
+        $this->assertEquals($info, $norm->priceInfo($row, 1));
         $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
         $this->assertArrayHasKey('unitPrice',$info);
@@ -101,10 +134,13 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(True,$norm->isSale());
         $this->assertEquals(False,$norm->isMemberOnly());
         $this->assertEquals(True,$norm->isStaffOnly());
+        $norm->addDiscountLine();
+        lttLib::clear();
 
         $row['special_price'] = 0.10;
         $norm = new SlidingMemSale();
         $info = $norm->priceInfo($row, 1);
+        $this->assertEquals($info, $norm->priceInfo($row, 1));
         $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
         $this->assertArrayHasKey('unitPrice',$info);
@@ -117,9 +153,12 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(True,$norm->isSale());
         $this->assertEquals(True,$norm->isMemberOnly());
         $this->assertEquals(False,$norm->isStaffOnly());
+        $norm->addDiscountLine();
+        lttLib::clear();
 
         $norm = new PercentMemSale();
         $info = $norm->priceInfo($row, 1);
+        $this->assertEquals($info, $norm->priceInfo($row, 1));
         $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
         $this->assertArrayHasKey('unitPrice',$info);
@@ -132,6 +171,8 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(True,$norm->isSale());
         $this->assertEquals(True,$norm->isMemberOnly());
         $this->assertEquals(False,$norm->isStaffOnly());
+        $norm->addDiscountLine();
+        lttLib::clear();
 
         CoreLocal::set('isMember',0);
         CoreLocal::set('isStaff',0);
@@ -190,13 +231,41 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         }
         lttLib::clear();
 
+        $pm = new PriceMethod();
+        $this->assertEquals(true, $pm->addItem(array(), 1, array()));
+        $this->assertEquals('', $pm->errorInfo());
+
         $db = Database::pDataConnect();
         $q = "SELECT * FROM products WHERE upc='0000000000111'";
         $r = $db->query($q);
         $row = $db->fetch_row($r);
         $discount = new NormalPricing();
         $discount->priceInfo($row, 1);
+
         $pm = new BasicPM();
+        $this->assertEquals(false, $pm->addItem($row, 0, $discount));
+        $pm->addItem($row, 1, $discount);
+        $record = lttLib::genericRecord();
+        $record['upc'] = '0000000000111';
+        $record['description'] = 'WYNDMERE 5-8 DRAM BOTTLE';
+        $record['trans_type'] = 'I';
+        $record['trans_subtype'] = '';
+        $record['trans_status'] = '';
+        $record['department'] = 103;
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        $record['unitPrice'] = 1.65;
+        $record['total'] = 1.65;
+        $record['regPrice'] = 1.65;
+        $record['tax'] = 1;
+        $record['discountable'] = 1;
+        $record['mixMatch'] = '499';
+        lttLib::verifyRecord(1, $record, $this);
+
+        lttLib::clear();
+
+        $pm = new NoDiscOnSalesPM();
+        $this->assertEquals(false, $pm->addItem($row, 0, $discount));
         $pm->addItem($row, 1, $discount);
         $record = lttLib::genericRecord();
         $record['upc'] = '0000000000111';
@@ -483,27 +552,36 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         }
 
         $cc = new CouponCode();
-        $this->assertEquals(True,$cc->is_special('0051234512345'));
-        $this->assertEquals(True,$cc->is_special('0991234512345'));
-        $this->assertEquals(False,$cc->is_special('0001234512345'));
+        $this->assertEquals(True,$cc->isSpecial('0051234512345'));
+        $this->assertEquals(True,$cc->isSpecial('0991234512345'));
+        $this->assertEquals(False,$cc->isSpecial('0001234512345'));
 
         $dat = new DatabarCoupon();
-        $this->assertEquals(True,$dat->is_special('811012345678901'));
-        $this->assertEquals(False,$dat->is_special('8110123456790'));
-        $this->assertEquals(False,$dat->is_special('0001234512345'));
+        $this->assertEquals(True,$dat->isSpecial('811012345678901'));
+        $this->assertEquals(False,$dat->isSpecial('8110123456790'));
+        $this->assertEquals(False,$dat->isSpecial('0001234512345'));
 
         $hc = new HouseCoupon();
-        $this->assertEquals(True,$hc->is_special('0049999900001'));
-        $this->assertEquals(False,$hc->is_special('0001234512345'));
+        $this->assertEquals(True,$hc->isSpecial('0049999900001'));
+        $this->assertEquals(False,$hc->isSpecial('0001234512345'));
 
         $mp = new MagicPLU();
-        $this->assertEquals(True,$mp->is_special('0000000008005'));
-        $this->assertEquals(True,$mp->is_special('0000000008006'));
-        $this->assertEquals(False,$mp->is_special('0001234512345'));
+        $this->assertEquals(True,$mp->isSpecial('0000000008005'));
+        $this->assertEquals(True,$mp->isSpecial('0000000008006'));
+        $this->assertEquals(False,$mp->isSpecial('0001234512345'));
 
         $so = new SpecialOrder();
-        $this->assertEquals(True,$so->is_special('0045400010001'));
-        $this->assertEquals(False,$so->is_special('0001234512345'));
+        $this->assertEquals(true, $so->isSpecial('0045400010001'));
+        $this->assertEquals(false, $so->isSpecial('0001234512345'));
+        $out = $so->handle('0045400000000', array());
+        $this->assertNotEquals(0, strlen($out['output']));
+        $out = $so->handle('0045400010001', array());
+        $this->assertNotEquals(0, strlen($out['output']));
+
+        $s = new SpecialUPC();
+        $this->assertEquals(false, $s->isSpecial('foo'));
+        $this->assertEquals(false, $s->is_special('foo'));
+        $this->assertEquals(null, $s->handle('foo', array()));
     }
 
     public function testCouponCode()
@@ -717,11 +795,20 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
     public function testSpecialDepts()
     {
+        $sd = new SpecialDept();
+        $this->assertEquals('Documentation Needed!', $sd->help_text());
+        $arr = $sd->register(1, 'not-array');
+        $expect = array(1 => array('SpecialDept'));
+        $this->assertEquals($expect, $arr);
+        $this->assertEquals(array(), $sd->handle(1, 1, array()));
+
         $defaults = array(
             'ArWarnDept',
             'AutoReprintDept',
             'EquityEndorseDept',
-            'EquityWarnDept'
+            'EquityWarnDept',
+            'BottleReturnDept',
+            'PaidOutDept',
         );
 
         $all = AutoLoader::ListModules('SpecialDept',False);
@@ -738,6 +825,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
             $this->assertArrayHasKey(1,$map);
             $this->assertInternalType('array',$map[1]);
             $this->assertContains($class,$map[1]);
+            $this->assertNotEquals(0, strlen($obj->help_text()));
         }
 
         CoreLocal::set('msgrepeat',0);
@@ -822,5 +910,41 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('main_frame',$json);
         $this->assertInternalType('string',$json['main_frame']);
         $this->assertEmpty($json['main_frame']);
+
+        CoreLocal::set('memberID', '0');
+
+        $brd = new BottleReturnDept();
+        CoreLocal::set('msgrepeat', 0);
+        $json = $brd->handle(10, 1, array());
+        $this->assertEquals('-100DP10', CoreLocal::get('strEntered'));
+        $this->assertEquals('?autoconfirm=1', substr($json['main_frame'], -14));
+        CoreLocal::set('msgrepeat', 0);
+        CoreLocal::set('strEntered', '');
+
+        $brd = new PaidOutDept();
+        CoreLocal::set('msgrepeat', 0);
+        $json = $brd->handle(10, 1, array());
+        $this->assertEquals('-100DP10', CoreLocal::get('strEntered'));
+        $this->assertEquals('/PaidOutComment.php', substr($json['main_frame'], -19));
+        CoreLocal::set('msgrepeat', 0);
+        CoreLocal::set('strEntered', '');
     }
+
+    function testVariableReWrite()
+    {
+        $v = new VariableWeightReWrite();
+        $this->assertEquals('foo', $v->translate('foo'));
+
+        $nocheck = '0021234500000';
+        $check =   '021234500000X';
+
+        $v = new ItemNumberOnlyReWrite();
+        $this->assertEquals('0000000012345', $v->translate($nocheck));
+        $this->assertEquals('0000000012345', $v->translate($check, true));
+
+        $v = new ZeroedPriceReWrite();
+        $this->assertEquals('0021234500000', $v->translate($nocheck));
+        $this->assertEquals('0212345000000', $v->translate($check, true));
+    }
+
 }

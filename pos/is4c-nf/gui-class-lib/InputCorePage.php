@@ -56,4 +56,3 @@ class InputCorePage extends BasicCorePage
     }
 }
 
-?>

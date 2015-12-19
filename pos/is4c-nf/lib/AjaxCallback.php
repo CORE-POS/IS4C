@@ -37,24 +37,34 @@ class AjaxCallback
     {
 
     }
+
+    public static function unitTest($class)
+    {
+        self::executeCallback($class);
+    }
  
     public static function run()
     {
         $callback_class = get_called_class();
         if (basename($_SERVER['PHP_SELF']) === $callback_class . '.php') {
             ini_set('display_errors', 'off');
-            $obj = new $callback_class();
-            $output = $obj->ajax();
+            self::executeCallback($callback_class);
+        }
+    }
 
-            switch ($obj->getEncoding()) {
-                case 'json':
-                    echo JsonLib::array_to_json($output);
-                    break;
-                case 'plain':
-                default:
-                    echo $output;
-                    break;
-            }
+    private static function executeCallback($callback_class)
+    {
+        $obj = new $callback_class();
+        $output = $obj->ajax();
+
+        switch ($obj->getEncoding()) {
+            case 'json':
+                echo JsonLib::array_to_json($output);
+                break;
+            case 'plain':
+            default:
+                echo $output;
+                break;
         }
     }
 }

@@ -209,6 +209,7 @@ class AddCashierPage extends FannieRESTfulPage
         if (!class_exists('CashierTests', false)) {
             include(dirname(__FILE__) . '/CashierTests.php');
         }
+        $this->config->set('FANNIE_STORE_MODE', 'HQ');
         $tester = new CashierTests($this->connection, $this->config, $this->logger);
         $tester->testAddCashier($this, $phpunit);
 
@@ -221,6 +222,7 @@ class AddCashierPage extends FannieRESTfulPage
         // unmap
         $this->saveStoreMapping($this->connection, 35, array());
         $phpunit->assertEquals(false, $map->load());
+        $this->config->set('FANNIE_STORE_MODE', 'STORE');
     }
 }
 

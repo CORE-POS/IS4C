@@ -24,20 +24,20 @@
 ini_set('display_errors','1');
 include(dirname(__FILE__) . '/../../config.php'); 
 if (!class_exists('FannieAPI')) {
-    include_once(dirnam(__FILE__) . '/../../classlib2.0/FannieAPI.php');
+    include_once(dirname(__FILE__) . '/../../classlib2.0/FannieAPI.php');
 }
 if (!function_exists('confset')) {
-    include(dirname(__FILE__) . '/util.php');
+    include(dirname(__FILE__) . '/../util.php');
 }
 if (!function_exists('create_if_needed')) {
-    include(dirname(__FILE__) . '/db.php');
+    include(dirname(__FILE__) . '/../db.php');
 }
 
 /**
     @class InstallSampleDataPage
     Class for the SampleData install and config options
 */
-class InstallSampleDataPage extends InstallPage {
+class InstallSampleDataPage extends \COREPOS\Fannie\API\InstallPage {
 
     protected $title = 'Fannie: Sample Data';
     protected $header = 'Fannie: Sample Data';
@@ -336,6 +336,5 @@ utilities to populate the lane tables.
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

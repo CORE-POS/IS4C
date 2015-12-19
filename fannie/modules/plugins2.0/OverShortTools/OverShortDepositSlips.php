@@ -53,10 +53,10 @@ class OverShortDepositSlips extends FanniePage
         $start = FormLib::get_form_value('startDate');
         $end = FormLib::get_form_value('endDate');
 
-        $fs = 12;
+        $font_size = 12;
 
         $pdf = new FPDF("P","mm","A4"); 
-        $pdf->SetFont('Arial','',$fs);
+        $pdf->SetFont('Arial','',$font_size);
         $pdf->SetMargins(5,5,5);
         $pdf->SetAutoPageBreak(True,5);
         $pdf->AddPage();
@@ -141,12 +141,12 @@ class OverShortDepositSlips extends FanniePage
                 $pdf->SetXY(($width-0)*$j + ($width+7)*($real-1-$j),10);
                 $pdf->MultiCell($width+($j==0?-1:$k),5,$str1,'R','L');
                 $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
-                $pdf->SetFontSize($fs-1);
+                $pdf->SetFontSize($font_size-1);
                 $pdf->MultiCell($width+($j==0?-1:$k),4.35,$str,'R','L');
                 $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
-                $pdf->SetFont('Arial','B',$fs-1);
+                $pdf->SetFont('Arial','B',$font_size-1);
                 $pdf->MultiCell($width+($j==0?-1:$k),5,$str2,'R','L');
-                $pdf->SetFont('Arial','',$fs-1);
+                $pdf->SetFont('Arial','',$font_size-1);
                 $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
                 $pdf->MultiCell($width+($j==0?-1:$k),5,$str3,'R','L');
                 
@@ -188,12 +188,12 @@ class OverShortDepositSlips extends FanniePage
             $pdf->SetXY(($width-0)*$j + ($width+7)*($real-1-$j),10);
             $pdf->MultiCell($width+($j==0?-1:$k),5,$str1,'R','L');
             $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
-            $pdf->SetFontSize($fs-1);
+            $pdf->SetFontSize($font_size-1);
             $pdf->MultiCell($width+($j==0?-1:$k),4.35,$str,'R','L');
             $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
-            $pdf->SetFont('Arial','B',$fs);
+            $pdf->SetFont('Arial','B',$font_size);
             $pdf->MultiCell($width+($j==0?-1:$k),5,$str2,'R','L');
-            $pdf->SetFont('Arial','',$fs);
+            $pdf->SetFont('Arial','',$font_size);
             $pdf->SetX(($width-0)*$j+ ($width+7)*($real-1-$j));
             $pdf->MultiCell($width+($j==0?-1:$k),5,$str3,'R','L');
         }
@@ -353,6 +353,5 @@ class OverShortDepositSlips extends FanniePage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

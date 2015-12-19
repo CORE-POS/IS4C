@@ -45,7 +45,7 @@ class SiteSearch extends FannieRESTfulPage
             if (!$obj->discoverable) {
                 continue;
             }
-            if (strpos(strtoupper($obj->description), $search_term) !== false) {
+            if (!empty($search_term) && strpos(strtoupper($obj->description), $search_term) !== false) {
                 $strong[] = $obj;
             }
         }
@@ -82,7 +82,7 @@ class SiteSearch extends FannieRESTfulPage
             <form method="get">
                 <div class="form-group">
                     <input type="text" class="form-control" id="search-term"
-                        placeholder="Enter search term" name="id" 
+                        placeholder="Enter search term" name="id" required
                         pattern=".{3,}" title="Three characters minimum" />
                     <button type="submit" class="btn btn-default">Search</button>
                 </div>
@@ -96,6 +96,13 @@ class SiteSearch extends FannieRESTfulPage
             within CORE. For example, enter "Site Search" to find this
             particular page.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->id = 'foo';
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
     }
 }
 

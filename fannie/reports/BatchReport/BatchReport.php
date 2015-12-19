@@ -31,7 +31,7 @@ class BatchReport extends FannieReportPage
     protected $header = "Select batch(es)";
     protected $title = "Fannie :: Batch Report";
     protected $report_cache = 'none';
-    protected $report_headers = array('UPC','Description','$','Qty','Rings','Location');
+    protected $report_headers = array('UPC','Brand','Description','$','Qty','Rings','Location');
     protected $required_fields = array('batchID');
 
     public $description = '[Batch Report] lists sales for items in a sales batch (or group of sales batches).';
@@ -100,6 +100,7 @@ class BatchReport extends FannieReportPage
 
         $salesBatchQ ="
             SELECT d.upc, 
+                p.brand,
                 p.description, 
                 l.floorSectionID,
                 f.name AS location,
@@ -129,6 +130,7 @@ class BatchReport extends FannieReportPage
         while ($row = $dbc->fetchRow($salesBatchR)) {
             $record = array();
             $record[] = $row['upc'];
+            $record[] = $row['brand'];
             $record[] = $row['description'];
             $record[] = sprintf('%.2f',$row['sales']);
             $record[] = sprintf('%.2f',$row['quantity']);
@@ -147,11 +149,11 @@ class BatchReport extends FannieReportPage
         $sumQty = 0.0;
         $sumSales = 0.0;
         foreach ($data as $row) {
-            $sumQty += $row[3];
-            $sumSales += $row[2];
+            $sumQty += $row[4];
+            $sumSales += $row[3];
         }
 
-        return array('Total',null,$sumSales,$sumQty);
+        return array('Total',null,null,$sumSales,$sumQty);
     }
 
     function form_content()

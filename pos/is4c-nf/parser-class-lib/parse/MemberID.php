@@ -54,6 +54,9 @@ class MemberID extends Parser
                 $ret['output'] = DisplayLib::lastpage();
             }
             return $ret;
+        } elseif ($str === 'ID') {
+            $ret['main_frame'] = MiscLib::baseURL() . '/gui-modules/memlist.php';
+            return $ret;
         } else {
             // always re-apply other member numbers
             $ret = PrehLib::memberID(substr($str,0,strlen($str)-2));

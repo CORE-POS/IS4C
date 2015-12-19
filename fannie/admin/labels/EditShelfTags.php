@@ -331,6 +331,15 @@ HTML;
             This is for quick fine-tuning before printing tags.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->id = 1;
+        $this->upc = '0000000004011';
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+        $phpunit->assertNotEquals(0, strlen($this->delete_id_upc_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_id_reprice_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class nslogin extends NoInputCorePage 
@@ -30,20 +31,25 @@ class nslogin extends NoInputCorePage
     private $heading;
     private $msg;
 
+    private function getPassword()
+    {
+        $ret = FormLib::get('reginput');
+        if ($ret === '') {
+            $ret = FormLib::get('userPassword');
+        }
+
+        return $ret;
+    }
+
     function preprocess()
     {
         $this->color ="coloredArea";
         $this->heading = _("enter password");
         $this->msg = _("confirm no sales");
 
-        if (isset($_REQUEST['reginput']) || isset($_REQUEST['userPassword'])) {
+        if (FormLib::get('reginput', false) !== false || FormLib::get('userPassword', false) !== false) {
 
-            $passwd = '';
-            if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])) {
-                $passwd = $_REQUEST['reginput'];
-            } elseif (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword'])) {
-                $passwd = $_REQUEST['userPassword'];
-            }
+            $passwd = $this->getPassword();
 
             if (strtoupper($passwd) == "CL") {
                 $this->change_page($this->page_url."gui-modules/pos2.php");
@@ -89,7 +95,7 @@ class nslogin extends NoInputCorePage
         <?php echo $this->heading ?>
         </span><br />
         <form name="form" id="nsform" method="post" autocomplete="off" 
-            action="<?php echo $_SERVER['PHP_SELF']; ?>">
+            action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <input type="password" name="userPassword" tabindex="0" 
             onblur="$('#userPassword').focus();" id="userPassword" />
         <input type="hidden" id="reginput" name="reginput" value="" />
@@ -105,8 +111,5 @@ class nslogin extends NoInputCorePage
 
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-    new nslogin();
-}
+AutoLoader::dispatch();
 
-?>

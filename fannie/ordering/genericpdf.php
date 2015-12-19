@@ -20,6 +20,9 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -40,7 +43,7 @@ if (isset($_REQUEST['upc'])){
     $x = 0;
     $y = 0;
     $date = date("m/d/Y");
-    $signage = new FannieSignage(array());
+    $signage = new COREPOS\Fannie\API\item\FannieSignage(array());
     for($i=0;$i<4;$i++){
         if ($count % 4 == 0){ 
             $pdf->AddPage();

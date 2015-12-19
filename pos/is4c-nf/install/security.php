@@ -31,14 +31,19 @@ body {
     <td><b>Cancel Transaction</b>: </td>
     <td>
     <?php
-    $privLevels = array(30=>'Admin only', 20=>'All');
+    $privLevels = array(30=>'Admin only', 25=>'Current & Admin', 20=>'All');
     echo InstallUtilities::installSelectField('SecurityCancel', $privLevels, 20);
     ?>
     </td>
 </tr>
 <tr>
     <td><b>Suspend/Resume</b>: </td>
-    <td><?php echo InstallUtilities::installSelectField('SecuritySR', $privLevels, 20); ?></td>
+    <td>
+    <?php
+    $privLevels = array(30=>'Admin only', 20=>'All');
+    echo InstallUtilities::installSelectField('SecuritySR', $privLevels, 20);
+    ?>
+    </td>
 </tr>
 <tr>
     <td><b>Print Tender Report</b>: </td>

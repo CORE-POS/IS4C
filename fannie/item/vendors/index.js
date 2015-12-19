@@ -170,3 +170,18 @@ function saveDiscountRate(s)
     });
 }
 
+function toggleActive(obj, vid)
+{
+    var dstr = 'action=toggleActive&vid=' + vid;
+    if ($(obj).prop('checked')) {
+        dstr += '&inactive=0';
+    } else {
+        dstr += '&inactive=1';
+    }
+	$.ajax({
+		url: 'VendorIndexPage.php',
+		method: 'post',
+		data: dstr
+    });
+}
+

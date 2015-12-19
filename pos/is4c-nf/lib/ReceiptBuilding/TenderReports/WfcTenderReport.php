@@ -25,23 +25,10 @@
   @class WfcTenderReport
   Generate a tender report
 */
-class WfcTenderReport extends TenderReport {
-
-/** 
- Print a tender report
- 
- This tender report is based on a single tender tape view
- rather than multiple views (e.g. ckTenders, ckTenderTotal, etc)
- adding a new tender is mostly just a matter of adding it
- to the $DESIRED_TENDERS array (exception being if you want
- special handling in the tender tape view (e.g., three
- tender types are actually compined under EBT)
- */
-static public function get()
+class WfcTenderReport extends TenderReport 
 {
-    $DESIRED_TENDERS = CoreLocal::get("TRDesiredTenders");
 
-    $DESIRED_TENDERS = array("CK"=>"CHECK TENDERS",
+    static private $DESIRED_TENDERS = array("CK"=>"CHECK TENDERS",
                  "CC"=>"CREDIT CARD TENDERS",
                  "GD"=>"GIFT CARD TENDERS",
                  "TC"=>"GIFT CERT TENDERS",
@@ -58,19 +45,26 @@ static public function get()
                  "SC"=>"STORE CREDIT"
              );
 
+/** 
+ Print a tender report
+ 
+ This tender report is based on a single tender tape view
+ rather than multiple views (e.g. ckTenders, ckTenderTotal, etc)
+ adding a new tender is mostly just a matter of adding it
+ to the $DESIRED_TENDERS array (exception being if you want
+ special handling in the tender tape view (e.g., three
+ tender types are actually compined under EBT)
+ */
+static public function get()
+{
     $db_a = Database::mDataConnect();
 
-    $blank = "             ";
-    $fieldNames = "  ".substr("Time".$blank, 0, 13)
-            .substr("Lane".$blank, 0, 9)
-            .substr("Trans #".$blank, 0, 12)
-            .substr("Change".$blank, 0, 14)
-            .substr("Amount".$blank, 0, 14)."\n";
+    $blank = self::standardBlank();
+    $fieldNames = self::standardFieldNames();
     $ref = ReceiptLib::centerString(trim(CoreLocal::get("CashierNo"))." ".trim(CoreLocal::get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
     $receipt = "";
 
-    $itemize = 0;
-    foreach($DESIRED_TENDERS as $tender_code => $header){ 
+    foreach (self::$DESIRED_TENDERS as $tender_code => $header) { 
         $query = "select tdate,register_no,trans_no,-total AS tender
                    from dlog where emp_no=".CoreLocal::get("CashierNo").
             " and trans_type='T' AND trans_subtype='".$tender_code."'
@@ -141,32 +135,16 @@ static public function get()
         $num_rows = $db_a->num_rows($result);
         if ($num_rows <= 0) continue;
 
-        //$receipt .= chr(27).chr(33).chr(5);
-
-        $titleStr = "";
-        for ($i = 0; $i < strlen($header); $i++)
-            $titleStr .= $header[$i]." ";
-        $titleStr = substr($titleStr,0,strlen($titleStr)-1);
-        $receipt .= ReceiptLib::centerString($titleStr)."\n";
+        $titleStr = array_reduce(str_split($titleStr), function($carry,$i){ return $carry . $i . ' '; });
+        $receipt .= ReceiptLib::centerString(trim($titleStr))."\n";
 
         $receipt .= $ref;
-        if ($itemize == 1) $receipt .=    ReceiptLib::centerString("------------------------------------------------------");
-
-        $itemize = 1;
-        
-        if ($itemize == 1) $receipt .= $fieldNames;
+        $receipt .=    ReceiptLib::centerString("------------------------------------------------------");
+        $receipt .= $fieldNames;
         $sum = 0;
 
-        for ($i = 0; $i < $num_rows; $i++) {
-            $row = $db_a->fetch_array($result);
-            $timeStamp = self::timeStamp($row["tdate"]);
-            if ($itemize == 1) {
-                $receipt .= "  ".substr($timeStamp.$blank, 0, 13)
-                .substr($row["register_no"].$blank, 0, 9)
-                .substr($row["trans_no"].$blank, 0, 8)
-                .substr($blank.number_format("0", 2), -10)
-                .substr($blank.number_format($row["tender"], 2), -14)."\n";
-            }
+        while ($row = $db_a->fetchRow($result)) {
+            $receipt .= self::standardLine($row['tdate'], $row['register_no'], $row['trans_no'], $row['tender']);
             $sum += $row["tender"];
         }
         
@@ -183,4 +161,3 @@ static public function get()
 
 }
 
-?>

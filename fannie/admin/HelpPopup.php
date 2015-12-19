@@ -89,6 +89,13 @@ class HelpPopup extends FanniePage
         </html>
         <?php
     }
+
+    public function unitTest($phpunit)
+    {
+        ob_start();
+        $this->drawPage();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+    }
 }
 
 FannieDispatch::conditionalExec();

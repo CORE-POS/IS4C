@@ -26,7 +26,7 @@
   Never open cash drawer
 
 */
-class NoKick 
+class NoKick extends Kicker
 {
 
     /**

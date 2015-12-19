@@ -37,70 +37,56 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     protected $preview_opts = array(
         'upc' => array(
-            'name' => 'upc',
             'display_name' => 'UPC *',
             'default' => 14,
             'required' => True
         ),
         'srp' => array(
-            'name' => 'srp',
             'display_name' => 'SRP *',
             'default' => 16,
             'required' => True
         ),
         'brand' => array(
-            'name' => 'brand',
             'display_name' => 'Brand *',
             'default' => 2,
             'required' => True
         ),
         'desc' => array(
-            'name' => 'desc',
             'display_name' => 'Description *',
             'default' => 6,
             'required' => True
         ),
         'sku' => array(
-            'name' => 'sku',
             'display_name' => 'SKU *',
             'default' => 1,
             'required' => true
         ),
         'qty' => array(
-            'name' => 'qty',
             'display_name' => 'Case Qty *',
             'default' => 3,
             'required' => True
         ),
         'size' => array(
-            'name' => 'size',
             'display_name' => 'Unit Size',
             'default' => 4,
-            'required' => False
         ),
         'cost' => array(
-            'name' => 'cost',
             'display_name' => 'Case Cost (Reg) *',
             'default' => 8,
             'required' => True
         ),
         'saleCost' => array(
-            'name' => 'saleCost',
             'display_name' => 'Case Cost (Sale)',
             'default' => 12,
-            'required' => false
         ),
         'cat' => array(
-            'name' => 'cat',
             'display_name' => 'UNFI Category # *',
             'default' => 5,
             'required' => True
         ),
         'flags' => array(
-            'name' => 'flags',
             'display_name' => 'Flags',
             'default' => 20,
-            'required' => false
         ),
     );
 

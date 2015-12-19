@@ -57,7 +57,11 @@ class SiteMap extends FannieRESTfulPage
                 continue;
             }
             $reflect = new ReflectionClass($obj);
-            $url = $FANNIE_URL . str_replace($FANNIE_ROOT, '', $reflect->getFileName());
+            $file = $reflect->getFileName();
+            if (DIRECTORY_SEPARATOR == '\\') {
+                $file = str_replace(DIRECTORY_SEPARATOR, '/', $file);
+            }
+            $url = $FANNIE_URL . str_replace($FANNIE_ROOT, '', $file);
             if (!isset($sets[$obj->page_set])) {
                 $sets[$obj->page_set] = array();
             }
@@ -127,6 +131,11 @@ class SiteMap extends FannieRESTfulPage
             provided by plugins. Pages <em>may</em> opt out of this list but the
             vast majority do not. This is provided to ensure users can locate
             most everything regardless of how the menus are set up.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
     }
 }
 

@@ -29,7 +29,7 @@ class ssd extends ScaleDriverWrapper {
     
         $scale_display = '';
         $scans = array();
-        if ($scale_data !== False && !empty($scale_data)){
+        if ($scale_data !== false && !empty($scale_data)){
             $scale_display = DisplayLib::scaledisplaymsg($scale_data);
             if (is_array($scale_display)){
                 if (isset($scale_display['upc']))
@@ -50,10 +50,14 @@ class ssd extends ScaleDriverWrapper {
 
     private function getFile($filename)
     {
-        $rel = MiscLib::base_url();
-        $scale_data = file_get_contents($rel.'scale-drivers/drivers/rs232/' . $filename);
-        $fp = fopen($rel.'scale-drivers/drivers/rs232/' . $filename,'w');
-        fclose($fp);
+        $file = dirname(__FILE__) . '/../drivers/rs232/' . $filename;
+        if (file_exists($file)) {
+            $scale_data = file_get_contents($file);
+        } else {
+            $scale_data = '';
+        }
+        $fptr = fopen($file, 'w');
+        fclose($fptr);
 
         return $scale_data;
     }

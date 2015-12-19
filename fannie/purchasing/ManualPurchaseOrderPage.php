@@ -243,7 +243,7 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
                 <label>Inv. #</label>
                 <input type="text" name="inv-number" class="form-control" />
             </div>';
-        $ret .= '<div class="collapse" id="delete-html">' . FannieUI::deleteIcon() . '</div>';
+        $ret .= '<div class="collapse" id="delete-html">' . COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</div>';
         $ret .= '<div class="form-group">
             <button type="button" class="btn btn-default" onclick="addInvoiceLine();">Add Line</button>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

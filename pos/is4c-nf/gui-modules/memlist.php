@@ -32,6 +32,7 @@
 
 */
 
+use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class memlist extends NoInputCorePage 
@@ -40,30 +41,68 @@ class memlist extends NoInputCorePage
     private $temp_result;
     private $temp_num_rows;
     private $entered;
-    private $db;
     private $temp_message = '';
 
     private $results = array();
     private $submitted = false;
 
-    function preprocess()
+    private function getInput()
     {
-        $entered = "";
-        if (isset($_REQUEST['idSearch']) && strlen($_REQUEST['idSearch']) > 0) {
-            $entered = $_REQUEST['idSearch'];
-        } elseif (isset($_REQUEST['search'])) {
-            $entered = strtoupper(trim($_REQUEST["search"]));
-            $entered = str_replace("'", '', $entered);
+        $entered = false;
+        if (FormLib::get('idSearch', false) !== false) {
+            $entered = FormLib::get('idSearch');
+        } elseif (FormLib::get('search', false) !== false) {
+            $entered = FormLib::get('search');
         } else {
-            return true;
+            return false;
         }
 
         if (substr($entered, -2) == "ID") {
             $entered = substr($entered, 0, strlen($entered) - 2);
         }
 
-        // No input available, stop
-        if (!$entered || strlen($entered) < 1 || $entered == "CL") {
+        return str_replace("'", '', $entered);
+    }
+
+    private function runSearch($entered)
+    {
+        $lookups = AutoLoader::ListModules('MemberLookup', True);
+        foreach ($lookups as $class) {
+            if (!class_exists($class)) continue;
+            $obj = new $class();
+
+            if (is_numeric($entered) && !$obj->handle_numbers()) {
+                continue;
+            } else if (!is_numeric($entered) && !$obj->handle_text()) {
+                continue;
+            } else if (is_numeric($entered)) {
+                $chk = $obj->lookup_by_number($entered);
+                if ($chk['url'] !== false) {
+                    $this->change_page($chk['url']);
+                    throw new Exception('page change requested');
+                }
+                foreach($chk['results'] as $key=>$val) {
+                    $this->results[$key] = $val;
+                }
+            } elseif (!is_numeric($entered)) {
+                $chk = $obj->lookup_by_text($entered);
+                if ($chk['url'] !== false) {
+                    $this->change_page($chk['url']);
+                    throw new Exception('page change requested');
+                }
+                foreach ($chk['results'] as $key=>$val) {
+                    $this->results[$key] = $val;
+                }
+            }
+        }
+    }
+
+    function preprocess()
+    {
+        $entered = $this->getInput();
+        if ($entered === false) {
+            return true;
+        } elseif (!$entered || strlen($entered) < 1 || $entered == "CL") {
             $this->change_page($this->page_url."gui-modules/pos2.php");
 
             return false;
@@ -77,36 +116,10 @@ class memlist extends NoInputCorePage
             list($memberID, $personNum) = explode("::", $entered, 2);
         } else {
             // search for the member
-            $lookups = AutoLoader::ListModules('MemberLookup', True);
-            foreach ($lookups as $class) {
-                if (!class_exists($class)) continue;
-                $obj = new $class();
-
-                if (is_numeric($entered) && !$obj->handle_numbers()) {
-                    continue;
-                } else if (!is_numeric($entered) && !$obj->handle_text()) {
-                    continue;
-                } else if (is_numeric($entered)) {
-                    $chk = $obj->lookup_by_number($entered);
-                if ($chk['url'] !== false) {
-                    $this->change_page($chk['url']);
-
-                        return false;        
-                    }
-                    foreach($chk['results'] as $key=>$val) {
-                        $this->results[$key] = $val;
-                    }
-                } elseif (!is_numeric($entered)) {
-                    $chk = $obj->lookup_by_text($entered);
-                    if ($chk['url'] !== false) {
-                        $this->change_page($chk['url']);
-
-                        return false;        
-                    }
-                    foreach ($chk['results'] as $key=>$val) {
-                        $this->results[$key] = $val;
-                    }
-                }
+            try {
+                $this->runSearch($entered);
+            } catch (Exception $ex) {
+                return false;
             }
 
             if (count($this->results) == 1 && (CoreLocal::get('verifyName') == 0 || $entered == CoreLocal::get('defaultNonMem'))) {
@@ -193,8 +206,8 @@ class memlist extends NoInputCorePage
     private function wefcCardCheck($card_no)
     {
         $db_a = Database::pDataConnect();
-        if (isset($_REQUEST['memberCard']) && $_REQUEST['memberCard'] != "") {
-            $memberCard = $_REQUEST['memberCard'];
+        if (FormLib::get('memberCard') !== '') {
+            $memberCard = FormLib::get('memberCard');
             if (!is_numeric($memberCard) || strlen($memberCard) > 5 || $memberCard == 0) {
                 return "Bad Member Card# format >{$memberCard}<";
             } else {
@@ -237,7 +250,8 @@ class memlist extends NoInputCorePage
         $message = $this->temp_message;
 
         echo "<div class=\"baseHeight\">"
-            ."<form id=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\">";
+            ."<form id=\"selectform\" method=\"post\" action=\""
+            .filter_input(INPUT_SERVER, 'PHP_SELF') . "\">";
 
         // First check for a problem found in preprocess.
         if ($message != "") {
@@ -310,8 +324,8 @@ class memlist extends NoInputCorePage
                     } else {
                         $noticeR = $dbc->execute($noticeP, array($id)); 
                         $notice = '';
-                        while ($w = $dbc->fetchRow($noticeR)) {
-                            $notice .= ' ' . $w['message'];
+                        while ($row = $dbc->fetchRow($noticeR)) {
+                            $notice .= ' ' . $row['message'];
                         }
                         $notice_cache[$id] = $notice;
                         $label .= $notice;
@@ -345,8 +359,5 @@ class memlist extends NoInputCorePage
 // /class memlist
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-    new memlist();
-}
+AutoLoader::dispatch();
 
-?>

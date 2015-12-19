@@ -76,7 +76,7 @@ class ProductsModel extends BasicModel
     'auto_par'=>array('type'=>'DOUBLE','default'=>0),
     'price_rule_id'=>array('type'=>'INT', 'default'=>0),
     'last_sold'=>array('type'=>'DATETIME'),
-    'id'=>array('type'=>'INT','default'=>0,'primary_key'=>True,'increment'=>True)
+    'id'=>array('type'=>'INT','primary_key'=>True,'increment'=>True)
     );
 
     protected $unique = array('upc');

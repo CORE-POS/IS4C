@@ -1,3 +1,8 @@
+<?php
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
+?>
 <html>
 <head>
 <title>Authorization Module README</title>

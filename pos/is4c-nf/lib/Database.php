@@ -126,9 +126,9 @@ static public function getsubtotals()
     // LastID => MAX(localtemptrans.trans_id) or zero table is empty
     CoreLocal::set("LastID", (!$row || !isset($row['LastID'])) ? 0 : (double)$row["LastID"] );
     // card_no => MAX(localtemptrans.card_no)
-    $cn = (!$row || !isset($row['card_no'])) ? "0" : trim($row["card_no"]);
-    if ($cn != "0" || CoreLocal::get("memberID") == "") {
-        CoreLocal::set("memberID",$cn);
+    $cardno = (!$row || !isset($row['card_no'])) ? "0" : trim($row["card_no"]);
+    if ($cardno != "0" || CoreLocal::get("memberID") == "") {
+        CoreLocal::set("memberID",$cardno);
     }
     // runningTotal => SUM(localtemptrans.total)
     CoreLocal::set("runningTotal", (!$row || !isset($row['runningTotal'])) ? 0 : (double)$row["runningTotal"] );
@@ -270,16 +270,16 @@ static public function getsubtotals()
 */
 static public function LineItemTaxes()
 {
-    $db = Database::tDataConnect();
-    $q = "SELECT id, description, taxTotal, fsTaxable, fsTaxTotal, foodstampTender, taxrate
+    $dbc = Database::tDataConnect();
+    $taxQ = "SELECT id, description, taxTotal, fsTaxable, fsTaxTotal, foodstampTender, taxrate
         FROM taxView ORDER BY taxrate DESC";
-    $r = $db->query($q);
+    $taxR = $dbc->query($taxQ);
     $taxRows = array();
     $fsTenderTTL = 0.00;
-    while ($w = $db->fetch_row($r)) {
-        $w['fsExempt'] = 0.00;
-        $taxRows[] = $w;
-        $fsTenderTTL = $w['foodstampTender'];
+    while ($row = $dbc->fetch_row($taxR)) {
+        $row['fsExempt'] = 0.00;
+        $taxRows[] = $row;
+        $fsTenderTTL = $row['foodstampTender'];
     }
 
     // loop through line items and deal with
@@ -599,9 +599,9 @@ static public function loadglobalvalues()
 {
     $query = "select CashierNo,Cashier,LoggedIn,TransNo,TTLFlag,
         FntlFlag,TaxExempt from globalvalues";
-    $db = self::pDataConnect();
-    $result = $db->query($query);
-    $row = $db->fetch_array($result);
+    $dbc = self::pDataConnect();
+    $result = $dbc->query($query);
+    $row = $dbc->fetch_array($result);
 
     CoreLocal::set("CashierNo",$row["CashierNo"]);
     CoreLocal::set("cashier",$row["Cashier"]);
@@ -651,7 +651,7 @@ static public function loadglobalvalue($param,$val)
 */
 static public function setglobalvalue($param, $value) 
 {
-    $db = self::pDataConnect();
+    $dbc = self::pDataConnect();
     
     if (!is_numeric($value)) {
         $value = "'".$value."'";
@@ -659,7 +659,7 @@ static public function setglobalvalue($param, $value)
     
     $strUpdate = "update globalvalues set ".$param." = ".$value;
 
-    $db->query($strUpdate);
+    $dbc->query($strUpdate);
 }
 
 /**
@@ -681,9 +681,9 @@ static public function setglobalvalues($arr)
     }
     $setStr = rtrim($setStr,",");
 
-    $db = self::pDataConnect();
+    $dbc = self::pDataConnect();
     $upQ = "UPDATE globalvalues SET ".$setStr;
-    $db->query($upQ);
+    $dbc->query($upQ);
 }
 
 /**
@@ -692,9 +692,24 @@ static public function setglobalvalues($arr)
 */
 static public function setglobalflags($value) 
 {
-    $db = self::pDataConnect();
+    $dbc = self::pDataConnect();
 
-    $db->query("update globalvalues set TTLFlag = ".$value.", FntlFlag = ".$value);
+    $dbc->query("update globalvalues set TTLFlag = ".$value.", FntlFlag = ".$value);
+}
+
+static private function getTaxByName($name)
+{
+    $dbc = self::tDataConnect();
+
+    // Get the codes for the names provided.
+    $query = "SELECT id FROM taxrates WHERE description = '$fromName'";
+    $result = $dbc->query($query);
+    $row = $dbc->fetch_row($result);
+    if ($row) {
+        return $row['id'];
+    } else {
+        throw new Exception('name: >' . $name . '< not known.');
+    }
 }
 
 /**
@@ -705,50 +720,27 @@ static public function setglobalflags($value)
 */
 static public function changeLttTaxCode($fromName, $toName) 
 {
-
-    $msg = "";
     $pfx = "changeLttTaxCode ";
     $pfx = "";
     if ( $fromName == "" ) {
-        $msg = "{$pfx}fromName is empty";
-        return $msg;
-    } else {
-        if ( $toName == "" ) {
-            $msg = "{$pfx}toName is empty";
-            return $msg;
-        }
+        return "{$pfx}fromName is empty";
+    } elseif ( $toName == "" ) {
+        return "{$pfx}toName is empty";
     }
 
-    $db = self::tDataConnect();
+    $dbc = self::tDataConnect();
 
     // Get the codes for the names provided.
-    $query = "SELECT id FROM taxrates WHERE description = '$fromName'";
-    $result = $db->query($query);
-    $row = $db->fetch_row($result);
-    if ( $row ) {
-        $fromId = $row['id'];
-    } else {
-        $msg = "{$pfx}fromName: >{$fromName}< not known.";
-        return $msg;
-    }
-    $query = "SELECT id FROM taxrates WHERE description = '$toName'";
-    $result = $db->query($query);
-    $row = $db->fetch_row($result);
-    if ( $row ) {
-        $toId = $row['id'];
-    } else {
-        $msg = "{$pfx}toName: >{$toName}< not known.";
-        return $msg;
+    try {
+        $fromId = self::getTaxByName($fromName);
+        $toId = self::getTaxByName($toName);
+    } catch (Exception $ex) {
+        return $pfx . $ex->getMessage();
     }
 
     // Change the values.
     $query = "UPDATE localtemptrans set tax = $toId WHERE tax = $fromId";
-    $result = $db->query($query);
-    /* Complains that errno is undefined in SQLManager.
-    if ( $db->errno ) {
-        return "{$pfx}UPDATE error: " . $db->error;
-    }
-    */
+    $result = $dbc->query($query);
     if ( !$result ) {
         return "UPDATE false";
     }

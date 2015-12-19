@@ -26,9 +26,8 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class ViewCashiersPage extends FanniePage 
+class ViewCashiersPage extends FannieRESTfulPage 
 {
-
     protected $title = "Fannie : View Cashiers";
     protected $header = "View Cashiers";
     protected $must_authenticate = True;
@@ -37,8 +36,8 @@ class ViewCashiersPage extends FanniePage
     public $description = '[View Cashiers] shows information about cashiers.';
     public $themed = true;
 
-
-    function javascript_content(){
+    function javascript_content()
+    {
         ob_start();
         ?>
 function deleteEmp(emp_no,filter){
@@ -52,10 +51,15 @@ function deleteEmp(emp_no,filter){
 
     function preprocess()
     {
-        global $FANNIE_OP_DB;
-        $emp = FormLib::get_form_value('emp_no');
-        if (FormLib::get_form_value('delete') !== '' && $emp !== '') {
-            $dbc = FannieDB::get($FANNIE_OP_DB);
+        $this->addRoute('get<emp_no><delete>');
+        return parent::preprocess();
+    }
+
+    protected function get_emp_no_delete_handler()
+    {
+        $emp = $this->emp_no;
+        if ($this->delete !== '' && $emp !== '') {
+            $dbc = FannieDB::get($this->config->get('OP_DB'));
             $employee = new EmployeesModel($dbc);
             $employee->emp_no($emp);
             $deleted = $employee->delete();
@@ -69,25 +73,35 @@ function deleteEmp(emp_no,filter){
         return true;
     }
 
-    function body_content()
+    protected function get_emp_no_delete_view()
     {
-        $filter = FormLib::get_form_value('filter',1);
-        $order = FormLib::get_form_value('order','num');
+        return $this->get_view();
+    }
+
+    function get_view()
+    {
+        try {
+            $filter = $this->form->filter;
+            $order = $this->form->order;
+        } catch (Exception $ex) {
+            $filter = 1;
+            $order = 'num';
+        }
         $orderby = '';
-        switch($order){
-        case 'num':
-        default:
-            $orderby = 'emp_no';
-            break;
-        case 'name':
-            $orderby = 'FirstName';
-            break;
-        case 'pass':
-            $orderby = 'CashierPassword';
-            break;
-        case 'fes':
-            $orderby = 'frontendsecurity';
-            break;
+        switch($order) {
+            case 'num':
+            default:
+                $orderby = 'emp_no';
+                break;
+            case 'name':
+                $orderby = 'FirstName';
+                break;
+            case 'pass':
+                $orderby = 'CashierPassword';
+                break;
+            case 'fes':
+                $orderby = 'frontendsecurity';
+                break;
         }
         
         $ret = '<div id="alert-area"></div><div class="form-inline">';
@@ -96,8 +110,7 @@ function deleteEmp(emp_no,filter){
         if ($filter == 1){
             $ret .= "<option value=1 selected>Active Cashiers</option>";
             $ret .= "<option value=0>Disabled Cashiers</option>";
-        }
-        else{
+        } else {
             $ret .= "<option value=1>Active Cashiers</option>";
             $ret .= "<option value=0 selected>Disabled Cashiers</option>";
         }
@@ -133,6 +146,20 @@ function deleteEmp(emp_no,filter){
     {
         return '<p>View, edit, or delete cashiers. Only <em>Active</em> cashiers can
             log into the lanes. Click column headers to sort the list.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $this->setForm($form);
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $form->filter = 0;
+        foreach (array('num','name','pass','fes') as $order) {
+            $form->order = $order;
+            $this->setForm($form);
+            $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        }
     }
 }
 

@@ -114,6 +114,9 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
                         $pdf->Rect($left + ($width*$column), $y, $left + ($width*$column) + $effective_width, $pdf->GetY(), 'F');
                         $pdf->SetXY($left + ($width*$column), $y);
                         $pdf->MultiCell($effective_width, 6, $item['description'], 0, 'C');
+                        if ($pdf->GetY() - $y < 12) {
+                            $pdf->Ln(6);
+                        }
                     }
                     break;
                 }
@@ -125,9 +128,25 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->Cell($effective_width, 6, $item['size'], 0, 1, 'C');
 
             $pdf->Ln(4);
-            $pdf->SetX($left + ($width*$column));
             $pdf->SetFont($this->font, '', $this->BIG_FONT);
-            $pdf->MultiCell($effective_width, 8, $price, 0, 'C');
+            $font_shrink = 0;
+            while (true) {
+                $pdf->SetX($left + ($width*$column));
+                $y = $pdf->GetY();
+                $pdf->MultiCell($effective_width, 8, $price, 0, 'C');
+                if ($pdf->GetY() - $y > 8) {
+                    $pdf->SetFillColor(0xff, 0xff, 0xff);
+                    $pdf->Rect($left + ($width*$column), $y, $left + ($width*$column) + $effective_width, $pdf->GetY(), 'F');
+                    $font_shrink++;
+                    if ($font_shrink >= $this->BIG_FONT) {
+                        break;
+                    }
+                    $pdf->SetFontSize($this->BIG_FONT - $font_shrink);
+                    $pdf->SetXY($left + ($width*$column), $y);
+                } else {
+                    break;
+                }
+            }
 
             if ($item['startDate'] != '' && $item['endDate'] != '') {
                 // intl would be nice
@@ -152,9 +171,5 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
     }
 }
 
-}
-
-namespace {
-    class Signage16UpP extends \COREPOS\Fannie\API\item\signage\Signage16UpP {}
 }
 

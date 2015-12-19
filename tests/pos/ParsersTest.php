@@ -1,6 +1,9 @@
 <?php
 include(dirname(__FILE__).'/../../pos/is4c-nf/parser-class-lib/PreParser.php');
 include(dirname(__FILE__).'/../../pos/is4c-nf/parser-class-lib/Parser.php');
+if (!class_exists('lttLib')) {
+    include(dirname(__FILE__) . '/lttLib.php');
+}
 
 /**
  * @backupGlobals disabled
@@ -18,6 +21,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         foreach($chain as $class){
             $instance = new $class();
             $this->assertInstanceOf('PreParser',$instance);
+            // just for coverage; not vital functionality
+            $this->assertNotEquals(0, strlen($instance->doc()));
         }
 
         $chain = Parser::get_parse_chain();
@@ -26,6 +31,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         foreach($chain as $class){
             $instance = new $class();
             $this->assertInstanceOf('Parser',$instance);
+            // just for coverage; not vital functionality
+            $this->assertNotEquals(0, strlen($instance->doc()));
         }
     }
 
@@ -73,8 +80,6 @@ class ParsersTest extends PHPUnit_Framework_TestCase
                 if ($chk){
                     $input = $obj->parse($input);
                 }
-                // just for coverage; not vital functionality
-                $this->assertNotEquals(0, strlen($obj->doc()));
             }
             $this->assertEquals($output, $input);
         }
@@ -87,6 +92,65 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, CoreLocal::get('toggletax'));
         $this->assertEquals(1, CoreLocal::get('togglefoodstamp'));
         $this->assertEquals(1, CoreLocal::get('toggleDiscountable'));
+
+        CoreLocal::set('itemPD', 0);
+        CoreLocal::set('multiple', 0);
+        CoreLocal::set('quantity', 0);
+        CoreLocal::set('refund', 0);
+        CoreLocal::set('toggletax', 0);
+        CoreLocal::set('togglefoodstamp', 0);
+        CoreLocal::set('toggleDiscountable', 0);
+    }
+
+    function testCcMenu()
+    {
+        $plugins = CoreLocal::get('PluginList');
+        CoreLocal::set('PluginList', array('Paycards'));
+        $obj = new CCMenu();
+        $this->assertEquals(true, $obj->check('CC'));
+        $this->assertEquals('QM1', $obj->parse('CC'));
+        CoreLocal::set('PluginList', $plugins);
+    }
+
+    function testCaseDiscount()
+    {
+        $obj = new CaseDiscount();
+        $this->assertEquals(true, $obj->check('10CT4011'));
+
+        $out = $obj->parse('11CT4011');
+        $this->assertEquals('cdinvalid', $out);
+
+        CoreLocal::set('isStaff', 0);
+        CoreLocal::set('SSI', 0);
+        CoreLocal::set('isMember', 0);
+        $out = $obj->parse('10CT4011');
+        $this->assertEquals('4011', $out);
+        $this->assertEquals(5, CoreLocal::get('casediscount'));
+
+        CoreLocal::set('isMember', 1);
+        $out = $obj->parse('10CT4011');
+        $this->assertEquals('4011', $out);
+        $this->assertEquals(10, CoreLocal::get('casediscount'));
+
+        CoreLocal::set('SSI', 1);
+        $out = $obj->parse('10CT4011');
+        $this->assertEquals('cdSSINA', $out);
+
+        CoreLocal::set('isStaff', 1);
+        $out = $obj->parse('10CT4011');
+        $this->assertEquals('cdStaffNA', $out);
+
+        CoreLocal::set('isStaff', 0);
+        CoreLocal::set('SSI', 0);
+        CoreLocal::set('isMember', 0);
+        CoreLocal::set('casediscount', 0);
+    }
+
+    function testMemStatusToggle()
+    {
+        $obj = new MemStatusToggle();
+        $this->assertEquals(false, $obj->check('foo'));
+        $this->assertEquals('foo', $obj->parse('foo'));
     }
 
     function testParsers()
@@ -102,14 +166,575 @@ class ParsersTest extends PHPUnit_Framework_TestCase
             foreach($chain as $class){
                 $obj = new $class();
                 $chk = $obj->check($input);
-                $this->assertInternalType('boolean',$chk);
+                $this->assertInternalType('boolean',$chk, $class . ' returns non-boolean');
                 if ($chk){
                     $actual = $obj->parse($input);
                     break;
                 }
+                $this->assertInternalType('string', $obj->doc());
             }
             $this->assertEquals($output, $actual);
         }
+    }
+
+    function testWakeup()
+    {
+        $obj = new Wakeup();
+        $this->assertEquals(true, $obj->check('WAKEUP'));
+
+        $out = $obj->parse('WAKEUP');
+        $this->assertEquals('rePoll', $out['udpmsg']);
+    }
+
+    function testToggleReceipt()
+    {
+        $obj = new ToggleReceipt();
+        CoreLocal::set('receiptToggle', 0);
+        $obj->parse('NR');
+        $this->assertEquals(1, CoreLocal::get('receiptToggle'));
+        $out = $obj->parse('NR');
+        $this->assertEquals(0, CoreLocal::get('receiptToggle'));
+        $this->assertEquals('/pos2.php', substr($out['main_frame'], -9));
+    }
+
+    function testTotals()
+    {
+        $t = new Totals();
+
+        $out = $t->parse('FNTL');
+        $this->assertEquals('/fsTotalConfirm.php', substr($out['main_frame'], -19));
+        $out = $t->parse('TETL');
+        $this->assertEquals('=Totals', substr($out['main_frame'], -7));
+        lttLib::clear();
+        $out = $t->parse('FTTL');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $this->assertEquals(true, $out['redraw_footer']);
+        lttLib::clear();
+        $out = $t->parse('TL');
+        $this->assertEquals('/memlist.php', substr($out['main_frame'], -12));
+        lttLib::clear();
+        PrehLib::setMember(1, 1);
+        $out = $t->parse('TL');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $this->assertEquals(true, $out['redraw_footer']);
+        lttLib::clear();
+        $out = $t->parse('WICTL');
+        $this->assertNotEquals(0, strlen($out['output']));
+    }
+
+    function testTenderOut()
+    {
+        $to = new TenderOut();
+        $this->assertEquals(true, $to->check('TO'));
+
+        CoreLocal::set('LastID', 0);
+        $out = $to->parse('TO');
+        $this->assertNotEquals(0, strlen($out['output']));
+
+        lttLib::clear();
+        PrehLib::deptkey(10, 100);
+        $out = $to->parse('TO');
+        $this->assertNotEquals(0, strlen($out['output']));
+    }
+
+    function testTenderKey()
+    {
+        $tk = new TenderKey();
+        $this->assertEquals(true, $tk->check('TT'));
+        $out = $tk->parse('TT');
+        $this->assertEquals('/tenderlist.php', substr($out['main_frame'], -15));
+
+        $this->assertEquals(true, $tk->check('100TT'));
+        $out = $tk->parse('100TT');
+        $this->assertEquals('/tenderlist.php', substr($out['main_frame'], -15));
+        $this->assertEquals(100, CoreLocal::get('tenderTotal'));
+    }
+
+    function testSigTermCommands()
+    {
+        $st = new SigTermCommands();
+
+        $this->assertEquals(true, $st->check('TERMAUTOENABLE'));
+        $this->assertEquals('direct', CoreLocal::get('PaycardsStateChange'));
+        $this->assertEquals(true, $st->check('TERMAUTODISABLE'));
+        $this->assertEquals('coordinated', CoreLocal::get('PaycardsStateChange'));
+
+        $this->assertEquals(true, $st->check('TERMMANUAL'));
+        $this->assertEquals(true, CoreLocal::get('paycard_keyed'));
+
+        $this->assertEquals(true, $st->check('PANCACHE:FAKE'));
+        CoreLocal::set('PaycardsAllowEBT', 1);
+        $this->assertEquals(true, $st->check('PANCACHE:FAKE'));
+        $this->assertEquals('FAKE', CoreLocal::get('CachePanEncBlock'));
+
+        $this->assertEquals(true, $st->check('PINCACHE:1234'));
+        $this->assertEquals('1234', CoreLocal::get('CachePinEncBlock'));
+        $this->assertEquals('ready', CoreLocal::get('ccTermState'));
+
+        $this->assertEquals(true, $st->check('TERM:CREDIT'));
+        $this->assertEquals('CREDIT', CoreLocal::get('CacheCardType'));
+        $this->assertEquals('ready', CoreLocal::get('ccTermState'));
+        $this->assertEquals(true, $st->check('TERM:DEBIT'));
+        $this->assertEquals('DEBIT', CoreLocal::get('CacheCardType'));
+        $this->assertEquals('pin', CoreLocal::get('ccTermState'));
+        CoreLocal::set('PaycardsOfferCashBack', 1);
+        $this->assertEquals(true, $st->check('TERM:DEBIT'));
+        $this->assertEquals('DEBIT', CoreLocal::get('CacheCardType'));
+        $this->assertEquals('cashback', CoreLocal::get('ccTermState'));
+        CoreLocal::set('PaycardsOfferCashBack', 2);
+        CoreLocal::set('isMember', 0);
+        $this->assertEquals(true, $st->check('TERM:DEBIT'));
+        $this->assertEquals('DEBIT', CoreLocal::get('CacheCardType'));
+        $this->assertEquals('pin', CoreLocal::get('ccTermState'));
+        CoreLocal::set('isMember', 1);
+        $this->assertEquals(true, $st->check('TERM:DEBIT'));
+        $this->assertEquals('DEBIT', CoreLocal::get('CacheCardType'));
+        $this->assertEquals('cashback', CoreLocal::get('ccTermState'));
+        CoreLocal::set('isMember', 0);
+        CoreLocal::set('PaycardsOfferCashBack', '');
+        $this->assertEquals(true, $st->check('TERM:EBTFOOD'));
+        $this->assertEquals('EBTFOOD', CoreLocal::get('CacheCardType'));
+        $this->assertEquals('pin', CoreLocal::get('ccTermState'));
+        $this->assertEquals(true, $st->check('TERM:EBTCASH'));
+        $this->assertEquals('EBTCASH', CoreLocal::get('CacheCardType'));
+        $this->assertEquals('pin', CoreLocal::get('ccTermState'));
+        CoreLocal::set('PaycardsOfferCashBack', 1);
+        $this->assertEquals(true, $st->check('TERM:EBTCASH'));
+        $this->assertEquals('EBTCASH', CoreLocal::get('CacheCardType'));
+        $this->assertEquals('cashback', CoreLocal::get('ccTermState'));
+        CoreLocal::set('PaycardsOfferCashBack', '');
+
+        $this->assertEquals(true, $st->check('VAUTH:1234'));
+        $this->assertEquals('1234', CoreLocal::get('paycard_voiceauthcode'));
+        $this->assertEquals(true, $st->check('EBTAUTH:1234'));
+        $this->assertEquals('1234', CoreLocal::get('ebt_authcode'));
+        $this->assertEquals(true, $st->check('EBTV:1234'));
+        $this->assertEquals('1234', CoreLocal::get('ebt_vnum'));
+
+        $this->assertEquals(true, $st->check('TERMCB:99999'));
+        $out = $st->parse('TERMCB:99999');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $this->assertEquals(true, $st->check('TERMCB:0'));
+        $out = $st->parse('TERMCB:0');
+        $this->assertEquals(0, strlen($out['output']));
+
+        $this->assertEquals(true, $st->check('CCFROMCACHE'));
+        $out = $st->parse('CCFROMCACHE');
+        $this->assertEquals('FAKE', $out['retry']);
+
+        foreach (array('TERMRESET', 'TERMREBOOT', 'TERMCLEARALL') as $cmd) {
+            CoreLocal::set('CachePanEncBlock', 'FAKE');
+            CoreLocal::set('ccTermState', 'FOO');
+            $this->assertEquals(true, $st->check($cmd));
+            $this->assertEquals('', CoreLocal::get('CachePanEncBlock'));
+            $this->assertEquals('swipe', CoreLocal::get('ccTermState'));
+        }
+    }
+
+    function testReceiptCoupon()
+    {
+        $rc = new ReceiptCoupon();
+        $one = 'RC209901001';
+        $two = 'RC200001001';
+        $this->assertEquals(true, $rc->check($one));
+        $this->assertEquals(true, $rc->check($two));
+        $out = $rc->parse($one);
+        $this->assertNotEquals(0, strlen($out['output']));
+        $out = $rc->parse($two);
+        $this->assertNotEquals(0, strlen($out['output']));
+    }
+
+    function testSteering()
+    {
+        $obj = new Steering();
+
+        CoreLocal::set('LastID', 1);
+        $obj->check('CAB');
+        $out = $obj->parse('CAB');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('LastID', 0);
+        $obj->check('CAB');
+        $out = $obj->parse('CAB');
+        $this->assertEquals('/cablist.php', substr($out['main_frame'], -12));
+
+        $obj->check('PVASDF');
+        $out = $obj->parse('PVASDF');
+        $this->assertEquals('/productlist.php', substr($out['main_frame'], -16));
+        $this->assertEquals('ASDF', CoreLocal::get('pvsearch'));
+        $obj->check('TESTPV');
+        $out = $obj->parse('TESTPV');
+        $this->assertEquals('/productlist.php', substr($out['main_frame'], -16));
+        $this->assertEquals('TEST', CoreLocal::get('pvsearch'));
+
+        CoreLocal::set('LastID', 1);
+        $obj->check('UNDO');
+        $out = $obj->parse('UNDO');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('LastID', 0);
+        $obj->check('UNDO');
+        $out = $obj->parse('UNDO');
+        $this->assertEquals('=UndoAdminLogin', substr($out['main_frame'], -15));
+
+        $obj->check('SK');
+        $out = $obj->parse('SK');
+        $this->assertEquals('/DDDReason.php', substr($out['main_frame'], -14));
+        $obj->check('DDD');
+        $out = $obj->parse('DDD');
+        $this->assertEquals('/DDDReason.php', substr($out['main_frame'], -14));
+
+        CoreLocal::set('SecuritySR', 21);
+        $obj->check('MG');
+        $out = $obj->parse('MG');
+        $this->assertEquals('=SusResAdminLogin', substr($out['main_frame'], -17));
+        CoreLocal::set('SecuritySR', 0);
+        $obj->check('MG');
+        $out = $obj->parse('MG');
+        $this->assertEquals('/adminlist.php', substr($out['main_frame'], -14));
+
+        CoreLocal::set('LastID', 1);
+        CoreLocal::set('receiptToggle', 0);
+        $obj->check('RP');
+        $out = $obj->parse('RP');
+        $this->assertEquals(1, CoreLocal::get('receiptToggle'));
+        $this->assertEquals('/pos2.php', substr($out['main_frame'], -9));
+        $obj->check('RP');
+        $out = $obj->parse('RP');
+        $this->assertEquals(0, CoreLocal::get('receiptToggle'));
+        $this->assertEquals('/pos2.php', substr($out['main_frame'], -9));
+        CoreLocal::set('LastID', 0);
+        $obj->check('RP');
+        $out = $obj->parse('RP');
+        $this->assertNotEquals(0, strlen($out['output']));
+
+        $obj->check('ID');
+        $out = $obj->parse('ID');
+        $this->assertEquals('/memlist.php', substr($out['main_frame'], -12));
+
+        $obj->check('DDM');
+        $out = $obj->parse('DDM');
+        $this->assertEquals('/drawerPage.php', substr($out['main_frame'], -15));
+
+        CoreLocal::set('LastID', 1);
+        $obj->check('NS');
+        $out = $obj->parse('NS');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('LastID', 0);
+        $obj->check('NS');
+        $out = $obj->parse('NS');
+        $this->assertEquals('/nslogin.php', substr($out['main_frame'], -12));
+
+        $obj->check('GD');
+        $out = $obj->parse('GD');
+        $this->assertEquals('/giftcardlist.php', substr($out['main_frame'], -17));
+
+        $obj->check('IC');
+        $out = $obj->parse('IC');
+        $this->assertEquals('/HouseCouponList.php', substr($out['main_frame'], -20));
+
+        $obj->check('CN');
+        $out = $obj->parse('CN');
+        $this->assertEquals('/mgrlogin.php', substr($out['main_frame'], -13));
+
+        $obj->check('PO');
+        $out = $obj->parse('PO');
+        $this->assertEquals('=PriceOverrideAdminLogin', substr($out['main_frame'], -24));
+
+        CoreLocal::set('memType', 1);
+        $obj->check('MSTG');
+        $out = $obj->parse('MSTG');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('memType', 0);
+        CoreLocal::set('SecuritySR', 21);
+        $obj->check('MSTG');
+        $out = $obj->parse('MSTG');
+        $this->assertEquals('=MemStatusAdminLogin', substr($out['main_frame'], -20));
+        CoreLocal::set('SecuritySR', 0);
+        $obj->check('MSTG');
+        $out = $obj->parse('MSTG');
+        $this->assertNotEquals(0, strlen($out['output']));
+
+        CoreLocal::set('LastID', 1);
+        $obj->check('SS');
+        $out = $obj->parse('SS');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $obj->check('SO');
+        $out = $obj->parse('SO');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('LastID', 0);
+        CoreLocal::set('LoggedIn', 1);
+        $obj->check('SS');
+        $out = $obj->parse('SS');
+        $this->assertEquals('login.php', substr($out['main_frame'], -9));
+        $this->assertEquals(0, CoreLocal::get('LoggedIn'));
+        CoreLocal::set('LastID', 0);
+        CoreLocal::set('LoggedIn', 1);
+        $obj->check('SO');
+        $out = $obj->parse('SO');
+        $this->assertEquals('login.php', substr($out['main_frame'], -9));
+        $this->assertEquals(0, CoreLocal::get('LoggedIn'));
+        // may have created log records when signing out
+        lttLib::clear();
+    }
+
+    function testStackableDiscount()
+    {
+        $sd = new StackableDiscount();
+        $this->assertEquals(false, $sd->check('ZSD'));
+        CoreLocal::set('tenderTotal', 1);
+        $this->assertEquals(true, $sd->check('100SD'));
+        $out = $sd->parse('100SD');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('tenderTotal', 0);
+        $this->assertEquals(true, $sd->check('100SD'));
+        $out = $sd->parse('100SD');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $this->assertEquals(true, $sd->check('-1SD'));
+        $out = $sd->parse('-1SD');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('percentDiscount', 5);
+        $this->assertEquals(true, $sd->check('5SD'));
+        $out = $sd->parse('5SD');
+        $this->assertEquals(10, CoreLocal::get('percentDiscount'));
+        CoreLocal::set('percentDiscount', 0);
+        // may have subtotal'd
+        lttLib::clear();
+    }
+
+    function testScrollItems()
+    {
+        $inputs = array('D', 'U', 'D5', 'U5');
+        $obj = new ScrollItems();
+        foreach ($inputs as $input) {
+            $this->assertEquals(true, $obj->check($input));
+            $out = $obj->parse($input);
+            $this->assertNotEquals(0, strlen($out['output']));
+        }
+    }
+
+    function testScaleInput()
+    {
+        $obj = new ScaleInput();
+        $out = $obj->parse('S111234');
+        $this->assertEquals(1, CoreLocal::get('scale'));
+        $this->assertEquals(12.34, CoreLocal::get('weight'));
+        $this->assertEquals('S111234', $out['scale']);
+
+        $out = $obj->parse('S143');
+        $this->assertEquals(0, CoreLocal::get('scale'));
+        $this->assertEquals('S143', $out['scale']);
+    }
+
+    function testRepeatKey()
+    {
+        $rk = new RepeatKey();
+        $this->assertEquals(true, $rk->check('*'));
+        $this->assertEquals(true, $rk->check('*2'));
+        $dbc = Database::tDataConnect();
+        $upc = new UPC();
+        lttLib::clear();
+        $out = $rk->parse('*');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $upc->parse('666');
+        $out = $rk->parse('*');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $query = 'SELECT * FROM localtemptrans WHERE upc=\'0000000000666\'';
+        $res = $dbc->query($query);
+        $this->assertEquals(2, $dbc->numRows($res));
+        lttLib::clear();
+        $upc->parse('666');
+        $out = $rk->parse('*2');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $query = 'SELECT * FROM localtemptrans WHERE upc=\'0000000000666\'';
+        $res = $dbc->query($query);
+        $this->assertEquals(2, $dbc->numRows($res));
+        $prep = $dbc->prepare('SELECT SUM(quantity) FROM localtemptrans WHERE upc=\'0000000000666\'');
+        $this->assertEquals(3, $dbc->getValue($prep));
+        lttLib::clear();
+    }
+
+    function testRRR()
+    {
+        $r = new RRR();
+        $this->assertEquals(true, $r->check('RRR'));
+        $this->assertEquals(true, $r->check('2*RRR'));
+        CoreLocal::set('LastID', 0);
+        $out = $r->parse('RRR');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $out = $r->parse('2*RRR');
+        $this->assertNotEquals(0, strlen($out['output']));
+        lttLib::clear();
+    }
+
+    function testPartialReceipt()
+    {
+        $obj = new PartialReceipt();
+        $out = $obj->parse('PP');
+        $this->assertEquals('partial', $out['receipt']);
+        $this->assertNotEquals(0, strlen($out['output']));
+    }
+
+    function testMemberID()
+    {
+        $m = new MemberID();
+        $this->assertEquals(true, $m->check('1ID'));
+        $out = $m->parse('0ID');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $this->assertEquals(true, $out['redraw_footer']);
+        $this->assertEquals('0', CoreLocal::get('memberID'));
+        CoreLocal::set('verifyName', 1);
+        $out = $m->parse('1ID');
+        $this->assertEquals('/memlist.php?idSearch=1', substr($out['main_frame'], -23));
+        CoreLocal::set('memberID', 1);
+        CoreLocal::set('defaultNonMem', 99999);
+        CoreLocal::set('RestrictDefaultNonMem', 1);
+        $out = $m->parse('99999ID');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreState::memberReset();
+        $out = $m->parse('99999ID');
+        $this->assertEquals('/memlist.php?idSearch=99999', substr($out['main_frame'], -27));
+        CoreLocal::set('RestrictDefaultNonMem', 0);
+        CoreState::memberReset();
+    }
+
+    function testLock()
+    {
+        $obj = new Lock();
+        $out = $obj->parse('LOCK');
+        $this->assertEquals('/login3.php', substr($out['main_frame'], -11));
+    }
+
+    function testDonationKey()
+    {
+        $d = new DonationKey();
+        CoreLocal::set('roundUpDept', 1);
+        $this->assertEquals(true, $d->check('RU'));
+        $this->assertEquals(true, $d->check('2RU'));
+        $dbc = Database::tDataConnect();
+        lttLib::clear();
+        $out = $d->parse('RU');
+        $prep = $dbc->prepare('SELECT SUM(total) FROM localtemptrans');
+        $this->assertEquals(1, $dbc->getValue($prep));
+        lttLib::clear();
+        $out = $d->parse('200RU');
+        $prep = $dbc->prepare('SELECT SUM(total) FROM localtemptrans');
+        $this->assertEquals(2, $dbc->getValue($prep));
+        CoreLocal::set('roundUpDept', '');
+        $d->parse('RU');
+        lttLib::clear();
+    }
+
+    function testDiscountApplied()
+    {
+        $sd = new DiscountApplied();
+        $this->assertEquals(false, $sd->check('ZDA'));
+        CoreLocal::set('tenderTotal', 1);
+        $this->assertEquals(true, $sd->check('100DA'));
+        $out = $sd->parse('100DA');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('tenderTotal', 0);
+        $this->assertEquals(true, $sd->check('100DA'));
+        $out = $sd->parse('100DA');
+        $this->assertNotEquals(0, strlen($out['output']));
+        $this->assertEquals(true, $sd->check('-1DA'));
+        $out = $sd->parse('-1DA');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('percentDiscount', 4);
+        $this->assertEquals(true, $sd->check('5DA'));
+        $out = $sd->parse('5DA');
+        $this->assertEquals(5, CoreLocal::get('percentDiscount'));
+        CoreLocal::set('percentDiscount', 0);
+        // may have subtotal'd
+        lttLib::clear();
+    }
+
+    function testDeptKey()
+    {
+        $d = new DeptKey();
+        CoreLocal::set('refund', 1);
+        CoreLocal::set('SpecialDeptMap', false);
+        $out = $d->parse('1.00DP');
+        $this->assertEquals('/deptlist.php', substr($out['main_frame'], -13));
+        $this->assertEquals('RF100', CoreLocal::get('departmentAmount'));
+        $this->assertInternalType('array', CoreLocal::get('SpecialDeptMap'));
+        CoreLocal::set('refundComment', '');
+        CoreLocal::set('SecurityRefund', 21);
+        $out = $d->parse('100DP10');
+        $this->assertEquals('=RefundAdminLogin', substr($out['main_frame'], -17));
+        CoreLocal::set('SecurityRefund', 0);
+        $out = $d->parse('100DP10');
+        $this->assertEquals('/refundComment.php', substr($out['main_frame'], -18));
+        CoreLocal::set('refund', 0);
+    }
+
+    function testBalanceCheck()
+    {
+        $obj = new BalanceCheck();
+        $this->assertEquals(true, $obj->check('BQ'));
+        $out = $obj->parse('BQ');
+        $this->assertNotEquals(0, strlen($out['output']));
+    }
+
+    function testComment()
+    {
+        $cm = new Comment();
+        lttLib::clear();
+        $out = $cm->parse('CMTEST');
+        $dbc = Database::tDataConnect();
+        $prep = $dbc->prepare('SELECT description FROM localtemptrans');
+        $this->assertEquals('TEST', $dbc->getValue($prep));
+        $out = $cm->parse('CM');
+        $this->assertEquals('/bigComment.php', substr($out['main_frame'], -15));
+        lttLib::clear();
+    }
+
+    function testClear()
+    {
+        $obj = new Clear();
+        $out = $obj->parse('CL');
+        $this->assertEquals(0, CoreLocal::get('msgrepeat'));
+        $this->assertEquals('', CoreLocal::get('strRemembered'));
+        $this->assertEquals(0, CoreLocal::get('SNR'));
+        $this->assertEquals(0, CoreLocal::get('refund'));
+        $this->assertEquals('/pos2.php', substr($out['main_frame'], -9));
+    }
+
+    function testCheckKey()
+    {
+        $obj = new CheckKey();
+        $out = $obj->parse('100CQ');
+        $this->assertEquals(100, CoreLocal::get('tenderTotal'));
+        $this->assertEquals('/checklist.php', substr($out['main_frame'], -14));
+    }
+
+    function testCaseDiscMsgs()
+    {
+        $obj = new CaseDiscMsgs();
+        $inputs = array('cdinvalid', 'cdStaffNA', 'cdSSINA');
+        foreach ($inputs as $input) {
+            $this->assertEquals(true, $obj->check($input));
+            $out = $obj->parse($input);
+            $this->assertNotEquals(0, strlen($out['output']));
+        }
+    }
+
+    function testAutoTare()
+    {
+        $tare = new AutoTare();
+        $this->assertEquals(true, $tare->check('TW'));
+        $this->assertEquals(true, $tare->check('5TW'));
+        CoreLocal::set('weight', 0);
+        $out = $tare->parse('TW');
+        $this->assertEquals(0.01, CoreLocal::get('tare'));
+        $out = $tare->parse('100TW');
+        $this->assertEquals(1, CoreLocal::get('tare'));
+        $out = $tare->parse('10000TW');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('weight', 0.5);
+        $out = $tare->parse('100TW');
+        $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('weight', 0);
+        CoreLocal::set('tare', 0);
+        lttLib::clear();
     }
 
     function testItemsEntry()
@@ -123,6 +748,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('togglefoodstamp',0);
         CoreLocal::set('toggleDiscountable',0);
         CoreLocal::set('nd',0);
+        CoreLocal::set('memType', 0);
 
         // test regular price item
         lttLib::clear();
@@ -451,5 +1077,31 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::verifyRecord(1, $record, $this);
 
         lttLib::clear();
+    }
+
+    function testUPC()
+    {
+        $u = new UPC();
+        foreach (array(UPC::SCANNED_PREFIX, UPC::MACRO_PREFIX, UPC::HID_PREFIX, UPC::GS1_PREFIX) as $prefix) {
+            $this->assertEquals(true, $u->check($prefix . '4011'));
+        }
+    }
+
+    // mostly for coverage's sake
+    function testBaseClasses()
+    {
+        $parser = new Parser();
+        $pre = new PreParser();
+        $post = new PostParser();
+
+        $pre->check('');
+        $pre->parse('');
+        $pre->doc();
+
+        $this->assertEquals(array(), $post->parse(array()));
+        $this->assertInternalType('array', PostParser::getPostParseChain());
+
+        $parser->check('');
+        $parser->parse('');
     }
 }

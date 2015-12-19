@@ -41,37 +41,73 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     protected $preview_opts = array(
         'sku' => array(
-            'name' => 'sku',
             'display_name' => 'SKU',
             'default' => 0,
-            'required' => True
+            'required' => true
         ),
         'plu' => array(
-            'name' => 'plu',
             'display_name' => 'PLU',
             'default' => 1,
-            'required' => True
+            'required' => true
         )
     );
 
-    protected $use_splits = False;
+    protected $use_splits = false;
 
-    function process_file($linedata){
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+    private function prepStatements($dbc)
+    {
+        $this->insP = $dbc->prepare('INSERT INTO vendorSKUtoPLU (vendorID, sku, upc) VALUES (?,?,?)');
+        $this->upP  = $dbc->prepare('UPDATE vendorSKUtoPLU SET upc=? WHERE sku=? AND vendorID=?');
+        $this->chkP = $dbc->prepare('SELECT upc FROM vendorSKUtoPLU WHERE sku=? AND upc=? AND vendorID=?');
+        $this->pluP = $dbc->prepare('SELECT upc FROM vendorSKUtoPLU WHERE sku=? AND vendorID=?');
+    }
 
+    private function sessionVendorID($dbc)
+    {
         if (!isset($_SESSION['vid'])){
             $this->error_details = 'Missing vendor setting';
-            return False;
+            return false;
         }
         $VENDOR_ID = $_SESSION['vid'];
 
-        $p = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorID=?");
-        $idR = $dbc->exec_statement($p,array($VENDOR_ID));
+        $idP = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorID=?");
+        $idR = $dbc->exec_statement($idP,array($VENDOR_ID));
         if ($dbc->num_rows($idR) == 0){
             $this->error_details = 'Cannot find vendor';
-            return False;
+            return false;
         }
+
+        return $VENDOR_ID;
+    }
+
+    private function getSkuPlu($data, $SKU, $PLU)
+    {
+        $sku = false;
+        $plu = false;
+        if (is_array($data) && isset($data[$SKU]) && isset($data[$PLU])) {
+            // grab data from appropriate columns
+            $sku = $data[$SKU];
+            $plu = substr($data[$PLU],0,13);
+            $plu = BarcodeLib::padUPC($plu);
+            if (!is_numeric($plu)) { 
+                $plu = false;
+            }
+        }
+
+        return array($sku, $plu);
+    }
+
+    function process_file($linedata)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $VENDOR_ID = $this->sessionVendorID($dbc);
+        if ($VENDOR_ID === false) {
+            return false;
+        }
+
+        $this->prepStatements($dbc);
 
         $SKU = $this->get_column_index('sku');
         $PLU = $this->get_column_index('plu');
@@ -79,43 +115,30 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $REPLACE = ($mode === '1') ? True : False;
 
         if ($REPLACE){
-            $delP = $dbc->prepare_statement('DELETE FROM vendorSKUtoPLU WHERE vendorID=?');
-            $dbc->exec_statement($delP, array($VENDOR_ID));
+            $delP = $dbc->prepare('DELETE FROM vendorSKUtoPLU WHERE vendorID=?');
+            $dbc->execute($delP, array($VENDOR_ID));
         }
 
-        $insP = $dbc->prepare_statement('INSERT INTO vendorSKUtoPLU (vendorID, sku, upc) VALUES (?,?,?)');
-        $upP  = $dbc->prepare_statement('UPDATE vendorSKUtoPLU SET upc=? WHERE sku=? AND vendorID=?');
-        $chkP = $dbc->prepare_statement('SELECT upc FROM vendorSKUtoPLU WHERE sku=? AND upc=? AND vendorID=?');
-        $pluP = $dbc->prepare_statement('SELECT upc FROM vendorSKUtoPLU WHERE sku=? AND vendorID=?');
-
         $this->stats = array('done' => 0, 'error' => array());
-        foreach($linedata as $data){
-            if (!is_array($data)) continue;
+        foreach ($linedata as $data) {
+            list($sku, $plu) = $this->getSkuPlu($data, $SKU, $PLU);
+            if ($sku !== false && $plu !== false) {
+                $chkR = $dbc->exec_statement($this->chkP, array($sku,$plu,$VENDOR_ID));
+                if ($dbc->num_rows($chkR) > 0) continue; // entry exists
 
-            if (!isset($data[$PLU])) continue;
-            if (!isset($data[$SKU])) continue;
+                $pluR = $dbc->exec_statement($this->pluP, array($sku,$VENDOR_ID));
+                $success = false;
+                if ($dbc->num_rows($pluR) == 0){
+                    $success = $dbc->exec_statement($this->insP, array($VENDOR_ID, $sku, $plu));
+                } else {
+                    $success = $dbc->exec_statement($this->upP, array($plu, $sku, $VENDOR_ID));
+                }
 
-            // grab data from appropriate columns
-            $sku = $data[$SKU];
-            $plu = substr($data[$PLU],0,13);
-            $plu = BarcodeLib::padUPC($plu);
-            if (!is_numeric($plu)) continue;
-    
-            $chkR = $dbc->exec_statement($chkP, array($sku,$plu,$VENDOR_ID));
-            if ($dbc->num_rows($chkR) > 0) continue; // entry exists
-
-            $pluR = $dbc->exec_statement($pluP, array($sku,$VENDOR_ID));
-            $success = false;
-            if ($dbc->num_rows($pluR) == 0){
-                $success = $dbc->exec_statement($insP, array($VENDOR_ID, $sku, $plu));
-            } else {
-                $success = $dbc->exec_statement($upP, array($plu, $sku, $VENDOR_ID));
-            }
-
-            if ($success) {
-                $this->stats['done']++;
-            } else {
-                $this->stats['error'][] = 'Error updating SKU #' . $sku;
+                if ($success) {
+                    $this->stats['done']++;
+                } else {
+                    $this->stats['error'][] = 'Error updating SKU #' . $sku;
+                }
             }
         }
 
@@ -127,7 +150,7 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 WHERE i.vendorID=?');
         $dbc->exec_statement($resetP, array($VENDOR_ID));
 
-        return True;
+        return true;
     }
 
     /**
@@ -142,20 +165,11 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage {
     function results_content()
     {
         unset($_SESSION['vid']);
-        $ret = '<p>Mapping complete</p>';
-        $ret .= '<div class="alert alert-success">Updated ' . $this->stats['done'] . ' items</div>';
-        if (count($this->stats['error']) > 0) {
-            $ret .= '<div class="alert alert-danger"><ul>';
-            foreach ($this->stats['error'] as $error) {
-                $ret .= '<li>' . $error . '</li>';
-            }
-            $ret .= '</ul></div>';
-        }
-
-        return $ret;
+        return $this->simpleStats($this->stats, 'done');
     }
 
-    function form_content(){
+    function form_content()
+    {
         global $FANNIE_OP_DB;
         $vid = FormLib::get_form_value('vid');
         if ($vid === ''){
@@ -163,30 +177,29 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage {
             return '<div class="alert alert-danger">Error: No Vendor Selected</div>';
         }
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $vp = $dbc->prepare_statement('SELECT vendorName FROM vendors WHERE vendorID=?');
-        $vr = $dbc->exec_statement($vp,array($vid));
-        if ($dbc->num_rows($vr)==0){
+        $vendP = $dbc->prepare('SELECT vendorName FROM vendors WHERE vendorID=?');
+        $vname = $dbc->getValue($vendP,array($vid));
+        if ($vname) {
             $this->add_onload_command("\$('#FannieUploadForm').remove();");
             return '<div class="alert alert-danger">Error: No Vendor Found</div>';
         }
-        $vrow = $dbc->fetch_row($vr);
         $_SESSION['vid'] = $vid;
         return '<div class="well"><legend>Instructions</legend>
-            Upload a PLU and SKU file for <i>'.$vrow['vendorName'].'</i> ('.$vid.'). File
+            Upload a PLU and SKU file for <i>'.$vname.'</i> ('.$vid.'). File
             can be CSV, XLS, or XLSX.</div><br />';
     }
 
     public function preprocess()
     {
-        if (php_sapi_name() !== 'cli') {
+        if (php_sapi_name() !== 'cli' && !header_sent() && session_id() === '') {
             /* this page requires a session to pass some extra
                state information through multiple requests */
-            @session_start();
+            session_start();
         }
 
         return parent::preprocess();
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

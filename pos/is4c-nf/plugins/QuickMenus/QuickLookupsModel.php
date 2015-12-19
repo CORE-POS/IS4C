@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\plugins\QuickMenus;
+
 /**
   @class QuickLookupsModel
 */

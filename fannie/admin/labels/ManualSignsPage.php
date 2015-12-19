@@ -76,13 +76,7 @@ class ManualSignsPage extends FannieRESTfulPage
     {
         $ret = '';
         $ret .= '<form target="_blank" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post" id="signform">';
-        $mods = FannieAPI::listModules('FannieSignage');
-        $others = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
-        foreach ($others as $o) {
-            if (!in_array($o, $mods)) {
-                $mods[] = $o;
-            }
-        }
+        $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
         sort($mods);
 
         $ret .= '<div class="form-group form-inline">';
@@ -181,6 +175,11 @@ HTML;
             No sign is printed for the first row but any changes made to the
             first row are automatically copied through to the other rows.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
     }
 }
 

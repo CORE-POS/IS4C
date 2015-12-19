@@ -24,9 +24,11 @@
 namespace COREPOS\pos\lib\models\trans;
 use COREPOS\pos\lib\models\BasicModel;
 
+/*
 if (!class_exists('\\COREPOS\\pos\lib\\models\\trans\\LocalTransModel')) {
     include_once(dirname(__FILE__).'/LocalTransModel.php');
 }
+*/
 
 /**
   @class LocalTempTransModel

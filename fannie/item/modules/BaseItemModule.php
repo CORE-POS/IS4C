@@ -999,29 +999,13 @@ HTML;
                 $model->tax($taxes[$i]);
             }
             $fs = FormLib::get('FS', array());
-            if (in_array($stores[$i], $fs)) {
-                $model->foodstamp(1);
-            } else {
-                $model->foodstamp(0);
-            }
+            $model->foodstamp(in_array($stores[$i], $fs) ? 1 : 0);
             $scale = FormLib::get('Scale', array());
-            if (in_array($stores[$i], $scale)) {
-                $model->scale(1);
-            } else {
-                $model->scale(0);
-            }
+            $model->scale(in_array($stores[$i], $scale) ? 1 : 0);
             $qtyFrc = FormLib::get('QtyFrc', array());
-            if (in_array($stores[$i], $qtyFrc)) {
-                $model->qttyEnforced(1);
-            } else {
-                $model->qttyEnforced(0);
-            }
+            $model->qttyEnforced(in_array($stores[$i], $qtyFrc) ? 1 : 0);
             $wic = FormLib::get('prod-wicable', array());
-            if (in_array($stores[$i], $wic)) {
-                $model->wicable(1);
-            } else {
-                $model->wicable(0);
-            }
+            $model->wicable(in_array($stores[$i], $wic) ? 1 : 0);
             $discount_setting = FormLib::get('discount');
             if (isset($discount_setting[$i])) {
                 switch ($discount_setting[$i]) {
@@ -1084,20 +1068,11 @@ HTML;
             $vendorID = 0;
             $v_input = FormLib::get('distributor');
             if (isset($v_input[$i])) {
-                $vendor = new VendorsModel($dbc);
-                $vendor->vendorName($v_input[$i]);
-                foreach($vendor->find('vendorID') as $obj) {
-                    $vendorID = $obj->vendorID();
-                    break;
-                }
+                $vendorID = $this->getVendorID($v_input[$i]);
             }
             $model->default_vendor_id($vendorID);
             $inUse = FormLib::get('prod-in-use', array());
-            if (in_array($stores[$i], $inUse)) {
-                $model->inUse(1);
-            } else {
-                $model->inUse(0);
-            }
+            $model->inUse(in_array($stores[$i], $inUse) ? 1 : 0);
             $idEnf = FormLib::get('id-enforced', array());
             if (isset($idEnf[$i])) {
                 $model->idEnforced($idEnf[$i]);
@@ -1113,23 +1088,7 @@ HTML;
                 }
                 $model->deposit($deposit[$i]);
             }
-
-            /* products.formatted_name is intended to be maintained automatically.
-             * Get all enabled plugins and standard modules of the base.
-             * Run plugins first, then standard modules.
-             */
-            $formatters = FannieAPI::ListModules('ProductNameFormatter');
-            $fmt_name = "";
-            $fn_params = array('index' => $i);
-            foreach($formatters as $formatter_name){
-                $formatter = new $formatter_name();
-                $fmt_name = $formatter->compose($fn_params);
-                if (isset($formatter->this_mod_only) &&
-                    $formatter->this_mod_only) {
-                    break;
-                }
-            }
-            $model->formatted_name($fmt_name);
+            $model->formatted_name($this->formatName($i));
 
             $model->save();
         }
@@ -1139,13 +1098,102 @@ HTML;
           a vendorItems record
         */
         if ($vendorID != 0) {
-            $vitem = new VendorItemsModel($dbc);
-            $vitem->vendorID($vendorID);
-            $vitem->upc($upc);
-            $sku = FormLib::get('vendorSKU');
-            if (empty($sku)) {
-                $sku = $upc;
-            } else {
+            $this->saveVendorItem($model, $vendorID);
+        }
+
+        if ($dbc->table_exists('prodExtra')) {
+            $this->saveProdExtra($model);
+        }
+
+        if (!isset($FANNIE_PRODUCT_MODULES['ProdUserModule']) && $dbc->tableExists('productUser')) {
+            $this->saveProdUser($upc);
+        }
+    }
+
+    private function getVendorID($name)
+    {
+        $dbc = $this->db();
+        $vendor = new VendorsModel($dbc);
+        $vendor->vendorName($name);
+        foreach ($vendor->find('vendorID') as $obj) {
+            return $obj->vendorID();
+        }
+
+        return 0;
+    }
+
+    private function formatName($index)
+    {
+        /* products.formatted_name is intended to be maintained automatically.
+         * Get all enabled plugins and standard modules of the base.
+         * Run plugins first, then standard modules.
+         */
+        $formatters = FannieAPI::ListModules('ProductNameFormatter');
+        $fmt_name = "";
+        $fn_params = array('index' => $index);
+        foreach ($formatters as $formatter_name) {
+            $formatter = new $formatter_name();
+            $fmt_name = $formatter->compose($fn_params);
+            if (isset($formatter->this_mod_only) &&
+                $formatter->this_mod_only) {
+                break;
+            }
+        }
+
+        return $fmt_name;
+    }
+
+    private function saveProdUser($upc)
+    {
+        try {
+            $dbc = $this->db();
+            $model = new ProductUserModel($dbc);
+            $model->upc($upc);
+            $model->description($this->form->puser_description);
+            return $model->save();
+        } catch (Exception $ex) {
+            return false;
+        }
+    }
+
+    private function saveProdExtra($product)
+    {
+        $dbc = $this->db();
+        $extra = new ProdExtraModel($dbc);
+        $extra->upc($product->upc());
+        if (!$extra->load()) {
+            $extra->variable_pricing(0);
+            $extra->margin(0);
+            $extra->case_quantity('');
+            $extra->case_cost(0.00);
+            $extra->case_info('');
+        }
+        $extra->manufacturer($product->brand());
+        $extra->cost($product->cost());
+        try {
+            $extra->distributor($this->form->distributor);
+        } catch (Exception $ex) {
+            $extra->distributor('');
+        }
+
+        return $extra->save();
+    }
+
+    private function saveVendorItem($product, $vendorID)
+    {
+        $dbc = $this->db();
+        $upc = $product->upc();
+        /**
+          If a vendor is selected, intialize
+          a vendorItems record
+        */
+        $vitem = new VendorItemsModel($dbc);
+        $vitem->vendorID($vendorID);
+        $vitem->upc($upc);
+        try {
+            $sku = $this->form->vendorSKU;
+            $caseSize = $this->form->caseSize;
+            if (!empty($sku)) {
                 /**
                   If a SKU is provided, update any
                   old record that used the UPC as a
@@ -1173,50 +1221,20 @@ HTML;
                             AND vendorID=?');
                     $dbc->execute($fixSkuP, array($sku, $upc, $vendorID));
                 }
+            } else {
+                $sku = $upc;
             }
-            $vitem->sku($sku);
-            $vitem->size($model->size());
-            $vitem->description($model->description());
-            $vitem->brand($model->brand());
-            $vitem->units(FormLib::get('caseSize', 1));
-            $vitem->cost($model->cost());
-            $vitem->save();
+        } catch (Exception $ex) {
+            $sku = $upc;
+            $caseSize = 1;
         }
-
-        if ($dbc->table_exists('prodExtra')) {
-            $extra = new ProdExtraModel($dbc);
-            $extra->upc($upc);
-            if (!$extra->load()) {
-                $extra->variable_pricing(0);
-                $extra->margin(0);
-                $extra->case_quantity('');
-                $extra->case_cost(0.00);
-                $extra->case_info('');
-            }
-            $brand = FormLib::get('manufacturer');
-            if (isset($brand[0])) {
-                $extra->manufacturer(str_replace("'",'',$brand[0]));
-            }
-            $dist = FormLib::get('distributor');
-            if (isset($dist[0])) {
-                $extra->distributor(str_replace("'",'',$dist[0]));
-            }
-            $cost = FormLib::get('cost');
-            if (isset($cost[0])) {
-                $extra->cost($cost[0]);
-            }
-            $extra->save();
-        }
-
-        if (!isset($FANNIE_PRODUCT_MODULES['ProdUserModule'])) {
-            if ($dbc->table_exists('productUser')){
-                $ldesc = FormLib::get_form_value('puser_description');
-                $model = new ProductUserModel($dbc);
-                $model->upc($upc);
-                $model->description($ldesc);
-                $model->save();
-            }
-        }
+        $vitem->sku($sku);
+        $vitem->size($product->size());
+        $vitem->description($product->description());
+        $vitem->brand($product->brand());
+        $vitem->units($caseSize);
+        $vitem->cost($product->cost());
+        return $vitem->save();
     }
 
     function AjaxCallback()

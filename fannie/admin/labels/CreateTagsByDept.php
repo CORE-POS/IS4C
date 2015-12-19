@@ -137,6 +137,11 @@ class CreateTagsByDept extends FanniePage {
             POS department range. Tags will be queued for
             printing under the selected super department.</p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
 FannieDispatch::conditionalExec();

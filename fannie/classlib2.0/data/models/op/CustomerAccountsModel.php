@@ -56,6 +56,35 @@ class CustomerAccountsModel extends BasicModel
     'modified' => array('type'=>'DATETIME', 'ignore_updates'=>true)
     );
 
+    public function migrateQuery()
+    {
+        return '
+            SELECT c.CardNo AS cardNo,
+                CASE WHEN s.memtype2 IS NOT NULL THEN s.memtype2 ELSE c.Type END AS memberStatus,
+                CASE WHEN s.memtype2 IS NOT NULL THEN c.Type ELSE \'\' END AS activeStatus,
+                CASE WHEN s.memtype1 IS NOT NULL THEN s.memtype1 ELSE c.memType END AS customerTypeID,
+                c.Balance AS chargeBalance,
+                c.ChargeLimit AS chargeLimit,
+                u.upc AS idCardUPC,
+                d.start_date AS startDate,
+                d.end_date AS endDate,
+                m.street AS addressFirstLine,
+                m.city,
+                m.state,
+                m.zip,
+                m.ads_OK AS contactAllowed,
+                z.pref,
+                CASE WHEN c.LastChange > m.modified THEN c.LastChange ELSE m.modified END AS modified
+            FROM custdata AS c
+                LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
+                LEFT JOIN memContact AS z ON c.CardNo=z.card_no
+                LEFT JOIN memDates AS d ON c.CardNo=d.card_no
+                LEFT JOIN memberCards AS u ON c.CardNo=u.card_no
+                LEFT JOIN suspensions AS s ON c.CardNo=s.cardno
+            WHERE c.CardNo IN (?)
+                AND c.personNum=1';
+    }
+
     /**
       Copy information from existing tables to
       a new CustomerAccounts record. This will NOT
@@ -65,31 +94,7 @@ class CustomerAccountsModel extends BasicModel
     */
     public function migrateAccount($card_no)
     {
-        $query = '
-            SELECT c.CardNo,
-                CASE WHEN s.memtype2 IS NOT NULL THEN s.memtype2 ELSE c.Type END AS memberStatus,
-                CASE WHEN s.memtype2 IS NOT NULL THEN c.Type ELSE \'\' END AS activeStatus,
-                CASE WHEN s.memtype1 IS NOT NULL THEN s.memtype1 ELSE c.memType END AS customerTypeID,
-                c.Balance,
-                c.ChargeLimit,
-                u.upc,
-                d.start_date,
-                d.end_date,
-                m.street,
-                m.city,
-                m.state,
-                m.zip,
-                m.ads_OK,
-                z.pref,
-                CASE WHEN c.LastChange > m.modified THEN c.LastChange ELSE m.modified END AS modified
-            FROM custdata AS c
-                LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
-                LEFT JOIN memContact AS z ON c.CardNo=z.card_no
-                LEFT JOIN memDates AS d ON c.CardNo=d.card_no
-                LEFT JOIN memberCards AS u ON c.CardNo=u.card_no
-                LEFT JOIN suspensions AS s ON c.CardNo=s.cardno
-            WHERE c.CardNo=?
-                AND c.personNum=1';
+        $query = $this->migrateQuery();
         $dbc = $this->connection;
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, array($card_no));
@@ -107,23 +112,23 @@ class CustomerAccountsModel extends BasicModel
         $this->memberStatus($w['memberStatus']);
         $this->activeStatus($w['activeStatus']);
         $this->customerTypeID($w['customerTypeID']);
-        $this->chargeBalance($w['Balance']);
-        $this->chargeLimit($w['ChargeLimit']);
-        $this->idCardUPC($w['upc']);
-        $this->startDate($w['start_date']);
-        $this->endDate($w['end_date']);
-        if (strstr($w['street'], "\n")) {
-            list($addr1, $addr2) = explode("\n", $w['street'], 2);
+        $this->chargeBalance($w['chargeBalance']);
+        $this->chargeLimit($w['chargeLimit']);
+        $this->idCardUPC($w['idCardUPC']);
+        $this->startDate($w['startDate']);
+        $this->endDate($w['endDate']);
+        if (strstr($w['addressFirstLine'], "\n")) {
+            list($addr1, $addr2) = explode("\n", $w['addressFirstLine'], 2);
             $this->addressFirstLine($addr1);
             $this->addressSecondLine($addr2);
         } else {
-            $this->addressFirstLine($w['street']);
+            $this->addressFirstLine($w['addressFirstLine']);
             $this->addressSecondLine('');
         }
         $this->city($w['city']);
         $this->state($w['state']);
         $this->zip($w['zip']);
-        $this->contactAllowed($w['ads_OK']);
+        $this->contactAllowed($w['contactAllowed']);
         if ($w['pref'] == 2) {
             $this->contactMethod('email');
         } elseif ($w['pref'] == 3) {
@@ -232,11 +237,18 @@ class CustomerAccountsModel extends BasicModel
             $lane_push = true;
         }
 
-        if ($this->record_changed && !$lane_push) {
+        $changed = $this->record_changed;
+        if ($changed && !$lane_push) {
             $this->modified(date('Y-m-d H:i:s'));
         }
+        $saved = parent::save();
 
-        return parent::save();
+        if ($saved && $changed && !$lane_push) {
+            $log = new UpdateAccountLogModel($this->connection);
+            $log->log($this);
+        }
+
+        return $saved;
     }
 }
 

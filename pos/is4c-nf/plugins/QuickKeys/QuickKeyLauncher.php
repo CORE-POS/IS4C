@@ -28,21 +28,20 @@ class QuickKeyLauncher extends Parser
 
     function check($str)
     {
+        $tmp = false;
         if (strstr($str,"QK")) {
             $tmp = explode("QK",$str);
-            $ct = count($tmp);
-            if ($ct <= 2 && is_numeric($tmp[$ct-1])) {
-                return true;
-            }
         } elseif (strstr($str,"QO")) {
             $tmp = explode("QO",$str);
-            $ct = count($tmp);
-            if ($ct <= 2 && is_numeric($tmp[$ct-1])) {
-                $this->mode = 'overlay';
-                return true;
-            }
+            $this->mode = 'overlay';
         }
-        return false;
+
+        $len = count($temp);
+        if ($tmp && $len <= 2 && is_numeric($tmp[$len-1])) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     function parse($str)
@@ -69,25 +68,32 @@ class QuickKeyLauncher extends Parser
         return $ret;
     }
 
-    private function overlayKeys($number)
+    public function getKeys($number)
     {
-        $db = Database::pDataConnect();
+        $dbc = Database::pDataConnect();
         $my_keys = array();
-        if ($db->table_exists('QuickLookups')) {
-            $prep = $db->prepare('
+        if ($dbc->table_exists('QuickLookups')) {
+            $prep = $dbc->prepare('
                 SELECT label,
                     action
                 FROM QuickLookups
                 WHERE lookupSet = ?
                 ORDER BY sequence');
-            $res = $db->execute($prep, array($number));
-            while ($row = $db->fetch_row($res)) {
+            $res = $dbc->execute($prep, array($number));
+            while ($row = $dbc->fetch_row($res)) {
                 $my_keys[] = new quickkey($row['label'], $row['action']);
             }
         }
         if (count($my_keys) == 0) {
             include(dirname(__FILE__) . '/quickkeys/keys/' . $number . '.php');
         }
+
+        return $my_keys;
+    }
+
+    private function overlayKeys($number)
+    {
+        $my_keys = $this->getKeys($number);
         if (count($my_keys) == 0) {
             return DisplayLib::boxMsg('Menu not found', '', false, DisplayLib::standardClearButton());
         }
@@ -143,4 +149,3 @@ class QuickKeyLauncher extends Parser
     }
 }
 
-?>

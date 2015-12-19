@@ -104,7 +104,3 @@ class Signage4UpL extends \COREPOS\Fannie\API\item\FannieSignage
 
 }
 
-namespace {
-    class Signage4UpL extends \COREPOS\Fannie\API\item\signage\Signage4UpL {}
-}
-

@@ -53,22 +53,35 @@ class PIApply extends FannieRESTfulPage
         } 
         $rest = array(
             'cardNo' => $json['card_no'],
-            'addressFirstLine' => $json['addr1'], 
-            'addressSecondLine' => $json['addr2'], 
-            'city' => $json['city'], 
-            'state' => $json['state'], 
+            'addressFirstLine' => strtoupper($json['addr1']), 
+            'addressSecondLine' => strtoupper($json['addr2']), 
+            'city' => strtoupper($json['city']), 
+            'state' => strtoupper($json['state']), 
             'zip' => $json['zip'], 
             'customers' => array(
                 array(
                     'accountHolder' => 1,
-                    'firstName' => $json['fn'],
-                    'lastName' => $json['ln'],
+                    'firstName' => strtoupper($json['fn']),
+                    'lastName' => strtoupper($json['ln']),
                     'phone' => $json['ph'],
                     'email' => $json['email'],
                 ),
             ),
         );
+        foreach ($json['houseHold'] as $hh) {
+            $rest['customers'][] = array(
+                'accountHolder' => 0,
+                'firstName' => strtoupper($hh[0]),
+                'lastName' => strtoupper($hh[1]),
+            );
+        }
         \COREPOS\Fannie\API\member\MemberREST::post($json['card_no'], $rest);
+
+        $custdata = new CustdataModel($this->connection);
+        $custdata->CardNo($json['card_no']);
+        foreach ($custdata->find() as $c) {
+            $c->pushToLanes();
+        }
         header('Location: PIMemberPage.php?id=' . $json['card_no']);
 
         return false;

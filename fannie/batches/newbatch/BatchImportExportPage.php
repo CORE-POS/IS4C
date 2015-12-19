@@ -153,6 +153,14 @@ class BatchImportExportPage extends FannieRESTfulPage
             Note: exporting & importing batches does not preserve numeric batch IDs.
             </em></p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->id = 1;
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+        $phpunit->assertNotEquals(0, strlen($this->post_id_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

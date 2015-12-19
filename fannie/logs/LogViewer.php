@@ -64,7 +64,7 @@ class LogViewer extends FanniePage
     private function list_content()
     {
         $ret = "Choose a log file:<ul>";
-        $dh = opendir(".");
+        $dh = opendir(dirname(__FILE__));
         while (($file = readdir($dh)) !== false) {
             if ($file[0] == "." || $file == "index.php" || $file == 'LogViewer.php') {
                 continue;
@@ -201,8 +201,15 @@ class LogViewer extends FanniePage
             <p><em>queries.log</em> logs developer-oriented information
             about database errors.</p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $this->mode = 'show';
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $phpunit->assertNotEquals(0, strlen($this->css_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

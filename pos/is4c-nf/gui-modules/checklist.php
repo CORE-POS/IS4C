@@ -26,6 +26,36 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 class checklist extends NoInputCorePage 
 {
 
+    private function handleInput($entered)
+    {
+        $entered = strtoupper($entered);
+
+        if ($entered == "" || $entered == "CL"){
+            // should be empty string
+            // javascript causes this input if the
+            // user presses CL{enter}
+            // Redirect to main screen
+            CoreLocal::set("tenderTotal","0");    
+            $this->change_page($this->page_url."gui-modules/pos2.php");
+            return False;
+        }
+
+        if (!empty($entered)){ 
+            // built department input string and set it
+            // to be the next POS entry
+            // Redirect to main screen
+            $input = CoreLocal::get("tenderTotal")."CQ".$entered;
+            $this->change_page(
+                $this->page_url 
+                . "gui-modules/pos2.php"
+                . '?reginput=' . $input
+                . '&repeat=1');
+            return False;
+        }
+
+        return true;
+    }
+
     /**
       Input processing function
     */
@@ -33,30 +63,7 @@ class checklist extends NoInputCorePage
     {
         // a selection was made
         if (isset($_REQUEST['search'])){
-            $entered = strtoupper($_REQUEST['search']);
-
-            if ($entered == "" || $entered == "CL"){
-                // should be empty string
-                // javascript causes this input if the
-                // user presses CL{enter}
-                // Redirect to main screen
-                CoreLocal::set("tenderTotal","0");    
-                $this->change_page($this->page_url."gui-modules/pos2.php");
-                return False;
-            }
-
-            if (!empty($entered)){ 
-                // built department input string and set it
-                // to be the next POS entry
-                // Redirect to main screen
-                $input = CoreLocal::get("tenderTotal")."CQ".$entered;
-                $this->change_page(
-                    $this->page_url 
-                    . "gui-modules/pos2.php"
-                    . '?reginput=' . $input
-                    . '&repeat=1');
-                return False;
-            }
+            return $this->handleInput($_REQUEST['search']);
         }
         return True;
     } // END preprocess() FUNCTION
@@ -108,9 +115,15 @@ class checklist extends NoInputCorePage
         $this->add_onload_command("\$('#search').focus();\n");
     } // END body_content() FUNCTION
 
+    public function unitTest($phpunit)
+    {
+        ob_start();
+        $phpunit->assertEquals(false, $this->handleInput(''));
+        $phpunit->assertEquals(false, $this->handleInput('CL'));
+        $phpunit->assertEquals(false, $this->handleInput('7'));
+        ob_get_clean();
+    }
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new checklist();
+AutoLoader::dispatch();
 
-?>

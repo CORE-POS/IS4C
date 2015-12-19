@@ -297,8 +297,18 @@ class SuperDeptEditor extends FanniePage {
             that are not considered sales. Examples of things that may fit
             well in super department #0 are gift cards and member equity.</p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        ob_start();
+        $this->ajax_response('foobar');
+        $this->ajax_response('deptsInSuper');
+        $this->ajax_response('deptsNotInSuper');
+        $this->ajax_response('superDeptEmail');
+        ob_get_clean();
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

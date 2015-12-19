@@ -25,6 +25,14 @@ class NewMagellan extends ScaleDriverWrapper {
     function ReadFromScale()
     {
         $readdir = dirname(__FILE__) . '/../drivers/NewMagellan/ss-output';
+        // do not process any scale input while 
+        // transaction is ending
+        if (CoreLocal::get('End') != 0) {
+            usleep(100);
+            echo '{}';
+            return;
+        }
+
         $scale_display = "";
         $scans = array();
         $files = scandir($readdir);
@@ -51,8 +59,11 @@ class NewMagellan extends ScaleDriverWrapper {
         if (!empty($scale_display)) $output['scale'] = $scale_display;
         if (!empty($scans)) $output['scans'] = ltrim($scans[0],'0');
 
-        if (!empty($output)) echo JsonLib::array_to_json($output);
-        else echo "{}";
+        if (!empty($output)) {
+            echo JsonLib::array_to_json($output);
+        } else {
+            echo "{}";
+        }
     }
 
     function ReadReset(){

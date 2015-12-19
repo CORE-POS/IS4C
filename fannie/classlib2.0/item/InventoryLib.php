@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2010 Whole Foods Co-op
+    Copyright 2015 Whole Foods Co-op, Duluth, MN
 
     This file is part of CORE-POS.
 
@@ -20,20 +20,33 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-// A page to search the member base.
-$page_title='Fannie - Member Management Module';
-$header='Send Statements';
-include('../../src/header.html');
 
-?>
-<ul>
-<li><a href=indvAR.php>AR (Member)</a></li>
-<li><a href=busAR.php>AR (Business EOM)</a></li>
-<li><a href=busAR.php>AR (Business Any Balance)</a></li>
-<li><a href=equity.php>Equity</a></li>
-</ul>
-<p />
-<a href=history.php>Sent E-mail History</a>
-<?php
-include('../../src/footer.html');
-?>
+namespace COREPOS\Fannie\API\item;
+
+class InventoryLib 
+{
+
+    public static function isBreakdown($dbc, $upc, $recurse=true)
+    {
+        $bdP = $dbc->prepare('
+            SELECT i.upc,
+                v.units,
+                v.sku,
+                v.vendorID
+            FROM VendorBreakdowns AS v
+                INNER JOIN vendorItems AS i ON v.sku=i.sku AND v.vendorID=i.vendorID
+            WHERE v.upc=?');
+        $bdInfo = $dbc->getRow($bdP, array($upc));
+        if ($recurse && $bdInfo && ($bdInfo['units'] == 1 || $bdInfo['units'] == null)) {
+            $model = new \VendorBreakdownsModel($dbc);
+            $model->vendorID($bdInfo['vendorID']);
+            $model->sku($bdInfo['sku']);
+            if ($model->initUnits()) {
+                return self::isBreakdown($dbc, $upc, false); 
+            }
+        }
+
+        return $bdInfo;
+    }
+}
+

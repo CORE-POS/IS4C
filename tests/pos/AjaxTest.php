@@ -4,6 +4,24 @@
  */
 class AjaxTest extends PHPUnit_Framework_TestCase
 {
+    public function testBase()
+    {
+        $obj = new AjaxCallback();
+        $this->assertEquals('json', $obj->getEncoding());
+        $obj->run();
+
+        ob_start();
+        CoreLocal::set('cabReference', '1-1-1');
+        AjaxCallback::unitTest('AjaxCabReceipt');
+        $output = ob_get_clean();
+        $this->assertEquals('Done', $output);
+        CoreLocal::set('cabReference', '');
+        ob_start();
+        AjaxCallback::unitTest('AjaxDecision');
+        $output = ob_get_clean();
+        $this->assertEquals('{"dest_page":"gui-modules/pos2.php","endorse":false,"cleared":true}', $output);
+    }
+    
     public function testParser()
     {
         $ajax = new AjaxParser();

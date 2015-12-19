@@ -67,4 +67,3 @@ class TenderKey extends Parser
     }
 }
 
-?>

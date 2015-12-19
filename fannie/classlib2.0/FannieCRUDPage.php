@@ -303,27 +303,26 @@ class FannieCRUDPage extends \FannieRESTfulPage
         return $ret;
     }
 
-    public function unitTest($phpunit)
+    public function baseUnitTest($phpunit)
     {
-        if (get_class($this) == '\COREPOS\Fannie\API\FannieCRUDPage') {
-            $this->model_name = 'FloorSectionsModel';
-            $phpunit->assertEquals('floorSectionID', $this->getIdCol());
-            $phpunit->assertEquals('FloorSectionsModel', get_class($this->getCRUDModel()));
-            $phpunit->assertEquals(array('name', 'NEW'), $this->findPlaceholder($this->model->getColumns(), $this->getIdCol()));
-            $phpunit->assertNotEquals(0, strlen($this->get_view()));
-            $this->connection->throwOnFailure(true);
-            ob_start();
-            $phpunit->assertEquals(false, $this->put_handler());
-            $json = ob_get_clean();
-            $model = new \FloorSectionsModel($this->connection);
-            $model->floorSectionID(1);
-            $phpunit->assertEquals(true, $model->load());
-            $this->id = 1;
-            $this->delete_id_handler();
-            $model->reset();
-            $model->floorSectionID(1);
-            $phpunit->assertEquals(false, $model->load());
-        }
+        $this->model_name = 'FloorSectionsModel';
+        $phpunit->assertEquals('floorSectionID', $this->getIdCol());
+        $phpunit->assertEquals('FloorSectionsModel', get_class($this->getCRUDModel()));
+        $phpunit->assertEquals(array('name', 'NEW'), $this->findPlaceholder($this->model->getColumns(), $this->getIdCol()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->connection->throwOnFailure(true);
+        ob_start();
+        $phpunit->assertEquals(false, $this->put_handler());
+        $json = ob_get_clean();
+        $json = json_decode($json, true);
+        $model = new \FloorSectionsModel($this->connection);
+        $model->floorSectionID($json['id']);
+        $phpunit->assertEquals(true, $model->load());
+        $this->id = $json['id'];
+        $this->delete_id_handler();
+        $model->reset();
+        $model->floorSectionID($json['id']);
+        $phpunit->assertEquals(false, $model->load());
     }
 }
 

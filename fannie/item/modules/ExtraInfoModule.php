@@ -97,26 +97,22 @@ class ExtraInfoModule extends ItemModule
     function SaveFormData($upc)
     {
         $upc = BarcodeLib::padUPC($upc);
-        $deposit = FormLib::get_form_value('deposit',0);
-        $inUse = FormLib::get_form_value('inUse',0);
-        $local = FormLib::get_form_value('local',0);
-        $idReq = FormLib::get_form_value('idReq',0);
+        try {
+            $dbc = $this->db();
 
-        $dbc = $this->db();
+            $pm = new ProductsModel($dbc);
+            $pm->upc($upc);
+            $pm->store_id(1);
+            $pm->deposit($this->form->deposit);
+            $pm->local($this->form->local);
+            $pm->inUse($this->form->inUse);
+            $pm->idEnforced($this->form->idReq);
+            $pm->enableLogging(false);
+            $r1 = $pm->save();
 
-        $pm = new ProductsModel($dbc);
-        $pm->upc($upc);
-        $pm->store_id(1);
-        $pm->deposit($deposit);
-        $pm->local($local);
-        $pm->inUse($inUse);
-        $pm->idEnforced($idReq);
-        $r1 = $pm->save();
-
-        if ($r1 === false) {
+            return $r1 === false ? false : true;
+        } catch (Exception $ex) {
             return false;
-        } else {
-            return true;    
         }
     }
 }

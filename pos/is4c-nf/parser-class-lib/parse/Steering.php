@@ -125,23 +125,22 @@ class Steering extends Parser
                 return true;
             case 'RP':
                 if (CoreLocal::get("LastID") != "0") {
-                    $tr = CoreLocal::get("receiptToggle");
-                    if ($tr == 1) {
+                    if (CoreLocal::get('receiptToggle') == 1) {
                         CoreLocal::set("receiptToggle",0);
                     } else {
                         CoreLocal::set("receiptToggle",1);
                     }
                     $this->ret['main_frame'] = $my_url."gui-modules/pos2.php";
                 } else {
-                    $db = Database::tDataConnect();
+                    $dbc = Database::tDataConnect();
                     $query = "select register_no, emp_no, trans_no, "
                         ."sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
                         ."from localtranstoday where register_no = " . CoreLocal::get("laneno")
                         ." and emp_no = " . CoreLocal::get("CashierNo")
-                        ." AND datetime >= " . $db->curdate()
+                        ." AND datetime >= " . $dbc->curdate()
                         ." group by register_no, emp_no, trans_no order by 1000 - trans_no";
-                    $result = $db->query($query);
-                    $num_rows = $db->num_rows($result);
+                    $result = $dbc->query($query);
+                    $num_rows = $dbc->num_rows($result);
 
                     if ($num_rows == 0)  {
                         $this->ret['output'] = DisplayLib::boxMsg(

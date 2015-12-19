@@ -95,7 +95,11 @@ class LikeCodeModule extends ItemModule
 
     function SaveFormData($upc)
     {
-        $lc = FormLib::get_form_value('likeCode');  
+        try {
+            $lc = $this->form->likeCode;
+        } catch (Exception $ex) {
+            return false;
+        }
         $dbc = $this->db();
 
         $delP = $dbc->prepare_statement('DELETE FROM upcLike WHERE upc=?'); 
@@ -140,7 +144,6 @@ class LikeCodeModule extends ItemModule
             $model->save();
         }
         while ($upcW = $dbc->fetch_row($upcR)) {
-            $model->reset();
             $model->upc($upcW['upc']);
             $model->normal_price($values['normal_price']);
             $model->pricemethod($values['pricemethod']);

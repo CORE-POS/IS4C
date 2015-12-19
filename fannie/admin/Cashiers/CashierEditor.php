@@ -182,6 +182,13 @@ class CashierEditor extends FanniePage {
             to log into lanes.</p>'
             ;
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->config->set('FANNIE_STORE_MODE', 'HQ');
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $this->config->set('FANNIE_STORE_MODE', 'STORE');
+    }
 }
 
 FannieDispatch::conditionalExec();

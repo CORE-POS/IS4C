@@ -43,7 +43,7 @@ class GCReceiptMessage extends ReceiptMessage
             $sigSlip = true;
         }
         $date = ReceiptLib::build_time(time());
-        list($emp, $reg, $trans) = explode('-',$ref);
+        list($emp, $reg, $trans) = ReceiptLib::parseRef($ref);
         $slip = '';
 
         // query database for gc receipt info 

@@ -61,14 +61,14 @@ class ItemMarginModule extends ItemModule
         $ret .= '<div class="col-sm-6">';
         $ret .= '<div class="form-group form-inline">
                     <label>Pricing Rule</label>
-                    <select name="price-rule-id" class="form-control input-sm"
+                    <select name="price_rule_id" class="form-control input-sm"
                         onchange="if(this.value>=0)$(\'#custom-pricing-fields :input\').prop(\'disabled\', true);
                         else $(\'#custom-pricing-fields :input\').prop(\'disabled\', false);">
                         <option value="0" ' . ($product->price_rule_id() == 0 ? 'selected' : '') . '>Normal</option>
                         <option value="1" ' . ($product->price_rule_id() == 1 ? 'selected' : '') . '>Variable</option>
                         <option value="-1" ' . ($product->price_rule_id() > 1 ? 'selected' : '') . '>Custom</option>
                     </select>
-                    <input type="hidden" name="current-price-rule-id" value="' . $product->price_rule_id() . '" />
+                    <input type="hidden" name="current_price_rule_id" value="' . $product->price_rule_id() . '" />
                     &nbsp;
                     <label>Avg. Daily Movement</label> ' . sprintf('%.2f', $this->avgSales($upc)) . '
                  </div>';
@@ -80,12 +80,12 @@ class ItemMarginModule extends ItemModule
         $disabled = $product->price_rule_id() <= 1 ? 'disabled' : '';
         $ret .= '<div id="custom-pricing-fields" class="form-group form-inline">
                     <label>Custom</label>
-                    <select ' . $disabled . ' name="price-rule-type" class="form-control input-sm">
+                    <select ' . $disabled . ' name="price_rule_type" class="form-control input-sm">
                     {{RULE_TYPES}}
                     </select>
-                    <input type="text" class="form-control date-field input-sm" name="rule-review-date"
+                    <input type="text" class="form-control date-field input-sm" name="rule_review_date"
                         ' . $disabled . ' placeholder="Review Date" title="Review Date" value="{{REVIEW_DATE}}" />
-                    <input type="text" class="form-control input-sm" name="rule-details"
+                    <input type="text" class="form-control input-sm" name="rule_details"
                         ' . $disabled . ' placeholder="Details" title="Details" value="{{RULE_DETAILS}}" />
                  </div>';
         $types = new PriceRuleTypesModel($db);
@@ -149,8 +149,13 @@ class ItemMarginModule extends ItemModule
     public function saveFormData($upc)
     {
         $db = $this->db();
-        $new_rule = FormLib::get('price-rule-id', 0);
-        $old_rule = FormLib::get('current-price-rule-id', 0);
+        try {
+            $new_rule = $this->form->price_rule_id;
+            $old_rule = $this->form->current_price_rule_id;
+        } catch (Exception $ex) {
+            $new_rule = 0;
+            $old_rule = 0;
+        }
 
         if ($new_rule != $old_rule) {
             $prod = new ProductsModel($db);
@@ -177,9 +182,11 @@ class ItemMarginModule extends ItemModule
                       just update that rule record. Otherwise create
                       a new one.
                     */
-                    $rule->reviewDate(FormLib::get('rule-review-date'));
-                    $rule->details(FormLib::get('rule-details'));
-                    $rule->priceRuleTypeID(FormLib::get('price-rule-type'));
+                    try {
+                        $rule->reviewDate($this->form->rule_review_date);
+                        $rule->details($this->form->rule_details);
+                        $rule->priceRuleTypeID($this->form->price_rule_type);
+                    } catch (Exception $ex) {}
                     if ($old_rule > 1) {
                         $rule->priceRuleID($old_rule);
                         $prod->price_rule_id($old_rule); // just in case
@@ -188,6 +195,7 @@ class ItemMarginModule extends ItemModule
                         $prod->price_rule_id($new_rule_id);
                     }
             }
+            $prod->enableLogging(false);
             $prod->save();
         }
 

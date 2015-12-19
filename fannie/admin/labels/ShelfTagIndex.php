@@ -190,6 +190,12 @@ function printMany(){
             tags for that super department. The pencil icon is for editing
             the currently queued tags.</p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
+    }
 }
 
 FannieDispatch::conditionalExec();

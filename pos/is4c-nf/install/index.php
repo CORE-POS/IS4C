@@ -21,6 +21,7 @@
 
     DHermann test
 *********************************************************************************/
+use COREPOS\pos\lib\FormLib;
 
 ini_set('display_errors','1');
 
@@ -58,7 +59,7 @@ if (!function_exists("socket_create")){
 <br />
 <table id="install" border=0 cellspacing=0 cellpadding=4>
 <?php 
-$register_id_is_mapped = false;
+$lane_id_is_mapped = false;
 $store_id_is_mapped = false;
 if (is_array(CoreLocal::get('LaneMap'))) {
     $my_ips = MiscLib::getAllIPs();
@@ -88,7 +89,7 @@ if (is_array(CoreLocal::get('LaneMap'))) {
             if (CoreLocal::get('laneno') === '') {
                 // no store_id set. assign based on IP
                 CoreLocal::set('laneno', $map[$ip]['register_id']);
-                $register_id_is_mapped = true;
+                $lane_id_is_mapped = true;
             } else if (CoreLocal::get('laneno') != $map[$ip]['register_id']) {
                 echo '<tr><td colspan="3">Warning: register_id is set to ' 
                     . CoreLocal::get('laneno') . '. Based on IP ' . $ip
@@ -96,7 +97,7 @@ if (is_array(CoreLocal::get('LaneMap'))) {
             } else {
                 // map entry matches
                 // should maybe delete ini.php entry if it exists?
-                $register_id_is_mapped = true;
+                $lane_id_is_mapped = true;
             }
 
             // use first matching IP
@@ -109,7 +110,7 @@ if (is_array(CoreLocal::get('LaneMap'))) {
     <td style="width:30%;">Lane number*:</td>
     <?php if (CoreLocal::get('laneno') !== '' && CoreLocal::get('laneno') == 0) { ?>
     <td>0 (Zero)</td>
-    <?php } elseif ($register_id_is_mapped) { ?>
+    <?php } elseif ($lane_id_is_mapped) { ?>
     <td><?php echo CoreLocal::get('laneno'); ?> (assigned by IP; cannot be edited)</td>
     <?php } else { ?>
     <td><?php echo InstallUtilities::installTextField('laneno', 99, InstallUtilities::INI_SETTING, false); ?></td>
@@ -208,24 +209,7 @@ if ($sql === False) {
     $opErrors = array_filter($opErrors, function($x){ return $x['error'] != 0; });
     $gotDBs++;
     if (!empty($opErrors)){
-        echo '<div class="db_create_errors" style="border: solid 1px red;padding:5px;">';
-        echo 'There were some errors creating operational DB structure';
-        echo '<ul style="margin-top:2px;">';
-        foreach($opErrors as $error){
-            if ($error['error'] == 0) {
-                continue; // no error occurred
-            }
-            echo '<li>';    
-            echo 'Error on structure <b>'.$error['struct'].'</b>. ';
-            printf('<a href="" onclick="$(\'#eDetails%s\').toggle();return false;">Details</a>',
-                $error['struct']);
-            printf('<ul style="display:none;" id="eDetails%s">',$error['struct']);
-            echo '<li>Query: <pre>'.$error['query'].'</pre></li>';
-            echo '<li>Error Message: '.$error['details'].'</li>';
-            echo '</ul>';
-            echo '</li>';
-        }
-        echo '</div>';
+        sqlErrorsToList($opErrors);
     }
 
 }
@@ -261,11 +245,13 @@ if ($sql === False ) {
     /* Re-do tax rates here so changes affect the subsequent
      * ltt* view builds. 
      */
-    if (isset($_REQUEST['TAX_RATE']) && $sql->table_exists('taxrates')){
+    if (is_array(FormLib::get('TAX_RATE')) && $sql->table_exists('taxrates')){
         $queries = array();
-        for($i=0; $i<count($_REQUEST['TAX_RATE']); $i++){
-            $rate = $_REQUEST['TAX_RATE'][$i];
-            $desc = $_REQUEST['TAX_DESC'][$i];
+        $TAX_RATE = FormLib::get('TAX_RATE');
+        $TAX_DESC = FormLib::get('TAX_DESC');
+        for($i=0; $i<count($TAX_RATE); $i++){
+            $rate = $TAX_RATE[$i];
+            $desc = $TAX_DESC[$i];
             if(is_numeric($rate)){
                 $desc = str_replace(" ","",$desc);
                 $queries[] = sprintf("INSERT INTO taxrates VALUES 
@@ -286,24 +272,7 @@ if ($sql === False ) {
     $transErrors = array_filter($transErrors, function($x){ return $x['error'] != 0; });
     $gotDBs++;
     if (!empty($transErrors)){
-        echo '<div class="db_create_errors" style="border: solid 1px red;padding:5px;">';
-        echo 'There were some errors creating transactional DB structure';
-        echo '<ul style="margin-top:2px;">';
-        foreach($transErrors as $error){
-            if ($error['error'] == 0) {
-                continue; // no error occurred
-            }
-            echo '<li>';    
-            echo 'Error on structure <b>'.$error['struct'].'</b>. ';
-            printf('<a href="" onclick="$(\'#eDetails%s\').toggle();return false;">Details</a>',
-                $error['struct']);
-            printf('<ul style="display:none;" id="eDetails%s">',$error['struct']);
-            echo '<li>Query: <pre>'.$error['query'].'</pre></li>';
-            echo '<li>Error Message: '.$error['details'].'</li>';
-            echo '</ul>';
-            echo '</li>';
-        }
-        echo '</div>';
+        sqlErrorsToList($transErrors);
     }
     //echo "</textarea>";
 }
@@ -381,24 +350,7 @@ else {
     $sErrors = InstallUtilities::createMinServer($sql, CoreLocal::get('mDatabase'));
     $sErrors = array_filter($sErrors, function($x){ return $x['error'] != 0; });
     if (!empty($sErrors)){
-        echo '<div class="db_create_errors" style="border: solid 1px red;padding:5px;">';
-        echo 'There were some errors creating transactional DB structure';
-        echo '<ul style="margin-top:2px;">';
-        foreach($sErrors as $error){
-            if ($error['error'] == 0) {
-                continue; // no error occurred
-            }
-            echo '<li>';    
-            echo 'Error on structure <b>'.$error['struct'].'</b>. ';
-            printf('<a href="" onclick="$(\'#eDetails%s\').toggle();return false;">Details</a>',
-                $error['struct']);
-            printf('<ul style="display:none;" id="eDetails%s">',$error['struct']);
-            echo '<li>Query: <pre>'.$error['query'].'</pre></li>';
-            echo '<li>Error Message: '.$error['details'].'</li>';
-            echo '</ul>';
-            echo '</li>';
-        }
-        echo '</div>';
+        sqlErrorsToList($sErrors);
     }
     //echo "</textarea>";
 }
@@ -451,3 +403,26 @@ printf("<tr><td>(Add)</td><td><input type=text name=TAX_RATE[] value=\"\" /></td
 </div> <!--    wrapper -->
 </body>
 </html>
+<?php
+function sqlErrorsToList($errors)
+{
+    echo '<div class="db_create_errors" style="border: solid 1px red;padding:5px;">';
+    echo 'There were some errors creating transactional DB structure';
+    echo '<ul style="margin-top:2px;">';
+    foreach ($errors as $error){
+        if ($error['error'] == 0) {
+            continue; // no error occurred
+        }
+        echo '<li>';    
+        echo 'Error on structure <b>'.$error['struct'].'</b>. ';
+        printf('<a href="" onclick="$(\'#eDetails%s\').toggle();return false;">Details</a>',
+            $error['struct']);
+        printf('<ul style="display:none;" id="eDetails%s">',$error['struct']);
+        echo '<li>Query: <pre>'.$error['query'].'</pre></li>';
+        echo '<li>Error Message: '.$error['details'].'</li>';
+        echo '</ul>';
+        echo '</li>';
+    }
+    echo '</div>';
+}
+

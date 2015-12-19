@@ -58,8 +58,3 @@ class FannieReportTool extends \FanniePage
 
 }
 
-namespace
-{
-    class FannieReportTool extends \COREPOS\Fannie\API\FannieReportTool {}
-}
-

@@ -96,7 +96,7 @@ class MemberLookup {
         return $this->listToArray($dbc, $result);
     }
 
-    private function listToArray($dbc, $result)
+    protected function listToArray($dbc, $result)
     {
         $ret = $this->default_value();
         while ($row = $dbc->fetch_row($result)) {

@@ -132,7 +132,13 @@ class mgrlogin extends NoInputCorePage
         }
 
         $priv = sprintf("%d",CoreLocal::get("SecurityCancel"));
-        if (Authenticate::checkPermission($password, $priv)) {
+        $ok = false;
+        if ($priv == 25) {
+            $ok = Authenticate::checkPassword($password);
+        } else {
+            $ok = Authenticate::checkPermission($password, $priv);
+        }
+        if ($ok) {
             $this->cancelorder();
             $ret['cancelOrder'] = true;
             $ret['trans_num'] = ReceiptLib::receiptNumber();
@@ -158,7 +164,20 @@ class mgrlogin extends NoInputCorePage
         CoreLocal::set("plainmsg",_("transaction cancelled"));
         UdpComm::udpSend("rePoll");
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->cancelorder();
+        $phpunit->assertEquals('transaction cancelled', CoreLocal::get('plainmsg'));
+        $ret = $this->mgrauthenticate('CL');
+        $phpunit->assertEquals(true, $ret['giveUp']);
+        $ret = $this->mgrauthenticate('56');
+        $phpunit->assertEquals(true, $ret['cancelOrder']);
+        $ret = $this->mgrauthenticate('12345');
+        $phpunit->assertEquals(false, $ret['cancelOrder']);
+        CoreLocal::set('plainmsg', '');
+    }
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new mgrlogin();
+AutoLoader::dispatch();
+

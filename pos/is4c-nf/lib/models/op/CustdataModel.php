@@ -59,7 +59,7 @@ class CustdataModel extends BasicModel
     'blueLine' => array('type'=>'VARCHAR(50)'),
     'Shown' => array('type'=>'TINYINT','default'=>1),
     'LastChange' => array('type'=>'TIMESTAMP'),
-    'id' => array('type'=>'INT','primary_key'=>True,'default'=>0,'increment'=>True)
+    'id' => array('type'=>'INT','primary_key'=>True,'increment'=>True)
     );
 
     public function doc()

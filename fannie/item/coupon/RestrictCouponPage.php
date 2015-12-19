@@ -178,8 +178,19 @@ function deletecoupon(upc){
             formatted coupon UPCs that apply to incorrect items.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
+        $this->id = 1;
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_id_handler());
+        $phpunit->assertEquals(false, $this->get_id_handler());
+        $phpunit->assertEquals(false, $this->delete_id_handler());
+        ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec();
 
-?>

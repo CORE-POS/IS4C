@@ -214,6 +214,9 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
                 <input type="text" name="ContactInfo_zip" class="form-control" />
             </div>
             <div class="row form-group form-inline">
+                <label>Phone</label>:
+                <input type="text" name="ContactInfo_phone" id="s_phone" 
+                    class="form-control" />
                 <label>Email</label>:
                 <input type="text" name="ContactInfo_email" id="s_email" 
                     class="form-control" />
@@ -241,6 +244,7 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         $state = FormLib::get_form_value('ContactInfo_state');
         $zip = FormLib::get_form_value('ContactInfo_zip');
         $email = FormLib::get_form_value('ContactInfo_email');
+        $phone = FormLib::get_form_value('ContactInfo_phone');
         
         $json = array();
         $customer = array();
@@ -266,19 +270,14 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         if (!empty($email)){
             $customer['email'] = $email;
         }
+        if (!empty($phone)){
+            $customer['phone'] = $phone;
+        }
         $json['customers'] = array($customer);
 
-        $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json, 0, true);
+        $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json, 0);
 
-        $ret = array();
-        foreach ($accounts as $account) {
-            foreach ($account['customers'] as $customer) {
-                $ret[$account['cardNo']] = $customer['firstName'] . ' ' . $customer['lastName'];
-            }
-        }
-
-        return $ret;
+        return $accounts;
     }
 }
 
-?>

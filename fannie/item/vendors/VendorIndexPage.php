@@ -179,6 +179,14 @@ class VendorIndexPage extends FanniePage {
             }
             echo json_encode($ret);
             break;
+        case 'toggleActive':
+            $dbc = $this->connection;
+            $dbc->setDefaultDB($this->config->OP_DB);
+            $vModel = new VendorsModel($dbc);
+            $vModel->vendorID(FormLib::get('vid'));
+            $vModel->inactive(FormLib::get('inactive'));
+            $vModel->save();
+            break;    
         default:
             echo 'Bad request'; 
             break;
@@ -240,6 +248,9 @@ class VendorIndexPage extends FanniePage {
         $model->load();
         $ret .= '<div>';
         $ret .= "<b>Id</b>: $id &nbsp; <b>Name</b>: " . $model->vendorName();
+        $ret .= ' <label>Active
+            <input type="checkbox" onchange="toggleActive(this, ' . $id . ')" ' . ($model->inactive() == 1 ? '' : 'checked') . ' />
+            </label>';
         $ret .= '</div>';
 
         $itemQ = $dbc->prepare_statement("SELECT COUNT(*) FROM vendorItems WHERE vendorID=?");

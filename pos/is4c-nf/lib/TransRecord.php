@@ -108,10 +108,8 @@ signs in
 static public function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $strtransstatus, $intdepartment, $dblquantity, $dblunitPrice, $dbltotal, $dblregPrice, $intscale, $inttax, $intfoodstamp, $dbldiscount, $dblmemDiscount, $intdiscountable, $intdiscounttype, $dblItemQtty, $intvolDiscType, $intvolume, $dblVolSpecial, $intmixMatch, $intmatched, $intvoided, $cost=0, $numflag=0, $charflag='') 
 {
     //$dbltotal = MiscLib::truncate2(str_replace(",", "", $dbltotal)); replaced by apbw 7/27/05 with the next 4 lines -- to fix thousands place errors
-    $dbltotal = str_replace(",", "", $dbltotal);        
-    $dbltotal = number_format($dbltotal, 2, '.', '');
-    $dblunitPrice = str_replace(",", "", $dblunitPrice);
-    $dblunitPrice = number_format($dblunitPrice, 2, '.', '');
+    $dbltotal = self::formatDouble($dbltotal);
+    $dblunitPrice = self::formatDouble($dblunitPrice);
 
     // do not clear refund flag when adding an informational log record
     if ($strtransType != 'L' && CoreLocal::get("refund") == 1) {
@@ -133,15 +131,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
         }
     }
 
-    $intregisterno = CoreLocal::get("laneno");
-    $intempno = CoreLocal::get("CashierNo");
-    $inttransno = CoreLocal::get("transno");
-    $strCardNo = CoreLocal::get("memberID");
-    $memType = CoreLocal::get("memType");
-    $staff = CoreLocal::get("isStaff");
-    $percentDiscount = CoreLocal::get("percentDiscount");
-
-    $db = Database::tDataConnect();
+    $dbc = Database::tDataConnect();
 
     $datetimestamp = "";
     if (CoreLocal::get("DBMS") == "mssql") {
@@ -152,19 +142,13 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 
     CoreLocal::set("LastID",CoreLocal::get("LastID") + 1);
 
-    $trans_id = CoreLocal::get("LastID");
-
-    if (strlen($strdescription) > 30) {
-        $strdescription = substr($strdescription, 0, 30);
-    }
-
     $values = array(
         'datetime'    => $datetimestamp,
-        'register_no'    => $intregisterno,
-        'emp_no'    => $intempno,
-        'trans_no'    => MiscLib::nullwrap($inttransno),
+        'register_no'    => CoreLocal::get('laneno'),
+        'emp_no'    => CoreLocal::get('CashierNo'),
+        'trans_no'    => MiscLib::nullwrap(CoreLocal::get('transno')),
         'upc'        => MiscLib::nullwrap($strupc),
-        'description'    => $strdescription,
+        'description'    => substr($strdescription, 0, 30),
         'trans_type'    => MiscLib::nullwrap($strtransType),
         'trans_subtype'    => MiscLib::nullwrap($strtranssubType, true),
         'trans_status'    => MiscLib::nullwrap($strtransstatus, true),
@@ -188,19 +172,15 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
         'mixMatch'    => MiscLib::nullwrap($intmixMatch),
         'matched'    => MiscLib::nullwrap($intmatched),
         'voided'    => MiscLib::nullwrap($intvoided),
-        'memType'    => MiscLib::nullwrap($memType),
-        'staff'        => MiscLib::nullwrap($staff),
-        'percentDiscount'=> MiscLib::nullwrap($percentDiscount),
+        'memType'    => MiscLib::nullwrap(CoreLocal::get('memType')),
+        'staff'        => MiscLib::nullwrap(CoreLocal::get('isStaff')),
+        'percentDiscount'=> MiscLib::nullwrap(CoreLocal::get('percentDiscount')),
         'numflag'    => MiscLib::nullwrap($numflag),
         'charflag'    => $charflag,
-        'card_no'    => (string)$strCardNo
+        'card_no'    => (string)CoreLocal::get('memberID'),
         );
-    if (CoreLocal::get("DBMS") == "mssql" && CoreLocal::get("store") == "wfc") {
-        unset($values["staff"]);
-        $values["isStaff"] = MiscLib::nullwrap($staff);
-    }
 
-    $db->smart_insert("localtemptrans",$values);
+    $dbc->smart_insert("localtemptrans",$values);
 
     if ($strtransType == "I" || $strtransType == "D") {
         CoreLocal::set("repeatable",1);
@@ -215,6 +195,43 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
     }
 }
 
+private static function formatDouble($dbl)
+{
+    $dbl = str_replace(",", "", $dbl);
+    $dbl = number_format($dbl, 2, '.', '');
+    return $dbl;
+}
+
+private static $default_record = array(
+    'upc'           => '',
+    'description'   => '',
+    'trans_type'    => 'I',
+    'trans_subtype' => '',
+    'trans_status'  => '',
+    'department'    => 0,
+    'quantity'      => 0.0,
+    'unitPrice'     => 0.0,
+    'total'         => 0.0,
+    'regPrice'      => 0.0,
+    'scale'         => 0,
+    'tax'           => 0,
+    'foodstamp'     => 0,
+    'discount'      => 0.0,
+    'memDiscount'   => 0.0,
+    'discountable'  => 0,
+    'discounttype'  => 0,
+    'ItemQtty'      => 0.0,
+    'volDiscType'   => 0,
+    'volume'        => 0,
+    'VolSpecial'    => 0,
+    'mixMatch'      => '',
+    'matched'       => 0,
+    'voided'        => 0,
+    'cost'          => 0.0,
+    'numflag'       => 0,
+    'charflag'      => '',
+);
+
 /**
   Wrapper for addItem that accepted a keyed array instead
   of many, MANY arguments. All keys are optional and will have
@@ -225,35 +242,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 static public function addRecord($named_params)
 {
     // start with default values
-    $new_record = array(
-        'upc'           => '',
-        'description'   => '',
-        'trans_type'    => 'I',
-        'trans_subtype' => '',
-        'trans_status'  => '',
-        'department'    => 0,
-        'quantity'      => 0.0,
-        'unitPrice'     => 0.0,
-        'total'         => 0.0,
-        'regPrice'      => 0.0,
-        'scale'         => 0,
-        'tax'           => 0,
-        'foodstamp'     => 0,
-        'discount'      => 0.0,
-        'memDiscount'   => 0.0,
-        'discountable'  => 0,
-        'discounttype'  => 0,
-        'ItemQtty'      => 0.0,
-        'volDiscType'   => 0,
-        'volume'        => 0,
-        'VolSpecial'    => 0,
-        'mixMatch'      => '',
-        'matched'       => 0,
-        'voided'        => 0,
-        'cost'          => 0.0,
-        'numflag'       => 0,
-        'charflag'      => '',
-    );
+    $new_record = self::$default_record;
 
     // override defaults with any values specified
     // in $named_params
@@ -350,27 +339,23 @@ static public function emptyQueue()
 */
 static public function addtax() 
 {
-    if (true){
-        self::addRecord(array(
-            'upc' => 'TAX',
-            'description' => 'Tax',
-            'trans_type' => 'A',
-            'total' => CoreLocal::get('taxTotal'),
-        ));
-        return;
-    }
+    self::addRecord(array(
+        'upc' => 'TAX',
+        'description' => 'Tax',
+        'trans_type' => 'A',
+        'total' => CoreLocal::get('taxTotal'),
+    ));
 
     /* line-item taxes in transaction
        intentionally disabled for now
-    */
 
-    $db = Database::tDataConnect();
+    $dbc = Database::tDataConnect();
     $q = "SELECT id, description, taxTotal, fsTaxable, fsTaxTotal, foodstampTender, taxrate
         FROM taxView ORDER BY taxrate DESC";
-    $r = $db->query($q);
+    $r = $dbc->query($q);
 
     $fsTenderAvailable = null;
-    while($w = $db->fetch_row($r)) {
+    while($w = $dbc->fetch_row($r)) {
         if ($fsTenderAvailable === null) $fsTenderAvailable = (double)$w['foodstampTender'];
         
         if ($fsTenderAvailable >= $w['fsTaxable']) {
@@ -392,7 +377,7 @@ static public function addtax()
             'tax' => $w['id'],
         ));
     }
-
+    */
 }
 
 /**
@@ -544,9 +529,6 @@ static public function addfsTaxExempt()
 */
 static public function discountnotify($strl) 
 {
-    if ($strl == 10.01) {
-        $strL = 10;
-    }
     self::addRecord(array(
         'description' => '** ' . $strl . '% Discount Applied **',
         'trans_type' => '0',
@@ -712,46 +694,6 @@ static public function addTare($dbltare)
 }
 
 /**
-  Add a virtual coupon by ID
-  @param $id identifier in the VirtualCoupon table
-*/
-static public function addVirtualCoupon($id)
-{
-    $sql = Database::pDataConnect();
-    $fetchQ = "select name,type,value,max from VirtualCoupon WHERE flag=$id";
-    $fetchR = $sql->query($fetchQ);
-    $coupW = $sql->fetch_row($fetchR);
-
-    $val = (double)$coupW["value"];
-    $limit = (double)$coupW["max"];
-    $type = $coupW["type"];
-    $desc = substr($coupW["name"],0,35);
-    switch(strtoupper($type)) {
-        case 'PERCENT':
-            $val = $val * CoreLocal::get("discountableTotal");
-            break;
-    }
-    if ($limit != 0 && $val > $limit) {
-        $val = $limit;
-    }
-    $val *= -1;
-    $upc = str_pad($id,13,'0',STR_PAD_LEFT);
-
-    self::addRecord(array(
-        'upc' => $upc,
-        'description' => $desc,
-        'trans_type' => 'I',
-        'trans_subtype' => 'CP',
-        'trans_status' => 'C',
-        'quantity' => 1,
-        'unitPrice' => $val,
-        'total' => $val,
-        'regPrice' => $val,
-        'ItemQtty' => 1,
-    ));
-}
-
-/**
   Add transaction discount record
 */
 static public function addTransDiscount() 
@@ -894,13 +836,13 @@ static public function debugLog($val)
     $trans_num = ReceiptLib::receiptNumber();
     $lastID = CoreLocal::get('LastID');
 
-    $db = Database::tDataConnect();
-    if ($db->table_exists('DebugLog')) {
-        $prep = $db->prepare('INSERT INTO DebugLog 
+    $dbc = Database::tDataConnect();
+    if ($dbc->table_exists('DebugLog')) {
+        $prep = $dbc->prepare('INSERT INTO DebugLog 
                               (tdate, transNum, transID, entry)
                               VALUES
                               (?, ?, ?, ?)');
-        $res = $db->execute($prep, array($tdate, $trans_num, $lastID, $val));
+        $res = $dbc->execute($prep, array($tdate, $trans_num, $lastID, $val));
 
         return $res ? true : false;
     } else {

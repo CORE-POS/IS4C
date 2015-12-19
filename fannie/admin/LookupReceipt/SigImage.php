@@ -77,6 +77,16 @@ class SigImage
             echo $row['filecontents'];
         }
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->setConfig();
+        $this->setLogger();
+        $this->setConnection();
+        ob_start();
+        $this->draw_page();
+        ob_get_clean();
+    }
 }
 
 FannieDispatch::conditionalExec();
