@@ -91,6 +91,22 @@ class AuthIndexPage extends FanniePage {
         return ob_get_clean();
     }
 
+    public function helpContent()
+    {
+        if (validateUserQuiet('admin')) {
+            return '<p>Access control revolves around <em>authorization classes</em>. An authorization
+                class is permission to access a particular tool or suite of tools. Authorizations are
+                not hierarchical. One user may have permission to access member management but not
+                item management, where as another user may have access to edit items but not members.
+                </p>    
+                <p>
+                Authorizations may be assigned to either users or groups. A group is simply a collection
+                of users with the same authorizations. This can be quicker if several people have the
+                same or similar jobs and need identical access.
+                </p>';
+        }
+    }
+
 // class AuthIndexPage
 }
 
