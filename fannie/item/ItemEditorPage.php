@@ -431,7 +431,8 @@ class ItemEditorPage extends FanniePage
         }
 
         // remove action so form cannot be submitted by pressing enter
-        $ret = '<form id="item-editor-form" action="' . ($authorized ? $_SERVER['PHP_SELF'] : '') . '" method="post">';
+        $ret = '<form id="item-editor-form" action="' . ($authorized ? $_SERVER['PHP_SELF'] : '') . '" 
+            enctype="multipart/form-data" method="post">';
         $ret .= '<div class="container"><div id="alert-area">';
 
         uasort($FANNIE_PRODUCT_MODULES, array('ItemEditorPage', 'sortModules'));

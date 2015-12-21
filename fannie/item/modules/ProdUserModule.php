@@ -141,6 +141,8 @@ class ProdUserModule extends ItemModule
             $ret .= '</select></div>';
         }
         $ret .= '<div id="originsBeforeMe"></div>';
+        $ret .= '<label>Item Photo</label>';
+        $ret .= $this->imageInput($model->photo(), 'item');
         $ret .= '</div>';
 
         $ret .= '<div class="col-sm-6">';
@@ -151,11 +153,42 @@ class ProdUserModule extends ItemModule
                     . str_replace('<br />', "\n", $model->long_text()) 
                     . '</textarea></div>';
 
+        $ret .= '<label>Nutrition Facts</label>';
+        $ret .= $this->imageInput($model->nutritionFacts(), 'nf');
         $ret .= '</div>';
         $ret .= '</div>';
         $ret .= '</div>';
 
         return $ret;
+    }
+
+    private function imageInput($filename, $type='item')
+    {
+        $url = $this->imageUrl($type);
+        $file = dirname(__FILE__) . '/../' . $url . $filename;
+        $ret = '';
+        if (file_exists($file) && is_file($file)) {
+            $ret .= sprintf('<div><img src="%s" alt="image" width="200" /></div>', $url . $filename);
+        } else {
+            $ret .= '<div class="alert alert-info">Currently no image</div>';
+        }
+        $ret .= '<br /><label>Upload new image</label>
+            <input type="file" name="image_' . $type . '" class="form-control" 
+                accept="image/png" />';
+
+        return $ret;
+    }
+
+    private function imageUrl($type)
+    {
+        switch (strtolower($type)) {
+            case 'item':
+                return 'images/done/';
+            case 'nf':
+                return 'images/nutrition-facts/';
+            default:
+                return false;
+        }
     }
 
     function SaveFormData($upc)
@@ -236,8 +269,56 @@ class ProdUserModule extends ItemModule
                 $dbc->execute($addP, array($originID, $item));
             }
         }
+
+        $model = $this->savePhotos($model);
         
         return $model->save();
+    }
+
+    private function savePhotos($model)
+    {
+        if ($this->savePhoto($model->upc(), 'item')) {
+            $model->photo(ltrim($model->upc(), '0') . '.png');
+        }
+        if ($this->savePhoto($model->upc(), 'nf')) {
+            $model->nutritionFacts(ltrim($model->upc(), '0') . '.png');
+        }
+
+        return $model;
+    }
+
+    private function savePhoto($upc, $type)
+    {
+        if ($this->validPhoto($type)) {
+            $infile = $_FILES['image_' . $type]['tmp_name'];
+            $outfile = dirname(__FILE__) . '/../' . $this->imageUrl($type) . ltrim($upc, 0) . '.png';
+            return move_uploaded_file($infile, $outfile);
+        }
+
+        return false;
+    }
+
+    private function validPhoto($type)
+    {
+        if (!isset($_FILES['image_' . $type])) {
+            var_dump($_FILES);
+            return false;
+        }
+
+        if ($_FILES['image_' . $type]['error'] !== UPLOAD_ERR_OK) {
+            echo 'Upload error';
+            return false;
+        }
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        if ($finfo->file($_FILES['image_' . $type]['tmp_name']) !== 'image/png') {
+            echo 'Not Png';
+            return false;
+        }
+
+        echo 'Valid Photo';
+
+        return true;
     }
 
     public function getFormJavascript($upc)

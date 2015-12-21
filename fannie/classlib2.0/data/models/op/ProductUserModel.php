@@ -36,6 +36,7 @@ class ProductUserModel extends BasicModel
     'brand' => array('type'=>'VARCHAR(255)'),
     'sizing' => array('type'=>'VARCHAR(255)'),
     'photo' => array('type'=>'VARCHAR(255)'),
+    'nutritionFacts' => array('type'=>'VARCHAR(255)'),
     'long_text' => array('type'=>'TEXT'),
     'enableOnline' => array('type'=>'TINYINT'),
     'soldOut' => array('type'=>'TINYINT', 'default'=>0),
