@@ -301,22 +301,17 @@ class ProdUserModule extends ItemModule
     private function validPhoto($type)
     {
         if (!isset($_FILES['image_' . $type])) {
-            var_dump($_FILES);
             return false;
         }
 
         if ($_FILES['image_' . $type]['error'] !== UPLOAD_ERR_OK) {
-            echo 'Upload error';
             return false;
         }
 
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         if ($finfo->file($_FILES['image_' . $type]['tmp_name']) !== 'image/png') {
-            echo 'Not Png';
             return false;
         }
-
-        echo 'Valid Photo';
 
         return true;
     }
