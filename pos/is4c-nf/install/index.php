@@ -297,7 +297,7 @@ if ($gotDBs == 2 && CoreLocal::get('laneno') != 0) {
     <td>
     <?php
     $db_opts = \COREPOS\common\sql\Lib::getDrivers();
-    echo InstallUtilities::installSelectField('mDBMS', $db_opts, 'mysql');
+    echo InstallUtilities::installSelectField('mDBMS', $db_opts, $db_opts[0]);
     ?>
     </td>
 </tr>
