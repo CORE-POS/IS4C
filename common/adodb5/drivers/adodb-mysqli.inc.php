@@ -905,7 +905,7 @@ class ADORecordSet_mysqli extends ADORecordSet{
 				break;
 		}
 		$this->adodbFetchMode = $mode;
-		$this->ADORecordSet($queryID);
+		parent::__construct($queryID);
 	}
 
 	function _initrs()
