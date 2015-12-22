@@ -629,7 +629,7 @@ class MercuryE2E extends BasicCCModule
     */
     public function prepareDataCapVoid($pcID)
     {
-        $request = new PaycardRequest($this->refnum(CoreLocal::get('paycard_id')));
+        $request = new PaycardVoidRequest($this->refnum(CoreLocal::get('paycard_id')));
         $request->setProcessor('MercuryE2E');
 
         $host = $this->getAxHost();
