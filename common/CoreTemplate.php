@@ -161,7 +161,7 @@ class CoreTemplate
                 continue;
             }
             if (is_object($data)) {
-                $line_obj = $data->$line_objects[0];
+                $line_obj = $data->{$line_objects[0]};
             } else {
                 $line_obj = $data[$line_objects[0]];
             }
