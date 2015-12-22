@@ -88,7 +88,7 @@ class ADODB_text extends ADOConnection {
 	var $_reznames;
 	var $_reztypes;
 
-	function ADODB_text()
+	function __construct()
 	{
 	}
 
@@ -374,7 +374,7 @@ class ADORecordSet_text extends ADORecordSet_array
 
 	var $databaseType = "text";
 
-	function ADORecordSet_text(&$conn,$mode=false)
+	function __construct(&$conn,$mode=false)
 	{
 		$this->ADORecordSet_array();
 		$this->InitArray($conn->_rezarray,$conn->_reztypes,$conn->_reznames);

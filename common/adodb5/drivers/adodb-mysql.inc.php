@@ -45,7 +45,7 @@ class ADODB_mysql extends ADOConnection {
 	var $nameQuote = '`';		/// string to use to quote identifiers and names
 	var $compat323 = false; 		// true if compat with mysql 3.23
 
-	function ADODB_mysql()
+	function __construct()
 	{
 		if (defined('ADODB_EXTENSION')) $this->rsPrefix .= 'ext_';
 	}
@@ -708,7 +708,7 @@ class ADORecordSet_mysql extends ADORecordSet{
 	var $databaseType = "mysql";
 	var $canSeek = true;
 
-	function ADORecordSet_mysql($queryID,$mode=false)
+	function __construct($queryID,$mode=false)
 	{
 		if ($mode === false) {
 			global $ADODB_FETCH_MODE;
@@ -865,7 +865,7 @@ class ADORecordSet_mysql extends ADORecordSet{
 }
 
 class ADORecordSet_ext_mysql extends ADORecordSet_mysql {
-	function ADORecordSet_ext_mysql($queryID,$mode=false)
+	function __construct($queryID,$mode=false)
 	{
 		if ($mode === false) {
 			global $ADODB_FETCH_MODE;

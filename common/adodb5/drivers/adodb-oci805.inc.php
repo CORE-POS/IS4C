@@ -21,7 +21,7 @@ class ADODB_oci805 extends ADODB_oci8 {
 	var $databaseType = "oci805";
 	var $connectSID = true;
 
-	function ADODB_oci805()
+	function __construct()
 	{
 		$this->ADODB_oci8();
 	}
@@ -51,7 +51,7 @@ class ADODB_oci805 extends ADODB_oci8 {
 
 class ADORecordset_oci805 extends ADORecordset_oci8 {
 	var $databaseType = "oci805";
-	function ADORecordset_oci805($id,$mode=false)
+	function __construct($id,$mode=false)
 	{
 		$this->ADORecordset_oci8($id,$mode);
 	}
