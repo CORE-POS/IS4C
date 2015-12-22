@@ -724,7 +724,7 @@ class ADORecordSet_mysql extends ADORecordSet{
 			$this->fetchMode = MYSQL_BOTH; break;
 		}
 		$this->adodbFetchMode = $mode;
-		$this->ADORecordSet($queryID);
+		parent::__construct($queryID);
 	}
 
 	function _initrs()
