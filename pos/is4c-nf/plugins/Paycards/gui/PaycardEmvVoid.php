@@ -130,6 +130,7 @@ function emvSubmit()
         <?php
         // generate message to print
         $amt = CoreLocal::get("paycard_amount");
+        $type = CoreLocal::get("CacheCardType");
         if ($amt > 0) {
             echo PaycardLib::paycard_msgBox(
                 $type,
