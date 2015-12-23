@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 if (!class_exists('FannieAPI')) {
-    include(dirname(__FILE__) .'/classlib2.0/FannieAPI.php');
+    include(dirname(__FILE__) .'/../../../../classlib2.0/FannieAPI.php');
 }
 
 class CoreWarehouseModel extends BasicModel {
@@ -67,6 +67,29 @@ class CoreWarehouseModel extends BasicModel {
 
     }
 
+    protected function dates($month, $year, $day=false)
+    {
+        $start_id = date('Ymd',mktime(0,0,0,$month,1,$year));
+        $start_date = date('Y-m-d',mktime(0,0,0,$month,1,$year));
+        $end_id = date('Ymt',mktime(0,0,0,$month,1,$year));
+        $end_date = date('Y-m-t',mktime(0,0,0,$month,1,$year));
+        if ($day !== false){
+            $start_id = date('Ymd',mktime(0,0,0,$month,$day,$year));
+            $start_date = date('Y-m-d',mktime(0,0,0,$month,$day,$year));
+            $end_id = $start_id;
+            $end_date = $start_date;
+        }
+
+        return array($start_id, $start_date, $end_id, $end_date);
+    }
+
+    protected function clearDates($sql, $start_id, $end_id)
+    {
+        /* clear old entries */
+        $sql = 'DELETE FROM '.$this->name.' WHERE date_id BETWEEN ? AND ?';
+        $prep = $this->connection->prepare($sql);
+        return $this->connection->execute($prep, array($start_id, $end_id));
+    }
+
 }
 
-?>

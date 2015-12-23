@@ -140,52 +140,11 @@ class FannieRESTfulPage extends FanniePage
         foreach($this->__routes as $route) {
             // correct request type
             if(substr($route,0,strlen($this->__method)) == $this->__method) {
-                $params = $this->routeParams($route);    
-                if ($params === false || count($params) === 0) {
-                    // route with no params
-                    if (!isset($try_routes[0])) {
-                        $try_routes[0] = array();
-                    }
-                    $try_routes[0][] = $route;
-                } else {
-                    // make sure all params provided
-                    $all = true;
-                    foreach($params as $p) {
-                        // just checking whether field exists
-                        // exception means it doesn't
-                        try {
-                            $this->form->$p;
-                        } catch (Exception $e) {
-                            $all = false;
-                            break;
-                        }
-                    }
-                    if ($all) {
-                        if (!isset($try_routes[count($params)])) {
-                            $try_routes[count($params)] = array();
-                        }
-                        $try_routes[count($params)][] = $route;
-                    }
-                }
+                $try_routes = $this->checkRoute($route, $try_routes);
             }
         }
         
-        // use the route with the most parameters
-        // set class variables to parameters
-        $num_params = array_keys($try_routes);
-        rsort($num_params);
-        $this->__route_stem = 'unknownRequest';
-        if (count($num_params) > 0) {
-            $longest = $num_params[0];
-            $best_route = array_pop($try_routes[$longest]);
-            $this->__route_stem = $this->__method;
-            if ($longest > 0) {
-                foreach($this->routeParams($best_route) as $param) {
-                    $this->$param = $this->form->$param;
-                    $this->__route_stem .= '_'.$param;
-                }
-            }
-        }
+        $this->__route_stem = $this->bestRoute($try_routes);
     }
 
     public function addRoute()
@@ -195,6 +154,61 @@ class FannieRESTfulPage extends FanniePage
                 $this->__routes[] = $r;
             }
         }
+    }
+
+    protected function checkRoute($route, $try_routes)
+    {
+        $params = $this->routeParams($route);    
+        if ($params === false || count($params) === 0) {
+            // route with no params
+            if (!isset($try_routes[0])) {
+                $try_routes[0] = array();
+            }
+            $try_routes[0][] = $route;
+        } else {
+            // make sure all params provided
+            $all = true;
+            foreach($params as $p) {
+                // just checking whether field exists
+                // exception means it doesn't
+                try {
+                    $this->form->$p;
+                } catch (Exception $e) {
+                    $all = false;
+                    break;
+                }
+            }
+            if ($all) {
+                if (!isset($try_routes[count($params)])) {
+                    $try_routes[count($params)] = array();
+                }
+                $try_routes[count($params)][] = $route;
+            }
+        }
+
+        return $try_routes;
+    }
+
+    protected function bestRoute($try_routes)
+    {
+        // use the route with the most parameters
+        // set class variables to parameters
+        $num_params = array_keys($try_routes);
+        rsort($num_params);
+        $ret = 'unknownRequest';
+        if (count($num_params) > 0) {
+            $longest = $num_params[0];
+            $best_route = array_pop($try_routes[$longest]);
+            $ret = $this->__method;
+            if ($longest > 0) {
+                foreach($this->routeParams($best_route) as $param) {
+                    $this->$param = $this->form->$param;
+                    $ret .= '_'.$param;
+                }
+            }
+        }
+
+        return $ret;
     }
 
     public function preprocess()
