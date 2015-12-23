@@ -136,8 +136,8 @@ class VendorMovementReport extends FannieReportPage
                 $record[] = number_format($row['qty'], 2);
                 $record[] = number_format($row['ttl'], 2);
             } else {
-                for ($i=0;$i<$dbc->num_fields($result);$i++) {
-                    if ($dbc->field_name($result, $i) == 'qty' || $dbc->field_name($result, $i) == 'ttl') {
+                for ($i=0;$i<$dbc->numFields($result);$i++) {
+                    if ($dbc->fieldName($result, $i) == 'qty' || $dbc->fieldName($result, $i) == 'ttl') {
                         $row[$i] = number_format($row[$i], 2);
                     }
                     $record[] .= $row[$i];

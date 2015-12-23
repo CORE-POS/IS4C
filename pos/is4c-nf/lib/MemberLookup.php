@@ -69,12 +69,12 @@ class MemberLookup {
     */
     public function lookup_by_number($num){
         $dbc = Database::pDataConnect();
-        $query = $dbc->prepare_statement('SELECT CardNo, personNum,
+        $query = $dbc->prepare('SELECT CardNo, personNum,
             LastName, FirstName FROM custdata
             WHERE CardNo=? 
             AND Type IN (\'PC\',\'REG\')
             ORDER BY personNum');
-        $result = $dbc->exec_statement($query, array($num));
+        $result = $dbc->execute($query, array($num));
 
         return $this->listToArray($dbc, $result);
     }
@@ -86,12 +86,12 @@ class MemberLookup {
     */
     public function lookup_by_text($text){
         $dbc = Database::pDataConnect();
-        $query = $dbc->prepare_statement('SELECT CardNo, personNum,
+        $query = $dbc->prepare('SELECT CardNo, personNum,
             LastName, FirstName FROM custdata
             WHERE LastName LIKE ? 
             AND Type IN (\'PC\',\'REG\')
             ORDER BY LastName, FirstName');
-        $result = $dbc->exec_statement($query, array($text.'%'));    
+        $result = $dbc->execute($query, array($text.'%'));    
 
         return $this->listToArray($dbc, $result);
     }

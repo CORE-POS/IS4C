@@ -65,13 +65,13 @@ class HourlyCustomersReport extends FannieReportPage
         $dlog = DTransactionsModel::selectDlog($date);
 
         $hour = $dbc->hour('tdate');
-        $q = $dbc->prepare_statement("select $hour as hour,
+        $q = $dbc->prepare("select $hour as hour,
             count(distinct trans_num)
             from $dlog where
             tdate BETWEEN ? AND ?
             group by $hour
             order by $hour");
-        $r = $dbc->exec_statement($q,array($date.' 00:00:00',$date.' 23:59:59'));
+        $r = $dbc->execute($q,array($date.' 00:00:00',$date.' 23:59:59'));
 
         $data = array();
         while($row = $dbc->fetch_array($r)){

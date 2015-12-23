@@ -47,9 +47,9 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $new_maintenance_method = false;
-        $prodUpdate = $dbc->table_definition('prodUpdate');
-        $priceHistory = $dbc->table_definition('prodPriceHistory');
-        $deptHistory = $dbc->table_definition('prodDepartmentHistory');
+        $prodUpdate = $dbc->tableDefinition('prodUpdate');
+        $priceHistory = $dbc->tableDefinition('prodPriceHistory');
+        $deptHistory = $dbc->tableDefinition('prodDepartmentHistory');
         if (isset($prodUpdate['prodUpdateID']) && isset($priceHistory['prodUpdateID']) && isset($deptHistory['prodUpdateID'])) {
             // schema is updated
             $new_maintenance_method = true;
@@ -321,7 +321,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             if ($column == 'prodUpdateID') {
                 continue;
             }
-            $col_list .= $dbc->identifier_escape($column) . ',';
+            $col_list .= $dbc->identifierEscape($column) . ',';
         }
         $col_list = substr($col_list, 0, strlen($col_list)-1);
 

@@ -112,7 +112,7 @@ class PatronageUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $fy_index = $this->get_column_index('fy');
 
         // prepare statements
-        $insP = $dbc->prepare_statement("INSERT INTO patronage (cardno,purchase,discounts,rewards,net_purch,tot_pat,
+        $insP = $dbc->prepare("INSERT INTO patronage (cardno,purchase,discounts,rewards,net_purch,tot_pat,
             cash_pat,equit_pat,FY) VALUES (?,?,?,?,?,?,?,?,?)");
         foreach ($linedata as $line) {
             // get info from file and member-type default settings

@@ -123,8 +123,8 @@ class MarginMovementReport extends FannieReportPage
         $query .= "GROUP BY d.upc,p.description,d.department,t.dept_name
             ORDER BY sum(total) DESC";
 
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($query, $args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($query, $args);
 
         $data = array();
         $sum_total = 0.0;

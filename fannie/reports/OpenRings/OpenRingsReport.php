@@ -117,8 +117,8 @@ class OpenRingsReport extends FannieReportPage
             GROUP BY year(tdate),month(tdate),day(tdate)
             ORDER BY year(tdate),month(tdate),day(tdate)";
 
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($query, $args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($query, $args);
 
         $data = array();
         while($row = $dbc->fetch_row($result)) {

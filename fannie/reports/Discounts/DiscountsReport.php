@@ -58,7 +58,7 @@ class DiscountsReport extends FannieReportPage {
 
         $dlog = DTransactionsModel::selectDlog($d1,$d2);
 
-        $query = $dbc->prepare_statement("
+        $query = $dbc->prepare("
             SELECT m.memDesc,
                 SUM(total) AS total 
             FROM $dlog AS d
@@ -67,7 +67,7 @@ class DiscountsReport extends FannieReportPage {
                 AND tdate BETWEEN ? AND ?
             GROUP BY m.memDesc
             ORDER BY m.memDesc");
-        $result = $dbc->exec_statement($query, array($d1.' 00:00:00', $d2.' 23:59:59'));
+        $result = $dbc->execute($query, array($d1.' 00:00:00', $d2.' 23:59:59'));
 
         $data = array();
         while($row = $dbc->fetch_row($result)){

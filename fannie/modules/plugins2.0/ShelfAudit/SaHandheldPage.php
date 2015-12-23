@@ -71,13 +71,13 @@ class SaHandheldPage extends FanniePage {
             $qty = FormLib::get_form_value('qty',0);
 
             $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ShelfAuditDB']);
-            $delP = $dbc->prepare_statement('DELETE FROM sa_inventory
+            $delP = $dbc->prepare('DELETE FROM sa_inventory
                     WHERE upc=? AND clear=0 AND section=?');
-            $insP = $dbc->prepare_statement('INSERT INTO sa_inventory (datetime,upc,clear,quantity,section)
+            $insP = $dbc->prepare('INSERT INTO sa_inventory (datetime,upc,clear,quantity,section)
                     VALUES ('.$dbc->now().',?,0,?,?)');
-            $dbc->exec_statement($delP, array($upc, $this->section));
+            $dbc->execute($delP, array($upc, $this->section));
             if ($qty > 0){
-                $dbc->exec_statement($insP, array($upc, $qty, $this->section));
+                $dbc->execute($insP, array($upc, $qty, $this->section));
             }
             echo $qty;
             echo 'quantity updated';
@@ -95,8 +95,8 @@ class SaHandheldPage extends FanniePage {
                 LEFT JOIN '.$FANNIE_PLUGIN_SETTINGS['ShelfAuditDB'].$dbc->sep().
                 'sa_inventory AS s ON p.upc=s.upc AND s.clear=0
                 WHERE p.upc=? ORDER BY v.vendorID';
-            $p = $dbc->prepare_statement($q);
-            $r = $dbc->exec_statement($p,array($upc));
+            $p = $dbc->prepare($q);
+            $r = $dbc->execute($p,array($upc));
             if($dbc->num_rows($r)==0){
                 // try again; item on-hand but not in products
                 $q = 'SELECT v.description,v.brand,s.quantity,v.units FROM
@@ -104,8 +104,8 @@ class SaHandheldPage extends FanniePage {
                     LEFT JOIN '.$FANNIE_PLUGIN_SETTINGS['ShelfAuditDB'].$dbc->sep().
                     'sa_inventory AS s ON s.upc=v.upc AND s.clear=0
                     WHERE v.upc=? ORDER BY v.vendorID';
-                $p = $dbc->prepare_statement($q);
-                $r = $dbc->exec_statement($p,array($upc));
+                $p = $dbc->prepare($q);
+                $r = $dbc->execute($p,array($upc));
             }
 
             

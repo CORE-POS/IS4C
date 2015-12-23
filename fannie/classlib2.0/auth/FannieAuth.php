@@ -64,10 +64,10 @@ class FannieAuth
         if (!$sql->isConnected()) {
             return false;
         }
-        $checkQ = $sql->prepare_statement("select * from Users AS u LEFT JOIN
+        $checkQ = $sql->prepare("select * from Users AS u LEFT JOIN
                 userSessions AS s ON u.uid=s.uid where u.name=? 
                 and s.session_id=?");
-        $checkR = $sql->exec_statement($checkQ,array($name,$session_id));
+        $checkR = $sql->execute($checkQ,array($name,$session_id));
 
         if ($sql->num_rows($checkR) == 0) {
             return false;
@@ -237,9 +237,9 @@ class FannieAuth
             return false;
         }
         $sql = FannieDB::getReadOnly(FannieConfig::factory()->get('OP_DB'));
-        $checkQ = $sql->prepare_statement("select * from userPrivs where uid=? and auth_class=? and
+        $checkQ = $sql->prepare("select * from userPrivs where uid=? and auth_class=? and
                  ((? between sub_start and sub_end) or (sub_start='all' and sub_end='all'))");
-        $checkR = $sql->exec_statement($checkQ,array($uid,$auth_class,$sub));
+        $checkR = $sql->execute($checkQ,array($uid,$auth_class,$sub));
         if ($sql->num_rows($checkR) == 0) {
             return false;
         }
@@ -262,12 +262,12 @@ class FannieAuth
             !self::isAlphaNumeric($sub)) {
             return false;
         }
-        $checkQ = $sql->prepare_statement("select g.gid  from userGroups as g, userGroupPrivs as p where
+        $checkQ = $sql->prepare("select g.gid  from userGroups as g, userGroupPrivs as p where
                         g.gid = p.gid and g.username=?
                         and p.auth=? and
                         ((? between p.sub_start and p.sub_end) or
                         (p.sub_start='all' and p.sub_end='all'))");
-        $checkR = $sql->exec_statement($checkQ,array($user,$auth,$sub));
+        $checkR = $sql->execute($checkQ,array($user,$auth,$sub));
 
         if ($sql->num_rows($checkR) == 0) {
             return false;
@@ -298,8 +298,8 @@ class FannieAuth
         }
 
         $sql = FannieDB::getReadOnly(FannieConfig::factory()->get('OP_DB'));
-        $fetchQ = $sql->prepare_statement("select uid from Users where name=?");
-        $fetchR = $sql->exec_statement($fetchQ,array($name));
+        $fetchQ = $sql->prepare("select uid from Users where name=?");
+        $fetchR = $sql->execute($fetchQ,array($name));
         if ($sql->num_rows($fetchR) == 0) {
             return false;
         }

@@ -101,7 +101,7 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
             GROUP BY superID,
                 super_name 
             ORDER BY superID");
-        $r = $dbc->exec_statement($q);
+        $r = $dbc->execute($q);
         while ($w = $dbc->fetch_row($r)) {
             $assignments[$w['superID']] = $w['super_name'];
         }
@@ -120,7 +120,7 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
             WHERE trans_type='I'
             GROUP BY mixMatch 
             ORDER BY mixMatch");
-        $r = $dbc->exec_statement($q);
+        $r = $dbc->execute($q);
         while ($w = $dbc->fetch_row($r)) {
             $suppliers[] = $w['mixMatch'];
         }
@@ -241,12 +241,12 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
               query. 
             */
             if ($f2 !== '' && $f3 === '') {
-                $q2 = $dbc->prepare_statement("
+                $q2 = $dbc->prepare("
                     SELECT o.specialOrderID 
                     FROM {$TRANS}SpecialOrders AS o
                     WHERE o.noteSuperID IN (?)
                     GROUP BY o.specialOrderID");
-                $r2 = $dbc->exec_statement($q2, array($f2));
+                $r2 = $dbc->execute($q2, array($f2));
                 while ($w2 = $dbc->fetch_row($r2)) {
                     $valid_ids[$w2['specialOrderID']] = true;
                 }
@@ -273,14 +273,14 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
             // avoid invalid query
         }
 
-        $itemsQ = $dbc->prepare_statement("
+        $itemsQ = $dbc->prepare("
             SELECT order_id,
                 description,
                 mixMatch 
             FROM {$TRANS}PendingSpecialOrder 
             WHERE order_id IN $oids
                 AND trans_id > 0");
-        $itemsR = $dbc->exec_statement($itemsQ, $oargs);
+        $itemsR = $dbc->execute($itemsQ, $oargs);
 
         $items = array();
         $suppliers = array();

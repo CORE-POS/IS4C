@@ -56,7 +56,7 @@ class SpecialOrderTags extends FannieRESTfulPage
         $x = 0;
         $y = 0;
         $date = date("m/d/Y");
-        $infoP = $dbc->prepare_statement("SELECT ItemQtty,total,regPrice,p.card_no,description,department,
+        $infoP = $dbc->prepare("SELECT ItemQtty,total,regPrice,p.card_no,description,department,
             CASE WHEN p.card_no=0 THEN o.lastName ELSE c.LastName END as name,
             CASE WHEN p.card_no=0 THEN o.firstName ELSE c.FirstName END as fname,
             CASE WHEN o.phone is NULL THEN m.phone ELSE o.phone END as phone,
@@ -67,9 +67,9 @@ class SpecialOrderTags extends FannieRESTfulPage
             LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
             LEFT JOIN {$TRANS}SpecialOrders AS o ON o.specialOrderID=p.order_id
             WHERE trans_id=? AND p.order_id=?");
-        $flagP = $dbc->prepare_statement("UPDATE {$TRANS}PendingSpecialOrder SET charflag='P'
+        $flagP = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET charflag='P'
             WHERE trans_id=? AND order_id=?");
-        $idP = $dbc->prepare_statement("SELECT trans_id FROM {$TRANS}PendingSpecialOrder WHERE
+        $idP = $dbc->prepare("SELECT trans_id FROM {$TRANS}PendingSpecialOrder WHERE
             trans_id > 0 AND order_id=? ORDER BY trans_id");
         $signage = new \COREPOS\Fannie\API\item\FannieSignage(array());
         foreach ($this->toIDs as $toid){
@@ -91,9 +91,9 @@ class SpecialOrderTags extends FannieRESTfulPage
             $row = $dbc->getRow($infoP, array($tid, $oid));
 
             // flag item as "printed"
-            $res2 = $dbc->exec_statement($flagP, array($tid, $oid));
+            $res2 = $dbc->execute($flagP, array($tid, $oid));
 
-            $res3 = $dbc->exec_statement($idP, array($oid));
+            $res3 = $dbc->execute($idP, array($oid));
             $o_count = 0;
             $rel_id = 1;
             while ($row3 = $dbc->fetch_row($res3)){
@@ -207,14 +207,14 @@ class SpecialOrderTags extends FannieRESTfulPage
         echo '<label for="sa"><b>Select All</b></label>';
         echo '<table class="table table-bordered table-striped small">';
         $oids = $this->getQueuedIDs($oids);
-        $infoP = $dbc->prepare_statement("SELECT min(datetime) as orderDate,sum(total) as value,
+        $infoP = $dbc->prepare("SELECT min(datetime) as orderDate,sum(total) as value,
             count(*)-1 as items,
             CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name
             FROM {$TRANS}PendingSpecialOrder AS p
             LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
             LEFT JOIN {$TRANS}SpecialOrders AS o ON o.specialOrderID=p.order_id 
             WHERE p.order_id=?");
-        $itemP = $dbc->prepare_statement("SELECT description,department,quantity,ItemQtty,total,trans_id
+        $itemP = $dbc->prepare("SELECT description,department,quantity,ItemQtty,total,trans_id
             FROM {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id > 0");
         foreach ($oids as $oid) {
             $row = $dbc->getRow($infoP, array($oid));
@@ -222,7 +222,7 @@ class SpecialOrderTags extends FannieRESTfulPage
                 <td>Items: %d</td><td>&nbsp;</td></tr>',
                 $oid,$row['orderDate'],$row['name'],$row['value'],$row['items']);
 
-            $res = $dbc->exec_statement($itemP, array($oid));
+            $res = $dbc->execute($itemP, array($oid));
             while ($row = $dbc->fetch_row($res)){
                 if ($row['department']==0){
                     echo '<tr><td>&nbsp;</td>';

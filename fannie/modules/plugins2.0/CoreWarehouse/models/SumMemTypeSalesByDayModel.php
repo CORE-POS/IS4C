@@ -53,8 +53,8 @@ class SumMemTypeSalesByDayModel extends CoreWarehouseModel {
 
         /* clear old entries */
         $sql = 'DELETE FROM '.$this->name.' WHERE date_id BETWEEN ? AND ?';
-        $prep = $this->connection->prepare_statement($sql);
-        $result = $this->connection->exec_statement($prep, array($start_id, $end_id));
+        $prep = $this->connection->prepare($sql);
+        $result = $this->connection->execute($prep, array($start_id, $end_id));
 
         /* reload table from transarction archives 
            The process for this controller is iterative because of
@@ -74,8 +74,8 @@ class SumMemTypeSalesByDayModel extends CoreWarehouseModel {
             AND card_no <> 0 AND memType IS NOT NULL
             GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), trans_num
             ORDER BY DATE_FORMAT(tdate,'%Y%m%d'), MAX(memType)";
-        $prep = $this->connection->prepare_statement($sql);
-        $result = $this->connection->exec_statement($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
+        $prep = $this->connection->prepare($sql);
+        $result = $this->connection->execute($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
         $this->reset();
         while($row = $this->connection->fetch_row($result)){
             if($this->date_id() != $row['date_id'] || $this->memType() != $row['memType']){

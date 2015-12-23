@@ -179,11 +179,11 @@ class BasicModel
         if (is_a($this->connection, 'SQLManager') && $this->connection->isConnected()) {
             $db_name = $this->connection->defaultDatabase();
             if ($this->connection->tableExists($db_name . $this->connection->sep() . $this->name)) {
-                $this->fq_name = $this->connection->identifier_escape($db_name) 
+                $this->fq_name = $this->connection->identifierEscape($db_name) 
                                 . $this->connection->sep() 
-                                . $this->connection->identifier_escape($this->name);
+                                . $this->connection->identifierEscape($this->name);
             } else {
-                $this->fq_name = $this->connection->identifier_escape($this->name);
+                $this->fq_name = $this->connection->identifierEscape($this->name);
             }
         } else {
             $this->fq_name = $this->name;
@@ -204,9 +204,9 @@ class BasicModel
     {
         if ($this->connection->tableExists($db_name . $this->connection->sep() . $this->name)) {
             /** doesn't work
-            $this->fq_name = $this->connection->identifier_escape($db_name) 
+            $this->fq_name = $this->connection->identifierEscape($db_name) 
                             . $this->connection->sep() 
-                            . $this->connection->identifier_escape($this->name);
+                            . $this->connection->identifierEscape($this->name);
             */
             $this->fq_name = $db_name . $this->connection->sep() . $this->name;
             return true;
@@ -234,7 +234,7 @@ class BasicModel
             return true;
         }
 
-        $dbms = $this->connection->dbms_name();
+        $dbms = $this->connection->dbmsName();
         $pkey = array();
         $indexes = array();
         $inc = false;
@@ -244,7 +244,7 @@ class BasicModel
                 return false;
             }
 
-            $sql .= $this->connection->identifier_escape($cname);    
+            $sql .= $this->connection->identifierEscape($cname);    
             $sql .= ' ';
 
             $type = $definition['type'];
@@ -289,14 +289,14 @@ class BasicModel
         if (!empty($pkey)) {
             $sql .= ' PRIMARY KEY (';
             foreach($pkey as $col) {
-                $sql .= $this->connection->identifier_escape($col).',';
+                $sql .= $this->connection->identifierEscape($col).',';
             }
             $sql = substr($sql,0,strlen($sql)-1).'),';
         }
         if (!empty($indexes)) {
             foreach($indexes as $index) {
                 $sql .= ' INDEX (';
-                $sql .= $this->connection->identifier_escape($index);
+                $sql .= $this->connection->identifierEscape($index);
                 $sql .= '),';
             }
         }
@@ -306,7 +306,7 @@ class BasicModel
         if ($inc && $dbms == 'mssql')
             $sql .= ' ON [PRIMARY]';
 
-        $result = $this->connection->exec_statement($sql);
+        $result = $this->connection->execute($sql);
 
         /**
           Clear out any cached definition
@@ -369,19 +369,19 @@ class BasicModel
                 // this method will and should fail
                 continue; 
             }
-            $sql .= $this->connection->identifier_escape($name).',';
+            $sql .= $this->connection->identifierEscape($name).',';
         }
         $sql = substr($sql,0,strlen($sql)-1);
         
         $sql .= ' FROM '.$this->fq_name.' WHERE 1=1';
         $args = array();
         foreach($this->unique as $name) {
-            $sql .= ' AND '.$this->connection->identifier_escape($name).' = ?';
+            $sql .= ' AND '.$this->connection->identifierEscape($name).' = ?';
             $args[] = $this->instance[$name];
         }
 
-        $prep = $this->connection->prepare_statement($sql);
-        $result = $this->connection->exec_statement($prep, $args);
+        $prep = $this->connection->prepare($sql);
+        $result = $this->connection->execute($prep, $args);
 
         if ($this->connection->num_rows($result) > 0) {
             $row = $this->connection->fetch_row($result);
@@ -444,7 +444,7 @@ class BasicModel
             if (!isset($table_def[$name])) {
                 continue;
             }
-            $sql .= $this->connection->identifier_escape($name).',';
+            $sql .= $this->connection->identifierEscape($name).',';
         }
         $sql = substr($sql,0,strlen($sql)-1);
         
@@ -452,15 +452,15 @@ class BasicModel
         
         $args = array();
         foreach($this->instance as $name => $value) {
-            $sql .= ' AND '.$this->connection->identifier_escape($name).' = ?';
+            $sql .= ' AND '.$this->connection->identifierEscape($name).' = ?';
             $args[] = $value;
         }
 
         foreach ($this->filters as $filter) {
-            $sql .= ' AND ' . $this->connection->identifier_escape($filter['left'])
+            $sql .= ' AND ' . $this->connection->identifierEscape($filter['left'])
                 . ' ' . $filter['op'];
             if (!$filter['rightIsLiteral'] && isset($this->columns[$filter['right']])) {
-                $sql .= ' ' . $this->connection->identifier_escape($filter['right']);
+                $sql .= ' ' . $this->connection->identifierEscape($filter['right']);
             } else {
                 $sql .= ' ?';
                 $args[] = $filter['right'];
@@ -472,7 +472,7 @@ class BasicModel
             if (!isset($this->columns[$name])) {
                 continue;
             }
-            $order_by .= $this->connection->identifier_escape($name);
+            $order_by .= $this->connection->identifierEscape($name);
             if ($reverse) {
                 $order_by .= ' DESC';
             }
@@ -483,8 +483,8 @@ class BasicModel
             $sql .= ' ORDER BY '.$order_by;
         }
 
-        $prep = $this->connection->prepare_statement($sql);
-        $result = $this->connection->exec_statement($prep, $args);
+        $prep = $this->connection->prepare($sql);
+        $result = $this->connection->execute($prep, $args);
 
         $ret = array();
         $my_type = get_class($this);
@@ -523,12 +523,12 @@ class BasicModel
         $sql = 'DELETE FROM '.$this->fq_name.' WHERE 1=1';
         $args = array();
         foreach($this->unique as $name) {
-            $sql .= ' AND '.$this->connection->identifier_escape($name).' = ?';
+            $sql .= ' AND '.$this->connection->identifierEscape($name).' = ?';
             $args[] = $this->instance[$name];
         }
 
-        $prep = $this->connection->prepare_statement($sql);
-        $result = $this->connection->exec_statement($prep, $args);
+        $prep = $this->connection->prepare($sql);
+        $result = $this->connection->execute($prep, $args);
 
         return ($result === false) ? false : true;
     }
@@ -621,11 +621,11 @@ class BasicModel
                 .' WHERE 1=1';
             $args = array();
             foreach($this->unique as $column) {
-                $check .= ' AND '.$this->connection->identifier_escape($column).' = ?';
+                $check .= ' AND '.$this->connection->identifierEscape($column).' = ?';
                 $args[] = $this->instance[$column];
             }
-            $prep = $this->connection->prepare_statement($check);
-            $result = $this->connection->exec_statement($prep, $args);
+            $prep = $this->connection->prepare($check);
+            $result = $this->connection->execute($prep, $args);
             if ($this->connection->num_rows($result)==0) {
                 $new_record = true;
             }
@@ -657,7 +657,7 @@ class BasicModel
                 // underlying table is missing this column
                 continue;
             }
-            $cols .= $this->connection->identifier_escape($column).',';
+            $cols .= $this->connection->identifierEscape($column).',';
             $vals .= '?,';    
             $args[] = $value;
         }
@@ -665,8 +665,8 @@ class BasicModel
         $vals = substr($vals,0,strlen($vals)-1).')';
         $sql .= ' '.$cols.' VALUES '.$vals;
 
-        $prep = $this->connection->prepare_statement($sql);
-        $result = $this->connection->exec_statement($prep, $args);
+        $prep = $this->connection->prepare($sql);
+        $result = $this->connection->execute($prep, $args);
 
         if ($result) {
             $this->record_changed = false;
@@ -676,7 +676,7 @@ class BasicModel
                 than the result object */
             foreach($this->columns as $name => $info) {
                 if (isset($info['increment']) && $info['increment'] == true) {
-                    $id = $this->connection->insert_id();
+                    $id = $this->connection->insertID();
                     if ($id !== false) {
                         $result = $id;
                         break;
@@ -702,7 +702,7 @@ class BasicModel
         $table_def = $this->getDefinition();
         foreach($this->instance as $column => $value) {
             if (in_array($column, $this->unique)) {
-                $where .= ' AND '.$this->connection->identifier_escape($column).' = ?';
+                $where .= ' AND '.$this->connection->identifierEscape($column).' = ?';
                 $where_args[] = $value;
             } else {
                 if (isset($this->columns[$column]['increment']) && $this->columns[$column]['increment']) {
@@ -711,7 +711,7 @@ class BasicModel
                     // underlying table is missing this column
                     continue;
                 }
-                $sets .= ' '.$this->connection->identifier_escape($column).' = ?,';
+                $sets .= ' '.$this->connection->identifierEscape($column).' = ?,';
                 $set_args[] = $value;
             }
         }
@@ -722,8 +722,8 @@ class BasicModel
         foreach($where_args as $arg) {
             $all_args[] = $arg;
         }
-        $prep = $this->connection->prepare_statement($sql);
-        $result = $this->connection->exec_statement($prep, $all_args);
+        $prep = $this->connection->prepare($sql);
+        $result = $this->connection->execute($prep, $all_args);
 
         if ($result) {
             $this->record_changed = false;
@@ -925,10 +925,10 @@ class BasicModel
                         ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to rename":"Renaming", 
                         $casemap[strtolower($col_name)], $col_name);
                 $recase_columns[] = $col_name;
-                $sql = 'ALTER TABLE ' . $this->connection->identifier_escape($this->name) . ' CHANGE COLUMN '
-                        . $this->connection->identifier_escape($casemap[strtolower($col_name)]) . ' '
-                        . $this->connection->identifier_escape($col_name) . ' '
-                        . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbms_name());
+                $sql = 'ALTER TABLE ' . $this->connection->identifierEscape($this->name) . ' CHANGE COLUMN '
+                        . $this->connection->identifierEscape($casemap[strtolower($col_name)]) . ' '
+                        . $this->connection->identifierEscape($col_name) . ' '
+                        . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbmsName());
                 if (isset($this->columns[$col_name]['default'])) {
                     $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
                 }
@@ -944,10 +944,10 @@ class BasicModel
                         ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to rename":"Renaming", 
                         $definition['replaces'], $col_name);
                 $recase_columns[] = $col_name;
-                $sql = 'ALTER TABLE ' . $this->connection->identifier_escape($this->name) . ' CHANGE COLUMN '
-                        . $this->connection->identifier_escape($definition['replaces']) . ' '
-                        . $this->connection->identifier_escape($col_name) . ' '
-                        . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbms_name());
+                $sql = 'ALTER TABLE ' . $this->connection->identifierEscape($this->name) . ' CHANGE COLUMN '
+                        . $this->connection->identifierEscape($definition['replaces']) . ' '
+                        . $this->connection->identifierEscape($col_name) . ' '
+                        . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbmsName());
                 if (isset($this->columns[$col_name]['default'])) {
                     $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
                 }
@@ -963,7 +963,7 @@ class BasicModel
                     }
                 }
             } else if (in_array($col_name, array_keys($current))) {
-                $type = $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbms_name());
+                $type = $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbmsName());
                 $rebuild = false;
                 if (strtoupper($type) != $current[$col_name]['type']) {
                     printf("%s column %s from %s to %s\n", 
@@ -984,10 +984,10 @@ class BasicModel
                     $redo_pk = true;
                 }
                 if ($rebuild) {
-                    $sql = 'ALTER TABLE ' . $this->connection->identifier_escape($this->name) . ' CHANGE COLUMN '
-                            . $this->connection->identifier_escape($col_name) . ' '
-                            . $this->connection->identifier_escape($col_name) . ' '
-                            . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbms_name());
+                    $sql = 'ALTER TABLE ' . $this->connection->identifierEscape($this->name) . ' CHANGE COLUMN '
+                            . $this->connection->identifierEscape($col_name) . ' '
+                            . $this->connection->identifierEscape($col_name) . ' '
+                            . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbmsName());
                     if (isset($this->columns[$col_name]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
                     }
@@ -995,7 +995,7 @@ class BasicModel
                         $sql .= ' NOT NULL';
                     }
                     if (isset($this->columns[$col_name]['increment']) && $this->columns[$col_name]['increment']) {
-                        if ($this->connection->dbms_name() == 'mssql') {
+                        if ($this->connection->dbmsName() == 'mssql') {
                             $sql .= ' IDENTITY (1, 1) NOT NULL';
                         } else {
                             $sql .= ' NOT NULL AUTO_INCREMENT';
@@ -1016,7 +1016,7 @@ class BasicModel
                                     $redo_pk = false;
                                 }
                             }
-                            $sql .= ', ADD ' . $index . ' (' . $this->connection->identifier_escape($this->columns[$col_name]) . ')'; 
+                            $sql .= ', ADD ' . $index . ' (' . $this->connection->identifierEscape($this->columns[$col_name]) . ')'; 
                         }
                     }
                     printf("\tSQL Details: %s\n", $sql);
@@ -1049,9 +1049,9 @@ class BasicModel
             foreach($their_columns as $their_col) {
                 if (isset($our_columns[$i-1]) && $our_columns[$i-1] == $their_col) {
                     $sql = 'ALTER TABLE '.$this->name.' ADD COLUMN '
-                        .$this->connection->identifier_escape($our_columns[$i]).' '
+                        .$this->connection->identifierEscape($our_columns[$i]).' '
                         .$this->getMeta($this->columns[$our_columns[$i]]['type'],
-                            $this->connection->dbms_name());
+                            $this->connection->dbmsName());
                     if (isset($this->columns[$our_columns[$i]]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
                     }
@@ -1059,27 +1059,27 @@ class BasicModel
                         $sql .= ' NOT NULL';
                     }
                     if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
-                        if ($this->connection->dbms_name() == 'mssql') {
+                        if ($this->connection->dbmsName() == 'mssql') {
                             $sql .= ' IDENTITY (1, 1) NOT NULL';
                         } else {
                             $sql .= ' NOT NULL AUTO_INCREMENT';
                         }
                     }
-                    $sql .= ' AFTER '.$this->connection->identifier_escape($their_col);
+                    $sql .= ' AFTER '.$this->connection->identifierEscape($their_col);
                     if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
                         // increment must be indexed
                         $index = 'INDEX';
                         if (isset($this->columns[$our_columns[$i]]['primary_key']) && $this->columns[$our_columns[$i]]['primary_key']) {
                             $index = 'PRIMARY KEY ';
                         }
-                        $sql .= ', ADD ' . $index . ' (' . $this->connection->identifier_escape($our_columns[$i]) . ')'; 
+                        $sql .= ', ADD ' . $index . ' (' . $this->connection->identifierEscape($our_columns[$i]) . ')'; 
                     }
                     break;
                 } elseif (isset($our_columns[$i+1]) && $our_columns[$i+1] == $their_col) {
                     $sql = 'ALTER TABLE '.$this->name.' ADD COLUMN '
-                        .$this->connection->identifier_escape($our_columns[$i]).' '
+                        .$this->connection->identifierEscape($our_columns[$i]).' '
                         .$this->getMeta($this->columns[$our_columns[$i]]['type'],
-                            $this->connection->dbms_name());
+                            $this->connection->dbmsName());
                     if (isset($this->columns[$our_columns[$i]]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
                     }
@@ -1087,7 +1087,7 @@ class BasicModel
                         $sql .= ' NOT NULL';
                     }
                     if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
-                        if ($this->connection->dbms_name() == 'mssql') {
+                        if ($this->connection->dbmsName() == 'mssql') {
                             $sql .= ' IDENTITY (1, 1) NOT NULL';
                         } else {
                             $sql .= ' NOT NULL AUTO_INCREMENT';
@@ -1100,15 +1100,15 @@ class BasicModel
                         if (isset($this->columns[$our_columns[$i]]['primary_key']) && $this->columns[$our_columns[$i]]['primary_key']) {
                             $index = 'PRIMARY KEY ';
                         }
-                        $sql .= ', ADD ' . $index . ' (' . $this->connection->identifier_escape($our_columns[$i]) . ')'; 
+                        $sql .= ', ADD ' . $index . ' (' . $this->connection->identifierEscape($our_columns[$i]) . ')'; 
                     }
                     break;
                 }
                 if (isset($our_columns[$i-1]) && in_array($our_columns[$i-1],$new_columns)) {
                     $sql = 'ALTER TABLE '.$this->name.' ADD COLUMN '
-                        .$this->connection->identifier_escape($our_columns[$i]).' '
+                        .$this->connection->identifierEscape($our_columns[$i]).' '
                         .$this->getMeta($this->columns[$our_columns[$i]]['type'],
-                            $this->connection->dbms_name());
+                            $this->connection->dbmsName());
                     if (isset($this->columns[$our_columns[$i]]['default'])) {
                         $sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
                     }
@@ -1116,20 +1116,20 @@ class BasicModel
                         $sql .= ' NOT NULL';
                     }
                     if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
-                        if ($this->connection->dbms_name() == 'mssql') {
+                        if ($this->connection->dbmsName() == 'mssql') {
                             $sql .= ' IDENTITY (1, 1) NOT NULL';
                         } else {
                             $sql .= ' NOT NULL AUTO_INCREMENT';
                         }
                     }
-                    $sql .= ' AFTER '.$this->connection->identifier_escape($our_columns[$i-1]);
+                    $sql .= ' AFTER '.$this->connection->identifierEscape($our_columns[$i-1]);
                     if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
                         // increment must be indexed
                         $index = 'INDEX';
                         if (isset($this->columns[$our_columns[$i]]['primary_key']) && $this->columns[$our_columns[$i]]['primary_key']) {
                             $index = 'PRIMARY KEY ';
                         }
-                        $sql .= ', ADD ' . $index . ' (' . $this->connection->identifier_escape($our_columns[$i]) . ')'; 
+                        $sql .= ', ADD ' . $index . ' (' . $this->connection->identifierEscape($our_columns[$i]) . ')'; 
                     }
                     break;
                 }
@@ -1156,8 +1156,8 @@ class BasicModel
                 && $this->columns[$our_columns[$i]]['index']) {
                 $new_indexes[]=$our_columns[$i];
                 $index_sql = 'ALTER TABLE '.$this->name.' ADD INDEX '
-                        .$this->connection->identifier_escape($our_columns[$i])
-                        .' ('.$this->connection->identifier_escape($our_columns[$i]).')';
+                        .$this->connection->identifierEscape($our_columns[$i])
+                        .' ('.$this->connection->identifierEscape($our_columns[$i]).')';
                 if ($mode == BasicModel::NORMALIZE_MODE_CHECK) {
                     echo "Need to add index to column: {$our_columns[$i]}\n";
                     echo "\tSQL Details: $index_sql\n";
@@ -1169,7 +1169,7 @@ class BasicModel
         }
         if ($redo_pk) {
             echo ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to set primary key":"Setting primary key";
-            $sql = 'ALTER TABLE ' . $this->connection->identifier_escape($this->name);
+            $sql = 'ALTER TABLE ' . $this->connection->identifierEscape($this->name);
             foreach ($current as $col_name=>$info) {
                 if ($info['primary_key'] === true) {
                     $sql .= ' DROP PRIMARY KEY,';
@@ -1179,7 +1179,7 @@ class BasicModel
             $sql .= ' ADD PRIMARY KEY(';
             foreach ($this->columns as $col_name => $info) {
                 if (isset($info['primary_key']) && $info['primary_key']) {
-                    $sql .= $this->connection->identifier_escape($col_name) . ',';
+                    $sql .= $this->connection->identifierEscape($col_name) . ',';
                 }
             }
             $sql = substr($sql, 0, strlen($sql)-1);

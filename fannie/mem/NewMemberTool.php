@@ -69,9 +69,9 @@ class NewMemberTool extends FanniePage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         // inner join so that only types
         // with defaults set up are shown
-        $q = $dbc->prepare_statement("SELECT m.memtype,m.memDesc 
+        $q = $dbc->prepare("SELECT m.memtype,m.memDesc 
             FROM memtype AS m ORDER BY m.memtype");
-        $r = $dbc->exec_statement($q);
+        $r = $dbc->execute($q);
         $opts = "";
         while($w = $dbc->fetch_row($r)) {
             $opts .= sprintf("<option value=%d>%s</option>",
@@ -145,12 +145,12 @@ class NewMemberTool extends FanniePage
         }
 
         $mt = $dbc->tableDefinition('memtype');
-        $defaultsQ = $dbc->prepare_statement("SELECT custdataType,discount,staff,ssi from memtype WHERE memtype=?");
+        $defaultsQ = $dbc->prepare("SELECT custdataType,discount,staff,ssi from memtype WHERE memtype=?");
         if ($dbc->tableExists('memdefaults') && (!isset($mt['custdataType']) || !isset($mt['discount']) || !isset($mt['staff']) || !isset($mt['ssi']))) {
-            $defaultsQ = $dbc->prepare_statement("SELECT cd_type as custdataType,discount,staff,SSI as ssi
+            $defaultsQ = $dbc->prepare("SELECT cd_type as custdataType,discount,staff,SSI as ssi
                     FROM memdefaults WHERE memtype=?");
         }
-        $defaultsR = $dbc->exec_statement($defaultsQ,array($mtype));
+        $defaultsR = $dbc->execute($defaultsQ,array($mtype));
         $defaults = $dbc->fetch_row($defaultsR);
 
         /**
@@ -218,11 +218,11 @@ class NewMemberTool extends FanniePage
         );
 
         /* everything's set but the actual member #s */
-        $numQ = $dbc->prepare_statement("SELECT MAX(CardNo) FROM custdata");
+        $numQ = $dbc->prepare("SELECT MAX(CardNo) FROM custdata");
         if ($FANNIE_SERVER_DBMS == 'MSSQL') {
-            $numQ = $dbc->prepare_statement("SELECT MAX(CAST(CardNo AS int)) FROM custdata");
+            $numQ = $dbc->prepare("SELECT MAX(CAST(CardNo AS int)) FROM custdata");
         }
-        $numR = $dbc->exec_statement($numQ);
+        $numR = $dbc->execute($numQ);
         $start = 1;
         if ($dbc->num_rows($numR) > 0) {
             $numW = $dbc->fetch_row($numR);
@@ -254,12 +254,12 @@ class NewMemberTool extends FanniePage
         $model->memType($mtype);
         $meminfo = new MeminfoModel($dbc);
 
-        $chkP = $dbc->prepare_statement('SELECT CardNo FROM custdata WHERE CardNo=?');
-        $mdP = $dbc->prepare_statement("INSERT INTO memDates VALUES (?,NULL,NULL)");
-        $mcP = $dbc->prepare_statement("INSERT INTO memContact (card_no,pref) VALUES (?,1)");
+        $chkP = $dbc->prepare('SELECT CardNo FROM custdata WHERE CardNo=?');
+        $mdP = $dbc->prepare("INSERT INTO memDates VALUES (?,NULL,NULL)");
+        $mcP = $dbc->prepare("INSERT INTO memContact (card_no,pref) VALUES (?,1)");
         for($i=$start; $i<=$end; $i++) {
             // skip if record already exists
-            $chkR = $dbc->exec_statement($chkP,array($i));
+            $chkR = $dbc->execute($chkP,array($i));
             if ($dbc->num_rows($chkR) > 0) {
                 continue;
             }
@@ -270,8 +270,8 @@ class NewMemberTool extends FanniePage
             $meminfo->card_no($i);
             $meminfo->save();
 
-            $dbc->exec_statement($mdP, array($i));
-            $dbc->exec_statement($mcP, array($i));
+            $dbc->execute($mdP, array($i));
+            $dbc->execute($mcP, array($i));
         }
 
         return $ret;

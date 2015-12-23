@@ -49,8 +49,8 @@ function create_if_needed($con,$dbms,$db_name,$table_name,$stddb){
         return $ret;
     }
 
-    $prep = $con->prepare_statement($CREATE["$stddb.$table_name"],$db_name);
-    $result = $con->exec_statement($prep,array(),$db_name);
+    $prep = $con->prepare($CREATE["$stddb.$table_name"],$db_name);
+    $result = $con->execute($prep,array(),$db_name);
     if ($result === False){
         $ret['error_msg'] = $con->error($db_name);
         $ret['error'] = 3;
@@ -93,7 +93,7 @@ function dropDeprecatedStructure($con, $db_name, $table_name, $is_view=true)
 
     if ($con->table_exists($table_name, $db_name)) {
         $dropQ = 'DROP '.($is_view ? 'VIEW' : 'TABLE').' '
-                .$con->identifier_escape($table_name, $db_name);
+                .$con->identifierEscape($table_name, $db_name);
         $result = $con->query($dropQ, $db_name);
         if ($result === false) {
             $ret['error_msg'] = $con->error($db_name);

@@ -162,8 +162,8 @@ class TenderEditor extends FannieRESTfulPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $newID=1;
-        $idQ = $dbc->prepare_statement("SELECT MAX(TenderID) FROM tenders");
-        $idR = $dbc->exec_statement($idQ);
+        $idQ = $dbc->prepare("SELECT MAX(TenderID) FROM tenders");
+        $idR = $dbc->execute($idQ);
         if ($dbc->num_rows($idR) > 0){
             $idW = $dbc->fetch_row($idR);
             if (!empty($idW[0])) $newID = $idW[0] + 1;

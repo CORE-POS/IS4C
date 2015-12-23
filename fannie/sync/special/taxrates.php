@@ -8,7 +8,7 @@
 */
 
 foreach ($FANNIE_LANES as $lane) {
-    $dbc->add_connection($lane['host'],$lane['type'],$lane['trans'],
+    $dbc->addConnection($lane['host'],$lane['type'],$lane['trans'],
             $lane['user'],$lane['pw']);
     if ($dbc->connections[$lane['trans']] !== false) {
         $selectQ = '

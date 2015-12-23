@@ -79,13 +79,13 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $depts = array();
-        $prep = $dbc->prepare_statement('SELECT dept_no,dept_name FROM departments ORDER BY dept_no');
-        $result = $dbc->exec_statement($prep);
+        $prep = $dbc->prepare('SELECT dept_no,dept_name FROM departments ORDER BY dept_no');
+        $result = $dbc->execute($prep);
         while($row = $dbc->fetch_row($result))
             $depts[$row[0]] = $row[1];
         $taxes = array('-'=>array(0,'NoTax'));
-        $prep = $dbc->prepare_statement('SELECT id, description FROM taxrates ORDER BY id');
-        $result = $dbc->exec_statement($prep);
+        $prep = $dbc->prepare('SELECT id, description FROM taxrates ORDER BY id');
+        $result = $dbc->execute($prep);
         while($row = $dbc->fetch_row($result)){
             if ($row['id'] == 1)
                 $taxes['X'] = array(1,'Regular');
@@ -366,8 +366,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $chkP = $dbc->prepare('SELECT upc FROM prodExtra WHERE upc=?');
             $chkR = $dbc->execute($chkP, array($upc));
             if ($dbc->num_rows($chkR) > 0) {
-                $extraP = $dbc->prepare_statement('UPDATE prodExtra SET manufacturer=?, distributor=? WHERE upc=?');
-                $dbc->exec_statement($extraP, array($brand, $supplier,$upc));
+                $extraP = $dbc->prepare('UPDATE prodExtra SET manufacturer=?, distributor=? WHERE upc=?');
+                $dbc->execute($extraP, array($brand, $supplier,$upc));
             } else {
                 $extraP = $dbc->prepare('INSERT INTO prodExtra
                                 (upc, variable_pricing, margin, manufacturer, distributor)
@@ -390,14 +390,14 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $upc = BarcodeLib::padUPC($upc);
             $encoded_desc = FormLib::get_form_value('desc');
             $desc = base64_decode($encoded_desc);
-            $fetchP = $dbc->prepare_statement("select normal_price,
+            $fetchP = $dbc->prepare("select normal_price,
                 special_price,t.description,
                 case when foodstamp = 1 then 'Yes' else 'No' end as fs,
                 case when scale = 1 then 'Yes' else 'No' end as s
                 from products as p left join taxrates as t
                 on p.tax = t.id
                 where upc=? and p.description=?");
-            $fetchR = $dbc->exec_statement($fetchP,array($upc, $desc));
+            $fetchR = $dbc->execute($fetchP,array($upc, $desc));
             $fetchW = $dbc->fetch_array($fetchR);
 
             $ret = "Delete item $upc - $desc?\n";
@@ -435,11 +435,11 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $model->plu($upc);
             $model->delete();
 
-            $delP = $dbc->prepare_statement("delete from prodExtra where upc=?");
-            $delXR = $dbc->exec_statement($delP,array($upc));
+            $delP = $dbc->prepare("delete from prodExtra where upc=?");
+            $delXR = $dbc->execute($delP,array($upc));
 
-            $delP = $dbc->prepare_statement("DELETE FROM upcLike WHERE upc=?");
-            $delR = $dbc->exec_statement($delP,array($upc));
+            $delP = $dbc->prepare("DELETE FROM upcLike WHERE upc=?");
+            $delR = $dbc->execute($delP,array($upc));
 
             deleteProductAllLanes($upc);
             break;
@@ -624,8 +624,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $query .= ",i.upc";
         }
 
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep, $args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, $args);
 
         if ($result === false || $dbc->num_rows($result) == 0) {
             return 'No data found!';
@@ -701,15 +701,15 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $deptQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
-        $deptR = $dbc->exec_statement($deptQ);
+        $deptQ = $dbc->prepare("select dept_no,dept_name from departments order by dept_no");
+        $deptR = $dbc->execute($deptQ);
         $depts = array();
         while ($deptW = $dbc->fetch_array($deptR)){
             $depts[$deptW['dept_no']] = $deptW['dept_name'];
         }
-        $superQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames 
+        $superQ = $dbc->prepare("SELECT superID,super_name FROM superDeptNames 
             ORDER BY superID");
-        $superR = $dbc->exec_statement($superQ);
+        $superR = $dbc->execute($superQ);
         $supers = array();
         while ($superW = $dbc->fetch_row($superR)){
             $supers[$superW['superID']] = $superW['super_name'];

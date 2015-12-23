@@ -96,7 +96,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     protected function getVendorID()
     {
-        $idP = $this->connection->prepare_statement("SELECT vendorID FROM vendors WHERE vendorName=? ORDER BY vendorID");
+        $idP = $this->connection->prepare("SELECT vendorID FROM vendors WHERE vendorName=? ORDER BY vendorID");
         $vid = $this->connection->getValue($idP, array($this->vendor_name));
 
         return $vid;
@@ -127,13 +127,13 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         // PLU items have different internal UPCs
         // map vendor SKUs to the internal PLUs
         $SKU_TO_PLU_MAP = array();
-        $skusP = $dbc->prepare_statement('SELECT sku, upc FROM vendorSKUtoPLU WHERE vendorID=?');
+        $skusP = $dbc->prepare('SELECT sku, upc FROM vendorSKUtoPLU WHERE vendorID=?');
         $skusR = $dbc->execute($skusP, array($VENDOR_ID));
         while($skusW = $dbc->fetch_row($skusR)) {
             $SKU_TO_PLU_MAP[$skusW['sku']] = $skusW['upc'];
         }
 
-        $extraP = $dbc->prepare_statement("update prodExtra set cost=? where upc=?");
+        $extraP = $dbc->prepare("update prodExtra set cost=? where upc=?");
         $prodP = $dbc->prepare('
             UPDATE products
             SET cost=?,
@@ -171,7 +171,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             )");
         $srpP = false;
         if ($dbc->tableExists('vendorSRPs')) {
-            $srpP = $dbc->prepare_statement("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
+            $srpP = $dbc->prepare("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
         }
         $updated_upcs = array();
         $rounder = new \COREPOS\Fannie\API\item\PriceRounder();
@@ -246,8 +246,8 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $reg_unit = $reg / $qty;
             $net_unit = $net / $qty;
 
-            $dbc->exec_statement($extraP, array($reg_unit,$upc));
-            $dbc->exec_statement($prodP, array($reg_unit,$organic_flag,$gf_flag,$upc,$VENDOR_ID));
+            $dbc->execute($extraP, array($reg_unit,$upc));
+            $dbc->execute($prodP, array($reg_unit,$organic_flag,$gf_flag,$upc,$VENDOR_ID));
             $updated_upcs[] = $upc;
 
             $args = array(
@@ -267,7 +267,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $dbc->execute($itemP,$args);
 
             if ($srpP) {
-                $dbc->exec_statement($srpP,array($VENDOR_ID,$upc,$srp));
+                $dbc->execute($srpP,array($VENDOR_ID,$upc,$srp));
             }
         }
 
@@ -310,10 +310,10 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             return false;
         }
 
-        $viP = $dbc->prepare_statement("DELETE FROM vendorItems WHERE vendorID=?");
-        $vsP = $dbc->prepare_statement("DELETE FROM vendorSRPs WHERE vendorID=?");
-        $dbc->exec_statement($viP,array($VENDOR_ID));
-        $dbc->exec_statement($vsP,array($VENDOR_ID));
+        $viP = $dbc->prepare("DELETE FROM vendorItems WHERE vendorID=?");
+        $vsP = $dbc->prepare("DELETE FROM vendorSRPs WHERE vendorID=?");
+        $dbc->execute($viP,array($VENDOR_ID));
+        $dbc->execute($vsP,array($VENDOR_ID));
     }
 
     function preview_content(){

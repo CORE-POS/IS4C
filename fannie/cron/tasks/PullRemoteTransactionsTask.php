@@ -88,7 +88,7 @@ class PullRemoteTransactionsTask extends FannieTask
                 }
             }
 
-            $connect = $dbc->add_connection($store->dbHost(), $store->dbDriver(),
+            $connect = $dbc->addConnection($store->dbHost(), $store->dbDriver(),
                                          $store->transDB(), $store->dbUser(),
                                          $store->dbPassword());
             $columns = $dbc->getMatchingColumns($local_dtrans, $FANNIE_OP_DB,

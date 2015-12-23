@@ -133,7 +133,7 @@ to apply the relevant discount(s).
         );
         echo "==========================================\n";
 
-        if (strstr($viewSQL, '0 AS memType') || strstr($viewSQL, '0 AS ' . $this->connection->identifier_escape('memType'))) {
+        if (strstr($viewSQL, '0 AS memType') || strstr($viewSQL, '0 AS ' . $this->connection->identifierEscape('memType'))) {
             /**
               Structure-check 27Dec2013
               Make sure memType is calcluated instead of hardcoded to zero
@@ -143,7 +143,7 @@ to apply the relevant discount(s).
                 echo "View needs to be rebuild to calculate memType correctly\n";    
             } else {
                 echo "Rebuilding view to calculate memType correctly... ";
-                $this->connection->query('DROP VIEW ' . $this->connection->identifier_escape($this->name));
+                $this->connection->query('DROP VIEW ' . $this->connection->identifierEscape($this->name));
                 $success = $this->create();
                 echo ($success ? 'succeeded' : 'failed') . "\n";
             }

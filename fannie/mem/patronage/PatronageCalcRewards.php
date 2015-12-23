@@ -51,16 +51,16 @@ class PatronageCalcRewards extends FannieRESTfulPage
             WHERE trans_type='T'
             AND trans_subtype IN (%s)
             GROUP BY card_no",$FANNIE_TRANS_DB,$dbc->sep(),$types);
-        $prep = $dbc->prepare_statement($fetchQ);
-        $fetchR = $dbc->exec_statement($prep,$args);
+        $prep = $dbc->prepare($fetchQ);
+        $fetchR = $dbc->execute($prep,$args);
 
-        $upP = $dbc->prepare_statement("UPDATE patronage_workingcopy
+        $upP = $dbc->prepare("UPDATE patronage_workingcopy
             SET rewards=? WHERE cardno=?");
         $reward_count = 0;
         $error_count = 0;
         while ($fetchW = $dbc->fetch_row($fetchR)) {
             if ($fetchW['total']==0) continue;
-            $added = $dbc->exec_statement($upP,array($fetchW['total'],$fetchW['card_no']));
+            $added = $dbc->execute($upP,array($fetchW['total'],$fetchW['card_no']));
             if ($added) {
                 $reward_count++;
             } else {

@@ -153,8 +153,8 @@ class WfcHtPayPeriodsPage extends FanniePage
             from ImportedHoursData as i left join employees as e on i.empID=e.empID
             where periodID=?
             order by $order $dir";
-        $dataP = $db->prepare_statement($dataQ);
-        $dataR = $db->exec_statement($dataQ, array($ppID));
+        $dataP = $db->prepare($dataQ);
+        $dataR = $db->execute($dataQ, array($ppID));
         $class = array("one","two");
         $c = 1;
         while ($dataW = $db->fetch_row($dataR)){

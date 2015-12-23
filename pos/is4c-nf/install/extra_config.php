@@ -375,7 +375,7 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
 <?php
 $settings = CoreLocal::get("TenderMap");
 $db = Database::pDataConnect();
-$tender_table = $db->table_definition('tenders');
+$tender_table = $db->tableDefinition('tenders');
 /**
   Load tender map from database if
   the schema supports it

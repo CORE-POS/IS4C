@@ -57,8 +57,8 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $batchtypes = array();
-        $typesQ = $dbc->prepare_statement("select batchTypeID,typeDesc from batchType order by batchTypeID");
-        $typesR = $dbc->exec_statement($typesQ);
+        $typesQ = $dbc->prepare("select batchTypeID,typeDesc from batchType order by batchTypeID");
+        $typesR = $dbc->execute($typesQ);
         while ($typesW = $dbc->fetch_array($typesR))
             $batchtypes[$typesW[0]] = $typesW[1];
         return $batchtypes;
@@ -79,25 +79,25 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $ftype = FormLib::get_form_value('ftype','UPCs');
         $has_checks = FormLib::get_form_value('has_checks') !== '' ? True : False;
 
-        $dtQ = $dbc->prepare_statement("SELECT discType FROM batchType WHERE batchTypeID=?");
+        $dtQ = $dbc->prepare("SELECT discType FROM batchType WHERE batchTypeID=?");
         $dtR = $dbc->execute($dtQ, array($btype));
         $dtW = $dbc->fetchRow($dtR);
         $discountType = is_array($dtW) ? $dtW[0] : 0;
 
-        $insQ = $dbc->prepare_statement("
+        $insQ = $dbc->prepare("
             INSERT INTO batches 
             (startDate,endDate,batchName,batchType,discounttype,priority,owner)
             VALUES 
             (?,?,?,?,?,0,?)");
         $args = array($date1,$date2,$bname,$btype,$discountType,$owner);
-        $insR = $dbc->exec_statement($insQ,$args);
-        $batchID = $dbc->insert_id();
+        $insR = $dbc->execute($insQ,$args);
+        $batchID = $dbc->insertID();
 
         if ($this->config->get('STORE_MODE') === 'HQ') {
             StoreBatchMapModel::initBatch($batchID);
         }
 
-        $upcChk = $dbc->prepare_statement("SELECT upc FROM products WHERE upc=?");
+        $upcChk = $dbc->prepare("SELECT upc FROM products WHERE upc=?");
 
         $model = new BatchListModel($dbc);
         $model->batchID($batchID);
@@ -129,7 +129,7 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $upc = '0'.substr($upc,0,12);
 
             if ($ftype == 'UPCs'){
-                $chkR = $dbc->exec_statement($upcChk, array($upc));
+                $chkR = $dbc->execute($upcChk, array($upc));
                 if ($dbc->num_rows($chkR) ==  0) continue;
             }   
 

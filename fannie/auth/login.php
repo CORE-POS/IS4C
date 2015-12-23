@@ -54,8 +54,8 @@ function login($name,$password){
   if ($password == "") return false;
 
   $sql = dbconnect();
-  $gatherQ = $sql->prepare_statement("select password,salt from Users where name=?");
-  $gatherR = $sql->exec_statement($gatherQ,array($name));
+  $gatherQ = $sql->prepare("select password,salt from Users where name=?");
+  $gatherR = $sql->execute($gatherQ,array($name));
   if ($sql->num_rows($gatherR) == 0){
     return false;
   }
@@ -158,12 +158,12 @@ function logout(){
         $uid = getUID($name);
 
         $sql = dbconnect();
-        $delP = $sql->prepare_statement('DELETE FROM userSessions
+        $delP = $sql->prepare('DELETE FROM userSessions
                 WHERE uid=? AND session_id=?');
-        $delR = $sql->exec_statement($delP, array($uid,$session_id));
+        $delR = $sql->execute($delP, array($uid,$session_id));
 
-        $upP = $sql->prepare_statement("UPDATE Users SET session_id='' WHERE name=?");
-        $upR = $sql->exec_statement($upP,array($name));
+        $upP = $sql->prepare("UPDATE Users SET session_id='' WHERE name=?");
+        $upR = $sql->execute($upP,array($name));
     }
 
     if (!headers_sent()) {
@@ -199,8 +199,8 @@ function createLogin($name,$password){
   }
 
   $sql = dbconnect();
-  $checkQ = $sql->prepare_statement("select * from Users where name=?");
-  $checkR = $sql->exec_statement($checkQ,array($name));
+  $checkQ = $sql->prepare("select * from Users where name=?");
+  $checkR = $sql->execute($checkQ,array($name));
   if ($sql->num_rows($checkR) != 0){
     return false;
   }
@@ -213,18 +213,18 @@ function createLogin($name,$password){
   // Users currently in the database
   $uid = '';
   srand($salt);
-  $verifyQ = $sql->prepare_statement("select * from Users where uid=?");
+  $verifyQ = $sql->prepare("select * from Users where uid=?");
   while ($uid == ''){
     $newid = (rand() % 9998) + 1;
     $newid = str_pad($newid,4,'0',STR_PAD_LEFT);
-    $verifyR = $sql->exec_statement($verifyQ,array($newid));
+    $verifyR = $sql->execute($verifyQ,array($newid));
     if ($sql->num_rows($verifyR) == 0){
       $uid = $newid;
     }
   }
 
-  $addQ = $sql->prepare_statement("insert into Users (name,uid,password,salt) values (?,?,?,?)");
-  $addR = $sql->exec_statement($addQ,array($name,$uid,$crypt_pass,$salt));
+  $addQ = $sql->prepare("insert into Users (name,uid,password,salt) values (?,?,?,?)");
+  $addR = $sql->execute($addQ,array($name,$uid,$crypt_pass,$salt));
 
   return true;
 }
@@ -240,14 +240,14 @@ function deleteLogin($name){
 
   $sql=dbconnect();
   $uid = getUID($name);
-  $delQ = $sql->prepare_statement("delete from userPrivs where uid=?");
-  $delR = $sql->exec_statement($delQ,array($uid));
+  $delQ = $sql->prepare("delete from userPrivs where uid=?");
+  $delR = $sql->execute($delQ,array($uid));
 
-  $deleteQ = $sql->prepare_statement("delete from Users where name=?");
-  $deleteR = $sql->exec_statement($deleteQ,array($name));
+  $deleteQ = $sql->prepare("delete from Users where name=?");
+  $deleteR = $sql->execute($deleteQ,array($name));
 
-  $groupQ = $sql->prepare_statement("DELETE FROM userGroups WHERE username=?");
-  $groupR = $sql->exec_statement($groupQ,array($name));
+  $groupQ = $sql->prepare("DELETE FROM userGroups WHERE username=?");
+  $groupR = $sql->execute($groupQ,array($name));
 
   return true;
 }
@@ -284,10 +284,10 @@ function checkLogin(){
   if (!$sql->isConnected()) {
       return false;
   }
-  $checkQ = $sql->prepare_statement("select * from Users AS u LEFT JOIN
+  $checkQ = $sql->prepare("select * from Users AS u LEFT JOIN
             userSessions AS s ON u.uid=s.uid where u.name=? 
             and s.session_id=?");
-  $checkR = $sql->exec_statement($checkQ,array($name,$session_id));
+  $checkR = $sql->execute($checkQ,array($name,$session_id));
 
   if ($sql->num_rows($checkR) == 0){
     return false;
@@ -337,8 +337,8 @@ function changePassword($name,$oldpassword,$newpassword){
   $salt = time();
   $crypt_pass = crypt($newpassword,$salt);
 
-  $updateQ = $sql->prepare_statement("update Users set password=?,salt=? where name=?");
-  $updateR = $sql->exec_statement($updateQ,array($crypt_pass,$salt,$name));
+  $updateQ = $sql->prepare("update Users set password=?,salt=? where name=?");
+  $updateR = $sql->execute($updateQ,array($crypt_pass,$salt,$name));
   
   return true;
 }
@@ -356,8 +356,8 @@ function changeAnyPassword($name,$newpassword){
   $salt = time();
   $crypt_pass = crypt($newpassword,$salt);
 
-  $updateQ = $sql->prepare_statement("update Users set password=?,salt=? where name=?");
-  $updateR = $sql->exec_statement($updateQ,array($crypt_pass,$salt,$name));
+  $updateQ = $sql->prepare("update Users set password=?,salt=? where name=?");
+  $updateR = $sql->execute($updateQ,array($crypt_pass,$salt,$name));
 
   return true;
 }

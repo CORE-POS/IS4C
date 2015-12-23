@@ -46,25 +46,25 @@ class ItemFlags extends FanniePage {
             else {
                 $bit=1;
                 $bit_number=1;
-                $chkP = $db->prepare_statement("SELECT bit_number FROM prodFlags WHERE bit_number=?");
+                $chkP = $db->prepare("SELECT bit_number FROM prodFlags WHERE bit_number=?");
                 for($i=0; $i<30; $i++){
-                    $chkR = $db->exec_statement($chkP,array($bit_number));
+                    $chkR = $db->execute($chkP,array($bit_number));
                     if ($db->num_rows($chkR) == 0) break;
                     $bit *= 2;
                     $bit_number++;
                 }
                 if ($bit > (1<<30)) $this->msgs[] = 'Error: can\'t add more flags';
                 else {
-                    $insP = $db->prepare_statement("INSERT INTO prodFlags 
+                    $insP = $db->prepare("INSERT INTO prodFlags 
                                 (bit_number, description) VALUES (?,?)");
-                    $db->exec_statement($insP,array($bit_number,$desc));    
+                    $db->execute($insP,array($bit_number,$desc));    
                 }
             }
         } elseif (FormLib::get_form_value('updateBtn') !== '') {
             $ids = FormLib::get_form_value('mask',array());
             $descs = FormLib::get_form_value('desc',array());
             $active = FormLib::get('active', array());
-            $upP = $db->prepare_statement("
+            $upP = $db->prepare("
                 UPDATE prodFlags 
                 SET description=?,
                     active=?
@@ -72,15 +72,15 @@ class ItemFlags extends FanniePage {
             for($i=0;$i<count($ids);$i++){
                 if (isset($descs[$i]) && !empty($descs[$i])){
                     $a = in_array($ids[$i], $active) ? 1 : 0;
-                    $db->exec_statement($upP,array($descs[$i],$a,$ids[$i]));   
+                    $db->execute($upP,array($descs[$i],$a,$ids[$i]));   
                 }
             }
         }
         elseif (FormLib::get_form_value('delBtn') !== ''){
             $ids = FormLib::get_form_value('del',array());
-            $delP = $db->prepare_statement("DELETE FROM prodFlags WHERE bit_number=?");
+            $delP = $db->prepare("DELETE FROM prodFlags WHERE bit_number=?");
             foreach($ids as $id)
-                $db->exec_statement($delP,array($id));
+                $db->execute($delP,array($id));
         }
 
         for($i=1; $i<=count($this->msgs); $i++) {
@@ -104,12 +104,12 @@ class ItemFlags extends FanniePage {
         echo '<form action="'.$_SERVER['PHP_SELF'].'" method="post">';
         $db = FannieDB::get($FANNIE_OP_DB);
         if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' ) {
-            $q = $db->prepare_statement("SELECT bit_number,description,active FROM prodFlags ORDER BY bit_number");
+            $q = $db->prepare("SELECT bit_number,description,active FROM prodFlags ORDER BY bit_number");
             $excelCols = array('','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ');
         } else {
-            $q = $db->prepare_statement("SELECT bit_number,description,active FROM prodFlags ORDER BY description");
+            $q = $db->prepare("SELECT bit_number,description,active FROM prodFlags ORDER BY description");
         }
-        $r = $db->exec_statement($q);
+        $r = $db->execute($q);
         echo '<div class="row">
             <div class="col-sm-6">';
         echo '<table class="table form-horizontal">';

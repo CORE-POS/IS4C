@@ -53,8 +53,8 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
          *  and if a superdepartment was chosen for this run
          *  get its name.
         */
-        $superP = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts ORDER BY super_name");
-        $superR = $dbc->exec_statement($superP);
+        $superP = $dbc->prepare("SELECT superID,super_name FROM MasterSuperDepts ORDER BY super_name");
+        $superR = $dbc->execute($superP);
         $this->supers = array();
         $this->supers[-1] = "All";
         while($row = $dbc->fetch_row($superR)) {
@@ -107,8 +107,8 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
             $args = array($this->selected);
         }
 
-        $prep = $dbc->prepare_statement($query1);
-        $result = $dbc->exec_statement($query1,$args);
+        $prep = $dbc->prepare($query1);
+        $result = $dbc->execute($query1,$args);
 
         ob_start();
         echo "<div class=\"text-center container\"><h1>Today's <span style=\"color:green;\">$this->name</span> Sales!</h1>";

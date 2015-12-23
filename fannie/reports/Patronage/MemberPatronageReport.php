@@ -76,7 +76,7 @@ HTML;
             return array();
         }
 
-        $pQ = $dbc->prepare_statement("
+        $pQ = $dbc->prepare("
             SELECT cardno,
                 purchase,
                 discounts,
@@ -91,7 +91,7 @@ HTML;
             FROM patronage as p
             WHERE p.cardno=? 
             ORDER BY FY");
-        $pR = $dbc->exec_statement($pQ,array($id));
+        $pR = $dbc->execute($pQ,array($id));
 
         $data = array();
         while ($row = $dbc->fetch_row($pR)) {

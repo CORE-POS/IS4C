@@ -32,12 +32,12 @@ $dbc = FannieDB::get($FANNIE_OP_DB);
 
 switch(FormLib::get_form_value('action')){
 case 'fetch':
-    $prep = $dbc->prepare_statement("SELECT u.upc,p.description FROM
+    $prep = $dbc->prepare("SELECT u.upc,p.description FROM
             upcLike AS u 
                 " . DTrans::joinProducts('u', 'p', 'INNER') . "
             WHERE u.likeCode=?
             ORDER BY p.description");
-    $res = $dbc->exec_statement($prep,array(FormLib::get_form_value('lc',0)));
+    $res = $dbc->execute($prep,array(FormLib::get_form_value('lc',0)));
     $ret = "";
     while($row = $dbc->fetch_row($res)){
         $ret .= "<a style=\"font-size:90%;\" href={$FANNIE_URL}item/itemMaint.php?upc=$row[0]>";

@@ -241,8 +241,8 @@ class VendorIndexPage extends FanniePage {
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $ret = "";
 
-        $nameQ = $dbc->prepare_statement("SELECT vendorName FROM vendors WHERE vendorID=?");
-        $nameR = $dbc->exec_statement($nameQ,array($id));
+        $nameQ = $dbc->prepare("SELECT vendorName FROM vendors WHERE vendorID=?");
+        $nameR = $dbc->execute($nameQ,array($id));
         $model = new VendorsModel($dbc);
         $model->vendorID($id);
         $model->load();
@@ -253,8 +253,8 @@ class VendorIndexPage extends FanniePage {
             </label>';
         $ret .= '</div>';
 
-        $itemQ = $dbc->prepare_statement("SELECT COUNT(*) FROM vendorItems WHERE vendorID=?");
-        $itemR = $dbc->exec_statement($itemQ,array($id));
+        $itemQ = $dbc->prepare("SELECT COUNT(*) FROM vendorItems WHERE vendorID=?");
+        $itemR = $dbc->execute($itemQ,array($id));
         $num = 0;
         if ($itemR && $row = $dbc->fetch_row($itemR)) {
             $num = $row[0];
@@ -439,8 +439,8 @@ class VendorIndexPage extends FanniePage {
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $id = 1;    
-        $p = $dbc->prepare_statement("SELECT max(vendorID) FROM vendors");
-        $rp = $dbc->exec_statement($p);
+        $p = $dbc->prepare("SELECT max(vendorID) FROM vendors");
+        $rp = $dbc->execute($p);
         $rw = $dbc->fetch_row($rp);
         if ($rw[0] != "")
             $id = $rw[0]+1;
@@ -460,8 +460,8 @@ class VendorIndexPage extends FanniePage {
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $vendors = "<option value=\"\">Select a vendor...</option>";
         $vendors .= "<option value=\"new\">New vendor...</option>";
-        $q = $dbc->prepare_statement("SELECT * FROM vendors ORDER BY vendorName");
-        $rp = $dbc->exec_statement($q);
+        $q = $dbc->prepare("SELECT * FROM vendors ORDER BY vendorName");
+        $rp = $dbc->execute($q);
         $vid = FormLib::get_form_value('vid');
         while($rw = $dbc->fetch_row($rp)){
             if ($vid !== '' && $vid == $rw[0])

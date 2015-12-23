@@ -151,7 +151,7 @@ class suspendedlist extends NoInputCorePage
         // use SQLManager's transfer method when not in stand alone mode
         // to eliminate the cross server query - andy 8/31/07
         if (CoreLocal::get("standalone") == 0){
-            $dbc_a->add_connection(CoreLocal::get("mServer"),CoreLocal::get("mDBMS"),
+            $dbc_a->addConnection(CoreLocal::get("mServer"),CoreLocal::get("mDBMS"),
                 CoreLocal::get("mDatabase"),CoreLocal::get("mUser"),CoreLocal::get("mPass"));
 
             $cols = Database::getMatchingColumns($dbc_a, "localtemptrans", "suspended");
@@ -180,7 +180,7 @@ class suspendedlist extends NoInputCorePage
             // localtemptrans might not actually be empty; let trans_id
             // populate via autoincrement rather than copying it from
             // the suspended table
-            $def = $dbc_a->table_definition('localtemptrans');
+            $def = $dbc_a->tableDefinition('localtemptrans');
             $cols = '';
             foreach($def as $name=>$info){
                 if ($name == 'trans_id') continue;

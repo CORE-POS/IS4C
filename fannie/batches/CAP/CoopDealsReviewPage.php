@@ -78,7 +78,7 @@ class CoopDealsReviewPage extends FanniePage
         } else {
             $superdept_grouping = "";
         }
-        $saleItemsP = $dbc->prepare_statement("
+        $saleItemsP = $dbc->prepare("
             SELECT t.upc,
                 t.price,
                 t.multiplier,"
@@ -96,9 +96,9 @@ class CoopDealsReviewPage extends FanniePage
                 AND t.dealSet=?
             ORDER BY s.super_name, t.upc
         ");
-        $saleItemsR = $dbc->exec_statement($saleItemsP, array($set));
+        $saleItemsR = $dbc->execute($saleItemsP, array($set));
 
-        $batchP = $dbc->prepare_statement('
+        $batchP = $dbc->prepare('
             INSERT INTO batches (
                 batchName,
                 batchType,
@@ -129,8 +129,8 @@ class CoopDealsReviewPage extends FanniePage
                     $args[] = $b_end;
                 }
     
-                $dbc->exec_statement($batchP,$args);
-                $bID = $dbc->insert_id();
+                $dbc->execute($batchP,$args);
+                $bID = $dbc->insertID();
                 $batchIDs[$row['batch']] = $bID;
 
                 if ($this->config->get('STORE_MODE') === 'HQ') {
@@ -174,7 +174,7 @@ class CoopDealsReviewPage extends FanniePage
             );
         }
 
-        $query = $dbc->prepare_statement("
+        $query = $dbc->prepare("
             SELECT
                 t.upc,
                 p.brand,
@@ -189,7 +189,7 @@ class CoopDealsReviewPage extends FanniePage
                 AND p.inUse=1
             ORDER BY s.super_name,t.upc
         ");
-        $result = $dbc->exec_statement($query, array($set));
+        $result = $dbc->execute($query, array($set));
 
         $ret = "<form action=CoopDealsReviewPage.php method=post>
         <div class=\"form-group\">

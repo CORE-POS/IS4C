@@ -29,18 +29,18 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(False,$rows);
         $this->assertEquals(1,$rows);
 
-        $fields = $sql->num_fields($result);
+        $fields = $sql->numFields($result);
         $this->assertNotEquals(False,$fields);
         $this->assertEquals(1,$fields);
 
         // field type naming not consistent accross db drivers
-        //$type = $sql->field_type($result,0);
+        //$type = $sql->fieldType($result,0);
         //$this->assertEquals('int',$type);
 
-        $name = $sql->field_name($result,0);
+        $name = $sql->fieldName($result,0);
         $this->assertEquals('one',$name);
 
-        $aff = $sql->affected_rows();
+        $aff = $sql->affectedRows();
         $this->assertNotEquals(False,$aff);
         $this->assertEquals(1,$aff);
 
@@ -53,7 +53,7 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1,$array['one']);
 
         /** PDO does not support seek */
-        //$seek = $sql->data_seek($result,0);
+        //$seek = $sql->dataSeek($result,0);
         //$this->assertNotEquals(false, $seek);
         $result = $sql->query("SELECT 1 as one");
         $this->assertNotEquals(False,$result);
@@ -69,7 +69,7 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
         $result = $sql->query("SELECT 1 as one");
         $this->assertNotEquals(False,$result);
 
-        $obj = $sql->fetch_object($result);
+        $obj = $sql->fetchObject($result);
         $this->assertNotEquals(False,$obj);
         $this->assertInstanceof('ADOFetchObj',$obj);
         $this->assertObjectHasAttribute('one',$obj);
@@ -79,7 +79,7 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
         $result = $sql->query("SELECT 1 as one");
         $this->assertNotEquals(False,$result);
 
-        $field = $sql->fetch_field($result,0);
+        $field = $sql->fetchField($result,0);
         $this->assertNotEquals(False,$field);
         $this->assertInternalType('object',$field);
         $this->assertObjectHasAttribute('name',$field);
@@ -93,7 +93,7 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
         $this->assertInternalType('string',$datediff);
         $this->assertNotEquals('',$datediff);
 
-        $dateeq = $sql->date_equals('d1',date('Y-m-d'));
+        $dateeq = $sql->dateEquals('d1',date('Y-m-d'));
         $this->assertInternalType('string',$dateeq);
         $this->assertNotEquals('',$dateeq);
 
@@ -137,7 +137,7 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
         $this->assertInternalType('string',$currency);
         $this->assertNotEquals('',$currency);
 
-        $limit = $sql->add_select_limit("SELECT 1",1);
+        $limit = $sql->addSelectLimit("SELECT 1",1);
         $this->assertInternalType('string',$limit);
         $this->assertNotEquals('',$limit);
 
@@ -163,9 +163,9 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
         */
 
         /* prepared statements */
-        $prep = $sql->prepare_statement("SELECT ? AS testCol");
+        $prep = $sql->prepare("SELECT ? AS testCol");
         $this->assertNotEquals(False,$prep);
-        $exec = $sql->exec_statement($prep,array(2));
+        $exec = $sql->execute($prep,array(2));
         $this->assertNotEquals(False,$exec);
         $row = $sql->fetch_row($exec);
         $this->assertNotEquals(False,$row);

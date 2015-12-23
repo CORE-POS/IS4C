@@ -53,8 +53,8 @@ class SumMemSalesByDayModel extends CoreWarehouseModel {
 
         /* clear old entries */
         $sql = 'DELETE FROM '.$this->name.' WHERE date_id BETWEEN ? AND ?';
-        $prep = $this->connection->prepare_statement($sql);
-        $result = $this->connection->exec_statement($prep, array($start_id, $end_id));
+        $prep = $this->connection->prepare($sql);
+        $result = $this->connection->execute($prep, array($start_id, $end_id));
 
         /* reload table from transarction archives */
         $sql = "INSERT INTO ".$this->name."
@@ -69,8 +69,8 @@ class SumMemSalesByDayModel extends CoreWarehouseModel {
             trans_type IN ('I','D') 
             AND card_no <> 0
             GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), card_no";
-        $prep = $this->connection->prepare_statement($sql);
-        $result = $this->connection->exec_statement($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
+        $prep = $this->connection->prepare($sql);
+        $result = $this->connection->execute($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
     }
 }
 

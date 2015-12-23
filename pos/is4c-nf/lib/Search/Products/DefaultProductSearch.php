@@ -32,7 +32,7 @@ class DefaultProductSearch extends ProductSearch
         $ret = array();
         $sql = Database::pDataConnect();
         $args = array('%' . $str . '%');
-        $table = $sql->table_definition('products');
+        $table = $sql->tableDefinition('products');
         $string_search = "(description LIKE ?)";
         // new coluumns 16Apr14
         // search in products.brand and products.formatted_name

@@ -68,18 +68,18 @@ class WfcHtListPage extends FanniePage
                     if (empty($adpid)) $adpid=NULL;
                     if (empty($dept)) $dept=NULL;
 
-                    $upQ = $sql->prepare_statement("update employees set adpid=?,name=?,department=? where empID=?");
-                    $upR = $sql->exec_statement($upQ, array($adpid, $name, $dept, $id));
+                    $upQ = $sql->prepare("update employees set adpid=?,name=?,department=? where empID=?");
+                    $upR = $sql->execute($upQ, array($adpid, $name, $dept, $id));
                     break;
                 case 'delete':
                     $id = FormLib::get('id');
-                    $upQ = $sql->prepare_statement("update employees set deleted=1 where empID=?");
-                    $upR = $sql->exec_statement($upQ, array($id));
+                    $upQ = $sql->prepare("update employees set deleted=1 where empID=?");
+                    $upR = $sql->execute($upQ, array($id));
                     break;
                 case 'undelete':
                     $id = FormLib::get('id');
-                    $upQ = $sql->prepare_statement("update employees set deleted=0 where empID=?");
-                    $upR = $sql->exec_statement($upQ, array($id));
+                    $upQ = $sql->prepare("update employees set deleted=0 where empID=?");
+                    $upR = $sql->execute($upQ, array($id));
                     break;
             }
         }
@@ -215,8 +215,8 @@ class WfcHtListPage extends FanniePage
             left join salarypto_ytd s on e.empID=s.empID
             {$this->dept_restrict}
             order by $sort $dir";
-        $fetchP = $sql->prepare_statement($fetchQ);
-        $fetchR = $sql->exec_statement($fetchP, $this->dept_args);
+        $fetchP = $sql->prepare($fetchQ);
+        $fetchR = $sql->execute($fetchP, $this->dept_args);
 
         ob_start();
 
@@ -242,8 +242,8 @@ class WfcHtListPage extends FanniePage
         } else if (strlen($this->dept_list) > 4){
             $sql = WfcHtLib::hours_dbconnect();
             $deptsQ = "select name,deptID from Departments WHERE deptID IN {$this->dept_list} order by name";
-            $deptsP = $sql->prepare_statement($deptsQ);
-            $deptsR = $sql->exec_statement($deptsP, $this->list_args);
+            $deptsP = $sql->prepare($deptsQ);
+            $deptsR = $sql->execute($deptsP, $this->list_args);
             echo "Show Department: ";
             echo "<select class=\"form-control\" onchange=\"top.location='{$_SERVER['PHP_SELF']}?showdept='+this.value;\">";
             echo "<option value=\"\">All</option>";

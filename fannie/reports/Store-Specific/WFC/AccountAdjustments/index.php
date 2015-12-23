@@ -62,7 +62,7 @@ if ($type=="daily"){
     $date = str_pad($year,4,'20',STR_PAD_LEFT)."-".
         str_pad($month,2,'0',STR_PAD_LEFT)."-".
         str_pad($day,2,'0',STR_PAD_LEFT);
-    $ddiff = $dbc->date_equals('tdate',$date);
+    $ddiff = $dbc->dateEquals('tdate',$date);
 }
 else {
     list($month,$year) = explode("/",$date);

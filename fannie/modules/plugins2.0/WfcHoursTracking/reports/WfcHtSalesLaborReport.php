@@ -75,8 +75,8 @@ class WfcHtSalesLaborReport extends FannieReportPage
                 AND e.deleted = 0
                 GROUP BY i.empID,e.name,e.adpID
                 ORDER BY e.name";
-        $prep = $sql->prepare_statement($query);
-        $result = $sql->exec_statement($prep, array($sp, $ep, $ep, $sp));
+        $prep = $sql->prepare($query);
+        $result = $sql->execute($prep, array($sp, $ep, $ep, $sp));
 
         $report = array();
         while($row = $sql->fetch_row($result)) {

@@ -74,7 +74,7 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             SET p.cost = ?,
                 p.modified = ' . $dbc->now() . '
             WHERE u.likeCode=?');
-        if ($dbc->dbms_name() == 'mssql') {
+        if ($dbc->dbmsName() == 'mssql') {
             $update = $dbc->prepare('
                 UPDATE products
                 SET normal_price = ?,

@@ -177,8 +177,8 @@ class PaycardResponse
     private function legacySave($dbTrans)
     {
         $sqlColumns =
-            $dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID," .
-            $dbTrans->identifier_escape('datetime').",refNum," .
+            $dbTrans->identifierEscape('date').",cashierNo,laneNo,transNo,transID," .
+            $dbTrans->identifierEscape('datetime').",refNum," .
             "seconds,commErr,httpCode";
         $sqlValues =
             sprintf("%d,%d,%d,%d,%d,",  $this->request->today, $this->request->cashierNo, $this->request->laneNo, $this->request->transNo, $this->request->transID) .
@@ -209,8 +209,8 @@ class PaycardResponse
     {
         // prepare some fields to store the request and the parsed response; we'll add more as we verify it
         $sqlColumns =
-            $dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID,".
-            $dbTrans->identifier_escape('datetime').
+            $dbTrans->identifierEscape('date').",cashierNo,laneNo,transNo,transID,".
+            $dbTrans->identifierEscape('datetime').
             ",origAmount,mode,altRoute," .
             "seconds,commErr,httpCode";
         $sqlValues =

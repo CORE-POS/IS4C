@@ -108,8 +108,8 @@ class DepartmentEditor extends FanniePage {
         }
         $taxes = array();
         $taxes[0] = "NoTax";
-        $p = $dbc->prepare_statement("SELECT id,description FROM taxrates ORDER BY id");
-        $resp = $dbc->exec_statement($p);
+        $p = $dbc->prepare("SELECT id,description FROM taxrates ORDER BY id");
+        $resp = $dbc->execute($p);
         while($row = $dbc->fetch_row($resp)){
             $taxes[$row[0]] = $row[1];
         }
@@ -219,8 +219,8 @@ class DepartmentEditor extends FanniePage {
                 return;
             }
 
-            $superP = $dbc->prepare_statement('INSERT INTO superdepts (superID,dept_ID) VALUES (0,?)');
-            $superR = $dbc->exec_statement($superP,array($id));
+            $superP = $dbc->prepare('INSERT INTO superdepts (superID,dept_ID) VALUES (0,?)');
+            $superR = $dbc->execute($superP,array($id));
         }
         else {
             if ($saved === False){
@@ -230,28 +230,28 @@ class DepartmentEditor extends FanniePage {
         }
         
         if ($dbc->tableExists('deptMargin')) {
-            $chkM = $dbc->prepare_statement('SELECT dept_ID FROM deptMargin WHERE dept_ID=?');
-            $mR = $dbc->exec_statement($chkM, array($id));
+            $chkM = $dbc->prepare('SELECT dept_ID FROM deptMargin WHERE dept_ID=?');
+            $mR = $dbc->execute($chkM, array($id));
             if ($dbc->num_rows($mR) > 0){
-                $up = $dbc->prepare_statement('UPDATE deptMargin SET margin=? WHERE dept_ID=?');
-                $dbc->exec_statement($up, array($margin, $id));
+                $up = $dbc->prepare('UPDATE deptMargin SET margin=? WHERE dept_ID=?');
+                $dbc->execute($up, array($margin, $id));
             }
             else {
-                $ins = $dbc->prepare_statement('INSERT INTO deptMargin (dept_ID,margin) VALUES (?,?)');
-                $dbc->exec_statement($ins, array($id, $margin));
+                $ins = $dbc->prepare('INSERT INTO deptMargin (dept_ID,margin) VALUES (?,?)');
+                $dbc->execute($ins, array($id, $margin));
             }
         }
 
         if ($dbc->tableExists('deptSalesCodes')) {
-            $chkS = $dbc->prepare_statement('SELECT dept_ID FROM deptSalesCodes WHERE dept_ID=?');
-            $rS = $dbc->exec_statement($chkS, array($id));
+            $chkS = $dbc->prepare('SELECT dept_ID FROM deptSalesCodes WHERE dept_ID=?');
+            $rS = $dbc->execute($chkS, array($id));
             if ($dbc->num_rows($rS) > 0){
-                $up = $dbc->prepare_statement('UPDATE deptSalesCodes SET salesCode=? WHERE dept_ID=?');
-                $dbc->exec_statement($up, array($pcode, $id));
+                $up = $dbc->prepare('UPDATE deptSalesCodes SET salesCode=? WHERE dept_ID=?');
+                $dbc->execute($up, array($pcode, $id));
             }
             else {
-                $ins = $dbc->prepare_statement('INSERT INTO deptSalesCodes (dept_ID,salesCode) VALUES (?,?)');
-                $dbc->exec_statement($ins, array($id, $pcode));
+                $ins = $dbc->prepare('INSERT INTO deptSalesCodes (dept_ID,salesCode) VALUES (?,?)');
+                $dbc->execute($ins, array($id, $pcode));
             }
         }
 
@@ -269,9 +269,9 @@ class DepartmentEditor extends FanniePage {
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $depts = "<option value=0>Select a department...</option>";
         $depts .= "<option value=-1>Create a new department</option>";
-        $p = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments
+        $p = $dbc->prepare("SELECT dept_no,dept_name FROM departments
                     ORDER BY dept_no");
-        $resp = $dbc->exec_statement($p);
+        $resp = $dbc->execute($p);
         $selectedDID = FormLib::get_form_value('did');
         while ($row = $dbc->fetch_row($resp)) {
             if ($selectedDID !== '' && $selectedDID == $row[0]) {

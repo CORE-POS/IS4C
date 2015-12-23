@@ -167,8 +167,8 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $query .= " GROUP BY year(datetime),month(datetime),day(datetime),emp_no,register_no,trans_no ";
             $query .= " ORDER BY year(datetime),month(datetime),day(datetime),emp_no,register_no,trans_no ";
 
-            $prep = $dbc->prepare_statement($query);
-            $result = $dbc->exec_statement($prep,$args);
+            $prep = $dbc->prepare($query);
+            $result = $dbc->execute($prep,$args);
             if (!empty($trans_num) && !empty($date)) {
                 header("Location: RenderReceiptPage.php?date=$date&receipt=$trans_num");
                 return false;
@@ -283,8 +283,8 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
     {
         $dbc = $this->connection;
         $depts = "<option value=\"\">Select one...</option>";
-        $prep = $dbc->prepare_statement("SELECT dept_no,dept_name from departments order by dept_name");
-        $res = $dbc->exec_statement($prep);
+        $prep = $dbc->prepare("SELECT dept_no,dept_name from departments order by dept_name");
+        $res = $dbc->execute($prep);
         while($row = $dbc->fetch_row($res)) {
             $depts .= sprintf("<option value=%d>%s</option>",$row[0],$row[1]);
         }
@@ -335,9 +335,9 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
     <select name="trans_subtype" class="form-control">
         <option value="">Select one...</option>
         <?php
-        $numsQ = $dbc->prepare_statement("SELECT TenderCode,TenderName FROM tenders 
+        $numsQ = $dbc->prepare("SELECT TenderCode,TenderName FROM tenders 
             ORDER BY TenderName");
-        $numsR = $dbc->exec_statement($numsQ);
+        $numsR = $dbc->execute($numsQ);
         while($numsW = $dbc->fetch_row($numsR)) {
             printf("<option value=%s>%s</option>",$numsW[0],$numsW[1]); 
         }

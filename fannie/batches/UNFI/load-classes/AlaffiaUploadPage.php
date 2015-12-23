@@ -91,7 +91,7 @@ class AlaffiaUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $UPC = $this->get_column_index('upc');
         $REG_COST = $this->get_column_index('cost');
 
-        $extraP = $dbc->prepare_statement("update prodExtra set cost=? where upc=?");
+        $extraP = $dbc->prepare("update prodExtra set cost=? where upc=?");
         $prodP = $dbc->prepare('
             UPDATE products
             SET cost=?,

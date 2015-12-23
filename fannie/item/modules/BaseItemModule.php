@@ -160,7 +160,7 @@ class BaseItemModule extends ItemModule
             $q = str_replace('p.last_sold', 'NULL as last_sold', $q);
         }
         $p = $dbc->prepare($q);
-        $r = $dbc->exec_statement($p,array($upc));
+        $r = $dbc->execute($p,array($upc));
         $stores = $this->getStores();
         $items = array();
         $rowItem = array();
@@ -179,8 +179,8 @@ class BaseItemModule extends ItemModule
             /* find previous and next items in department */
             list($prevUPC, $nextUPC) = $this->prevNextItem($rowItem['department'], $upc);
 
-            $lcP = $dbc->prepare_statement('SELECT likeCode FROM upcLike WHERE upc=?');
-            $lcR = $dbc->exec_statement($lcP,array($upc));
+            $lcP = $dbc->prepare('SELECT likeCode FROM upcLike WHERE upc=?');
+            $lcR = $dbc->execute($lcP,array($upc));
             if ($dbc->num_rows($lcR) > 0) {
                 $lcW = $dbc->fetch_row($lcR);
                 $likeCode = $lcW['likeCode'];
@@ -256,8 +256,8 @@ class BaseItemModule extends ItemModule
                 $args[] = $vID;
             }
             $vendorP .= ' ORDER BY i.vendorID';
-            $vendorP = $dbc->prepare_statement($vendorP);
-            $vendorR = $dbc->exec_statement($vendorP,$args);
+            $vendorP = $dbc->prepare($vendorP);
+            $vendorR = $dbc->execute($vendorP,$args);
             
             if ($dbc->num_rows($vendorR) > 0){
                 $v = $dbc->fetch_row($vendorR);
@@ -488,7 +488,7 @@ HTML;
 
             if (isset($rowItem['discounttype']) && $rowItem['discounttype'] <> 0) {
                 /* show sale info */
-                $batchP = $dbc->prepare_statement("
+                $batchP = $dbc->prepare("
                     SELECT b.batchName, 
                         b.batchID 
                     FROM batches AS b 
@@ -496,7 +496,7 @@ HTML;
                     WHERE '" . date('Y-m-d') . "' BETWEEN b.startDate AND b.endDate 
                         AND (l.upc=? OR l.upc=?)"
                 );
-                $batchR = $dbc->exec_statement($batchP,array($upc,'LC'.$likeCode));
+                $batchR = $dbc->execute($batchP,array($upc,'LC'.$likeCode));
                 $batch = array('batchID'=>0, 'batchName'=>"Unknown");
                 if ($dbc->num_rows($batchR) > 0) {
                     $batch = $dbc->fetch_row($batchR);
@@ -615,8 +615,8 @@ HTML;
                 </td>
                 </tr>';
 
-            $taxQ = $dbc->prepare_statement('SELECT id,description FROM taxrates ORDER BY id');
-            $taxR = $dbc->exec_statement($taxQ);
+            $taxQ = $dbc->prepare('SELECT id,description FROM taxrates ORDER BY id');
+            $taxR = $dbc->execute($taxQ);
             $rates = array();
             while ($taxW = $dbc->fetch_row($taxR)) {
                 array_push($rates,array($taxW[0],$taxW[1]));
@@ -1267,9 +1267,9 @@ HTML;
         } elseif (FormLib::get('dept_defaults') !== '') {
             $json = array('tax'=>0,'fs'=>False,'nodisc'=>False);
             $dept = FormLib::get_form_value('dept_defaults','');
-            $p = $db->prepare_statement('SELECT dept_tax,dept_fs,dept_discount
+            $p = $db->prepare('SELECT dept_tax,dept_fs,dept_discount
                     FROM departments WHERE dept_no=?');
-            $r = $db->exec_statement($p,array($dept));
+            $r = $db->execute($p,array($dept));
             if ($db->num_rows($r)) {
                 $w = $db->fetch_row($r);
                 $json['tax'] = $w['dept_tax'];

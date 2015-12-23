@@ -115,6 +115,7 @@ class DTransactionsModel extends BasicModel
         $this->columns['store_row_id'] = $tmp1;
 
         $this->connection = FannieDB::get($FANNIE_ARCHIVE_DB);
+        $dated_tables = array();
         if ($FANNIE_ARCHIVE_METHOD == 'partitions') {
             $this->name = 'bigArchive';
             $chk = parent::normalize($FANNIE_ARCHIVE_DB, $mode, $doCreate);
@@ -123,7 +124,7 @@ class DTransactionsModel extends BasicModel
             }
         } else {
             $pattern = '/^transArchive\d\d\d\d\d\d$/';
-            $tables = $this->connection->get_tables($FANNIE_ARCHIVE_DB);
+            $tables = $this->connection->getTables($FANNIE_ARCHIVE_DB);
             foreach($tables as $t) {
                 if (preg_match($pattern,$t)) {
                     $this->name = $t;
@@ -184,7 +185,7 @@ class DTransactionsModel extends BasicModel
             }
         } else {
             $pattern = '/^dlog\d\d\d\d\d\d$/';
-            $tables = $this->connection->get_tables($FANNIE_ARCHIVE_DB);
+            $tables = $this->connection->getTables($FANNIE_ARCHIVE_DB);
             foreach($tables as $t) {
                 if (preg_match($pattern,$t)) {
                     $this->name = $t;
@@ -248,16 +249,16 @@ class DTransactionsModel extends BasicModel
             "$view_name (of table $table_name)\n"
         );
         if ($this->connection->table_exists($view_name)) {
-            $sql = 'DROP VIEW '.$this->connection->identifier_escape($view_name);
+            $sql = 'DROP VIEW '.$this->connection->identifierEscape($view_name);
             if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
                 $this->connection->query($sql);
             }
         }
 
-        $sql = 'CREATE VIEW '.$this->connection->identifier_escape($view_name).' AS '
+        $sql = 'CREATE VIEW '.$this->connection->identifierEscape($view_name).' AS '
             .'SELECT '
-            .$this->connection->identifier_escape('datetime').' AS '
-            .$this->connection->identifier_escape('tdate').',';
+            .$this->connection->identifierEscape('datetime').' AS '
+            .$this->connection->identifierEscape('tdate').',';
         $c = $this->connection; // for more concise code below
         foreach($this->columns as $name => $definition) {
             if ($name == 'datetime') continue;
@@ -265,11 +266,11 @@ class DTransactionsModel extends BasicModel
             elseif ($name == 'trans_num'){
                 // create trans_num field
                 $sql .= $c->concat(
-                $c->convert($c->identifier_escape('emp_no'),'char'),
+                $c->convert($c->identifierEscape('emp_no'),'char'),
                 "'-'",
-                $c->convert($c->identifier_escape('register_no'),'char'),
+                $c->convert($c->identifierEscape('register_no'),'char'),
                 "'-'",
-                $c->convert($c->identifier_escape('trans_no'),'char'),
+                $c->convert($c->identifierEscape('trans_no'),'char'),
                 ''
                 ).' as trans_num';
             } elseif($name == 'trans_type') {
@@ -283,12 +284,12 @@ class DTransactionsModel extends BasicModel
                 $sql .= "CASE WHEN upc = 'MAD Coupon' THEN 'MA' 
                    WHEN upc like('%00000000052') THEN 'RR' ELSE trans_subtype END as trans_subtype,\n";
             } else {
-                $sql .= $c->identifier_escape($name).",\n";
+                $sql .= $c->identifierEscape($name).",\n";
             }
         }
         $sql = preg_replace("/,\n$/","\n",$sql);
-        $sql .= ' FROM '.$c->identifier_escape($table_name)
-            .' WHERE '.$c->identifier_escape('trans_status')
+        $sql .= ' FROM '.$c->identifierEscape($table_name)
+            .' WHERE '.$c->identifierEscape('trans_status')
             ." NOT IN ('D','X','Z') AND emp_no <> 9999
             AND register_no <> 99";
         // for plain "dlog" view, add a date restriction

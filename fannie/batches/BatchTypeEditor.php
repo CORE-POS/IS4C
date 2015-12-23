@@ -107,17 +107,17 @@ class BatchTypeEditor extends FanniePage {
             return false; // ajax call
         }
         if (FormLib::get_form_value('addtype') !== ''){
-            $prep = $dbc->prepare_statement("SELECT MAX(batchTypeID) FROM batchType");
-            $res = $dbc->exec_statement($prep);
+            $prep = $dbc->prepare("SELECT MAX(batchTypeID) FROM batchType");
+            $res = $dbc->execute($prep);
             $tid = array_pop($dbc->fetch_row($res));
             $tid = (empty($tid)) ? 1 : $tid + 1;
 
-            $ins = $dbc->prepare_statement("INSERT INTO batchType (batchTypeID,typeDesc,discType)
+            $ins = $dbc->prepare("INSERT INTO batchType (batchTypeID,typeDesc,discType)
                 VALUES (?,'New Type',1)");
-            $dbc->exec_statement($ins,array($tid));
+            $dbc->execute($ins,array($tid));
         } elseif (FormLib::get_form_value('deltype') !== ''){
-            $query = $dbc->prepare_statement("DELETE FROM batchType WHERE batchTypeID=?");
-            $dbc->exec_statement($query,array(FormLib::get_form_value('bid')));
+            $query = $dbc->prepare("DELETE FROM batchType WHERE batchTypeID=?");
+            $dbc->execute($query,array(FormLib::get_form_value('bid')));
         }
 
         return true;

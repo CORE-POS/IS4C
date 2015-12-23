@@ -75,8 +75,8 @@ class OverShortDepositSlips extends FanniePage
               case when id >= 68 then id+1
               when id = 43 then 68
               else id end";
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep, array($start, $end));
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, array($start, $end));
         $acc = array();
         $counts = array();
         $ckSum = 0;
@@ -102,10 +102,10 @@ class OverShortDepositSlips extends FanniePage
                 if (is_numeric($v)) $vcount++;
             }
 
-            // accumulate up to 57 checks
+            // accumulate up to 56 checks
             // that's max column size
             // put any leftovers in $extra
-            if ($vcount + count($acc) <= 57){
+            if ($vcount + count($acc) <= 56){
                 foreach($vals as $v){
                     if (is_numeric($v)) array_push($acc,$v);
                 }
@@ -122,7 +122,7 @@ class OverShortDepositSlips extends FanniePage
                 $str1 = "WFC #$num\n";
                 $sum = 0;
                 $str = "";
-                for($j=0;$j<57;$j++){
+                for($j=0;$j<56;$j++){
                     if ($j < count($acc)){
                         $str .= sprintf("%.2f",$acc[$j]);
                         $sum += $acc[$j];
@@ -169,7 +169,7 @@ class OverShortDepositSlips extends FanniePage
         if (count($acc) > 0){
             $sum = 0;
             $str = "";
-            for($j=0;$j<57;$j++){
+            for($j=0;$j<56;$j++){
                 if ($j < count($acc)){
                     $str .= sprintf("%.2f",$acc[$j]);
                     $sum += $acc[$j];
@@ -232,8 +232,8 @@ class OverShortDepositSlips extends FanniePage
                  'depositAmount'=>array());
         $dbQ = "SELECT rowName,denomination,amt FROM dailyDeposit WHERE
             dateStr = ? AND rowName IN ('buyAmount','depositAmount')";
-        $dbP = $dbc->prepare_statement($dbQ);
-        $dbR = $dbc->exec_statement($dbP,array($dateClause));
+        $dbP = $dbc->prepare($dbQ);
+        $dbR = $dbc->execute($dbP,array($dateClause));
         while($dbW = $dbc->fetch_row($dbR)){
             $dbstack[$dbW[0]][$dbW[1]] = $dbW[2];
         }

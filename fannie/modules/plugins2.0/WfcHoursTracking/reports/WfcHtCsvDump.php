@@ -64,8 +64,8 @@ class WfcHtCsvDump extends FannieReportPage
             left join uto as u on e.empID=u.empID
             where deleted=0
             order by e.name";
-        $fetchP = $sql->prepare_statement($fetchQ);
-        $fetchR = $sql->exec_statement($fetchP);
+        $fetchP = $sql->prepare($fetchQ);
+        $fetchR = $sql->execute($fetchP);
         
         $report = array();
         while($fetchW = $sql->fetch_row($fetchR)) {

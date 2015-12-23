@@ -64,9 +64,9 @@ class VendorDepartmentEditor extends FanniePage {
             break;
         case 'deleteCat':
             $dbc = FannieDB::get($FANNIE_OP_DB);
-            $q = $dbc->prepare_statement("DELETE FROM vendorDepartments
+            $q = $dbc->prepare("DELETE FROM vendorDepartments
                 WHERE vendorID=? AND deptID=?");
-            $gone = $dbc->exec_statement($q,
+            $gone = $dbc->execute($q,
                     array(FormLib::get_form_value('vid'),
                         FormLib::get_form_value('deptID')) );
             if (!$gone) {
@@ -100,17 +100,17 @@ class VendorDepartmentEditor extends FanniePage {
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $json = array('error' => 0);
         
-        $chkQ = $dbc->prepare_statement("SELECT * FROM vendorDepartments WHERE
+        $chkQ = $dbc->prepare("SELECT * FROM vendorDepartments WHERE
                 vendorID=? AND deptID=?");
-        $chkR = $dbc->exec_statement($chkQ,array($vid,$did));
+        $chkR = $dbc->execute($chkQ,array($vid,$did));
         if ($dbc->num_rows($chkR) > 0) {
             $json['error'] = "Number #$did is already in use!";
         }
 
-        $insQ = $dbc->prepare_statement("INSERT INTO vendorDepartments (vendorID,deptID,
+        $insQ = $dbc->prepare("INSERT INTO vendorDepartments (vendorID,deptID,
             name,margin,testing,posDeptID) VALUES (?,?,
             ?,0.00,0.00,0)");
-        $insR = $dbc->exec_statement($insQ,array($vid,$did,$name));
+        $insR = $dbc->execute($insQ,array($vid,$did,$name));
 
         if ($insR) {
             $new_row .= sprintf("<tr id=\"row-%d\">
@@ -196,7 +196,7 @@ class VendorDepartmentEditor extends FanniePage {
         $ret .= "<tr><th>No.</th><th>Name</th><th>Margin</th><th>POS Dept#</th>
             <th>&nbsp;</th><th>&nbsp;</th></tr>";
 
-        $deptQ = $dbc->prepare_statement("
+        $deptQ = $dbc->prepare("
             SELECT d.vendorID,
                 deptID,
                 name,
@@ -206,7 +206,7 @@ class VendorDepartmentEditor extends FanniePage {
             FROM vendorDepartments AS d
             WHERE d.vendorID=?
             ORDER BY deptID");
-        $deptR = $dbc->exec_statement($deptQ,array($id));
+        $deptR = $dbc->execute($deptQ,array($id));
         while($row = $dbc->fetch_row($deptR)){
             $ret .= sprintf("<tr id=\"row-%d\">
                 <td>%d</td>

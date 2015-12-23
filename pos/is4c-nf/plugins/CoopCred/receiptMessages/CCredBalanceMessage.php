@@ -85,12 +85,12 @@ class CCredBalanceMessage extends CustomerReceiptMessage {
                 WHERE m.cardNo =" . $CORE_LOCAL->get("memberID") .
                 " AND m.programID={$programID}
                  AND c.personNum=1";
-        $ccS = $conn->prepare_statement("$ccQ");
+        $ccS = $conn->prepare("$ccQ");
         if ($ccS === False) {
             return "Statement prep for Program {$programID} failed.{$lineEnd}";
         }
         $args = array();
-        $ccR = $conn->exec_statement($ccS, $args);
+        $ccR = $conn->execute($ccS, $args);
         if ($ccR === False) {
             return "Query for Program {$programID} failed.{$lineEnd}";
         }

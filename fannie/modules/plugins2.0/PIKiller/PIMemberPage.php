@@ -86,8 +86,8 @@ class PIMemberPage extends PIKillerPage {
         $susp = $this->get_model($dbc,'SuspensionsModel',array('cardno'=>$this->card_no));
         if ($susp->load()) $this->__models['suspended'] = $susp;
 
-        $noteP = $dbc->prepare_statement('SELECT note FROM memberNotes WHERE cardno=? ORDER BY stamp DESC');
-        $noteR = $dbc->exec_statement($noteP, array($this->card_no));
+        $noteP = $dbc->prepare('SELECT note FROM memberNotes WHERE cardno=? ORDER BY stamp DESC');
+        $noteR = $dbc->execute($noteP, array($this->card_no));
         $this->__models['note'] = '';
         if ($dbc->num_rows($noteR) > 0){
             $tmp = $dbc->fetch_row($noteR);
@@ -116,10 +116,10 @@ class PIMemberPage extends PIKillerPage {
         $note = FormLib::get_form_value('notetext');
         $hash = FormLib::get_form_value('_notetext');
         if (base64_decode($hash) != $note){
-            $noteP = $dbc->prepare_statement('INSERT INTO memberNotes
+            $noteP = $dbc->prepare('INSERT INTO memberNotes
                     (cardno, note, stamp, username) VALUES
                     (?, ?, '.$dbc->now().', ?)');   
-            $noteR = $dbc->exec_statement($noteP,array($this->card_no,
+            $noteR = $dbc->execute($noteP,array($this->card_no,
                     str_replace("\n",'<br />',$note),
                     $this->current_user));
         }

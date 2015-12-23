@@ -92,26 +92,26 @@ class CalendarAjax extends \COREPOS\Fannie\API\webservices\FannieWebService {
                 $uid = FormLib::get_form_value('uid',0);
 
                 $db = CalendarPluginDB::get();
-                $chkP = $db->prepare_statement("SELECT calendarID FROM monthview_events 
+                $chkP = $db->prepare("SELECT calendarID FROM monthview_events 
                         WHERE eventDate=? and uid=? and calendarID=?");
-                $rowCheck = $db->exec_statement($chkP,array($date,$uid,$id));
+                $rowCheck = $db->execute($chkP,array($date,$uid,$id));
                 if ($db->num_rows($rowCheck) <= 0 && $text != ""){
-                    $insP = $db->prepare_statement("INSERT INTO monthview_events 
+                    $insP = $db->prepare("INSERT INTO monthview_events 
                                                     (calendarID, eventDate, eventText, uid) VALUES (?,?,?,?)");
-                    $db->exec_statement($insP,array($id,$date,$text,$uid));
+                    $db->execute($insP,array($id,$date,$text,$uid));
                 }
                 else if ($text == ""){
-                    $delP = $db->prepare_statement("DELETE FROM monthview_events WHERE
+                    $delP = $db->prepare("DELETE FROM monthview_events WHERE
                             calendarID=? AND eventDate=?
                             AND uid=?");
-                    $db->exec_statement($delP,array($id,$date,$uid));
+                    $db->execute($delP,array($id,$date,$uid));
                 }
                 else {
-                    $upP = $db->prepare_statement("UPDATE monthview_events SET
+                    $upP = $db->prepare("UPDATE monthview_events SET
                             eventText=?
                             WHERE calendarID=? AND eventDate=?
                             AND uid=?");
-                    $db->exec_statement($upP,array($text,$id,$date,$uid));
+                    $db->execute($upP,array($text,$id,$date,$uid));
                 }
 
                 $calendar = new CalendarsModel($db);
@@ -124,14 +124,14 @@ class CalendarAjax extends \COREPOS\Fannie\API\webservices\FannieWebService {
                 $uid = FormLib::get_form_value('uid',0);
 
                 $db = CalendarPluginDB::get();
-                $p = $db->prepare_statement("INSERT INTO calendars (name) VALUES (?)");
-                $db->exec_statement($p,array($name));
+                $p = $db->prepare("INSERT INTO calendars (name) VALUES (?)");
+                $db->execute($p,array($name));
 
-                $id = $db->insert_id();
+                $id = $db->insertID();
 
-                $p = $db->prepare_statement("INSERT INTO permissions (calendarID,uid,classID)
+                $p = $db->prepare("INSERT INTO permissions (calendarID,uid,classID)
                                 VALUES (?,?,4)");
-                $db->exec_statement($p,array($id,$uid));
+                $db->execute($p,array($id,$uid));
 
                 $data[] = "<p class=\"index\"><a href=\"?calID=$id&view=month\">$name</a></p>";
                 break;
@@ -168,17 +168,17 @@ class CalendarAjax extends \COREPOS\Fannie\API\webservices\FannieWebService {
                 $calendar->name($name);
                 $calendar->save();
 
-                $p = $db->prepare_statement("DELETE FROM permissions WHERE calendarID=? and classID < 4");
-                $db->exec_statement($p,array($calID));
-                $insP = $db->prepare_statement("INSERT INTO permissions (calendarID,uid,classID) VALUES (?,?,?)");
+                $p = $db->prepare("DELETE FROM permissions WHERE calendarID=? and classID < 4");
+                $db->execute($p,array($calID));
+                $insP = $db->prepare("INSERT INTO permissions (calendarID,uid,classID) VALUES (?,?,?)");
                 if ($viewers != ""){
                     foreach(explode(",",$viewers) as $v){
-                        $db->exec_statement($insP,array($calID,$v,1));
+                        $db->execute($insP,array($calID,$v,1));
                     }
                 }
                 if ($writers != ""){
                     foreach(explode(",",$writers) as $w){
-                        $db->exec_statement($insP,array($calID,$w,2));
+                        $db->execute($insP,array($calID,$w,2));
                     }
                 }
                 if (FormLib::get('url')) {

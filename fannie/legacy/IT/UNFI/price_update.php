@@ -25,7 +25,7 @@ $insBatchQ = $sql->prepare("INSERT INTO batchTest(startDate,endDate,batchName,ba
               VALUES(".$sql->now().','.$sql->now().",?,7,0)");
 //echo $insBatchQ;
 $insBatchR = $sql->execute($insBatchQ, array($batchName));
-$maxID = $sql->insert_id();
+$maxID = $sql->insertID();
 
 echo "<b>".$buyer."</b><br>";
 echo "<html><head><title>Check tag info</title></head><body bgcolor='ffffcc'>";

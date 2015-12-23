@@ -315,8 +315,8 @@ class MemberTypeEditor extends FannieRESTfulPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $q = $dbc->prepare_statement("SELECT MAX(memtype) FROM memtype");
-        $r = $dbc->exec_statement($q);
+        $q = $dbc->prepare("SELECT MAX(memtype) FROM memtype");
+        $r = $dbc->execute($q);
         $sug = 0;
         if($dbc->num_rows($r)>0){
             $w = $dbc->fetch_row($r);

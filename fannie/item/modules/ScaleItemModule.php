@@ -29,8 +29,8 @@ class ScaleItemModule extends ItemModule
         $upc = BarcodeLib::padUPC($upc);
 
         $dbc = $this->db();
-        $p = $dbc->prepare_statement('SELECT * FROM scaleItems WHERE plu=?');
-        $r = $dbc->exec_statement($p,array($upc));
+        $p = $dbc->prepare('SELECT * FROM scaleItems WHERE plu=?');
+        $r = $dbc->execute($p,array($upc));
         $scale = array('itemdesc'=>'','weight'=>0,'bycount'=>0,'tare'=>0,
             'shelflife'=>0,'label'=>133,'graphics'=>0,'text'=>'', 'netWeight'=>0);
         $found = false;
@@ -58,8 +58,8 @@ class ScaleItemModule extends ItemModule
                 </div>";
         $ret .= '<div id="ScaleFieldsetContent" class="panel-body" style="' . $css . '">';
         
-        $p = $dbc->prepare_statement('SELECT description FROM products WHERE upc=?');
-        $r = $dbc->exec_statement($p,array($upc));
+        $p = $dbc->prepare('SELECT description FROM products WHERE upc=?');
+        $r = $dbc->execute($p,array($upc));
         $reg_description = '';
         if ($dbc->num_rows($r) > 0) {
             $w = $dbc->fetch_row($r);

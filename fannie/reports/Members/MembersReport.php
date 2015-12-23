@@ -34,10 +34,10 @@ class MembersReport extends FannieReportPage
         $suspended = FormLib::get('suspended', 1);
 
         $trans = $this->config->get('TRANS_DB');
-        if ($dbc->dbms_name() == 'mssql') {
+        if ($dbc->dbmsName() == 'mssql') {
             $trans .= ".dbo";
         }
-        $q = $dbc->prepare_statement("
+        $q = $dbc->prepare("
             SELECT c.CardNo,
                 CASE WHEN m.start_date IS NULL THEN n.startdate ELSE m.start_date END AS startdate,
                 m.end_date AS enddate,
@@ -61,7 +61,7 @@ class MembersReport extends FannieReportPage
         for ($i=0; $i<$arg_count; $i++) {
             $args[] = $args[$i];
         }
-        $r = $dbc->exec_statement($q, $args);
+        $r = $dbc->execute($q, $args);
         $saveW = array();
         $data = array();
         while ($w = $dbc->fetch_row($r)) {

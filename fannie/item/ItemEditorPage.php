@@ -273,8 +273,8 @@ class ItemEditorPage extends FanniePage
         }
 
         $query = $dbc->addSelectLimit($query, 500);
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($query,$args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($query,$args);
 
         /**
           Query somehow failed. Unlikely. Show error and search box again.

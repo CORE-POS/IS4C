@@ -74,7 +74,7 @@ class SigCapturePage extends BasicCorePage
         $amt = FormLib::get('amt');
         if ($amt !== '') {
             if (FormLib::get('type') !== '') {
-                $terminal_msg .= sprintf('%s: $.%2f', FormLib::get('type'), $amt);
+               $terminal_msg .= sprintf('%s: $.%2f', FormLib::get('type'), $amt);
             } else {
                 $terminal_msg .= sprintf('Amount: $.%2f', $amt);
             }
@@ -129,7 +129,7 @@ class SigCapturePage extends BasicCorePage
                  VALUES
                     (?, ?, ?, ?,
                      ?, ?, ?)';
-        $capP = $dbc->prepare_statement($capQ);
+        $capP = $dbc->prepare($capQ);
         Database::getsubtotals();
         $args = array(
             date('Y-m-d H:i:s'),
@@ -140,7 +140,7 @@ class SigCapturePage extends BasicCorePage
             $format,
             $img_content,
         );
-        $capR = $dbc->exec_statement($capP, $args);
+        $capR = $dbc->execute($capP, $args);
 
         return $capR ? true : false;
     }

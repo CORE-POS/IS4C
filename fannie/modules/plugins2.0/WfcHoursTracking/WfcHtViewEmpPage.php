@@ -58,8 +58,8 @@ class WfcHtViewEmpPage extends FanniePage
             $validated = false;
             $sql = WfcHtLib::hours_dbconnect();
             $depts = array(10,11,12,13,20,21,30,40,41,50,60,998);
-            $checkQ = $sql->prepare_statement("select department from employees where empID=?");
-            $checkR = $sql->exec_statement($checkQ, array($this->empID));
+            $checkQ = $sql->prepare("select department from employees where empID=?");
+            $checkR = $sql->execute($checkQ, array($this->empID));
             $checkW = $sql->fetch_row($checkR);
             if (FannieAuth::validateUserQuiet('view_all_hours', $checkW['department'])){
                 $validated = true;
@@ -74,8 +74,8 @@ class WfcHtViewEmpPage extends FanniePage
         }
 
         $sql = WfcHtLib::hours_dbconnect();
-        $deptQ = $sql->prepare_statement("select department from employees where empID=?");
-        $deptR = $sql->exec_statement($deptQ, array($this->empID));
+        $deptQ = $sql->prepare("select department from employees where empID=?");
+        $deptR = $sql->execute($deptQ, array($this->empID));
         $deptW = $sql->fetch_row($deptR);
         if ($deptW['department'] >= 998){
             header("Location: WfcHtViewSalaryPage.php?id=".$this->empID);
@@ -159,7 +159,7 @@ class WfcHtViewEmpPage extends FanniePage
 
         echo "<h3>Employee Total Hours Worked and PTO Status</h3>";
 
-        $infoQ = $sql->prepare_statement("select e.name,e.PTOLevel,p.dateStr,
+        $infoQ = $sql->prepare("select e.name,e.PTOLevel,p.dateStr,
             l.HoursWorked - h.totalHours as remaining,
             o.PTOremaining,o.totalPTO,h.totalHours,u.hours
             from employees as e left join PayPeriods as p on e.PTOCutoff = p.periodID
@@ -168,7 +168,7 @@ class WfcHtViewEmpPage extends FanniePage
             left join pto as o on e.empID=o.empID
             left join uto as u on e.empID=u.empID
             where e.empID=?");
-        $infoR = $sql->exec_statement($infoQ, array($this->empID));
+        $infoR = $sql->execute($infoQ, array($this->empID));
         $infoW = $sql->fetch_row($infoR);
 
         $startdate = $infoW['dateStr'];
@@ -194,11 +194,11 @@ class WfcHtViewEmpPage extends FanniePage
         echo "<tr class=one><th>UTO Hours Remaining</th><td>{$infoW['hours']}</td></tr>";
         echo "</tr></table>";
 
-        $periodsQ = $sql->prepare_statement("select min(p.dateStr),sum(i.hours),sum(i.OTHours),sum(i.PTOHours),
+        $periodsQ = $sql->prepare("select min(p.dateStr),sum(i.hours),sum(i.OTHours),sum(i.PTOHours),
             sum(i.UTOHours),sum(i.SecondRateHours),i.periodID
             from ImportedHoursData as i left join PayPeriods as p on i.periodID=p.periodID
             where i.empID=? group by i.periodID order by i.periodID desc");
-        $periodsR = $sql->exec_statement($periodsQ, array($this->empID));
+        $periodsR = $sql->execute($periodsQ, array($this->empID));
         $sums = array(0,0,0,0,0,0);
         $class = array("one","two");
         $prev_hours = 0;

@@ -84,8 +84,8 @@ class PIPurchasesPage extends PIKillerPage {
             $query = $today . ' UNION ALL ' . $query;
             array_unshift($args, $this->id);
         }
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep, $args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, $args);
 
         ob_start();
         echo '<tr><td>';

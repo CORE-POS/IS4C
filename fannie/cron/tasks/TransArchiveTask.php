@@ -45,7 +45,7 @@ class TransArchiveTask extends FannieTask
 
         set_time_limit(0);
 
-        $cols = $sql->table_definition('dtransactions');
+        $cols = $sql->tableDefinition('dtransactions');
         if (isset($cols['date_id'])){
             $sql->query("UPDATE dtransactions SET date_id=DATE_FORMAT(datetime,'%Y%m%d')");
         }
@@ -194,13 +194,13 @@ class TransArchiveTask extends FannieTask
                 }
             } else if (!$sql->table_exists($table)) {
                 $query = "CREATE TABLE $table LIKE $FANNIE_TRANS_DB.dtransactions";
-                if ($sql->dbms_name() == 'mssql') {
+                if ($sql->dbmsName() == 'mssql') {
                     $query = "SELECT * INTO $table FROM $FANNIE_TRANS_DB.dbo.dtransactions
                                 WHERE ".$sql->datediff('datetime', "'$date'")."= 0";
                 }
                 try {
                     $chk1 = $sql->query($query, $FANNIE_ARCHIVE_DB);
-                    if ($sql->dbms_name() != 'mssql') {
+                    if ($sql->dbmsName() != 'mssql') {
                         // mysql doesn't create & populate in one step
                         $chk2 = $sql->query("INSERT INTO $table 
                                              SELECT * 

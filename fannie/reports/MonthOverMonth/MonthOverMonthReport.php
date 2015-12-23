@@ -117,8 +117,8 @@ class MonthOverMonthReport extends FannieReportPage {
                 ORDER BY YEAR(tdate),MONTH(tdate),t.department,d.dept_name";
         }
 
-        $queryP = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($queryP, $qArgs);
+        $queryP = $dbc->prepare($query);
+        $result = $dbc->execute($queryP, $qArgs);
 
         $ret = array();
         while ($row = $dbc->fetch_array($result)){
@@ -139,8 +139,8 @@ class MonthOverMonthReport extends FannieReportPage {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $depts = array();
-        $q = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
-        $r = $dbc->exec_statement($q);
+        $q = $dbc->prepare("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
+        $r = $dbc->execute($q);
         while($w = $dbc->fetch_row($r))
             $depts[$w[0]] = $w[1];
         ob_start();

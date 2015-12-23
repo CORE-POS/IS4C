@@ -110,11 +110,11 @@ class GeneralSalesReport extends FannieReportPage
                 $omitDepts = array();
         }
         $supers = array();
-        $prep = $dbc->prepare_statement($sales);
+        $prep = $dbc->prepare($sales);
         $args = $omitDepts;
         $args[] = $d1 . ' 00:00:00';
         $args[] = $d2 . ' 23:59:59';
-        $salesR = $dbc->exec_statement($prep, $args);
+        $salesR = $dbc->execute($prep, $args);
     
         $curSuper = 0;
         $grandTotal = 0;

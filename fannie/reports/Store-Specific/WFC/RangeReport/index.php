@@ -86,13 +86,13 @@ $dlog = DTransactionsModel::selectDlog($repDate,$repDate2);
 $dlog = "trans_archive.dlogBig";
 $WAREHOUSE = $FANNIE_PLUGIN_SETTINGS['WarehouseDatabase'] . ($FANNIE_SERVER_DBMS=='MSSQL' ? '.dbo.' : '.');
 
-$tenderQ = $dbc->prepare_statement("SELECT t.TenderName,-sum(d.total) as total, SUM(d.quantity)
+$tenderQ = $dbc->prepare("SELECT t.TenderName,-sum(d.total) as total, SUM(d.quantity)
 FROM {$WAREHOUSE}sumTendersByDay as d ,tenders as t 
 WHERE d.date_id BETWEEN ? AND ?
 AND d.trans_subtype = t.TenderCode
 and d.total <> 0
 GROUP BY t.TenderName");
-$tenderR = $dbc->exec_statement($tenderQ,$date_ids);
+$tenderR = $dbc->execute($tenderQ,$date_ids);
 $tenders = WfcLib::getTenders();
 $mad = array(0.0,0);
 while ($row = $dbc->fetch_row($tenderR)){
@@ -112,13 +112,13 @@ echo WfcLib::tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Co
          array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,WfcLib::ALIGN_RIGHT),2);
 
 
-$pCodeQ = $dbc->prepare_statement("SELECT d.salesCode,-1*sum(l.total) as total,min(l.department) 
+$pCodeQ = $dbc->prepare("SELECT d.salesCode,-1*sum(l.total) as total,min(l.department) 
 FROM {$WAREHOUSE}sumDeptSalesByDay as l join departments as d on l.department = d.dept_no
 WHERE date_id BETWEEN ? AND ?
 AND l.department < 600 AND l.department <> 0
 GROUP BY d.salesCode
 order by d.salesCode");
-$pCodeR = $dbc->exec_statement($pCodeQ,$date_ids);
+$pCodeR = $dbc->execute($pCodeQ,$date_ids);
 $pCodes = WfcLib::getPCodes();
 while($row = $dbc->fetch_row($pCodeR)){
     if (isset($pCodes[$row[0]])) $pCodes[$row[0]][0] = $row[1];
@@ -128,22 +128,22 @@ echo "<br /><b>Sales</b>";
 echo WfcLib::tablify($pCodes,array(0,1),array("pCode","Sales"),
          array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY),1);
 
-$saleSumQ = $dbc->prepare_statement("SELECT -1*sum(l.total) as totalSales
+$saleSumQ = $dbc->prepare("SELECT -1*sum(l.total) as totalSales
 FROM {$WAREHOUSE}sumDeptSalesByDay as l
 WHERE date_id BETWEEN ? AND ?
 AND l.department < 600 AND l.department <> 0");
-$saleSumR = $dbc->exec_statement($saleSumQ,$date_ids);
+$saleSumR = $dbc->execute($saleSumQ,$date_ids);
 echo "<br /><b><u>Total Sales</u></b><br />";
 echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($saleSumR)));
 
-$otherQ = $dbc->prepare_statement("SELECT d.department,t.dept_name, -1*sum(total) as total 
+$otherQ = $dbc->prepare("SELECT d.department,t.dept_name, -1*sum(total) as total 
 FROM {$WAREHOUSE}sumDeptSalesByDay as d join departments as t ON d.department = t.dept_no
 WHERE date_id BETWEEN ? AND ?
 AND (d.department >300)AND d.department <> 0 
 and d.department <> 610
 and d.department not between 500 and 599
 GROUP BY d.department, t.dept_name order by d.department");
-$otherR = $dbc->exec_statement($otherQ,$date_ids);
+$otherR = $dbc->execute($otherQ,$date_ids);
 $others = WfcLib::getOtherCodes();
 while($row = $dbc->fetch_row($otherR)){
     $others["$row[0]"][1] = $row[1];
@@ -153,7 +153,7 @@ echo "<br /><b>Other</b>";
 echo WfcLib::tablify($others,array(1,0,2,3),array("Account","Dept","Description","Amount"),
          array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY),3);
 
-$discQ = $dbc->prepare_statement("SELECT     m.memDesc, -1*SUM(d.total) AS Discount,count(*) 
+$discQ = $dbc->prepare("SELECT     m.memDesc, -1*SUM(d.total) AS Discount,count(*) 
 FROM $dlog d INNER JOIN
        custdata c ON d.card_no = c.CardNo INNER JOIN
       memTypeID m ON c.memType = m.memTypeID
@@ -161,7 +161,7 @@ WHERE     (d.tdate BETWEEN ? AND ? )
     AND (d.upc = 'DISCOUNT') AND c.personnum= 1
 and total <> 0
 GROUP BY m.memDesc, d.upc ");
-$discR = $dbc->exec_statement($discQ,$dates);
+$discR = $dbc->execute($discQ,$dates);
 $discounts = array("MAD Coupon"=>array(66600,$mad[0],$mad[1]),
            "Staff Member"=>array(61170,0.0,0),
            "Staff NonMem"=>array(61170,0.0,0),
@@ -174,21 +174,21 @@ echo "<br /><b>Discounts</b>";
 echo WfcLib::tablify($discounts,array(1,0,2,3),array("Account","Type","Amount","Count"),
          array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,WfcLib::ALIGN_RIGHT),2);
 
-$taxSumQ = $dbc->prepare_statement("SELECT  -1*sum(total) as tax_collected
+$taxSumQ = $dbc->prepare("SELECT  -1*sum(total) as tax_collected
 FROM $dlog as d 
 WHERE tdate BETWEEN ? AND ?
 AND (d.upc = 'tax')
 GROUP BY d.upc");
-$taxSumR = $dbc->exec_statement($taxSumQ,$dates);
+$taxSumR = $dbc->execute($taxSumQ,$dates);
 echo "<br /><b><u>Actual Tax Collected</u></b><br />";
 echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($taxSumR)));
 
-$transQ = $dbc->prepare_statement("SELECT SUM(d.total),SUM(d.quantity),SUM(d.transCount),m.memdesc
+$transQ = $dbc->prepare("SELECT SUM(d.total),SUM(d.quantity),SUM(d.transCount),m.memdesc
     FROM {$WAREHOUSE}sumMemTypeSalesByDay as d LEFT JOIN
     memTypeID as m ON m.memTypeID=d.memType
     WHERE d.date_id BETWEEN ? AND ?
     GROUP BY d.memType, m.memdesc");
-$transR = $dbc->exec_statement($transQ,$date_ids);
+$transR = $dbc->execute($transQ,$date_ids);
 $transinfo = array("Member"=>array(0,0.0,0.0,0.0,0.0),
            "Non Member"=>array(0,0.0,0.0,0.0,0.0),
            "Staff Member"=>array(0,0.0,0.0,0.0,0.0),

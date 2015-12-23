@@ -40,7 +40,7 @@ class SqliteAdapter implements DialectAdapter
             $row = $dbc->fetchRow($result);
             $ret = $row['sql'];
         }
-        $dbc->end_query($result, $db_name);
+        $dbc->endQuery($result, $db_name);
         return $ret;
     }
 

@@ -67,8 +67,8 @@ class TransactionSummaryModel extends CoreWarehouseModel {
 
         /* clear old entries */
         $sql = 'DELETE FROM '.$this->name.' WHERE date_id BETWEEN ? AND ?';
-        $prep = $this->connection->prepare_statement($sql);
-        $result = $this->connection->exec_statement($prep, array($start_id, $end_id));
+        $prep = $this->connection->prepare($sql);
+        $result = $this->connection->execute($prep, array($start_id, $end_id));
 
         // 5Jul2013 - percentDiscount not currently exposed via dlog
         $sql = "INSERT INTO ".$this->name." 
@@ -101,8 +101,8 @@ class TransactionSummaryModel extends CoreWarehouseModel {
             ON t.department=m.dept_ID
             WHERE tdate BETWEEN ? AND ? AND upc <> 'RRR'
             GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), trans_num";
-        $prep = $this->connection->prepare_statement($sql);
-        $result = $this->connection->exec_statement($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
+        $prep = $this->connection->prepare($sql);
+        $result = $this->connection->execute($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
     }
 }
 

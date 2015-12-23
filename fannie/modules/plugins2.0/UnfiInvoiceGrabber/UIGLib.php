@@ -88,7 +88,7 @@ class UIGLib
                     // date previously did not include this invoice
                     $dbc->execute($create, array($vendorID, $header_info['placedDate'], $header_info['placedDate'],
                                     $header_info['vendorOrderID'], $header_info['vendorInvoiceID']));
-                    $id = $dbc->insert_id();
+                    $id = $dbc->insertID();
                 }
 
                 foreach($item_info as $item) {

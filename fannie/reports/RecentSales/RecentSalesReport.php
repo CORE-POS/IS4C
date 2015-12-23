@@ -128,12 +128,12 @@ class RecentSalesReport extends FannieReportPage
         $q .= "WHERE $where
             AND tdate < " . $dbc->curdate() . "
             AND tdate BETWEEN ? AND ?";
-        $p = $dbc->prepare_statement($q);
+        $p = $dbc->prepare($q);
         
         $data = array();
         foreach($dates as $label => $span) {
             $args = array($baseArgs[0], $span[0].' 00:00:00', $span[1].' 23:59:59');
-            $r = $dbc->exec_statement($p, $args);
+            $r = $dbc->execute($p, $args);
 
             $row = array('qty'=>0, 'ttl'=>0);
             if ($dbc->num_rows($r) > 0) {

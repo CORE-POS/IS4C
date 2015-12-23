@@ -219,11 +219,11 @@ class ProgramEventsReport extends FannieReportPage {
         $args[] = $date1 . ' 00:00:00';
         $args[] = $date2 . ' 23:59:59';
 
-        $prep = $dbc->prepare_statement($query);
+        $prep = $dbc->prepare($query);
         if ($prep === False) {
             $dbc->logger("\nprep failed:\n$query");
         }
-        $result = $dbc->exec_statement($prep,$args);
+        $result = $dbc->execute($prep,$args);
         if ($result === False) {
             $dbc->logger("\nexec failed:\n$query\nargs:",implode(" : ",$args));
         }

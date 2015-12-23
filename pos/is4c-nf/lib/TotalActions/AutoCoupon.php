@@ -31,7 +31,7 @@ class AutoCoupon extends TotalAction
     {
         $dbc = Database::pDataConnect();
         $coupons = array();
-        $hc_table = $dbc->table_definition('houseCoupons');
+        $hc_table = $dbc->tableDefinition('houseCoupons');
         if ($dbc->table_exists('autoCoupons')) {
             $autoR = $dbc->query('SELECT coupID, description FROM autoCoupons');
             while($autoW = $dbc->fetch_row($autoR)) {

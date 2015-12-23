@@ -410,7 +410,7 @@ static public function uploadtoServer()
     // new upload method makes use of SQLManager's transfer method
     // to simulate cross-server queries
     $connect = self::tDataConnect();
-    $connect->add_connection(CoreLocal::get("mServer"),
+    $connect->addConnection(CoreLocal::get("mServer"),
                 CoreLocal::get("mDBMS"),
                 CoreLocal::get("mDatabase"),
                 CoreLocal::get("mUser"),
@@ -488,7 +488,7 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
         return $cache[$table_name];
     }
 
-    $local_poll = $connection->table_definition($table_name,CoreLocal::get("tDatabase"));
+    $local_poll = $connection->tableDefinition($table_name,CoreLocal::get("tDatabase"));
     if ($local_poll === false) {
         return '';
     }
@@ -496,7 +496,7 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
     foreach($local_poll as $name=>$v) {
         $local_cols[$name] = true;
     }
-    $remote_poll = $connection->table_definition((!empty($table2)?$table2:$table_name),
+    $remote_poll = $connection->tableDefinition((!empty($table2)?$table2:$table_name),
                 CoreLocal::get("mDatabase"));
     if ($remote_poll === false) {
         return '';
@@ -528,12 +528,12 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
  */
 static public function localMatchingColumns($connection,$table1,$table2)
 {
-    $poll1 = $connection->table_definition($table1);
+    $poll1 = $connection->tableDefinition($table1);
     $cols1 = array();
     foreach($poll1 as $name=>$v) {
         $cols1[$name] = true;
     }
-    $poll2 = $connection->table_definition($table2);
+    $poll2 = $connection->tableDefinition($table2);
     $matching_cols = array();
     foreach($poll2 as $name=>$v) {
         if (isset($cols1[$name])) {
@@ -563,7 +563,7 @@ static public function uploadCCdata()
     }
 
     $sql = self::tDataConnect();
-    $sql->add_connection(CoreLocal::get("mServer"),
+    $sql->addConnection(CoreLocal::get("mServer"),
                 CoreLocal::get("mDBMS"),
                 CoreLocal::get("mDatabase"),
                 CoreLocal::get("mUser"),
@@ -793,7 +793,7 @@ static public function rotateTempData()
       value to the column. Otherwise it may be handled but some
       other mechanism such as triggers or column default values.
     */
-    $table_def = $connection->table_definition('dtransactions');
+    $table_def = $connection->tableDefinition('dtransactions');
     if (isset($table_def['store_id']) && CoreLocal::get('store_id') !== '') {
         $assignQ = sprintf('
             UPDATE dtransactions

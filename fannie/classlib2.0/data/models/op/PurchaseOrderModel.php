@@ -139,11 +139,11 @@ values can be saved here for reference.
         $this->connection = $dbc;
         if (!$dbc->table_exists($this->name))
             return parent::normalize($db_name, $mode, $doCreate);
-        $def = $dbc->table_definition($this->name);
+        $def = $dbc->tableDefinition($this->name);
         if (count($def)==3 && isset($def['stamp']) && isset($def['id']) && isset($def['name'])){
             echo "==========================================\n";
             if ($mode == BasicModel::NORMALIZE_MODE_APPLY){
-                $dbc->query('DROP TABLE '.$dbc->identifier_escape($this->name));
+                $dbc->query('DROP TABLE '.$dbc->identifierEscape($this->name));
                 $success = $this->create();    
                 echo "Recreating table ".$this->name.": ";
                 echo ($success) ? 'Succeeded' : 'Failed';

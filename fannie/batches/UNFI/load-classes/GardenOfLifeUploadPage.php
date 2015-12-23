@@ -107,7 +107,7 @@ class GardenOfLifeUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $SIZE = $this->get_column_index('size');
         $TYPE = $this->get_column_index('type');
 
-        $extraP = $dbc->prepare_statement("update prodExtra set cost=? where upc=?");
+        $extraP = $dbc->prepare("update prodExtra set cost=? where upc=?");
         $prodP = $dbc->prepare('
             UPDATE products
             SET cost=?,

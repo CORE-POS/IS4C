@@ -21,8 +21,8 @@ class lttLib {
     */
     public static function verifyRecord($trans_id,$values, $testObj){
         $db = Database::tDataConnect();
-        $p = $db->prepare_statement('SELECT * FROM localtemptrans WHERE trans_id=?');
-        $r = $db->exec_statement($p, array($trans_id));
+        $p = $db->prepare('SELECT * FROM localtemptrans WHERE trans_id=?');
+        $r = $db->execute($p, array($trans_id));
         $testObj->assertEquals(1,$db->num_rows($r),'Record not found');
         $w = $db->fetch_row($r);
         $testObj->assertInternalType('array',$w);
@@ -35,7 +35,7 @@ class lttLib {
     public static function dumpRecord($trans_id)
     {
         $db = Database::tDataConnect();
-        $p = $db->prepare_statement('SELECT * FROM localtemptrans WHERE trans_id=?');
+        $p = $db->prepare('SELECT * FROM localtemptrans WHERE trans_id=?');
         ob_start();
         var_dump($db->getRow($p, array($trans_id)));
         return ob_get_clean();

@@ -73,7 +73,7 @@ class EpScaleLib
         foreach (explode("\n", $text) as $line) {
             $ret .= wordwrap($line, 35, "\n") . "\n";
         }
-        return str_replace("\n", '<br>', $ret);
+        return str_replace("\n", chr(0xE), $ret);
     }
 
     static private function getAddItemLine($item_info)

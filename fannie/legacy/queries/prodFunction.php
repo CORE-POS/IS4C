@@ -519,7 +519,7 @@ function likedtotable($query,$args,$border,$bgcolor)
         echo "<tr align left>\n";
         /*for($i=0; $i<5; $i++)
         {
-                echo "<th>" . $sql->field_name($results,$i). "</th>\n";
+                echo "<th>" . $sql->fieldName($results,$i). "</th>\n";
         }
         echo "</tr>\n"; *///end table header
         //layout table body

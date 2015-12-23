@@ -86,7 +86,7 @@ class WfcHtFinal extends FannieReportPage
         $report = array();
         while($row = $sql->fetch_row($result)) {
             $record = array();
-            for($i=0;$i<$sql->num_fields($result);$i++) {
+            for($i=0;$i<$sql->numFields($result);$i++) {
                 if (is_numeric($row[$i]) && $row[$i] != ((int)$row[$i])) {
                     $row[$i] = number_format($row[$i], 2);
                 }

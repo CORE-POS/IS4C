@@ -290,8 +290,8 @@ class MarginToolFromSearch extends FannieRESTfulPage
 
         // maintain @deprecated table if present
         if ($dbc->tableExists('batchowner')) {
-            $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
-            $insR = $dbc->exec_statement($insQ,array($id,$owner));
+            $insQ = $dbc->prepare("insert batchowner values (?,?)");
+            $insR = $dbc->execute($insQ,array($id,$owner));
         }
 
         // add items to batch

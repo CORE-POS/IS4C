@@ -68,6 +68,8 @@ Replaces nightly.tablecache.php';
             $this->cronMsg("Could not load batch reporting data for likecodes", FannieLogger::WARNING);
         }
 
+        $chk = $sql->query('DELETE FROM shelftags WHERE id < 0');
+
         $sql = FannieDB::get($FANNIE_TRANS_DB);
 
         $cashierPerformanceSQL = "

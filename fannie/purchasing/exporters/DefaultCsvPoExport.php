@@ -49,14 +49,13 @@ class DefaultCsvPoExport {
 
         echo 'Vendor,"'.$vendor->vendorName().'",Order Date,'.date('Y-m-d')."\r\n";
         echo "\r\n";
-        echo "SKU,\"Order Qty\",Brand,Description,\"Case Size\",\"Est. Cost\"\r\n";
+        echo "SKU,\"Order Qty\",\"Case Size\",\"Unit Size\",Description\r\n";
         foreach($items->find() as $obj){
             echo $obj->sku().',';
             echo $obj->quantity().',';
-            echo '"'.$obj->brand().'",';
-            echo '"'.$obj->description().'",';
             echo '"'.$obj->caseSize().'",';
-            printf('%.2f', $obj->unitCost()*$obj->caseSize()*$obj->quantity());
+            echo '"'.$obj->unitSize().'",';
+            echo '"'.$obj->description().'",';
             echo "\r\n";
         }
     }

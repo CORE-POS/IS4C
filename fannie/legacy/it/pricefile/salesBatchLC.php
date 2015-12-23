@@ -72,7 +72,7 @@ else if (isset($_POST['likecode'])){
     $createQ = $sql->prepare("insert into batches (startDate, endDate, batchName, batchType, discountType, priority, owner) 
         values (?,?,?,?,?,0,'Produce')");
     $sql->execute($createQ, array($startDate, $endDate, $batchName, $batchType, $discount));
-    $batchID = $sql->insert_id();
+    $batchID = $sql->insertID();
 
     if ($sql->tableExists('batchowner')) {
         $ownerQ = $sql->prepare("insert into batchowner values (?,'Produce')");

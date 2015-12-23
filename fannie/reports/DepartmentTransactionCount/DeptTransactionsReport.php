@@ -89,15 +89,15 @@ class DeptTransactionsReport extends FannieReportPage
 
         $dataset = array();
 
-        $prep = $dbc->prepare_statement($queryAll);
-        $result = $dbc->exec_statement($prep,$argsAll);
+        $prep = $dbc->prepare($queryAll);
+        $result = $dbc->execute($prep,$argsAll);
         while($row = $dbc->fetch_row($result)) {
             $datestr = sprintf("%d/%d/%d",$row['month'],$row['day'],$row['year']);
             $dataset[$datestr] = array('ttl'=>$row['trans_count'],'sub'=>0);
         }
 
-        $prep = $dbc->prepare_statement($querySelected);
-        $result = $dbc->exec_statement($prep,$argsSel);
+        $prep = $dbc->prepare($querySelected);
+        $result = $dbc->execute($prep,$argsSel);
         while($row = $dbc->fetch_row($result)) {
             $datestr = sprintf("%d/%d/%d",$row['month'],$row['day'],$row['year']);
             if (isset($dataset[$datestr])) {

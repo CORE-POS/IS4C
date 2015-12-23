@@ -33,9 +33,9 @@ class Notes extends \COREPOS\Fannie\API\member\MemberModule {
 
         $dbc = $this->db();
         
-        $infoQ = $dbc->prepare_statement("SELECT note,stamp FROM memberNotes
+        $infoQ = $dbc->prepare("SELECT note,stamp FROM memberNotes
                 WHERE cardno=? ORDER BY stamp DESC");
-        $infoR = $dbc->exec_statement($infoQ,array($memNum));
+        $infoR = $dbc->execute($infoQ,array($memNum));
 
         $recentNote = "";
         $recentDate = "";
@@ -98,7 +98,7 @@ class Notes extends \COREPOS\Fannie\API\member\MemberModule {
 
         $dbc = $this->db();
 
-        $insertNote = $dbc->prepare_statement("INSERT into memberNotes
+        $insertNote = $dbc->prepare("INSERT into memberNotes
                 (cardno, note, stamp, username)
                 VALUES (?, ?, ".$dbc->now().", 'Admin')");
 
@@ -106,7 +106,7 @@ class Notes extends \COREPOS\Fannie\API\member\MemberModule {
         // so displayed notes have user's
         // paragraph formatting
         $note = str_replace("\n",'<br />',$note);
-        $test1 = $dbc->exec_statement($insertNote,array($memNum,$note));
+        $test1 = $dbc->execute($insertNote,array($memNum,$note));
 
         if ($test1 === False )
             return "Error: problem saving Notes<br />";

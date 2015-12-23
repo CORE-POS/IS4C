@@ -84,8 +84,8 @@ class TrendsReport extends FannieReportPage
                 YEAR(t.tdate),
                 MONTH(t.tdate),
                 DAY(t.tdate)";
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep,$from_where['args']);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep,$from_where['args']);
     
         // variable columns. one per dates
         $dates = array();

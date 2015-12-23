@@ -182,8 +182,8 @@ class CostHistoryReport extends FannieReportPage
         if (isset($def['storeID']) && $this->config->get('STORE_ID')) {
             $q = str_replace('h.upc=p.upc', 'h.upc=p.upc AND h.storeID=p.store_id', $q);
         }
-        $p = $sql->prepare_statement($q);
-        $r = $sql->exec_statement($p,$args);
+        $p = $sql->prepare($q);
+        $r = $sql->execute($p,$args);
 
         if ($upc !== '') {
             $this->report_headers[] = 'Current Cost';
@@ -211,8 +211,8 @@ class CostHistoryReport extends FannieReportPage
         $sql = $this->connection;
         $sql->selectDB($this->config->get('OP_DB'));
 
-        $deptsQ = $sql->prepare_statement("select dept_no,dept_name from departments order by dept_no");
-        $deptsR = $sql->exec_statement($deptsQ);
+        $deptsQ = $sql->prepare("select dept_no,dept_name from departments order by dept_no");
+        $deptsR = $sql->execute($deptsQ);
         $deptsList = "";
         while ($deptsW = $sql->fetch_array($deptsR)) {
             $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";

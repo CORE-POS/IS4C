@@ -59,7 +59,7 @@ class CouponsReport extends FannieReportPage {
 
         $dlog = DTransactionsModel::selectDlog($d1,$d2);
 
-        $query = $dbc->prepare_statement("SELECT 
+        $query = $dbc->prepare("SELECT 
             CASE WHEN upc='0' THEN 'NOT SCANNED' ELSE upc END as upc, 
             sum(CASE WHEN upc='0' THEN 1 ELSE quantity END) as qty,
             sum(-total) as ttl FROM $dlog
@@ -67,7 +67,7 @@ class CouponsReport extends FannieReportPage {
             AND tdate BETWEEN ? AND ?
             GROUP BY upc
             ORDER BY upc");
-        $result = $dbc->exec_statement($query, array($d1.' 00:00:00', $d2.' 23:59:59'));
+        $result = $dbc->execute($query, array($d1.' 00:00:00', $d2.' 23:59:59'));
 
         $data = array();
         while($row = $dbc->fetch_row($result)){

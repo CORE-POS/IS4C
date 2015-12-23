@@ -168,17 +168,17 @@ static private $SQL_CONNECTION = null;
             JOIN {$CORE_LOCAL->get('pDatabase')}.custdata c
                 ON m.cardNo = c.CardNo
             WHERE m.cardNo = ? AND m.programID = ? AND c.personNum=1";
-        $statement = $conn->prepare_statement($query);
+        $statement = $conn->prepare($query);
             if ($statement === False) {
-                return "Error: prepare_statement() failed for query: $query";
+                return "Error: prepare() failed for query: $query";
             }
         $args=array(
             (int)$CORE_LOCAL->get("memberID"),
             (int)$pgm->programID()
             );
-        $result = $conn->exec_statement($statement,$args);
+        $result = $conn->execute($statement,$args);
             if ($result === False) {
-                return "Error: exec_statement() failed for query: $query args:" .
+                return "Error: execute() failed for query: $query args:" .
                     implode('|',$args);
             }
 

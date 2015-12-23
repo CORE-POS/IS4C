@@ -61,8 +61,8 @@ class WfcHtSyncPage extends FanniePage
         $ret = '';
 
         $db = WfcHtLib::hours_dbconnect();
-        $chkQ = $db->prepare_statement("SELECT empID, name FROM employees WHERE empID=?");
-        $insQ = $db->prepare_statement("INSERT INTO employees VALUES (?,?,NULL,0,8,NULL,0)");
+        $chkQ = $db->prepare("SELECT empID, name FROM employees WHERE empID=?");
+        $insQ = $db->prepare("INSERT INTO employees VALUES (?,?,NULL,0,8,NULL,0)");
         exec('getent passwd', $users, $exit_code);
         foreach ($users as $line) {
             // extract users with group 100 from unix passwd file
@@ -94,10 +94,10 @@ class WfcHtSyncPage extends FanniePage
             }
 
             // create entry in hours database
-            $chkR = $db->exec_statement($chkQ, array($uid));
+            $chkR = $db->execute($chkQ, array($uid));
             if ($db->num_rows($chkR) == 0) {
                 $new_accounts[$uid] = $shortname;
-                $db->exec_statement($insQ, array($uid, $name));
+                $db->execute($insQ, array($uid, $name));
                 $ret .= "Added ADP entry for $name<br />";
             } else {
                 $w = $db->fetch_row($chkR);
@@ -114,13 +114,13 @@ class WfcHtSyncPage extends FanniePage
           Create corresponding POS user accounts
         */
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $chkQ = $dbc->prepare_statement("SELECT uid FROM Users WHERE uid=?");
-        $insQ = $dbc->prepare_statement("INSERT INTO Users VALUES (?,'','',?,'','')");
+        $chkQ = $dbc->prepare("SELECT uid FROM Users WHERE uid=?");
+        $insQ = $dbc->prepare("INSERT INTO Users VALUES (?,'','',?,'','')");
         foreach($new_accounts as $uid => $uname){
             $uid = str_pad($uid,4,'0',STR_PAD_LEFT);
-            $chkR = $dbc->exec_statement($chkQ, array($uid));
+            $chkR = $dbc->execute($chkQ, array($uid));
             if ($dbc->num_rows($chkR) == 0) {
-                $dbc->exec_statement($insQ, array($uname, $uid));
+                $dbc->execute($insQ, array($uname, $uid));
                 $ret .= "Added user account for $uname<br />";
             }
         }

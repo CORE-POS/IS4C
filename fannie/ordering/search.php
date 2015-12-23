@@ -73,7 +73,7 @@ if (isset($_REQUEST['q'])){
     echo '<input type="submit" onclick="window.close();" value="Close" />';
 
     echo '<div id="one" style="display:block;">';
-    $itemP = $dbc->prepare_statement("
+    $itemP = $dbc->prepare("
         SELECT upc,
             description 
         FROM products 
@@ -81,7 +81,7 @@ if (isset($_REQUEST['q'])){
         GROUP BY upc,
             description
         ORDER BY description");
-    $itemR = $dbc->exec_statement($itemP,array('%'.$_REQUEST['q'].'%', $_REQUEST['q']));
+    $itemR = $dbc->execute($itemP,array('%'.$_REQUEST['q'].'%', $_REQUEST['q']));
     if ($dbc->num_rows($itemR) == 0)
         echo 'No matching items';
     else {
@@ -95,9 +95,9 @@ if (isset($_REQUEST['q'])){
     echo '</div>';
 
     echo '<div id="two" style="display:none;">';
-    $memP = $dbc->prepare_statement("SELECT CardNo,FirstName,LastName FROM custdata WHERE LastName LIKE ?
+    $memP = $dbc->prepare("SELECT CardNo,FirstName,LastName FROM custdata WHERE LastName LIKE ?
         ORDER BY LastName,FirstName");
-    $memR = $dbc->exec_statement($memP,array('%'.$_REQUEST['q'].'%'));
+    $memR = $dbc->execute($memP,array('%'.$_REQUEST['q'].'%'));
     if ($dbc->num_rows($memR) == 0)
         echo 'No matching owners';
     else {
@@ -111,13 +111,13 @@ if (isset($_REQUEST['q'])){
     echo '</div>';
 
     echo '<div id="three" style="display:none;">';
-    $brandP = $dbc->prepare_statement("
+    $brandP = $dbc->prepare("
         SELECT p.brand 
         FROM products AS p 
         WHERE p.brand LIKE ? 
         GROUP BY p.brand
         ORDER BY p.brand");
-    $brandR = $dbc->exec_statement($brandP,array('%'.$_REQUEST['q'].'%'));
+    $brandR = $dbc->execute($brandP,array('%'.$_REQUEST['q'].'%'));
     if ($dbc->num_rows($brandR) == 0)
         echo 'No matching brands';
     else {
@@ -131,7 +131,7 @@ if (isset($_REQUEST['q'])){
     }
     echo '</div>';
 } elseif (isset($_REQUEST['brand'])){
-    $q = $dbc->prepare_statement("
+    $q = $dbc->prepare("
         SELECT p.upc,
             p.description 
         FROM products AS p
@@ -139,7 +139,7 @@ if (isset($_REQUEST['q'])){
         GROUP BY p.upc,
             p.description
         ORDER by p.description");
-    $r = $dbc->exec_statement($q, array(base64_decode($_REQUEST['brand'])));
+    $r = $dbc->execute($q, array(base64_decode($_REQUEST['brand'])));
     printf("<b>%s items</b>",base64_decode($_REQUEST['brand']));
     echo '<ul>';
     while($itemW = $dbc->fetch_row($r)){

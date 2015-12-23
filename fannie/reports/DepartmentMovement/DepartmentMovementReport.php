@@ -202,8 +202,8 @@ class DepartmentMovementReport extends FannieReportPage
           special case to combine year, month, and day into
           a single field
         */
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep,$args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep,$args);
         $ret = array();
         while ($row = $dbc->fetch_array($result)) {
             $record = array();
@@ -213,7 +213,7 @@ class DepartmentMovementReport extends FannieReportPage
                 $record[] = sprintf('%.2f', $row[3]);
                 $record[] = sprintf('%.2f', $row[4]);
             } else {
-                for($i=0;$i<$dbc->num_fields($result);$i++) {
+                for($i=0;$i<$dbc->numFields($result);$i++) {
                     if (preg_match('/^\d+\.\d+$/', $row[$i])) {
                         $row[$i] = sprintf('%.2f', $row[$i]);
                     }

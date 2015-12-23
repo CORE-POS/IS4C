@@ -49,14 +49,14 @@ class CashierRecordsReport extends FannieReportPage
         $date2 = $this->form->date2;
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
-        $q = $dbc->prepare_statement("select emp_no,sum(-total),count(DISTINCT trans_num),
+        $q = $dbc->prepare("select emp_no,sum(-total),count(DISTINCT trans_num),
                 year(tdate),month(tdate),day(tdate)
                 from $dlog as d where
                 tdate BETWEEN ? AND ?
                 AND trans_type='T'
                 GROUP BY year(tdate),month(tdate),day(tdate),emp_no
                 ORDER BY sum(-total) DESC");
-        $r = $dbc->exec_statement($q,array($date1.' 00:00:00',$date2.' 23:59:59'));
+        $r = $dbc->execute($q,array($date1.' 00:00:00',$date2.' 23:59:59'));
 
         $data = array();
         while($row = $dbc->fetch_row($r)){

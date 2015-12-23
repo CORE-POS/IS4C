@@ -91,8 +91,8 @@ class MemEquityTransferTool extends FanniePage {
         $dlist = substr($dlist,0,strlen($dlist)-1).")";
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $q = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments WHERE dept_no IN $dlist");
-        $r = $dbc->exec_statement($q,$dArgs);
+        $q = $dbc->prepare("SELECT dept_no,dept_name FROM departments WHERE dept_no IN $dlist");
+        $r = $dbc->execute($q,$dArgs);
         if ($dbc->num_rows($r) == 0){
             $this->errors .= '<div class="alert alert-danger">Error: department(s) don\'t exist.</div>';
             return true;

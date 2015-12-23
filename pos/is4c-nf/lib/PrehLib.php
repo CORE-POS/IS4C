@@ -147,14 +147,14 @@ static public function setAltMemMsg($store, $member, $personNumber, $row)
                             ON p.programID = m.programID
                             WHERE m.cardNo =?" .
                         " ORDER BY ppID";
-                    $ccS = $conn->prepare_statement("$ccQ");
+                    $ccS = $conn->prepare("$ccQ");
                     if ($ccS === False) {
                         CoreLocal::set("memMsg", $memMsg . "Prep failed");
                         return;
                     }
                     $args = array();
                     $args[] = $member;
-                    $ccR = $conn->exec_statement($ccS, $args);
+                    $ccR = $conn->execute($ccS, $args);
                     if ($ccR === False) {
                         CoreLocal::set("memMsg", $memMsg . "Query failed");
                         return;
@@ -196,7 +196,7 @@ static public function setAltMemMsg($store, $member, $personNumber, $row)
                 $query = "SELECT ChargeLimit AS CLimit
                     FROM custdata
                     WHERE personNum=1 AND CardNo = $member";
-                $table_def = $conn->table_definition('custdata');
+                $table_def = $conn->tableDefinition('custdata');
                 // 3Jan14 schema may not have been updated
                 if (!isset($table_def['ChargeLimit'])) {
                     $query = str_replace('ChargeLimit', 'MemDiscountLimit', $query);
@@ -460,7 +460,7 @@ static private function getTenderMods($right)
       if the schema supports it
       16Mar2015
     */
-    $tender_table = $dbc->table_definition('tenders');
+    $tender_table = $dbc->tableDefinition('tenders');
     if (isset($tender_table['TenderModule'])) {
         $tender_model = new \COREPOS\pos\lib\models\op\TendersModel($dbc);
         $map = $tender_model->getMap();
@@ -665,7 +665,7 @@ static private function getDepartment($dbc, $dept)
         dept_limit,
         dept_minimum,
         dept_discount,";
-    $table = $dbc->table_definition('departments');
+    $table = $dbc->tableDefinition('departments');
     if (isset($table['dept_see_id'])) {
         $query .= 'dept_see_id,';
     } else {
@@ -1253,7 +1253,7 @@ static public function chargeOk()
         c.Balance, c.ChargeOk
         FROM custdata AS c 
         WHERE c.personNum=1 AND c.CardNo = " . ((int)CoreLocal::get("memberID"));
-    $table_def = $conn->table_definition('custdata');
+    $table_def = $conn->tableDefinition('custdata');
     // 3Jan14 schema may not have been updated
     if (!isset($table_def['ChargeLimit'])) {
         $query = str_replace('c.ChargeLimit', 'c.MemDiscountLimit', $query);

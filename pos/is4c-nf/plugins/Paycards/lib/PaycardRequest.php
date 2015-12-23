@@ -153,7 +153,7 @@ class PaycardRequest
         $insP = $dbTrans->prepare($insQ);
         $insR = $dbTrans->execute($insP, $ptArgs);
         if ($insR) {
-            $this->last_paycard_transaction_id = $dbTrans->insert_id();
+            $this->last_paycard_transaction_id = $dbTrans->insertID();
         } else {
             throw new Exception('Error saving PaycardTransactions');
         }
@@ -162,8 +162,8 @@ class PaycardRequest
     protected function legacySave($dbTrans)
     {
         $sql = 'INSERT INTO efsnetRequest (' .
-                    $dbTrans->identifier_escape('date') . ', cashierNo, laneNo, transNo, transID, ' .
-                    $dbTrans->identifier_escape('datetime') . ', refNum, live, mode, amount,
+                    $dbTrans->identifierEscape('date') . ', cashierNo, laneNo, transNo, transID, ' .
+                    $dbTrans->identifierEscape('datetime') . ', refNum, live, mode, amount,
                     PAN, issuer, manual, name,
                     sentPAN, sentExp, sentTr1, sentTr2)
                 VALUES (
@@ -195,7 +195,7 @@ class PaycardRequest
         if (!$dbTrans->execute($prep, $efsArgs)){
             throw new Exception('Error saving efsnetRequest');
         }
-        $this->last_req_id = $dbTrans->insert_id();
+        $this->last_req_id = $dbTrans->insertID();
     }
     
     public function changeAmount($amt)
@@ -209,7 +209,7 @@ class PaycardRequest
         $dbTrans->query($upQ);
 
         $sql = sprintf("UPDATE efsnetRequest SET amount=%f WHERE "
-            .$dbTrans->identifier_escape('date')."=%d 
+            .$dbTrans->identifierEscape('date')."=%d 
             AND cashierNo=%d AND laneNo=%d AND transNo=%d
             AND transID=%d",
             $amt,$this->today, $this->cashierNo, $this->laneNo, $this->transNo, $this->transID);

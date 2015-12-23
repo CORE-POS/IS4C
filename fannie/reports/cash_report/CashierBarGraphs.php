@@ -87,7 +87,7 @@ class CashierBarGraphs extends FannieRESTfulPage
         if ($dbc->isView('CashPerformDay') && $dbc->tableExists('CashPerformDay_cache')) {
             $query = str_replace('CashPerformDay', 'CashPerformDay_cache', $query);
         }
-        $result = $dbc->exec_statement($query,$args);
+        $result = $dbc->execute($query,$args);
 
         $this->rpm = array(); // rings per minute
         $this->ipm = array(); // items per minute

@@ -78,12 +78,12 @@ class MemStatusEditor extends FanniePage {
         $account = \COREPOS\Fannie\API\member\MemberREST::get($this->cardno);
         $status_string = $account['activeStatus'];
 
-        $reasonQ = $dbc->prepare_statement("SELECT textStr,mask,
+        $reasonQ = $dbc->prepare("SELECT textStr,mask,
             CASE WHEN cardno IS NULL THEN 0 ELSE 1 END as checked
             FROM reasoncodes AS r LEFT JOIN suspensions AS s
             ON s.cardno=? AND r.mask & s.reasoncode <> 0
             ORDER BY mask");
-        $reasonR = $dbc->exec_statement($reasonQ,array($this->cardno));
+        $reasonR = $dbc->execute($reasonQ,array($this->cardno));
         $ret .= '<div class="form-group form-inline"><label>Mode</label> <select name="type" class="form-control">';
         $ret .= '<option value="INACT">Inactive</option>';
         $ret .= '<option value="TERM" '.($status_string=='TERM'?'selected':'').'>Terminated</option>';
@@ -118,9 +118,9 @@ class MemStatusEditor extends FanniePage {
         $account = \COREPOS\Fannie\API\member\MemberREST::get($cardno);
 
         // fetch stored values
-        $valQ = $dbc->prepare_statement("SELECT memtype1,memtype2,mailflag,discount,chargelimit
+        $valQ = $dbc->prepare("SELECT memtype1,memtype2,mailflag,discount,chargelimit
             FROM suspensions WHERE cardno=?");
-        $valR = $dbc->exec_statement($valQ,array($cardno));
+        $valR = $dbc->execute($valQ,array($cardno));
         $valW = $dbc->fetch_row($valR);
 
         $account['activeStatus'] = '';
@@ -135,14 +135,14 @@ class MemStatusEditor extends FanniePage {
         \COREPOS\Fannie\API\member\MemberREST::post($cardno, $account);
 
         // remove suspension and log action to history
-        $delQ = $dbc->prepare_statement("DELETE FROM suspensions WHERE cardno=?");
-        $delR = $dbc->exec_statement($delQ,$cardno);
+        $delQ = $dbc->prepare("DELETE FROM suspensions WHERE cardno=?");
+        $delR = $dbc->execute($delQ,$cardno);
 
         $username = $this->current_user;
         $now = date('Y-m-d h:i:s');
-        $histQ = $dbc->prepare_statement("INSERT INTO suspension_history (username, postdate,
+        $histQ = $dbc->prepare("INSERT INTO suspension_history (username, postdate,
             post, cardno, reasoncode) VALUES (?,".$dbc->now().",'Account reactivated',?,-1)");
-        $histR = $dbc->exec_statement($histQ,array($username,$cardno));
+        $histR = $dbc->execute($histQ,array($username,$cardno));
     }
 
     protected function deactivate_account($cardno, $reason, $type)
@@ -156,13 +156,13 @@ class MemStatusEditor extends FanniePage {
         $cas_model->card_no($cardno);
         $current_id = 0;
 
-        $chkQ = $dbc->prepare_statement("SELECT cardno FROM suspensions WHERE cardno=?");
-        $chkR = $dbc->exec_statement($chkQ,array($cardno));
+        $chkQ = $dbc->prepare("SELECT cardno FROM suspensions WHERE cardno=?");
+        $chkR = $dbc->execute($chkQ,array($cardno));
         if ($dbc->num_rows($chkR)>0) {
             // if account is already suspended, just update the reason
-            $upQ = $dbc->prepare_statement("UPDATE suspensions SET reasoncode=?, type=?
+            $upQ = $dbc->prepare("UPDATE suspensions SET reasoncode=?, type=?
                 WHERE cardno=?");
-            $upR = $dbc->exec_statement($upQ,array($reason,substr($type,0,1),$cardno));
+            $upR = $dbc->execute($upQ,array($reason,substr($type,0,1),$cardno));
 
             $m_status = 0;
             if (substr($type, 0, 1) == 'T') {
@@ -234,9 +234,9 @@ class MemStatusEditor extends FanniePage {
 
             // log action
             $username = $this->current_user;
-            $histQ = $dbc->prepare_statement("INSERT INTO suspension_history (username, postdate,
+            $histQ = $dbc->prepare("INSERT INTO suspension_history (username, postdate,
                 post, cardno, reasoncode) VALUES (?,".$dbc->now().",'',?,?)");
-            $histR = $dbc->exec_statement($histQ,array($username,$cardno,$reason));
+            $histR = $dbc->execute($histQ,array($username,$cardno,$reason));
 
             $cas_model->savedType($account['memberStatus']);
             $cas_model->savedMemType($account['customerTypeID']);

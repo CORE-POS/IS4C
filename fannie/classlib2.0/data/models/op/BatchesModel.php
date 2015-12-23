@@ -126,7 +126,7 @@ those same items revert to normal pricing.
                 WHERE l.upc LIKE 'LC%'
                     AND l.batchID = ?";
 
-            if ($this->connection->dbms_name() == 'mssql') {
+            if ($this->connection->dbmsName() == 'mssql') {
                 $forceQ="UPDATE products
                     SET start_date = b.startDate, 
                     end_date=b.endDate,
@@ -197,7 +197,7 @@ those same items revert to normal pricing.
                 WHERE b.upc LIKE 'LC%'
                     AND b.batchID = ?";
 
-            if ($this->connection->dbms_name() == 'mssql') {
+            if ($this->connection->dbmsName() == 'mssql') {
                 $forceQ = "UPDATE products
                       SET normal_price = l.salePrice,
                       modified = getdate()
@@ -287,7 +287,7 @@ those same items revert to normal pricing.
                 end_date='1900-01-01'
             WHERE b.upc NOT LIKE '%LC%'
                 AND b.batchID=?";
-        if ($this->connection->dbms_name() == "mssql") {
+        if ($this->connection->dbmsName() == "mssql") {
             $unsaleQ = "UPDATE products SET special_price=0,
                 specialpricemethod=0,specialquantity=0,
                 specialgroupprice=0,discounttype=0,
@@ -314,7 +314,7 @@ those same items revert to normal pricing.
                 end_date='1900-01-01'
             WHERE l.upc LIKE '%LC%'
                 AND l.batchID=?";
-        if ($this->connection->dbms_name() == "mssql") {
+        if ($this->connection->dbmsName() == "mssql") {
             $unsaleLCQ = "UPDATE products
                 SET special_price=0,
                 specialpricemethod=0,specialquantity=0,

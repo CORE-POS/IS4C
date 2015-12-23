@@ -226,9 +226,9 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
 
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
-        $prep = $dbc->prepare_statement($query); 
-        $results = $dbc->exec_statement($prep,$args);
-        $number_cols = $dbc->num_fields($results);
+        $prep = $dbc->prepare($query); 
+        $results = $dbc->execute($prep,$args);
+        $number_cols = $dbc->numFields($results);
         $rows = array();
         while ($row = $dbc->fetch_row($results)) {
             $rows[] = $row;
@@ -317,7 +317,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $dateInt = str_replace("-","",$date1);
         list($emp,$reg,$trans) = explode("-",$transNum);
 
-        $query = $dbc->prepare_statement("SELECT mode, amount, PAN, 
+        $query = $dbc->prepare("SELECT mode, amount, PAN, 
             CASE WHEN manual=1 THEN 'keyed' ELSE 'swiped' END AS entryMethod, 
             issuer, xResultMessage, xApprovalNumber, xTransactionID, name,
             q.refNum
@@ -345,7 +345,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
             and m.validResponse=1 and 
             (m.xResponseCode=0 or m.xResultMessage like '%APPROVE%')
             and m.commErr=0 AND r.commErr=0");
-        $result = $dbc->exec_statement($query,array(
+        $result = $dbc->execute($query,array(
                         $dateInt,$emp,$reg,$trans,
                         $dateInt,$emp,$reg,$trans
                         ));

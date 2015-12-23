@@ -75,8 +75,8 @@ class BatchListPage extends FannieRESTfulPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $json = array('error'=>0, 'msg'=>'Created batch ' . $this->newName);
 
-        $infoQ = $dbc->prepare_statement("select discType from batchType where batchTypeID=?");
-        $infoR = $dbc->exec_statement($infoQ,array($this->newType));
+        $infoQ = $dbc->prepare("select discType from batchType where batchTypeID=?");
+        $infoR = $dbc->execute($infoQ,array($this->newType));
         $discounttype = 1; // if no match, assuming sale is probably safer
                            // than assuming price change
         if ($infoR && ($infoW = $dbc->fetch_row($infoR))) {
@@ -98,8 +98,8 @@ class BatchListPage extends FannieRESTfulPage
         }
 
         if ($dbc->tableExists('batchowner')) {
-            $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
-            $insR = $dbc->exec_statement($insQ,array($id,$b->owner()));
+            $insQ = $dbc->prepare("insert batchowner values (?,?)");
+            $insR = $dbc->execute($insQ,array($id,$b->owner()));
         }
         
         if ($id === false) {
@@ -121,7 +121,7 @@ class BatchListPage extends FannieRESTfulPage
         $infoQ = $dbc->prepare("SELECT discType 
                                 FROM batchType 
                                 WHERE batchTypeID=?");
-        $infoR = $dbc->exec_statement($infoQ,array($this->batchType));
+        $infoR = $dbc->execute($infoQ,array($this->batchType));
         $infoW = $dbc->fetch_row($infoR);
         $discounttype = $infoW['discType'];
 
@@ -136,14 +136,14 @@ class BatchListPage extends FannieRESTfulPage
         $saved = $model->save();
         
         if ($dbc->tableExists('batchowner')) {
-            $checkQ = $dbc->prepare_statement("select batchID from batchowner where batchID=?");
-            $checkR = $dbc->exec_statement($checkQ,array($this->id));
+            $checkQ = $dbc->prepare("select batchID from batchowner where batchID=?");
+            $checkR = $dbc->execute($checkQ,array($this->id));
             if($dbc->num_rows($checkR) == 0) {
-                $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
-                $insR = $dbc->exec_statement($insQ,array($this->id,$this->owner));
+                $insQ = $dbc->prepare("insert batchowner values (?,?)");
+                $insR = $dbc->execute($insQ,array($this->id,$this->owner));
             } else {
-                $upQ = $dbc->prepare_statement("update batchowner set owner=? where batchID=?");
-                $upR = $dbc->exec_statement($upQ,array($this->owner,$this->id));
+                $upQ = $dbc->prepare("update batchowner set owner=? where batchID=?");
+                $upR = $dbc->execute($upQ,array($this->owner,$this->id));
             }
         }
 
@@ -173,11 +173,11 @@ class BatchListPage extends FannieRESTfulPage
         $batch = new BatchesModel($dbc);
         $batch->forceStopBatch($this->id);
 
-        $delQ = $dbc->prepare_statement("delete from batches where batchID=?");
-        $batchR = $dbc->exec_statement($delQ,array($this->id));
+        $delQ = $dbc->prepare("delete from batches where batchID=?");
+        $batchR = $dbc->execute($delQ,array($this->id));
     
-        $delQ = $dbc->prepare_statement("delete from batchList where batchID=?");
-        $itemR = $dbc->exec_statement($delQ,array($this->id));
+        $delQ = $dbc->prepare("delete from batchList where batchID=?");
+        $itemR = $dbc->execute($delQ,array($this->id));
         if ($itemR !== false && $batchR === false) {
             $json['error'] = 1;
             $json['msg'] = 'Items were unsaled and removed from the batch, but the batch could not be deleted';
@@ -372,12 +372,12 @@ class BatchListPage extends FannieRESTfulPage
         $fetchQ .= ' GROUP BY b.batchName, b.batchType, b.startDate, b.endDate, b.batchID,
                         t.typeDesc, ' . $owneralias . '.owner ';
         $fetchQ .= ' ORDER BY b.batchID DESC';
-        $fetchQ = $dbc->add_select_limit($fetchQ,50);
+        $fetchQ = $dbc->addSelectLimit($fetchQ,50);
         if (is_numeric($maxBatchID)) {
             $fetchQ = str_replace("WHERE ","WHERE b.batchID < ? AND ",$fetchQ);
             array_unshift($args,$maxBatchID);
         }
-        $fetchR = $dbc->exec_statement($fetchQ,$args);
+        $fetchR = $dbc->execute($fetchQ,$args);
         
         $count = 0;
         $lastBatchID = 0;

@@ -104,10 +104,10 @@ class CronManagementPage extends FanniePage
 
                 /* backup crontab just in case */
                 $dbc = FannieDB::get($FANNIE_OP_DB);
-                $trun = $dbc->prepare_statement("TRUNCATE TABLE cronBackup");
-                $dbc->exec_statement($trun);
-                $prep = $dbc->prepare_statement('INSERT INTO cronBackup VALUES ('.$dbc->now().', ?)');
-                $dbc->exec_statement($prep,array(file_get_contents($tmpfn)));
+                $trun = $dbc->prepare("TRUNCATE TABLE cronBackup");
+                $dbc->execute($trun);
+                $prep = $dbc->prepare('INSERT INTO cronBackup VALUES ('.$dbc->now().', ?)');
+                $dbc->execute($prep,array(file_get_contents($tmpfn)));
                 $crontab = file_get_contents($tmpfn);
 
                 unlink($tmpfn);

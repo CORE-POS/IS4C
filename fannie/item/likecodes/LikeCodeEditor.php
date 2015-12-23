@@ -53,19 +53,19 @@ class LikeCodeEditor extends FanniePage {
                 $msg .= $lc . " is not a number";
                 $msg_type = 'danger';
             } else {
-                $chkP = $dbc->prepare_statement('SELECT * FROM likeCodes WHERE likeCode=?');
-                $chk = $dbc->exec_statement($chkP,array($lc));
+                $chkP = $dbc->prepare('SELECT * FROM likeCodes WHERE likeCode=?');
+                $chk = $dbc->execute($chkP,array($lc));
                 if ($dbc->num_rows($chk) > 0){
-                    $upP = $dbc->prepare_statement("UPDATE likeCodes SET
+                    $upP = $dbc->prepare("UPDATE likeCodes SET
                         likeCodeDesc=?
                         WHERE likeCode=?");
-                    $upR = $dbc->exec_statement($upP,array($name,$lc));
+                    $upR = $dbc->execute($upP,array($name,$lc));
                     $msg .= "LC #$lc renamed $name";
                     $msg_type .= 'success';
                 } else {
-                    $insP = $dbc->prepare_statement('INSERT INTO likeCodes 
+                    $insP = $dbc->prepare('INSERT INTO likeCodes 
                             (likeCode,likeCodeDesc) VALUES (?,?)');
-                    $insR = $dbc->exec_statement($insP,array($lc,$name));
+                    $insR = $dbc->execute($insP,array($lc,$name));
                     $msg .= "LC #$lc ($name) created";
                     $msg_type = 'success';
                 }
@@ -74,10 +74,10 @@ class LikeCodeEditor extends FanniePage {
             $lc = $_REQUEST['lcselect'];
             $lc = FormLib::get_form_value('lcselect',0);
 
-            $q1 = $dbc->prepare_statement('DELETE FROM likeCodes WHERE likeCode=?');
-            $q2 = $dbc->prepare_statement('DELETE FROM upcLike WHERE likeCode=?');
-            $dbc->exec_statement($q1,array($lc));
-            $dbc->exec_statement($q2,array($lc));
+            $q1 = $dbc->prepare('DELETE FROM likeCodes WHERE likeCode=?');
+            $q2 = $dbc->prepare('DELETE FROM upcLike WHERE likeCode=?');
+            $dbc->execute($q1,array($lc));
+            $dbc->execute($q2,array($lc));
     
             $msg .= "LC #$lc has been deleted<br />";
             $msg_type = 'success';
@@ -120,8 +120,8 @@ function loadlc(id){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $opts = "";
-        $p = $dbc->prepare_statement("SELECT likeCode,likeCodeDesc FROM likeCodes ORDER BY likeCode");
-        $res = $dbc->exec_statement($p);
+        $p = $dbc->prepare("SELECT likeCode,likeCodeDesc FROM likeCodes ORDER BY likeCode");
+        $res = $dbc->execute($p);
         while ($row = $dbc->fetch_row($res)) {
             $opts .= "<option value=\"$row[0]\">$row[0] $row[1]</option>";
         }

@@ -48,8 +48,8 @@ while($line = fgets($fp)){
       $temp = preg_replace("/\\r?<br.*?>/","\n",$temp); // breaks to newlines
       $temp = preg_replace("/\'/","",$temp); // lose apostrophes
       $temp = preg_replace("/<.*?>/","",$temp); // lose html tags
-      $upQ = $sql->prepare_statement("update scaleItems set text=? where plu=?");   
-      $upR = $sql->exec_statement($upQ,array($temp,$current_plu));
+      $upQ = $sql->prepare("update scaleItems set text=? where plu=?");   
+      $upR = $sql->execute($upQ,array($temp,$current_plu));
       echo "<td>$temp</td>";   
     }
   }

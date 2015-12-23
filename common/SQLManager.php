@@ -148,6 +148,9 @@ class SQLManager
         return true;
     }
 
+    /**
+      @deprecated
+    */
     public function add_connection($server,$type,$database,$username,$password='',$persistent=false,$new=false)
     {
         return $this->addConnection($server, $type, $database, $username, $password, $persistent,$new);
@@ -322,7 +325,7 @@ class SQLManager
     /**
       Potentially required for SQLite
     */
-    public function end_query($result_object, $which_connection='')
+    public function endQuery($result_object, $which_connection='')
     {
         if (is_object($result_object) && method_exists($result_object, 'closeCursor')) {
             $result_object->closeCursor();
@@ -344,11 +347,6 @@ class SQLManager
         }
 
         return $ret;
-    }
-
-    public function query_all($query_text)
-    {
-        return $this->queryAll($query_text);
     }
 
     /**
@@ -376,6 +374,9 @@ class SQLManager
         return $adapter->identifierEscape($str);
     }
 
+    /**
+      @deprecated
+    */
     public function identifier_escape($str,$which_connection='')
     {
         return $this->identifierEscape($str, $which_connection);
@@ -422,10 +423,6 @@ class SQLManager
         return $result_object->Move((int)$rownum);
     }
 
-    public function data_seek($result_object,$rownum,$which_connection='')
-    {
-        return $this->dataSeek($result_object, $rownum, $which_connection);
-    }
     /**
       Get number of fields in a result set
       @param $result_object A result set
@@ -441,6 +438,9 @@ class SQLManager
         return $result_object->FieldCount();
     }
 
+    /**
+      @deprecated
+    */
     public function num_fields($result_object,$which_connection='')
     {
         return $this->numFields($result_object, $which_connection);
@@ -488,11 +488,6 @@ class SQLManager
         return $result_object->FetchNextObject(False);
     }
 
-    public function fetch_object($result_object,$which_connection='')
-    {
-        return $this->fetchObject($result_object, $which_connection);
-    }
-    
     /**
       An alias for the method fetch_array()
     */
@@ -714,11 +709,6 @@ class SQLManager
         return $result_object->FetchField($index);
     }
 
-    public function fetch_field($result_object,$index,$which_connection='')
-    {
-        return $this->fetchField($result_object, $index, $which_connection);
-    }
-
     /**
       Start a transaction
       @param $which_connection see method close()
@@ -779,7 +769,7 @@ class SQLManager
             return true;
         }
 
-        $num_fields = $this->num_fields($result,$source_db);
+        $numFields = $this->numFields($result,$source_db);
 
         $prep = $insert_query . ' VALUES(';
         $arg_sets = array();
@@ -790,7 +780,7 @@ class SQLManager
         while ($row = $this->fetch_array($result,$source_db)) {
             $big_values .= '(';
             $args = array();
-            for ($i=0; $i<$num_fields; $i++) {
+            for ($i=0; $i<$numFields; $i++) {
                 $type = strtolower($this->fieldType($result,$i,$source_db));
                 $row[$i] = $this->sanitizeValue($row[$i], $type);
                 $args[] = $row[$i];
@@ -912,15 +902,10 @@ class SQLManager
         return $fld->type;
     }
 
-    public function field_type($result_object,$index,$which_connection='')
-    {
-        return $this->fieldType($result_object, $index, $which_connection);
-    }
-
     /**
       Alias of method fetchField()
     */
-    public function field_name($result_object,$index,$which_connection='')
+    public function fieldName($result_object,$index,$which_connection='')
     {
         $field = $this->fetchField($result_object, $index, $which_connection);
 
@@ -1121,6 +1106,9 @@ class SQLManager
         return false;
     }
 
+    /**
+      @deprecated
+    */
     public function table_definition($table_name,$which_connection='')
     {
         return $this->tableDefinition($table_name, $which_connection);
@@ -1208,11 +1196,6 @@ class SQLManager
         return $conn->MetaTables();
     }
 
-    public function get_tables($which_connection='')
-    {
-        return $this->getTables($which_connection);
-    }
-
     /**
       Get current default database
       for a given connection
@@ -1271,11 +1254,6 @@ class SQLManager
         return $adapter->addSelectLimit($query, $int_limit);
     }
 
-    public function add_select_limit($query,$int_limit,$which_connection='')
-    {
-        return $this->addSelectLimit($query, $int_limit, $which_connection);
-    }
-
     /**
       Get database scope separator
       @param which_connection see method close
@@ -1305,10 +1283,6 @@ class SQLManager
         return $this->connectionType($which_connection);
     }
 
-    public function dbms_name($which_connection='')
-    {
-        return $this->dbmsName($which_connection);
-    }
     /**
       Get last error message
       @param which_connection see method close
@@ -1347,6 +1321,9 @@ class SQLManager
         return $con->Insert_ID();
     }
 
+    /**
+      @deprecated
+    */
     public function insert_id($which_connection='')
     {
         return $this->insertID($which_connection);
@@ -1365,11 +1342,6 @@ class SQLManager
         $con = $this->connections[$which_connection];
 
         return $con->Affected_Rows();
-    }
-
-    public function affected_rows($which_connection='')
-    {
-        return $this->affectedRows($which_connection);
     }
 
     /** 
@@ -1412,6 +1384,9 @@ class SQLManager
         return $ret;
     }
 
+    /**
+      @deprecated
+    */
     public function smart_insert($table_name,$values,$which_connection='')
     {
         return $this->smartInsert($table_name, $values, $which_connection);
@@ -1463,11 +1438,6 @@ class SQLManager
         return $ret;
     }
 
-    public function smart_update($table_name,$values,$where_clause,$which_connection='')
-    {
-        return $this->smartUpdate($table_name, $values, $where_clause, $which_connection);
-    }
-
     /**
       Create a prepared statement
       @param $sql SQL expression    
@@ -1479,7 +1449,7 @@ class SQLManager
           then just the input string $sql
 
       The return value of this function should be handed
-      to SQLManager::exec_statement for execution
+      to SQLManager::execute for execution
     */
     public function prepare($sql,$which_connection="")
     {
@@ -1491,15 +1461,18 @@ class SQLManager
         return $con->Prepare($sql);
     }
 
+    /**
+      @deprecated
+    */
     public function prepare_statement($sql,$which_connection="")
     {
         return $this->prepare($sql, $which_connection);
     }
 
-    /**
+   /**
       Execute a prepared statement with the given
       set of parameters
-      @param $sql a value from SQLManager::prepare_statement
+      @param $sql a value from SQLManager::prepare
       @param $input_array an array of values
       @param which_connection see method close
       @return same as SQLManager::query
@@ -1522,6 +1495,9 @@ class SQLManager
         return $this->query($sql,$which_connection,$input_array);
     }
 
+    /**
+      @deprecated
+    */
     public function exec_statement($sql, $input_array=array(), $which_connection='')
     {
         return $this->execute($sql, $input_array, $which_connection);
@@ -1530,7 +1506,7 @@ class SQLManager
     /**
       Get a value directly from a query without verifying
       rows exist and fetching one
-      @param $sql a value from SQLManager::prepare_statement
+      @param $sql a value from SQLManager::prepare
       @param $input_array an array of values
       @param which_connection see method close
       @return [mixed] value or [boolean] false
@@ -1556,7 +1532,7 @@ class SQLManager
     /**
       Get a row directly from a query without verifying
       rows exist and fetching one
-      @param $sql a value from SQLManager::prepare_statement
+      @param $sql a value from SQLManager::prepare
       @param $input_array an array of values
       @param which_connection see method close
       @return [mixed] value or [boolean] false
@@ -1600,23 +1576,6 @@ class SQLManager
         return sprintf("(%s BETWEEN '%s 00:00:00' AND '%s 23:59:59')",
             $col,$base,$base);
     }
-
-    public function date_equals($col,$dateStr)
-    {
-        return $this->dateEquals($col, $dateStr);
-    }
-
-    /* compat layer; mimic functions of Brad's mysql class */
-    public function get_result($host,$user,$pass,$data_base,$query)
-    {
-        return $this->query($query);
-    }
-
-    public function aff_rows($result)
-    {
-        return $this->affected_rows($result);
-    }
-
 
     /**
       Assign a query log
@@ -1668,8 +1627,8 @@ class SQLManager
             $which_connection=$this->default_db;
         }
         
-        $definition1 = $this->table_definition($table1, $which_connection);
-        $definition2 = $this->table_definition($table2, $which_connection);
+        $definition1 = $this->tableDefinition($table1, $which_connection);
+        $definition2 = $this->tableDefinition($table2, $which_connection);
         if (!is_array($definition1) || ! is_array($definition2)) {
             return array();
         }

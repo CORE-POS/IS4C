@@ -86,9 +86,9 @@ class DepartmentImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $fs_index = $this->get_column_index('fs');
 
         // prepare statements
-        $marP = $dbc->prepare_statement("INSERT INTO deptMargin (dept_ID,margin) VALUES (?,?)");
+        $marP = $dbc->prepare("INSERT INTO deptMargin (dept_ID,margin) VALUES (?,?)");
 
-        $scP = $dbc->prepare_statement("INSERT INTO deptSalesCodes (dept_ID,salesCode) VALUES (?,?)");
+        $scP = $dbc->prepare("INSERT INTO deptSalesCodes (dept_ID,salesCode) VALUES (?,?)");
 
         $model = new DepartmentsModel($dbc);
 
@@ -128,11 +128,11 @@ class DepartmentImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
             }
 
             if ($dbc->tableExists('deptMargin')) {
-                $insR = $dbc->exec_statement($marP,array($dept_no, $margin));
+                $insR = $dbc->execute($marP,array($dept_no, $margin));
             }
 
             if ($dbc->tableExists('deptSalesCodes')) {
-                $insR = $dbc->exec_statement($scP,array($dept_no, $dept_no));
+                $insR = $dbc->execute($scP,array($dept_no, $dept_no));
             }
         }
 

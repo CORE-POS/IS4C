@@ -63,8 +63,8 @@ class CWDemographicsReport extends FannieReportPage {
             CASE WHEN c.Type='PC' THEN 1 ELSE 0 END
             ORDER BY 
             CASE WHEN (year(m.start_date) <= 1991 OR m.start_date IS NULL) THEN '1991 or earlier' ELSE YEAR(m.start_date) END";
-        $totalP = $dbc->prepare_statement($totalQ);
-        $totalR = $dbc->exec_statement($totalP);
+        $totalP = $dbc->prepare($totalQ);
+        $totalR = $dbc->execute($totalP);
 
         $report1 = array();
         $totalActiveMem = 0;
@@ -116,8 +116,8 @@ class CWDemographicsReport extends FannieReportPage {
                 ON w.card_no=m.card_no
                 WHERE w.date_id >= ? AND (c.Type='PC' OR s.memtype2 = 'PC')
                 GROUP BY w.card_no";
-        $participationP = $dbc->prepare_statement($participationQ);
-        $participationR = $dbc->exec_statement($participationP, array($lastyear));
+        $participationP = $dbc->prepare($participationQ);
+        $participationR = $dbc->execute($participationP, array($lastyear));
         $report2 = array(
             array('1) Last Month', 0, 0),  
             array('2) Last 3 Months', 0, 0),   

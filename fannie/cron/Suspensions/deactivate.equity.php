@@ -44,7 +44,7 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 
 $TRANS = $FANNIE_TRANS_DB . ($FANNIE_SERVER_DBMS=="MSSQL" ? 'dbo.' : '.');
 
-$custdata = $sql->table_definition('custdata');
+$custdata = $sql->tableDefinition('custdata');
 
 $dStr = date("Y-m-01 00:00:00");
 

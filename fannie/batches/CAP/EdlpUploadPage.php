@@ -105,7 +105,7 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             if ($dbc->numRows($lookup) == 0 && $SKU !== false) {
                 $sku = str_replace('-', '', $data[$SKU]);
                 $found = false;
-                $look2 = $dbc->exec_statement($skuP, array($sku));
+                $look2 = $dbc->execute($skuP, array($sku));
                 if ($dbc->numRows($look2)) {
                     $w = $dbc->fetchRow($look2);
                     $upc = $w['upc'];

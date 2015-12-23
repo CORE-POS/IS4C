@@ -92,8 +92,8 @@ class BatchFromSearch extends FannieRESTfulPage
         }
 
         if ($dbc->tableExists('batchowner')) {
-            $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
-            $insR = $dbc->exec_statement($insQ,array($batchID,$owner));
+            $insQ = $dbc->prepare("insert batchowner values (?,?)");
+            $insR = $dbc->execute($insQ,array($batchID,$owner));
         }
 
         // add items to batch

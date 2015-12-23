@@ -54,7 +54,7 @@ class PaycardVoidRequest extends PaycardRequest
                     AND transID=" . $this->transID;
         $initR = $dbTrans->query($initQ);
         if ($initR) {
-            $this->last_paycard_transaction_id = $dbTrans->insert_id();
+            $this->last_paycard_transaction_id = $dbTrans->insertID();
         } else {
             throw new Exception('Error saving void request in PaycardTransactions');
         }

@@ -488,9 +488,9 @@ class FannieReportPage extends FanniePage
         $hash = str_replace("&excel=xls","",$hash);
         $hash = str_replace("&excel=csv","",$hash);
         $hash = md5($hash);
-        $query = $dbc->prepare_statement("SELECT report_data FROM $table WHERE
+        $query = $dbc->prepare("SELECT report_data FROM $table WHERE
             hash_key=? AND expires >= ".$dbc->now());
-        $result = $dbc->exec_statement($query,array($hash));
+        $result = $dbc->execute($query,array($hash));
         if ($dbc->num_rows($result) > 0) {
             $ret = $dbc->fetch_row($result);
             return $ret[0];
@@ -529,11 +529,11 @@ class FannieReportPage extends FanniePage
             $expires = date('Y-m-d',mktime(0,0,0,date('n')+1,date('j'),date('Y')));
         }
 
-        $delQ = $dbc->prepare_statement("DELETE FROM $table WHERE hash_key=?");
-        $dbc->exec_statement($delQ,array($hash));
-        $upQ = $dbc->prepare_statement("INSERT INTO $table (hash_key, report_data, expires)
+        $delQ = $dbc->prepare("DELETE FROM $table WHERE hash_key=?");
+        $dbc->execute($delQ,array($hash));
+        $upQ = $dbc->prepare("INSERT INTO $table (hash_key, report_data, expires)
             VALUES (?,?,?)");
-        $dbc->exec_statement($upQ, array($hash, gzcompress(serialize($data)), $expires));
+        $dbc->execute($upQ, array($hash, gzcompress(serialize($data)), $expires));
 
         return true;
     }

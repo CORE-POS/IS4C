@@ -65,7 +65,7 @@ if ($id !== False) {
             break;
     }
     $prep = $dbc->prepare($query);
-    $result = $dbc->exec_statement($prep, $args);
+    $result = $dbc->execute($prep, $args);
 
     while ($row = $dbc->fetch_row($result)) {
         $count = 1;
@@ -102,12 +102,12 @@ elseif ($batchID !== False){
         $args[] = $x;
     }
     $batchIDList = substr($batchIDList,0,strlen($batchIDList)-1);
-    $testQ = $dbc->prepare_statement("select b.*,p.scale,p.numflag
+    $testQ = $dbc->prepare("select b.*,p.scale,p.numflag
         FROM batchBarcodes as b 
             " . DTrans::joinProducts('b', 'p', 'INNER') . "
         WHERE b.batchID in ($batchIDList) and b.description <> ''
         ORDER BY b.batchID");
-    $result = $dbc->exec_statement($testQ,$args);
+    $result = $dbc->execute($testQ,$args);
     while($row = $dbc->fetch_row($result)){
         $myrow = array(
         'normal_price' => $row['normal_price'],

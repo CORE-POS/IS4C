@@ -92,8 +92,8 @@ class NonMovementReport extends FannieReportPage {
         $tempName = "TempNoMove";
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
 
-        $tempQ = $dbc->prepare_statement("CREATE TABLE $tempName (upc varchar(13))");
-        $dbc->exec_statement($tempQ);
+        $tempQ = $dbc->prepare("CREATE TABLE $tempName (upc varchar(13))");
+        $dbc->execute($tempQ);
 
         $insQ = $dbc->prepare("
             INSERT INTO $tempName
@@ -102,7 +102,7 @@ class NonMovementReport extends FannieReportPage {
                 d.tdate BETWEEN ? AND ?
                 AND d.trans_type='I'
             GROUP BY d.upc");
-        $dbc->exec_statement($insQ, array($date1.' 00:00:00',$date2.' 23:59:59'));
+        $dbc->execute($insQ, array($date1.' 00:00:00',$date2.' 23:59:59'));
 
         $where = ' 1=1 ';
         $buyer = FormLib::get('super');
@@ -140,7 +140,7 @@ class NonMovementReport extends FannieReportPage {
                 AND p.inUse=1
             ORDER BY p.upc";
         $prep = $dbc->prepare($query);
-        $result = $dbc->exec_statement($prep,$args);
+        $result = $dbc->execute($prep,$args);
 
         /**
           Simple report
@@ -172,8 +172,8 @@ class NonMovementReport extends FannieReportPage {
             $ret[] = $record;
         }
 
-        $drop = $dbc->prepare_statement("DROP TABLE $tempName");
-        $dbc->exec_statement($drop);
+        $drop = $dbc->prepare("DROP TABLE $tempName");
+        $dbc->execute($drop);
         return $ret;
     }
     
@@ -181,8 +181,8 @@ class NonMovementReport extends FannieReportPage {
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
-        $deptsR = $dbc->exec_statement($deptsQ);
+        $deptsQ = $dbc->prepare("select dept_no,dept_name from departments order by dept_no");
+        $deptsR = $dbc->execute($deptsQ);
         $deptsList = "";
         while ($deptsW = $dbc->fetch_array($deptsR))
             $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";

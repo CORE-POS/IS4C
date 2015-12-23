@@ -36,10 +36,10 @@ class AR extends \COREPOS\Fannie\API\member\MemberModule
         $dbc = $this->db();
         $trans = $FANNIE_TRANS_DB.$dbc->sep();
         
-        $infoQ = $dbc->prepare_statement("SELECT n.balance
+        $infoQ = $dbc->prepare("SELECT n.balance
                 FROM {$trans}ar_live_balance AS n 
                 WHERE n.card_no=?");
-        $infoR = $dbc->exec_statement($infoQ,array($memNum));
+        $infoR = $dbc->execute($infoQ,array($memNum));
         $infoW = $dbc->fetch_row($infoR);
 
         $account = self::getAccount();

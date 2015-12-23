@@ -104,8 +104,8 @@ class NewItemsReport extends FannieReportPage
             HAVING entryDate BETWEEN ? AND ?
             ORDER BY entryDate";
 
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($query, $args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($query, $args);
 
         $data = array();
         while($row = $dbc->fetch_row($result)) {

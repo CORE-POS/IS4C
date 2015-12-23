@@ -43,7 +43,7 @@ class DraftPatronageReport extends FannieReportPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $q = $dbc->prepare_statement("
+        $q = $dbc->prepare("
             SELECT p.cardno,
                 c.LastName,
                 c.FirstName,
@@ -63,7 +63,7 @@ class DraftPatronageReport extends FannieReportPage
                 LEFT JOIN memtype AS a ON c.memType=a.memtype
                 LEFT JOIN memtype AS b ON s.memtype1=b.memtype
             ORDER BY p.cardno");
-        $r = $dbc->exec_statement($q);
+        $r = $dbc->execute($q);
         $data = array();
         while ($w = $dbc->fetch_row($r)) {
             $record = array(

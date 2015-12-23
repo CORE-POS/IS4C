@@ -65,8 +65,8 @@ class VendorDepartmentUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         }
         $VENDOR_ID = $_SESSION['vid'];
 
-        $p = $dbc->prepare_statement("SELECT vendorID,vendorName FROM vendors WHERE vendorID=?");
-        $idR = $dbc->exec_statement($p,array($VENDOR_ID));
+        $p = $dbc->prepare("SELECT vendorID,vendorName FROM vendors WHERE vendorID=?");
+        $idR = $dbc->execute($p,array($VENDOR_ID));
         if ($dbc->num_rows($idR) == 0){
             $this->error_details = 'Cannot find vendor';
             return False;
@@ -115,8 +115,8 @@ class VendorDepartmentUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             return '<div class="alert alert-danger">Error: No Vendor Selected</div>';
         }
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $vp = $dbc->prepare_statement('SELECT vendorName FROM vendors WHERE vendorID=?');
-        $vr = $dbc->exec_statement($vp,array($vid));
+        $vp = $dbc->prepare('SELECT vendorName FROM vendors WHERE vendorID=?');
+        $vr = $dbc->execute($vp,array($vid));
         if ($dbc->num_rows($vr)==0){
             $this->add_onload_command("\$('#FannieUploadForm').remove();");
             return '<div class="alert alert-danger">Error: No Vendor Found</div>';

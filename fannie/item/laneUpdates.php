@@ -36,7 +36,7 @@ function addProductAllLanes($upc)
     $STORE_ID = FannieConfig::config('STORE_ID');
     $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
 
-    $server_table_def = $laneupdate_sql->table_definition('products',$FANNIE_OP_DB);
+    $server_table_def = $laneupdate_sql->tableDefinition('products',$FANNIE_OP_DB);
 
     // generate list of server columns
     $server_cols = array();
@@ -44,7 +44,7 @@ function addProductAllLanes($upc)
         $server_cols[$k] = True;
 
     for ($i = 0; $i < count($FANNIE_LANES); $i++){
-        $laneupdate_sql->add_connection($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
+        $laneupdate_sql->addConnection($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
             $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
             $FANNIE_LANES[$i]['pw']);
         
@@ -55,7 +55,7 @@ function addProductAllLanes($upc)
 
         // generate list of columns that exist on both
         // the server and the lane
-        $lane_table_def = $laneupdate_sql->table_definition('products',$FANNIE_LANES[$i]['op']);
+        $lane_table_def = $laneupdate_sql->tableDefinition('products',$FANNIE_LANES[$i]['op']);
         $matching_columns = array();
         foreach($lane_table_def as $k=>$v){
             if (isset($server_cols[$k])) $matching_columns[] = $k;
@@ -72,7 +72,7 @@ function addProductAllLanes($upc)
         if ($STORE_MODE == 'HQ') {
             $selQ .= ' AND store_id=' . ((int)$STORE_ID);
         }
-        $selQ = $laneupdate_sql->add_select_limit($selQ, 1, $FANNIE_OP_DB);
+        $selQ = $laneupdate_sql->addSelectLimit($selQ, 1, $FANNIE_OP_DB);
         $ins = rtrim($ins,",").")";
 
         $laneupdate_sql->transfer($FANNIE_OP_DB,$selQ,$FANNIE_LANES[$i]['op'],$ins);
@@ -93,8 +93,8 @@ function deleteProductAllLanes($upc)
             // connect failed
             continue;
         }
-        $delQ = $tmp->prepare_statement("DELETE FROM products WHERE upc=?");
-        $delR = $tmp->exec_statement($delQ,array($upc),$FANNIE_LANES[$i]['op']);
+        $delQ = $tmp->prepare("DELETE FROM products WHERE upc=?");
+        $delR = $tmp->execute($delQ,array($upc),$FANNIE_LANES[$i]['op']);
     }
 }
 

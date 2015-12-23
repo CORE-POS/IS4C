@@ -45,12 +45,12 @@ class CreateTagsByDept extends FanniePage {
             $end = FormLib::get_form_value('deptEnd');
             $pageID = FormLib::get_form_value('sID',0);
             $dbc = FannieDB::get($FANNIE_OP_DB);
-            $prodP = $dbc->prepare_statement("
+            $prodP = $dbc->prepare("
                 SELECT p.upc
                 FROM products AS p
                 WHERE p.department BETWEEN ? AND ?
             ");
-            $prodR = $dbc->exec_statement($prodP, array($start,$end));
+            $prodR = $dbc->execute($prodP, array($start,$end));
             $tag = new ShelftagsModel($dbc);
             $product = new ProductsModel($dbc);
             while ($row = $dbc->fetch_row($prodR)) {
@@ -72,8 +72,8 @@ class CreateTagsByDept extends FanniePage {
     function body_content()
     {
         $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
-        $deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
-        $deptsR = $dbc->exec_statement($deptsQ);
+        $deptsQ = $dbc->prepare("select dept_no,dept_name from departments order by dept_no");
+        $deptsR = $dbc->execute($deptsQ);
         $deptsList = "";
 
         $qmodel = new ShelfTagQueuesModel($dbc);

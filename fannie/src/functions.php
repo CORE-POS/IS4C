@@ -44,9 +44,9 @@ function select_to_table($query,$args,$border,$bgcolor, $no_end=false)
 {
     global $FANNIE_OP_DB;
     $dbc = FannieDB::get($FANNIE_OP_DB);
-    $prep = $dbc->prepare_statement($query);
-    $results = $dbc->exec_statement($prep,$args); 
-    $number_cols = $dbc->num_fields($results);
+    $prep = $dbc->prepare($query);
+    $results = $dbc->execute($prep,$args); 
+    $number_cols = $dbc->numFields($results);
     //display query
     //echo "<b>query: $query</b>";
     //layout table header
@@ -56,7 +56,7 @@ function select_to_table($query,$args,$border,$bgcolor, $no_end=false)
     echo "<tr align left>\n";
     for($i=0; $i<$number_cols; $i++)
     {
-        echo "<th><font size =2>" . $dbc->field_name($results,$i). "</font></th>\n";
+        echo "<th><font size =2>" . $dbc->fieldName($results,$i). "</font></th>\n";
     }
     echo "</tr>\n"; //end table header
     */
@@ -92,9 +92,9 @@ function select_to_table2($query,$args,$border,$bgcolor,$width="120",$spacing="0
 {
     global $FANNIE_OP_DB;
     $dbc = FannieDB::get($FANNIE_OP_DB);
-    $prep = $dbc->prepare_statement($query);
-    $results = $dbc->exec_statement($prep,$args); 
-    $number_cols = $dbc->num_fields($results);
+    $prep = $dbc->prepare($query);
+    $results = $dbc->execute($prep,$args); 
+    $number_cols = $dbc->numFields($results);
     $num_rows = $dbc->num_rows($results);
     $backgrounds = array('#ffffff',$bgcolor);
     $b = 0;    

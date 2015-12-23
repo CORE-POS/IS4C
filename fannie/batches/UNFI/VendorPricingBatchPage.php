@@ -200,8 +200,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $query = str_replace('x.variable_pricing', 'p.price_rule_id AS variable_pricing', $query);
         }
 
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep,$args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep,$args);
 
         $ret .= "<table class=\"table table-bordered small\">";
         $ret .= "<tr><td colspan=6>&nbsp;</td><th colspan=2>Current</th>

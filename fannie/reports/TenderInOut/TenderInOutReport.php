@@ -58,14 +58,14 @@ class TenderInOutReport extends FannieReportPage
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
 
-        $query = $dbc->prepare_statement("select tdate,trans_num,-total as total,emp_no, register_no
+        $query = $dbc->prepare("select tdate,trans_num,-total as total,emp_no, register_no
               FROM $dlog as t 
               where t.trans_subtype = ? AND
               trans_type='T' AND
               tdate BETWEEN ? AND ?
               AND total <> 0
               order by tdate");
-        $result = $dbc->exec_statement($query,array($code,$date1.' 00:00:00',$date2.' 23:59:59'));
+        $result = $dbc->execute($query,array($code,$date1.' 00:00:00',$date2.' 23:59:59'));
 
 
         $data = array();
@@ -98,8 +98,8 @@ class TenderInOutReport extends FannieReportPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $tenders = array();
-        $p = $dbc->prepare_statement("SELECT TenderCode,TenderName FROM tenders ORDER BY TenderName");
-        $r = $dbc->exec_statement($p);
+        $p = $dbc->prepare("SELECT TenderCode,TenderName FROM tenders ORDER BY TenderName");
+        $r = $dbc->execute($p);
         while($w = $dbc->fetch_row($r)) {
             $tenders[$w['TenderCode']] = $w['TenderName'];
         }

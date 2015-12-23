@@ -142,12 +142,9 @@ class CommonTest extends PHPUnit_Framework_TestCase
 
         $res = $dbc->queryAll('SELECT 1 AS one');
         $this->assertNotEquals(false, $res);
-        $res = $dbc->query_all('SELECT 1 AS one');
-        $this->assertNotEquals(false, $res);
         $this->assertEquals(1, $dbc->numRows($res));
         $this->assertEquals(false, $dbc->numRows(false));
         $this->assertEquals(true, $dbc->dataSeek($res, 0));
-        $this->assertEquals(true, $dbc->data_seek($res, 0));
 
         $res = $dbc->query('SELECT ' . $dbc->curtime() . ' AS val');
         $this->assertNotEquals(false, $res);
@@ -169,14 +166,11 @@ class CommonTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, $dbc->isView('dlog'));
         $this->assertNotEquals(0, strlen($dbc->getViewDefinition('dlog')));
 
-        $def1 = $dbc->tableDefinition('dtransactions');
-        $def2 = $dbc->table_definition('dtransactions');
-        $this->assertEquals($def1, $def2);
         $this->assertEquals(false, $dbc->tableDefinition('not_real_table'));
         $this->assertEquals(false, $dbc->detailedDefinition('not_real_table'));
 
         $tables = $dbc->getTables();
-        $this->assertEquals($tables, $dbc->get_tables());
+        $this->assertInternalType('array', $tables);
 
         $this->assertEquals($FANNIE_TRANS_DB, $dbc->defaultDatabase());
 

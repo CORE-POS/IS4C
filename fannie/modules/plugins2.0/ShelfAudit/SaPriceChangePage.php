@@ -87,10 +87,10 @@ class SaPriceChangePage extends FannieRESTfulPage {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $prodQ = $dbc->prepare_statement('SELECT upc, description, normal_price
+        $prodQ = $dbc->prepare('SELECT upc, description, normal_price
                         FROM products WHERE upc=?');
         $upc = BarcodeLib::padUPC($this->id);
-        $prodR = $dbc->exec_statement($prodQ, array($upc));
+        $prodR = $dbc->execute($prodQ, array($upc));
 
         if ($dbc->num_rows($prodR) == 0){
             echo '<div class="alert alert-danger">No item found for: '.$upc.'</div>';
@@ -107,17 +107,17 @@ class SaPriceChangePage extends FannieRESTfulPage {
         
         $pendR = 0;
         if ($dbc->table_exists('batchListTest')){
-            $pendQ = $dbc->prepare_statement('SELECT salePrice FROM batchListTest as l
+            $pendQ = $dbc->prepare('SELECT salePrice FROM batchListTest as l
                             LEFT JOIN batchTest AS b ON l.batchID=b.batchID WHERE
                             b.discountType=0 AND l.upc=? ORDER BY l.batchID DESC');
-            $pendR = $dbc->exec_statement($pendQ, array($upc));
+            $pendR = $dbc->execute($pendQ, array($upc));
         }
 
         if ($pendR === 0 || $dbc->num_rows($pendR) == 0){
-            $pendQ = $dbc->prepare_statement('SELECT salePrice FROM batchList as l
+            $pendQ = $dbc->prepare('SELECT salePrice FROM batchList as l
                             LEFT JOIN batches AS b ON l.batchID=b.batchID WHERE
                             b.discountType=0 AND l.upc=? ORDER BY l.batchID DESC');
-            $pendR = $dbc->exec_statement($pendQ, array($upc));
+            $pendR = $dbc->execute($pendQ, array($upc));
         }
 
         // no pending price change batch

@@ -56,8 +56,8 @@ class DeleteItemPage extends FannieRESTfulPage
         }
 
         if (substr($upc, 0, 3) == '002') {
-            $scaleQ = $dbc->prepare_statement("DELETE FROM scaleItems WHERE plu=?");
-            $dbc->exec_statement($scaleQ,array($upc));
+            $scaleQ = $dbc->prepare("DELETE FROM scaleItems WHERE plu=?");
+            $dbc->execute($scaleQ,array($upc));
             $plu = substr($upc, 3, 4);
             \COREPOS\Fannie\API\item\HobartDgwLib::deleteItemsFromScales($plu);
             \COREPOS\Fannie\API\item\EpScaleLib::deleteItemsFromScales($plu);

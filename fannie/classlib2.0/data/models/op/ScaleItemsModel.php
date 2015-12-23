@@ -99,9 +99,9 @@ DataGateWeigh file wants to see in a CSV
 
         $current_definition = $this->connection->tableDefinition($this->name);
         if (isset($current_definition['class']) && !isset($current_definition['reportingClass'])) {
-            $alter = 'ALTER TABLE ' . $this->connection->identifier_escape($this->name) . '
-                      CHANGE COLUMN ' . $this->connection->identifier_escape('class') . ' ' .
-                      $this->connection->identifier_escape('reportingClass') . ' '  .
+            $alter = 'ALTER TABLE ' . $this->connection->identifierEscape($this->name) . '
+                      CHANGE COLUMN ' . $this->connection->identifierEscape('class') . ' ' .
+                      $this->connection->identifierEscape('reportingClass') . ' '  .
                       $this->getMeta($this->columns['reportingClass']['type']);
 
             printf("%s column class as reportingClass\n", 
