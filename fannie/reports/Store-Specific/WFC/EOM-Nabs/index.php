@@ -238,4 +238,3 @@ function cellify($data,$formatting){
     return $ret;
 }
 
-?>

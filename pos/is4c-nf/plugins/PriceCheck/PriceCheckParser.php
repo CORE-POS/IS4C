@@ -57,4 +57,3 @@ class PriceCheckParser extends Parser {
 
 }
 
-?>

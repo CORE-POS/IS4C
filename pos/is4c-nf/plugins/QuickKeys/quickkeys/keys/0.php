@@ -11,4 +11,3 @@ $my_keys = array(
     new quickkey("Refund","RF")
 );
 
-?>

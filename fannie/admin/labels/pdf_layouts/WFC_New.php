@@ -128,4 +128,3 @@ foreach($data as $row){
     $pdf->Output();  //Output PDF file to screen.
 }
 
-?>

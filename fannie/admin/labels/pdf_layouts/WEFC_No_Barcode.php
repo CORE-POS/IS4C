@@ -378,4 +378,3 @@ function WEFC_No_Barcode($data,$offset=0) {
 // WEFC_No_Barcode()
 }
 
-?>

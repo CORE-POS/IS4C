@@ -35,4 +35,4 @@ while( ($file = readdir($dh)) !== False){
     echo "<a href=new/$file><img src=new/$u.thumb.$e /></a>";
     echo "<hr />";
 }
-?>
+

@@ -123,4 +123,3 @@ class ContactPref extends \COREPOS\Fannie\API\member\MemberModule {
 // ContactPref
 }
 
-?>

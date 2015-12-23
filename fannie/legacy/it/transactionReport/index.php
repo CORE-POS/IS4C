@@ -127,5 +127,3 @@ echo "<td>".round($sales/$trans,2)."<t/d>";
 echo "</tr>";
 echo "</table>";
 
-
-?>

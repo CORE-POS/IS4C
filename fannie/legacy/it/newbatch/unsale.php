@@ -67,4 +67,3 @@ function unsale($batchID){
     }
 }
 
-?>

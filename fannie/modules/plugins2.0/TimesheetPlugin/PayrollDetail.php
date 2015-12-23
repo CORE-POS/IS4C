@@ -130,4 +130,3 @@ class PayrollDetail extends FanniePage {
 
 FannieDispatch::conditionalExec(false);
 
-?>

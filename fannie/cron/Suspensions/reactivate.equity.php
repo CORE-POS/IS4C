@@ -95,5 +95,3 @@ if ($cns != "()"){
     $delR = $sql->query($delQ);
 }
 
-
-?>

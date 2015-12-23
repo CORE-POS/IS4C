@@ -221,4 +221,3 @@ class PriceMovementReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

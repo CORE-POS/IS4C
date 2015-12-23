@@ -587,4 +587,4 @@ $(document).ready(function(){
 </script>
 <?php
 include('../src/footer.html');
-?>
+

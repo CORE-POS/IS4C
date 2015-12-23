@@ -257,4 +257,3 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
 
 FannieDispatch::conditionalExec();
 
-?>

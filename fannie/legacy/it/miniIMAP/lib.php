@@ -149,4 +149,3 @@ function stream_attachment($imap,$msg,$num,$name){
     echo $bytes;
 }
 
-?>

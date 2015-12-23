@@ -48,4 +48,3 @@ foreach($FANNIE_LANES as $lane){
 
 echo "<li>Product table synched</li>";
 
-?>

@@ -137,4 +137,3 @@ class DiscountsReport extends FannieReportPage {
 
 FannieDispatch::conditionalExec();
 
-?>

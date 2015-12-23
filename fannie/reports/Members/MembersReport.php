@@ -175,4 +175,3 @@ class MembersReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

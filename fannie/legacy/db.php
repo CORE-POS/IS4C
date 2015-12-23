@@ -14,4 +14,3 @@ if (!function_exists('add_second_server')){
     }
 }
 
-?>

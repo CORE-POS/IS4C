@@ -87,4 +87,4 @@ class giftcardlist extends NoInputCorePage
 
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
     new giftcardlist();
-?>
+

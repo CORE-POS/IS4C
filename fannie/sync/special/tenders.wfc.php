@@ -40,4 +40,3 @@ foreach($FANNIE_LANES as $lane){
 
 echo "<li>Tenders table synched</li>";
 
-?>

@@ -147,4 +147,3 @@ function qualified_names(){
     return $ret;
 }
 
-?>

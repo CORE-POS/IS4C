@@ -74,4 +74,3 @@ foreach($dbs as $db){
     system($cmd);
 }
 
-?>

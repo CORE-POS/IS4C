@@ -162,4 +162,3 @@ class BasketLimitedReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

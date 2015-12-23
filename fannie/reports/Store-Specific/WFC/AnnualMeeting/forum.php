@@ -108,4 +108,3 @@ if (isset($_REQUEST['excel'])){
     echo $xls;
 }
 
-?>

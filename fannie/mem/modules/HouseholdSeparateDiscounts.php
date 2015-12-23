@@ -158,4 +158,3 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
     }
 }
 
-?>

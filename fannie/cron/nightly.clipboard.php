@@ -66,4 +66,3 @@ if ($chk2 === false)
 else
     echo cron_msg("Cleared deleted shelftags");
 
-?>

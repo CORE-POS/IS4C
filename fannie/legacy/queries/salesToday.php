@@ -34,4 +34,3 @@ while($row1 = $sql->fetch_row($result1,'is4c_op')){
 echo "<tr><td>$row2[0]</td></tr>";
 echo "</table>";
 
-?>

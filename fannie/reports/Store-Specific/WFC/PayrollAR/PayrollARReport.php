@@ -95,4 +95,3 @@ class PayrollARReport extends FannieReportPage {
 
 FannieDispatch::conditionalExec(false);
 
-?>

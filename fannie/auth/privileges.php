@@ -254,4 +254,3 @@ function checkAuth($name,$auth_class,$sub='all'){
   return true;
 }
 
-?>

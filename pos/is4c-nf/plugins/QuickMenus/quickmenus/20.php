@@ -21,4 +21,3 @@ $my_menu = array(
     "Fish Salad" => "20017"
 );
 
-?>

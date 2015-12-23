@@ -9,4 +9,3 @@ $my_menu = array(
     "PARSLEY LEAF FLAKES OG2" => "14083"
 );
 
-?>

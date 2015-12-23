@@ -72,4 +72,3 @@ if (date('j') == 1){
     echo cron_msg("Cleared monthly cache");
 }
 
-?>

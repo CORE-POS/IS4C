@@ -96,4 +96,3 @@ $chk = $sql->query($salesQ);
 if ($chk === false)
     echo cron_msg("Error archiving sales data for inventory");
 
-?>

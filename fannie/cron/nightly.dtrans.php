@@ -434,4 +434,3 @@ function createViews($dstr,$db){
         echo cron_msg("Error creating dlog view for new archive table");
 }
 
-?>

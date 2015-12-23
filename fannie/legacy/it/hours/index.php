@@ -14,4 +14,3 @@ elseif ($name)
 else
     header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/it/hours/");
 
-?>

@@ -468,4 +468,3 @@ echo $output;
         </tr>';
     echo '</table>';
 
-?>

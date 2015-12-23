@@ -399,4 +399,3 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
 
 FannieDispatch::conditionalExec(false);
 
-?>

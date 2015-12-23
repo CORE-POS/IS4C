@@ -136,4 +136,3 @@ unlink($outfile);
 
 ftp_close($conn_id);
 
-?>

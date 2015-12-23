@@ -30,4 +30,4 @@ else {
     echo "<a href=javascript:close()>Close</a>";
   }
 }
-?>
+

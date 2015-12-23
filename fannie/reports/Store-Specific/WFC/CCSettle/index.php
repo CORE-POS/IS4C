@@ -113,4 +113,3 @@ printf('<tr><th align="right" colspan="9">POS Total</th><td>%.2f</td></tr>
     $totals['Discover']);
 echo '</table>';
 
-?>

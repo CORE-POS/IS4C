@@ -14,4 +14,3 @@ while(false !== ($filename = readdir($d))){
 }
 unlink("tmp/invoice.csv");
 
-?>

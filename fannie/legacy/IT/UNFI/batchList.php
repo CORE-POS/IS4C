@@ -51,5 +51,4 @@ while($batchListW = $sql->fetch_array($batchListR)){
    echo "<td><a href=batchList.php?delete=yes&batchID=$batchListW[0] onclick=\"return confirm('Delete batch $batchListW[1]');\">Delete</a></td>";
    $i++;
 }
-?>
 

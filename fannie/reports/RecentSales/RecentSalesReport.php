@@ -179,4 +179,3 @@ class RecentSalesReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

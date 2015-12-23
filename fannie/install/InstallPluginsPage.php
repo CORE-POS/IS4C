@@ -283,4 +283,3 @@ confset('FANNIE_PLUGIN_SETTINGS',$saveStr);
 
 FannieDispatch::conditionalExec();
 
-?>

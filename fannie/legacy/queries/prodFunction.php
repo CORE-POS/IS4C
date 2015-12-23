@@ -647,4 +647,3 @@ function deptPrevNext($dept,$upc,&$prev,&$next){
     return true;
 }
 
-?>

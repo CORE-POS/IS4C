@@ -204,4 +204,3 @@ class TimesheetExport extends FannieReportPage {
 
 FannieDispatch::conditionalExec(false);
 
-?>

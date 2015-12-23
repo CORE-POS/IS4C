@@ -87,4 +87,3 @@ class GroupPM extends PriceMethod {
     }
 }
 
-?>

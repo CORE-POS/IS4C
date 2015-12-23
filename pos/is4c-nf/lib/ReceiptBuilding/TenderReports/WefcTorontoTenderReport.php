@@ -468,4 +468,3 @@ static private function trTotal($codes,$label,$listEach=False,$reportIfNone=True
 // WefcTorontoTenderReport class
 }
 
-?>

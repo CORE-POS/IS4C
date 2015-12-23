@@ -153,4 +153,3 @@ class RecallReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

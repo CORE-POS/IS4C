@@ -47,4 +47,4 @@ class EquitySoldReceiptMessage extends ReceiptMessage {
         return $slip;
     }
 }
-?>
+

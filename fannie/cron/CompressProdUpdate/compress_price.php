@@ -88,5 +88,3 @@ while($w = $sql->fetch_row($r)){
     $prevDate = $w['modified']; 
 }
 
-
-?>

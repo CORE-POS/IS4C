@@ -161,4 +161,3 @@ class UploadAnyFile extends FanniePage {
 
 FannieDispatch::conditionalExec(false);
 
-?>

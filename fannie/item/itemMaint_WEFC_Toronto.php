@@ -180,4 +180,3 @@ echo "</form>";
 
 include ('../src/footer.html');
 
-?>

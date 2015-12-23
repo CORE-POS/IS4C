@@ -225,4 +225,4 @@ $output .= "<hr />";
 $output .= "<a href=index.php?logout=yes>Logout</a>";
 
 echo $output;
-?>
+

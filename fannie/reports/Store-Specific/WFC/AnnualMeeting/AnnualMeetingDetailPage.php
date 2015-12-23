@@ -172,4 +172,3 @@ class AnnualMeetingDetailPage extends FannieRESTfulPage {
 
 FannieDispatch::conditionalExec();
 
-?>

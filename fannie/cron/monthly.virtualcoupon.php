@@ -82,4 +82,4 @@ $blueLineQ = "UPDATE custdata SET blueLine="
 $sql->query($blueLineQ);
 
 echo cron_msg("Updated values in core_op.custdata");
-?>
+

@@ -85,4 +85,3 @@ function updateCustomerAllLanes($cardno){
     redoCard($cardno);
 }
 
-?>

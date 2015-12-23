@@ -182,6 +182,3 @@ function get_get_data($int){
 
 /* rounding function to create 'non-stupid' pricing */
 
-
-
-?>

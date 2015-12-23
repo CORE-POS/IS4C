@@ -108,4 +108,3 @@ $memQ = "UPDATE meminfo AS m
     WHERE s.cardno is not null";
 $sql->query($memQ);
 
-?>

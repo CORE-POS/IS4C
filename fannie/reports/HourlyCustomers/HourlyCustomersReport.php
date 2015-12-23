@@ -105,4 +105,3 @@ class HourlyCustomersReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

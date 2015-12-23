@@ -144,4 +144,3 @@ ob_end_clean();
 \COREPOS\Fannie\API\data\DataCache::putFile('monthly',$output);
 echo $output;
 
-?>

@@ -39,4 +39,3 @@ mail($to_string,$subject,$message,$headers);
 
 header("Location: index.php");
 
-?>

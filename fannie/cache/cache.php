@@ -43,4 +43,3 @@ function put_cache($type,$content){
     fclose($fp);
 }
 
-?>

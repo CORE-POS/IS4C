@@ -39,4 +39,3 @@ while ($w = $dbc->fetch_row($r)){
 echo '<tr><th>Total</th><td>'.$sum.'</td></tr>';
 echo '</table>';
 
-?>

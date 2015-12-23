@@ -110,4 +110,3 @@ $memQ = "UPDATE meminfo as m LEFT JOIN
     where s.cardno is not null";
 $sql->query($memQ);
 
-?>

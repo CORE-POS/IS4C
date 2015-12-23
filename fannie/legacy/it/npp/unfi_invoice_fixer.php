@@ -27,4 +27,3 @@ while(!feof($fp)){
 fclose($fp);
 fclose($fp2);
 
-?>

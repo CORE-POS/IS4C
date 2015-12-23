@@ -101,4 +101,3 @@ class TsAreasReport extends FanniePage {
 
 FannieDispatch::conditionalExec(false);
 
-?>

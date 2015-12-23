@@ -150,4 +150,3 @@ if ( isset($FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION) && $FANNIE_COMPOSE_LONG_PRO
     curl_close($productUser);
 }
 
-?>

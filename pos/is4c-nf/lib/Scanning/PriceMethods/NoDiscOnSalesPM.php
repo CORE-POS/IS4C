@@ -68,4 +68,3 @@ class NoDiscOnSalesPM extends PriceMethod {
     }
 }
 
-?>

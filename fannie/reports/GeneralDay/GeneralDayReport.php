@@ -387,4 +387,3 @@ class GeneralDayReport extends FannieReportPage
 
 FannieDispatch::conditionalExec(false);
 
-?>

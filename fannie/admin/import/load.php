@@ -119,4 +119,3 @@ echo "Data import complete<p />";
 
 include($FANNIE_ROOT."src/footer.html");
 
-?>

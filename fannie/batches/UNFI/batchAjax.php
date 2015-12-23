@@ -153,4 +153,3 @@ case 'batchDel':
     break;
 }
 
-?>

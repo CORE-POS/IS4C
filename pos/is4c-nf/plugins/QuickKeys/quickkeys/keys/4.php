@@ -8,4 +8,3 @@ $my_keys = array(
     new quickkey("Tax\nExempt","TETL")
 );
 
-?>

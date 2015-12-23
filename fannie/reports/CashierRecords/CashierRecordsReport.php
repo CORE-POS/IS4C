@@ -110,4 +110,3 @@ class CashierRecordsReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

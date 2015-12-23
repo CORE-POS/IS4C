@@ -413,4 +413,3 @@ class BrowseVendorItems extends FanniePage
 
 FannieDispatch::conditionalExec(false);
 
-?>

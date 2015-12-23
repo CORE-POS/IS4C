@@ -135,4 +135,3 @@ class CCredBalanceMessage extends CustomerReceiptMessage {
 
 }
 
-?>

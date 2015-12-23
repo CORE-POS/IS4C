@@ -9,4 +9,3 @@ $my_menu = array(
     "Reboot Terminal (Slow)" => "TERMREBOOT",
 );
 
-?>

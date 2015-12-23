@@ -259,4 +259,3 @@ class TsEmployeesReport extends FanniePage {
 
 FannieDispatch::conditionalExec(false);
 
-?>

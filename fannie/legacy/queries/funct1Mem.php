@@ -733,4 +733,3 @@ function log_info($name,$variable){
   fclose($log);
 }
 
-?>

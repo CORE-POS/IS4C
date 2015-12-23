@@ -141,4 +141,3 @@ function pricePerSI($price,$sizeStr,$size='',$unitofmeasure='',$systemOut=''){
 
 }
 
-?>

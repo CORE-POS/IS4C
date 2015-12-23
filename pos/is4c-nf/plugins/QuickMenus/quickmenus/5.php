@@ -10,4 +10,3 @@ $my_menu = array(
     "Dean''s Beans Hazelnut Dream" => "5013"
 );
 
-?>

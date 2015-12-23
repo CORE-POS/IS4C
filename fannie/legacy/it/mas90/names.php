@@ -46,4 +46,3 @@ while ($row = $sql->fetch_row($result)){
     echo $row[8].$NL;
 }
 
-?>

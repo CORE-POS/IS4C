@@ -9,4 +9,3 @@ $my_menu = array(
     "Yankee Farmers Ground Buffalo" => "9014"
 );
 
-?>

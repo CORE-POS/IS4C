@@ -10,4 +10,3 @@ $my_menu = array(
     "Aroma Cone 1/2in. Beeswax" => "13015"
 );
 
-?>

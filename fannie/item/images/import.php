@@ -45,4 +45,3 @@ while( ($file = readdir($dh)) !== False){
     }
 }
 
-?>

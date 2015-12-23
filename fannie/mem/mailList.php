@@ -82,4 +82,4 @@ while($row = $dbc->fetch_row($result)){
 
 $xls = \COREPOS\Fannie\API\data\DataConvert::arrayToCsv($ret);
 echo $xls;
-?>
+

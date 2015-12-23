@@ -85,4 +85,3 @@ class TimesheetGeneralReport extends FannieReportPage {
 
 FannieDispatch::conditionalExec(false);
 
-?>

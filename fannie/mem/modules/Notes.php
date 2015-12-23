@@ -117,4 +117,3 @@ class Notes extends \COREPOS\Fannie\API\member\MemberModule {
 // Notes
 }
 
-?>

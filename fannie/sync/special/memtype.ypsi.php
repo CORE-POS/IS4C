@@ -39,4 +39,3 @@ foreach($FANNIE_LANES as $lane){
 
 echo "<li>memtype table synced</li>";
 
-?>

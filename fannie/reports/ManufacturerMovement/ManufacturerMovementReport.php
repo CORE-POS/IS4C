@@ -283,4 +283,3 @@ class ManufacturerMovementReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

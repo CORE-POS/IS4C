@@ -388,4 +388,3 @@ function showGraph(i) {
 
 FannieDispatch::conditionalExec();
 
-?>

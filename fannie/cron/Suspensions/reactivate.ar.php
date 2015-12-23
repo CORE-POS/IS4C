@@ -110,4 +110,3 @@ if (strlen($cns) > 2){
     $delR = $sql->query($delQ);
 }
 
-?>

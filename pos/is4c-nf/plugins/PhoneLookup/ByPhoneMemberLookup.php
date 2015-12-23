@@ -59,4 +59,3 @@ class ByPhoneMemberLookup extends MemberLookup {
     }
 }
 
-?>

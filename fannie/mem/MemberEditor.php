@@ -277,4 +277,3 @@ class MemberEditor extends FanniePage {
 
 FannieDispatch::conditionalExec();
 
-?>

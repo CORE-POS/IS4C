@@ -102,4 +102,3 @@ function getIngredients($id,$mult=1){
     return $ret;
 }
 
-?>

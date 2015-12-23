@@ -148,4 +148,4 @@ if ($success)
     echo cron_msg("Changes logged in prodUpdate");
 else
     echo cron_msg("Error logging changes");
-?>
+

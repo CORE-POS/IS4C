@@ -76,5 +76,3 @@ if (($today == $discount_day) || ($today == $discount_day_after)) {
     echo cron_msg("nightly.seniordiscount.php: Discount active on " . $discount_day . ".<br /> No discounts to apply");
 }
 
-
-?>

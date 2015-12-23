@@ -98,5 +98,3 @@ function getSRP($cost,$margin){
     return $srp;
 }
 
-
-?>

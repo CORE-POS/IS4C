@@ -218,4 +218,3 @@ if (!isset($_RREQUEST['month']))
     \COREPOS\Fannie\API\data\DataCache::putFile('monthly',$output);
 echo $output;
 
-?>

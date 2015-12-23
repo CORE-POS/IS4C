@@ -445,4 +445,3 @@ function installSelectField($name, &$current_value, $options, $default_value='',
     return $ret;
 }
 
-?>

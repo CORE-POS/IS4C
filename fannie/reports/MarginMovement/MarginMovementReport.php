@@ -201,4 +201,3 @@ class MarginMovementReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

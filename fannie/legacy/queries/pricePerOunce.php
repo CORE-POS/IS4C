@@ -56,4 +56,3 @@ function pricePerOunce($price,$sizeStr){
     return "";
 }
 
-?>

@@ -87,4 +87,4 @@ echo "<a href=/git/fannie/item/handheld.php>Small-screen</a>";
 echo "</div>";
 echo "</body>";
 echo "</html>";
-?>
+

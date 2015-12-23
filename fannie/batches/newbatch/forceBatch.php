@@ -271,4 +271,3 @@ function forceBatch($batchID)
     $update->logManyUpdates(array_keys($upcs), $updateType);
 }
 
-?>

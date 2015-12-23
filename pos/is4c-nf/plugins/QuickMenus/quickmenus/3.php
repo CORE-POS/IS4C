@@ -7,4 +7,3 @@ $my_menu = array(
     "Bakery Sweets" => "99003"
 );
 
-?>

@@ -127,4 +127,3 @@ class HouseholdMembers extends \COREPOS\Fannie\API\member\MemberModule {
     }
 }
 
-?>

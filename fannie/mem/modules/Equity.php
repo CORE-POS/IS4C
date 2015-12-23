@@ -67,4 +67,3 @@ class Equity extends \COREPOS\Fannie\API\member\MemberModule {
     }
 }
 
-?>

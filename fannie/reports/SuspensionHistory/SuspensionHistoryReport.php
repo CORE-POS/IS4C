@@ -92,4 +92,3 @@ class SuspensionHistoryReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

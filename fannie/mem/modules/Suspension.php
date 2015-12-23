@@ -85,4 +85,3 @@ class Suspension extends \COREPOS\Fannie\API\member\MemberModule {
     }
 }
 
-?>

@@ -42,4 +42,4 @@ while ($row = $sql->fetch_array($result)){
     echo "\"".$row[6]."\",";
     echo "\"".$row[7]."\"".$NL;
 }
-?>
+

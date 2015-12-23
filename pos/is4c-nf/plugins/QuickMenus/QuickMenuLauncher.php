@@ -65,4 +65,3 @@ class QuickMenuLauncher extends Parser {
     }
 }
 
-?>

@@ -149,4 +149,3 @@ class SpartanNashInvoiceImport extends ImportPurchaseOrder
 
 FannieDispatch::conditionalExec(false);
 
-?>

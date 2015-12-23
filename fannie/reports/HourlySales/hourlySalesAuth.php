@@ -224,4 +224,4 @@ if (isset($_REQUEST['excel']))
     echo "<p />Total: $sum";
 else
     echo "<p />Total: " . number_format($sum,2);
-?>
+

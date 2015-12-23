@@ -58,4 +58,3 @@ while ($row = $sql->fetch_row($result)){
 $INV_NUM--;
 $sql->query("update lastMasInvoice set num=$INV_NUM");
 
-?>

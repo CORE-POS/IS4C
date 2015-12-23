@@ -123,4 +123,3 @@ function deleteAllLanes($upc, $tables){
     }
 }
 
-?>

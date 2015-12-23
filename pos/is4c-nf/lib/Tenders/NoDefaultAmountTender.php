@@ -34,4 +34,3 @@ class NoDefaultAmountTender extends TenderModule
 
 }
 
-?>

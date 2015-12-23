@@ -301,4 +301,4 @@ input[type="checkbox"] {
 <?php
 include($FANNIE_ROOT.'src/footer.html');
 }
-?>
+

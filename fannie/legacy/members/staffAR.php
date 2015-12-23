@@ -113,5 +113,4 @@ if(!validateUserQuiet('staffar')){
    echo "</body>";
    echo "</html>";
 }
-?>
 

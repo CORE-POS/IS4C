@@ -72,4 +72,3 @@ class MemDates extends \COREPOS\Fannie\API\member\MemberModule {
     }
 }
 
-?>

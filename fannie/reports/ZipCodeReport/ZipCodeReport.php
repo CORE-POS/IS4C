@@ -154,4 +154,3 @@ class ZipCodeReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

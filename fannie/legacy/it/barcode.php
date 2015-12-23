@@ -177,4 +177,3 @@ while($m < 32){
 
 $pdf->Output();
 
-?>

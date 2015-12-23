@@ -357,4 +357,3 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
 
 FannieDispatch::conditionalExec(false);
 
-?>

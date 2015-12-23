@@ -169,4 +169,4 @@ $(document).ready(function(){
 <?php
 include($FANNIE_ROOT.'src/footer.html');
 }
-?>
+

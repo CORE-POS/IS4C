@@ -355,4 +355,3 @@ echo "<br />id $id";
 
 FannieDispatch::conditionalExec(false);
 
-?>

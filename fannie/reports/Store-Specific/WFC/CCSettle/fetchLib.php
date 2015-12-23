@@ -157,4 +157,3 @@ function docurl($xml){
     return $result;
 }
 
-?>

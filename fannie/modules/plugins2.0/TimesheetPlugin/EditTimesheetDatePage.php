@@ -241,4 +241,3 @@ class EditTimesheetDatePage extends FanniePage {
 
 FannieDispatch::conditionalExec(false);
 
-?>

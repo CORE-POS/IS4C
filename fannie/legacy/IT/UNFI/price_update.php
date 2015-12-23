@@ -84,4 +84,4 @@ echo "</form>";
 echo "</table>";
 
 echo "<a href=/queries/labels/barcodenew.php?id=$buyID>Go to barcode page</a>";
-?>
+

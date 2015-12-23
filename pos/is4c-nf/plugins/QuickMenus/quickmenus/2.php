@@ -17,4 +17,3 @@ $my_menu = array(
     "Equity - Scholarship" => "DP3020"    
 );
 
-?>

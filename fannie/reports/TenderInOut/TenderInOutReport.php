@@ -157,4 +157,3 @@ class TenderInOutReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

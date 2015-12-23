@@ -77,4 +77,3 @@ class WFCFixup extends PreParser {
     }
 }
 
-?>

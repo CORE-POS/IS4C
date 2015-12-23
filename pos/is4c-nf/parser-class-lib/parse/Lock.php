@@ -47,4 +47,3 @@ class Lock extends Parser {
     }
 }
 
-?>

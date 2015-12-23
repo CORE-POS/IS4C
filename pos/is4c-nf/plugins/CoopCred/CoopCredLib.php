@@ -392,4 +392,4 @@ static private $SQL_CONNECTION = null;
 
 // CoopCredLib class
 }
-?>
+

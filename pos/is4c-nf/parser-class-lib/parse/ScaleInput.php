@@ -70,4 +70,3 @@ class ScaleInput extends Parser {
 
 }
 
-?>

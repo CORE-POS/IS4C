@@ -214,4 +214,3 @@ class OpenRingsReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

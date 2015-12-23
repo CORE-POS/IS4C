@@ -165,4 +165,3 @@ class MemCard extends \COREPOS\Fannie\API\member\MemberModule {
 // MemCard
 }
 
-?>

@@ -22,4 +22,4 @@ $types = array("MYSQL","MYSQL","MYSQL","MYSQL","MYSQL","MYSQL");
 $users = array("root","root","root","root","root","root");
 $pws = array("is4c","is4c","is4c","is4c","is4c","is4c");
 */
-?>
+

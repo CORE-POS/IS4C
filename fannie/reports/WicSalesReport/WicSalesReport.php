@@ -263,4 +263,3 @@ class WicSalesReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

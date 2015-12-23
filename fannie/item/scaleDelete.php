@@ -101,4 +101,3 @@ if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
 
 include ('../src/footer.html');
 
-?>

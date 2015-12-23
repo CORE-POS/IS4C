@@ -105,4 +105,3 @@ function unit_mapper($input){
     return false;
 }
 
-?>
