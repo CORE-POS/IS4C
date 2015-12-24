@@ -70,7 +70,7 @@ class LocalInvoicesReport extends FannieReportPage
     function fetch_report_data()
     {
         $dbc = $this->connection;
-        array($codingP, $args) = $this->stmt();
+        list($codingP, $args) = $this->stmt();
 
         $report = array();
         $invoice_sums = array();
