@@ -34,12 +34,9 @@ class MemMailList extends FannieReportPage
     protected $report_headers = array('Mem#', 'Last Name', 'First Name', 'Address', 'Address2', 'City', 'State', 'Zip', 'Phone', 'Email');
     public $description = '[Member Mailing List] lists contact information for selected customers.';
 
-    public function fetch_report_data()
+    protected function selectFrom()
     {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
-
-        $query = "
+        return "
                SELECT CardNo, 
                   LastName, 
                   FirstName, 
@@ -55,12 +52,17 @@ class MemMailList extends FannieReportPage
               LEFT JOIN meminfo AS m
               ON c.CardNo=m.card_no
               LEFT JOIN memDates AS d
-              ON c.CardNo=d.card_no
-          WHERE  ";
+              ON c.CardNo=d.card_no ";
+    }
 
-         switch (FormLib::get('type')) {
+    protected function where($dbc, $type)
+    {
+         $ret = " WHERE ";
+
+         switch ($type) {
              case 'Members':
-                $query .= "c.Type='PC'
+             default:
+                $ret .= "c.Type='PC'
                   AND (end_date > ".$dbc->now()." 
                     or end_date = '' 
                     or end_date is null
@@ -72,7 +74,7 @@ class MemMailList extends FannieReportPage
                   order by m.card_no";
                 break;
              case 'Members (All)':
-                $query .= "c.Type='PC'
+                $ret .= "c.Type='PC'
                   AND (end_date > ".$dbc->now()." 
                     or end_date = '' 
                     or end_date is null
@@ -83,13 +85,27 @@ class MemMailList extends FannieReportPage
                   order by m.card_no";
                 break;
              case 'Business':
-                $query .= "c.memType=2
+                $ret .= "c.memType=2
                   AND personNum = 1
                   AND LastName <> 'NEW MEMBER'
                   order by m.card_no";
                 break;
          }
 
+         return $ret;
+    }
+
+    public function fetch_report_data()
+    {
+        try {
+            $dbc = $this->connection;
+            $dbc->selectDB($this->config->get('OP_DB'));
+
+            $query = $this->selectFrom()
+                . $this->where($dbc, $this->form->type);
+        } catch (Exception $ex) {
+            return array();
+        }
         $result = $dbc->query($query);
         $data = array();
 
@@ -137,6 +153,17 @@ class MemMailList extends FannieReportPage
     </div>
 </form>
 HTML;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->form_content()));
+        $form = new COREPOS\common\mvc\ValueContainer();
+        foreach (array('Members', 'Members (All)', 'Business') as $type) {
+            $form->type = $type;
+            $this->setForm($form);
+            $phpunit->assertInternalType('array', $this->fetch_report_data());
+        }
     }
 }
 

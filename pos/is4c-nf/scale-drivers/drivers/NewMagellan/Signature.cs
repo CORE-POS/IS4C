@@ -74,6 +74,8 @@ public class Signature
         }
 
         bmp.Save(filename, System.Drawing.Imaging.ImageFormat.Bmp);
+        var bpp = BitmapConverter.To1bpp(filename);
+        File.WriteAllBytes(filename, bpp);
     }
 
     private Pen getPen(Brush b)

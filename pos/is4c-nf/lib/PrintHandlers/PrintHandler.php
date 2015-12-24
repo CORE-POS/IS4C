@@ -101,7 +101,8 @@ class PrintHandler {
     inline stripe (8 pixels tall with $tallDots, 24 otherwise) the array will have
     only one element.
     */
-    function TransposeBitmapData($data, $width, $tallDots=false) {
+    function TransposeBitmapData($data, $width, $tallDots=false) 
+    {
         $oldRowBytes = (int)(($width + 7) / 8);
         $newColBytes = $tallDots ? 1 : 3;
         $oldStripeSize = (int)($oldRowBytes * ($tallDots ? 8 : 24));
@@ -129,29 +130,14 @@ class PrintHandler {
                 $oldMask = 1 << (7 - ($c % 8));
                 $newByte = ($tallDots ? $c : ($c + $c + $c));
                 // top or only byte
-                $b = 0;
-                for ($r = 0;  $r < 8;  $r++) {
-                    $oldByte = ($r * $oldRowBytes) + ($c >> 3); // (int)($c / 8)
-                    if (ord($oldData[$oldByte]) & $oldMask)
-                        $b |= (1 << (7 - ($r % 8)));
-                }
+                $b = $this->bitMagic(0, array($oldData, $oldMask, $oldRowBytes), $c);
                 $newData[$newByte + 0] = chr($b);
                 if (!$tallDots) {
                     // middle byte
-                    $b = 0;
-                    for ($r = 8;  $r < 16;  $r++) {
-                        $oldByte = ($r * $oldRowBytes) + ($c >> 3); // (int)($c / 8)
-                        if (ord($oldData[$oldByte]) & $oldMask)
-                            $b |= (1 << (7 - ($r % 8)));
-                    }
+                    $b = $this->bitMagic(8, array($oldData, $oldMask, $oldRowBytes), $c);
                     $newData[$newByte + 1] = chr($b);
                     // bottom byte
-                    $b = 0;
-                    for ($r = 16;  $r < 24;  $r++) {
-                        $oldByte = ($r * $oldRowBytes) + ($c >> 3); // (int)($c / 8)
-                        if (ord($oldData[$oldByte]) & $oldMask)
-                            $b |= (1 << (7 - ($r % 8)));
-                    }
+                    $b = $this->bitMagic(16, array($oldData, $oldMask, $oldRowBytes), $c);
                     $newData[$newByte + 2] = chr($b);
                 }
             }
@@ -159,6 +145,23 @@ class PrintHandler {
         }
         return $stripes;
     } // TransposeBitmapData()
+
+    /**
+      No idea what this really does but it was repeated
+      three times above
+    */
+    private function bitMagic($base, $oldInfo, $c)
+    {
+        $byte = 0;
+        list($oldData, $oldMask, $oldRowBytes) = $oldInfo;
+        for ($r = $base;  $r < $base+8;  $r++) {
+            $oldByte = ($r * $oldRowBytes) + ($c >> 3); // (int)($c / 8)
+            if (ord($oldData[$oldByte]) & $oldMask)
+                $byte |= (1 << (7 - ($r % 8)));
+        }
+
+        return $byte;
+    }
     
     function InlineBitmap($data, $width, $tallDots=false, $wideDots=false) {
         return '';

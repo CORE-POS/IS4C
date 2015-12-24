@@ -190,7 +190,7 @@ class FannieDispatch
             $class = substr($page,0,strlen($page)-4);
             if ($class != 'index' && class_exists($class)) {
                 $obj = new $class();
-                if ($dbc->isConnected($op_db)) {
+                if ($dbc && $dbc->isConnected($op_db)) {
                     // write URL log
                     self::logUsage($dbc, $op_db);
                     /*

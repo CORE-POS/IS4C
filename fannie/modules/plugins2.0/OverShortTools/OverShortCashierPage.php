@@ -101,7 +101,12 @@ class OverShortCashierPage extends FanniePage {
             }
             $totals[$totalsW[0]] = $totalsW[2];
             $names[$totalsW[0]] = $totalsW[1];
-            $counts[$totalsW[0]] = 0.00;
+            $code = $totalsW[0];
+            if ($code !== 'CA' && $code !== 'CK' && $code !== 'TK') {
+                $counts[$code] = $totals[$code];
+            } else {
+                $counts[$totalsW[0]] = 0.00;
+            }
         }
 
         $model = new DailyCountsModel($dbc);
@@ -216,7 +221,6 @@ class OverShortCashierPage extends FanniePage {
                 <input type=text onchange=\"resumSheet();\" id=count$code 
                     class=\"form-control form-control-sm\" value=\"".$counts[$code]."\" />
                 </div></td>";
-            if (!isset($counts[$code])) $counts[$code] = 0.00;
             $os = round($counts[$code] - $totals[$code],2);
             $ret .= "<td id=osCC>$os</td>";
 

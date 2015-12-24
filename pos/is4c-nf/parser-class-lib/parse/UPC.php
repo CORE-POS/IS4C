@@ -137,21 +137,21 @@ class UPC extends Parser
             $quantity = 1;
         }
 
-        list($scaleStickerItem,$scalepriceUPC,$scalepricEAN) = $this->rewriteScaleSticker($upc);
+        list($upc,$scaleStickerItem,$scalepriceUPC,$scalepricEAN) = $this->rewriteScaleSticker($upc);
 
         $result = $this->lookupItem($upc);
-        $db = Database::pDataConnect();
-        $num_rows = $db->num_rows($result);
+        $dbc = Database::pDataConnect();
+        $num_rows = $dbc->num_rows($result);
 
         /* check for special upcs that aren't really products */
         if ($num_rows == 0){
-            return $this->nonProductUPCs($upc);
+            return $this->nonProductUPCs($upc, $ret);
         }
 
         /* product exists
            BEGIN error checking round #1
         */
-        $row = $db->fetch_array($result);
+        $row = $dbc->fetch_array($result);
 
         /**
           If formatted_name is present, copy it directly over
@@ -181,8 +181,8 @@ class UPC extends Parser
           based on item's department
         */
         $deptmods = CoreLocal::get('SpecialDeptMap');
-        if (!is_array($deptmods) && $db->table_exists('SpecialDeptMap')) {
-            $model = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($db);
+        if (!is_array($deptmods) && $dbc->table_exists('SpecialDeptMap')) {
+            $model = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($dbc);
             $deptmods = $model->buildMap();
             CoreLocal::set('SpecialDeptMap', $deptmods);
         }
@@ -350,16 +350,16 @@ class UPC extends Parser
         if ($row['special_limit'] > 0) {
             $appliedQ = "
                 SELECT SUM(quantity) AS saleQty
-                FROM " . CoreLocal::get('tDatabase') . $db->sep() . "localtemptrans
+                FROM " . CoreLocal::get('tDatabase') . $dbc->sep() . "localtemptrans
                 WHERE discounttype <> 0
                     AND (
                         upc='{$row['upc']}'
                         OR (mixMatch='{$row['mixmatchcode']}' AND mixMatch<>''
                             AND mixMatch<>'0' AND mixMatch IS NOT NULL)
                     )";
-            $appliedR = $db->query($appliedQ);
-            if ($appliedR && $db->num_rows($appliedR)) {
-                $appliedW = $db->fetch_row($appliedR);
+            $appliedR = $dbc->query($appliedQ);
+            if ($appliedR && $dbc->num_rows($appliedR)) {
+                $appliedW = $dbc->fetch_row($appliedR);
                 if (($appliedW['saleQty']+$quantity) > $row['special_limit']) {
                     $row['discounttype'] = 0;
                     $row['special_price'] = 0;
@@ -512,15 +512,15 @@ class UPC extends Parser
     {
         $upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 
-        $db = Database::pDataConnect();
+        $dbc = Database::pDataConnect();
         $query = "select description,scale,tax,foodstamp,discounttype,
             discount,department,normal_price
                    from products where upc='".$upc."'";
-        $result = $db->query($query);
+        $result = $dbc->query($query);
 
-        if ($db->num_rows($result) <= 0) return;
+        if ($dbc->num_rows($result) <= 0) return;
 
-        $row = $db->fetch_array($result);
+        $row = $dbc->fetch_array($result);
         
         $description = $row["description"];
         $description = str_replace("'", "", $description);
@@ -583,13 +583,13 @@ class UPC extends Parser
 
     public function expandUPCE($entered)
     {
-        $p6 = substr($entered, -1);
-        if ($p6 == 0) $entered = substr($entered, 0, 3)."00000".substr($entered, 3, 3);
-        elseif ($p6 == 1) $entered = substr($entered, 0, 3)."10000".substr($entered, 3, 3);
-        elseif ($p6 == 2) $entered = substr($entered, 0, 3)."20000".substr($entered, 3, 3);
-        elseif ($p6 == 3) $entered = substr($entered, 0, 4)."00000".substr($entered, 4, 2);
-        elseif ($p6 == 4) $entered = substr($entered, 0, 5)."00000".substr($entered, 5, 1);
-        else $entered = substr($entered, 0, 6)."0000".$p6;
+        $par6 = substr($entered, -1);
+        if ($par6 == 0) $entered = substr($entered, 0, 3)."00000".substr($entered, 3, 3);
+        elseif ($par6 == 1) $entered = substr($entered, 0, 3)."10000".substr($entered, 3, 3);
+        elseif ($par6 == 2) $entered = substr($entered, 0, 3)."20000".substr($entered, 3, 3);
+        elseif ($par6 == 3) $entered = substr($entered, 0, 4)."00000".substr($entered, 4, 2);
+        elseif ($par6 == 4) $entered = substr($entered, 0, 5)."00000".substr($entered, 5, 1);
+        else $entered = substr($entered, 0, 6)."0000".$par6;
 
         return $entered;
     }
@@ -666,7 +666,7 @@ class UPC extends Parser
             if ($upc == "0020006000000" || $upc == "0020010000000") $scalepriceUPC *= -1;
         }
 
-        return array($scaleStickerItem, $scalepriceUPC, $scalepriceEAN);
+        return array($upc, $scaleStickerItem, $scalepriceUPC, $scalepriceEAN);
     }
 
     public static $requestInfoHeader = 'customer age';
@@ -740,7 +740,7 @@ class UPC extends Parser
         return $dbc->numRows($restrictR) > 0 ? true : false;
     }
 
-    private function nonProductUPCs($upc)
+    private function nonProductUPCs($upc, $ret)
     {
         $dbc = Database::pDataConnect();
         $objs = CoreLocal::get("SpecialUpcClasses");

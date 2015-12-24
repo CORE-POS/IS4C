@@ -148,11 +148,6 @@ class ScaleItemModule extends ItemModule
 
             $css_class = '';
             $title = '';
-            if ($checked) {
-                $online = \COREPOS\Fannie\API\item\ServiceScaleLib::scaleOnline($scale->host());
-                $css_class = $online ? 'has-success' : 'has-danger';
-                $title = $online ? 'Scale Online' : 'Scale Offline';
-            }
             $ret .= sprintf('<div class="form-group %s" title="%s"><div class="checkbox">
                             <label class="control-label">
                             <input type="checkbox" name="scaleID[]" id="scaleID%d" value=%d %s />
@@ -223,6 +218,7 @@ class ScaleItemModule extends ItemModule
             $p->store_id(1);
             if($p->load()) {
                 $p->Scale(0);
+                $p->enableLogging(false);
                 $p->save();
             }
         }

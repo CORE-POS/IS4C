@@ -159,16 +159,6 @@ public class SPH_Magellan_Scale : SerialPortHandler
             }
         } else if (s.Substring(0,2) == "S1") { // scale message
             /**
-              Rate limiter. Two consecutive, identical messages
-              are probably scale state results. Take a short
-              pause to avoid flooding the scale with constant
-              state requests.
-            */
-            if (s == last_message) {
-                Thread.Sleep(200);
-            }
-
-            /**
               The scale supports two primary commands:
               S11 is "get stable weight". This tells the scale to return
               the next stable non-zero weight.

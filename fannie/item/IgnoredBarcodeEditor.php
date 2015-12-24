@@ -173,7 +173,7 @@ class IgnoredBarcodeEditor extends FannieRESTfulPage
             $ret .= '<td>';
             if ($pk != false) {
                 $ret .= '<a href="?_method=delete&id=' . $pk . '" class="btn btn-danger">'
-                    . FannieUI::deleteIcon() . '</a>';
+                    . COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a>';
             }
             $ret .= '</td>';
             $ret .= '</tr>';
@@ -194,6 +194,11 @@ class IgnoredBarcodeEditor extends FannieRESTfulPage
             at the lanes. It is used primarily to suppress unexpected accidental scans on produce
             stickers or packaging when items are intended to be entered by PLU.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
     }
 }
 

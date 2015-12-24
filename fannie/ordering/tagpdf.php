@@ -20,6 +20,9 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
+    return;
+}
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -56,7 +59,7 @@ if (isset($_REQUEST['toids'])){
         WHERE trans_id=? AND order_id=?");
     $idP = $dbc->prepare_statement("SELECT trans_id FROM {$TRANS}PendingSpecialOrder WHERE
         trans_id > 0 AND order_id=? ORDER BY trans_id");
-    $signage = new FannieSignage(array());
+    $signage = new COREPOS\Fannie\API\item\FannieSignage(array());
     foreach($_REQUEST['toids'] as $toid){
         if ($count % 4 == 0){ 
             $pdf->AddPage();

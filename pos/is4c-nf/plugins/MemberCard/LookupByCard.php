@@ -21,7 +21,8 @@
 
 *********************************************************************************/
 
-class LookupByCard {
+class LookupByCard 
+{
 
     /**
       This module handle numeric inputs
@@ -56,14 +57,7 @@ class LookupByCard {
             ORDER BY personNum');
         $result = $dbc->exec_statement($query, array($upc));
 
-        $ret = $this->default_value();
-        while($w = $dbc->fetch_row($result)){
-            $key = $w['CardNo'].'::'.$w['personNum'];
-            $val = $w['CardNo'].' '.$w['LastName'].', '.$w['FirstName'];
-            $ret['results'][$key] = $val;
-        }
-        return $ret;
+        return $this->listToArray($dbc, $result);
     }
 }
 
-?>

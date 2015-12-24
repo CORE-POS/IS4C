@@ -5,6 +5,25 @@
 class PagesTest extends PHPUnit_Framework_TestCase
 {
 
+    public function testLib()
+    {
+        $classes = array('BasicCorePage', 'InputCorePage', 'NoInputCorePage');
+        foreach ($classes as $class) {
+            ob_start();
+            $obj = new $class();
+            $no_draw = ob_get_clean();
+            $this->assertNotEquals(0, strlen($obj->getHeader()));
+            $this->assertNotEquals(0, strlen($obj->getFooter()));
+        }
+
+        ob_start();
+        $obj = new InputCorePage();
+        $no_draw = ob_get_clean();
+        $obj->hide_input(true);
+        $this->assertEquals(true, (false !== strpos($obj->getHeader(), 'type="password"')));
+        $obj->hide_input(false);
+    }
+
     public function testDrawing()
     {
         CoreLocal::set('Debug_Redirects', 1, True);
@@ -44,6 +63,8 @@ class PagesTest extends PHPUnit_Framework_TestCase
                 $this->assertEquals('</ul>',substr($output,-5));
                 $this->assertEquals('Follow redirect', substr($output,0,15));
             }
+
+            $obj->unitTest($this);
         }
     }
 }

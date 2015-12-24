@@ -57,6 +57,37 @@ static public function timeStamp($time) {
     return strftime("%I:%M %p", strtotime($time));
 }
 
+static protected function standardLine($tdate, $lane, $trans, $amt)
+{
+    $timeStamp = self::timeStamp($tdate);
+    $blank = self::standardBlank();
+    $line = "  ".substr($timeStamp . $blank, 0, 13)
+        .substr($lane . $blank, 0, 9)
+        .substr($trans . $blank, 0, 8)
+        .substr($blank . number_format("0", 2), -10)
+        .substr($blank . number_format($row["tender"], 2), -14)
+        ."\n";
+
+    return $line;
 }
 
-?>
+static protected function standardBlank()
+{
+    $blank = "             ";
+    return $blank;
+}
+
+static protected function standardFieldNames()
+{
+    $blank = self::standardBlank();
+    $fieldNames = "  ".substr("Time".$blank, 0, 13)
+            .substr("Lane".$blank, 0, 9)
+            .substr("Trans #".$blank, 0, 12)
+            .substr("Change".$blank, 0, 14)
+            .substr("Amount".$blank, 0, 14)."\n";
+
+    return $fieldNames;
+}
+
+}
+

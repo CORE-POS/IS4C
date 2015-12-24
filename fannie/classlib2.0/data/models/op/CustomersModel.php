@@ -53,6 +53,29 @@ class CustomersModel extends BasicModel
     'modified' => array('type'=>'DATETIME'),
     );
 
+    public function migrateQuery()
+    {
+        return '
+            SELECT c.CardNo AS cardNo,
+                c.personNum AS accountHolder,
+                c.FirstName AS firstName,
+                c.LastName AS lastName, 
+                c.chargeOk AS chargeAllowed,
+                c.writeChecks AS checksAllowed,
+                c.Discount AS discount,
+                c.staff,
+                m.phone,
+                m.email_1 AS email,
+                m.email_2 AS altPhone,
+                CASE WHEN s.memtype2 IS NOT NULL THEN s.memtype2 ELSE c.Type END AS memberStatus,
+                c.SSI AS lowIncomeBenefits,
+                CASE WHEN c.LastChange > m.modified THEN c.LastChange ELSE m.modified END AS modified
+            FROM custdata AS c
+                LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
+                LEFT JOIN suspensions AS s ON c.CardNo=s.cardno
+            WHERE c.CardNo IN (?)';
+    }
+
     /**
       Copy information from existing tables to
       a new customer records. This will NOT
@@ -63,24 +86,7 @@ class CustomersModel extends BasicModel
     public function migrateAccount($card_no)
     {
         $dbc = $this->connection;
-        $query = '
-            SELECT c.personNum,
-                c.FirstName,
-                c.LastName, 
-                c.chargeOk,
-                c.writeChecks,
-                c.Discount,
-                c.staff,
-                m.phone,
-                m.email_1,
-                m.email_2,
-                CASE WHEN s.memtype2 IS NOT NULL THEN s.memtype2 ELSE c.Type END AS memberStatus,
-                c.SSI,
-                CASE WHEN c.LastChange > m.modified THEN c.LastChange ELSE m.modified END AS modified
-            FROM custdata AS c
-                LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
-                LEFT JOIN suspensions AS s ON c.CardNo=s.cardno
-            WHERE c.CardNo=?';
+        $query = $this->migrateQuery();
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, array($card_no));
         if ($res === false || $dbc->numRows($res) == 0) {
@@ -111,18 +117,18 @@ class CustomersModel extends BasicModel
         }
 
         while ($w = $dbc->fetchRow($res)) {
-            $this->firstName($w['FirstName']);
-            $this->lastName($w['LastName']);
-            $this->chargeAllowed($w['chargeOk']);
-            $this->checksAllowed($w['writeChecks']);
-            $this->discount($w['Discount']);
+            $this->firstName($w['firstName']);
+            $this->lastName($w['lastName']);
+            $this->chargeAllowed($w['chargeAllowed']);
+            $this->checksAllowed($w['checksAllowed']);
+            $this->discount($w['discount']);
             $this->staff($w['staff']);
-            $this->lowIncomeBenefits($w['SSI']);
-            if ($w['personNum'] == 1) {
+            $this->lowIncomeBenefits($w['lowIncomeBenefits']);
+            if ($w['accountHolder'] == 1) {
                 $this->accountHolder(1);
                 $this->phone($w['phone']);
-                $this->altPhone($w['email_2']);
-                $this->email($w['email_1']);
+                $this->altPhone($w['altPhone']);
+                $this->email($w['email']);
             } else {
                 $this->accountHolder(0);
                 $this->phone('');
@@ -214,11 +220,18 @@ class CustomersModel extends BasicModel
             $lane_push = true;
         }
 
-        if ($this->record_changed && !$lane_push) {
+        $changed = $this->record_changed;
+        if ($changed && !$lane_push) {
             $this->modified(date('Y-m-d H:i:s'));
         }
+        $saved = parent::save();
 
-        return parent::save();
+        if ($saved && $changed && !$lane_push) {
+            $log = new UpdateCustomerLogModel($this->connection);
+            $log->log($this);
+        }
+
+        return $saved;
     }
 }
 

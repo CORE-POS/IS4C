@@ -26,6 +26,9 @@ class WFCFixup extends PreParser {
     
     function check($str)
     {
+        if (CoreLocal::get('store') !== 'wfc') {
+            return false;
+        }
         $as_upc = str_pad($str, 13, '0', STR_PAD_LEFT);
         if (substr($str,-3) == "QK9"){
             $this->remainder = str_replace("QK9","QM9",$str);
@@ -45,7 +48,7 @@ class WFCFixup extends PreParser {
         } elseif ($as_upc == '0049999900047') {
             $this->remainder = '0049999900048';
             return true;
-        } elseif ($str == 'DP9020') {
+        } elseif ($str == 'FS') {
             $this->remainder = 'WIC';
             return true;
         }

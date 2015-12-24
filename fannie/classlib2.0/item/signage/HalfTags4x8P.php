@@ -124,7 +124,3 @@ class HalfTags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
 
 }
 
-namespace {
-    class HalfTags4x8P extends \COREPOS\Fannie\API\item\signage\HalfTags4x8P {}
-}
-

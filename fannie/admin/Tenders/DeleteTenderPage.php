@@ -26,9 +26,8 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class DeleteTenderPage extends FanniePage 
+class DeleteTenderPage extends FannieRESTfulPage 
 {
-
     protected $title = "Fannie : Tenders";
     protected $header = "Tenders";
     protected $must_authenticate = True;
@@ -37,27 +36,12 @@ class DeleteTenderPage extends FanniePage
     public $description = '[Delete Tender] gets rid of a tender type.';
     public $themed = true;
 
-    private $mode = 'form';
-
-    function preprocess(){
-        $id = FormLib::get_form_value('TenderID',False);
-        if (is_numeric($id))
-            $this->mode = 'results';
-        return True;
-    }
-
-    function body_content(){
-        if ($this->mode == 'form')
-            return $this->form_content();
-        elseif ($this->mode == 'results')
-            return $this->results_content();
-    }
-
-    function results_content(){
+    protected function get_id_view()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $id = FormLib::get_form_value('TenderID');
+        $id = $this->id;
         $tender = new TendersModel($dbc);
         $tender->TenderID($id);
         $tender->delete();
@@ -70,13 +54,14 @@ class DeleteTenderPage extends FanniePage
         return $ret;
     }
     
-    function form_content(){
+    protected function get_view()
+    {
         $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
         $ret = "<div class=\"well\">Be careful. Deleting a tender could make a mess.
             If you run into problems, re-add the tender using
             the same two-character code.</div>";
         $ret .= '<form action="DeleteTenderPage.php" method="post">';
-        $ret .= '<p><select name="TenderID" class="form-control">';
+        $ret .= '<p><select name="id" class="form-control">';
         $ret .= '<option>Select a tender...</option>';
         $tender = new TendersModel($dbc);
         foreach($tender->find('TenderID') as $obj){
@@ -100,7 +85,14 @@ class DeleteTenderPage extends FanniePage
             that has been used in the past may create problems with some
             reports on historical data where that tender was used.</p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->id = 'FOO';
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

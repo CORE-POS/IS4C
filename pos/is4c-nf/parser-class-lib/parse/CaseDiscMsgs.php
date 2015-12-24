@@ -36,7 +36,7 @@ class CaseDiscMsgs extends Parser
     function parse($str)
     {
         $ret = $this->default_json();
-        if ($str == "cdInvalid") {
+        if ($str == "cdinvalid") {
             $ret['output'] = DisplayLib::boxMsg(
                 CoreLocal::get("casediscount") . _("% case discount invalid"),
                 '',

@@ -99,15 +99,15 @@ if (strlen($receiptType) > 0) {
     $email_class = ReceiptLib::emailReceiptMod();
 
     if ($transFinished) {
-        CoreLocal::set("End",0);
         $output = $yesSync;
         UdpComm::udpSend("termReset");
         $sd = MiscLib::scaleObject();
         if (is_object($sd)) {
-            $sd->ReadReset();
+            //$sd->ReadReset();
         }
         CoreLocal::set('ccTermState','swipe');
         uploadAndReset($receiptType);
+        CoreLocal::set("End",0);
     }
 
     // close session so if printer hangs

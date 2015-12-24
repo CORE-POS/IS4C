@@ -37,25 +37,21 @@ class AlaffiaUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     protected $preview_opts = array(
         'upc' => array(
-            'name' => 'upc',
             'display_name' => 'UPC *',
             'default' => 6,
             'required' => true
         ),
         'desc' => array(
-            'name' => 'desc',
             'display_name' => 'Description *',
             'default' => 5,
             'required' => true
         ),
         'sku' => array(
-            'name' => 'sku',
             'display_name' => 'SKU *',
             'default' => 1,
             'required' => true
         ),
         'cost' => array(
-            'name' => 'cost',
             'display_name' => 'Case Cost (Reg) *',
             'default' => 7,
             'required' => true

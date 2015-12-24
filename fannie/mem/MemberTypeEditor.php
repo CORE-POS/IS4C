@@ -438,6 +438,10 @@ class MemberTypeEditor extends FannieRESTfulPage
         $phpunit->assertNotEquals(false, strpos($newpage, "$testID"));
 
         $this->connection->query('DELETE FROM memtype WHERE memtype=' . $testID);
+
+        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
+        $this->errors = 'an error';
+        $phpunit->assertNotEquals(0, strlen($this->post_new_view()));
     }
 }
 

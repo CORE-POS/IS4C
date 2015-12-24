@@ -1300,6 +1300,54 @@ class EditBatchPage extends FannieRESTfulPage
             own clipboard and don\'t interfere with each oter.</p>
             ';
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->id = 1;
+        $this->paste = 1;
+        $phpunit->assertEquals(true, $this->get_id_paste_handler());
+        $phpunit->assertNotEquals(0, strlen($this->get_id_paste_view()));
+
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_id_trim_handler());
+        ob_get_clean();
+
+        $this->upc = '0000000004011';
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_id_upc_swap_handler());
+        ob_get_clean();
+
+        ob_start();
+        $phpunit->assertEquals(false, $this->delete_id_upc_handler());
+        ob_get_clean();
+
+        $this->limit = 1;
+        $phpunit->assertEquals(false, $this->post_id_limit_handler());
+
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_id_unsale_handler());
+        ob_get_clean();
+
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_id_force_handler());
+        ob_get_clean();
+
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_id_autotag_handler());
+        ob_get_clean();
+
+        $this->addUPC = $this->upc;
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_id_addUPC_handler());
+        ob_get_clean();
+
+        $this->addLC = 1;
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_id_addLC_handler());
+        ob_get_clean();
+
+        $phpunit->assertEquals(true, $this->get_id_paste_handler());
+    }
 }
 
 FannieDispatch::conditionalExec();

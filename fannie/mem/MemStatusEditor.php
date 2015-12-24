@@ -33,7 +33,7 @@ class MemStatusEditor extends FanniePage {
     protected $must_authenticate = true;
     protected $auth_classes =  array('editmembers');
 
-    private $cardno;
+    private $cardno = false;
 
     function preprocess()
     {
@@ -291,8 +291,14 @@ class MemStatusEditor extends FanniePage {
             simply clear all the reason checkboxes.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $this->cardno = 1;
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

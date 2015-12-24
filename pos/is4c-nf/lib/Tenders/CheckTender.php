@@ -44,12 +44,12 @@ class CheckTender extends TenderModule
         } elseif (CoreLocal::get("store")=="wfc" && CoreLocal::get("isMember") != 0 && ($this->amount - CoreLocal::get("amtdue") - 0.005) > 0) { 
             // This should really be a separate tender 
             // module for store-specific behavior
-            $db = Database::pDataConnect();
-            $q = sprintf("SELECT card_no FROM custReceiptMessage
+            $dbc = Database::pDataConnect();
+            $query = sprintf("SELECT card_no FROM custReceiptMessage
                 WHERE card_no=%d AND modifier_module='WfcEquityMessage'",
                 CoreLocal::get('memberID'));
-            $r = $db->query($q);
-            if ($db->num_rows($r) > 0) {
+            $res = $dbc->query($query);
+            if ($dbc->num_rows($res) > 0) {
                 return DisplayLib::xboxMsg(
                     _("member check tender cannot exceed total purchase if equity is owed"),
                     $clearButton
@@ -64,9 +64,9 @@ class CheckTender extends TenderModule
                     group by trans_num 
                     having sum(case when trans_subtype='CK' then total else 0 end) < 0 
                     and sum(Case when trans_subtype='CA' then total else 0 end) > 0";
-                $db = Database::mDataConnect();
-                $chkR = $db->query($chkQ);
-                if ($db->num_rows($chkR) > 0) {
+                $dbc = Database::mDataConnect();
+                $chkR = $dbc->query($chkQ);
+                if ($dbc->num_rows($chkR) > 0) {
                     return DisplayLib::xboxMsg(_("already used check over benefit today"), $clearButton);
                 }
             }
@@ -107,37 +107,7 @@ class CheckTender extends TenderModule
 
     public function defaultPrompt()
     {
-        if (CoreLocal::get("enableFranking") != 1) {
-            return parent::defaultPrompt();
-        }
-
-        CoreLocal::set('RepeatAgain', false);
-
-        $ref = trim(CoreLocal::get("CashierNo"))."-"
-            .trim(CoreLocal::get("laneno"))."-"
-            .trim(CoreLocal::get("transno"));
-
-        if ($this->amount === False) {
-            $this->amount = $this->defaultTotal();
-        }
-
-        $msg = "<br />"._("insert")." ".$this->name_string.
-            ' for $'.sprintf('%.2f',$this->amount) . '<br />';
-        if (CoreLocal::get("LastEquityReference") == $ref) {
-            $msg .= "<div style=\"background:#993300;color:#ffffff;
-                margin:3px;padding: 3px;\">
-                There was an equity sale on this transaction. Did it get
-                endorsed yet?</div>";
-        }
-
-        CoreLocal::set("boxMsg",$msg);
-        CoreLocal::set('strEntered', (100*$this->amount).$this->tender_code);
-        CoreLocal::set('boxMsgButtons', array(
-            'Endorse [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
-            'Cancel [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-        ));
-
-        return MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$this->amount;
+        return parent::frankingPrompt();
     }
 
 }

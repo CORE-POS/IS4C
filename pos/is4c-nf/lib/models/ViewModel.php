@@ -116,68 +116,64 @@ class ViewModel extends BasicModel
         );
         echo "==========================================\n";
 
-        if ($db_name == \CoreLocal::get('pDatabase')) {
-            $this->connection = \Database::pDataConnect();
-        } else if ($db_name == \CoreLocal::get('tDatabase')) {
-            $this->connection = \Database::tDataConnect();
-        } else {
+        $this->setConnectionByName($db_name);
+        if (!$this->connection->isConnected($db_name)) {
             echo "Error: Unknown database ($db_name)";
             return false;
         }
 
         if (!$this->connection->table_exists($this->name)) {
-            if ($mode == BasicModel::NORMALIZE_MODE_CHECK) {
-                echo "View {$this->name} not found!\n";
-                echo "==========================================\n";
-                printf("%s view %s\n","Check complete. Need to create", $this->name);
-                echo "==========================================\n\n";
-                return 999;
-            } else if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
-                echo "==========================================\n";
-                if ($doCreate) {
-                    $cResult = $this->create(); 
-                    printf("Update complete. Creation of view %s %s\n",$this->name, ($cResult)?"OK":"failed");
-                    // create succeeded, normalize_lanes enabled
-                    if ($cResult && $this->normalize_lanes && !$this->currently_normalizing_lane) {
-                        $this->normalizeLanes($db_name, $mode, $doCreate);
-                    }
-                } else {
-                    printf("Update complete. Creation of view %s %s\n",$this->name, ($doCreate)?"OK":"not supported");
-                }
-                echo "==========================================\n\n";
-                return true;
-            }
+            return $this->normalizeCreate($mode, $doCreate);
         } elseif (!$this->connection->isView($this->name)) {
-            if ($mode == BasicModel::NORMALIZE_MODE_CHECK) {
-                echo "Table {$this->name} should be a view!\n";
-                echo "==========================================\n";
-                printf("%s view %s\n","Check complete. Need to drop and re-create", $this->name);
-                echo "==========================================\n\n";
-                return 999;
-            } else if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
-                echo "==========================================\n";
-                if ($doCreate) {
-                    $cResult = $this->delete();
-                    if ($cResult) {
-                        $cResult = $this->create(); 
-                    }
-                    printf("Update complete. Creation of view %s %s\n",$this->name, ($cResult)?"OK":"failed");
-                    // create succeeded, normalize_lanes enabled
-                    if ($cResult && $this->normalize_lanes && !$this->currently_normalizing_lane) {
-                        $this->normalizeLanes($db_name, $mode, $doCreate);
-                    }
-                } else {
-                    printf("Update complete. Creation of view %s %s\n",$this->name, ($doCreate)?"OK":"not supported");
-                }
-                echo "==========================================\n\n";
-                return true;
-            }
+            return $this->normalizeTableToView($mode, $doCrate);
         }
 
         return 0;
     }
 
-    /* START ACCESSOR FUNCTIONS */
-    /* END ACCESSOR FUNCTIONS */
+    protected function normalizeCreate($mode, $doCreate)
+    {
+        if ($mode == BasicModel::NORMALIZE_MODE_CHECK) {
+            echo "View {$this->name} not found!\n";
+            echo "==========================================\n";
+            printf("%s view %s\n","Check complete. Need to create", $this->name);
+            echo "==========================================\n\n";
+            return 999;
+        } elseif ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
+            echo "==========================================\n";
+            if ($doCreate) {
+                $cResult = $this->create(); 
+                printf("Update complete. Creation of view %s %s\n",$this->name, ($cResult)?"OK":"failed");
+            } else {
+                printf("Update complete. Creation of view %s %s\n",$this->name, ($doCreate)?"OK":"not supported");
+            }
+            echo "==========================================\n\n";
+            return true;
+        }
+    }
+
+    protected function normalizeTableToView($mode, $doCreate)
+    {
+        if ($mode == BasicModel::NORMALIZE_MODE_CHECK) {
+            echo "Table {$this->name} should be a view!\n";
+            echo "==========================================\n";
+            printf("%s view %s\n","Check complete. Need to drop and re-create", $this->name);
+            echo "==========================================\n\n";
+            return 999;
+        } else if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
+            echo "==========================================\n";
+            if ($doCreate) {
+                $cResult = $this->delete();
+                if ($cResult) {
+                    $cResult = $this->create(); 
+                }
+                printf("Update complete. Creation of view %s %s\n",$this->name, ($cResult)?"OK":"failed");
+            } else {
+                printf("Update complete. Creation of view %s %s\n",$this->name, ($doCreate)?"OK":"not supported");
+            }
+            echo "==========================================\n\n";
+            return true;
+        }
+    }
 }
 

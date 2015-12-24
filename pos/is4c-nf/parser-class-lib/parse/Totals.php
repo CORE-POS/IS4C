@@ -43,24 +43,21 @@ class Totals extends Parser {
         $ret = $this->default_json();
         if ($str == "FNTL"){
             $ret['main_frame'] = MiscLib::base_url().'gui-modules/fsTotalConfirm.php';
-        }
-        elseif ($str == "TETL"){
+        } elseif ($str == "TETL"){
             $ret['main_frame'] = MiscLib::base_url().'gui-modules/requestInfo.php?class=Totals';
-        }
-        elseif ($str == "FTTL")
-            PrehLib::finalttl();
-        elseif ($str == "TL"){
+        } elseif ($str == "FTTL") {
+            $this->finalttl();
+        } elseif ($str == "TL"){
             CoreLocal::set('End', 0);
             $chk = PrehLib::ttl();
             if ($chk !== True)
                 $ret['main_frame'] = $chk;
-        }
-        elseif ($str == "MTL"){
+        } elseif ($str == "MTL") {
             $chk = PrehLib::omtr_ttl();
             if ($chk !== True)
                 $ret['main_frame'] = $chk;
         } elseif ($str == "WICTL") {
-            $ttl = PrehLib::wicableTotal();
+            $ttl = $this->wicableTotal();
             $ret['output'] = DisplayLib::boxMsg(
                 _('WIC Total') . sprintf(': $%.2f', $ttl), 
                 '', 
@@ -115,6 +112,80 @@ class Totals extends Parser {
             </tr>
             </table>";
     }
+
+    /**
+      Calculate WIC eligible total
+      @return [number] WIC eligible items total
+    */
+    private function wicableTotal()
+    {
+        $dbc = Database::tDataConnect();
+        $products = CoreLocal::get('pDatabase') . $dbc->sep() . 'products';
+
+        $query = '
+            SELECT SUM(total) AS wicableTotal
+            FROM localtemptrans AS t
+                INNER JOIN ' . $products . ' AS p ON t.upc=p.upc
+            WHERE t.trans_type = \'I\'
+                AND p.wicable = 1
+        ';
+
+        $result = $dbc->query($query);
+        if (!$result || $dbc->num_rows($result) == 0) {
+            return 0.00;
+        } else {
+            $row = $dbc->fetch_row($result);
+            
+            return $row['wicableTotal'];
+        }
+    }
+
+    /**
+      Add tax and transaction discount records.
+      This is called at the end of a transaction.
+      There's probably no other place where calling
+      this function is appropriate.
+    */
+    private function finalttl() 
+    {
+        if (CoreLocal::get("percentDiscount") > 0) {
+            TransRecord::addRecord(array(
+                'description' => 'Discount',
+                'trans_type' => 'C',
+                'trans_status' => 'D',
+                'unitPrice' => MiscLib::truncate2(-1 * CoreLocal::get('transDiscount')),
+                'voided' => 5,
+            ));
+        }
+
+        TransRecord::addRecord(array(
+            'upc' => 'Subtotal',
+            'description' => 'Subtotal',
+            'trans_type' => 'C',
+            'trans_status' => 'D',
+            'unitPrice' => MiscLib::truncate2(CoreLocal::get('taxTotal') - CoreLocal::get('fsTaxExempt')),
+            'voided' => 11,
+        ));
+
+        if (CoreLocal::get("fsTaxExempt")  != 0) {
+            TransRecord::addRecord(array(
+                'upc' => 'Tax',
+                'description' => 'FS Taxable',
+                'trans_type' => 'C',
+                'trans_status' => 'D',
+                'unitPrice' => MiscLib::truncate2(CoreLocal::get('fsTaxExempt')),
+                'voided' => 7,
+            ));
+        }
+
+        TransRecord::addRecord(array(
+            'upc' => 'Total',
+            'description' => 'Total',
+            'trans_type' => 'C',
+            'trans_status' => 'D',
+            'unitPrice' => MiscLib::truncate2(CoreLocal::get('amtdue')),
+            'voided' => 11,
+        ));
+    }
 }
 
-?>

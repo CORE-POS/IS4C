@@ -48,12 +48,35 @@ class OrderGenTask extends FannieTask
         $this->vendors = $v;
     }
 
+    private function freshenCache($dbc)
+    {
+        $items = $dbc->query('
+            SELECT i.upc,
+                i.storeID,
+                i.count,
+                i.countDate
+            FROM InventoryCounts AS i
+                LEFT JOIN InventoryCache AS c ON i.upc=c.upc AND i.storeID=c.storeID
+            WHERE i.mostRecent=1
+                AND c.upc IS NULL'); 
+        $ins = $dbc->prepare('
+            INSERT INTO InventoryCache
+                (upc, storeID, cacheStart, cacheEnd, baseCount, ordered, sold, shrunk, onHand)
+            VALUES (?, ?, ?, ?, ?, 0, 0, 0, ?)');
+        while ($row = $dbc->fetchRow($items)) {
+            $args = array($row['upc'], $row['storeID'], $row['countDate'], $row['countDate'], $row['count'], $row['count']);
+            $dbc->execute($ins, $args);
+        }
+    }
+
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $curP = $dbc->prepare('SELECT onHand,cacheEnd FROM InventoryCache WHERE upc=? AND storeID=? AND baseCount > 0');
+        $this->freshenCache($dbc);
+        $curP = $dbc->prepare('SELECT onHand,cacheEnd FROM InventoryCache WHERE upc=? AND storeID=? AND baseCount >= 0');
         $catalogP = $dbc->prepare('SELECT * FROM vendorItems WHERE upc=? AND vendorID=?');
         $costP = $dbc->prepare('SELECT cost FROM products WHERE upc=? AND store_id=?');
+        $prodP = $dbc->prepare('SELECT * FROM products WHERE upc=? AND store_id=?');
         $dtP = $dbc->prepare('
             SELECT ' . DTrans::sumQuantity() . '
             FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'dlog
@@ -99,9 +122,32 @@ class OrderGenTask extends FannieTask
                     $orders[$row['vid']] = $poID;
                 }
                 $itemR = $dbc->getRow($catalogP, array($row['upc'], $row['vid']));
+
+                // If the item is a breakdown, get its source package
+                // and multiply the case size to reflect total brokendown units
+                $bdInfo = COREPOS\Fannie\API\item\InventoryLib::isBreakdown($dbc, $row['upc']);
+                if ($bdInfo) {
+                    $itemR2 = $dbc->getRow($catalogP, array($bdInfo['upc'], $row['vid']));
+                    if ($itemR2) {
+                        $itemR = $itemR2;
+                        $itemR['units'] *= $bdInfo['units'];
+                    }
+                }
+
                 // no catalog entry to create an order
                 if ($itemR === false || $itemR['units'] <= 0) {
-                    continue;
+                    $itemR['sku'] = $row['upc'];
+                    $prodW = $dbc->getRow($prodP, array($row['upc'], $row['storeID']));
+                    if ($prodW === false) {
+                        continue;
+                    } else {
+                        $itemR['brand'] = $prodW['brand'];
+                        $itemR['description'] = $prodW['description'];
+                        $itemR['cost'] = $prodW['cost'];
+                        $itemR['saleCost'] = 0;
+                        $itemR['size'] = $prodW['size'];
+                        $itemR['units'] = 1;
+                    }
                 }
 
                 /**

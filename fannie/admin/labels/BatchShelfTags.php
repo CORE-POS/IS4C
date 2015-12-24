@@ -110,6 +110,11 @@ class BatchShelfTags extends FanniePage {
             the sheet blank. This is intended for re-using partial sheets.</p>
             ';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
 FannieDispatch::conditionalExec();

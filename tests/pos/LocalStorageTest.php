@@ -60,7 +60,19 @@ class LocalStorageTest extends PHPUnit_Framework_TestCase
             $this->assertInternalType('boolean',$isNot);
             $this->assertEquals(True,$is);
             $this->assertEquals(False,$isNot);
+
+            foreach ($obj as $key => $val) {
+                // is iterable
+            }
         }
 
+    }
+
+    public function testCoreLocal()
+    {
+        CoreLocal::refresh();
+        CoreLocal::migrateSettings();
+        $json = CoreLocal::convertIniPhpToJson();
+        $this->assertInternalType('array', json_decode($json, true));
     }
 }

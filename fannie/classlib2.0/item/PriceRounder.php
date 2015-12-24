@@ -107,7 +107,6 @@ class PriceRounder
       This is just an example of what a more complex rounding
       scheme might look like. Nothing should be calling this 
       method. 
-    */
     private function example($price, $extra_parameters=array())
     {
         // operate in cents
@@ -146,6 +145,7 @@ class PriceRounder
             return round($prev/100.00, 2);
         }
     }
+    */
 }
 
 }

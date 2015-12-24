@@ -26,8 +26,8 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class CashierIndexPage extends FanniePage {
-
+class CashierIndexPage extends FanniePage 
+{
     protected $title = "Fannie : Cashier Management";
     protected $header = "Cashier Management";
     protected $must_authenticate = True;
@@ -53,8 +53,12 @@ class CashierIndexPage extends FanniePage {
         return '<p>Tools for managing cashier accounts used to log
             into the lanes.</p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

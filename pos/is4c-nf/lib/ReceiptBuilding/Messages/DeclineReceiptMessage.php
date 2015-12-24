@@ -53,7 +53,7 @@ class DeclineReceiptMessage extends ReceiptMessage
     public function standalone_receipt($ref, $reprint=false)
     {
         $date = ReceiptLib::build_time(time());
-        list($emp,$reg,$trans) = explode('-', $ref);
+        list($emp, $reg, $trans) = ReceiptLib::parseRef($ref);
         $sort = 'asc';
 
         $db = Database::tDataConnect();

@@ -28,6 +28,8 @@ class ModelsTest extends PHPUnit_Framework_TestCase
                 $obj->$column_name($val);
                 $this->assertEquals($val, $obj->$column_name(), 'Get/set busted for ' . $model_class . ' :: ' . $column_name);
             }
+
+            $this->assertInternalType('string', $obj->doc());
         }
     }
 

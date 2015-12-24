@@ -434,6 +434,11 @@ class PIMemberPage extends PIKillerPage {
         echo '</tr>';
 
         echo "</table>";
+        if (FormLib::get('edit', false) !== false) {
+            $this->addScript('edit.js');
+            $this->addOnloadCommand("\$('input').keydown(piJS.nosubmit);\n");
+            $this->addOnloadCommand("\$('input[name=FirstName]').focus();\n");
+        }
         return ob_get_clean();
     }
 

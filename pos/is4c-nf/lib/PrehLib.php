@@ -114,9 +114,10 @@ static public function memberID($member_number)
   @param $row a record from custdata
   @param $chargeOk whether member can store-charge purchases
 */
-static public function setAltMemMsg($store, $member, $personNumber, $row, $chargeOk) 
+static public function setAltMemMsg($store, $member, $personNumber, $row)
 {
     if ($store == 'WEFC_Toronto') {
+        $chargeOk = self::chargeOk();
     /* Doesn't quite allow for StoreCharge/PrePay for regular members
      * either instead of or in addition to CoopCred
      */
@@ -352,7 +353,7 @@ static public function setMember($member, $personNumber, $row=array())
     }
 
     CoreLocal::set("memMsg", self::defaultMemMsg($member, $row));
-    self::setAltMemMsg(CoreLocal::get("store"), $member, $personNumber, $row, $chargeOk);
+    self::setAltMemMsg(CoreLocal::get("store"), $member, $personNumber, $row);
 
     /**
       Set member number and attributes
@@ -442,59 +443,6 @@ static public function checkUnpaidAR($cardno)
 static public function check_unpaid_ar($cardno)
 {
     return self::checkUnpaidAR($cardno);
-}
-
-/**
-  Check if an item is voided or a refund
-  @param $num item trans_id in localtemptrans
-  @return array of status information with keys:
-   - voided (int)
-   - scaleprice (numeric)
-   - discountable (int)
-   - discounttype (int)
-   - caseprice (numeric)
-   - refund (boolean)
-   - status (string)
-*/
-static public function checkstatus($num) 
-{
-    $ret = array(
-        'voided' => 0,
-        'scaleprice' => 0,
-        'discountable' => 0,
-        'discounttype' => 0,
-        'caseprice' => 0,
-        'refund' => false,
-        'status' => ''
-    );
-
-    $query = "select voided,unitPrice,discountable,
-        discounttype,trans_status
-        from localtemptrans where trans_id = ".((int)$num);
-
-    $dbc = Database::tDataConnect();
-    $result = $dbc->query($query);
-
-    if ($result && $dbc->numRows($result) > 0) {
-        $row = $dbc->fetch_array($result);
-
-        $ret['voided'] = $row['voided'];
-        $ret['scaleprice'] = $row['unitPrice'];
-        $ret['discountable'] = $row['discountable'];
-        $ret['discounttype'] = $row['discounttype'];
-        $ret['caseprice'] = $row['unitPrice'];
-
-        if ($row["trans_status"] == "V") {
-            $ret['status'] = 'V';
-        } elseif ($row["trans_status"] == "R") {
-            CoreLocal::set("refund",1);
-            CoreLocal::set("autoReprint",1);
-            $ret['status'] = 'R';
-            $ret['refund'] = true;
-        }
-    }
-    
-    return $ret;
 }
 
 static private function getTenderMods($right)
@@ -602,6 +550,8 @@ static public function tender($right, $strl)
 private static function tenderEndsTransaction($tender_object, $ret)
 {
     CoreLocal::set("change",-1 * CoreLocal::get("amtdue"));
+    CoreLocal::set('strEntered', '');
+    CoreLocal::set('msgrepeat', 0);
     $cash_return = CoreLocal::get("change");
     TransRecord::addchange($cash_return, $tender_object->ChangeType(), $tender_object->ChangeMsg());
                 
@@ -1190,33 +1140,6 @@ static public function omtr_ttl()
 }
 
 /**
-  Calculate WIC eligible total
-  @return [number] WIC eligible items total
-*/
-static public function wicableTotal()
-{
-    $dbc = Database::tDataConnect();
-    $products = CoreLocal::get('pDatabase') . $dbc->sep() . 'products';
-
-    $query = '
-        SELECT SUM(total) AS wicableTotal
-        FROM localtemptrans AS t
-            INNER JOIN ' . $products . ' AS p ON t.upc=p.upc
-        WHERE t.trans_type = \'I\'
-            AND p.wicable = 1
-    ';
-
-    $result = $dbc->query($query);
-    if (!$result || $dbc->num_rows($result) == 0) {
-        return 0.00;
-    } else {
-        $row = $dbc->fetch_row($result);
-        
-        return $row['wicableTotal'];
-    }
-}
-
-/**
   See what the last item in the transaction is currently
   @param $full_record [boolean] return full database record.
     Default is false. Just returns description.
@@ -1241,55 +1164,6 @@ static public function peekItem($full_record=false, $transID=false)
     } else {
         return isset($row['description']) ? $row['description'] : false;
     }
-}
-
-/**
-  Add tax and transaction discount records.
-  This is called at the end of a transaction.
-  There's probably no other place where calling
-  this function is appropriate.
-*/
-static public function finalttl() 
-{
-    if (CoreLocal::get("percentDiscount") > 0) {
-        TransRecord::addRecord(array(
-            'description' => 'Discount',
-            'trans_type' => 'C',
-            'trans_status' => 'D',
-            'unitPrice' => MiscLib::truncate2(-1 * CoreLocal::get('transDiscount')),
-            'voided' => 5,
-        ));
-    }
-
-    TransRecord::addRecord(array(
-        'upc' => 'Subtotal',
-        'description' => 'Subtotal',
-        'trans_type' => 'C',
-        'trans_status' => 'D',
-        'unitPrice' => MiscLib::truncate2(CoreLocal::get('taxTotal') - CoreLocal::get('fsTaxExempt')),
-        'voided' => 11,
-    ));
-
-
-    if (CoreLocal::get("fsTaxExempt")  != 0) {
-        TransRecord::addRecord(array(
-            'upc' => 'Tax',
-            'description' => 'FS Taxable',
-            'trans_type' => 'C',
-            'trans_status' => 'D',
-            'unitPrice' => MiscLib::truncate2(CoreLocal::get('fsTaxExempt')),
-            'voided' => 7,
-        ));
-    }
-
-    TransRecord::addRecord(array(
-        'upc' => 'Total',
-        'description' => 'Total',
-        'trans_type' => 'C',
-        'trans_status' => 'D',
-        'unitPrice' => MiscLib::truncate2(CoreLocal::get('amtdue')),
-        'voided' => 11,
-    ));
 }
 
 /**

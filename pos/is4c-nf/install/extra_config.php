@@ -1,12 +1,13 @@
-<!DOCTYPE html>
-<html>
 <?php
+use COREPOS\pos\lib\FormLib;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 include('../ini.php');
 CoreState::loadParams();
 include('InstallUtilities.php');
 ?>
+<!DOCTYPE html>
+<html>
 <head>
 <title>IT CORE Lane Installation: Additional Configuration</title>
 <link rel="stylesheet" href="../css/toggle-switch.css" type="text/css" />
@@ -128,15 +129,15 @@ include('InstallUtilities.php');
 </td><td><?php
 // If values entered on the form are being saved, set session variable
 //  and flag type of port choice: "other" or not.
-if (isset($_REQUEST['PPORT'])) {
-    if ($_REQUEST['PPORT'] == 'other' &&
-        isset($_REQUEST['otherpport']) &&
-        $_REQUEST['otherpport'] != '') {
-        CoreLocal::set('printerPort',trim($_REQUEST['otherpport']));
+if (FormLib::get('PPORT',false) !== false) {
+    $PPORT = FormLib::get('PPORT');
+    $otherport = FormLib::get('otherport', false);
+    if ($PPORT === 'other' && $otherport !== false) {
+        CoreLocal::set('printerPort',trim($otherpport));
         $otherpport = True;
-        $otherpportValue = trim($_REQUEST['otherpport']);
+        $otherpportValue = trim($otherpport);
     } else {
-        CoreLocal::set('printerPort',$_REQUEST['PPORT']);
+        CoreLocal::set('printerPort',$PPORT);
         $otherpport = False;
         $otherpportValue = "";
     }
@@ -248,7 +249,7 @@ $footer_mods = array();
 $current_mods = CoreLocal::get("FooterModules");
 // replace w/ form post if needed
 // fill in defaults if missing
-if (isset($_REQUEST['FOOTER_MODS'])) $current_mods = $_REQUEST['FOOTER_MODS'];
+if (is_array(FormLib::get('FOOTER_MODS'))) $current_mods = FormLib::get('FOOTER_MODS');
 elseif(!is_array($current_mods) || count($current_mods) != 5){
     $current_mods = array(
     'SavedOrCouldHave',
@@ -369,7 +370,7 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
 </tr>
 <tr><td>
 <b>Tender Mapping</b>:<br />
-<p>Map custom tenders to IS4Cs expected tenders Tender Rpt. column: Include the checked tenders 
+<p>Map custom tenders to CORE's expected tenders Tender Rpt. column: Include the checked tenders 
     in the Tender Report (available via Mgrs. Menu [MG])</p></td><td>
 <?php
 $settings = CoreLocal::get("TenderMap");
@@ -384,9 +385,9 @@ if (isset($tender_table['TenderModule'])) {
     $settings = $model->getMap();
 }
 if (!is_array($settings)) $settings = array();
-if (isset($_REQUEST['TenderMapping'])){
+if (is_array(FormLib::get('TenderMapping'))) {
     $settings = array();
-    foreach ($_REQUEST['TenderMapping'] as $tm) {
+    foreach (FormLib::get('TenderMapping') as $tm) {
         if ($tm=="") {
             continue;
         }
@@ -430,10 +431,10 @@ $mods = AutoLoader::listModules('TenderModule');
 //  Tender Report: Desired tenders column
 $settings2 = CoreLocal::get("TRDesiredTenders");
 if (!is_array($settings2)) $settings2 = array();
-if (isset($_REQUEST['TR_LIST'])){
+if (is_array(FormLib::get('TR_LIST'))) {
     $saveStr2 = "array(";
     $settings2 = array();
-    foreach($_REQUEST['TR_LIST'] as $dt){
+    foreach(FormLib::get('TR_LIST') as $dt){
         if($dt=="") continue;
         list($code2,$name2) = explode(":",$dt);
         $settings2[$code2] = $name2;

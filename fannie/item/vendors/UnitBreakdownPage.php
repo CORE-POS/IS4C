@@ -61,16 +61,15 @@ class UnitBreakdownPage extends FannieRESTfulPage
                 continue;
             }
             $split_factor = false;
-            $unit_size = '';
-            if (preg_match('/^\d+$/', $original->size())) {
-                $split_factor = $original->size();
-            } elseif (preg_match('/(\d+)\s*\\/\s*(.+)/', $original->size(), $matches)) {
-                $split_factor = $matches[1];
-                $unit_size = $matches[2];
-            } elseif (preg_match('/(\d+)\s*CT/', $original->size(), $matches)) {
-                $split_factor = $matches[1];
-            } elseif (preg_match('/(\d+)\s*PKT/', $original->size(), $matches)) {
-                $split_factor = $matches[1];
+            if ($obj->units() == 1 || $obj->units() == null) {
+                list($split_factor, $unit_size) = $obj->getSplit($original->size());
+                if ($split_factor) {
+                    $obj->units($split_factor);
+                    $obj->save();
+                }
+            } else {
+                $split_factor = $obj->units();
+                $unit_size = '';
             }
             if (!$split_factor) {
                 $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Vendor SKU #" . $original->size() . " cannot be broken down');\n");
@@ -83,7 +82,9 @@ class UnitBreakdownPage extends FannieRESTfulPage
             $original->sku($obj->upc());
             $original->upc($obj->upc());
             $original->units(1);
-            $original->size($unit_size);
+            if ($unit_size != '') {
+                $original->size($unit_size);
+            }
             $original->cost($original->cost() / $split_factor);
             $original->saleCost($original->saleCost() / $split_factor);
             if ($original->save()) {
@@ -258,7 +259,7 @@ class UnitBreakdownPage extends FannieRESTfulPage
                 $row['vendorDescript'],
                 $row['storeDescript'],
                 $this->id, $row['sku'], $row['upc'],
-                $row['upc'], FannieUI::deleteIcon()
+                $row['upc'], COREPOS\Fannie\API\lib\FannieUI::deleteIcon()
             );
 
         }
@@ -292,6 +293,15 @@ class UnitBreakdownPage extends FannieRESTfulPage
             and calculate their costs based on the original
             items\' unit size.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $this->id = 1;
+        $phpunit->assertNotEquals(0, strlen($this->delete_id_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_id_sku_plu_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_id_break_view()));
+        $phpunit->assertNotEquals(0, strlen($this->css_content()));
     }
 }
 

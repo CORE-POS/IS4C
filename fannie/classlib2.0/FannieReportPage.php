@@ -609,7 +609,9 @@ class FannieReportPage extends FanniePage
     */
     public function fetch_report_data()
     {
-        return array();
+        return array(
+            array('2000-01-01', '1-1-1', '1234567890123', 'Sample Data'),
+        );
     }
 
     /**
@@ -821,8 +823,10 @@ class FannieReportPage extends FanniePage
                 }
                 break;
             case 'csv':
-                header('Content-Type: application/ms-excel');
-                header('Content-Disposition: attachment; filename="'.$this->header.'.csv"');
+                if (!headers_sent()) {
+                    header('Content-Type: application/ms-excel');
+                    header('Content-Disposition: attachment; filename="'.$this->header.'.csv"');
+                }
                 foreach($this->report_end_content() as $line) {
                     $ret .= $this->csvLine(array(strip_tags($line)));
                 }
@@ -1251,9 +1255,18 @@ class FannieReportPage extends FanniePage
     // drawPage()
     }
 
-    function draw_page ()
+    function draw_page()
     {
         $this->drawPage();
+    }
+
+    public function baseUnitTest($phpunit)
+    {
+        $this->bodyContent();
+        foreach (array('html', 'csv') as $format) {
+            $this->report_format = $format;
+            $phpunit->assertNotEquals(0, strlen($this->report_content()));
+        }
     }
 
 }

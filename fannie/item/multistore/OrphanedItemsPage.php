@@ -131,6 +131,11 @@ class OrphanedItemsPage extends FannieRESTfulPage
             store and assign them to a store.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

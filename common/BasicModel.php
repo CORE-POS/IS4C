@@ -75,6 +75,7 @@ class BasicModel
     protected $meta_types = array(
         'MONEY' => array('default'=>'DECIMAL(10,2)','mssql'=>'MONEY'),
         'BIGINT UNSIGNED' => array('default'=>'BIGINT UNSIGNED', 'mssql'=>'BIGINT'),
+        'REAL' => array('default'=>'DOUBLE'),
     );
 
     /**
@@ -837,6 +838,11 @@ class BasicModel
             $this->setConnectionByName($db_name);
         }    
 
+        if (!$this->connection->isConnected($db_name)) {
+            echo "Error: Unknown database ($db_name)\n";
+            return false;
+        }
+
         echo "==========================================\n";
         printf("%s table %s\n", 
             ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Checking":"Updating", 
@@ -1029,7 +1035,7 @@ class BasicModel
                             ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to change":"Changing", 
                             $col_name, $current[$col_name]['type'], $type);
                     $rebuild = true;
-                } else if (isset($this->columns[$col_name]['default']) && $this->columns[$col_name]['default'] != $current[$col_name]['default']) {
+                } else if (isset($this->columns[$col_name]['default']) && trim($this->columns[$col_name]['default'],"'") != $current[$col_name]['default']) {
                     printf("%s column %s default value from %s to %s\n", 
                             ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to change":"Changing", 
                             $col_name, $current[$col_name]['default'], $this->columns[$col_name]['default']);

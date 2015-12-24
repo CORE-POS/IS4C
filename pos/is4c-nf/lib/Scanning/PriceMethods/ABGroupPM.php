@@ -78,14 +78,14 @@ class ABGroupPM extends PriceMethod
 
         // lookup existing qualifiers (i.e., item As)
         // by-weight items are rounded down here
-        $q1 = "SELECT floor(sum(ItemQtty)),max(department) 
+        $qualQ = "SELECT floor(sum(ItemQtty)),max(department) 
             FROM localtemptrans WHERE mixMatch='$qualMM' 
             and trans_status <> 'R'";
-        $r1 = $dbt->query($q1);
+        $qualR = $dbt->query($qualQ);
         $quals = 0;
         $dept1 = 0;
-        if($dbt->num_rows($r1)>0){
-            $rowq = $dbt->fetch_row($r1);
+        if($dbt->num_rows($qualR)>0){
+            $rowq = $dbt->fetch_row($qualR);
             $quals = round($rowq[0]);
             $dept1 = $rowq[1];    
         }
@@ -95,18 +95,18 @@ class ABGroupPM extends PriceMethod
         //
         // extra checks to make sure the maximum
         // discount on scale items is "free"
-        $q2 = "SELECT sum(CASE WHEN scale=0 THEN ItemQtty ELSE 1 END),
+        $discQ = "SELECT sum(CASE WHEN scale=0 THEN ItemQtty ELSE 1 END),
             max(department),max(scale),max(total),max(quantity) FROM localtemptrans 
             WHERE mixMatch='$discMM' 
             and trans_status <> 'R'";
-        $r2 = $dbt->query($q2);
+        $discR = $dbt->query($discQ);
         $dept2 = 0;
         $discs = 0;
         $discountIsScale = false;
         $discountScaleQty = 0;
         $scaleDiscMax = 0;
-        if($dbt->num_rows($r2)>0){
-            $rowd = $dbt->fetch_row($r2);
+        if($dbt->num_rows($discR)>0){
+            $rowd = $dbt->fetch_row($discR);
             $discs = round($rowd[0]);
             $dept2 = $rowd[1];
             if ($rowd[2]==1) $discountIsScale = true;
@@ -120,13 +120,13 @@ class ABGroupPM extends PriceMethod
         }
 
         // items that have already been used in an AB set
-        $q3 = "SELECT sum(matched) FROM localtemptrans WHERE
+        $matchQ = "SELECT sum(matched) FROM localtemptrans WHERE
             mixmatch IN ('$qualMM','$discMM')";
-        $r3 = $dbt->query($q3);
+        $matchR = $dbt->query($matchQ);
         $matches = 0;
-        if ($r3 && $dbt->num_rows($r3) > 0) {
-            $w3 = $dbt->fetch_row($r3);
-            $matches = $w3[0];
+        if ($matchR && $dbt->num_rows($matchR) > 0) {
+            $matchW = $dbt->fetch_row($matchR);
+            $matches = $matchW[0];
         }
 
         // reduce totals by existing matches

@@ -54,9 +54,23 @@ class posCustDisplay extends BasicCorePage
         echo '</div>';
 
     } // END body_content() FUNCTION
+
+    public function unitTest($phpunit)
+    {
+        ob_start();
+        CoreLocal::set('plainmsg', 'foo');
+        $this->body_content();
+        $body = ob_get_clean();
+        $phpunit->assertNotEquals(0, strlen($body));
+        ob_start();
+        CoreLocal::set('plainmsg', '');
+        CoreLocal::set('End', 1);
+        $this->body_content();
+        $body = ob_get_clean();
+        $phpunit->assertNotEquals(0, strlen($body));
+        CoreLocal::set('End', 0);
+    }
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-    new posCustDisplay();
-}
+AutoLoader::dispatch();
 

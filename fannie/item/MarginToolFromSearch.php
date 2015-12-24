@@ -89,7 +89,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
             echo "0";
         } else {
             $row = $dbc->fetch_row($result);
-            echo sprintf('%.4f', ($row['totalPrice'] - $row['totalCost']) / $row['totalPrice'] * 100);
+            echo sprintf('%.4f', $row['totalPrice']==0 ? 0 : ($row['totalPrice'] - $row['totalCost']) / $row['totalPrice'] * 100);
         }
 
         return false;
@@ -657,6 +657,40 @@ function reCalc(upc, price, cost, deptID, superID) {
             item will impact overal margin at a department
             or super department level.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
+        $this->u = 'foo';
+        $phpunit->assertEquals(false, $this->post_u_handler());
+        $this->u = '4011';
+        $phpunit->assertEquals(true, $this->post_u_handler());
+        $phpunit->assertNotEquals(0, strlen($this->post_u_view()));
+
+        $this->upc = '0000000004011';
+        $this->deptID = 1;
+        $this->newprice = 1;
+        ob_start();
+        $phpunit->assertEquals(false, $this->get_upc_deptID_newprice_handler());
+        ob_get_clean();
+
+        $this->upcs = '["' . $this->upc . '"]';
+        $this->newprices = '["' . $this->newprice . '"]';
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_upcs_deptID_newprices_handler());
+        ob_get_clean();
+
+        $this->superID = 1;
+        ob_start();
+        $phpunit->assertEquals(false, $this->get_upc_superID_newprice_handler());
+        ob_get_clean();
+
+        $this->upcs = '["' . $this->upc . '"]';
+        $this->newprices = '["' . $this->newprice . '"]';
+        ob_start();
+        $phpunit->assertEquals(false, $this->post_upcs_superID_newprices_handler());
+        ob_get_clean();
     }
 }
 

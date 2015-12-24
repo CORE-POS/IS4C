@@ -114,7 +114,7 @@ class AdvancedBatchEditor extends FannieRESTfulPage
                 $item->groupSalePrice($item->salePrice());
             }
             $prod = $dbc->getRow($prodP, array($item->upc()));
-            $ret .= $this->printRow($item);
+            $ret .= $this->printRow($item, $prod);
         }
         $ret .= '</tbody></table>
             <p>
@@ -128,7 +128,7 @@ class AdvancedBatchEditor extends FannieRESTfulPage
         return $ret;
     }
 
-    private function printRow($item)
+    private function printRow($item, $prod)
     {
         return sprintf('
             <tr>
@@ -173,6 +173,13 @@ class AdvancedBatchEditor extends FannieRESTfulPage
 </form>
 HTML;
 
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->id = 1;
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
     }
 }
 

@@ -39,16 +39,17 @@ class PatronageCheckNumbersUploadPage extends \COREPOS\Fannie\API\FannieUploadPa
 
     protected $preview_opts = array(
         'check_no' => array(
-            'name' => 'check_no',
             'display_name' => 'Check Number',
             'default' => 0,
             'required' => true
         ),
         'tdate' => array(
-            'name' => 'tdate',
             'display_name' => 'Date',
             'default' => 1,
-            'required' => false
+        ),
+        'amount' => array(
+            'display_name' => 'Cashed Amount',
+            'default' => 2,
         ),
     );
 
@@ -61,6 +62,7 @@ class PatronageCheckNumbersUploadPage extends \COREPOS\Fannie\API\FannieUploadPa
 
         $cn_index = $this->get_column_index('check_no');
         $td_index = $this->get_column_index('tdate');
+        $amt_index = $this->get_column_index('amount');
 
         $p = new PatronageModel($dbc);
         foreach ($linedata as $line) {
@@ -101,6 +103,13 @@ class PatronageCheckNumbersUploadPage extends \COREPOS\Fannie\API\FannieUploadPa
                         $this->stats['errors'][] = $dbc->error();
                     }
                 }
+
+                if ($amt_index && $line[$amt_index] && $line[$amt_index] != $obj->cash_pat()) {
+                    $this->stats['errors'][] = 'Check #' . $check_no
+                        . ' member #' . $obj->cardno() 
+                        . ' issued for ' . $obj->cash_pat()
+                        . ' and cashed for ' . $line[$amt_index];
+                }
             }
         }
 
@@ -118,20 +127,16 @@ class PatronageCheckNumbersUploadPage extends \COREPOS\Fannie\API\FannieUploadPa
 
     function results_content()
     {
-        $ret = '
-            <p>Import Complete</p>
-            <div class="alert alert-success">' . $this->stats['imported'] . ' records imported</div>';
-        if ($this->stats['errors']) {
-            $ret .= '<div class="alert alert-error"><ul>';
-            foreach ($this->stats['errors'] as $error) {
-                $ret .= '<li>' . $error . '</li>';
-            }
-            $ret .= '</ul></div>';
-        }
+        return $this->simpleStats($this->stats);
+    }
 
-        return $ret;
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->form_content()));
+        $this->stats['errors'][] = 'an error';
+        $phpunit->assertNotEquals(0, strlen($this->results_content()));
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

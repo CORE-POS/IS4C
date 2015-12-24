@@ -39,34 +39,26 @@ class EquityHistoryImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     protected $preview_opts = array(
         'memnum' => array(
-            'name' => 'memnum',
             'display_name' => 'Member Number',
             'default' => 0,
             'required' => True
         ),
         'amt' => array(
-            'name' => 'amt',
             'display_name' => 'Equity Amt',
             'default' => 1,
             'required' => True
         ),
         'date' => array(
-            'name' => 'date',
             'display_name' => 'Date',
             'default' => 2,
-            'required' => False
         ),
         'transID' => array(
-            'name' => 'transID',
             'display_name' => 'Transaction ID',
             'default' => 3,
-            'required' => False
         ),
         'dept' => array(
-            'name' => 'dept',
             'display_name' => 'Dept. #',
             'default' => 4,
-            'required' => False
         )
     );
 
@@ -119,20 +111,9 @@ class EquityHistoryImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     function results_content()
     {
-        $ret = '
-            <p>Import Complete</p>
-            <div class="alert alert-success">' . $this->stats['imported'] . ' records imported</div>';
-        if ($this->stats['errors']) {
-            $ret .= '<div class="alert alert-error"><ul>';
-            foreach ($this->stats['errors'] as $error) {
-                $ret .= '<li>' . $error . '</li>';
-            }
-            $ret .= '</ul></div>';
-        }
-
-        return $ret;
+        return $this->simpleStates($this->stats);
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

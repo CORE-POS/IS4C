@@ -69,24 +69,12 @@ class PaycardEmvPage extends PaycardProcessPage
             // if we're still here, we haven't accepted a valid amount yet; display prompt again
         } elseif (isset($_REQUEST['xml-resp'])) {
             $xml = $_REQUEST['xml-resp'];
-            $e2e = new MercuryE2E();
-            $json = array();
-            $plugin_info = new Paycards();
-            $json['main_frame'] = $plugin_info->pluginUrl().'/gui/PaycardEmvSuccess.php';
-            $json['receipt'] = false;
-            $success = $e2e->handleResponseDataCap($xml);
-            if ($success === PaycardLib::PAYCARD_ERR_OK) {
-                $json = $e2e->cleanup($json);
-                CoreLocal::set("strRemembered","");
-                CoreLocal::set("msgrepeat",0);
-                if ($json['receipt']) {
-                    $json['main_frame'] .= '?receipt=' . $json['receipt'];
-                }
-            } else {
-                CoreLocal::set("msgrepeat",0);
-                $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
+            $this->emvResponseHandler($xml);
+            if (isset($_REQUEST['err-info'])) {
+                $fp = fopen(dirname(__FILE__) . '/../resp.xml', 'a');
+                fwrite($fp, $_REQUEST['err-info'] . "\n\n");
+                fclose($fp);
             }
-            header('Location: ' . $json['main_frame']);
             return false;
         } // post?
 
@@ -95,6 +83,8 @@ class PaycardEmvPage extends PaycardProcessPage
 
     function head_content()
     {
+        $url = MiscLib::baseURL();
+        echo '<script type="text/javascript" src="' . $url . '/js/singleSubmit.js"></script>';
         if (!$this->run_transaction) {
             return '';
         }
@@ -124,12 +114,19 @@ function emvSubmit()
             $('body').append(f);
             $('#js-form').submit();
         },
-        error: function(resp) {
+        error: function(xhr, stat, err) {
             // display error to user?
             // go to dedicated error page?
             $('div.baseHeight').html('Finishing transaction');
             var f = $('<form id="js-form"></form>');
-            f.append($('<input type="hidden" name="xml-resp" />').val(resp));
+            if (xhr.responseXml != null) {
+                f.append($('<input type="hidden" name="xml-resp" />').val(xhr.responseXml));
+            } else if (xhr.responseText != null) {
+                f.append($('<input type="hidden" name="xml-resp" />').val(xhr.responseText));
+            } else {
+                f.append($('<input type="hidden" name="xml-resp" />').val(''));
+            }
+            f.append($('<input type="hidden" name="err-info" />').val(JSON.stringify(xhr)+'-'+stat+'-'+err));
             $('body').append(f);
             $('#js-form').submit();
         }
@@ -230,6 +227,7 @@ function emvSubmit()
         ?>
         </div>
         <?php
+        $this->add_onload_command("singleSubmit.restrict('#formlocal');\n");
     }
 }
 

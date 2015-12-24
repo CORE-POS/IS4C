@@ -46,7 +46,6 @@ define("LOCAL_CERT_PATH",realpath(dirname(__FILE__)).'/cacert.pem');
 
 class BasicCCModule 
 {
-
     public $last_ref_num = '';
     public $last_req_id = 0;
     public $last_paycard_transaction_id = 0;
@@ -62,6 +61,9 @@ class BasicCCModule
         "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"",
         "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
     );
+
+    protected $sendByType = array();
+    protected $respondByType = array();
 
     /** 
       Constructor
@@ -134,7 +136,12 @@ class BasicCCModule
      */
     public function doSend($type)
     {
-        return $this->setErrorMsg(0);
+        if (isset($this->sendByType[$type])) {
+            $method = $this->sendByType[$type];
+            return $this->$method();
+        } else {
+            return $this->setErrorMsg(0);
+        }
     }
 
     /**
@@ -324,7 +331,13 @@ class BasicCCModule
      */
     public function handleResponse($response)
     {
-        return false;
+        $type = CoreLocal::get('paycard_type');
+        if (isset($this->respondByType[$type])) {
+            $method = $this->respondByType[$type];
+            return $this->$method();
+        } else {
+            return false;
+        }
     }
 
     /**

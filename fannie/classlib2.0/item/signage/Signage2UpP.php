@@ -32,6 +32,7 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
     protected $SMALLEST_FONT = 12;
 
     protected $font = 'Arial';
+    protected $alt_font = 'Arial';
 
     public function drawPDF()
     {
@@ -60,7 +61,7 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
             $pdf->SetXY($left, $top + ($row*$height));
             $pdf->SetFont($this->font, 'B', $this->SMALL_FONT);
-            $pdf->Cell($width, 10, $item['brand'], 0, 1, 'C');
+            $pdf->Cell($width, 11, strtoupper($item['brand']), 0, 1, 'C');
             $pdf->SetX($left);
             $pdf->SetFont($this->font, '', $this->MED_FONT);
             $item['description'] = str_replace("\r", '', $item['description']);
@@ -95,10 +96,6 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
     }
 }
 
-}
-
-namespace {
-    class Signage2UpP extends \COREPOS\Fannie\API\item\signage\Signage2UpP {}
 }
 
 

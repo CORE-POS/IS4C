@@ -723,7 +723,7 @@ HTML;
         foreach ($pairs as $pair) {
             if (substr($pair, -1) == '=') {
                 $ret[substr($pair, 0, strlen($pair)-1)] = '';
-            } else {
+            } elseif (strstr($pair, '=')) {
                 list($key, $val) = explode('=', $pair, 2);
                 $ret[$key] = $val;
             }

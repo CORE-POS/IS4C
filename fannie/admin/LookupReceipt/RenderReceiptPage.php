@@ -79,8 +79,12 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         <hr class="hidden-print" />
         <?php
         $ret = ob_get_clean();
-        $transNum = FormLib::get('receipt');
         $date1 = $this->getReceiptDate($this->form);
+        try {
+            $transNum = $this->form->receipt;
+        } catch (Exception $ex) {
+            $transNum = '';
+        }
 
         if ($date1 !== false && $transNum !== '') {
             $ret .= '<p>';
@@ -401,6 +405,22 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         }
 
         return $ret;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->receipt = '1-1-1';
+        $form->year = date('Y');
+        $form->month = date('n');
+        $form->day = date('j');
+        $this->setForm($form);
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $form->date = date('Y-m-d');
+        $this->setForm($form);
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->getHeader()));
+        $phpunit->assertNotEquals(0, strlen($this->getFooter()));
     }
 
 }

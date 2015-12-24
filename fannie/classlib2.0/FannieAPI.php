@@ -287,11 +287,9 @@ class FannieAPI
                 $directories[] = dirname(__FILE__).'/../reports/';
                 $directories[] = dirname(__FILE__).'/../purchasing/reports/';
                 break;
-            case 'FannieReportTool':
             case '\COREPOS\Fannie\API\FannieReportTool':
                 $directories[] = dirname(__FILE__).'/../reports/';
                 break;
-            case 'FannieSignage':
             case '\COREPOS\Fannie\API\item\FannieSignage':
                 $directories[] = dirname(__FILE__) . '/item/signage/';
                 break;
@@ -392,11 +390,12 @@ class FannieAPI
     {
         $name = false;
         $basedir = 'unknown';
+        $path = realpath($path);
         if (strstr($path, '/modules/plugins2.0/')) {
-            $name = '\\COREPOS\\Fannie\\Plugin';
+            $name = 'COREPOS\\Fannie\\Plugin';
             $basedir = 'plugins2.0';
         } elseif (strstr($path, '/classlib2.0/')) {
-            $name = '\\COREPOS\\Fannie\\API';
+            $name = 'COREPOS\\Fannie\\API';
             $basedir = 'classlib2.0';
         }
 

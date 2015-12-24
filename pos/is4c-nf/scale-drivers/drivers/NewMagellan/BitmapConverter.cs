@@ -77,7 +77,7 @@ public class BitmapConverter {
         int bits = 0;
         for(int i=0; i<newdata.Length; i++){
             int x1 = (i % newRowBytes)*8;
-            int y1 = i / newRowBytes;
+            int y1 = y - (i / newRowBytes);
             int val = 0;
             for(int j=0; j<8; j++){
                 if(x1+j >= width) // end of pixel row, rest gets padded

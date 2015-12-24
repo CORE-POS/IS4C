@@ -50,7 +50,7 @@ class CCReceiptMessage extends ReceiptMessage {
     protected function variable_slip($ref, $reprint=False, $sigSlip=False)
     {
         $date = ReceiptLib::build_time(time());
-        list($emp,$reg,$trans) = explode('-', $ref);
+        list($emp, $reg, $trans) = ReceiptLib::parseRef($ref);
         $sort = 'asc';
 
         $slip = '';

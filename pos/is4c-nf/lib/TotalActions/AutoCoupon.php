@@ -27,6 +27,27 @@
 */
 class AutoCoupon extends TotalAction
 {
+    private function getCoupons()
+    {
+        $dbc = Database::pDataConnect();
+        $coupons = array();
+        $hc_table = $dbc->table_definition('houseCoupons');
+        if ($dbc->table_exists('autoCoupons')) {
+            $autoR = $dbc->query('SELECT coupID, description FROM autoCoupons');
+            while($autoW = $dbc->fetch_row($autoR)) {
+                $coupons[$autoW['coupID']] = $autoW['description'];
+            }
+        }
+        if (isset($hc_table['description']) && isset($hc_table['auto'])) {
+            $autoR = $dbc->query('SELECT coupID, description FROM houseCoupons WHERE auto=1');
+            while($autoW = $dbc->fetch_row($autoR)) {
+                $coupons[$autoW['coupID']] = $autoW['description'];
+            }
+        }
+
+        return $coupons;
+    }
+
     /**
       Apply action
       @return [boolean] true if the action
@@ -37,25 +58,11 @@ class AutoCoupon extends TotalAction
     */
     public function apply()
     {
-        $db = Database::pDataConnect();
+        $dbc = Database::pDataConnect();
         $repeat = CoreLocal::get('msgrepeat');
+        $coupons = $this->getCoupons();
 
-        $coupons = array();
-        $hc_table = $db->table_definition('houseCoupons');
-        if ($db->table_exists('autoCoupons')) {
-            $autoR = $db->query('SELECT coupID, description FROM autoCoupons');
-            while($autoW = $db->fetch_row($autoR)) {
-                $coupons[$autoW['coupID']] = $autoW['description'];
-            }
-        }
-        if (isset($hc_table['description']) && isset($hc_table['auto'])) {
-            $autoR = $db->query('SELECT coupID, description FROM houseCoupons WHERE auto=1');
-            while($autoW = $db->fetch_row($autoR)) {
-                $coupons[$autoW['coupID']] = $autoW['description'];
-            }
-        }
-
-        $hc = new HouseCoupon();
+        $hcoup = new HouseCoupon();
         $prefix = CoreLocal::get('houseCouponPrefix');
         if ($prefix == '') {
             $prefix = '00499999';
@@ -63,7 +70,7 @@ class AutoCoupon extends TotalAction
 
         foreach($coupons as $id => $description) {
 
-            if ($hc->checkQualifications($id, true) !== true) {
+            if ($hcoup->checkQualifications($id, true) !== true) {
                 // member or transaction does not meet requirements
                 // for auto-coupon purposes, this isn't really an 
                 // error. no feedback necessary
@@ -72,15 +79,15 @@ class AutoCoupon extends TotalAction
 
             // get value of coupon AND value
             // of any previous applications of this coupon
-            $add = $hc->getValue($id);
+            $add = $hcoup->getValue($id);
             $upc = $prefix . str_pad($id, 5, '0', STR_PAD_LEFT);
             $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
-            $current = $db->query('SELECT SUM(-total) AS ttl FROM '
-                           .CoreLocal::get('tDatabase') . $db->sep() . 'localtemptrans
+            $current = $dbc->query('SELECT SUM(-total) AS ttl FROM '
+                           .CoreLocal::get('tDatabase') . $dbc->sep() . 'localtemptrans
                            WHERE upc=\'' . $upc . '\'');
             $val = 0;
-            if ($db->num_rows($current) > 0) {
-                $currentW = $db->fetch_row($current);
+            if ($dbc->num_rows($current) > 0) {
+                $currentW = $dbc->fetch_row($current);
                 $val = $currentW['ttl'];
             }
 

@@ -39,104 +39,15 @@ class AuthorizeDotNet extends BasicCCModule {
 
     function entered($validate,$json)
     {
-        $enabled = PaycardDialogs::enabledCheck();
-        if ($enabled !== true) {
-            $json['output'] = $enabled;
-
-            return $json;
-        }
-
-        // error checks based on processing mode
-        switch (CoreLocal::get("paycard_mode")) {
-            case PaycardLib::PAYCARD_MODE_VOID:
-                // use the card number to find the trans_id
-                $pan4 = substr($this->trans_pan['pan'],-4);
-                $trans = array(CoreLocal::get('CashierNo'), CoreLocal::get('laneno'), CoreLocal::get('transno'));
-                list($success, $result) = PaycardDialogs::voidableCheck($pan4, $trans);
-                if ($success === true) {
-                    return $this->paycard_void($result,$trans[1],$trans[2],$json);
-                } else {
-                    $json['output'] = $result;
-                    return $json;
-                }
-                break;
-            case PaycardLib::PAYCARD_MODE_AUTH:
-                if ($validate) {
-                    $valid = PaycardDialogs::validateCard($this->trans_pan['pan']);
-                    if ($valid !== true) {
-                        $json['output'] = $valid;
-                        return $json;
-                    }
-                }
-                return PaycardLib::setupAuthJson($json);
-                break;
-        } // switch mode
-    
-        // if we're still here, it's an error
-        PaycardLib::paycard_reset();
-        $json['output'] = PaycardDialogs::invalidMode();
-        return $json;
+        $this->trans_pan['pan'] = CoreLocal::get("paycard_PAN");
+        return PaycardModule::ccEntered($this->trans_pan['pan'], $validate, $json);
     }
 
     function paycard_void($transID,$laneNo=-1,$transNo=-1,$json=array()) 
     {
-        // situation checking
-        $enabled = PaycardDialogs::enabledCheck();
-        if ($enabled !== true) {
-            $json['output'] = $enabled;
-
-            return $json;
-        }
-    
-        // initialize
-        $cashier = CoreLocal::get("CashierNo");
-        $lane = CoreLocal::get("laneno");
-        $trans = CoreLocal::get("transno");
-        if ($laneNo != -1) $lane = $laneNo;
-        if ($transNo != -1) $trans = $transNo;
-        list($success, $request) = PaycardDialogs::getRequest(array($cashier, $lane, $trans), $transID);
-        if ($success === false) {
-            $json['output'] = $request;
-            return $json;
-        }
-
-        list($success, $response) = PaycardDialogs::getResponse(array($cashier, $lane, $trans), $transID);
-        if ($success === false) {
-            $json['output'] = $response;
-            return $json;
-        }
-
-        // look up any previous successful voids
-        $eligible = PaycardDialogs::notVoided(array($cashier, $lane, $trans), $transID);
-        if ($eligible === false) {
-            $json['output'] = $eligible;
-            return $json;
-        }
-
-        list($success, $lineitem) = PaycardDialogs::getTenderLine(array($cashier, $lane, $trans), $transID);
-        if ($success === false) {
-            $json['output'] = $lineitem;
-            return $json;
-        }
-
-        $valid = PaycardDialogs::validateVoid($request, $response, $lineitem, $transID);
-        if ($valid !== true) {
-            $json['output'] = $valid;
-            return $json;
-        }
-    
-        // save the details
-        CoreLocal::set("paycard_amount",(($request['mode']=='refund') ? -1 : 1) * $request['amount']);
-        CoreLocal::set("paycard_id",$transID);
-        CoreLocal::set("paycard_type",PaycardLib::PAYCARD_TYPE_CREDIT);
-        CoreLocal::set("paycard_mode",PaycardLib::PAYCARD_MODE_VOID);
-        CoreLocal::set("paycard_name",$request["name"]);
-    
-        // display FEC code box
-        CoreLocal::set("inputMasked",1);
-        $plugin_info = new Paycards();
-        $json['main_frame'] = $plugin_info->pluginUrl().'/gui/paycardboxMsgVoid.php';
-        return $json;
+        $this->voidTrans = "";
+        $this->voidRef = "";
+        return PaycardModule::ccVoid($transID, $laneNo, $transNo, $json);
     }
 
     function handleResponse($authResult)
@@ -182,13 +93,10 @@ class AuthorizeDotNet extends BasicCCModule {
             $response->saveResponse();
         } catch (Exception $ex) { }
 
-        if( $authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200){
-            if ($authResult['curlHTTP'] == '0'){
-                CoreLocal::set("boxMsg","No response from processor<br />
-                            The transaction did not go through");
-                return PaycardLib::PAYCARD_ERR_PROC;
-            }    
-            return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_COMM);
+        $comm = PaycardModule::commError($authResult);
+        if ($comm !== false) {
+            TransRecord::addcomment('');
+            return $comm;
         }
 
         switch ($xml->get("RESPONSECODE")){

@@ -64,6 +64,9 @@ $y = $top;
 //cycle through result array of query
 foreach($data as $row){
 
+    if (strlen(ltrim($row['upc'], '0')) <= 4) continue;
+    elseif (substr($row['upc'], -6) == '000000') continue;
+
    // extract & format data
    $price = $row['normal_price'];
    $desc = strtoupper(substr($row['description'],0,27));

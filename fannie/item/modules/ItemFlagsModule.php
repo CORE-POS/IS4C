@@ -29,6 +29,39 @@ class ItemFlagsModule extends ItemModule
         return self::META_WIDTH_FULL;
     }
 
+    private function getFlags($upc)
+    {
+        $dbc = $this->db();
+        $query = "
+            SELECT f.description,
+                f.bit_number,
+                (1<<(f.bit_number-1)) & p.numflag AS flagIsSet
+            FROM products AS p, 
+                prodFlags AS f
+            WHERE p.upc=?
+                " . (FannieConfig::config('STORE_MODE') == 'HQ' ? ' AND p.store_id=? ' : '') . "
+                AND f.active=1";
+        $args = array($upc);
+        if (FannieConfig::config('STORE_MODE') == 'HQ') {
+            $args[] = FannieConfig::config('STORE_ID');
+        }
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep,$args);
+        
+        if ($dbc->numRows($res) == 0){
+            // item does not exist
+            $prep = $dbc->prepare('
+                SELECT f.description,
+                    f.bit_number,
+                    0 AS flagIsSet
+                FROM prodFlags AS f
+                WHERE f.active=1');
+            $res = $dbc->execute($prep);
+        }
+
+        return $res;
+    }
+
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
         $upc = BarcodeLib::padUPC($upc);
@@ -45,44 +78,19 @@ class ItemFlagsModule extends ItemModule
         $ret .= '<div id="ItemFlagsTable" class="col-sm-5">';
 
         $dbc = $this->db();
-        $q = "
-            SELECT f.description,
-                f.bit_number,
-                (1<<(f.bit_number-1)) & p.numflag AS flagIsSet
-            FROM products AS p, 
-                prodFlags AS f
-            WHERE p.upc=?
-                " . (FannieConfig::config('STORE_MODE') == 'HQ' ? ' AND p.store_id=? ' : '') . "
-                AND f.active=1";
-        $args = array($upc);
-        if (FannieConfig::config('STORE_MODE') == 'HQ') {
-            $args[] = FannieConfig::config('STORE_ID');
-        }
-        $p = $dbc->prepare_statement($q);
-        $r = $dbc->exec_statement($p,$args);
-        
-        if ($dbc->num_rows($r) == 0){
-            // item does not exist
-            $p = $dbc->prepare_statement('
-                SELECT f.description,
-                    f.bit_number,
-                    0 AS flagIsSet
-                FROM prodFlags AS f
-                WHERE f.active=1');
-            $r = $dbc->exec_statement($p);
-        }
+        $res = $this->getFlags($upc);
 
         $tableStyle = " style='border-spacing:5px; border-collapse: separate;'";
         $ret .= "<table{$tableStyle}>";
         $i=0;
-        while($w = $dbc->fetch_row($r)){
+        while($row = $dbc->fetchRow($res)){
             if ($i==0) $ret .= '<tr>';
             if ($i != 0 && $i % 2 == 0) $ret .= '</tr><tr>';
             $ret .= sprintf('<td><input type="checkbox" id="item-flag-%d" name="flags[]" value="%d" %s /></td>
-                <td><label for="item-flag-%d">%s</label></td>',$i, $w['bit_number'],
-                ($w['flagIsSet']==0 ? '' : 'checked'),
+                <td><label for="item-flag-%d">%s</label></td>',$i, $row['bit_number'],
+                ($row['flagIsSet']==0 ? '' : 'checked'),
                 $i,
-                $w['description']
+                $row['description']
             );
             $i++;
         }
@@ -117,6 +125,7 @@ class ItemFlagsModule extends ItemModule
         $model->upc($upc);
         $model->store_id(1);
         $model->numflag($numflag);
+        $model->enableLogging(false);
         $saved = $model->save();
 
         return $saved ? true : false;

@@ -129,6 +129,11 @@ class ShrinkReasonEditor extends FannieRESTfulPage
             the sake of quantity on hand, loss is loss.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->post_id_desc_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

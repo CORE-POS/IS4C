@@ -150,7 +150,7 @@ class FannieTask
                     $options[$this->getOptionName($arg)] = true;
                 }
             } else {
-                $nonopt[] = $opt;
+                $nonopt[] = $arg;
             }
         }
 

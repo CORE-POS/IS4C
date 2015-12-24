@@ -11,6 +11,7 @@ class ItemsTest extends PHPUnit_Framework_TestCase
 
         foreach($items as $item_class) {
             $obj = new $item_class();
+            $this->assertNotEquals(0, strlen($obj->showEditForm('0000000004011')));
         }
     }
 
@@ -69,6 +70,65 @@ class ItemsTest extends PHPUnit_Framework_TestCase
         $module->setForm($form);
         $saved = $module->saveFormData($upc);
         $this->assertEquals(false, $saved, 'Accepted invalid input');
+    }
+
+    public function testItemMargin()
+    {
+        $config = FannieConfig::factory();
+        $connection = FannieDB::get($config->OP_DB);
+        $module = new ItemFlagsModule();
+        $module->setConnection($connection);
+        $module->setConfig($config);
+
+        $form = new \COREPOS\common\mvc\ValueContainer();
+        $form->price_rule_id = 1;
+        $form->current_price_rule_id = 99;
+        $module->setForm($form);
+        $this->assertEquals(true, $module->saveFormData('0000000004011'));
+
+        $form->price_rule_id = 2;
+        $form->current_price_rule_id = 99;
+        $module->setForm($form);
+        $this->assertEquals(true, $module->saveFormData('0000000004011'));
+
+        $form->price_rule_id = 2;
+        $form->current_price_rule_id = 0;
+        $module->setForm($form);
+        $this->assertEquals(true, $module->saveFormData('0000000004011'));
+    }
+
+    public function textExtraInfo()
+    {
+        $config = FannieConfig::factory();
+        $connection = FannieDB::get($config->OP_DB);
+        $module = new ExtraInfoModule();
+        $module->setConnection($connection);
+        $module->setConfig($config);
+
+        $form = new \COREPOS\common\mvc\ValueContainer();
+        $form->deposit = 0;
+        $form->local = 0;
+        $form->inUse = 1;
+        $form->idEnforced = 0;
+        $module->setForm($form);
+        $this->assertEquals(true, $module->saveFormData('0000000004011'));
+    }
+
+    public function testLikeCode()
+    {
+        $config = FannieConfig::factory();
+        $connection = FannieDB::get($config->OP_DB);
+        $module = new LikeCodeModule();
+        $module->setConnection($connection);
+        $module->setConfig($config);
+
+        $form = new \COREPOS\common\mvc\ValueContainer();
+        $form->likeCode = 1;
+        $module->setForm($form);
+        $this->assertEquals(true, $module->saveFormData('0000000004011'));
+        $form->likeCode = -1;
+        $module->setForm($form);
+        $this->assertEquals(true, $module->saveFormData('0000000004011'));
     }
 
 }

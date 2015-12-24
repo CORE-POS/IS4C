@@ -1,6 +1,6 @@
 <?php
 require($FANNIE_ROOT.'src/Credentials/GoE.wfc.php');
-include('xmlData.php');
+include($FANNIE_ROOT.'src/xmlData.php');
 
 function getProcessorInfo($dateStr){
     global $FANNIE_TRANS_DB;

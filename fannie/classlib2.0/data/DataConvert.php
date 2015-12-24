@@ -265,7 +265,3 @@ class DataConvert
 
 }
 
-namespace {
-    class DataConvert extends \COREPOS\Fannie\API\data\DataConvert {}
-}
-

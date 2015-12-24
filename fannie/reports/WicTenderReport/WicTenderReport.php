@@ -36,26 +36,65 @@ class WicTenderReport extends FannieReportPage
     protected $sort_direction = 1;
     protected $title = "Fannie : WIC Tender Report";
     protected $header = "WIC Tender Report";
-    protected $required_fields = array('date1');
+    protected $required_fields = array('date1', 'date2');
+
     public function fetch_report_data()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
+        try {
+            $date1 = $this->form->date1;
+            $date2 = $this->form->date2;
+        } catch (Exception $ex) {
+            return array();
+        }
         
         /* Count WIC transactions */
         $query = "
             SELECT count(description) as count 
             FROM dlog_90_view
             WHERE description='WIC'
-            AND tdate>= '" . $_GET['date1'] . 
-                "' and tdate<='" . $_GET['date2'] . "';
+            AND tdate>= '" . $date1 . 
+                " 00:00:00' and tdate<='" . $date2 . " 23:59:59';
             ";
         $result = $dbc->query($query);
         while ($row = $dbc->fetch_row($result)) {
             echo $row['count'] . " <strong>WIC transactions</strong> occured during this period.";
         }
         
+        /**
+          Find every transaction with wicable items
+          and check whether or not WIC was used as a tender
+          in that transaction
+        */
+        $query = '
+            SELECT YEAR(tdate) AS year,
+                MONTH(tdate) AS month,
+                DAY(tdate) AS day,
+                trans_num,
+                SUM(CASE WHEN d.trans_subtype=\'WT\' THEN 1 ELSE 0 END) as usedWic
+            FROM dlog_90_view AS d
+                LEFT JOIN ' . $this->config->get('OP_DB') . $dbc->sep() . 'products AS p ON p.upc=d.upc AND p.store_id=d.store_id
+            WHERE d.tdate BETWEEN \'' . $date1 . ' 00:00:00\'
+                AND \'' . $date2 . ' 23:59:59\'
+            GROUP BY YEAR(tdate),
+                MONTH(tdate),
+                DAY(tdate),
+                trans_num
+            HAVING SUM(CASE WHEN p.wicable=1 THEN 1 ELSE 0 END) <> 0';
+        $result = $dbc->query($query);
+        $wicTrans = array();
+        /**
+          Used date + trans_num to build a unique transaction identifier
+          and store whether the transaction included WIC tender
+        */
+        while ($row = $dbc->fetchRow($result)) {
+            $key = mktime(0, 0, 0, $row['month'], $row['day'], $row['year'])
+                . '-' . $row['trans_num'];
+            $wicTrans[$key] = $row['usedWic'];
+        }
         /* Find Tender Type for each transaction */
+        /*
         $query = "SELECT d.upc,
             CASE WHEN d.description='credit card' 
                 or d.description='cash' 
@@ -78,7 +117,7 @@ class WicTenderReport extends FannieReportPage
                 or d.description='gift card'
                 ) 
                 and d.tdate>= '" . $_GET['date1'] . 
-                "' and d.tdate<='" . $_GET['date2'] . "';";
+                " 00:00:00' and d.tdate<='" . $_GET['date2'] . " 23:59:59';";
             $result = $dbc->query($query);
             while ($row = $dbc->fetch_row($result)) {
                 $tmpTender[] = $row['Tender'];
@@ -90,55 +129,75 @@ class WicTenderReport extends FannieReportPage
                     $tmpTender[$i] = $tender;
                 }
             }
+            */
             
             /* Find sum of sales per item purchased with WIC and Non-WIC */
             $query = "
-            select d.trans_no, 
+            select YEAR(tdate) AS year,
+                MONTH(tdate) AS month,
+                DAY(tdate) AS day,
+                trans_num,
                 d.upc, 
                 d.description, 
                 d.quantity
             from dlog_90_view as d 
-                left join is4c_op.products as p on p.upc=d.upc 
-            where (
+                INNER JOIN " . $this->config->get('OP_DB') . $dbc->sep() . "products AS p ON p.upc=d.upc AND p.store_id=d.store_id
+            where 
                 p.wicable=1 
-                or d.description='credit card' 
-                or d.description='cash' 
-                or d.description='check'
-                or d.description='wic' 
-                or d.description='store credit' 
-                or d.description='gift card'
-                ) 
-                and d.tdate>='2015-11-09 00:00:00'
-                and (p.department<200 and p.department>220)
-                    or p.department<500
-                and d.tdate>= '" . $_GET['date1'] . 
-                "' and d.tdate<='" . $_GET['date2'] . "';
+                and ((p.department<200 and p.department>220)
+                    or p.department<500)
+                and d.tdate>= '" . $date1 . 
+                " 00:00:00' and d.tdate<='" . $date2 . " 23:59:59';
                 ";
             $result = $dbc->query($query);
             $count = 0;
+            $items = array();
+            /**
+              Accumulate sales by UPC
+              Use the same transaction identifier to check
+              whether the transaction included a WIC tender
+            */
             while ($row = $dbc->fetch_row($result)) {
-               if ( array_search($row['upc'], $item[0]) != NULL) {
-                    if ( $tmpTender[$count] == 'WIC' ) {
-                        $item[2][ array_search($row['upc'], $item[0]) ] += $row['quantity'];
-                    } else {
-                        $item[3][ array_search($row['upc'], $item[0]) ] += $row['quantity'];
-                    }        
-                } else {
-                    $item[0][] = $row['upc'];
-                    $item[1][] = $row['description'];
-                    
-                    if ( $tmpTender[$count] == 'WIC' ) {
-                        $item[2][ array_search($row['upc'], $item[0]) ] += $row['quantity'];
-                    } else {
-                        $item[3][ array_search($row['upc'], $item[0]) ] += $row['quantity'];
-                    }        
-                    
+                if (!isset($items[$row['upc']])) {
+                    $items[$row['upc']] = array(
+                        $row['upc'],
+                        $row['description'],
+                        0,
+                        0,
+                    );
                 }
-                $count++;
+                $key = mktime(0, 0, 0, $row['month'], $row['day'], $row['year'])
+                    . '-' . $row['trans_num'];
+                if (isset($wicTrans[$key]) && $wicTrans[$key] == 1) {
+                    $items[$row['upc']][2] += $row['quantity'];
+                } else {
+                    $items[$row['upc']][3] += $row['quantity'];
+                }
             }
             
-        return $item;
+            /**
+              Rebuild the array w/ numeric keys instead
+              of UPCs as keys
+            */
+            $data = array();
+            foreach ($items as $upc => $info) {
+                $data[] = $info;
+            }
+
+            return $data;
     }
+
+    public function calculate_footers($data)
+    {
+        $sums = array(0, 0);
+        foreach ($data as $row) {
+            $sums[0] += $row[2];
+            $sums[1] += $row[3];
+        }
+
+        return array('Total', null, $sums[0], $sums[1]);
+    }
+
 
     public function form_content()
     {

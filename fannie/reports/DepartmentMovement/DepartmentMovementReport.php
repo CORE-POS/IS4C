@@ -69,33 +69,16 @@ class DepartmentMovementReport extends FannieReportPage
         $filter_condition = 't.department BETWEEN ? AND ?';
         $args = array($deptStart,$deptEnd);
         if (count($deptMulti) > 0) {
-            $filter_condition = 't.department IN (';
-            $args = array();
-            foreach ($deptMulti as $d) {
-                $filter_condition .= '?,';
-                $args[] = $d;
-            }
-            $filter_condition = substr($filter_condition, 0, strlen($filter_condition)-1) . ')';
+            list($inStr, $args) = $dbc->safeInClause($deptMulti);
+            $filter_condition = 't.department IN (' . $inStr . ') ';
         }
         if ($buyer !== "" && $buyer > 0) {
             $filter_condition .= ' AND s.superID=? ';
             $args[] = $buyer;
-            /*
-            $superR = $dbc->execute($superP, array($buyer));
-            $filter_condition = 't.department IN (';
-            $args = array();
-            while ($superW = $dbc->fetch_row($superR)) {
-                $filter_condition .= '?,';
-                $args[] = $superW['dept_ID'];
-            }
-            $filter_condition = substr($filter_condition, 0, strlen($filter_condition)-1) . ')';
-            $filter_condition .= ' AND s.superID=?';
-            $args[] = $buyer;
-            */
-        } else if ($buyer !== "" && $buyer == -1) {
+        } elseif ($buyer !== "" && $buyer == -1) {
             $filter_condition = "1=1";
             $args = array();
-        } else if ($buyer !== "" && $buyer == -2){
+        } elseif ($buyer !== "" && $buyer == -2){
             $superR = $dbc->execute($superP, array(0));
             $filter_condition = 't.department NOT IN (0,';
             $args = array();
@@ -135,6 +118,7 @@ class DepartmentMovementReport extends FannieReportPage
         switch($groupby) {
             case 'PLU':
                 $query = "SELECT t.upc,
+                      p.brand,
                       CASE WHEN p.description IS NULL THEN t.description ELSE p.description END as description, 
                       SUM(CASE WHEN trans_status IN('','0','R') THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings,"
                       . DTrans::sumQuantity('t')." as qty,
@@ -261,8 +245,8 @@ class DepartmentMovementReport extends FannieReportPage
           how the data is grouped
         */
         switch(count($data[0])) {
-            case 9:
-                $this->report_headers = array('UPC','Description','Rings','Qty','$',
+            case 10:
+                $this->report_headers = array('UPC','Brand','Description','Rings','Qty','$',
                     'Dept#','Department','Subdept','Vendor');
                 $this->sort_column = 4;
                 $this->sort_direction = 1;

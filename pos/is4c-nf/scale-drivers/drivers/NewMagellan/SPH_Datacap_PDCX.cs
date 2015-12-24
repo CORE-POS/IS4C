@@ -230,6 +230,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             + "<MerchantID>MerchantID</MerchantID>"
             + "<TranCode>GetSignature</TranCode>"
             + "<SecureDevice>"+ this.device_identifier + "</SecureDevice>"
+            + "<ComPort>" + this.com_port + "</ComPort>"
             + "<Account>"
             + "<AcctNo>SecureDevice</AcctNo>"
             + "</Account>"
@@ -240,10 +241,10 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         try {
             doc.LoadXml(result);
             XmlNode status = doc.SelectSingleNode("RStream/CmdResponse/CmdStatus");
-            if (status.Value != "Success") {
+            if (status.InnerText != "Success") {
                 return null;
             }
-            string sigdata = doc.SelectSingleNode("RStream/Signature").Value;
+            string sigdata = doc.SelectSingleNode("RStream/Signature").InnerText;
             List<Point> points = SigDataToPoints(sigdata);
 
             int ticks = Environment.TickCount;
@@ -252,7 +253,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             while (File.Exists(my_location + sep + "ss-output/"  + sep + ticks)) {
                 ticks++;
             }
-            string filename = my_location + sep + "ss-output"+ sep + ticks + ".bmp";
+            string filename = my_location + sep + "ss-output"+ sep + "tmp" + sep + ticks + ".bmp";
             BitmapBPP.Signature sig = new BitmapBPP.Signature(filename, points);
             parent.MsgSend("TERMBMP" + ticks + ".bmp");
             

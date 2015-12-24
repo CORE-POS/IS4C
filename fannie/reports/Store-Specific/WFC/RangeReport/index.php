@@ -67,7 +67,7 @@ if (FormLib::get('date') !== '' && FormLib::get('date2') !== '') {
 
    $stamp1 = strtotime($repDate);
    $stamp2 = strtotime($repDate2);
-   $date1 = date('Y-m-d',($stamp1 ? $stamp : strtotime('yesterday')));
+   $date1 = date('Y-m-d',($stamp1 ? $stamp1 : strtotime('yesterday')));
    $date2 = date('Y-m-d',($stamp2 ? $stamp2 : strtotime('yesterday')));
 
    $ddiff = "'$date1 00:00:00' AND '$date2 23:59:59'";

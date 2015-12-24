@@ -133,6 +133,15 @@ class CloneItemPage extends FannieRESTfulPage
             the cloned item description is recommended.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->id = '4011';
+        $phpunit->assertNotEquals(0, strlen($this->post_id_view()));
+        $this->id = 'not-an-item';
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+        $phpunit->assertEquals(true, $this->post_id_handler());
+    }
 }
 
 FannieDispatch::conditionalExec();

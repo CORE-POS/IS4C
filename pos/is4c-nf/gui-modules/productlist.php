@@ -31,6 +31,27 @@ class productlist extends NoInputCorePage
     private $temp_num_rows;
     private $boxSize;
 
+    private function adjustUPC($entered)
+    {
+        // expand UPC-E to UPC-A
+        if (substr($entered, 0, 1) == 0 && strlen($entered) == 7) {
+            $parser = new UPC();
+            $entered = $parser->expandUPCE($entered);
+        }
+
+        // UPCs should be length 13 w/ at least one leading zero
+        if (strlen($entered) == 13 && substr($entered, 0, 1) != 0) 
+            $entered = "0".substr($entered, 0, 12);
+        else 
+            $entered = substr("0000000000000".$entered, -13);
+
+        // zero out the price field of scale UPCs
+        if (substr($entered, 0, 3) == "002")
+            $entered = substr($entered, 0, 8)."00000";
+
+        return $entered;
+    }
+
     function preprocess()
     {
         $entered = "";
@@ -60,34 +81,7 @@ class productlist extends NoInputCorePage
         }
 
         if (is_numeric($entered)) {
-            // expand UPC-E to UPC-A
-            if (substr($entered, 0, 1) == 0 && strlen($entered) == 7) {
-                $p6 = substr($entered, -1);
-
-                if ($p6 == 0) 
-                    $entered = substr($entered, 0, 3)."00000".substr($entered, 3, 3);
-                elseif ($p6 == 1) 
-                    $entered = substr($entered, 0, 3)."10000".substr($entered, 4, 3);
-                elseif ($p6 == 2) 
-                    $entered = substr($entered, 0, 3)."20000".substr($entered, 4, 3);
-                elseif ($p6 == 3) 
-                    $entered = substr($entered, 0, 4)."00000".substr($entered, 4, 2);
-                elseif ($p6 == 4) 
-                    $entered = substr($entered, 0, 5)."00000".substr($entered, 6, 1);
-                else 
-                    $entered = substr($entered, 0, 6)."0000".$p6;
-
-            }
-
-            // UPCs should be length 13 w/ at least one leading zero
-            if (strlen($entered) == 13 && substr($entered, 0, 1) != 0) 
-                $entered = "0".substr($entered, 0, 12);
-            else 
-                $entered = substr("0000000000000".$entered, -13);
-
-            // zero out the price field of scale UPCs
-            if (substr($entered, 0, 3) == "002")
-                $entered = substr($entered, 0, 8)."00000";
+            $entered = $this->adjustUPC($entered);
         }
 
         /* Get all enabled plugins and standard modules of the base. */
@@ -147,7 +141,8 @@ class productlist extends NoInputCorePage
             }
             echo "<div class=\"baseHeight\">"
                 ."<div class=\"listbox\">"
-                ."<form name=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\""
+                ."<form name=\"selectform\" method=\"post\" action=\""
+                . filter_input(INPUT_SERVER, 'PHP_SELF') . "\""
                 ." id=\"selectform\">"
                 ."<select name=\"search\" id=\"search\" "
                 .' style="min-height: 200px; min-width: 220px;'
@@ -202,7 +197,7 @@ class productlist extends NoInputCorePage
             <span class="larger">
             <?php echo $strmsg;?>
             </span>
-            <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" autocomplete="off">
+            <form action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>" method="post" autocomplete="off">
             <p>
             <input type="text" name="search" size="15" id="search"
                 onblur="$('#search').focus();" />
@@ -219,7 +214,5 @@ class productlist extends NoInputCorePage
 
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new productlist();
+AutoLoader::dispatch();
 
-?>

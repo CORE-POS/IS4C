@@ -227,4 +227,3 @@ class QttyEnforcedGroupPM extends PriceMethod {
     }
 }
 
-?>

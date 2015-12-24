@@ -61,11 +61,19 @@ class EpScaleLib
         $et_line .= 'SAD' . $scale_model->epScaleAddress() . chr(253);
         $et_line .= 'PNO' . $item_info['PLU'] . chr(253);
         $et_line .= 'INO' . $item_info['PLU'] . chr(253);
-        $item_info['ExpandedText'] = str_replace("\r", '', $item_info['ExpandedText']);
-        $item_info['ExpandedText'] = str_replace("\n", '<br>', $item_info['ExpandedText']);
-        $et_line .= 'ITE' . $item_info['ExpandedText'] . chr(253);
+        $et_line .= 'ITE' . self::expandedText($item_info['ExpandedText']) . chr(253);
 
         return $et_line;
+    }
+
+    static private function expandedText($text)
+    {
+        $text = str_replace("\r", '', $text);
+        $ret = '';
+        foreach (explode("\n", $text) as $line) {
+            $ret .= wordwrap($line, 35, "\n") . "\n";
+        }
+        return str_replace("\n", '<br>', $ret);
     }
 
     static private function getAddItemLine($item_info)
@@ -193,7 +201,8 @@ class EpScaleLib
         $lines = explode("\n", $desc);
         $keys = array_filter(array_keys($lines), function($i) use ($limit) { return $i<$limit; });
         return array_reduce($keys, function($carry, $key) use ($lines) {
-            return $carry . 'DN' . ($key+1) . $lines[$key] . chr(253);
+            return $carry . 'DN' . ($key+1) . $lines[$key] . chr(253)
+                . 'DS' . ($key+1) . '0' . chr(253);
         });
     }
 

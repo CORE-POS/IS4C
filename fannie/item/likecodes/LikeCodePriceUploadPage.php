@@ -37,22 +37,18 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     protected $preview_opts = array(
         'likecode' => array(
-            'name' => 'likecode',
             'display_name' => 'Like Code #',
             'default' => 0,
             'required' => true
         ),
         'price' => array(
-            'name' => 'price',
             'display_name' => 'Price',
             'default' => 1,
             'required' => true
         ),
         'cost' => array(
-            'name' => 'cost',
             'display_name' => 'Cost (Unit)',
             'default' => 2,
-            'required' => false
         ),
     );
 

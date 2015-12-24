@@ -184,7 +184,3 @@ class DataLoad
 
 }
 
-namespace {
-    class DataLoad extends \COREPOS\Fannie\API\data\DataLoad {}
-}
-

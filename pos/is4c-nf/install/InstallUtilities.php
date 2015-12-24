@@ -151,7 +151,7 @@ class InstallUtilities extends LibraryClass
             preg_match($orig_setting, $content, $matches);
             if ($matches[1] === $value.', True') {// found with exact same value
                 return true;    // no need to bother rewriting it
-            } elseif ($writeable_global) {
+            } elseif (is_writable($file)) {
                 return file_put_contents($file, $new) ? true : false;
             }
         } else {
@@ -456,6 +456,112 @@ class InstallUtilities extends LibraryClass
         return ($saved) ? true : false;
     }
 
+    static private function loadFromSql($sql, $table)
+    {
+        $loaded = 0;
+        echo "from data/$table.sql<br>\n";
+        $fptr = fopen(dirname(__FILE__) . "/data/$table.sql","r");
+        $success = true;
+        while($line = fgets($fptr)) {
+            $query = "INSERT INTO $table VALUES $line";
+            $try = $sql->query("INSERT INTO $table VALUES $line");
+            if ($try === false) {
+                $error = $sql->error();
+                $success = false;
+                echo "<br><small style='color:red;'>"
+                    . (strlen($error)? $error : 'Unknown error')
+                    . " executing:<br><code>$query</code></small><br>\n";
+            } else {
+                if(++$loaded % 50 === 0) {
+                    echo "<br>\n";
+                    flush();
+                }
+                echo ".";
+            }
+        }
+        fclose($fptr);
+        echo ($success? ' success!' : "<br>\n'$table' load " . ($loaded? 'partial success;' : 'failed;'))
+            . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
+
+        return $success;
+    }
+
+    static private function loadFromCsv($sql, $table, $path)
+    {
+        $LOCAL = 'LOCAL';
+        if (CoreLocal::get('localhost') == '127.0.0.1' || CoreLocal::get('localhost') == 'localhost') {
+            $LOCAL = '';
+        }
+        $query = "LOAD DATA $LOCAL INFILE
+                '$path'
+                INTO TABLE $table
+                FIELDS TERMINATED BY ','
+                ESCAPED BY '\\\\'
+                OPTIONALLY ENCLOSED BY '\"'
+                LINES TERMINATED BY '\\r\\n'";
+        $prep = $sql->prepare_statement($query);
+        $try = $sql->exec_statement($prep);
+        if ($try === false) {
+            $error = $sql->error();
+            echo "<br><span style='color:red;'>"
+                . (strlen($error)? $error : 'Unknown error')
+                . " executing:<br><code>$query</code><br></span><br>\n";
+        }
+
+        return $try;
+    }
+
+    static private function loadCsvLines($sql, $table, $path)
+    {
+        $loaded = 0;
+        echo "line-by-line<br>\n";
+        $fptr = fopen($path, 'r');
+        $stmt = false;
+        $success = false;
+        while(!feof($fptr)) {
+            $line = fgetcsv($fptr);
+            if (!is_array($line)) continue;
+            if ($stmt === false) {
+                $query = 'INSERT INTO '.$table.' VALUES (';
+                foreach($line as $field) {
+                    $query .= '?,';
+                }
+                $query = substr($query,0,strlen($query)-1).')';
+                $stmt = $sql->prepare_statement($query);
+                if ($stmt === false) {
+                    $error = $sql->error();
+                    $success = false;
+                    echo "<br><span style='color:red;'>"
+                        . (strlen($error)? $error : 'Unknown error')
+                        . " preparing:<br><code>$query</code></span><br>\n";
+                    break;
+                }
+            }
+            $try = $sql->exec_statement($stmt, $line);
+            if ($try === false) {
+                $error = $sql->error();
+                $success = false;
+                echo "<br><span style='color:red;'>"
+                    . (strlen($error)? $error : 'Unknown error')
+                    . " executing:<br><code>$query</code><br>("
+                    . "'" . join("', '", $line) . "')"
+                    . ' [' . count($line) . ' operands]'
+                    . "</span><br>\n";
+            } else {
+                if(++$loaded % 100 === 0) {
+                    echo "<br>\n";
+                    flush();
+                }
+                echo ".";
+            }
+        }
+        fclose($fptr);
+        echo ($success? ' success!' : "<br>\n'$table' load " . ($loaded? 'partial success;' : 'failed;'))
+            . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
+
+        return $success;
+    }
+
     /**
       Load sample data into the table
       @param $sql [SQLManager object] connected to database
@@ -466,46 +572,20 @@ class InstallUtilities extends LibraryClass
     static public function loadSampleData($sql, $table, $quiet=false)
     {
         $success = true; 
-        $loaded = 0;
         ob_start();
         echo "Loading `$table` ";
         if (file_exists(dirname(__FILE__) . "/data/$table.sql")) {
-            echo "from data/$table.sql<br>\n";
-            $fp = fopen(dirname(__FILE__) . "/data/$table.sql","r");
-            while($line = fgets($fp)) {
-                $query = "INSERT INTO $table VALUES $line";
-                $try = $sql->query("INSERT INTO $table VALUES $line");
-                if ($try === false) {
-                    $error = $sql->error();
-                    $success = false;
-                    echo "<br><small style='color:red;'>"
-                        . (strlen($error)? $error : 'Unknown error')
-                        . " executing:<br><code>$query</code></small><br>\n";
-                } else {
-                    if(++$loaded % 50 === 0) {
-                        echo "<br>\n";
-                        flush();
-                    }
-                    echo ".";
-                }
-            }
-            fclose($fp);
-            echo ($success? ' success!' : "<br>\n'$table' load " . ($loaded? 'partial success;' : 'failed;'))
-                . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
-        } else if (file_exists(dirname(__FILE__) . "/data/$table.csv")) {
+            $success = self::loadFromSql($sql, $table);
+        } elseif (file_exists(dirname(__FILE__) . "/data/$table.csv")) {
             echo "from data/$table.csv ";
-            $LOCAL = 'LOCAL';
-            if (CoreLocal::get('localhost') == '127.0.0.1' || CoreLocal::get('localhost') == 'localhost') {
-                $LOCAL = '';
-            }
             $path = realpath(dirname(__FILE__) . "/data/$table.csv");
             /**
               Handle symlinks on windows by checking if the first line
               of the file contains the name of another CSV file.
             */
             if (MiscLib::win32()) {
-                $fp = fopen($path, 'r');
-                $first_line = trim(fgets($fp));
+                $fptr = fopen($path, 'r');
+                $first_line = trim(fgets($fptr));
                 if (substr($first_line, -4) == '.csv') {
                     $path = realpath(substr($first_line, 3));
                     if (!file_exists($path)) {
@@ -516,73 +596,18 @@ class InstallUtilities extends LibraryClass
                         return false;
                     }
                 }
-                fclose($fp);
+                fclose($fptr);
                 $path = str_replace('\\', '/', $path);
             }
-            $query = "LOAD DATA $LOCAL INFILE
-                    '$path'
-                    INTO TABLE $table
-                    FIELDS TERMINATED BY ','
-                    ESCAPED BY '\\\\'
-                    OPTIONALLY ENCLOSED BY '\"'
-                    LINES TERMINATED BY '\\r\\n'";
-            $prep = $sql->prepare_statement($query);
-            $try = $sql->exec_statement($prep);
-            if ($try === false) {
-                $error = $sql->error();
-                echo "<br><span style='color:red;'>"
-                    . (strlen($error)? $error : 'Unknown error')
-                    . " executing:<br><code>$query</code><br></span><br>\n";
-            }
+            $try = self::loadFromCsv($sql, $table, $path);
             /** alternate implementation
             for non-mysql and/or LOAD DATA LOCAL
             not allowed */
             if ($try !== false) {
                 echo "succeeded!<br>\n";
+                $success = true;
             } else {
-                echo "line-by-line<br>\n";
-                $fp = fopen($path, 'r');
-                $stmt = false;
-                while(!feof($fp)) {
-                    $line = fgetcsv($fp);
-                    if (!is_array($line)) continue;
-                    if ($stmt === false) {
-                        $query = 'INSERT INTO '.$table.' VALUES (';
-                        foreach($line as $field) {
-                            $query .= '?,';
-                        }
-                        $query = substr($query,0,strlen($query)-1).')';
-                        $stmt = $sql->prepare_statement($query);
-                        if ($stmt === false) {
-                            $error = $sql->error();
-                            $success = false;
-                            echo "<br><span style='color:red;'>"
-                                . (strlen($error)? $error : 'Unknown error')
-                                . " preparing:<br><code>$query</code></span><br>\n";
-                            break;
-                        }
-                    }
-                    $try = $sql->exec_statement($stmt, $line);
-                    if ($try === false) {
-                        $error = $sql->error();
-                        $success = false;
-                        echo "<br><span style='color:red;'>"
-                            . (strlen($error)? $error : 'Unknown error')
-                            . " executing:<br><code>$query</code><br>("
-                            . "'" . join("', '", $line) . "')"
-                            . ' [' . count($line) . ' operands]'
-                            . "</span><br>\n";
-                    } else {
-                        if(++$loaded % 100 === 0) {
-                            echo "<br>\n";
-                            flush();
-                        }
-                        echo ".";
-                    }
-                }
-                fclose($fp);
-                echo ($success? ' success!' : "<br>\n'$table' load " . ($loaded? 'partial success;' : 'failed;'))
-                    . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
+                $success = self::loadCsvLines($sql, $table, $path);
             }
         } else {
             echo "<br><span style='color:red;'>Table data not found in either {$table}.sql or {$table}.csv</span><br>\n";
@@ -605,9 +630,7 @@ class InstallUtilities extends LibraryClass
             } elseif ($type == 'mssql') {
                 ini_set('mssql.connect_timeout',1);
             }
-            ob_start();
-            $sql =  @ new \COREPOS\pos\lib\SQLManager($host,$type,$db,$user,$pw);
-            ob_end_clean();
+            $sql =  new \COREPOS\pos\lib\SQLManager($host,$type,$db,$user,$pw);
         } catch(Exception $ex) {}
 
         if ($sql === false || $sql->isConnected($db) === false) {
@@ -791,16 +814,7 @@ class InstallUtilities extends LibraryClass
                 $current_value = (int)$current_value;
             }
         } else if ($quoted && !is_array($current_value)) {
-            // quoted must not contain single quotes
-            $current_value = str_replace("'", '', $current_value);
-            // must not start with backslash
-            while (strlen($current_value) > 0 && substr($current_value, 0, 1) == "\\") {
-                $current_value = substr($current_value, 1);
-            }
-            // must not end with backslash
-            while (strlen($current_value) > 0 && substr($current_value, -1) == "\\") {
-                $current_value = substr($current_value, 0, strlen($current_value)-1);
-            }
+            $current_value = self::sanitizeString($current_value);
         }
 
         CoreLocal::set($name, $current_value);
@@ -873,25 +887,7 @@ class InstallUtilities extends LibraryClass
         }
 
         // sanitize values:
-        if (!$is_array && !$quoted) {
-            // unquoted must be a number or boolean
-            if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value) !== 'false') {
-                $current_value = (int)$current_value;
-            }
-        } else if (!$is_array && $quoted) {
-            // quoted must not contain single quotes
-            $current_value = str_replace("'", '', $current_value);
-            // must not start with backslash
-            while (strlen($current_value) > 0 && substr($current_value, 0, 1) == "\\") {
-                $current_value = substr($current_value, 1);
-            }
-            // must not end with backslash
-            while (strlen($current_value) > 0 && substr($current_value, -1) == "\\") {
-                $current_value = substr($current_value, 0, strlen($current_value)-1);
-            }
-        } else if ($is_array && !is_array($current_value)) {
-            $current_value = $default_value;
-        }
+        $current_value = self::sanitizeValue($current_value, $is_array, $quoted);
         
         CoreLocal::set($name, $current_value);
         self::writeInput($name, $current_value, $storage);
@@ -960,6 +956,60 @@ class InstallUtilities extends LibraryClass
 
         return $ret;
     }
+
+    private static function sanitizeValue($current_value, $is_array, $quoted)
+    {
+        if (!$is_array && !$quoted) {
+            // unquoted must be a number or boolean
+            if (!is_numeric($current_value) && strtolower($current_value) !== 'true' && strtolower($current_value) !== 'false') {
+                $current_value = (int)$current_value;
+            }
+        } else if (!$is_array && $quoted) {
+            $current_value = self::sanitizeString($current_value);
+        } else if ($is_array && !is_array($current_value)) {
+            $current_value = $default_value;
+        }
+
+        return $current_value;
+    }
+
+    private static function sanitizeString($current_value)
+    {
+        // quoted must not contain single quotes
+        $current_value = str_replace("'", '', $current_value);
+        // must not start with backslash
+        while (strlen($current_value) > 0 && substr($current_value, 0, 1) == "\\") {
+            $current_value = substr($current_value, 1);
+        }
+        // must not end with backslash
+        while (strlen($current_value) > 0 && substr($current_value, -1) == "\\") {
+            $current_value = substr($current_value, 0, strlen($current_value)-1);
+        }
+
+        return $current_value;
+    }
+
+    private static function checkParameter($param, $checked, $wrong)
+    {
+        $p_value = $param->materializeValue();
+        $checked[$param->param_key()] = true;
+        $i_value = CoreLocal::get($param->param_key());
+        if (isset($checked[$param->param_key()])) {
+            // setting has a lane-specific parameters
+        } elseif (is_numeric($i_value) && is_numeric($p_value) && $i_value == $p_value) {
+            // allow loose comparison on numbers
+            // i.e., permit integer 1 equal string '1'
+        } elseif ($p_value !== $i_value) {
+            printf('<span style="color:red;">Setting mismatch for</span>
+                <a href="" onclick="$(this).next().toggle(); return false;">%s</a>
+                <span style="display:none;"> parameters says %s, ini.php says %s</span></p>',
+                $param->param_key(), print_r($p_value, true), print_r($i_value, true)
+            );
+            $wrong[$param->param_key()] = $p_value;
+        }
+
+        return array($checked, $wrong);
+    }
     
     public static function validateConfiguration()
     {
@@ -985,22 +1035,7 @@ class InstallUtilities extends LibraryClass
         $checked = array();
         $wrong = array();
         foreach ($parameters->find() as $param) {
-            $p_value = $param->materializeValue();
-            $checked[$param->param_key()] = true;
-            $i_value = $CORE_LOCAL->get($param->param_key());
-            if (is_numeric($i_value) && is_numeric($p_value) && $i_value == $p_value) {
-                // allow loose comparison on numbers
-                // i.e., permit integer 1 equal string '1'
-                continue;
-            }
-            if ($p_value !== $i_value) {
-                printf('<span style="color:red;">Setting mismatch for</span>
-                    <a href="" onclick="$(this).next().toggle(); return false;">%s</a>
-                    <span style="display:none;"> parameters says %s, ini.php says %s</span></p>',
-                    $param->param_key(), print_r($p_value, true), print_r($i_value, true)
-                );
-                $wrong[$param->param_key()] = $p_value;
-            }
+            list($checked, $wrong) = self::checkParameter($param, $checked, $wrong);
         }
 
         /**
@@ -1010,26 +1045,7 @@ class InstallUtilities extends LibraryClass
         $parameters->store_id(0);
         $parameters->lane_id(0);
         foreach ($parameters->find() as $param) {
-            if (isset($checked[$param->param_key()])) {
-                // setting has a lane-specific parameters
-                // value. no need to check this one.
-                continue;
-            }
-            $p_value = $param->materializeValue();
-            $i_value = $CORE_LOCAL->get($param->param_key());
-            if (is_numeric($i_value) && is_numeric($p_value) && $i_value == $p_value) {
-                // allow loose comparison on numbers
-                // i.e., permit integer 1 equal string '1'
-                continue;
-            }
-            if ($p_value !== $i_value) {
-                printf('<p>Setting mismatch for 
-                    <a href="" onclick=$(this).next.toggle();return false;">%s</a>
-                    <span style="display:none;"> parameters says %s, ini.php says %s</span></p>',
-                    $param->param_key(), print_r($p_value, true), print_r($i_value, true)
-                );
-                $wrong[$param->param_key()] = $p_value;
-            }
+            list($checked, $wrong) = self::checkParameter($param, $checked, $wrong);
         }
 
         /**
@@ -1100,6 +1116,7 @@ class InstallUtilities extends LibraryClass
         
         $sample_data = array(
             'couponcodes',
+            'customReceipt',
             'globalvalues',
             'parameters',
             'tenders',
@@ -2012,6 +2029,14 @@ class InstallUtilities extends LibraryClass
             $errors[] = $obj->createIfNeeded($name);
         }
 
+        $errors = self::createDlog($db, $name, $errors);
+        $errors = self::createTTG($db, $name, $errors);
+
+        return $errors;
+    }
+
+    private static function createDlog($db, $name, $errors)
+    {
         $dlogQ = "CREATE VIEW dlog AS
             SELECT datetime AS tdate,
                 register_no,
@@ -2055,6 +2080,11 @@ class InstallUtilities extends LibraryClass
             $errors = InstallUtilities::dbStructureModify($db,'dlog',$dlogQ,$errors);
         }
 
+        return $errors;
+    }
+
+    private static function createTTG($db, $name, $errors)
+    {
         $ttG = "
             CREATE VIEW TenderTapeGeneric AS
             SELECT tdate, 

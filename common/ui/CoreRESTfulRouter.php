@@ -130,7 +130,7 @@ class CoreRESTfulRouter
         try {
             $method = $this->form->_method;
         } catch (\Exception $ex) {
-            $req = filter_input(INPUTT_SERVER, 'REQUEST_METHOD');
+            $req = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
             $method = $req ? $req : 'get';
         }
 

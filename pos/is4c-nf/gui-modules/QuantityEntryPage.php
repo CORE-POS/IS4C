@@ -58,6 +58,24 @@ class QuantityEntryPage extends BasicCorePage
     const MODE_INTEGER = 0;
     const MODE_PRECISE = 1;
 
+    private function getPrefixes($input_string)
+    {
+        $plu = '';
+        $prefix = '';
+        // trim numeric characters from right side of
+        // input. what remains, if anything, should be
+        // prefixes to the UPC
+        $matched = preg_match('/^(\D*)(\d+)$/', $input_string, $matches);
+        if ($matched) {
+            $prefix = $matches[1];
+            $plu = $matches[2];
+        } else {
+            $plu = $input_string;
+        }
+
+        return array($plu, $prefix);
+    }
+
     function preprocess()
     {
         $this->box_color="coloredArea";
@@ -67,11 +85,7 @@ class QuantityEntryPage extends BasicCorePage
             $this->msg = _('precision weight required');
         }
 
-        if (!isset($_REQUEST['reginput'])) {
-            return true;
-        }
-
-        $qtty = strtoupper(trim($_REQUEST["reginput"]));
+        $qtty = strtoupper(trim(FormLib::get('reginput')));
         if ($qtty == "CL") {
             /**
               Clear cancels
@@ -82,52 +96,13 @@ class QuantityEntryPage extends BasicCorePage
             $this->change_page($this->page_url."gui-modules/pos2.php");
             return false;
         } elseif (is_numeric($qtty) && $qtty < 9999 && $qtty >= 0) {
-            /**
-              If it's a number, check error conditions.
-              The number should always be an integer. In
-              precision mode the number must be exactly three
-              digits. This mode is for very light items
-              that should be measured in thousands instead
-              of hundreths. If the number is valid it's converted
-              back to decimal in precision mode.
-            */
-            if ($qtty != ((int)$qtty)) {
-                $this->box_color="errorColoredArea";
-                if ($mode == self::MODE_PRECISE) {
-                    $this->msg = _("invalid precision weight") 
-                            . '<br />'
-                            . _('enter three digits');
-                } else {
-                    $this->msg = _("invalid quantity") 
-                            . '<br />'
-                            . _('enter whole number');
-                }
-
+            $qtty = $this->validateQty($mode, $qtty);
+            if ($qtty === true) {
                 return true;
-            } elseif ($mode == self::MODE_PRECISE && strlen($qtty) != 3) {
-                $this->box_color="errorColoredArea";
-                $this->msg = _('invalid precision weight')
-                        . '<br />'
-                        . _('enter three digits');
-                return true;
-            } elseif ($mode == self::MODE_PRECISE) {
-                $qtty /= 1000.00;
-                $qtty = round($qtty, 3);
             }
 
             $input_string = FormLib::get('entered-item');
-            $plu = '';
-            $prefix = '';
-            // trim numeric characters from right side of
-            // input. what remains, if anything, should be
-            // prefixes to the UPC
-            $matched = preg_match('/^(\D*)(\d+)$/', $input_string, $matches);
-            if ($matched) {
-                $prefix = $matches[1];
-                $plu = $matches[2];
-            } else {
-                $plu = $input_string;
-            }
+            list($plu, $prefix) = $this->getPrefixes($input_string);
             CoreLocal::set("qttyvalid",1);
             $inp = $prefix . $qtty . '*' . $plu;
             $this->change_page(
@@ -137,15 +112,53 @@ class QuantityEntryPage extends BasicCorePage
                 . '&repeat=1');
 
             return false;
-        }
-
-        $this->box_color="errorColoredArea";
-        $this->msg = _("invalid quantity");
-        if ($mode == self::MODE_PRECISE) {
-            $this->msg = _('invalid precision weight');
+        } elseif ($qtty !== '') {
+            $this->box_color="errorColoredArea";
+            $this->msg = _("invalid quantity");
+            if ($mode == self::MODE_PRECISE) {
+                $this->msg = _('invalid precision weight');
+            }
         }
 
         return true;
+    }
+
+    private function validateQty($mode, $qtty)
+    {
+        /**
+          If it's a number, check error conditions.
+          The number should always be an integer. In
+          precision mode the number must be exactly three
+          digits. This mode is for very light items
+          that should be measured in thousands instead
+          of hundreths. If the number is valid it's converted
+          back to decimal in precision mode.
+        */
+        if ($qtty != ((int)$qtty)) {
+            $this->box_color="errorColoredArea";
+            if ($mode == self::MODE_PRECISE) {
+                $this->msg = _("invalid precision weight") 
+                        . '<br />'
+                        . _('enter three digits');
+            } else {
+                $this->msg = _("invalid quantity") 
+                        . '<br />'
+                        . _('enter whole number');
+            }
+
+            return true;
+        } elseif ($mode == self::MODE_PRECISE && strlen($qtty) != 3) {
+            $this->box_color="errorColoredArea";
+            $this->msg = _('invalid precision weight')
+                    . '<br />'
+                    . _('enter three digits');
+            return true;
+        } elseif ($mode == self::MODE_PRECISE) {
+            $qtty /= 1000.00;
+            $qtty = round($qtty, 3);
+        }
+
+        return $qtty;
     }
 
     function head_content()
@@ -184,10 +197,16 @@ class QuantityEntryPage extends BasicCorePage
         echo DisplayLib::printfooter();
         echo "</div>";
     } // END true_body() FUNCTION
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertEquals(true, $this->validateQty(self::MODE_PRECISE, 1.5));
+        $phpunit->assertEquals(true, $this->validateQty(self::MODE_INTEGER, 1.5));
+        $phpunit->assertEquals(true, $this->validateQty(self::MODE_PRECISE, 10));
+        $phpunit->assertEquals(true, $this->validateQty(self::MODE_PRECISE, 1000));
+        $phpunit->assertEquals(0.100, $this->validateQty(self::MODE_PRECISE, 100));
+    }
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
-    new QuantityEntryPage();
-}
+AutoLoader::dispatch();
 
-?>

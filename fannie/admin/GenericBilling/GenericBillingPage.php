@@ -92,7 +92,9 @@ function postBilling(){
                 'customers' => array(
                     array('accountHolder'=>1),
                 ), 
-            )
+            ),
+            0,
+            true
         );
         foreach ($accounts as $account) {
             $ret .= sprintf('<option %s value="%d">%d %s</option>',
@@ -209,6 +211,16 @@ function postBilling(){
             involves billing business customers for random services
             that lack specialized tooling.
             </p>'; 
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->id = 1;
+        ob_start();
+        $phpunit->assertEquals(false, $this->get_id_handler());
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
     }
 }
 

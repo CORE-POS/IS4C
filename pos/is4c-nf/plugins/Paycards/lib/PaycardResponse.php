@@ -164,7 +164,7 @@ class PaycardResponse
     private function legacyToken($dbTrans)
     {
         $tokenSql = sprintf("INSERT INTO efsnetTokens (expireDay, refNum, token, processData, acqRefData) 
-                VALUES (%s,'%s','%s','%s','%s')",
+                VALUES ('%s','%s','%s','%s','%s')",
             $this->now,
             $this->request->refNum, 
             $this->token['record'],

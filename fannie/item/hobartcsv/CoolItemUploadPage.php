@@ -35,19 +35,16 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     protected $preview_opts = array(
         'upc' => array(
-            'name' => 'upc',
             'display_name' => 'UPC*',
             'default' => 0,
             'required' => true
         ),
         'price' => array(
-            'name' => 'price',
             'display_name' => 'Price*',
             'default' => 1,
             'required' => true
         ),
         'cool' => array(
-            'name' => 'cool',
             'display_name' => 'COOL*',
             'default' => 2,
             'required' => true

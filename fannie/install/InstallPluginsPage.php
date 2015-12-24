@@ -133,7 +133,23 @@ foreach ($others as $o) {
         $mods[] = $o;
     }
 }
-sort($mods);
+$sortName = function($name) {
+    if (strstr($name, '\\')) {
+        $parts = explode('\\', $name);
+        $name = $parts[count($parts)-1];
+    }
+    return $name;
+};
+$modSort = function($a, $b) use ($sortName) {
+    $a = $sortName($a);
+    $b = $sortName($b);
+    if ($a == $b) {
+        return 0;
+    } else {
+        return $a < $b ? -1 : 1;
+    }
+};
+usort($mods, $modSort);
 
 if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
     $oldset = $FANNIE_PLUGIN_LIST;
