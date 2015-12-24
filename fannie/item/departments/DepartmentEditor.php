@@ -62,7 +62,7 @@ class DepartmentEditor extends FanniePage {
 
     private function getDept($dbc, $deptID)
     {
-        $dept = new DepartmensModel($dbc);
+        $dept = new DepartmentsModel($dbc);
         if ($deptID !== -1) { // not new department
             $dept->dept_no($deptID);
             $dept->load();
