@@ -301,17 +301,17 @@ class TenderEditor extends FannieRESTfulPage
         $model = $this->getTenderModel(1);
         $phpunit->assertEquals(true, $model->load());
 
-        $this->testCode($phpunit);
-        $this->testName($phpunit);
-        $this->testType($phpunit);
-        $this->testChange($phpunit);
-        $this->testMin($phpunit);
-        $this->testMax($phpunit);
-        $this->testRefund($phpunit);
-        $this->testSalesCode($phpunit);
+        $this->testCode($phpunit, $model);
+        $this->testName($phpunit, $model);
+        $this->testType($phpunit, $model);
+        $this->testChange($phpunit, $model);
+        $this->testMin($phpunit, $model);
+        $this->testMax($phpunit, $model);
+        $this->testRefund($phpunit, $model);
+        $this->testSalesCode($phpunit, $model);
     }
 
-    private function testCode($phpunit)
+    private function testCode($phpunit, $model)
     {
         $this->saveCode = 'ZZ';
         $phpunit->assertInternalType('bool', $this->post_id_saveCode_handler());
@@ -319,7 +319,7 @@ class TenderEditor extends FannieRESTfulPage
         $phpunit->assertEquals('ZZ', $model->TenderCode());
     }
 
-    private function testName($phpunit)
+    private function testName($phpunit, $model)
     {
         $this->saveName = 'Test Changed';
         $phpunit->assertInternalType('bool', $this->post_id_saveName_handler());
@@ -327,7 +327,7 @@ class TenderEditor extends FannieRESTfulPage
         $phpunit->assertEquals('Test Changed', $model->TenderName());
     }
 
-    private function testType($phpunit)
+    private function testType($phpunit, $model)
     {
         $this->saveType = 'YY';
         $phpunit->assertInternalType('bool', $this->post_id_saveType_handler());
@@ -335,7 +335,7 @@ class TenderEditor extends FannieRESTfulPage
         $phpunit->assertEquals('YY', $model->TenderType());
     }
 
-    private function testChange($phpunit)
+    private function testChange($phpunit, $model)
     {
         $this->saveCMsg = 'Kickbacks';
         $phpunit->assertInternalType('bool', $this->post_id_saveCMsg_handler());
@@ -343,7 +343,7 @@ class TenderEditor extends FannieRESTfulPage
         $phpunit->assertEquals('Kickbacks', $model->ChangeMessage());
     }
 
-    private function testMin($phpunit)
+    private function testMin($phpunit, $model)
     {
         $this->saveMin = 5;
         $phpunit->assertInternalType('bool', $this->post_id_saveMin_handler());
@@ -351,7 +351,7 @@ class TenderEditor extends FannieRESTfulPage
         $phpunit->assertEquals(5, $model->MinAmount());
     }
 
-    private function testMax($phpunit)
+    private function testMax($phpunit, $model)
     {
         $this->saveMax = 15;
         $phpunit->assertInternalType('bool', $this->post_id_saveMax_handler());
@@ -359,7 +359,7 @@ class TenderEditor extends FannieRESTfulPage
         $phpunit->assertEquals(15, $model->MaxAmount());
     }
 
-    private function testRefund($phpunit)
+    private function testRefund($phpunit, $model)
     {
         $this->saveRLimit = 25;
         $phpunit->assertInternalType('bool', $this->post_id_saveRLimit_handler());
@@ -367,7 +367,7 @@ class TenderEditor extends FannieRESTfulPage
         $phpunit->assertEquals(25, $model->MaxRefund());
     }
 
-    private function testSalesCode($phpunit)
+    private function testSalesCode($phpunit, $model)
     {
         $this->saveSalesCode = 2500;
         $phpunit->assertInternalType('bool', $this->post_id_saveSalesCode_handler());
