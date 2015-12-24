@@ -212,7 +212,9 @@ class LaneTender extends FannieReportPage
 
     public function helpContent()
     {
-        return '<p>
+        return '<p>Select a date range and cashier <i>(opt.)</i>  
+        to calculate discrepancies between POS and counted 
+        totals.
             </p>';
     }
 }
