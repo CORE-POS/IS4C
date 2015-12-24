@@ -50,7 +50,7 @@ class AuthClassesPage extends FannieRESTfulPage
         return parent::preprocess();
     }
 
-    public function post_id_handler()
+    protected function post_id_handler()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $notes = FormLib::get('notes');
@@ -76,7 +76,7 @@ class AuthClassesPage extends FannieRESTfulPage
         return false;
     }
 
-    public function delete_id_handler()
+    protected function delete_id_handler()
     {
         deleteClass($this->id);
         header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF'));
@@ -84,14 +84,14 @@ class AuthClassesPage extends FannieRESTfulPage
         return false;
     }
 
-    public function get_id_handler()
+    protected function get_id_handler()
     {
         $this->notes = getAuthNotes($this->id); 
 
         return true;
     }
 
-    public function get_new_handler()
+    protected function get_new_handler()
     {
         $this->id = '';
         $this->notes = '';
@@ -99,12 +99,12 @@ class AuthClassesPage extends FannieRESTfulPage
         return true;
     }
 
-    public function get_new_view()
+    protected function get_new_view()
     {
         return $this->get_id_view();
     }
 
-    public function get_id_view()
+    protected function get_id_view()
     {
         $this->add_onload_command("\$('input.form-control').focus();\n");
         $ret = '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">
@@ -123,40 +123,34 @@ class AuthClassesPage extends FannieRESTfulPage
         return $ret;
     }
 
-    public function get_edit_view()
+    protected function get_edit_view()
+    {
+        return $this->listButtonForm('get', 'Edit Class');
+    }
+
+    private function listButtonForm($method, $button)
     {
         $this->add_onload_command("\$('select.form-control').focus();\n");
         $ret = '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="get">
+            <input type="hidden" name="_method" value="' . $method . '" />
             <label>Authorization class</label>
             <select name="id" class="form-control">';
         foreach (getAuthList() as $name) {
             $ret .= '<option>' . $name . '</option>';
         }
         $ret .= '</select>';
-        $ret .= '<p><button type="submit" class="btn btn-default">Edit Class</button></p>';
+        $ret .= '<p><button type="submit" class="btn btn-default">' . $button . '</button></p>';
         $ret .= '</form>';
 
         return $ret;
     }
 
-    public function get_remove_view()
+    protected function get_remove_view()
     {
-        $this->add_onload_command("\$('select.form-control').focus();\n");
-        $ret = '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="get">
-            <input type="hidden" name="_method" value="delete" />
-            <label>Authorization class</label>
-            <select name="id" class="form-control">';
-        foreach (getAuthList() as $name) {
-            $ret .= '<option>' . $name . '</option>';
-        }
-        $ret .= '</select>';
-        $ret .= '<p><button type="submit" class="btn btn-default">Delete Class</button></p>';
-        $ret .= '</form>';
-
-        return $ret;
+        return $this->listButtonForm('delete', 'Delete Class');
     }
     
-    public function get_view()
+    protected function get_view()
     {
         ob_start();
         echo '<div class="row container">';

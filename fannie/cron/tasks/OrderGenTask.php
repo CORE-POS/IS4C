@@ -115,10 +115,10 @@ class OrderGenTask extends FannieTask
                   item(s)
                 */
                 if (!isset($orders[$row['vid']])) {
-                    $po = new PurchaseOrderModel($dbc);
-                    $po->vendorID($row['vid']);
-                    $po->creationDate(date('Y-m-d H:i:s'));
-                    $poID = $po->save();
+                    $order = new PurchaseOrderModel($dbc);
+                    $order->vendorID($row['vid']);
+                    $order->creationDate(date('Y-m-d H:i:s'));
+                    $poID = $order->save();
                     $orders[$row['vid']] = $poID;
                 }
                 $itemR = $dbc->getRow($catalogP, array($row['upc'], $row['vid']));
@@ -177,30 +177,35 @@ class OrderGenTask extends FannieTask
         }
 
         if (!$this->silent) {
-            /**
-              Fire off email notifications
-            */
-            $deptP = $dbc->prepare('
-                SELECT e.emailAddress
-                FROM PurchaseOrderItems AS i
-                    INNER JOIN products AS p ON p.upc=i.internalUPC
-                    INNER JOIN superdepts AS s ON p.department=s.dept_ID
-                    INNER JOIN superDeptEmails AS e ON s.superID=e.superID
-                WHERE orderID=?
-                GROUP BY e.emailAddress');
-            foreach ($orders as $oid) {
-                $sendTo = array();
-                $deptR = $dbc->execute($deptP, array($oid));
-                while ($deptW = $dbc->fetchRow($deptR)) {
-                    $sendTo[] = $deptW['emailAddress'];
-                }
-                $sendTo = 'andy@wholefoods.coop';
-                if (count($sendTo) > 0) {
-                    $msg_body = 'Created new order' . "\n";
-                    $msg_body .= "http://" . 'key' . '/' . $this->config->get('URL')
-                        . 'purchasing/ViewPurchaseOrders.php?id=' . $oid . "\n";
-                    mail($sendTo, 'Generated Purchase Order', $msg_body);
-                }
+            $this->sendNotifications($dbc, $orders);
+        }
+    }
+
+    private function sendNotifications($dbc, $orders)
+    {
+        /**
+          Fire off email notifications
+        */
+        $deptP = $dbc->prepare('
+            SELECT e.emailAddress
+            FROM PurchaseOrderItems AS i
+                INNER JOIN products AS p ON p.upc=i.internalUPC
+                INNER JOIN superdepts AS s ON p.department=s.dept_ID
+                INNER JOIN superDeptEmails AS e ON s.superID=e.superID
+            WHERE orderID=?
+            GROUP BY e.emailAddress');
+        foreach ($orders as $oid) {
+            $sendTo = array();
+            $deptR = $dbc->execute($deptP, array($oid));
+            while ($deptW = $dbc->fetchRow($deptR)) {
+                $sendTo[] = $deptW['emailAddress'];
+            }
+            $sendTo = 'andy@wholefoods.coop';
+            if (count($sendTo) > 0) {
+                $msg_body = 'Created new order' . "\n";
+                $msg_body .= "http://" . 'key' . '/' . $this->config->get('URL')
+                    . 'purchasing/ViewPurchaseOrders.php?id=' . $oid . "\n";
+                mail($sendTo, 'Generated Purchase Order', $msg_body);
             }
         }
     }

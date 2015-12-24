@@ -37,10 +37,8 @@ last thirteen weeks';
         'weekday' => '*',
     );
 
-    public function run()
+    private function initWeeks($dbc)
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB;
-
         $today = strtotime('today');
         $this_monday = $today;
         while(date('N', $this_monday) != 1) {
@@ -48,7 +46,6 @@ last thirteen weeks';
         }
         $last_monday = mktime(0, 0, 0, date('n', $this_monday), date('j', $this_monday) - 7, date('Y', $this_monday));
 
-        $dbc = FannieDB::get($FANNIE_ARCHIVE_DB);
         $this->cronMsg('Determining applicable weeks', FannieLogger::INFO);
         $dbc->query('TRUNCATE TABLE weeksLastQuarter');
         $ins = $dbc->prepare('INSERT INTO weeksLastQuarter (weekLastQuarterID, weekStart, weekEnd) VALUES (?, ?, ?)');
@@ -72,6 +69,16 @@ last thirteen weeks';
             $dbc->execute($ins, $args);
             $weeks[] = array($monday, $sunday);
         }
+
+        return $weeks;
+    }
+
+    public function run()
+    {
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB;
+
+        $dbc = FannieDB::get($FANNIE_ARCHIVE_DB);
+        $weeks = $this->initWeeks($dbc);
 
         $addP = $dbc->prepare('INSERT INTO productWeeklyLastQuarter 
                             (upc, weekLastQuarterID, quantity, total,
@@ -147,6 +154,11 @@ last thirteen weeks';
             }
         } // end loop on weeks
 
+        $this->weightedAverages($dbc);
+    }
+
+    private function weightedAverages($dbc)
+    {
         // now do weighted averages
         $this->cronMsg('Calculating weighted averages', FannieLogger::INFO);
         $dbc->query('TRUNCATE TABLE productSummaryLastQuarter');

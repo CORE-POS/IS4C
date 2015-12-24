@@ -153,9 +153,6 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
 
     function receiptHeader($date,$trans) 
     {
-        global $FANNIE_ARCHIVE_DB, $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_METHOD;
-        $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
-
         $totime = strtotime($date);
         $month = date('m',$totime);
         $year = date('Y',$totime);
@@ -220,10 +217,34 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         return $this->receipt_to_table($query1,$args,0,'FFFFFF');
     }
 
+    private function receiptHeaderLines()
+    {
+        $receiptHeader = "";
+        if ($this->config->get('COOP_ID')) { 
+            switch ($this->config->get('COOP_ID')) {
+
+            case "WEFC_Toronto":
+                $receiptHeader .= ("<tr><td align=center colspan=4>" . "W E S T &nbsp; E N D &nbsp; F O O D &nbsp; C O - O P" . "</td></tr>\n");
+                $receiptHeader .= ("<tr><td align=center colspan=4>" . "416-533-6363" . "</td></tr>\n");
+                $receiptHeader .= ("<tr><td align=center colspan=4>" . "Local food for local tastes" . "</td></tr>\n");
+                break;
+
+            case "WFC_Duluth":
+                $receiptHeader .= ("<tr><td align=center colspan=4>" . "W H O L E &nbsp; F O O D S &nbsp; C O - O P" . "</td></tr>\n");
+                $receiptHeader .= ("<tr><td align=center colspan=4>" . "218-728-0884" . "</td></tr>\n");
+                $receiptHeader .= ("<tr><td align=center colspan=4>" . "MEMBER OWNED SINCE 1970" . "</td></tr>\n");
+                break;
+
+            default:
+                $receiptHeader .= ("<tr><td align=center colspan=4>" . "FANNIE_COOP_ID >{$FANNIE_COOP_ID}<" . "</td></tr>\n");
+                break;
+            }
+        }
+        return $receiptHeader;
+    }
+
     function receipt_to_table($query,$args,$border,$bgcolor)
     {
-        global $FANNIE_TRANS_DB, $FANNIE_COOP_ID;
-
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
         $prep = $dbc->prepare($query); 
@@ -241,39 +262,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $emp_no = $row2['emp_no'];  
         $trans_num = $row2['emp_no']."-".$row2['register_no']."-".$row2['trans_no'];
 
-        /* 20Jan13 EL The way I would like to do this.
-         * Or perhaps get from core_trans.lane_config
-        if ( $CORE_LOCAL->get("receiptHeaderCount") > 0 ) {
-            $receiptHeader = "";
-            $c = $CORE_LOCAL->get("receiptHeaderCount");
-            for ( $i=1; $i <= $c; $i++ ) {
-                $h = "receiptHeader$i";
-                $receiptHeader .= ("<tr><td align=center colspan=4>" . $CORE_LOCAL->get("$h") . "</td></tr>\n");
-            }
-        }
-        */
-
-        $receiptHeader = "";
-        if ( isset($FANNIE_COOP_ID) ) {
-            switch ($FANNIE_COOP_ID) {
-
-            case "WEFC_Toronto":
-                $receiptHeader .= ("<tr><td align=center colspan=4>" . "W E S T &nbsp; E N D &nbsp; F O O D &nbsp; C O - O P" . "</td></tr>\n");
-                $receiptHeader .= ("<tr><td align=center colspan=4>" . "416-533-6363" . "</td></tr>\n");
-                $receiptHeader .= ("<tr><td align=center colspan=4>" . "Local food for local tastes" . "</td></tr>\n");
-                break;
-
-            case "WFC_Duluth":
-                $receiptHeader .= ("<tr><td align=center colspan=4>" . "W H O L E &nbsp; F O O D S &nbsp; C O - O P" . "</td></tr>\n");
-                $receiptHeader .= ("<tr><td align=center colspan=4>" . "218-728-0884" . "</td></tr>\n");
-                $receiptHeader .= ("<tr><td align=center colspan=4>" . "MEMBER OWNED SINCE 1970" . "</td></tr>\n");
-                break;
-
-            default:
-                $receiptHeader .= ("<tr><td align=center colspan=4>" . "FANNIE_COOP_ID >{$FANNIE_COOP_ID}<" . "</td></tr>\n");
-
-            }
-        }
+        $receiptHeader = $this->receiptHeaderLines();
 
         $ret = "<table border = $border bgcolor=$bgcolor>\n";
         $ret .= "{$receiptHeader}\n";
