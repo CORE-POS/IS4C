@@ -301,14 +301,14 @@ class TenderEditor extends FannieRESTfulPage
         $model = $this->getTenderModel(1);
         $phpunit->assertEquals(true, $model->load());
 
-        $this->testCode();
-        $this->testName();
-        $this->testType();
-        $this->testChange();
-        $this->testMin();
-        $this->testMax();
-        $this->testRefund();
-        $this->testSalesCode();
+        $this->testCode($phpunit);
+        $this->testName($phpunit);
+        $this->testType($phpunit);
+        $this->testChange($phpunit);
+        $this->testMin($phpunit);
+        $this->testMax($phpunit);
+        $this->testRefund($phpunit);
+        $this->testSalesCode($phpunit);
     }
 
     private function testCode($phpunit)
