@@ -71,7 +71,7 @@ var tenderEditor = (function($) {
         });
     };
 
-    mod.saveMin = saveMin(val,t_id){
+    mod.saveMin = function(val,t_id){
         var elem = $(this);
         var orig = this.defaultValue;
         $.ajax({
