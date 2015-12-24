@@ -254,6 +254,5 @@ class ActivityReport extends FannieReportPage
 
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

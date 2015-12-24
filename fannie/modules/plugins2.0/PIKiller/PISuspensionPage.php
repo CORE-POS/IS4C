@@ -365,4 +365,3 @@ class PISuspensionPage extends PIKillerPage {
 
 FannieDispatch::conditionalExec();
 
-?>

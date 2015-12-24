@@ -87,6 +87,5 @@ class TsAdminDelete extends FanniePage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

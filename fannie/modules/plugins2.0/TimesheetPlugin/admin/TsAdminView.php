@@ -390,6 +390,5 @@ class TsAdminView extends FanniePage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

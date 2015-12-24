@@ -20,4 +20,3 @@ if ($all) {
     header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$_SERVER['PHP_SELF']}");
 }
 
-?>

@@ -208,4 +208,3 @@ while($row = $sql->fetch_array($result)){
 
 $pdf->Output();  //Output PDF file to screen.
 
-?>

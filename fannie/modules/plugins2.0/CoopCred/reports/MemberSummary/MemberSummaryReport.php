@@ -638,6 +638,5 @@ title="Tick to display with sorting from column heads; un-tick for a plain formt
 // /class MemberSummaryReport
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

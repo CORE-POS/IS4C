@@ -570,6 +570,5 @@ class CoopCredInputTool extends FanniePage {
 // /class CoopCredInputTool
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

@@ -400,4 +400,4 @@ function togglePrint(username,oid){
 </script>
 <?php
 //include($FANNIE_ROOT.'src/footer.html');
-?>
+

@@ -322,5 +322,5 @@ if (isset($this->current_item_data['upc'])){
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

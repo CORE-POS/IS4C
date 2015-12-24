@@ -661,4 +661,3 @@ class CalendarPluginDisplayLib
 
 }
 
-?>

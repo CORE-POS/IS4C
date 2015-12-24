@@ -503,4 +503,3 @@ function togglePrint(username,oid){
 
 FannieDispatch::conditionalExec();
     
-?>

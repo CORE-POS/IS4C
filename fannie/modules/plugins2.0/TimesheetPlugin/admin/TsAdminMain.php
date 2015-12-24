@@ -78,6 +78,5 @@ class TsAdminMain extends FanniePage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

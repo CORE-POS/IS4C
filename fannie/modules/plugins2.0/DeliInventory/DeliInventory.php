@@ -60,4 +60,3 @@ class DeliInventory extends \COREPOS\Fannie\API\FanniePlugin {
     }
 }
 
-?>

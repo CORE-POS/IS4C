@@ -671,6 +671,5 @@ class CoopCredConfigEditor extends FanniePage {
 // CoopCredConfigEditor class
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

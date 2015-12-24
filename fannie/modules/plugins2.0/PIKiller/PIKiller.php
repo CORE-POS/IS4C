@@ -31,3 +31,4 @@ class PIKiller extends \COREPOS\Fannie\API\FanniePlugin {
     public $plugin_settings = array();
 
 }
+

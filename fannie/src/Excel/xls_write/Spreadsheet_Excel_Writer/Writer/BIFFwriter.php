@@ -258,4 +258,4 @@ class Spreadsheet_Excel_Writer_BIFFwriter extends PEAR
         return false;
     }
 }
-?>
+

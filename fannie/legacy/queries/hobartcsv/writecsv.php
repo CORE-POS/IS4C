@@ -128,5 +128,4 @@ function delete_text($filename,$scaletype,$scaleip,$department,$plu){
   fclose($fp);
 
 }
-?>
 

@@ -87,4 +87,3 @@ input[type="submit"] {
 
 FannieDispatch::conditionalExec();
 
-?>

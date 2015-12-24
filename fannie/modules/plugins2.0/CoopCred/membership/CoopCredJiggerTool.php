@@ -463,6 +463,5 @@ class CoopCredJiggerTool extends FanniePage {
     // class CoopCredJiggerTool
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

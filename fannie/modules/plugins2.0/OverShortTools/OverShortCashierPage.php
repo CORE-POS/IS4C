@@ -368,4 +368,3 @@ class OverShortCashierPage extends FanniePage {
 
 FannieDispatch::conditionalExec(false);
 
-?>

@@ -550,6 +550,5 @@ class OverShortSafecountPage extends FanniePage {
 
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

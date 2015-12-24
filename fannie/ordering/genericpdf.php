@@ -124,4 +124,4 @@ echo '<input type="submit" value="Print Tags" />';
 echo '</form>';
 
 include($FANNIE_ROOT.'src/footer.html');
-?>
+

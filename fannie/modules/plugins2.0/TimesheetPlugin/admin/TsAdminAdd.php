@@ -261,6 +261,5 @@ class TsAdminAdd extends FanniePage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

@@ -127,6 +127,5 @@ class CalendarMainPage extends FanniePage {
 
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

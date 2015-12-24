@@ -82,4 +82,3 @@ class CoreWarehouse extends \COREPOS\Fannie\API\FanniePlugin {
     }
 }
 
-?>

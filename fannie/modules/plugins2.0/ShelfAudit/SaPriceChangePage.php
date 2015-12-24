@@ -244,4 +244,3 @@ function do_pricechange(upc, newprice){
 
 FannieDispatch::conditionalExec();
 
-?>
