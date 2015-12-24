@@ -35,50 +35,11 @@ class LocalInvoicesReport extends FannieReportPage
 
     public $page_set = 'Purchasing';
     public $description = '[Local Invoice Report] show local item totals for invoices.';
-    public $themed = true;
+    protected $required_fields = array('date1', 'date2');
 
-    function preprocess()
+    private function stmt()
     {
-        /**
-          Set the page header and title, enable caching
-        */
-        $this->report_cache = 'none';
-        $this->title = "Fannie : Local Invoices";
-        $this->header = "Local Invoices";
-
-        if (isset($_REQUEST['date1'])) {
-            /**
-              Form submission occurred
-
-              Change content function, turn off the menus,
-              set up headers
-            */
-            $this->content_function = "report_content";
-            $this->has_menus(False);
-        
-            /**
-              Check if a non-html format has been requested
-            */
-            if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
-                $this->report_format = 'xls';
-            elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
-                $this->report_format = 'csv';
-        }
-
-        return True;
-    }
-
-    /**
-      Lots of options on this report.
-    */
-    function fetch_report_data()
-    {
-        global $FANNIE_OP_DB;
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
-
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $departments = $dbc->tableDefinition('departments');
+        $dbc = $this->connection;
         $codingQ = 'SELECT o.orderID,
                     i.vendorInvoiceID, 
                     SUM(o.receivedTotalCost) as rtc,
@@ -93,19 +54,28 @@ class LocalInvoicesReport extends FannieReportPage
                 WHERE i.userID=0
                     AND o.receivedDate BETWEEN ? AND ? ';
         $vendorID = FormLib::get('vendorID');
-        $args = array($date1 . ' 00:00:00', $date2 . ' 23:59:59');
+        $args = array($this->form->date1 . ' 00:00:00', $this->form->date2 . ' 23:59:59');
         if ($vendorID !== '') {
             $codingQ .= ' AND i.vendorID=? ';
             $args[] = $vendorID;
         }
         $codingQ .= 'GROUP BY o.orderID, i.vendorInvoiceID, g.name
                     ORDER BY rdate, i.vendorInvoiceID, g.name';
-        $codingP = $dbc->prepare($codingQ);
+        return $dbc->prepare($codingQ);
+    }
+
+    /**
+      Lots of options on this report.
+    */
+    function fetch_report_data()
+    {
+        $dbc = $this->connection;
+        $codingP = $this->stmt();
 
         $report = array();
         $invoice_sums = array();
         $codingR = $dbc->execute($codingP, $args);
-        while($codingW = $dbc->fetch_row($codingR)) {
+        while ($codingW = $dbc->fetch_row($codingR)) {
             if ($codingW['rtc'] == 0) {
                 // skip zero lines (tote charges)
                 continue;

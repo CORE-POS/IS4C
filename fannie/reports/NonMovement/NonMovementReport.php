@@ -157,14 +157,14 @@ class NonMovementReport extends FannieReportPage {
             $record[] = $row[4];
             if ($this->report_format == 'html') {
                 $record[] = sprintf('<a href="" id="del%s"
-                        onclick="backgroundDeactivate(\'%s\');return false;">
+                        onclick="nonMovement.backgroundDeactivate(\'%s\');return false;">
                         Deactivate this item</a>',$row[0],$row[0]);
             } else {
                 $record[] = '';
             }
             if ($this->report_format == 'html'){
                 $record[] = sprintf('<a href="" id="del%s"
-                        onclick="backgroundDelete(\'%s\',\'%s\');return false;">
+                        onclick="nonMovement.backgroundDelete(\'%s\',\'%s\');return false;">
                         Delete this item</a>',$row[0],$row[0],$row[1]);
             } else {
                 $record[] = '';

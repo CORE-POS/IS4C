@@ -36,41 +36,33 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     public $description = '[Product Import] loads or updates product data via spreadsheet. Used
     primarily for intial database population.';
-    public $themed = true;
 
     protected $preview_opts = array(
         'upc' => array(
-            'name' => 'upc',
             'display_name' => 'UPC',
             'default' => 0,
             'required' => true
         ),
         'desc' => array(
-            'name' => 'desc',
             'display_name' => 'Description',
             'default' => 1,
             'required' => true
         ),
         'price' => array(
-            'name' => 'price',
             'display_name' => 'Price',
             'default' => 2,
             'required' => true
         ),
         'dept' => array(
-            'name' => 'dept',
             'display_name' => 'Department #',
             'default' => 3,
-            'required' => false
         )
     );
 
     private $stats = array('imported'=>0, 'errors'=>array());
 
-    function process_file($linedata)
+    private function deptDefaults($dbc)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
         $defaults_table = array();
         $defQ = $dbc->prepare("SELECT dept_no,dept_tax,dept_fs,dept_discount FROM departments");
         $defR = $dbc->execute($defQ);
@@ -81,6 +73,33 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
                 'discount' => $defW['dept_discount']
             );
         }
+
+        return $defaults_table;
+    }
+
+    private function getDefaultableSettings($dept, $defaults_table)
+    {
+        $tax = 0;
+        $fstamp = 0;
+        $discount = 1;
+        if ($dept && isset($defaults_table[$dept])) {
+            if (isset($defaults_table[$dept]['tax']))
+                $tax = $defaults_table[$dept]['tax'];
+            if (isset($defaults_table[$dept]['discount']))
+                $discount = $defaults_table[$dept]['discount'];
+            if (isset($defaults_table[$dept]['fs']))
+                $fstamp = $defaults_table[$dept]['fs'];
+        }
+
+        return array($tax, $fstamp, $discount);
+    }
+
+    function process_file($linedata)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $defaults_tables = $this->deptDefaults($dbc);
 
         $upc_index = $this->get_column_index('upc');
         $desc_index = $this->get_column_index('desc');
@@ -101,17 +120,7 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             $price = str_replace('$', '', $price);
             $price = trim($price);
             $dept = ($dept_index !== false) ? $line[$dept_index] : 0;
-            $tax = 0;
-            $fs = 0;
-            $discount = 1;
-            if ($dept_index !== false){
-                if (isset($defaults_table[$dept]['tax']))
-                    $tax = $defaults_table[$dept]['tax'];
-                if (isset($defaults_table[$dept]['discount']))
-                    $discount = $defaults_table[$dept]['discount'];
-                if (isset($defaults_table[$dept]['fs']))
-                    $fs = $defaults_table[$dept]['fs'];
-            }
+            list($tax, $fstamp, $discount) = $this->getDefaultableSettings($dept, $defaults_table);
 
             // upc cleanup
             $upc = str_replace(" ","",$upc);
@@ -135,7 +144,7 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             $model->normal_price($price);
             $model->department($dept);
             $model->tax($tax);
-            $model->foodstamp($fs);
+            $model->foodstamp($fstamp);
             $model->discount($discount);
             // fully init new record
             $model->pricemethod(0);

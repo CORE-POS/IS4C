@@ -40,34 +40,25 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     protected $preview_opts = array(
         'upc' => array(
-            'name' => 'upc',
             'display_name' => 'UPC*',
             'default' => 5,
             'required' => true
         ),
         'brand' => array(
-            'name' => 'brand',
             'display_name' => 'Brand',
             'default' => 0,
-            'required' => false
         ),
         'desc' => array(
-            'name' => 'desc',
             'display_name' => 'Description',
             'default' => 1,
-            'required' => false
         ),
         'size' => array(
-            'name' => 'size',
             'display_name' => 'Unit Size',
             'default' => 3,
-            'required' => false
         ),
         'sku' => array(
-            'name' => 'sku',
             'display_name' => 'Vendor SKU',
             'default' => 4,
-            'required' => false
         ),
     );
 
@@ -92,8 +83,8 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
 
         $ret = true;
 
-        $checks = (FormLib::get_form_value('checks')=='yes') ? true : false;
-        $normalize = (FormLib::get_form_value('norm')=='yes') ? true : false;
+        $checks = (FormLib::get('checks')=='yes') ? true : false;
+        $normalize = (FormLib::get('norm')=='yes') ? true : false;
 
         $model = new ProductUserModel($dbc);
 
@@ -159,9 +150,6 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
                     $desc = ucwords(strtolower($desc));
                 }
                 $model->description($desc);
-                if ($upc == '0002529300278') {
-                    var_dump($model->description());
-                }
                 $changed = true;
             }
             if ($model->sizing() == '' && $size_index !== false && !empty($line[$size_index])) {

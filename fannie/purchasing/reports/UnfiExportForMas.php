@@ -35,47 +35,17 @@ class UnfiExportForMas extends FannieReportPage
 
     public $page_set = 'Purchasing';
     public $description = '[MAS Invoice Export] exports vendor invoices for MAS90.';
-    public $themed = true;
-
-    function preprocess(){
-        /**
-          Set the page header and title, enable caching
-        */
-        $this->report_cache = 'none';
-        $this->title = "Fannie : Invoice Export";
-        $this->header = "Invoice Export";
-
-        if (isset($_REQUEST['date1'])) {
-            /**
-              Form submission occurred
-
-              Change content function, turn off the menus,
-              set up headers
-            */
-            $this->content_function = "report_content";
-            $this->has_menus(False);
-        
-            /**
-              Check if a non-html format has been requested
-            */
-            if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
-                $this->report_format = 'xls';
-            elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
-                $this->report_format = 'csv';
-        }
-
-        return True;
-    }
+    protected $required_fields = array('date1', 'date2');
 
     /**
       Lots of options on this report.
     */
-    function fetch_report_data(){
-        global $FANNIE_OP_DB;
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+    function fetch_report_data()
+    {
+        $date1 = FormLib::get('date1',date('Y-m-d'));
+        $date2 = FormLib::get('date2',date('Y-m-d'));
 
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
         $mustCodeP = $dbc->prepare('
             SELECT i.orderID,
                 i.sku
@@ -159,13 +129,6 @@ class UnfiExportForMas extends FannieReportPage
                 $report[] = $row;
             }
         }
-
-        /*
-        for ($i=0; $i<count($report); $i++) {
-            $inv = $report[$i][1];
-            $report[$i][3] = sprintf('%.2f', $invoice_sums[$inv]);
-        }
-        */
 
         return $report;
     }

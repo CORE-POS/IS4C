@@ -4,7 +4,7 @@ var tenderEditor = (function($) {
 
     var _popover = function(data, elem, orig) {
         var timeout=1500;
-        if (data == "") {
+        if (data === "") {
             data = 'Saved!';
         } else {
             elem.val(orig);
@@ -16,7 +16,7 @@ var tenderEditor = (function($) {
             placement: 'auto bottom'
         });
         elem.popover('show');
-        setTimeout(function(){elem.popover('destroy') }, timeout);
+        setTimeout(function(){elem.popover('destroy'); }, timeout);
     };
 
     mod.saveCode = function(val,t_id){

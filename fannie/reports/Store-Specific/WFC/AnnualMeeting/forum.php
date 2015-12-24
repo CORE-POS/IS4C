@@ -2,8 +2,11 @@
 include('../../../../config.php');
 include_once($FANNIE_ROOT.'src/SQLManager.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!function_exists('wfc_am_get_names')) {
+    include(dirname(__FILE__) . '/lib.php');
+}
 
-if (isset($_REQUEST['excel'])){
+if (FormLib::get('excel') !== '') {
     $ext = \COREPOS\Fannie\API\data\DataConvert::excelFileExtension();
     header('Content-Type: application/ms-excel');
     header('Content-Disposition: attachment; filename="OwnerForums.' .$ext .'"');
@@ -41,7 +44,7 @@ while($hereW = $fannieDB->fetch_row($hereR)){
 
 include($FANNIE_ROOT.'src/Credentials/OutsideDB.is4c.php');
 // online registrations
-$q = "SELECT datetime as tdate,u.owner as card_no,
+$query = "SELECT datetime as tdate,u.owner as card_no,
     real_name as name,name as email,
     '' as phone,
     d.description,
@@ -50,9 +53,9 @@ $q = "SELECT datetime as tdate,u.owner as card_no,
     Users AS u ON d.emp_no=u.uid
     WHERE upc LIKE '0000098%'
     ORDER BY upc,tdate";
-$r = $dbc->query($q);
-while($w = $dbc->fetch_row($r)){
-    $records[] = $w;
+$res = $dbc->query($query);
+while($row = $dbc->fetch_row($res)){
+    $records[] = $row;
 }
 $totals = array();
 echo '<table cellspacing="0" cellpadding="4" border="1">
@@ -61,28 +64,11 @@ echo '<table cellspacing="0" cellpadding="4" border="1">
     <th>Email</th><th>Ph.</th><th>Event</th><th>Source</th>
     </tr>';
 foreach($records as $w){
-    if (!strstr($w['email'],'@') && !preg_match('/\d+/',$w['email']) &&
-        $w['email'] != 'no email'){
-        $w['name'] .= ' '.$w['email'];  
-        $w['email'] = '';
-    }
-    $ln = ""; $fn="";
-    if (strstr($w['name'],' ')){
-        $w['name'] = trim($w['name']);
-        $parts = explode(' ',$w['name']);
-        if (count($parts) > 1){
-            $ln = $parts[count($parts)-1];
-            for($i=0;$i<count($parts)-1;$i++)
-                $fn .= ' '.$parts[$i];
-        }
-        else if (count($parts) > 0)
-            $ln = $parts[0];
-    } else {
-        $ln = $w['name'];
-    }
+    list($w['email'], $w['name']) = wfc_am_check_email($w['email'], $w['name']);
+    list($fname, $lname) = wfc_am_get_names($w['name']);
     printf('<tr><td>%s</td><td>%d</td><td>%s</td><td>%s</td>
         <td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
-        $w['tdate'],$w['card_no'],$ln,$fn,$w['email'],
+        $w['tdate'],$w['card_no'],$lname,$fname,$w['email'],
         $w['phone'],$w['description'],
         $w['source']
     );
@@ -98,7 +84,7 @@ foreach($totals as $event => $count) {
 }
 echo '</table>';
 
-if (isset($_REQUEST['excel'])){
+if (FormLib::get('excel') !== '') {
     $output = ob_get_contents();
     ob_end_clean();
 
