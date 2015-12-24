@@ -36,7 +36,6 @@ if (!class_exists('FannieAPI')) {
 class RecentSalesReport extends FannieReportPage
 {
     public $description = '[Recent Sales] lists sales for an item in recent days/weeks/months.';
-    public $themed = true;
 
     protected $header = 'Recent Sales';
     protected $title = 'Fannie : Recent Sales';
@@ -47,15 +46,15 @@ class RecentSalesReport extends FannieReportPage
     protected $no_sort_but_style = true;
 
     private $upc;
-    private $lc;
+    private $likecode;
 
     public function preprocess() {
         // custom: one of the fields is required but not both
         $this->upc = BarcodeLib::padUPC(FormLib::get('upc'));
-        $this->lc = FormLib::get('likecode');
-        if ($this->upc != '0000000000000' || $this->lc !== '') {
-            if ($this->lc !== '') {
-                $this->report_headers[0] = 'Like Code #'.$this->lc;
+        $this->likecode = FormLib::get('likecode');
+        if ($this->upc != '0000000000000' || $this->likecode !== '') {
+            if ($this->likecode !== '') {
+                $this->report_headers[0] = 'Like Code #'.$this->likecode;
                 $this->required_fields = array('likecode');
             } else {
                 $this->report_headers[0] = 'UPC #' . $this->upc;
@@ -88,11 +87,8 @@ class RecentSalesReport extends FannieReportPage
         return array(); // override
     }
 
-    public function fetch_report_data()
+    private function getDates()
     {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
-
         $dates = array();
         $stamp = strtotime('yesterday');
         $dates['Yesterday'] = array(date("Y-m-d",$stamp), date('Y-m-d', $stamp));
@@ -110,34 +106,39 @@ class RecentSalesReport extends FannieReportPage
         $stamp = mktime(0,0,0,date("n")-1,1,date("Y"));
         $dates['Last Month'] = array(date("Y-m-01",$stamp),date("Y-m-t",$stamp));
 
+        return $dates;
+    }
+
+    public function fetch_report_data()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+
+        $dates = $this->getDates();
         $dlog = DTransactionsModel::selectDlog($dates['Last Month'][0], $dates['Yesterday'][0]);
 
-        $where = 'd.upc = ?';
-        $baseArgs = array($this->upc);
-        if ($this->lc !== '') {
-            $where = 'u.likeCode = ?';
-            $baseArgs = array($this->lc);
+        list($where, $item) = array('d.upc = ?', $this->upc);
+        if ($this->likecode !== '') {
+            list($where, $item) = array('u.likeCode = ?', $this->likecode);
         }
 
-        $q = "SELECT SUM(CASE WHEN trans_status='M' THEN 0 ELSE quantity END) as qty,
+        $qtyQ = "SELECT SUM(CASE WHEN trans_status='M' THEN 0 ELSE quantity END) as qty,
             SUM(total) as ttl
             FROM $dlog as d ";
-        if ($this->lc !== '') {
-            $q .= ' LEFT JOIN upcLike AS u ON d.upc=u.upc ';
+        if ($this->likecode !== '') {
+            $qtyQ .= ' LEFT JOIN upcLike AS u ON d.upc=u.upc ';
         }
-        $q .= "WHERE $where
+        $qtyQ .= "WHERE $where
             AND tdate < " . $dbc->curdate() . "
             AND tdate BETWEEN ? AND ?";
-        $p = $dbc->prepare($q);
+        $prep = $dbc->prepare($qtyQ);
         
         $data = array();
-        foreach($dates as $label => $span) {
-            $args = array($baseArgs[0], $span[0].' 00:00:00', $span[1].' 23:59:59');
-            $r = $dbc->execute($p, $args);
-
-            $row = array('qty'=>0, 'ttl'=>0);
-            if ($dbc->num_rows($r) > 0) {
-                $row = $dbc->fetch_row($r);
+        foreach ($dates as $label => $span) {
+            $args = array($item, $span[0].' 00:00:00', $span[1].' 23:59:59');
+            $row = $dbc->getRow($prep, $args);
+            if ($row === false) {
+                $row = array('qty'=>0, 'ttl'=>0);
             }
 
             $record = array($label, sprintf('%.2f',$row['qty']), sprintf('%.2f', $row['ttl']));

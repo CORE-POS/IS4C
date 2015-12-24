@@ -35,62 +35,44 @@ class MemContactImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     public $description = '[Member Contact Info] uploads members\' address, phone number, and
     email. Member numbers must already exist.';
-    public $themed = true;
 
     protected $preview_opts = array(
         'memnum' => array(
-            'name' => 'memnum',
             'display_name' => 'Member Number',
             'default' => 0,
-            'required' => True
+            'required' => true
         ),
         'street' => array(
-            'name' => 'street',
             'display_name' => 'Street Address',
             'default' => 1,
-            'required' => False
         ),
         'street2' => array(
-            'name' => 'street2',
             'display_name' => '2nd Address Line',
             'default' => 2,
-            'required' => False
         ),
         'city' => array(
-            'name' => 'city',
             'display_name' => 'City',
             'default' => 3,
-            'required' => False
         ),
         'state' => array(
-            'name' => 'state',
             'display_name' => 'State',
             'default' => 4,
-            'required' => False,
         ),
         'zip' => array(
-            'name' => 'zip',
             'display_name' => 'Zip Code',
             'default' => 5,
-            'required' => False,
         ),
         'ph1' => array(
-            'name' => 'ph1',
             'display_name' => 'Phone #',
             'default' => 6,
-            'required' => False,
         ),
         'ph2' => array(
-            'name' => 'ph2',
             'display_name' => 'Alt. Phone #',
             'default' => 7,
-            'required' => False,
         ),
         'email' => array(
-            'name' => 'email',
             'display_name' => 'Email',
             'default' => 8,
-            'required' => False,
         )
     );
 

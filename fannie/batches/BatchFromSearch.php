@@ -96,6 +96,22 @@ class BatchFromSearch extends FannieRESTfulPage
             $insR = $dbc->execute($insQ,array($batchID,$owner));
         }
 
+        $this->itemsToBatch($batchID, $dbc, $upcs, $prices);
+
+        /**
+          If tags were requested and it's price change batch, make them
+          Lookup vendor info for each item then add a shelftag record
+        */
+        $tagset = $this->form->tagset;
+        if ($discounttype == 0 && $tagset !== '') {
+            $this->itemsToTags($tagset, $dbc, $upcs, $prices);
+        }
+
+        return 'Location: newbatch/BatchManagementTool.php?startAt=' . $batchID;
+    }
+
+    private function itemsToBatch($batchID, $dbc, $upcs, $prices)
+    {
         // add items to batch
         for($i=0; $i<count($upcs); $i++) {
             $upc = $upcs[$i];
@@ -110,36 +126,29 @@ class BatchFromSearch extends FannieRESTfulPage
             $list->quantity(0);
             $list->save();
         }
+    }
 
-        /**
-          If tags were requested and it's price change batch, make them
-          Lookup vendor info for each item then add a shelftag record
-        */
-        $tagset = $this->form->tagset;
-        if ($discounttype == 0 && $tagset !== '') {
-            $vendorID = $this->form->preferredVendor;
-            $tag = new ShelftagsModel($dbc);
-            $product = new ProductsModel($dbc);
-            for($i=0; $i<count($upcs);$i++) {
-                $upc = $upcs[$i];
-                $price = isset($prices[$i]) ? $prices[$i] : 0.00;
-                $product->upc($upc);
-                $info = $product->getTagData($price);
-                $tag->id($tagset);
-                $tag->upc($upc);
-                $tag->description($info['description']);
-                $tag->normal_price($price);
-                $tag->brand($info['brand']);
-                $tag->sku($info['sku']);
-                $tag->size($info['size']);
-                $tag->units($info['units']);
-                $tag->vendor($info['vendor']);
-                $tag->pricePerUnit($info['pricePerUnit']);
-                $tag->save();
-            }
+    private function itemsToTags($tagset, $dbc, $upcs, $prices)
+    {
+        $tag = new ShelftagsModel($dbc);
+        $product = new ProductsModel($dbc);
+        for($i=0; $i<count($upcs);$i++) {
+            $upc = $upcs[$i];
+            $price = isset($prices[$i]) ? $prices[$i] : 0.00;
+            $product->upc($upc);
+            $info = $product->getTagData($price);
+            $tag->id($tagset);
+            $tag->upc($upc);
+            $tag->description($info['description']);
+            $tag->normal_price($price);
+            $tag->brand($info['brand']);
+            $tag->sku($info['sku']);
+            $tag->size($info['size']);
+            $tag->units($info['units']);
+            $tag->vendor($info['vendor']);
+            $tag->pricePerUnit($info['pricePerUnit']);
+            $tag->save();
         }
-
-        return 'Location: newbatch/BatchManagementTool.php?startAt=' . $batchID;
     }
 
     function post_redoSRPs_handler()
@@ -216,8 +225,8 @@ class BatchFromSearch extends FannieRESTfulPage
         $discTypes = array();
         $ret .= '<select name="batchType" id="batchType" class="form-control"
             onchange="discountTypeFixup()">';
-        while($row = $dbc->fetch_row($types)) {
-            $ret .= sprintf('<option value="%d">%s</option>',
+            while($row = $dbc->fetch_row($types)) {
+                $ret .= sprintf('<option value="%d">%s</option>',
                             $row['batchTypeID'], $row['typeDesc']
             );
             $discTypes[] = $row;

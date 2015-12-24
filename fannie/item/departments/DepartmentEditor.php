@@ -60,52 +60,32 @@ class DepartmentEditor extends FanniePage {
         }
     }
 
-    private function ajax_display_dept($id){
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        $name="";
-        $tax="";
-        $fs=0;
-        $disc=1;
-        $max=50;
-        $min=0.01;
-        $margin=0.00;
-        $pcode="";
-
-        if ($id != -1){ // -1 means create new department
-            $dept = new DepartmentsModel($dbc);
-            $dept->dept_no($id);
+    private function getDept($dbc, $deptID)
+    {
+        $dept = new DepartmensModel($dbc);
+        if ($deptID !== -1) { // not new department
+            $dept->dept_no($deptID);
             $dept->load();
-            $name = $dept->dept_name();
-            $tax = $dept->dept_tax();
-            $fs = $dept->dept_fs();
-            $max = $dept->dept_limit();
-            $min = $dept->dept_minimum();
-            $disc = $dept->dept_discount();
-
             /**
               Use legacy tables for margin and sales code if needed
             */
             $margin = $dept->margin();
             if (empty($margin) && $dbc->tableExists('deptMargin')) {
                 $prep = $dbc->prepare('SELECT margin FROM deptMargin WHERE dept_ID=?');
-                $res = $dbc->execute($prep, array($id));
-                if ($dbc->num_rows($res) > 0) {
-                    $row = $dbc->fetch_row($res);
-                    $margin = $row['margin'];
-                }
+                $dept->margin($dbc->getValue($prep, array($id)));
             }
             $pcode = $dept->salesCode();
             if (empty($pcode) && $dbc->tableExists('deptSalesCodes')) {
                 $prep = $dbc->prepare('SELECT salesCode FROM deptSalesCodes WHERE dept_ID=?');
-                $res = $dbc->execute($prep, array($id));
-                if ($dbc->num_rows($res) > 0) {
-                    $row = $dbc->fetch_row($res);
-                    $pcode = $row['salesCode'];
-                }
+                $dept->salesCode($dbc->getValue($prep, array($id)));
             }
         }
+
+        return $dept;
+    }
+
+    private function getTaxes($dbc)
+    {
         $taxes = array();
         $taxes[0] = "NoTax";
         $p = $dbc->prepare("SELECT id,description FROM taxrates ORDER BY id");
@@ -113,6 +93,17 @@ class DepartmentEditor extends FanniePage {
         while($row = $dbc->fetch_row($resp)){
             $taxes[$row[0]] = $row[1];
         }
+
+        return $taxes;
+    }
+
+    private function ajax_display_dept($id)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $dept = $this->getDept($dbc, $id);
+        $taxes = $this->getTaxes($dbc);
 
         $ret = '<div class="row">'
             . '<label class="control-label col-sm-2">Dept #</label>'
@@ -129,10 +120,10 @@ class DepartmentEditor extends FanniePage {
         }
         $ret .= "</div>";
         $ret .= "<div class=\"col-sm-4\"><input type=text maxlength=30 name=name 
-            id=deptname value=\"$name\" class=\"form-control\" /></div>";
+            id=deptname value=\"" . $dept->dept_name() . "\" class=\"form-control\" /></div>";
         $ret .= "<div class=\"col-sm-2\"><select class=\"form-control\" id=depttax name=tax>";
         foreach ($taxes as $k=>$v) {
-            if ($k == $tax) {
+            if ($k == $dept->dept_tax()) {
                 $ret .= "<option value=$k selected>$v</option>";
             } else {
                 $ret .= "<option value=$k>$v</option>";
@@ -140,7 +131,7 @@ class DepartmentEditor extends FanniePage {
         }
         $ret .= "</select></div>";
         $ret .= "<div class=\"col-sm-2\"><input type=checkbox value=1 name=fs id=deptfs "
-            . ($fs==1?'checked':'') . " class=\"checkbox\" /></div>";
+            . ($dept->dept_fs()==1?'checked':'') . " class=\"checkbox\" /></div>";
         $ret .= "</div>";
         $ret .= '<div class="row">'
             . '<label class="control-label col-sm-2">Discount</label>'
@@ -151,21 +142,21 @@ class DepartmentEditor extends FanniePage {
             . '</div>';
         $ret .= '<div class="row form-inline">';
         $ret .= "<div class=\"col-sm-2\"><input class=\"checkbox\" type=checkbox value=1 
-            name=disc id=deptdisc ". ($disc>0?'checked':'') . " /></div>";
+            name=disc id=deptdisc ". ($dept->dept_discount()>0?'checked':'') . " /></div>";
         $ret .= sprintf("<div class=\"col-sm-2\"><div class=\"input-group\">
             <span class=\"input-group-addon\">\$</span>
             <input type=number name=min class=\"form-control\" 
             id=deptmin value=\"%.2f\" min=\"0\" max=\"9999\" step=\"0.01\" />
-            </div></div>",$min,0);  
+            </div></div>",$dept->dept_minimum(),0);  
         $ret .= sprintf("<div class=\"col-sm-2\"><div class=\"input-group\">
             <span class=\"input-group-addon\">\$</span>
             <input type=number name=max class=\"form-control\" id=deptmax 
-            value=\"%.2f\" min=\"0\" max=\"99999\" step=\"0.01\" /></div></div>",$max,0);  
+            value=\"%.2f\" min=\"0\" max=\"99999\" step=\"0.01\" /></div></div>",$dept->dept_limit(),0);  
         $ret .= sprintf("<div class=\"col-sm-2\"><div class=\"input-group\"><input type=number name=margin 
             class=\"form-control\" id=deptmargin value=\"%.2f\" min=\"0\" max=\"999\" step=\"0.01\" />
-            <span class=\"input-group-addon\">%%</span></div></div>",$margin*100);
+            <span class=\"input-group-addon\">%%</span></div></div>",$dept->margin()*100);
         $ret .= "<div class=\"col-sm-2\"><input type=text id=deptsalescode 
-           class=\"form-control\" name=pcode value=\"$pcode\" /></div>";
+           class=\"form-control\" name=pcode value=\"" . $dept->salesCode() . "\" /></div>";
         $ret .= '</div>';
         if ($id != -1) {
             $ret .= "<input type=hidden name=did id=deptno value=\"$id\" />";
@@ -179,80 +170,44 @@ class DepartmentEditor extends FanniePage {
         echo $ret;
     }
 
-    private function ajax_save_dept(){
+    private function ajax_save_dept()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $id = FormLib::get_form_value('did',0);
-        $name = FormLib::get_form_value('name','');
-        $tax = FormLib::get_form_value('tax',0);
-        $fs = FormLib::get_form_value('fs',0);
-        $disc = FormLib::get_form_value('disc',1);
-        $min = FormLib::get_form_value('min',0.01);
-        $max = FormLib::get_form_value('max',50.00);
-        $margin = FormLib::get_form_value('margin',0);
+        $deptID = FormLib::get('did',0);
+        $margin = FormLib::get('margin',0);
         $margin = ((float)$margin) / 100.0; 
-        $pcode = FormLib::get_form_value('pcode',$id);
+        $pcode = FormLib::get('pcode',$id);
         if (!is_numeric($pcode)) $pcode = (int)$id;
-        $new = FormLib::get_form_value('new',0);
 
         $model = new DepartmentsModel($dbc);
-        $model->dept_no($id);
-        $model->dept_name($name);
-        $model->dept_tax($tax);
-        $model->dept_fs($fs);
-        $model->dept_discount($disc);
-        $model->dept_minimum($min);
-        $model->dept_limit($max);
+        $model->dept_no($deptID);
+        $model->dept_name(FormLib::get('name', ''));
+        $model->dept_tax(FormLib::get('tax', 0));
+        $model->dept_fs(FormLib::get('fs', 0));
+        $model->dept_discount(FormLib::get('disc', 1));
+        $model->dept_minimum(FormLib::get('min', 0.01));
+        $model->dept_limit(FormLib::get('max', 50.00));
         $model->modified(date('Y-m-d H:i:s'));
         $model->margin($margin);
         $model->salesCode($pcode);
-        if ($new == 1) {
+        if (FormLib::get('new', 0) == 1) {
             $model->modifiedby(1);
             $model->dept_see_id(0);
         }
         $saved = $model->save();
 
-        if ($new == 1){
-            if ($saved === False){
+        if (FormLib::get('new', 0) == 1) {
+            if ($saved === false) {
                 echo 'Error: could not create department';
-                return;
+            } else {
+                $superP = $dbc->prepare('INSERT INTO superdepts (superID,dept_ID) VALUES (0,?)');
+                $superR = $dbc->execute($superP,array($deptID));
             }
-
-            $superP = $dbc->prepare('INSERT INTO superdepts (superID,dept_ID) VALUES (0,?)');
-            $superR = $dbc->execute($superP,array($id));
-        }
-        else {
-            if ($saved === False){
-                echo 'Error: could not save changes';
-                return;
-            }
-        }
-        
-        if ($dbc->tableExists('deptMargin')) {
-            $chkM = $dbc->prepare('SELECT dept_ID FROM deptMargin WHERE dept_ID=?');
-            $mR = $dbc->execute($chkM, array($id));
-            if ($dbc->num_rows($mR) > 0){
-                $up = $dbc->prepare('UPDATE deptMargin SET margin=? WHERE dept_ID=?');
-                $dbc->execute($up, array($margin, $id));
-            }
-            else {
-                $ins = $dbc->prepare('INSERT INTO deptMargin (dept_ID,margin) VALUES (?,?)');
-                $dbc->execute($ins, array($id, $margin));
-            }
-        }
-
-        if ($dbc->tableExists('deptSalesCodes')) {
-            $chkS = $dbc->prepare('SELECT dept_ID FROM deptSalesCodes WHERE dept_ID=?');
-            $rS = $dbc->execute($chkS, array($id));
-            if ($dbc->num_rows($rS) > 0){
-                $up = $dbc->prepare('UPDATE deptSalesCodes SET salesCode=? WHERE dept_ID=?');
-                $dbc->execute($up, array($pcode, $id));
-            }
-            else {
-                $ins = $dbc->prepare('INSERT INTO deptSalesCodes (dept_ID,salesCode) VALUES (?,?)');
-                $dbc->execute($ins, array($id, $pcode));
-            }
+        } elseif ($saved === false) {
+            echo 'Error: could not save changes';
+            return;
         }
 
         $json = array();
@@ -262,6 +217,32 @@ class DepartmentEditor extends FanniePage {
         echo json_encode($json);
     }
 
+    private function legacySave($dbc, $deptID, $margin, $pcode)
+    {
+        if ($dbc->tableExists('deptMargin')) {
+            $chkM = $dbc->prepare('SELECT dept_ID FROM deptMargin WHERE dept_ID=?');
+            $marginR = $dbc->execute($chkM, array($deptID));
+            if ($dbc->num_rows($marginR) > 0){
+                $upP = $dbc->prepare('UPDATE deptMargin SET margin=? WHERE dept_ID=?');
+                $dbc->execute($upP, array($margin, $deptID));
+            } else {
+                $ins = $dbc->prepare('INSERT INTO deptMargin (dept_ID,margin) VALUES (?,?)');
+                $dbc->execute($ins, array($deptID, $margin));
+            }
+        }
+
+        if ($dbc->tableExists('deptSalesCodes')) {
+            $chkS = $dbc->prepare('SELECT dept_ID FROM deptSalesCodes WHERE dept_ID=?');
+            $codeR = $dbc->execute($chkS, array($deptID));
+            if ($dbc->num_rows($codeR) > 0) {
+                $upP = $dbc->prepare('UPDATE deptSalesCodes SET salesCode=? WHERE dept_ID=?');
+                $dbc->execute($upP, array($pcode, $deptID));
+            } else {
+                $ins = $dbc->prepare('INSERT INTO deptSalesCodes (dept_ID,salesCode) VALUES (?,?)');
+                $dbc->execute($ins, array($deptID, $pcode));
+            }
+        }
+    }
 
     public function body_content()
     {
@@ -269,9 +250,9 @@ class DepartmentEditor extends FanniePage {
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $depts = "<option value=0>Select a department...</option>";
         $depts .= "<option value=-1>Create a new department</option>";
-        $p = $dbc->prepare("SELECT dept_no,dept_name FROM departments
+        $prep = $dbc->prepare("SELECT dept_no,dept_name FROM departments
                     ORDER BY dept_no");
-        $resp = $dbc->execute($p);
+        $resp = $dbc->execute($prep);
         $selectedDID = FormLib::get_form_value('did');
         while ($row = $dbc->fetch_row($resp)) {
             if ($selectedDID !== '' && $selectedDID == $row[0]) {

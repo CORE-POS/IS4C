@@ -41,18 +41,26 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
         'weekday' => '*',
     );
 
+    private function isNewMethod($dbc)
+    {
+        $prodUpdate = $dbc->tableDefinition('prodUpdate');
+        $priceHistory = $dbc->tableDefinition('prodPriceHistory');
+        $deptHistory = $dbc->tableDefinition('prodDepartmentHistory');
+        if (isset($prodUpdate['prodUpdateID']) && isset($priceHistory['prodUpdateID']) && isset($deptHistory['prodUpdateID'])) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public function run()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $new_maintenance_method = false;
-        $prodUpdate = $dbc->tableDefinition('prodUpdate');
-        $priceHistory = $dbc->tableDefinition('prodPriceHistory');
-        $deptHistory = $dbc->tableDefinition('prodDepartmentHistory');
-        if (isset($prodUpdate['prodUpdateID']) && isset($priceHistory['prodUpdateID']) && isset($deptHistory['prodUpdateID'])) {
+        $new_method = $this->isNewMethod($dbc);
+        if ($new_method) {
             // schema is updated
-            $new_maintenance_method = true;
             $this->cronMsg('New archiving method for prodUpdate', FannieLogger::INFO);
 
             // migrate data if needed
@@ -68,9 +76,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
                     }
                 }
             }
-        }
 
-        if ($new_maintenance_method) {
             /**
               New method:
               1. Lookup the last prodUpdate record ID added to the price history
@@ -78,40 +84,44 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
               3. Repeat for department history/changes
               4. Do not use prodUpdateArchive
             */
-            $limitR = $dbc->query('SELECT MAX(prodUpdateID) as lastChange FROM prodPriceHistory');
-            $limit = 0;
-            if ($dbc->num_rows($limitR) > 0) {
-                $limitW = $dbc->fetch_row($limitR);
-                $limit = $limitW['lastChange'];
-            }
+            $limit = $this->lastUpdateID($dbc, 'prodPriceHistory');
             $this->cronMsg('Scanning price changes from prodUpdateID '.$limit, FannieLogger::INFO);
             $this->scanPriceChanges($dbc, $limit);
 
             if ($dbc->tableExists('ProdCostHistory')) {
-                $limitR = $dbc->query('
-                    SELECT MAX(prodUpdateID) AS lastChange
-                    FROM ProdCostHistory');
-                $limit = 0;
-                if ($dbc->numRows($limitR) > 0) {
-                    $limitW = $dbc->fetchRow($limitR);
-                    $limit = $limitW['lastChange'];
-                }
+                $limit = $this->lastUpdateID($dbc, 'prodCostHistory');
                 $this->cronMsg('Scanning cost changes from prodUpdateID '.$limit, FannieLogger::INFO);
                 $this->scanCostChanges($dbc, $limit);
             }
 
-            $limitR = $dbc->query('SELECT MAX(prodUpdateID) as lastChange FROM prodDepartmentHistory');
-            $limit = 0;
-            if ($dbc->num_rows($limitR) > 0) {
-                $limitW = $dbc->fetch_row($limitR);
-                $limit = $limitW['lastChange'];
-            }
+            $limit = $this->lastUpdateID($dbc, 'prodDepartmentHistory');
             $this->cronMsg('Scanning dept changes from prodUpdateID '.$limit, FannieLogger::INFO);
             $this->scanDeptChanges($dbc, $limit);
         } else {
             $this->cronMsg('Old prodUpdate archiving is no longer supported. Apply schema updates to prodUpdate table.',
                 FannieLogger::WARNING);
         }
+    }
+
+    private function lastUpdateID($dbc, $table)
+    {
+        $limitP = $dbc->prepare('SELECT MAX(prodUpdateID) AS lastChange FROM ' . $dbc->identifierEscape($table));
+        $limit = $dbc->getValue($limit);
+
+        return $limit ? $limit : 0;
+    }
+
+    private function changesSince($dbc, $offset=0)
+    {
+        $prodUpdateQ = 'SELECT prodUpdateID FROM prodUpdate ';
+        $args = array();
+        if ($offset > 0) {
+            $prodUpdateQ .= ' WHERE prodUpdateID > ? ';
+            $args[] = $offset;
+        }
+        $prodUpdateQ .= ' ORDER BY upc, modified';
+        $prodUpdateP = $dbc->prepare($prodUpdateQ);
+        return $dbc->execute($prodUpdateP, $args);
     }
 
     /**
@@ -122,15 +132,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
     */
     private function scanPriceChanges($dbc, $offset=0)
     {
-        $prodUpdateQ = 'SELECT prodUpdateID FROM prodUpdate ';
-        $args = array();
-        if ($offset > 0) {
-            $prodUpdateQ .= ' WHERE prodUpdateID > ? ';
-            $args[] = $offset;
-        }
-        $prodUpdateQ .= ' ORDER BY upc, modified';
-        $prodUpdateP = $dbc->prepare($prodUpdateQ);
-        $prodUpdateR = $dbc->execute($prodUpdateP, $args);
+        $prodUpdateR = $this->changesSince($dbc, $offset);
        
         $chkP = $dbc->prepare("SELECT modified,price FROM
             prodPriceHistory WHERE upc=?
@@ -147,7 +149,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
           Only create new entries when the prodUpdate record's price
           does not match the previous price.
         */
-        while($prodUpdateW = $dbc->fetch_row($prodUpdateR)) {
+        while ($prodUpdateW = $dbc->fetch_row($prodUpdateR)) {
             $update->reset();
             $update->prodUpdateID($prodUpdateW['prodUpdateID']);
             $update->load();
@@ -186,15 +188,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
     */
     private function scanCostChanges($dbc, $offset=0)
     {
-        $prodUpdateQ = 'SELECT prodUpdateID FROM prodUpdate ';
-        $args = array();
-        if ($offset > 0) {
-            $prodUpdateQ .= ' WHERE prodUpdateID > ? ';
-            $args[] = $offset;
-        }
-        $prodUpdateQ .= ' ORDER BY upc, modified';
-        $prodUpdateP = $dbc->prepare($prodUpdateQ);
-        $prodUpdateR = $dbc->execute($prodUpdateP, $args);
+        $prodUpdateR = $this->changesSince($dbc, $offset);
        
         $chkP = $dbc->prepare("
             SELECT modified,
@@ -255,15 +249,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
     */
     private function scanDeptChanges($dbc, $offset=0)
     {
-        $prodUpdateQ = 'SELECT prodUpdateID FROM prodUpdate ';
-        $args = array();
-        if ($offset > 0) {
-            $prodUpdateQ .= ' WHERE prodUpdateID > ? ';
-            $args[] = $offset;
-        }
-        $prodUpdateQ .= ' ORDER BY upc, modified';
-        $prodUpdateP = $dbc->prepare($prodUpdateQ);
-        $prodUpdateR = $dbc->execute($prodUpdateP, $args);
+        $prodUpdateR = $this->changesSince($dbc, $offset);
        
         $chkP = $dbc->prepare("SELECT modified,dept_ID FROM
             prodDepartmentHistory WHERE upc=?

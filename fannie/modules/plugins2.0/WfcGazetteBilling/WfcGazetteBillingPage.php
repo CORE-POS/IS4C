@@ -48,34 +48,29 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     protected $preview_opts = array(
         'phone' => array(
-            'name' => 'phone',
             'display_name' => 'Phone',
             'default' => 2,
-            'required' => True
+            'required' => true
         ),
         'card_no' => array(
-            'name' => 'card_no',
             'display_name' => 'Mem#',
             'default' => 3,
-            'required' => True
+            'required' => true
         ),
         'size' => array(
-            'name' => 'size',
             'display_name' => 'Ad Size#',
             'default' => 4,
-            'required' => True
+            'required' => true
         ),
         'color' => array(
-            'name' => 'color',
             'display_name' => 'Color/B&W',
             'default' => 5,
-            'required' => True
+            'required' => true
         ),
         'name' => array(
-            'name' => 'name',
             'display_name' => 'Name',
             'default' => 0,
-            'required' => True
+            'required' => true
         )
     );
 
@@ -326,4 +321,4 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
 }
 
 FannieDispatch::conditionalExec();
-?>
+
