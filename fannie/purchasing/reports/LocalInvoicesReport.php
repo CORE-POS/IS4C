@@ -61,7 +61,7 @@ class LocalInvoicesReport extends FannieReportPage
         }
         $codingQ .= 'GROUP BY o.orderID, i.vendorInvoiceID, g.name
                     ORDER BY rdate, i.vendorInvoiceID, g.name';
-        return $dbc->prepare($codingQ);
+        return array($dbc->prepare($codingQ), $args);
     }
 
     /**
@@ -70,7 +70,7 @@ class LocalInvoicesReport extends FannieReportPage
     function fetch_report_data()
     {
         $dbc = $this->connection;
-        $codingP = $this->stmt();
+        array($codingP, $args) = $this->stmt();
 
         $report = array();
         $invoice_sums = array();
