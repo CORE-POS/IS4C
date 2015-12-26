@@ -147,8 +147,9 @@ class DepartmentDiscrepancy extends FanniePage
                     SUM(CASE WHEN tax=2 THEN 1 ELSE 0 END) as tax2,     
                     SUM(CASE WHEN foodstamp=0 THEN 1 ELSE 0 END) as fs0,
                     SUM(CASE WHEN foodstamp=1 THEN 1 ELSE 0 END) as fs1 
-                FROM products where department={$_GET['dept']}
-                WHERE inUse=1
+                FROM products 
+                WHERE department={$_GET['dept']}
+                    AND inUse=1
                     AND store_id=1;";
         $result = $dbc->query($query);
         while ($row = $dbc->fetch_row($result)) {
