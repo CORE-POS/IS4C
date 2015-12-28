@@ -138,14 +138,14 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
             <th>Placed</th><th>Received</th><th>Rec. Cost</th></tr></thead><tbody>';
         $count = 1;
         while ($row = $dbc->fetchRow($result)) {
-            $ret .= $this->orderRowToTable($row);
+            $ret .= $this->orderRowToTable($row, $placed);
         }
         $ret .= '</tbody></table></div>';
 
         return $ret;
     }
 
-    private function orderRowToTable($row)
+    private function orderRowToTable($row, $placed)
     {
         return sprintf('<tr><td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
                 <td>%s</td>
