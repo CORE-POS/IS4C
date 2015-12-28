@@ -918,6 +918,7 @@ HTML;
         function syncStoreTabs()
         {
             if ($('#store-sync').prop('checked') === false) {
+                markUnSynced();
                 return true;
             }
             var store_id = $('.tab-pane.active .store-id:first').val();
@@ -961,6 +962,74 @@ HTML;
             });
 
             return true;
+        }
+
+        function markUnSynced()
+        {
+            var store_id = $('.tab-pane.active .store-id:first').val();
+            var current = {};
+            $('#store-tab-'+store_id+' .syncable-input').each(function(){
+                if ($(this).attr('name').length > 0) {
+                    var name = $(this).attr('name');
+                    var val = $(this).val();
+                    current[name] = val;
+                }
+            });
+            var synced = {};
+            $('.syncable-input').each(function(){
+                if ($(this).attr('name').length > 0) {
+                    var name = $(this).attr('name');
+                    if (name in current && $(this).val() != current[name]) {
+                        synced[name] = false;
+                        $('#store-sync').prop('checked', false);
+                    } else {
+                        synced[name] = true;
+                    }
+                }
+            });
+            $('.syncable-input').each(function() {
+                if ($(this).attr('name').length > 0) {
+                    var name = $(this).attr('name');
+                    if (name in synced && synced[name] === false) {
+                        $(this).addClass('alert-warning');
+                    } else {
+                        $(this).removeClass('alert-warning');
+                    }
+                }
+            });
+            var checkboxes = {};
+            $('#store-tab-'+store_id+' .syncable-checkbox').each(function(){
+                if ($(this).attr('name').length > 0) {
+                    var name = $(this).attr('name');
+                    if ($(this).prop('checked')) {
+                        checkboxes[name] = true;
+                    } else {
+                        checkboxes[name] = false;
+                    }
+                }
+            });
+            var synced = {};
+            $('.syncable-checkbox').each(function(){
+                if ($(this).attr('name').length > 0) {
+                    var name = $(this).attr('name');
+                    if (name in checkboxes && $(this).prop('checked') != checkboxes[name]) {
+                        synced[name] = false;
+                        $('#store-sync').prop('checked', false);
+                    } else {
+                        synced[name] = true;
+                    }
+                }
+            });
+            $('.syncable-checkbox').each(function(){
+                if ($(this).attr('name').length > 0) {
+                    var name = $(this).attr('name');
+                    if (name in synced && synced[name] === false) {
+                        $(this).closest('label').addClass('alert-warning');
+                    } else {
+                        $(this).closest('label').removeClass('alert-warning');
+                    }
+                }
+            });
         }
         <?php
 
