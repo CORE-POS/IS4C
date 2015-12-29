@@ -20,4 +20,3 @@ while($row = $sql->fetch_row($result)){
     echo $row[1].$NL;
 }
 
-?>

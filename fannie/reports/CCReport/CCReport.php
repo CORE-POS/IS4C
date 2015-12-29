@@ -49,7 +49,7 @@ class CCReport extends FannieReportPage
         $seconds = strtotime($date);
         $start = date('Y-m-d 00:00:00',$seconds);
         $end = date('Y-m-d 23:59:59',$seconds);
-        $query = $dbc->prepare_statement("
+        $query = $dbc->prepare("
             SELECT q.datetime,
                 q.laneno,
                 q.cashierno,
@@ -72,7 +72,7 @@ class CCReport extends FannieReportPage
             and q.laneNo <> 99 and q.cashierNo <> 9999
             and m.transID is null
             order by q.datetime,q.laneNo,q.transNo,q.cashierNo");
-        $result = $dbc->exec_statement($query,array($start,$end));
+        $result = $dbc->execute($query,array($start,$end));
 
         $sum = 0;
         $htable = array();

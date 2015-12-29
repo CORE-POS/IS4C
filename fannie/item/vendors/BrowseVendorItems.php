@@ -99,8 +99,8 @@ class BrowseVendorItems extends FanniePage
         }
         $query .= "GROUP BY brand ORDER BY brand";
         $ret = "<option value=\"\">Select a brand...</option>";
-        $p = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($p,$args);
+        $p = $dbc->prepare($query);
+        $result = $dbc->execute($p,$args);
         while($row=$dbc->fetch_row($result))
             $ret .= "<option>$row[0]</option>";
 
@@ -162,13 +162,13 @@ class BrowseVendorItems extends FanniePage
         $defaultSuper = $ds;
 
         $depts = "";
-        $p = $dbc->prepare_statement("SELECT dept_no,dept_name 
+        $p = $dbc->prepare("SELECT dept_no,dept_name 
                                       FROM departments AS d
                                         LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
                                       ORDER BY 
                                           CASE WHEN s.superID=? THEN 0 ELSE 1 END,
                                           dept_no");
-        $rp = $dbc->exec_statement($p, array($defaultSuper));
+        $rp = $dbc->execute($p, array($defaultSuper));
         while($rw = $dbc->fetch_row($rp))
             $depts .= "<option value=$rw[0]>$rw[0] $rw[1]</option>";
 
@@ -202,8 +202,8 @@ class BrowseVendorItems extends FanniePage
         $ret = "<table class=\"table table-bordered\">";
         $ret .= "<tr><th>UPC</th><th>Brand</th><th>Description</th>";
         $ret .= "<th>Size</th><th>Cost</th><th>Price</th><th>Dept.</th><th>&nbsp;</th></tr>";
-        $p = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($p,$args);
+        $p = $dbc->prepare($query);
+        $result = $dbc->execute($p,$args);
         while ($row = $dbc->fetch_row($result)) {
             $inPOS = $dbc->execute($posP, array($row['upc']));
             if ($inPOS && $dbc->numRows($inPOS) > 0) {
@@ -260,13 +260,13 @@ class BrowseVendorItems extends FanniePage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $p = $dbc->prepare_statement("SELECT i.*,v.vendorName FROM vendorItems AS i
+        $p = $dbc->prepare("SELECT i.*,v.vendorName FROM vendorItems AS i
             LEFT JOIN vendors AS v ON v.vendorID=i.vendorID
             WHERE i.vendorID=? AND upc=?");
-        $vinfo = $dbc->exec_statement($p, array($vid,$upc));
+        $vinfo = $dbc->execute($p, array($vid,$upc));
         $vinfo = $dbc->fetch_row($vinfo);
-        $p = $dbc->prepare_statement("SELECT * FROM departments WHERE dept_no=?");
-        $dinfo = $dbc->exec_statement($p,array($dept));
+        $p = $dbc->prepare("SELECT * FROM departments WHERE dept_no=?");
+        $dinfo = $dbc->execute($p,array($dept));
         $dinfo = $dbc->fetch_row($dinfo);
         
         $model = new ProductsModel($dbc);
@@ -282,12 +282,12 @@ class BrowseVendorItems extends FanniePage
         $model->store_id(1);
         $model->save();
 
-        $xInsQ = $dbc->prepare_statement("INSERT INTO prodExtra (upc,manufacturer,distributor,cost,margin,variable_pricing,location,
+        $xInsQ = $dbc->prepare("INSERT INTO prodExtra (upc,manufacturer,distributor,cost,margin,variable_pricing,location,
                 case_quantity,case_cost,case_info) VALUES
                 (?,?,?,?,0.00,0,'','',0.00,'')");
         $args = array($upc,$vinfo['brand'],
                 $vinfo['vendorName'],$vinfo['cost']);
-        $dbc->exec_statement($xInsQ,$args);
+        $dbc->execute($xInsQ,$args);
 
         if ($tags !== -1) {
             $tag = new ShelftagsModel($dbc);
@@ -326,14 +326,14 @@ class BrowseVendorItems extends FanniePage
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $cats = "";
-        $p = $dbc->prepare_statement("SELECT i.vendorDept, d.name 
+        $p = $dbc->prepare("SELECT i.vendorDept, d.name 
                                       FROM vendorItems AS i
                                         LEFT JOIN vendorDepartments AS d
                                         ON i.vendorID=d.vendorID AND i.vendorDept=d.deptID
                                       WHERE i.vendorID=?
                                       GROUP BY i.vendorDept, d.name
                                       ORDER BY i.vendorDept");
-        $rp = $dbc->exec_statement($p,array($vid));
+        $rp = $dbc->execute($p,array($vid));
         while ($rw = $dbc->fetch_row($rp)) {
             if ($rw['vendorDept'] == 0 && empty($rw['name'])) {
                 continue;
@@ -413,4 +413,3 @@ class BrowseVendorItems extends FanniePage
 
 FannieDispatch::conditionalExec(false);
 
-?>

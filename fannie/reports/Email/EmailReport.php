@@ -47,8 +47,8 @@ class EmailReport extends FannieRESTfulPage
             $args = $temp;
         }
         $q .= ") AND email_1 LIKE '%@%.%'";
-        $p = $dbc->prepare_statement($q);
-        $r = $dbc->exec_statement($p,$args);
+        $p = $dbc->prepare($q);
+        $r = $dbc->execute($p,$args);
 
         $ret = '<p>Matched '.$dbc->num_rows($r).' accounts';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -74,8 +74,8 @@ class EmailReport extends FannieRESTfulPage
             <div class="panel panel-default">
                 <div class="panel-heading">Include Types</div>
                 <div class="panel-body">';
-        $p = $dbc->prepare_statement("SELECT memtype,memDesc FROM memtype ORDER BY memtype");
-        $r = $dbc->exec_statement($p);
+        $p = $dbc->prepare("SELECT memtype,memDesc FROM memtype ORDER BY memtype");
+        $r = $dbc->execute($p);
         while ($w = $dbc->fetch_row($r)) {
             $ret .= sprintf('<label><input type="checkbox" value="%d" name="types[]" /> %s</label><br />',
                 $w['memtype'],$w['memDesc']);

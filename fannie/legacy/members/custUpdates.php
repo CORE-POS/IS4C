@@ -23,7 +23,7 @@ function addCustomerAllLanes($cardno){
             $addR = $sql->query($addQ);
         }
         else {
-            $sql->add_connection($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']);
+            $sql->addConnection($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']);
             $selQ = "SELECT CardNo,personNum,LastName,FirstName,
                                 CashBack,Balance,Discount,ChargeLimit,ChargeOK,
                                 WriteChecks,StoreCoupons,Type,memType,staff,SSI,Purchases,
@@ -85,4 +85,3 @@ function updateCustomerAllLanes($cardno){
     redoCard($cardno);
 }
 
-?>

@@ -277,7 +277,7 @@ function itemParse($upc){
                     return;
                 }
 
-                while($row = $dbc->fetch_object($DatabaseResult))
+                while($row = $dbc->fetchObject($DatabaseResult))
                 {
                     $selectorData[] = array(
                         CS_SOURCE_ID=>$row->dept_no,
@@ -777,7 +777,7 @@ function itemParse($upc){
                 print("The query failed!<br>\n");
                 return;
             }
-            while($row = $dbc->fetch_object($DatabaseResult))
+            while($row = $dbc->fetchObject($DatabaseResult))
             {
                 $selectorData[] = array(
                     CS_SOURCE_ID=>$row->dept_no,
@@ -1208,7 +1208,7 @@ function likedtotable($query,$border,$bgcolor)
                 die("<li>errorno=".$dbc->errno()
                         ."<li>error=" .$dbc->error()
                         ."<li>query=".$query);
-        $number_cols = $dbc->num_fields($results);
+        $number_cols = $dbc->numFields($results);
         //display query
         //echo "<b>query: $query</b>";
         //layout table header

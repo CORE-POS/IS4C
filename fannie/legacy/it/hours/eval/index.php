@@ -18,4 +18,3 @@ else if ($perm === false){
 
 header("Location: list.php");
 
-?>

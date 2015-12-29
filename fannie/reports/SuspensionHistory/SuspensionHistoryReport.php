@@ -49,12 +49,12 @@ class SuspensionHistoryReport extends FannieReportPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $q = $dbc->prepare_statement("select username,postdate,post,textStr
+        $q = $dbc->prepare("select username,postdate,post,textStr
                 from suspension_history AS s 
                 LEFT JOIN reasoncodes AS r ON
                 s.reasoncode & r.mask > 0
                 WHERE s.cardno=? ORDER BY postdate DESC");
-        $r = $dbc->exec_statement($q,array($this->form->memNum));
+        $r = $dbc->execute($q,array($this->form->memNum));
         $data = array();
         while($w = $dbc->fetch_row($r)){
             $record = array(
@@ -92,4 +92,3 @@ class SuspensionHistoryReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

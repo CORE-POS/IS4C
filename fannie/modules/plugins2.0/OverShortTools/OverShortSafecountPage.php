@@ -185,8 +185,8 @@ class OverShortSafecountPage extends FanniePage {
             $dateArgs = array($dates[0],$dates[1]);
         }
         $countQ = "SELECT tender_type,sum(amt) from dailyCounts where tender_type in ('CA','CK','SCA') and $dateClause GROUP BY tender_type";
-        $countP = $dbc->prepare_statement($countQ);
-        $countR = $dbc->exec_statement($countP, $dateArgs);
+        $countP = $dbc->prepare($countQ);
+        $countR = $dbc->execute($countP, $dateArgs);
         $osCounts = array('CA'=>0,'CK'=>0,'SCA'=>0);
         while($countW = $dbc->fetch_row($countR))
             $osCounts[$countW[0]] = $countW[1];
@@ -402,8 +402,8 @@ class OverShortSafecountPage extends FanniePage {
 
         $dlog = DTransactionsModel::selectDlog($startDate,$endDate);
         $posTotalQ = "SELECT -1*sum(d.total) FROM $dlog as d WHERE ".str_replace(" date "," d.tdate ",$dateClause)." AND d.trans_subtype IN ('CA','CK')";
-        $posTotalP = $dbc->prepare_statement($posTotalQ);   
-        $posTotalR = $dbc->exec_statement($posTotalP, $dateArgs);
+        $posTotalP = $dbc->prepare($posTotalQ);   
+        $posTotalR = $dbc->execute($posTotalP, $dateArgs);
         $posTotalW = $dbc->fetch_row($posTotalR);
         $posTotal = $posTotalW[0];
 
@@ -424,8 +424,8 @@ class OverShortSafecountPage extends FanniePage {
                 ELSE 0 end) AS total
                 FROM dailyCounts WHERE date BETWEEN ? AND ?
                 GROUP BY date";
-        $countP = $dbc->prepare_statement($countQ);
-        $countR = $dbc->exec_statement($countP, array($startDate,$endDate));
+        $countP = $dbc->prepare($countQ);
+        $countR = $dbc->execute($countP, array($startDate,$endDate));
         while($row = $dbc->fetch_row($countR)){
             $d = $row['date'];
             if (!isset($dailies[$d])) $dailies[$d] = array(0,0);
@@ -435,8 +435,8 @@ class OverShortSafecountPage extends FanniePage {
                 SUM(case when trans_subtype in ('CA','CK') then -total ELSE 0 END) as total
                 FROM $dlog AS d WHERE tdate BETWEEN ? AND ?
                 GROUP BY YEAR(tdate),MONTH(tdate),DAY(tdate)";
-        $posP = $dbc->prepare_statement($posQ);
-        $posR = $dbc->exec_statement($posP, array($startDate.' 00:00:00',$endDate.' 23:59:59'));
+        $posP = $dbc->prepare($posQ);
+        $posR = $dbc->execute($posP, array($startDate.' 00:00:00',$endDate.' 23:59:59'));
         while($row = $dbc->fetch_row($posR)){
             $d = $row[0]."-".str_pad($row[1],2,'0',STR_PAD_LEFT)."-".str_pad($row[2],2,'0',STR_PAD_LEFT);
             if (!isset($dailies[$d])) $dailies[$d] = array(0,0);
@@ -550,6 +550,5 @@ class OverShortSafecountPage extends FanniePage {
 
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

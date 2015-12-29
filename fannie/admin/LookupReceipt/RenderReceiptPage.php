@@ -153,9 +153,6 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
 
     function receiptHeader($date,$trans) 
     {
-        global $FANNIE_ARCHIVE_DB, $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_METHOD;
-        $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
-
         $totime = strtotime($date);
         $month = date('m',$totime);
         $year = date('Y',$totime);
@@ -220,42 +217,11 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         return $this->receipt_to_table($query1,$args,0,'FFFFFF');
     }
 
-    function receipt_to_table($query,$args,$border,$bgcolor)
+    private function receiptHeaderLines()
     {
-        global $FANNIE_TRANS_DB, $FANNIE_COOP_ID;
-
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('TRANS_DB'));
-        $prep = $dbc->prepare_statement($query); 
-        $results = $dbc->exec_statement($prep,$args);
-        $number_cols = $dbc->num_fields($results);
-        $rows = array();
-        while ($row = $dbc->fetch_row($results)) {
-            $rows[] = $row;
-        } 
-        if (isset($rows[0])) {
-            $row2 = $rows[0];
-        } else {
-            $row2 = array('emp_no'=>'','register_no'=>'','trans_no'=>'','datetime'=>'','memberID'=>'');
-        }
-        $emp_no = $row2['emp_no'];  
-        $trans_num = $row2['emp_no']."-".$row2['register_no']."-".$row2['trans_no'];
-
-        /* 20Jan13 EL The way I would like to do this.
-         * Or perhaps get from core_trans.lane_config
-        if ( $CORE_LOCAL->get("receiptHeaderCount") > 0 ) {
-            $receiptHeader = "";
-            $c = $CORE_LOCAL->get("receiptHeaderCount");
-            for ( $i=1; $i <= $c; $i++ ) {
-                $h = "receiptHeader$i";
-                $receiptHeader .= ("<tr><td align=center colspan=4>" . $CORE_LOCAL->get("$h") . "</td></tr>\n");
-            }
-        }
-        */
-
         $receiptHeader = "";
-        if ( isset($FANNIE_COOP_ID) ) {
-            switch ($FANNIE_COOP_ID) {
+        if ($this->config->get('COOP_ID')) { 
+            switch ($this->config->get('COOP_ID')) {
 
             case "WEFC_Toronto":
                 $receiptHeader .= ("<tr><td align=center colspan=4>" . "W E S T &nbsp; E N D &nbsp; F O O D &nbsp; C O - O P" . "</td></tr>\n");
@@ -271,9 +237,32 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
 
             default:
                 $receiptHeader .= ("<tr><td align=center colspan=4>" . "FANNIE_COOP_ID >{$FANNIE_COOP_ID}<" . "</td></tr>\n");
-
+                break;
             }
         }
+        return $receiptHeader;
+    }
+
+    function receipt_to_table($query,$args,$border,$bgcolor)
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('TRANS_DB'));
+        $prep = $dbc->prepare($query); 
+        $results = $dbc->execute($prep,$args);
+        $number_cols = $dbc->numFields($results);
+        $rows = array();
+        while ($row = $dbc->fetch_row($results)) {
+            $rows[] = $row;
+        } 
+        if (isset($rows[0])) {
+            $row2 = $rows[0];
+        } else {
+            $row2 = array('emp_no'=>'','register_no'=>'','trans_no'=>'','datetime'=>'','memberID'=>'');
+        }
+        $emp_no = $row2['emp_no'];  
+        $trans_num = $row2['emp_no']."-".$row2['register_no']."-".$row2['trans_no'];
+
+        $receiptHeader = $this->receiptHeaderLines();
 
         $ret = "<table border = $border bgcolor=$bgcolor>\n";
         $ret .= "{$receiptHeader}\n";
@@ -317,7 +306,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $dateInt = str_replace("-","",$date1);
         list($emp,$reg,$trans) = explode("-",$transNum);
 
-        $query = $dbc->prepare_statement("SELECT mode, amount, PAN, 
+        $query = $dbc->prepare("SELECT mode, amount, PAN, 
             CASE WHEN manual=1 THEN 'keyed' ELSE 'swiped' END AS entryMethod, 
             issuer, xResultMessage, xApprovalNumber, xTransactionID, name,
             q.refNum
@@ -345,7 +334,7 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
             and m.validResponse=1 and 
             (m.xResponseCode=0 or m.xResultMessage like '%APPROVE%')
             and m.commErr=0 AND r.commErr=0");
-        $result = $dbc->exec_statement($query,array(
+        $result = $dbc->execute($query,array(
                         $dateInt,$emp,$reg,$trans,
                         $dateInt,$emp,$reg,$trans
                         ));

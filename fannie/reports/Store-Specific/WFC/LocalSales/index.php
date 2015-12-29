@@ -42,7 +42,7 @@ if (isset($_REQUEST['submit'])){
             $d1,$d2);
     }
 
-    $sales = $dbc->prepare_statement("SELECT t.department,d.dept_name,s.superID,n.super_name,
+    $sales = $dbc->prepare("SELECT t.department,d.dept_name,s.superID,n.super_name,
             sum(case when numflag = 2 then total else 0 end) as localSales,
             sum(case when numflag = 1 then total else 0 end) as scSales,
             sum(total) as allSales
@@ -57,7 +57,7 @@ if (isset($_REQUEST['submit'])){
             AND upc Not IN ('RRR','DISCOUNT')
             group by t.department,d.dept_name,s.superID,n.super_name
             order by s.superID,t.department");
-    $result = $dbc->exec_statement($sales,array($d1.' 00:00:00',$d2.' 23:59:59'));
+    $result = $dbc->execute($sales,array($d1.' 00:00:00',$d2.' 23:59:59'));
     $sID = -1;
     $sname = "";
     $sttl = 0;
@@ -169,4 +169,4 @@ $(document).ready(function(){
 <?php
 include($FANNIE_ROOT.'src/footer.html');
 }
-?>
+

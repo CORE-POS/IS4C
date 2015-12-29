@@ -68,4 +68,4 @@ Filename: <input type="file" id="file" name="upload" />
     /* html footer */
     include($FANNIE_ROOT."src/footer.html");
 }
-?>
+

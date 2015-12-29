@@ -53,7 +53,7 @@ TransRecord::finalizeTransaction(true);
 ob_start();
 include(realpath(dirname(__FILE__).'/ajax-end.php'));
 ob_end_clean();
-if (!headers_send()) {
+if (!headers_sent()) {
     header("Location: ".MiscLib::base_url()."gui-modules/pos2.php");
 }
 

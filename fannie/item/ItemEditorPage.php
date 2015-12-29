@@ -273,8 +273,8 @@ class ItemEditorPage extends FanniePage
         }
 
         $query = $dbc->addSelectLimit($query, 500);
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($query,$args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($query,$args);
 
         /**
           Query somehow failed. Unlikely. Show error and search box again.
@@ -431,7 +431,8 @@ class ItemEditorPage extends FanniePage
         }
 
         // remove action so form cannot be submitted by pressing enter
-        $ret = '<form id="item-editor-form" action="' . ($authorized ? $_SERVER['PHP_SELF'] : '') . '" method="post">';
+        $ret = '<form id="item-editor-form" action="' . ($authorized ? $_SERVER['PHP_SELF'] : '') . '" 
+            enctype="multipart/form-data" method="post">';
         $ret .= '<div class="container"><div id="alert-area">';
 
         uasort($FANNIE_PRODUCT_MODULES, array('ItemEditorPage', 'sortModules'));
@@ -530,9 +531,9 @@ class ItemEditorPage extends FanniePage
             $this->add_onload_command("addVendorDialog();\n");
             if ($this->config->get('STORE_MODE') == 'HQ') {
                 $this->addOnloadCommand("\$('#item-editor-form').submit(syncStoreTabs);\n");
-                if ($isNew) { 
-                    $this->addOnloadCommand("\$('.syncable-input:visible').change(syncStoreTabs);\n");
-                }
+                $this->addOnloadCommand("\$('.syncable-input').change(syncStoreTabs);\n");
+                $this->addOnloadCommand("\$('.syncable-checkbox').change(syncStoreTabs);\n");
+                $this->addOnloadCommand("markUnSynced();\n");
             }
         }
 

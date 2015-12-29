@@ -157,10 +157,10 @@ class CoopCredTransferTool extends FanniePage {
         if ($this->mode == 'init') {
             $memNum = FormLib::get_form_value('memIN');
             if ($memNum != 0) {
-                $q = $dbc->prepare_statement("SELECT FirstName,LastName
+                $q = $dbc->prepare("SELECT FirstName,LastName
                     FROM {$OP}custdata
                     WHERE CardNo=? AND personNum=1");
-                $r = $dbc->exec_statement($q,array($memNum));
+                $r = $dbc->execute($q,array($memNum));
                 if ($dbc->num_rows($r) == 0) {
                     $this->errors .= "<em>Error: no such member: ".$memNum."</em>"
                         ."<br /><br />"
@@ -266,8 +266,8 @@ class CoopCredTransferTool extends FanniePage {
                     WHERE c.CardNo=? AND c.personNum=1
                     AND b.programID =" . $this->programID .
                     "";
-                $s = $dbc->prepare_statement($q);
-                $r = $dbc->exec_statement($s,array($this->cn1));
+                $s = $dbc->prepare($q);
+                $r = $dbc->execute($s,array($this->cn1));
                 if ($dbc->num_rows($r) == 0) {
                     $this->errors .= "<em>Error: no such member: ".$this->cn1."</em>"
                         ."<br /><br />"
@@ -293,10 +293,10 @@ class CoopCredTransferTool extends FanniePage {
                     return True;
                 }
 
-            $q = $dbc->prepare_statement("SELECT FirstName,LastName
+            $q = $dbc->prepare("SELECT FirstName,LastName
                 FROM {$OP}custdata
                 WHERE CardNo=? AND personNum=1");
-            $r = $dbc->exec_statement($q,array($this->cn2));
+            $r = $dbc->execute($q,array($this->cn2));
             if ($dbc->num_rows($r) == 0) {
                 $this->errors .= "<em>Error: no such member: ".$this->cn2."</em>"
                     ."<br /><br />"
@@ -582,10 +582,10 @@ class CoopCredTransferTool extends FanniePage {
     function getTransNo($emp,$register) {
         global $FANNIE_TRANS_DB;
         $dbc = FannieDB::get($FANNIE_TRANS_DB);
-        $q = $dbc->prepare_statement("SELECT max(trans_no)
+        $q = $dbc->prepare("SELECT max(trans_no)
             FROM dtransactions
             WHERE register_no=? AND emp_no=?");
-        $r = $dbc->exec_statement($q,array($register,$emp));
+        $r = $dbc->execute($q,array($register,$emp));
         $n = array_pop($dbc->fetch_row($r));
         return (empty($n)?1:$n+1);    
     }
@@ -657,9 +657,9 @@ class CoopCredTransferTool extends FanniePage {
             $defaults['ItemQtty'] = 0;
             $defaults['upc'] = '0';
             $tenderQ = "SELECT TenderName FROM {$OP}tenders WHERE TenderCode=?";
-            $tenderP = $dbc->prepare_statement($tenderQ);
+            $tenderP = $dbc->prepare($tenderQ);
             $tArgs = array($comment);
-            $tenderR = $dbc->exec_statement($tenderP,$tArgs);
+            $tenderR = $dbc->execute($tenderP,$tArgs);
             if ($tenderR === False) {
                 return "$tenderQ\nargs:" . implode(":",$tArgs);
             }
@@ -685,9 +685,9 @@ class CoopCredTransferTool extends FanniePage {
                     $defaults['description'] = $this->depts[$department];
                 else {
                     $nameQ = "SELECT dept_name FROM {$OP}departments WHERE dept_no=?";
-                    $nameP = $dbc->prepare_statement($nameQ);
+                    $nameP = $dbc->prepare($nameQ);
                     $nArgs = array($department);
-                    $nameR = $dbc->exec_statement($nameP,$nArgs);
+                    $nameR = $dbc->execute($nameP,$nArgs);
                     if ($nameR === False) {
                         return "$nameQ\nargs:" . implode(":",$nArgs);
                     }
@@ -702,9 +702,9 @@ class CoopCredTransferTool extends FanniePage {
         }
 
         $q = "SELECT memType,Staff FROM {$OP}custdata WHERE CardNo=?";
-        $s = $dbc->prepare_statement($q);
+        $s = $dbc->prepare($q);
         $args = array($cardno);
-        $r = $dbc->exec_statement($s,$args);
+        $r = $dbc->execute($s,$args);
         if ($r === False) {
             return "$q\nargs:" . implode(":",$args);
         }
@@ -723,8 +723,8 @@ class CoopCredTransferTool extends FanniePage {
         $columns = substr($columns,0,strlen($columns)-1);
         $values = substr($values,0,strlen($values)-1);
         $query = "INSERT INTO dtransactions ($columns) VALUES ($values)";
-        $prep = $dbc->prepare_statement($query);
-        $rslt = $dbc->exec_statement($prep, $args);
+        $prep = $dbc->prepare($query);
+        $rslt = $dbc->execute($prep, $args);
         if ($rslt === False) {
             return "$query\nargs:" . implode(":",$args);
         }
@@ -758,11 +758,11 @@ class CoopCredTransferTool extends FanniePage {
             WHERE m.programID ={$programID} AND c.personNum =1
                 AND b.programID ={$programID}
             ORDER BY c.LastName";
-        $memberS = $dbc->prepare_statement("$memberQ");
+        $memberS = $dbc->prepare("$memberQ");
         if ($memberS === False) {
             return "<option value=''>Failed: prep $s : See queries.log</option>";
         }
-        $memberR = $dbc->exec_statement($memberS, array());
+        $memberR = $dbc->execute($memberS, array());
         if ($memberR === False) {
             return "<option value=''>Failed: exec $memberQ : See queries.log</option>";
         }
@@ -782,6 +782,5 @@ class CoopCredTransferTool extends FanniePage {
 
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

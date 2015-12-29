@@ -32,7 +32,7 @@ foreach($FANNIE_LANES as $lane){
 
     if ($lane['type'] != 'MYSQL') continue;
 
-    $dbc->add_connection($lane['host'],$lane['type'],$lane['op'],
+    $dbc->addConnection($lane['host'],$lane['type'],$lane['op'],
             $lane['user'],$lane['pw']);
     if ($dbc->connections[$lane['op']] !== False){
 
@@ -48,4 +48,3 @@ foreach($FANNIE_LANES as $lane){
 
 echo "<li>Product table synched</li>";
 
-?>

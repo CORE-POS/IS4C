@@ -114,8 +114,8 @@ class OverShortMAS extends FannieRESTfulPage {
                 AND tdate BETWEEN ? AND ?
                 AND department <> 703
                 GROUP BY type HAVING SUM(total) <> 0 ORDER BY type";
-        $tenderP = $dbc->prepare_statement($tenderQ);
-        $tenderR = $dbc->exec_statement($tenderP, $args);
+        $tenderP = $dbc->prepare($tenderQ);
+        $tenderR = $dbc->execute($tenderP, $args);
         while($w = $dbc->fetch_row($tenderR)){
             $coding = isset($codes[$w['type']]) ? $codes[$w['type']] : 10120;
             $name = isset($names[$w['type']]) ? $names[$w['type']] : $w['name'];
@@ -134,8 +134,8 @@ class OverShortMAS extends FannieRESTfulPage {
                 AND store_id=1
             AND total <> 0 AND tdate BETWEEN ? AND ?
             GROUP BY name ORDER BY name";
-        $discountP = $dbc->prepare_statement($discountQ);
-        $discountR = $dbc->exec_statement($discountP, $args);
+        $discountP = $dbc->prepare($discountQ);
+        $discountR = $dbc->execute($discountP, $args);
         while($w = $dbc->fetch_row($discountR)){
             $coding = isset($codes[$w['name']]) ? $codes[$w['name']] : 66600;
             $name = $w['name'];
@@ -161,8 +161,8 @@ class OverShortMAS extends FannieRESTfulPage {
                 AND d.store_id=1
             GROUP BY salesCode HAVING sum(total) <> 0 
             ORDER BY salesCode";
-        $salesP = $dbc->prepare_statement($salesQ);
-        $salesR = $dbc->exec_statement($salesP, $args);
+        $salesP = $dbc->prepare($salesQ);
+        $salesR = $dbc->execute($salesP, $args);
         while($w = $dbc->fetch_row($salesR)){
             $coding = isset($codes[$w['salesCode']]) ? $codes[$w['salesCode']] : $w['salesCode'];
             $name = isset($names[$w['salesCode']]) ? $names[$w['salesCode']] : $w['name'];
@@ -176,8 +176,8 @@ class OverShortMAS extends FannieRESTfulPage {
 
         $taxQ = "SELECT SUM(total) FROM $dlog WHERE tdate BETWEEN ? AND ?
             AND upc='TAX'";
-        $taxP = $dbc->prepare_statement($taxQ);
-        $taxR = $dbc->exec_statement($taxP, $args);
+        $taxP = $dbc->prepare($taxQ);
+        $taxR = $dbc->execute($taxP, $args);
         $taxes = 0.00;
         if ($dbc->num_rows($taxR) > 0){
             $taxW = $dbc->fetch_row($taxR);
@@ -200,8 +200,8 @@ class OverShortMAS extends FannieRESTfulPage {
             AND d.store_id=1
             GROUP BY salesCode HAVING sum(total) <> 0 
             ORDER BY salesCode";
-        $salesP = $dbc->prepare_statement($salesQ);
-        $salesR = $dbc->exec_statement($salesP, $args);
+        $salesP = $dbc->prepare($salesQ);
+        $salesR = $dbc->execute($salesP, $args);
         while($w = $dbc->fetch_row($salesR)){
             $coding = isset($codes[$w['salesCode']]) ? $codes[$w['salesCode']] : $w['salesCode'];
             $name = isset($names[$w['salesCode']]) ? $names[$w['salesCode']] : $w['name'];
@@ -239,9 +239,9 @@ class OverShortMAS extends FannieRESTfulPage {
             AND store_id=1
             AND trans_subtype <> 'IC'
             AND tdate BETWEEN ? AND ? ORDER BY tdate";
-        $miscP = $dbc->prepare_statement($miscQ);
-        $miscR = $dbc->exec_statement($miscP, $args);
-        $detailP = $dbc->prepare_statement("SELECT description 
+        $miscP = $dbc->prepare($miscQ);
+        $miscR = $dbc->execute($miscP, $args);
+        $detailP = $dbc->prepare("SELECT description 
             FROM $dtrans WHERE trans_type='C'
             AND trans_subtype='CM' AND datetime BETWEEN ? AND ?
             AND store_id=1
@@ -251,7 +251,7 @@ class OverShortMAS extends FannieRESTfulPage {
             list($date,$time) = explode(' ',$w['tdate']);
             list($e,$r,$t) = explode('-',$w['trans_num']);
             // lookup comments on the transaction
-            $detailR = $dbc->exec_statement($detailP, array(
+            $detailR = $dbc->execute($detailP, array(
                 $date.' 00:00:00', $date.' 23:59:59',
                 $e, $r, $t
             ));
@@ -275,8 +275,8 @@ class OverShortMAS extends FannieRESTfulPage {
             AND store_id=1
             AND trans_subtype = 'IC'
             AND tdate BETWEEN ? AND ? ORDER BY tdate";
-        $miscP = $dbc->prepare_statement($miscQ);
-        $miscR = $dbc->exec_statement($miscP, $args);
+        $miscP = $dbc->prepare($miscQ);
+        $miscR = $dbc->execute($miscP, $args);
         while($w = $dbc->fetch_row($miscR)) {
             $record = array(
                 $dateID, $dateStr,

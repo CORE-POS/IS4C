@@ -87,10 +87,10 @@ class TsAdminView extends FanniePage {
         if ($_GET['function'] == 'edit' && isset($_GET['submitted']) 
             && isset($_GET['emp_no']) && isset($_GET['periodID']) && isset($_GET['id'])) {
 
-            $oneP = $ts_db->prepare_statement("UPDATE timesheet
+            $oneP = $ts_db->prepare("UPDATE timesheet
                 SET time_in=?, time_out=?, area=?
                 WHERE ID=?");
-            $twoP = $ts_db->prepare_statement("UPDATE timesheet
+            $twoP = $ts_db->prepare("UPDATE timesheet
                 SET time_in=?
                 WHERE ID=?");
             foreach ($_GET['id'] AS $key => $id) {
@@ -108,13 +108,13 @@ class TsAdminView extends FanniePage {
                         $area,
                         $id
                     );
-                    $result = $ts_db->exec_statement($oneP,$args);
+                    $result = $ts_db->execute($oneP,$args);
                 } else {
                     $args = array(
                         '2008-01-01 '.$timein,
                         $id
                     );
-                    $result = $ts_db->exec_statement($twoP,$args);
+                    $result = $ts_db->execute($twoP,$args);
                 }
             
                 if (!$result) {
@@ -133,26 +133,26 @@ class TsAdminView extends FanniePage {
         $emp_no = (int) $this->emp_no;
         $periodID = (int) $this->periodID;
     
-        $mainQ = $ts_db->prepare_statement("SELECT date, DATE_FORMAT(date, '%M %D'), 
+        $mainQ = $ts_db->prepare("SELECT date, DATE_FORMAT(date, '%M %D'), 
             ROUND(SUM(TIMESTAMPDIFF(MINUTE, time_in, time_out))/60, 2)
             FROM timesheet
             WHERE emp_no = ?
             AND periodID = ?
             GROUP BY date");
-        $mainR = $ts_db->exec_statement($mainQ, array($emp_no,$periodID));
+        $mainR = $ts_db->execute($mainQ, array($emp_no,$periodID));
         
-        $nameQ = $ts_db->prepare_statement("SELECT firstname FROM ".
+        $nameQ = $ts_db->prepare("SELECT firstname FROM ".
             $FANNIE_OP_DB.$ts_db->sep()."employees WHERE emp_no=?");
-        $nameR = $ts_db->exec_statement($nameQ, array($emp_no));
+        $nameR = $ts_db->execute($nameQ, array($emp_no));
         list($name) = $ts_db->fetch_row($nameR);
         
-        $periodQ = $ts_db->prepare_statement("SELECT 
+        $periodQ = $ts_db->prepare("SELECT 
             date_format(periodStart, '%M %D, %Y'), date_format(periodEnd, '%M %D, %Y')
             FROM payperiods WHERE periodID=?");
-        $periodR = $ts_db->exec_statement($periodQ, array($periodID));
+        $periodR = $ts_db->execute($periodQ, array($periodID));
         $period = $ts_db->fetch_row($periodR);
 
-        $query = $ts_db->prepare_statement("SELECT CASE area WHEN 0 THEN TIME_FORMAT(time_in, '%H:%i') 
+        $query = $ts_db->prepare("SELECT CASE area WHEN 0 THEN TIME_FORMAT(time_in, '%H:%i') 
             ELSE TIME_FORMAT(time_in, '%r') END,
             CASE area WHEN 0 THEN time_out ELSE TIME_FORMAT(time_out, '%r') END,
             area,
@@ -162,7 +162,7 @@ class TsAdminView extends FanniePage {
             AND area <> 31
             AND periodID = ?
             AND date = ?");
-        $shiftP = $ts_db->prepare_statement("SELECT * FROM shifts WHERE ShiftID 
+        $shiftP = $ts_db->prepare("SELECT * FROM shifts WHERE ShiftID 
                 NOT IN (0,31) ORDER BY ShiftID ASC");
         
         ob_start();
@@ -179,7 +179,7 @@ class TsAdminView extends FanniePage {
                     '&emp_no=' . $emp_no . '&periodID=' . $periodID . '">Delete</a></th>
                 <th align="right" colspan="2">' . $mainRow[2] . ' Hours</th>
             </tr>';
-            $result = $ts_db->exec_statement($query, array($emp_no, $periodID, $mainRow[0]));
+            $result = $ts_db->execute($query, array($emp_no, $periodID, $mainRow[0]));
             if (!$result) echo "<p>Error!</p><p>Query: $query</p><p>" . $ts_db->error() . "</p>";
             while ($row = $ts_db->fetch_row($result)) {
                 if ($row[2] == 0) {
@@ -228,7 +228,7 @@ class TsAdminView extends FanniePage {
                     $in = substr($row[0], 9, 2);
                     $out = substr($row[1], 9, 2);
 
-                    $shiftR = $ts_db->exec_statement($shiftP);
+                    $shiftR = $ts_db->execute($shiftP);
                     
                     echo '<tr class="details" style="display:none">
                         <td>
@@ -270,12 +270,12 @@ class TsAdminView extends FanniePage {
         }
         echo '</div>';
         
-        $periodQ = $ts_db->prepare_statement("SELECT periodStart, periodEnd 
+        $periodQ = $ts_db->prepare("SELECT periodStart, periodEnd 
                     FROM payperiods WHERE periodID = ?");
-        $periodR = $ts_db->exec_statement($periodQ, array($periodID));
+        $periodR = $ts_db->execute($periodQ, array($periodID));
         list($periodStart, $periodEnd) = $ts_db->fetch_row($periodR);
         
-        $weekoneQ = $ts_db->prepare_statement("SELECT 
+        $weekoneQ = $ts_db->prepare("SELECT 
             ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2)
             FROM timesheet AS t
             INNER JOIN payperiods AS p
@@ -286,7 +286,7 @@ class TsAdminView extends FanniePage {
             AND t.date >= DATE(p.periodStart)
             AND t.date < DATE(date_add(p.periodStart, INTERVAL 7 day))");
         
-        $weektwoQ = $ts_db->prepare_statement("SELECT 
+        $weektwoQ = $ts_db->prepare("SELECT 
             ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2)
             FROM timesheet AS t
             INNER JOIN payperiods AS p
@@ -297,19 +297,19 @@ class TsAdminView extends FanniePage {
             AND t.date >= DATE(date_add(p.periodStart, INTERVAL 7 day)) 
             AND t.date <= DATE(p.periodEnd)");
 
-        $vacationQ = $ts_db->prepare_statement("SELECT ROUND(vacation, 2), ID
+        $vacationQ = $ts_db->prepare("SELECT ROUND(vacation, 2), ID
             FROM timesheet AS t
             WHERE t.emp_no = $emp_no
             AND t.periodID = $periodID
             AND t.area = 31");
             
-        $WageQ = $ts_db->prepare_statement("SELECT pay_rate FROM ".
+        $WageQ = $ts_db->prepare("SELECT pay_rate FROM ".
             $FANNIE_OP_DB.$ts_db->sep()."employees WHERE emp_no = ?");
         
-        $weekoneR = $ts_db->exec_statement($weekoneQ, array($emp_no,$periodID));
-        $weektwo = $ts_db->exec_statement($weektwoQ, array($emp_no,$periodID));
-        $vacationR = $ts_db->exec_statement($vacationQ, array($emp_no,$periodID));
-        $WageR = $ts_db->exec_statement($WageQ, array($emp_no));
+        $weekoneR = $ts_db->execute($weekoneQ, array($emp_no,$periodID));
+        $weektwo = $ts_db->execute($weektwoQ, array($emp_no,$periodID));
+        $vacationR = $ts_db->execute($vacationQ, array($emp_no,$periodID));
+        $WageR = $ts_db->execute($WageQ, array($emp_no));
         
         list($weekone) = $ts_db->fetch_row($weekoneR);
         if (is_null($weekone)) $weekone = 0;
@@ -390,6 +390,5 @@ class TsAdminView extends FanniePage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

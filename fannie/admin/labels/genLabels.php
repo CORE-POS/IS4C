@@ -29,22 +29,22 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
     return;
 }
 
-$layout = FormLib::get_form_value('layout',$FANNIE_DEFAULT_PDF);
+$layout = FormLib::get('layout',$FANNIE_DEFAULT_PDF);
 $layout = str_replace(" ","_",$layout);
-$offset = (isset($_REQUEST['offset']) && is_numeric($_REQUEST['offset']))?$_REQUEST['offset']:0;
-$offset = FormLib::get_form_value('offset',0);
+$offset = FormLib::get('offset', 0);
+$offset = FormLib::get('offset',0);
 $data = array();
 
-$id = FormLib::get_form_value('id',False);
-$batchID = FormLib::get_form_value('batchID',False);
+$tagID = FormLib::get('id',False);
+$batchID = FormLib::get('batchID',False);
 
 $dbc = FannieDB::getReadOnly($FANNIE_OP_DB);
 
-if ($id !== False) {
-    if (!is_array($id)) {
-        $id = array($id);
+if ($tagID !== False) {
+    if (!is_array($tagID)) {
+        $tagID = array($tagID);
     }
-    list($inStr, $args) = $dbc->safeInClause($id);
+    list($inStr, $args) = $dbc->safeInClause($tagID);
     $query = "
         SELECT s.*,
             p.scale,
@@ -65,7 +65,7 @@ if ($id !== False) {
             break;
     }
     $prep = $dbc->prepare($query);
-    $result = $dbc->exec_statement($prep, $args);
+    $result = $dbc->execute($prep, $args);
 
     while ($row = $dbc->fetch_row($result)) {
         $count = 1;
@@ -102,12 +102,12 @@ elseif ($batchID !== False){
         $args[] = $x;
     }
     $batchIDList = substr($batchIDList,0,strlen($batchIDList)-1);
-    $testQ = $dbc->prepare_statement("select b.*,p.scale,p.numflag
+    $testQ = $dbc->prepare("select b.*,p.scale,p.numflag
         FROM batchBarcodes as b 
             " . DTrans::joinProducts('b', 'p', 'INNER') . "
         WHERE b.batchID in ($batchIDList) and b.description <> ''
         ORDER BY b.batchID");
-    $result = $dbc->exec_statement($testQ,$args);
+    $result = $dbc->execute($testQ,$args);
     while($row = $dbc->fetch_row($result)){
         $myrow = array(
         'normal_price' => $row['normal_price'],

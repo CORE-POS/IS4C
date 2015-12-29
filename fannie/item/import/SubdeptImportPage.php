@@ -70,7 +70,7 @@ class SubdeptImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $desc_index = $this->get_column_index('desc');
         $dn_index = $this->get_column_index('dn');
 
-        $insP = $dbc->prepare_statement("INSERT INTO subdepts (subdept_no,subdept_name,dept_ID)
+        $insP = $dbc->prepare("INSERT INTO subdepts (subdept_no,subdept_name,dept_ID)
                     VALUES (?,?,?)");
 
         foreach($linedata as $line){
@@ -84,7 +84,7 @@ class SubdeptImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
             if (strlen($desc) > 30) $desc = substr($desc,0,30);
 
-            $insR = $dbc->exec_statement($insP,array($subdept_no,$desc,$dept_no));
+            $insR = $dbc->execute($insP,array($subdept_no,$desc,$dept_no));
             if ($insR) {
                 $this->stats['imported']++;
             } else {

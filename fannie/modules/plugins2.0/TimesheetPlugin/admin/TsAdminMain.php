@@ -34,9 +34,9 @@ class TsAdminMain extends FanniePage {
             <input type="radio" name="function" value="view" id="view" checked="checked" />View/Edit Sheets</label>
             </p>';
             
-        $query = $ts_db->prepare_statement("SELECT FirstName, emp_no FROM ".
+        $query = $ts_db->prepare("SELECT FirstName, emp_no FROM ".
                 $FANNIE_OP_DB.$ts_db->sep()."employees where EmpActive=1 ORDER BY FirstName ASC");
-        $result = $ts_db->exec_statement($query);
+        $result = $ts_db->execute($query);
         echo '<div class="form-group">';
         echo '<label>Name</label><select class="form-control" name="emp_no">
         <option value="0">Whose sheet?</option>';
@@ -44,16 +44,16 @@ class TsAdminMain extends FanniePage {
             echo "<option value=\"$row[1]\">$row[0]</option>\n";
         }
         echo '</select></div>';
-        $currentQ = $ts_db->prepare_statement("SELECT periodID FROM payperiods WHERE "
+        $currentQ = $ts_db->prepare("SELECT periodID FROM payperiods WHERE "
                 .$ts_db->now()." BETWEEN periodStart AND periodEnd");
-        $currentR = $ts_db->exec_statement($currentQ);
+        $currentR = $ts_db->execute($currentQ);
         $row = $ts_db->fetch_row($currentR);
         $ID = $row[0];
 
-        $query = $ts_db->prepare_statement("SELECT date_format(periodStart, '%M %D, %Y'), 
+        $query = $ts_db->prepare("SELECT date_format(periodStart, '%M %D, %Y'), 
                 date_format(periodEnd, '%M %D, %Y'), periodID 
                 FROM payperiods WHERE periodStart < ".$ts_db->now()." ORDER BY periodID DESC");
-        $result = $ts_db->exec_statement($query);
+        $result = $ts_db->execute($query);
 
         echo '<div class="form-group">';
         echo '<label>Pay Period</label><select class="form-control" name="periodID">
@@ -78,6 +78,5 @@ class TsAdminMain extends FanniePage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

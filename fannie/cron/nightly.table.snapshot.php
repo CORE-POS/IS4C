@@ -64,4 +64,3 @@ else {
     $sql->query("INSERT INTO custdataBackup SELECT * FROM custdata");
 }
 
-?>

@@ -12,4 +12,3 @@ $my_menu = array(
     "Raisins, Thompson, Org." => "3476"
 );
 
-?>

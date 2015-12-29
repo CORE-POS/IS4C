@@ -70,13 +70,13 @@ $TRANS = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_TRANS_DB.'.dbo.' : $FANNIE_TRANS
 $WAREHOUSE = $FANNIE_PLUGIN_SETTINGS['WarehouseDatabase'] . ($FANNIE_SERVER_DBMS=='MSSQL' ? '.dbo.' : '.');
 $date_id = date('Ymd', strtotime($dstr));
 
-$tenderQ = $dbc->prepare_statement("SELECT t.TenderName,-sum(d.total) as total, d.quantity
+$tenderQ = $dbc->prepare("SELECT t.TenderName,-sum(d.total) as total, d.quantity
 FROM {$WAREHOUSE}sumTendersByDay as d ,{$OP_DB}tenders as t 
 WHERE d.date_id=?
 AND d.trans_subtype = t.TenderCode
 and d.total <> 0
 GROUP BY t.TenderName");
-$tenderR = $dbc->exec_statement($tenderQ,array($date_id));
+$tenderR = $dbc->execute($tenderQ,array($date_id));
 $tenders = WfcLib::getTenders();
 $mad = array(0.0,0);
 while ($row = $dbc->fetch_row($tenderR)){
@@ -95,14 +95,14 @@ echo WfcLib::tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Co
          array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,WfcLib::ALIGN_RIGHT),2);
 
 
-$pCodeQ = $dbc->prepare_statement("SELECT s.salesCode,-1*sum(l.total) as total,min(l.department) 
+$pCodeQ = $dbc->prepare("SELECT s.salesCode,-1*sum(l.total) as total,min(l.department) 
 FROM {$WAREHOUSE}sumDeptSalesByDay as l
 INNER JOIN {$OP_DB}departments AS s ON l.department=s.dept_no
 WHERE l.date_id=?
 AND l.department < 600 AND l.department <> 0
 GROUP BY s.salesCode
 order by s.salesCode");
-$pCodeR = $dbc->exec_statement($pCodeQ,array($date_id));
+$pCodeR = $dbc->execute($pCodeQ,array($date_id));
 $pCodes = WfcLib::getPCodes();
 while($row = $dbc->fetch_row($pCodeR)){
     if (isset($pCodes[$row[0]])) $pCodes[$row[0]][0] = $row[1];
@@ -111,22 +111,22 @@ echo "<br /><b>Sales</b>";
 echo WfcLib::tablify($pCodes,array(0,1),array("pCode","Sales"),
          array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY),1);
 
-$saleSumQ = $dbc->prepare_statement("SELECT -1*sum(l.total) as totalSales
+$saleSumQ = $dbc->prepare("SELECT -1*sum(l.total) as totalSales
 FROM {$WAREHOUSE}sumDeptSalesByDay as l
 WHERE l.date_id = ?
 AND l.department < 600 AND l.department <> 0");
-$saleSumR = $dbc->exec_statement($saleSumQ,array($date_id));
+$saleSumR = $dbc->execute($saleSumQ,array($date_id));
 echo "<br /><b><u>Total Sales</u></b><br />";
 echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($saleSumR)));
 
-$returnsQ = $dbc->prepare_statement("SELECT s.salesCode,-1*sum(L.total)as returns
+$returnsQ = $dbc->prepare("SELECT s.salesCode,-1*sum(L.total)as returns
 FROM $dlog as L,departments as s
 WHERE s.dept_no = L.department
 AND L.tdate BETWEEN ? AND ?
 AND(trans_status = 'R')
 GROUP BY s.salesCode");
 $dates = array($dstr.' 00:00:00',$dstr.' 23:59:59');
-$returnsR = $dbc->exec_statement($returnsQ,$dates);
+$returnsR = $dbc->execute($returnsQ,$dates);
 $returns = array();
 while($row = $dbc->fetch_row($returnsR))
     $returns["$row[0]"] = array($row[1]);
@@ -136,11 +136,11 @@ echo WfcLib::tablify($returns,array(0,1),array("pCode","Sales"),
 
 // idea here is to get everything to the right of the
 // RIGHT MOST space, hence the reverse
-$voidTransQ = $dbc->prepare_statement("SELECT RIGHT(description,".
+$voidTransQ = $dbc->prepare("SELECT RIGHT(description,".
         $dbc->locate("' '","REVERSE(description)")."-1),
            trans_num,-1*total from
            {$TRANS}voidTransHistory where tdate BETWEEN ? AND ?");
-$voidTransR = $dbc->exec_statement($voidTransQ,$dates);
+$voidTransR = $dbc->execute($voidTransQ,$dates);
 $voids = array();
 while($row = $dbc->fetch_row($voidTransR))
     $voids["$row[0]"] = array($row[1],$row[2]);
@@ -148,14 +148,14 @@ echo "<br /><b>Voids</b>";
 echo WfcLib::tablify($voids,array(0,1,2),array("Original","Void","Total"),
          array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY),2);
 
-$otherQ = $dbc->prepare_statement("SELECT d.department,t.dept_name, -1*sum(total) as total 
+$otherQ = $dbc->prepare("SELECT d.department,t.dept_name, -1*sum(total) as total 
 FROM {$WAREHOUSE}sumDeptSalesByDay as d left join departments as t ON d.department = t.dept_no
 WHERE d.date_id=?
 AND d.department > 300 
 and d.department <> 610
 and d.department not between 500 and 599
 GROUP BY d.department, t.dept_name order by d.department");
-$otherR = $dbc->exec_statement($otherQ,array($date_id));
+$otherR = $dbc->execute($otherQ,array($date_id));
 $others = WfcLib::getOtherCodes();
 while($row = $dbc->fetch_row($otherR)){
     $others["$row[0]"][1] = $row[1];
@@ -165,11 +165,11 @@ echo "<br /><b>Other</b>";
 echo WfcLib::tablify($others,array(1,0,2,3),array("Account","Dept","Description","Amount"),
          array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY),3);
 
-$equityQ = $dbc->prepare_statement("SELECT d.card_no,t.dept_name, -1*sum(stockPurchase) as total 
+$equityQ = $dbc->prepare("SELECT d.card_no,t.dept_name, -1*sum(stockPurchase) as total 
 FROM {$TRANS}stockpurchases as d left join departments as t ON d.dept = t.dept_no
 WHERE d.tdate BETWEEN ? AND ?
 GROUP BY d.card_no, t.dept_name ORDER BY d.card_no, t.dept_name");
-$equityR = $dbc->exec_statement($equityQ,$dates);
+$equityR = $dbc->execute($equityQ,$dates);
 $equityrows = array();
 while($row = $dbc->fetch_row($equityR)){
     $newrow = array("00-".str_pad($row[0],7,"0",STR_PAD_LEFT),$row[0],$row[1],$row[2]);
@@ -179,7 +179,7 @@ echo "<br /><b>Equity Payments by Member Number</b>";
 echo WfcLib::tablify($equityrows,array(1,2,3,4),array("Account","MemNum","Description","Amount"),
     array(0,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY));
 
-$arQ = $dbc->prepare_statement("SELECT d.card_no,'STORE CHARGE' as description,
+$arQ = $dbc->prepare("SELECT d.card_no,'STORE CHARGE' as description,
 SUM(d.Charges),
 count(card_no) as transactions 
 FROM {$TRANS}ar_history as d 
@@ -198,7 +198,7 @@ AND d.Payments <> 0
 GROUP BY d.card_no
 
 ORDER BY description DESC, card_no");
-$arR = $dbc->exec_statement($arQ,array($dates[0],$dates[1],$dates[0],$dates[1]));
+$arR = $dbc->execute($arQ,array($dates[0],$dates[1],$dates[0],$dates[1]));
 $ar_rows = array();
 while($row = $dbc->fetch_row($arR)){
     $newrow = array("01-".str_pad($row[0],7,"0",STR_PAD_LEFT),$row[0],$row[1],$row[2],$row[3]);
@@ -208,12 +208,12 @@ echo "<br /><b>AR Activity by Member Number</b>";
 echo WfcLib::tablify($ar_rows,array(1,2,3,4,5),array("Account","MemNum","Description","Amount","Transactions"),
     array(0,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,WfcLib::ALIGN_RIGHT));
 
-$discQ = $dbc->prepare_statement("SELECT m.memDesc, -1*SUM(d.total) AS Discount,SUM(transCount)
+$discQ = $dbc->prepare("SELECT m.memDesc, -1*SUM(d.total) AS Discount,SUM(transCount)
 FROM {$WAREHOUSE}sumDiscountsByDay AS d INNER JOIN
       memTypeID m ON d.memType = m.memTypeID
 WHERE d.date_id=?
 GROUP BY m.memDesc");
-$discR = $dbc->exec_statement($discQ,array($date_id));
+$discR = $dbc->execute($discQ,array($date_id));
 $discounts = array("MAD Coupon"=>array(66600,$mad[0],$mad[1]),
            "Staff Member"=>array(61170,0.0,0),
            "Staff NonMem"=>array(61170,0.0,0),
@@ -227,13 +227,13 @@ echo WfcLib::tablify($discounts,array(1,0,2,3),array("Account","Type","Amount","
          array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,WfcLib::ALIGN_RIGHT),2);
 
 $deliTax = 0.0325;
-$checkQ = $dbc->prepare_statement("select ".$dbc->datediff("?","'2008-07-01'"));
-$checkR = $dbc->exec_statement($checkQ,array($repDate));
+$checkQ = $dbc->prepare("select ".$dbc->datediff("?","'2008-07-01'"));
+$checkR = $dbc->execute($checkQ,array($repDate));
 $diff = array_pop($dbc->fetch_row($checkR));
 if ($diff < 0) $deliTax = 0.025;
 
 
-$taxQ = $dbc->prepare_statement("SELECT (CASE WHEN d.tax = 1 THEN 'Non Deli Sales' ELSE 'Deli Sales' END) as type, sum(total) as taxable_sales,
+$taxQ = $dbc->prepare("SELECT (CASE WHEN d.tax = 1 THEN 'Non Deli Sales' ELSE 'Deli Sales' END) as type, sum(total) as taxable_sales,
 .01*(sum(CASE WHEN d.tax = 1 THEN total ELSE 0 END)) as city_tax_nonDeli,
 $deliTax*(sum(CASE WHEN d.tax = 2 THEN total ELSE 0 END)) as city_tax_Del, 
 .065*(sum(total)) as state_tax,
@@ -242,7 +242,7 @@ FROM $dlog as d
 WHERE d.tdate BETWEEN ? AND ?
 AND d.tax <> 0 
 GROUP BY d.tax ORDER BY d.tax DESC");
-$taxR = $dbc->exec_statement($taxQ,$dates);
+$taxR = $dbc->execute($taxQ,$dates);
 $taxes = array();
 while($row = $dbc->fetch_row($taxR))
     $taxes["$row[0]"] = array(-1*$row[1],-1*$row[2],-1*$row[3],-1*$row[4],-1*$row[5]);
@@ -251,20 +251,20 @@ echo WfcLib::tablify($taxes,array(0,1,2,3,4,5),array("&nbsp;","Taxable Sales","C
     array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,
           WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY));
 
-$taxSumQ = $dbc->prepare_statement("SELECT  -1*sum(total) as tax_collected
+$taxSumQ = $dbc->prepare("SELECT  -1*sum(total) as tax_collected
 FROM $dlog as d 
 WHERE d.tdate BETWEEN ? AND ?
 AND (d.upc = 'tax')
 GROUP BY d.upc");
-$taxSumR = $dbc->exec_statement($taxSumQ,$dates);
+$taxSumR = $dbc->execute($taxSumQ,$dates);
 echo "<br /><b><u>Actual Tax Collected</u></b><br />";
 echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($taxSumR)));
 
-$transQ = $dbc->prepare_statement("SELECT d.total,d.quantity,d.transCount,m.memdesc
+$transQ = $dbc->prepare("SELECT d.total,d.quantity,d.transCount,m.memdesc
     FROM {$WAREHOUSE}sumMemTypeSalesByDay as d LEFT JOIN
     memTypeID as m ON m.memTypeID=d.memType
     WHERE d.date_id=?");
-$transR = $dbc->exec_statement($transQ,array($date_id));
+$transR = $dbc->execute($transQ,array($date_id));
 $transinfo = array("Member"=>array(0,0.0,0.0,0.0,0.0),
            "Non Member"=>array(0,0.0,0.0,0.0,0.0),
            "Staff Member"=>array(0,0.0,0.0,0.0,0.0),

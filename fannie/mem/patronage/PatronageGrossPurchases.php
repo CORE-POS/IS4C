@@ -37,16 +37,16 @@ class PatronageGrossPurchases extends FannieRESTfulPage
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         if ($dbc->table_exists("patronage_workingcopy")) {
-            $drop = $dbc->prepare_statement("DROP TABLE patronage_workingcopy");
-            $dbc->exec_statement($drop);
+            $drop = $dbc->prepare("DROP TABLE patronage_workingcopy");
+            $dbc->execute($drop);
         }
         if (!function_exists('duplicate_structure')) {
             include_once(dirname(__FILE__) . '/../../install/db.php');
         }
-        $create = $dbc->prepare_statement(
-            duplicate_structure(strtoupper($dbc->dbms_name()),'patronage','patronage_workingcopy')
+        $create = $dbc->prepare(
+            duplicate_structure(strtoupper($dbc->dbmsName()),'patronage','patronage_workingcopy')
         );
-        $dbc->exec_statement($create);
+        $dbc->execute($create);
 
         $insQ = sprintf("INSERT INTO patronage_workingcopy
             (cardno, purchase, discounts, rewards, net_purch, tot_pat, cash_pat, equit_pat, FY)
@@ -56,8 +56,8 @@ class PatronageGrossPurchases extends FannieRESTfulPage
             0,0,0,0,0,?
             FROM %s%sdlog_patronage as d
             GROUP BY card_no",$FANNIE_TRANS_DB,$dbc->sep());
-        $prep = $dbc->prepare_statement($insQ);
-        $worked = $dbc->exec_statement($prep,array($this->id));
+        $prep = $dbc->prepare($insQ);
+        $worked = $dbc->execute($prep,array($this->id));
     
         if ($worked) {
             $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', 'Purchases and Discounts calculated');\n");
@@ -93,11 +93,11 @@ class PatronageGrossPurchases extends FannieRESTfulPage
         <label>Fiscal Year</label>
         <select name="id" class="form-control">
         <?php
-        $q = $dbc->prepare_statement("
+        $q = $dbc->prepare("
             SELECT min_year,
                 max_year 
             FROM $FANNIE_TRANS_DB".$dbc->sep()."dlog_patronage");
-        $r = $dbc->exec_statement($q);
+        $r = $dbc->execute($q);
         $w = $dbc->fetch_row($r);
         printf('<option>%d</option>',$w[0]);
         printf('<option>%d</option>',$w[1]);

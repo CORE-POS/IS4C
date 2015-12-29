@@ -42,7 +42,7 @@ class StockSummaryReport extends FannieReportPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $q = $dbc->prepare_statement("select 
+        $q = $dbc->prepare("select 
             card_no,
             LastName,FirstName,Type,
             sum(case when tdate <= '2005-11-26 23:59:59' then stockPurchase else 0 end) as unknown,
@@ -54,7 +54,7 @@ class StockSummaryReport extends FannieReportPage
             where card_no > 0
             group by card_no,LastName,FirstName,Type
             order by card_no");
-        $r = $dbc->exec_statement($q);
+        $r = $dbc->execute($q);
 
         $types = array('PC'=>'Member','REG'=>'NonMember',
             'TERM'=>'Termed','INACT'=>'Inactive',

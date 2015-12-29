@@ -67,8 +67,8 @@ class ZipCodeReport extends FannieReportPage
             GROUP BY zipcode
             ORDER BY COUNT(*) DESC";
         $exArgs[] = $date1.' 00:00:00';
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep, $exArgs);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, $exArgs);
         while ($row = $dbc->fetch_row($result)) {
             $record = array($row['zipcode'], $row['num']);
             $ret[] = $record;
@@ -154,4 +154,3 @@ class ZipCodeReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

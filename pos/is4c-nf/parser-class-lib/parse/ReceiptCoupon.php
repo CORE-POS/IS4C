@@ -31,3 +31,4 @@ class ReceiptCoupon extends Parser
         }
     }
 }
+

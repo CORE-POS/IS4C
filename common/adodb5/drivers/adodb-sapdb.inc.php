@@ -31,7 +31,7 @@ class ADODB_SAPDB extends ADODB_odbc {
 	var $hasInsertId = true;
 	var $_bindInputArray = true;
 
-	function ADODB_SAPDB()
+	function __construct()
 	{
 		//if (strncmp(PHP_OS,'WIN',3) === 0) $this->curmode = SQL_CUR_USE_ODBC;
 		$this->ADODB_odbc();
@@ -174,7 +174,7 @@ class  ADORecordSet_sapdb extends ADORecordSet_odbc {
 
 	var $databaseType = "sapdb";
 
-	function ADORecordSet_sapdb($id,$mode=false)
+	function __construct($id,$mode=false)
 	{
 		$this->ADORecordSet_odbc($id,$mode);
 	}

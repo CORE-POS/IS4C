@@ -82,8 +82,8 @@ class ProductHistoryReport extends FannieReportPage
         }
         $query .= ' ORDER BY modified DESC';
 
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep,$args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep,$args);
 
         $data = array();
         while($row = $dbc->fetch_row($result)) {

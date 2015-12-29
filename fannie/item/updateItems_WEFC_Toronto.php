@@ -211,10 +211,10 @@ if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == "WEFC_Toronto" ) {
         $checkR = $dbc->query("SELECT upc FROM $table_name WHERE upc='$upc'");
         if ($dbc->num_rows($checkR) == 0){
             $coop_array['upc'] = $dbc->escape($upc);
-            $dbc->smart_insert("$table_name",$coop_array);
+            $dbc->smartInsert("$table_name",$coop_array);
         }
         else {
-            $dbc->smart_update("$table_name",$coop_array,"upc='$upc'");
+            $dbc->smartUpdate("$table_name",$coop_array,"upc='$upc'");
         }
     }
 }
@@ -261,7 +261,7 @@ if ( isset($FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION) && $FANNIE_COMPOSE_LONG_PRO
 /* 3. Insert or update products */
 if ($up_array['store_id'] == $FANNIE_STORE_ID){
     // record exists so update it
-    $dbc->smart_update('products',$up_array,"upc='$upc'");
+    $dbc->smartUpdate('products',$up_array,"upc='$upc'");
 }
 else if($up_array['store_id']==0 && count($CHANGES) > 0){
     // only the HQ record exists and we are not HQ
@@ -281,7 +281,7 @@ else if($up_array['store_id']==0 && count($CHANGES) > 0){
     $up_array['mixmatchcode'] = "'0'";
     $up_array['discounttype'] = 0;
     $up_array['store_id'] = 0;
-    $dbc->smart_insert('products',$up_array);
+    $dbc->smartInsert('products',$up_array);
 }
 
 /* 4. Apply HQ updates to non-HQ records */
@@ -312,10 +312,10 @@ if ($dbc->table_exists('productUser')){
         // if productUser record doesn't exist, needs more values
         $puser_array['upc'] = $dbc->escape($upc);
         $puser_array['enableOnline'] = 0;
-        $dbc->smart_insert('productUser',$puser_array);
+        $dbc->smartInsert('productUser',$puser_array);
     }
     else {
-        $dbc->smart_update('productUser',$puser_array,"upc='$upc'");
+        $dbc->smartUpdate('productUser',$puser_array,"upc='$upc'");
     }
 }
 
@@ -345,10 +345,10 @@ if ($dbc->table_exists('vendorItems')){
         else {
             $vi_array['vendorID'] = 0;
         }
-        $dbc->smart_insert('vendorItems',$vi_array);
+        $dbc->smartInsert('vendorItems',$vi_array);
     }
     else {
-        $dbc->smart_update('vendorItems',$vi_array,"upc='$upc'");
+        $dbc->smartUpdate('vendorItems',$vi_array,"upc='$upc'");
     }
 }
 
@@ -372,10 +372,10 @@ if ($dbc->table_exists('prodExtra')){
         $px_array['upc'] = $dbc->escape($upc);
         $px_array['variable_pricing'] = 0;
         $px_array['case_info'] = "''";
-        $dbc->smart_insert('prodExtra',$px_array);
+        $dbc->smartInsert('prodExtra',$px_array);
     }
     else {
-        $dbc->smart_update('prodExtra',$px_array,"upc='$upc'");
+        $dbc->smartUpdate('prodExtra',$px_array,"upc='$upc'");
     }
 }
 
@@ -396,7 +396,7 @@ if ($dbc->table_exists("prodUpdate")){
     'noDisc' => $up_array['discount'],
     'inUse' => $up_array['inUse']
     );
-    $dbc->smart_insert('prodUpdate',$pu_array);
+    $dbc->smartInsert('prodUpdate',$pu_array);
 }
 
 /* 9. Insert or update scaleItems */
@@ -433,12 +433,12 @@ if(isset($_REQUEST['s_plu'])){
     $chk = $dbc->query("SELECT * FROM scaleItems WHERE plu='$upc'");
     $action = "ChangeOneItem";
     if ($dbc->num_rows($chk) == 0){
-        $dbc->smart_insert('scaleItems',$scale_array);
+        $dbc->smartInsert('scaleItems',$scale_array);
         $action = "WriteOneItem";
     }
     else {
         unset($scale_array['plu']);
-        $dbc->smart_update('scaleItems',$scale_array,"plu='$upc'");
+        $dbc->smartUpdate('scaleItems',$scale_array,"plu='$upc'");
         $action = "ChangeOneItem";
     }
 
@@ -473,7 +473,7 @@ if (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] != -1){
         $upcsR = $dbc->query($upcsQ);
         unset($up_array['description']);
         while($upcsW = $dbc->fetch_row($upcsR)){
-            $dbc->smart_update('products',$up_array,
+            $dbc->smartUpdate('products',$up_array,
                 "upc='$upcsW[0]' AND store_id=$FANNIE_STORE_ID");
             updateProductAllLanes($upcsW[0]);
         }
@@ -587,4 +587,4 @@ $(document).ready(function(){
 </script>
 <?php
 include('../src/footer.html');
-?>
+

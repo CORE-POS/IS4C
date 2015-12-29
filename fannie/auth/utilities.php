@@ -84,8 +84,8 @@ function getUID($name){
   if (!auth_enabled()) return '0000';
 
   $sql = dbconnect();
-  $fetchQ = $sql->prepare_statement("select uid from Users where name=?");
-  $fetchR = $sql->exec_statement($fetchQ,array($name));
+  $fetchQ = $sql->prepare("select uid from Users where name=?");
+  $fetchR = $sql->execute($fetchQ,array($name));
   if ($sql->num_rows($fetchR) == 0){
     return false;
   }
@@ -98,8 +98,8 @@ function getNumUsers(){
   if (!auth_enabled()) return 9999;
     
   $sql = dbconnect();
-  $fetchQ = $sql->prepare_statement("select uid from Users");
-  $fetchR = $sql->exec_statement($fetchQ);
+  $fetchQ = $sql->prepare("select uid from Users");
+  $fetchR = $sql->execute($fetchQ);
 
   return $sql->num_rows($fetchR);
 }
@@ -108,15 +108,15 @@ function getNumAdmins(){
     $sql = dbconnect();
     $num = 0;
     if ($sql->table_exists('userPrivs')){
-        $q = $sql->prepare_statement("SELECT uid FROM userPrivs WHERE auth_class='admin'");
-        $r = $sql->exec_statement($q);
+        $q = $sql->prepare("SELECT uid FROM userPrivs WHERE auth_class='admin'");
+        $r = $sql->execute($q);
         $num += $sql->num_rows($r);
     }
     if ($sql->table_exists('userGroups') && $sql->table_exists('userGroupPrivs')){
-        $q = $sql->prepare_statement("SELECT username FROM userGroups AS g LEFT JOIN
+        $q = $sql->prepare("SELECT username FROM userGroups AS g LEFT JOIN
             userGroupPrivs AS p ON g.gid=p.gid
             WHERE p.auth='admin'");
-        $r = $sql->exec_statement($q);
+        $r = $sql->execute($q);
         $num += $sql->num_rows($r);
 
     }
@@ -131,9 +131,9 @@ function getGID($group)
     $sql = dbconnect();
 
     $gidQ = "select gid from userGroups where name=?";
-    $gidQ = $sql->add_select_limit($gidQ,1); 
-    $gidP = $sql->prepare_statement($gidQ);
-    $gidR = $sql->exec_statement($gidP,array($group));
+    $gidQ = $sql->addSelectLimit($gidQ,1); 
+    $gidP = $sql->prepare($gidQ);
+    $gidR = $sql->execute($gidP,array($group));
 
     if ($sql->num_rows($gidR) == 0)
         return false;
@@ -159,16 +159,16 @@ function doLogin($name){
     $session_id = genSessID();  
 
     $sql = dbconnect();
-    $sessionQ = $sql->prepare_statement("update Users set session_id = ? where name=?");
-    $sessionR = $sql->exec_statement($sessionQ,array($session_id,$name));
+    $sessionQ = $sql->prepare("update Users set session_id = ? where name=?");
+    $sessionR = $sql->execute($sessionQ,array($session_id,$name));
 
     /**
       Periodically purge expired records
         9May13 EL Not periodic.
     */
-    $delP = $sql->prepare_statement('DELETE FROM userSessions
+    $delP = $sql->prepare('DELETE FROM userSessions
             WHERE expires < '.$sql->now());
-    $delR = $sql->exec_statement($delP);
+    $delR = $sql->execute($delP);
 
     /**
       New behavior - Store session id in dedicated table.
@@ -179,10 +179,10 @@ function doLogin($name){
     $uid = getUID($name);
     $ip = (isset($_SERVER['REMOTE_ADDR'])) ? $_SERVER['REMOTE_ADDR'] : 'unknown';
     $expires = date('Y-m-d',strtotime('tomorrow'));
-    $sessionP = $sql->prepare_statement('INSERT INTO userSessions 
+    $sessionP = $sql->prepare('INSERT INTO userSessions 
                 (uid,session_id,ip,expires)
                 VALUES (?,?,?,?)');
-    $sessionR = $sql->exec_statement($sessionP,array($uid,$session_id,$ip,$expires));
+    $sessionR = $sql->execute($sessionP,array($uid,$session_id,$ip,$expires));
 
     $session_data = array("name"=>$name,"session_id"=>$session_id);
     $cookie_data = serialize($session_data);
@@ -199,15 +199,15 @@ function syncUserShadow($name){
     $sql = dbconnect(); 
 
     if (!$currentUID){
-        $addQ = $sql->prepare_statement("INSERT INTO Users 
+        $addQ = $sql->prepare("INSERT INTO Users 
             (name,password,salt,uid,session_id,real_name)
             VALUES (?,'','',?,'',?)");
-        $sql->exec_statement($addQ,array($name,$posixUID,$realname));
+        $sql->execute($addQ,array($name,$posixUID,$realname));
     }
     else {
-        $upQ1 = $sql->prepare_statement("UPDATE Users SET real_name=?
+        $upQ1 = $sql->prepare("UPDATE Users SET real_name=?
                 WHERE name=?");
-        $sql->exec_statement($upQ1,array($realname,$name));
+        $sql->execute($upQ1,array($realname,$name));
     }
 }
 
@@ -216,15 +216,15 @@ function syncUserLDAP($name,$uid,$fullname){
     $sql = dbconnect();
 
     if (!$currentUID){
-        $addQ = $sql->prepare_statement("INSERT INTO Users 
+        $addQ = $sql->prepare("INSERT INTO Users 
             (name,password,salt,uid,session_id,real_name)
             VALUES (?,'','',?,'',?)");
-        $sql->exec_statement($addQ,array($name,$uid,$fullname));
+        $sql->execute($addQ,array($name,$uid,$fullname));
     }
     else {
-        $upQ1 = $sql->prepare_statement("UPDATE Users SET real_name=?
+        $upQ1 = $sql->prepare("UPDATE Users SET real_name=?
                 WHERE name=?");
-        $sql->exec_statement($upQ1,array($fullname,$name));
+        $sql->execute($upQ1,array($fullname,$name));
     }
 }
 

@@ -323,4 +323,3 @@ class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage
 
 FannieDispatch::conditionalExec(false);
 
-?>

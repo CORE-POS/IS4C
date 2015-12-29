@@ -54,9 +54,9 @@ class CwLoadDataPage extends FanniePage {
     }
 
     public function getModels(){
-        $dh = opendir(dirname(__FILE__).'/models');
+        $dir = opendir(dirname(__FILE__).'/models');
         $ret = array();
-        while(($file=readdir($dh)) !== False){
+        while(($file=readdir($dir)) !== False){
             if ($file[0] == '.') continue;
             if (substr($file,-9) != 'Model.php') continue;
             if ($file == 'CoreWarehouseModel.php') continue;
@@ -118,6 +118,22 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
             echo "\t[ -d <year-month-day] || [-s <start month> <start year> [-e <end month> <end year>]]\n";
             echo "Specify a single date or a range of months.\n";
         }
+        function check_date($argv, $i, $type)
+        {
+            if (!isset($argv[$i+1])){
+                throw new Excepion("Missing $type month\n");
+            } elseif (!isset($argv[$i+2])) {
+                throw new Exception("Missing $type year\n");
+            }
+            $start = array($argv[$i+1],$argv[$i+2]);
+            if ($start[0] < 1 || $start[0] > 12){
+                throw new Exception("Invalid $type month\n");
+            } elseif ($start[1] < 1950 || $start[1] > date('Y')){
+                throw new Exception("Invalid $type year\n");
+            }
+
+            return $start;
+        }
         $start = array();
         $end = array();
         $day = array();
@@ -128,52 +144,24 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
             switch($argv[$i]){
             case '-s':
             case '--start':
-                if (!isset($argv[$i+1])){
+                try {
+                    $start = check_date($argv, $i, 'start');
+                    $i += 2;
+                } catch (Exception $ex) {
                     print_cli_help();
-                    echo "Missing start month\n";
-                    return 1;   
-                }
-                elseif(!isset($argv[$i+2])){
-                    print_cli_help();
-                    echo "Missing start year\n";
-                    return 1;   
-                }
-                $start = array($argv[$i+1],$argv[$i+2]);
-                $i+=2;
-                if ($start[0] < 1 || $start[0] > 12){
-                    print_cli_help();
-                    echo "Invalid start month\n";
-                    return 1;   
-                }
-                elseif ($start[1] < 1950 || $start[1] > date('Y')){
-                    print_cli_help();
-                    echo "Invalid start year\n";
-                    return 1;   
+                    echo $ex->getMessage();
+                    return 1;
                 }
                 break;
             case '-e':
             case '--end':
-                if (!isset($argv[$i+1])){
+                try {
+                    $end = check_date($argv, $i, 'end');
+                    $i += 2;
+                } catch (Exception $ex) {
                     print_cli_help();
-                    echo "Missing end month\n";
-                    return 1;   
-                }
-                elseif(!isset($argv[$i+2])){
-                    print_cli_help();
-                    echo "Missing end year\n";
-                    return 1;   
-                }
-                $end = array($argv[$i+1],$argv[$i+2]);
-                $i+=2;
-                if ($end[0] < 1 || $end[0] > 12){
-                    print_cli_help();
-                    echo "Invalid start month\n";
-                    return 1;   
-                }
-                elseif ($end[1] < 1950 || $end[1] > date('Y')){
-                    print_cli_help();
-                    echo "Invalid start year\n";
-                    return 1;   
+                    echo $ex->getMessage();
+                    return 1;
                 }
                 break;
             case '-m':

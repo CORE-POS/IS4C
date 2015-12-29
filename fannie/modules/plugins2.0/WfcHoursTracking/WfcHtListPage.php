@@ -52,7 +52,7 @@ class WfcHtListPage extends FanniePage
             if (!empty($this->selected_dept) && $this->selected_dept != -1){
                 $this->dept_restrict = " WHERE deleted=0 AND department=? ";
                 $this->dept_args = array($this->selected_dept);
-            } else if ($this->selected_dept == -1){
+            } elseif ($this->selected_dept == -1){
                 $this->dept_restrict = " WHERE deleted=1 ";
             }
         }
@@ -61,25 +61,25 @@ class WfcHtListPage extends FanniePage
             $sql = WfcHtLib::hours_dbconnect();
             switch (FormLib::get('action')) {
                 case 'update':
-                    $name = $_POST["name"];
-                    $id = $_POST["id"];
-                    $adpid = $_POST["adpid"];
-                    $dept = $_POST["dept"];
+                    $name = FormLib::get("name");
+                    $id = FormLib::get("id");
+                    $adpid = FormLib::get("adpid");
+                    $dept = FormLib::get("dept");
                     if (empty($adpid)) $adpid=NULL;
                     if (empty($dept)) $dept=NULL;
 
-                    $upQ = $sql->prepare_statement("update employees set adpid=?,name=?,department=? where empID=?");
-                    $upR = $sql->exec_statement($upQ, array($adpid, $name, $dept, $id));
+                    $upQ = $sql->prepare("update employees set adpid=?,name=?,department=? where empID=?");
+                    $upR = $sql->execute($upQ, array($adpid, $name, $dept, $id));
                     break;
                 case 'delete':
                     $id = FormLib::get('id');
-                    $upQ = $sql->prepare_statement("update employees set deleted=1 where empID=?");
-                    $upR = $sql->exec_statement($upQ, array($id));
+                    $upQ = $sql->prepare("update employees set deleted=1 where empID=?");
+                    $upR = $sql->execute($upQ, array($id));
                     break;
                 case 'undelete':
                     $id = FormLib::get('id');
-                    $upQ = $sql->prepare_statement("update employees set deleted=0 where empID=?");
-                    $upR = $sql->exec_statement($upQ, array($id));
+                    $upQ = $sql->prepare("update employees set deleted=0 where empID=?");
+                    $upR = $sql->execute($upQ, array($id));
                     break;
             }
         }
@@ -156,49 +156,48 @@ class WfcHtListPage extends FanniePage
         ';
     }
 
+    private function getSort()
+    {
+        if (FormLib::get('sort') !== '') {
+            switch(strtolower(FormLib::get('sort'))) {
+                case 'name':
+                    return 'e.name';
+                case 'adpid':
+                    return 'e.adpid';
+                case 'ptolevel':
+                    return 'e.ptolevel';
+                case 'ptoremaining':
+                    return 'p.ptoremaining';
+                case 'hours':
+                    return 'u.hours';
+                case 'totalhours':
+                    return 'h.totalhours';
+            }
+        }
+
+        return 'e.name';
+    }
+
+    private function getDirections()
+    {
+        if (FormLib::get('dir') !== '') {
+            switch(strtolower(FormLib::get('dir'))) {
+                case 'asc':
+                    return array('asc', 'desc');
+                case 'desc':
+                    return array('desc', 'asc');
+            }
+        }
+
+        return array('asc', 'desc');
+    }
+
     public function body_content()
     {
         $edit = FannieAuth::validateUserQuiet('edit_employees');
 
-        $sort = "e.name";
-        if (FormLib::get('sort') !== '') {
-            switch(strtolower(FormLib::get('sort'))) {
-                case 'name':
-                    $sort = 'e.name';
-                    break;
-                case 'adpid':
-                    $sort = 'e.adpid';
-                    break;
-                case 'ptolevel':
-                    $sort = 'e.ptolevel';
-                    break;
-                case 'ptoremaining':
-                    $sort = 'p.ptoremaining';
-                    break;
-                case 'hours':
-                    $sort = 'u.hours';
-                    break;
-                case 'totalhours':
-                    $sort = 'h.totalhours';
-                    break;
-            }
-        }
-
-        $dir = "asc";
-        if (FormLib::get('dir') !== '') {
-            switch(strtolower(FormLib::get('dir'))) {
-                case 'asc':
-                    $dir = 'asc';
-                    break;
-                case 'desc':
-                    $dir = 'desc';
-                    break;
-            }
-        }
-        $otherdir = "desc";
-        if ($dir == "desc") {
-            $otherdir="asc";
-        }
+        $sort = $this->getSort();
+        list($dir, $otherdir) = $this->getDirections();
 
         $sql = WfcHtLib::hours_dbconnect();
 
@@ -215,8 +214,8 @@ class WfcHtListPage extends FanniePage
             left join salarypto_ytd s on e.empID=s.empID
             {$this->dept_restrict}
             order by $sort $dir";
-        $fetchP = $sql->prepare_statement($fetchQ);
-        $fetchR = $sql->exec_statement($fetchP, $this->dept_args);
+        $fetchP = $sql->prepare($fetchQ);
+        $fetchR = $sql->execute($fetchP, $this->dept_args);
 
         ob_start();
 
@@ -224,64 +223,46 @@ class WfcHtListPage extends FanniePage
             $sql = WfcHtLib::hours_dbconnect();
             $deptsQ = "select name,deptID from Departments order by name";
             $deptsR = $sql->query($deptsQ);
-            echo "Show Department: ";
-            echo "<select class=\"form-control\" onchange=\"top.location='{$_SERVER['PHP_SELF']}?showdept='+this.value;\">";
-            echo "<option value=\"\">All</option>";
-            while ($deptsW = $sql->fetch_row($deptsR)) {
-                if ($this->selected_dept == $deptsW[1]) {
-                    echo "<option value=$deptsW[1] selected>$deptsW[0]</option>";
-                } else {
-                    echo "<option value=$deptsW[1]>$deptsW[0]</option>";
-                }
-            }
+            $this->deptOptions($sql, $deptsR);
             if ($this->selected_dept == -1)
                 echo "<option selected value=\"-1\">DELETED</option>";
             else
                 echo "<option value=\"-1\">DELETED</option>";
             echo "</select>";
-        } else if (strlen($this->dept_list) > 4){
+        } elseif (strlen($this->dept_list) > 4){
             $sql = WfcHtLib::hours_dbconnect();
             $deptsQ = "select name,deptID from Departments WHERE deptID IN {$this->dept_list} order by name";
-            $deptsP = $sql->prepare_statement($deptsQ);
-            $deptsR = $sql->exec_statement($deptsP, $this->list_args);
-            echo "Show Department: ";
-            echo "<select class=\"form-control\" onchange=\"top.location='{$_SERVER['PHP_SELF']}?showdept='+this.value;\">";
-            echo "<option value=\"\">All</option>";
-            while ($deptsW = $sql->fetch_row($deptsR)) {
-                if ($this->selected_dept == $deptsW[1]) {
-                    echo "<option value=$deptsW[1] selected>$deptsW[0]</option>";
-                } else {
-                    echo "<option value=$deptsW[1]>$deptsW[0]</option>";
-                }
-            }
+            $deptsP = $sql->prepare($deptsQ);
+            $deptsR = $sql->execute($deptsP, $this->list_args);
+            $this->deptOptions($sql, $deptsR);
             echo "</select>";
         }
 
         echo "<table class=\"table\"><tr>";
         if ($sort == "e.name")
-            echo "<th><a href={$_SERVER['PHP_SELF']}?sort=name&dir=$otherdir&showdept={$this->selected_dept}>Name</a></th>";
+            echo "<th><a href=?sort=name&dir=$otherdir&showdept={$this->selected_dept}>Name</a></th>";
         else
-            echo "<th><a href={$_SERVER['PHP_SELF']}?sort=name&dir=asc&showdept={$this->selected_dept}>Name</a></th>";
+            echo "<th><a href=?sort=name&dir=asc&showdept={$this->selected_dept}>Name</a></th>";
         if ($sort == "e.adpid")
-            echo "<th><a href={$_SERVER['PHP_SELF']}?sort=adpid&dir=$otherdir&showdept={$this->selected_dept}>ADP ID</a></th>";
+            echo "<th><a href=?sort=adpid&dir=$otherdir&showdept={$this->selected_dept}>ADP ID</a></th>";
         else
-            echo "<th><a href={$_SERVER['PHP_SELF']}?sort=adpid&dir=asc&showdept={$this->selected_dept}>ADP ID</a></th>";
+            echo "<th><a href=?sort=adpid&dir=asc&showdept={$this->selected_dept}>ADP ID</a></th>";
         if ($sort == "e.ptolevel")
-            echo "<th><a href={$_SERVER['PHP_SELF']}?sort=ptolevel&dir=$otherdir&showdept={$this->selected_dept}>PTO Level</a></th>";
+            echo "<th><a href=?sort=ptolevel&dir=$otherdir&showdept={$this->selected_dept}>PTO Level</a></th>";
         else
-            echo "<th><a href={$_SERVER['PHP_SELF']}?sort=ptolevel&dir=asc&showdept={$this->selected_dept}>PTO Level</a></th>";
+            echo "<th><a href=?sort=ptolevel&dir=asc&showdept={$this->selected_dept}>PTO Level</a></th>";
         if ($sort == "p.ptoremaining")
-            echo "<th><a href={$_SERVER['PHP_SELF']}?sort=ptoremaining&dir=$otherdir&showdept={$this->selected_dept}>Avail. PTO</a></th>";
+            echo "<th><a href=?sort=ptoremaining&dir=$otherdir&showdept={$this->selected_dept}>Avail. PTO</a></th>";
         else
-            echo "<th><a href={$_SERVER['PHP_SELF']}?sort=ptoremaining&dir=desc&showdept={$this->selected_dept}>Avail. PTO</a></th>";
+            echo "<th><a href=?sort=ptoremaining&dir=desc&showdept={$this->selected_dept}>Avail. PTO</a></th>";
         if ($sort == "u.hours")
-            echo "<th><a href={$_SERVER['PHP_SELF']}?sort=hours&dir=$otherdir&showdept={$this->selected_dept}>Avail. UTO</a></th>";
+            echo "<th><a href=?sort=hours&dir=$otherdir&showdept={$this->selected_dept}>Avail. UTO</a></th>";
         else
-            echo "<th><a href={$_SERVER['PHP_SELF']}?sort=hours&dir=desc&showdept={$this->selected_dept}>Avail. UTO</a></th>";
+            echo "<th><a href=?sort=hours&dir=desc&showdept={$this->selected_dept}>Avail. UTO</a></th>";
         if ($sort == "u.hours")
-            echo "<th><a href={$_SERVER['PHP_SELF']}?sort=totalhours&dir=$otherdir&showdept={$this->selected_dept}>Total Hours</a></th>";
+            echo "<th><a href=?sort=totalhours&dir=$otherdir&showdept={$this->selected_dept}>Total Hours</a></th>";
         else
-            echo "<th><a href={$_SERVER['PHP_SELF']}?sort=totalhours&dir=desc&showdept={$this->selected_dept}>Total Hours</a></th>";
+            echo "<th><a href=?sort=totalhours&dir=desc&showdept={$this->selected_dept}>Total Hours</a></th>";
         echo "</tr>";
 
         while ($fetchW = $sql->fetch_row($fetchR)){
@@ -302,14 +283,28 @@ class WfcHtListPage extends FanniePage
             echo "<td align=right>".(is_numeric($fetchW[3])?sprintf("%.2f",$fetchW[3]):$fetchW[3])."</td>";
             if ($edit){
                 echo "<td><a href=WfcHtEditPage.php?id=$fetchW[5]>Edit</a></td>";
-                if ($this->selected_dept == "-1") echo "<td><a href={$_SERVER['PHP_SELF']}?action=undelete&id=$fetchW[5]>Undelete</a></td>";
-                else echo "<td><a href={$_SERVER['PHP_SELF']}?action=delete&id=$fetchW[5]>Delete</a></td>";
+                if ($this->selected_dept == "-1") echo "<td><a href=?action=undelete&id=$fetchW[5]>Undelete</a></td>";
+                else echo "<td><a href=?action=delete&id=$fetchW[5]>Delete</a></td>";
             }
             echo "</tr>";
         }
         echo '</table>';
 
         return ob_get_clean();
+    }
+
+    private function deptOptions($sql, $deptsR)
+    {
+        echo "Show Department: ";
+        echo "<select class=\"form-control\" onchange=\"top.location='?showdept='+this.value;\">";
+        echo "<option value=\"\">All</option>";
+        while ($deptsW = $sql->fetch_row($deptsR)) {
+            if ($this->selected_dept == $deptsW[1]) {
+                echo "<option value=$deptsW[1] selected>$deptsW[0]</option>";
+            } else {
+                echo "<option value=$deptsW[1]>$deptsW[0]</option>";
+            }
+        }
     }
 }
 

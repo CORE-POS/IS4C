@@ -48,9 +48,9 @@ class WfcHtSalaryUploadPage extends FanniePage
             $ids = FormLib::get('ids', array());
             $days = FormLib::get('days');
             $datestamp = FormLib::get('year')."-".str_pad(FormLib::get('month'),2,'0',STR_PAD_LEFT)."-01";
-            $insQ = $sql->prepare_statement("INSERT INTO salaryHours VALUES (?, ?, ?)");
+            $insQ = $sql->prepare("INSERT INTO salaryHours VALUES (?, ?, ?)");
             for ($i=0; $i < count($ids); $i++) {
-                $sql->exec_statement($insQ, array($ids[$i], $datestamp, $days[$i]));
+                $sql->execute($insQ, array($ids[$i], $datestamp, $days[$i]));
             }
 
             return '<div class="alert alert-success">Salary PTO added</div>';

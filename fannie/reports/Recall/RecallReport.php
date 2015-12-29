@@ -46,8 +46,8 @@ class RecallReport extends FannieReportPage
 
         $upc = BarcodeLib::padUPC(FormLib::get('upc'));
 
-        $q = $dbc->prepare_statement("SELECT description FROM products WHERE upc=?");
-        $r = $dbc->exec_statement($q,array($upc));
+        $q = $dbc->prepare("SELECT description FROM products WHERE upc=?");
+        $r = $dbc->execute($q,array($upc));
         $w = $dbc->fetch_row($r);
         $description = $w[0];
 
@@ -74,7 +74,7 @@ class RecallReport extends FannieReportPage
                 tdate BETWEEN ? AND ?
             GROUP BY d.card_no
             ORDER BY d.card_no");
-        $r = $dbc->exec_statement($q,array($upc,$date1.' 00:00:00',$date2.' 23:59:59'));
+        $r = $dbc->execute($q,array($upc,$date1.' 00:00:00',$date2.' 23:59:59'));
 
         $data = array();
         while($w = $dbc->fetch_row($r)) {
@@ -153,4 +153,3 @@ class RecallReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

@@ -300,4 +300,3 @@ foreach($rows as $row){
 
 $pdf->Output();  //Output PDF file to screen.
 
-?>

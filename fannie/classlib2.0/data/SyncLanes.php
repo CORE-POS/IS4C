@@ -107,7 +107,7 @@ class SyncLanes
             $server_def = $dbc->tableDefinition($table, $server_db);
             $laneNumber=1;
             foreach ($lanes as $lane) {
-                $dbc->add_connection($lane['host'],$lane['type'],
+                $dbc->addConnection($lane['host'],$lane['type'],
                     $lane[$db],$lane['user'],$lane['pw']);
                 if ($dbc->connections[$lane[$db]]) {
                     $lane_def = $dbc->tableDefinition($table, $lane[$db]);
@@ -193,7 +193,7 @@ class SyncLanes
         }
         $laneNumber=1;
         foreach($lanes as $lane) {
-            $dbc->add_connection($lane['host'],$lane['type'],
+            $dbc->addConnection($lane['host'],$lane['type'],
                 $lane[$db],$lane['user'],$lane['pw']);
             if ($dbc->connections[$lane[$db]]) {
                 $success = $dbc->transfer($lane[$db],

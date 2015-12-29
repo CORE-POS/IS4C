@@ -47,7 +47,7 @@ class SalesBatchTask extends FannieTask
         $sale_upcs = array();
 
         // ensure likecode items are mixmatch-able
-        if ($dbc->dbms_name() == 'mssql') {
+        if ($dbc->dbmsName() == 'mssql') {
             $dbc->query("UPDATE products
                 SET mixmatchcode=convert(varchar,u.likecode+500)
                 FROM 

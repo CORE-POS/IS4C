@@ -87,21 +87,21 @@ class EditBatchPage extends FannieRESTfulPage
         $uid = ltrim($uid,'0');
         $bid = $this->id;
 
-        $q = $dbc->prepare_statement("
+        $q = $dbc->prepare("
             SELECT listID 
             FROM batchList AS l 
                 INNER JOIN batchCutPaste as b ON b.upc=l.upc AND b.batchID=l.batchID
             WHERE b.uid=?"
         );
-        $r = $dbc->exec_statement($q,array($uid));
-        $upP = $dbc->prepare_statement('UPDATE batchList SET batchID=? WHERE listID=?');
+        $r = $dbc->execute($q,array($uid));
+        $upP = $dbc->prepare('UPDATE batchList SET batchID=? WHERE listID=?');
         $count = 0;
         while ($w = $dbc->fetch_row($r)) {
-            $dbc->exec_statement($upP,array($bid,$w['listID']));
+            $dbc->execute($upP,array($bid,$w['listID']));
             $count++;
         }
-        $delP = $dbc->prepare_statement("DELETE FROM batchCutPaste WHERE uid=?");
-        $dbc->exec_statement($delP,$uid);
+        $delP = $dbc->prepare("DELETE FROM batchCutPaste WHERE uid=?");
+        $dbc->execute($delP,$uid);
 
         $this->add_onload_command("showBootstrapAlert('#inputarea', 'success', 'Pasted $count items');\n");
 
@@ -280,8 +280,8 @@ class EditBatchPage extends FannieRESTfulPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $bid = $this->id;
-        $delQ = $dbc->prepare_statement("DELETE FROM batchBarcodes where batchID=?");
-        $dbc->exec_statement($delQ,array($bid));
+        $delQ = $dbc->prepare("DELETE FROM batchBarcodes where batchID=?");
+        $dbc->execute($delQ,array($bid));
         
         $selQ = "
             SELECT l.upc,
@@ -310,13 +310,13 @@ class EditBatchPage extends FannieRESTfulPage
         $selP = $dbc->prepare($selQ);
         $selR = $dbc->execute($selP, $args);
         $upc = "";
-        $insP = $dbc->prepare_statement("INSERT INTO batchBarcodes
+        $insP = $dbc->prepare("INSERT INTO batchBarcodes
             (upc,description,normal_price,brand,sku,size,units,vendor,batchID)
             VALUES (?,?,?,?,?,?,?,?,?)");
         $tag_count = 0;
         while ($selW = $dbc->fetch_row($selR)) {
             if ($upc != $selW['upc']){
-                $dbc->exec_statement($insP,array(
+                $dbc->execute($insP,array(
                     $selW['upc'], $selW['description'],
                     $selW['salePrice'], $selW['brand'],
                     $selW['sku'], $selW['size'],
@@ -432,8 +432,8 @@ class EditBatchPage extends FannieRESTfulPage
         $json['price'] = sprintf('%.2f', $this->price);
         $json['qty'] = (int)$this->qty;
 
-        $upQ = $dbc->prepare_statement("update batchBarcodes set normal_price=? where upc=? and batchID=?");
-        $upR = $dbc->exec_statement($upQ,array($this->price,$this->upc,$this->id));
+        $upQ = $dbc->prepare("update batchBarcodes set normal_price=? where upc=? and batchID=?");
+        $upR = $dbc->execute($upQ,array($this->price,$this->upc,$this->id));
 
         if (FormLib::get_form_value('audited') == '1') {
             \COREPOS\Fannie\API\lib\AuditLib::batchNotification(
@@ -502,8 +502,8 @@ class EditBatchPage extends FannieRESTfulPage
             }
         }
 
-        $delQ = $dbc->prepare_statement("delete from batchList where batchID=? and upc=?");
-        $delR = $dbc->exec_statement($delQ,array($id,$upc));
+        $delQ = $dbc->prepare("delete from batchList where batchID=? and upc=?");
+        $delR = $dbc->execute($delQ,array($id,$upc));
         if ($delR === false) {
             if ($json['error']) {
                 $json['msg'] .= '<br />Error deleting item ' . $upc . ' from batch';
@@ -513,8 +513,8 @@ class EditBatchPage extends FannieRESTfulPage
             }
         }
         
-        $delQ = $dbc->prepare_statement("delete from batchBarcodes where upc=? and batchID=?");
-        $delR = $dbc->exec_statement($delQ,array($upc,$id));
+        $delQ = $dbc->prepare("delete from batchBarcodes where upc=? and batchID=?");
+        $delR = $dbc->execute($delQ,array($upc,$id));
 
         if (FormLib::get_form_value('audited') == '1') {
             \COREPOS\Fannie\API\lib\AuditLib::batchNotification(
@@ -534,9 +534,9 @@ class EditBatchPage extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $q = $dbc->prepare_statement("UPDATE batchList SET salePrice = -1*salePrice
+        $q = $dbc->prepare("UPDATE batchList SET salePrice = -1*salePrice
             WHERE batchID=? AND upc=?");
-        $r = $dbc->exec_statement($q,array($this->id,$this->upc));
+        $r = $dbc->execute($q,array($this->id,$this->upc));
 
         $json = array('error' => 0);
         if ($r === false) {
@@ -566,16 +566,16 @@ class EditBatchPage extends FannieRESTfulPage
             $pmethod = 3;
         }
 
-        $upQ2 = $dbc->prepare_statement("UPDATE batchList SET
+        $upQ2 = $dbc->prepare("UPDATE batchList SET
                 quantity=?,pricemethod=?,
                 salePrice=? WHERE batchID=?
                 AND salePrice >= 0");
-        $upQ3 = $dbc->prepare_statement("UPDATE batchList SET
+        $upQ3 = $dbc->prepare("UPDATE batchList SET
                 quantity=?,pricemethod=?,
                     salePrice=? WHERE batchID=?
                     AND salePrice < 0");
-        $save2 = $dbc->exec_statement($upQ2, array($this->qualifiers+1,$pmethod,$this->discount,$this->id));
-        $save3 = $dbc->exec_statement($upQ3,array($this->qualifiers+1,$pmethod,-1*$this->discount,$this->id));
+        $save2 = $dbc->execute($upQ2, array($this->qualifiers+1,$pmethod,$this->discount,$this->id));
+        $save3 = $dbc->execute($upQ3,array($this->qualifiers+1,$pmethod,-1*$this->discount,$this->id));
 
         $json['error'] = 0;
         if (!$save1 || !$save2 || !$save3) {
@@ -656,8 +656,8 @@ class EditBatchPage extends FannieRESTfulPage
         $ret .= "<label class=\"control-label\">Like code</label><input type=text id=addItemLC 
             name=\"addLC\" size=4 value=1 class=\"form-control\" disabled /> ";
         $ret .= "<select id=lcselect onchange=\"\$('#addItemLC').val(this.value);\" class=\"form-control\" disabled>";
-        $lcQ = $dbc->prepare_statement("select likecode,likecodeDesc from likeCodes order by likecode");
-        $lcR = $dbc->exec_statement($lcQ);
+        $lcQ = $dbc->prepare("select likecode,likecodeDesc from likeCodes order by likecode");
+        $lcR = $dbc->execute($lcQ);
         while ($lcW = $dbc->fetch_array($lcR)) {
             $ret .= "<option value=$lcW[0]>$lcW[0] $lcW[1]</option>";
         }
@@ -795,7 +795,7 @@ class EditBatchPage extends FannieRESTfulPage
             WHERE b.batchID = ? 
             $orderby";
         $fetchArgs[] = $id;
-        if ($dbc->dbms_name() == "mssql") {
+        if ($dbc->dbmsName() == "mssql") {
             $fetchQ = "select b.upc,
                     case when l.likecode is null then p.description
                     else l.likecodedesc end as description,
@@ -820,8 +820,8 @@ class EditBatchPage extends FannieRESTfulPage
             $fetchQ = str_replace('y.subsection', 'y.floorSectionID', $fetchQ);
         }
 
-        $fetchP = $dbc->prepare_statement($fetchQ);
-        $fetchR = $dbc->exec_statement($fetchP, $fetchArgs);
+        $fetchP = $dbc->prepare($fetchQ);
+        $fetchR = $dbc->execute($fetchP, $fetchArgs);
 
         $overlapP = $dbc->prepare('
             SELECT b.batchID,
@@ -839,8 +839,8 @@ class EditBatchPage extends FannieRESTfulPage
         ');
         $overlap_args = array($model->startDate(), $model->endDate(), $model->startDate(), $model->endDate());
 
-        $cpCount = $dbc->prepare_statement("SELECT count(*) FROM batchCutPaste WHERE uid=?");
-        $res = $dbc->exec_statement($cpCount,array($uid));
+        $cpCount = $dbc->prepare("SELECT count(*) FROM batchCutPaste WHERE uid=?");
+        $res = $dbc->execute($cpCount,array($uid));
         $row = $dbc->fetch_row($res);
         $cpCount = $row[0];
         
@@ -1134,12 +1134,12 @@ class EditBatchPage extends FannieRESTfulPage
         $ret .= " | No limit";
         $ret .= " <span id=\"currentLimit\" style=\"color:#000;\"></span>";
 
-        $q = $dbc->prepare_statement("SELECT b.discounttype,salePrice,
+        $q = $dbc->prepare("SELECT b.discounttype,salePrice,
             CASE WHEN l.pricemethod IS NULL THEN 4 ELSE l.pricemethod END as pricemethod,
             CASE WHEN l.quantity IS NULL THEN 1 ELSE l.quantity END as quantity
             FROM batches AS b LEFT JOIN batchList AS l 
             ON b.batchID=l.batchID WHERE b.batchID=? ORDER BY l.pricemethod");
-        $r = $dbc->exec_statement($q,array($id));
+        $r = $dbc->execute($q,array($id));
         $w = $dbc->fetch_row($r);
 
         if (!empty($w['salePrice'])){
@@ -1176,7 +1176,7 @@ class EditBatchPage extends FannieRESTfulPage
             $ret .= "<div class=\"alert alert-warning\">Add items first</div>";
         }
 
-        $fetchQ = $dbc->prepare_statement("
+        $fetchQ = $dbc->prepare("
             SELECT b.upc,
                 case when l.likeCode is null then p.description else l.likeCodeDesc end as description,
                 p.normal_price,
@@ -1188,7 +1188,7 @@ class EditBatchPage extends FannieRESTfulPage
             WHERE b.batchID = ? 
                 AND b.salePrice >= 0");
         if ($FANNIE_SERVER_DBMS == "MSSQL"){
-            $fetchQ = $dbc->prepare_statement("select b.upc,
+            $fetchQ = $dbc->prepare("select b.upc,
                     case when l.likecode is null then p.description
                     else l.likecodedesc end as description,
                     p.normal_price,b.salePrice
@@ -1198,14 +1198,14 @@ class EditBatchPage extends FannieRESTfulPage
                     b.upc = 'LC'+convert(varchar,l.likecode)
                     where b.batchID = ? AND b.salePrice >= 0");
         }
-        $fetchR = $dbc->exec_statement($fetchQ,array($id));
+        $fetchR = $dbc->execute($fetchQ,array($id));
 
         $ret .= '<table class="table" id="qualifier-table">';
         $ret .= '<tr><th colspan="4">Qualifying Item(s)</th></tr>';
         $ret .= $this->pairedTableBody($dbc, $fetchR);
         $ret .= "</table>";
 
-        $fetchQ = $dbc->prepare_statement("
+        $fetchQ = $dbc->prepare("
             SELECT b.upc,
                 case when l.likeCode is null then p.description else l.likeCodeDesc end as description,
                 p.normal_price,
@@ -1217,7 +1217,7 @@ class EditBatchPage extends FannieRESTfulPage
             WHERE b.batchID = ? 
                 AND b.salePrice < 0");
         if ($FANNIE_SERVER_DBMS == "MSSQL"){
-            $fetchQ = $dbc->prepare_statement("select b.upc,
+            $fetchQ = $dbc->prepare("select b.upc,
                     case when l.likecode is null then p.description
                     else l.likecodedesc end as description,
                     p.normal_price,b.salePrice
@@ -1227,7 +1227,7 @@ class EditBatchPage extends FannieRESTfulPage
                     b.upc = 'LC'+convert(varchar,l.likecode)
                     where b.batchID = ? AND b.salePrice < 0");
         }
-        $fetchR = $dbc->exec_statement($fetchQ,array($id));
+        $fetchR = $dbc->execute($fetchQ,array($id));
 
         $ret .= '<table class="table" id="discount-table">';
         $ret .= '<tr><th colspan="4">Discount Item(s)</th></tr>';

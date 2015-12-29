@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-include(dirname(__FILE__) . '/../../config.php');
+include(dirname(__FILE__) . '/../../../../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
@@ -81,7 +81,7 @@ class LaneTender extends FannieReportPage
                 d.register_no,
                 e.FirstName
             FROM ' . $dlog . ' AS d
-                LEFT JOIN is4c_op.employees AS e ON e.emp_no=d.emp_no
+                LEFT JOIN employees AS e ON e.emp_no=d.emp_no
             WHERE (
                 d.trans_subtype=\'CA\'
                 OR d.trans_subtype=\'MI\'

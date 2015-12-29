@@ -126,8 +126,8 @@ class ManufacturerMovementReport extends FannieReportPage
             break;
         }
 
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep,$args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep,$args);
         $ret = array();
         while ($row = $dbc->fetch_array($result)) {
             $record = array();
@@ -136,8 +136,8 @@ class ManufacturerMovementReport extends FannieReportPage
                 $record[] = number_format($row['qty'], 2);
                 $record[] = number_format($row['ttl'], 2);
             } else {
-                for ($i=0;$i<$dbc->num_fields($result);$i++) {
-                    if ($dbc->field_name($result, $i) == 'qty' || $dbc->field_name($result, $i) == 'ttl') {
+                for ($i=0;$i<$dbc->numFields($result);$i++) {
+                    if ($dbc->fieldName($result, $i) == 'qty' || $dbc->fieldName($result, $i) == 'ttl') {
                         $row[$i] = sprintf('%.2f', $row[$i]);
                     }
                     $record[] .= $row[$i];
@@ -283,4 +283,3 @@ class ManufacturerMovementReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

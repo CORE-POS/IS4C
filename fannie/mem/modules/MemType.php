@@ -139,12 +139,12 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
 
         // Get any special values for this Member Type.
         $mt = $dbc->tableDefinition('memtype');
-        $q = $dbc->prepare_statement("SELECT custdataType,discount,staff,ssi from memtype WHERE memtype=?");
+        $q = $dbc->prepare("SELECT custdataType,discount,staff,ssi from memtype WHERE memtype=?");
         if ($dbc->tableExists('memdefaults') && (!isset($mt['custdataType']) || !isset($mt['discount']) || !isset($mt['staff']) || !isset($mt['ssi']))) {
-            $q = $dbc->prepare_statement("SELECT cd_type as custdataType,discount,staff,SSI as ssi
+            $q = $dbc->prepare("SELECT cd_type as custdataType,discount,staff,SSI as ssi
                     FROM memdefaults WHERE memtype=?");
         }
-        $r = $dbc->exec_statement($q,array($mtype));
+        $r = $dbc->execute($q,array($mtype));
         if ($dbc->num_rows($r) > 0){
             $w = $dbc->fetch_row($r);
             $json['memberStatus'] = $w['custdataType'];

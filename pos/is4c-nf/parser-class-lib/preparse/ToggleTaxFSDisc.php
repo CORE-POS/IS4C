@@ -112,4 +112,3 @@ class ToggleTaxFSDisc extends PreParser
     }
 }
 
-?>

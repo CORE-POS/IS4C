@@ -82,9 +82,9 @@ class HouseCoupon extends SpecialUPC
     private function lookupCoupon($id)
     {
         $dbc = Database::pDataConnect();
-        $hctable = $dbc->table_definition('houseCoupons');
+        $hctable = $dbc->tableDefinition('houseCoupons');
         $infoQ = "SELECT endDate," 
-                    . $dbc->identifier_escape('limit') . ",
+                    . $dbc->identifierEscape('limit') . ",
                     discountType, 
                     department,
                     discountValue, 

@@ -40,4 +40,3 @@ while($row1 = $sql->fetch_row($result1,'is4c_op')){
 echo "<tr><th width=60px align=left>Total</th><td>$row2[0] (".round($row2[0]/$row2[1]*100,2)."%)</td></tr>";
 echo "</table>";
 
-?>

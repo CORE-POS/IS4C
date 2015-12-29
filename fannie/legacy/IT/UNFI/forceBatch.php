@@ -100,4 +100,3 @@ $update->logManyUpdates(array_keys($upcs), $updateType);
 
 echo "Batch $batchID has been forced";
 
-?>

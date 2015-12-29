@@ -68,4 +68,3 @@ class PIEquityPage extends PIKillerPage {
 
 FannieDispatch::conditionalExec();
 
-?>

@@ -56,4 +56,3 @@ class Harvest_Kicker extends Kicker {
     }
 }
 
-?>

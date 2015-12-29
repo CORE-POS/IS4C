@@ -29,4 +29,4 @@ $enc = 'cp1252';
 $file = 'GnuMICR.z';
 $size1 = 1458;
 $size2 = 3781;
-?>
+

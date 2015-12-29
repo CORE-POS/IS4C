@@ -67,4 +67,3 @@ if ($rslt === False)
 else
     echo cron_msg("OK.");
 
-?>

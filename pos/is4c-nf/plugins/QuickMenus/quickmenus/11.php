@@ -7,4 +7,3 @@ $my_menu = array(
     "Dark Chocolate Coins" => "11037"
 );
 
-?>

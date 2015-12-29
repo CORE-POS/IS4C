@@ -38,8 +38,8 @@ class ExtraInfoModule extends ItemModule
 
         $info = array('cost'=>0.00,'deposit'=>0,'local'=>0,'inUse'=>1,'modified'=>'Unknown','idEnforced'=>0);
         $dbc = $this->db();
-        $p = $dbc->prepare_statement('SELECT cost,deposit,local,inUse,modified,idEnforced FROM products WHERE upc=?');
-        $r = $dbc->exec_statement($p,array($upc));
+        $p = $dbc->prepare('SELECT cost,deposit,local,inUse,modified,idEnforced FROM products WHERE upc=?');
+        $r = $dbc->execute($p,array($upc));
         if ($dbc->num_rows($r) > 0) {
             $info = $dbc->fetch_row($r);
         }

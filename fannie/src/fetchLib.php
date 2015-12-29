@@ -7,7 +7,7 @@ function getFailedTrans($dateStr,$hour){
     global $sql;
 
     $trans_stack = array();
-    $query = $sql->prepare_statement("
+    $query = $sql->prepare("
         SELECT refNum
         FROM PaycardTransactions
         WHERE 
@@ -16,7 +16,7 @@ function getFailedTrans($dateStr,$hour){
         AND httpCode <> 200
         AND (refNum like '%-%' OR refNum='')");
     $dateStr = date('Ymd', strtotime($dateStr));
-    $response = $sql->exec_statement($query,array($dateStr,$hour));
+    $response = $sql->execute($query,array($dateStr,$hour));
     while($row = $sql->fetch_row($response))
         $trans_stack[] = $row['refNum'];
 

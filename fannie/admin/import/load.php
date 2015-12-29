@@ -77,12 +77,12 @@ $ORIGIN = (isset($_REQUEST['origin_col'])) ? (int)$_REQUEST['origin_col'] : 4;
 
 $tpath = sys_get_temp_dir()."/vendorupload/";
 $fp = fopen($tpath."lcimp.csv","r");
-$chkP = $dbc->prepare_statement("SELECT p.upc FROM products AS p INNER JOIN
+$chkP = $dbc->prepare("SELECT p.upc FROM products AS p INNER JOIN
     upcLike AS u ON p.upc=u.upc WHERE
     u.likeCode=? AND p.upc NOT IN (
     select upc from productUser)");
-$ins = $dbc->prepare_statement("INSERT INTO productUser (upc) VALUES (?)");
-$up = $dbc->prepare_statement("UPDATE productUser AS p INNER JOIN
+$ins = $dbc->prepare("INSERT INTO productUser (upc) VALUES (?)");
+$up = $dbc->prepare("UPDATE productUser AS p INNER JOIN
     upcLike AS u ON p.upc=u.upc
     SET p.description=?,
     p.brand=? WHERE u.likeCode=?");
@@ -100,12 +100,12 @@ while(!feof($fp)){
     $o = $data[$ORIGIN];
     if (!is_numeric($l) || $l != (int)$l) continue;
 
-    $r  = $dbc->exec_statement($chkP,array($l));
+    $r  = $dbc->execute($chkP,array($l));
     while($w = $dbc->fetch_row($r)){
-        $dbc->exec_statement($ins,array($w['upc']));
+        $dbc->execute($ins,array($w['upc']));
     }
 
-    $dbc->exec_statement($up,array($d,$o,$l));
+    $dbc->execute($up,array($d,$o,$l));
 
 }
 fclose($fp);
@@ -119,4 +119,3 @@ echo "Data import complete<p />";
 
 include($FANNIE_ROOT."src/footer.html");
 
-?>

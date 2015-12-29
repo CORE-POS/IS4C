@@ -103,7 +103,7 @@ class AddCashierPage extends FannieRESTfulPage
         $checkP = $dbc->prepare("SELECT * FROM employees WHERE CashierPassword=?");
         while ($passwd === '') {
             $newpass = rand(1000,9999);
-            $checkR = $dbc->exec_statement($checkP,array($newpass));
+            $checkR = $dbc->execute($checkP,array($newpass));
             if ($dbc->num_rows($checkR) == 0) {
                 $passwd = $newpass;
             }

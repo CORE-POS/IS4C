@@ -49,8 +49,8 @@ class WfcHtEditPage extends FanniePage
             return '<div class="alert alert-error">Error: no employee ID specified</div>';
         }
 
-        $fetchQ = $db->prepare_statement("select adpid,name,department from employees where empID=?");
-        $fetchR = $db->exec_statement($fetchQ, array($empID));
+        $fetchQ = $db->prepare("select adpid,name,department from employees where empID=?");
+        $fetchR = $db->execute($fetchQ, array($empID));
         $fetchW = $db->fetch_row($fetchR);
         $ret = "<form action=WfcHtListPage.php method=post>";
         $ret .= "<input type=hidden name=action value=update />";

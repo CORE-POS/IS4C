@@ -115,4 +115,3 @@ class DeclineReceiptMessage extends ReceiptMessage
 
 }
 
-?>

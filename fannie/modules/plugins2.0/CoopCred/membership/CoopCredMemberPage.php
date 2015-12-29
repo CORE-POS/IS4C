@@ -119,6 +119,5 @@ class CoopCredMemberPage extends FanniePage {
 // CoopCredMemberPage class
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

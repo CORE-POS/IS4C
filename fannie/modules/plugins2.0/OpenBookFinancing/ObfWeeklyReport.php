@@ -1099,7 +1099,7 @@ class ObfWeeklyReport extends FannieReportPage
             GROUP BY c.obfWeekID
             HAVING SUM(c.actualSales) > 0
             ORDER BY MAX(w.endDate) DESC';
-        $splhWeekQ = $dbc->add_select_limit($splhWeekQ, 13);
+        $splhWeekQ = $dbc->addSelectLimit($splhWeekQ, 13);
         $splhWeekP = $dbc->prepare($splhWeekQ);
         $splhWeekR = $dbc->execute($splhWeekP, array($week->obfWeekID()));
         while ($splhWeekW = $dbc->fetch_row($splhWeekR)) {

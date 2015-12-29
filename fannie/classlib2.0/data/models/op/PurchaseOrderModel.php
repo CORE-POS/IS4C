@@ -59,21 +59,8 @@ values can be saved here for reference.
         ';
     }
 
-    public function guessAccounts()
+    private function getCodingStatements($dbc)
     {
-        $dbc = $this->connection; 
-        $detailP = $dbc->prepare('
-            SELECT o.sku,
-                o.internalUPC,
-                o.receivedTotalCost
-            FROM PurchaseOrderItems AS o
-            WHERE o.internalUPC NOT IN (
-                SELECT upc FROM products
-            )
-                AND o.orderID=?
-                AND o.receivedTotalCost <> 0');
-        $detailR = $dbc->execute($detailP, array($this->orderID()));
-
         $config = FannieConfig::factory();
         $soP1 = $dbc->prepare('
             SELECT d.salesCode
@@ -92,42 +79,62 @@ values can be saved here for reference.
                 INNER JOIN departments AS d ON p.deptID=d.dept_no
             WHERE v.sku=?
                 AND v.vendorID=?');
+
+        return array($soP1, $soP2, $vdP);
+    }
+
+    public function guessAccounts()
+    {
+        $dbc = $this->connection; 
+        $detailP = $dbc->prepare('
+            SELECT o.sku,
+                o.internalUPC,
+                o.receivedTotalCost
+            FROM PurchaseOrderItems AS o
+            WHERE o.internalUPC NOT IN (
+                SELECT upc FROM products
+            )
+                AND o.orderID=?
+                AND o.receivedTotalCost <> 0');
+        $detailR = $dbc->execute($detailP, array($this->orderID()));
+
+        list($soP1, $soP2, $vdP) = $this->getCodingStatements($dbc);
         $coding = array('n/a' => 0.00);
-        while ($w = $dbc->fetchRow($detailR)) {
-            $soR = $dbc->execute($soP1, array($w['internalUPC']));
-            if ($dbc->numRows($soR) > 0) {
-                $soW = $dbc->fetchRow($soR);
-                if (!isset($coding[$soW['salesCode']])) {
-                    $coding[$soW['salesCode']] = 0.00;
-                }
-                $coding[$soW['salesCode']] += $w['receivedTotalCost'];
+        while ($row = $dbc->fetchRow($detailR)) {
+            list($coding, $matched) = $this->checkSpecialOrder($dbc, array($soP1, array($row['internalUPC'])), $row, $coding);
+            if ($matched === true) {
                 continue;
             }
 
-            $soR = $dbc->execute($soP2, array($w['internalUPC']));
-            if ($dbc->numRows($soR) > 0) {
-                $soW = $dbc->fetchRow($soR);
-                if (!isset($coding[$soW['salesCode']])) {
-                    $coding[$soW['salesCode']] = 0.00;
-                }
-                $coding[$soW['salesCode']] += $w['receivedTotalCost'];
+            list($coding, $matched) = $this->checkSpecialOrder($dbc, array($soP2, array($row['internalUPC'])), $row, $coding);
+            if ($matched === true) {
                 continue;
             }
 
-            $soR = $dbc->execute($vdP, array($w['sku'], $this->vendorID()));
-            if ($dbc->numRows($soR) > 0) {
-                $soW = $dbc->fetchRow($soR);
-                if (!isset($coding[$soW['salesCode']])) {
-                    $coding[$soW['salesCode']] = 0.00;
-                }
-                $coding[$soW['salesCode']] += $w['receivedTotalCost'];
+            list($coding, $matched) = $this->checkSpecialOrder($dbc, array($vdP, array($row['sku'], $this->vendorID())), $row, $coding);
+            if ($matched === true) {
                 continue;
             }
 
-            $coding['n/a'] += $w['receivedTotalCost'];
+            $coding['n/a'] += $row['receivedTotalCost'];
         }
 
         return $coding;
+    }
+
+    private function checkSpecialOrder($dbc, $stmt, $row, $coding)
+    {
+        $soR = $dbc->execute($stmt[0], $stmt[1]);
+        if ($dbc->numRows($soR) > 0) {
+            $soW = $dbc->fetchRow($soR);
+            if (!isset($coding[$soW['salesCode']])) {
+                $coding[$soW['salesCode']] = 0.00;
+            }
+            $coding[$soW['salesCode']] += $row['receivedTotalCost'];
+            return array($coding, true);
+        } else {
+            return array($coding, false);
+        }
     }
 
     /**
@@ -139,11 +146,11 @@ values can be saved here for reference.
         $this->connection = $dbc;
         if (!$dbc->table_exists($this->name))
             return parent::normalize($db_name, $mode, $doCreate);
-        $def = $dbc->table_definition($this->name);
+        $def = $dbc->tableDefinition($this->name);
         if (count($def)==3 && isset($def['stamp']) && isset($def['id']) && isset($def['name'])){
             echo "==========================================\n";
             if ($mode == BasicModel::NORMALIZE_MODE_APPLY){
-                $dbc->query('DROP TABLE '.$dbc->identifier_escape($this->name));
+                $dbc->query('DROP TABLE '.$dbc->identifierEscape($this->name));
                 $success = $this->create();    
                 echo "Recreating table ".$this->name.": ";
                 echo ($success) ? 'Succeeded' : 'Failed';

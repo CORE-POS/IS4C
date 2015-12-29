@@ -44,4 +44,3 @@ foreach($data as $k=>$v){
 }
 echo "</table>";
 
-?>

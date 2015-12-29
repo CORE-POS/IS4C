@@ -180,7 +180,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
         'card_no'    => (string)CoreLocal::get('memberID'),
         );
 
-    $dbc->smart_insert("localtemptrans",$values);
+    $dbc->smartInsert("localtemptrans",$values);
 
     if ($strtransType == "I" || $strtransType == "D") {
         CoreLocal::set("repeatable",1);

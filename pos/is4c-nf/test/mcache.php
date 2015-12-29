@@ -5,4 +5,3 @@ $ms = new MemcacheStorage();
 
 $ms->set("asdf",array(100));
 
-?>

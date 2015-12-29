@@ -118,4 +118,4 @@ $(document).ready(function(){
 </script>
 <?php
 include($FANNIE_ROOT.'src/footer.html');
-?>
+

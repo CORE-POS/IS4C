@@ -59,4 +59,3 @@ class NoReceiptPreParse extends PreParser {
     }
 }
 
-?>

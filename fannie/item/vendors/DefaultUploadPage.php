@@ -127,8 +127,8 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         }
         $VENDOR_ID = $_SESSION['vid'];
 
-        $p = $dbc->prepare_statement("SELECT vendorID,vendorName FROM vendors WHERE vendorID=?");
-        $idR = $dbc->exec_statement($p,array($VENDOR_ID));
+        $p = $dbc->prepare("SELECT vendorID,vendorName FROM vendors WHERE vendorID=?");
+        $idR = $dbc->execute($p,array($VENDOR_ID));
         if ($dbc->num_rows($idR) == 0){
             $this->error_details = 'Cannot find vendor';
             return False;
@@ -188,7 +188,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             )");
         $srpP = false;
         if ($dbc->tableExists('vendorSRPs')) {
-            $srpP = $dbc->prepare_statement("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
+            $srpP = $dbc->prepare("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
         }
         $pm = new ProductsModel($dbc);
 
@@ -299,7 +299,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $dbc->execute($itemP, $args);
 
             if ($srpP) {
-                $dbc->exec_statement($srpP,array($VENDOR_ID,$upc,$srp));
+                $dbc->execute($srpP,array($VENDOR_ID,$upc,$srp));
             }
 
             if ($_SESSION['vUploadChangeCosts']) {
@@ -328,17 +328,17 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         }
         $VENDOR_ID = $_SESSION['vid'];
 
-        $p = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorID=?");
-        $idR = $dbc->exec_statement($p,array($VENDOR_ID));
+        $p = $dbc->prepare("SELECT vendorID FROM vendors WHERE vendorID=?");
+        $idR = $dbc->execute($p,array($VENDOR_ID));
         if ($dbc->num_rows($idR) == 0){
             $this->error_details = 'Cannot find vendor';
             return False;
         }
 
-        $p = $dbc->prepare_statement("DELETE FROM vendorItems WHERE vendorID=?");
-        $dbc->exec_statement($p,array($VENDOR_ID));
-        $p = $dbc->prepare_statement("DELETE FROM vendorSRPs WHERE vendorID=?");
-        $dbc->exec_statement($p,array($VENDOR_ID));
+        $p = $dbc->prepare("DELETE FROM vendorItems WHERE vendorID=?");
+        $dbc->execute($p,array($VENDOR_ID));
+        $p = $dbc->prepare("DELETE FROM vendorSRPs WHERE vendorID=?");
+        $dbc->execute($p,array($VENDOR_ID));
 
         if (FormLib::get_form_value('rm_cds') !== '') {
             $_SESSION['vUploadCheckDigits'] = true;
@@ -381,8 +381,8 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             return '<div class="alert alert-danger">Error: No Vendor Selected</div>';
         }
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $vp = $dbc->prepare_statement('SELECT vendorName FROM vendors WHERE vendorID=?');
-        $vr = $dbc->exec_statement($vp,array($vid));
+        $vp = $dbc->prepare('SELECT vendorName FROM vendors WHERE vendorID=?');
+        $vr = $dbc->execute($vp,array($vid));
         if ($dbc->num_rows($vr)==0){
             $this->add_onload_command("\$('#FannieUploadForm').remove();");
             return '<div class="alert alert-danger">Error: No Vendor Found</div>';

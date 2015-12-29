@@ -57,7 +57,7 @@ class TableSnapshotTask extends FannieTask
         }
 
         try {
-            if ($sql->dbms_name() == "mssql") {
+            if ($sql->dbmsName() == "mssql") {
                 $sql->query("SELECT * INTO productBackup FROM products");
             } else {
                 $sql->query("CREATE TABLE productBackup LIKE products");
@@ -84,7 +84,7 @@ class TableSnapshotTask extends FannieTask
         }
 
         try {
-            if ($sql->dbms_name() == "mssql") {
+            if ($sql->dbmsName() == "mssql") {
                 $sql->query("SELECT * INTO custdataBackup FROM custdata");
             } else {
                 $sql->query("CREATE TABLE custdataBackup LIKE custdata");

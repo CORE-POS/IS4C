@@ -65,13 +65,13 @@ class CoopCredCheckQ extends Parser {
             WHERE m.cardNo =" . $CORE_LOCAL->get("memberID") .
             " AND c.personNum=1 " .
             "ORDER BY ppID";
-        $ccS = $conn->prepare_statement("$ccQ");
+        $ccS = $conn->prepare("$ccQ");
         if ($ccS === False) {
             $ret['output'] = DisplayLib::boxMsg("<p>Prep Failed: {$ccQ}</p>","",True);
             return $ret;
         }
         $args = array();
-        $ccR = $conn->exec_statement($ccS, $args);
+        $ccR = $conn->execute($ccS, $args);
         if ($ccR === False) {
             $ret['output'] = DisplayLib::boxMsg("<p>Query Failed: {$ccQ}</p>","",True);
             return $ret;
@@ -182,4 +182,3 @@ class CoopCredCheckQ extends Parser {
 
 }
 
-?>

@@ -46,7 +46,7 @@ if (isset($_GET['action'])){
         $insQ = $sql->prepare("insert into batches (startDate, endDate, batchName, batchType, discountType,
             priority,owner) values (?,?,?,?,?,0,?)");
         $insR = $sql->execute($insQ, array($startdate, $enddate, $name, $type, $discounttype, $owner));
-        $id = $sql->insert_id();
+        $id = $sql->insertID();
         
         if ($sql->tableExists('batchowner')) {
             $insQ = $sql->prepare("insert batchowner values (?,?)");
@@ -523,7 +523,7 @@ function addItemPriceLCInput($lc){
             where u.upc is not null
             group by p.normal_price
             order by count(*) desc";
-    $fetchQ = $sql->add_select_limit($fetchQ,1);
+    $fetchQ = $sql->addSelectLimit($fetchQ,1);
     $fetchP = $sql->prepare($fetchQ);
     $fetchR = $sql->execute($fetchP, array($lc));
     $normal_price = array_pop($sql->fetch_array($fetchR));

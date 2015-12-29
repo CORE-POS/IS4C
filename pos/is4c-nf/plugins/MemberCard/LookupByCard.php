@@ -48,14 +48,14 @@ class LookupByCard
     public function lookup_by_number($num){
         $dbc = Database::pDataConnect();
         $upc = str_pad($num,13,'0',STR_PAD_LEFT);
-        $query = $dbc->prepare_statement('SELECT CardNo, personNum,
+        $query = $dbc->prepare('SELECT CardNo, personNum,
             LastName, FirstName FROM custdata
             AS c LEFT JOIN memberCards AS m
             ON c.CardNo=m.card_no
             WHERE m.upc=?
             AND Type IN (\'PC\',\'REG\')
             ORDER BY personNum');
-        $result = $dbc->exec_statement($query, array($upc));
+        $result = $dbc->execute($query, array($upc));
 
         return $this->listToArray($dbc, $result);
     }

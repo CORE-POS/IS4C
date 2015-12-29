@@ -73,4 +73,3 @@ class TenderKeyCoopCred extends Parser
     }
 }
 
-?>

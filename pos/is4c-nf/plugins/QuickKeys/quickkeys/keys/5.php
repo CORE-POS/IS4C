@@ -7,4 +7,3 @@ $my_keys = array(
     new quickkey("Balance","BQ")
 );
 
-?>

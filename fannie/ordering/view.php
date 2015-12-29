@@ -100,4 +100,4 @@ if (isset($_REQUEST['k']) && file_exists($cachepath.$_REQUEST['k'])){
 <?php
 printf("<input type=hidden value=\"%d\" id=\"init_oid\" />",$orderID);
 include($FANNIE_ROOT.'src/footer.html');
-?>
+

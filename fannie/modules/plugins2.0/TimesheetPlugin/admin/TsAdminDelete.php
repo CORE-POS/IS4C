@@ -14,11 +14,11 @@ class TsAdminDelete extends FanniePage {
         $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
         if (isset($_GET['submitted']) && $_GET['confirm'] == 'confirm') {
             // Delete then redirect...
-            $query = $ts_db->prepare_statement("DELETE FROM timesheet
+            $query = $ts_db->prepare("DELETE FROM timesheet
                     WHERE date=?
                     AND emp_no=?
                     AND periodID=?");
-            $result = $ts_db->exec_statement($query,array($_GET['date'],
+            $result = $ts_db->execute($query,array($_GET['date'],
                         $_GET['emp_no'],$_GET['periodID']));
     
             if ($result) {
@@ -40,7 +40,7 @@ class TsAdminDelete extends FanniePage {
     function body_content(){
         global $FANNIE_OP_DB,$FANNIE_PLUGIN_SETTINGS;
         $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
-        $query = $ts_db->prepare_statement("SELECT 
+        $query = $ts_db->prepare("SELECT 
             CASE area WHEN 0 THEN TIME_FORMAT(time_in, '%H:%i') ELSE TIME_FORMAT(time_in, '%h:%i %p') END,
                     CASE area WHEN 0 THEN time_out ELSE TIME_FORMAT(time_out, '%h:%i %p') END,
                     ShiftName,
@@ -51,12 +51,12 @@ class TsAdminDelete extends FanniePage {
             AND emp_no=?
             AND periodID=?
             ORDER BY ID asc");
-        $result = $ts_db->exec_statement($query,array($_GET['date'],$_GET['emp_no'],$_GET['periodID']));
+        $result = $ts_db->execute($query,array($_GET['date'],$_GET['emp_no'],$_GET['periodID']));
         if (!$result) echo '<p>' . $ts_db->error() . '</p>';
-        $empQ = $ts_db->prepare_statement("SELECT CONCAT(firstname, ' ', lastname), 
+        $empQ = $ts_db->prepare("SELECT CONCAT(firstname, ' ', lastname), 
             date_format(?, '%M %D, %Y') FROM ".
             $FANNIE_OP_DB.$ts_db->sep()."employees WHERE emp_no=?");
-        $empR = $ts_db->exec_statement($empQ,array($_GET['date'],$_GET['emp_no']));
+        $empR = $ts_db->execute($empQ,array($_GET['date'],$_GET['emp_no']));
         list($name, $date) = $ts_db->fetch_row($empR);
     
         ob_start();
@@ -87,6 +87,5 @@ class TsAdminDelete extends FanniePage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

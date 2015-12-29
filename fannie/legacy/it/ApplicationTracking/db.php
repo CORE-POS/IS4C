@@ -8,4 +8,3 @@ function db_connect(){
     return $appdb;
 }
 
-?>

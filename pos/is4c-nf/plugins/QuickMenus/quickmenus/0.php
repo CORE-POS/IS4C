@@ -6,4 +6,3 @@ $my_menu = array(
     "Tender External CC" => "MANUALCC"
 );
 
-?>

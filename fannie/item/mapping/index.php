@@ -63,12 +63,12 @@ if (isset($_REQUEST['ajax'])){
 function lookupItem($store,$sec,$subsec,$sh_set,$shelf,$loc){
     global $FANNIE_OP_DB;
     $dbc = FannieDB::get($FANNIE_OP_DB);
-    $q = $dbc->prepare_statement("SELECT l.upc,p.description FROM prodPhysicalLocation AS l
+    $q = $dbc->prepare("SELECT l.upc,p.description FROM prodPhysicalLocation AS l
         " . DTrans::joinProducts('l') . "
         WHERE l.store_id=? AND section=? AND subsection=?
         AND shelf_set=? AND shelf=? AND location=?");
     $args = array($store,$sec,$subsec,$sh_set,$shelf,$loc);
-    $r = $dbc->exec_statement($q,$args);
+    $r = $dbc->execute($q,$args);
     $ret = array('upc'=>'','description'=>'no item at this location');
     if ($dbc->num_rows($r) > 0){
         $w = $dbc->fetch_row($r);
@@ -86,20 +86,20 @@ function saveItem($store,$sec,$subsec,$sh_set,$shelf,$loc,$upc){
         store_id=? AND section=? AND subsection=?
         AND shelf_set=? AND shelf=? AND location=?");
     $args = array($store,$sec,$subsec,$sh_set,$shelf,$loc);
-    $r = $dbc->exec_statement($q,$args);
-    $q = $dbc->prepare_statement("INSERT INTO prodPhysicalLocation (upc,
+    $r = $dbc->execute($q,$args);
+    $q = $dbc->prepare("INSERT INTO prodPhysicalLocation (upc,
         store_id,section,subsection,shelf_set,shelf,
         location) VALUES (?,?,?,?,?,?,?)");
     $args = array($upc,$store,$sec,$subsec,$sh_set,
         $shelf,$loc);
-    $r = $dbc->exec_statement($q,$args);
+    $r = $dbc->execute($q,$args);
 }
 
 
 $dbc = FannieDB::get($FANNIE_OP_DB);
-$sectionsQ = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts
+$sectionsQ = $dbc->prepare("SELECT superID,super_name FROM MasterSuperDepts
     WHERE superID > 0 ORDER BY superID");
-$sectionsR = $dbc->exec_statement($sectionsQ);
+$sectionsR = $dbc->execute($sectionsQ);
 $supers = array();
 while($sectionsW = $dbc->fetch_row($sectionsR))
     $supers[$sectionsW[0]] = $sectionsW[1];

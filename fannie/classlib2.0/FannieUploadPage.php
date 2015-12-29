@@ -779,6 +779,15 @@ class FannieUploadPage extends \FanniePage
         return $ret;
     }
 
+    protected function checkIndex($index, $line)
+    {
+        if ($index !== false && isset($line[$index])) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public function helpContent()
     {
         return '

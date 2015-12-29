@@ -47,8 +47,8 @@ class ItemLinksModule extends ItemModule
         $ret .= '<div id="LinksList" class="col-sm-5">';
 
         $dbc = $this->db();
-        $p = $dbc->prepare_statement('SELECT upc FROM products WHERE upc=?');
-        $r = $dbc->exec_statement($p,array($upc));
+        $p = $dbc->prepare('SELECT upc FROM products WHERE upc=?');
+        $r = $dbc->execute($p,array($upc));
 
         if ($dbc->num_rows($r) > 0){
             $ret .= '<div style="width:40%; float:left;">';

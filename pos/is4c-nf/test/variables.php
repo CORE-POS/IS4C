@@ -6,4 +6,3 @@ echo '<ul>';
 
 echo '</ul>';
 
-?>

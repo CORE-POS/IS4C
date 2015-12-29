@@ -77,4 +77,3 @@ else {
   parseitem('ChangeOneItem',$plu,$itemdesc,$tare,$shelflife,$price,$bycount,$weight,$exceptionprice,$text,$label,$graphics);
 }
 
-?>

@@ -49,14 +49,14 @@ class CreateTagsByManu extends FanniePage {
             else
                 $cond = " p.brand LIKE ? ";
             $dbc = FannieDB::get($FANNIE_OP_DB);
-            $prodP = $dbc->prepare_statement("
+            $prodP = $dbc->prepare("
                 SELECT
                     p.upc
                 FROM
                     products AS p
                 WHERE $cond
             ");
-            $prodR = $dbc->exec_statement($prodP, array('%'.$manu.'%'));
+            $prodR = $dbc->execute($prodP, array('%'.$manu.'%'));
             $tag = new ShelftagsModel($dbc);
             $product = new ProductsModel($dbc);
             while ($prodW = $dbc->fetch_row($prodR)) {

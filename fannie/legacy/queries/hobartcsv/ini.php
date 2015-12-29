@@ -25,4 +25,4 @@ $DGW_dir = "/srv/www/htdocs/queries/hobartcsv/csv_output";
 
 // csv creation directory
 $CSV_dir = "/srv/www/htdocs/queries/hobartcsv/csvfiles";
-?>
+

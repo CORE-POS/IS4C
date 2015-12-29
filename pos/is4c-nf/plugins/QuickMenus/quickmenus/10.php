@@ -14,4 +14,3 @@ $my_menu = array(
     "Cream Cheese" => "0020104000050"
 );
 
-?>

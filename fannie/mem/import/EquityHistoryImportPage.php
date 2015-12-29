@@ -76,7 +76,7 @@ class EquityHistoryImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $trans_index = $this->get_column_index('transID');
 
         // prepare statements
-        $insP = $dbc->prepare_statement("INSERT INTO stockpurchases (card_no,stockPurchase,
+        $insP = $dbc->prepare("INSERT INTO stockpurchases (card_no,stockPurchase,
                 tdate,trans_num,dept) VALUES (?,?,?,?,?)");
         foreach($linedata as $line){
             // get info from file and member-type default settings
@@ -88,7 +88,7 @@ class EquityHistoryImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $dept = ($dept_index !== False) ? $line[$dept_index] : 0;   
             $trans = ($trans_index !== False) ? $line[$trans_index] : "";
 
-            $insR = $dbc->exec_statement($insP,array($cardno,$amt,$date,$trans,$dept));
+            $insR = $dbc->execute($insP,array($cardno,$amt,$date,$trans,$dept));
             if ($insR === False){
                 $this->stats['errors'][] = "Error importing entry for member $cardno";
             } else {

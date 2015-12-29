@@ -64,40 +64,7 @@ class FannieItemLaneSync extends FannieWebService
           performance becomes an issue.
         */
         if (property_exists($args, 'fast')) {
-            $upc_data = array();
-            $query = '
-                SELECT normal_price,
-                    pricemethod,
-                    quantity,
-                    groupprice,
-                    special_price,
-                    specialpricemethod,
-                    specialquantity,
-                    specialgroupprice,
-                    discounttype,
-                    mixmatchcode,
-                    department,
-                    tax,
-                    foodstamp,
-                    discount,
-                    qttyEnforced,
-                    idEnforced,
-                    inUse,
-                    upc
-                FROM products
-                WHERE store_id=?
-                    AND upc IN ('; 
-            $params = array($storeID);
-            foreach ($args->upc as $upc) {
-                $query .= '?,';
-                $params[] = \BarcodeLib::padUPC($upc);
-            }
-            $query = substr($query, 0, strlen($query)-1);
-            $prep = $dbc->prepare($query);
-            $result = $dbc->execute($prep, $params);
-            while ($w = $dbc->fetchRow($result)) {
-                $upc_data[$w['upc']] = $w;
-            }
+            $upc_data = $this->getItemData($dbc, $args, $storeID);
 
             $updateQ = '
                 UPDATE products AS p SET
@@ -129,30 +96,7 @@ class FannieItemLaneSync extends FannieWebService
                     // connect failed
                     continue;
                 }
-                $updateP = $lane_sql->prepare($updateQ);
-                foreach ($upc_data as $upc => $data) {
-                    $lane_args = array(
-                        $data['normal_price'],
-                        $data['pricemethod'],
-                        $data['quantity'],
-                        $data['groupprice'],
-                        $data['special_price'],
-                        $data['specialpricemethod'],
-                        $data['specialquantity'],
-                        $data['specialgroupprice'],
-                        $data['discounttype'],
-                        $data['mixmatchcode'],
-                        $data['department'],
-                        $data['tax'],
-                        $data['foodstamp'],
-                        $data['discount'],
-                        $data['qttyEnforced'],
-                        $data['idEnforced'],
-                        $data['inUse'],
-                        $upc,
-                    );
-                    $lane_sql->execute($updateP, $lane_args);
-                }
+                $this->updateLane($lane_sql, $upc_data, $updateQ);
             }
         } else {
             $product = new \ProductsModel($dbc);
@@ -169,6 +113,74 @@ class FannieItemLaneSync extends FannieWebService
         }
 
         return $ret;
+    }
+
+    private function getItemData($dbc, $args, $storeID)
+    {
+        $upc_data = array();
+        $query = '
+            SELECT normal_price,
+                pricemethod,
+                quantity,
+                groupprice,
+                special_price,
+                specialpricemethod,
+                specialquantity,
+                specialgroupprice,
+                discounttype,
+                mixmatchcode,
+                department,
+                tax,
+                foodstamp,
+                discount,
+                qttyEnforced,
+                idEnforced,
+                inUse,
+                upc
+            FROM products
+            WHERE store_id=?
+                AND upc IN ('; 
+        $params = array($storeID);
+        foreach ($args->upc as $upc) {
+            $query .= '?,';
+            $params[] = \BarcodeLib::padUPC($upc);
+        }
+        $query = substr($query, 0, strlen($query)-1);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, $params);
+        while ($w = $dbc->fetchRow($result)) {
+            $upc_data[$w['upc']] = $w;
+        }
+
+        return $upc_data;
+    }
+
+    private function updateLane($lane_sql, $upc_data, $updateQ)
+    {
+        $updateP = $lane_sql->prepare($updateQ);
+        foreach ($upc_data as $upc => $data) {
+            $lane_args = array(
+                $data['normal_price'],
+                $data['pricemethod'],
+                $data['quantity'],
+                $data['groupprice'],
+                $data['special_price'],
+                $data['specialpricemethod'],
+                $data['specialquantity'],
+                $data['specialgroupprice'],
+                $data['discounttype'],
+                $data['mixmatchcode'],
+                $data['department'],
+                $data['tax'],
+                $data['foodstamp'],
+                $data['discount'],
+                $data['qttyEnforced'],
+                $data['idEnforced'],
+                $data['inUse'],
+                $upc,
+            );
+            $lane_sql->execute($updateP, $lane_args);
+        }
     }
 }
 

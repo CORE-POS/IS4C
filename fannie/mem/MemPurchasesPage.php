@@ -69,8 +69,8 @@ class MemPurchasesPage extends FannieRESTfulPage
             GROUP BY year(tdate),month(tdate),day(tdate),trans_num
             ORDER BY year(tdate) DESC, month(tdate) DESC,
             day(tdate) DESC";
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep, 
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, 
             array($this->id, $this->__models['start'].' 00:00:00', $this->__models['end'].' 23:59:59'));
 
         ob_start();

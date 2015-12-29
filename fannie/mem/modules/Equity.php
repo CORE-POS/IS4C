@@ -34,10 +34,10 @@ class Equity extends \COREPOS\Fannie\API\member\MemberModule {
         $dbc = $this->db();
         $trans = $FANNIE_TRANS_DB.$dbc->sep();
         
-        $infoQ = $dbc->prepare_statement("SELECT payments
+        $infoQ = $dbc->prepare("SELECT payments
                 FROM {$trans}equity_live_balance
                 WHERE memnum=?");
-        $infoR = $dbc->exec_statement($infoQ,array($memNum));
+        $infoR = $dbc->execute($infoQ,array($memNum));
         $equity = 0;
         if ($dbc->num_rows($infoR) > 0) {
             $w = $dbc->fetch_row($infoR);
@@ -67,4 +67,3 @@ class Equity extends \COREPOS\Fannie\API\member\MemberModule {
     }
 }
 
-?>

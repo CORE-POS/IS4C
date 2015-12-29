@@ -49,9 +49,9 @@ class SpanningViewModel extends ViewModel
     public function findExtraTable($table)
     {
         foreach ($this->extra_db_names as $db) {
-            $fq_name = $this->connection->identifier_escape($db)
+            $fq_name = $this->connection->identifierEscape($db)
                     . $this->connection->sep()
-                    . $this->connection->identifier_escape($table);
+                    . $this->connection->identifierEscape($table);
             /**
               Underlying tableExists function does not
               cope with identifier escapes correctly. Omitting

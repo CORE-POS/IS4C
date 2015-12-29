@@ -90,7 +90,7 @@ class StoreSummaryReportAlt extends FannieReportPage {
         $dbc->selectDB($this->config->get('OP_DB'));
 
         $dtrans = DTransactionsModel::selectDtrans($d1,$d2);
-        $datestamp = $dbc->identifier_escape('datetime');
+        $datestamp = $dbc->identifierEscape('datetime');
 
         if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' )
             $shrinkageUsers = " AND t.card_no not between 99990 and 99998";
@@ -101,8 +101,8 @@ class StoreSummaryReportAlt extends FannieReportPage {
         $data = array();
 
         $taxNames = array(0 => '');
-        $tQ = $dbc->prepare_statement("SELECT id, rate, description FROM taxrates WHERE id > 0 ORDER BY id");
-        $tR = $dbc->exec_statement($tQ);
+        $tQ = $dbc->prepare("SELECT id, rate, description FROM taxrates WHERE id > 0 ORDER BY id");
+        $tR = $dbc->execute($tQ);
         // Try generating code in this loop for use in SELECT and reporting.
         //  See SalesAndTaxTodayReport.php
         while ( $trow = $dbc->fetch_array($tR) ) {
@@ -202,9 +202,9 @@ class StoreSummaryReportAlt extends FannieReportPage {
                 CASE WHEN s.superID IS NULL THEN r.superID ELSE s.superID end,
                 CASE WHEN e.dept_no IS NULL THEN d.dept_no ELSE e.dept_no end";
         }
-        $costsP = $dbc->prepare_statement($costs);
+        $costsP = $dbc->prepare($costs);
         $costArgs = array($d1.' 00:00:00', $d2.' 23:59:59');
-        $costsR = $dbc->exec_statement($costsP, $costArgs);
+        $costsR = $dbc->execute($costsP, $costArgs);
 
         // Array in which totals used in the report are accumulated.
         $supers = array();

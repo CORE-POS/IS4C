@@ -53,7 +53,7 @@ class AuditLib
 
         $message = "Item $upc ($desc) has been changed\n";  
         $message .= "Price: " . $product->normal_price() . "\n";
-        $taxQ = $dbc->prepare_statement('SELECT description FROM taxrates WHERE id=?');
+        $taxQ = $dbc->prepare('SELECT description FROM taxrates WHERE id=?');
         $taxR = $dbc->execute($taxQ, array($product->tax()));
         $taxname = 'No Tax';
         if ($dbc->num_rows($taxR) > 0) {

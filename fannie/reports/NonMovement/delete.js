@@ -1,28 +1,32 @@
-function backgroundDelete(upc, description)
-{
-	if (!confirm('Delete '+upc+' '+description)){
-		return false;
-	}
+var nonMovement = (function($) {
+    var mod = {};
+    mod.backgroundDelete = function(upc, description)
+    {
+        if (!window.confirm('Delete '+upc+' '+description)){
+            return false;
+        }
 
-	$.ajax({
-		url: 'NonMovementReport.php',
-		cache: false,
-		data: 'deleteItem='+upc,
-		success: function(data){
-			$('#del'+upc).closest('tr').remove();
-		}
-	});
-}
+        $.ajax({
+            url: 'NonMovementReport.php',
+            data: 'deleteItem='+upc,
+            success: function() {
+                $('#del'+upc).closest('tr').remove();
+            }
+        });
+    };
 
-function backgroundDeactivate(upc)
-{
-	$.ajax({
-		url: 'NonMovementReport.php',
-		cache: false,
-		data: 'deactivate='+upc,
-		success: function(data) {
-			$('#del'+upc).closest('tr').remove();
-		}
-	});
-}
+    mod.backgroundDeactivate = function(upc)
+    {
+        $.ajax({
+            url: 'NonMovementReport.php',
+            data: 'deactivate='+upc,
+            success: function() {
+                $('#del'+upc).closest('tr').remove();
+            }
+        });
+    }
+
+    return mod;
+
+}(jQuery));
 

@@ -69,7 +69,7 @@ class MemberTypeEditor extends FannieRESTfulPage
             $mtModel->reset();
             $mtModel->memtype($id);
             if ($mtModel->load()) {
-                $this->errors .= 'ID is already in use';
+                $this->errors .= $id . ' ID is already in use';
                 return true;
             } else {
                 $mtModel->memDesc('');
@@ -315,22 +315,22 @@ class MemberTypeEditor extends FannieRESTfulPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $q = $dbc->prepare_statement("SELECT MAX(memtype) FROM memtype");
-        $r = $dbc->exec_statement($q);
+        $q = $dbc->prepare("SELECT MAX(memtype) FROM memtype");
+        $r = $dbc->execute($q);
         $sug = 0;
         if($dbc->num_rows($r)>0){
             $w = $dbc->fetch_row($r);
             if(!empty($w)) $sug = $w[0]+1;
         }
-        $ret = '<form method="post">';
+        $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">';
         $ret .='<div class="well">Give the new memtype an ID number. The one
             provided is only a suggestion. ID numbers
             must be unique.</div>';
         $ret .='<div class="form-inline"><p>';
         $ret .= sprintf('<label>New ID</label>: <input class="form-control" value="%d"
-            name="new" />',$sug);
-        $ret .= ' <button type="submit" class="btn btn-default"
-            onclick="finishMemType();return false;">Create New Type</button>';
+            name="new" id="new-mem-id" />',$sug);
+        $ret .= ' <button type="submit" class="btn btn-default">
+            Create New Type</button>';
         $ret .= ' <a href="' . $_SERVER['PHP_SELF'] . '" class="btn btn-default">Cancel</a>';
         $ret .= '</p></div>
             </form>';

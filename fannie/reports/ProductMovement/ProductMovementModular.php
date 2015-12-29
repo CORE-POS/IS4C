@@ -134,8 +134,8 @@ class ProductMovementModular extends FannieReportPage
                 and (trans_status <> 'X' || trans_type='L')
                 GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)";
         }
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep,$args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep,$args);
 
         /**
           Simple report

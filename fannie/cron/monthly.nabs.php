@@ -59,5 +59,3 @@ while($fixW = $sql->fetch_row($fixR)){
     $tn++;
 }
 
-
-?>

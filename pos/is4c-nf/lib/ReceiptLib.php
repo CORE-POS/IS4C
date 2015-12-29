@@ -796,12 +796,12 @@ static public function receiptDetail($reprint=false, $trans_num='')
 
         // otherwise use new format 
         $query = "select linetoprint,sequence,dept_name,ordered, 0 as ".
-                $dbc->identifier_escape('local')
+                $dbc->identifierEscape('local')
             ." from rp_receipt_reorder_unions_g where emp_no=$empNo and "
             ." register_no=$laneNo and trans_no=$transNo "
             ." order by ordered,dept_name, " 
             ." case when ordered=4 then '' else upc end, "
-                .$dbc->identifier_escape('sequence');
+                .$dbc->identifierEscape('sequence');
 
         $result = $dbc->query($query);
         $num_rows = $dbc->num_rows($result);
@@ -1039,7 +1039,7 @@ static private function messageModFooters($receipt, $where, $ref, $reprint)
     foreach(self::messageMods() as $class){
         if (!class_exists($class)) continue;
         $obj = new $class();
-        $modQ .= $obj->select_condition().' AS '.$dbc->identifier_escape($class).',';
+        $modQ .= $obj->select_condition().' AS '.$dbc->identifierEscape($class).',';
         $select_mods[$class] = $obj;
     }
     $modQ = rtrim($modQ,',');

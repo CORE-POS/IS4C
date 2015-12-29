@@ -56,7 +56,7 @@ class BatchTypeEditor extends FanniePage {
 
         $json = array('error'=>'');
         $model = new BatchTypeModel($dbc);
-        if (FormLib::get_form_value('saveDesc') !== '') {
+        if (FormLib::get('saveDesc') !== '') {
             $model->batchTypeID(FormLib::get('bid'));
             $model->typeDesc(FormLib::get('saveDesc'));
             if ($model->save() === false) {
@@ -66,7 +66,7 @@ class BatchTypeEditor extends FanniePage {
 
             return false; // ajax call
         }
-        if (FormLib::get_form_value('saveType') !== '') {
+        if (FormLib::get('saveType') !== '') {
             $model->batchTypeID(FormLib::get('bid'));
             $model->discType(FormLib::get('saveType'));
             if ($model->save() === false) {
@@ -106,18 +106,18 @@ class BatchTypeEditor extends FanniePage {
 
             return false; // ajax call
         }
-        if (FormLib::get_form_value('addtype') !== ''){
-            $prep = $dbc->prepare_statement("SELECT MAX(batchTypeID) FROM batchType");
-            $res = $dbc->exec_statement($prep);
+        if (FormLib::get('addtype') !== ''){
+            $prep = $dbc->prepare("SELECT MAX(batchTypeID) FROM batchType");
+            $res = $dbc->execute($prep);
             $tid = array_pop($dbc->fetch_row($res));
             $tid = (empty($tid)) ? 1 : $tid + 1;
 
-            $ins = $dbc->prepare_statement("INSERT INTO batchType (batchTypeID,typeDesc,discType)
+            $ins = $dbc->prepare("INSERT INTO batchType (batchTypeID,typeDesc,discType)
                 VALUES (?,'New Type',1)");
-            $dbc->exec_statement($ins,array($tid));
-        } elseif (FormLib::get_form_value('deltype') !== ''){
-            $query = $dbc->prepare_statement("DELETE FROM batchType WHERE batchTypeID=?");
-            $dbc->exec_statement($query,array(FormLib::get_form_value('bid')));
+            $dbc->execute($ins,array($tid));
+        } elseif (FormLib::get('deltype') !== ''){
+            $query = $dbc->prepare("DELETE FROM batchType WHERE batchTypeID=?");
+            $dbc->execute($query,array(FormLib::get('bid')));
         }
 
         return true;
@@ -143,8 +143,9 @@ class BatchTypeEditor extends FanniePage {
         foreach ($model->find('batchTypeID') as $obj) {
             $ret .= sprintf('<tr>
                 <td>%d</td>
-                <td><input type="text" class="form-control" onchange="saveDesc.call(this,this.value,%d)" value="%s" /></td>
-                <td><select onchange="saveType.call(this, $(this).val(),%d);" class="form-control">',
+                <td><input type="text" class="form-control" 
+                    onchange="batchTypeEditor.saveDesc.call(this,this.value,%d)" value="%s" /></td>
+                <td><select onchange="batchTypeEditor.saveType.call(this, $(this).val(),%d);" class="form-control">',
                 $obj->batchTypeID(), $obj->batchTypeID(), $obj->typeDesc(), $obj->batchTypeID());
         $found = false;
         foreach ($this->price_methods as $id=>$desc) {
@@ -159,19 +160,19 @@ class BatchTypeEditor extends FanniePage {
             $ret .= sprintf('<option value="%d" selected>%d (Custom)</option>',$w['discType'],$w['discType']);
         $ret .= '</select></td>';
         $ret .= sprintf('<td align="center">
-                    <input type="checkbox" %s onchange="saveDated.call(this, %d);" />
+                    <input type="checkbox" %s onchange="batchTypeEditor.saveDated.call(this, %d);" />
                     </td>',
                     ($obj->datedSigns() ? 'checked' : ''),
                     $obj->batchTypeID()
                 );
         $ret .= sprintf('<td align="center">
-                    <input type="checkbox" %s onchange="saveSO.call(this, %d);" />
+                    <input type="checkbox" %s onchange="batchTypeEditor.saveSO.call(this, %d);" />
                     </td>',
                     ($obj->specialOrderEligible() ? 'checked' : ''),
                     $obj->batchTypeID()
                 );
         $ret .= sprintf('<td>
-                    <select onchange="saveUI.call(this, $(this).val(),%d);" class="form-control">',
+                    <select onchange="batchTypeEditor.saveUI.call(this, $(this).val(),%d);" class="form-control">',
                     $obj->batchTypeID()
         );
         foreach ($this->editor_uis as $id => $desc) {

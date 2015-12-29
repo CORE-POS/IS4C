@@ -118,8 +118,8 @@ function postBilling(){
         $query = "SELECT n.balance
             FROM  " . $FANNIE_TRANS_DB.$sql->sep()."ar_live_balance AS n 
             WHERE n.card_no=?";
-        $prep = $sql->prepare_statement($query);
-        $result = $sql->exec_statement($prep, array($this->id));
+        $prep = $sql->prepare($query);
+        $result = $sql->execute($prep, array($this->id));
         $row = $sql->fetch_row($result);
 
         printf("<form onsubmit=\"postBilling();return false;\">

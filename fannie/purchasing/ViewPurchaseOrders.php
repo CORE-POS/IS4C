@@ -38,7 +38,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 
     private $show_all = true;
 
-    function preprocess()
+    public function preprocess()
     {
         $this->__routes[] = 'get<pending>';
         $this->__routes[] = 'get<placed>';
@@ -55,7 +55,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         return parent::preprocess();
     }
 
-    function get_id_export_handler(){
+    protected function get_id_export_handler(){
         if (!file_exists('exporters/'.$this->export.'.php'))
             return $this->unknown_request_handler();
         include_once('exporters/'.$this->export.'.php');    
@@ -68,7 +68,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         return False;
     }
 
-    function post_id_setPlaced_handler(){
+    protected function post_id_setPlaced_handler(){
         global $FANNIE_OP_DB;
         $model = new PurchaseOrderModel(FannieDB::get($FANNIE_OP_DB));
         $model->orderID($this->id);
@@ -91,20 +91,19 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         return false;
     }
 
-    function get_pending_handler(){
+    protected function get_pending_handler(){
         echo $this->get_orders(0);
         return False;
     }
 
-    function get_placed_handler(){
+    protected function get_placed_handler(){
         echo $this->get_orders(1);
         return False;
     }
 
-    function get_orders($placed)
+    protected function get_orders($placed)
     {
-        global $FANNIE_OP_DB;   
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
 
         $month = FormLib::get('month');
         $year = FormLib::get('year');
@@ -130,33 +129,38 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $args = array($placed, $start, $end);
         if (!$this->show_all) $args[] = FannieAuth::getUID($this->current_user);
 
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep, $args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, $args);
 
         $ret = '<div class="table-responsive">
             <table class="table table-striped table-bordered tablesorter">';
         $ret .= '<thead><tr><th>Created</th><th>Invoice#</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
             <th>Placed</th><th>Received</th><th>Rec. Cost</th></tr></thead><tbody>';
         $count = 1;
-        while($w = $dbc->fetch_row($result)){
-            $ret .= sprintf('<tr><td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
-                    <td>%s</td>
-                    <td>%s</td><td>%d</td><td>%.2f</td>
-                    <td>%s</td><td>%s</td><td>%.2f</td></tr>',
-                    $w['orderID'],
-                    $w['creationDate'], $w['vendorInvoiceID'], $w['vendorName'], $w['records'],
-                    $w['estimatedCost'],
-                    ($placed == 1 ? $w['placedDate'] : '&nbsp;'),
-                    (!empty($w['receivedDate']) ? $w['receivedDate'] : '&nbsp;'),
-                    (!empty($w['receivedCost']) ? $w['receivedCost'] : 0.00)
-            );
+        while ($row = $dbc->fetchRow($result)) {
+            $ret .= $this->orderRowToTable($row, $placed);
         }
         $ret .= '</tbody></table></div>';
 
         return $ret;
     }
 
-    function delete_id_handler()
+    private function orderRowToTable($row, $placed)
+    {
+        return sprintf('<tr><td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
+                <td>%s</td>
+                <td>%s</td><td>%d</td><td>%.2f</td>
+                <td>%s</td><td>%s</td><td>%.2f</td></tr>',
+                $row['orderID'],
+                $row['creationDate'], $row['vendorInvoiceID'], $row['vendorName'], $row['records'],
+                $row['estimatedCost'],
+                ($placed == 1 ? $row['placedDate'] : '&nbsp;'),
+                (!empty($row['receivedDate']) ? $row['receivedDate'] : '&nbsp;'),
+                (!empty($row['receivedCost']) ? $row['receivedCost'] : 0.00)
+        );
+    }
+
+    protected function delete_id_handler()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -176,7 +180,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         return false;
     }
 
-    public function post_id_sku_recode_handler()
+    protected function post_id_sku_recode_handler()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
@@ -192,17 +196,17 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
             $model->save();
         }
 
-        return $_SERVER['PHP_SELF'] . '?id=' . $this->id;
+        return filter_input(INPUT_SERVER, 'PHP_SELF') . '?id=' . $this->id;
     }
 
-    public function get_id_recode_view()
+    protected function get_id_recode_view()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $model = new PurchaseOrderItemsModel($dbc);
         $model->orderID($this->id);
 
-        $ret = '<form method="post" action="' . $_SERVER['PHP_SELF'] . '">
+        $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">
             <input type="hidden" name="id" value="' . $this->id . '" />
             <table class="table table-striped">
             <tr>
@@ -243,7 +247,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         return $ret;
     }
 
-    function get_id_view()
+    protected function get_id_view()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
@@ -268,8 +272,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 
         $ret .= 'Export as: <select id="exporterSelect" class="form-control">';
-        $dh = opendir('exporters');
-        while( ($file=readdir($dh)) !== False){
+        $dir = opendir('exporters');
+        while( ($file=readdir($dir)) !== False){
             if (substr($file,-4) != '.php')
                 continue;
             include('exporters/'.$file);
@@ -386,7 +390,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
       Receiving interface for processing enter recieved costs and quantities
       on an order
     */
-    public function get_id_receive_view()
+    protected function get_id_receive_view()
     {
         $this->add_script('js/view.js');
         $ret = '
@@ -410,7 +414,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
       Receiving AJAX callback. For items that were in
       the purchase order, just save the received quantity and cost
     */
-    public function post_id_sku_qty_cost_handler()
+    protected function post_id_sku_qty_cost_handler()
     {
         $dbc = $this->connection;
         $model = new PurchaseOrderItemsModel($dbc);
@@ -431,7 +435,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
       the purchase order, create a whole record for the
       item that showed up. 
     */
-    public function post_id_sku_upc_brand_description_orderQty_orderCost_receiveQty_receiveCost_handler()
+    protected function post_id_sku_upc_brand_description_orderQty_orderCost_receiveQty_receiveCost_handler()
     {
         $dbc = $this->connection;
         $model = new PurchaseOrderItemsModel($dbc);
@@ -456,7 +460,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
       Lookup item in the order and display form fields
       to enter required info 
     */
-    public function get_id_sku_handler()
+    protected function get_id_sku_handler()
     {
         $dbc = $this->connection;
         $model = new PurchaseOrderItemsModel($dbc);
@@ -479,83 +483,91 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         }
         
         // item not in order. need all fields to add it.
+        echo '<form onsubmit="saveReceive(); return false;">';
         if (!$found) {
-            echo '<div class="alert alert-danger">SKU not found in order</div>';
-            echo '<form onsubmit="saveReceive(); return false;">';
-            echo '<table class="table table-bordered">';
-            echo '<tr><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
-                <th>Qty Ordered</th><th>Cost (est)</th><th>Qty Received</th><th>Cost Received</th></tr>';
-            $order = new PurchaseOrderModel($dbc);
-            $order->orderID($this->id);
-            $order->load();
-            $item = new VendorItemsModel($dbc);
-            $item->vendorID($order->vendorID());
-            $item->sku($this->sku);
-            $item->load();
-            printf('<tr>
-                <td>%s<input type="hidden" name="sku" value="%s" /></td>
-                <td><input type="text" class="form-control" name="upc" value="%s" /></td>
-                <td><input type="text" class="form-control" name="brand" value="%s" /></td>
-                <td><input type="text" class="form-control" name="description" value="%s" /></td>
-                <td><input type="text" class="form-control" name="orderQty" value="%s" /></td>
-                <td><input type="text" class="form-control" name="orderCost" value="%.2f" /></td>
-                <td><input type="text" class="form-control" name="receiveQty" value="%s" /></td>
-                <td><input type="text" class="form-control" name="receiveCost" value="%.2f" /></td>
-                <td><button type="submit" class="btn btn-default">Add New Item</button><input type="hidden" name="id" value="%d" /></td>
-                </tr>',
-                $item->sku(), $item->sku(),
-                $item->upc(),
-                $item->brand(),
-                $item->description(),
-                1,
-                $item->cost() * $item->units(),
-                0,
-                0,
-                $this->id
-            );
-            echo '</table>';
-            echo '</form>';
+            $this->receiveUnOrderedItem($dbc);
         } else {
             // item in order. just need received qty and cost
-            echo '<form onsubmit="saveReceive(); return false;">';
-            echo '<table class="table table-bordered">';
-            echo '<tr><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
-                <th>Qty Ordered</th><th>Cost (est)</th><th>Qty Received</th><th>Cost Received</th></tr>';
-            if ($model->receivedQty() === null) {
-                $model->receivedQty($model->quantity());
-            }
-            if ($model->receivedTotalCost() === null) {
-                $model->receivedTotalCost($model->quantity()*$model->unitCost()*$model->caseSize());
-            }
-            printf('<tr>
-                <td>%s<input type="hidden" name="sku" value="%s" /></td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%.2f</td>
-                <td><input type="text" class="form-control" name="qty" value="%s" /></td>
-                <td><input type="text" class="form-control" name="cost" value="%.2f" /></td>
-                <td><button type="submit" class="btn btn-default">Save</button><input type="hidden" name="id" value="%d" /></td>
-                </tr>',
-                $model->sku(), $model->sku(),
-                $model->internalUPC(),
-                $model->brand(),
-                $model->description(),
-                $model->quantity(),
-                $model->quantity() * $model->unitCost() * $model->caseSize(),
-                $model->receivedQty(),
-                $model->receivedTotalCost(),
-                $this->id
-            );
-            echo '</table>';
-            echo '</form>';
+            $this->receiveOrderedItem($dbc, $model);
         }
+        echo '</form>';
 
         return false;
     }
 
-    public function get_view()
+    private function receiveUnOrderedItem($dbc)
+    {
+        echo '<div class="alert alert-danger">SKU not found in order</div>';
+        echo '<table class="table table-bordered">';
+        echo '<tr><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
+            <th>Qty Ordered</th><th>Cost (est)</th><th>Qty Received</th><th>Cost Received</th></tr>';
+        $order = new PurchaseOrderModel($dbc);
+        $order->orderID($this->id);
+        $order->load();
+        $item = new VendorItemsModel($dbc);
+        $item->vendorID($order->vendorID());
+        $item->sku($this->sku);
+        $item->load();
+        printf('<tr>
+            <td>%s<input type="hidden" name="sku" value="%s" /></td>
+            <td><input type="text" class="form-control" name="upc" value="%s" /></td>
+            <td><input type="text" class="form-control" name="brand" value="%s" /></td>
+            <td><input type="text" class="form-control" name="description" value="%s" /></td>
+            <td><input type="text" class="form-control" name="orderQty" value="%s" /></td>
+            <td><input type="text" class="form-control" name="orderCost" value="%.2f" /></td>
+            <td><input type="text" class="form-control" name="receiveQty" value="%s" /></td>
+            <td><input type="text" class="form-control" name="receiveCost" value="%.2f" /></td>
+            <td><button type="submit" class="btn btn-default">Add New Item</button><input type="hidden" name="id" value="%d" /></td>
+            </tr>',
+            $item->sku(), $item->sku(),
+            $item->upc(),
+            $item->brand(),
+            $item->description(),
+            1,
+            $item->cost() * $item->units(),
+            0,
+            0,
+            $this->id
+        );
+        echo '</table>';
+    }
+
+    private function receiveOrderedItem($dbc, $model)
+    {
+        echo '<table class="table table-bordered">';
+        echo '<tr><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
+            <th>Qty Ordered</th><th>Cost (est)</th><th>Qty Received</th><th>Cost Received</th></tr>';
+        if ($model->receivedQty() === null) {
+            $model->receivedQty($model->quantity());
+        }
+        if ($model->receivedTotalCost() === null) {
+            $model->receivedTotalCost($model->quantity()*$model->unitCost()*$model->caseSize());
+        }
+        printf('<tr>
+            <td>%s<input type="hidden" name="sku" value="%s" /></td>
+            <td>%s</td>
+            <td>%s</td>
+            <td>%s</td>
+            <td>%s</td>
+            <td>%.2f</td>
+            <td><input type="text" class="form-control" name="qty" value="%s" /></td>
+            <td><input type="text" class="form-control" name="cost" value="%.2f" /></td>
+            <td><button type="submit" class="btn btn-default">Save</button><input type="hidden" name="id" value="%d" /></td>
+            </tr>',
+            $model->sku(), $model->sku(),
+            $model->internalUPC(),
+            $model->brand(),
+            $model->description(),
+            $model->quantity(),
+            $model->quantity() * $model->unitCost() * $model->caseSize(),
+            $model->receivedQty(),
+            $model->receivedTotalCost(),
+            $this->id
+        );
+        echo '</table>';
+    }
+
+    protected function get_view()
     {
         $init = FormLib::get('init', 'placed');
 
@@ -650,4 +662,3 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 
 FannieDispatch::conditionalExec();
 
-?>

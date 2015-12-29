@@ -62,4 +62,3 @@ class CashDropWarningPage extends InputCorePage
 if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
     new CashDropWarningPage();
 
-?>

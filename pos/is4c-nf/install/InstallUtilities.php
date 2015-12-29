@@ -429,22 +429,22 @@ class InstallUtilities extends LibraryClass
 
         $saved = false;
         if ($sql !== false) {
-            $prep = $sql->prepare_statement('SELECT param_value FROM parameters
+            $prep = $sql->prepare('SELECT param_value FROM parameters
                                         WHERE param_key=? AND lane_id=?');
-            $exists = $sql->exec_statement($prep, array($key, CoreLocal::get('laneno')));
+            $exists = $sql->execute($prep, array($key, CoreLocal::get('laneno')));
             if ($sql->num_rows($exists)) {
-                $prep = $sql->prepare_statement('
+                $prep = $sql->prepare('
                     UPDATE parameters 
                     SET param_value=?,
                         is_array=?,
                         store_id=0
                     WHERE param_key=? 
                         AND lane_id=?');
-                $saved = $sql->exec_statement($prep, array($value, $save_as_array, $key, CoreLocal::get('laneno')));
+                $saved = $sql->execute($prep, array($value, $save_as_array, $key, CoreLocal::get('laneno')));
             } else {
-                $prep = $sql->prepare_statement('INSERT INTO parameters (store_id, lane_id, param_key,
+                $prep = $sql->prepare('INSERT INTO parameters (store_id, lane_id, param_key,
                                         param_value, is_array) VALUES (0, ?, ?, ?, ?)');
-                $saved = $sql->exec_statement($prep, array(CoreLocal::get('laneno'), $key, $value, $save_as_array));
+                $saved = $sql->execute($prep, array(CoreLocal::get('laneno'), $key, $value, $save_as_array));
             }
         }
 
@@ -499,8 +499,8 @@ class InstallUtilities extends LibraryClass
                 ESCAPED BY '\\\\'
                 OPTIONALLY ENCLOSED BY '\"'
                 LINES TERMINATED BY '\\r\\n'";
-        $prep = $sql->prepare_statement($query);
-        $try = $sql->exec_statement($prep);
+        $prep = $sql->prepare($query);
+        $try = $sql->execute($prep);
         if ($try === false) {
             $error = $sql->error();
             echo "<br><span style='color:red;'>"
@@ -527,7 +527,7 @@ class InstallUtilities extends LibraryClass
                     $query .= '?,';
                 }
                 $query = substr($query,0,strlen($query)-1).')';
-                $stmt = $sql->prepare_statement($query);
+                $stmt = $sql->prepare($query);
                 if ($stmt === false) {
                     $error = $sql->error();
                     $success = false;
@@ -537,7 +537,7 @@ class InstallUtilities extends LibraryClass
                     break;
                 }
             }
-            $try = $sql->exec_statement($stmt, $line);
+            $try = $sql->execute($stmt, $line);
             if ($try === false) {
                 $error = $sql->error();
                 $success = false;
@@ -1134,7 +1134,7 @@ class InstallUtilities extends LibraryClass
                     );
                 }
             } else {
-                $db->end_query($chk);
+                $db->endQuery($chk);
             }
         }
 
@@ -1186,7 +1186,7 @@ class InstallUtilities extends LibraryClass
     public static function createTransDBs($db, $name)
     {
         $errors = array();
-        $type = $db->dbms_name();
+        $type = $db->dbmsName();
 
         if (CoreLocal::get('laneno') == 0) {
             $errors[] = array(
@@ -2001,7 +2001,7 @@ class InstallUtilities extends LibraryClass
     public static function createMinServer($db, $name)
     {
         $errors = array();
-        $type = $db->dbms_name();
+        $type = $db->dbmsName();
         if (CoreLocal::get('laneno') == 0) {
             $errors[] = array(
                 'struct' => 'No structures created for lane #0',

@@ -35,8 +35,8 @@ $upc = FormLib::get_form_value('upc');
 $action = FormLib::get_form_value('action','unknown');
 switch($action){
 case 'addVarPricing':
-    $prep = $dbc->prepare_statement("UPDATE prodExtra SET variable_pricing=1 WHERE upc=?");
-    $dbc->exec_statement($prep,array($upc));
+    $prep = $dbc->prepare("UPDATE prodExtra SET variable_pricing=1 WHERE upc=?");
+    $dbc->execute($prep,array($upc));
     $prod = new ProductsModel($dbc);
     $prod->upc($upc);
     foreach ($prod->find('store_id') as $p) {
@@ -48,8 +48,8 @@ case 'addVarPricing':
     }
     break;
 case 'delVarPricing':
-    $prep = $dbc->prepare_statement("UPDATE prodExtra SET variable_pricing=0 WHERE upc=?");
-    $dbc->exec_statement($prep,array($upc));
+    $prep = $dbc->prepare("UPDATE prodExtra SET variable_pricing=0 WHERE upc=?");
+    $dbc->execute($prep,array($upc));
     $ruleProd = new ProductsModel($dbc);
     $prod = new ProductsModel($dbc);
     $prod->upc($upc);
@@ -95,8 +95,8 @@ case 'newPrice':
             AND upc=?');
     $dbc->execute($batchP, array($price, $bid, $upc));
     if ($dbc->tableExists('vendorSRPs')) {
-        $sP = $dbc->prepare_statement("UPDATE vendorSRPs SET srp=? WHERE upc=? AND vendorID=?");
-        $dbc->exec_statement($sP,array($price,$upc,$vid));
+        $sP = $dbc->prepare("UPDATE vendorSRPs SET srp=? WHERE upc=? AND vendorID=?");
+        $dbc->execute($sP,array($price,$upc,$vid));
     }
     echo "New Price Applied";
     break;
@@ -153,4 +153,3 @@ case 'batchDel':
     break;
 }
 
-?>

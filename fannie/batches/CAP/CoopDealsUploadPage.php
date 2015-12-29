@@ -79,8 +79,8 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         if ($dbc->tableExists('tempCapPrices')){
-            $drop = $dbc->prepare_statement("DROP TABLE tempCapPrices");
-            $dbc->exec_statement($drop);
+            $drop = $dbc->prepare("DROP TABLE tempCapPrices");
+            $dbc->execute($drop);
         }
         if (!$dbc->tableExists('CoopDealsItems')) {
             $cdi = new CoopDealsItemsModel($dbc);
@@ -99,14 +99,14 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $dbc->execute($delP, array($month));
 
         $rm_checks = (FormLib::get_form_value('rm_cds') != '') ? True : False;
-        $upcP = $dbc->prepare_statement('SELECT upc FROM products WHERE upc=? AND inUse=1');
-        $skuP = $dbc->prepare_statement('
+        $upcP = $dbc->prepare('SELECT upc FROM products WHERE upc=? AND inUse=1');
+        $skuP = $dbc->prepare('
             SELECT s.upc 
             FROM vendorSKUtoPLU AS s
                 INNER JOIN products AS p ON s.vendorID=p.default_vendor_id AND s.upc=p.upc
             WHERE s.sku=?'
         );
-        $insP = $dbc->prepare_statement('
+        $insP = $dbc->prepare('
             INSERT INTO CoopDealsItems 
                 (dealSet, upc, price, abtpr, multiplier)
             VALUES
@@ -121,16 +121,16 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $upc = substr($upc,0,strlen($upc)-1);
             $upc = BarcodeLib::padUPC($upc);
 
-            $lookup = $dbc->exec_statement($upcP, array($upc));
+            $lookup = $dbc->execute($upcP, array($upc));
             if ($dbc->num_rows($lookup) == 0) {
                 $sku = $data[$SKU];
-                $look2 = $dbc->exec_statement($skuP, array($sku));
+                $look2 = $dbc->execute($skuP, array($sku));
                 if ($dbc->num_rows($look2)) {
                     $w = $dbc->fetch_row($look2);
                     $upc = $w['upc'];
                 } else {
                     $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
-                    $look3 = $dbc->exec_statement($skuP, array($sku));
+                    $look3 = $dbc->execute($skuP, array($sku));
                     if ($dbc->num_rows($look3)) {
                         $w = $dbc->fetch_row($look3);
                         $upc = $w['upc'];
@@ -154,7 +154,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             if (strstr($data[$ABT],"TPR"))
                 $abt[] = "TPR";
             foreach($abt as $type){
-                $dbc->exec_statement($insP,array($month,$upc,$price,$type,$mult));
+                $dbc->execute($insP,array($month,$upc,$price,$type,$mult));
             }
         }
 

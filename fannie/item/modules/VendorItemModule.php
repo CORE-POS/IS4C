@@ -41,8 +41,8 @@ class VendorItemModule extends ItemModule {
         $ret .= '<div id="VendorItemsFieldsetContent" class="panel-body' . $css . '">';
 
         $dbc = $this->db();
-        $p = $dbc->prepare_statement('SELECT vendorID,vendorName FROM vendors ORDER BY vendorName');
-        $r = $dbc->exec_statement($p);
+        $p = $dbc->prepare('SELECT vendorID,vendorName FROM vendors ORDER BY vendorName');
+        $r = $dbc->execute($p);
         if ($dbc->num_rows($r) == 0) return ''; // no vendors available
         $vendors = array();
         while ($w = $dbc->fetch_row($r)) {
@@ -71,7 +71,7 @@ class VendorItemModule extends ItemModule {
         }
         $ret .= '</select>';
 
-        $prep = $dbc->prepare_statement('SELECT * FROM vendorItems WHERE vendorID=? AND upc=?');
+        $prep = $dbc->prepare('SELECT * FROM vendorItems WHERE vendorID=? AND upc=?');
         $style = ($matched) ? 'display:none;' : 'display:table;';
         $cost_class = '';
         foreach ($vendors as $id => $name) {
@@ -84,7 +84,7 @@ class VendorItemModule extends ItemModule {
             $ret .= "<table id=\"vtable$id\"
                      class=\"vtable table table-bordered $table_class\">";
             $row = array('cost'=>0,'sku'=>'','units'=>1,'size'=>'');
-            $res = $dbc->exec_statement($prep,array($id,$upc)); 
+            $res = $dbc->execute($prep,array($id,$upc)); 
             if ($dbc->num_rows($res) > 0)
                 $row = $dbc->fetch_row($res);
             $ret .= '<tr>
@@ -156,10 +156,10 @@ class VendorItemModule extends ItemModule {
         $sizes = FormLib::get_form_value('v_size',array());
 
         $dbc = $this->db();
-        $chkP = $dbc->prepare_statement('SELECT upc FROM vendorItems WHERE vendorID=? AND upc=?');
-        $insP = $dbc->prepare_statement('INSERT INTO vendorItems (upc,vendorID,cost,units,sku,size)
+        $chkP = $dbc->prepare('SELECT upc FROM vendorItems WHERE vendorID=? AND upc=?');
+        $insP = $dbc->prepare('INSERT INTO vendorItems (upc,vendorID,cost,units,sku,size)
                     VALUES (?,?,?,?,?,?)');
-        $upP = $dbc->prepare_statement('UPDATE vendorItems SET cost=?,units=?,sku=?,size=? WHERE
+        $upP = $dbc->prepare('UPDATE vendorItems SET cost=?,units=?,sku=?,size=? WHERE
                     upc=? AND vendorID=?');
         $initP = $dbc->prepare('
             UPDATE vendorItems
@@ -201,9 +201,9 @@ class VendorItemModule extends ItemModule {
                 continue; // no submission. don't create a record
             }
 
-            $chkR = $dbc->exec_statement($chkP,array($ids[$i],$upc));
+            $chkR = $dbc->execute($chkP,array($ids[$i],$upc));
             if ($dbc->num_rows($chkR) == 0){
-                $try = $dbc->exec_statement($insP,array($upc,$ids[$i],
+                $try = $dbc->execute($insP,array($upc,$ids[$i],
                     $costs[$i],$units[$i],$skus[$i],$sizes[$i]));
                 if ($try === false) {
                     $ret = false;
@@ -214,7 +214,7 @@ class VendorItemModule extends ItemModule {
                         $upc, $ids[$i]));
                 }
             } else {
-                $try = $dbc->exec_statement($upP,array($costs[$i],
+                $try = $dbc->execute($upP,array($costs[$i],
                     $units[$i],$skus[$i],$sizes[$i],$upc,$ids[$i]));
                 if ($try === false) $ret = false;
             }

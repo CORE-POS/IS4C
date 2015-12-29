@@ -117,4 +117,3 @@ while($monthlyW = $sql->fetch_array($monthlyR)){
 }
 echo "<td>$sum</td></tr></table>";
 
-?>

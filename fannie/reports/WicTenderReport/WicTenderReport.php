@@ -237,4 +237,3 @@ class WicTenderReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

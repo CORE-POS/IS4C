@@ -60,8 +60,8 @@ if (!$output){
     $span = array("$start 00:00:00","$end 23:59:59");
 
     $accounts = array();
-    $accountQ = $dbc->prepare_statement("SELECT CardNo from custdata WHERE memType=4 ORDER BY CardNo");
-    $accountR = $dbc->exec_statement($accountQ);
+    $accountQ = $dbc->prepare("SELECT CardNo from custdata WHERE memType=4 ORDER BY CardNo");
+    $accountR = $dbc->execute($accountQ);
     while($accountW = $dbc->fetch_row($accountR))
         $accounts[] = $accountW['CardNo'];
 
@@ -74,7 +74,7 @@ if (!$output){
     $accountStr = rtrim($accountStr,",").")";
 
     echo "<b>Total by account</b>";
-    $totalQ = $dbc->prepare_statement("select l.card_no,sum(l.total),
+    $totalQ = $dbc->prepare("select l.card_no,sum(l.total),
         (sum(l.total)-(sum(l.total*m.margin))) as cost
         FROM $dlog as l left join departments as m on l.department = m.dept_no
         WHERE card_no IN $accountStr
@@ -85,7 +85,7 @@ if (!$output){
         ORDER BY card_no");
     $args[] = $span[0];
     $args[] = $span[1];
-    $totalR = $dbc->exec_statement($totalQ,$args);
+    $totalR = $dbc->execute($totalQ,$args);
     $data = array();
     while ($totalW=$dbc->fetch_row($totalR)){
         if (!isset($data["$totalW[0]"])){
@@ -101,7 +101,7 @@ if (!$output){
         2,array(1,2));
 
     echo "<br /><b>Total by pCode</b>";
-    $totalQ = $dbc->prepare_statement("select d.salesCode,sum(l.total),
+    $totalQ = $dbc->prepare("select d.salesCode,sum(l.total),
         (sum(l.total)-(sum(l.total)*d.margin)) as cost
         FROM $dlog as l left join departments as d on l.department = d.dept_no
         WHERE card_no IN $accountStr
@@ -110,7 +110,7 @@ if (!$output){
         and tdate BETWEEN ? AND ?
         GROUP BY d.salesCode,d.margin
         ORDER BY d.salesCode");
-    $totalR = $dbc->exec_statement($totalQ,$args);
+    $totalR = $dbc->execute($totalQ,$args);
     $data = array();
     while ($totalW=$dbc->fetch_row($totalR)){
         if (empty($data["$totalW[0]"])){
@@ -125,7 +125,7 @@ if (!$output){
         array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY),
         2,array(1,2));
 
-    $totalQ = $dbc->prepare_statement("select d.salesCode,sum(l.total),
+    $totalQ = $dbc->prepare("select d.salesCode,sum(l.total),
         (sum(l.total)-(sum(l.total)*d.margin)) as cost
         FROM $dlog as l left join departments as d on l.department = d.dept_no
         WHERE card_no = ?
@@ -136,7 +136,7 @@ if (!$output){
         ORDER BY d.salesCode");
     foreach ($accounts as $account){
         echo "<br /><b>Total for $account</b>";
-        $totalR = $dbc->exec_statement($totalQ,array($account,$span[0],$span[1]));
+        $totalR = $dbc->execute($totalQ,array($account,$span[0],$span[1]));
         $data = array();
         while ($totalW=$dbc->fetch_row($totalR)){
             if (empty($data["$totalW[0]"])){
@@ -238,4 +238,3 @@ function cellify($data,$formatting){
     return $ret;
 }
 
-?>

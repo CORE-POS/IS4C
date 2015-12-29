@@ -21,7 +21,7 @@ class ADODB_borland_ibase extends ADODB_ibase {
 	var $databaseType = "borland_ibase";
 
 
-	function ADODB_borland_ibase()
+	function __construct()
 	{
 		$this->ADODB_ibase();
 	}
@@ -84,7 +84,7 @@ class  ADORecordSet_borland_ibase extends ADORecordSet_ibase {
 
 	var $databaseType = "borland_ibase";
 
-	function ADORecordSet_borland_ibase($id,$mode=false)
+	function __construct($id,$mode=false)
 	{
 		$this->ADORecordSet_ibase($id,$mode);
 	}

@@ -49,4 +49,3 @@ class PartialReceipt extends Parser {
 
 }
 
-?>

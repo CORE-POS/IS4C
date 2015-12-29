@@ -103,7 +103,7 @@ class ScaleItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
         $model = new ScaleItemsModel($dbc);
         $ret = true;
-        $this->stats = array('done' => 0, 'error' => array());
+        $this->stats = array('done' => 0, 'errors' => array());
         foreach($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
@@ -120,7 +120,7 @@ class ScaleItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $model->plu($upc);
             $model->load();
 
-            if ($type_index !== false && isset($line[$type_index])) {
+            if ($this->checkIndex($type_index, $line)) {
                 if (strtoupper($line[$type_index]) == 'FIXED' || strtoupper($line[$type_index]) == 'EA') {
                     $model->weight(1);
                     $model->bycount(1);
@@ -129,28 +129,24 @@ class ScaleItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                     $model->bycount(0);
                 }
             }
-            if ($desc_index !== false && isset($line[$desc_index]) && !empty($line[$desc_index])) {
-                $desc = $line[$desc_index];
-                $desc = str_replace("'","",$desc);
+            if ($this->checkIndex($desc_index, $line) && !empty($line[$desc_index])) {
+                $desc = str_replace("'","",$line[$desc_index]);
                 $desc = str_replace("\"","",$desc);
                 $model->itemdesc($desc);
             }
-            if ($price_index !== false && isset($line[$price_index])) {
+            if ($this->checkIndex($price_index, $line)) {
                 $model->price($line[$price_index]);
             }
-            if ($tare_index !== false && isset($line[$tare_index])) {
+            if ($this->checkIndex($tare_index, $line)) {
                 $model->tare($line[$tare_index]);
             }
-            if ($shelf_index !== false && isset($line[$shelf_index])) {
+            if ($this->checkIndex($shelf_index, $line)) {
                 $model->shelflife($line[$shelf_index]);
             }
-            if ($net_index !== false && isset($line[$net_index])) {
+            if ($this->checkIndex($net_index, $line)) {
                 $model->netWeight($line[$net_index]);
             }
-            if ($text_index !== false && isset($line[$text_index]) && !empty($line[$text_index])) {
-                $text = $line[$text_index];
-                $text = str_replace("'","",$text);
-                $text = str_replace("\"","",$text);
+            if ($this->checkIndex($text_index, $line) && !empty($line[$text_index])) {
                 $model->text($line[$text_index]);
             }
 
@@ -158,7 +154,7 @@ class ScaleItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
             if ($try === false) {
                 $ret = false;
-                $this->stats['error'][] = 'There was an error importing UPC ' . $upc;
+                $this->stats['errors'][] = 'There was an error importing UPC ' . $upc;
             } else {
                 $this->stats['done']++;
             }
@@ -179,19 +175,9 @@ class ScaleItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     function results_content()
     {
-        $ret = '<p>Import Complete</p>';
-        $ret .= '<div class="alert alert-success">Updated ' . $this->stats['done'] . ' items</div>';
-        if (count($this->stats['error']) > 0) {
-            $ret .= '<div class="alert alert-danger"><ul>';
-            foreach ($this->stats['error'] as $error) {
-                $ret .= '<li>' . $error . '</li>';
-            }
-            $ret .= '</ul></div>';
-        }
-
-        return $ret;
+        return $this->simpleStats($this->stats, 'done');
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

@@ -87,7 +87,7 @@ class InstallTest extends PHPUnit_Framework_TestCase
 
         foreach ($samples as $sample) {
             ob_start();
-            $dbc->query('TRUNCATE TABLE ' . $dbc->identifier_escape($sample));
+            $dbc->query('TRUNCATE TABLE ' . $dbc->identifierEscape($sample));
             $loaded = InstallUtilities::loadSampleData($dbc, $sample, false);
             $output = ob_get_clean();
 

@@ -31,4 +31,4 @@
 */
 
 header('Location: VendorIndexPage.php');
-?>
+

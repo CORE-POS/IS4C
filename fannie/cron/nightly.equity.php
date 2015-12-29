@@ -74,4 +74,3 @@ $sql->query('INSERT INTO equity_history_sum
         FROM stockpurchases
         GROUP BY card_no');
 
-?>

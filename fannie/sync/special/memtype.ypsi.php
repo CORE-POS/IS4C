@@ -25,7 +25,7 @@
 // merge memtype + memdefaults for updating the lanes
 foreach($FANNIE_LANES as $lane){
 
-    $dbc->add_connection($lane['host'],$lane['type'],$lane['op'],
+    $dbc->addConnection($lane['host'],$lane['type'],$lane['op'],
             $lane['user'],$lane['pw']);
     if ($dbc->connections[$lane['op']] !== False){
         $selectQ = "SELECT t.memtype,t.memDesc,d.cd_type,d.discount,d.staff,d.SSI FROM memtype t 
@@ -39,4 +39,3 @@ foreach($FANNIE_LANES as $lane){
 
 echo "<li>memtype table synced</li>";
 
-?>

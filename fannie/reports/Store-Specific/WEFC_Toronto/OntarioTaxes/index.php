@@ -136,8 +136,8 @@ if (isset($_REQUEST['submit'])){
                 CASE WHEN e.dept_no IS NULL THEN d.dept_no ELSE e.dept_no end";
     }
     $supers = array();
-    $salesP = $dbc->prepare_statement($sales);
-    $salesR = $dbc->exec_statement($salesP, array($d1.' 00:00:00',$d2.' 23:59:59'));
+    $salesP = $dbc->prepare($sales);
+    $salesR = $dbc->execute($salesP, array($d1.' 00:00:00',$d2.' 23:59:59'));
 
     $curSuper = 0;
     $grandTotal = 0;
@@ -256,4 +256,4 @@ input[type="checkbox"] {
 <?php
 include($FANNIE_ROOT.'src/footer.html');
 }
-?>
+

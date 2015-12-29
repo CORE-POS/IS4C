@@ -124,4 +124,4 @@ else {
         printf("<pre>%s</pre>",$documentation);
     echo '<a href="magic-doc.php">Back</a><br />';
 }
-?>
+

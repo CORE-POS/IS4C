@@ -9,4 +9,3 @@ $my_menu = array(
     "KALE GREEN" => "94627"
 );
 
-?>

@@ -104,7 +104,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
             );
         }
 
-        $query = $dbc->prepare_statement("
+        $query = $dbc->prepare("
             SELECT
                 t.upc,
                 p.description,
@@ -122,7 +122,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
                 AND t.dealSet=?
             ORDER BY s.super_name,t.upc
         ");
-        $result = $dbc->exec_statement($query, array($set));
+        $result = $dbc->execute($query, array($set));
         $upcomingP = $dbc->prepare('
             SELECT batchName
             FROM batchList AS l

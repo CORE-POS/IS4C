@@ -64,3 +64,4 @@ if ($success)
     echo cron_msg("Voids logged");
 else
     echo cron_msg("Error logging voids");
+

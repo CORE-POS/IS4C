@@ -113,8 +113,8 @@ class PriceMovementReport extends FannieReportPage
             GROUP BY d.upc,p.description,price,d.department,t.dept_name
             ORDER BY d.upc";
 
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($query, $args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($query, $args);
 
         $data = array();
         while($row = $dbc->fetch_row($result)) {
@@ -221,4 +221,3 @@ class PriceMovementReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

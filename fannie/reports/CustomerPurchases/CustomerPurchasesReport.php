@@ -63,8 +63,8 @@ class CustomerPurchasesReport extends FannieReportPage
               order by year(t.tdate),month(t.tdate),day(t.tdate)";
         $args = array($card_no, $date1.' 00:00:00',$date2.' 23:59:59');
     
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($prep,$args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep,$args);
 
         /**
           Simple report

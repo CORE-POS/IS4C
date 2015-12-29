@@ -31,7 +31,7 @@ include('../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
-$query = $dbc->prepare_statement("SELECT CardNo, 
+$query = $dbc->prepare("SELECT CardNo, 
           LastName, 
           FirstName, 
           street,
@@ -58,7 +58,7 @@ $query = $dbc->prepare_statement("SELECT CardNo,
       AND LastName <> 'NEW MEMBER'
           order by m.card_no");
 
-$result = $dbc->exec_statement($query);
+$result = $dbc->execute($query);
 
 $ret = array();
 while($row = $dbc->fetch_row($result)){
@@ -82,4 +82,4 @@ while($row = $dbc->fetch_row($result)){
 
 $xls = \COREPOS\Fannie\API\data\DataConvert::arrayToCsv($ret);
 echo $xls;
-?>
+

@@ -106,8 +106,8 @@ class DataLoad
         $fptr = fopen($file, 'r');
         $ret = true;
         while ($line = fgets($fptr)) {
-            $prep = $sql->prepare_statement("INSERT INTO $table VALUES $line");
-            $try = $sql->exec_statement($prep);
+            $prep = $sql->prepare("INSERT INTO $table VALUES $line");
+            $try = $sql->execute($prep);
             if ($try === false) {
                 $error = $sql->error();
                 $ret = false;
@@ -128,14 +128,14 @@ class DataLoad
         if ($fannie_host == '127.0.0.1' || $fannie_host == 'localhost') {
             $LOCAL = '';
         }
-        $prep = $sql->prepare_statement("LOAD DATA $LOCAL INFILE
+        $prep = $sql->prepare("LOAD DATA $LOCAL INFILE
             '{$file}'
             INTO TABLE $table
             FIELDS TERMINATED BY ','
             ESCAPED BY '\\\\'
             OPTIONALLY ENCLOSED BY '\"'
             LINES TERMINATED BY '\\r\\n'");
-        $try = $sql->exec_statement($prep);
+        $try = $sql->execute($prep);
         if ($try === false) {
             $error = $sql->error();
             echo "<br><span style='color:red;'>"
@@ -161,9 +161,9 @@ class DataLoad
                     $query .= '?,';
                 }
                 $query = substr($query,0,strlen($query)-1).')';
-                $stmt = $sql->prepare_statement($query);
+                $stmt = $sql->prepare($query);
             }
-            $try = $sql->exec_statement($stmt, $line);
+            $try = $sql->execute($stmt, $line);
             if ($try === false) {
                 $error = $sql->error();
                 $ret = false;

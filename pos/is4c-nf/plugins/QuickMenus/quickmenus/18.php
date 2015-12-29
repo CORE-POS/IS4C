@@ -5,4 +5,3 @@ $my_menu = array(
     "Enviro-Tote Organic Co-op Wine" => "18002"
 );
 
-?>

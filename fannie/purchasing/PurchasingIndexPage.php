@@ -146,4 +146,3 @@ class PurchasingIndexPage extends FannieRESTfulPage {
 
 FannieDispatch::conditionalExec();
 
-?>

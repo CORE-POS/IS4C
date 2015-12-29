@@ -70,11 +70,11 @@ class GumSearchPage extends FannieRESTfulPage
             }
         }
         else {
-            $q = $dbc->prepare_statement('SELECT CardNo, LastName, FirstName FROM
+            $q = $dbc->prepare('SELECT CardNo, LastName, FirstName FROM
                 custdata WHERE LastName LIKE ? AND FirstName LIKE ?
                 AND Type = \'PC\'
                 ORDER BY LastName,FirstName,CardNo');
-            $r = $dbc->exec_statement($q, array($this->last.'%',$this->first.'%'));
+            $r = $dbc->execute($q, array($this->last.'%',$this->first.'%'));
             $this->__models['custdata'] = array();
             while($w = $dbc->fetch_row($r)){
                 $this->__models['custdata'][] = $w;

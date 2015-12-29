@@ -76,7 +76,7 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
         // PLU items have different internal UPCs
         // map vendor SKUs to the internal PLUs
         $SKU_TO_PLU_MAP = array();
-        $skusP = $dbc->prepare_statement('SELECT sku, upc FROM vendorSKUtoPLU WHERE vendorID=?');
+        $skusP = $dbc->prepare('SELECT sku, upc FROM vendorSKUtoPLU WHERE vendorID=?');
         $skusR = $dbc->execute($skusP, array($VENDOR_ID));
         while($skusW = $dbc->fetch_row($skusR)) {
             $SKU_TO_PLU_MAP[$skusW['sku']] = $skusW['upc'];
@@ -87,7 +87,7 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
 
     private function prepareStatements($dbc)
     {
-        $this->extraP = $dbc->prepare_statement("update prodExtra set cost=?,variable_pricing=1 where upc=?");
+        $this->extraP = $dbc->prepare("update prodExtra set cost=?,variable_pricing=1 where upc=?");
         $this->prodP = $dbc->prepare('
             UPDATE products
             SET cost=?,
@@ -104,7 +104,7 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
                 AND vendorID=?');
         $this->srpP = false;
         if ($dbc->tableExists('vendorSRPs')) {
-            $this->srpP = $dbc->prepare_statement("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
+            $this->srpP = $dbc->prepare("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
         }
         $this->upcP = $dbc->prepare('SELECT price_rule_id FROM products WHERE upc=? AND inUse=1');
         $this->ruleP = $dbc->prepare('SELECT * FROM PriceRules WHERE priceRuleID=?');
@@ -128,7 +128,7 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $idP = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
+        $idP = $dbc->prepare("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
         $VENDOR_ID = $dbc->getValue($idP);
         if ($VENDOR_ID === false) {
             $this->error_details = 'Cannot find vendor';
@@ -200,8 +200,8 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
             $reg_unit = $reg / $qty;
             $net_unit = $net / $qty;
 
-            $dbc->exec_statement($this->extraP, array($reg_unit,$upc));
-            $dbc->exec_statement($this->prodP, array($reg_unit,$upc,$VENDOR_ID));
+            $dbc->execute($this->extraP, array($reg_unit,$upc));
+            $dbc->execute($this->prodP, array($reg_unit,$upc,$VENDOR_ID));
             $updated_upcs[] = $upc;
 
             $args = array(
@@ -215,7 +215,7 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
             $dbc->execute($this->itemP,$args);
 
             if ($this->srpP) {
-                $dbc->exec_statement($this->srpP,array($VENDOR_ID,$upc,$srp));
+                $dbc->execute($this->srpP,array($VENDOR_ID,$upc,$srp));
             }
             $rule_id = $dbc->getValue($this->upcP, array($upc));
             $ruleR = $dbc->execute($this>ruleP, array($rule_id));

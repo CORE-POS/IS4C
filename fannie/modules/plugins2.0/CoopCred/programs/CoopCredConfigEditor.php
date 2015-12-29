@@ -604,8 +604,8 @@ class CoopCredConfigEditor extends FanniePage {
         $q = "SELECT configID
                 FROM CCredConfig
                 ORDER BY configID";
-        $p = $dbc->prepare_statement($q);
-        $resp = $dbc->exec_statement($p);
+        $p = $dbc->prepare($q);
+        $resp = $dbc->execute($p);
         if ($resp === false) {
             return "<p style='font-size:1.2em;'>" . 
                "Exec SQL failed: $q" . "</p>";
@@ -671,6 +671,5 @@ class CoopCredConfigEditor extends FanniePage {
 // CoopCredConfigEditor class
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

@@ -310,12 +310,12 @@ class LiabilityReport extends FannieReportPage
         // summary
         }
 
-        $statement = $dbc->prepare_statement("$query");
+        $statement = $dbc->prepare("$query");
         if ($statement === False) {
             $ret[] = "***Error preparing: $query";
             return $ret;
         }
-        $results = $dbc->exec_statement($statement,$args);
+        $results = $dbc->execute($statement,$args);
         if ($results === False) {
             $allArgs = implode(' : ',$args);
             $ret[] = "***Error executing: $query with: $allArgs";
@@ -628,6 +628,5 @@ title="Tick to display with sorting from column heads; un-tick for a plain formt
 // /class LiabilityReport
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

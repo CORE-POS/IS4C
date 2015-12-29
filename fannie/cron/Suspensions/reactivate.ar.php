@@ -57,7 +57,7 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 
 $TRANS = $FANNIE_TRANS_DB . ($FANNIE_SERVER_DBMS=="MSSQL" ? 'dbo.' : '.');
 
-$custdata = $sql->table_definition('custdata');
+$custdata = $sql->tableDefinition('custdata');
 
 $meminfoQ = "UPDATE meminfo AS m LEFT JOIN
         custdata AS c ON m.card_no=c.CardNo
@@ -110,4 +110,3 @@ if (strlen($cns) > 2){
     $delR = $sql->query($delQ);
 }
 
-?>

@@ -152,7 +152,7 @@ class ScreenDisplayModel extends ViewModel
             on l.tax = t.id
             WHERE trans_type <> 'L'
             order by trans_id";
-        if ($this->connection->dbms_name() == 'mssql') {
+        if ($this->connection->dbmsName() == 'mssql') {
             $viewSQL = "select 
                 CASE
                 WHEN (voided = 5 or voided = 11 or voided = 17 or trans_type = 'T')

@@ -50,16 +50,16 @@ class SaReportPage extends FanniePage {
             return True;
         }
         if (FormLib::get_form_value('delete') == 'yes'){
-            $query=$dbc->prepare_statement('delete from sa_inventory where id=?');
-            $result=$dbc->exec_statement($query,array(FormLib::get_form_value('id')));
+            $query=$dbc->prepare('delete from sa_inventory where id=?');
+            $result=$dbc->execute($query,array(FormLib::get_form_value('id')));
             if ($result) {
                 $this->sql_actions='Deleted record.';
             } else {
                 $this->sql_actions='Unable to delete record, please try again. <!-- '.$query.' -->';
             }
         } else if (FormLib::get_form_value('clear') == 'yes'){
-            $query=$dbc->prepare_statement('update sa_inventory set clear=1;');
-            $result=$dbc->exec_statement($query);
+            $query=$dbc->prepare('update sa_inventory set clear=1;');
+            $result=$dbc->execute($query);
             if ($result) {
                 $this->sql_actions='Cleared old scans.';
                 header ("Location: SaReportPage.php");
@@ -112,7 +112,7 @@ class SaReportPage extends FanniePage {
         }
         */
             
-        $q= $dbc->prepare_statement('SELECT
+        $q= $dbc->prepare('SELECT
             s.id,
             s.datetime,
             s.upc,
@@ -157,7 +157,7 @@ class SaReportPage extends FanniePage {
             ON p.default_vendor_id=z.vendorID
             WHERE clear!=1
             ORDER BY '.$order);
-        $r=$dbc->exec_statement($q);
+        $r=$dbc->execute($q);
         if ($r) {
             $this->status = 'Good - Connected';
             $num_rows=$dbc->num_rows($r);

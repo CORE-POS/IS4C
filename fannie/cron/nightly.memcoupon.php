@@ -80,4 +80,3 @@ $blQ = "update custdata
     WHERE Type = 'PC'";
 $blR = $sql->query($blQ);
 
-?>

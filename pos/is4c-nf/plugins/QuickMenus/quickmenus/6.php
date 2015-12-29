@@ -7,4 +7,3 @@ $my_menu = array(
     "Castelvetrano Olives with pits" => "6008"
 );
 
-?>

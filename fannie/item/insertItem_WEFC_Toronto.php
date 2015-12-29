@@ -145,7 +145,7 @@ if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == "WEFC_Toronto" ) {
         $coop_array = array("description" => $dbc->escape(substr($_REQUEST['descript'],0,255)),
         "search_description" => isset($_REQUEST['puser_description'])?$dbc->escape(substr($_REQUEST['puser_description'],0,255)):'');
         $coop_array['upc'] = $dbc->escape($upc);
-        $dbc->smart_insert("$table_name",$coop_array);
+        $dbc->smartInsert("$table_name",$coop_array);
     }
 }
 
@@ -242,11 +242,11 @@ $ins_array['idEnforced'] = 0;
 $ins_array['numflag'] = 0;
 
 /* since the item doesn't exist at all, just insert a master record */
-$resultI = $dbc->smart_insert('products',$ins_array);
+$resultI = $dbc->smartInsert('products',$ins_array);
 /* if we do persistent per-store records
 if ($FANNIE_STORE_ID != 0){
     $ins_array['store_id'] = $FANNIE_STORE_ID;
-    $resultI = $dbc->smart_insert('products',$ins_array);
+    $resultI = $dbc->smartInsert('products',$ins_array);
 }
 */
 
@@ -268,7 +268,7 @@ if ($dbc->table_exists('productUser')){
     // Some productUser fields are not edited in itemMaint.php
     $puser_array['enableOnline'] = 0;
     $dbc->query("DELETE FROM productUser WHERE upc='$upc'");
-    $dbc->smart_insert('productUser',$puser_array);
+    $dbc->smartInsert('productUser',$puser_array);
 }
 
 /* 4. Insert or update vendorItems */
@@ -299,10 +299,10 @@ if ($dbc->table_exists('vendorItems')){
         else {
             $vi_array['vendorID'] = 0;
         }
-        $dbc->smart_insert('vendorItems',$vi_array);
+        $dbc->smartInsert('vendorItems',$vi_array);
     }
     else {
-        $dbc->smart_update('vendorItems',$vi_array,"upc='$upc'");
+        $dbc->smartUpdate('vendorItems',$vi_array,"upc='$upc'");
     }
 // vendorItems
 }
@@ -335,7 +335,7 @@ if ($dbc->table_exists('prodExtra')){
         $px_array['margin'] = 0.00;
     }
     $dbc->query("DELETE FROM prodExtra WHERE upc='$upc'");
-    $dbc->smart_insert('prodExtra',$px_array);
+    $dbc->smartInsert('prodExtra',$px_array);
 }
 
 /* 6. Insert to prodUpdate, an audit table. */
@@ -355,7 +355,7 @@ if ($dbc->table_exists("prodUpdate")){
     'noDisc' => $ins_array['discount'],
     'inUse' => $ins_array['inUse']
     );
-    $dbc->smart_insert('prodUpdate',$pu_array);
+    $dbc->smartInsert('prodUpdate',$pu_array);
 }
 
 /* 7. Insert to scaleItem */
@@ -390,7 +390,7 @@ if (isset($_REQUEST['s_plu'])){
     $scale_array['class'] = "''";
 
     $dbc->query("DELETE FROM scaleItems WHERE plu='$upc'");
-    $dbc->smart_insert("scaleItems",$scale_array);
+    $dbc->smartInsert("scaleItems",$scale_array);
 
     $action = "WriteOneItem";
     include('hobartcsv/parse.php');

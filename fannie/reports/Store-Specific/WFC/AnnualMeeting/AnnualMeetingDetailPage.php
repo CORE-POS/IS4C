@@ -16,13 +16,13 @@ class AnnualMeetingDetailPage extends FannieRESTfulPage {
         $upc = str_pad($this->id,13,'0',STR_PAD_LEFT);
         $matches = array();
         if ($this->id !== ''){
-            $cardP = $fannie->prepare_statement('SELECT CardNo FROM
+            $cardP = $fannie->prepare('SELECT CardNo FROM
                 custdata WHERE CardNo=? AND personNum=1 AND Type=\'PC\'');
-            $cardR = $fannie->exec_statement($cardP, array($cardno));
+            $cardR = $fannie->execute($cardP, array($cardno));
             if ($fannie->num_rows($cardR) == 0){
-                $upcP = $fannie->prepare_statement('SELECT card_no
+                $upcP = $fannie->prepare('SELECT card_no
                     FROM memberCards WHERE upc=?');
-                $upcR = $fannie->exec_statement($upcP, array($upc));
+                $upcR = $fannie->execute($upcP, array($upc));
                 if ($fannie->num_rows($upcR) > 0){
                     $upcW = $fannie->fetch_row($upcR);
                     $cardno = $upcW['card_no'];
@@ -39,8 +39,8 @@ class AnnualMeetingDetailPage extends FannieRESTfulPage {
                 $args[] = '%'.FormLib::get_form_value('fn').'%';
                 $nameQ .= ' AND FirstName LIKE ?';
             }
-            $nameP = $fannie->prepare_statement($nameQ);
-            $nameR = $fannie->exec_statement($nameP, $args);
+            $nameP = $fannie->prepare($nameQ);
+            $nameR = $fannie->execute($nameP, $args);
             while($w = $fannie->fetch_row($nameR))
                 $matches[$w['CardNo']] = $w['FirstName'].' '.$w['LastName'];
             $cardno = False;
@@ -99,16 +99,16 @@ class AnnualMeetingDetailPage extends FannieRESTfulPage {
             AND d.card_no = ?
             ORDER BY MIN(tdate)";
         $records = array();
-        $hereP = $fannieDB->prepare_statement($hereQ);
-        $hereR = $fannieDB->exec_statement($hereP, array($cn));
+        $hereP = $fannieDB->prepare($hereQ);
+        $hereR = $fannieDB->execute($hereP, array($cn));
         while($hereW = $fannieDB->fetch_row($hereR)){
             $records[] = $hereW;
         }
 
         // POS registrations from last 90 days
         $hereQ = str_replace('dlog ','dlog_90_view ',$hereQ);
-        $hereP = $fannieDB->prepare_statement($hereQ);
-        $hereR = $fannieDB->exec_statement($hereP, array($cn));
+        $hereP = $fannieDB->prepare($hereQ);
+        $hereR = $fannieDB->execute($hereP, array($cn));
         while($hereW = $fannieDB->fetch_row($hereR)){
             $records[] = $hereW;
         }
@@ -125,8 +125,8 @@ class AnnualMeetingDetailPage extends FannieRESTfulPage {
             GROUP BY tdate,r.card_no,name,email,
             phone,guest_count,child_count
             ORDER BY tdate";
-        $p = $dbc->prepare_statement($q);
-        $r = $dbc->exec_statement($p, array($cn));
+        $p = $dbc->prepare($q);
+        $r = $dbc->execute($p, array($cn));
         while($w = $dbc->fetch_row($r)){
             $records[] = $w;
         }
@@ -172,4 +172,3 @@ class AnnualMeetingDetailPage extends FannieRESTfulPage {
 
 FannieDispatch::conditionalExec();
 
-?>

@@ -22,4 +22,4 @@ $diff='';
 $file='Scala-Bold.z';
 $size1=746;
 $size2=36150;
-?>
+

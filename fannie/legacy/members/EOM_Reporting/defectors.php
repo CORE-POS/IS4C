@@ -64,4 +64,3 @@ while($row = $sql->fetch_row($result)){
 }
 echo "</table>";
 
-?>

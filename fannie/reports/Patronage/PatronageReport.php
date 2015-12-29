@@ -53,8 +53,8 @@ class PatronageReport extends FannieReportPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $fyQ = $dbc->prepare_statement("SELECT FY FROM patronage GROUP BY FY ORDER BY FY DESC");
-        $fyR = $dbc->exec_statement($fyQ);
+        $fyQ = $dbc->prepare("SELECT FY FROM patronage GROUP BY FY ORDER BY FY DESC");
+        $fyR = $dbc->execute($fyQ);
         $fy = FormLib::get('fy');
 
         $ret = '<form action="PatronageReport.php" id="reportForm" 
@@ -94,10 +94,10 @@ class PatronageReport extends FannieReportPage
             return array();
         }
 
-        $pQ = $dbc->prepare_statement("SELECT cardno,purchase,discounts,rewards,net_purch,
+        $pQ = $dbc->prepare("SELECT cardno,purchase,discounts,rewards,net_purch,
             tot_pat,cash_pat,equit_pat,0 as type,0 as ttl FROM patronage as p
             WHERE p.FY=? ORDER BY cardno");
-        $pR = $dbc->exec_statement($pQ,array($fy));
+        $pR = $dbc->execute($pQ,array($fy));
 
         $data = array();
         while($row = $dbc->fetch_row($pR)) {

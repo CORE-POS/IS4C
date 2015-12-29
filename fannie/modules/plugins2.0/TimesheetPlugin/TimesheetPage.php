@@ -49,17 +49,17 @@ class TimesheetPage extends FanniePage
                 WHERE ? BETWEEN DATE(periodStart) AND DATE(periodEnd)"
             );
 
-            $result = $ts_db->exec_statement($query,array($date));
+            $result = $ts_db->execute($query,array($date));
             $row = $ts_db->fetchRow($result);
             $periodID = $row['periodID'];
             $periodStart = $row['periodStart'];
 
-            $query = $ts_db->prepare_statement("
+            $query = $ts_db->prepare("
                 SELECT DATEDIFF(CURDATE(), DATE(periodEnd)) 
                 FROM " . $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'] . $ts_db->sep() . "payperiods 
                 WHERE periodID = ?");
 
-            $result = $ts_db->exec_statement($query,array($periodID));
+            $result = $ts_db->execute($query,array($periodID));
             $row = $ts_db->fetchRow($result);
             $datediff = $row[0];
         
@@ -104,22 +104,22 @@ class TimesheetPage extends FanniePage
                 setcookie("timesheet", $emp_no, time()+60*3);
         
                 // First check to make sure they haven't already entered hours for this day.
-                $query = $ts_db->prepare_statement("
+                $query = $ts_db->prepare("
                     SELECT * 
                     FROM " . $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'] . $ts_db->sep() . "timesheet 
                     WHERE emp_no=? 
                         AND tdate BETWEEN ? AND ?
                         AND area <> 31");
         
-                $result = $ts_db->exec_statement($query,array($emp_no,$date . ' 00:00:00', $date . ' 23:59:59'));
+                $result = $ts_db->execute($query,array($emp_no,$date . ' 00:00:00', $date . ' 23:59:59'));
                 if ($ts_db->num_rows($result) == 0) { // Success.
                     $successcount = 0;
-                    $insP = $ts_db->prepare_statement("INSERT INTO ".
+                    $insP = $ts_db->prepare("INSERT INTO ".
                         $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].
                         ".timesheet (emp_no, hours, area, tdate, periodID)
                         VALUES (?,?,?,?,?)");
                     for ($i = 1; $i <= $entrycount; $i++) {
-                        $result = $ts_db->exec_statement($insP,array(
+                        $result = $ts_db->execute($insP,array(
                             $emp_no, $_POST['hours'.$i],
                             $_POST['area'.$i],$date,$periodID
                         ));
@@ -237,7 +237,7 @@ class TimesheetPage extends FanniePage
             
         echo '<table class="table table-bordered">';
         echo "<tr><td align='right'><b>Total Hours</b></td><td align='center'><strong>Labor Category</strong></td>";
-        $queryP = $ts_db->prepare_statement("SELECT IF(NiceName='', ShiftName, NiceName), ShiftID 
+        $queryP = $ts_db->prepare("SELECT IF(NiceName='', ShiftName, NiceName), ShiftID 
             FROM " . $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'] . ".shifts 
             WHERE visible=true ORDER BY ShiftOrder ASC");
         $max = 5;
@@ -245,7 +245,7 @@ class TimesheetPage extends FanniePage
             echo "<tr><td align='right'><input class=\"form-control price-field\" 
                 type='text' name='hours" . $i . "' size=6></input></td>";
 
-            $result = $ts_db->exec_statement($queryP);
+            $result = $ts_db->execute($queryP);
             echo '<td><select class="form-control" name="area' . $i . '" id="area' . $i . '">
                 <option>Please select an area of work.</option>';
             while ($row = $ts_db->fetch_row($result)) {

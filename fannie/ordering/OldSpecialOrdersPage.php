@@ -88,7 +88,7 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
             GROUP BY superID,
                 super_name 
             ORDER BY superID");
-        $r = $dbc->exec_statement($q);
+        $r = $dbc->execute($q);
         while ($w = $dbc->fetch_row($r)) {
             $assignments[$w['superID']] = $w['super_name'];
         }
@@ -106,7 +106,7 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
             WHERE trans_type='I'
             GROUP BY mixMatch 
             ORDER BY mixMatch");
-        $r = $dbc->exec_statement($q);
+        $r = $dbc->execute($q);
         while ($w = $dbc->fetch_row($r)) {
             $suppliers[] = $w['mixMatch'];
         }
@@ -206,7 +206,7 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
         }
         $lookupQ .= " ORDER BY MIN(datetime) DESC";
         $p = $dbc->prepare($lookupQ);
-        $r = $dbc->exec_statement($p,$filterargs);
+        $r = $dbc->execute($p,$filterargs);
 
         /**
           Capture all the order records in $orders
@@ -259,7 +259,7 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
             }
             $q .= " GROUP BY p.order_id";
             $p = $dbc->prepare($q);
-            $r = $dbc->exec_statement($p,$args);
+            $r = $dbc->execute($p,$args);
             $valid_ids = array();
             while ($w = $dbc->fetch_row($r)) {
                 $valid_ids[$w['order_id']] = true;
@@ -271,12 +271,12 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
               query. 
             */
             if ($f2 !== '' && $f3 === '') {
-                $q2 = $dbc->prepare_statement("
+                $q2 = $dbc->prepare("
                     SELECT o.specialOrderID 
                     FROM {$TRANS}SpecialOrders AS o
                     WHERE o.noteSuperID IN (?)
                     GROUP BY o.specialOrderID");
-                $r2 = $dbc->exec_statement($q2, array($f2));
+                $r2 = $dbc->execute($q2, array($f2));
                 while ($w2 = $dbc->fetch_row($r2)) {
                     $valid_ids[$w2['specialOrderID']] = true;
                 }
@@ -303,14 +303,14 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
             // avoid invalid query
         }
 
-        $itemsQ = $dbc->prepare_statement("
+        $itemsQ = $dbc->prepare("
             SELECT order_id,
                 description,
                 mixMatch 
             FROM {$TRANS}CompleteSpecialOrder 
             WHERE order_id IN $oids
                 AND trans_id > 0");
-        $itemsR = $dbc->exec_statement($itemsQ, $oargs);
+        $itemsR = $dbc->execute($itemsQ, $oargs);
         $items = array();
         $suppliers = array();
         while ($itemsW = $dbc->fetch_row($itemsR)) {
@@ -503,4 +503,3 @@ function togglePrint(username,oid){
 
 FannieDispatch::conditionalExec();
     
-?>

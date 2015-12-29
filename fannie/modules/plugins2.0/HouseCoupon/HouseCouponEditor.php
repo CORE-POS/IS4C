@@ -120,7 +120,7 @@ class HouseCouponEditor extends FanniePage
         } elseif (FormLib::get_form_value('new_coupon_submit') !== '') {
             $dbc = FannieDB::get($this->config->get('OP_DB'));
 
-            $maxQ = $dbc->prepare_statement("SELECT max(coupID) from houseCoupons");
+            $maxQ = $dbc->prepare("SELECT max(coupID) from houseCoupons");
             $maxR = $dbc->execute($maxQ);
             $max = 0;
             if ($maxR && $dbc->numRows($maxR)) {
@@ -129,8 +129,8 @@ class HouseCouponEditor extends FanniePage
             }
             $this->coupon_id = $max+1;
             
-            $insQ = $dbc->prepare_statement("INSERT INTO houseCoupons (coupID) values (?)");
-            $dbc->exec_statement($insQ,array($this->coupon_id));
+            $insQ = $dbc->prepare("INSERT INTO houseCoupons (coupID) values (?)");
+            $dbc->execute($insQ,array($this->coupon_id));
 
             $this->display_function='editCoupon';
 
@@ -187,10 +187,10 @@ class HouseCouponEditor extends FanniePage
                 /**
                   Delete UPCs and departments
                 */
-                $query = $dbc->prepare_statement("DELETE FROM houseCouponItems
+                $query = $dbc->prepare("DELETE FROM houseCouponItems
                     WHERE upc=? AND coupID=?");
                 foreach (FormLib::get_form_value('del',array()) as $upc) {
-                    $dbc->exec_statement($query,array($upc,$this->coupon_id));
+                    $dbc->execute($query,array($upc,$this->coupon_id));
                     $msgs[] = array('type'=>'success', 'text'=>'Deleted ' . $upc);
                 }
             }
@@ -289,8 +289,8 @@ class HouseCouponEditor extends FanniePage
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         
         $depts = array();
-        $query = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
-        $result = $dbc->exec_statement($query);
+        $query = $dbc->prepare("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
+        $result = $dbc->execute($query);
         while($row = $dbc->fetch_row($result)){
             $depts[$row[0]] = $row[1];
         }

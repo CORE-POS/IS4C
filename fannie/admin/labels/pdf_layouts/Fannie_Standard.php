@@ -180,4 +180,4 @@ if (!class_exists('FpdfWithBarcode')) {
     */
     $pdf->Output();
   }
-?>
+

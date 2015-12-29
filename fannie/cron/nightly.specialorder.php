@@ -259,4 +259,3 @@ if (strlen($empty) > 2){
     $delR = $sql->query($delQ);
 }
 
-?>

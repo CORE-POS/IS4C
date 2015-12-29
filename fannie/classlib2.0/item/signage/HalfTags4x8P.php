@@ -35,27 +35,19 @@ class HalfTags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
     public function drawPDF()
     {
         $pdf = new \FPDF('P', 'mm', 'Letter');
-        if (\COREPOS\Fannie\API\FanniePlugin::isEnabled('CoopDealsSigns')) {
-            $this->font = 'Gill';
-            $this->alt_font = 'GillBook';
-            define('FPDF_FONTPATH', dirname(__FILE__) . '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
-            $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
-            $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
-        }
+        $pdf = $this->loadPluginFonts($pdf);
 
         $width = 52; // tag width in mm
         $height = 31; // tag height in mm
         $left = 6; // left margin
         $top = 16; // top margin
-        $pdf->SetTopMargin($top);  //Set top margin of the page
-        $pdf->SetLeftMargin($left);  //Set left margin of the page
-        $pdf->SetRightMargin($left);  //Set the right margin of the page
-        $pdf->SetAutoPageBreak(False); // manage page breaks yourself
+        $pdf->SetMargins($left, $top, $left);
+        $pdf->SetAutoPageBreak(false); // manage page breaks yourself
 
         $data = $this->loadItems();
         $num = 0; // count tags 
-        $x = $left;
-        $y = $top;
+        $posX = $left;
+        $posY = $top;
         foreach ($data as $item) {
 
             // extract & format data
@@ -71,17 +63,15 @@ class HalfTags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
 
             if ($num % 32 == 0) {
                 $pdf->AddPage();
-                $x = $left;
-                $y = $top;
-            } else if ($num % 4 == 0) {
-                $x = $left;
-                $y += $height;
+                $posX = $left;
+                $posY = $top;
+            } elseif ($num % 4 == 0) {
+                $posX = $left;
+                $posY += $height;
             }
 
-
             $pdf->SetFont($this->font, '', 8);
-
-            $pdf->SetXY($x,$y);
+            $pdf->SetXY($posX,$posY);
             // try normal wordwrap
             // but squeeze into two lines if needed
             $wrapped = wordwrap($desc, 12, "\n", true);
@@ -95,11 +85,11 @@ class HalfTags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
             }
             $pdf->MultiCell($width/2, 3, $wrapped, 0, 'L');
 
-            $pdf->SetX($x);
+            $pdf->SetX($posX);
             $pdf->Cell($width/2,3,date('n/j/y ') . $size,0,1,'L');
 
             $pdf->SetFont($this->font,'B',18); //change font for price
-            $pdf->SetX($x);
+            $pdf->SetX($posX);
             $pdf->Cell($width/2,8,$price,0,1,'L');
 
             $args = array(
@@ -110,10 +100,10 @@ class HalfTags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
                 'font' => $this->font,
             );
             $b_y = $pdf->GetY();
-            $pdf = $this->drawBarcode($upc, $pdf, $x, $b_y, $args);
+            $pdf = $this->drawBarcode($upc, $pdf, $posX, $b_y, $args);
 
             // move right by tag width
-            $x += $width;
+            $posX += $width;
 
             $num++;
         }

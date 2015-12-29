@@ -86,4 +86,3 @@ while($w = $db->fetch_row($r)){
 }
 echo "</table>";
 
-?>

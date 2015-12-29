@@ -24,7 +24,7 @@
 // map server super depts to lane subdepts
 foreach($FANNIE_LANES as $lane){
 
-    $dbc->add_connection($lane['host'],$lane['type'],$lane['op'],
+    $dbc->addConnection($lane['host'],$lane['type'],$lane['op'],
             $lane['user'],$lane['pw']);
     if ($dbc->connections[$lane['op']] !== False){
         $selectQ = "SELECT superID,super_name,dept_ID FROM MasterSuperDepts";
@@ -37,4 +37,3 @@ foreach($FANNIE_LANES as $lane){
 
 echo "<li>Subdepts table synched</li>";
 
-?>

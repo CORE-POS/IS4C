@@ -50,6 +50,7 @@ class ReportMetricsTask extends FannieTask
             return false;
         }
 
+        $msg .= $this->versionInfo();
         $free = disk_free_space(dirname(__FILE__));
         $total = disk_total_space(dirname(__FILE__));
         $msg .= sprintf('Disk space available: %d/%d (%.2f)%%', $free, $total, ($free/$total)*100) 
@@ -159,6 +160,15 @@ class ReportMetricsTask extends FannieTask
         } else {
             mail($settings['ReportMetricsEmail'], 'CORE Metrics', $msg);
         }
+    }
+
+    private function versionInfo()
+    {
+        $msg = 'OS Version: ' . php_uname() . "\n";
+        $msg .= 'PHP Version: ' . phpversion() . "\n";
+        $msg .= 'CORE Version: ' . file_get_contents(dirname(__FILE__) . '/../../../../VERSION') . "\n";
+
+        return $msg;
     }
 
     private function tail($filename, $num=500)

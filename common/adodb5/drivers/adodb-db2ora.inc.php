@@ -52,7 +52,7 @@ class ADODB_db2oci extends ADODB_db2 {
 	var $sysTimeStamp = 'sysdate';
 	var $sysDate = 'trunc(sysdate)';
 
-	function ADODB_db2oci()
+	function __construct()
 	{
 		$this->ADODB_db2();
 	}
@@ -70,7 +70,7 @@ class  ADORecordSet_db2oci extends ADORecordSet_odbc {
 
 	var $databaseType = "db2oci";
 
-	function ADORecordSet_db2oci($id,$mode=false)
+	function __construct($id,$mode=false)
 	{
 		return $this->ADORecordSet_db2($id,$mode);
 	}

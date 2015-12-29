@@ -51,7 +51,7 @@ class CalendarPluginDisplayLib
         $OWNER = CalendarPluginPermissions::is_owner($uid,$id);
 
         $sql = CalendarPluginDB::get();
-        $dataP = $sql->prepare_statement("
+        $dataP = $sql->prepare("
             SELECT m.eventDate,m.eventText,m.uid,u.real_name,m.eventID,m.attendeeLimit
             FROM monthview_events as m LEFT JOIN "
             .$FANNIE_OP_DB.$sql->sep()."Users as u on m.uid=u.uid
@@ -59,7 +59,7 @@ class CalendarPluginDisplayLib
             month(eventDate)=? AND
             year(eventDate)=?
             AND hour(eventDate)=0");
-        $dataR = $sql->exec_statement($dataP,array($id,$month,$year));
+        $dataR = $sql->execute($dataP,array($id,$month,$year));
         $db_data = array();
         while($dataW = $sql->fetch_row($dataR)){
             $dataW[0] = trim(preg_replace('/\d+:\d+:\d+/','',$dataW[0]));
@@ -486,7 +486,7 @@ class CalendarPluginDisplayLib
         $ids = rtrim($ids,",");
         $ids .= ")";
 
-        $dataP = $sql->prepare_statement("
+        $dataP = $sql->prepare("
             SELECT m.eventDate,m.eventText,c.name
             FROM monthview_events as m LEFT JOIN
             calendars as c on m.calendarID=c.calendarID
@@ -496,7 +496,7 @@ class CalendarPluginDisplayLib
             order by eventDate,c.name");
         $args[] = $startDate;
         $args[] = $endDate;
-        $dataR = $sql->exec_statement($dataP,$args);
+        $dataR = $sql->execute($dataP,$args);
         $curDate = "";
         $classes = array("overlay_one","overlay_two");
         $c = 0;
@@ -589,10 +589,10 @@ class CalendarPluginDisplayLib
         }
         $ret .= "</p><hr />";
 
-        $userP = $db->prepare_statement("SELECT uid,real_name,name FROM "
+        $userP = $db->prepare("SELECT uid,real_name,name FROM "
                     .$FANNIE_OP_DB.$db->sep()."Users 
                     WHERE uid<>? order by name,real_name");
-        $userR = $db->exec_statement($userP,array($uid));
+        $userR = $db->execute($userP,array($uid));
         $userOpts = array();
         while ($userW = $db->fetch_row($userR)){
             $name = $userW['real_name'];
@@ -603,11 +603,11 @@ class CalendarPluginDisplayLib
 
         $ret .= "<p>Users who can view this calendar (<i>left</i>):";
         $ret .= "<table><tr>";
-        $viewP = $db->prepare_statement("SELECT p.uid,u.real_name,u.name FROM permissions as p
+        $viewP = $db->prepare("SELECT p.uid,u.real_name,u.name FROM permissions as p
               LEFT JOIN ".$FANNIE_OP_DB.$db->sep()."Users as u on p.uid=u.uid
               WHERE p.calendarID=?
               AND p.classID = 1");
-        $viewR = $db->exec_statement($viewP,array($calID));
+        $viewR = $db->execute($viewP,array($calID));
         $ret .= "<td><select id=prefViewers multiple size=10 style=\"min-width:50px\">";
         while($viewW = $db->fetch_row($viewR)){
             $name = $userW['real_name'];
@@ -629,11 +629,11 @@ class CalendarPluginDisplayLib
 
         $ret .= "<p>Users who can write on this calendar (<i>left</i>):";
         $ret .= "<table><tr>";
-        $viewP = $db->prepare_statement("SELECT p.uid,u.real_name,u.name FROM permissions as p
+        $viewP = $db->prepare("SELECT p.uid,u.real_name,u.name FROM permissions as p
               LEFT JOIN ".$FANNIE_OP_DB.$db->sep()."Users as u on p.uid=u.uid
               WHERE p.calendarID=?
               AND p.classID = 2");
-        $viewR = $db->exec_statement($viewP,array($calID));
+        $viewR = $db->execute($viewP,array($calID));
         $ret .= "<td><select id=prefWriters multiple size=10 style=\"min-width:50px\">";
         while($viewW = $db->fetch_row($viewR)){
             $name = $userW['real_name'];
@@ -661,4 +661,3 @@ class CalendarPluginDisplayLib
 
 }
 
-?>

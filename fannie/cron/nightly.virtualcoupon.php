@@ -103,4 +103,3 @@ $sql->query($blueLineQ);
 
 $sql->query("DROP TABLE TempVirtCoupon");
 
-?>

@@ -57,8 +57,8 @@ class CustomerCountReport extends FannieReportPage {
         // dynamic column headers
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $typeQ = $dbc->prepare_statement("SELECT memtype,memDesc FROM memtype ORDER BY memtype");
-        $typeR = $dbc->exec_statement($typeQ);
+        $typeQ = $dbc->prepare("SELECT memtype,memDesc FROM memtype ORDER BY memtype");
+        $typeR = $dbc->execute($typeQ);
         $this->memtypes = array();
         $this->report_headers = array('Date');
         while($typeW = $dbc->fetch_row($typeR)){
@@ -90,8 +90,8 @@ class CustomerCountReport extends FannieReportPage {
             AND upc <> 'RRR'
             group by year(tdate),month(tdate),day(tdate),trans_num
             order by year(tdate),month(tdate),day(tdate),max(memType)";
-        $salesP = $dbc->prepare_statement($sales);
-        $result = $dbc->exec_statement($salesP, array($date1, $date2));
+        $salesP = $dbc->prepare($sales);
+        $result = $dbc->execute($salesP, array($date1, $date2));
 
         /**
           Create result records based on date and increment them

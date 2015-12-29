@@ -89,8 +89,8 @@ class GoEMerchant extends BasicCCModule
         $transID = CoreLocal::get("paycard_id");
         $cvv2 = CoreLocal::get("paycard_cvv2");
         $sqlColumns =
-            $dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID," .
-            $dbTrans->identifier_escape('datetime').
+            $dbTrans->identifierEscape('date').",cashierNo,laneNo,transNo,transID," .
+            $dbTrans->identifierEscape('datetime').
             ",seconds,commErr,httpCode";
         $sqlValues =
             sprintf("%d,%d,%d,%d,%d,",  $today, $cashierNo, $laneNo, $transNo, $transID) .
@@ -142,7 +142,7 @@ class GoEMerchant extends BasicCCModule
         $sqlColumns .= ",validResponse";
         $sqlValues .= sprintf(",%d",$validResponse);
 
-        $table_def = $dbTrans->table_definition('efsnetResponse');
+        $table_def = $dbTrans->tableDefinition('efsnetResponse');
         if (isset($table_def['efsnetRequestID'])) {
             $sqlColumns .= ', efsnetRequestID';
             $sqlValues .= sprintf(', %d', $this->last_req_id);
@@ -234,8 +234,8 @@ class GoEMerchant extends BasicCCModule
         $dbTrans = PaycardLib::paycard_db();
         // prepare some fields to store the request and the parsed response; we'll add more as we verify it
         $sqlColumns =
-            $dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID,"
-            .$dbTrans->identifier_escape('datetime').
+            $dbTrans->identifierEscape('date').",cashierNo,laneNo,transNo,transID,"
+            .$dbTrans->identifierEscape('datetime').
             ",origAmount,mode,altRoute," .
             "seconds,commErr,httpCode";
         $sqlValues =
@@ -479,8 +479,8 @@ class GoEMerchant extends BasicCCModule
 
         // store request in the database before sending it
         $sql = 'INSERT INTO efsnetRequest (' .
-                    $dbTrans->identifier_escape('date') . ', cashierNo, laneNo, transNo, transID, ' .
-                    $dbTrans->identifier_escape('datetime') . ', refNum, live, mode, amount,
+                    $dbTrans->identifierEscape('date') . ', cashierNo, laneNo, transNo, transID, ' .
+                    $dbTrans->identifierEscape('datetime') . ', refNum, live, mode, amount,
                     PAN, issuer, manual, name,
                     sentPAN, sentExp, sentTr1, sentTr2)
                 VALUES (
@@ -494,7 +494,7 @@ class GoEMerchant extends BasicCCModule
             $cardPANmasked, $cardIssuer, $manual, $cardName,
             $sendPAN, $sendExp, $sendTr1, $sendTr2);
         $prep = $dbTrans->prepare($sql);
-        $table_def = $dbTrans->table_definition('efsnetRequest');
+        $table_def = $dbTrans->tableDefinition('efsnetRequest');
 
         if ($dbTrans->table_exists('efsnetRequest') && !$dbTrans->execute($prep, $efsArgs)) {
             PaycardLib::paycard_reset();
@@ -503,7 +503,7 @@ class GoEMerchant extends BasicCCModule
         }
 
         if (isset($table_def['efsnetRequestID'])) {
-            $this->last_req_id = $dbTrans->insert_id();
+            $this->last_req_id = $dbTrans->insertID();
         }
 
         $insQ = '
@@ -523,7 +523,7 @@ class GoEMerchant extends BasicCCModule
         $insP = $dbTrans->prepare($insQ);
         $insR = $dbTrans->execute($insP, $ptArgs);
         if ($insR) {
-            $this->last_paycard_transaction_id = $dbTrans->insert_id();
+            $this->last_paycard_transaction_id = $dbTrans->insertID();
         } else {
             PaycardLib::paycard_reset();
             // internal error, nothing sent (ok to retry)
@@ -628,7 +628,7 @@ class GoEMerchant extends BasicCCModule
                     AND transNo=' . $transNo . '
                     AND transID=' . $transID;
         if (!$dbTrans->table_exists('PaycardTransactions')) {
-            $sql = "SELECT refNum,xTransactionID FROM efsnetResponse WHERE ".$dbTrans->identifier_escape('date')."='".$today."'" .
+            $sql = "SELECT refNum,xTransactionID FROM efsnetResponse WHERE ".$dbTrans->identifierEscape('date')."='".$today."'" .
                 " AND cashierNo=".$cashierNo." AND laneNo=".$laneNo." AND transNo=".$transNo." AND transID=".$transID;
         }
         $result = PaycardLib::paycard_db_query($sql, $dbTrans);
@@ -660,7 +660,7 @@ class GoEMerchant extends BasicCCModule
                     AND transID=" . $transID;
         $initR = $dbTrans->query($initQ);
         if ($initR) {
-            $this->last_paycard_transaction_id = $dbTrans->insert_id();
+            $this->last_paycard_transaction_id = $dbTrans->insertID();
         } else {
             return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
         }

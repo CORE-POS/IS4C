@@ -18,4 +18,3 @@ while($w = $sql->fetch_row($r)){
 }
 echo "</table>";
 
-?>

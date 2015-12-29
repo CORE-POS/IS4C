@@ -128,13 +128,13 @@ class ActivityReport extends FannieReportPage
         $fromSpec = "(SELECT $fromCols FROM CCredHistory " .
             "UNION SELECT $fromCols FROM CCredHistoryToday)";
 
-        $q = $dbc->prepare_statement("SELECT charges,transNum,payments,
+        $q = $dbc->prepare("SELECT charges,transNum,payments,
                 year(tdate) AS year, month(tdate) AS month, day(tdate) AS day
                 FROM $fromSpec AS s 
                 WHERE s.cardNo=? AND programID=?
                 ORDER BY tdate DESC");
         $args=array($this->cardNo,$this->programID);
-        $r = $dbc->exec_statement($q,$args);
+        $r = $dbc->execute($q,$args);
 
         $data = array();
         $rrp  = "{$FANNIE_URL}admin/LookupReceipt/RenderReceiptPage.php";
@@ -254,6 +254,5 @@ class ActivityReport extends FannieReportPage
 
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

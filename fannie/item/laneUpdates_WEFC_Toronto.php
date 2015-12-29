@@ -43,7 +43,7 @@ function addAllLanes($upc, $table_name){
     $STORE_ID = FannieConfig::config('STORE_ID');
     $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
 
-    $server_table_def = $laneupdate_sql->table_definition("{$table_name}",$FANNIE_OP_DB);
+    $server_table_def = $laneupdate_sql->tableDefinition("{$table_name}",$FANNIE_OP_DB);
     if (count($server_table_def) == 0)
          echo "<br />server_table_def is empty for >{$table_name}<";
 
@@ -53,14 +53,14 @@ function addAllLanes($upc, $table_name){
         $server_cols[$k] = True;
 
     for ($i = 0; $i < count($FANNIE_LANES); $i++){
-        $laneupdate_sql->add_connection($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
+        $laneupdate_sql->addConnection($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
             $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
             $FANNIE_LANES[$i]['pw']);
 
         if ( $laneupdate_sql->table_exists("$table_name") ) {
             // generate list of columns that exist on both
             // the server and the lane
-            $lane_table_def = $laneupdate_sql->table_definition("{$table_name}",$FANNIE_LANES[$i]['op']);
+            $lane_table_def = $laneupdate_sql->tableDefinition("{$table_name}",$FANNIE_LANES[$i]['op']);
             $matching_columns = array();
             foreach($lane_table_def as $k=>$v){
                 if (isset($server_cols[$k])) $matching_columns[] = $k;
@@ -79,7 +79,7 @@ function addAllLanes($upc, $table_name){
             }
             if ( isset($matching_columns['store_id']) )
                 $selQ .= " ORDER BY store_id DESC";
-            $selQ = $laneupdate_sql->add_select_limit($selQ, 1, $FANNIE_OP_DB);
+            $selQ = $laneupdate_sql->addSelectLimit($selQ, 1, $FANNIE_OP_DB);
             $ins = rtrim($ins,",").")";
 
             if (True) {
@@ -123,4 +123,3 @@ function deleteAllLanes($upc, $tables){
     }
 }
 
-?>

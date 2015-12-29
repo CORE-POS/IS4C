@@ -98,8 +98,8 @@ class OverShortDayPage extends FanniePage
                 $empsQ = "SELECT e.firstname, e.emp_no FROM "
                     .$FANNIE_OP_DB.$dbc->sep()."employees AS e
                     WHERE emp_no=?";
-                $empsP = $dbc->prepare_statement($empsQ);
-                $empsR = $dbc->exec_statement($empsP,array(FormLib::get_form_value('emp_no')));
+                $empsP = $dbc->prepare($empsQ);
+                $empsR = $dbc->execute($empsP,array(FormLib::get_form_value('emp_no')));
             } else {
                 /* determine who worked that day (and their first names) */
                 $empsQ = "
@@ -117,8 +117,8 @@ class OverShortDayPage extends FanniePage
                     GROUP BY $id_field,
                         $name_field 
                     ORDER BY $name_field";
-                $empsP = $dbc->prepare_statement($empsQ);
-                $empsR=$dbc->exec_statement($empsP,$args);
+                $empsP = $dbc->prepare($empsQ);
+                $empsR=$dbc->execute($empsP,$args);
             }
             $output = "<h3 id=currentdate>$date</h3>";
 
@@ -136,8 +136,8 @@ class OverShortDayPage extends FanniePage
             }
             $tQ .= " GROUP BY d.trans_subtype, t.TenderName, t.tenderID
                 ORDER BY t.TenderID";
-            $tP = $dbc->prepare_statement($tQ);
-            $tR=$dbc->exec_statement($tP,$args);
+            $tP = $dbc->prepare($tQ);
+            $tR=$dbc->execute($tP,$args);
 
             $tender_info = array();
             while($tW = $dbc->fetch_row($tR)){
@@ -187,8 +187,8 @@ class OverShortDayPage extends FanniePage
             }
             $q .= "GROUP BY $id_field,
                 CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END";
-            $p = $dbc->prepare_statement($q);
-            $r = $dbc->exec_statement($p, $args);
+            $p = $dbc->prepare($q);
+            $r = $dbc->execute($p, $args);
             $posttl = array();
             while($w = $dbc->fetch_row($r)){
                 if (in_array($w['trans_subtype'], OverShortTools::$EXCLUDE_TENDERS)) {
@@ -197,10 +197,10 @@ class OverShortDayPage extends FanniePage
                 $tender_info[$w['trans_subtype']]['perEmp'][$w[1]] = $w['total'];
             }
 
-            $noteP = $dbc->prepare_statement('SELECT note FROM dailyNotes WHERE emp_no=? AND date=?');
-            $scaP = $dbc->prepare_statement('SELECT amt FROM dailyCounts WHERE date=? AND emp_no=?
+            $noteP = $dbc->prepare('SELECT note FROM dailyNotes WHERE emp_no=? AND date=?');
+            $scaP = $dbc->prepare('SELECT amt FROM dailyCounts WHERE date=? AND emp_no=?
                             AND tender_type=\'SCA\'');
-            $countP = $dbc->prepare_statement("select amt from dailyCounts where date=? and emp_no=? and tender_type=?");
+            $countP = $dbc->prepare("select amt from dailyCounts where date=? and emp_no=? and tender_type=?");
 
             while ($row = $dbc->fetch_array($empsR)){
                 $emp_no = $row[1];
@@ -208,7 +208,7 @@ class OverShortDayPage extends FanniePage
                 $perCashierCountTotal = 0;
                 $perCashierOSTotal = 0;
 
-                $noteR = $dbc->exec_statement($noteP, array($emp_no, $date));   
+                $noteR = $dbc->execute($noteP, array($emp_no, $date));   
                 $noteW = $dbc->fetch_array($noteR);
                 $note = stripslashes($noteW[0]);
 
@@ -216,7 +216,7 @@ class OverShortDayPage extends FanniePage
       
                 $output .= "<tr><td><a href=OverShortDayPage.php?action=date&arg=$date&emp_no=$row[1] target={$date}_{$row[1]}>$row[0]</a></td>";
                 $output .= "<td>Starting cash</td><td>n/a</td>";
-                $fetchR = $dbc->exec_statement($scaP, array($date, $emp_no));
+                $fetchR = $dbc->execute($scaP, array($date, $emp_no));
                 $startcash = 0;
                 if ($dbc->num_rows($fetchR) != 0) {
                     $fetchW = $dbc->fetch_row($fetchR);
@@ -239,12 +239,12 @@ class OverShortDayPage extends FanniePage
                         <td id=dlog$code$row[1]>$posAmt</td>";
                     $output .= "<input type=\"hidden\" class=\"tcode$emp_no\" value=\"$code\" />";
 
-                    $fetchR = $dbc->exec_statement($countP, array($date, $emp_no, $code));
+                    $fetchR = $dbc->execute($countP, array($date, $emp_no, $code));
                     $value = '';
                     if ($dbc->num_rows($fetchR) != 0) {
                         $fetchW = $dbc->fetch_row($fetchR);
                         $value = $fetchW[0];
-                    } elseif ($code !== 'CA' && $code !== 'CK' && $code !== 'TK') {
+                    } elseif ($code !== 'CA' && $code !== 'CK' && $code !== 'TK' && $code !== 'WT') {
                         $value = $posAmt;
                     }
                     $output .= "<td><div class=\"input-group\">
@@ -318,7 +318,7 @@ class OverShortDayPage extends FanniePage
             $output .= "<td id=overallCountTotal>$overallCountTotal</td>";
             $output .= "<td id=overallOSTotal>$overallOSTotal</td></tr>";
 
-            $noteR = $dbc->exec_statement($noteP, array(-1, $date));
+            $noteR = $dbc->execute($noteP, array(-1, $date));
             $noteW = $dbc->fetch_array($noteR);
             $note = $noteW[0];
             $output .= "<tr><td>&nbsp;</td><td>Notes</td><td colspan=3</td>";

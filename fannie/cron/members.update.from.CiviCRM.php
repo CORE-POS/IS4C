@@ -68,7 +68,7 @@
  29Aug12 EL Set memberIdOffset to 0 from 4000. Note that clearIS4C() will need different params now
                             or maybe need to work differently.
   7Aug12 EL Enable email, to me at gmail.
- 13Jul12 EL -> Try doing dbConn2 as add_connection. It may be necessary.
+ 13Jul12 EL -> Try doing dbConn2 as addConnection. It may be necessary.
                It is important that the databases for each conn have different names.
                See nightly.dtrans.php for example, but it isn't clear how you distinguish the two.
                                See the (foo,$database) arg, which defaults to the first one.
@@ -1736,4 +1736,3 @@ if (0) {
 */
 
 
-?>

@@ -53,7 +53,7 @@ class PayrollARReport extends FannieReportPage {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $query = $dbc->prepare_statement("SELECT c.CardNo,c.FirstName,c.LastName,c.ChargeLimit,
+        $query = $dbc->prepare("SELECT c.CardNo,c.FirstName,c.LastName,c.ChargeLimit,
             CASE WHEN s.cardNo IS NULL THEN 'no' ELSE 'yes' END as autodeduct,
             x.FirstName,x.LastName,
             y.FirstName,y.LastName,
@@ -72,11 +72,11 @@ class PayrollARReport extends FannieReportPage {
         
           Issue a query, build array of results
         */
-        $result = $dbc->exec_statement($query);
+        $result = $dbc->execute($query);
         $ret = array();
         while ($row = $dbc->fetch_array($result)){
             $record = array();
-            for($i=0;$i<$dbc->num_fields($result);$i++)
+            for($i=0;$i<$dbc->numFields($result);$i++)
                 $record[] = $row[$i];
             $ret[] = $record;
         }
@@ -95,4 +95,3 @@ class PayrollARReport extends FannieReportPage {
 
 FannieDispatch::conditionalExec(false);
 
-?>

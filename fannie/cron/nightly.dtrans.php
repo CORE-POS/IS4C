@@ -64,7 +64,7 @@ set_time_limit(0);
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
         $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
-$cols = $sql->table_definition('dtransactions');
+$cols = $sql->tableDefinition('dtransactions');
 if (isset($cols['date_id'])){
     $sql->query("UPDATE dtransactions SET date_id=DATE_FORMAT(datetime,'%Y%m%d')");
 }
@@ -80,7 +80,7 @@ while($datesW = $sql->fetch_row($datesR)) {
 }
 
 $UPDATED_DLOG_SCHEMA = false;
-$table_def = $sql->table_definition('dlog');
+$table_def = $sql->tableDefinition('dlog');
 if (isset($table_def['description'])) {
     // most likely
     $UPDATED_DLOG_SCHEMA = true;
@@ -131,7 +131,7 @@ foreach($dates as $date) {
                 createViews($dstr,$sql);
             }
         }
-        $sql->add_connection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+        $sql->addConnection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
             $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
         $sql->transfer($FANNIE_TRANS_DB,
             "select * from dtransactions WHERE ".$sql->datediff('datetime',"'$date'")."= 0",
@@ -311,18 +311,18 @@ function createViews($dstr,$db){
         $FANNIE_ARCHIVE_PW; 
 
     if ($FANNIE_ARCHIVE_REMOTE){
-        $db->add_connection($FANNIE_ARCHIVE_SERVER,$FANNIE_ARCHIVE_DBMS,
+        $db->addConnection($FANNIE_ARCHIVE_SERVER,$FANNIE_ARCHIVE_DBMS,
             $FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_USER,
             $FANNIE_ARCHIVE_PW);
     }
     else {
-        $db->add_connection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
+        $db->addConnection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
             $FANNIE_ARCHIVE_DB,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
     }
 
     $dbms = $FANNIE_ARCHIVE_REMOTE?$FANNIE_ARCHIVE_DBMS:$FANNIE_SERVER_DBMS;
 
-    $table_def = $db->table_definition('transArchive' . $str);
+    $table_def = $db->tableDefinition('transArchive' . $str);
 
     $dlogQ = "CREATE  view dlog$dstr as
         select 
@@ -434,4 +434,3 @@ function createViews($dstr,$db){
         echo cron_msg("Error creating dlog view for new archive table");
 }
 
-?>

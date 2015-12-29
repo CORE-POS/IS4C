@@ -60,4 +60,3 @@ class PINoteHistoryPage extends PIKillerPage {
 
 FannieDispatch::conditionalExec();
 
-?>

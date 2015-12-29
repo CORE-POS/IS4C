@@ -65,8 +65,8 @@ class SaScanningPage extends FanniePage {
         }
 
         if (FormLib::get_form_value('sflag') == 1){
-            $query = $dbc->prepare_statement('SELECT MAX(section) AS new_section FROM sa_inventory');
-            $result = $dbc->exec_statement($query);
+            $query = $dbc->prepare('SELECT MAX(section) AS new_section FROM sa_inventory');
+            $result = $dbc->execute($query);
             $section = 0;
             if ($dbc->num_rows($result) > 0)
                 $section = array_pop($dbc->fetch_row($result));
@@ -113,7 +113,7 @@ class SaScanningPage extends FanniePage {
             $qty = FormLib::get_form_value('qinput');
             $qty = rtrim($qty,'z');
             $args = array($upc);
-            $stmt = $dbc->prepare_statement('INSERT INTO sa_inventory 
+            $stmt = $dbc->prepare('INSERT INTO sa_inventory 
                     (id,datetime,upc,clear,quantity,section)
                     VALUES (NULL,'.$dbc->now().',?,0,?,?)');
                     
@@ -131,7 +131,7 @@ class SaScanningPage extends FanniePage {
                 $args[] = $this->section;
             }
 
-            $result = $dbc->exec_statement($stmt, $args);
+            $result = $dbc->execute($stmt, $args);
             if ($result) { $this->status = 'good - scan entered:'.$upc.'';  
             }   else { $this->status = 'bad - strange scan:'.$query; }
         }

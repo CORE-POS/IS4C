@@ -50,7 +50,7 @@ class PaycardEmvSuccess extends BasicCorePage
                              VALUES
                                 (?, ?, ?, ?,
                                  ?, ?, ?)';
-                    $capP = $dbc->prepare_statement($capQ);
+                    $capP = $dbc->prepare($capQ);
                     $args = array(
                         date('Y-m-d H:i:s'),
                         CoreLocal::get('CashierNo'),
@@ -60,7 +60,7 @@ class PaycardEmvSuccess extends BasicCorePage
                         $format,
                         $img_content,
                     );
-                    $capR = $dbc->exec_statement($capP, $args);
+                    $capR = $dbc->execute($capP, $args);
 
                     unlink($_REQUEST['bmpfile']);
                     // continue to below. finishing transaction is the same

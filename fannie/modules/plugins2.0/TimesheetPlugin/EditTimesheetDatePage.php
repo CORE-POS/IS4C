@@ -32,10 +32,10 @@ class EditTimesheetDatePage extends FanniePage {
             $this->errors[] = 'You have found this page mistakenly.';
         } elseif (isset($_POST['submitted'])) { // If the form has been submitted.
             if ($_POST['submit'] == 'delete') {
-                $query = $ts_db->prepare_statement("DELETE 
+                $query = $ts_db->prepare("DELETE 
                     FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet 
                     WHERE emp_no=? AND date=?");
-                $result = $ts_db->exec_statement($query,array($emp_no,$date));
+                $result = $ts_db->execute($query,array($emp_no,$date));
                 if ($result) {
                     $this->display_func = 'ts_delete_msg';
                 } 
@@ -75,16 +75,16 @@ class EditTimesheetDatePage extends FanniePage {
                 if (empty($errors)) { // All good.
 
                     $successcount = 0;
-                    $upP = $ts_db->prepare_statement("UPDATE 
+                    $upP = $ts_db->prepare("UPDATE 
                         {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet 
                         SET hours=?,area=?
                         WHERE emp_no=? AND tdate=? AND ID=?");
-                    $insP = $ts_db->prepare_statement("INSERT INTO 
+                    $insP = $ts_db->prepare("INSERT INTO 
                         {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet 
                         (emp_no, hours, area, tdate, periodID) VALUES (?,?,?,?,?)");
                     for ($i = 1; $i <= $entrycount; $i++) {
                         if (is_numeric($ID[$i])) {
-                            $result = $ts_db->exec_statement($upP,array(
+                            $result = $ts_db->execute($upP,array(
                                 $hours[$i],$area[$i],
                                 $emp_no, $date, $ID[$i]
                             ));
@@ -95,7 +95,7 @@ class EditTimesheetDatePage extends FanniePage {
                             }
                         } 
                         elseif ($ID[$i] == 'insert') {
-                            $result = $ts_db->exec_statement($insP,array(
+                            $result = $ts_db->execute($insP,array(
                                 $emp_no, $hours[$i],
                                 $area[$i], $date, $periodID
                             ));
@@ -123,10 +123,10 @@ class EditTimesheetDatePage extends FanniePage {
             }
         } else if (!empty($periodID)){
             // Make sure we're in a valid pay period.       
-            $query = $ts_db->prepare_statement("SELECT DATEDIFF(CURDATE(), DATE(periodEnd)) 
+            $query = $ts_db->prepare("SELECT DATEDIFF(CURDATE(), DATE(periodEnd)) 
                 FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
                 WHERE periodID = ?");
-            $result = $ts_db->exec_statement($query,array($periodID));
+            $result = $ts_db->execute($query,array($periodID));
             list($datediff) = $ts_db->fetch_row($result);
 
             if ($datediff > 1) { // Bad.
@@ -196,11 +196,11 @@ class EditTimesheetDatePage extends FanniePage {
 
         for ($i = 1; $i <= $max; $i++) {
             $inc = $i - 1;
-            $query = $ts_db->prepare_statement("SELECT hours, area, ID 
+            $query = $ts_db->prepare("SELECT hours, area, ID 
                 FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet 
                 WHERE emp_no = ? AND tdate = ? ORDER BY ID ASC LIMIT ".$inc.",1");
             // echo $query;
-            $result = $ts_db->exec_statement($query,array($emp_no,$date));
+            $result = $ts_db->execute($query,array($emp_no,$date));
             $num = $ts_db->num_rows($result);
                     
             if ($row = $ts_db->fetch_row($result)) {
@@ -215,10 +215,10 @@ class EditTimesheetDatePage extends FanniePage {
 
             echo "<tr><td align='right'><input 
                 class=\"form-control price-field\" type='text' name='hours" . $i . "' value='$hours' size=6></input></td>";
-            $query = $ts_db->prepare_statement("SELECT IF(NiceName='', ShiftName, NiceName), ShiftID 
+            $query = $ts_db->prepare("SELECT IF(NiceName='', ShiftName, NiceName), ShiftID 
                 FROM " . $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'] . ".shifts 
                 WHERE visible=true ORDER BY ShiftOrder ASC");
-            $result = $ts_db->exec_statement($query);
+            $result = $ts_db->execute($query);
             echo '<td><select name="area' . $i . '" id="area' . $i . '"
                 class="form-control"><option>Please select an area of work.</option>';
             while ($row = $ts_db->fetch_row($result)) {
@@ -241,4 +241,3 @@ class EditTimesheetDatePage extends FanniePage {
 
 FannieDispatch::conditionalExec(false);
 
-?>

@@ -41,8 +41,8 @@ class UploadVendorPriceFile extends FanniePage {
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $p = $dbc->prepare_statement('SELECT vendorID,vendorName FROM vendors ORDER BY vendorName');
-        $r = $dbc->exec_statement($p);
+        $p = $dbc->prepare('SELECT vendorID,vendorName FROM vendors ORDER BY vendorName');
+        $r = $dbc->execute($p);
         $ret = '<label>Use the Default import tool</label>'
             . '<select id="vendor-id" class="form-control">';;
        

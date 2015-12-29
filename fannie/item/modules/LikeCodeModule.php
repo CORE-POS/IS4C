@@ -32,8 +32,8 @@ class LikeCodeModule extends ItemModule
     {
         $FANNIE_URL = FannieConfig::config('URL');
         $dbc = $this->db();
-        $p = $dbc->prepare_statement('SELECT likeCode FROM upcLike WHERE upc=?');
-        $r = $dbc->exec_statement($p,array($upc));
+        $p = $dbc->prepare('SELECT likeCode FROM upcLike WHERE upc=?');
+        $r = $dbc->execute($p,array($upc));
         $myLC = -1;     
         if ($dbc->num_rows($r) > 0) {
             $w = $dbc->fetch_row($r);
@@ -61,8 +61,8 @@ class LikeCodeModule extends ItemModule
                 onchange=\"updateLcModList(this.value);\" class=\"chosenSelect form-control\">";
         $ret .= "<option value=-1>(none)</option>";
     
-        $p = $dbc->prepare_statement('SELECT likeCode, likeCodeDesc FROM likeCodes ORDER BY likeCode');
-        $r = $dbc->exec_statement($p);
+        $p = $dbc->prepare('SELECT likeCode, likeCodeDesc FROM likeCodes ORDER BY likeCode');
+        $r = $dbc->execute($p);
         while($w = $dbc->fetch_row($r)){
             $ret .= sprintf('<option %s value="%d">%d %s</option>',
                 ($w['likeCode'] == $myLC ? 'selected': ''),
@@ -102,31 +102,31 @@ class LikeCodeModule extends ItemModule
         }
         $dbc = $this->db();
 
-        $delP = $dbc->prepare_statement('DELETE FROM upcLike WHERE upc=?'); 
-        $delR = $dbc->exec_statement($delP,array($upc));
+        $delP = $dbc->prepare('DELETE FROM upcLike WHERE upc=?'); 
+        $delR = $dbc->execute($delP,array($upc));
         if ($lc == -1){
             return ($delR === False) ? False : True;
         }
 
         $insP = 'INSERT INTO upcLike (upc,likeCode) VALUES (?,?)';
-        $insR = $dbc->exec_statement($insP,array($upc,$lc));
+        $insR = $dbc->execute($insP,array($upc,$lc));
         
         if (FormLib::get_form_value('LikeCodeNoUpdate') == 'noupdate'){
             return ($insR === False) ? False : True;
         }
 
         /* get values for current item */
-        $valuesP = $dbc->prepare_statement('SELECT normal_price,pricemethod,groupprice,quantity,
+        $valuesP = $dbc->prepare('SELECT normal_price,pricemethod,groupprice,quantity,
             department,scale,tax,foodstamp,discount,qttyEnforced,local,wicable
             FROM products WHERE upc=?');
-        $valuesR = $dbc->exec_statement($valuesP,array($upc));  
+        $valuesR = $dbc->execute($valuesP,array($upc));  
         if ($dbc->num_rows($valuesR) == 0) return False;
         $values = $dbc->fetch_row($valuesR);
 
         /* apply current values to other other items
            in the like code */
-        $upcP = $dbc->prepare_statement('SELECT upc FROM upcLike WHERE likeCode=? AND upc<>?');
-        $upcR = $dbc->exec_statement($upcP,array($lc,$upc));
+        $upcP = $dbc->prepare('SELECT upc FROM upcLike WHERE likeCode=? AND upc<>?');
+        $upcR = $dbc->execute($upcP,array($lc,$upc));
         $isHQ = FannieConfig::config('STORE_MODE') == 'HQ' ? true : false;
         $stores = new StoresModel($dbc);
         $stores = array_map(
@@ -284,7 +284,7 @@ class LikeCodeModule extends ItemModule
                 INNER JOIN upcLike AS u ON p.upc=u.upc 
             WHERE u.likeCode=?
             ORDER BY p.upc");
-        $res = $dbc->exec_statement($p,array($lc));
+        $res = $dbc->execute($p,array($lc));
         $prev = false;
         while($row = $dbc->fetch_row($res)){
             if ($prev === $row['upc']) {

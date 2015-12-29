@@ -103,7 +103,7 @@ class MemberPreferences extends FannieRESTfulPage
         $ret .= sprintf('<input type="hidden" value="%d" name="id" />',$cardno);
         $ret .= '<div id="alert-area"></div>';
 
-        $prefQ = $dbc->prepare_statement("SELECT a.pref_key,
+        $prefQ = $dbc->prepare("SELECT a.pref_key,
             CASE WHEN c.pref_value IS NULL THEN a.pref_default_value ELSE c.pref_value END
             AS current_value,
             a.pref_description
@@ -111,7 +111,7 @@ class MemberPreferences extends FannieRESTfulPage
             LEFT JOIN custPreferences AS c
             ON a.pref_key=c.pref_key AND c.card_no=?
             ORDER BY a.pref_key");
-        $prefR = $dbc->exec_statement($prefQ,array($cardno));
+        $prefR = $dbc->execute($prefQ,array($cardno));
         $ret .= '<table class="table">';
         $ret .= '<tr><th>Setting</th><th>Value</th></tr>'; 
         while ($prefW = $dbc->fetch_row($prefR)) {

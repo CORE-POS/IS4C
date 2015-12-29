@@ -81,8 +81,8 @@ class BigArchiveModel extends DTransactionsModel
         ));
 
         $partitionQ = "
-            ALTER TABLE " . $this->connection->identifier_escape($this->name) . "
-            PARTITION BY RANGE(TO_DAYS(" . $this->connection->identifier_escape('datetime') . "))
+            ALTER TABLE " . $this->connection->identifierEscape($this->name) . "
+            PARTITION BY RANGE(TO_DAYS(" . $this->connection->identifierEscape('datetime') . "))
             (PARTITION {$partition_name}
                 VALUES LESS THAN (TO_DAYS('{$next_month}'))
             )";
@@ -109,7 +109,7 @@ class BigArchiveModel extends DTransactionsModel
         ));
 
         $partitionQ = "
-            ALTER TABLE " . $this->connection->identifier_escape($this->name) . "
+            ALTER TABLE " . $this->connection->identifierEscape($this->name) . "
             ADD PARTITION
             (PARTITION {$partition_name}
                 VALUES LESS THAN (TO_DAYS('{$next_month}'))

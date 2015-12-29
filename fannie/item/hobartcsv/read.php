@@ -50,48 +50,48 @@ while($line = fgets($fp)){
     $temp = str_pad("002".$temp,13,"0",STR_PAD_RIGHT);
     $current_plu = $temp;
     echo "<td><a href=\"../productTestScale.php?upc=$temp\">$temp</a></td>";
-    $checkQ = $sql->prepare_statement("select upc from products where upc=?");
-    $checkR = $sql->exec_statement($checkQ,array($temp));
+    $checkQ = $sql->prepare("select upc from products where upc=?");
+    $checkR = $sql->execute($checkQ,array($temp));
     if ($sql->num_rows($checkR) == 0){
           fputs($err,"UPC $temp not present in Products\n\n");    
       break;
     }
-    $checkQ = $sql->prepare_statement("select plu from scaleItems where plu=?");
-    $checkR = $sql->exec_statement($checkQ,array($temp));
+    $checkQ = $sql->prepare("select plu from scaleItems where plu=?");
+    $checkR = $sql->execute($checkQ,array($temp));
     if ($sql->num_rows($checkR) == 0){
-      $addQ = $sql->prepare_statement("insert into scaleItems (plu,exceptionprice,reportingClass) values (?,0,NULL)");
-      $addR = $sql->exec_statement($addQ,array($temp));
+      $addQ = $sql->prepare("insert into scaleItems (plu,exceptionprice,reportingClass) values (?,0,NULL)");
+      $addR = $sql->execute($addQ,array($temp));
     }
     }
     else {
       if ($i == $targets['Price']){
-    $upQ = $sql->prepare_statement("update scaleItems set price=? where plu=?");
-    $upR = $sql->exec_statement($upQ,array($data[$i],$current_plu));
+    $upQ = $sql->prepare("update scaleItems set price=? where plu=?");
+    $upR = $sql->execute($upQ,array($data[$i],$current_plu));
       }
       else if ($i == $targets['Item Description']){
     $temp = preg_replace("/<.*?>/","",$data[$i]); // trim out html
     $temp = preg_replace("/\'/","",$temp); // trim out apostrophes
-    $upQ = $sql->prepare_statement("update scaleItems set itemdesc=? where plu=?");
-    $upR = $sql->exec_statement($upQ,array($temp,$current_plu));
+    $upQ = $sql->prepare("update scaleItems set itemdesc=? where plu=?");
+    $upR = $sql->execute($upQ,array($temp,$current_plu));
       }
       else if ($i == $targets['Item Type']){
     $temp = 1;
     if ($data[$i] == 'Random Weight')
       $temp = 0;
-    $upQ = $sql->prepare_statement("update scaleItems set weight=? where plu=?");
-    $upR = $sql->exec_statement($upQ,array($temp,$current_plu));
+    $upQ = $sql->prepare("update scaleItems set weight=? where plu=?");
+    $upR = $sql->execute($upQ,array($temp,$current_plu));
       }
       else if ($i == $targets['By Count']){
-    $upQ = $sql->prepare_statement("update scaleItems set bycount=? where plu=?");
-    $upR = $sql->exec_statement($upQ,array($data[$i],$current_plu));
+    $upQ = $sql->prepare("update scaleItems set bycount=? where plu=?");
+    $upR = $sql->execute($upQ,array($data[$i],$current_plu));
       }
       else if ($i == $targets['Tare 01']){
-    $upQ = $sql->prepare_statement("update scaleItems set tare=? where plu=?");
-    $upR = $sql->exec_statement($upQ,array($data[$i],$current_plu));
+    $upQ = $sql->prepare("update scaleItems set tare=? where plu=?");
+    $upR = $sql->execute($upQ,array($data[$i],$current_plu));
       }
       else if ($i == $targets['Shelf Life']){
-    $upQ = $sql->prepare_statement("update scaleItems set shelflife=? where plu=?");
-    $upR = $sql->exec_statement($upQ,array($data[$i],$current_plu));
+    $upQ = $sql->prepare("update scaleItems set shelflife=? where plu=?");
+    $upR = $sql->execute($upQ,array($data[$i],$current_plu));
       }
       echo "<td>$data[$i]</td>";   
     }
@@ -99,5 +99,3 @@ while($line = fgets($fp)){
   echo "</tr>";
 }
 
-
-?>

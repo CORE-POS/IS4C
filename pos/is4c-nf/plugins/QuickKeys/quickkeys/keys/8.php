@@ -8,4 +8,3 @@ $my_keys = array(
     new quickkey("Dahl's\nSkim","1031")
 );
 
-?>

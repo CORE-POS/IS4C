@@ -36,4 +36,3 @@ foreach($FANNIE_LANES as $lane) {
 
 echo "<li>Custdata table synched</li>";
 
-?>

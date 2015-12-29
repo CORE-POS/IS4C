@@ -99,5 +99,3 @@ while($line = fgets($fp)){
   echo "</tr>";
 }
 
-
-?>

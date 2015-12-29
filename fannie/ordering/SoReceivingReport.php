@@ -70,9 +70,9 @@ JAVASCRIPT;
         echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 
         $suppliers = array('');
-        $q = $dbc->prepare_statement("SELECT mixMatch FROM PendingSpecialOrder WHERE trans_type='I'
+        $q = $dbc->prepare("SELECT mixMatch FROM PendingSpecialOrder WHERE trans_type='I'
             GROUP BY mixMatch ORDER BY mixMatch");
-        $r = $dbc->exec_statement($q);
+        $r = $dbc->execute($q);
         while($w = $dbc->fetch_row($r)){
             $suppliers[] = $w[0];
         }
@@ -102,8 +102,8 @@ JAVASCRIPT;
             ON p.order_id=s.specialOrderID
             WHERE $where
             ORDER BY mixMatch, upc";
-        $p = $dbc->prepare_statement($q);
-        $r = $dbc->exec_statement($q, $args);
+        $p = $dbc->prepare($q);
+        $r = $dbc->execute($q, $args);
         echo '<table class="table table-bordered table-striped tablesorter tablesorter-core">';
         echo '<thead><tr>';
         echo '<th>UPC</th>';

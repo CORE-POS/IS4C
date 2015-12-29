@@ -71,4 +71,4 @@ Start:<input type=text size=5 name=range1 /> End:<input type=text size=5 name=ra
 </form>
 <?php
 }
-?>
+

@@ -48,10 +48,10 @@ $product = new ProductsModel($dbc);
 $product->upc($upc);
 $tagData = $product->getTagData();
 
-$prodQ = $dbc->prepare_statement("SELECT p.*,s.superID FROM products AS p
+$prodQ = $dbc->prepare("SELECT p.*,s.superID FROM products AS p
     LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
     where upc=?");
-$prodR = $dbc->exec_statement($prodQ,array($upc));
+$prodR = $dbc->execute($prodQ,array($upc));
 $prodW = $dbc->fetchRow($prodR);
 $superID = $prodW['superID'];
 

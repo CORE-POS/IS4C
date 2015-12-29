@@ -306,14 +306,14 @@ class OrderViewPage extends FannieRESTfulPage
             $dbc->selectDB($this->config->get('OP_DB'));
 
             // look up personnum, correct if it hasn't been set
-            $pendQ = $dbc->prepare_statement("SELECT voided FROM {$TRANS}PendingSpecialOrder
+            $pendQ = $dbc->prepare("SELECT voided FROM {$TRANS}PendingSpecialOrder
                 WHERE order_id=?");
             $personNum = $dbc->getValue($pendQ,array($orderID));
             if ($personNum == 0) {
                 $personNum = 1;
-                $upP = $dbc->prepare_statement("UPDATE {$TRANS}PendingSpecialOrder SET voided=?
+                $upP = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET voided=?
                     WHERE order_id=?");
-                $upR = $dbc->exec_statement($upP,array($personNum,$orderID));
+                $upR = $dbc->execute($upP,array($personNum,$orderID));
             }
         }
 
@@ -329,9 +329,9 @@ class OrderViewPage extends FannieRESTfulPage
             $current_street = $orderModel->street();
             $current_phone = $orderModel->phone();
             if (empty($current_street) && empty($current_phone)) {
-                $contactQ = $dbc->prepare_statement("SELECT street,city,state,zip,phone,email_1,email_2
+                $contactQ = $dbc->prepare("SELECT street,city,state,zip,phone,email_1,email_2
                         FROM meminfo WHERE card_no=?");
-                $contactR = $dbc->exec_statement($contactQ, array($memNum));
+                $contactR = $dbc->execute($contactQ, array($memNum));
                 if ($dbc->num_rows($contactR) > 0) {
                     $contact_row = $dbc->fetch_row($contactR);
 
@@ -363,16 +363,16 @@ class OrderViewPage extends FannieRESTfulPage
             }
         } 
 
-        $prep = $dbc->prepare_statement("SELECT entry_date FROM {$TRANS}SpecialOrderHistory 
+        $prep = $dbc->prepare("SELECT entry_date FROM {$TRANS}SpecialOrderHistory 
                 WHERE order_id=? AND entry_type='CONFIRMED'");
         $confirm_date = $dbc->getValue($prep, array($orderID));
 
         $callback = 2;
         $user = 'Unknown';
         $orderDate = "";
-        $prep = $dbc->prepare_statement("SELECT datetime,numflag,mixMatch FROM 
+        $prep = $dbc->prepare("SELECT datetime,numflag,mixMatch FROM 
                 {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id=0");
-        $res = $dbc->exec_statement($prep, array($orderID));
+        $res = $dbc->execute($prep, array($orderID));
         if ($dbc->num_rows($res) > 0) {
             list($orderDate,$callback,$user) = $dbc->fetch_row($res);
         }
@@ -497,11 +497,11 @@ class OrderViewPage extends FannieRESTfulPage
             <select id="nDept" class="form-control input-sm contact-field" 
                 name="noteDept">
             <option value="0">Choose...</option>';
-        $superQ = $dbc->prepare_statement("select superID,super_name from MasterSuperDepts
+        $superQ = $dbc->prepare("select superID,super_name from MasterSuperDepts
             where superID > 0
             group by superID,super_name
             order by super_name");
-        $superR = $dbc->exec_statement($superQ);
+        $superR = $dbc->execute($superQ);
         while($superW = $dbc->fetch_row($superR)) {
             $ret .= sprintf('<option value="%d" %s>%s</option>',
                 $superW['superID'],
@@ -633,15 +633,15 @@ class OrderViewPage extends FannieRESTfulPage
         $ins_array['total'] = $casePrice * $num_cases;
         $ins_array['regPrice'] = $item['normal_price'] * $item['caseSize'] * $num_cases;
 
-        $tidP = $dbc->prepare_statement("SELECT MAX(trans_id),MAX(voided),MAX(numflag) 
+        $tidP = $dbc->prepare("SELECT MAX(trans_id),MAX(voided),MAX(numflag) 
                 FROM {$TRANS}PendingSpecialOrder WHERE order_id=?");
-        $tidR = $dbc->exec_statement($tidP,array($orderID));
+        $tidR = $dbc->execute($tidP,array($orderID));
         $tidW = $dbc->fetch_row($tidR);
         $ins_array['trans_id'] = $tidW[0]+1;
         $ins_array['voided'] = $tidW[1];
         $ins_array['numflag'] = $tidW[2];
 
-        $dbc->smart_insert("{$TRANS}PendingSpecialOrder",$ins_array);
+        $dbc->smartInsert("{$TRANS}PendingSpecialOrder",$ins_array);
 
         return array($qtyReq,$ins_array['trans_id'],$ins_array['description']);
     }
@@ -656,7 +656,7 @@ class OrderViewPage extends FannieRESTfulPage
         $orderID = 1;
         $values = ($this->config->get('SERVER_DBMS') != "MSSQL" ? "VALUES()" : "DEFAULT VALUES");
         $dbc->query('INSERT ' . $TRANS . 'SpecialOrders ' . $values);
-        $orderID = $dbc->insert_id();
+        $orderID = $dbc->insertID();
 
         /**
           @deprecated 24Apr14
@@ -670,7 +670,7 @@ class OrderViewPage extends FannieRESTfulPage
         $ins_array = $this->genericRow($orderID);
         $ins_array['numflag'] = 2;
         $ins_array['mixMatch'] = $user;
-        $dbc->smart_insert("{$TRANS}PendingSpecialOrder",$ins_array);
+        $dbc->smartInsert("{$TRANS}PendingSpecialOrder",$ins_array);
 
         $note_vals = array(
             'order_id'=>$orderID,
@@ -695,7 +695,7 @@ class OrderViewPage extends FannieRESTfulPage
         $dbc->selectDB($this->config->get('TRANS_DB')); // switch back to previous
 
         if ($dbc->table_exists($TRANS . 'SpecialOrderStatus')) {
-            $dbc->smart_insert("{$TRANS}SpecialOrderStatus",$status_vals);
+            $dbc->smartInsert("{$TRANS}SpecialOrderStatus",$status_vals);
         }
 
         $this->createContactRow($orderID);
@@ -824,8 +824,8 @@ HTML;
         $dbc->selectDB($this->config->get('OP_DB'));
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
 
-        $deptP = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments order by dept_no");
-        $deptR = $dbc->exec_statement($deptP);
+        $deptP = $dbc->prepare("SELECT dept_no,dept_name FROM departments order by dept_no");
+        $deptR = $dbc->execute($deptP);
         $depts = array(0=>'Unassigned');
         while($deptW = $dbc->fetch_row($deptR)) {
             $depts[$deptW['dept_no']] = $deptW['dept_name'];
@@ -833,14 +833,14 @@ HTML;
 
         $ret = '<table class="table table-bordered table-striped">';
         $ret .= '<tr><th>UPC</th><th>SKU</th><th>Description</th><th>Cases</th><th>SRP</th><th>Actual</th><th>Qty</th><th>Dept</th><th>&nbsp;</th></tr>';
-        $prep = $dbc->prepare_statement("SELECT o.upc,o.description,total,quantity,department,
+        $prep = $dbc->prepare("SELECT o.upc,o.description,total,quantity,department,
             v.sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch,
             o.trans_id,o.unitPrice,o.memType,o.staff
             FROM {$TRANS}PendingSpecialOrder as o
             left join vendorItems as v on o.upc=v.upc AND vendorID=1
             WHERE order_id=? AND trans_type='I' 
             ORDER BY trans_id DESC");
-        $res = $dbc->exec_statement($prep, array($orderID));
+        $res = $dbc->execute($prep, array($orderID));
         $num_rows = $dbc->num_rows($res);
         $prev_id = 0;
         while ($row = $dbc->fetch_row($res)) {
@@ -951,14 +951,14 @@ HTML;
         $ret .= "<form data-order=\"$orderID\" data-trans=\"$transID\">";
         $ret .= '<div class="form-inline">';
         $ret .= '<select id="newdept" class="form-control">';
-        $prep = $dbc->prepare_statement("select super_name,
+        $prep = $dbc->prepare("select super_name,
             CASE WHEN MIN(map_to) IS NULL THEN MIN(m.dept_ID) ELSE MIN(map_to) END
             from MasterSuperDepts
             as m left join {$TRANS}SpecialOrderDeptMap as s
             on m.dept_ID=s.dept_ID
             where m.superID > 0
             group by super_name ORDER BY super_name");
-        $res = $dbc->exec_statement($prep);
+        $res = $dbc->execute($prep);
         while ($row = $dbc->fetch_row($res)) {
             $ret .= sprintf('<option value="%d">%s</option>',$row[1],$row[0]);
         }
@@ -977,12 +977,12 @@ HTML;
         $dbc->selectDB($this->config->get('OP_DB'));
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
 
-        $query = $dbc->prepare_statement("SELECT o.unitPrice,o.itemQtty,o.quantity,o.discounttype,
+        $query = $dbc->prepare("SELECT o.unitPrice,o.itemQtty,o.quantity,o.discounttype,
             c.type,c.memType,o.regPrice,o.total,o.discountable,o.cost,o.card_no
             FROM {$TRANS}PendingSpecialOrder AS o LEFT JOIN custdata AS c ON
             o.card_no=c.CardNo AND c.personNum=1
             WHERE order_id=? AND trans_id=?");
-        $response = $dbc->exec_statement($query, array($oid,$tid));
+        $response = $dbc->execute($query, array($oid,$tid));
         $row = $dbc->fetch_row($response);
 
         $regPrice = $row['itemQtty']*$row['quantity']*$row['unitPrice'];
@@ -1006,10 +1006,10 @@ HTML;
             $total = $row['total'];
         }
 
-        $query = $dbc->prepare_statement("UPDATE {$TRANS}PendingSpecialOrder SET
+        $query = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET
                 total=?,regPrice=?
                 WHERE order_id=? AND trans_id=?");
-        $dbc->exec_statement($query, array($total,$regPrice,$oid,$tid));
+        $dbc->execute($query, array($total,$regPrice,$oid,$tid));
 
         return array(
             'regPrice'=>sprintf("%.2f",$regPrice),

@@ -37,32 +37,13 @@ class WfcHtSyncPage extends FanniePage
 
     public $page_set = 'Plugin :: WFC Hours Tracking';
     public $description = '[Sync Accounts] brings unix account in sync with web accounts.';
-    public $themed = true;
 
-    public function body_content()
+    private function checkLocalAccounts($EXCLUDE_EMAILS)
     {
-        global $FANNIE_OP_DB;
-
-        $EXCLUDE_EMAILS = array(
-            'root'=>True,
-            'finance'=>True,
-            'pop'=>True,
-            'quickbooks'=>True,
-            'testuser'=>True,
-            'printer'=>True,
-            'games'=>True,
-            'csc'=>True,
-            'ldap'=>True,
-            'relfvin'=>True,
-            'jkresha'=>True
-        );
-
         $new_accounts = array();
-        $ret = '';
-
-        $db = WfcHtLib::hours_dbconnect();
-        $chkQ = $db->prepare_statement("SELECT empID, name FROM employees WHERE empID=?");
-        $insQ = $db->prepare_statement("INSERT INTO employees VALUES (?,?,NULL,0,8,NULL,0)");
+        $dbc = WfcHtLib::hours_dbconnect();
+        $chkQ = $dbc->prepare("SELECT empID, name FROM employees WHERE empID=?");
+        $insQ = $dbc->prepare("INSERT INTO employees VALUES (?,?,NULL,0,8,NULL,0)");
         exec('getent passwd', $users, $exit_code);
         foreach ($users as $line) {
             // extract users with group 100 from unix passwd file
@@ -94,45 +75,72 @@ class WfcHtSyncPage extends FanniePage
             }
 
             // create entry in hours database
-            $chkR = $db->exec_statement($chkQ, array($uid));
-            if ($db->num_rows($chkR) == 0) {
+            $chkR = $dbc->execute($chkQ, array($uid));
+            if ($dbc->num_rows($chkR) == 0) {
                 $new_accounts[$uid] = $shortname;
-                $db->exec_statement($insQ, array($uid, $name));
-                $ret .= "Added ADP entry for $name<br />";
+                $dbc->execute($insQ, array($uid, $name));
+                echo "Added ADP entry for $name<br />";
             } else {
-                $w = $db->fetch_row($chkR);
-                if ($name != $w['name']) {
+                $row = $dbc->fetch_row($chkR);
+                if ($name != $row['name']) {
                     echo '<span class="glpyhicon glyphicon-exclamation-sign"></span>';
                 }
                 echo "$name exists as ";
-                echo $w['name'] . '<br />';
+                echo $row['name'] . '<br />';
             }
         }
-        echo '<hr />';
 
+        return $new_accounts;
+    }
+
+    private function checkPosAccounts($new_accoutns)
+    {
         /**
           Create corresponding POS user accounts
         */
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $chkQ = $dbc->prepare_statement("SELECT uid FROM Users WHERE uid=?");
-        $insQ = $dbc->prepare_statement("INSERT INTO Users VALUES (?,'','',?,'','')");
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $chkQ = $dbc->prepare("SELECT uid FROM Users WHERE uid=?");
+        $insQ = $dbc->prepare("INSERT INTO Users VALUES (?,'','',?,'','')");
         foreach($new_accounts as $uid => $uname){
             $uid = str_pad($uid,4,'0',STR_PAD_LEFT);
-            $chkR = $dbc->exec_statement($chkQ, array($uid));
+            $chkR = $dbc->execute($chkQ, array($uid));
             if ($dbc->num_rows($chkR) == 0) {
-                $dbc->exec_statement($insQ, array($uname, $uid));
-                $ret .= "Added user account for $uname<br />";
+                $dbc->execute($insQ, array($uname, $uid));
+                echo "Added user account for $uname<br />";
             }
         }
+    }
+
+    public function body_content()
+    {
+        ob_start();
+
+        $EXCLUDE_EMAILS = array(
+            'root'=>True,
+            'finance'=>True,
+            'pop'=>True,
+            'quickbooks'=>True,
+            'testuser'=>True,
+            'printer'=>True,
+            'games'=>True,
+            'csc'=>True,
+            'ldap'=>True,
+            'relfvin'=>True,
+            'jkresha'=>True
+        );
+
+        $new_accounts = $this->checkLocalAccounts($EXCLUDE_EMAILS);
+
+        echo '<hr />';
 
         if (count($new_accounts) == 0){
-            $ret .= '<i>No new employees found</i><br />';
+            echo '<i>No new employees found</i><br />';
         }
 
-        $ret .= '<p />
+        echo '<p />
             <a href="WfcHtMenuPage.php">Main Menu</a>';
 
-        return $ret;
+        return ob_get_clean();
     }
 }
 

@@ -54,4 +54,3 @@ function UNFItoWFC($upc){
     return str_pad($combined,13,'0',STR_PAD_LEFT);
 }
 
-?>

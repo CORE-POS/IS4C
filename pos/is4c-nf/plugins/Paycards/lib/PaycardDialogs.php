@@ -75,7 +75,7 @@ class PaycardDialogs
                     AND PAN LIKE \'%' . $pan4 . '\'';
         if (!$dbTrans->table_exists('PaycardTransactions')) {
             $sql = "SELECT transID,cashierNo,laneNo,transNo FROM efsnetRequest WHERE "
-                .$dbTrans->identifier_escape('date')."='".$today."' AND (PAN LIKE '%".$pan4."')"; 
+                .$dbTrans->identifierEscape('date')."='".$today."' AND (PAN LIKE '%".$pan4."')"; 
         }
         $search = PaycardLib::paycard_db_query($sql, $dbTrans);
         $num = PaycardLib::paycard_db_num_rows($search);
@@ -126,7 +126,7 @@ class PaycardDialogs
         // @deprecated table 6May14
         if (!$dbTrans->table_exists('PaycardTransactions')) {
             $sql = "SELECT live,PAN,mode,amount,name FROM efsnetRequest 
-                WHERE ".$dbTrans->identifier_escape('date')."='".$today."' AND cashierNo=".$trans[0]." AND 
+                WHERE ".$dbTrans->identifierEscape('date')."='".$today."' AND cashierNo=".$trans[0]." AND 
                 laneNo=".$trans[1]." AND transNo=".$trans[2]." AND transID=".$id;
         }
         $search = PaycardLib::paycard_db_query($sql, $dbTrans);
@@ -169,7 +169,7 @@ class PaycardDialogs
         // @deprecated table 5May14
         if (!$dbTrans->table_exists('PaycardTransactions')) {
             $sql = "SELECT commErr,httpCode,validResponse,xResponseCode,
-                xTransactionID FROM efsnetResponse WHERE ".$dbTrans->identifier_escape('date')."='".$today."' 
+                xTransactionID FROM efsnetResponse WHERE ".$dbTrans->identifierEscape('date')."='".$today."' 
                 AND cashierNo=".$trans[0]." AND laneNo=".$trans[1]." AND transNo=".$trans[2]." AND transID=".$id;
         }
         $search = PaycardLib::paycard_db_query($sql, $dbTrans);
@@ -249,7 +249,7 @@ class PaycardDialogs
         // @deprecated table 5May14
         if (!$dbTrans->table_exists('PaycardTransactions')) {
             $sql = "SELECT transID FROM efsnetRequestMod WHERE "
-                    .$dbTrans->identifier_escape('date')."=".$today
+                    .$dbTrans->identifierEscape('date')."=".$today
                     ." AND cashierNo=".$trans[0]." AND laneNo=".$trans[1]
                     ." AND transNo=".$trans[2]." AND transID=".$id
                     ." AND mode='void' AND xResponseCode=0";

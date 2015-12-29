@@ -32,11 +32,11 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(False,$rows);
         $this->assertEquals(1,$rows);
 
-        $fields = $sql->num_fields($result);
+        $fields = $sql->numFields($result);
         $this->assertNotEquals(False,$fields);
         $this->assertEquals(1,$fields);
 
-        $type = strtolower($sql->field_type($result,0));
+        $type = strtolower($sql->fieldType($result,0));
         $constraint = $this->logicalOr(
             $this->equalTo('int'),
             $this->equalTo('longlong')
@@ -100,9 +100,9 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals('',$error);
 
         /* prepared statements */
-        $prep = $sql->prepare_statement("SELECT ? as col");
+        $prep = $sql->prepare("SELECT ? as col");
         $this->assertNotEquals(False,$prep);
-        $exec = $sql->exec_statement($prep,array(2));
+        $exec = $sql->execute($prep,array(2));
         $this->assertNotEquals(False,$exec);
         $row = $sql->fetch_row($exec);
         $this->assertNotEquals(False,$row);

@@ -54,4 +54,3 @@ class Wakeup extends Parser {
     }
 }
 
-?>

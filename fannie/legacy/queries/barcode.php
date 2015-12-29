@@ -140,4 +140,3 @@ function printMods($original_upc){
     print "</i></div>";
 }
 
-?>

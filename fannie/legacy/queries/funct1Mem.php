@@ -27,7 +27,7 @@ function select_cols_to_table($query,$border,$bgcolor,$cols)
         echo "<tr align left>\n";
         /*for($i=0; $i<5; $i++)
         {
-                echo "<th>" . $sql->field_name($results,$i). "</th>\n";
+                echo "<th>" . $sql->fieldName($results,$i). "</th>\n";
         }
         echo "</tr>\n"; *///end table header
         //layout table body
@@ -74,7 +74,7 @@ function select_to_table($query,$border,$bgcolor)
     echo "<tr align left>\n";
     /*for($i=0; $i<5; $i++)
     {
-        echo "<th>" . $sql->field_name($results,$i). "</th>\n";
+        echo "<th>" . $sql->fieldName($results,$i). "</th>\n";
     }
     echo "</tr>\n"; *///end table header
     //layout table body
@@ -111,7 +111,7 @@ function prodList_to_table($query,$border,$bgcolor,$upc)
 {
     global $sql;
         $results = $sql->query($query); 
-        $number_cols = $sql->num_fields($results);
+        $number_cols = $sql->numFields($results);
         //display query
         //echo "<b>query: $query</b>";
         //layout table header
@@ -119,7 +119,7 @@ function prodList_to_table($query,$border,$bgcolor,$upc)
         echo "<tr align left>\n";
         /*for($i=0; $i<5; $i++)
         {
-                echo "<th>" . $sql->field_name($results,$i). "</th>\n";
+                echo "<th>" . $sql->fieldName($results,$i). "</th>\n";
         }
         echo "</tr>\n"; *///end table header
         //layout table body
@@ -168,7 +168,7 @@ function like_to_table($query,$border,$bgcolor)
 {
     global $sql;
         $results = $sql->query($query); 
-        $number_cols = $sql->num_fields($results);
+        $number_cols = $sql->numFields($results);
         //display query
         //echo "<b>query: $query</b>";
         //layout table header
@@ -176,7 +176,7 @@ function like_to_table($query,$border,$bgcolor)
         echo "<tr align left>\n";
         /*for($i=0; $i<5; $i++)
         {
-                echo "<th>" . $sql->field_name($results,$i). "</th>\n";
+                echo "<th>" . $sql->fieldName($results,$i). "</th>\n";
         }
         echo "</tr>\n"; *///end table header
         //layout table body
@@ -216,8 +216,8 @@ function receipt_to_table($query,$query2,$border,$bgcolor)
     //echo $query2;
     $result = $sql->query($query2);
     $results = $sql->query($query); 
-    $number_cols = $sql->num_fields($results);
-    $number2_cols = $sql->num_fields($result);
+    $number_cols = $sql->numFields($results);
+    $number2_cols = $sql->numFields($result);
     //display query
     //echo "<b>query: $query</b>";
     //layout table header
@@ -240,7 +240,7 @@ function receipt_to_table($query,$query2,$border,$bgcolor)
     echo "<tr align left>\n";
     /*for($i=0; $i<5; $i++)
     {
-        echo "<th>" . $sql->field_name($results,$i). "</th>\n";
+        echo "<th>" . $sql->fieldName($results,$i). "</th>\n";
     }
     echo "</tr>\n"; *///end table header
     //layout table body
@@ -287,8 +287,8 @@ function edit_receipt($query,$query2,$border,$bgcolor)
     global $sql;
         $result = $sql->query($query2);
         $results = $sql->query($query);
-        $number_cols = $sql->num_fields($results);
-        $number2_cols = $sql->num_fields($result);
+        $number_cols = $sql->numFields($results);
+        $number2_cols = $sql->numFields($result);
         $row2 = $sql->fetch_row($result);
         $emp_no = $row2[4];
     echo "<form action=editReceipt2.php method=GET name=edit>";
@@ -363,7 +363,7 @@ function select_star_from($table)
     global $sql;
     $query = "SELECT * FROM $table";
     $results = $sql->query($query); 
-    $number_cols = $sql->num_fields($results);
+    $number_cols = $sql->numFields($results);
     //display query
     echo "<b>query: $query</b>";
     //layout table header
@@ -371,7 +371,7 @@ function select_star_from($table)
     echo "<tr align left>\n";
     for($i=0; $i<$number_cols; $i++)
     {
-        echo "<th>" . $sql->field_name($results,$i). "</th>\n";
+        echo "<th>" . $sql->fieldName($results,$i). "</th>\n";
     }
     echo "</tr>\n"; //end table header
     //layout table body
@@ -411,7 +411,7 @@ function select_where_equal($table,$where,$whereVar)
     global $sql;
     $query = "SELECT * FROM $table WHERE $where = '$whereVar'";
     $results = $sql->query($query); 
-    $number_cols = $sql->num_fields($results);
+    $number_cols = $sql->numFields($results);
     //display query
     echo "<b>query: $query</b>";
     //layout table header
@@ -419,7 +419,7 @@ function select_where_equal($table,$where,$whereVar)
     echo "<tr align left>\n";
     for($i=0; $i<$number_cols; $i++)
     {
-        echo "<th>" . $sql->field_name($results,$i). "</th>\n";
+        echo "<th>" . $sql->fieldName($results,$i). "</th>\n";
     }
     echo "</tr>\n"; //end table header
     //layout table body
@@ -460,7 +460,7 @@ function select_where_between($table,$where,$whereVar1,$whereVar2)
     global $sql;
     $query = "SELECT * FROM $table WHERE $where BETWEEN '$whereVar1' AND '$whereVar2'";
     $results = $sql->query($query); 
-    $number_cols = $sql->num_fields($results);
+    $number_cols = $sql->numFields($results);
     //display query
     echo "<b>query: $query</b>";
     //layout table header
@@ -468,7 +468,7 @@ function select_where_between($table,$where,$whereVar1,$whereVar2)
     echo "<tr align left>\n";
     for($i=0; $i<$number_cols; $i++)
     {
-        echo "<th>" . $sql->field_name($results,$i). "</th>\n";
+        echo "<th>" . $sql->fieldName($results,$i). "</th>\n";
     }
     echo "</tr>\n"; //end table header
     //layout table body
@@ -508,7 +508,7 @@ function select_to_drop($table,$value,$label,$name)
     global $sql;
     $query = "SELECT * FROM $table";
     $results = $sql->query($query); 
-    $number_cols = $sql->num_fields($results);
+    $number_cols = $sql->numFields($results);
     //display query
     echo "<b>query: $query</b>";
     echo "<select name=$name id=$name>";
@@ -525,7 +525,7 @@ function query_to_drop($query,$value,$label,$name,$line)
 {
     global $sql;
     $results = $sql->query($query); 
-        $number_cols = $sql->num_fields($results);
+        $number_cols = $sql->numFields($results);
 
         //display query
     //echo $number_cols;
@@ -733,4 +733,3 @@ function log_info($name,$variable){
   fclose($log);
 }
 
-?>

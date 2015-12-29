@@ -33,7 +33,7 @@ class WicProdReport extends FannieReportPage
     public $themed = true;
 
     protected $report_headers = array('UPC', 'Brand', 'Description', 'Vendor', 
-                                'Cost', 'Retail', 'location');
+                                'Cost', 'Retail', 'location', 'Department');
     protected $sort_direction = 1;
     protected $title = "Fannie : WIC Product Report";
     protected $header = "WIC Product Report";
@@ -57,6 +57,8 @@ class WicProdReport extends FannieReportPage
                     p.normal_price,
                     p.cost, 
                     v.vendorName, 
+                    p.department,
+                    d.dept_name,
                     fs.name
                 FROM products AS p
                     LEFT JOIN productUser AS pu ON pu.upc=p.upc
@@ -64,6 +66,7 @@ class WicProdReport extends FannieReportPage
                     LEFT JOIN vendors AS v ON v.vendorID=vi.vendorID
                     LEFT JOIN prodPhysicalLocation AS pl ON pl.upc=p.upc
                     LEFT JOIN FloorSections AS fs ON fs.floorSectionID=pl.floorSectionID
+                    LEFT JOIN departments AS d ON p.department=d.dept_no
                 WHERE p.inUse=1
                     AND p.wicable=1
                 ;";
@@ -82,6 +85,7 @@ class WicProdReport extends FannieReportPage
             $item[$row['upc']][4] = $row['cost'];
             $item[$row['upc']][5] = $row['normal_price'];
             $item[$row['upc']][6] = $row['name'] ? $row['name'] : '';
+            $item[$row['upc']][7] = $row['department'] . ' ' . $row['dept_name'];
         }
 
         sort($item);

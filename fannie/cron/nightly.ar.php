@@ -163,4 +163,3 @@ if (date("j")==1 && $sql->table_exists("ar_history_backup")){
 
 echo cron_msg("Done.");
 
-?>

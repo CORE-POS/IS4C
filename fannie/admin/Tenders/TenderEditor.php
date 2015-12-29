@@ -162,8 +162,8 @@ class TenderEditor extends FannieRESTfulPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $newID=1;
-        $idQ = $dbc->prepare_statement("SELECT MAX(TenderID) FROM tenders");
-        $idR = $dbc->exec_statement($idQ);
+        $idQ = $dbc->prepare("SELECT MAX(TenderID) FROM tenders");
+        $idR = $dbc->execute($idQ);
         if ($dbc->num_rows($idR) > 0){
             $idW = $dbc->fetch_row($idR);
             if (!empty($idW[0])) $newID = $idW[0] + 1;
@@ -197,36 +197,36 @@ class TenderEditor extends FannieRESTfulPage
             $ret .= sprintf('<tr>
                 <td><input size="2" maxlength="2" value="%s"
                     class="form-control"
-                    onchange="saveCode.call(this, this.value,%d);" /></td>
+                    onchange="tenderEditor.saveCode.call(this, this.value,%d);" /></td>
                 <td><input size="10" maxlength="255" value="%s"
                     class="form-control"
-                    onchange="saveName.call(this, this.value,%d);" /></td>
+                    onchange="tenderEditor.saveName.call(this, this.value,%d);" /></td>
                 <td><input size="2" maxlength="2" value="%s"
                     class="form-control"
-                    onchange="saveType.call(this, this.value,%d);" /></td>
+                    onchange="tenderEditor.saveType.call(this, this.value,%d);" /></td>
                 <td><input size="10" maxlength="255" value="%s"
                     class="form-control"
-                    onchange="saveCMsg.call(this, this.value,%d);" /></td>
+                    onchange="tenderEditor.saveCMsg.call(this, this.value,%d);" /></td>
                 <td class="col-sm-1"><div class="input-group">
                     <span class="input-group-addon">$</span>
                     <input size="6" maxlength="10" value="%.2f"
                     class="form-control price-field"
-                    onchange="saveMin.call(this, this.value,%d);" />
+                    onchange="tenderEditor.saveMin.call(this, this.value,%d);" />
                 </div></td>
                 <td class="col-sm-1"><div class="input-group">
                     <span class="input-group-addon">$</span>
                     <input size="6" maxlength="10" value="%.2f"
                     class="form-control price-field"
-                    onchange="saveMax.call(this, this.value,%d);" />
+                    onchange="tenderEditor.saveMax.call(this, this.value,%d);" />
                 </div></td>
                 <td class="col-sm-1"><div class="input-group"><span class="input-group-addon">$</span>
                     <input size="6" maxlength="10" value="%.2f"
                     class="form-control price-field"
-                    onchange="saveRLimit.call(this, this.value,%d);" />
+                    onchange="tenderEditor.saveRLimit.call(this, this.value,%d);" />
                 </div></td>
                 <td><input size="10" value="%s"
                     class="form-control"
-                    onchange="saveSalesCode.call(this, this.value, %d);" /></td>
+                    onchange="tenderEditor.saveSalesCode.call(this, this.value, %d);" /></td>
                 </tr>',
                 $row->TenderCode(),$row->TenderID(),
                 $row->TenderName(),$row->TenderID(),
@@ -240,222 +240,16 @@ class TenderEditor extends FannieRESTfulPage
         }
         $ret .= "</table>";
         $ret .= "<p>";
-        $ret .= '<button type="button" class="btn btn-default" onclick="addTender();return false;">Add a new tender</button>';
+        $ret .= '<button type="button" class="btn btn-default" onclick="tenderEditor.addTender();return false;">Add a new tender</button>';
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
         $ret .= '<button type="button" class="btn btn-default" onclick="location=\'DeleteTenderPage.php\';">Delete a tender</button>';
         $ret .= '</p>';
         return $ret;
     }
 
-    function javascript_content()
-    {
-        return <<<JAVASCRIPT
-function saveCode(val,t_id){
-    var elem = $(this);
-    var orig = this.defaultValue;
-    $.ajax({
-        type:'post',
-        data: 'saveCode='+val+'&id='+t_id,
-        success: function(data){
-            var timeout=1500;
-            if (data == "") {
-                data = 'Saved!';
-            } else {
-                elem.val(orig);
-                timeout = 3000;
-            }
-            elem.popover({
-                html: true,
-                content: data,
-                placement: 'auto bottom'
-            });
-            elem.popover('show');
-            setTimeout(function(){elem.popover('destroy') }, timeout);
-        }   
-    });
-}
-function saveName(val,t_id){
-    var elem = $(this);
-    var orig = this.defaultValue;
-    $.ajax({
-        type:'post',
-        data: 'saveName='+val+'&id='+t_id,
-        success: function(data){
-            var timeout=1500;
-            if (data == "") {
-                data = 'Saved!';
-            } else {
-                elem.val(orig);
-                timeout = 3000;
-            }
-            elem.popover({
-                html: true,
-                content: data,
-                placement: 'auto bottom'
-            });
-            elem.popover('show');
-            setTimeout(function(){elem.popover('destroy') }, timeout);
-        }
-    });
-}
-function saveType(val,t_id){
-    var elem = $(this);
-    var orig = this.defaultValue;
-    $.ajax({
-        type:'post',
-        data: 'saveType='+val+'&id='+t_id,
-        success: function(data){
-            var timeout=1500;
-            if (data == "") {
-                data = 'Saved!';
-            } else {
-                elem.val(orig);
-                timeout = 3000;
-            }
-            elem.popover({
-                html: true,
-                content: data,
-                placement: 'auto bottom'
-            });
-            elem.popover('show');
-            setTimeout(function(){elem.popover('destroy') }, timeout);
-        }   
-    });
-}
-function saveCMsg(val,t_id){
-    var elem = $(this);
-    var orig = this.defaultValue;
-    $.ajax({
-        type:'post',
-        data: 'saveCMsg='+val+'&id='+t_id,
-        success: function(data){
-            var timeout=1500;
-            if (data == "") {
-                data = 'Saved!';
-            } else {
-                elem.val(orig);
-                timeout = 3000;
-            }
-            elem.popover({
-                html: true,
-                content: data,
-                placement: 'auto bottom'
-            });
-            elem.popover('show');
-            setTimeout(function(){elem.popover('destroy') }, timeout);
-        }   
-    });
-}
-function saveMin(val,t_id){
-    var elem = $(this);
-    var orig = this.defaultValue;
-    $.ajax({
-        type:'post',
-        data: 'saveMin='+val+'&id='+t_id,
-        success: function(data){
-            var timeout=1500;
-            if (data == "") {
-                data = 'Saved!';
-            } else {
-                elem.val(orig);
-                timeout = 3000;
-            }
-            elem.popover({
-                html: true,
-                content: data,
-                placement: 'auto bottom'
-            });
-            elem.popover('show');
-            setTimeout(function(){elem.popover('destroy') }, timeout);
-        }   
-    });
-}
-function saveMax(val,t_id){
-    var elem = $(this);
-    var orig = this.defaultValue;
-    $.ajax({
-        type:'post',
-        data: 'saveMax='+val+'&id='+t_id,
-        success: function(data){
-            var timeout=1500;
-            if (data == "") {
-                data = 'Saved!';
-            } else {
-                elem.val(orig);
-                timeout = 3000;
-            }
-            elem.popover({
-                html: true,
-                content: data,
-                placement: 'auto bottom'
-            });
-            elem.popover('show');
-            setTimeout(function(){elem.popover('destroy') }, timeout);
-        }   
-    });
-}
-function saveRLimit(val,t_id){
-    var elem = $(this);
-    var orig = this.defaultValue;
-    $.ajax({
-        type:'post',
-        data: 'saveRLimit='+val+'&id='+t_id,
-        success: function(data){
-            var timeout=1500;
-            if (data == "") {
-                data = 'Saved!';
-            } else {
-                elem.val(orig);
-                timeout = 3000;
-            }
-            elem.popover({
-                html: true,
-                content: data,
-                placement: 'auto bottom'
-            });
-            elem.popover('show');
-            setTimeout(function(){elem.popover('destroy') }, timeout);
-        }   
-    });
-}
-function saveSalesCode(val, t_id){
-    var elem = $(this);
-    var orig = this.defaultValue;
-    $.ajax({
-        type:'post',
-        data: 'saveSalesCode='+val+'&id='+t_id,
-        success: function(data){
-            var timeout=1500;
-            if (data == "") {
-                data = 'Saved!';
-            } else {
-                elem.val(orig);
-                timeout = 3000;
-            }
-            elem.popover({
-                html: true,
-                content: data,
-                placement: 'auto bottom'
-            });
-            elem.popover('show');
-            setTimeout(function(){elem.popover('destroy') }, timeout);
-        }   
-    });
-}
-function addTender(){
-    $.ajax({
-        type:'post',
-        data:'newTender=yes',
-        success: function(data){
-            $('#mainDisplay').html(data);
-        }
-    });
-}
-JAVASCRIPT;
-    }
-
     function get_view()
     {
+        $this->addScript('edit.js');
         $ret = '<div id="alert-area"></div>';
         $ret .= '<div id="mainDisplay">';
         $ret .= $this->getTenderTable();
@@ -507,41 +301,74 @@ JAVASCRIPT;
         $model = $this->getTenderModel(1);
         $phpunit->assertEquals(true, $model->load());
 
+        $this->testCode($phpunit, $model);
+        $this->testName($phpunit, $model);
+        $this->testType($phpunit, $model);
+        $this->testChange($phpunit, $model);
+        $this->testMin($phpunit, $model);
+        $this->testMax($phpunit, $model);
+        $this->testRefund($phpunit, $model);
+        $this->testSalesCode($phpunit, $model);
+    }
+
+    private function testCode($phpunit, $model)
+    {
         $this->saveCode = 'ZZ';
         $phpunit->assertInternalType('bool', $this->post_id_saveCode_handler());
         $model->load();
         $phpunit->assertEquals('ZZ', $model->TenderCode());
+    }
 
+    private function testName($phpunit, $model)
+    {
         $this->saveName = 'Test Changed';
         $phpunit->assertInternalType('bool', $this->post_id_saveName_handler());
         $model->load();
         $phpunit->assertEquals('Test Changed', $model->TenderName());
+    }
 
+    private function testType($phpunit, $model)
+    {
         $this->saveType = 'YY';
         $phpunit->assertInternalType('bool', $this->post_id_saveType_handler());
         $model->load();
         $phpunit->assertEquals('YY', $model->TenderType());
+    }
 
+    private function testChange($phpunit, $model)
+    {
         $this->saveCMsg = 'Kickbacks';
         $phpunit->assertInternalType('bool', $this->post_id_saveCMsg_handler());
         $model->load();
         $phpunit->assertEquals('Kickbacks', $model->ChangeMessage());
+    }
 
+    private function testMin($phpunit, $model)
+    {
         $this->saveMin = 5;
         $phpunit->assertInternalType('bool', $this->post_id_saveMin_handler());
         $model->load();
         $phpunit->assertEquals(5, $model->MinAmount());
+    }
 
+    private function testMax($phpunit, $model)
+    {
         $this->saveMax = 15;
         $phpunit->assertInternalType('bool', $this->post_id_saveMax_handler());
         $model->load();
         $phpunit->assertEquals(15, $model->MaxAmount());
+    }
 
+    private function testRefund($phpunit, $model)
+    {
         $this->saveRLimit = 25;
         $phpunit->assertInternalType('bool', $this->post_id_saveRLimit_handler());
         $model->load();
         $phpunit->assertEquals(25, $model->MaxRefund());
+    }
 
+    private function testSalesCode($phpunit, $model)
+    {
         $this->saveSalesCode = 2500;
         $phpunit->assertInternalType('bool', $this->post_id_saveSalesCode_handler());
         $model->load();

@@ -9,5 +9,3 @@ function hours_dbconnect(){
     return FannieDB::get('HoursTracking');
 }
 
-
-?>

@@ -60,4 +60,3 @@ class Clear extends Parser {
 
 }
 
-?>

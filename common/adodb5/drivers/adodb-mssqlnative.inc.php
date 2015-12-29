@@ -126,7 +126,7 @@ class ADODB_mssqlnative extends ADOConnection {
 	var $sequences = false;
 	var $mssql_version = '';
 
-	function ADODB_mssqlnative()
+	function __construct()
 	{
 		if ($this->debug) {
 			ADOConnection::outp("<pre>");
@@ -837,7 +837,7 @@ class ADORecordset_mssqlnative extends ADORecordSet {
 	var $fieldOffset = 0;
 	// _mths works only in non-localised system
 
-	function ADORecordset_mssqlnative($id,$mode=false)
+	function __construct($id,$mode=false)
 	{
 		if ($mode === false) {
 			global $ADODB_FETCH_MODE;
@@ -1086,7 +1086,7 @@ class ADORecordset_mssqlnative extends ADORecordSet {
 
 
 class ADORecordSet_array_mssqlnative extends ADORecordSet_array {
-	function ADORecordSet_array_mssqlnative($id=-1,$mode=false)
+	function __construct($id=-1,$mode=false)
 	{
 		$this->ADORecordSet_array($id,$mode);
 	}

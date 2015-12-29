@@ -60,13 +60,13 @@ class BatchShelfTags extends FanniePage {
         $ret .= "<label>Select batch(es*) to be printed</label>";
         
         $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
-        $fetchQ = $dbc->prepare_statement("select b.batchID,b.batchName
+        $fetchQ = $dbc->prepare("select b.batchID,b.batchName
               from batches as b left join
               batchBarcodes as c on b.batchID = c.batchID
               where c.upc is not null
                   group by b.batchID,b.batchName
                   order by b.batchID desc");
-        $fetchR = $dbc->exec_statement($fetchQ);
+        $fetchR = $dbc->execute($fetchQ);
         $ret .= "<select name=batchID[] multiple class=\"form-control\" size=15>";
         while($fetchW = $dbc->fetch_array($fetchR))
             $ret .= "<option value=$fetchW[0]>$fetchW[1]</option>";

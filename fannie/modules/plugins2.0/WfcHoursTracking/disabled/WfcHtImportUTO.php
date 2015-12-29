@@ -53,7 +53,7 @@ if (isset($_POST["MAX_FILE_SIZE"])){
     echo "<input type=hidden name=pp value=\"$pp\" />";
     echo "<table cellpadding=4 cellspacing=0 border=1>";
     echo "<tr class=one><th>ADP ID</th><th>UTO Hours</th></tr>";
-    $checkQ = $db->prepare_statement("select empID from employees where adpID=?");
+    $checkQ = $db->prepare("select empID from employees where adpID=?");
     while (!feof($fp)){
         $line = fgets($fp);
 
@@ -63,7 +63,7 @@ if (isset($_POST["MAX_FILE_SIZE"])){
         $adpID = $fields[$ADP_COL];
         if (!is_numeric($adpID)) continue;
 
-        $checkR = $db->exec_statement($checkQ, array($adpID));
+        $checkR = $db->execute($checkQ, array($adpID));
         if ($db->num_rows($checkR) < 1){
             echo "Notice: ADP ID #$adpID doesn't match any current employee.";
             echo "Data for this ID is being omitted.<br />";
@@ -92,15 +92,15 @@ elseif (isset($_POST["data"])){
     $datalines = $_POST["data"];
     $ppID = $_POST["pp"];
     
-    $eIDQ = $db->prepare_statement("select empID from employees where adpID=?");
-    $upQ = $db->prepare_statement("update ImportedHoursData set UTOHours=? where empID=? and periodID=? LIMIT 1");
+    $eIDQ = $db->prepare("select empID from employees where adpID=?");
+    $upQ = $db->prepare("update ImportedHoursData set UTOHours=? where empID=? and periodID=? LIMIT 1");
     foreach ($datalines as $line){
         $fields = explode(",",$line);
-        $eIDR = $db->exec_statement($eIDQ, array($fields[0]));
+        $eIDR = $db->execute($eIDQ, array($fields[0]));
         if ($db->num_rows($eIDR) < 1) continue;
         $empID = array_pop($db->fetch_row($eIDR));
 
-        $upR = $db->exec_statement($upQ, array($fields[1], $empID, $ppID));
+        $upR = $db->execute($upQ, array($fields[1], $empID, $ppID));
     }
 
     echo "UTO data import complete!<br />";

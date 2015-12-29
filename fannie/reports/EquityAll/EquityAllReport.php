@@ -73,9 +73,9 @@ class EquityAllReport extends FannieReportPage
             WHERE $type_restrict AND $equity_restrict
             ORDER BY $num";
 
-        $p = $dbc->prepare_statement($q);
+        $p = $dbc->prepare($q);
 
-        $r = $dbc->exec_statement($p);
+        $r = $dbc->execute($p);
         $data = array();
         while($w = $dbc->fetch_row($r)) {
             $record = array();
@@ -144,4 +144,3 @@ class EquityAllReport extends FannieReportPage
 
 FannieDispatch::conditionalExec();
 
-?>

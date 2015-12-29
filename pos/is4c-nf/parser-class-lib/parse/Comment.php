@@ -55,4 +55,3 @@ class Comment extends Parser {
     }
 }
 
-?>

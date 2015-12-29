@@ -36,13 +36,13 @@ class Suspension extends \COREPOS\Fannie\API\member\MemberModule {
 
         $dbc = $this->db();
         
-        $infoQ = $dbc->prepare_statement("SELECT CASE WHEN s.type = 'I' THEN 'Inactive' ELSE 'Terminated' END as status,
+        $infoQ = $dbc->prepare("SELECT CASE WHEN s.type = 'I' THEN 'Inactive' ELSE 'Terminated' END as status,
                 s.suspDate,
                 CASE WHEN s.reasoncode = 0 THEN s.reason ELSE r.textStr END as reason
                 FROM suspensions AS s LEFT JOIN reasoncodes AS r
                 ON s.reasoncode & r.mask <> 0
                 WHERE s.cardno=?");
-        $infoR = $dbc->exec_statement($infoQ,array($memNum));
+        $infoR = $dbc->execute($infoQ,array($memNum));
 
         $status = "Active";
         $date = "";
@@ -85,4 +85,3 @@ class Suspension extends \COREPOS\Fannie\API\member\MemberModule {
     }
 }
 
-?>

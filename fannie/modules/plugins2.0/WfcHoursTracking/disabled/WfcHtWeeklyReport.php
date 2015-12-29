@@ -26,14 +26,14 @@ while($limitW = $sql->fetch_row($limitR)){
     $limitDay = $limitW[0];
 }
 
-$query = $sql->prepare_statement("SELECT e.empID,e.name,e.adpID,f.status,w.hours
+$query = $sql->prepare("SELECT e.empID,e.name,e.adpID,f.status,w.hours
     FROM employees AS e LEFT JOIN fullTimeStatus AS f
     ON e.empID = f.empID LEFT JOIN weeklyHours AS w
     ON e.empID = w.empID
     WHERE datediff(w.weekStart,?) >= 0
     AND deleted = 0
     ORDER BY e.name,w.weekStart");
-$result = $sql->exec_statement($query, array($limitDay));
+$result = $sql->execute($query, array($limitDay));
 while($row = $sql->fetch_row($result)){
     if (!isset($empData["$row[0]"]))
         $empData["$row[0]"] = array();
@@ -112,4 +112,4 @@ foreach($empData as $k=>$v){
 echo "</table>";
 
 */
-?>
+

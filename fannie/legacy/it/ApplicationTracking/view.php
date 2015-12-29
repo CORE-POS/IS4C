@@ -210,4 +210,3 @@ while(!empty($interviews) or !empty($notes)){
     }
 }
 
-?>

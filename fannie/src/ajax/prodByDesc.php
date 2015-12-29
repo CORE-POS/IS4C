@@ -25,8 +25,8 @@ if (strlen($search) > 2){
     }
     $q .=  "GROUP BY goodDesc
         ORDER BY goodDesc";
-    $p = $dbc->prepare_statement($q);
-    $r = $dbc->exec_statement($p,$args);
+    $p = $dbc->prepare($q);
+    $r = $dbc->execute($p,$args);
     while($w = $dbc->fetch_row($r)){
         $ret[] = array('label'=>$w[1],'value'=>$w[0]);
     }

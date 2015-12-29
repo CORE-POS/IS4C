@@ -71,8 +71,8 @@ function addAuth($name,$auth_class,$sub_start='all',$sub_end='all'){
     }
   }
 
-  $addQ = $sql->prepare_statement("insert into userPrivs values (?,?,?,?)");
-  $addR = $sql->exec_statement($addQ,array($uid,$auth_class,$sub_start,$sub_end));
+  $addQ = $sql->prepare("insert into userPrivs values (?,?,?,?)");
+  $addR = $sql->execute($addQ,array($uid,$auth_class,$sub_start,$sub_end));
   return true;
 }
 
@@ -82,8 +82,8 @@ function createClass($name, $notes){
     }
 
     $sql = dbconnect();
-    $checkQ = $sql->prepare_statement("select * from userKnownPrivs where auth_class='$name'");
-    $checkR = $sql->exec_statement($checkQ);
+    $checkQ = $sql->prepare("select * from userKnownPrivs where auth_class='$name'");
+    $checkR = $sql->execute($checkQ);
     if ($sql->num_rows($checkR) != 0){
         return true;
     }
@@ -93,9 +93,9 @@ function createClass($name, $notes){
     }
 
     $notes = str_replace("\n","<br />",$notes);
-    $insQ = $sql->prepare_statement("INSERT INTO userKnownPrivs (auth_class, notes)
+    $insQ = $sql->prepare("INSERT INTO userKnownPrivs (auth_class, notes)
             VALUES (?, ?)");
-    $insR = $sql->exec_statement($insQ,array($name,$notes));
+    $insR = $sql->execute($insQ,array($name,$notes));
     return ($insR) ? true : false;
 }
 
@@ -110,14 +110,14 @@ function deleteClass($name){
 
     $sql = dbconnect();
 
-    $q1 = $sql->prepare_statement("DELETE FROM userKnownPrivs WHERE auth_class=?");
-    $r1 = $sql->exec_statement($q1,array($name));
+    $q1 = $sql->prepare("DELETE FROM userKnownPrivs WHERE auth_class=?");
+    $r1 = $sql->execute($q1,array($name));
 
-    $q2 = $sql->prepare_statement("DELETE FROM userPrivs WHERE auth_class=?");
-    $r2 = $sql->exec_statement($q2,array($name));
+    $q2 = $sql->prepare("DELETE FROM userPrivs WHERE auth_class=?");
+    $r2 = $sql->execute($q2,array($name));
 
-    $q3 = $sql->prepare_statement("DELETE FROM userGroupPrivs WHERE auth=?");
-    $r3 = $sql->exec_statement($q3,array($name));
+    $q3 = $sql->prepare("DELETE FROM userGroupPrivs WHERE auth=?");
+    $r3 = $sql->execute($q3,array($name));
     return true;
 }
 
@@ -135,8 +135,8 @@ function deleteAuth($name,$auth_class){
     return false;
   }
   $sql = dbconnect();
-  $delQ = $sql->prepare_statement("delete from userPrivs where uid=? and auth_class=?");
-  $delR = $sql->exec_statement($delQ,array($uid,$auth_class));
+  $delQ = $sql->prepare("delete from userPrivs where uid=? and auth_class=?");
+  $delR = $sql->execute($delQ,array($uid,$auth_class));
   return true;
 }
 
@@ -154,8 +154,8 @@ function showAuths($name){
     return array();
   }
   $sql = dbconnect();
-  $fetchQ = $sql->prepare_statement("select auth_class,sub_start,sub_end from userPrivs where uid=?");
-  $fetchR = $sql->exec_statement($fetchQ,array($uid));
+  $fetchQ = $sql->prepare("select auth_class,sub_start,sub_end from userPrivs where uid=?");
+  $fetchR = $sql->execute($fetchQ,array($uid));
   $ret = array();
   while ($row = $sql->fetch_array($fetchR)){
     $ret[] = array($row[0], $row[1], $row[2]);
@@ -174,8 +174,8 @@ function showClasses(){
   echo "<th>Authorization class</th><th>Notes</th>";
   echo "</tr>";
   $sql = dbconnect();
-  $fetchQ = $sql->prepare_statement("select auth_class,notes from userKnownPrivs order by auth_class");
-  $fetchR = $sql->exec_statement($fetchQ);
+  $fetchQ = $sql->prepare("select auth_class,notes from userKnownPrivs order by auth_class");
+  $fetchR = $sql->execute($fetchQ);
   while ($row = $sql->fetch_array($fetchR)){
     echo "<tr>";
     echo "<td>$row[0]</td><td>".(empty($row[1])?'&nbsp;':$row[1])."</td>";
@@ -187,8 +187,8 @@ function showClasses(){
 
 function getAuthNotes($name){
     $sql = dbconnect();
-    $q = $sql->prepare_statement("SELECT notes FROM userKnownPrivs WHERE auth_class=?");
-    $r = $sql->exec_statement($q,array($name));
+    $q = $sql->prepare("SELECT notes FROM userKnownPrivs WHERE auth_class=?");
+    $r = $sql->execute($q,array($name));
     if ($sql->num_rows($r) == 0) return "";
     $w = $sql->fetch_row($r);
     return str_replace("<br />","\n",$w['notes']);
@@ -200,16 +200,16 @@ function updateAuthNotes($name,$notes){
     }
     $sql = dbconnect();
     $notes = str_replace("\n","<br />",$notes);
-    $q = $sql->prepare_statement("UPDATE userKnownPrivs SET notes=? WHERE auth_class=?");
-    $r = $sql->exec_statement($q,array($notes,$name));
+    $q = $sql->prepare("UPDATE userKnownPrivs SET notes=? WHERE auth_class=?");
+    $r = $sql->execute($q,array($notes,$name));
     return true;
 }
 
 function getAuthList(){
     $sql = dbconnect();
     $ret = array();
-    $prep = $sql->prepare_statement("SELECT auth_class FROM userKnownPrivs ORDER BY auth_class");
-    $result = $sql->exec_statement($prep);
+    $prep = $sql->prepare("SELECT auth_class FROM userKnownPrivs ORDER BY auth_class");
+    $result = $sql->execute($prep);
     while($row = $sql->fetch_Row($result))
         $ret[] = $row['auth_class'];
 
@@ -245,13 +245,12 @@ function checkAuth($name,$auth_class,$sub='all'){
     return false;
   }
   $sql = dbconnect();
-  $checkQ = $sql->prepare_statement("select * from userPrivs where uid=? and auth_class=? and
+  $checkQ = $sql->prepare("select * from userPrivs where uid=? and auth_class=? and
              ((? between sub_start and sub_end) or (sub_start='all' and sub_end='all'))");
-  $checkR = $sql->exec_statement($checkQ,array($uid,$auth_class,$sub));
+  $checkR = $sql->execute($checkQ,array($uid,$auth_class,$sub));
   if ($sql->num_rows($checkR) == 0){
     return false;
   }
   return true;
 }
 
-?>

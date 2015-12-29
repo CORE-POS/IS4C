@@ -346,4 +346,4 @@ else {
         $pdf->Output();  //Output PDF file to screen.
     }
 }    
-?>
+

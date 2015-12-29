@@ -162,8 +162,8 @@ class HourlyTransReport extends FannieReportPage
                    GROUP BY $date_selector, $hour
                    ORDER BY $date_selector, $hour";
 
-        $prep = $dbc->prepare_statement($query);
-        $result = $dbc->exec_statement($query, $args);
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($query, $args);
 
         $dataset = array();
         $minhour = 24;
@@ -388,4 +388,3 @@ function showGraph(i) {
 
 FannieDispatch::conditionalExec();
 
-?>

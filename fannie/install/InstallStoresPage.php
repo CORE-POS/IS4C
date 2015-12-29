@@ -316,4 +316,3 @@ confset('FANNIE_READONLY_JSON', "'$FANNIE_READONLY_JSON'");
 
 FannieDispatch::conditionalExec(false);
 
-?>

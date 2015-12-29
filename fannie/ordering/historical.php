@@ -81,17 +81,17 @@ $status = array(
 );
 
 $assignments = array();
-$q = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts
+$q = $dbc->prepare("SELECT superID,super_name FROM MasterSuperDepts
     GROUP BY superID,super_name ORDER BY superID");
-$r = $dbc->exec_statement($q);
+$r = $dbc->execute($q);
 while($w = $dbc->fetch_row($r))
     $assignments[$w[0]] = $w[1];
 unset($assignments[0]); 
 
 $suppliers = array('');
-$q = $dbc->prepare_statement("SELECT mixMatch FROM {$TRANS}CompleteSpecialOrder WHERE trans_type='I'
+$q = $dbc->prepare("SELECT mixMatch FROM {$TRANS}CompleteSpecialOrder WHERE trans_type='I'
     GROUP BY mixMatch ORDER BY mixMatch");
-$r = $dbc->exec_statement($q);
+$r = $dbc->execute($q);
 while($w = $dbc->fetch_row($r)){
     $suppliers[] = $w[0];
 }
@@ -195,7 +195,7 @@ if ($paged) {
 }
 $lookupQ .= " ORDER BY $orderby";
 $p = $dbc->prepare($lookupQ);
-$r = $dbc->exec_statement($p,$filterargs);
+$r = $dbc->execute($p,$filterargs);
 
 $orders = array();
 $valid_ids = array();
@@ -215,24 +215,24 @@ if ($f2 !== '' || $f3 !== '') {
         $filter .= "AND p.mixMatch=?";
         $args[] = $f3;
     }
-    $p = $dbc->prepare_statement("SELECT p.order_id FROM {$TRANS}CompleteSpecialOrder AS p
+    $p = $dbc->prepare("SELECT p.order_id FROM {$TRANS}CompleteSpecialOrder AS p
         LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
         LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
         WHERE 1=1 $filter
         GROUP BY p.order_id");
-    $r = $dbc->exec_statement($p,$args);
+    $r = $dbc->execute($p,$args);
     $valid_ids = array();
     while($w = $dbc->fetch_row($r))
         $valid_ids[$w['order_id']] = True;
 
     if ($f2 !== '' && $f3 === '') {
-        $q2 = $dbc->prepare_statement("SELECT o.specialOrderID FROM 
+        $q2 = $dbc->prepare("SELECT o.specialOrderID FROM 
                 {$TRANS}SpecialOrders AS o
                 INNER JOIN {$TRANS}CompleteSpecialOrder AS p
                 ON p.order_id=o.specialOrderID
                 WHERE o.noteSuperID IN (?)
                 GROUP BY o.specialOrderID");
-        $r2 = $dbc->exec_statement($q2, array($f2));
+        $r2 = $dbc->execute($q2, array($f2));
         while($w2 = $dbc->fetch_row($r2)) {
             $valid_ids[$w2['specialOrderID']] = true;
         }
@@ -252,10 +252,10 @@ if (empty($oargs)) {
     // avoid invalid query
 }
 
-$itemsQ = $dbc->prepare_statement("SELECT order_id,description,mixMatch FROM 
+$itemsQ = $dbc->prepare("SELECT order_id,description,mixMatch FROM 
     {$TRANS}CompleteSpecialOrder WHERE order_id IN $oids
     AND trans_id > 0");
-$itemsR = $dbc->exec_statement($itemsQ, $oargs);
+$itemsR = $dbc->execute($itemsQ, $oargs);
 $items = array();
 $suppliers = array();
 while ($itemsW = $dbc->fetch_row($itemsR)) {
@@ -400,4 +400,4 @@ function togglePrint(username,oid){
 </script>
 <?php
 //include($FANNIE_ROOT.'src/footer.html');
-?>
+

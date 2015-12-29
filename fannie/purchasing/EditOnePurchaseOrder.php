@@ -60,8 +60,8 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
         $skuQ = 'SELECT v.brand, v.description, v.size, v.units, v.cost, v.sku
                  FROM vendorItems AS v
                  WHERE v.sku LIKE ? AND v.vendorID=?';
-        $skuP = $dbc->prepare_statement($skuQ);
-        $skuR = $dbc->exec_statement($skuP, array('%'.$this->search.'%', $this->id));   
+        $skuP = $dbc->prepare($skuQ);
+        $skuR = $dbc->execute($skuP, array('%'.$this->search.'%', $this->id));   
         while($w = $dbc->fetch_row($skuR)){
             $result = array(
             'sku' => $w['sku'],
@@ -82,8 +82,8 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
         // search by UPC
         $upcQ = 'SELECT brand, description, size, units, cost, sku
             FROM vendorItems WHERE upc = ? AND vendorID=?';
-        $upcP = $dbc->prepare_statement($upcQ);
-        $upcR = $dbc->exec_statement($upcP, array(BarcodeLib::padUPC($this->search), $this->id));
+        $upcP = $dbc->prepare($upcQ);
+        $upcR = $dbc->execute($upcP, array(BarcodeLib::padUPC($this->search), $this->id));
         while($w = $dbc->fetch_row($upcR)){
             $result = array(
             'sku' => $w['sku'],
@@ -107,8 +107,8 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
             INNER JOIN vendorItems as v
             ON i.vendor_sku = v.sku AND i.vendorID=v.vendorID
             WHERE our_sku = ? AND i.vendorID=?';
-        $iskuP = $dbc->prepare_statement($iskuQ);
-        $iskuR = $dbc->exec_statement($iskuP, array($this->search, $this->id));
+        $iskuP = $dbc->prepare($iskuQ);
+        $iskuR = $dbc->execute($iskuP, array($this->search, $this->id));
         while($w = $dbc->fetch_row($iskuR)){
             $result = array(
             'sku' => $w['sku'],
@@ -180,8 +180,8 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
             $q = 'SELECT count(*) as rows,
                 SUM(unitCost*caseSize*quantity) as estimatedCost
                 FROM PurchaseOrderItems WHERE orderID=?';
-            $p = $dbc->prepare_statement($q);
-            $r = $dbc->exec_statement($p, array($orderID));
+            $p = $dbc->prepare($q);
+            $r = $dbc->execute($p, array($orderID));
             $w = $dbc->fetch_row($r);
             $ret['count'] = $w['rows'];
             $ret['cost'] = sprintf('%.2f',$w['estimatedCost']);
@@ -258,8 +258,8 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
             LEFT JOIN PurchaseOrderItems as i
             ON p.orderID=i.orderID
             WHERE p.orderID=?';
-        $p = $dbc->prepare_statement($q);
-        $r = $dbc->exec_statement($p, array($orderID)); 
+        $p = $dbc->prepare($q);
+        $r = $dbc->execute($p, array($orderID)); 
         $w = $dbc->fetch_row($r);
 
         $ret = '<div id="orderInfo">
@@ -395,17 +395,17 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
         $orderQ = 'SELECT orderID FROM PurchaseOrder WHERE
             vendorID=? AND userID=? and placed=0
             ORDER BY creationDate DESC';
-        $orderP = $dbc->prepare_statement($orderQ);
-        $orderR = $dbc->exec_statement($orderP, array($vendorID, $userID));
+        $orderP = $dbc->prepare($orderQ);
+        $orderR = $dbc->execute($orderP, array($vendorID, $userID));
         if ($dbc->num_rows($orderR) > 0){
             $row = $dbc->fetch_row($orderR);
             return $row['orderID'];
         } else {
             $insQ = 'INSERT INTO PurchaseOrder (vendorID, creationDate,
                 placed, userID) VALUES (?, '.$dbc->now().', 0, ?)';
-            $insP = $dbc->prepare_statement($insQ);
-            $insR = $dbc->exec_statement($insP, array($vendorID, $userID));
-            return $dbc->insert_id();
+            $insP = $dbc->prepare($insQ);
+            $insR = $dbc->execute($insP, array($vendorID, $userID));
+            return $dbc->insertID();
         }
     }
 

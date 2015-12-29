@@ -39,4 +39,3 @@ while ($row = $sql->fetch_row($deptR)){
 }
 echo "</table>";
 
-?>

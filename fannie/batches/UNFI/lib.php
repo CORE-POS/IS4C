@@ -26,9 +26,9 @@ function getVendorID($scriptName)
     global $FANNIE_OP_DB;
     $dbc = FannieDB::get($FANNIE_OP_DB);
 
-    $query = $dbc->prepare_statement("SELECT vendorID FROM vendorLoadScripts
+    $query = $dbc->prepare("SELECT vendorID FROM vendorLoadScripts
         WHERE loadScript=?");
-    $result = $dbc->exec_statement($query,array($scriptName));
+    $result = $dbc->execute($query,array($scriptName));
 
     if (!$result || $dbc->num_rows($result) == 0) {
         return false;
@@ -38,4 +38,3 @@ function getVendorID($scriptName)
     }
 }
 
-?>

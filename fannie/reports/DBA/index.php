@@ -5,9 +5,9 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (isset($_REQUEST['loadID'])){
-    $q = $dbc->prepare_statement("SELECT reportName,reportQuery FROM 
+    $q = $dbc->prepare("SELECT reportName,reportQuery FROM 
         customReports WHERE reportID=?");
-    $r = $dbc->exec_statement($q,array($_REQUEST['loadID']));
+    $r = $dbc->execute($q,array($_REQUEST['loadID']));
     $w = $dbc->fetch_row($r);
     echo $w['reportName'];
     echo '`';
@@ -48,8 +48,8 @@ if ($errors == "" && $query != ""){
     if (!empty($dtrans))
         $query = str_ireplace(" dtransactions "," ".$dtrans." ",$query);
 
-    $prep = $dbc->prepare_statement($query);
-    $result = $dbc->exec_statement($query);
+    $prep = $dbc->prepare($query);
+    $result = $dbc->execute($query);
     if (!$result){
         echo "<i>Error occured</i>: ".$dbc->error();
         echo "<hr />";
@@ -68,9 +68,9 @@ if ($errors == "" && $query != ""){
         }
         echo '<table cellspacing="0" cellpadding="4" border="1">';
         echo '<tr>';
-        $num = $dbc->num_fields($result);
+        $num = $dbc->numFields($result);
         for($i=0;$i<$num;$i++){
-            echo '<th>'.$dbc->field_name($result,$i)."</th>";
+            echo '<th>'.$dbc->fieldName($result,$i)."</th>";
         }
         echo '</tr>';
         while($row = $dbc->fetch_row($result)){
@@ -93,21 +93,21 @@ if ($errors == "" && $query != ""){
             $name = $_REQUEST['repName'];
             $saveableQ = base64_encode($_REQUEST['query']);
 
-            $chkQ = $dbc->prepare_statement("SELECT reportID FROM customReports WHERE reportName=?");
-            $chkR = $dbc->exec_statement($chkQ,array($name));
+            $chkQ = $dbc->prepare("SELECT reportID FROM customReports WHERE reportName=?");
+            $chkR = $dbc->execute($chkQ,array($name));
             if ($dbc->num_rows($chkR) == 0){
-                $idQ = $dbc->prepare_statement("SELECT max(reportID) FROM customReports");
-                $idR = $dbc->exec_statement($idQ);
+                $idQ = $dbc->prepare("SELECT max(reportID) FROM customReports");
+                $idR = $dbc->execute($idQ);
                 $id = array_pop($dbc->fetch_row($idR));
                 $id = ($id=="")?1:$id+1;
-                $insQ = $dbc->prepare_statement("INSERT INTO customReports (reportID,reportName,reportQuery)
+                $insQ = $dbc->prepare("INSERT INTO customReports (reportID,reportName,reportQuery)
                     VALUES (?,?,?)");
-                $insR = $dbc->exec_statement($insQ,array($id,$name,$saveableQ));
+                $insR = $dbc->execute($insQ,array($id,$name,$saveableQ));
             }
             else {
                 $id = array_pop($dbc->fetch_row($chkR));
-                $upQ = $dbc->prepare_statement("UPDATE customReports SET reportQuery=? WHERE reportID=?");
-                $upR = $dbc->exec_statement($upQ,array($saveableQ,$id));
+                $upQ = $dbc->prepare("UPDATE customReports SET reportQuery=? WHERE reportID=?");
+                $upR = $dbc->execute($upQ,array($saveableQ,$id));
             }
         }
     }
@@ -120,8 +120,8 @@ else {
     if (!empty($errors))
         echo "<blockquote>".$errors."</blockquote>";
 
-    $q = $dbc->prepare_statement("SELECT reportID,reportName FROM customReports ORDER BY reportName");
-    $r = $dbc->exec_statement($q);
+    $q = $dbc->prepare("SELECT reportID,reportName FROM customReports ORDER BY reportName");
+    $r = $dbc->execute($q);
     $opts = "";
     while($w = $dbc->fetch_row($r))
         $opts .= sprintf('<option value="%d">%s</option>',$w['reportID'],$w['reportName']);
@@ -175,4 +175,3 @@ else {
     include($FANNIE_ROOT.'src/footer.html');
 }
 
-?>

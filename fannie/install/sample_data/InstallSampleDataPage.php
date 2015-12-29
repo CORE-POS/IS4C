@@ -21,7 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
 include(dirname(__FILE__) . '/../../config.php'); 
 if (!class_exists('FannieAPI')) {
     include_once(dirname(__FILE__) . '/../../classlib2.0/FannieAPI.php');
@@ -130,11 +129,11 @@ $db = new SQLManager($FANNIE_SERVER,
     $FANNIE_SERVER_USER,
     $FANNIE_SERVER_PW);
 
-if (isset($_REQUEST['employees'])){
+if (FormLib::get('employees') !== ''){
     echo "Loading employees";
     $db->query("TRUNCATE TABLE employees");
     \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'employees');  
-} elseif (isset($_REQUEST['custdata'])) {
+} elseif (FormLib::get('custdata') !== ''){
     echo "Loading custdata";
     $backup1 = $db->query('TRUNCATE TABLE custdataBackup');
     $backup2 = $db->query('INSERT INTO custdataBackup SELECT * FROM custdata');
@@ -144,11 +143,11 @@ if (isset($_REQUEST['employees'])){
         $db->query("TRUNCATE TABLE custdata");
         \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'custdata');
     }
-} elseif(isset($_REQUEST['memtype'])){
+} elseif (FormLib::get('memtype') !== ''){
     echo "Loading memtype";
     $db->query("TRUNCATE TABLE memtype");
     \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'memtype');
-} elseif (isset($_REQUEST['products'])) {
+} elseif (FormLib::get('products') !== ''){
     echo "Loading products";
     $backup1 = $db->query('TRUNCATE TABLE productBackup');
     $backup2 = $db->query('INSERT INTO productBackup SELECT * FROM products');
@@ -158,18 +157,15 @@ if (isset($_REQUEST['employees'])){
         $db->query("TRUNCATE TABLE products");
         \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'products');
     }
-}
-elseif(isset($_REQUEST['prod-flags'])){
+} elseif (FormLib::get('prod-flags') !== ''){
     echo "Loading product flags";
     $db->query("TRUNCATE TABLE prodFlags");
     \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'prodFlags');
-}
-elseif(isset($_REQUEST['batchType'])){
+} elseif (FormLib::get('batchType') !== ''){
     echo "Loading batchn types";
     $db->query("TRUNCATE TABLE batchType");
     \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'batchType');
-}
-elseif(isset($_REQUEST['depts'])){
+} elseif (FormLib::get('depts') !== ''){
     echo "Loading departments";
     $db->query("TRUNCATE TABLE departments");
     \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'departments');
@@ -178,32 +174,28 @@ elseif(isset($_REQUEST['depts'])){
     $db->query("TRUNCATE TABLE subdepts");
     \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'subdepts');
     */
-}
-elseif (isset($_REQUEST['superdepts'])){
+} elseif (FormLib::get('superdepts') !== ''){
     echo "Loading super departments";
     $db->query("TRUNCATE TABLE superdepts");
     \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'superdepts');
     $db->query("TRUNCATE TABLE superDeptNames");
     \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'superDeptNames');
-}
-elseif (isset($_REQUEST['tenders'])){
+} elseif (FormLib::get('tenders') !== ''){
     echo "Loading tenders";
     $db->query("TRUNCATE TABLE tenders");
     \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'tenders');
-}
-elseif (isset($_REQUEST['authentication'])){
+} elseif (FormLib::get('authentication') !== ''){
     echo "Loading authentication info";
     $db->query("TRUNCATE TABLE userKnownPrivs");
     \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'userKnownPrivs');
-}
-elseif (isset($_REQUEST['origin'])){
+} elseif (FormLib::get('origin') !== ''){
     echo "Loading country info";
     $db->query("TRUNCATE TABLE originCountry");
     \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'originCountry');
     echo "<br />Loading state/province info";
     $db->query("TRUNCATE TABLE originStateProv");
     \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'originStateProv');
-} else if (isset($_REQUEST['authGroups'])) {
+} elseif (FormLib::get('authGroups') !== ''){
     echo "Loading authentication groups";
     $db->query("TRUNCATE TABLE userGroups");
     \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'userGroups');

@@ -35,59 +35,49 @@ class PatronageUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     public $description = '[Import Patronage] loads in member purchase and patronage
     distribution data for a given year.';
-    public $themed = true;
 
     protected $preview_opts = array(
         'memnum' => array(
-            'name' => 'memnum',
             'display_name' => 'Member Number',
             'default' => 0,
-            'required' => True
+            'required' => true
         ),
         'gross' => array(
-            'name' => 'gross',
             'display_name' => 'Gross Purchases',
             'default' => 1,
-            'required' => True
+            'required' => true
         ),
         'discount' => array(
-            'name' => 'discount',
             'display_name' => 'Discounts',
             'default' => 2,
             'required' => true
         ),
         'reward' => array(
-            'name' => 'reward',
             'display_name' => 'Rewards',
             'default' => 3,
             'required' => true
         ),
         'net' => array(
-            'name' => 'net',
             'display_name' => 'Net Purchases',
             'default' => 4,
             'required' => true
         ),
         'pat' => array(
-            'name' => 'pat',
             'display_name' => 'Total Patronage',
             'default' => 5,
             'required' => true
         ),
         'cash' => array(
-            'name' => 'cash',
             'display_name' => 'Paid Out Patronage',
             'default' => 6,
             'required' => true
         ),
         'equity' => array(
-            'name' => 'equity',
             'display_name' => 'Retained Patronage',
             'default' => 7,
             'required' => true
         ),
         'fy' => array(
-            'name' => 'fy',
             'display_name' => 'Fiscal Year',
             'default' => 8,
             'required' => true
@@ -112,7 +102,7 @@ class PatronageUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $fy_index = $this->get_column_index('fy');
 
         // prepare statements
-        $insP = $dbc->prepare_statement("INSERT INTO patronage (cardno,purchase,discounts,rewards,net_purch,tot_pat,
+        $insP = $dbc->prepare("INSERT INTO patronage (cardno,purchase,discounts,rewards,net_purch,tot_pat,
             cash_pat,equit_pat,FY) VALUES (?,?,?,?,?,?,?,?,?)");
         foreach ($linedata as $line) {
             // get info from file and member-type default settings

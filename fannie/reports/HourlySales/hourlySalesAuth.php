@@ -49,8 +49,8 @@ if($buyer == -1){
     echo "All";
 } else {
     $sdQ = "SELECT super_name FROM superDeptNames WHERE superID = ?";
-    $sdP = $dbc->prepare_statement($sdQ);
-    $sdR = $dbc->exec_statement($sdP,array($buyer));
+    $sdP = $dbc->prepare($sdQ);
+    $sdR = $dbc->execute($sdP,array($buyer));
     $superDept = "";
     while($row = $dbc->fetch_row($sdR)){
         $superDept = $row['super_name'];
@@ -131,8 +131,8 @@ else {
     echo " <a href='javascript:history.back();'>Back</a>";
 }
 $sum = 0;
-$prep = $dbc->prepare_statement($hourlySalesQ);
-$result = $dbc->exec_statement($prep,$args);
+$prep = $dbc->prepare($hourlySalesQ);
+$result = $dbc->execute($prep,$args);
 echo "<table cellspacing=0 cellpadding=4 border=1>";
 $minhour = 24;
 $maxhour = 0;
@@ -224,4 +224,4 @@ if (isset($_REQUEST['excel']))
     echo "<p />Total: $sum";
 else
     echo "<p />Total: " . number_format($sum,2);
-?>
+

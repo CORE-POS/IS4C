@@ -79,4 +79,3 @@ if ($sql->num_rows($r) > 0){
     mail($to,$subject,$msg_body);
 }
 
-?>

@@ -71,4 +71,3 @@ class MemStatusToggle extends PreParser {
     }
 }
 
-?>

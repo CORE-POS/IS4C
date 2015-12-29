@@ -48,4 +48,3 @@ class ReverseTransaction extends \COREPOS\Fannie\API\FanniePlugin {
             and cleaning up after mistakes.';
 }
 
-?>

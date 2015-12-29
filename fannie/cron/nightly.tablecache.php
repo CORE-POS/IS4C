@@ -110,4 +110,4 @@ if ($sql->table_exists("reportDataCache")){
 }
 
 echo cron_msg("Success");
-?>
+

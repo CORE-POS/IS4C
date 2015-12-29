@@ -188,4 +188,4 @@ End Date: <input type=text name=date2 /><br />
 </html>
 <?php
 }
-?>
+

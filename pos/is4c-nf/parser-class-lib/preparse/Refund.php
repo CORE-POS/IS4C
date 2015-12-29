@@ -74,4 +74,3 @@ class Refund extends PreParser
     }
 }
 
-?>

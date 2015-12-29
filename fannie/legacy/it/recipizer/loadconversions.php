@@ -19,4 +19,4 @@ while ($line = fgets($fp)){
     $mult = $matches[3];
     $insR = $sql->execute($insQ, array($from, $to, $mult));
 }
-?>
+

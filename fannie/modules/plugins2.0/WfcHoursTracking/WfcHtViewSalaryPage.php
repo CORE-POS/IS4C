@@ -34,7 +34,6 @@ class WfcHtViewSalaryPage extends FanniePage
     protected $must_authenticate = true;
     public $page_set = 'Plugin :: WFC Hours Tracking';
     public $description = '[View Salary] shows information for a single salaried employee.';
-    public $themed = true;
 
     protected $title = 'View Employee';
     protected $header = '';
@@ -56,8 +55,8 @@ class WfcHtViewSalaryPage extends FanniePage
             $validated = false;
             $depts = array(10,11,12,13,20,21,30,40,41,50,60,998);
             $sql = WfcHtLib::hours_dbconnect();
-            $checkQ = $sql->prepare_statement("select department from employees where empID=?");
-            $checkR = $sql->exec_statement($checkQ, array($this->empID));
+            $checkQ = $sql->prepare("select department from employees where empID=?");
+            $checkR = $sql->execute($checkQ, array($this->empID));
             $checkW = $sql->fetch_row($checkR);
             if (FannieAuth::validateUserQuiet('view_all_hours', $checkW['department'])){
                 $validated = true;
@@ -72,8 +71,8 @@ class WfcHtViewSalaryPage extends FanniePage
         }
 
         $sql = WfcHtLib::hours_dbconnect();
-        $deptQ = $sql->prepare_statement("select department from employees where empID=?");
-        $deptR = $sql->exec_statement($deptQ, array($this->empID));
+        $deptQ = $sql->prepare("select department from employees where empID=?");
+        $deptR = $sql->execute($deptQ, array($this->empID));
         $deptW = $sql->fetch_row($deptR);
         if ($deptW['department'] < 998){
             header("Location: WfcHtViewEmpPage.php?id=".$this->empID);
@@ -82,14 +81,10 @@ class WfcHtViewSalaryPage extends FanniePage
 
         return true;
     }
-    
-    public function body_content()
-    {
-        global $FANNIE_URL;
-        $sql = WfcHtLib::hours_dbconnect();
 
-        ob_start();
-echo "<style type=text/css>
+    public function css_content()
+    {
+        return <<<CSS
 #payperiods {
     margin-top: 50px;
 }
@@ -131,18 +126,24 @@ a {
 #newtable td{
     text-align: right;
 }
+CSS;
+    }
+    
+    public function body_content()
+    {
+        global $FANNIE_URL;
+        $sql = WfcHtLib::hours_dbconnect();
 
-</style>";
+        ob_start();
 
         echo "<h3>Salary Employee PTO Status</h3>";
 
-        $infoQ = $sql->prepare_statement("select e.name,e.adpID,
+        $infoQ = $sql->prepare("select e.name,e.adpID,
             s.totalTaken as daysTaken
             from employees as e left join
             salarypto_ytd as s on e.empID=s.empID
             where e.empID=?");
-        $infoR = $sql->exec_statement($infoQ, array($this->empID));
-        $infoW = $sql->fetch_row($infoR);
+        $infoW = $sql->getRow($infoQ, array($this->empID));
 
         echo "<h2>{$infoW['name']} [ <a href={$FANNIE_URL}auth/ui/loginform.php?logout=yes>Logout</a> ]</h2>";
         echo "<table class=\"table\" id=newtable>";
@@ -151,20 +152,20 @@ a {
         echo "<tr class=one><th>PTO Remaining</th><td>".($infoW['adpID']-$infoW['daysTaken'])."</td></tr>";
         echo "</tr></table>";
 
-        $periodsQ = $sql->prepare_statement("select daysUsed,month(dstamp),year(dstamp) 
+        $periodsQ = $sql->prepare("select daysUsed,month(dstamp),year(dstamp) 
                 from salaryHours where empID=? order by dstamp DESC");
-        $periodsR = $sql->exec_statement($periodsQ, array($this->empID));
+        $periodsR = $sql->execute($periodsQ, array($this->empID));
         $class = array("one","two");
-        $c = 0;
+        $color = 0;
         echo "<table id=payperiods class=\"table\">";
         echo "<tr><th>Month</th><th>PTO Taken</th></tr>";
         while ($row = $sql->fetch_row($periodsR)){
-            echo "<tr class=\"$class[$c]\">";
+            echo "<tr class=\"$class[$color]\">";
             $dstr = date("F Y",mktime(0,0,0,$row[1],1,$row[2]));
             echo "<td>$dstr</td>";
             echo "<td>$row[0]</td>";
             echo "</tr>";   
-            $c = ($c+1)%2;
+            $color = ($color+1)%2;
         }
 
         echo "</table>";

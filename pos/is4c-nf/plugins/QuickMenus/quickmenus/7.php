@@ -10,4 +10,3 @@ $my_menu = array(
     "7007" => "Consignment Book King"
 );
 
-?>

@@ -44,7 +44,7 @@ if (isset($_REQUEST['toids'])){
     $x = 0;
     $y = 0;
     $date = date("m/d/Y");
-    $infoP = $dbc->prepare_statement("SELECT ItemQtty,total,regPrice,p.card_no,description,department,
+    $infoP = $dbc->prepare("SELECT ItemQtty,total,regPrice,p.card_no,description,department,
         CASE WHEN p.card_no=0 THEN o.lastName ELSE c.LastName END as name,
         CASE WHEN p.card_no=0 THEN o.firstName ELSE c.FirstName END as fname,
         CASE WHEN o.phone is NULL THEN m.phone ELSE o.phone END as phone,
@@ -55,9 +55,9 @@ if (isset($_REQUEST['toids'])){
         LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
         LEFT JOIN {$TRANS}SpecialOrders AS o ON o.specialOrderID=p.order_id
         WHERE trans_id=? AND p.order_id=?");
-    $flagP = $dbc->prepare_statement("UPDATE {$TRANS}PendingSpecialOrder SET charflag='P'
+    $flagP = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET charflag='P'
         WHERE trans_id=? AND order_id=?");
-    $idP = $dbc->prepare_statement("SELECT trans_id FROM {$TRANS}PendingSpecialOrder WHERE
+    $idP = $dbc->prepare("SELECT trans_id FROM {$TRANS}PendingSpecialOrder WHERE
         trans_id > 0 AND order_id=? ORDER BY trans_id");
     $signage = new COREPOS\Fannie\API\item\FannieSignage(array());
     foreach($_REQUEST['toids'] as $toid){
@@ -76,13 +76,13 @@ if (isset($_REQUEST['toids'])){
         $tid = $tmp[0];
         $oid = $tmp[1];
 
-        $r = $dbc->exec_statement($infoP, array($tid, $oid));
+        $r = $dbc->execute($infoP, array($tid, $oid));
         $w = $dbc->fetch_row($r);
 
         // flag item as "printed"
-        $r2 = $dbc->exec_statement($flagP, array($tid, $oid));
+        $r2 = $dbc->execute($flagP, array($tid, $oid));
 
-        $r3 = $dbc->exec_statement($idP, array($oid));
+        $r3 = $dbc->execute($idP, array($oid));
         $o_count = 0;
         $rel_id = 1;
         while($w3 = $dbc->fetch_row($r3)){
@@ -179,23 +179,23 @@ else {
                 $_REQUEST['oids'][] = $oid;
         }
     }
-    $infoP = $dbc->prepare_statement("SELECT min(datetime) as orderDate,sum(total) as value,
+    $infoP = $dbc->prepare("SELECT min(datetime) as orderDate,sum(total) as value,
         count(*)-1 as items,
         CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name
         FROM {$TRANS}PendingSpecialOrder AS p
         LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
         LEFT JOIN {$TRANS}SpecialOrders AS o ON o.specialOrderID=p.order_id 
         WHERE p.order_id=?");
-    $itemP = $dbc->prepare_statement("SELECT description,department,quantity,ItemQtty,total,trans_id
+    $itemP = $dbc->prepare("SELECT description,department,quantity,ItemQtty,total,trans_id
         FROM {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id > 0");
     foreach($_REQUEST['oids'] as $oid){
-        $r = $dbc->exec_statement($infoP, array($oid));
+        $r = $dbc->execute($infoP, array($oid));
         $w = $dbc->fetch_row($r);
         printf('<tr><td colspan="2">Order #%d (%s, %s)</td><td>Amt: $%.2f</td>
             <td>Items: %d</td><td>&nbsp;</td></tr>',
             $oid,$w['orderDate'],$w['name'],$w['value'],$w['items']);
 
-        $r = $dbc->exec_statement($itemP, array($oid));
+        $r = $dbc->execute($itemP, array($oid));
         while($w = $dbc->fetch_row($r)){
             if ($w['department']==0){
                 echo '<tr><td>&nbsp;</td>';
@@ -220,4 +220,4 @@ else {
 }
 
 include($FANNIE_ROOT.'src/footer.html');
-?>
+

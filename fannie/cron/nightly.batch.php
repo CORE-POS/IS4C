@@ -167,4 +167,3 @@ else {
         AND b.discountType <> 0");
 }
 
-?>

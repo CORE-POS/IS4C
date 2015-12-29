@@ -6,4 +6,3 @@ $my_menu = array(
     "Body Ecology Cocobiotic, 500ml" => "12003"
 );
 
-?>

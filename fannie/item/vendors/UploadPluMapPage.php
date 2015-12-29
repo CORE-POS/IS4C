@@ -70,8 +70,8 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage {
         }
         $VENDOR_ID = $_SESSION['vid'];
 
-        $idP = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorID=?");
-        $idR = $dbc->exec_statement($idP,array($VENDOR_ID));
+        $idP = $dbc->prepare("SELECT vendorID FROM vendors WHERE vendorID=?");
+        $idR = $dbc->execute($idP,array($VENDOR_ID));
         if ($dbc->num_rows($idR) == 0){
             $this->error_details = 'Cannot find vendor';
             return false;
@@ -123,15 +123,15 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage {
         foreach ($linedata as $data) {
             list($sku, $plu) = $this->getSkuPlu($data, $SKU, $PLU);
             if ($sku !== false && $plu !== false) {
-                $chkR = $dbc->exec_statement($this->chkP, array($sku,$plu,$VENDOR_ID));
+                $chkR = $dbc->execute($this->chkP, array($sku,$plu,$VENDOR_ID));
                 if ($dbc->num_rows($chkR) > 0) continue; // entry exists
 
-                $pluR = $dbc->exec_statement($this->pluP, array($sku,$VENDOR_ID));
+                $pluR = $dbc->execute($this->pluP, array($sku,$VENDOR_ID));
                 $success = false;
                 if ($dbc->num_rows($pluR) == 0){
-                    $success = $dbc->exec_statement($this->insP, array($VENDOR_ID, $sku, $plu));
+                    $success = $dbc->execute($this->insP, array($VENDOR_ID, $sku, $plu));
                 } else {
-                    $success = $dbc->exec_statement($this->upP, array($plu, $sku, $VENDOR_ID));
+                    $success = $dbc->execute($this->upP, array($plu, $sku, $VENDOR_ID));
                 }
 
                 if ($success) {
@@ -143,12 +143,12 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage {
         }
 
         // update vendorItems to use the new PLU mapping
-        $resetP = $dbc->prepare_statement('UPDATE vendorItems AS i
+        $resetP = $dbc->prepare('UPDATE vendorItems AS i
                 INNER JOIN vendorSKUtoPLU as s
                 ON s.sku=i.sku AND s.vendorID=i.vendorID
                 SET i.upc=s.upc
                 WHERE i.vendorID=?');
-        $dbc->exec_statement($resetP, array($VENDOR_ID));
+        $dbc->execute($resetP, array($VENDOR_ID));
 
         return true;
     }

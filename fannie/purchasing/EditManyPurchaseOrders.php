@@ -53,8 +53,8 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
             i.vendorID, vendorName
             FROM vendorItems AS i LEFT JOIN vendors AS v ON
             i.vendorID=v.vendorID WHERE sku LIKE ?';
-        $skuP = $dbc->prepare_statement($skuQ);
-        $skuR = $dbc->exec_statement($skuP, array('%'.$this->search.'%'));
+        $skuP = $dbc->prepare($skuQ);
+        $skuR = $dbc->execute($skuP, array('%'.$this->search.'%'));
         while($w = $dbc->fetch_row($skuR)){
             $result = array(
             'sku' => $w['sku'],
@@ -77,8 +77,8 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
             i.vendorID, vendorName
             FROM vendorItems AS i LEFT JOIN vendors AS v ON
             i.vendorID = v.vendorID WHERE upc=?';
-        $upcP = $dbc->prepare_statement($upcQ);
-        $upcR = $dbc->exec_statement($upcP, array(BarcodeLib::padUPC($this->search)));
+        $upcP = $dbc->prepare($upcQ);
+        $upcR = $dbc->execute($upcP, array(BarcodeLib::padUPC($this->search)));
         while($w = $dbc->fetch_row($upcR)){
             $result = array(
             'sku' => $w['sku'],
@@ -104,8 +104,8 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
             ON i.vendor_sku = v.sku AND i.vendorID=v.vendorID
             LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
             WHERE our_sku = ? ';
-        $iskuP = $dbc->prepare_statement($iskuQ);
-        $iskuR = $dbc->exec_statement($iskuP, array($this->search));
+        $iskuP = $dbc->prepare($iskuQ);
+        $iskuR = $dbc->execute($iskuP, array($this->search));
         while($w = $dbc->fetch_row($iskuR)){
             $result = array(
             'sku' => $w['sku'],
@@ -185,8 +185,8 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
             WHERE p.userID=?
             GROUP BY p.orderID, vendorName
             ORDER BY vendorName';
-        $p = $dbc->prepare_statement($q);
-        $r = $dbc->exec_statement($p, array($userID));  
+        $p = $dbc->prepare($q);
+        $r = $dbc->execute($p, array($userID));  
 
         $ret = '<ul id="vendorList">';
         while($w = $dbc->fetch_row($r)){
@@ -228,8 +228,8 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
         $orderQ = 'SELECT orderID FROM PurchaseOrder WHERE
             vendorID=? AND userID=? and placed=0
             ORDER BY creationDate DESC';
-        $orderP = $dbc->prepare_statement($orderQ);
-        $orderR = $dbc->exec_statement($orderP, array($vendorID, $userID));
+        $orderP = $dbc->prepare($orderQ);
+        $orderR = $dbc->execute($orderP, array($vendorID, $userID));
         if ($dbc->num_rows($orderR) > 0){
             $row = $dbc->fetch_row($orderR);
             return $row['orderID'];
@@ -237,9 +237,9 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
         else {
             $insQ = 'INSERT INTO PurchaseOrder (vendorID, creationDate,
                 placed, userID) VALUES (?, '.$dbc->now().', 0, ?)';
-            $insP = $dbc->prepare_statement($insQ);
-            $insR = $dbc->exec_statement($insP, array($vendorID, $userID));
-            return $dbc->insert_id();
+            $insP = $dbc->prepare($insQ);
+            $insR = $dbc->execute($insP, array($vendorID, $userID));
+            return $dbc->insertID();
         }
     }
 
@@ -257,4 +257,3 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
 
 FannieDispatch::conditionalExec();
 
-?>

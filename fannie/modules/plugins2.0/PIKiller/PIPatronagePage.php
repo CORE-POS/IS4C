@@ -113,4 +113,3 @@ class PIPatronagePage extends PIKillerPage {
 
 FannieDispatch::conditionalExec();
 
-?>

@@ -291,7 +291,7 @@ class MercuryGift extends BasicCCModule
                     'Mercury', 'Cardholder', $manual, $now);
         $insR = $dbTrans->query($insQ);
         if ($insR) {
-            $this->last_paycard_transaction_id = $dbTrans->insert_id();
+            $this->last_paycard_transaction_id = $dbTrans->insertID();
         } else {
             return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
         }
@@ -428,7 +428,7 @@ class MercuryGift extends BasicCCModule
                     AND transID=" . $transID;
         $initR = $dbTrans->query($initQ);
         if ($initR) {
-            $this->last_paycard_transaction_id = $dbTrans->insert_id();
+            $this->last_paycard_transaction_id = $dbTrans->insertID();
         } else {
             return PaycardLib::PAYCARD_ERR_NOSEND; // database error, nothing sent (ok to retry)
         }

@@ -12,4 +12,3 @@ $my_keys = array(
     new quickkey("Larry's\nMedium","1132")
 );
 
-?>

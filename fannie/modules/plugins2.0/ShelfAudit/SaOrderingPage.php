@@ -131,7 +131,7 @@ class SaOrderingPage extends FanniePage
                             INNER JOIN vendors AS v ON o.vendorID=v.vendorID
                         WHERE i.internalUPC = ?
                         ORDER BY o.placedDate DESC';
-            $ordersQ = $dbc->add_select_limit($ordersQ, 10);
+            $ordersQ = $dbc->addSelectLimit($ordersQ, 10);
             $ordersP = $dbc->prepare($ordersQ);
             $ordersR = $dbc->execute($ordersP, array($upc));
             $orders = array();

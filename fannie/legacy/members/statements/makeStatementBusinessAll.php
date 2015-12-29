@@ -240,7 +240,7 @@ while($selAddW = $sql->fetch_row($selAddR)){
 
     /*
     if ($selTransW[0] != $selAddW[0]){
-        $sql->data_seek($selTransR,$rowNum);
+        $sql->dataSeek($selTransR,$rowNum);
         break;
     }
     else $rowNum++;
@@ -474,4 +474,3 @@ function addBackPage($pdf){
     $pdf->SetFont('Arial','',10);
 }
 
-?>

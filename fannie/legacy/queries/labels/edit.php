@@ -89,4 +89,3 @@ echo "<input type=submit name=submit value=\"Update Shelftags\" />";
 echo "</form>";
 echo "</html>";
 
-?>

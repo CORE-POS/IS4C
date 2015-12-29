@@ -80,4 +80,3 @@ echo "<a href=scaleSynch.php?asnew=yes>Send all items as new</a>";
 // wrap up html
 echo "</body></html>";
 
-?>

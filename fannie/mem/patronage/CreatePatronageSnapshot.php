@@ -69,13 +69,13 @@ class CreatePatronageSnapshot extends FannieRESTfulPage
         $dlog = DTransactionsModel::selectDlog($this->date1, $this->date2);
 
         if ($dbc->table_exists("dlog_patronage")) {
-            $drop = $dbc->prepare_statement("DROP TABLE dlog_patronage");
-            $dbc->exec_statement($drop);
+            $drop = $dbc->prepare("DROP TABLE dlog_patronage");
+            $dbc->execute($drop);
         }
-        $create = $dbc->prepare_statement('CREATE TABLE dlog_patronage (card_no INT, trans_type VARCHAR(2), 
+        $create = $dbc->prepare('CREATE TABLE dlog_patronage (card_no INT, trans_type VARCHAR(2), 
                 trans_subtype VARCHAR(2), total DECIMAL(10,2), min_year INT, max_year INT,
                 primary key (card_no, trans_type, trans_subtype))');
-        $dbc->exec_statement($create);
+        $dbc->execute($create);
 
         $insQ = sprintf("
                 INSERT INTO dlog_patronage
@@ -106,8 +106,8 @@ class CreatePatronageSnapshot extends FannieRESTfulPage
         $args[] = $this->date1 . ' 00:00:00';
         $args[] = $this->date2 . ' 23:59:59';
     
-        $prep = $dbc->prepare_statement($insQ);
-        $worked = $dbc->exec_statement($prep,$args);
+        $prep = $dbc->prepare($insQ);
+        $worked = $dbc->execute($prep,$args);
 
         if ($worked) {
             $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', 'Patronage Snapshot Created');\n");
@@ -151,13 +151,13 @@ class CreatePatronageSnapshot extends FannieRESTfulPage
         <label>Member Type(s) to include</label>
         <div class="form-group well">
         <?php
-        $typeQ = $dbc->prepare_statement("
+        $typeQ = $dbc->prepare("
             SELECT memtype,
                 memDesc,
                 custdataType
             FROM ".$FANNIE_OP_DB.$dbc->sep()."memtype 
             ORDER BY memtype");
-        $typeR = $dbc->exec_statement($typeQ);
+        $typeR = $dbc->execute($typeQ);
         while ($typeW = $dbc->fetch_row($typeR)) {
             printf('<input class="checkbox-inline" type="checkbox" value="%d" name="mtype[]"
                 id="mtype%d" %s /> <label for="mtype%d">%s</label><br />',

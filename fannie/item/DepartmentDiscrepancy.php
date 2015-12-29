@@ -69,23 +69,21 @@ class DepartmentDiscrepancy extends FanniePage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         
-        for ($i=0; $i<$_GET['iFs']; $i++) {
-            if ($_GET['fs' . $i] != 'noChange') {
-                $query = "UPDATE products SET foodstamp = ";
-                if ($_GET['fs' . $i] == 'fs0') {
-                    $query .= " 0 ";
-                } elseif ($_GET['fs' . $i] == 'fs1') {
-                    $query .= " 1 ";
-                }  
-                $query .= "WHERE upc = " . $_GET['plu' . $i] . ";";
-                $result = $dbc->query($query);
-                if (mysql_errno() > 0) {
-                    echo mysql_errno() . ": " . mysql_error(). "<br>";
-                }
+        for ($i=0; $i<FormLib::get('iFs'); $i++) {
+            if (FormLib::get('fs' . $i) != 'noChange') {
+                $query = $dbc->prepare("UPDATE products SET foodstamp = ? WHERE upc=?");
+                $args = array();
+                if (FormLib::get('fs' . $i) == 'fs0') {
+                    $args[] = 0;
+                } else {
+                    $args[] = 1;
+                } 
+                $args[] = FormLib::get('plu'  . $i);
+                $result = $dbc->execute($query, $args);
             }
         }
         
-        echo $_GET['iFs'] . " selected items have been updated.";
+        echo FormLib::get('iFs') . " selected items have been updated.";
         echo "<p><a href=\"DepartmentDiscrepancy.php\" role=\"button\">Back to Select Department</a></p>";
     }
     
@@ -94,24 +92,22 @@ class DepartmentDiscrepancy extends FanniePage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         
-        for ($i=0; $i<$_GET['iTax']; $i++) {
-            if ($_GET['tax' . $i] != 'noChange') {
-                $query = "UPDATE products SET tax = ";
-                if ($_GET['tax' . $i] == 'tax0') {
-                    $query .= " 0 ";
-                } elseif ($_GET['tax' . $i] == 'tax1') {
-                    $query .= " 1 ";
-                } elseif ($_GET['tax' . $i] == 'tax2') {
-                    $query .= " 2 ";
+        for ($i=0; $i<FormLib::get('iTax'); $i++) {
+            if (FormLib::get('tax' . $i) != 'noChange') {
+                $query = $dbc->prepare("UPDATE products SET tax = ? WHERE upc=?");
+                $args = array();
+                if (FormLib::get('tax' . $i) == 'tax1') {
+                    $args[] = 1;
+                } elseif (FormLib::get('tax' . $i) == 'tax2') {
+                    $args[] = 2;
+                } else {
+                    $args[] = 0;
                 } 
-                $query .= "WHERE upc = " . $_GET['upc' . $i] . ";";
-                $result = $dbc->query($query);
-                if (mysql_errno() > 0) {
-                    echo mysql_errno() . ": " . mysql_error(). "<br>";
-                }
+                $args[] = FormLib::get('upc' . $i);
+                $result = $dbc->execute($query, $args);
             }
         }
-        echo $_GET['iTax'] . " selected items have been updated.";
+        echo FormLib::get('iTax') . " selected items have been updated.";
         echo "<p><a href=\"DepartmentDiscrepancy.php\" role=\"button\">Back to Select Department</a></p>";
     }
 
@@ -125,7 +121,7 @@ class DepartmentDiscrepancy extends FanniePage
         while ($row = $dbc->fetch_row($result)) {
             $dp_no[] = $row['dept_no'];
         }
-        $key = array_search($_GET['dept'], $dp_no);
+        $key = array_search(FormLib::get('dept'), $dp_no);
         
         echo "<a href=\"http://key/git/fannie/item/DepartmentDiscrepancy.php?dept=";
         echo $dp_no[$key - 1];
@@ -135,23 +131,20 @@ class DepartmentDiscrepancy extends FanniePage
         echo $dp_no[$key + 1];
         echo "\" class=\"btn btn-default\">NEXT </a><br>";
         
-        
-        
         $query = "SELECT department FROM products GROUP BY department";
         $result = $dbc->query($query);
         while ($row = $dbc->fetch_row($result)) {
             $department[] = $row['department'];
         }
-        $query = "select SUM(CASE WHEN tax=0 THEN 1 ELSE 0 END) as tax0,  
+        $query = $dbc->prepare("select SUM(CASE WHEN tax=0 THEN 1 ELSE 0 END) as tax0,  
                     SUM(CASE WHEN tax=1 THEN 1 ELSE 0 END) as tax1,     
                     SUM(CASE WHEN tax=2 THEN 1 ELSE 0 END) as tax2,     
                     SUM(CASE WHEN foodstamp=0 THEN 1 ELSE 0 END) as fs0,
                     SUM(CASE WHEN foodstamp=1 THEN 1 ELSE 0 END) as fs1 
-                FROM products 
-                WHERE department={$_GET['dept']}
+                FROM products where department=?
                     AND inUse=1
-                    AND store_id=1;";
-        $result = $dbc->query($query);
+                    AND store_id=1");
+        $result = $dbc->execute($query, array(FormLib::get('dept')));
         while ($row = $dbc->fetch_row($result)) {
             $tax0 = $row['tax0'];
             $tax1 = $row['tax1'];
@@ -159,13 +152,10 @@ class DepartmentDiscrepancy extends FanniePage
             $fs0 = $row['fs0'];
             $fs1 = $row['fs1'];
         }
-        $query = "select dept_name from departments where dept_no={$_GET['dept']}";
-        $result = $dbc->query($query);
-        while ($row = $dbc->fetch_row($result)) {
-            $dept_name = $row['dept_name'];
-        }
+        $query = $dbc->prepare("select dept_name from departments where dept_no=?");
+        $dept_name = $dbc->getValue($query, array(FormLib::get('dept')));
         
-        echo "In Department <b>" . $_GET['dept'] . " - " . $dept_name . "</b><br>" . 
+        echo "In Department <b>" . FormLib::get('dept') . " - " . $dept_name . "</b><br>" . 
             "<div class=\"container\">" . 
             $tax0 . " items found with no tax<br>" .
             $tax1 . " items found with regular tax<br>" .
@@ -174,22 +164,20 @@ class DepartmentDiscrepancy extends FanniePage
             $fs1 . " items foodstamp-able<br>" . 
             "</div>";
             
-            
-            
         //* Check for items not following tax pattern
-        $query = "select * from products where department={$_GET['dept']} and tax=";
+        $query = $dbc->prepare("select * from products where department=? and tax=?");
+        $args = array(FormLib::get('dept'));
         if ( ($tax0 < $tax1 && $tax0 != 0) || ($tax0 < $tax2 && $tax0 != 0) ) {
-            $query .= "0";
+            $args[] = 0;
             $taxType = "No Tax";
         } elseif ( ($tax1 < $tax0 && $tax1 != 0) || ($tax1 < $tax2 && $tax1 != 0) ) {
-            $query .= "1";
+            $args[] = 1;
             $taxType = "Regular Tax";
         } elseif ( ($tax2 < $tax0 && $tax2 != 0) || ($tax2 < $tax1 && $tax2 != 0) ) {
-            $query .= "2";
+            $args[] = 2;
             $taxType = "Deli Tax";
         }
-        $query .= ";";
-        $result = $dbc->query($query);
+        $result = $dbc->execute($query, $args);
         while ($row = $dbc->fetch_row($result)) {
             $upc[] = $row['upc'];
             $desc[] = $row['description'];
@@ -205,7 +193,7 @@ class DepartmentDiscrepancy extends FanniePage
             <th></th>
             <th></th>";
         for ($i=0; $i<count($upc); $i++) {
-            $ret .= "<tr><td><a href=\"http://key/git/fannie/item/ItemEditorPage.php?searchupc={$upc[$i]}\">{$upc[$i]}</a></td>";
+            $ret .= "<tr><td><a href=\"ItemEditorPage.php?searchupc={$upc[$i]}\">{$upc[$i]}</a></td>";
             $ret .= "<td>" . $desc[$i] . "</td>";
             $ret .= "<td><b>" . $taxType . "</b></td>";
             $ret .= "<td><input type=\"radio\" name=\"tax{$i}\" id=\"tax{$i}\" value=\"tax0\" required>no tax </td>";
@@ -220,18 +208,17 @@ class DepartmentDiscrepancy extends FanniePage
         $ret .= "</form>";
         $ret .= "<br>";
         
-        
         //* Check for items not following Foodstamp pattern
-        $query = "select * from products where department={$_GET['dept']} and foodstamp=";
+        $query = $dbc->prepare("select * from products where department=? and foodstamp=?");
+        $args = array(FormLib::get('dept'));
         if ($fs0 < $fs1) {
-            $query .= "0";
+            $args[] = 0;
             $fsType = "Not Foodstamp able";
         } else if ($fs1 < $fs0 ) {
-            $query .= "1";
+            $args[] = 1;
             $fsType = "Is Foodstamp albe";
         }
-        $query .= ";";
-        $result = $dbc->query($query);
+        $result = $dbc->execute($query, $args);
         while ($row = $dbc->fetch_row($result)) {
             $upc2[] = $row['upc'];
             $desc2[] = $row['description'];
@@ -247,7 +234,7 @@ class DepartmentDiscrepancy extends FanniePage
             <th></th>
             <th></th>";
         for ($i=0; $i<count($upc2); $i++) {
-            $ret .= "<tr><td><a href=\"http://key/git/fannie/item/ItemEditorPage.php?searchupc={$upc2[$i]}\">{$upc2[$i]}</a></td>";
+            $ret .= "<tr><td><a href=\"ItemEditorPage.php?searchupc={$upc2[$i]}\">{$upc2[$i]}</a></td>";
             $ret .= "<td>" . $desc2[$i] . "</td>";
             $ret .= "<td><b>" . $fsType . "</b></td>";
             $ret .= "<td><input type=\"radio\" name=\"fs{$i}\" id=\"fs{$i}\" value=\"fs0\"required>not foodstamp-able </td>";

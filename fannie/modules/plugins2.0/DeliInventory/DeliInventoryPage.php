@@ -175,8 +175,8 @@ if (isset($_GET['action'])){
         $oldcat = preg_replace("/_/"," ",$_GET['oldcat']);
         $newcat = preg_replacE("/_/"," ",$_GET['newcat']);
 
-        $update = $sql->prepare_statement('UPDATE deliInventoryCat SET category=? WHERE category=?');
-        $sql->exec_statement($update, array($newcat, $oldcat));
+        $update = $sql->prepare('UPDATE deliInventoryCat SET category=? WHERE category=?');
+        $sql->execute($update, array($newcat, $oldcat));
 
         $out .= $this->gettable();
         break;
@@ -256,8 +256,8 @@ if (isset($_GET['action'])){
             $args[] = $limitCat;
         }
         $fetchQ .= "order by category, item";
-        $fetchP = $sql->prepare_statement($fetchQ); 
-        $fetchR = $sql->exec_statement($fetchP, $args);
+        $fetchP = $sql->prepare($fetchQ); 
+        $fetchR = $sql->execute($fetchP, $args);
 
         $ret .= "<a href=\"\" onclick=\"saveAll();return false;\">Save all changes</a> | <a href=\"\" onclick=\"clearAll();return false;\">Clear all totals</a><br /><br />";
 
@@ -377,11 +377,11 @@ if (isset($_GET['action'])){
         global $FANNIE_OP_DB, $FANNIE_URL;
         $sql = FannieDB::get($FANNIE_OP_DB);
 
-        $prep = $sql->prepare_statement('UPDATE deliInventoryCat SET id=? WHERE id=?');
+        $prep = $sql->prepare('UPDATE deliInventoryCat SET id=? WHERE id=?');
 
-        $sql->exec_statement($prep, array(-1*$id2, $id2));
-        $sql->exec_statement($prep, array($id2, $id1));
-        $sql->exec_statement($prep, array($id1, -1*$id2));
+        $sql->execute($prep, array(-1*$id2, $id2));
+        $sql->execute($prep, array($id2, $id1));
+        $sql->execute($prep, array($id1, -1*$id2));
     }
 
     // safari trim
@@ -439,3 +439,4 @@ if (isset($_GET['action'])){
 }
 
 FannieDispatch::conditionalExec();
+

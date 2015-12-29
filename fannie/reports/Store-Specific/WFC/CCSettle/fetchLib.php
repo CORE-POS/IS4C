@@ -7,12 +7,12 @@ function getProcessorInfo($dateStr){
     $dbc = FannieDB::get($FANNIE_TRANS_DB);
 
     $trans_stack = array();
-    $query = $dbc->prepare_statement("SELECT q.refNum,r.httpCode,q.PAN,q.issuer FROM efsnetRequest as q
+    $query = $dbc->prepare("SELECT q.refNum,r.httpCode,q.PAN,q.issuer FROM efsnetRequest as q
         LEFT JOIN efsnetResponse as r ON q.date=r.date
         and q.cashierNo=r.cashierNo and q.laneNo=r.laneNo
         and q.transNo=r.transNo and q.transID=r.transID
         WHERE q.datetime BETWEEN ? AND ?");
-    $result = $dbc->exec_statement($query,array($dateStr.' 00:00:00',$dateStr.' 23:59:59'));
+    $result = $dbc->execute($query,array($dateStr.' 00:00:00',$dateStr.' 23:59:59'));
     while($row = $dbc->fetch_row($result)){
         $trans_stack[$row['refNum']] = array(
             "http"=>$row['httpCode'],
@@ -157,4 +157,3 @@ function docurl($xml){
     return $result;
 }
 
-?>

@@ -298,4 +298,4 @@ $strCat = $strCat . ")";
 echo "</table>";
 echo "<input type=hidden value=$buyID name=buyID>";
 echo "</form>";
-?>
+

@@ -121,9 +121,9 @@ class PatronageOverDatesReport extends FannieReportPage
                 ORDER BY tpurch desc{$limit}
                 ;";
 
-        $statement = $dbc->prepare_statement($query);
+        $statement = $dbc->prepare($query);
         $args = array($d1.' 00:00:00', $d2.' 23:59:59');
-        $result = $dbc->exec_statement($statement, $args);
+        $result = $dbc->execute($statement, $args);
         $mdata = array(); // New
         while ($row = $dbc->fetch_row($result)) {
             $card_no[] = $row['card_no'];
@@ -153,11 +153,11 @@ class PatronageOverDatesReport extends FannieReportPage
                     GROUP BY trans_num, mt, dt, yt 
                     ORDER BY mt, dt, yt
                     ;";
-            $statement = $dbc->prepare_statement($query);
+            $statement = $dbc->prepare($query);
             $args = array($d1.' 00:00:00', $d2.' 23:59:59');
             for($i=0; $i<count($card_no);$i++) {
                 $args[2] = $card_no[$i];
-                $result = $dbc->exec_statement($statement, $args);
+                $result = $dbc->execute($statement, $args);
                 $mdata["$card_no[$i]"][1] = $dbc->num_rows($result);
                 $numTran[] = $dbc->num_rows($result);
             }
@@ -170,9 +170,9 @@ class PatronageOverDatesReport extends FannieReportPage
                     AND (trans_type = 'A'){$shrinkageUsers}
                     GROUP BY card_no
                     ;";
-            $statement = $dbc->prepare_statement($query);
+            $statement = $dbc->prepare($query);
             $args = array($d1.' 00:00:00', $d2.' 23:59:59');
-            $result = $dbc->exec_statement($statement, $args);
+            $result = $dbc->execute($statement, $args);
             $count = 0;
             if ($this->top_n > 0) {
                 while ($row = $dbc->fetch_row($result)) {

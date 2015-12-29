@@ -44,7 +44,7 @@ class ReportModel extends BasicModel
     {
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
-            $sql .= $definition.' as '.$this->connection->identifier_escape($name).',';
+            $sql .= $definition.' as '.$this->connection->identifierEscape($name).',';
         }
         $sql = substr($sql,0,strlen($sql)-1);
         

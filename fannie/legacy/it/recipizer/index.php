@@ -70,9 +70,9 @@ if (isset($_GET['action'])){
         $field = $_GET['field'];
         $value = $_GET['value'];
 
-        $table = $sql->table_definition('recipes');
+        $table = $sql->tableDefinition('recipes');
         if (isset($table[$field])) {
-            $field = $sql->identifier_escape($field);
+            $field = $sql->identifierEscape($field);
             $upQ = $sql->prepare("update recipes set $field=? where id=?");
             $upR = $sql->execute($upQ, array($value, $id));
         }
@@ -115,7 +115,7 @@ if (isset($_GET['action'])){
         $swap = $ord-1;
         
         if ($sql->table_exists($table)) {
-            $table = $sql->identifier_escape($table);
+            $table = $sql->identifierEscape($table);
 
             $openQ = $sql->prepare("update $table set ord=-1*? where ord=? and recipeID=?");
             $openR = $sql->execute($openQ, array($swap, $swap, $id));
@@ -143,7 +143,7 @@ if (isset($_GET['action'])){
         $swap = $ord+1;
         
         if ($sql->table_exists($table)) {
-            $table = $sql->identifier_escape($table);
+            $table = $sql->identifierEscape($table);
 
             $openQ = $sql->prepare("update $table set ord=-1*? where ord=? and recipeID=?");
             $openR = $sql->execute($openQ, array($swap, $swap, $id));
@@ -588,7 +588,7 @@ function fixOrder($table,$ord){
     $next = $ord+1;
 
     if (!$sql->table_exists($table)) return;
-    $table = $sql->identifier_escape($table);
+    $table = $sql->identifierEscape($table);
     
     $maxQ = "select max(ord) from $table";
     $maxR = $sql->query($maxQ);

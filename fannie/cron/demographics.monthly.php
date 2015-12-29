@@ -67,4 +67,3 @@ $query = "INSERT INTO YTD_Patronage_Speedup
     year_no, month_no, day_no, trans_num";
 $dbc->query($query);
 
-?>

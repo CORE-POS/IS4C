@@ -48,34 +48,29 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     protected $preview_opts = array(
         'phone' => array(
-            'name' => 'phone',
             'display_name' => 'Phone',
             'default' => 2,
-            'required' => True
+            'required' => true
         ),
         'card_no' => array(
-            'name' => 'card_no',
             'display_name' => 'Mem#',
             'default' => 3,
-            'required' => True
+            'required' => true
         ),
         'size' => array(
-            'name' => 'size',
             'display_name' => 'Ad Size#',
             'default' => 4,
-            'required' => True
+            'required' => true
         ),
         'color' => array(
-            'name' => 'color',
             'display_name' => 'Color/B&W',
             'default' => 5,
-            'required' => True
+            'required' => true
         ),
         'name' => array(
-            'name' => 'name',
             'display_name' => 'Name',
             'default' => 0,
-            'required' => True
+            'required' => true
         )
     );
 
@@ -110,7 +105,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $dRecord['trans_id'] = 1;
 
         $dParam = DTrans::parameterize($dRecord, 'datetime', $sql->now());
-        $insD = $sql->prepare_statement("INSERT INTO dtransactions
+        $insD = $sql->prepare("INSERT INTO dtransactions
                 ({$dParam['columnString']}) VALUES ({$dParam['valueString']})");
 
         $tRecord = DTrans::$DEFAULTS;
@@ -125,14 +120,14 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $tRecord['trans_id'] = 2;
 
         $tParam = DTrans::parameterize($tRecord, 'datetime', $sql->now());
-        $insT = $sql->prepare_statement("INSERT INTO dtransactions
+        $insT = $sql->prepare("INSERT INTO dtransactions
                 ({$tParam['columnString']}) VALUES ({$tParam['valueString']})");
         
-        $transQ = $sql->prepare_statement("SELECT MAX(trans_no) FROM dtransactions
+        $transQ = $sql->prepare("SELECT MAX(trans_no) FROM dtransactions
             WHERE emp_no=? AND register_no=?");
         foreach(FormLib::get_form_value('cardnos',array()) as $cardno){
             $amt = FormLib::get_form_value('billable'.$cardno);
-            $transR = $sql->exec_statement($transQ, array($EMP_NO, $LANE_NO));
+            $transR = $sql->execute($transQ, array($EMP_NO, $LANE_NO));
             $t_no = '';
             if ($sql->num_rows($transR) > 0){
                 $row = $sql->fetch_row($transR);
@@ -152,14 +147,14 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $dRecord['card_no'] = $cardno;
 
             $dParam = DTrans::parameterize($dRecord);
-            $ins = $sql->exec_statement($insD, $dParam['arguments']);
+            $ins = $sql->execute($insD, $dParam['arguments']);
 
             $tRecord['trans_no'] = $t_no;
             $tRecord['total'] = -1*$amt;
             $tRecord['card_no'] = $cardno;
 
             $tParam = DTrans::parameterize($tRecord);
-            $sql->exec_statement($insT, $tParam['arguments']);
+            $sql->execute($insT, $tParam['arguments']);
 
             $ret .= sprintf("<tr><td>%d</td><td>$%.2f</td><td>%s</td></tr>",
                 $cardno,$amt,$EMP_NO."-".$LANE_NO."-".$t_no);
@@ -188,7 +183,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             </tr>
             <form action=WfcGazetteBillingPage.php method=post>";
         $sql = FannieDB::get($FANNIE_OP_DB);
-        $searchQ = $sql->prepare_statement("SELECT m.card_no,c.lastname FROM
+        $searchQ = $sql->prepare("SELECT m.card_no,c.lastname FROM
             meminfo as m left join custdata as c
             on m.card_no=c.cardno and c.personnum=1
             left join suspensions as s on
@@ -196,7 +191,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             WHERE (c.memtype = 2 or s.memtype1 = 2)
             and (m.phone=? OR m.email_1=? OR m.email_2=?
             or c.lastname=?)");
-        $altSearchQ = $sql->prepare_statement("SELECT m.card_no,c.lastname FROM
+        $altSearchQ = $sql->prepare("SELECT m.card_no,c.lastname FROM
             meminfo as m left join custdata as c
             on m.card_no=c.cardno and c.personnum=1
             WHERE c.memtype = 2
@@ -237,21 +232,21 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $desc = "($sz, ".($clr=="FULL" ? "color" : "b&w");
             $desc .= ((substr($data[$MEMBER],0,3)=="YES") ? ', owner' : '').")";
 
-            $searchR = $sql->exec_statement($searchQ, array($ph, $ph, $ph, $cn));
+            $searchR = $sql->execute($searchQ, array($ph, $ph, $ph, $cn));
 
             if ($sql->num_rows($searchR) > 1){
                 $tmp = explode(" ",$data[$CONTACT]);
-                $searchR = $sql->exec_statement($altSearchQ, array($tmp[0].'%', $ph, $ph, $ph));
+                $searchR = $sql->execute($altSearchQ, array($tmp[0].'%', $ph, $ph, $ph));
             }
 
             if (strstr($cn, 'GREY DOFFIN') && strstr(strtoupper($cn),'FURNITURE')) {
-                $searchP = $sql->prepare_statement('SELECT CardNo as card_no, LastName
+                $searchP = $sql->prepare('SELECT CardNo as card_no, LastName
                         FROM custdata WHERE CardNo=? AND personNum=1');
-                $searchR = $sql->exec_statement($searchP, array(13366));
+                $searchR = $sql->execute($searchP, array(13366));
             } else if (strstr($cn, 'GREY DOFFIN')) {
-                $searchP = $sql->prepare_statement('SELECT CardNo as card_no, LastName
+                $searchP = $sql->prepare('SELECT CardNo as card_no, LastName
                         FROM custdata WHERE CardNo=? AND personNum=1');
-                $searchR = $sql->exec_statement($searchP, array(6880));
+                $searchR = $sql->execute($searchP, array(6880));
             }
             
             $warning = '';
@@ -326,4 +321,4 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
 }
 
 FannieDispatch::conditionalExec();
-?>
+

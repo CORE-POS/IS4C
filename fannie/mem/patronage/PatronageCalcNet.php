@@ -38,9 +38,9 @@ class PatronageCalcNet extends FannieRESTfulPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         ob_start();
-        $q = $dbc->prepare_statement("UPDATE patronage_workingcopy SET
+        $q = $dbc->prepare("UPDATE patronage_workingcopy SET
             net_purch = purchase + discounts + rewards");
-        $r = $dbc->exec_statement($q);
+        $r = $dbc->execute($q);
         if ($r) {
             echo '<div class="alert alert-success">';
             echo 'Net purchases updated';

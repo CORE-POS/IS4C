@@ -474,4 +474,3 @@ echo "<table>";
         echo "<input name=submit type=submit value=submit>";
         echo "</form>";
 
-?>

@@ -30,9 +30,9 @@ class TsAdminAdd extends FanniePage {
             }
         
             // Make sure we're in a valid pay period.
-            $query = $ts_db->prepare_statement("SELECT periodID FROM payperiods 
+            $query = $ts_db->prepare("SELECT periodID FROM payperiods 
                 WHERE ".$ts_db->now()." BETWEEN DATE(periodStart) AND DATE(periodEnd)");
-            $result = $ts_db->exec_statement($query);
+            $result = $ts_db->execute($query);
             list($periodID) = $ts_db->fetch_row($result);
         
             $emp_no = $_GET['emp_no'];
@@ -103,19 +103,19 @@ class TsAdminAdd extends FanniePage {
         
             if (empty($this->errors)) { // All good.
                 // First check to make sure they haven't already entered hours for this day.
-                $query = $ts_db->prepare_statement("SELECT * FROM timesheet WHERE emp_no=? AND date=?");
-                $result = $ts_db->exec_statement($query,array($emp_no,$date));
+                $query = $ts_db->prepare("SELECT * FROM timesheet WHERE emp_no=? AND date=?");
+                $result = $ts_db->execute($query,array($emp_no,$date));
                 if ($ts_db->num_rows($result) == 0) { // Success.
                     $successcount = 0;
-                    $query = $ts_db->prepare_statement("INSERT INTO timesheet 
+                    $query = $ts_db->prepare("INSERT INTO timesheet 
                         (emp_no, time_in, time_out, area, date, periodID)
                         VALUES (?,?,?,?,?,?)");
                     for ($i = 1; $i <= $entrycount; $i++) {
-                        $result = $ts_db->exec_statement($query,array(
+                        $result = $ts_db->execute($query,array(
                             $emp_no, $timein[$i], $timeout[$i],
                             $area[$i], $date, $periodID
                         ));
-                        if ($ts_db->affected_rows() == 1) {$successcount++;}
+                        if ($ts_db->affectedRows() == 1) {$successcount++;}
                     }
                     if ($successcount != $entrycount) {
                         $this->errors[] = '<p>The entered hours could not be added, please try again later.</p>';
@@ -123,10 +123,10 @@ class TsAdminAdd extends FanniePage {
                         $this->errors[] = '<p>Query: ' . $query . '</p>';
                         return True;
                     }
-                    $query = $ts_db->prepare_statement("INSERT INTO timesheet 
+                    $query = $ts_db->prepare("INSERT INTO timesheet 
                         (emp_no, time_out, time_in, area, date, periodID)
                         VALUES (?, '2008-01-01 00:00:00', ?, 0, ?, ?)");
-                    $result = $ts_db->exec_statement($query, array($emp_no,
+                    $result = $ts_db->execute($query, array($emp_no,
                             ('2008-01-01 '.$lunch), $date, $periodID));
                     if (!$result) {
                         $this->errors[] = '<p>The entered hours could not be added, please try again later.</p>';
@@ -171,9 +171,9 @@ class TsAdminAdd extends FanniePage {
             Name: <select name="emp_no" class="form-control">
             <option value="error">Who are You?</option>' . "\n";
     
-        $query = $ts_db->prepare_statement("SELECT FirstName, emp_no FROM ".
+        $query = $ts_db->prepare("SELECT FirstName, emp_no FROM ".
                 $FANNIE_OP_DB.$ts_db->sep()."employees where EmpActive=1 ORDER BY FirstName ASC");
-        $result = $ts_db->exec_statement($query);
+        $result = $ts_db->execute($query);
         while ($row = $ts_db->fetch_array($result)) {
             echo "<option value=\"$row[1]\">$row[0]</option>\n";
         }
@@ -220,11 +220,11 @@ class TsAdminAdd extends FanniePage {
         echo "<table class=\"table table-bordered\">
             <tr><th>Time In</th><th>Time Out</th><th>Area Worked</th></tr>\n";
         $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
-        $query = $ts_db->prepare_statement("SELECT * FROM shifts 
+        $query = $ts_db->prepare("SELECT * FROM shifts 
             WHERE ShiftID NOT IN (0, 13) ORDER BY ShiftID ASC");
         var_dump($ts_db->tableExists('shifts'));
         for ($i = 1; $i <= $this->max; $i++) {
-            $result = $ts_db->exec_statement($query);
+            $result = $ts_db->execute($query);
             
             echo '<tr>
                 <td class="form-inline">
@@ -261,6 +261,5 @@ class TsAdminAdd extends FanniePage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
-?>

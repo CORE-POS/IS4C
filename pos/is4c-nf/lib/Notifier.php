@@ -62,8 +62,8 @@ class MemBalanceNotifier extends Notifier
 
         $db = Database::pDataConnect();
 
-        $query = $db->prepare_statement('SELECT Balance FROM custdata WHERE CardNo=?');
-        $result = $db->exec_statement($query, array(CoreLocal::get('memberID')));
+        $query = $db->prepare('SELECT Balance FROM custdata WHERE CardNo=?');
+        $result = $db->execute($query, array(CoreLocal::get('memberID')));
 
         // non-valid member number apparently
         if ($db->num_rows($result) == 0) {

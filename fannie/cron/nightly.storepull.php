@@ -57,4 +57,3 @@ curl_setopt($custdata, CURLOPT_RETURNTRANSFER, True);
 $r2 = curl_exec($custdata);
 curl_close($custdata);
 
-?>

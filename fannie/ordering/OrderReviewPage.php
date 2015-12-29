@@ -63,8 +63,8 @@ class OrderReviewPage extends FannieRESTfulPage
         
         // look up member id 
         $memNum = 0;
-        $findMem = $dbc->prepare_statement("SELECT card_no,voided FROM {$TRANS}CompleteSpecialOrder WHERE order_id=?");
-        $memR = $dbc->exec_statement($findMem, array($orderID));
+        $findMem = $dbc->prepare("SELECT card_no,voided FROM {$TRANS}CompleteSpecialOrder WHERE order_id=?");
+        $memR = $dbc->execute($findMem, array($orderID));
         if ($dbc->num_rows($memR) > 0) {
             $memW = $dbc->fetch_row($memR);
             $memNum = $memW['card_no'];
@@ -73,15 +73,15 @@ class OrderReviewPage extends FannieRESTfulPage
 
         // Get member info from custdata, non-member info from SpecialOrders
         if ($memNum != 0) {
-            $namesP = $dbc->prepare_statement("SELECT personNum,FirstName,LastName FROM custdata
+            $namesP = $dbc->prepare("SELECT personNum,FirstName,LastName FROM custdata
                 WHERE CardNo=? ORDER BY personNum");
-            $namesR = $dbc->exec_statement($namesP,array($memNum));
+            $namesR = $dbc->execute($namesP,array($memNum));
             while($namesW = $dbc->fetch_row($namesR)) {
                 $names[$namesW['personNum']] = array($namesW['FirstName'],$namesW['LastName']);
             }
 
-            $statusQ = $dbc->prepare_statement("SELECT Type FROM custdata WHERE CardNo=?");
-            $statusR = $dbc->exec_statement($statusQ,array($memNum));
+            $statusQ = $dbc->prepare("SELECT Type FROM custdata WHERE CardNo=?");
+            $statusR = $dbc->execute($statusQ,array($memNum));
             $status_row  = $dbc->fetch_row($statusR);
             if ($status_row['Type'] == 'INACT') {
                 $status_row['status'] = 'Inactive';
@@ -92,9 +92,9 @@ class OrderReviewPage extends FannieRESTfulPage
             }
         }
 
-        $q = $dbc->prepare_statement("SELECT entry_date FROM {$TRANS}SpecialOrderHistory 
+        $q = $dbc->prepare("SELECT entry_date FROM {$TRANS}SpecialOrderHistory 
                 WHERE order_id=? AND entry_type='CONFIRMED'");
-        $r = $dbc->exec_statement($q, array($orderID));
+        $r = $dbc->execute($q, array($orderID));
         $confirm_date = "";
         if ($dbc->num_rows($r) > 0) {
             $confirm_date = array_pop($dbc->fetch_row($r));
@@ -103,9 +103,9 @@ class OrderReviewPage extends FannieRESTfulPage
         $callback = 1;
         $user = 'Unknown';
         $orderDate = '';
-        $q = $dbc->prepare_statement("SELECT datetime,numflag,mixMatch FROM 
+        $q = $dbc->prepare("SELECT datetime,numflag,mixMatch FROM 
                 {$TRANS}CompleteSpecialOrder WHERE order_id=? AND trans_id=0");
-        $r = $dbc->exec_statement($q, array($orderID));
+        $r = $dbc->execute($q, array($orderID));
         if ($dbc->num_rows($r) > 0) {
             list($orderDate,$callback,$user) = $dbc->fetch_row($r);
         }
@@ -207,7 +207,7 @@ class OrderReviewPage extends FannieRESTfulPage
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
 
         $dQ = $dbc->prepare("SELECT dept_no,dept_name FROM departments order by dept_no");
-        $dR = $dbc->exec_statement($dQ);
+        $dR = $dbc->execute($dQ);
         $depts = array(0=>'Unassigned');
         while ($dW = $dbc->fetch_row($dR)) {
             $depts[$dW['dept_no']] = $dW['dept_name'];
@@ -215,12 +215,12 @@ class OrderReviewPage extends FannieRESTfulPage
 
         $ret = '<table class="table table-bordered table-striped">';
         $ret .= '<tr><th>UPC</th><th>SKU</th><th>Description</th><th>Cases</th><th>SRP</th><th>Actual</th><th>Qty</th><th>Dept</th></tr>';
-        $q = $dbc->prepare_statement("SELECT o.upc,o.description,total,quantity,department,
+        $q = $dbc->prepare("SELECT o.upc,o.description,total,quantity,department,
             sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch FROM {$TRANS}CompleteSpecialOrder as o
             left join vendorItems as v on o.upc=v.upc AND o.upc <> '0000000000000'
             WHERE order_id=? AND trans_type='I'
             ORDER BY trans_id DESC");
-        $r = $dbc->exec_statement($q, array($this->orderID));
+        $r = $dbc->execute($q, array($this->orderID));
         while($w = $dbc->fetch_row($r)) {
             $ret .= sprintf('<tr>
                     <td>%s</td>

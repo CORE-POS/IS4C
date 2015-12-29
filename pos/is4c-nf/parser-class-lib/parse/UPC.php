@@ -634,6 +634,9 @@ class UPC extends Parser
     */
     private function rewriteScaleSticker($upc)
     {
+        if ($upc == '0028491108110' || $upc == '0028491108310' || $upc == '0028491108010') {
+            return array($upc, false, 0, 0);
+        }
         $scalePrefix = '002';
         $scaleStickerItem = false;
         $scaleCheckDigits = false;
@@ -776,7 +779,7 @@ class UPC extends Parser
     private function lookupItem($upc)
     {
         $dbc = Database::pDataConnect();
-        $table = $dbc->table_definition('products');
+        $table = $dbc->tableDefinition('products');
         $query = "SELECT inUse,upc,description,normal_price,scale,deposit,
             qttyEnforced,department,local,cost,tax,foodstamp,discount,
             discounttype,specialpricemethod,special_price,groupprice,

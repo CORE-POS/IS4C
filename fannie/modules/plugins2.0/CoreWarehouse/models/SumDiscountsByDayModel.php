@@ -37,23 +37,11 @@ class SumDiscountsByDayModel extends CoreWarehouseModel {
     );
 
     public function refresh_data($trans_db, $month, $year, $day=False){
-        $start_id = date('Ymd',mktime(0,0,0,$month,1,$year));
-        $start_date = date('Y-m-d',mktime(0,0,0,$month,1,$year));
-        $end_id = date('Ymt',mktime(0,0,0,$month,1,$year));
-        $end_date = date('Y-m-t',mktime(0,0,0,$month,1,$year));
-        if ($day !== False){
-            $start_id = date('Ymd',mktime(0,0,0,$month,$day,$year));
-            $start_date = date('Y-m-d',mktime(0,0,0,$month,$day,$year));
-            $end_id = $start_id;
-            $end_date = $start_date;
-        }
+        list($start_id, $start_date, $end_id, $end_date) = $this->dates($month, $year, $day);
 
         $target_table = DTransactionsModel::selectDlog($start_date, $end_date);
 
-        /* clear old entries */
-        $sql = 'DELETE FROM '.$this->name.' WHERE date_id BETWEEN ? AND ?';
-        $prep = $this->connection->prepare_statement($sql);
-        $result = $this->connection->exec_statement($prep, array($start_id, $end_id));
+        $this->clearDates($sql, $start_id, $end_id);
 
         /* reload table from transarction archives */
         $sql = "INSERT INTO ".$this->name."
@@ -66,8 +54,8 @@ class SumDiscountsByDayModel extends CoreWarehouseModel {
             trans_type IN ('S') AND total <> 0
             AND upc='DISCOUNT' AND card_no <> 0
             GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), memType";
-        $prep = $this->connection->prepare_statement($sql);
-        $result = $this->connection->exec_statement($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
+        $prep = $this->connection->prepare($sql);
+        $result = $this->connection->execute($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
     }
 }
 

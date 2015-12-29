@@ -75,9 +75,9 @@ function regularDisplay()
         \$<input type=text name=amount /></td></tr>
         <tr><td><b>Department</b></td>
         <td><select name=dept>";
-    $numsQ = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments 
+    $numsQ = $dbc->prepare("SELECT dept_no,dept_name FROM departments 
         ORDER BY dept_no");
-    $numsR = $dbc->exec_statement($numsQ);
+    $numsR = $dbc->execute($numsQ);
     while($numsW = $dbc->fetch_row($numsR)){
         printf("<option value=%d %s>%d %s</option>",
             $numsW[0],
@@ -87,9 +87,9 @@ function regularDisplay()
     echo "</select></td></tr>
         <tr><td><b>Tender Type</b></td>
         <td><select name=tender>";
-    $numsQ = $dbc->prepare_statement("SELECT TenderCode,TenderName FROM tenders 
+    $numsQ = $dbc->prepare("SELECT TenderCode,TenderName FROM tenders 
         ORDER BY TenderName");
-    $numsR = $dbc->exec_statement($numsQ);
+    $numsR = $dbc->execute($numsQ);
     while($numsW = $dbc->fetch_row($numsR)){
         printf("<option value=%s>%s</option>",$numsW[0],$numsW[1]); 
     }
@@ -126,20 +126,20 @@ function bill($amt,$desc,$dept,$tender){
     global $FANNIE_OP_DB,$EMP_NO,$LANE_NO,$CARD_NO, $FANNIE_TRANS_DB;
     $dbc = FannieDB::get($FANNIE_OP_DB);
 
-    $tnQ = $dbc->prepare_statement("SELECT TenderName FROM tenders WHERE TenderCode=?");
-    $tnR = $dbc->exec_statement($tnQ,array($tender));
+    $tnQ = $dbc->prepare("SELECT TenderName FROM tenders WHERE TenderCode=?");
+    $tnR = $dbc->execute($tnQ,array($tender));
     $tname = array_pop($dbc->fetch_array($tnR));
 
     $dbc = FannieDB::get($FANNIE_TRANS_DB);
 
-    $transQ = $dbc->prepare_statement("SELECT MAX(trans_no) FROM dtransactions
+    $transQ = $dbc->prepare("SELECT MAX(trans_no) FROM dtransactions
         WHERE emp_no=? AND register_no=?");
-    $transR = $dbc->exec_statement($transQ,array($EMP_NO,$LANE_NO));
+    $transR = $dbc->execute($transQ,array($EMP_NO,$LANE_NO));
     $t_no = array_pop($dbc->fetch_array($transR));
     if ($t_no == "") $t_no = 1;
     else $t_no++;
 
-    $insQ = $dbc->prepare_statement("INSERT INTO dtransactions VALUES (
+    $insQ = $dbc->prepare("INSERT INTO dtransactions VALUES (
         ".$dbc->now().",0,0,?,?,?,
         ?,?,'D','','',?,
         1.0,0,0.00,?,?,?,0,0,.0,.0,
@@ -151,15 +151,15 @@ function bill($amt,$desc,$dept,$tender){
 
     $amt *= -1;
     $amt = sprintf('%.2f',$amt);
-    $insQ2 = $dbc->prepare_statement("INSERT INTO dtransactions VALUES (
+    $insQ2 = $dbc->prepare("INSERT INTO dtransactions VALUES (
         ".$dbc->now().",0,0,?,?,?,
         0,?,'T',?,0,0,
         0.0,0,0.00,.0,?,.0,0,0,.0,.0,
         0,0,0,NULL,0.0,0,0,.0,0,0,0,0,0,'',
         ?,2)");
     $args2 = array($LANE_NO,$EMP_NO,$t_no,$tname,$tender,$amt,$CARD_NO);
-    $dbc->exec_statement($insQ,$args);
-    $dbc->exec_statement($insQ2,$args2);
+    $dbc->execute($insQ,$args);
+    $dbc->execute($insQ2,$args2);
 
     printf("Receipt is %d-%d-%d.",
         $EMP_NO,$LANE_NO,$t_no);

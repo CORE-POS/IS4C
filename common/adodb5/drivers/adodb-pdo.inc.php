@@ -86,7 +86,7 @@ class ADODB_pdo extends ADOConnection {
 	var $dsnType = '';
 	var $stmt = false;
 	
-	function ADODB_pdo()
+	function __construct()
 	{
 	}
 	
@@ -455,7 +455,7 @@ class ADOPDOStatement {
 	var $_stmt;
 	var $_connectionID;
 	
-	function ADOPDOStatement($stmt,$connection)
+	function __construct($stmt,$connection)
 	{
 		$this->_stmt = $stmt;
 		$this->_connectionID = $connection;
@@ -514,7 +514,7 @@ class ADORecordSet_pdo extends ADORecordSet {
 	var $databaseType = "pdo";		
 	var $dataProvider = "pdo";
 	
-	function ADORecordSet_pdo($id,$mode=false)
+	function __construct($id,$mode=false)
 	{
 		if ($mode === false) {  
 			global $ADODB_FETCH_MODE;
@@ -531,7 +531,7 @@ class ADORecordSet_pdo extends ADORecordSet {
 		$this->fetchMode = $mode;
 		
 		$this->_queryID = $id;
-		$this->ADORecordSet($id);
+		parent::__construct($id);
 	}
 
 	
