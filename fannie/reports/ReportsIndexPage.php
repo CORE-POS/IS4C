@@ -32,14 +32,8 @@ class ReportsIndexPage extends FanniePage {
     protected $header = "Reports";
 
     public $description = '[Reports Menu] lists all known reports.';
-    public $themed = true;
 
-    public function body_content()
-    {
-        global $FANNIE_ROOT, $FANNIE_URL;
-
-        ob_start();
-        $terminology = '
+    private $terminology = '
 <ul>
 <li><strong>Terminology (<a href="" onclick="$(\'#terminologyList\').toggle(); return false;">Show/Hide</a>)</strong>
 <ul class="collapse" id="terminologyList">
@@ -94,78 +88,66 @@ All member-related things in IS4C are on the member number.
 open in a separate tab or window as a reference for Manufacturers and Vendors (Distributors).
 </li>
 </ul>';
-        echo $terminology;
+
+    public function body_content()
+    {
+        ob_start();
+        echo $this->terminology;
 
         $report_sets = array();
         $other_reports = array();
-
         $reports = FannieAPI::listModules('FannieReportPage');
-        foreach($reports as $class) {
-            $obj = new $class();
-            if (!$obj->discoverable) {
-                continue;
-            }
-            $reflect = new ReflectionClass($obj);
-            $url = $FANNIE_URL . str_replace($FANNIE_ROOT, '', $reflect->getFileName());
-            if ($obj->report_set != '') {
-                if (!isset($report_sets[$obj->report_set])) {
-                    $report_sets[$obj->report_set] = array();
-                }
-                $report_sets[$obj->report_set][] = array(
-                    'url' => $url,
-                    'info' => $obj->description,
-                );
-            } else {
-                $other_reports[] = array(
-                    'url' => $url,
-                    'info' => $obj->description,
-                );
-            }
-        }
+        list($report_sets, $other_sets) = $this->classesToSets($reports, $report_sets, $other_sets);
         $tools = FannieAPI::listModules('\COREPOS\Fannie\API\FannieReportTool');
-        foreach($tools as $class) {
-            $obj = new $class();
-            if (!$obj->discoverable) {
-                continue;
-            }
-            $reflect = new ReflectionClass($obj);
-            $url = $FANNIE_URL . str_replace($FANNIE_ROOT, '', $reflect->getFileName());
-            if ($obj->report_set != '') {
-                if (!isset($report_sets[$obj->report_set])) {
-                    $report_sets[$obj->report_set] = array();
-                }
-                $report_sets[$obj->report_set][] = array(
-                    'url' => $url,
-                    'info' => $obj->description,
-                );
-            } else {
-                $other_reports[] = array(
-                    'url' => $url,
-                    'info' => $obj->description,
-                );
-            }
-        }
+        list($report_sets, $other_sets) = $this->classesToSets($tools, $report_sets, $other_sets);
+
         echo '<ul>';
         $keys = array_keys($report_sets);
         sort($keys);
         foreach($keys as $set_name) {
             echo '<li>' . $set_name;
             echo '<ul>';
-            $reports = $report_sets[$set_name];
-            usort($reports, array('ReportsIndexPage', 'reportAlphabetize'));
-            foreach($reports as $report) {
-                $description = $report['info'];
-                $url = $report['url'];
-                $linked = preg_replace('/\[(.+)\]/', '<a href="' . $url . '">\1</a>', $description);
-                if ($linked === $description) {
-                    $linked .= ' (<a href="' . $url . '">Link</a>)';
-                }
-                echo '<li>' . $linked . '</li>';
-            }
+            $this->reportSetToLinks($report_sets[$set_name]);
             echo '</ul></li>';
         }
-        usort($other_reports, array('ReportsIndexPage', 'reportAlphabetize'));
-        foreach($other_reports as $report) {
+        $this->reportSetToLinks($other_reports);
+        echo '</ul>';
+
+        return ob_get_clean();
+    }
+
+    private function classesToSets($reports, $report_sets, $other_sets)
+    {
+        foreach($reports as $class) {
+            $obj = new $class();
+            if (!$obj->discoverable) {
+                continue;
+            }
+            $reflect = new ReflectionClass($obj);
+            $url = $this->config->get('URL') . str_replace($this->config->get('ROOT'), '', $reflect->getFileName());
+            if ($obj->report_set != '') {
+                if (!isset($report_sets[$obj->report_set])) {
+                    $report_sets[$obj->report_set] = array();
+                }
+                $report_sets[$obj->report_set][] = array(
+                    'url' => $url,
+                    'info' => $obj->description,
+                );
+            } else {
+                $other_reports[] = array(
+                    'url' => $url,
+                    'info' => $obj->description,
+                );
+            }
+        }
+
+        return array($report_sets, $other_sets);
+    }
+
+    private function reportSetToLinks($report_set)
+    {
+        usort($report_set, array('ReportsIndexPage', 'reportAlphabetize'));
+        foreach($report_set as $report) {
             $description = $report['info'];
             $url = $report['url'];
             $linked = preg_replace('/\[(.+)\]/', '<a href="' . $url . '">\1</a>', $description);
@@ -174,9 +156,6 @@ open in a separate tab or window as a reference for Manufacturers and Vendors (D
             }
             echo '<li>' . $linked . '</li>';
         }
-        echo '</ul>';
-
-        return ob_get_clean();
     }
 
     static private function reportAlphabetize($a, $b)
