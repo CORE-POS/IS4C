@@ -116,40 +116,8 @@ class CoopDeals12UpDarkL extends \COREPOS\Fannie\API\item\FannieSignage
               really tough.
             */
             $pdf->SetFont('Gill', '', $this->MED_FONT);
-            $font_shrink = 0;
-            while (true) {
-                $pdf->SetX($left + ($width*$column));
-                $y = $pdf->GetY();
-                $pdf->MultiCell($effective_width, 7, $item['description'], 0, 'C');
-                if ($pdf->GetY() - $y > 14) {
-                    $pdf->SetFillColor(0xff, 0xff, 0xff);
-                    $pdf->Rect($left + ($width*$column), $y, $left + ($width*$column) + $effective_width, $pdf->GetY(), 'F');
-                    $font_shrink++;
-                    if ($font_shrink >= $this->MED_FONT) {
-                        break;
-                    }
-                    $pdf->SetFontSize($this->MED_FONT - $font_shrink);
-                    $pdf->SetXY($left + ($width*$column), $y);
-                } else {
-                    if ($pdf->GetY() - $y < 14) {
-                        $words = explode(' ', $item['description']);
-                        $multi = '';
-                        for ($i=0;$i<floor(count($words)/2);$i++) {
-                            $multi .= $words[$i] . ' ';
-                        }
-                        $multi = trim($multi) . "\n";
-                        for ($i=floor(count($words)/2); $i<count($words); $i++) {
-                            $multi .= $words[$i] . ' ';
-                        }
-                        $item['description'] = trim($multi);
-                        $pdf->SetFillColor(0xff, 0xff, 0xff);
-                        $pdf->Rect($left + ($width*$column), $y, $left + ($width*$column) + $effective_width, $pdf->GetY(), 'F');
-                        $pdf->SetXY($left + ($width*$column), $y);
-                        $pdf->MultiCell($effective_width, 7, $item['description'], 0, 'C');
-                    }
-                    break;
-                }
-            }
+            $pdf = $this->fitText($pdf, $this->MED_FONT, 
+                $item['description'], array($column, 7, 2));
 
             $pdf->SetX($left + ($width*$column));
             $pdf->SetFont('GillBook', '', $this->SMALLER_FONT);

@@ -893,6 +893,60 @@ class FannieSignage
 
         return $pdf;
     }
+
+    protected function fitText($pdf, $text, $font_size, $spacing)
+    {
+        $font_shrink = 0;
+        $effective_width = $this->width - $this->left;
+        $column = $spacing[0];
+        $line_height = $spacing[1];
+        $lines = $spacing[2];
+        while (true) {
+            $pdf->SetX($this->left + ($this->width*$column));
+            $y = $pdf->GetY();
+            $pdf->MultiCell($effective_width, $line_height, $text, 0, 'C');
+            if ($pdf->GetY() - $y > ($line_height*$lines)) {
+                $pdf->SetFillColor(0xff, 0xff, 0xff);
+                $pdf->Rect($this->left + ($this->width*$column), $y, $this->left + ($this->width*$column) + $effective_width, $pdf->GetY(), 'F');
+                $font_shrink++;
+                if ($font_shrink >= $font_size) {
+                    break;
+                }
+                $pdf->SetFontSize($font_size - $font_shrink);
+                $pdf->SetXY($this->left + ($this->width*$column), $y);
+            } else {
+                if ($lines == 2 && $pdf->GetY() - $y < ($lines*$line_height)) {
+                    $pdf = $this->twoLineText($pdf, $text, $y, $spacing);
+                }
+                break;
+            }
+        }
+
+        return $pdf;
+    }
+
+    protected function twoLineText($pdf, $text, $y, $spacing)
+    {
+        $effective_width = $this->width - $this->left;
+        $column = $spacing[0];
+        $line_height = $spacing[1];
+        $words = explode(' ', $text);
+        $multi = '';
+        for ($i=0;$i<floor(count($words)/2);$i++) {
+            $multi .= $words[$i] . ' ';
+        }
+        $multi = trim($multi) . "\n";
+        for ($i=floor(count($words)/2); $i<count($words); $i++) {
+            $multi .= $words[$i] . ' ';
+        }
+        $text = trim($multi);
+        $pdf->SetFillColor(0xff, 0xff, 0xff);
+        $pdf->Rect($this->left + ($this->width*$column), $y, $this->left + ($this->width*$column) + $effective_width, $pdf->GetY(), 'F');
+        $pdf->SetXY($this->left + ($this->width*$column), $y);
+        $pdf->MultiCell($effective_width, $line_height, $text, 0, 'C');
+
+        return $pdf;
+    }
 }
 
 }

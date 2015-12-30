@@ -65,68 +65,12 @@ class Signage15UpL extends \COREPOS\Fannie\API\item\FannieSignage
 
             $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($row*$this->height) + 6);
             $pdf->SetFont($this->font, 'B', $this->SMALL_FONT);
-            $font_shrink = 0;
-            while (true) {
-                $pdf->SetX($this->left + ($this->width*$column));
-                $y = $pdf->GetY();
-                $pdf->MultiCell($effective_width, 6, strtoupper($item['brand']), 0, 'C');
-                if ($pdf->GetY() - $y > 6.005) {
-                    $pdf->SetFillColor(0xff, 0xff, 0xff);
-                    $pdf->Rect($this->left + ($this->width*$column), $y, $this->left + ($this->width*$column) + $effective_width, $pdf->GetY(), 'F');
-                    $font_shrink++;
-                    if ($font_shrink >= $this->SMALL_FONT) {
-                        break;
-                    }
-                    $pdf->SetFontSize($this->SMALL_FONT - $font_shrink);
-                    $pdf->SetXY($this->left + ($this->width*$column), $y);
-                } else {
-                    break;
-                }
-            }
+            $pdf = $this->fitText($pdf, $this->SMALL_FONT, 
+                strtoupper($item['brand']), array($column, 6, 1));
 
-            /**
-              This block attempts to write the description then
-              checks how many lines it took. If the description was
-              longer than two lines, it whites the whole thing out,
-              drops one font size, and tries again. Calculating
-              effective text size with smart line breaks seems
-              really tough.
-            */
             $pdf->SetFont($this->font, '', $this->MED_FONT);
-            $font_shrink = 0;
-            while (true) {
-                $pdf->SetX($this->left + ($this->width*$column));
-                $y = $pdf->GetY();
-                $pdf->MultiCell($effective_width, 6, $item['description'], 0, 'C');
-                if ($pdf->GetY() - $y > 12) {
-                    $pdf->SetFillColor(0xff, 0xff, 0xff);
-                    $pdf->Rect($this->left + ($this->width*$column), $y, $this->left + ($this->width*$column) + $effective_width, $pdf->GetY(), 'F');
-                    $font_shrink++;
-                    if ($font_shrink >= $this->MED_FONT) {
-                        break;
-                    }
-                    $pdf->SetFontSize($this->MED_FONT - $font_shrink);
-                    $pdf->SetXY($this->left + ($this->width*$column), $y);
-                } else {
-                    if ($pdf->GetY() - $y < 12) {
-                        $words = explode(' ', $item['description']);
-                        $multi = '';
-                        for ($i=0;$i<floor(count($words)/2);$i++) {
-                            $multi .= $words[$i] . ' ';
-                        }
-                        $multi = trim($multi) . "\n";
-                        for ($i=floor(count($words)/2); $i<count($words); $i++) {
-                            $multi .= $words[$i] . ' ';
-                        }
-                        $item['description'] = trim($multi);
-                        $pdf->SetFillColor(0xff, 0xff, 0xff);
-                        $pdf->Rect($this->left + ($this->width*$column), $y, $this->left + ($this->width*$column) + $effective_width, $pdf->GetY(), 'F');
-                        $pdf->SetXY($this->left + ($this->width*$column), $y);
-                        $pdf->MultiCell($effective_width, 6, $item['description'], 0, 'C');
-                    }
-                    break;
-                }
-            }
+            $pdf = $this->fitText($pdf, $this->MED_FONT, 
+                $item['description'], array($column, 6, 2));
 
             $pdf->SetX($this->left + ($this->width*$column));
             $pdf->SetFont($this->alt_font, '', $this->SMALLER_FONT);
