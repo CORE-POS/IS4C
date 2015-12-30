@@ -32,6 +32,11 @@ class FannieSignage
     protected $overrides = array();
     protected $excludes = array();
 
+    protected $width;
+    protected $height;
+    protected $top;
+    protected $left;
+
     /**
       constructor
       @param $items [array] of upcs

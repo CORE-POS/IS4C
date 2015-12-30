@@ -32,6 +32,11 @@ class RailSigns8x8P extends \COREPOS\Fannie\API\item\FannieSignage
     protected $font = 'Arial';
     protected $alt_font = 'Arial';
 
+    protected $width = 24; // tag width in mm
+    protected $height = 31; // tag height in mm
+    protected $left = 5.0; // left margin
+    protected $top = 15; // top margin
+
     public function drawPDF()
     {
         $pdf = new \FPDF('P', 'mm', 'Letter');
@@ -43,20 +48,16 @@ class RailSigns8x8P extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
         }
 
-        $width = 24; // tag width in mm
         $bar_width = 22;
-        $height = 31; // tag height in mm
-        $left = 5.0; // left margin
-        $top = 15; // top margin
-        $pdf->SetTopMargin($top);  //Set top margin of the page
-        $pdf->SetLeftMargin($left);  //Set left margin of the page
-        $pdf->SetRightMargin($left);  //Set the right margin of the page
+        $pdf->SetTopMargin($this->top);  //Set top margin of the page
+        $pdf->SetLeftMargin($this->left);  //Set left margin of the page
+        $pdf->SetRightMargin($this->left);  //Set the right margin of the page
         $pdf->SetAutoPageBreak(False); // manage page breaks yourself
 
         $data = $this->loadItems();
         $num = 0; // count tags 
-        $x = $left;
-        $y = $top;
+        $x = $this->left;
+        $y = $this->top;
         $sign = 0;
         foreach ($data as $item) {
 
@@ -77,12 +78,12 @@ class RailSigns8x8P extends \COREPOS\Fannie\API\item\FannieSignage
 
             if ($num % 64 == 0) {
                 $pdf->AddPage();
-                $x = $left;
-                $y = $top;
+                $x = $this->left;
+                $y = $this->top;
                 $sign = 0;
             } else if ($num % 8 == 0) {
-                $x = $left;
-                $y += $height;
+                $x = $this->left;
+                $y += $this->height;
             }
 
             $row = floor($sign / 8);
@@ -90,11 +91,11 @@ class RailSigns8x8P extends \COREPOS\Fannie\API\item\FannieSignage
 
             $pdf->SetFillColor(86, 90, 92);
             //$pdf->SetFillColor(12, 122, 63);
-            $pdf->Rect($left + ($width*$column), $top + ($row*$height), $bar_width, 5, 'F');
+            $pdf->Rect($this->left + ($this->width*$column), $this->top + ($row*$this->height), $bar_width, 5, 'F');
             //$pdf->SetFillColor(140, 208, 36);
-            $pdf->Rect($left + ($width*$column), $top + ($row*$height) + 25, $bar_width, 2, 'F');
+            $pdf->Rect($this->left + ($this->width*$column), $this->top + ($row*$this->height) + 25, $bar_width, 2, 'F');
 
-            $pdf->SetXY($left + ($width*$column), $top + ($row*$height)+6);
+            $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($row*$this->height)+6);
             $y = $pdf->GetY();
             $pdf->SetFont($this->font, '', $this->MED_FONT);
             $pdf->MultiCell($bar_width, 5, $item['description'], 0, 'C');
@@ -102,12 +103,12 @@ class RailSigns8x8P extends \COREPOS\Fannie\API\item\FannieSignage
                 $pdf->Ln(5);
             }
 
-            $pdf->SetX($left + ($width*$column));
+            $pdf->SetX($this->left + ($this->width*$column));
             $pdf->SetFont($this->font, '', $this->BIG_FONT);
             $pdf->Cell($bar_width, 8, $price, 0, 1, 'C');
 
             // move right by tag width
-            $x += $width;
+            $x += $this->width;
 
             $num++;
             $sign++;
