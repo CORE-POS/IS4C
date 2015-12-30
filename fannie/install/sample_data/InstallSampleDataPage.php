@@ -123,86 +123,41 @@ else {
 <?php
 /* First, if this is a request to load a file, do that.
 */
-$db = new SQLManager($FANNIE_SERVER,
+$dbc = new SQLManager($FANNIE_SERVER,
     $FANNIE_SERVER_DBMS,
     $FANNIE_OP_DB,
     $FANNIE_SERVER_USER,
     $FANNIE_SERVER_PW);
 
-if (FormLib::get('employees') !== ''){
-    echo "Loading employees";
-    $db->query("TRUNCATE TABLE employees");
-    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'employees');  
+if (FormLib::get('employees') !== '') {
+    $this->reloadTable($dbc, 'employees');
 } elseif (FormLib::get('custdata') !== ''){
-    echo "Loading custdata";
-    $backup1 = $db->query('TRUNCATE TABLE custdataBackup');
-    $backup2 = $db->query('INSERT INTO custdataBackup SELECT * FROM custdata');
-    if ($backup1 === false || $backup2 === false) {
-        echo _(' - failed to backup current data. Sample data not loaded.');
-    } else {
-        $db->query("TRUNCATE TABLE custdata");
-        \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'custdata');
-    }
+    $this->reloadTable($dbc, 'custdata', 'custdataBackup');
 } elseif (FormLib::get('memtype') !== ''){
-    echo "Loading memtype";
-    $db->query("TRUNCATE TABLE memtype");
-    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'memtype');
+    $this->reloadTable($dbc, 'memtype');
 } elseif (FormLib::get('products') !== ''){
-    echo "Loading products";
-    $backup1 = $db->query('TRUNCATE TABLE productBackup');
-    $backup2 = $db->query('INSERT INTO productBackup SELECT * FROM products');
-    if ($backup1 === false || $backup2 === false) {
-        echo _(' - failed to backup current data. Sample data not loaded.');
-    } else {
-        $db->query("TRUNCATE TABLE products");
-        \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'products');
-    }
+    $this->reloadTable($dbc, 'products', 'productBackup');
 } elseif (FormLib::get('prod-flags') !== ''){
-    echo "Loading product flags";
-    $db->query("TRUNCATE TABLE prodFlags");
-    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'prodFlags');
+    $this->reloadTable($dbc, 'prodFlags');
 } elseif (FormLib::get('batchType') !== ''){
-    echo "Loading batchn types";
-    $db->query("TRUNCATE TABLE batchType");
-    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'batchType');
+    $this->reloadTable($dbc, 'batchType');
 } elseif (FormLib::get('depts') !== ''){
-    echo "Loading departments";
-    $db->query("TRUNCATE TABLE departments");
-    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'departments');
-    /* subdepts sample data is of questionable use
-    echo "<br />Loading subdepts";
-    $db->query("TRUNCATE TABLE subdepts");
-    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'subdepts');
-    */
+    $this->reloadTable($dbc, 'departments');
 } elseif (FormLib::get('superdepts') !== ''){
-    echo "Loading super departments";
-    $db->query("TRUNCATE TABLE superdepts");
-    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'superdepts');
-    $db->query("TRUNCATE TABLE superDeptNames");
-    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'superDeptNames');
+    $this->reloadTable($dbc, 'superdepts');
+    $this->reloadTable($dbc, 'superDeptNames');
 } elseif (FormLib::get('tenders') !== ''){
-    echo "Loading tenders";
-    $db->query("TRUNCATE TABLE tenders");
-    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'tenders');
+    $this->reloadTable($dbc, 'tenders');
 } elseif (FormLib::get('authentication') !== ''){
-    echo "Loading authentication info";
-    $db->query("TRUNCATE TABLE userKnownPrivs");
-    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'userKnownPrivs');
+    $this->reloadTable($dbc, 'userKnownPrivs');
 } elseif (FormLib::get('origin') !== ''){
-    echo "Loading country info";
-    $db->query("TRUNCATE TABLE originCountry");
-    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'originCountry');
-    echo "<br />Loading state/province info";
-    $db->query("TRUNCATE TABLE originStateProv");
-    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'originStateProv');
+    $this->reloadTable($dbc, 'originCountry');
+    $this->reloadTable($dbc, 'originStateProv');
 } elseif (FormLib::get('authGroups') !== ''){
-    echo "Loading authentication groups";
-    $db->query("TRUNCATE TABLE userGroups");
-    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'userGroups');
-    $db->query("TRUNCATE TABLE userGroupPrivs");
-    \COREPOS\Fannie\API\data\DataLoad::loadSampleData($db,'userGroupPrivs');
+    $this->reloadTable($dbc, 'userGroups');
+    $this->reloadTable($dbc, 'userGroupPrivs');
     // give "Administrators" group all permissions
-    $db->query("INSERT userGroupPrivs SELECT 
+    $dbc->query("INSERT userGroupPrivs SELECT 
             1, auth_class, 'all', 'all'
             FROM userKnownPrivs");
 }
@@ -324,6 +279,26 @@ utilities to populate the lane tables.
                     class="btn btn-default"
                     >' . $label . '
                 </button>';
+        }
+    }
+
+    private function reloadTable($dbc, $table, $backup_table=false)
+    {
+        echo 'Loading ' . $table;
+        $ready = true;
+        if ($backup_table !== false) {
+            $backup1 = $dbc->query('TRUNCATE TABLE ' . $dbc->identifierEscape($backup_table));
+            $backup2 = $dbc->query('INSERT INTO ' . $dbc->identifierEscape($backup_table) 
+                . ' SELECT * FROM ' . $dbc->identifierEscape($table));
+            if ($backup1 === false || $backup2 === false) {
+                echo _(' - failed to backup current data. Sample data not loaded.');
+                $ready = false;
+            }
+        }
+
+        if ($ready === true) {
+            $dbc->query("TRUNCATE TABLE " . $dbc->identifierEscape($table));
+            \COREPOS\Fannie\API\data\DataLoad::loadSampleData($dbc, $table);
         }
     }
 }
