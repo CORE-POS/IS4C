@@ -24,33 +24,6 @@ var deptEdit = (function($) {
 
     var mod = {};
 
-    mod.deptchange = function() {
-        var dID = $('#deptselect').val();
-        if (dID == 0){ 
-            $('#infodiv').html("");
-            return;
-        }
-
-        $.ajax({
-            url: 'DepartmentEditor.php',
-            type: 'get',
-            timeout: 5000,
-            data: 'id='+dID,
-            error: function(){
-                showBootstrapAlert('#deptdiv', 'danger', 'Error loading department');
-            },
-            success: function(resp){
-                $('#infodiv').html(resp);
-                $('#infodiv input[type=text]').keyup(function (e){
-                    if (e.which == 13) {
-                        deptSave();
-                    }
-                });
-                $('#infodiv input[type=text]:first').focus();
-            }
-        });
-    };
-
     mod.deptSave = function() {
         var fields = $('.deptFields :input').serialize();
         if (!$('#deptdisc').is(':checked')) {
@@ -72,6 +45,33 @@ var deptEdit = (function($) {
                 } else {
                     showBootstrapAlert('#deptdiv', 'danger', 'Error saving department');
                 }
+            }
+        });
+    };
+
+    mod.deptchange = function() {
+        var dID = $('#deptselect').val();
+        if (dID == 0){ 
+            $('#infodiv').html("");
+            return;
+        }
+
+        $.ajax({
+            url: 'DepartmentEditor.php',
+            type: 'get',
+            timeout: 5000,
+            data: 'id='+dID,
+            error: function(){
+                showBootstrapAlert('#deptdiv', 'danger', 'Error loading department');
+            },
+            success: function(resp){
+                $('#infodiv').html(resp);
+                $('#infodiv input[type=text]').keyup(function (e){
+                    if (e.which == 13) {
+                        mod.deptSave();
+                    }
+                });
+                $('#infodiv input[type=text]:first').focus();
             }
         });
     };
