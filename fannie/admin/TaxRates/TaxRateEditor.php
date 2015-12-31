@@ -142,18 +142,31 @@ class TaxRateEditor extends FannieRESTfulPage
         $form->desc = array('test rate');
         $form->rate = array('0.05');
         $form->account = array('101');
-        $this->setForm($form);
-        $post = $this->post_handler();
-        $phpunit->assertInternalType('bool', $post);
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $rate = new TaxRatesModel($dbc);
+
+        $this->testInsert($phpunit, $rate, $form);
+
+        $this->testUpdate($phpunit, $rate, $form);
+
+        $this->testDelete($phpunit, $rate, $form);
+    }
+
+    private function testInsert($phpunit, $rate, $form)
+    {
+        $this->setForm($form);
+        $post = $this->post_handler();
+        $phpunit->assertInternalType('bool', $post);
         $rate->id(1);
         $phpunit->assertEquals(true, $rate->load());
         $phpunit->assertEquals('test rate', $rate->description());
         $phpunit->assertEquals(0.05, $rate->rate());
         $phpunit->assertEquals('101', $rate->salesCode());
+    }
 
+    private function testUpdate($phpunit, $rate, $form)
+    {
         $form->rate = array('0.15');
         $this->setForm($form);
         $post = $this->post_handler();
@@ -161,7 +174,10 @@ class TaxRateEditor extends FannieRESTfulPage
         $rate->id(1);
         $phpunit->assertEquals(true, $rate->load());
         $phpunit->assertEquals(0.15, $rate->rate());
+    }
 
+    private function testDelete($phpunit, $rate, $form)
+    {
         $form->del = array(1);
         $this->setForm($form);
         $post = $this->post_handler();

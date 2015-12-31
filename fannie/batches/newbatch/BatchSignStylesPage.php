@@ -75,7 +75,7 @@ class BatchSignStylesPage extends FannieRESTfulPage
         }, '');
     }
 
-    protected function get_id_view()
+    private function getUpcItems()
     {
         $query = '
             SELECT l.upc,
@@ -101,6 +101,11 @@ class BatchSignStylesPage extends FannieRESTfulPage
             $rows[] = $row;
         }
 
+        return $rows;
+    }
+
+    private function getLcItems($rows)
+    {
         $query = '
             SELECT l.upc,
                 \'\' AS brand,
@@ -118,10 +123,14 @@ class BatchSignStylesPage extends FannieRESTfulPage
         while ($row = $this->connection->fetchRow($res)) {
             $rows[] = $row;
         }
-        $args = array($this->id);
-        while ($row = $this->connection->fetchRow($res)) {
-            $rows[] = $row;
-        }
+
+        return $rows;
+    }
+
+    protected function get_id_view()
+    {
+        $rows = $this->getUpcItems();
+        $rows = $this->getLcItems($rows);
 
         $ret = '<form method="post">
             <table class="table table-bordered"><thead><tr>
