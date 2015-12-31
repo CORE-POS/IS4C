@@ -17,6 +17,10 @@ var batchEdit = (function ($) {
         }
     };
 
+    var inputAreaAlert = function(type, msg) {
+        showBootstrapAlert('#inputarea', type, msg);
+    };
+
     mod.toggleUpcLcInput = function()
     {
         if ($('#addItemLikeCode').is(':checked')) {
@@ -36,7 +40,7 @@ var batchEdit = (function ($) {
             data: dataStr,
             success: function(resp) {
                 if (resp.error) {
-                    showBootstrapAlert('#inputarea', 'danger', resp.msg);
+                    inputAreaAlert('danger', resp.msg);
                     $(resp.field).focus().select();
                 } else if (resp.content) {
                     $('#inputarea').html(resp.content);
@@ -75,7 +79,7 @@ var batchEdit = (function ($) {
             data: 'id='+batchID+'&autotag=1',
             dataType: 'json',
             success: function(resp) {
-                showBootstrapAlert('#inputarea', 'success', 'Generated ' + resp.tags + ' tags');
+                inputAreaAlert('success', 'Generated ' + resp.tags + ' tags');
             }
         });
     };
@@ -91,10 +95,10 @@ var batchEdit = (function ($) {
             dataType: 'json',
             error: function() {
                 $('#progress-bar').hide();
-                showBootstrapAlert('#inputarea', 'danger', 'Network Error forcing batch');
+                inputAreaAlert('danger', 'Network Error forcing batch');
             },
             success: function(resp) {
-                showBootstrapAlert('#inputarea', colorName(resp), resp.msg);
+                inputAreaAlert(colorName(resp), resp.msg);
                 $('#progress-bar').hide();
             }
         });
@@ -107,7 +111,7 @@ var batchEdit = (function ($) {
             data: 'id='+batchID+'&unsale=1',
             dataType: 'json',
             success: function(resp) {
-                showBootstrapAlert('#inputarea', colorName(resp), resp.msg);
+                inputAreaAlert(colorName(resp), resp.msg);
             }
         });
     };
@@ -141,7 +145,7 @@ var batchEdit = (function ($) {
             dataType: 'json',
             success: function(resp) {
                 if (resp.error) {
-                    showBootstrapAlert('#inputarea', 'danger', resp.msg);
+                    inputAreaAlert('danger', resp.msg);
                 } else {
                     clickedElem.closest('tr').hide();
                     if (/^LC\d+$/.test(upc)) {
@@ -151,7 +155,7 @@ var batchEdit = (function ($) {
                 }
             }
         });
-    }
+    };
 
     mod.editUpcPrice = function(upc)
     {
@@ -173,7 +177,7 @@ var batchEdit = (function ($) {
             dataType: 'json',
             success: function(resp) {
                 if (resp.error) {
-                    showBootstrapAlert('#inputarea', 'warning', resp.msg);
+                    inputAreaAlert('warning', resp.msg);
                 } else {
                     $('#editLink'+upc+' .edit').show();
                     $('#editLink'+upc+' .save').hide();
@@ -233,7 +237,7 @@ var batchEdit = (function ($) {
             dataType: 'json',
             success: function(resp) {
                 if (resp.error) {
-                    showBootstrapAlert('#inputarea', 'danger', resp.error);
+                    inputAreaAlert('danger', resp.error);
                 } else {
                     $('#qualifier-table').append(tr);
                     tr.find('.down-arrow').show();
@@ -252,7 +256,7 @@ var batchEdit = (function ($) {
             dataType: 'json',
             success: function(resp) {
                 if (resp.error) {
-                    showBootstrapAlert('#inputarea', 'danger', resp.error);
+                    inputAreaAlert('danger', resp.error);
                 } else {
                     $('#discount-table').append(tr);
                     tr.find('.down-arrow').hide();
@@ -272,9 +276,9 @@ var batchEdit = (function ($) {
             dataType: 'json',
             success: function(resp) {
                 if (resp.error) {
-                    showBootstrapAlert('#inputarea', 'danger', resp.error);
+                    inputAreaAlert('danger', resp.error);
                 } else {
-                    showBootstrapAlert('#inputarea', 'success', 'Saved Paired Sale Settings');
+                    inputAreaAlert('success', 'Saved Paired Sale Settings');
                 }
             }
         });
@@ -288,7 +292,7 @@ var batchEdit = (function ($) {
             dataType: 'json',
             success: function(resp) {
                 if (resp.error) {
-                    showBootstrapAlert('#inputarea', 'danger', resp.error);
+                    inputAreaAlert('danger', resp.error);
                 } else {
                     $('#displayarea').html(resp.display);
                 }
@@ -305,7 +309,7 @@ var batchEdit = (function ($) {
             dataType: 'json',
             success: function(resp) {
                 if (resp.error) {
-                    showBootstrapAlert('#inputarea', 'danger', resp.error);
+                    inputAreaAlert('danger', resp.error);
                 }
             }
         });
