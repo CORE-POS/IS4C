@@ -61,22 +61,77 @@ class AlaffiaUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected $use_splits = false;
     protected $use_js = false;
 
+    protected function getVendorID()
+    {
+        $idP = $this->connection->prepare("SELECT vendorID FROM vendors WHERE vendorName=? ORDER BY vendorID");
+        $vid = $this->connection->getValue($idP, array('ALAFFIA'));
+
+        return $vid;
+    }
+
+    private function prepStatements($dbc)
+    {
+        $extraP = $dbc->prepare("update prodExtra set cost=? where upc=?");
+        $prodP = $dbc->prepare('
+            UPDATE products
+            SET cost=?,
+                modified=' . $dbc->now() . '
+            WHERE upc=?
+                AND default_vendor_id=?');
+        $itemP = $dbc->prepare("
+            INSERT INTO vendorItems (
+                brand, sku, size, upc,
+                units, cost, description, vendorDept,
+                vendorID, saleCost, modified, srp
+            ) VALUES (
+                'ALAFFIA', ?, ?, ?,
+                ?, ?, ?, 0,
+                ?, 0, ?, 0
+            )");
+
+        return array($extraP, $prodP, $itemP);
+    }
+
+    private function getQtyAndSize($description)
+    {
+        $CASE_PATTERN = '/\s*\(case of (\d+)\)/i';
+        $SIZE_PATTERN = '/,? +([\d\.]+ oz)\.?\s*/i';
+        $qty = 1;
+        $size = '';
+        if (preg_match($SIZE_PATTERN, $description, $matches)) {
+            $size = $matches[1];
+            $description = preg_replace($SIZE_PATTERN, '', $description);
+        }
+        if (preg_match($CASE_PATTERN, $description, $matches)) {
+            $qty = $matches[1];
+            $description = preg_replace($CASE_PATTERN, '', $description);
+        }
+
+        return array($description, $qty, $size);
+    }
+
+    private function cleanDescription($description)
+    {
+        $description = str_replace("'","",$description);
+        if (substr($description, 0, 5) == "*NEW ") {
+            $description = substr($description, 5);
+        }
+        if (strstr($description, ' Available ')) {
+            list($description, $junk) = explode(' Available ', $description);
+        }
+
+        return $description;
+    }
+
     function process_file($linedata)
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $idP = $dbc->prepare("
-            SELECT vendorID 
-            FROM vendors 
-            WHERE vendorName='ALAFFIA' 
-            ORDER BY vendorID");
-        $idR = $dbc->execute($idP);
-        if ($dbc->num_rows($idR) == 0){
+        $VENDOR_ID = $this->getVendorID();
+        if ($VENDOR_ID === false) {
             $this->error_details = 'Cannot find vendor';
             return false;
         }
-        $idW = $dbc->fetchRow($idR);
-        $VENDOR_ID = $idW['vendorID'];
 
         $clean = $dbc->prepare('
             DELETE 
@@ -91,45 +146,8 @@ class AlaffiaUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $UPC = $this->get_column_index('upc');
         $REG_COST = $this->get_column_index('cost');
 
-        $extraP = $dbc->prepare("update prodExtra set cost=? where upc=?");
-        $prodP = $dbc->prepare('
-            UPDATE products
-            SET cost=?,
-                modified=' . $dbc->now() . '
-            WHERE upc=?
-                AND default_vendor_id=?');
-        $itemP = $dbc->prepare("
-            INSERT INTO vendorItems (
-                brand, 
-                sku,
-                size,
-                upc,
-                units,
-                cost,
-                description,
-                vendorDept,
-                vendorID,
-                saleCost,
-                modified,
-                srp
-            ) VALUES (
-                'ALAFFIA',
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                0,
-                ?,
-                0,
-                ?,
-                0
-            )");
+        list($extraP, $prodP, $itemP) = $this->prepStatements($dbc);
         $updated_upcs = array();
-
-        $CASE_PATTERN = '/\s*\(case of (\d+)\)/i';
-        $SIZE_PATTERN = '/,? +([\d\.]+ oz)\.?\s*/i';
 
         foreach ($linedata as $data) {
             if (!is_array($data)) continue;
@@ -153,7 +171,6 @@ class AlaffiaUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             // syntax fixes. kill apostrophes in text fields,
             // trim $ off amounts as well as commas for the
             // occasional > $1,000 item
-            $description = str_replace("'","",$description);
             $reg = str_replace('$',"",$reg);
             $reg = str_replace(",","",$reg);
             $reg = trim($reg);
@@ -166,23 +183,8 @@ class AlaffiaUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 continue;
             }
 
-            if (substr($description, 0, 5) == "*NEW ") {
-                $description = substr($description, 5);
-            }
-            if (strstr($description, ' Available ')) {
-                list($description, $junk) = explode(' Available ', $description);
-            }
-
-            $qty = 1;
-            $size = '';
-            if (preg_match($SIZE_PATTERN, $description, $matches)) {
-                $size = $matches[1];
-                $description = preg_replace($SIZE_PATTERN, '', $description);
-            }
-            if (preg_match($CASE_PATTERN, $description, $matches)) {
-                $qty = $matches[1];
-                $description = preg_replace($CASE_PATTERN, '', $description);
-            }
+            $description = $this->cleanDescription();
+            list($description, $qty, $size) = $this->getQtyAndSize($description);
 
             // need unit cost, not case cost
             $reg_unit = $reg / $qty;

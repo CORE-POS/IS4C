@@ -37,47 +37,36 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     protected $preview_opts = array(
         'upc' => array(
-            'name' => 'upc',
             'display_name' => 'UPC',
             'default' => 7,
-            'required' => True
+            'required' => true
         ),
         'price' => array(
-            'name' => 'price',
             'display_name' => 'Sale Price',
             'default' => 24,
-            'required' => True
+            'required' => true
         ),
         'abt' => array(
-            'name' => 'abt',
             'display_name' => 'A/B/TPR',
             'default' => 5,
-            'required' => True
+            'required' => true
         ),
         'sku' => array(
-            'name' => 'sku',
             'display_name' => 'SKU',
             'default' => 8,
-            'required' => False
         ),
         'sub' => array(
-            'name' => 'sub',
             'display_name' => 'Sub',
             'default' => 6,
-            'required' => False
         ),
         'mult' => array(
-            'name' => 'mult',
             'display_name' => 'Line Notes',
             'default' => 13,
-            'required' => false,
         ),
     );
 
-    function process_file($linedata)
+    private function setupTables($dbc)
     {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
         if ($dbc->tableExists('tempCapPrices')){
             $drop = $dbc->prepare("DROP TABLE tempCapPrices");
             $dbc->execute($drop);
@@ -86,19 +75,10 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $cdi = new CoopDealsItemsModel($dbc);
             $cdi->create();
         }
+    }
 
-        $SUB = $this->get_column_index('sub');
-        $UPC = $this->get_column_index('upc');
-        $SKU = $this->get_column_index('sku');
-        $PRICE = $this->get_column_index('price');
-        $ABT = $this->get_column_index('abt');
-        $MULT = $this->get_column_index('mult');
-
-        $month = FormLib::get('deal-month', 'not specified');
-        $delP = $dbc->prepare('DELETE FROM CoopDealsItems WHERE dealSet=?');
-        $dbc->execute($delP, array($month));
-
-        $rm_checks = (FormLib::get_form_value('rm_cds') != '') ? True : False;
+    private function prepStatements($dbc)
+    {
         $upcP = $dbc->prepare('SELECT upc FROM products WHERE upc=? AND inUse=1');
         $skuP = $dbc->prepare('
             SELECT s.upc 
@@ -111,6 +91,63 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 (dealSet, upc, price, abtpr, multiplier)
             VALUES
                 (?, ?, ?, ?, ?)');
+
+        return array($upcP, $skuP, $insP);
+    }
+
+    private function checkSku($dbc, $upc, $sku, $skuP)
+    {
+        $look2 = $dbc->execute($skuP, array($sku));
+        if ($dbc->num_rows($look2)) {
+            $row = $dbc->fetch_row($look2);
+            return $row['upc'];
+        } else {
+            $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
+            $look3 = $dbc->execute($skuP, array($sku));
+            if ($dbc->num_rows($look3)) {
+                $row = $dbc->fetch_row($look3);
+                return $row['upc'];
+            }
+        }
+
+        return $upc;
+    }
+
+    private function dealTypes($type)
+    {
+        $abt = array();
+        if (strstr($type,"A")) {
+            $abt[] = "A";
+        }
+        if (strstr($type,"B")) {
+            $abt[] = "B";
+        }
+        if (strstr($type,"TPR")) {
+            $abt[] = "TPR";
+        }
+
+        return $abt;
+    }
+
+    function process_file($linedata)
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $this->setupTables($dbc);
+
+        $SUB = $this->get_column_index('sub');
+        $UPC = $this->get_column_index('upc');
+        $SKU = $this->get_column_index('sku');
+        $PRICE = $this->get_column_index('price');
+        $ABT = $this->get_column_index('abt');
+        $MULT = $this->get_column_index('mult');
+
+        $month = FormLib::get('deal-month', 'not specified');
+        $delP = $dbc->prepare('DELETE FROM CoopDealsItems WHERE dealSet=?');
+        $dbc->execute($delP, array($month));
+        list($upcP, $skuP, $insP) = $this->prepStatements($dbc);
+
+        $rm_checks = (FormLib::get_form_value('rm_cds') != '') ? True : False;
         foreach ($linedata as $data) {
             if (!is_array($data)) continue;
             if (count($data) < 14) continue;
@@ -123,19 +160,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
             $lookup = $dbc->execute($upcP, array($upc));
             if ($dbc->num_rows($lookup) == 0) {
-                $sku = $data[$SKU];
-                $look2 = $dbc->execute($skuP, array($sku));
-                if ($dbc->num_rows($look2)) {
-                    $w = $dbc->fetch_row($look2);
-                    $upc = $w['upc'];
-                } else {
-                    $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
-                    $look3 = $dbc->execute($skuP, array($sku));
-                    if ($dbc->num_rows($look3)) {
-                        $w = $dbc->fetch_row($look3);
-                        $upc = $w['upc'];
-                    }
-                }
+                $upc = $this->checkSku($dbc, $upc, $data[$SKU], $skuP);
             }
             $mult = 1;
             if ($MULT !== false) {
@@ -146,14 +171,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             }
 
             $price = trim($data[$PRICE],"\$");
-            $abt = array();
-            if (strstr($data[$ABT],"A"))
-                $abt[] = "A";
-            if (strstr($data[$ABT],"B"))
-                $abt[] = "B";
-            if (strstr($data[$ABT],"TPR"))
-                $abt[] = "TPR";
-            foreach($abt as $type){
+            foreach ($this->dealTypes($data[$ABT]) as $type){
                 $dbc->execute($insP,array($month,$upc,$price,$type,$mult));
             }
         }

@@ -38,67 +38,67 @@ $pdf->SetRightMargin(0);  //Set the right margin of the page
 $pdf->AddPage();  //Add a page
 
 //Set increment counters for rows 
-$i = 9;  //x location of barcode
-$j = 31; //y locaton of barcode
-$l = 26; //y location of size and price on label
-$k = 25; //x location of date and price on label
-$m = 0;  //number of labels created
-$n = 18; //y location of description for label
-$r = 22; //y location of brand name for label
-$p = 5;  //x location fields on label
-$t = 30; //y location of SKU and vendor info
-$u = 20; //x locaiton of vendor info for label
+$bc_x = 9;  //x location of barcode
+$bc_y = 31; //y locaton of barcode
+$sp_x = 25; //x location of date and price on label
+$sp_y = 26; //y location of size and price on label
+$count = 0;  //number of labels created
+$desc_y = 18; //y location of description for label
+$brand_y= 22; //y location of brand name for label
+$left_x= 5;  //x location fields on label
+$vi_x = 20; //x locaiton of vendor info for label
+$vi_y = 30; //y location of SKU and vendor info
 $down = 30.5;
 
 for ($ocount=0;$ocount<$offset;$ocount++){
-   //If $i > 175, start a new line of labels
-   if($i > 175){
-      $i = 9;
-      $j = $j + $down;
-      $k = 25;
-      $l = $l + $down;
-      $n = $n + $down;
-      $r = $r + $down;
-      $p = 5;
-      $u = 20;
-      $t = $t + $down;
+   //If $bc_x > 175, start a new line of labels
+   if($bc_x > 175){
+      $bc_x = 9;
+      $bc_y = $bc_y + $down;
+      $sp_x = 25;
+      $sp_y = $sp_y + $down;
+      $desc_y = $desc_y + $down;
+      $brand_y= $brand_y+ $down;
+      $left_x= 5;
+      $vi_x = 20;
+      $vi_y = $vi_y + $down;
    }
    //increment counters    
-   $i =$i+ 53;
-   $k = $k + 53;
-   $m = $m + 1;
-   $p = $p + 53;
-   $u = $u + 53;
+   $bc_x =$bc_x+ 53;
+   $sp_x = $sp_x + 53;
+   $count = $count + 1;
+   $left_x= $left_x+ 53;
+   $vi_x = $vi_x + 53;
 }
 
 //cycle through result array of query
 foreach($data as $row){
-   //If $m == 32 add a new page and reset all counters..
-   if($m == 32){
+   //If $count == 32 add a new page and reset all counters..
+   if($count == 32){
       $pdf->AddPage();
-      $i = 9;
-      $j = 31;
-      $l = 26;
-      $k = 25;
-      $m = 0;
-      $n = 18;
-      $r = 22;
-      $p = 5;  
-      $t = 30;
-      $u = 20;
+      $bc_x = 9;
+      $bc_y = 31;
+      $sp_y = 26;
+      $sp_x = 25;
+      $count = 0;
+      $desc_y = 18;
+      $brand_y= 22;
+      $left_x= 5;  
+      $vi_y = 30;
+      $vi_x = 20;
    }
 
-   //If $i > 175, start a new line of labels
-   if($i > 175){
-      $i = 9;
-      $j = $j + $down;
-      $k = 25;
-      $l = $l + $down;
-      $n = $n + $down;
-      $r = $r + $down;
-      $p = 5;
-      $u = 20;
-      $t = $t + $down;
+   //If $bc_x > 175, start a new line of labels
+   if($bc_x > 175){
+      $bc_x = 9;
+      $bc_y = $bc_y + $down;
+      $sp_x = 25;
+      $sp_y = $sp_y + $down;
+      $desc_y = $desc_y + $down;
+      $brand_y= $brand_y+ $down;
+      $left_x= 5;
+      $vi_x = 20;
+      $vi_y = $vi_y + $down;
    }
    $price = $row['normal_price'];
    $desc = strtoupper(substr($row['description'],0,27));
@@ -114,31 +114,31 @@ foreach($data as $row){
    
    //Start laying out a label 
    $pdf->SetFont('Arial','',8);  //Set the font 
-   $pdf->TEXT($p,$n,$desc);   //Add description to label
-   $pdf->TEXT($p,$r,$brand);  //Add brand name to label
-   $pdf->TEXT($p,$l,$size);  //Add size to label
-   $pdf->SetXY($k+7,$t-3);
+   $pdf->TEXT($left_x,$desc_y,$desc);   //Add description to label
+   $pdf->TEXT($left_x,$brand_y,$brand);  //Add brand name to label
+   $pdf->TEXT($left_x,$sp_y,$size);  //Add size to label
+   $pdf->SetXY($sp_x+7,$vi_y-3);
    $pdf->Cell(15,4,$ppu,0,0,'R'); // ppu right-aligned
-   //$pdf->TEXT($k+7,$t,$ppu);
-   $pdf->TEXT($i+24,$j+11,$tagdate);
+   //$pdf->TEXT($sp_x+7,$vi_y,$ppu);
+   $pdf->TEXT($bc_x+24,$bc_y+11,$tagdate);
    $pdf->SetFont('Arial','',10);  //change font size
-   $pdf->TEXT($p,$t,$sku);  //add UNFI SKU
-   $pdf->TEXT($u-2,$t,$vendor);  //add vendor 
+   $pdf->TEXT($left_x,$vi_y,$sku);  //add UNFI SKU
+   $pdf->TEXT($vi_x-2,$vi_y,$vendor);  //add vendor 
    $pdf->SetFont('Arial','B',24); //change font for price
-   $pdf->TEXT($k,$l,$price);  //add price
+   $pdf->TEXT($sp_x,$sp_y,$price);  //add price
 
    $newUPC = $upc . $check; //add check digit to upc
    if (strlen($upc) <= 11)
-    $pdf->UPC_A($i,$j,$upc,7);  //generate barcode and place on label
+    $pdf->UPC_A($bc_x,$bc_y,$upc,7);  //generate barcode and place on label
    else
-    $pdf->EAN13($i,$j,$upc,7);  //generate barcode and place on label
+    $pdf->EAN13($bc_x,$bc_y,$upc,7);  //generate barcode and place on label
 
    //increment counters    
-   $i =$i+ 53;
-   $k = $k + 53;
-   $m = $m + 1;
-   $p = $p + 53;
-   $u = $u + 53;
+   $bc_x =$bc_x+ 53;
+   $sp_x = $sp_x + 53;
+   $count = $count + 1;
+   $left_x= $left_x+ 53;
+   $vi_x = $vi_x + 53;
 }
 
 $pdf->Output();  //Output PDF file to screen.

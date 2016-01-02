@@ -26,7 +26,8 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class DepartmentEditor extends FanniePage {
+class DepartmentEditor extends FannieRESTfulPage 
+{
     protected $title = "Fannie : Manage Departments";
     protected $header = "Manage Departments";
     
@@ -34,31 +35,6 @@ class DepartmentEditor extends FanniePage {
     protected $auth_classes = array('departments', 'admin');
 
     public $description = '[Department Editor] creates, updates, and deletes POS departments.';
-    public $themed = true;
-
-    function preprocess(){
-        /* allow ajax calls */
-        if(FormLib::get_form_value('action') !== ''){
-            $this->ajax_response(FormLib::get_form_value('action'));
-            return False;
-        }
-
-        return True;
-    }
-
-    function ajax_response($action){
-        switch($action){
-        case 'deptDisplay':
-            $this->ajax_display_dept(FormLib::get_form_value('did',0));
-            break;
-        case 'deptSave':
-            $this->ajax_save_dept();
-            break;
-        default:
-            echo 'Bad request';
-            break;
-        }
-    }
 
     private function getDept($dbc, $deptID)
     {
@@ -97,12 +73,12 @@ class DepartmentEditor extends FanniePage {
         return $taxes;
     }
 
-    private function ajax_display_dept($id)
+    protected function get_id_handler()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $dept = $this->getDept($dbc, $id);
+        $dept = $this->getDept($dbc, $this->id);
         $taxes = $this->getTaxes($dbc);
 
         $ret = '<div class="row">'
@@ -113,10 +89,10 @@ class DepartmentEditor extends FanniePage {
             . '</div>';
         $ret .= '<div class="row">';
         $ret .= '<div class="col-sm-2">';
-        if ($id == -1){
+        if ($this->id == -1){
             $ret .= "<input class=\"form-control\" type=text name=did id=deptno />";
         } else {
-            $ret .= $id;
+            $ret .= $this->id;
         }
         $ret .= "</div>";
         $ret .= "<div class=\"col-sm-4\"><input type=text maxlength=30 name=name 
@@ -158,28 +134,29 @@ class DepartmentEditor extends FanniePage {
         $ret .= "<div class=\"col-sm-2\"><input type=text id=deptsalescode 
            class=\"form-control\" name=pcode value=\"" . $dept->salesCode() . "\" /></div>";
         $ret .= '</div>';
-        if ($id != -1) {
-            $ret .= "<input type=hidden name=did id=deptno value=\"$id\" />";
+        if ($this->id != -1) {
+            $ret .= "<input type=hidden name=did id=deptno value=\"" . $this->id . "\" />";
             $ret .= "<input type=hidden name=new id=isNew value=0 />";
         } else {
             $ret .= "<input type=hidden id=isNew name=new value=1 />";
         }
-        $ret .= "<p><button type=submit value=Save onclick=\"deptSave(); return false;\"
+        $ret .= "<p><button type=submit value=Save onclick=\"deptEdit.deptSave(); return false;\"
             class=\"btn btn-default\">Save</button></p>";
 
         echo $ret;
+
+        return false;
     }
 
-    private function ajax_save_dept()
+    protected function post_handler()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = $this->connection;
 
         $deptID = FormLib::get('did',0);
         $margin = FormLib::get('margin',0);
         $margin = ((float)$margin) / 100.0; 
-        $pcode = FormLib::get('pcode',$id);
-        if (!is_numeric($pcode)) $pcode = (int)$id;
+        $pcode = FormLib::get('pcode',$deptID);
+        if (!is_numeric($pcode)) $pcode = (int)$deptID;
 
         $model = new DepartmentsModel($dbc);
         $model->dept_no($deptID);
@@ -196,25 +173,23 @@ class DepartmentEditor extends FanniePage {
             $model->modifiedby(1);
             $model->dept_see_id(0);
         }
-        $saved = $model->save();
+
+        if ($model->save() === false) {
+            return false;
+        }
 
         if (FormLib::get('new', 0) == 1) {
-            if ($saved === false) {
-                echo 'Error: could not create department';
-            } else {
-                $superP = $dbc->prepare('INSERT INTO superdepts (superID,dept_ID) VALUES (0,?)');
-                $superR = $dbc->execute($superP,array($deptID));
-            }
-        } elseif ($saved === false) {
-            echo 'Error: could not save changes';
-            return;
+            $superP = $dbc->prepare('INSERT INTO superdepts (superID,dept_ID) VALUES (0,?)');
+            $superR = $dbc->execute($superP,array($deptID));
         }
 
         $json = array();
-        $json['did'] = $id;
-        $json['msg'] = 'Department '.$id.' - '.$name.' Saved';
+        $json['did'] = $deptID;
+        $json['msg'] = 'Department '.$deptID.' - '.$name.' Saved';
 
         echo json_encode($json);
+
+        return false;
     }
 
     private function legacySave($dbc, $deptID, $margin, $pcode)
@@ -244,7 +219,7 @@ class DepartmentEditor extends FanniePage {
         }
     }
 
-    public function body_content()
+    public function get_view()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -265,7 +240,7 @@ class DepartmentEditor extends FanniePage {
         ?>
         <div id="deptdiv" class="form-group">
             <label class="control-label">Department</label>
-            <select class="form-control" id="deptselect" onchange="deptchange();">
+            <select class="form-control" id="deptselect" onchange="deptEdit.deptchange();">
             <?php echo $depts ?>
             </select>
         </div>
@@ -275,7 +250,7 @@ class DepartmentEditor extends FanniePage {
     
         $this->add_script('dept.js');
         if ($selectedDID !== '') {
-            $this->add_onload_command('deptchange();'); 
+            $this->add_onload_command('deptEdit.deptchange();'); 
         }
 
         return ob_get_clean();
@@ -305,9 +280,10 @@ class DepartmentEditor extends FanniePage {
 
     public function unitTest($phpunit)
     {
-        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
         ob_start();
-        $this->ajax_response('deptDisplay');
+        $this->id = 1;
+        $this->get_id_handler();
         $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
     }
 }

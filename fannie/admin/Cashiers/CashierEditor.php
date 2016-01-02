@@ -40,15 +40,15 @@ class CashierEditor extends FanniePage {
 
     function preprocess(){
         global $FANNIE_OP_DB;
-        $emp_no = FormLib::get_form_value('emp_no',0);
+        $emp_no = FormLib::get('emp_no',0);
 
-        if (FormLib::get_form_value('fname') !== '') {
-            $fname = FormLib::get_form_value('fname');
-            $lname = FormLib::get_form_value('lname');
-            $passwd = FormLib::get_form_value('passwd');
-            $fes = FormLib::get_form_value('fes');
-            $active = FormLib::get_form_value('active') !== '' ? 1 : 0;
-            $dob = FormLib::get_form_value('birthdate');
+        if (FormLib::get('fname') !== '') {
+            $fname = FormLib::get('fname');
+            $lname = FormLib::get('lname');
+            $passwd = FormLib::get('passwd');
+            $fes = FormLib::get('fes');
+            $active = FormLib::get('active') !== '' ? 1 : 0;
+            $dob = FormLib::get('birthdate');
 
             $dbc = FannieDB::get($FANNIE_OP_DB);
             $employee = new EmployeesModel($dbc);
@@ -63,20 +63,7 @@ class CashierEditor extends FanniePage {
             $employee->birthdate($dob);
             $saved = $employee->save();
 
-            $map = new StoreEmployeeMapModel($dbc);
-            $map->empNo($emp_no);
-            $stores = FormLib::get('store', array());
-            foreach ($stores as $s) {
-                $map->storeID($s);
-                $map->save();
-            }
-            $map->reset();
-            $map->empNo($emp_no);
-            foreach ($map->find() as $obj) {
-                if (!in_array($obj->storeID(), $stores)) {
-                    $obj->delete();
-                }
-            }
+            $this->saveStoreMapping($dbc, $emp_no);
 
             if ($saved) {
                 $message = "Cashier Updated. <a href=ViewCashiersPage.php>Back to List of Cashiers</a>";
@@ -87,6 +74,24 @@ class CashierEditor extends FanniePage {
         }
 
         return true;
+    }
+
+    private function saveStoreMapping($dbc, $emp_no)
+    {
+        $map = new StoreEmployeeMapModel($dbc);
+        $map->empNo($emp_no);
+        $stores = FormLib::get('store', array());
+        foreach ($stores as $s) {
+            $map->storeID($s);
+            $map->save();
+        }
+        $map->reset();
+        $map->empNo($emp_no);
+        foreach ($map->find() as $obj) {
+            if (!in_array($obj->storeID(), $stores)) {
+                $obj->delete();
+            }
+        }
     }
 
     function body_content()

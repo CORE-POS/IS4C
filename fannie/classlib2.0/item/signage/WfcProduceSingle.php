@@ -33,6 +33,11 @@ class WfcProduceSingle extends \COREPOS\Fannie\API\item\FannieSignage
     protected $font = 'Arial';
     protected $alt_font = 'Arial';
 
+    protected $width = 136.52;
+    protected $height = 105;
+    protected $top = 90;
+    protected $left = 15;
+
     public function drawPDF()
     {
         $pdf = new \FPDF('L', 'mm', 'Letter');
@@ -47,11 +52,7 @@ class WfcProduceSingle extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf->SetFont($this->font, '', 16);
 
         $data = $this->loadItems();
-        $width = 136.52;
-        $height = 105;
-        $top = 90;
-        $left = 15;
-        $effective_width = $width - (2*$left);
+        $effective_width = $this->width - (2*$this->left);
         foreach ($data as $item) {
             $pdf->AddPage();
 
@@ -59,13 +60,13 @@ class WfcProduceSingle extends \COREPOS\Fannie\API\item\FannieSignage
 
             $price = $this->printablePrice($item);
 
-            $pdf->SetXY($left + ($width*$column), $top);
+            $pdf->SetXY($this->left + ($this->width*$column), $this->top);
             $pdf->SetFontSize($this->SMALL_FONT);
             $pdf->Cell($effective_width, 10, $item['brand'], 0, 1, 'C');
-            $pdf->SetX($left + ($width*$column));
+            $pdf->SetX($this->left + ($this->width*$column));
             $pdf->SetFontSize($this->MED_FONT);
             $pdf->MultiCell($effective_width, 12, $item['description'], 0, 'C');
-            $pdf->SetX($left + ($width*$column));
+            $pdf->SetX($this->left + ($this->width*$column));
             $pdf->SetFontSize($this->BIG_FONT);
             $pdf->Cell($effective_width, 25, $price, 0, 1, 'C');
             $y_pos = $pdf->GetY();
@@ -73,13 +74,13 @@ class WfcProduceSingle extends \COREPOS\Fannie\API\item\FannieSignage
             if ($item['startDate'] != '' && $item['endDate'] != '') {
                 // intl would be nice
                 $datestr = $this->getDateString($item['startDate'], $item['endDate']);
-                $pdf->SetXY($left + ($width*$column), $top + ($height - 40));
+                $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height - 40));
                 $pdf->SetFontSize($this->SMALL_FONT);
                 $pdf->Cell($effective_width, 20, $datestr, 0, 1, 'R');
             }
 
             if ($item['originName'] != '') {
-                $pdf->SetXY($left + ($width*$column), $y_pos);
+                $pdf->SetXY($this->left + ($this->width*$column), $y_pos);
                 $pdf->SetFontSize($this->SMALL_FONT);
                 if (strlen($item['originName']) < 50) {
                     $pdf->Cell($effective_width, 20, $item['originName'], 0, 1, 'L');
