@@ -72,7 +72,7 @@ class UnitBreakdownPage extends FannieRESTfulPage
                 $unit_size = '';
             }
             if (!$split_factor) {
-                $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Vendor SKU #" . $original->size() . " cannot be broken down');\n");
+                $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Vendor SKU #" . $obj->sku() . ' ' . $original->size() . " cannot be broken down');\n");
                 continue;
             }
 
@@ -202,7 +202,8 @@ class UnitBreakdownPage extends FannieRESTfulPage
             SELECT m.sku,
                 m.upc,
                 v.description AS vendorDescript,
-                p.description as storeDescript
+                p.description as storeDescript,
+                m.units
             FROM VendorBreakdowns AS m
                 " . DTrans::joinProducts('m') . "
                 LEFT JOIN vendorItems AS v ON v.sku=m.sku AND v.vendorID=m.vendorID
@@ -233,6 +234,7 @@ class UnitBreakdownPage extends FannieRESTfulPage
             <th>Our PLU</th>
             <th>Vendor Description</th>
             <th>Our Description</th>
+            <th>Units</th>
             <th>&nbsp;</th>
             </tr></thead><tbody>';
         $res = $dbc->execute($prep, array($this->id));
@@ -249,6 +251,7 @@ class UnitBreakdownPage extends FannieRESTfulPage
                     <td><a href="../ItemEditorPage.php?searchupc=%s">%s</a></td>
                     <td>%s</td>
                     <td>%s</td>
+                    <td>%s</td>
                     <td>
                         <a href="?_method=delete&id=%d&sku=%s&plu=%s" 
                         onclick="return confirm(\'Delete entry for PLU #%s?\');">%s</a>
@@ -258,6 +261,7 @@ class UnitBreakdownPage extends FannieRESTfulPage
                 $row['upc'], $row['upc'],
                 $row['vendorDescript'],
                 $row['storeDescript'],
+                $row['units'],
                 $this->id, $row['sku'], $row['upc'],
                 $row['upc'], COREPOS\Fannie\API\lib\FannieUI::deleteIcon()
             );
