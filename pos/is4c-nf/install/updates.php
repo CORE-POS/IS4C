@@ -94,6 +94,7 @@ foreach ($mods as $class) {
     }
 
     $noslash_class = str_replace('\\', '-', $class);
+    $refl = new ReflectionClass($model);
     if ($changes > 0) {
         printf(' <a href="" onclick="$(\'#mDetails%s\').toggle();return false;"
             >Details</a><br /><pre style="display:none;" id="mDetails%s">%s</pre><br />
@@ -102,7 +103,7 @@ foreach ($mods as $class) {
             <pre>php %s --update %s %s</pre>
             </li>',
             $noslash_class, $noslash_class, $details, $noslash_class,
-            $cmd, $db_name, $class
+            $cmd, $db_name, $refl->getFileName()
             );
     } else if ($changes < 0 || $changes === false) {
         printf(' <a href="" onclick="$(\'#mDetails%s\').toggle();return false;"
