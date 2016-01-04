@@ -41,6 +41,8 @@ class ManualSignsPage extends FannieRESTfulPage
         $scales = FormLib::get('scale');
         $sizes = FormLib::get('size');
         $origins = FormLib::get('origin');
+        $start = FormLib::get('start');
+        $end = FormLib::get('end');
 
         $items = array();
         for ($i=0; $i<count($descriptions); $i++) {
@@ -58,8 +60,8 @@ class ManualSignsPage extends FannieRESTfulPage
                 'vendor' => '',
                 'scale' => $scales[$i],
                 'numflag' => 0,
-                'startDate' => '',
-                'endDate' => '',
+                'startDate' => $start[$i],
+                'endDate' => $end[$i],
                 'originName' => $origins[$i],
                 'originShortName' => $origins[$i],
             );
@@ -108,7 +110,9 @@ class ManualSignsPage extends FannieRESTfulPage
         <th>Price</th>
         <th>Scale</th>
         <th>Size</th>
-        <th>Origin</th>
+        <th>Origin/Reg. Price</th>
+        <th>Start Date</th>
+        <th>End Date</th>
     </tr>
     </thead>
     <tbody>
@@ -139,6 +143,14 @@ class ManualSignsPage extends FannieRESTfulPage
             <input type="text" class="form-control input-sm" placeholder="Change All"
                 onchange="if (this.value !== '') $('.input-origin').val(this.value);" />
         </td>
+        <td>
+            <input type="text" class="form-control input-sm date-field" placeholder="Change All"
+                onchange="if (this.value !== '') $('.input-start').val(this.value);" />
+        </td>
+        <td>
+            <input type="text" class="form-control input-sm date-field" placeholder="Change All"
+                onchange="if (this.value !== '') $('.input-end').val(this.value);" />
+        </td>
     </tr>
 HTML;
         for ($i=0; $i<32; $i++) {
@@ -153,6 +165,8 @@ HTML;
     </select></td>
     <td><input type="text" name="size[]" class="form-control input-sm input-size" /></td>
     <td><input type="text" name="origin[]" class="form-control input-sm input-origin" /></td>
+    <td><input type="text" name="start[]" class="form-control input-sm input-start date-field" /></td>
+    <td><input type="text" name="end[]" class="form-control input-sm input-end date-field" /></td>
 </tr>
 HTML;
         }
