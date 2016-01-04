@@ -292,7 +292,10 @@ class ProdUserModule extends ItemModule
         if ($this->validPhoto($type)) {
             $infile = $_FILES['image_' . $type]['tmp_name'];
             $outfile = dirname(__FILE__) . '/../' . $this->imageUrl($type) . ltrim($upc, 0) . '.png';
-            return move_uploaded_file($infile, $outfile);
+            if (file_exists($outfile)) {
+                unlink($outfile);
+            }
+            $res = move_uploaded_file($infile, $outfile);
         }
 
         return false;
