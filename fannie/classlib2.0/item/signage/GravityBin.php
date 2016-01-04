@@ -55,6 +55,9 @@ class GravityBin extends \COREPOS\Fannie\API\item\FannieSignage
             $row = floor($sign / 2);
             $column = $sign % 2;
 
+            $pdf->SetDrawColor(0, 0, 0);
+            $pdf->Rect(7 + ($this->width*$column), 5+($row*$this->height), $this->width, $this->height);
+
             $pdf->SetXY(10 + ($this->width*$column), 5 + ($row*$this->height));
             $pdf->SetFont($this->font, 'B', $this->BIG_FONT);
             $pdf->MultiCell($this->width, 8, $item['description'], 0, 'C');
