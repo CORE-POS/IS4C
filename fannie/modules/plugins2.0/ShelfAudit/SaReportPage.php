@@ -142,7 +142,7 @@ class SaReportPage extends FanniePage {
 
             FROM sa_inventory AS s LEFT JOIN '.
             $FANNIE_OP_DB.$dbc->sep().'products AS p
-            ON s.upc=p.upc LEFT JOIN '.
+            ON s.upc=p.upc AND p.store_id=1 LEFT JOIN '.
             $FANNIE_OP_DB.$dbc->sep().'departments AS d
             ON p.department=d.dept_no LEFT JOIN '.
             $FANNIE_OP_DB.$dbc->sep().'vendorItems AS v

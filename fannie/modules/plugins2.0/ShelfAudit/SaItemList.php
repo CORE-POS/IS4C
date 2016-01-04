@@ -45,6 +45,14 @@ class SaItemList extends SaHandheldPage
                 SET clear=1
             ');
             return true;
+        } elseif (FormLib::get('export') === '1') {
+            $table = $this->getList();
+            $arr = COREPOS\Fannie\API\data\DataConvert::htmlToArray($table);
+            $out = COREPOS\Fannie\API\data\DataConvert::arrayToCsv($arr);
+            header('Content-Type: application/ms-excel');
+            header('Content-Disposition: attachment; filename="Scan List.csv"');
+            echo $out;
+            return false;
         }
 
         $upc = FormLib::get_form_value('upc_in','');
@@ -95,7 +103,21 @@ class SaItemList extends SaHandheldPage
             echo '<div class="alert alert-danger">Item not found (' 
                 . $this->current_item_data['upc'] . ')</div>'; 
         } 
+        echo '<div class="table-responsive">';
         echo $this->getList();
+        echo '</div>
+            <p>
+            <a href="?clear=1" class="btn btn-default btn-danger"
+                onclick="return window.confirm(\'Clear list?\');">
+                Clear List
+            </a>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            |
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="?export=1" class="btn btn-default btn-info">
+                Export List
+            </a>
+            </p>';
 
         return ob_get_clean();
     }
@@ -122,7 +144,6 @@ class SaItemList extends SaHandheldPage
         ');
         $res = $this->connection->execute($prep);
         $ret = '
-            <div class="table-responsive">
             <table class="table table-bordered table-striped small">
             <tr>
                 <th>UPC</th>
@@ -152,13 +173,7 @@ class SaItemList extends SaHandheldPage
                 $row['qty']
             ); 
         }
-        $ret .= '</table></div>';
-        $ret .= '<p>
-            <a href="?clear=1" class="btn btn-default btn-danger"
-                onclick="return window.confirm(\'Clear list?\');">
-                Clear List
-            </a>
-            </p>';
+        $ret .= '</table>';
 
         return $ret;
     }
