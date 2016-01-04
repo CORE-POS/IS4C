@@ -32,6 +32,7 @@ class PurchaseOrderModel extends BasicModel
     protected $columns = array(
     'orderID' => array('type'=>'INT','default'=>0,'increment'=>True,'primary_key'=>True),
     'vendorID' => array('type'=>'INT'),
+    'storeID' => array('type'=>'INT'),
     'creationDate' => array('type'=>'DATETIME'),
     'placed' => array('type'=>'TINYINT','default'=>0,'index'=>True),
     'placedDate' => array('type'=>'DATETIME'),

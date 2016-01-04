@@ -118,14 +118,18 @@ class GumDividendTaxReport extends FannieReportPage
             $pdf = new FPDF('P', 'mm', 'Letter');
             $bridge = GumLib::getSetting('posLayer');
             $year = date('Y', strtotime(FormLib::get('endDate')));
+            $count = 0;
             foreach ($data as $row) {
+                if ($count % 2 == 0) {
+                    $pdf->addPage();
+                }
                 $custdata = $bridge::getCustdata($row[0]);
                 $meminfo = $bridge::getMeminfo($row[0]);
                 $ssn = ($row[10] == 'No key') ? $row[9] : $row[10];
                 $amount = array(1 => $row[8]);
-                $form = new GumTaxFormTemplate($custdata, $meminfo, $ssn, $tax_year, $amount);
-                $pdf->addPage();
-                $form->renderAsPDF($pdf, 15);
+                $form = new GumTaxDividendFormTemplate($custdata, $meminfo, $ssn, $tax_year, $amount);
+                $form->renderAsPDF($pdf, 15 + (($count%2)*150));
+                $count++;
             }
             $pdf->Output('taxform.pdf', 'I');
         } else {

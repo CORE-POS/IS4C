@@ -46,6 +46,7 @@ class UnfiExportForMas extends FannieReportPage
         $date2 = FormLib::get('date2',date('Y-m-d'));
 
         $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $mustCodeP = $dbc->prepare('
             SELECT i.orderID,
                 i.sku
@@ -95,6 +96,7 @@ class UnfiExportForMas extends FannieReportPage
                 continue;
             }
             $code = $accounting::toPurchaseCode($codingW['salesCode']);
+            $code = $this->wfcCoding($code);
             if (empty($code) && $this->report_format == 'html') {
                 $code = 'n/a';
             }
@@ -131,6 +133,17 @@ class UnfiExportForMas extends FannieReportPage
         }
 
         return $report;
+    }
+
+    private function wfcCoding($code)
+    {
+        if (substr($code, 0, 3) === '512' || $code === '51600') {
+            return $code . '0120';
+        } elseif ($code === '51300' || $code === '51310' || $code === '51315') {
+            return $code . '0130';
+        } else {
+            return $code . '0160';
+        }
     }
     
     function form_content()

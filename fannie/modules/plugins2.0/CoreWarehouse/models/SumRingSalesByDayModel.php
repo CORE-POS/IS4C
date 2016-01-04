@@ -40,6 +40,10 @@ class SumRingSalesByDayModel extends CoreWarehouseModel {
     public function refresh_data($trans_db, $month, $year, $day=False){
         list($start_id, $start_date, $end_id, $end_date) = $this->dates($month, $year, $day);
 
+        $config = FannieConfig::factory();
+        $settings = $config->get('PLUGIN_SETTINGS');
+        $sql = FannieDB::get($settings['WarehouseDatabase']);
+
         $target_table = DTransactionsModel::selectDlog($start_date, $end_date);
 
         $this->clearDates($sql, $start_id, $end_id);
