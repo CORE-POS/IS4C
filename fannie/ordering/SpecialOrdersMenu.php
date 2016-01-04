@@ -30,6 +30,8 @@ class SpecialOrdersMenu extends FanniePage
     protected $title = "Fannie :: Special Orders";
     protected $header = "Special Orders";
     protected $must_authenticate = true;
+    public $description = '[Special Order Menu] links to other special order related pages';
+    public $page_set = 'Special Orders';
 
     public function body_content()
     {

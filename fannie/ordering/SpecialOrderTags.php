@@ -29,6 +29,8 @@ class SpecialOrderTags extends FannieRESTfulPage
 {
     protected $title = "Fannie :: Special Orders";
     protected $header = "Special Orders";
+    public $description = '[Special Order Tags] prints scannable, barcoded order tags';
+    public $page_set = 'Special Orders';
 
     public function preprocess()
     {

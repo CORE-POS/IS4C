@@ -28,6 +28,8 @@ class SoReceivingReport extends FanniePage
 {
     protected $title = "Fannie :: Special Order Receiving";
     protected $header = "Special Order Receiving";
+    public $description = '[Receiving Report] lists information about active special orders by vendor';
+    public $page_set = 'Special Orders';
 
     public function javascriptContent()
     {

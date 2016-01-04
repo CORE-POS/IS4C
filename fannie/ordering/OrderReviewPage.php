@@ -30,6 +30,8 @@ class OrderReviewPage extends FannieRESTfulPage
     protected $header = 'Review Order';
     protected $title = 'Review Order';
     protected $must_authenticate = true;
+    public $description = '[Review Special Order] lists and an archived special order';
+    public $page_set = 'Special Orders';
 
     public function preprocess()
     {

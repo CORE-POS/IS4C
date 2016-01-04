@@ -30,6 +30,8 @@ class OrderViewPage extends FannieRESTfulPage
     protected $header = 'View Order';
     protected $title = 'View Order';
     protected $must_authenticate = true;
+    public $description = '[View Special Order] lists and/or edits an active special order';
+    public $page_set = 'Special Orders';
 
     public function preprocess()
     {

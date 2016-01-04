@@ -32,6 +32,7 @@ class OrderDeptMap extends FannieRESTfulPage
     protected $title = 'Map Special Orders Departments';
     public $description = '[Special Order Departments] maps items\' normal department setting
     to specialized secondary departments (if necessary).';
+    public $page_set = 'Special Orders';
 
     protected function post_id_handler()
     {
@@ -111,6 +112,26 @@ class OrderDeptMap extends FannieRESTfulPage
         $ret .= '</tbody></table>';
 
         return $this->updateForm() . $ret;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $body = $this->get_view();
+        $phpunit->assertNotEquals(0, strlen($body));
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->id = 1;
+        $form->mapID = 2;
+        $form->minQty = 3;
+        $this->id = 1;
+        $this->setForm($form);
+        $this->post_id_handler();
+        $model = new SpecialOrderDeptMapModel($this->connection);
+        $model->dept_ID(1);
+        $phpunit->assertEquals(true, $model->load());
+        $phpunit->assertEquals(2, $model->map_to());
+        $phpunit->assertEquals(3, $model->minQty());
+        $body2 = $this->get_view();
+        $phpunit->assertNotEquals($body, $body2);
     }
 }
 
