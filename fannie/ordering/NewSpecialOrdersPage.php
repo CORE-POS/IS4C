@@ -344,7 +344,7 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
                 SUM(CASE WHEN o.notes LIKE '' THEN 0 ELSE 1 END) > 0
             ORDER BY MIN(datetime)";
         $soP = $dbc->prepare($soQ);
-        $soR = $dbc->execute($soR, $filterargs);
+        $soR = $dbc->execute($soP, $filterargs);
 
         $orders = array();
         $valid_ids = array();
