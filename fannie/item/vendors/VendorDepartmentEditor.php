@@ -35,7 +35,6 @@ class VendorDepartmentEditor extends FanniePage {
 
     public $description = '[Vendor Subcategories] manages vendor-specific subcategories.
     These are distinct from POS departments.';
-    public $themed = true;
 
     function preprocess()
     {
@@ -56,19 +55,17 @@ class VendorDepartmentEditor extends FanniePage {
         switch($action){
         case 'createCat':
             $json = $this->createVendorDepartment(
-                FormLib::get_form_value('vid'),
-                FormLib::get_form_value('deptID'),
-                FormLib::get_form_value('name')
+                FormLib::get('vid'),
+                FormLib::get('deptID'),
+                FormLib::get('name')
             );
             echo json_encode($json);
             break;
         case 'deleteCat':
             $dbc = FannieDB::get($FANNIE_OP_DB);
-            $q = $dbc->prepare("DELETE FROM vendorDepartments
+            $delP = $dbc->prepare("DELETE FROM vendorDepartments
                 WHERE vendorID=? AND deptID=?");
-            $gone = $dbc->execute($q,
-                    array(FormLib::get_form_value('vid'),
-                        FormLib::get_form_value('deptID')) );
+            $gone = $dbc->execute($delP, array(FormLib::get('vid'), FormLib::get('deptID')));
             if (!$gone) {
                 $json['error'] = 'Error deleting #' + FormLib::get('deptID');
             }
@@ -96,14 +93,14 @@ class VendorDepartmentEditor extends FanniePage {
 
     private function createVendorDepartment($vid,$did,$name)
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
+        global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $json = array('error' => 0);
         
         $chkQ = $dbc->prepare("SELECT * FROM vendorDepartments WHERE
                 vendorID=? AND deptID=?");
         $chkR = $dbc->execute($chkQ,array($vid,$did));
-        if ($dbc->num_rows($chkR) > 0) {
+        if ($dbc->numRows($chkR) > 0) {
             $json['error'] = "Number #$did is already in use!";
         }
 
@@ -113,29 +110,8 @@ class VendorDepartmentEditor extends FanniePage {
         $insR = $dbc->execute($insQ,array($vid,$did,$name));
 
         if ($insR) {
-            $new_row .= sprintf("<tr id=\"row-%d\">
-                <td>%d</td>
-                <td id=nametd%d>%s</td>
-                <td id=margintd%d>%.2f%%</td>
-                <td id=button%d>
-                    <a href=\"\" onclick=\"edit(%d);return false;\"
-                        class=\"edit-link\">%s<a>
-                    <a href=\"\" onclick=\"save(%d);return false;\"
-                        class=\"save-link collapse\">%s</a>
-                </td>
-                <td><a href=\"\" onclick=\"deleteCat(%d,'%s');return false\">%s</a></td>
-                </tr>",
-                $did,
-                $did, $did,
-                $name, $did,
-                0,
-                $did, $did,
-                \COREPOS\Fannie\API\lib\FannieUI::editIcon(),
-                $did,
-                \COREPOS\Fannie\API\lib\FannieUI::saveIcon(),
-                $did, $name,
-                \COREPOS\Fannie\API\lib\FannieUI::deleteIcon());
-            $json['row'] = $new_row;
+            $row = array('deptID'=>$did, 'name'=>$name, 'margin'=>0, 'posDeptID'=>0);
+            $json['row'] = $this->rowToTable($did, $row);
         } else {
             $json['error'] = 'Error creating new subcategory';
         }
@@ -145,7 +121,6 @@ class VendorDepartmentEditor extends FanniePage {
 
     function body_content()
     {
-        global $FANNIE_URL;
         $vid = FormLib::get_form_value('vid');
         if ($vid === '') {
             return '<div class="alert alert-danger">Error: no vendor selected</div>';
@@ -163,7 +138,7 @@ class VendorDepartmentEditor extends FanniePage {
                 <label>Name</label>
                 <input type=text id=newname class="form-control" />
             </div>
-            <button onclick="newdept();return false;" type=submit 
+            <button onclick="vDept.newdept();return false;" type=submit 
                 class="btn btn-default">Add subcategory</button>
             &nbsp;&nbsp;&nbsp;
             <a href="" onclick="$('#newform').hide(); return false;">Cancel</a>
@@ -183,7 +158,7 @@ class VendorDepartmentEditor extends FanniePage {
 
     private function vendorDeptDisplay($id)
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
+        global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
         $v = new VendorsModel($dbc);
@@ -207,44 +182,49 @@ class VendorDepartmentEditor extends FanniePage {
             WHERE d.vendorID=?
             ORDER BY deptID");
         $deptR = $dbc->execute($deptQ,array($id));
-        while($row = $dbc->fetch_row($deptR)){
-            $ret .= sprintf("<tr id=\"row-%d\">
-                <td>%d</td>
-                <td id=nametd%d>%s</td>
-                <td id=margintd%d>%.2f%%</td>
-                <td id=posdepttd%d>%d</td>
-                <td id=button%d>
-                    <a href=\"\" onclick=\"edit(%d);return false;\"
-                        class=\"edit-link\">%s</a>
-                    <a href=\"\" onclick=\"save(%d);return false;\"
-                        class=\"save-link collapse\">%s</a>
-                </td>
-                <td><a href=\"\" onclick=\"deleteCat(%d,'%s');return false\">%s</a></td>
-                <td><a href=\"../../reports/VendorCategory/VendorCategoryReport.php?id=%d&category=%d\"
-                    title=\"View Items in this Category\">
-                    <span class=\"glyphicon glyphicon-th-list\"></span>
-                    </a></td>
-                </tr>",
-                $row['deptID'],
-                $row['deptID'],
-                $row['deptID'], $row['name'],
-                $row['deptID'], $row['margin']*100,
-                $row['deptID'], $row['posDeptID'],
-                $row['deptID'],
-                $row['deptID'],
-                \COREPOS\Fannie\API\lib\FannieUI::editIcon(),
-                $row['deptID'],
-                \COREPOS\Fannie\API\lib\FannieUI::saveIcon(),
-                $row['deptID'], $row['name'],
-                \COREPOS\Fannie\API\lib\FannieUI::deleteIcon(),
-                $id, $row['deptID'] 
-            );
+        while ($row = $dbc->fetchRow($deptR)){
+            $ret .= $this->rowToTable($id, $row);
         }
         $ret .= "</table>";
 
         $ret .= '<p><a href="VendorIndexPage.php?vid=' . $id . '" class="btn btn-default">Home</a></p>';
 
         return $ret;
+    }
+
+    private function rowToTable($id, $row)
+    {
+        return sprintf("<tr id=\"row-%d\">
+            <td>%d</td>
+            <td id=nametd%d>%s</td>
+            <td id=margintd%d>%.2f%%</td>
+            <td id=posdepttd%d>%d</td>
+            <td id=button%d>
+                <a href=\"\" onclick=\"vDept.edit(%d);return false;\"
+                    class=\"edit-link\">%s</a>
+                <a href=\"\" onclick=\"vDept.save(%d);return false;\"
+                    class=\"save-link collapse\">%s</a>
+            </td>
+            <td><a href=\"\" onclick=\"vDept.deleteCat(%d,'%s');return false\">%s</a></td>
+            <td><a href=\"../../reports/VendorCategory/VendorCategoryReport.php?id=%d&category=%d\"
+                title=\"View Items in this Category\">
+                <span class=\"glyphicon glyphicon-th-list\"></span>
+                </a></td>
+            </tr>",
+            $row['deptID'],
+            $row['deptID'],
+            $row['deptID'], $row['name'],
+            $row['deptID'], $row['margin']*100,
+            $row['deptID'], $row['posDeptID'],
+            $row['deptID'],
+            $row['deptID'],
+            \COREPOS\Fannie\API\lib\FannieUI::editIcon(),
+            $row['deptID'],
+            \COREPOS\Fannie\API\lib\FannieUI::saveIcon(),
+            $row['deptID'], $row['name'],
+            \COREPOS\Fannie\API\lib\FannieUI::deleteIcon(),
+            $id, $row['deptID'] 
+        );
     }
 
     public function helpContent()

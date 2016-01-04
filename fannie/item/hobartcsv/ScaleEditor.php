@@ -125,7 +125,7 @@ class ScaleEditor extends FannieRESTfulPage
             $supers[$row['superID']] = $row['super_name'];
         }
 
-        $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+        $ret = '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">';
         
         $ret .= '<table class="table">
             <tr><th>Description</th><th>Host</th><th>Type</th><th>Scale Dept.</th><th>POS Super Dept</th>

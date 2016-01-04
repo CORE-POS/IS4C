@@ -38,38 +38,32 @@ class CashierEditor extends FanniePage {
 
     private $messages = '';
 
-    function preprocess(){
-        global $FANNIE_OP_DB;
+    public function preprocess()
+    {
         $emp_no = FormLib::get('emp_no',0);
 
         if (FormLib::get('fname') !== '') {
-            $fname = FormLib::get('fname');
-            $lname = FormLib::get('lname');
-            $passwd = FormLib::get('passwd');
-            $fes = FormLib::get('fes');
-            $active = FormLib::get('active') !== '' ? 1 : 0;
-            $dob = FormLib::get('birthdate');
-
-            $dbc = FannieDB::get($FANNIE_OP_DB);
+            $dbc = FannieDB::get($this->config->get('OP_DB'));
             $employee = new EmployeesModel($dbc);
             $employee->emp_no($emp_no);
-            $employee->FirstName($fname);
-            $employee->LastName($lname);
-            $employee->CashierPassword($passwd);
-            $employee->AdminPassword($passwd);
-            $employee->frontendsecurity($fes);
-            $employee->backendsecurity($fes);
+            $employee->FirstName(FormLib::get('fname'));
+            $employee->LastName(FormLib::get('lname'));
+            $employee->CashierPassword(FormLib::get('passwd'));
+            $employee->AdminPassword(FormLib::get('passwd'));
+            $employee->frontendsecurity(FormLib::get('fes'));
+            $employee->backendsecurity(FormLib::get('fes'));
+            $active = FormLib::get('active') !== '' ? 1 : 0;
             $employee->EmpActive($active);
-            $employee->birthdate($dob);
+            $employee->birthdate(FormLib::get('birthdate'));
             $saved = $employee->save();
 
             $this->saveStoreMapping($dbc, $emp_no);
 
             if ($saved) {
                 $message = "Cashier Updated. <a href=ViewCashiersPage.php>Back to List of Cashiers</a>";
-                $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', '$message');\n");
+                $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'success', '$message');\n");
             } else {
-                $this->add_onload_command("showBootstrapAlert('#alert-area', 'danger', 'Error saving cashier');\n");
+                $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'danger', 'Error saving cashier');\n");
             }
         }
 

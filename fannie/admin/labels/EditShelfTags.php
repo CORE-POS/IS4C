@@ -116,7 +116,7 @@ class EditShelfTags extends FannieRESTfulPage
         $tag->upc(BarcodeLib::padUPC($this->upc));
         $tag->delete();
 
-        header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $this->id);
+        header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?id=' . $this->id);
 
         return false;
     }
@@ -134,7 +134,7 @@ class EditShelfTags extends FannieRESTfulPage
         ');
         $moveR = $dbc->execute($moveP, array($this->newID, $this->oldID, BarcodeLib::padUPC($this->upc)));
 
-        header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $this->oldID);
+        header('Location: ' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?id=' . $this->oldID);
 
         return false;
     }
@@ -152,34 +152,7 @@ class EditShelfTags extends FannieRESTfulPage
         $ret .= "<th>Size</th><th>Units</th><th>Vendor</th><th>PricePer</th><th># Tags</th></tr>";
 
         foreach ($tags->find() as $tag) {
-            $ret .= '<tr>';
-            $ret .= "<td>" . $tag->upc() . "</td><input type=hidden name=upc[] value=\"" . $tag->upc() . "\" />";
-            $ret .= "<td><input type=text name=desc[] value=\"" . $tag->description() . "\" 
-                        class=\"form-control input-sm\" /></td>";
-            $ret .= "<td><div class=\"input-group\">
-                    <span class=\"input-group-addon\">\$</span>
-                    <input type=text name=price[] value=\"" . $tag->normal_price() . "\" 
-                        class=\"form-control price-field input-sm\" />
-                    </div></td>";
-            $ret .= "<td><input type=text name=brand[] value=\"" . $tag->brand() . "\" 
-                        class=\"form-control input-sm\" /></td>";
-            $ret .= "<td><input type=text name=sku[] value=\"" . $tag->sku() . "\" 
-                        class=\"form-control input-sm\" /></td>";
-            $ret .= "<td><input type=text name=size[] value=\"" . $tag->size() . "\" 
-                        class=\"form-control input-sm\" /></td>";
-            $ret .= "<td><input type=text name=units[] value=\"" . $tag->units() . "\" 
-                        class=\"form-control input-sm price-field\" /></td>";
-            $ret .= "<td><input type=text name=vendor[] value=\"" . $tag->vendor() . "\" 
-                        class=\"form-control input-sm\" /></td>";
-            $ret .= "<td><input type=text name=ppo[] value=\"" . $tag->pricePerUnit() . "\" 
-                        class=\"form-control input-sm\" /></td>";
-            $ret .= "<td><input type=number name=counts[] value=\"" . $tag->count() . "\" 
-                        class=\"form-control input-sm price-field\" /></td>";
-            $ret .= '<td><a href="?_method=delete&id=' . $this->id . '&upc=' . $tag->upc() . '"
-                        class="btn btn-danger">'
-                        . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon('Delete OR Change Queue')
-                        . '</a></td>';
-            $ret .= "</tr>";
+            $ret .= $this->tagToRow($tag);
         }
         $ret .= "</table>";
         $ret .= "<input type=hidden name=id value=\"".$this->id."\" />";
@@ -190,6 +163,40 @@ class EditShelfTags extends FannieRESTfulPage
             class=\"btn btn-default btn-reset\">Use Current Pricing</a>";
         $ret .= '</p>';
         $ret .= "</form>";
+
+        return $ret;
+    }
+
+    private function tagToRow($tag)
+    {
+        $ret = '<tr>';
+        $ret .= "<td>" . $tag->upc() . "</td><input type=hidden name=upc[] value=\"" . $tag->upc() . "\" />";
+        $ret .= "<td><input type=text name=desc[] value=\"" . $tag->description() . "\" 
+                    class=\"form-control input-sm\" /></td>";
+        $ret .= "<td><div class=\"input-group\">
+                <span class=\"input-group-addon\">\$</span>
+                <input type=text name=price[] value=\"" . $tag->normal_price() . "\" 
+                    class=\"form-control price-field input-sm\" />
+                </div></td>";
+        $ret .= "<td><input type=text name=brand[] value=\"" . $tag->brand() . "\" 
+                    class=\"form-control input-sm\" /></td>";
+        $ret .= "<td><input type=text name=sku[] value=\"" . $tag->sku() . "\" 
+                    class=\"form-control input-sm\" /></td>";
+        $ret .= "<td><input type=text name=size[] value=\"" . $tag->size() . "\" 
+                    class=\"form-control input-sm\" /></td>";
+        $ret .= "<td><input type=text name=units[] value=\"" . $tag->units() . "\" 
+                    class=\"form-control input-sm price-field\" /></td>";
+        $ret .= "<td><input type=text name=vendor[] value=\"" . $tag->vendor() . "\" 
+                    class=\"form-control input-sm\" /></td>";
+        $ret .= "<td><input type=text name=ppo[] value=\"" . $tag->pricePerUnit() . "\" 
+                    class=\"form-control input-sm\" /></td>";
+        $ret .= "<td><input type=number name=counts[] value=\"" . $tag->count() . "\" 
+                    class=\"form-control input-sm price-field\" /></td>";
+        $ret .= '<td><a href="?_method=delete&id=' . $this->id . '&upc=' . $tag->upc() . '"
+                    class="btn btn-danger">'
+                    . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon('Delete OR Change Queue')
+                    . '</a></td>';
+        $ret .= "</tr>";
 
         return $ret;
     }
@@ -240,7 +247,7 @@ class EditShelfTags extends FannieRESTfulPage
 </form>
 HTML;
         $queues = new ShelfTagQueuesModel($dbc);
-        $ret = str_replace('{{SELF}}', $_SERVER['PHP_SELF'], $ret);
+        $ret = str_replace('{{SELF}}', filter_input(INPUT_SERVER, 'PHP_SELF'), $ret);
         $ret = str_replace('{{id}}', $this->id, $ret);
         $ret = str_replace('{{upc}}', $this->upc, $ret);
         $ret = str_replace('{{brand}}', $tag->brand(), $ret);

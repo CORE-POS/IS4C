@@ -93,7 +93,7 @@ class PatronageChecks extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $fy = FormLib::get('fy');
+        $fiscal_year = FormLib::get('fy');
         $per_page = FormLib::get('per_page');
 
         $custdata = new CustdataModel($dbc);
@@ -114,7 +114,7 @@ class PatronageChecks extends FannieRESTfulPage
             ORDER BY m.zip,
                 c.LastName,
                 c.FirstName');
-        $result = $dbc->execute($query, array($fy));
+        $result = $dbc->execute($query, array($fiscal_year));
         $pdf = new FPDF('P', 'mm', 'Letter');
         $pdf->SetMargins(6.35, 6.35, 6.35); // quarter-inch margins
         $pdf->SetAutoPageBreak(false);
@@ -122,36 +122,36 @@ class PatronageChecks extends FannieRESTfulPage
         $this->files = array();
         $filenumber = 1;
         set_time_limit(0);
-        while ($w = $dbc->fetch_row($result)) {
+        while ($row = $dbc->fetch_row($result)) {
             if (empty($filename)) {
-                $filename = $filenumber . '-' . substr($w['zip'], 0, 5);
+                $filename = $filenumber . '-' . substr($row['zip'], 0, 5);
             }
             $dbc = FannieDB::get($FANNIE_OP_DB);
-            $custdata->CardNo($w['cardno']);
+            $custdata->CardNo($row['cardno']);
             $custdata->personNum(1);
             $custdata->load();
-            $meminfo->card_no($w['cardno']);
+            $meminfo->card_no($row['cardno']);
             $meminfo->load();
 
-            if ($w['check_number'] == '') {
+            if ($row['check_number'] == '') {
                 $patronage = new PatronageModel($dbc);
-                $patronage->cardno($w['cardno']);
-                $patronage->FY($fy);
+                $patronage->cardno($row['cardno']);
+                $patronage->FY($fiscal_year);
                 $number = GumLib::allocateCheck($patronage, false);
                 $dbc = FannieDB::get($FANNIE_OP_DB);
                 $patronage->check_number($number);
                 $patronage->save();
-                $w['check_number'] = $number;
+                $row['check_number'] = $number;
             }
 
             $pdf->AddPage();
             $pdf->Image('rebate_body.png', 10, 0, 190);
-            $check = new GumCheckTemplate($custdata, $meminfo, $w['cash_pat'], 'Rebate ' . $fy, $w['check_number']);
-            $check->addBankLine('Net Purchases: $' . number_format($w['net_purch'], 2));
-            $check->addBankLine('Retained Equity: $' . number_format($w['equit_pat'], 2));
+            $check = new GumCheckTemplate($custdata, $meminfo, $row['cash_pat'], 'Rebate ' . $fiscal_year, $row['check_number']);
+            $check->addBankLine('Net Purchases: $' . number_format($row['net_purch'], 2));
+            $check->addBankLine('Retained Equity: $' . number_format($row['equit_pat'], 2));
             $check->renderAsPDF($pdf);
             if ($pdf->PageNo() == $per_page) {
-                $filename .= '-' . substr($w['zip'], 0, 5) . '.pdf';
+                $filename .= '-' . substr($row['zip'], 0, 5) . '.pdf';
                 $filenumber++;
                 $pdf->Output('/tmp/' . $filename, 'F');
                 $this->files[] = $filename;
@@ -184,13 +184,13 @@ class PatronageChecks extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">
+        $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">
             <div class="form-group">
                 <label>Fiscal Year</label>
                 <select class="form-control" name="fy">';
         $result = $dbc->query('SELECT FY FROM patronage GROUP BY FY ORDER BY FY DESC');
-        while ($w = $dbc->fetch_row($result)) {
-            $ret .= '<option>' . $w['FY'] . '</option>';
+        while ($row = $dbc->fetchRow($result)) {
+            $ret .= '<option>' . $row['FY'] . '</option>';
         }
         $ret .= '</select>
             </div>

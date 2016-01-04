@@ -78,16 +78,16 @@ class AutoParsTask extends FannieTask
             $last_nonsale_qty = 0.1;
             $nonsale_qty = 0.1;
             $nonsale_count = 0;
-            while ($w = $dbc->fetchRow($salesR)) {
-                $index = $w['diff'];
+            while ($salesW = $dbc->fetchRow($salesR)) {
+                $index = $salesW['diff'];
                 if ($index > $max) {
                     $max = $index;
                 }
-                $days[$index] = $w['qty'];
-                if ($w['onSale']) {
+                $days[$index] = $salesW['qty'];
+                if ($salesW['onSale']) {
                     $days[$index] = ($nonsale_count == 0 ? $nonsale_qty : $nonsale_qty/$nonsale_count);
                 } else {
-                    $nonsale_qty += $w['qty'];
+                    $nonsale_qty += $salesW['qty'];
                     $nonsale_count++;
                 }
             }

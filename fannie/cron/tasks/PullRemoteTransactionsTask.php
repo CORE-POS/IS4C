@@ -40,7 +40,7 @@ class PullRemoteTransactionsTask extends FannieTask
 
     public function run()
     {
-        global $FANNIE_OP_DB, $FANNIE_SERVER, $FANNIE_TRANS_DB;
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $local_dtrans = $FANNIE_TRANS_DB . $dbc->sep() . 'dtransactions';
 
@@ -58,7 +58,7 @@ class PullRemoteTransactionsTask extends FannieTask
 
         $stores = new StoresModel($dbc);
         foreach($stores->find() as $store) {
-            if ($store->dbHost() == $FANNIE_SERVER) {
+            if ($store->dbHost() == $this->config->get('SERVER')) {
                 // that's me! just continue.
                 continue;
             } else if ($store->pull() == 0) {
@@ -68,23 +68,15 @@ class PullRemoteTransactionsTask extends FannieTask
 
             $remoteID = $store->storeID();
 
-            $lowerBound = 0;
-            $dtransMax = $dbc->execute($max1, array($remoteID));
-            if ($dtransMax === false) {
+            $lowerBound = $dbc->getValue($max1, array($remoteID));
+            if ($lowerBound === false) {
                 $this->cronMsg('Polling problem: cannot lookup info in dtransactions', FannieLogger::WARNING);
                 continue;
-            } else if ($dbc->num_rows($dtransMax) > 0) {
-                $row = $dbc->fetch_row($dtransMax);
-                $lowerBound = $row['done'];
-            } 
-            if ($lowerBound == 0) {
-                $transarchiveMax = $dbc->execute($max2, array($remoteID));
-                if ($transarchiveMax === false) {
+            } elseif ($lowerBound == 0) {
+                $lowerBound = $dbc->getValue($max2, array($remoteID));
+                if ($lowerBound === false) {
                     $this->cronMsg('Polling problem: cannot lookup info in transarchive', FannieLogger::WARNING);
                     continue;
-                } else if ($dbc->num_rows($transarchiveMax) > 0) {
-                    $row = $dbc->fetch_row($transarchiveMax);
-                    $lowerBound = $row['done'];
                 }
             }
 

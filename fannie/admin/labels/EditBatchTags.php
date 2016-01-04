@@ -26,35 +26,31 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class EditBatchTags extends FanniePage {
-
+class EditBatchTags extends FanniePage 
+{
     protected $title = 'Fannie - Edit Batch Shelf Tags';
     protected $header = 'Edit Batch Shelf Tags';
-    protected $must_authenticate = True;
+    protected $must_authenticate = true;
     protected $auth_classes = array('barcodes');
 
     public $description = '[Edit Batch Shelf Tags] updates the text information for a set of tags.';
-    public $themed = true;
 
-    private $id;
-
-    function preprocess()
+    public function preprocess()
     {
-        global $FANNIE_OP_DB;
-        $this->ids = FormLib::get_form_value('batchID',0);
+        $this->ids = FormLib::get('batchID',0);
 
-        if (FormLib::get_form_value('submit',False) !== False){
-            $upcs = FormLib::get_form_value('upc',array());
-            $descs = FormLib::get_form_value('desc',array());
-            $prices = FormLib::get_form_value('price',array());
-            $brands = FormLib::get_form_value('brand',array());
-            $skus = FormLib::get_form_value('sku',array());
-            $sizes = FormLib::get_form_value('size',array());
-            $units = FormLib::get_form_value('units',array());
-            $vendors = FormLib::get_form_value('vendor',array());
-            $ppos = FormLib::get_form_value('ppo',array());
+        if (FormLib::get('submit', false) !== false) {
+            $upcs = FormLib::get('upc',array());
+            $descs = FormLib::get('desc',array());
+            $prices = FormLib::get('price',array());
+            $brands = FormLib::get('brand',array());
+            $skus = FormLib::get('sku',array());
+            $sizes = FormLib::get('size',array());
+            $units = FormLib::get('units',array());
+            $vendors = FormLib::get('vendor',array());
+            $ppos = FormLib::get('ppo',array());
 
-            $dbc = FannieDB::get($FANNIE_OP_DB);
+            $dbc = FannieDB::get($this->config->get('OP_DB'));
             $tag = new BatchBarcodesModel($dbc);
             for ($i = 0; $i < count($upcs); $i++){
                 $batchID = $this->ids[$i];
@@ -78,7 +74,7 @@ class EditBatchTags extends FanniePage {
                 $tag->size($size);
                 $tag->units($unit);
                 $tag->vendor($vendor);
-                //$tag->pricePerUnit($ppo);
+                $tag->pricePerUnit($ppo);
                 $tag->save();
             }
             header("Location: BatchShelfTags.php");
@@ -89,7 +85,8 @@ class EditBatchTags extends FanniePage {
         return true;
     }
 
-    function css_content(){
+    function css_content()
+    {
         return "
         .one {
             background: #ffffff;
@@ -99,7 +96,8 @@ class EditBatchTags extends FanniePage {
         }";
     }
 
-    function body_content(){
+    function body_content()
+    {
         $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
 
         $ret = "<form method=post>";
@@ -108,7 +106,7 @@ class EditBatchTags extends FanniePage {
         $ret .= "<th>Size</th><th>Units</th><th>Vendor</th><th>PricePer</th></tr>";
 
         if (!is_array($this->ids)) {
-            $this->ids = array($this->id);
+            $this->ids = array($this->ids);
         }
         $tags = new BatchBarcodesModel($dbc);
 
@@ -117,29 +115,7 @@ class EditBatchTags extends FanniePage {
             $tags->batchID($batchID);
 
             foreach ($tags->find() as $tag) {
-                $ret .= '<tr>';
-                $ret .= '<input type="hidden" name="batchID[]" value="' . $batchID . '" />';
-                $ret .= "<td>" . $tag->upc() . "</td><input type=hidden name=upc[] value=\"" . $tag->upc() . "\" />";
-                $ret .= "<td><input type=text name=desc[] value=\"" . $tag->description() . "\" 
-                            class=\"form-control\" /></td>";
-                $ret .= "<td><div class=\"input-group\">
-                        <span class=\"input-group-addon\">\$</span>
-                        <input type=text name=price[] value=\"" . $tag->normal_price() . "\" 
-                            class=\"form-control\" />
-                        </div></td>";
-                $ret .= "<td><input type=text name=brand[] value=\"" . $tag->brand() . "\" 
-                        class=\"form-control\" /></td>";
-                $ret .= "<td><input type=text name=sku[] value=\"" . $tag->sku() . "\" 
-                            class=\"form-control\" /></td>";
-                $ret .= "<td><input type=text name=size[] value=\"" . $tag->size() . "\" 
-                            class=\"form-control\" /></td>";
-                $ret .= "<td><input type=text name=units[] value=\"" . $tag->units() . "\" 
-                            class=\"form-control\" /></td>";
-                $ret .= "<td><input type=text name=vendor[] value=\"" . $tag->vendor() . "\" 
-                            class=\"form-control\" /></td>";
-                $ret .= "<td><input type=text name=ppo[] value=\"" . /*price per unit?*/"" . "\" 
-                            class=\"form-control\" /></td>";
-                $ret .= "</tr>";
+                $ret .= $this->tagToRow($batchID, $tag);
             }
         }
 
@@ -149,6 +125,35 @@ class EditBatchTags extends FanniePage {
             class=\"btn btn-default\">Update Batch Tags</button>";
         $ret .= '</p>';
         $ret .= "</form>";
+
+        return $ret;
+    }
+
+    private function tagToRow($batchID, $tag)
+    {
+        $ret = '<tr>';
+        $ret .= '<input type="hidden" name="batchID[]" value="' . $batchID . '" />';
+        $ret .= "<td>" . $tag->upc() . "</td><input type=hidden name=upc[] value=\"" . $tag->upc() . "\" />";
+        $ret .= "<td><input type=text name=desc[] value=\"" . $tag->description() . "\" 
+                    class=\"form-control\" /></td>";
+        $ret .= "<td><div class=\"input-group\">
+                <span class=\"input-group-addon\">\$</span>
+                <input type=text name=price[] value=\"" . $tag->normal_price() . "\" 
+                    class=\"form-control\" />
+                </div></td>";
+        $ret .= "<td><input type=text name=brand[] value=\"" . $tag->brand() . "\" 
+                class=\"form-control\" /></td>";
+        $ret .= "<td><input type=text name=sku[] value=\"" . $tag->sku() . "\" 
+                    class=\"form-control\" /></td>";
+        $ret .= "<td><input type=text name=size[] value=\"" . $tag->size() . "\" 
+                    class=\"form-control\" /></td>";
+        $ret .= "<td><input type=text name=units[] value=\"" . $tag->units() . "\" 
+                    class=\"form-control\" /></td>";
+        $ret .= "<td><input type=text name=vendor[] value=\"" . $tag->vendor() . "\" 
+                    class=\"form-control\" /></td>";
+        $ret .= "<td><input type=text name=ppo[] value=\"" . $tag->pricePerUnit() . "" . "\" 
+                    class=\"form-control\" /></td>";
+        $ret .= "</tr>";
 
         return $ret;
     }
