@@ -132,6 +132,8 @@ class DTransactionsModel extends BasicModel
                     if ($chk !== False) {
                         $trans_adds += $chk;
                     }
+                    // track existing monthly archives by date string
+                    $dated_tables[substr($t, -6)] = true;
                 }
             }
         }
@@ -196,6 +198,17 @@ class DTransactionsModel extends BasicModel
                         $log_adds += $chk;
                         $this->normalizeLog($t, 'transArchive'.substr($t,4),$mode);
                     }
+                    unset($dated_tables[substr($t, -6)]);
+                }
+            }
+            // create any missing dlogs for existing month tables
+            foreach ($dated_tables as $date => $val) {
+                ob_start();
+                $chk = parent::normalize($FANNIE_ARCHIVE_DB, BasicModel::NORMALIZE_MODE_CHECK);
+                ob_end_clean();
+                if ($chk !== false && $chk > 0) {
+                    $log_adds += $chk;
+                    $this->normalizeLog('dlog' . $date, 'transArchive'. $date,$mode);
                 }
             }
         }
