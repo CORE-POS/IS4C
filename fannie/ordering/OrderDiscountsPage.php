@@ -151,6 +151,7 @@ class OrderDiscountsPage extends FannieRESTfulPage
         $this->id = array(1);
         $form->type = array('markdown');
         $form->amt = array(10);
+        $this->setForm($form);
         $this->post_id_handler();
         $body2 = $this->get_view();
         $phpunit->assertNotEquals($body, $body2);
