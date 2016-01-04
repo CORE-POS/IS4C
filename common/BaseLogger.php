@@ -105,6 +105,25 @@ class BaseLogger
         $this->syslog_protocol = $protocol;
     }
 
+    protected function getSyslogSocket()
+    {
+        if (!function_exists('socket_create')) {
+            throw new \Exception('Sockets extension required for remote logging');
+        }
+
+        $socket = false;
+        if (strtolower($this->syslog_protocol) === 'udp') {
+            $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+        } elseif (strtolower($this->syslog_protocol) === 'tcp') {
+            $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        }
+        if ($socket === false) {
+            throw new \Exception('Remote logging socket error: ' . socket_last_error());
+        }
+
+        return $socket;
+    }
+
     /**
       Send message to remote syslog
       @param $message [string] log line
@@ -113,32 +132,22 @@ class BaseLogger
     protected function syslogRemote($message)
     {
         $context = array('skip_remote' => true);
-        if (!function_exists('socket_create')) {
-            $this->debug('Sockets extension required for remote logging', $context);
-
-            return false;
-        } 
         
-        $socket = false;
-        if (strtolower($this->syslog_protocol) === 'udp') {
-            $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-        } elseif (strtolower($this->syslog_protocol) === 'tcp') {
+        try {
+            $socket = $this->getSyslogSocket();
             $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        }
-        if ($socket === false) {
-            $this->debug('Remote logging socket error: ' . socket_last_error(), $context);
 
-            return false;
-        }
+            socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 5, 'usec' => 0)); 
+            if (!socket_connect($socket, $this->syslog_host, $this->syslog_port)) {
+                $this->debug('Unable to connect to ' . $this->syslog_host . ':' . $this->syslog_port
+                    . ' for remote logging. Error: ' . socket_last_error(), $context);
+            }
 
-        socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 5, 'usec' => 0)); 
-        if (!socket_connect($socket, $this->syslog_host, $this->syslog_port)) {
-            $this->debug('Unable to connect to ' . $this->syslog_host . ':' . $this->syslog_port
-                . ' for remote logging. Error: ' . socket_last_error(), $context);
+            socket_write($socket, $message);
+            socket_close($socket);
+        } catch (\Exception $ex) {
+            $this->debug($ex->getMessage(), $context);
         }
-
-        socket_write($socket, $message);
-        socket_close($socket);
 
         return true;
     }
@@ -244,7 +253,7 @@ class BaseLogger
             }
             if ($int_level === self::DEBUG && $verbose_debug) {
                 $stack = array();
-                if (isset($context['exception']) && $context['exception'] instanceof Exception) {
+                if (isset($context['exception']) && $context['exception'] instanceof \Exception) {
                     $stack = $this->stackTrace($context['exception']->getTrace());
                 } else {
                     $stack = $this->stackTrace(debug_backtrace());

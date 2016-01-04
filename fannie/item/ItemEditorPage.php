@@ -53,12 +53,12 @@ class ItemEditorPage extends FanniePage
                 return false;
             } else {
                 $this->connection->selectDB($this->config->get('OP_DB'));
-                $p = $this->connection->prepare('
+                $prep = $this->connection->prepare('
                     SELECT storeID
                     FROM Stores
                     WHERE storeID=?');
-                $r = $this->connection->execute($p, array($this->config->get('STORE_ID')));
-                if ($r === false || $this->connection->numRows($r) == 0) {
+                $res = $this->connection->execute($prep, array($this->config->get('STORE_ID')));
+                if ($res === false || $this->connection->numRows($res) == 0) {
                     $this->error_msg = 'No record exists for this store';
                     return false;
                 }
@@ -124,13 +124,13 @@ class ItemEditorPage extends FanniePage
         $this->header = '';//_('Item Maintenance');
 
         if (FormLib::get_form_value('searchupc') !== '') {
-            $this->mode = 'search_results';
+            $this->mode = 'searchResults';
         }
 
         if (FormLib::get_form_value('createBtn') !== ''){
-            $this->msgs = $this->save_item(true);
+            $this->msgs = $this->saveItem(true);
         } else if (FormLib::get_form_value('updateBtn') !== '') {
-            $this->msgs = $this->save_item(false);
+            $this->msgs = $this->saveItem(false);
         }
 
         return true;
@@ -139,15 +139,15 @@ class ItemEditorPage extends FanniePage
     function body_content()
     {
         switch($this->mode){
-            case 'search_results':
-                return $this->search_results();
+            case 'searchResults':
+                return $this->searchResults();
             case 'search':
             default:
-                return $this->search_form();
+                return $this->searchForm();
         }
     }
 
-    function search_form()
+    private function searchForm()
     {
         $FANNIE_URL = $this->config->get('URL');
         $ret = '';
@@ -156,7 +156,7 @@ class ItemEditorPage extends FanniePage
             $ret .= $this->msgs;
             $ret .= '</blockquote>';
         }
-        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method=get>';
+        $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method=get>';
         $ret .= '
             <div class="container-fluid">
             <div class="row form-group form-inline">
@@ -186,8 +186,8 @@ class ItemEditorPage extends FanniePage
         $ret .= '</p>';
         
         $this->add_script('autocomplete.js');
-        $ws = $FANNIE_URL . 'ws/';
-        $this->add_onload_command("bindAutoComplete('#upc', '$ws', 'item');\n");
+        $wsUrl = $FANNIE_URL . 'ws/';
+        $this->add_onload_command("bindAutoComplete('#upc', '$wsUrl', 'item');\n");
         $this->add_onload_command('$(\'#upc\').focus();');
 
         $this->add_script($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
@@ -200,16 +200,9 @@ class ItemEditorPage extends FanniePage
         return $ret;
     }
 
-    function search_results()
+    private function searchQuery($upc, $numType, $inUseFlag, $store_id)
     {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
-        $upc = trim(FormLib::get_form_value('searchupc'));
-        $numType = FormLib::get_form_value('ntype','UPC');
-        $inUseFlag = FormLib::get('inUse', false);
-        $store_id = $this->config->get('STORE_ID');
-
-        $query = "";
+        $query = '';
         $args = array();
         if (is_numeric($upc)) {
             switch($numType) {
@@ -220,13 +213,6 @@ class ItemEditorPage extends FanniePage
                         left join prodExtra as x on p.upc=x.upc 
                         WHERE v.sku LIKE ? ";
                     $args[] = '%'.$upc;
-                    if (!$inUseFlag) {
-                        $query .= ' AND inUse=1 ';
-                    }
-                    if ($this->config->get('STORE_MODE') == 'HQ') {
-                        $query .= " AND p.store_id=? ";
-                        $args[] = $store_id;
-                    }
                     break;
                 case 'Brand Prefix':
                     $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
@@ -234,13 +220,6 @@ class ItemEditorPage extends FanniePage
                         prodExtra as x on p.upc=x.upc 
                         WHERE p.upc like ? ";
                     $args[] = '%'.$upc.'%';
-                    if (!$inUseFlag) {
-                        $query .= ' AND inUse=1 ';
-                    }
-                    if ($this->config->get('STORE_MODE') == 'HQ') {
-                        $query .= " AND p.store_id=? ";
-                        $args[] = $store_id;
-                    }
                     break;
                 case 'UPC':
                 default:
@@ -250,10 +229,7 @@ class ItemEditorPage extends FanniePage
                         prodExtra as x on p.upc=x.upc 
                         WHERE p.upc = ? ";
                     $args[] = $upc;
-                    if ($this->config->get('STORE_MODE') == 'HQ') {
-                        $query .= " AND p.store_id=? ";
-                        $args[] = $store_id;
-                    }
+                    $inUseFlag = 1; // exact matches should be allowed
                     break;
             }
         } else {
@@ -262,16 +238,53 @@ class ItemEditorPage extends FanniePage
                 prodExtra AS x ON p.upc=x.upc
                 WHERE description LIKE ? ";
             $args[] = '%'.$upc.'%';    
-            if (!$inUseFlag) {
-                $query .= ' AND inUse=1 ';
-            }
-            if ($this->config->get('STORE_MODE') == 'HQ') {
-                $query .= " AND p.store_id=? ";
-                $args[] = $store_id;
-            }
-            $query .= " ORDER BY description";
+        }
+        if (!$inUseFlag) {
+            $query .= ' AND inUse=1 ';
+        }
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $query .= " AND p.store_id=? ";
+            $args[] = $store_id;
         }
 
+        return array($query, $args);
+    }
+
+    private function newResultToUpc($dbc, $upc, $numType)
+    {
+        if (strlen($upc) > 13) {
+            $upc = ltrim($upc, '0');
+        }
+        $actualUPC = BarcodeLib::padUPC($upc);
+        $this->mode = 'new'; // mode drives appropriate help text
+        if ($numType == 'SKU') {
+            $prep = $dbc->prepare('
+                SELECT upc
+                FROM vendorItems
+                WHERE sku LIKE ?
+            ');
+            $skuR = $dbc->execute($prep, array('%'.$upc));
+            if ($skuR && $dbc->numRows($skuR)) {
+                $skuW = $dbc->fetchRow($skuR);
+                $actualUPC = BarcodeLib::padUPC($skuW['upc']);
+            }
+        }
+
+        return $actualUPC;
+    }
+
+    private function searchResults()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $upc = trim(FormLib::get_form_value('searchupc'));
+        $numType = FormLib::get_form_value('ntype','UPC');
+        $inUseFlag = FormLib::get('inUse', false);
+        $store_id = $this->config->get('STORE_ID');
+
+        $query = "";
+        $args = array();
+        list($query, $args) = $this->searchQuery($upc, $numType, $inUseFlag, $store_id);
         $query = $dbc->addSelectLimit($query, 500);
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($query,$args);
@@ -283,20 +296,20 @@ class ItemEditorPage extends FanniePage
             $this->msgs = '<div class="alert alert-danger">' . _('Error searching for') 
                 . ' ' . $upc . '</div>';
             $this->mode = 'search'; // mode drives appropriate help text
-            return $this->search_form();
+            return $this->searchForm();
         }
 
-        $num = $dbc->num_rows($result);
+        $num = $dbc->numRows($result);
 
         /**
           No match for text input. Can't create a new item w/o numeric UPC,
           so show error and search box again.
         */
         if ($num == 0 && !is_numeric($upc)) {
-            $this->msgs = '<div class="alert alert-danger">' . _('Error searching for') 
+            $this->msgs = '<div class="alert alert-danger">' . _('No results for') 
                 . ' ' . $upc . '</div>';
             $this->mode = 'search'; // mode drives appropriate help text
-            return $this->search_form();
+            return $this->searchForm();
         }
 
         /**
@@ -304,11 +317,11 @@ class ItemEditorPage extends FanniePage
         */
         if ($num > 1) {
             $items = array();
-            while($row = $dbc->fetch_row($result)) {
+            while ($row = $dbc->fetchRow($result)) {
                 $items[$row['upc']] = $row;
             }
             $this->mode = 'many'; // mode drives appropriate help text
-            return $this->multiple_results($items);
+            return $this->multipleResults($items);
         }
 
         /**
@@ -316,36 +329,18 @@ class ItemEditorPage extends FanniePage
           editing an existing item
         */
         $actualUPC = '';
-        $new = false;
         if ($num == 0) {
-            if (strlen($upc) > 13) {
-                $upc = ltrim($upc, '0');
-            }
-            $actualUPC = BarcodeLib::padUPC($upc);
-            $new = true;
-            $this->mode = 'new'; // mode drives appropriate help text
-            if ($numType == 'SKU') {
-                $prep = $dbc->prepare('
-                    SELECT upc
-                    FROM vendorItems
-                    WHERE sku LIKE ?
-                ');
-                $skuR = $dbc->execute($prep, array('%'.$upc));
-                if ($skuR && $dbc->numRows($skuR)) {
-                    $skuW = $dbc->fetchRow($skuR);
-                    $actualUPC = BarcodeLib::padUPC($skuW['upc']);
-                }
-            }
+            $actualUPC = $this->newResultToUpc($dbc, $upc, $numType);
         } else {
-            $row = $dbc->fetch_row($result);
+            $row = $dbc->fetchRow($result);
             $actualUPC = $row['upc'];
             $this->mode = 'edit'; // mode drives appropriate help text
         }
 
-        return $this->edit_form($actualUPC,$new);
+        return $this->editForm($actualUPC, $this->mode === 'new' ? true : false);
     }
 
-    function multiple_results($results)
+    private function multipleResults($results)
     {
         $FANNIE_URL = $this->config->get('URL');
         $ret = '<table id="itemSearchResults" class="tablesorter">';
@@ -362,7 +357,7 @@ class ItemEditorPage extends FanniePage
                             <td>%s</td>
                             <td>%s</td>
                             </tr>',
-                            $_SERVER['PHP_SELF'],
+                            filter_input(INPUT_SERVER, 'PHP_SELF'),
                             $upc, $upc, 
                             $data['description'],
                             $data['manufacturer'],
@@ -391,19 +386,9 @@ class ItemEditorPage extends FanniePage
         }
     }
 
-    function edit_form($upc,$isNew)
+    private function userCanEdit($upc, $isNew)
     {
-        $FANNIE_PRODUCT_MODULES = $this->config->get('PRODUCT_MODULES');
-        $FANNIE_URL = $this->config->get('URL');
-        $shown = array();
-
-        $this->add_script('autocomplete.js');
-        $this->add_script($FANNIE_URL . 'src/javascript/chosen/chosen.jquery.min.js');
-        $this->add_css_file($FANNIE_URL . 'src/javascript/chosen/bootstrap-chosen.css');
-        $ws = $FANNIE_URL . 'ws/';
-
         $authorized = false;
-        $super_dept_limit = false;
         if (FannieAuth::validateUserQuiet('pricechange') || FannieAuth::validateUserQuiet('audited_pricechange')) {
             $authorized = true;
         } elseif (($range=FannieAuth::validateUserLimited('pricechange')) !== false) {
@@ -430,8 +415,83 @@ class ItemEditorPage extends FanniePage
             $authorized = true;
         }
 
+        return $authorized;
+    }
+
+    private function editorLinksArea($upc, $isNew, $authorized)
+    {
+        $url = $this->config->get('URL');
+        $self = filter_input(INPUT_SERVER, 'PHP_SELF');
+        $ret = '<p>';
+        if (!$authorized) {
+            $ret .= sprintf('<a class="btn btn-danger"
+                        href="%sauth/ui/loginform.php?redirect=%s?searchupc=%s">Login
+                        to edit</a>', $url, $self, $upc);
+            $this->addOnloadCommand("\$(':input').prop('disabled', true).prop('title','Login to edit');\n");
+        } elseif ($isNew) {
+            $ret .= '<button type="submit" name="createBtn" value="1"
+                        class="btn btn-default">Create Item</button>';
+        } else {
+            $ret .= '<button type="submit" name="updateBtn" value="1"
+                        class="btn btn-default">Update Item</button>';
+        }
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a class="btn btn-default btn-sm" href="' . $self . '">Back</a>';
+        $this->add_script($url . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
+        $this->add_css_file($url . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
+        if (!$isNew) {
+            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+            $ret .= '<a href="DeleteItemPage.php?id='.$upc.'" class="btn btn-danger btn-sm">Delete this item</a>';
+
+            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+            $ret .= '<label class="badge">History</label> <span class="btn-group">';
+            $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
+                href="'.$url.'reports/PriceHistory/?upc='.$upc.'" title="Price History">Price</a>';
+
+            $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
+                href="'.$url.'reports/CostHistory/?upc='.$upc.'" title="Cost History">Cost</a>';
+
+            $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
+                href="'.$url.'reports/RecentSales/?upc='.$upc.'" title="Sales History">Sales</a>';
+
+            $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
+                href="'.$url.'reports/ItemBatches/ItemBatchesReport.php?upc='.$upc.'" 
+                title="Batch History">Batches</a>';
+
+            $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
+                href="'.$url.'reports/ItemOrderHistory/ItemOrderHistoryReport.php?upc='.$upc.'" 
+                title="Order History">Orders</a>';
+            $ret .= '</span>';
+
+            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+            $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
+                href="'.$url.'item/addShelfTag.php?upc='.$upc.'" title="Queue a tag for this item">Shelf Tag</a>';
+
+            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+            $ret .=  '<a class="btn btn-default btn-sm" 
+                href="' . $url . 'item/CloneItemPage.php?id=' . $upc . '" 
+                title="Create a duplicate item with a different UPC">Clone Item</a>';
+        }
+        $ret .= '</p>';
+
+        return $ret;
+    }
+
+    private function editForm($upc,$isNew)
+    {
+        $FANNIE_PRODUCT_MODULES = $this->config->get('PRODUCT_MODULES');
+        $FANNIE_URL = $this->config->get('URL');
+        $shown = array();
+
+        $this->add_script('autocomplete.js');
+        $this->add_script($FANNIE_URL . 'src/javascript/chosen/chosen.jquery.min.js');
+        $this->add_css_file($FANNIE_URL . 'src/javascript/chosen/bootstrap-chosen.css');
+        $wsUrl = $FANNIE_URL . 'ws/';
+
+        $authorized = $this->userCanEdit($upc, $isNew);
+
         // remove action so form cannot be submitted by pressing enter
-        $ret = '<form id="item-editor-form" action="' . ($authorized ? $_SERVER['PHP_SELF'] : '') . '" 
+        $ret = '<form id="item-editor-form" action="' . ($authorized ? filter_input(INPUT_SERVER, 'PHP_SELF') : '') . '" 
             enctype="multipart/form-data" method="post">';
         $ret .= '<div class="container"><div id="alert-area">';
 
@@ -464,58 +524,7 @@ class ItemEditorPage extends FanniePage
             $mod_js .= $mod->getFormJavascript($upc);
 
             if ($count == 1 && $current_width == 0) { // show links after first mod
-
-                $ret .= '<p>';
-                if (!$authorized) {
-                    $ret .= sprintf('<a class="btn btn-danger"
-                                href="%sauth/ui/loginform.php?redirect=%s?searchupc=%s">Login
-                                to edit</a>', $FANNIE_URL, $_SERVER['PHP_SELF'], $upc);
-                    $this->addOnloadCommand("\$(':input').prop('disabled', true).prop('title','Login to edit');\n");
-                } else if ($isNew) {
-                    $ret .= '<button type="submit" name="createBtn" value="1"
-                                class="btn btn-default">Create Item</button>';
-                } else {
-                    $ret .= '<button type="submit" name="updateBtn" value="1"
-                                class="btn btn-default">Update Item</button>';
-                }
-                $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <a class="btn btn-default btn-sm" href="' . $_SERVER['PHP_SELF'] . '">Back</a>';
-                $this->add_script($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
-                $this->add_css_file($FANNIE_URL . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
-                if (!$isNew) {
-                    $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-                    $ret .= '<a href="DeleteItemPage.php?id='.$upc.'" class="btn btn-danger btn-sm">Delete this item</a>';
-
-                    $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-                    $ret .= '<label class="badge">History</label> <span class="btn-group">';
-                    $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
-                        href="'.$FANNIE_URL.'reports/PriceHistory/?upc='.$upc.'" title="Price History">Price</a>';
-
-                    $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
-                        href="'.$FANNIE_URL.'reports/CostHistory/?upc='.$upc.'" title="Cost History">Cost</a>';
-
-                    $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
-                        href="'.$FANNIE_URL.'reports/RecentSales/?upc='.$upc.'" title="Sales History">Sales</a>';
-
-                    $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
-                        href="'.$FANNIE_URL.'reports/ItemBatches/ItemBatchesReport.php?upc='.$upc.'" 
-                        title="Batch History">Batches</a>';
-
-                    $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
-                        href="'.$FANNIE_URL.'reports/ItemOrderHistory/ItemOrderHistoryReport.php?upc='.$upc.'" 
-                        title="Order History">Orders</a>';
-                    $ret .= '</span>';
-
-                    $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-                    $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
-                        href="'.$FANNIE_URL.'item/addShelfTag.php?upc='.$upc.'" title="Queue a tag for this item">Shelf Tag</a>';
-
-                    $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-                    $ret .=  '<a class="btn btn-default btn-sm" 
-                        href="' . $FANNIE_URL . 'item/CloneItemPage.php?id=' . $upc . '" 
-                        title="Create a duplicate item with a different UPC">Clone Item</a>';
-                }
-                $ret .= '</p>';
+                $ret .= $this->editorLinksArea($upc, $isNew, $authorized);
             }
 
             $current_width += $mod->width();
@@ -524,9 +533,9 @@ class ItemEditorPage extends FanniePage
         $ret .= '</div>'; // close fluid-container
 
         if (isset($shown['BaseItemModule'])) {
-            $this->add_onload_command("bindAutoComplete('.brand-field', '$ws', 'brand');\n");
-            $this->add_onload_command("bindAutoComplete('input.vendor_field', '$ws', 'vendor');\n");
-            $this->add_onload_command("bindAutoComplete('.unit-of-measure', '$ws', 'unit');\n");
+            $this->add_onload_command("bindAutoComplete('.brand-field', '$wsUrl', 'brand');\n");
+            $this->add_onload_command("bindAutoComplete('input.vendor_field', '$wsUrl', 'vendor');\n");
+            $this->add_onload_command("bindAutoComplete('.unit-of-measure', '$wsUrl', 'unit');\n");
             $this->add_onload_command("\$('.unit-of-measure').autocomplete('option', 'minLength', 1);\n");
             $this->add_onload_command("addVendorDialog();\n");
             if ($this->config->get('STORE_MODE') == 'HQ') {
@@ -543,7 +552,7 @@ class ItemEditorPage extends FanniePage
         }
 
         if (isset($shown['ProdUserModule'])) {
-            $this->add_onload_command("bindAutoComplete('#lf_brand', '$ws', 'long_brand');\n");
+            $this->add_onload_command("bindAutoComplete('#lf_brand', '$wsUrl', 'long_brand');\n");
         }
 
         if (isset($shown['LikeCodeModule'])) {
@@ -570,7 +579,7 @@ class ItemEditorPage extends FanniePage
         return $ret;
     }
 
-    function save_item($isNew)
+    private function saveItem($isNew)
     {
         $FANNIE_PRODUCT_MODULES = $this->config->get('PRODUCT_MODULES');
         $FANNIE_URL = $this->config->get('URL');
@@ -581,27 +590,15 @@ class ItemEditorPage extends FanniePage
         }
         $upc = BarcodeLib::padUPC($upc);
 
-        $audited = false;
-        if (FannieAuth::validateUserQuiet('pricechange')) { 
-            // validated; nothing to do
-        } elseif (FannieAuth::validateUserQuiet('audited_pricechange')) {
-            $audited = true;
-        } elseif (($range=FannieAuth::validateUserLimited('pricechange')) !== false) {
-            // validated for certain departments; nothing to do
-        } else {
+        $authorized = $this->userCanEdit($upc, $isNew);
+        $audited = FannieAuth::validateUserQuiet('audited_pricechange') ? true : false;
+        if ($authorized !== true) {
             // not authorized to make edits
             return '<span style="color:red;">Error: Log in to edit</span>';
         }
 
         uasort($FANNIE_PRODUCT_MODULES, array('ItemEditorPage', 'sortModules'));
-        $form = new \COREPOS\common\mvc\FormValueContainer();
-        foreach ($FANNIE_PRODUCT_MODULES as $class => $params) {
-            $mod = new $class();
-            $mod->setConnection($this->connection);
-            $mod->setConfig($this->config);
-            $mod->setForm($form);
-            $mod->SaveFormData($upc);
-        }
+        $this->saveModules($FANNIE_PRODUCT_MODULES, $upc);
 
         /* push updates to the lanes */
         $dbc = $this->connection;
@@ -614,17 +611,34 @@ class ItemEditorPage extends FanniePage
         }
 
         if ($audited) {
-            $lc = FormLib::get('likeCode', -1);
+            $likecode = FormLib::get('likeCode', -1);
             $no_update = FormLib::get('LikeCodeNoUpdate', false);
-            if ($lc != -1 && !$no_update) {
-                \COREPOS\Fannie\API\lib\AuditLib::itemUpdate($upc, $lc);
+            if ($likecode != -1 && !$no_update) {
+                \COREPOS\Fannie\API\lib\AuditLib::itemUpdate($upc, $likecode);
             } else {
                 \COREPOS\Fannie\API\lib\AuditLib::itemUpdate($upc);
             }
         }
 
+        return $this->modulesResult($FANNIE_PRODUCT_MODULES, $upc);
+    }
+
+    private function saveModules($mods, $upc)
+    {
+        $form = new \COREPOS\common\mvc\FormValueContainer();
+        foreach ($mods as $class => $params) {
+            $mod = new $class();
+            $mod->setConnection($this->connection);
+            $mod->setConfig($this->config);
+            $mod->setForm($form);
+            $mod->SaveFormData($upc);
+        }
+    }
+
+    private function modulesResult($mods, $upc)
+    {
         $ret = "<table class=\"table\">";
-        foreach ($FANNIE_PRODUCT_MODULES as $class => $params) {
+        foreach ($mods as $class => $params) {
             $mod = new $class();
             $rows = $mod->summaryRows($upc);
             foreach ($rows as $row) {
@@ -632,8 +646,6 @@ class ItemEditorPage extends FanniePage
             }
         }
         $ret .= '</table>';
-
-        return $ret;
     }
 
     public function helpContent()

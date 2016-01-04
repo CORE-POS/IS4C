@@ -644,7 +644,7 @@ class EditBatchPage extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $ret = "<form class=\"form-inline\" onsubmit=\"advanceToPrice(); return false;\" id=\"add-item-form\">";
+        $ret = "<form class=\"form-inline\" onsubmit=\"batchEdit.advanceToPrice(); return false;\" id=\"add-item-form\">";
 
         $ret .= '<span class="add-by-upc-fields">';
         $ret .= "<label class=\"control-label\">UPC</label>
@@ -672,7 +672,7 @@ class EditBatchPage extends FannieRESTfulPage
         }
         $ret .= " /> <label for=\"addItemTag\">New shelf tag</label>";
         */
-        $ret .= " <input type=checkbox id=addItemLikeCode onchange=\"toggleUpcLcInput();\" /> 
+        $ret .= " <input type=checkbox id=addItemLikeCode onchange=\"batchEdit.toggleUpcLcInput();\" /> 
             <label for=\"addItemLikeCode\" class=\"control-label\">Likecode</label>";
         $ret .= "</form>";
         
@@ -681,7 +681,7 @@ class EditBatchPage extends FannieRESTfulPage
 
     private function addItemPriceInput($upc, $newtags=false, $description, $price)
     {
-        $ret = "<form onsubmit=\"addItemPrice('$upc'); return false;\" id=\"add-price-form\" class=\"form-inline\">";
+        $ret = "<form onsubmit=\"batchEdit.addItemPrice('$upc'); return false;\" id=\"add-price-form\" class=\"form-inline\">";
         $ret .= "<label>ID</label>: $upc <label>Description</label>: $description <label>Normal price</label>: $price ";
         $ret .= "<label>Sale price</label><input class=\"form-control\" type=text id=add-item-price name=price size=5 /> ";
         $ret .= "<button type=submit value=Add class=\"btn btn-default\">Add</button>";
@@ -856,7 +856,7 @@ class EditBatchPage extends FannieRESTfulPage
                 $mapR = $dbc->execute($mapP, array($s->storeID(), $id));
                 $checked = ($mapR && $dbc->numRows($mapR)) ? 'checked' : '';
                 $ret .= sprintf('<label>
-                    <input type="checkbox" onchange="toggleStore(%d, %d);" %s />
+                    <input type="checkbox" onchange="batchEdit.toggleStore(%d, %d);" %s />
                     %s
                     </label> | ',
                     $s->storeID(), $id,
@@ -883,23 +883,23 @@ class EditBatchPage extends FannieRESTfulPage
         $ret .= "<a href=\"../../admin/labels/SignFromSearch.php?batch=$id\">Print Sale Signs</a> | ";
         $ret .= "<a href=\"BatchSignStylesPage.php?id=$id\">Sign Pricing</a> | ";
         $ret .= "<a href=\"{$FANNIE_URL}admin/labels/BatchShelfTags.php?batchID%5B%5D=$id\">Print Shelf Tags</a> | ";
-        $ret .= "<a href=\"\" onclick=\"generateTags($id); return false;\">Auto-tag</a> | ";
+        $ret .= "<a href=\"\" onclick=\"batchEdit.generateTags($id); return false;\">Auto-tag</a> | ";
         if ($cpCount > 0) {
             $ret .= "<a href=\"EditBatchPage.php?id=$id&paste=1\">Paste Items ($cpCount)</a> | ";
         }
         if ($dtype == 0 || (time() >= $start && time() <= $end)) {
-            $ret .= "<a href=\"\" onclick=\"forceNow($id); return false;\">Force batch</a> | ";
+            $ret .= "<a href=\"\" onclick=\"batchEdit.forceNow($id); return false;\">Force batch</a> | ";
         }
         if ($dtype != 0) {
-            $ret .= "<a href=\"\" onclick=\"unsaleNow($id); return false;\">Stop Sale</a> ";
+            $ret .= "<a href=\"\" onclick=\"batchEdit.unsaleNow($id); return false;\">Stop Sale</a> ";
         }
 
         if ($dtype == 0) {
-            $ret .= " <a href=\"\" onclick=\"trimPcBatch($id); return false;\">Trim Unchanged</a> ";
+            $ret .= " <a href=\"\" onclick=\"batchEdit.trimPcBatch($id); return false;\">Trim Unchanged</a> ";
         } else {
             $ret .= " | <span id=\"edit-limit-link\"><a href=\"\" 
-                onclick=\"editTransLimit(); return false;\">" . ($hasLimit ? 'Edit' : 'Add' ) . " Limit</a></span>";
-            $ret .= "<span id=\"save-limit-link\" class=\"collapse\"><a href=\"\" onclick=\"saveTransLimit($id); return false;\">Save Limit</a></span>";
+                onclick=\"batchEdit.editTransLimit(); return false;\">" . ($hasLimit ? 'Edit' : 'Add' ) . " Limit</a></span>";
+            $ret .= "<span id=\"save-limit-link\" class=\"collapse\"><a href=\"\" onclick=\"batchEdit.saveTransLimit($id); return false;\">Save Limit</a></span>";
             $ret .= " <span class=\"form-group form-inline\" id=\"currentLimit\" style=\"color:#000;\">{$limit}</span>";
         }
         $ret .= "<br />";
@@ -988,24 +988,24 @@ class EditBatchPage extends FannieRESTfulPage
             $ret .= sprintf('<input text="text" class="form-control" name="price" value="%.2f" />', $fetchW['salePrice']);
             $ret .= '</div></div></td>';
             $ret .= "<td bgcolor=$colors[$cur] id=editLink{$fetchW['upc']}>
-                <a href=\"\" class=\"edit\" onclick=\"editUpcPrice('{$fetchW['upc']}'); return false;\">
+                <a href=\"\" class=\"edit\" onclick=\"batchEdit.editUpcPrice('{$fetchW['upc']}'); return false;\">
                     " . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . "</a>
-                <a href=\"\" class=\"save collapse\" onclick=\"saveUpcPrice('{$fetchW['upc']}'); return false;\">
+                <a href=\"\" class=\"save collapse\" onclick=\"batchEdit.saveUpcPrice('{$fetchW['upc']}'); return false;\">
                     " . \COREPOS\Fannie\API\lib\FannieUI::saveIcon() . "</a>
                 </td>";
             $ret .= "<td bgcolor=$colors[$cur]><a href=\"\" 
-                onclick=\"deleteUPC.call(this, $id, '{$fetchW['upc']}'); return false;\">"
+                onclick=\"batchEdit.deleteUPC.call(this, $id, '{$fetchW['upc']}'); return false;\">"
                 . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . "</a>
                 </td>";
             if ($fetchW['isCut'] == 1) {
                 $ret .= "<td bgcolor=$colors[$cur] id=cpLink{$fetchW['upc']}>
-                    <a href=\"\" id=\"unCut{$fetchW['upc']}\" onclick=\"cutItem('{$fetchW['upc']}',$id,$uid, 0); return false;\">Undo</a>
-                    <a href=\"\" class=\"collapse\" id=\"doCut{$fetchW['upc']}\" onclick=\"cutItem('{$fetchW['upc']}',$id,$uid, 1); return false;\">Cut</a>
+                    <a href=\"\" id=\"unCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid, 0); return false;\">Undo</a>
+                    <a href=\"\" class=\"collapse\" id=\"doCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid, 1); return false;\">Cut</a>
                     </td>";
             } else {
                 $ret .= "<td bgcolor=$colors[$cur] id=cpLink{$fetchW['upc']}>
-                    <a href=\"\" class=\"collapse\" id=\"unCut{$fetchW['upc']}\" onclick=\"cutItem('{$fetchW['upc']}',$id,$uid,0); return false;\">Undo</a>
-                    <a href=\"\" id=\"doCut{$fetchW['upc']}\" onclick=\"cutItem('{$fetchW['upc']}',$id,$uid,1); return false;\">Cut</a>
+                    <a href=\"\" class=\"collapse\" id=\"unCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid,0); return false;\">Undo</a>
+                    <a href=\"\" id=\"doCut{$fetchW['upc']}\" onclick=\"batchEdit.cutItem('{$fetchW['upc']}',$id,$uid,1); return false;\">Cut</a>
                     </td>";
             }
 
@@ -1100,13 +1100,13 @@ class EditBatchPage extends FannieRESTfulPage
             }
             $ret .= "<td bgcolor=$colors[$cur]>$fetchW[1]</td>";
             $ret .= "<td bgcolor=$colors[$cur]>
-                <a href=\"\" class=\"down-arrow\" onclick=\"swapQualifierToDiscount(this, '$fetchW[0]'); return false;\">
+                <a href=\"\" class=\"down-arrow\" onclick=\"batchEdit.swapQualifierToDiscount(this, '$fetchW[0]'); return false;\">
                     <img src=\"{$FANNIE_URL}src/img/buttons/arrow_down.gif\" alt=\"Make Discount Item\" /></a>
-                <a href=\"\" class=\"up-arrow collapse\" onclick=\"swapDiscountToQualifier(this, '$fetchW[0]'); return false;\">
+                <a href=\"\" class=\"up-arrow collapse\" onclick=\"batchEdit.swapDiscountToQualifier(this, '$fetchW[0]'); return false;\">
                     <img src=\"{$FANNIE_URL}src/img/buttons/arrow_up.gif\" alt=\"Make Qualifying Item\" />
                     </a>
                 </td>";
-            $ret .= "<td bgcolor=$colors[$cur]><a href=\"\" onclick=\"deleteUPC.call(this, {$fetchW['batchID']}, '$fetchW[0]'); return false;\">"
+            $ret .= "<td bgcolor=$colors[$cur]><a href=\"\" onclick=\"batchEdit.deleteUPC.call(this, {$fetchW['batchID']}, '$fetchW[0]'); return false;\">"
                 . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a></td>';
             $ret .= "</tr>";
 
@@ -1130,7 +1130,7 @@ class EditBatchPage extends FannieRESTfulPage
         $ret .= sprintf('<input type="hidden" id="currentBatchID" value="%d" />',$id);
         $ret .= "<b>Batch name</b>: $name<br />";
         $ret .= "<a href=\"BatchListPage.php\">Back to batch list</a> | ";
-        $ret .= "<a href=\"\" onclick=\"forceNow($id); return false;\">Force batch</a>";
+        $ret .= "<a href=\"\" onclick=\"batchEdit.forceNow($id); return false;\">Force batch</a>";
         $ret .= " | No limit";
         $ret .= " <span id=\"currentLimit\" style=\"color:#000;\"></span>";
 
@@ -1169,7 +1169,7 @@ class EditBatchPage extends FannieRESTfulPage
                     name="discount" /></div>',
                     (empty($w['salePrice'])?'':abs($w['salePrice'])));
             $ret .= sprintf(' <button type="submit" class="btn btn-default"
-                    onclick="savePairedPricing(%d); return false;">Update Pricing</button>',$id);
+                    onclick="batchEdit.savePairedPricing(%d); return false;">Update Pricing</button>',$id);
             $ret .= '</div>';
             $ret .= '</div>'; // end #paired-fields
         } else {

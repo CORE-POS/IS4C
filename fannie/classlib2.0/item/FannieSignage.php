@@ -501,41 +501,16 @@ class FannieSignage
         return array('query' => $query, 'args' => $args);
     }
 
-    protected $codes=array(
-        'A'=>array(
-            '0'=>'0001101','1'=>'0011001','2'=>'0010011','3'=>'0111101','4'=>'0100011',
-            '5'=>'0110001','6'=>'0101111','7'=>'0111011','8'=>'0110111','9'=>'0001011'),
-        'B'=>array(
-            '0'=>'0100111','1'=>'0110011','2'=>'0011011','3'=>'0100001','4'=>'0011101',
-            '5'=>'0111001','6'=>'0000101','7'=>'0010001','8'=>'0001001','9'=>'0010111'),
-        'C'=>array(
-            '0'=>'1110010','1'=>'1100110','2'=>'1101100','3'=>'1000010','4'=>'1011100',
-            '5'=>'1001110','6'=>'1010000','7'=>'1000100','8'=>'1001000','9'=>'1110100'),
-    );
-
-    protected $parities=array(
-        '0'=>array('A','A','A','A','A','A'),
-        '1'=>array('A','A','B','A','B','B'),
-        '2'=>array('A','A','B','B','A','B'),
-        '3'=>array('A','A','B','B','B','A'),
-        '4'=>array('A','B','A','A','B','B'),
-        '5'=>array('A','B','B','A','A','B'),
-        '6'=>array('A','B','B','B','A','A'),
-        '7'=>array('A','B','A','B','A','B'),
-        '8'=>array('A','B','A','B','B','A'),
-        '9'=>array('A','B','B','A','B','A')
-    );
-
     protected function upcToBitString($upc)
     {
         $code='101'; // start bar
-        $parity = $this->parities[$upc[0]]; // parity based on first digit
+        $parity = \BarcodeLib::$PARITIES[$upc[0]]; // parity based on first digit
         for ($i=1;$i<=6;$i++) { // first half
-            $code .= $this->codes[$parity[$i-1]][$upc[$i]];
+            $code .= \BarcodeLib::$CODES[$parity[$i-1]][$upc[$i]];
         }
         $code .= '01010'; // middle bar
         for ($i=7;$i<=12;$i++) { // second half
-            $code .= $this->codes['C'][$upc[$i]];
+            $code .= \BarcodeLib::$CODES['C'][$upc[$i]];
         }
         $code.='101'; // end bar
 
@@ -915,6 +890,60 @@ class FannieSignage
             $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
             $pdf->AddFont('GillBook', '', 'GillSansMTPro-Book.php');
         }
+
+        return $pdf;
+    }
+
+    protected function fitText($pdf, $text, $font_size, $spacing)
+    {
+        $font_shrink = 0;
+        $effective_width = $this->width - $this->left;
+        $column = $spacing[0];
+        $line_height = $spacing[1];
+        $lines = $spacing[2];
+        while (true) {
+            $pdf->SetX($this->left + ($this->width*$column));
+            $y = $pdf->GetY();
+            $pdf->MultiCell($effective_width, $line_height, $text, 0, 'C');
+            if ($pdf->GetY() - $y > ($line_height*$lines)) {
+                $pdf->SetFillColor(0xff, 0xff, 0xff);
+                $pdf->Rect($this->left + ($this->width*$column), $y, $this->left + ($this->width*$column) + $effective_width, $pdf->GetY(), 'F');
+                $font_shrink++;
+                if ($font_shrink >= $font_size) {
+                    break;
+                }
+                $pdf->SetFontSize($font_size - $font_shrink);
+                $pdf->SetXY($this->left + ($this->width*$column), $y);
+            } else {
+                if ($lines == 2 && $pdf->GetY() - $y < ($lines*$line_height)) {
+                    $pdf = $this->twoLineText($pdf, $text, $y, $spacing);
+                }
+                break;
+            }
+        }
+
+        return $pdf;
+    }
+
+    protected function twoLineText($pdf, $text, $y, $spacing)
+    {
+        $effective_width = $this->width - $this->left;
+        $column = $spacing[0];
+        $line_height = $spacing[1];
+        $words = explode(' ', $text);
+        $multi = '';
+        for ($i=0;$i<floor(count($words)/2);$i++) {
+            $multi .= $words[$i] . ' ';
+        }
+        $multi = trim($multi) . "\n";
+        for ($i=floor(count($words)/2); $i<count($words); $i++) {
+            $multi .= $words[$i] . ' ';
+        }
+        $text = trim($multi);
+        $pdf->SetFillColor(0xff, 0xff, 0xff);
+        $pdf->Rect($this->left + ($this->width*$column), $y, $this->left + ($this->width*$column) + $effective_width, $pdf->GetY(), 'F');
+        $pdf->SetXY($this->left + ($this->width*$column), $y);
+        $pdf->MultiCell($effective_width, $line_height, $text, 0, 'C');
 
         return $pdf;
     }

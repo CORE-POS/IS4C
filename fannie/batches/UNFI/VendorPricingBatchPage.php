@@ -219,9 +219,11 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             if (isset($batchUPCs[$row['upc']])) {
                 $background = 'selection';
             } elseif ($row['variable_pricing'] == 0) {
-                $background = ($row['normal_price']+0.10<$row['rawSRP'])?'red':'green';
-                if ($row['normal_price']-.10>$row['rawSRP']) {
-                    $background = ($row['normal_price']-.10>$row['rawSRP'])?'yellow':'green';
+                $background = ( ($row['normal_price']+0.10 < $row['rawSRP'])
+                    && ($row['normal_price'] < $row['srp']) ) ?'red':'green';
+                if ($row['normal_price']-.10 > $row['rawSRP']) {
+                    $background = ($row['normal_price']-.10 > $row['rawSRP']
+                        && ($row['normal_price'] > $row['srp']) )?'yellow':'green';
                 }
             }
             if (isset($batchUPCs[$row['upc']])) {

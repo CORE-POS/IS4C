@@ -76,61 +76,13 @@ class CoopDeals16UpDarkP extends \COREPOS\Fannie\API\item\FannieSignage
 
             $pdf->SetXY($left + ($width*$column), $top + ($row*$height) - 2);
             $pdf->SetFont('Gill', 'B', $this->SMALL_FONT);
-            $font_shrink = 0;
-            while (true) {
-                $pdf->SetX($left + ($width*$column));
-                $y = $pdf->GetY();
-                $pdf->MultiCell($effective_width, 6, strtoupper($item['brand']), 0, 'C');
-                if ($pdf->GetY() - $y > 6) {
-                    $pdf->SetFillColor(0xff, 0xff, 0xff);
-                    $pdf->Rect($left + ($width*$column), $y, $left + ($width*$column) + $effective_width, $pdf->GetY(), 'F');
-                    $font_shrink++;
-                    if ($font_shrink >= $this->SMALL_FONT) {
-                        break;
-                    }
-                    $pdf->SetFontSize($this->MED_FONT - $font_shrink);
-                    $pdf->SetXY($left + ($width*$column), $y);
-                } else {
-                    break;
-                }
-            }
+            $pdf = $this->fitText($pdf, $this->SMALL_FONT, 
+                strtoupper($item['brand']), array($column, 6, 1));
 
             $pdf->SetX($left + ($width*$column));
             $pdf->SetFont('Gill', '', $this->MED_FONT);
-            $font_shrink = 0;
-            while (true) {
-                $pdf->SetX($left + ($width*$column));
-                $y = $pdf->GetY();
-                $pdf->MultiCell($effective_width, 6, $item['description'], 0, 'C');
-                if ($pdf->GetY() - $y > 12) {
-                    $pdf->SetFillColor(0xff, 0xff, 0xff);
-                    $pdf->Rect($left + ($width*$column), $y, $left + ($width*$column) + $effective_width, $pdf->GetY(), 'F');
-                    $font_shrink++;
-                    if ($font_shrink >= $this->MED_FONT) {
-                        break;
-                    }
-                    $pdf->SetFontSize($this->MED_FONT - $font_shrink);
-                    $pdf->SetXY($left + ($width*$column), $y);
-                } else {
-                    if ($pdf->GetY() - $y < 12) {
-                        $words = explode(' ', $item['description']);
-                        $multi = '';
-                        for ($i=0;$i<floor(count($words)/2);$i++) {
-                            $multi .= $words[$i] . ' ';
-                        }
-                        $multi = trim($multi) . "\n";
-                        for ($i=floor(count($words)/2); $i<count($words); $i++) {
-                            $multi .= $words[$i] . ' ';
-                        }
-                        $item['description'] = trim($multi);
-                        $pdf->SetFillColor(0xff, 0xff, 0xff);
-                        $pdf->Rect($left + ($width*$column), $y, $left + ($width*$column) + $effective_width, $pdf->GetY(), 'F');
-                        $pdf->SetXY($left + ($width*$column), $y);
-                        $pdf->MultiCell($effective_width, 6, $item['description'], 0, 'C');
-                    }
-                    break;
-                }
-            }
+            $pdf = $this->fitText($pdf, $this->MED_FONT, 
+                $item['description'], array($column, 6, 2));
 
             $pdf->SetX($left + ($width*$column));
             $pdf->SetFont('GillBook', '', $this->SMALLER_FONT);

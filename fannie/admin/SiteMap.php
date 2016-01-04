@@ -38,9 +38,8 @@ class SiteMap extends FannieRESTfulPage
     public $description = '[Site Map] is a list of all known pages. It\'s very likely the page
     you\'re on right now!';
 
-    public function get_view()
+    private function getPages()
     {
-        global $FANNIE_ROOT, $FANNIE_URL;
         $pages = FannieAPI::listModules('FanniePage');
         $sets = array();
         $help = array(
@@ -61,7 +60,7 @@ class SiteMap extends FannieRESTfulPage
             if (DIRECTORY_SEPARATOR == '\\') {
                 $file = str_replace(DIRECTORY_SEPARATOR, '/', $file);
             }
-            $url = $FANNIE_URL . str_replace($FANNIE_ROOT, '', $file);
+            $url = $this->config->get('URL') . str_replace($this->config->get('ROOT'), '', $file);
             if (!isset($sets[$obj->page_set])) {
                 $sets[$obj->page_set] = array();
             }
@@ -85,6 +84,41 @@ class SiteMap extends FannieRESTfulPage
             }
         }
 
+        return array($sets, $help, $test_stats);
+    }
+
+    private function printPageSet($sets, $set_name)
+    {
+        $ret = '<li>' . $set_name;
+        $ret .= '<ul>';
+        $page_keys = array_keys($sets[$set_name]);
+        sort($page_keys);
+        foreach ($page_keys as $page_key) {
+            $description = $sets[$set_name][$page_key]['info'];
+            $url = $sets[$set_name][$page_key]['url'];
+            $linked = preg_replace('/\[(.+)\]/', '<a href="' . $url . '">\1</a>', $description);
+            if ($linked === $description) {
+                $linked .= ' (<a href="' . $url . '">Link</a>)';
+            }
+            $ret .= sprintf('<li>%s 
+                <span class="%s">Help</span>
+                <span class="%s">Tested</span>
+                </li>',
+                $linked,
+                $sets[$set_name][$page_key]['help'],
+                $sets[$set_name][$page_key]['test']
+            );
+        }
+        $ret .= '</ul>';
+        $ret .= '</li>';
+
+        return $ret;
+    }
+
+    public function get_view()
+    {
+        list($sets, $help, $test_stats) = $this->getPages();
+
         $ret = '';
         $ret .= '<div class="alert alert-info">';
         $ret .= sprintf('New UI help content percent: <strong>%.2f%%</strong><br />', 
@@ -97,28 +131,7 @@ class SiteMap extends FannieRESTfulPage
         sort($keys);
         $ret .= '<ul>';
         foreach ($keys as $set_name) {
-            $ret .= '<li>' . $set_name;
-            $ret .= '<ul>';
-            $page_keys = array_keys($sets[$set_name]);
-            sort($page_keys);
-            foreach ($page_keys as $page_key) {
-                $description = $sets[$set_name][$page_key]['info'];
-                $url = $sets[$set_name][$page_key]['url'];
-                $linked = preg_replace('/\[(.+)\]/', '<a href="' . $url . '">\1</a>', $description);
-                if ($linked === $description) {
-                    $linked .= ' (<a href="' . $url . '">Link</a>)';
-                }
-                $ret .= sprintf('<li>%s 
-                    <span class="%s">Help</span>
-                    <span class="%s">Tested</span>
-                    </li>',
-                    $linked,
-                    $sets[$set_name][$page_key]['help'],
-                    $sets[$set_name][$page_key]['test']
-                );
-            }
-            $ret .= '</ul>';
-            $ret .= '</li>';
+            $ret .= $this->printPageSet($sets, $set_name);
         }
         $ret .= '</ul>';
 
