@@ -45,8 +45,8 @@ class UIGLib
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $create = $dbc->prepare('INSERT INTO PurchaseOrder (vendorID, creationDate, placed,
-                            placedDate, userID, vendorOrderID, vendorInvoiceID) VALUES
-                            (?, ?, 1, ?, 0, ?, ?)');
+                            placedDate, userID, vendorOrderID, vendorInvoiceID, storeID) VALUES
+                            (?, ?, 1, ?, 0, ?, ?, ?)');
         $find = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? AND vendorInvoiceID=?');
         $findPO = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? AND vendorOrderID=?');
         $plu = $dbc->prepare('SELECT upc FROM vendorSKUtoPLU WHERE vendorID=? AND sku LIKE ?');
@@ -87,7 +87,7 @@ class UIGLib
                     // date has not been downloaded before OR
                     // date previously did not include this invoice
                     $dbc->execute($create, array($vendorID, $header_info['placedDate'], $header_info['placedDate'],
-                                    $header_info['vendorOrderID'], $header_info['vendorInvoiceID']));
+                                    $header_info['vendorOrderID'], $header_info['vendorInvoiceID'], 1));
                     $id = $dbc->insertID();
                 }
 
