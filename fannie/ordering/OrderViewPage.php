@@ -35,7 +35,7 @@ class OrderViewPage extends FannieRESTfulPage
 
     public function preprocess()
     {
-        if (session_id() == '') {
+        if (php_sapi_name() !== 'cli' && !headers_sent() && session_id() == '') {
             session_start();
         }
 
