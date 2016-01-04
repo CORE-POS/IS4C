@@ -348,9 +348,9 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
 
         $orders = array();
         $valid_ids = array();
-        while ($w = $dbc->fetch_row($r)) {
-            $orders[] = $w;
-            $valid_ids[$w['order_id']] = true;
+        while ($row = $dbc->fetch_row($soR)) {
+            $orders[] = $row;
+            $valid_ids[$row['order_id']] = true;
         }
 
         if ($filter_buyer !== '' || $filter_supplier !== '') {
