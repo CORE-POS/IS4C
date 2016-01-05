@@ -93,7 +93,7 @@ class HobartItemCsvUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     protected $use_splits = false;
 
-    function process_file($linedata)
+    function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);

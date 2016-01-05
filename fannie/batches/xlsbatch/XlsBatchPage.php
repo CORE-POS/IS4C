@@ -64,20 +64,21 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         return $batchtypes;
     }
 
-    function process_file($linedata){
+    function process_file($linedata, $indexes)
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $upcCol = $this->get_column_index('upc_lc');
         $priceCol = $this->get_column_index('price');
 
-        $btype = FormLib::get_form_value('btype',0);
-        $date1 = FormLib::get_form_value('date1',date('Y-m-d'));
-        $date2 = FormLib::get_form_value('date2',date('Y-m-d'));
-        $bname = FormLib::get_form_value('bname','');
-        $owner = FormLib::get_form_value('bowner','');
-        $ftype = FormLib::get_form_value('ftype','UPCs');
-        $has_checks = FormLib::get_form_value('has_checks') !== '' ? True : False;
+        $btype = FormLib::get('btype',0);
+        $date1 = FormLib::get('date1',date('Y-m-d'));
+        $date2 = FormLib::get('date2',date('Y-m-d'));
+        $bname = FormLib::get('bname','');
+        $owner = FormLib::get('bowner','');
+        $ftype = FormLib::get('ftype','UPCs');
+        $has_checks = FormLib::get('has_checks') !== '' ? True : False;
 
         $dtQ = $dbc->prepare("SELECT discType FROM batchType WHERE batchTypeID=?");
         $dtR = $dbc->execute($dtQ, array($btype));
@@ -158,18 +159,19 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
     function preview_content()
     {
         $batchtypes = $this->get_batch_types();
+        $type = FormLib::get('btype');
         $ret = sprintf("<b>Batch Type</b>: %s <input type=hidden value=%d name=btype /><br />",
-            $batchtypes[FormLib::get_form_value('btype')],FormLib::get_form_value('btype'));
+            isset($batchtypes[$type]) ? $batchtypes[$type] : 1, $type);
         $ret .= sprintf("<b>Batch Name</b>: %s <input type=hidden value=\"%s\" name=bname /><br />",
-            FormLib::get_form_value('bname'),FormLib::get_form_value('bname'));
+            FormLib::get('bname'),FormLib::get('bname'));
         $ret .= sprintf("<b>Owner</b>: %s <input type=hidden value=\"%s\" name=bowner /><br />",
-            FormLib::get_form_value('bowner'),FormLib::get_form_value('bowner'));
+            FormLib::get('bowner'),FormLib::get('bowner'));
         $ret .= sprintf("<b>Start Date</b>: %s <input type=hidden value=\"%s\" name=date1 /><br />",
-            FormLib::get_form_value('date1'),FormLib::get_form_value('date1'));
+            FormLib::get('date1'),FormLib::get('date1'));
         $ret .= sprintf("<b>End Date</b>: %s <input type=hidden value=\"%s\" name=date2 /><br />",
-            FormLib::get_form_value('date2'),FormLib::get_form_value('date2'));
+            FormLib::get('date2'),FormLib::get('date2'));
         $ret .= sprintf("<b>Product Identifier</b>: %s <input type=hidden value=\"%s\" name=ftype /><br />",
-            FormLib::get_form_value('ftype'),FormLib::get_form_value('ftype'));
+            FormLib::get('ftype'),FormLib::get('ftype'));
         $ret .= sprintf("<b>Includes check digits</b>: <input type=checkbox name=has_checks /><br />");
         $ret .= "<i>&nbsp;&nbsp;&nbsp;&nbsp;UPCs have check digits</i><br />";
         $ret .= "<br />";

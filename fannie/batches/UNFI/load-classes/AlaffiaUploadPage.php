@@ -123,7 +123,7 @@ class AlaffiaUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         return $description;
     }
 
-    function process_file($linedata)
+    function process_file($linedata, $indexes)
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));

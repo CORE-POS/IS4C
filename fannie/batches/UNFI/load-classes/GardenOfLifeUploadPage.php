@@ -70,7 +70,7 @@ class GardenOfLifeUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected $use_splits = false;
     protected $use_js = false;
 
-    function process_file($linedata)
+    function process_file($linedata, $indexes)
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));

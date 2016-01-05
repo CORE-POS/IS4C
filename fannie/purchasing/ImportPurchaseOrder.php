@@ -100,7 +100,7 @@ class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage
 
     private $results = '';
 
-    function process_file($linedata)
+    public function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);

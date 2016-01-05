@@ -51,7 +51,7 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         ),
     );
 
-    function process_file($linedata)
+    function process_file($linedata, $indexes)
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));

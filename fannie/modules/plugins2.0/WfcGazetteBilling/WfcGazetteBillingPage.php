@@ -166,7 +166,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
     }
 
     private $output_html = '';
-    function process_file($linedata)
+    public function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
         $BILLING_MEMBER = $this->BILLING_MEMBER;

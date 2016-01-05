@@ -132,7 +132,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         return array($VENDOR_ID, $row['vendorName']);
     }
 
-    function process_file($linedata)
+    public function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);

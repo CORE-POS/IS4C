@@ -102,7 +102,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         return $vid;
     }
 
-    function process_file($linedata)
+    function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);

@@ -201,7 +201,7 @@ class FannieUploadPage extends \FanniePage
                                 break;
                             }
                         }
-                        $try = $this->process_file($lines);
+                        $try = $this->process_file($lines, $this->getIndexes());
 
                         $done = ($offset + $chunk_size) > count($fileData) ? true : false;
 
@@ -261,7 +261,7 @@ class FannieUploadPage extends \FanniePage
                     } else {
                         /* process one file */
                         $this->upload_file_name = sys_get_temp_dir().'/fannie/splits/'.array_pop($files);                                    
-                        $try = $this->process_file($this->fileToArray());
+                        $try = $this->process_file($this->fileToArray(), $this->getIndexes());
                         unlink($this->upload_file_name);
                         if ($try && count($files) > 0) {
                             /* if more remain, redirect back to self */
@@ -278,7 +278,7 @@ class FannieUploadPage extends \FanniePage
                         }
                     }
                 } else { // not using splits
-                    $try = $this->process_file($this->fileToArray());
+                    $try = $this->process_file($this->fileToArray(), $this->getIndexes());
                 }
 
                 if ($try) {
@@ -439,9 +439,10 @@ class FannieUploadPage extends \FanniePage
       Do something with the uploaded data
       @param $linedata an array of arrays
        (each inner area is one line of data)
+      @param $indexes an array of column names and indexes
       @return True on success, False on error
     */
-    public function process_file($linedata)
+    public function process_file($linedata, $indexes)
     {
         return true;
     }
@@ -698,6 +699,17 @@ class FannieUploadPage extends \FanniePage
         $ret .= '</div>';
 
         $this->add_onload_command("doUpload('" . $this->upload_file_name . "', 0);");
+
+        return $ret;
+    }
+
+    protected function getIndexes()
+    {
+        $ret = array();
+        foreach ($this->preview_opts as $key => $info) {
+            $name = isset($info['name']) ? $info['name'] : $key;
+            $ret[$name] = $this->getColumnIndex($name);
+        }
 
         return $ret;
     }

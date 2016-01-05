@@ -52,7 +52,7 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         ),
     );
 
-    public function process_file($linedata)
+    public function process_file($linedata, $indexes)
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));

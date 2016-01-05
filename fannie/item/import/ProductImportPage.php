@@ -94,7 +94,7 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
         return array($tax, $fstamp, $discount);
     }
 
-    function process_file($linedata)
+    public function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
