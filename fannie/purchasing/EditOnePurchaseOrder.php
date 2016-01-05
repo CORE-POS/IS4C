@@ -26,18 +26,18 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class EditOnePurchaseOrder extends FannieRESTfulPage {
-    
+class EditOnePurchaseOrder extends FannieRESTfulPage 
+{
     protected $header = 'Purchase Orders';
     protected $title = 'Purchase Orders';
 
     public $description = '[Single-Vendor Purchase Order] creates and edits a purchase order
     for a specific vendor. When scanning, only items available from that vendor are shown.';
-    public $themed = true;
 
-    protected $must_authenticate = True;
+    protected $must_authenticate = true;
     
-    function preprocess(){
+    public function preprocess()
+    {
         $this->__routes[] = 'get<id><search>';
         $this->__routes[] = 'get<id><sku><qty>';
         $this->__routes[] = 'get<id><sku><index>';
@@ -50,7 +50,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
       AJAX call: ?id=<vendor ID>&search=<search string>
       Find vendor items based on search string
     */
-    function get_id_search_handler()
+    protected function get_id_search_handler()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -139,7 +139,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
       AJAX call: ?id=<order ID>&sku=<vendor SKU>&qty=<# of cases>
       Add the given SKU & qty to the order
     */
-    function get_id_sku_qty_handler()
+    protected function get_id_sku_qty_handler()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -190,7 +190,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
         return False;
     }
 
-    function get_id_sku_index_handler()
+    protected function get_id_sku_index_handler()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -237,7 +237,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
       Main page. Vendor is selected. Find/create order
       based on vendorID & userID
     */
-    function get_id_view()
+    protected function get_id_view()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -442,6 +442,26 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
             <p>Next enter UPCs or SKUs. If there are multiple matching items,
             use the dropdown to specify which. Finally enter the number
             of cases to order.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->id = 1;
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+        $this->search = '4011';
+        ob_start();
+        $this->get_id_search_handler();
+        $this->assertInternalType('array', json_decode(ob_get_clean(), true));
+        $this->sku = '4011';
+        $this->qty = 1;
+        ob_start();
+        $this->get_id_sku_qty_handler();
+        $this->assertInternalType('array', json_decode(ob_get_clean(), true));
+        $this->index = 1;
+        ob_start();
+        $this->get_id_sku_index_handler();
+        $this->assertInternalType('array', json_decode(ob_get_clean(), true));
     }
 }
 

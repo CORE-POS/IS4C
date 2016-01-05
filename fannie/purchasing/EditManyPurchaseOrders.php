@@ -26,24 +26,25 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class EditManyPurchaseOrders extends FannieRESTfulPage {
-
+class EditManyPurchaseOrders extends FannieRESTfulPage 
+{
     protected $header = 'Purchase Orders';
     protected $title = 'Purchase Orders';
 
     public $description = '[Multi-Vendor Purchase Order] creates and edits multiple purchase orders
     as items from different vendors are scanned.';
-    public $themed = true;
 
-    protected $must_authenticate = True;
+    protected $must_authenticate = true;
 
-    function preprocess(){
+    function preprocess()
+    {
         $this->__routes[] = 'get<search>';
         $this->__routes[] = 'get<id><sku><qty>';
         return parent::preprocess();
     }
 
-    function get_search_handler(){
+    protected function get_search_handler()
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $ret = array(); 
@@ -131,7 +132,8 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
       AJAX call: ?id=<vendor ID>&sku=<vendor SKU>&qty=<# of cases>
       Add the given SKU & qty to the order
     */
-    function get_id_sku_qty_handler(){
+    protected function get_id_sku_qty_handler()
+    {
         global $FANNIE_OP_DB;
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -161,15 +163,15 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
         $pitem->sku($this->sku);
         if (count($pitem->find()) == 0){
             $ret['error'] = 'Error saving entry';
-        }
-        else {
+        } else {
             $ret['sidebar'] = $this->calculate_sidebar();
         }
         echo json_encode($ret);
-        return False;
+        return false;
     }
 
-    function calculate_sidebar(){
+    protected function calculate_sidebar()
+    {
         global $FANNIE_OP_DB;
         $userID = FannieAuth::getUID($this->current_user);
 
@@ -201,7 +203,8 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
         return $ret;
     }
 
-    function get_view(){
+    protected function get_view()
+    {
         $ret = '<div class="col-sm-6">';
         $ret .= '<div id="ItemSearch">';
         $ret .= '<form class="form" action="" onsubmit="itemSearch();return false;">';
@@ -222,7 +225,8 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
         return $ret;
     }
 
-    private function getOrderID($vendorID, $userID){
+    private function getOrderID($vendorID, $userID)
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $orderQ = 'SELECT orderID FROM PurchaseOrder WHERE
@@ -233,8 +237,7 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
         if ($dbc->num_rows($orderR) > 0){
             $row = $dbc->fetch_row($orderR);
             return $row['orderID'];
-        }
-        else {
+        } else {
             $insQ = 'INSERT INTO PurchaseOrder (vendorID, creationDate,
                 placed, userID) VALUES (?, '.$dbc->now().', 0, ?)';
             $insP = $dbc->prepare($insQ);
@@ -252,6 +255,21 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
             <p>Each time you select an item from a different vendor,
             a pending order is automatically created for that vendor
             if one does not already exist.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->search = '4011';
+        ob_start();
+        $this->get_search_handler();
+        $this->assertInternalType('array', json_decode(ob_get_clean(), true));
+        $this->id = 1;
+        $this->sku = '4011';
+        $this->qty = 1;
+        ob_start();
+        $this->get_id_sku_qty_handler();
+        $this->assertInternalType('array', json_decode(ob_get_clean(), true));
     }
 }
 

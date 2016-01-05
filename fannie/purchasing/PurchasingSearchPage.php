@@ -26,13 +26,12 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class PurchasingSearchPage extends FannieRESTfulPage {
-    
+class PurchasingSearchPage extends FannieRESTfulPage 
+{
     protected $header = 'Purchase Orders';
     protected $title = 'Purchase Orders';
 
     public $description = '[Search Purchase Orders] finds orders/invoices containing a given item.';
-    public $themed = true;
 
     protected $must_authenticate = true;
 
@@ -138,6 +137,13 @@ class PurchasingSearchPage extends FannieRESTfulPage {
     {
         return '<p>Enter a UPC or SKU to find orders containing that
             item. Omit the dates to search all known orders.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->id = '4011';
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
     }
 }
 
