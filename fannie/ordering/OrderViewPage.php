@@ -104,7 +104,7 @@ class OrderViewPage extends FannieRESTfulPage
             $this->dept,
             $this->vendor,
             $this->actual,
-            $this->unit,
+            $this->unitPrice,
             $this->qty,
             $this->orderID,
             $this->transID,
