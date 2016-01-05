@@ -97,33 +97,6 @@ class EditManyPurchaseOrders extends FannieRESTfulPage
             return False;
         }
 
-        // search by internalSKU / order code
-        $iskuQ = 'SELECT brand, description, size, units, cost, sku,
-            v.vendorID, vendorName
-            FROM internalSKUs as i
-            INNER JOIN vendorItems as v
-            ON i.vendor_sku = v.sku AND i.vendorID=v.vendorID
-            LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
-            WHERE our_sku = ? ';
-        $iskuP = $dbc->prepare($iskuQ);
-        $iskuR = $dbc->execute($iskuP, array($this->search));
-        while($w = $dbc->fetch_row($iskuR)){
-            $result = array(
-            'sku' => $w['sku'],
-            'title' => '['.$w['vendorName'].'] '.$w['brand'].' - '.$w['description'],
-            'unitSize' => $w['size'],   
-            'caseSize' => $w['units'],
-            'unitCost' => sprintf('%.2f',$w['cost']),
-            'caseCost' => sprintf('%.2f',$w['cost']*$w['units']),
-            'vendorID' => $w['vendorID']
-            );
-            $ret[] = $result;
-        }
-        if (count($ret) > 0){
-            echo json_encode($ret);
-            return False;
-        }
-
         echo '[]';
         return False;
     }

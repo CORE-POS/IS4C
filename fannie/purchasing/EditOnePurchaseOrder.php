@@ -101,31 +101,6 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             return False;
         }
 
-        // search by internalSKU / order code
-        $iskuQ = 'SELECT brand, description, size, units, cost, sku
-            FROM internalSKUs as i
-            INNER JOIN vendorItems as v
-            ON i.vendor_sku = v.sku AND i.vendorID=v.vendorID
-            WHERE our_sku = ? AND i.vendorID=?';
-        $iskuP = $dbc->prepare($iskuQ);
-        $iskuR = $dbc->execute($iskuP, array($this->search, $this->id));
-        while($w = $dbc->fetch_row($iskuR)){
-            $result = array(
-            'sku' => $w['sku'],
-            'title' => $w['brand'].' - '.$w['description'],
-            'unitSize' => $w['size'],   
-            'caseSize' => $w['units'],
-            'unitCost' => sprintf('%.2f',$w['cost']),
-            'caseCost' => sprintf('%.2f',$w['cost']*$w['units']),
-            'cases' => 1,
-            );
-            $ret[] = $result;
-        }
-        if (count($ret) > 0){
-            $this->mergeSearchResult($ret);
-            return False;
-        }
-
         echo '[]';
         return False;
     }
