@@ -394,6 +394,23 @@ JAVASCRIPT;
 
         return str_replace('{{orderID}}', $orderID, $js);
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->javascriptContent()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->orderID=1;
+        $phpunit->assertNotEquals(0, strlen($this->get_orderID_view()));
+        ob_start();
+        $this->get_orderID_customer_handler();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        ob_start();
+        $this->get_orderID_items_handler();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        ob_start();
+        $this->get_orderID_history_handler();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+    }
 }
 
 FannieDispatch::conditionalExec();

@@ -1110,8 +1110,10 @@ HTML;
         $tester->testOrderView($this, $phpunit);
         $tester->testSetCustomer($this, $phpunit);
         $tester->testAddItem($this, $phpunit);
+        $tester->testEditItem($this, $phpunit);
         $tester->testDeleteItem($this, $phpunit);
         $tester->testEditCustomer($this, $phpunit);
+        $tester->testToggles($this, $phpunit);
     }
 }
 
