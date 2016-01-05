@@ -279,8 +279,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         while( ($file=readdir($dir)) !== False){
             if (substr($file,-4) != '.php')
                 continue;
-            include('exporters/'.$file);
             $class = substr($file,0,strlen($file)-4);
+            if (!class_exists($class)) include('exporters/'.$file);
             if (!class_exists($class)) continue;
             $obj = new $class();
             if (!isset($obj->nice_name)) continue;
