@@ -258,6 +258,7 @@ class SpecialOrderTags extends FannieRESTfulPage
         $this->toIDs = array('1:1');
         ob_start();
         $phpunit->assertEquals(false, $this->get_toIDs_handler());
+        $pdf = ob_get_clean();
     }
 }
 
