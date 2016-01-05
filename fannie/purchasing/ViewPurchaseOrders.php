@@ -275,7 +275,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 
         $ret .= 'Export as: <select id="exporterSelect" class="form-control">';
-        $dir = opendir('exporters');
+        $dir = opendir(dirname(__FILE__) . '/exporters');
         while( ($file=readdir($dir)) !== False){
             if (substr($file,-4) != '.php')
                 continue;
