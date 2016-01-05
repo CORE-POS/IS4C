@@ -255,7 +255,7 @@ class SpecialOrderTags extends FannieRESTfulPage
         $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
         $phpunit->assertNotEquals(0, strlen($this->get_view()));
         $phpunit->assertInternalType('array', $this->getQueuedIDs(array()));
-        $this->toIDs = array(1);
+        $this->toIDs = array('1:1');
         ob_start();
         $phpunit->assertEquals(false, $this->get_toIDs_handler());
     }
