@@ -44,7 +44,7 @@ class SpecialOrderTags extends FannieRESTfulPage
         $dbc->selectDB($this->config->get('OP_DB'));
         $TRANS = $this->config->get('TRANS_DB').$dbc->sep();
 
-        if (!defined('FPDF_PATH')) {
+        if (!defined('FPDF_FONTPATH')) {
             define('FPDF_FONTPATH','font/');
         }
         if (!class_exists('FPDF')) {
