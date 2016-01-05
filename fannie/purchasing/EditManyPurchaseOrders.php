@@ -236,13 +236,13 @@ class EditManyPurchaseOrders extends FannieRESTfulPage
         $this->search = '4011';
         ob_start();
         $this->get_search_handler();
-        $this->assertInternalType('array', json_decode(ob_get_clean(), true));
+        $phpunit->assertInternalType('array', json_decode(ob_get_clean(), true));
         $this->id = 1;
         $this->sku = '4011';
         $this->qty = 1;
         ob_start();
         $this->get_id_sku_qty_handler();
-        $this->assertInternalType('array', json_decode(ob_get_clean(), true));
+        $phpunit->assertInternalType('array', json_decode(ob_get_clean(), true));
     }
 }
 

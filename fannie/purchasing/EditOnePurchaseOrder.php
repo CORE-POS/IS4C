@@ -427,16 +427,16 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         $this->search = '4011';
         ob_start();
         $this->get_id_search_handler();
-        $this->assertInternalType('array', json_decode(ob_get_clean(), true));
+        $phpunit->assertInternalType('array', json_decode(ob_get_clean(), true));
         $this->sku = '4011';
         $this->qty = 1;
         ob_start();
         $this->get_id_sku_qty_handler();
-        $this->assertInternalType('array', json_decode(ob_get_clean(), true));
+        $phpunit->assertInternalType('array', json_decode(ob_get_clean(), true));
         $this->index = 1;
         ob_start();
         $this->get_id_sku_index_handler();
-        $this->assertInternalType('array', json_decode(ob_get_clean(), true));
+        $phpunit->assertInternalType('array', json_decode(ob_get_clean(), true));
     }
 }
 
