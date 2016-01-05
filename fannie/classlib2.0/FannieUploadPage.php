@@ -806,6 +806,20 @@ class FannieUploadPage extends \FanniePage
             </ul>
         </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertInternalType('string', $this->bodyContent());
+        $phpunit->assertInternalType('string', $this->preview_content());
+        $this->error_details = 'Test error';
+        $phpunit->assertInternalType('string', $this->uploadError());
+        $phpunit->assertInternalType('string', $this->processingError());
+        $stats = array(
+            'errors' => array('one', 'two'),
+            'imported' => 0,
+        );
+        $phpunit->assertInternalType('string', $this->simpleStats($stats));
+    }
 }
 
 }
