@@ -646,6 +646,8 @@ class ItemEditorPage extends FanniePage
             }
         }
         $ret .= '</table>';
+
+        return $ret;
     }
 
     public function helpContent()
