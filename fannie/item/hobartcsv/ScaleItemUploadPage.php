@@ -32,7 +32,6 @@ class ScaleItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     protected $header = "Import Scale Items";
 
     public $description = '[Scale Item Import] load information about service-scale (Hobart) items.';
-    public $themed = true;
 
     protected $preview_opts = array(
         'upc' => array(
@@ -92,22 +91,13 @@ class ScaleItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $upc_index = $this->get_column_index('upc');
-        $desc_index = $this->get_column_index('desc');
-        $price_index = $this->get_column_index('price');
-        $type_index = $this->get_column_index('type');
-        $tare_index = $this->get_column_index('tare');
-        $shelf_index = $this->get_column_index('shelf');
-        $net_index = $this->get_column_index('net');
-        $text_index = $this->get_column_index('text');
-
         $model = new ScaleItemsModel($dbc);
         $ret = true;
         $this->stats = array('done' => 0, 'errors' => array());
         foreach($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
-            $upc = $line[$upc_index];
+            $upc = $line[$indexes['upc']];
 
             // upc cleanup
             $upc = str_replace(" ","",$upc);
@@ -120,34 +110,34 @@ class ScaleItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $model->plu($upc);
             $model->load();
 
-            if ($this->checkIndex($type_index, $line)) {
-                if (strtoupper($line[$type_index]) == 'FIXED' || strtoupper($line[$type_index]) == 'EA') {
+            if ($this->checkIndex($indexes['type'], $line)) {
+                if (strtoupper($line[$indexes['type']]) == 'FIXED' || strtoupper($line[$indexes['type']]) == 'EA') {
                     $model->weight(1);
                     $model->bycount(1);
-                } else if (strtoupper($line[$type_index]) == 'RANDOM' || strtoupper($line[$type_index]) == 'RAND') {
+                } else if (strtoupper($line[$indexes['type']]) == 'RANDOM' || strtoupper($line[$indexes['type']]) == 'RAND') {
                     $model->weight(0);
                     $model->bycount(0);
                 }
             }
-            if ($this->checkIndex($desc_index, $line) && !empty($line[$desc_index])) {
-                $desc = str_replace("'","",$line[$desc_index]);
+            if ($this->checkIndex($indexes['desc'], $line) && !empty($line[$indexes['desc']])) {
+                $desc = str_replace("'","",$line[$indexes['desc']]);
                 $desc = str_replace("\"","",$desc);
                 $model->itemdesc($desc);
             }
-            if ($this->checkIndex($price_index, $line)) {
-                $model->price($line[$price_index]);
+            if ($this->checkIndex($indexes['price'], $line)) {
+                $model->price($line[$indexes['price']]);
             }
-            if ($this->checkIndex($tare_index, $line)) {
-                $model->tare($line[$tare_index]);
+            if ($this->checkIndex($indexes['tare'], $line)) {
+                $model->tare($line[$indexes['tare']]);
             }
-            if ($this->checkIndex($shelf_index, $line)) {
-                $model->shelflife($line[$shelf_index]);
+            if ($this->checkIndex($indexes['shelf'], $line)) {
+                $model->shelflife($line[$indexes['shelf']]);
             }
-            if ($this->checkIndex($net_index, $line)) {
-                $model->netWeight($line[$net_index]);
+            if ($this->checkIndex($indexes['net'], $line)) {
+                $model->netWeight($line[$indexes['net']]);
             }
-            if ($this->checkIndex($text_index, $line) && !empty($line[$text_index])) {
-                $model->text($line[$text_index]);
+            if ($this->checkIndex($indexes['text'], $line) && !empty($line[$indexes['text']])) {
+                $model->text($line[$indexes['text']]);
             }
 
             $try = $model->save();

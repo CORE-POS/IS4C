@@ -29,7 +29,8 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class DepartmentImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
+class DepartmentImportPage extends \COREPOS\Fannie\API\FannieUploadPage 
+{
     protected $title = "Fannie :: Product Tools";
     protected $header = "Import Departments";
 
@@ -37,7 +38,6 @@ class DepartmentImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected $auth_classes = array('departments', 'admin');
 
     public $description = '[Department Import] load POS departments from a spreadsheet.';
-    public $themed = true;
 
     protected $preview_opts = array(
         'dept_no' => array(
@@ -79,28 +79,20 @@ class DepartmentImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $dn_index = $this->get_column_index('dept_no');
-        $desc_index = $this->get_column_index('desc');
-        $margin_index = $this->get_column_index('margin');
-        $tax_index = $this->get_column_index('tax');
-        $fs_index = $this->get_column_index('fs');
-
         // prepare statements
         $marP = $dbc->prepare("INSERT INTO deptMargin (dept_ID,margin) VALUES (?,?)");
-
         $scP = $dbc->prepare("INSERT INTO deptSalesCodes (dept_ID,salesCode) VALUES (?,?)");
-
         $model = new DepartmentsModel($dbc);
 
         foreach($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
-            $dept_no = $line[$dn_index];
-            $desc = $line[$desc_index];
-            $margin = ($margin_index !== False) ? $line[$margin_index] : 0;
+            $dept_no = $line[$indexes['dept_no']];
+            $desc = $line[$indexes['desc']];
+            $margin = ($indexes['margin'] !== False) ? $line[$indexes['margin']] : 0;
             if ($margin > 1) $margin /= 100.00;
-            $tax = ($tax_index !== False) ? $line[$tax_index] : 0;
-            $fs = ($fs_index !== False) ? $line[$fs_index] : 0;
+            $tax = ($indexes['tax'] !== False) ? $line[$indexes['tax']] : 0;
+            $fs = ($indexes['fs'] !== False) ? $line[$indexes['fs']] : 0;
 
             if (!is_numeric($dept_no)) continue; // skip header/blank rows
 

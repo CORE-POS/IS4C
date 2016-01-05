@@ -135,13 +135,6 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $dbc->selectDB($this->config->get('OP_DB'));
         $this->setupTables($dbc);
 
-        $SUB = $this->get_column_index('sub');
-        $UPC = $this->get_column_index('upc');
-        $SKU = $this->get_column_index('sku');
-        $PRICE = $this->get_column_index('price');
-        $ABT = $this->get_column_index('abt');
-        $MULT = $this->get_column_index('mult');
-
         $month = FormLib::get('deal-month', 'not specified');
         $delP = $dbc->prepare('DELETE FROM CoopDealsItems WHERE dealSet=?');
         $dbc->execute($delP, array($month));
@@ -152,7 +145,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             if (!is_array($data)) continue;
             if (count($data) < 14) continue;
 
-            $upc = str_replace("-","",$data[$UPC]);
+            $upc = str_replace("-","",$data[$indexes['upc']]);
             $upc = str_replace(" ","",$upc);
             if ($rm_checks)
                 $upc = substr($upc,0,strlen($upc)-1);
@@ -160,18 +153,18 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
             $lookup = $dbc->execute($upcP, array($upc));
             if ($dbc->num_rows($lookup) == 0) {
-                $upc = $this->checkSku($dbc, $upc, $data[$SKU], $skuP);
+                $upc = $this->checkSku($dbc, $upc, $data[$indexes['sku']], $skuP);
             }
             $mult = 1;
-            if ($MULT !== false) {
-                $line_notes = $data[$MULT];
+            if ($indexes['mult'] !== false) {
+                $line_notes = $data[$indexes['mult']];
                 if (preg_match('/(\d+)\/\$(\d+)/', $line_notes, $matches)) {
                     $mult = $matches[1];
                 }
             }
 
-            $price = trim($data[$PRICE],"\$");
-            foreach ($this->dealTypes($data[$ABT]) as $type){
+            $price = trim($data[$indexes['price']],"\$");
+            foreach ($this->dealTypes($data[$indexes['abt']]) as $type){
                 $dbc->execute($insP,array($month,$upc,$price,$type,$mult));
             }
         }

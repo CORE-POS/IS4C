@@ -57,5 +57,5 @@ class ItemImportIndex extends FanniePage {
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

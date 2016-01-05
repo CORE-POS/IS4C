@@ -101,11 +101,6 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
 
         $defaults_tables = $this->deptDefaults($dbc);
 
-        $upc_index = $this->get_column_index('upc');
-        $desc_index = $this->get_column_index('desc');
-        $price_index = $this->get_column_index('price');
-        $dept_index = $this->get_column_index('dept');
-
         $ret = true;
         $linecount = 0;
         $checks = (FormLib::get_form_value('checks')=='yes') ? true : false;
@@ -114,12 +109,12 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
         foreach($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
-            $upc = $line[$upc_index];
-            $desc = $line[$desc_index];
-            $price =  $line[$price_index];  
+            $upc = $line[$indexes['upc']];
+            $desc = $line[$indexes['desc']];
+            $price =  $line[$indexes['price']];  
             $price = str_replace('$', '', $price);
             $price = trim($price);
-            $dept = ($dept_index !== false) ? $line[$dept_index] : 0;
+            $dept = ($indexes['dept'] !== false) ? $line[$indexes['dept']] : 0;
             list($tax, $fstamp, $discount) = $this->getDefaultableSettings($dept, $defaults_table);
 
             // upc cleanup

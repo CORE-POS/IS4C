@@ -26,8 +26,8 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class GardenOfLifeUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
-
+class GardenOfLifeUploadPage extends \COREPOS\Fannie\API\FannieUploadPage 
+{
     public $title = "Fannie - Garden of Life Prices";
     public $header = "Upload Garden of Life price file";
     public $themed = true;
@@ -99,14 +99,6 @@ class GardenOfLifeUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 )');
         $dbc->execute($clean, array($VENDOR_ID, $VENDOR_ID));
 
-        $SKU = $this->get_column_index('sku');
-        $BRAND = $this->get_column_index('brand');
-        $DESCRIPTION = $this->get_column_index('desc');
-        $UPC = $this->get_column_index('upc');
-        $REG_COST = $this->get_column_index('cost');
-        $SIZE = $this->get_column_index('size');
-        $TYPE = $this->get_column_index('type');
-
         $extraP = $dbc->prepare("update prodExtra set cost=? where upc=?");
         $prodP = $dbc->prepare('
             UPDATE products
@@ -150,22 +142,22 @@ class GardenOfLifeUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         foreach ($linedata as $data) {
             if (!is_array($data)) continue;
 
-            if (!isset($data[$UPC])) continue;
+            if (!isset($data[$indexes['upc']])) continue;
 
             // grab data from appropriate columns
-            $sku = ($SKU !== false) ? $data[$SKU] : '';
-            $description = $data[$DESCRIPTION];
-            $upc = str_replace(' ', '', $data[$UPC]);
+            $sku = ($indexes['sku'] !== false) ? $data[$indexes['sku']] : '';
+            $description = $data[$indexes['desc']];
+            $upc = str_replace(' ', '', $data[$indexes['upc']]);
             $upc = substr($upc, 0, strlen($upc)-1);
             $upc = BarcodeLib::padUPC($upc);
-            $size = ($SIZE !== false) ? $data[$SIZE] : '';
+            $size = ($indexes['size'] !== false) ? $data[$indexes['size']] : '';
             if (is_numeric($size)) {
                 $size .= 'CT';
             }
-            $type = strtolower($data[$TYPE]);
+            $type = strtolower($data[$indexes['type']]);
             $qty = 1;
             // zeroes isn't a real item, skip it
-            $reg = trim($data[$REG_COST]);
+            $reg = trim($data[$indexes['cost']]);
             // blank spreadsheet cell
             // can't process items w/o price (usually promos/samples anyway)
             if (empty($reg)) {

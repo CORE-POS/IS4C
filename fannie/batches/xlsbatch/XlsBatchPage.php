@@ -69,9 +69,6 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $upcCol = $this->get_column_index('upc_lc');
-        $priceCol = $this->get_column_index('price');
-
         $btype = FormLib::get('btype',0);
         $date1 = FormLib::get('date1',date('Y-m-d'));
         $date2 = FormLib::get('date2',date('Y-m-d'));
@@ -108,10 +105,10 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
         $ret = '';
         foreach($linedata as $line){
-            if (!isset($line[$upcCol])) continue;
-            if (!isset($line[$priceCol])) continue;
-            $upc = $line[$upcCol];
-            $price = $line[$priceCol];
+            if (!isset($line[$indexes['upc_lc']])) continue;
+            if (!isset($line[$indexes['price']])) continue;
+            $upc = $line[$indexes['upc_lc']];
+            $price = $line[$indexes['price']];
             $upc = str_replace(" ","",$upc);    
             $upc = str_replace("-","",$upc);    
             $price = trim($price,' ');

@@ -98,26 +98,16 @@ class HobartItemCsvUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $barcode_index = $this->get_column_index('barcode');
-        $desc_index = $this->get_column_index('desc');
-        $price_index = $this->get_column_index('price');
-        $type_index = $this->get_column_index('type');
-        $graphics_index = $this->get_column_index('graphics');
-        $label_index = $this->get_column_index('label');
-        $tare_index = $this->get_column_index('tare');
-        $shelf_index = $this->get_column_index('shelf');
-        $net_index = $this->get_column_index('net');
-
         $model = new ScaleItemsModel($dbc);
         $ret = true;
         $this->stats = array('done' => 0, 'error' => array());
         foreach ($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
-            if (!isset($line[$barcode_index])) {
+            if (!isset($line[$indexes['barcode']])) {
                 continue;
             }
-            $barcode_segment = $line[$barcode_index];
+            $barcode_segment = $line[$indexes['barcode']];
             if (!is_numeric($barcode_segment)) {
                 continue;
             }
@@ -127,7 +117,7 @@ class HobartItemCsvUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $model->plu($upc);
             $model->load();
 
-            $type = $line[$type_index];
+            $type = $line[$indexes['type']];
             if ($type == 'Random Weight') {
                 $model->weight(0);
                 $model->bycount(0);
@@ -139,35 +129,35 @@ class HobartItemCsvUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 continue;
             }
 
-            if ($desc_index !== false && isset($line[$desc_index]) && !empty($line[$desc_index])) {
-                $desc = $line[$desc_index];
+            if ($indexes['desc'] !== false && isset($line[$indexes['desc']]) && !empty($line[$indexes['desc']])) {
+                $desc = $line[$indexes['desc']];
                 $desc = str_replace("'","",$desc);
                 $desc = str_replace("\"","",$desc);
                 $model->itemdesc($desc);
             }
 
-            if ($price_index !== false && isset($line[$price_index])) {
-                $model->price($line[$price_index]);
+            if ($indexes['price'] !== false && isset($line[$indexes['price']])) {
+                $model->price($line[$indexes['price']]);
             }
 
-            if ($tare_index !== false && isset($line[$tare_index])) {
-                $model->tare($line[$tare_index]);
+            if ($indexes['tare'] !== false && isset($line[$tare_index])) {
+                $model->tare($line[$indexes['tare']]);
             }
 
-            if ($shelf_index !== false && isset($line[$shelf_index])) {
-                $model->shelflife($line[$shelf_index]);
+            if ($indexes['shelf'] !== false && isset($line[$indexes['shelf']])) {
+                $model->shelflife($line[$indexes['shelf']]);
             }
 
-            if ($net_index !== false && isset($line[$net_index])) {
-                $model->netWeight($line[$net_index]);
+            if ($indexes['net'] !== false && isset($line[$indexes['net']])) {
+                $model->netWeight($line[$indexes['net']]);
             }
 
-            if ($label_index !== false && isset($line[$label_index])) {
-                $model->label($line[$label_index]);
+            if ($indexes['label'] !== false && isset($line[$indexes['label']])) {
+                $model->label($line[$indexes['label']]);
             }
 
-            if ($graphics_index !== false && isset($line[$graphics_index])) {
-                $model->graphics($line[$graphics_index]);
+            if ($indexes['graphics'] !== false && isset($line[$indexes['graphics']])) {
+                $model->graphics($line[$indexes['graphics']]);
             }
 
             $try = $model->save();

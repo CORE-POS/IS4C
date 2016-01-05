@@ -74,22 +74,19 @@ class VendorDepartmentUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $idW = $dbc->fetch_row($idR);
         $vendorName = $idW['vendorName'];
 
-        $num = $this->get_column_index('deptID');
-        $name = $this->get_column_index('name');
-        $margin = $this->get_column_index('margin');
         $model = new VendorDepartmentsModel($dbc);
 
         foreach ($linedata as $data) {
             if (!is_array($data)) continue;
 
-            if (!isset($data[$num])) continue;
-            if (!is_numeric($data[$num])) continue;
+            if (!isset($data[$indexes['deptID']])) continue;
+            if (!is_numeric($data[$indexes['deptID']])) continue;
 
             // grab data from appropriate columns
             $model->vendorID($VENDOR_ID);
-            $model->deptID($data[$num]);
-            $model->name($name === false ? '' : $data[$name]);
-            $model->margin($margin === false ? 0 : $data[$margin]);
+            $model->deptID($data[$indexes['deptID']]);
+            $model->name($indexes['name'] === false ? '' : $data[$indexes['name']]);
+            $model->margin($indexes['margin'] === false ? 0 : $data[$indexes['margin']]);
             $model->save();
         }
 
