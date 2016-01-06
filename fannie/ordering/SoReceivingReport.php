@@ -28,6 +28,8 @@ class SoReceivingReport extends FanniePage
 {
     protected $title = "Fannie :: Special Order Receiving";
     protected $header = "Special Order Receiving";
+    public $description = '[Receiving Report] lists information about active special orders by vendor';
+    public $page_set = 'Special Orders';
 
     public function javascriptContent()
     {
@@ -46,6 +48,7 @@ JAVASCRIPT;
 
     public function bodyContent()
     {
+        ob_start();
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
         $status = array(
@@ -55,14 +58,16 @@ JAVASCRIPT;
             4 => "Placed"
         );
 
-        $order = isset($_REQUEST['order'])?$_REQUEST['order']:'mixMatch';
-        $filter = isset($_REQUEST['f'])?$_REQUEST['f']:4;
-        $supp = isset($_REQUEST['s'])?$_REQUEST['s']:'';
-        if ($filter !== '') $filter = (int)$filter;
+        $order = FormLib::get('order', 'mixMatch');
+        $filter = FormLib::get('f', 4);
+        $supp = FormLib::get('s');
+        if ($filter !== '') {
+            $filter = (int)$filter;
+        }
 
         echo '<div class="form-group form-inline">';
         echo '<select id="sF" class="form-control" onchange="refilter($(this).val());">';
-        foreach($status as $k=>$v){
+        foreach ($status as $k=>$v) {
             printf('<option value="%s" %s>%s</option>',
                 $k,($k===$filter?'selected':''),$v);
         }
@@ -70,15 +75,15 @@ JAVASCRIPT;
         echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 
         $suppliers = array('');
-        $q = $dbc->prepare("SELECT mixMatch FROM PendingSpecialOrder WHERE trans_type='I'
+        $prep = $dbc->prepare("SELECT mixMatch FROM PendingSpecialOrder WHERE trans_type='I'
             GROUP BY mixMatch ORDER BY mixMatch");
-        $r = $dbc->execute($q);
-        while($w = $dbc->fetch_row($r)){
-            $suppliers[] = $w[0];
+        $res = $dbc->execute($prep);
+        while ($row = $dbc->fetchRow($res)) {
+            $suppliers[] = $row[0];
         }
         echo '<select id="sS" class="form-control" onchange="refilter($(\'#sF\').val());">';
         echo '<option value="">Supplier...</option>';
-        foreach($suppliers as $s){
+        foreach ($suppliers as $s) {
             printf('<option %s>%s</option>',
                 ($s==$supp?'selected':''),$s);
         }
@@ -96,14 +101,14 @@ JAVASCRIPT;
             $args[] = $supp;
         }
 
-        $q = "SELECT upc,description,ItemQtty,mixMatch,subStatus
+        $orderQ = "SELECT upc,description,ItemQtty,mixMatch,subStatus
             FROM PendingSpecialOrder AS p
             LEFT JOIN SpecialOrders as s
             ON p.order_id=s.specialOrderID
             WHERE $where
             ORDER BY mixMatch, upc";
-        $p = $dbc->prepare($q);
-        $r = $dbc->execute($q, $args);
+        $orderP = $dbc->prepare($orderQ);
+        $orderR = $dbc->execute($orderP, $args);
         echo '<table class="table table-bordered table-striped tablesorter tablesorter-core">';
         echo '<thead><tr>';
         echo '<th>UPC</th>';
@@ -112,14 +117,22 @@ JAVASCRIPT;
         echo '<th>Supplier</th>';
         echo '<th>Status Updated</th>';
         echo '</tr></thead><tbody>';
-        while ($w = $dbc->fetch_row($r)){
+        while ($row = $dbc->fetchRow($orderR)){
             printf('<tr><td>%s</td><td>%s</td><td>%d</td><td>%s</td><td>%s</td></tr>',
-                $w['upc'],$w['description'],$w['ItemQtty'],$w['mixMatch'],
-                ($w['subStatus']==0?'Unknown':date('m/d/Y',$w['subStatus'])));
+                $row['upc'],$row['description'],$row['ItemQtty'],$row['mixMatch'],
+                ($row['subStatus']==0?'Unknown':date('m/d/Y',$row['subStatus'])));
         }
         echo '</tbody></table>';
         $this->addScript($this->config->get('URL') . 'src/javascript/tablesorter/jquery.tablesorter.js');
         $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
+
+        return ob_get_clean();
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->javascriptContent()));
+        $phpunit->assertNotEquals(0, strlen($this->bodyContent()));
     }
 }
 

@@ -33,6 +33,16 @@ class SaItemList extends SaHandheldPage
     hand using a handheld device.';
     protected $enable_linea = true;
 
+    private function exportList()
+    {
+        $table = $this->getList();
+        $arr = COREPOS\Fannie\API\data\DataConvert::htmlToArray($table);
+        $out = COREPOS\Fannie\API\data\DataConvert::arrayToCsv($arr);
+        header('Content-Type: application/ms-excel');
+        header('Content-Disposition: attachment; filename="Scan List.csv"');
+        return $out;
+    }
+
     public function preprocess()
     {
         $dbc = $this->connection;
@@ -45,9 +55,12 @@ class SaItemList extends SaHandheldPage
                 SET clear=1
             ');
             return true;
+        } elseif (FormLib::get('export') === '1') {
+            echo $this->exportList();
+            return false;
         }
 
-        $upc = FormLib::get_form_value('upc_in','');
+        $upc = FormLib::get('upc_in','');
         if ($upc !== '') {
             $upc = BarcodeLib::padUPC($upc);
             $this->current_item_data['upc'] = $upc;
@@ -62,26 +75,32 @@ class SaItemList extends SaHandheldPage
             ');
             $row = $dbc->getRow($prep, array($upc));
             if ($row) {
-                $this->current_item_data['desc'] = $row['brand'] . ' ' . $row['description'] . ' ' . $row['size'];
-                $this->current_item_data['qty'] = $row['qty'];
-                $dbc->selectDB($settings['ShelfAuditDB']);
-                $model = new SaListModel($dbc);
-                $model->upc($upc);
-                $model->clear(0);
-                $entries = $model->find('date', true);
-                if (count($entries) > 0) {
-                    $entries[0]->tdate(date('Y-m-d H:i:s'));
-                    $entries[0]->quantity(1);
-                    $entries[0]->save();
-                } else {
-                    $model->tdate(date('Y-m-d H:i:s'));
-                    $model->quantity(1);
-                    $model->save();
-                }
+                $this->saveRowToList($dbc, $upc, $row, $settings);
             }
         }
+
         return true;
     } 
+
+    private function saveRowToList($dbc, $upc, $row, $settings)
+    {
+        $this->current_item_data['desc'] = $row['brand'] . ' ' . $row['description'] . ' ' . $row['size'];
+        $this->current_item_data['qty'] = $row['qty'];
+        $dbc->selectDB($settings['ShelfAuditDB']);
+        $model = new SaListModel($dbc);
+        $model->upc($upc);
+        $model->clear(0);
+        $entries = $model->find('date', true);
+        if (count($entries) > 0) {
+            $entries[0]->tdate(date('Y-m-d H:i:s'));
+            $entries[0]->quantity(1);
+            return $entries[0]->save();
+        } else {
+            $model->tdate(date('Y-m-d H:i:s'));
+            $model->quantity(1);
+            return $model->save();
+        }
+    }
 
     public function body_content()
     {
@@ -95,7 +114,21 @@ class SaItemList extends SaHandheldPage
             echo '<div class="alert alert-danger">Item not found (' 
                 . $this->current_item_data['upc'] . ')</div>'; 
         } 
+        echo '<div class="table-responsive">';
         echo $this->getList();
+        echo '</div>
+            <p>
+            <a href="?clear=1" class="btn btn-default btn-danger"
+                onclick="return window.confirm(\'Clear list?\');">
+                Clear List
+            </a>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            |
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="?export=1" class="btn btn-default btn-info">
+                Export List
+            </a>
+            </p>';
 
         return ob_get_clean();
     }
@@ -122,7 +155,6 @@ class SaItemList extends SaHandheldPage
         ');
         $res = $this->connection->execute($prep);
         $ret = '
-            <div class="table-responsive">
             <table class="table table-bordered table-striped small">
             <tr>
                 <th>UPC</th>
@@ -152,13 +184,7 @@ class SaItemList extends SaHandheldPage
                 $row['qty']
             ); 
         }
-        $ret .= '</table></div>';
-        $ret .= '<p>
-            <a href="?clear=1" class="btn btn-default btn-danger"
-                onclick="return window.confirm(\'Clear list?\');">
-                Clear List
-            </a>
-            </p>';
+        $ret .= '</table>';
 
         return $ret;
     }

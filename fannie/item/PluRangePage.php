@@ -91,51 +91,65 @@ class PluRangePage extends FannieRESTfulPage
         return false;
     }
 
+    private function validLengthNumber($length, $number)
+    {
+        if ($length < 1 || $length > 7) {
+            throw new Exception('Invalid length: ' . $length);
+        } elseif ($number < 1) {
+            throw new Exception('Invalid range size: ' . $number);
+        } elseif ($number > 15) {
+            throw new Exception($number . ' is too many; range max is 15');
+        }
+
+        return true;
+    }
+
     public function get_length_number_handler()
     {
-        global $FANNIE_OP_DB;
-        if ($this->length < 1 || $this->length > 7) {
-            echo 'Invalid length: ' . $this->length;
-            return false;
-        } else if ($this->number < 1) {
-            echo 'Invalid range size: ' . $this->number;
-            return false;
-        } else if ($this->number > 15) {
-            echo $this->number . ' is too many; range max is 15';
+        try {
+            $this->validLengthNumber($this->length, $this->number);
+            $min = '1' . str_repeat('0', $this->length-1);
+            $max = str_repeat('9', $this->length);
+
+            $dbc = FannieDB::get($this->config->get('OP_DB'));
+            $actualMin = "SELECT MIN(upc) AS minimum
+                          FROM products AS p
+                          WHERE upc BETWEEN ? AND ?
+                            AND upc NOT BETWEEN '0000000003000' AND '0000000004999'
+                            AND upc NOT BETWEEN '0000000093000' AND '0000000094999'";
+            $minP = $dbc->prepare($actualMin);
+            $min = $dbc->getValue($minP, array(BarcodeLib::padUPC($min), BarcodeLib::padUPC($max)));
+
+            $range_start = $this->findOpenRange($dbc, $min, $max);
+            if ($range_start === false) {
+                throw new Exception('No range found');
+            } 
+
+            $this->start_plu = $range_start;
+            return true;
+        } catch (Exception $ex) {
+            echo $ex->getMessage();
             return false;
         }
+    }
 
-        $min = '1' . str_repeat('0', $this->length-1);
-        $max = str_repeat('9', $this->length);
-
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $actualMin = "SELECT MIN(upc) AS minimum
-                      FROM products AS p
-                      WHERE upc BETWEEN ? AND ?
-                        AND upc NOT BETWEEN '0000000003000' AND '0000000004999'
-                        AND upc NOT BETWEEN '0000000093000' AND '0000000094999'";
-        $minP = $dbc->prepare($actualMin);
-        $minR = $dbc->execute($minP, array(BarcodeLib::padUPC($min), BarcodeLib::padUPC($max)));
-        if ($dbc->num_rows($minR) > 0) {
-            $minW = $dbc->fetch_row($minR);
-            $min = $minW['minimum'];
-        }
-
+    private function findOpenRange($dbc, $min, $max) 
+    {
         $current = $min;
         $range_start = false;
         $lookup = $dbc->prepare('SELECT upc FROM products WHERE upc=?');
         $count = 0;
-        while($current < $max) {
-            $check = $dbc->execute($lookup, BarcodeLib::padUPC($current));
+        while ($current < $max) {
+            $check = $dbc->getValue($lookup, BarcodeLib::padUPC($current));
             if ($count++ > 9999999) break; // prevent inf. loop
-            if ($dbc->num_rows($check) > 0) {
+            if ($check !== false) {
                 $current++;
             } else {
                 // found an opening; check range
                 $range_start = $current;
                 for ($i=1; $i<$this->number; $i++) {
-                    $check = $dbc->execute($lookup, array(BarcodeLib::padUPC($current + $i)));
-                    if ($dbc->num_rows($check) > 0) {
+                    $check = $dbc->getValue($lookup, array(BarcodeLib::padUPC($current + $i)));
+                    if ($check !== false) {
                         // collision
                         $range_start = false;
                         $current = $current + $i + 1;
@@ -148,21 +162,14 @@ class PluRangePage extends FannieRESTfulPage
             }
         }
 
-        if ($range_start === false) {
-            echo 'No range found';
-            return false;
-        } else {
-            $this->start_plu = $range_start;
-            return true;
-        }
-
+        return $range_start;
     }
 
     public function get_length_number_view()
     {
         global $FANNIE_OP_DB;
         $ret = '<div class="well">Open range found starting at ' . $this->start_plu . '</div>'; 
-        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+        $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">';
         $ret .= '<input type="hidden" name="start" value="' . $this->start_plu . '" />';
         $ret .= '<input type="hidden" name="number" value="' . $this->number . '" />';
         $ret .= '<div class="form-group">
@@ -192,7 +199,7 @@ class PluRangePage extends FannieRESTfulPage
         // 3000 through 4999
         // 93000 through 949999
         $ret = '<div class="well">Find open PLU range</div>';
-        $ret .= '<form action="' . $_SERVER['PHP_SELF'] . '" method="get">';
+        $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="get">';
         $ret .= '<div class="form-group">';
         $ret .= '<label>PLU Length</label>';
         $ret .= '<input type="number" name="length" class="form-control" 

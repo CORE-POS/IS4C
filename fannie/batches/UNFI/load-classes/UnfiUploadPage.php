@@ -26,11 +26,10 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
-
+class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage 
+{
     public $title = "Fannie - UNFI Prices";
     public $header = "Upload UNFI price file";
-    public $themed = true;
 
     public $description = '[UNFI Catalog Import] specialized vendor import tool. Column choices
     default to UNFI price file layout.';
@@ -102,7 +101,7 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         return $vid;
     }
 
-    function process_file($linedata)
+    function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -111,18 +110,6 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $this->error_details = 'Cannot find vendor';
             return false;
         }
-
-        $SKU = $this->get_column_index('sku');
-        $BRAND = $this->get_column_index('brand');
-        $DESCRIPTION = $this->get_column_index('desc');
-        $QTY = $this->get_column_index('qty');
-        $SIZE1 = $this->get_column_index('size');
-        $UPC = $this->get_column_index('upc');
-        $CATEGORY = $this->get_column_index('cat');
-        $REG_COST = $this->get_column_index('cost');
-        $NET_COST = $this->get_column_index('saleCost');
-        $SRP = $this->get_column_index('srp');
-        $FLAGS = $this->get_column_index('flags');
 
         // PLU items have different internal UPCs
         // map vendor SKUs to the internal PLUs
@@ -179,18 +166,18 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         foreach($linedata as $data) {
             if (!is_array($data)) continue;
 
-            if (!isset($data[$UPC])) continue;
+            if (!isset($data[$indexes['upc']])) continue;
 
             // grab data from appropriate columns
-            $sku = ($SKU !== false) ? $data[$SKU] : '';
+            $sku = ($indexes['sku'] !== false) ? $data[$indexes['sku']] : '';
             $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
-            $brand = $data[$BRAND];
-            $description = $data[$DESCRIPTION];
-            $qty = $data[$QTY];
-            $size = ($SIZE1 !== false) ? $data[$SIZE1] : '';
-            $prodInfo = ($FLAGS !== false) ? $data[$FLAGS] : '';
+            $brand = $data[$indexes['brand']];
+            $description = $data[$indexes['desc']];
+            $qty = $data[$indexes['qty']];
+            $size = ($indexes['size'] !== false) ? $data[$indexes['size']] : '';
+            $prodInfo = ($indexes['flags'] !== false) ? $data[$indexes['flags']] : '';
             $flag = 0;
-            $upc = substr($data[$UPC],0,13);
+            $upc = substr($data[$indexes['upc']],0,13);
             // zeroes isn't a real item, skip it
             if ($upc == "0000000000000")
                 continue;
@@ -204,14 +191,14 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
                     $size = 'LB';
                 }
             }
-            $category = $data[$CATEGORY];
-            $reg = trim($data[$REG_COST]);
-            $net = ($NET_COST !== false) ? trim($data[$NET_COST]) : 0.00;
+            $category = $data[$indexes['cat']];
+            $reg = trim($data[$indexes['cost']]);
+            $net = ($indexes['saleCost'] !== false) ? trim($data[$indexes['saleCost']]) : 0.00;
             // blank spreadsheet cell
             if (empty($net)) {
                 $net = 0;
             }
-            $srp = trim($data[$SRP]);
+            $srp = trim($data[$indexes['srp']]);
             // can't process items w/o price (usually promos/samples anyway)
             if (empty($reg) or empty($srp))
                 continue;

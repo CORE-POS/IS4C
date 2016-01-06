@@ -10,17 +10,14 @@ class SpecialOrderTests extends \COREPOS\Fannie\API\test\TestWrapper
         $form->_method = 'get';
         $page->setForm($form);
         $get = $this->runRESTfulPage($page, $form);
-        $phpunit->assertEquals(true, strstr($get, 'orderID='));
-
-        list($junk, $oid) = explode('orderID=', $get, 2);
-        $this->orderID = $oid;
+        $phpunit->assertEquals(false, $get);
     }
 
     public function testOrderView($page, $phpunit)
     {
         $form = new \COREPOS\common\mvc\ValueContainer();
         $form->_method = 'get';
-        $form->orderID = $this->orderID;
+        $form->orderID = 1;
         $page->setForm($form);
         $get = $this->runRESTfulPage($page, $form);
         $phpunit->assertNotEquals(0, strlen($get));
@@ -30,11 +27,13 @@ class SpecialOrderTests extends \COREPOS\Fannie\API\test\TestWrapper
     {
         $form = new \COREPOS\common\mvc\ValueContainer();
         $form->_method = 'get';
-        $form->orderID = $this->orderID;
+        $form->orderID = 1;
         $form->customer = 1;
         $form->memNum = 1;
         $page->setForm($form);
-        $get = $this->runRESTfulPage($page, $form);
+        ob_start();
+        $this->runRESTfulPage($page, $form);
+        $get = json_decode(ob_get_clean(), true);
         $phpunit->assertInternalType('array', $get);
         $phpunit->assertArrayHasKey('customer', $get);
         $phpunit->assertArrayHasKey('footer', $get);
@@ -60,7 +59,7 @@ class SpecialOrderTests extends \COREPOS\Fannie\API\test\TestWrapper
     {
         $form = new \COREPOS\common\mvc\ValueContainer();
         $form->_method = 'post';
-        $form->orderID = $this->orderID;
+        $form->orderID = 1;
         $form->togglePrint = 1;
         $page->setForm($form);
         $get = $this->runRESTfulPage($page, $form);
@@ -68,7 +67,7 @@ class SpecialOrderTests extends \COREPOS\Fannie\API\test\TestWrapper
 
         $form = new \COREPOS\common\mvc\ValueContainer();
         $form->_method = 'post';
-        $form->orderID = $this->orderID;
+        $form->orderID = 1;
         $form->transID = 1;
         $form->toggleStaff = 1;
         $page->setForm($form);
@@ -77,7 +76,7 @@ class SpecialOrderTests extends \COREPOS\Fannie\API\test\TestWrapper
 
         $form = new \COREPOS\common\mvc\ValueContainer();
         $form->_method = 'post';
-        $form->orderID = $this->orderID;
+        $form->orderID = 1;
         $form->transID = 1;
         $form->toggleMemType = 1;
         $page->setForm($form);
@@ -89,7 +88,7 @@ class SpecialOrderTests extends \COREPOS\Fannie\API\test\TestWrapper
     {
         $form = new \COREPOS\common\mvc\ValueContainer();
         $form->_method = 'post';
-        $form->orderID = $this->orderID;
+        $form->orderID = 1;
         $form->description = 'changed';
         $form->srp = 10.99;
         $form->actual = 9.99;
@@ -111,7 +110,7 @@ class SpecialOrderTests extends \COREPOS\Fannie\API\test\TestWrapper
     {
         $form = new \COREPOS\common\mvc\ValueContainer();
         $form->_method = 'delete';
-        $form->orderID = $this->orderID;
+        $form->orderID = 1;
         $form->transID = 1;
         $page->setForm($form);
         ob_start();
@@ -125,7 +124,7 @@ class SpecialOrderTests extends \COREPOS\Fannie\API\test\TestWrapper
     {
         $form = new \COREPOS\common\mvc\ValueContainer();
         $form->_method = 'post';
-        $form->orderID = $this->orderID;
+        $form->orderID = 1;
         $form->noteDept = 1;
         $form->noteText = 'testing';
         $form->addr = '123 4th st';

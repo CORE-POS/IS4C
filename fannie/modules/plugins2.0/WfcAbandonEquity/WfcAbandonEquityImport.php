@@ -40,7 +40,7 @@ class WfcAbandonEquityImport extends \COREPOS\Fannie\API\FannieUploadPage
     protected $header = 'Abandoned Equity';
     protected $title = 'Abandoned Equity';
 
-    function process_file($linedata)
+    public function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $EMP_NO = $this->config->get('EMP_NO');

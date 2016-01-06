@@ -73,12 +73,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
             $model = $this->setArrayValue($model, 'local', $local, $i);
             $model = $this->setArrayValue($model, 'brand', $brand, $i);
             if (isset($vendor[$i])) {
-                $vlookup->reset();
-                $vlookup->vendorName($vendor[$i]);
-                foreach ($vlookup->find('vendorID') as $obj) {
-                    $model->default_vendor_id($obj->vendorID());
-                    break;
-                }
+                $model = $this->setVendorByName($model, $vlookup, $vendor[$i]);
             }
 
             $model = $this->setBinaryFlag($model, $upc, 'fs', 'foodstamp');
@@ -103,6 +98,18 @@ class EditItemsFromSearch extends FannieRESTfulPage
         }
 
         return true;
+    }
+
+    private function setVendorByName($pmodel, $vmodel, $name)
+    {
+        $vmodel->reset();
+        $vmodel->vendorName($name);
+        foreach ($vmodel->find('vendorID') as $obj) {
+            $pmodel->default_vendor_id($obj->vendorID());
+            break;
+        }
+
+        return $pmodel;
     }
 
     private function setArrayValue($model, $column, $arr, $index)
@@ -275,11 +282,8 @@ class EditItemsFromSearch extends FannieRESTfulPage
         */
         $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.vendorField\');">';
         $ret .= '<option value=""></option><option>DIRECT</option>';
-        $vendors = $dbc->query('SELECT vendorName FROM vendors
-                        GROUP BY vendorName ORDER BY vendorName');
-        while($row = $dbc->fetch_row($vendors)) {
-            $ret .= '<option>' . $row['vendorName'] . '</option>';
-        }
+        $vendors = new VendorsModel($dbc);
+        $ret .= $vendors->toOptions();
         $ret .= '</select></td>';
 
         $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.deptSelect\');">';
@@ -311,7 +315,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
                   ORDER BY p.upc';
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
-        while($row = $dbc->fetch_row($result)) {
+        while ($row = $dbc->fetch_row($result)) {
             $deptOpts = $this->arrayToOpts($depts, $row['department'], true);
             $taxOpts = $this->arrayToOpts($taxes, $row['tax']);
             $localOpts = $this->arrayToOpts($locales, $row['local']);

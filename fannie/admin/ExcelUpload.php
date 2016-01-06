@@ -6,7 +6,11 @@ if (!class_exists('FannieAPI')) {
 
 class ExcelUpload extends \COREPOS\Fannie\API\FannieUploadPage {
 
-    function process_file($linedata)
+    protected $header = 'Generic File Upload';
+    protected $title = 'Generic File Upload';
+    public $description = '[Excel Upload] takes a spreadsheet and creates a corresponding database table. Servers no purpose unless you\'re going to write additional SQL manually';
+
+    function process_file($linedata, $indexes)
     {
         $headers = $linedata[0]; 
         $headers = array_map(function($i){ return str_replace(' ', '', $i);}, $headers);

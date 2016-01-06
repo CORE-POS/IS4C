@@ -123,7 +123,7 @@ class AlaffiaUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         return $description;
     }
 
-    function process_file($linedata)
+    function process_file($linedata, $indexes)
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
@@ -140,28 +140,22 @@ class AlaffiaUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             vendorID=?');
         $dbc->execute($clean, array($VENDOR_ID));
 
-        $SKU = $this->get_column_index('sku');
-        $BRAND = $this->get_column_index('brand');
-        $DESCRIPTION = $this->get_column_index('desc');
-        $UPC = $this->get_column_index('upc');
-        $REG_COST = $this->get_column_index('cost');
-
         list($extraP, $prodP, $itemP) = $this->prepStatements($dbc);
         $updated_upcs = array();
 
         foreach ($linedata as $data) {
             if (!is_array($data)) continue;
 
-            if (!isset($data[$UPC])) continue;
+            if (!isset($data[$indexes['upc']])) continue;
 
             // grab data from appropriate columns
-            $sku = ($SKU !== false) ? $data[$SKU] : '';
-            $description = $data[$DESCRIPTION];
-            $upc = str_replace(' ', '', $data[$UPC]);
+            $sku = ($indexes['sku'] !== false) ? $data[$indexes['sku']] : '';
+            $description = $data[$indexes['desc']];
+            $upc = str_replace(' ', '', $data[$indexes['upc']]);
             $upc = substr($upc, 0, strlen($upc)-1);
             $upc = BarcodeLib::padUPC($upc);
             // zeroes isn't a real item, skip it
-            $reg = trim($data[$REG_COST]);
+            $reg = trim($data[$indexes['cost']]);
             // blank spreadsheet cell
             // can't process items w/o price (usually promos/samples anyway)
             if (empty($reg)) {

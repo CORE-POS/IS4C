@@ -64,7 +64,7 @@ class EquityHistoryImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     private $stats = array('imported'=>0, 'errors'=>array());
     
-    function process_file($linedata)
+    public function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $dbc = FannieDB::get($FANNIE_TRANS_DB);

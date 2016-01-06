@@ -49,15 +49,15 @@ class GumDividendTaxReport extends FannieReportPage
 
     public function report_description_content()
     {
-        $dt = FormLib::get('endDate', date('Y-m-d'));
-        return array('FY ending ' . $dt);
+        $end_date = FormLib::get('endDate', date('Y-m-d'));
+        return array('FY ending ' . $end_date);
     }
     
     public function fetch_report_data()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
-        $dt = FormLib::get('endDate', date('Y-m-d'));
+        $end_date = FormLib::get('endDate', date('Y-m-d'));
         $key = FormLib::get('key');
         $privkey = openssl_pkey_get_private($key);
 
@@ -77,7 +77,7 @@ class GumDividendTaxReport extends FannieReportPage
                 LEFT JOIN ' . $FANNIE_OP_DB . $dbc->sep() . 'meminfo AS m ON m.card_no=d.card_no
                 LEFT JOIN GumTaxIdentifiers AS t ON d.card_no=t.card_no
             WHERE yearEndDate = ?');
-        $res = $dbc->execute($prep, array($dt));
+        $res = $dbc->execute($prep, array($end_date));
         $data = array();
         while ($row = $dbc->fetchRow($res)) {
             $record = array(
@@ -93,44 +93,54 @@ class GumDividendTaxReport extends FannieReportPage
             $record[] = $row['zip'];
             $record[] = sprintf('%.2f', $row['dividendAmount']);
             $record[] = 'XXX-XX-' . $row['maskedTaxIdentifier'];
-            if (!$privkey) {
-                $record[] = 'No key';
-            } elseif ($row['maskedTaxIdentifier'] != 'n/a') {
-                $try = openssl_private_decrypt($row['encryptedTaxIdentifier'], $decrypted, $privkey);
-                if ($try) {
-                    $record[] = $decrypted;
-                } else {
-                    $record[] = 'Error';
-                }
-            } else {
-                $record[] = 'n/a';
-            }
+            $record[] = $this->unmask($row['maskedTaxIdentifier'], $privkey);
             $data[] = $record;
         }
 
         return $data;
     }
 
+    private function unmask($val, $privkey)
+    {
+        if (!$privkey) {
+            return 'No key';
+        } elseif ($val !== 'n/a') {
+            $try = openssl_private_decrypt($row['encryptedTaxIdentifier'], $decrypted, $privkey);
+            return $try ? $decrypted : 'Error';
+        } else {
+            return 'n/a';
+        }
+    }
+
     public function report_content()
     {
         if (FormLib::get('excel') == '1099') {
             $data = $this->fetch_report_data();
-            $pdf = new FPDF('P', 'mm', 'Letter');
-            $bridge = GumLib::getSetting('posLayer');
-            $year = date('Y', strtotime(FormLib::get('endDate')));
-            foreach ($data as $row) {
-                $custdata = $bridge::getCustdata($row[0]);
-                $meminfo = $bridge::getMeminfo($row[0]);
-                $ssn = ($row[10] == 'No key') ? $row[9] : $row[10];
-                $amount = array(1 => $row[8]);
-                $form = new GumTaxFormTemplate($custdata, $meminfo, $ssn, $tax_year, $amount);
-                $pdf->addPage();
-                $form->renderAsPDF($pdf, 15);
-            }
-            $pdf->Output('taxform.pdf', 'I');
+            $this->reportToPdf($data);
         } else {
             return parent::report_content();
         }
+    }
+
+    private function reportToPdf($data)
+    {
+        $pdf = new FPDF('P', 'mm', 'Letter');
+        $bridge = GumLib::getSetting('posLayer');
+        $year = date('Y', strtotime(FormLib::get('endDate')));
+        $count = 0;
+        foreach ($data as $row) {
+            if ($count % 2 == 0) {
+                $pdf->addPage();
+            }
+            $custdata = $bridge::getCustdata($row[0]);
+            $meminfo = $bridge::getMeminfo($row[0]);
+            $ssn = ($row[10] == 'No key') ? $row[9] : $row[10];
+            $amount = array(1 => $row[8]);
+            $form = new GumTaxDividendFormTemplate($custdata, $meminfo, $ssn, $tax_year, $amount);
+            $form->renderAsPDF($pdf, 15 + (($count%2)*150));
+            $count++;
+        }
+        $pdf->Output('taxform.pdf', 'I');
     }
 
     public function form_content()
@@ -138,7 +148,7 @@ class GumDividendTaxReport extends FannieReportPage
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
 
-        $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+        $ret = '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">';
         $ret .= 'FY ending: ';
         $ret .= '<select name="endDate">';
         $years = $dbc->query('SELECT yearEndDate

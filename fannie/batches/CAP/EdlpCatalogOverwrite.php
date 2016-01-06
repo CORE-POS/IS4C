@@ -124,7 +124,7 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
         $this->prodRuleP = $dbc->prepare('UPDATE products SET price_rule_id=? WHERE upc=?');
     }
 
-    function process_file($linedata)
+    function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);

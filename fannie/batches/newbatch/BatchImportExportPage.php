@@ -32,6 +32,7 @@ class BatchImportExportPage extends FannieRESTfulPage
     protected $auth_classes = array('batches','batches_audited');
     protected $title = 'Batch Import/Export';
     protected $header = 'Batch Import/Export';
+    public $description = '[Batch Import/Export] can import or export sales batches as formatted text (specifically, JSON)';
 
     protected function post_id_handler()
     {

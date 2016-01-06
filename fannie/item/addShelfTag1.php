@@ -37,23 +37,20 @@ if (basename(__FILE__) != basename($_SERVER['PHP_SELF'])) {
 }
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
-$id = 0;
-$upc = $_REQUEST['upc'];
-$description = $_REQUEST['description'];
-$brand = $_REQUEST['brand'];
-$units = $_REQUEST['units'];
-if ( $units == '' )
-    $units = 'NULL';
-$size = $_REQUEST['size'];
-$ppo = $_REQUEST['ppo'];
-$vendor = $_REQUEST['vendor'];
-$sku = $_REQUEST['sku'];
-$price = $_REQUEST['price'];
-$id = $_REQUEST['subID'];
+$upc = FormLib::get('upc');
+$description = FormLib::get('description');
+$brand = FormLib::get('brand');
+$units = FormLib::get('units');
+$size = FormLib::get('size');
+$ppo = FormLib::get('ppo');
+$vendor = FormLib::get('vendor');
+$sku = FormLib::get('sku');
+$price = FormLib::get('price');
+$tagsetID = FormLib::get('subID', 0);
 $count = FormLib::get('count', 1);
 
 $shelftag = new ShelftagsModel($dbc);
-$shelftag->id($id);
+$shelftag->id($tagsetID);
 $shelftag->upc($upc);
 $shelftag->normal_price($price);
 $shelftag->pricePerUnit($ppo);
@@ -79,7 +76,7 @@ $insR = $shelftag->save();
     </head>
 <body>
 <?php
-if ($insR == false) {
+if ($insR === false) {
     echo '<div class="alert alert-danger">Error creating tag</div>';
 } else {
     echo '<div class="alert alert-success">Created Tag</div>';

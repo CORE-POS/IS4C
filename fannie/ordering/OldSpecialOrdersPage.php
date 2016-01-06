@@ -24,13 +24,17 @@ include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
+if (!class_exists('NewSpecialOrdersPage')) {
+    include(dirname(__FILE__) . '/NewSpecialOrdersPage.php');
+}
 
-class OldSpecialOrdersPage extends FannieRESTfulPage
+class OldSpecialOrdersPage extends NewSpecialOrdersPage
 {
     protected $must_authenticate = true;
-    public $themed = true;
     protected $header = 'Old Special Orders';
     protected $title = 'Old Special Orders';
+    public $description = '[Old Special Orders] lists all archived special orders';
+    public $page_set = 'Special Orders';
 
     private $card_no = false;
 
@@ -53,14 +57,20 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $TRANS = $FANNIE_TRANS_DB . $dbc->sep();
 
-        $f1 = FormLib::get('f1');
-        $f2 = FormLib::get('f2');
-        $f3 = FormLib::get('f3');
+        try {
+            $filter_status = $this->form->f1;
+            $filter_buyer = $this->form->f2;
+            $filter_supplier = $this->form->f3;
+        } catch (Exception $ex) {
+            $filter_status='';
+            $filter_buyer='';
+            $filter_supplier='';
+        }
 
         $ret = '';
         if ($this->card_no) {
             $ret .= sprintf('(<a href="%s?f1=%s&f2=%s&f3=%s">Back to All Owners</a>)<br />',
-                    $_SERVER['PHP_SELF'], $f1, $f2, $f3);
+                    $_SERVER['PHP_SELF'], $filter_status, $filter_buyer, $filter_supplier);
         }
 
         $status = array(
@@ -79,19 +89,7 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
           Lookup list of super departments
           for filtering purposes
         */
-        $assignments = array();
-        $q = $dbc->prepare("
-            SELECT superID,
-                super_name 
-            FROM MasterSuperDepts
-            WHERE superID > 0
-            GROUP BY superID,
-                super_name 
-            ORDER BY superID");
-        $r = $dbc->execute($q);
-        while ($w = $dbc->fetch_row($r)) {
-            $assignments[$w['superID']] = $w['super_name'];
-        }
+        $assignments = $this->getSuperDepartments($dbc);
 
         /**
           Lookup list of vendors for filtering purposes
@@ -99,17 +97,7 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
           may not overlap perfectly with the actual
           vendors table
         */
-        $suppliers = array('');
-        $q = $dbc->prepare("
-            SELECT mixMatch 
-            FROM {$TRANS}CompleteSpecialOrder 
-            WHERE trans_type='I'
-            GROUP BY mixMatch 
-            ORDER BY mixMatch");
-        $r = $dbc->execute($q);
-        while ($w = $dbc->fetch_row($r)) {
-            $suppliers[] = $w['mixMatch'];
-        }
+        $suppliers = $this->getOrderSuppliers($dbc);
 
         /**
           Filter the inital query by
@@ -117,10 +105,10 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
         */
         $filterstring = '1=1 ';
         $filterargs = array();
-        if ($f1 !== '') {
-            $f1 = (int)$f1;
+        if ($filter_status !== '') {
+            $filter_status = (int)$filter_status;
             $filterstring .= ' AND statusFlag=?';
-            $filterargs[] = $f1;
+            $filterargs[] = $filter_status;
         }
 
         $ret .= '<a href="index.php">Main Menu</a>';
@@ -138,7 +126,7 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
         $ret .= '<option value="">All</option>';
         foreach ($status as $k=>$v) {
             $ret .= sprintf("<option %s value=\"%d\">%s</option>",
-                ($k===$f1?'selected':''),$k,$v);
+                ($k===$filter_status?'selected':''),$k,$v);
         }
         $ret .= '</select>';
 
@@ -148,9 +136,9 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
         $ret .= '<option value="">All</option>';
         foreach ($assignments as $k=>$v) {
             $ret .= sprintf("<option %s value=\"%d\">%s</option>",
-                ($k==$f2?'selected':''),$k,$v);
+                ($k==$filter_buyer?'selected':''),$k,$v);
         }
-        $ret .= sprintf('<option %s value="2%%2C8">Meat+Cool</option>',($f2=="2,8"?'selected':''));
+        $ret .= sprintf('<option %s value="2%%2C8">Meat+Cool</option>',($filter_buyer=="2,8"?'selected':''));
         $ret .= '</select>';
 
         $ret .= '&nbsp;';
@@ -158,7 +146,7 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
         $ret .= '<b>Supplier</b>: <select id="f_3" class="form-control input-sm" onchange="refilter();">';
         foreach ($suppliers as $v) {
             $ret .= sprintf("<option %s>%s</option>",
-                ($v===$f3?'selected':''),$v);
+                ($v===$filter_supplier?'selected':''),$v);
         }
         $ret .= '</select>';
         $ret .= '</div>';
@@ -205,8 +193,8 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
             $filterargs[] = $page; // again
         }
         $lookupQ .= " ORDER BY MIN(datetime) DESC";
-        $p = $dbc->prepare($lookupQ);
-        $r = $dbc->execute($p,$filterargs);
+        $lookupP = $dbc->prepare($lookupQ);
+        $lookupR = $dbc->execute($lookupP,$filterargs);
 
         /**
           Capture all the order records in $orders
@@ -214,9 +202,9 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
         */
         $orders = array();
         $valid_ids = array();
-        while ($w = $dbc->fetch_row($r)) {
-            $orders[] = $w;
-            $valid_ids[$w['order_id']] = true;
+        while ($row = $dbc->fetchRow($lookupR)) {
+            $orders[] = $row;
+            $valid_ids[$row['order_id']] = true;
         }
 
         /**
@@ -225,62 +213,8 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
           These matching IDs will be compared to the
           IDs in $orders to get the final list
         */
-        if ($f2 !== '' || $f3 !== '') {
-            $filter = "";
-            $args = array();
-            if ($f2 !== '') {
-                $filter .= "AND (m.superID IN (?) OR o.noteSuperID IN (?))";
-                $args = array($f2,$f2);
-            }
-            if ($f3 !== '') {
-                $filter .= "AND p.mixMatch=?";
-                $args[] = $f3;
-            }
-            /** 
-                while the goal is to filter by super department
-                and/or vendor, reapplying the member number or
-                paging criteria keeps the result set more manageable
-            */
-            $q = "
-                SELECT p.order_id 
-                FROM {$TRANS}CompleteSpecialOrder AS p
-                    LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
-                    LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
-                WHERE 1=1 $filter ";
-            if ($this->card_no) {
-                $q .= ' AND p.card_no=? ';
-                $args[] = $this->card_no;
-            } else {
-                $q .= "
-                    AND ".$dbc->monthdiff($dbc->now(),'datetime')." >= ((?-1)*2)
-                    AND ".$dbc->monthdiff($dbc->now(),'datetime')." < (?*2) ";
-                $args[] = $page;
-                $args[] = $page;
-            }
-            $q .= " GROUP BY p.order_id";
-            $p = $dbc->prepare($q);
-            $r = $dbc->execute($p,$args);
-            $valid_ids = array();
-            while ($w = $dbc->fetch_row($r)) {
-                $valid_ids[$w['order_id']] = true;
-            }
-
-            /**
-              This may be redundant. Notes tagged by super
-              department should be captured in the previous
-              query. 
-            */
-            if ($f2 !== '' && $f3 === '') {
-                $q2 = $dbc->prepare("
-                    SELECT o.specialOrderID 
-                    FROM {$TRANS}SpecialOrders AS o
-                    WHERE o.noteSuperID IN (?)
-                    GROUP BY o.specialOrderID");
-                $r2 = $dbc->execute($q2, array($f2));
-                while ($w2 = $dbc->fetch_row($r2)) {
-                    $valid_ids[$w2['specialOrderID']] = true;
-                }
-            }
+        if ($filter_buyer !== '' || $filter_supplier !== '') {
+            $valid_ids = $this->filterBuyerSupplier($dbc, $filter_buyer, $filter_supplier, 'CompleteSpecialOrder');
         }
 
         /**
@@ -290,92 +224,9 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
           all items and vendors on the order summary 
           row
         */
-        $oids = "(";
-        $oargs = array();
-        foreach ($valid_ids as $id=>$nonsense) {
-            $oids .= "?,";
-            $oargs[] = $id;
-        }
-        $oids = rtrim($oids,",").")";
-        if (empty($oargs)) {
-            $oids = '(?)';
-            $oargs = array(-1);
-            // avoid invalid query
-        }
-
-        $itemsQ = $dbc->prepare("
-            SELECT order_id,
-                description,
-                mixMatch 
-            FROM {$TRANS}CompleteSpecialOrder 
-            WHERE order_id IN $oids
-                AND trans_id > 0");
-        $itemsR = $dbc->execute($itemsQ, $oargs);
-        $items = array();
-        $suppliers = array();
-        while ($itemsW = $dbc->fetch_row($itemsR)) {
-            if (!isset($items[$itemsW['order_id']])) {
-                $items[$itemsW['order_id']] = $itemsW['description'];
-            } else {
-                $items[$itemsW['order_id']] .= "; ".$itemsW['description'];
-            }
-            if (!empty($itemsW['mixMatch'])) {
-                if (!isset($suppliers[$itemsW['order_id']])) {
-                    $suppliers[$itemsW['order_id']] = $itemsW['mixMatch'];
-                } else {
-                    $suppliers[$itemsW['order_id']] .= "; ".$itemsW['mixMatch'];
-                }
-            }
-        }
-
-        /**
-          Trim down how much of the item(s) summary is shown
-          by default. With multiple items on one order this
-          could get very, very long. The full item list is 
-          shown on hover or when clicking the expand/+ link
-        */
-        $lenLimit = 10;
-        foreach ($items as $id=>$desc) {
-            if (strlen($desc) <= $lenLimit) {
-                $items[$id] = '<td>' . $desc . '</td>';
-                continue;
-            }
-
-            $min = substr($desc,0,$lenLimit);
-            $rest = substr($desc,$lenLimit);
-            
-            $desc = sprintf('<td title="%s%s">
-                        %s<span id="exp%d" style="display:none;">%s</span>
-                        <a href="" onclick="$(\'#exp%d\').toggle();return false;">+</a>
-                        </td>',
-                        $min, $rest,
-                        $min, $id, $rest,
-                        $id);
-            $items[$id] = $desc;
-        }
-
-        /**
-          Do the same trimming for suppliers
-        */
-        $lenLimit = 10;
-        foreach ($suppliers as $id=>$desc) {
-            if (strlen($desc) <= $lenLimit) {
-                $suppliers[$id] = '<td>' . $desc . '</td>';
-                continue;
-            }
-
-            $min = substr($desc,0,$lenLimit);
-            $rest = substr($desc,$lenLimit);
-            
-            $desc = sprintf('<td title="%s%s">
-                    %s<span id="sup%d" style="display:none;">%s</span>
-                    <a href="" onclick="$(\'#sup%d\').toggle();return false;">+</a>
-                    </td>',
-                    $min, $rest,
-                    $min, $id, $rest,
-                    $id);
-            $suppliers[$id] = $desc;
-        }
+        list($items, $suppliers) = $this->getTextForOrders($dbc, array_keys($valid_ids), 'CompleteSpecialOrder');
+        $items = $this->limitTextSize($items, 'exp', 10);
+        $suppliers = $this->limitTextSize($suppliers, 'sup', 10);
 
         $ret .= '<table class="table table-bordered tablesorter">
             <thead>
@@ -419,7 +270,7 @@ class OldSpecialOrdersPage extends FannieRESTfulPage
           Paging links if not using member number filter
         */
         if (!$this->card_no) {
-            $url = $_SERVER['REQUEST_URI'];
+            $url = filter_input(INPUT_SERVER, 'REQUEST_URI');
             if (!strstr($url,"page=")) {
                 if (substr($url,-4)==".php") {
                     $url .= "?page=".$page;
@@ -453,7 +304,7 @@ function refilter(){
     var f2 = $('#f_2').val();
     var f3 = $('#f_3').val();
 
-    var loc = '<?php echo $_SERVER['PHP_SELF']; ?>?f1='+f1+'&f2='+f2+'&f3='+f3;
+    var loc = '<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>?f1='+f1+'&f2='+f2+'&f3='+f3;
     if ($('#cardno').length!=0)
         loc += '&card_no='+$('#cardno').val();
     if ($('#orderSetting').length!=0)

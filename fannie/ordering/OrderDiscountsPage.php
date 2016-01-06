@@ -32,6 +32,7 @@ class OrderDiscountsPage extends FannieRESTfulPage
     protected $title = 'Set Special Order Discounts';
     public $description = '[Special Order Discounts] assigns markups (from wholesale) or markdown
     (from retail) based on member type.';
+    public $page_set = 'Special Orders';
 
     /**
       Generate a default record for every
@@ -138,6 +139,22 @@ class OrderDiscountsPage extends FannieRESTfulPage
         $ret .= '</select>';
 
         return $ret;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $this->init();
+        $body = $this->get_view();
+        $phpunit->assertNotEquals(0, strlen($body));
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->id = array(1);
+        $this->id = array(1);
+        $form->type = array('markdown');
+        $form->amt = array(10);
+        $this->setForm($form);
+        $this->post_id_handler();
+        $body2 = $this->get_view();
+        $phpunit->assertNotEquals($body, $body2);
     }
 }
 

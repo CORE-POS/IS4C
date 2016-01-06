@@ -30,10 +30,12 @@ class OrderViewPage extends FannieRESTfulPage
     protected $header = 'View Order';
     protected $title = 'View Order';
     protected $must_authenticate = true;
+    public $description = '[View Special Order] lists and/or edits an active special order';
+    public $page_set = 'Special Orders';
 
     public function preprocess()
     {
-        if (session_id() == '') {
+        if (php_sapi_name() !== 'cli' && !headers_sent() && session_id() == '') {
             session_start();
         }
 
@@ -102,7 +104,7 @@ class OrderViewPage extends FannieRESTfulPage
             $this->dept,
             $this->vendor,
             $this->actual,
-            $this->unit,
+            $this->unitPrice,
             $this->qty,
             $this->orderID,
             $this->transID,
@@ -1108,8 +1110,10 @@ HTML;
         $tester->testOrderView($this, $phpunit);
         $tester->testSetCustomer($this, $phpunit);
         $tester->testAddItem($this, $phpunit);
+        $tester->testEditItem($this, $phpunit);
         $tester->testDeleteItem($this, $phpunit);
         $tester->testEditCustomer($this, $phpunit);
+        $tester->testToggles($this, $phpunit);
     }
 }
 

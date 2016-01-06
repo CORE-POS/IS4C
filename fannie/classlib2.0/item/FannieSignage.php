@@ -894,7 +894,7 @@ class FannieSignage
         return $pdf;
     }
 
-    protected function fitText($pdf, $text, $font_size, $spacing)
+    protected function fitText($pdf, $font_size, $text, $spacing)
     {
         $font_shrink = 0;
         $effective_width = $this->width - $this->left;

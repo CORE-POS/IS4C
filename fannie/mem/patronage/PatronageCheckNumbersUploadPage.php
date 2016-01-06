@@ -55,7 +55,7 @@ class PatronageCheckNumbersUploadPage extends \COREPOS\Fannie\API\FannieUploadPa
 
     private $stats = array('imported'=>0, 'errors'=>array());
     
-    function process_file($linedata)
+    public function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -104,7 +104,7 @@ class PatronageCheckNumbersUploadPage extends \COREPOS\Fannie\API\FannieUploadPa
                     }
                 }
 
-                if ($amt_index && $line[$amt_index] && $line[$amt_index] != $obj->cash_pat()) {
+                if ($amt_index && $line[$amt_index] && trim($line[$amt_index]) != $obj->cash_pat()) {
                     $this->stats['errors'][] = 'Check #' . $check_no
                         . ' member #' . $obj->cardno() 
                         . ' issued for ' . $obj->cash_pat()

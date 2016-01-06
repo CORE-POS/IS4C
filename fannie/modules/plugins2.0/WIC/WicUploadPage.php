@@ -66,7 +66,7 @@ class WicUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     private $stats = array('total'=>0);
 
-    public function process_file($linedata)
+    public function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);

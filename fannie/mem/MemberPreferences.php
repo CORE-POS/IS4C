@@ -46,41 +46,24 @@ class MemberPreferences extends FannieRESTfulPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $cardno = $this->id;
         $notice = new CustomerNotificationsModel($dbc);
-        if (isset($_REQUEST['savebtn'])){
-            $pk = isset($_REQUEST['pref_k']) ? $_REQUEST['pref_k'] : array();
-            $pv = isset($_REQUEST['pref_v']) ? $_REQUEST['pref_v'] : array();
-            if (is_array($pk) && is_array($pv) && count($pk)==count($pv)){
+        if (FormLib::get('savebtn') !== '') {
+            $pkey = FormLib::get('pref_k', array());
+            $pval = FormLib::get('pref_v', array());
+            if (is_array($pkey) && is_array($pval) && count($pkey)==count($pval)){
                 $availModel = new CustAvailablePrefsModel($dbc);
                 $prefModel = new CustPreferencesModel($dbc);
-                for($i=0;$i<count($pk);$i++) {
-                    $availModel->pref_key($pk[$i]);
+                for($i=0;$i<count($pkey);$i++) {
+                    $availModel->pref_key($pkey[$i]);
                     $availModel->load();
 
-                    $prefModel->pref_key($pk[$i]);
+                    $prefModel->pref_key($pkey[$i]);
                     $prefModel->card_no($cardno);
                     $prefModel->custAvailablePrefID($availModel->custAvailablePrefID());
-                    $prefModel->pref_value($pv[$i]);
+                    $prefModel->pref_value($pval[$i]);
                     $prefModel->save();
 
-                    if ($pk[$i] == 'email_receipt' && filter_var($pv[$i], FILTER_VALIDATE_EMAIL)) {
-                        $notice->reset();
-                        $notice->cardNo($cardno);
-                        $notice->source('email_receipt');
-                        $notice->type('memlist');
-                        $exists = $notice->find();
-                        if (count($exists) > 0) {
-                            $notice = array_pop($exists);
-                        }
-                        $notice->message('&#x2709;');
-                        $notice->save();
-                    } elseif ($pk[$i] == 'email_receipt') {
-                        $notice->reset();
-                        $notice->cardNo($cardno);
-                        $notice->source('email_receipt');
-                        $notice->type('memlist');
-                        foreach ($notice->find() as $obj) {
-                            $obj->delete();
-                        }
+                    if ($pkey[$i] === 'email_receipt') {
+                        $this->setupNotification($cardno, $pval[$i], $notice);
                     }
                 }
                 $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', 'Saved Settings');\n");
@@ -88,6 +71,33 @@ class MemberPreferences extends FannieRESTfulPage
         }
 
         return true;
+    }
+
+    private function setupNotification($cardno, $val, $notice)
+    {
+        $ret = true;
+        if (filter_var($val, FILTER_VALIDATE_EMAIL)) {
+            $notice->reset();
+            $notice->cardNo($cardno);
+            $notice->source('email_receipt');
+            $notice->type('memlist');
+            $exists = $notice->find();
+            if (count($exists) > 0) {
+                $notice = array_pop($exists);
+            }
+            $notice->message('&#x2709;');
+            $ret = $notice->save();
+        } else {
+            $notice->reset();
+            $notice->cardNo($cardno);
+            $notice->source('email_receipt');
+            $notice->type('memlist');
+            foreach ($notice->find() as $obj) {
+                $ret = ($obj->delete() && $ret) ? true : false;
+            }
+        }
+
+        return $ret;
     }
 
     public function get_id_view()

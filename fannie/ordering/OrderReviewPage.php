@@ -30,6 +30,8 @@ class OrderReviewPage extends FannieRESTfulPage
     protected $header = 'Review Order';
     protected $title = 'Review Order';
     protected $must_authenticate = true;
+    public $description = '[Review Special Order] lists and an archived special order';
+    public $page_set = 'Special Orders';
 
     public function preprocess()
     {
@@ -391,6 +393,23 @@ JAVASCRIPT;
         $orderID = property_exists($this, 'orderID') ? $this->orderID : 0;
 
         return str_replace('{{orderID}}', $orderID, $js);
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->javascriptContent()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->orderID=1;
+        $phpunit->assertNotEquals(0, strlen($this->get_orderID_view()));
+        ob_start();
+        $this->get_orderID_customer_handler();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        ob_start();
+        $this->get_orderID_items_handler();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        ob_start();
+        $this->get_orderID_history_handler();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
     }
 }
 

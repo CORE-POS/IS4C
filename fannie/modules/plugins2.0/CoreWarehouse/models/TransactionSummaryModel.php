@@ -54,6 +54,10 @@ class TransactionSummaryModel extends CoreWarehouseModel {
         global $FANNIE_OP_DB;
         list($start_id, $start_date, $end_id, $end_date) = $this->dates($month, $year, $day);
 
+        $config = FannieConfig::factory();
+        $settings = $config->get('PLUGIN_SETTINGS');
+        $sql = FannieDB::get($settings['WarehouseDatabase']);
+
         $target_table = DTransactionsModel::selectDlog($start_date, $end_date);
 
         $this->clearDates($sql, $start_id, $end_id);
