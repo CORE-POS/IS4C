@@ -158,13 +158,17 @@ class SaReportPage extends FanniePage {
             WHERE clear!=1
             ORDER BY '.$order);
         $r=$dbc->execute($q);
+        $upcs = array();
         if ($r) {
             $this->status = 'Good - Connected';
-            $num_rows=$dbc->num_rows($r);
+            $num_rows=$dbc->numRows($r);
             if ($num_rows>0) {
                 $this->scans=array();
-                while($row = $dbc->fetch_row($r)){
-                    $this->scans[] = $row;
+                while ($row = $dbc->fetchRow($r)){
+                    if (!isset($upcs[$row['upc']])) {
+                        $this->scans[] = $row;
+                        $upcs[$row['upc']] = true;
+                    }
                 }
             } else {
                 $this->status = 'Good - No scans';
