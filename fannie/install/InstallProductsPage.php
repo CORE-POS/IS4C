@@ -279,6 +279,11 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
         echo installSelectField('FANNIE_DEFAULT_SIGNAGE', $FANNIE_DEFAULT_SIGNAGE, $mods);
         ?>
+        <label>Default Purchase Order Export</label>
+        <?php
+        $mods = COREPOS\Fannie\API\item\InventoryLib::orderExporters();
+        echo installSelectField('FANNIE_DEFAULT_PO_EXPORT', $FANNIE_DEFAULT_PO_EXPORT, $mods);
+        ?>
         <label>Default Account Coding</label>
         <?php
         $mods = array('COREPOS\Fannie\API\item\Accounting', 'COREPOS\Fannie\API\item\StandardAccounting');
