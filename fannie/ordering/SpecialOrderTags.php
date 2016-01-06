@@ -44,7 +44,7 @@ class SpecialOrderTags extends FannieRESTfulPage
         $dbc->selectDB($this->config->get('OP_DB'));
         $TRANS = $this->config->get('TRANS_DB').$dbc->sep();
 
-        if (!defined('FPDF_PATH')) {
+        if (!defined('FPDF_FONTPATH')) {
             define('FPDF_FONTPATH','font/');
         }
         if (!class_exists('FPDF')) {
@@ -55,8 +55,8 @@ class SpecialOrderTags extends FannieRESTfulPage
         $pdf->Open(); //open new PDF Document
 
         $count = 0;
-        $x = 0;
-        $y = 0;
+        $posX = 0;
+        $posY = 0;
         $date = date("m/d/Y");
         $infoP = $dbc->prepare("SELECT ItemQtty,total,regPrice,p.card_no,description,department,
             CASE WHEN p.card_no=0 THEN o.lastName ELSE c.LastName END as name,
@@ -82,9 +82,9 @@ class SpecialOrderTags extends FannieRESTfulPage
                 $pdf->Line(0,135,215,135);
             }
 
-            $x = $count % 2 == 0 ? 5 : 115;
-            $y = ($count/2) % 2 == 0 ? 10 : 145;
-            $pdf->SetXY($x,$y);
+            $posX = $count % 2 == 0 ? 5 : 115;
+            $posY = ($count/2) % 2 == 0 ? 10 : 145;
+            $pdf->SetXY($posX,$posY);
 
             $tmp = explode(":",$toid);
             $tid = $tmp[0];
@@ -105,54 +105,54 @@ class SpecialOrderTags extends FannieRESTfulPage
             }
 
             $pdf->SetFont('Arial','','12');
-            $pdf->Text($x+85,$y,"$rel_id / $o_count");
+            $pdf->Text($posX+85,$posY,"$rel_id / $o_count");
 
             $pdf->SetFont('Arial','B','24');
             $pdf->Cell(100,10,$row['name'],0,1,'C');
             $pdf->SetFont('Arial','','12');
-            $pdf->SetX($x);
+            $pdf->SetX($posX);
             $pdf->Cell(100,8,$row['fname'],0,1,'C');
-            $pdf->SetX($x);
+            $pdf->SetX($posX);
             if ($row['card_no'] != 0){
                 $pdf->Cell(100,8,"Owner #".$row['card_no'],0,1,'C');
-                $pdf->SetX($x);
+                $pdf->SetX($posX);
             }
 
             $pdf->SetFont('Arial','','16');
             $pdf->Cell(100,9,$row['description'],0,1,'C');
-            $pdf->SetX($x);
+            $pdf->SetX($posX);
             $pdf->Cell(100,9,"Cases: ".$row['ItemQtty'].' - '.$row['quantity'],0,1,'C');
-            $pdf->SetX($x);
+            $pdf->SetX($posX);
             $pdf->SetFont('Arial','B','16');
             $pdf->Cell(100,9,sprintf("Total: \$%.2f",$row['total']),0,1,'C');
             $pdf->SetFont('Arial','','12');
-            $pdf->SetX($x);
+            $pdf->SetX($posX);
             if ($row['discounttype'] == 1 || $row['discounttype'] == 2){
                 $pdf->Cell(100,9,'Sale Price',0,1,'C');
-                $pdf->SetX($x);
+                $pdf->SetX($posX);
 
             } elseif ($row['regPrice']-$row['total'] > 0){
                 $percent = round(100 * (($row['regPrice']-$row['total'])/$row['regPrice']));
                 $pdf->Cell(100,9,sprintf("Owner Savings: \$%.2f (%d%%)",
                         $row['regPrice'] - $row['total'],$percent),0,1,'C');
-                $pdf->SetX($x);
+                $pdf->SetX($posX);
             }
             $pdf->Cell(100,6,"Tag Date: ".$date,0,1,'C');
-            $pdf->SetX($x);
+            $pdf->SetX($posX);
             $pdf->Cell(50,6,"Dept #".$row['department'],0,0,'R');
             $pdf->SetFont('Arial','B','12');
-            $pdf->SetX($x+50);
+            $pdf->SetX($posX+50);
             $pdf->Cell(50,6,$row['vendorName'],0,1,'L');
             $pdf->SetFont('Arial','','12');
-            $pdf->SetX($x);
+            $pdf->SetX($posX);
             $pdf->Cell(100,6,"Ph: ".$row['phone'],0,1,'C');
-            $pdf->SetXY($x,$y+85);
+            $pdf->SetXY($posX,$posY+85);
             $pdf->Cell(160,10,"Notes: _________________________________");  
-            $pdf->SetX($x);
+            $pdf->SetX($posX);
             
             $upc = "454".str_pad($oid,6,'0',STR_PAD_LEFT).str_pad($tid,2,'0',STR_PAD_LEFT);
 
-            $pdf = $signage->drawBarcode($upc, $pdf, $x+30, $y+95, array('height'=>14,'fontsize'=>8));
+            $pdf = $signage->drawBarcode($upc, $pdf, $posX+30, $posY+95, array('height'=>14,'fontsize'=>8));
 
             $count++;
         }
@@ -255,9 +255,10 @@ class SpecialOrderTags extends FannieRESTfulPage
         $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
         $phpunit->assertNotEquals(0, strlen($this->get_view()));
         $phpunit->assertInternalType('array', $this->getQueuedIDs(array()));
-        $this->toIDs = array(1);
+        $this->toIDs = array('1:1');
         ob_start();
         $phpunit->assertEquals(false, $this->get_toIDs_handler());
+        $pdf = ob_get_clean();
     }
 }
 

@@ -64,18 +64,12 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     private $stats = array('total'=>0, 'here'=>0);
 
-    public function process_file($linedata)
+    public function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $upc_index = $this->get_column_index('upc');
-        $desc_index = $this->get_column_index('desc');
-        $size_index = $this->get_column_index('size');
-        $brand_index = $this->get_column_index('brand');
-        $sku_index = $this->get_column_index('sku');
-
-        if ($desc_index === false && $brand_index === false) {
+        if ($indexes['desc'] === false && $indexes['brand'] === false) {
             $this->error_details = 'Neither brand nor description provided; nothing to import!';
 
             return false;
@@ -102,7 +96,7 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
         ');
 
         foreach ($linedata as $line) {
-            $upc = $line[$upc_index];
+            $upc = $line[$indexes['upc']];
             // upc cleanup
             $upc = str_replace(" ","",$upc);
             $upc = str_replace("-","",$upc);
@@ -117,8 +111,8 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
 
             $verifyR = $dbc->execute($verifyP, array($upc));
             if ($dbc->num_rows($verifyR) == 0) {
-                if ($sku_index !== false) {
-                    $skuR = $dbc->execute($skuP, array($line[$sku_index]));
+                if ($indexes['sku'] !== false) {
+                    $skuR = $dbc->execute($skuP, array($line[$indexes['sku']]));
                     if ($dbc->num_rows($skuR) == 0) {
                         // no UPC match, no vendor sku match
                         continue;
@@ -136,24 +130,24 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             $model->upc($upc);
             $model->load();
             $changed = false;
-            if ($model->brand() == '' && $brand_index !== false && !empty($line[$brand_index])) {
-                $brand = $line[$brand_index];
+            if ($model->brand() == '' && $indexes['brand'] !== false && !empty($line[$indexes['brand']])) {
+                $brand = $line[$indexes['brand']];
                 if ($normalize) {
                     $brand = ucwords(strtolower($brand));
                 }
                 $model->brand($brand);
                 $changed = true;
             }
-            if ($model->description() == '' && $desc_index !== false && !empty($line[$desc_index])) {
-                $desc = $line[$desc_index];
+            if ($model->description() == '' && $indexes['desc'] !== false && !empty($line[$indexes['desc']])) {
+                $desc = $line[$indexes['desc']];
                 if ($normalize) {
                     $desc = ucwords(strtolower($desc));
                 }
                 $model->description($desc);
                 $changed = true;
             }
-            if ($model->sizing() == '' && $size_index !== false && !empty($line[$size_index])) {
-                $size = $line[$size_index];
+            if ($model->sizing() == '' && $indexes['size'] !== false && !empty($line[$indexes['size']])) {
+                $size = $line[$indexes['size']];
                 $model->sizing($size);
                 $changed = true;
             }

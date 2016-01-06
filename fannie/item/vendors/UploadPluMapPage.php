@@ -26,8 +26,8 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage {
-
+class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage 
+{
     public $title = "Fannie - Load Vendor SKU/PLU mapping";
     public $header = "Upload Vendor SKU/PLU file";
 
@@ -97,7 +97,7 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage {
         return array($sku, $plu);
     }
 
-    function process_file($linedata)
+    public function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -109,8 +109,6 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
         $this->prepStatements($dbc);
 
-        $SKU = $this->get_column_index('sku');
-        $PLU = $this->get_column_index('plu');
         $mode = FormLib::get_form_value('map_mode',0);
         $REPLACE = ($mode === '1') ? True : False;
 
@@ -121,7 +119,7 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
         $this->stats = array('done' => 0, 'error' => array());
         foreach ($linedata as $data) {
-            list($sku, $plu) = $this->getSkuPlu($data, $SKU, $PLU);
+            list($sku, $plu) = $this->getSkuPlu($data, $indexes['sku'], $indexes['plu']);
             if ($sku !== false && $plu !== false) {
                 $chkR = $dbc->execute($this->chkP, array($sku,$plu,$VENDOR_ID));
                 if ($dbc->num_rows($chkR) > 0) continue; // entry exists

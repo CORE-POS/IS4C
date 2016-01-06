@@ -28,10 +28,8 @@ if (!class_exists('FannieAPI')) {
 
 class ManualPurchaseOrderPage extends FannieRESTfulPage 
 {
-
     protected $header = 'Purchase Orders';
     protected $title = 'Purchase Orders';
-    public $themed = true;
 
     public $description = '[Manual Purchase Order] is a tool for entering purchase order info
         in a grid from existing paperwork.';
@@ -301,6 +299,15 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
             one line at a time. Auto completion is available
             via both product UPC and vendor item SKU.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->id = 1;
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+        $this->adjust = 1;
+        $phpunit->assertNotEquals(0, strlen($this->get_id_adjust_view()));
     }
 }
 

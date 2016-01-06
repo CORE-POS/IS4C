@@ -48,6 +48,11 @@ class SpecialOrdersMenu extends FanniePage
 </ul>
 HTML;
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
 FannieDispatch::conditionalExec();

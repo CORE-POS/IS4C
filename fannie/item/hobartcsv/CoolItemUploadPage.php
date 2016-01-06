@@ -51,13 +51,10 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         ),
     );
 
-    function process_file($linedata)
+    function process_file($linedata, $indexes)
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $upc_index = $this->get_column_index('upc');
-        $price_index = $this->get_column_index('price');
-        $cool_index = $this->get_column_index('cool');
 
         $itemP = $dbc->prepare('
             SELECT itemdesc,
@@ -76,11 +73,11 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $prodPricing = FormLib::get('prodPricing') === '' ? false : true;
         $scale_items = array();
         foreach ($linedata as $line) {
-            $upc = trim($line[$upc_index]);
+            $upc = trim($line[$indexes['upc']]);
             $upc = BarcodeLib::padUPC($upc);
-            $price = str_replace('$', '', $line[$price_index]);
+            $price = str_replace('$', '', $line[$indexes['price']]);
             $price = trim($price);
-            $cool = $line[$cool_index];
+            $cool = $line[$indexes['cool']];
             if (!is_numeric($upc) || !is_numeric($price)) {
                 continue;
             }

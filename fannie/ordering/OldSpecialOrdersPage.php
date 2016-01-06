@@ -193,8 +193,8 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
             $filterargs[] = $page; // again
         }
         $lookupQ .= " ORDER BY MIN(datetime) DESC";
-        $p = $dbc->prepare($lookupQ);
-        $r = $dbc->execute($p,$filterargs);
+        $lookupP = $dbc->prepare($lookupQ);
+        $lookupR = $dbc->execute($lookupP,$filterargs);
 
         /**
           Capture all the order records in $orders
@@ -202,9 +202,9 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
         */
         $orders = array();
         $valid_ids = array();
-        while ($w = $dbc->fetch_row($r)) {
-            $orders[] = $w;
-            $valid_ids[$w['order_id']] = true;
+        while ($row = $dbc->fetchRow($lookupR)) {
+            $orders[] = $row;
+            $valid_ids[$row['order_id']] = true;
         }
 
         /**
@@ -304,7 +304,7 @@ function refilter(){
     var f2 = $('#f_2').val();
     var f3 = $('#f_3').val();
 
-    var loc = '<?php echo $_SERVER['PHP_SELF']; ?>?f1='+f1+'&f2='+f2+'&f3='+f3;
+    var loc = '<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>?f1='+f1+'&f2='+f2+'&f3='+f3;
     if ($('#cardno').length!=0)
         loc += '&card_no='+$('#cardno').val();
     if ($('#orderSetting').length!=0)

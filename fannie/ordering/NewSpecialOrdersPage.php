@@ -55,9 +55,9 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
         if (file_exists("{$cachepath}{$username}.prints")) {
             $prints = unserialize(file_get_contents("{$cachepath}{$username}.prints"));
         } else {
-            $fp = fopen("{$cachepath}{$username}.prints",'w');
-            fwrite($fp,serialize($prints));
-            fclose($fp);
+            $fptr = fopen("{$cachepath}{$username}.prints",'w');
+            fwrite($fptr,serialize($prints));
+            fclose($fptr);
         }
 
         return $prints;
@@ -392,23 +392,23 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
                 onclick="$(\'#pdfform\').submit();" /></td>',
                 $this->config->get('URL').'src/img/buttons/action_print.gif');
         $ret .= '</tr></thead><tbody>';
-        $fp = fopen($cachepath.$key,"w");
+        $fptr = fopen($cachepath.$key,"w");
         foreach ($orders as $w) {
-            $id = $w['order_id'];
-            if (!isset($valid_ids[$id])) continue;
+            $oid = $w['order_id'];
+            if (!isset($valid_ids[$oid])) continue;
 
 
             $ret .= '<tr class="' . ($w['charflag'] == 'P' ? 'arrived' : 'notarrived') . '">';
 
             list($date, $time) = explode(' ', $w['orderDate'], 2);
             $ret .= sprintf('<td><a href="OrderViewPage.php?orderID=%d&k=%s">%s</a></td>',
-                            $id, $key, $date);
+                            $oid, $key, $date);
 
             $ret .= sprintf('<td><a href="" onclick="applyMemNum(%d); return false;">%s</a></td>',
                             $w['card_no'], $w['name']);
 
-            $ret .= (isset($items[$id]) ? $items[$id] : '<td>&nbsp;</td>');
-            $ret .= (isset($suppliers[$id]) ? $suppliers[$id] : '<td>&nbsp;</td>');
+            $ret .= (isset($items[$oid]) ? $items[$oid] : '<td>&nbsp;</td>');
+            $ret .= (isset($suppliers[$oid]) ? $suppliers[$oid] : '<td>&nbsp;</td>');
 
             $ret .= sprintf('<td>%d</td>', $w['items']);
             $ret .= sprintf('<td>%.2f</td>', $w['value']);
@@ -420,18 +420,18 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
                 ($w['status_flag']==$k?'selected':''),
                 $k,$v);
             }
-            $ret .= "</select> <span id=\"statusdate{$id}\">".($w['sub_status']==0?'No Date':date('m/d/Y',$w['sub_status']))."</span></td>";
+            $ret .= "</select> <span id=\"statusdate{$oid}\">".($w['sub_status']==0?'No Date':date('m/d/Y',$w['sub_status']))."</span></td>";
             $ret .= "<td align=center>".($w['charflag']=='P'?'Yes':'No')."</td>";
 
             $ret .= sprintf('<td><input type="checkbox" %s name="oids[]" value="%d" 
                             onclick="togglePrint(\'%s\',%d);" /></td>',
-                    (isset($prints[$id])?'checked':''),
-                    $id,$username,$id);
+                    (isset($prints[$oid])?'checked':''),
+                    $oid,$username,$oid);
             $ret .= '</tr>';
 
-            fwrite($fp,$w['order_id']."\n");
+            fwrite($fptr,$w['order_id']."\n");
         }
-        fclose($fp);
+        fclose($fptr);
         $ret .= "</tbody></table>";
 
         $this->add_script('../src/javascript/tablesorter/jquery.tablesorter.js');

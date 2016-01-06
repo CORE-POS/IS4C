@@ -26,13 +26,12 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class ViewPurchaseOrders extends FannieRESTfulPage {
-
+class ViewPurchaseOrders extends FannieRESTfulPage 
+{
     protected $header = 'Purchase Orders';
     protected $title = 'Purchase Orders';
 
     public $description = '[View Purchase Orders] lists pending orders and completed invoices.';
-    public $themed = true;
 
     protected $must_authenticate = false;
 
@@ -55,7 +54,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         return parent::preprocess();
     }
 
-    protected function get_id_export_handler(){
+    protected function get_id_export_handler()
+    {
         if (!file_exists('exporters/'.$this->export.'.php'))
             return $this->unknown_request_handler();
         include_once('exporters/'.$this->export.'.php');    
@@ -65,10 +65,11 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         $exportObj = new $this->export();
         $exportObj->send_headers();
         $exportObj->export_order($this->id);
-        return False;
+        return false;
     }
 
-    protected function post_id_setPlaced_handler(){
+    protected function post_id_setPlaced_handler()
+    {
         global $FANNIE_OP_DB;
         $model = new PurchaseOrderModel(FannieDB::get($FANNIE_OP_DB));
         $model->orderID($this->id);
@@ -91,14 +92,16 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
         return false;
     }
 
-    protected function get_pending_handler(){
+    protected function get_pending_handler()
+    {
         echo $this->get_orders(0);
-        return False;
+        return false;
     }
 
-    protected function get_placed_handler(){
+    protected function get_placed_handler()
+    {
         echo $this->get_orders(1);
-        return False;
+        return false;
     }
 
     protected function get_orders($placed)
@@ -650,6 +653,17 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
                 the dropdowns to filter the list. The distinction between <em>All Orders</em>
                 and <em>My Orders</em> only works if user authentication is enabled.</p>';
         }
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->id = '4011';
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+        $this->recode = 1;
+        $phpunit->assertNotEquals(0, strlen($this->get_id_recode_view()));
+        $this->receive = 1;
+        $phpunit->assertNotEquals(0, strlen($this->get_id_receive_view()));
     }
 }
 

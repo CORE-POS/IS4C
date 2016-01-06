@@ -63,7 +63,8 @@ class UploadAnyFile extends FanniePage {
       Process an upload
       @return HTML string explaining results
     */
-    function process_file(){
+    public function process_file($linedata, $indexes)
+    {
         if (!is_dir($this->tpath)) mkdir($this->tpath);
         /* rm any files in $tpath - probably not a good idea
         $dh = opendir($tpath);

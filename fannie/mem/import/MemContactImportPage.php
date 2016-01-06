@@ -88,7 +88,7 @@ class MemContactImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
         }
     }
     
-    function process_file($linedata)
+    public function process_file($linedata, $indexes)
     {
         $mn_index = $this->get_column_index('memnum');
         $st_index = $this->get_column_index('street');

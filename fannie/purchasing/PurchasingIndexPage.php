@@ -26,17 +26,16 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class PurchasingIndexPage extends FannieRESTfulPage {
-    
+class PurchasingIndexPage extends FannieRESTfulPage 
+{
     protected $header = 'Purchase Orders';
     protected $title = 'Purchase Orders';
 
     public $description = '[Purchase Order Menu] lists purchase order related pages.';
-    public $themed = true;
 
-    protected $must_authenticate = True;
+    protected $must_authenticate = true;
 
-    function put_handler()
+    protected function put_handler()
     {
         try {
             $vendors = $this->form->vendors;
@@ -59,7 +58,7 @@ class PurchasingIndexPage extends FannieRESTfulPage {
         }
     }
 
-    function put_view()
+    protected function put_view()
     {
         $res = $this->connection->query('
             SELECT v.vendorID, v.vendorName
@@ -90,7 +89,7 @@ class PurchasingIndexPage extends FannieRESTfulPage {
         return $ret;
     }
 
-    function get_view()
+    protected function get_view()
     {
 
         return '<ul>
@@ -141,6 +140,12 @@ class PurchasingIndexPage extends FannieRESTfulPage {
             from all known vendors. This option creates separate orders
             for each vendor as needed.</p>
             ';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->put_view()));
     }
 }
 

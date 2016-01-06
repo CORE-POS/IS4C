@@ -132,7 +132,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         return array($VENDOR_ID, $row['vendorName']);
     }
 
-    function process_file($linedata)
+    public function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -143,19 +143,6 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $this->error_details = $ex->getMessage();
             return false;
         }
-
-        $SKU = $this->get_column_index('sku');
-        $BRAND = $this->get_column_index('brand');
-        $DESCRIPTION = $this->get_column_index('desc');
-        $QTY = $this->get_column_index('qty');
-        $SIZE1 = $this->get_column_index('size');
-        $UPC = $this->get_column_index('upc');
-        $CATEGORY = $this->get_column_index('vDept');
-        $REG_COST = $this->get_column_index('cost');
-        $NET_COST = $this->get_column_index('saleCost');
-        $REG_UNIT = $this->get_column_index('unitCost');
-        $NET_UNIT = $this->get_column_index('unitSaleCost');
-        $SRP = $this->get_column_index('srp');
 
         // PLU items have different internal UPCs
         // map vendor SKUs to the internal PLUs
@@ -185,22 +172,22 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         foreach($linedata as $data) {
             if (!is_array($data)) continue;
 
-            if (!isset($data[$UPC])) continue;
+            if (!isset($data[$indexes['upc']])) continue;
 
             // grab data from appropriate columns
-            $sku = $data[$SKU];
-            $brand = ($BRAND === false) ? $vendorName : substr($data[$BRAND], 0, 50);
-            $description = substr($data[$DESCRIPTION], 0, 50);
-            if ($QTY === false) {
+            $sku = $data[$indexes['sku']];
+            $brand = ($indexes['brand'] === false) ? $vendorName : substr($data[$indexes['brand']], 0, 50);
+            $description = substr($data[$indexes['desc']], 0, 50);
+            if ($indexes['qty'] === false) {
                 $qty = 1.0;
             } else {
-                $qty = $data[$QTY];
+                $qty = $data[$indexes['qty']];
                 if (!is_numeric($qty)) {
                     $qty = 1.0;
                 }
             }
-            $size = ($SIZE1 === false) ? '' : substr($data[$SIZE1], 0, 25);
-            $upc = $data[$UPC];
+            $size = ($indexes['size'] === false) ? '' : substr($data[$indexes['size']], 0, 25);
+            $upc = $data[$indexes['upc']];
             $upc = str_replace(' ', '', $upc);
             $upc = str_replace('-', '', $upc);
             if (strlen($upc) > 13) {
@@ -216,15 +203,15 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             if (isset($SKU_TO_PLU_MAP[$sku])) {
                 $upc = $SKU_TO_PLU_MAP[$sku];
             }
-            $category = ($CATEGORY === false) ? 0 : $data[$CATEGORY];
+            $category = ($indexes['vDept'] === false) ? 0 : $data[$indexes['vDept']];
 
             $reg_unit = '';
-            if ($REG_UNIT !== false) {
-                $reg_unit = trim($data[$REG_UNIT]);
+            if ($indexes['unitCost'] !== false) {
+                $reg_unit = trim($data[$indexes['unitCost']]);
                 $reg_unit = $this->priceFix($reg_unit);
             }
-            if (!is_numeric($reg_unit) && $REG_COST !== false) {
-                $reg = trim($data[$REG_COST]);
+            if (!is_numeric($reg_unit) && $indexes['cost'] !== false) {
+                $reg = trim($data[$indexes['cost']]);
                 $reg = $this->priceFix($reg);
                 if (is_numeric($reg)) {
                     $reg_unit = $reg / $qty;
@@ -240,12 +227,12 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 continue;
 
             $net_unit = '';
-            if ($NET_UNIT !== false) {
-                $net_unit = trim($data[$NET_UNIT]);
+            if ($indexes['unitSaleCost'] !== false) {
+                $net_unit = trim($data[$indexes['unitSaleCost']]);
                 $net_unit = $this->priceFix($net_unit);
             }
-            if (!is_numeric($net_unit) && $NET_COST !== false) {
-                $net = trim($data[$NET_COST]);
+            if (!is_numeric($net_unit) && $indexes['saleCost'] !== false) {
+                $net = trim($data[$indexes['saleCost']]);
                 $net = $this->priceFix($net);
                 if (is_numeric($net)) {
                     $net_unit = $net / $qty;
@@ -255,7 +242,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             if (empty($net_unit)) {
                 $net_unit = 0.00;
             }
-            $srp = ($SRP === false) ? 0.00 : trim($data[$SRP]);
+            $srp = ($indexes['srp'] === false) ? 0.00 : trim($data[$indexes['srp']]);
 
             if ($net_unit == $reg_unit) {
                 $net_unit = 0.00; // not really a sale
