@@ -20,10 +20,10 @@ class CashierBarGraphs extends FannieRESTfulPage
         $path = realpath(dirname(__FILE__));
         $path = rtrim($path, '/') . '/image_area';
         if (!is_dir($path)) {
-            $this->error_msg = 'Missing required directory ' . $path;
+            $this->error_text = 'Missing required directory ' . $path;
             return false;
         } elseif (!is_writable($path)) {
-            $this->error_msg = 'Directory ' . $path . ' must be writable by web server';
+            $this->error_text = 'Directory ' . $path . ' must be writable by web server';
             return false;
         } else {
             return true;
