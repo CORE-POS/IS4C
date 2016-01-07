@@ -276,6 +276,7 @@ HTML;
         $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
         $phpunit->assertNotEquals(0, strlen($this->delete_id_upc_view()));
         $phpunit->assertNotEquals(0, strlen($this->get_id_reprice_view()));
+        $phpunit->assertNotEquals(0, strlen($this->tagToRow(new ShelftagsModel($this->connection))));
     }
 }
 
