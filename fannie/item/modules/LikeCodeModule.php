@@ -28,17 +28,23 @@ if (!class_exists('FannieAPI')) {
 class LikeCodeModule extends ItemModule 
 {
 
+    private function getLikeCode($dbc, $upc)
+    {
+        $prep = $dbc->prepare('SELECT likeCode FROM upcLike WHERE upc=?');
+        $res = $dbc->execute($prep,array($upc));
+        $myLC = -1;     
+        if ($dbc->numRows($res) > 0) {
+            $row = $dbc->fetchRow($res);
+            $myLC = $row['likeCode'];
+        }
+
+        return $myLC;
+    }
+
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {
-        $FANNIE_URL = FannieConfig::config('URL');
         $dbc = $this->db();
-        $p = $dbc->prepare('SELECT likeCode FROM upcLike WHERE upc=?');
-        $r = $dbc->execute($p,array($upc));
-        $myLC = -1;     
-        if ($dbc->num_rows($r) > 0) {
-            $w = $dbc->fetch_row($r);
-            $myLC = $w['likeCode'];
-        }
+        $myLC = $this->getLikeCode($dbc, $upc);
         $ret = '<div id="LikeCodeFieldSet" class="panel panel-default">';
         $ret .=  "<div class=\"panel-heading\">
                 <a href=\"\" onclick=\"\$('#LikeCodeFieldsetContent').toggle();return false;\">
@@ -61,14 +67,8 @@ class LikeCodeModule extends ItemModule
                 onchange=\"updateLcModList(this.value);\" class=\"chosenSelect form-control\">";
         $ret .= "<option value=-1>(none)</option>";
     
-        $p = $dbc->prepare('SELECT likeCode, likeCodeDesc FROM likeCodes ORDER BY likeCode');
-        $r = $dbc->execute($p);
-        while($w = $dbc->fetch_row($r)){
-            $ret .= sprintf('<option %s value="%d">%d %s</option>',
-                ($w['likeCode'] == $myLC ? 'selected': ''),
-                $w['likeCode'],$w['likeCode'],$w['likeCodeDesc']
-            );
-        }
+        $lcm = new LikeCodesModel($dbc);
+        $ret .= $lcm->toOptions($myLC);
         $ret .= "</select>";
         $ret .= " <label><input type=checkbox name=LikeCodeNoUpdate value='noupdate'>Check to not update like code items</label>";
         $ret .= ' <span id="LikeCodeHistoryLink">' . $this->HistoryLink($myLC) . '</span>';
@@ -93,10 +93,10 @@ class LikeCodeModule extends ItemModule
         return $ret;
     }
 
-    function SaveFormData($upc)
+    public function SaveFormData($upc)
     {
         try {
-            $lc = $this->form->likeCode;
+            $likecode = $this->form->likeCode;
         } catch (Exception $ex) {
             return false;
         }
@@ -104,14 +104,14 @@ class LikeCodeModule extends ItemModule
 
         $delP = $dbc->prepare('DELETE FROM upcLike WHERE upc=?'); 
         $delR = $dbc->execute($delP,array($upc));
-        if ($lc == -1){
+        if ($likecode == -1){
             return ($delR === False) ? False : True;
         }
 
         $insP = 'INSERT INTO upcLike (upc,likeCode) VALUES (?,?)';
-        $insR = $dbc->execute($insP,array($upc,$lc));
+        $insR = $dbc->execute($insP,array($upc,$likecode));
         
-        if (FormLib::get_form_value('LikeCodeNoUpdate') == 'noupdate'){
+        if (FormLib::get('LikeCodeNoUpdate') == 'noupdate'){
             return ($insR === False) ? False : True;
         }
 
@@ -119,22 +119,82 @@ class LikeCodeModule extends ItemModule
         $valuesP = $dbc->prepare('SELECT normal_price,pricemethod,groupprice,quantity,
             department,scale,tax,foodstamp,discount,qttyEnforced,local,wicable
             FROM products WHERE upc=?');
-        $valuesR = $dbc->execute($valuesP,array($upc));  
-        if ($dbc->num_rows($valuesR) == 0) return False;
-        $values = $dbc->fetch_row($valuesR);
+        $values = $dbc->getRow($valuesP,array($upc));  
+        if ($values === false) {
+            return false;
+        }
 
-        /* apply current values to other other items
-           in the like code */
-        $upcP = $dbc->prepare('SELECT upc FROM upcLike WHERE likeCode=? AND upc<>?');
-        $upcR = $dbc->execute($upcP,array($lc,$upc));
-        $isHQ = FannieConfig::config('STORE_MODE') == 'HQ' ? true : false;
         $stores = new StoresModel($dbc);
         $stores = array_map(
             function($obj){ return $obj->storeID(); },
             array_filter($stores->find(), function($obj){ return $obj->hasOwnItems(); }));
+
         $model = new ProductsModel($dbc);
         $model->upc($upc);
-        $model->mixmatchcode($lc+500);
+        $model->mixmatchcode($likecode+500);
+        $this->saveModelToStores($model, $stores);
+
+        /* apply current values to other other items
+           in the like code */
+        $upcP = $dbc->prepare('SELECT upc FROM upcLike WHERE likeCode=? AND upc<>?');
+        $upcR = $dbc->execute($upcP,array($likecode,$upc));
+        while ($upcW = $dbc->fetchRow($upcR)) {
+            $this->updateItem($dbc, $upcW['upc'], $likecode, $values);
+            updateProductAllLanes($upcW['upc']);
+        }
+
+        return true;
+    }
+
+    private $upP = null;
+    private function updateStatement($dbc)
+    {
+        if ($this->upP === null) {
+            $this->upP = $dbc->prepare('
+                UPDATE products
+                SET normal_price=?,
+                    pricemethod=?,
+                    groupprice=?,
+                    quantity=?,
+                    department=?,
+                    scale=?,
+                    tax=?,
+                    foodstamp=?,
+                    discount=?,
+                    qttyEnforced=?,
+                    local=?,
+                    wicable=?,
+                    mixmatchcode=?
+                WHERE upc=?');
+        }
+        return $this->upP;
+    }
+
+    private function updateItem($dbc, $upc, $likecode, $values)
+    {
+        $upP = $this->updateStatement($dbc);
+        $args = array(
+            $values['normal_price'],
+            $values['pricemethod'],
+            $values['groupprice'],
+            $values['quantity'],
+            $values['department'],
+            $values['scale'],
+            $values['tax'],
+            $values['foodstamp'],
+            $values['discount'],
+            $values['qttyEnforced'],
+            $values['local'],
+            $values['wicable'],
+            $likecode+500,
+            $upc
+        );
+        return $dbc->execute($upP, $args);
+    }
+
+    private function saveModelToStores($model, $stores)
+    {
+        $isHQ = FannieConfig::config('STORE_MODE') == 'HQ' ? true : false;
         if ($isHQ) {
             foreach ($stores as $store_id) {
                 $model->store_id($store_id);
@@ -143,32 +203,6 @@ class LikeCodeModule extends ItemModule
         } else {
             $model->save();
         }
-        while ($upcW = $dbc->fetch_row($upcR)) {
-            $model->upc($upcW['upc']);
-            $model->normal_price($values['normal_price']);
-            $model->pricemethod($values['pricemethod']);
-            $model->groupprice($values['groupprice']);
-            $model->quantity($values['quantity']);
-            $model->department($values['department']);
-            $model->scale($values['scale']);
-            $model->tax($values['tax']);
-            $model->foodstamp($values['foodstamp']);
-            $model->discount($values['discount']);
-            $model->qttyEnforced($values['qttyEnforced']);
-            $model->local($values['local']);
-            $model->wicable($values['wicable']);
-            $model->mixmatchcode($lc+500);
-            if ($isHQ) {
-                foreach ($stores as $store_id) {
-                    $model->store_id($store_id);
-                    $model->save();
-                }
-            } else {
-                $model->save();
-            }
-            updateProductAllLanes($upcW['upc']);
-        }
-        return true;
     }
 
     public function getFormJavascript($upc)
@@ -260,20 +294,20 @@ class LikeCodeModule extends ItemModule
         return ob_get_clean();
     }
 
-    private function HistoryLink($lc)
+    private function HistoryLink($likecode)
     {
         $FANNIE_URL = FannieConfig::config('URL');
-        if ($lc == -1) return '';
-        $ret = '<a href="'.$FANNIE_URL.'reports/RecentSales/?likecode='.$lc.'" 
+        if ($likecode == -1) return '';
+        $ret = '<a href="'.$FANNIE_URL.'reports/RecentSales/?likecode='.$likecode.'" 
                 title="Likecode Sales History" class="iframe fancyboxLink">';
         $ret .= 'Likecode Sales History</a>';
 
         return $ret;
     }
 
-    private function LikeCodeItems($lc, $upc='nomatch')
+    private function LikeCodeItems($likecode, $upc='nomatch')
     {
-        if ($lc == -1) return '';
+        if ($likecode == -1) return '';
         $ret = "<b>Like Code Linked Items</b><div id=lctable>";
         $ret .= "<table class=\"alert alert-warning table\">";
         $dbc = $this->db();
@@ -284,7 +318,7 @@ class LikeCodeModule extends ItemModule
                 INNER JOIN upcLike AS u ON p.upc=u.upc 
             WHERE u.likeCode=?
             ORDER BY p.upc");
-        $res = $dbc->execute($p,array($lc));
+        $res = $dbc->execute($p,array($likecode));
         $prev = false;
         while($row = $dbc->fetch_row($res)){
             if ($prev === $row['upc']) {
@@ -304,7 +338,7 @@ class LikeCodeModule extends ItemModule
 
     function AjaxCallback()
     {
-        $lc = FormLib::get_form_value('lc',-1);
+        $likecode = FormLib::get('lc',-1);
         $newLC = FormLib::get('newLC', false);
         $json = array();
 
@@ -344,8 +378,8 @@ class LikeCodeModule extends ItemModule
         /** lookup items associated w/ like code **/
         } else {
             $json = array(
-            'items' => $this->LikeCodeItems($lc),
-            'link' => $this->HistoryLink($lc)
+            'items' => $this->LikeCodeItems($likecode),
+            'link' => $this->HistoryLink($likecode)
             );
         }
 

@@ -10,6 +10,7 @@
             <file>tests/fannie/InstallFannieTest.php</file>
             <file>tests/fannie/ApiLibTest.php</file>
             <file>tests/fannie/FannieSQLManagerTest.php</file>
+            <file>tests/fannie/ItemsTest.php</file>
             <file>tests/fannie/LogTest.php</file>
             <file>tests/fannie/MembersTest.php</file>
             <file>tests/fannie/ModelsTest.php</file>
