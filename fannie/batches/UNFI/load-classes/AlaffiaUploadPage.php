@@ -215,7 +215,7 @@ class AlaffiaUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
     function results_content()
     {
         $ret = "<p>Price data import complete</p>";
-        $ret .= '<p><a href="'.$_SERVER['PHP_SELF'].'">Upload Another</a></p>';
+        $ret .= '<p><a href="'.filter_input(INPUT_SERVER, 'PHP_SELF').'">Upload Another</a></p>';
 
         return $ret;
     }

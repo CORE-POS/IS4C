@@ -1,7 +1,7 @@
 function newBatch()
 {
     var dataStr = $('#newBatchForm').serialize();
-    if ($('#newBatchName').val() == '') {
+    if ($('#newBatchName').val() === '') {
         showBootstrapAlert('#inputarea', 'danger', 'Name cannot be blank');
         return;
     }
@@ -39,9 +39,9 @@ function editBatchLine(id)
     $('#enddate'+id).html($('<input class="form-control date-input" name="endDate"/>').val(enddate));
 
     var typesElem = $('<select class="form-control" name="batchType"/>');
-    for (typeID in batchTypes) {
+    for (var typeID in batchTypes) {
         var opt = $('<option/>').val(typeID).html(batchTypes[typeID]);
-        if (type == batchTypes[typeID]) {
+        if (type === batchTypes[typeID]) {
             opt.attr('selected','selected');
         }
         typesElem.append(opt);
@@ -50,9 +50,9 @@ function editBatchLine(id)
 
     var ownerElem = $('<select class="form-control" name="owner"/>');
     ownerElem.append('<option/>');
-    for (o in owners) {
-        var opt = $('<option/>').html(owners[o]);
-        if (owner == owners[o]) {
+    for (var o in owners) {
+        opt = $('<option/>').html(owners[o]);
+        if (owner === owners[o]) {
             opt.attr('selected','selected');
         }
         ownerElem.append(opt);
@@ -87,11 +87,12 @@ function saveBatchLine(id)
     });
 
     $('tr#batchRow' + id + ' td').each(function() {
+        var newVal = '';
         if ($(this).find('select').length > 0) {
-            var newVal = $(this).find('option:selected').html();
+            newVal = $(this).find('option:selected').html();
             $(this).html(newVal);
         } else if ($(this).find('input').length > 0) {
-            var newVal = $(this).find('input').val();
+            newVal = $(this).find('input').val();
             $(this).html(newVal);
         }
     });
@@ -109,14 +110,14 @@ function saveBatchLine(id)
 function deleteBatch(id, name)
 {
 	var audited = $('#isAudited').val();
-	if (audited == "1") {
-		alert("You're not allowed to delete batches");
+	if (audited === "1") {
+		window.alert("You're not allowed to delete batches");
 		return;
 	}
 
     var dataStr = 'delete=1&id='+id;
 
-	if (confirm('Delete this batch ('+name+')?')) {
+	if (window.confirm('Delete this batch ('+name+')?')) {
         $.ajax({
             url: 'BatchListPage.php',
             data: dataStr,
