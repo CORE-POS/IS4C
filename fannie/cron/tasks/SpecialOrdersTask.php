@@ -40,92 +40,177 @@ class SpecialOrdersTask extends FannieTask
         'weekday' => '*',
     );
 
-    public function run()
+    private function cleanFileCache()
     {
-        // clean cache
         $cachepath = sys_get_temp_dir()."/ordercache/";
-        $dh = opendir($cachepath);
-        while (($file = readdir($dh)) !== false) {
+        $dir = opendir($cachepath);
+        while (($file = readdir($dir)) !== false) {
             if ($file == "." || $file == "..") continue;
             if (!is_file($cachepath.$file)) continue;
             unlink($cachepath.$file);
         }
-        closedir($dh);
+        closedir($dir);
+    }
 
-        $sql = FannieDB::get($this->config->get('TRANS_DB'));
-
-        // auto-close called/waiting after 30 days
+    private function getOldCalledWaiting($sql)
+    {
         $subquery = "select p.order_id from PendingSpecialOrder as p
             left join SpecialOrders as s
             on p.order_id=s.specialOrderID
             where p.trans_id=0 and s.statusFlag=1
             and ".$sql->datediff($sql->now(),'datetime')." > 30";
         $cwIDs = "(";
-        $r = $sql->query($subquery);
-        while($w = $sql->fetch_row($r)){
-            $cwIDs .= $w['order_id'].",";
+        $res = $sql->query($subquery);
+        while ($row = $sql->fetchRow($res)) {
+            $cwIDs .= $row['order_id'].",";
         }
         $cwIDs = rtrim($cwIDs,",").")";
-        if (strlen($cwIDs) > 2){
-            // transfer to completed orders
-            $copyQ = "INSERT INTO CompleteSpecialOrder
-                SELECT p.* FROM PendingSpecialOrder AS p
-                WHERE p.order_id IN $cwIDs";
 
-            // make note in history table
-            $historyQ = "INSERT INTO SpecialOrderHistory
-                        (order_id, entry_date, entry_type, entry_value)
-                        SELECT p.order_id,
-                            " . $sql->now() . ",
-                            'AUTOCLOSE',
-                            'Call/Waiting 30'
-                        FROM PendingSpecialOrder AS p
-                        WHERE p.order_id IN $cwIDs
-                        GROUP BY p.order_id";
-            $sql->query($historyQ);
+        return $cwIDs;
+    }
 
-            // clear from pending
-            $sql->query($copyQ);
-            $delQ = "DELETE FROM PendingSpecialOrder
-                WHERE order_id IN $cwIDs";
-            $sql->query($delQ);
-        }
-        // end auto-close
-
-        // auto-close all after 90 days
+    private function get90DaysOld($sql)
+    {
         $subquery = "select p.order_id from PendingSpecialOrder as p
             left join SpecialOrders as s
             on p.order_id=s.specialOrderID
             where p.trans_id=0 
             and ".$sql->datediff($sql->now(),'datetime')." > 90";
         $allIDs = "(";
-        $r = $sql->query($subquery);
-        while($w = $sql->fetch_row($r)){
-            $allIDs .= $w['order_id'].",";
+        $res = $sql->query($subquery);
+        while ($row = $sql->fetchRow($res)) {
+            $allIDs .= $row['order_id'].",";
         }
         $allIDs = rtrim($allIDs,",").")";
+
+        return $allIDs;
+    }
+
+    private function closeOrders($sql, $cwIDs, $reason)
+    {
+        // transfer to completed orders
+        $copyQ = "INSERT INTO CompleteSpecialOrder
+            SELECT p.* FROM PendingSpecialOrder AS p
+            WHERE p.order_id IN $cwIDs";
+
+        // make note in history table
+        $historyQ = "INSERT INTO SpecialOrderHistory
+                    (order_id, entry_date, entry_type, entry_value)
+                    SELECT p.order_id,
+                        " . $sql->now() . ",
+                        'AUTOCLOSE',
+                        '$reason'
+                    FROM PendingSpecialOrder AS p
+                    WHERE p.order_id IN $cwIDs
+                    GROUP BY p.order_id";
+        $sql->query($historyQ);
+
+        // clear from pending
+        $sql->query($copyQ);
+        $delQ = "DELETE FROM PendingSpecialOrder
+            WHERE order_id IN $cwIDs";
+        $sql->query($delQ);
+    }
+
+    private function cleanEmptyOrders($sql)
+    {
+        $cleanupQ = sprintf("
+            SELECT p.order_id 
+            FROM PendingSpecialOrder AS p 
+                LEFT JOIN SpecialOrders AS o ON p.order_id=o.specialOrderID
+            WHERE 
+                (
+                    o.specialOrderID IS NULL
+                    OR %s(o.notes)=0
+                )
+                OR p.order_id IN (
+                    SELECT order_id FROM CompleteSpecialOrder
+                    WHERE trans_id=0
+                    GROUP BY order_id
+                )
+            GROUP BY p.order_id
+            HAVING MAX(trans_id)=0",
+        ($sql->dbmsName()==="mssql" ? 'datalength' : 'length'));
+        $cleanupR = $sql->query($cleanupQ);
+        $empty = "(";
+        $clean=0;
+        while ($row = $sql->fetchRow($cleanupR)) {
+            $empty .= $row['order_id'].",";
+            $clean++;
+        }
+        $empty = rtrim($empty,",").")";
+
+        $this->cronMsg("Finishing $clean orders");
+
+        if (strlen($empty) > 2){
+            //echo "Empties: ".$empty."\n";
+            $delQ = "DELETE FROM PendingSpecialOrder WHERE order_id IN $empty AND trans_id=0";
+            $delR = $sql->query($delQ);
+        }
+    }
+
+    private function homelessOrderNotices($sql)
+    {
+        $OP = $this->config->get('OP_DB') . $sql->sep();
+
+        $query = "
+        select s.order_id,description,datetime,
+        case when c.lastName ='' then b.LastName else c.lastName END as name
+        from PendingSpecialOrder
+        as s left join SpecialOrders as c on s.order_id=c.specialOrderID
+        left join {$OP}custdata as b on s.card_no=b.CardNo and s.voided=b.personNum
+        where s.order_id in (
+        select p.order_id from PendingSpecialOrder as p
+        left join SpecialOrders as n
+        on p.order_id=n.specialOrderID
+        where notes LIKE ''
+        group by p.order_id
+        having max(department)=0 and max(noteSuperID)=0
+        and max(trans_id) > 0
+        )
+        and trans_id > 0
+        order by datetime
+        ";
+
+        $res = $sql->query($query);
+        if ($sql->numRows($res) > 0) {
+            $msg_body = "Homeless orders detected!\n\n";
+            while ($row = $sql->fetch_row($res)) {
+                $msg_body .= $row['datetime'].' - '.(empty($row['name'])?'(no name)':$row['name']).' - '.$row['description']."\n";
+                $msg_body .= "http://" . $_SERVER['SERVER_NAME'] . '/' . $this->config->get('URL')
+                    . "ordering/view.php?orderID=".$row['order_id']."\n\n";
+            }
+            $msg_body .= "These messages will be sent daily until orders get departments\n";
+            $msg_body .= "or orders are closed\n";
+
+            if ($this->config->get('COOP_ID') == 'WFC_Duluth') {
+                $to_addr = "buyers, michael";
+                $subject = "Incomplete SO(s)";
+                mail($to_addr,$subject,$msg_body);
+            } else {
+                $this->cronMsg($msg_body, FannieTask::TASK_WORST_ERROR);
+            }
+        }
+    }
+
+    public function run()
+    {
+        // clean cache
+        $this->cleanFileCache();
+
+        $sql = FannieDB::get($this->config->get('TRANS_DB'));
+
+        // auto-close called/waiting after 30 days
+        $cwIDs = $this->getOldCalledWaiting($sql);
+        if (strlen($cwIDs) > 2) {
+            $this->closeOrders($sql, $cwIDs, 'Call/Waiting 30');
+        }
+        // end auto-close
+
+        // auto-close all after 90 days
+        $allIDs = $this->get90DaysOld($sql);
         if (strlen($allIDs) > 2){
-            // copy to completed orders
-            $copyQ = "INSERT INTO CompleteSpecialOrder
-                SELECT p.* FROM PendingSpecialOrder AS p
-                WHERE p.order_id IN $allIDs";
-            $sql->query($copyQ);
-
-            // make note in history table
-            $historyQ = "INSERT INTO SpecialOrderHistory
-                        (order_id, entry_date, entry_type, entry_value)
-                        SELECT p.order_id,
-                            " . $sql->now() . ",
-                            'AUTOCLOSE',
-                            '90 Days'
-                        FROM PendingSpecialOrder AS p
-                        WHERE p.order_id IN $allIDs
-                        GROUP BY p.order_id";
-
-            // remove from pending orders
-            $delQ = "DELETE FROM PendingSpecialOrder
-                WHERE order_id IN $allIDs";
-            $sql->query($delQ);
+            $this->closeOrders($sql, $allIDs, '90 Days');
         }
         // end auto-close
 
@@ -223,84 +308,13 @@ class SpecialOrdersTask extends FannieTask
         }
 
         // remove "empty" orders from pending
-        $cleanupQ = sprintf("
-            SELECT p.order_id 
-            FROM PendingSpecialOrder AS p 
-                LEFT JOIN SpecialOrders AS o ON p.order_id=o.specialOrderID
-            WHERE 
-                (
-                    o.specialOrderID IS NULL
-                    OR %s(o.notes)=0
-                )
-                OR p.order_id IN (
-                    SELECT order_id FROM CompleteSpecialOrder
-                    WHERE trans_id=0
-                    GROUP BY order_id
-                )
-            GROUP BY p.order_id
-            HAVING MAX(trans_id)=0",
-        ($FANNIE_SERVER_DBMS=="MSSQL" ? 'datalength' : 'length'));
-        $cleanupR = $sql->query($cleanupQ);
-        $empty = "(";
-        $clean=0;
-        while($row = $sql->fetch_row($cleanupR)){
-            $empty .= $row['order_id'].",";
-            $clean++;
-        }
-        $empty = rtrim($empty,",").")";
-
-        $this->cronMsg("Finishing $clean orders");
-
-        if (strlen($empty) > 2){
-            //echo "Empties: ".$empty."\n";
-            $delQ = "DELETE FROM PendingSpecialOrder WHERE order_id IN $empty AND trans_id=0";
-            $delR = $sql->query($delQ);
-        }
+        $this->cleanEmptyOrders($sql);
 
         /**
           Find active orders that do not belong to a department
           and fire off emails until someone fixes it
         */
-        $OP = $this->config->get('OP_DB') . $sql->sep();
-
-        $q = "
-        select s.order_id,description,datetime,
-        case when c.lastName ='' then b.LastName else c.lastName END as name
-        from PendingSpecialOrder
-        as s left join SpecialOrders as c on s.order_id=c.specialOrderID
-        left join {$OP}custdata as b on s.card_no=b.CardNo and s.voided=b.personNum
-        where s.order_id in (
-        select p.order_id from PendingSpecialOrder as p
-        left join SpecialOrders as n
-        on p.order_id=n.specialOrderID
-        where notes LIKE ''
-        group by p.order_id
-        having max(department)=0 and max(noteSuperID)=0
-        and max(trans_id) > 0
-        )
-        and trans_id > 0
-        order by datetime
-        ";
-
-        $r = $sql->query($q);
-        if ($sql->num_rows($r) > 0) {
-            $msg_body = "Homeless orders detected!\n\n";
-            while ($w = $sql->fetch_row($r)) {
-                $msg_body .= $w['datetime'].' - '.(empty($w['name'])?'(no name)':$w['name']).' - '.$w['description']."\n";
-                $msg_body .= "http://" . $_SERVER['SERVER_NAME'] . '/' . $this->config->get('URL')
-                    . "ordering/view.php?orderID=".$w['order_id']."\n\n";
-            }
-            $msg_body .= "These messages will be sent daily until orders get departments\n";
-            $msg_body .= "or orders are closed\n";
-
-            if ($this->config->get('COOP_ID') == 'WFC_Duluth') {
-                $to = "buyers, michael";
-                $subject = "Incomplete SO(s)";
-                mail($to,$subject,$msg_body);
-            } else {
-                $this->cronMsg($msg_body, FannieTask::TASK_WORST_ERROR);
-            }
-        }
+        $this->homelessOrderNotices($sql);
     }
 }
 

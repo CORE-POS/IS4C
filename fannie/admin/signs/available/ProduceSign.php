@@ -42,7 +42,7 @@ class ProduceSign extends SignClass {
             });
         });
         </script>
-        <form id="searchForm" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="get">
+        <form id="searchForm" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>" method="get">
         <input type="hidden" name="signtype" value="ProduceSign" />
         <input type="hidden" name="action" value="edit" />
         <b>Search</b> <input type="text" name="search_desc" id="searchDescIn" />
@@ -59,15 +59,15 @@ class ProduceSign extends SignClass {
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
         $upc = str_pad($_REQUEST['search_desc'],13,'0',STR_PAD_LEFT);
-        $q = $dbc->prepare("SELECT CASE WHEN u.brand IS NULL THEN '' ELSE u.brand END as origin,
+        $query = $dbc->prepare("SELECT CASE WHEN u.brand IS NULL THEN '' ELSE u.brand END as origin,
             CASE WHEN u.description IS NULL THEN p.description ELSE u.description END as goodDesc,
             CASE WHEN p.discounttype IN (1,2) THEN special_price ELSE normal_price END as price,
             CASE WHEN p.discounttype in (1,2) THEN 'SALE' ELSE 'REG' END as onSale,
             p.scale,p.local
             FROM products AS p LEFT JOIN productUser AS u ON p.upc=u.upc
             WHERE p.upc=?");
-        $r = $dbc->execute($q,array($upc));
-        $w = $dbc->fetch_row($r);
+        $res = $dbc->execute($query,array($upc));
+        $row = $dbc->fetch_row($res);
         ?>
         <script type="text/javascript">
         $(document).ready(function(){
@@ -92,27 +92,27 @@ class ProduceSign extends SignClass {
         <form id="editForm" action="<?php echo $FANNIE_URL; ?>/admin/signs/available/ProduceSign.php" method="get">
         <input type="hidden" name="signtype" value="ProduceSign" />
         <input type="hidden" id="action" name="action" value="preview" />
-        <input type="hidden" name="scale" value="<?php echo $w['scale']; ?>" />
+        <input type="hidden" name="scale" value="<?php echo $row['scale']; ?>" />
         <table>
         <tr>
             <th>Item</th>
-            <td><input type="text" name="desc" id="desc" value="<?php echo $w['goodDesc']; ?>" /></td>
+            <td><input type="text" name="desc" id="desc" value="<?php echo $row['goodDesc']; ?>" /></td>
         </tr>
         <tr>
             <th>Origin</th>
-            <td><input type="text" name="origin" id="origin" value="<?php echo $w['origin']; ?>" /></td>
+            <td><input type="text" name="origin" id="origin" value="<?php echo $row['origin']; ?>" /></td>
         </tr>
         <tr>
             <th>Price</th>
-            <td><input type="text" name="price" id="price" value="<?php echo $w['price']; ?>" /></td>
+            <td><input type="text" name="price" id="price" value="<?php echo $row['price']; ?>" /></td>
         </tr>
         <tr>
             <th>On Sale</th>
-            <td><?php echo $w['onSale']=='SALE' ? 'Yes' : 'No' ?></td>
+            <td><?php echo $row['onSale']=='SALE' ? 'Yes' : 'No' ?></td>
         </tr>
         <tr>
             <th>Local</th>
-            <td><?php echo $w['local']=='1' ? 'Yes' : 'No' ?></td>
+            <td><?php echo $row['local']=='1' ? 'Yes' : 'No' ?></td>
         </tr>
         </table>
         <p />
@@ -123,13 +123,15 @@ class ProduceSign extends SignClass {
         <?php
     }
 
-    function preview(){
-        $desc = isset($_REQUEST['desc']) ? $_REQUEST['desc'] : '&nbsp;';
-        $price = isset($_REQUEST['price']) ? $_REQUEST['price'] : '&nbsp;';
-        if (isset($_REQUEST['scale']) && $_REQUEST['scale']==1)
+    function preview()
+    {
+        $desc = FormLib::get('desc', '&nbsp;');
+        $price = FormLib::get('price', '&nbsp;');
+        if (FormLib::get('scale') == 1) {
             $price .= " / lb";
+        }
         $price = '$'.$price;
-        $origin = isset($_REQUEST['origin']) ? $_REQUEST['origin'] : '&nbsp;';
+        $origin = FormLib::get('origin', '&nbsp;');
 
         printf('<div id="pvDesc" style="text-align:center;">%s</div>
             <div id="pvPrice" style="text-align:center;font-size:200%%;">%s</div>
@@ -137,14 +139,16 @@ class ProduceSign extends SignClass {
             $desc,$price,$origin);
     }
 
-    function sign_pdf(){
+    function sign_pdf()
+    {
         global $FANNIE_ROOT;
-        $desc = isset($_REQUEST['desc']) ? $_REQUEST['desc'] : '&nbsp;';
-        $price = isset($_REQUEST['price']) ? $_REQUEST['price'] : '&nbsp;';
-        if (isset($_REQUEST['scale']) && $_REQUEST['scale']==1)
+        $desc = FormLib::get('desc', '&nbsp;');
+        $price = FormLib::get('price', '&nbsp;');
+        if (FormLib::get('scale') == 1) {
             $price .= " / lb";
+        }
         $price = '$'.$price;
-        $origin = isset($_REQUEST['origin']) ? $_REQUEST['origin'] : '&nbsp;';
+        $origin = FormLib::get('origin', '&nbsp;');
 
         require($FANNIE_ROOT.'src/fpdf/fpdf.php');
         define('FPDF_FONTPATH',$FANNIE_ROOT.'src/fpdf/font/');
@@ -170,5 +174,5 @@ class ProduceSign extends SignClass {
     }
 }
 
-if (basename($_SERVER['PHP_SELF']) == 'ProduceSign.php')
-    $ps = new ProduceSign();
+if (basename(filter_input(INPUT_SERVER, 'PHP_SELF')) == 'ProduceSign.php')
+    $psign = new ProduceSign();

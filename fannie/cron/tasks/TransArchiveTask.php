@@ -36,22 +36,19 @@ class TransArchiveTask extends FannieTask
         'weekday' => '*',
     );
 
-    public function run()
+    private function setDateID($sql)
     {
-        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD;
-        $sql = FannieDB::get($FANNIE_TRANS_DB);
-        $sql->throwOnFailure(true);
-        $today = date('Y-m-d 00:00:00');
-
-        set_time_limit(0);
-
         $cols = $sql->tableDefinition('dtransactions');
         if (isset($cols['date_id'])){
             $sql->query("UPDATE dtransactions SET date_id=DATE_FORMAT(datetime,'%Y%m%d')");
         }
+    }
 
+    private function getDates($sql)
+    {
         /* Find date(s) in dtransactions */
         $dates = array();
+        $today = date('Y-m-d 00:00:00');
         try {
             $datesP = $sql->prepare('
                 SELECT YEAR(datetime) AS year, 
@@ -79,12 +76,11 @@ class TransArchiveTask extends FannieTask
                 . $ex->getMessage(), FannieLogger::ALERT);
         }
 
-        if (count($dates) == 0) {
-            $this->cronMsg('No data to rotate', FannieLogger::INFO);
+        return $dates;
+    }
 
-            return true;
-        }
-
+    private function rotateQuarter($sql, $dates)
+    {
         /* Load dtransactions into the archive, trim to 90 days */
         $chkP = $sql->prepare("INSERT INTO transarchive 
                                SELECT * 
@@ -100,6 +96,7 @@ class TransArchiveTask extends FannieTask
                 */
                 $this->cronMsg('Failed to archive ' . $date . ' in transarchive (last quarter table)
                     Details: ' . $ex->getMessage(), FannieLogger::ERROR);
+                throw new Exception('Archive failed! Not safe to proceed');
             }
         }
         try {
@@ -113,7 +110,10 @@ class TransArchiveTask extends FannieTask
             $this->cronMsg('Failed to trim transarchive (last quarter table)
                 Details: ' . $ex->getMessage(), FannieLogger::ERROR);
         }
+    }
 
+    private function reloadDlog15($sql)
+    {
         /* reload all the small snapshot */
         try {
             $chk1 = $sql->query("TRUNCATE TABLE dlog_15");
@@ -129,6 +129,66 @@ class TransArchiveTask extends FannieTask
             $this->cronMsg('Failed to reload dlog_15. Details: '
                 . $ex->getMessage(), FannieLogger::ERROR);
         }
+    }
+
+    private function getBigArchiveSql($sql)
+    {
+        $bigArchive = $sql->query('SHOW CREATE TABLE bigArchive');
+        $bigArchive = $sql->fetchRow($bigArchive);
+        return $bigArchive['Create Table'];
+    }
+
+    private function createPartitionIfNeeded($sql, $date, $bigArchive)
+    {
+        $partition_name = "p" . date("Ym", strtotime($date)); 
+        if (strstr($bigArchive, 'PARTITION ' . $partition_name . ' VALUES') === false) {
+            $ts = strtotime($date);
+            $boundary = date("Y-m-d", mktime(0,0,0,date("n", $ts)+1,1,date("Y", $ts)));
+            // new partition named pYYYYMM
+            // ends on first day of next month
+            $newQ = sprintf("ALTER TABLE bigArchive ADD PARTITION 
+                (PARTITION %s 
+                VALUES LESS THAN (TO_DAYS('%s'))
+                )",$partition_name,$boundary);
+            try {
+                $newR = $sql->query($newQ);
+                /* refresh table definition after adding partition */
+                $bigArchive = $this->getBigArchiveSql($sql);
+            } catch (Exception $ex) {
+                /**
+                @severity lack of partitions will eventually
+                cause performance problems in large data sets
+                */
+                $this->cronMsg("Error creating new partition $partition_name. Details: "
+                    . $ex->getMessage(), FannieLogger::ERROR);
+            }
+        }
+
+        return $bigArchive;
+    }
+
+    public function run()
+    {
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD;
+        $sql = FannieDB::get($FANNIE_TRANS_DB);
+        $sql->throwOnFailure(true);
+
+        set_time_limit(0);
+
+        $this->setDateID($sql);
+
+        /* Find date(s) in dtransactions */
+        $dates = $this->getDates($sql);
+        if (count($dates) == 0) {
+            $this->cronMsg('No data to rotate', FannieLogger::INFO);
+
+            return true;
+        }
+
+        // should NOT catch the exception thrown if
+        // rotating into quarterly table fails
+        $this->rotateQuarter($sql, $dates);
+        $this->reloadDlog15($sql);
 
         $added_partition = false;
         $created_view = false;
@@ -136,12 +196,7 @@ class TransArchiveTask extends FannieTask
         $sql->throwOnFailure(true);
         /* get table definition in partitioning mode to
            have a list of existing partitions */
-        $bigArchive = false;
-        if ($FANNIE_ARCHIVE_METHOD == "partitions") {
-            $bigArchive = $sql->query('SHOW CREATE TABLE bigArchive');
-            $bigArchive = $sql->fetchRow($bigArchive);
-            $bigArchive = $bigArchive['Create Table'];
-        }
+        $bigArchive = $FANNIE_ARCHIVE_METHOD === 'partitions' ? $this->getBigArchiveSql($sql) : false;
         foreach ($dates as $date) {
             /* figure out which monthly archive dtransactions data belongs in */
             list($year, $month, $day) = explode('-', $date);
@@ -151,31 +206,7 @@ class TransArchiveTask extends FannieTask
             if ($FANNIE_ARCHIVE_METHOD == "partitions") {
                 // we're just partitioning
                 // create a partition if it doesn't exist
-                $partition_name = "p" . date("Ym", strtotime($date)); 
-                if (strstr($bigArchive, 'PARTITION ' . $partition_name . ' VALUES') === false) {
-                    $ts = strtotime($date);
-                    $boundary = date("Y-m-d", mktime(0,0,0,date("n", $ts)+1,1,date("Y", $ts)));
-                    // new partition named pYYYYMM
-                    // ends on first day of next month
-                    $newQ = sprintf("ALTER TABLE bigArchive ADD PARTITION 
-                        (PARTITION %s 
-                        VALUES LESS THAN (TO_DAYS('%s'))
-                        )",$partition_name,$boundary);
-                    try {
-                        $newR = $sql->query($newQ);
-                        /* refresh table definition after adding partition */
-                        $bigArchive = $sql->query('SHOW CREATE TABLE bigArchive');
-                        $bigArchive = $sql->fetchRow($bigArchive);
-                        $bigArchive = $bigArchive['Create Table'];
-                    } catch (Exception $ex) {
-                        /**
-                        @severity lack of partitions will eventually
-                        cause performance problems in large data sets
-                        */
-                        $this->cronMsg("Error creating new partition $partition_name. Details: "
-                            . $ex->getMessage(), FannieLogger::ERROR);
-                    }
-                }
+                $bigArchive = $this->createPartitionIfNeeded($sql, $date, $bigArchive);
         
                 // now just copy rows into the partitioned table
                 $loadQ = "INSERT INTO bigArchive 
@@ -191,8 +222,9 @@ class TransArchiveTask extends FannieTask
                     */
                     $this->cronMsg('Failed to properly archive transaction data for ' . $date
                         . ' Details: ' . $ex->getMessage(), FannieLogger::ALERT);
+                    throw new Exception('Archive failed! Not safe to proceed');
                 }
-            } else if (!$sql->table_exists($table)) {
+            } elseif (!$sql->tableExists($table)) {
                 $query = "CREATE TABLE $table LIKE $FANNIE_TRANS_DB.dtransactions";
                 if ($sql->dbmsName() == 'mssql') {
                     $query = "SELECT * INTO $table FROM $FANNIE_TRANS_DB.dbo.dtransactions
@@ -221,6 +253,7 @@ class TransArchiveTask extends FannieTask
                     */
                     $this->cronMsg("Error creating new archive structure $table Details: "
                         . $ex->getMessage(), FannieLogger::ALERT);
+                    throw new Exception('Archive failed! Not safe to proceed');
                 }
             } else {
                 $query = "INSERT INTO " . $table . "
@@ -235,6 +268,7 @@ class TransArchiveTask extends FannieTask
                     */
                     $this->cronMsg('Failed to properly archive transaction data for ' . $date
                         . ' Details: ' . $ex->getMessage(), FannieLogger::ALERT);
+                    throw new Exception('Archive failed! Not safe to proceed');
                 }
             }
 
@@ -243,7 +277,8 @@ class TransArchiveTask extends FannieTask
         /* drop dtransactions data 
            DO NOT TRUNCATE; that resets AUTO_INCREMENT column
         */
-        $sql =  FannieDB::get($FANNIE_TRANS_DB);
+        $today = date('Y-m-d 00:00:00');
+        $sql = FannieDB::get($FANNIE_TRANS_DB);
         $sql->throwOnFailure(true);
         try {
             $chk = $sql->query("DELETE FROM dtransactions WHERE datetime < '$today'");

@@ -138,13 +138,6 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
         $ruleType = FormLib::get('ruleType');
         $review = FormLib::get('reviewDate');
 
-        $SKU = $this->get_column_index('sku');
-        $QTY = $this->get_column_index('qty');
-        $UPC = $this->get_column_index('upc');
-        $REG_COST = $this->get_column_index('cost');
-        $NET_COST = $this->get_column_index('saleCost');
-        $SRP = $this->get_column_index('srp');
-
         $SKU_TO_PLU_MAP = $this->buildSkuMap($dbc, $VENDOR_ID);
 
         $updated_upcs = array();
@@ -152,26 +145,26 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
         foreach ($linedata as $data) {
             if (!is_array($data)) continue;
 
-            if (!isset($data[$UPC])) continue;
+            if (!isset($data[$indexes['upc']])) continue;
 
             // grab data from appropriate columns
-            $sku = ($SKU !== false) ? $data[$SKU] : '';
+            $sku = ($indexes['sku'] !== false) ? $data[$indexes['sku']] : '';
             $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
-            $qty = $data[$QTY];
-            $upc = substr($data[$UPC],0,13);
+            $qty = $data[$indexes['qty']];
+            $upc = substr($data[$indexes['upc']],0,13);
             // zeroes isn't a real item, skip it
             if ($upc == "0000000000000")
                 continue;
             if (isset($SKU_TO_PLU_MAP[$sku])) {
                 $upc = $SKU_TO_PLU_MAP[$sku];
             }
-            $reg = trim($data[$REG_COST]);
-            $net = ($NET_COST !== false) ? trim($data[$NET_COST]) : 0.00;
+            $reg = trim($data[$indexes['cost']]);
+            $net = ($indexes['saleCost'] !== false) ? trim($data[$indexes['saleCost']]) : 0.00;
             // blank spreadsheet cell
             if (empty($net)) {
                 $net = 0;
             }
-            $srp = trim($data[$SRP]);
+            $srp = trim($data[$indexes['srp']]);
             // can't process items w/o price (usually promos/samples anyway)
             if (empty($reg) or empty($srp))
                 continue;

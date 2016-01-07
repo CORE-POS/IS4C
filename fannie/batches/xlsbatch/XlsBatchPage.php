@@ -64,18 +64,13 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         return $batchtypes;
     }
 
-    function process_file($linedata, $indexes)
+    private function createBatch($dbc)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
         $btype = FormLib::get('btype',0);
         $date1 = FormLib::get('date1',date('Y-m-d'));
         $date2 = FormLib::get('date2',date('Y-m-d'));
         $bname = FormLib::get('bname','');
         $owner = FormLib::get('bowner','');
-        $ftype = FormLib::get('ftype','UPCs');
-        $has_checks = FormLib::get('has_checks') !== '' ? True : False;
 
         $dtQ = $dbc->prepare("SELECT discType FROM batchType WHERE batchTypeID=?");
         $dtR = $dbc->execute($dtQ, array($btype));
@@ -91,6 +86,18 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $insR = $dbc->execute($insQ,$args);
         $batchID = $dbc->insertID();
 
+        return $batchID;
+    }
+
+    function process_file($linedata, $indexes)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $ftype = FormLib::get('ftype','UPCs');
+        $has_checks = FormLib::get('has_checks') !== '' ? True : False;
+
+        $batchID = $this->createBatch($dbc);
         if ($this->config->get('STORE_MODE') === 'HQ') {
             StoreBatchMapModel::initBatch($batchID);
         }
