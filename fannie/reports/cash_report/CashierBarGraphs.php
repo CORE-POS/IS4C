@@ -15,6 +15,21 @@ class CashierBarGraphs extends FannieRESTfulPage
     public $themed = true;
     private $session_key = '';
 
+    protected function readinessCheck()
+    {
+        $path = realpath(dirname(__FILE__));
+        $path = rtrim($path, '/') . '/image_area';
+        if (!is_dir($path)) {
+            $this->error_msg = 'Missing required directory ' . $path;
+            return false;
+        } elseif (!is_writable($path)) {
+            $this->error_msg = 'Directory ' . $path . ' must be writable by web server';
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     private function avg($array)
     {
         $count = 0;
