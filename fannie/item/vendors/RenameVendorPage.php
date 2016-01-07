@@ -109,14 +109,14 @@ class RenameVendorPage extends FannieRESTfulPage
         $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
         $this->error = 'error';
         $phpunit->assertNotEquals(0, strlen($this->post_id_view()));
-        $this->assertEquals(true, $this->post_id_handler());
+        $phpunit->assertEquals(true, $this->post_id_handler());
         $form = new COREPOS\common\mvc\ValueContainer();
         $form->name = '';
         $this->setForm($form);
-        $this->assertEquals(true, $this->post_id_handler());
+        $phpunit->assertEquals(true, $this->post_id_handler());
         $form->name = 'Not a real vendor';
         $this->setForm($form);
-        $this->assertNotEquals(true, $this->post_id_handler());
+        $phpunit->assertNotEquals(true, $this->post_id_handler());
     }
 }
 

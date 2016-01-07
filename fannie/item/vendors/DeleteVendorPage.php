@@ -123,10 +123,10 @@ class DeleteVendorPage extends FannieRESTfulPage
         $this->id = 1;
         $this->error = 'error';
         $phpunit->assertNotEquals(0, strlen($this->post_id_view()));
-        $this->assertEquals(true, $this->post_id_handler());
+        $phpunit->assertEquals(true, $this->post_id_handler());
         $form = new COREPOS\common\mvc\ValueContainer();
         $this->form->newID = 1;
-        $this->assertEquals(true, $this->post_id_handler());
+        $phpunit->assertEquals(true, $this->post_id_handler());
     }
 }
 
