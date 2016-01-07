@@ -8,10 +8,17 @@ class ItemsTest extends PHPUnit_Framework_TestCase
     public function testItems()
     {
         $items = FannieAPI::listModules('ItemModule', true);
+        $conf = FannieConfig::factory();
+        $con = FannieDB::get($conf->get('OP_DB'));
 
         foreach($items as $item_class) {
             $obj = new $item_class();
+            $obj->setConnection($con);
+            $obj->setConfig($conf);
             $this->assertNotEquals(0, strlen($obj->showEditForm('0000000004011')));
+            $this->assertInternalType('int', $obj->width());
+            $this->assertInternalType('array', $obj->summaryRows('0000000004011'));
+            $this->assertInternalType('string', $obj->getFormJavascript());
         }
     }
 
