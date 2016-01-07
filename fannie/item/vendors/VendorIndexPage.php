@@ -251,6 +251,8 @@ class VendorIndexPage extends FanniePage {
         $ret .= ' <label>Active
             <input type="checkbox" onchange="toggleActive(this, ' . $id . ')" ' . ($model->inactive() == 1 ? '' : 'checked') . ' />
             </label>';
+        $ret .= sprintf(' | <a href="RenameVendorPage.php?id=%d">Rename %s</a>', $id, $model->vendorName());
+        $ret .= sprintf(' | <a href="DeleteVendorPage.php?id=%d">Delete %s</a>', $id, $model->vendorName());
         $ret .= '</div>';
 
         $itemQ = $dbc->prepare("SELECT COUNT(*) FROM vendorItems WHERE vendorID=?");
