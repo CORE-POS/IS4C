@@ -854,6 +854,13 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
 
         return $ret;
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $phpunit->assertNotEquals(0, strlen($this->css_content()));
+        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
+    }
 }
 
 FannieDispatch::conditionalExec();

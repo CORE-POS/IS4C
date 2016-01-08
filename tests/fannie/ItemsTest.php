@@ -22,6 +22,35 @@ class ItemsTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    public function testBaseModule()
+    {
+        $config = FannieConfig::factory();
+        $connection = FannieDB::get($config->OP_DB);
+        $mod = new BaseItemModule();
+        $mod->setConfig($config);
+        $mod->setConnection($connection);
+        $this->assertNotEquals(0, strlen($this->showEditForm('0123456789012')));
+
+        $form = new \COREPOS\common\mvc\ValueContainer();
+        $form->store_id = array(1);
+        $form->tax = array(0);
+        $form->FS = array();
+        $form->Scale = array();
+        $form->QtyFrc = array();
+        $form->discount = array(1);
+        $form->price = array(1);
+        $form->cost = array(0);
+        $form->descript = array('unit test item');
+        $form->manufacturer = array('unit test');
+        $form->department = array(1);
+        $form->subdept = array(0);
+        $form->size = array('');
+        $form->unitm = array('');
+        $form->distributor = array('unit test');
+        $mod->setForm($form);
+        $mod->saveFormData('0123456789012');
+    }
+
     public function testItemFlags()
     {
         $config = FannieConfig::factory();
@@ -104,7 +133,7 @@ class ItemsTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, $module->saveFormData('0000000004011'));
     }
 
-    public function textExtraInfo()
+    public function testExtraInfo()
     {
         $config = FannieConfig::factory();
         $connection = FannieDB::get($config->OP_DB);
@@ -119,6 +148,17 @@ class ItemsTest extends PHPUnit_Framework_TestCase
         $form->idEnforced = 0;
         $module->setForm($form);
         $this->assertEquals(true, $module->saveFormData('0000000004011'));
+    }
+
+    public function testItemLinks()
+    {
+        $mod = new ItemLinksModule();
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->newshelftag = 'tag';
+        $mod->setForm($form);
+        ob_start();
+        $mod->saveFormData('4011');
+        $this->assertNotEquals(0, strlen(ob_get_clean()));
     }
 
     public function testLikeCode()

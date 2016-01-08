@@ -88,15 +88,18 @@ class ItemLinksModule extends ItemModule
         return $ret;
     }
 
-    function SaveFormData($upc){
+    function SaveFormData($upc)
+    {
         $upc = BarcodeLib::padUPC($upc);
         $ret = '';
-        if (FormLib::get_form_value('newshelftag','') != ''){
-            $ret .= "<script type=\"text/javascript\">";
-            $ret .= "testwindow= window.open (\"addShelfTag.php?upc=$upc\", \"New Shelftag\",\"location=0,status=1,scrollbars=1,width=300,height=220\");";
-            $ret .= "testwindow.moveTo(50,50);";
-            $ret .= "</script>";
-        }
+        try {
+            if ($this->form->newshelftag !== '') {
+                $ret .= "<script type=\"text/javascript\">";
+                $ret .= "testwindow= window.open (\"addShelfTag.php?upc=$upc\", \"New Shelftag\",\"location=0,status=1,scrollbars=1,width=300,height=220\");";
+                $ret .= "testwindow.moveTo(50,50);";
+                $ret .= "</script>";
+            }
+        } catch (Exception ($ex) {}
         echo $ret; // output javascript to result page
         return True;
     }

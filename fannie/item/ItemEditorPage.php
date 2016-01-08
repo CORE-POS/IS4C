@@ -696,6 +696,38 @@ class ItemEditorPage extends FanniePage
 
         return $ret;
     }
+    
+    public function unitTest($phpunit)
+    {
+        $this->error_msg = '';
+        $upc = '0000000004011';
+        $phpunit->assertNotEquals(0, strlen($this->errorContent()));
+        $phpunit->assertNotEquals(0, strlen($this->searchForm()));
+        foreach (array('SKU','Brand Prefix','UPC') as $type) {
+            $phpunit->assertInternalType('array', $this->searchQuery($upc, $type, 1, 1));
+        }
+
+        list($query, $args) = $this->searchQuery('banana', $type, 0, 1);
+        $prep = $this->connection->prepare($query);
+        $res = $this->connection->execute($prep, $args);
+        $results = array();
+        while ($row = $this->connection->fetchRow($res)) {
+            $results[$row['upc']] = $row;
+        }
+        $phpunit->assertNotEquals(0, strlen($this->multipleResults($results)));
+
+        $phpunit->assertInternalType('boolean', $this->userCanEdit($upc, false));
+        $phpunit->assertInternalType('boolean', $this->userCanEdit($upc, true));
+
+        $phpunit->assertNotEquals(0, strlen($this->editorLinksArea($upc, false, false)));
+        $phpunit->assertNotEquals(0, strlen($this->editorLinksArea($upc, false, true)));
+        $phpunit->assertNotEquals(0, strlen($this->editorLinksArea($upc, true, true)));
+
+        $phpunit->assertNotEquals(0, strlen($this->editForm($upc, false)));
+        $phpunit->assertNotEquals(0, strlen($this->editForm($upc, true)));
+
+        $phpunit->assertNotEquals(0, strlen($this->modulesResult(array('BaseItemModule'), $upc)));
+    }
 }
 
 FannieDispatch::conditionalExec();

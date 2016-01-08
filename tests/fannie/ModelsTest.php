@@ -33,5 +33,23 @@ class ModelsTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    public function testBreakdowns()
+    {
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $model = new VendorBreakdownsModel($dbc);
+
+        $pair = $model->getSplit('4/12oz');
+        $this->assertEquals($pair, array(4, '12OZ'));
+
+        $pair = $model->getSplit('5 CT');
+        $this->assertEquals($pair, array(5, ''));
+
+        $pair = $model->getSplit('4PKT');
+        $this->assertEquals($pair, array(4, ''));
+
+        $pair = $model->getSplit('NonSense');
+        $this->assertEquals($pair, array(false, ''));
+    }
+
 }
 
