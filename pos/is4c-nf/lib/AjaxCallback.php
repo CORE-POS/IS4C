@@ -48,7 +48,9 @@ class AjaxCallback
         $callback_class = get_called_class();
         if (basename($_SERVER['PHP_SELF']) === $callback_class . '.php') {
             ini_set('display_errors', 'off');
+            self::perfStart();
             self::executeCallback($callback_class);
+            self::perfEnd();
         }
     }
 
@@ -65,6 +67,25 @@ class AjaxCallback
             default:
                 echo $output;
                 break;
+        }
+    }
+
+    protected static $elapsed = null;
+    protected static function perfStart()
+    {
+        self::$elapsed = microtime(true); 
+    }
+
+    protected static function perfEnd()
+    {
+        $timer = microtime(true) - self::$elapsed;
+        $log = dirname(__FILE__) . '/../log/perf.log';
+        $refl = new ReflectionClass(get_called_class());
+        $file = basename($refl->getFileName());
+        if (self::$elapsed !== null && is_writable($log)) {
+            $fptr = fopen($log, 'a');
+            fwrite($fptr, $file . "," . $timer . "\n");
+            fclose($fptr);
         }
     }
 }
