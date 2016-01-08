@@ -29,7 +29,7 @@ class ItemsTest extends PHPUnit_Framework_TestCase
         $mod = new BaseItemModule();
         $mod->setConfig($config);
         $mod->setConnection($connection);
-        $this->assertNotEquals(0, strlen($this->showEditForm('0123456789012')));
+        $this->assertNotEquals(0, strlen($mod->showEditForm('0123456789012')));
 
         $form = new \COREPOS\common\mvc\ValueContainer();
         $form->store_id = array(1);
