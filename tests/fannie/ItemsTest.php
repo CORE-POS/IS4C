@@ -145,7 +145,7 @@ class ItemsTest extends PHPUnit_Framework_TestCase
         $form->deposit = 0;
         $form->local = 0;
         $form->inUse = 1;
-        $form->idEnforced = 0;
+        $form->idReq = 0;
         $module->setForm($form);
         $this->assertEquals(true, $module->saveFormData('0000000004011'));
     }
