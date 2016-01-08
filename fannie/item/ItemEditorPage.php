@@ -740,7 +740,7 @@ class ItemEditorPage extends FanniePage
         $phpunit->assertNotEquals(0, strlen($this->editForm($upc, false)));
         $phpunit->assertNotEquals(0, strlen($this->editForm($upc, true)));
 
-        $phpunit->assertNotEquals(0, strlen($this->modulesResult(array('BaseItemModule'), $upc)));
+        $phpunit->assertNotEquals(0, strlen($this->modulesResult(array('BaseItemModule'=>'irrelevant'), $upc)));
     }
 }
 
