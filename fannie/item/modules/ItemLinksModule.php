@@ -99,7 +99,7 @@ class ItemLinksModule extends ItemModule
                 $ret .= "testwindow.moveTo(50,50);";
                 $ret .= "</script>";
             }
-        } catch (Exception ($ex) {}
+        } catch (Exception $ex) {}
         echo $ret; // output javascript to result page
         return True;
     }
