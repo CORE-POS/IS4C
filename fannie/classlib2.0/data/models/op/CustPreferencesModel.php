@@ -31,7 +31,7 @@ class CustPreferencesModel extends BasicModel
     protected $preferred_db = 'op';
 
     protected $columns = array(
-    'custPrefenceID' => array('type'=>'INT', 'increment'=>true),
+    'custPreferenceID' => array('type'=>'INT', 'increment'=>true),
     'card_no' => array('type'=>'INT', 'primary_key'=>true),
     'custAvailablePrefID' => array('type'=>'INT'),
     'pref_key' => array('type'=>'VARCHAR(50)', 'primary_key'=>true),
