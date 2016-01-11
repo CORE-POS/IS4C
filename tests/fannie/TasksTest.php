@@ -86,6 +86,26 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, $p->cashed_here(), 'Not marked as cashed');
     }
 
+    public function testArHistory()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new ArHistoryTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testAutoPars()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new AutoParsTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
     public function testEquityHistory()
     {
         $config = FannieConfig::factory();
@@ -134,6 +154,146 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $row = $dbc->fetchRow($res);
         $this->assertEquals(30, $row[0]);
         $this->assertEquals(3, $row[1]);
+    }
+
+    public function testInventory()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new InventoryTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testLastSold()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new LastSoldTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testNabs()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new NabsTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testNotInUse()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new NotInUseTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testOrderGen()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new OrderGenTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testPriceChange()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new PriceChangeTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testProdUpdate()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new ProdUpdateMaintenanceTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testDataCache()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new ReportDataCacheTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testSalesTask()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new SalesBatchTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testSameDay()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new SameDayReportingTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testSetDates()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new SetMemDatesTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testSO()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new SpecialOrdersTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testSnapshot()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new TableSnapshotTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testVoid()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new VoidHistoryTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
     }
 
 }

@@ -91,6 +91,15 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         $this->assertInternalType('object', $exp);
     }
 
+    public function testHelp()
+    {
+        $text = 'foo';
+        $doc_link = 'http://foo';
+        $tag = 'div';
+        $this->assertNotEquals(0, strlen(COREPOS\Fannie\API\lib\FannieHelp::toolTip($text)));
+        $this->assertNotEquals(0, strlen(COREPOS\Fannie\API\lib\FannieHelp::toolTip($text, $doc_link, $tag)));
+    }
+
     public function testFannieSignage()
     {
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
@@ -229,6 +238,17 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals('', COREPOS\Fannie\API\lib\FannieUI::formatDate('0000-00-00'));
         $this->assertEquals(date('m.d.Y'), COREPOS\Fannie\API\lib\FannieUI::formatDate(date('Y-m-d'), 'm.d.Y'));
+    }
+
+    public function testServiceScale()
+    {
+        $this->assertNotEquals(0, strlen(COREPOS\Fannie\API\item\ServiceScaleLib::sessionKey()));
+        $this->assertEquals(false, COREPOS\Fannie\API\item\ServiceScaleLib::getModelByHost('foo'));
+        $this->assertEquals(53, COREPOS\Fannie\API\item\ServiceScaleLib::attributesToLabel('horizontal', true, true));
+        $this->assertEquals(63, COREPOS\Fannie\API\item\ServiceScaleLib::attributesToLabel('horizontal', true, false));
+        $this->assertEquals(133, COREPOS\Fannie\API\item\ServiceScaleLib::attributesToLabel('horizontal', false, false));
+        $this->assertEquals(23, COREPOS\Fannie\API\item\ServiceScaleLib::attributesToLabel('vertical', true, false));
+        $this->assertEquals(103, COREPOS\Fannie\API\item\ServiceScaleLib::attributesToLabel('vertical', false, false));
     }
 }
 
