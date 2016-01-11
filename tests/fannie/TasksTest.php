@@ -210,7 +210,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
     {
         $config = FannieConfig::factory();
         $logger = new FannieLogger();
-        $task = new PriceChangeTask();
+        $task = new PriceBatchTask();
         $task->setConfig($config);
         $task->setLogger($logger);
         $task->run();
