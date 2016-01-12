@@ -89,7 +89,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             $this->scanPriceChanges($dbc, $limit);
 
             if ($dbc->tableExists('ProdCostHistory')) {
-                $limit = $this->lastUpdateID($dbc, 'prodCostHistory');
+                $limit = $this->lastUpdateID($dbc, 'ProdCostHistory');
                 $this->cronMsg('Scanning cost changes from prodUpdateID '.$limit, FannieLogger::INFO);
                 $this->scanCostChanges($dbc, $limit);
             }

@@ -290,6 +290,9 @@ class SpecialOrdersTask extends FannieTask
         foreach($order_ids as $o)
             $oids .= $o.",";
         $oids = rtrim($oids,",").")";
+        if ($oids === '()') {
+            $oids = '(-999)';
+        }
         $checkQ = "SELECT order_id FROM CompleteSpecialOrder WHERE trans_id=0 AND order_id IN $oids";
         $checkR = $sql->query($checkQ);
         $done_oids = array();
