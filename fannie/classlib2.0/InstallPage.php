@@ -87,6 +87,20 @@ class InstallPage extends \FanniePage
         return ob_get_clean();
     }
 
+    public function helpContent()
+    {
+        $dir = rtrim(realpath(dirname(__FILE__) . '/../'), '/');
+        $conf = $dir . '/config.php';
+        return '<p>Configuration settings and values are stored in
+            ' . $conf . '. If it does not exist, create the file
+            so and put "<?php" on the first line (without quotes).
+            Make sure the file is writable by the web server (i.e.,
+            chmod 666 <em>or</em> chown [webserver user].</p>
+            <p>For details on all the different settings, consult the
+            <a href="https://github.com/CORE-POS/IS4C/wiki/Office-Configuration">wiki</a>.
+            </p>';
+    }
+
 }
 
 }
