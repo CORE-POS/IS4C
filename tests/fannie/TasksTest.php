@@ -236,16 +236,6 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task->run();
     }
 
-    public function testSalesTask()
-    {
-        $config = FannieConfig::factory();
-        $logger = new FannieLogger();
-        $task = new SalesBatchTask();
-        $task->setConfig($config);
-        $task->setLogger($logger);
-        $task->run();
-    }
-
     public function testSameDay()
     {
         $config = FannieConfig::factory();
