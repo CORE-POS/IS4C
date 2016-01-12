@@ -69,7 +69,7 @@ class PriceBatchTask extends FannieTask
 
         /* change prices
         */
-        if (strstr(strtouper($this->config->get('SERVER_DBMS')), "MYSQL")) {
+        if (strstr(strtoupper($this->config->get('SERVER_DBMS')), "MYSQL")) {
             $chk_vital[] = $sql->query("UPDATE products AS p LEFT JOIN
                 batchList AS l ON l.upc=p.upc LEFT JOIN
                 batches AS b ON b.batchID=l.batchID
