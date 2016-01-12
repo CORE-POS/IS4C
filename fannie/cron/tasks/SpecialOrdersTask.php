@@ -265,6 +265,9 @@ class SpecialOrdersTask extends FannieTask
                 $where .= " OR ";
         }
         $where .= ")";
+        if ($where === '( )') {
+            $where = '1=1';
+        }
 
         $this->cronMsg("Found ".count($order_ids)." order items");
 

@@ -106,7 +106,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
     private function lastUpdateID($dbc, $table)
     {
         $limitP = $dbc->prepare('SELECT MAX(prodUpdateID) AS lastChange FROM ' . $dbc->identifierEscape($table));
-        $limit = $dbc->getValue($limit);
+        $limit = $dbc->getValue($limitP);
 
         return $limit ? $limit : 0;
     }
