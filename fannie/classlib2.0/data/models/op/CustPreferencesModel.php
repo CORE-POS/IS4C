@@ -31,7 +31,7 @@ class CustPreferencesModel extends BasicModel
     protected $preferred_db = 'op';
 
     protected $columns = array(
-    'custPrefenceID' => array('type'=>'INT', 'increment'=>true),
+    'custPreferenceID' => array('type'=>'INT', 'increment'=>true),
     'card_no' => array('type'=>'INT', 'primary_key'=>true),
     'custAvailablePrefID' => array('type'=>'INT'),
     'pref_key' => array('type'=>'VARCHAR(50)', 'primary_key'=>true),
@@ -54,13 +54,13 @@ available at the lanes.
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function custPrefenceID()
+    public function custPreferenceID()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["custPrefenceID"])) {
-                return $this->instance["custPrefenceID"];
-            } else if (isset($this->columns["custPrefenceID"]["default"])) {
-                return $this->columns["custPrefenceID"]["default"];
+            if(isset($this->instance["custPreferenceID"])) {
+                return $this->instance["custPreferenceID"];
+            } else if (isset($this->columns["custPreferenceID"]["default"])) {
+                return $this->columns["custPreferenceID"]["default"];
             } else {
                 return null;
             }
@@ -71,7 +71,7 @@ available at the lanes.
                 throw new Exception('Invalid operator: ' . func_get_arg(1));
             }
             $filter = array(
-                'left' => 'custPrefenceID',
+                'left' => 'custPreferenceID',
                 'right' => $value,
                 'op' => $op,
                 'rightIsLiteral' => false,
@@ -81,12 +81,12 @@ available at the lanes.
             }
             $this->filters[] = $filter;
         } else {
-            if (!isset($this->instance["custPrefenceID"]) || $this->instance["custPrefenceID"] != func_get_args(0)) {
-                if (!isset($this->columns["custPrefenceID"]["ignore_updates"]) || $this->columns["custPrefenceID"]["ignore_updates"] == false) {
+            if (!isset($this->instance["custPreferenceID"]) || $this->instance["custPreferenceID"] != func_get_args(0)) {
+                if (!isset($this->columns["custPreferenceID"]["ignore_updates"]) || $this->columns["custPreferenceID"]["ignore_updates"] == false) {
                     $this->record_changed = true;
                 }
             }
-            $this->instance["custPrefenceID"] = func_get_arg(0);
+            $this->instance["custPreferenceID"] = func_get_arg(0);
         }
         return $this;
     }
