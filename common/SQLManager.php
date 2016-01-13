@@ -1772,15 +1772,15 @@ class SQLManager
 
     protected function getAdapter($type)
     {
-        if (isset($adapters[$type])) {
-            return $adapters[$type];
+        if (isset($this->adapters[$type])) {
+            return $this->adapters[$type];
         }
         if (isset($this->adapter_map[$type])) {
             $class = $this->adapter_map[$type];
-            $adapters[$type] = new $class();
+            $this->adapters[$type] = new $class();
         }
 
-        return $adapters[$type];
+        return $this->adapters[$type];
     }
 
     /**
