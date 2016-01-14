@@ -118,7 +118,7 @@ StaffArPayrollDeduction plugin.';
                 continue;
             }
 
-            $record = DTrans::$DEFAULTS;
+            $record = DTrans::defaults();
             $record['emp_no'] = $emp;
             $record['register_no'] = $reg;
             $record['trans_no'] = $trans_no;

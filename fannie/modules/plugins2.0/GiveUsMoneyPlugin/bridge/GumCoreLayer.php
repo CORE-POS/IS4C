@@ -51,7 +51,7 @@ class GumCoreLayer extends GumPosLayer
             }
         }
 
-        $record = DTrans::$DEFAULTS;
+        $record = DTrans::defaults();
         $record['register_no'] = $register_no;
         $record['emp_no'] = $emp_no;
         $record['trans_no'] = $trans_no;

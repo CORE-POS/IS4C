@@ -154,7 +154,7 @@ class ReverseTransPage extends FannieRESTfulPage
         $result = $dbc->execute($prep, $args);
 
         $trans_id = 1;
-        $record = DTrans::$DEFAULTS;
+        $record = DTrans::defaults();
         $record['emp_no'] = $emp_no;
         $record['register_no'] = $register_no;
         $record['trans_no'] = $trans_no;

@@ -136,7 +136,7 @@ class WfcAbandonEquityImport extends \COREPOS\Fannie\API\FannieUploadPage
 
             $trans_id = 1;
             if ($a_amt > 0) {
-                $record = DTrans::$DEFAULTS;
+                $record = DTrans::defaults();
                 $record['register_no'] = $LANE_NO;
                 $record['emp_no'] = $EMP_NO;
                 $record['trans_no'] = $trans;
@@ -156,7 +156,7 @@ class WfcAbandonEquityImport extends \COREPOS\Fannie\API\FannieUploadPage
                 $dbc->execute($prep, $info['arguments']);
             }
             if ($b_amt > 0) {
-                $record = DTrans::$DEFAULTS;
+                $record = DTrans::defaults();
                 $record['register_no'] = $LANE_NO;
                 $record['emp_no'] = $EMP_NO;
                 $record['trans_no'] = $trans;
@@ -176,7 +176,7 @@ class WfcAbandonEquityImport extends \COREPOS\Fannie\API\FannieUploadPage
                 $dbc->execute($prep, $info['arguments']);
             }
 
-            $record = DTrans::$DEFAULTS;
+            $record = DTrans::defaults();
             $record['register_no'] = $LANE_NO;
             $record['emp_no'] = $EMP_NO;
             $record['trans_no'] = $trans;
@@ -195,7 +195,7 @@ class WfcAbandonEquityImport extends \COREPOS\Fannie\API\FannieUploadPage
             $prep = $dbc->prepare("INSERT INTO $dtrans_table ({$info['columnString']}) VALUES ({$info['valueString']})");
             $dbc->execute($prep, $info['arguments']);
 
-            $record = DTrans::$DEFAULTS;
+            $record = DTrans::defaults();
             $record['register_no'] = $LANE_NO;
             $record['emp_no'] = $EMP_NO;
             $record['trans_no'] = $trans;
