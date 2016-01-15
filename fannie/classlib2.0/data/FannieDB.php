@@ -62,6 +62,20 @@ class FannieDB
         return self::$db;
     }
 
+    /**
+      This method exists to support unit testing where test runs
+      that take several minutes may run into issues with the
+      single database connection timing out.
+    */
+    public static function forceReconnect($db_name)
+    {
+        if (self::$db !== null) {
+            self::$db->close('', true);
+            self::$db = null;
+        }
+        return self::get($db_name);
+    }
+
     private static function dbIsConfigured()
     {
         $config = FannieConfig::factory();

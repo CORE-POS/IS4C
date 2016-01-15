@@ -7,6 +7,7 @@ class PluginFannieTest extends PHPUnit_Framework_TestCase
 {
     public function testPlugins()
     {
+        $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
         $plugin_path = dirname(__FILE__) . '/../../fannie/modules/plugins2.0/';
         $first = array('CwReportDataSource'=>'');
         $files = array();

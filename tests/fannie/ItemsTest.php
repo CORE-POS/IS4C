@@ -9,7 +9,7 @@ class ItemsTest extends PHPUnit_Framework_TestCase
     {
         $items = FannieAPI::listModules('ItemModule', true);
         $conf = FannieConfig::factory();
-        $con = FannieDB::get($conf->get('OP_DB'));
+        $con = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
 
         foreach($items as $item_class) {
             $obj = new $item_class();

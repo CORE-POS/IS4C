@@ -9,7 +9,7 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
     {
         $config = FannieConfig::factory();
         $OP_DB = $config->get('OP_DB');
-        $sql = FannieDB::get($OP_DB);
+        $sql = FannieDB::forceReconnect($OP_DB);
 
         /* test create connection */
         $this->assertInstanceOf('SQLManager',$sql);

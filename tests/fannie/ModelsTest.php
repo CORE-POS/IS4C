@@ -7,6 +7,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 {
     public function testModels()
     {
+        $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
         $models = FannieAPI::listModules('BasicModel', true);
 
         foreach ($models as $model_class) {

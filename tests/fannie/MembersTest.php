@@ -7,6 +7,7 @@ class MembersTest extends PHPUnit_Framework_TestCase
 {
     public function testItems()
     {
+        $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
         $mems = FannieAPI::listModules('MemberModule', true);
 
         foreach($mems as $mem_class) {

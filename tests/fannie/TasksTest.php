@@ -7,6 +7,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
 {
     public function testTasks()
     {
+        $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
         $tasks = FannieAPI::listModules('FannieTask', true);
 
         foreach($tasks as $task_class) {

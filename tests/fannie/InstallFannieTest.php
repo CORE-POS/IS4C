@@ -7,6 +7,7 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
 {
     public function testInstallOpDB()
     {
+        $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
         $op_db = FannieConfig::config('OP_DB');
         $con = FannieDB::get($op_db);
         if (!class_exists('InstallIndexPage')) {

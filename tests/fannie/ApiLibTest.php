@@ -7,6 +7,8 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
 {
     public function testBarcodeLib()
     {
+        $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
+
         $pad = BarcodeLib::padUPC('1');
         $this->assertEquals('0000000000001', $pad, 'BarcodeLib::padUPC failed');
 
