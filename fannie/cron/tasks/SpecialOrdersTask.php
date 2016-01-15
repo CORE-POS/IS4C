@@ -43,6 +43,9 @@ class SpecialOrdersTask extends FannieTask
     private function cleanFileCache()
     {
         $cachepath = sys_get_temp_dir()."/ordercache/";
+        if (!is_dir($cachepath) && !mkdir($cachepath)) {
+            return false;
+        }
         $dir = opendir($cachepath);
         while (($file = readdir($dir)) !== false) {
             if ($file == "." || $file == "..") continue;

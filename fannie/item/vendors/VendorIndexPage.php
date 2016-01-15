@@ -572,7 +572,6 @@ class VendorIndexPage extends FannieRESTfulPage
         $phpunit->assertNotEquals(0, strlen($this->get_view()));
         $new = $this->newVendor('TEST VENDOR');
         $phpunit->assertEquals(true, is_numeric($new));
-        $phpunit->assertNotEquals(0, strlen($this->getVendorInfo($new)));
         $this->id=$new;
         $this->get_id_audoAdd_handler();
 

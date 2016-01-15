@@ -16,8 +16,8 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
             $obj = new $report_class();
             $obj->setConfig($config);
             $obj->setLogger($logger);
-            $dbc->selectDB($op_db);
             $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
+            $dbc->selectDB($op_db);
             $dbc->throwOnFailure(true);
             $obj->setConnection($dbc);
 
