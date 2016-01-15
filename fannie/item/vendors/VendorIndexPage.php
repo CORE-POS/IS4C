@@ -35,168 +35,186 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class VendorIndexPage extends FanniePage {
-
+class VendorIndexPage extends FannieRESTfulPage 
+{
     protected $title = "Fannie : Manage Vendors";
     protected $header = "Manage Vendors";
 
     protected $must_authenticate = true;
     protected $auth_classes = array('pricechange');
 
-    public $themed = true;
-
     public $description = '[Vendor Editor] creates or update information about vendors.';
 
-    function preprocess()
+    public function preprocess()
     {
+        $this->addRoute(
+            'get<id><autoAdd>',
+            'get<new><name>',
+            'get<info>',
+            'post<info>',
+            'post<delivery>',
+            'post<id><shipping>',
+            'post<id><rate>',
+            'post<id><inactive>'
+        );
 
-        $ajax = FormLib::get_form_value('action');
-        if ($ajax !== ''){
-            $this->ajax_callbacks($ajax);
-            return False;
-        }       
+        return parent::preprocess();
+    }
 
-        $auto = FormLib::get('autoAdd', 0);
-        if ($auto == 1) {
-            $vendor = FormLib::get('vid');
-            $this->autoPopulate($vendor);
-            header('Location: VendorIndexPage.php?vid=' . $vendor);
+    protected function get_id_autoAdd_handler()
+    {
+        $this->autoPopulate($this->id);
 
+        return 'VendorIndexPage.php?vid=' . $this->id;
+    }
+
+    protected function get_new_name_handler()
+    {
+        echo $this->newVendor($this->name);
+
+        return false;
+    }
+
+    protected function get_info_handler()
+    {
+        $this->getVendorInfo(FormLib::get('vid',0)); 
+
+        return false;
+    }
+
+    protected function post_info_handler()
+    {
+        $id = FormLib::get('vendorID','');
+        if ($id === '') {
+            echo json_encode(array('error'=>1, 'msg'=>'Bad request'));
             return false;
         }
 
-        return True;
+        $web = FormLib::get('website');
+        if (!empty($web) && substr(strtolower($web),0,4) !== "http") {
+            $web = 'http://'.$web;
+        }
+        $localID = FormLib::get('local-origin-id', 0);
+
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $vModel = new VendorsModel($dbc);
+        $vModel->vendorID($id);
+        $vModel->phone(FormLib::get('phone'));
+        $vModel->fax(FormLib::get('fax'));
+        $vModel->email(FormLib::get('email'));
+        $vModel->website($web);
+        $vModel->notes(FormLib::get('notes'));
+        $vModel->address(FormLib::get('address'));
+        $vModel->city(FormLib::get('city'));
+        $vModel->state(FormLib::get('state'));
+        $vModel->zip(FormLib::get('zip'));
+        $vModel->localOriginID($localID);
+        $success = $vModel->save();
+
+        $vcModel = new VendorContactModel($dbc);
+        $vcModel->vendorID($id);
+        $vcModel->phone(FormLib::get('phone'));
+        $vcModel->fax(FormLib::get('fax'));
+        $vcModel->email(FormLib::get('email'));
+        $vcModel->website($web);
+        $vcModel->notes(FormLib::get('notes'));
+        $vcModel->save();
+
+        $ret = array('error'=>0, 'msg'=>'');
+        if ($success) {
+            $ret['msg'] = 'Saved vendor information';
+        } else {
+            $ret['msg'] = 'Error saving vendor information';
+            $ret['error'] = 1;
+        }
+        echo json_encode($ret);
+
+        return false;
     }
 
-    function ajax_callbacks($action)
+    protected function post_id_inactive_handler()
     {
-        global $FANNIE_OP_DB;
-        switch ($action) {
-        case 'vendorDisplay':
-            $this->getVendorInfo(FormLib::get_form_value('vid',0)); 
-            break;
-        case 'newVendor':
-            $this->newVendor(FormLib::get_form_value('name',''));
-            break;
-        case 'saveDelivery':
-            $delivery = new VendorDeliveriesModel(FannieDB::get($FANNIE_OP_DB));
-            $delivery->vendorID(FormLib::get('vID', 0));
-            $delivery->frequency(FormLib::get('frequency', 'weekly'));
-            $delivery->regular( FormLib::get('regular') ? 1 : 0 );
-            $delivery->sunday( FormLib::get('sunday') ? 1 : 0 );
-            $delivery->monday( FormLib::get('monday') ? 1 : 0 );
-            $delivery->tuesday( FormLib::get('tuesday') ? 1 : 0 );
-            $delivery->wednesday( FormLib::get('wednesday') ? 1 : 0 );
-            $delivery->thursday( FormLib::get('thursday') ? 1 : 0 );
-            $delivery->friday( FormLib::get('friday') ? 1 : 0 );
-            $delivery->saturday( FormLib::get('saturday') ? 1 : 0 );
-            $ret = array();
-            if ($delivery->regular()) {
-                $delivery->autoNext();
-                $ts1 = strtotime($delivery->nextDelivery());
-                $ts2 = strtotime($delivery->nextNextDelivery());
-                if ($ts1 !== false && $ts2 !== false) {
-                    $ret['next'] = date('D, M jS', $ts1);
-                    $ret['nextNext'] = date('D, M jS', $ts2);
-                }
-            }
-            $delivery->save();
-            echo json_encode($ret);
-            break;
-        case 'saveContactInfo':
-            $id = FormLib::get_form_value('vendorID','');
-            if ($id === ''){
-                echo 'Bad request';
-                break;
-            }
-            $web = FormLib::get_form_value('website');
-            if (!empty($web) && substr(strtolower($web),0,4) !== "http") {
-                $web = 'http://'.$web;
-            }
-            $localID = FormLib::get_form_value('local-origin-id', 0);
-            /** 29Oct2014 Andy
-                Widen vendors table so additional vendorContacts
-                table can be deprecated in the future
-            */
-            $dbc = FannieDB::get($FANNIE_OP_DB);
-            $vModel = new VendorsModel($dbc);
-            $vModel->vendorID($id);
-            $vModel->phone(FormLib::get_form_value('phone'));
-            $vModel->fax(FormLib::get_form_value('fax'));
-            $vModel->email(FormLib::get_form_value('email'));
-            $vModel->website($web);
-            $vModel->notes(FormLib::get_form_value('notes'));
-            $vModel->localOriginID($localID);
-            $success = $vModel->save();
+        $dbc = $this->connection;
+        $dbc->setDefaultDB($this->config->OP_DB);
+        $vModel = new VendorsModel($dbc);
+        $vModel->vendorID($this->id);
+        $vModel->inactive($this->inactive);
+        $vModel->save();
 
-            $vcModel = new VendorContactModel($dbc);
-            $vcModel->vendorID($id);
-            $vcModel->phone(FormLib::get_form_value('phone'));
-            $vcModel->fax(FormLib::get_form_value('fax'));
-            $vcModel->email(FormLib::get_form_value('email'));
-            $vcModel->website($web);
-            $vcModel->notes(FormLib::get_form_value('notes'));
-            $success = $vcModel->save();
-            $ret = array('error'=>0, 'msg'=>'');
-            if ($success) {
-                $ret['msg'] = 'Saved vendor information';
-            } else {
-                $ret['msg'] = 'Error saving vendor information';
-                $ret['error'] = 1;
+        return false;
+    }
+
+    protected function post_id_shipping_handler()
+    {
+        $ret = array('error'=>0);
+        if ($this->id === ''){
+            $ret['error'] = 'Bad request';
+        } else {
+            $dbc = FannieDB::get($this->config->get('OP_DB'));
+            $vModel = new VendorsModel($dbc);
+            $vModel->vendorID($this->id);
+            $vModel->shippingMarkup($this->shipping / 100.00);
+            if (!$vModel->save()) {
+                $ret['error'] = 'Save failed!';
             }
-            echo json_encode($ret);
-            break;
-        case 'saveShipping':
-            $id = FormLib::get('id','');
-            $ret = array('error'=>0);
-            if ($id === ''){
-                $ret['error'] = 'Bad request';
-            } else {
-                $dbc = FannieDB::get($FANNIE_OP_DB);
-                $vModel = new VendorsModel($dbc);
-                $vModel->vendorID($id);
-                $vModel->shippingMarkup(FormLib::get('shipping') / 100.00);
-                if (!$vModel->save()) {
-                    $ret['error'] = 'Save failed!';
-                }
-            }
-            echo json_encode($ret);
-            break;
-        case 'saveDiscountRate':
-            $id = FormLib::get('id','');
-            $ret = array('error'=>0);
-            if ($id === ''){
-                $ret['error'] = 'Bad request';
-            } else {
-                $dbc = $this->connection;
-                $dbc->setDefaultDB($this->config->OP_DB);
-                $vModel = new VendorsModel($dbc);
-                $vModel->vendorID($id);
-                $vModel->discountRate(FormLib::get('rate') / 100.00);
-                if (!$vModel->save()) {
-                    $ret['error'] = 'Save failed!';
-                }
-            }
-            echo json_encode($ret);
-            break;
-        case 'toggleActive':
+        }
+        echo json_encode($ret);
+
+        return false;
+    }
+
+    protected function post_id_rate_handler()
+    {
+        $ret = array('error'=>0);
+        if ($this->id === ''){
+            $ret['error'] = 'Bad request';
+        } else {
             $dbc = $this->connection;
             $dbc->setDefaultDB($this->config->OP_DB);
             $vModel = new VendorsModel($dbc);
-            $vModel->vendorID(FormLib::get('vid'));
-            $vModel->inactive(FormLib::get('inactive'));
-            $vModel->save();
-            break;    
-        default:
-            echo 'Bad request'; 
-            break;
+            $vModel->vendorID($this->id);
+            $vModel->discountRate($this->rate / 100.00);
+            if (!$vModel->save()) {
+                $ret['error'] = 'Save failed!';
+            }
         }
+        echo json_encode($ret);
+
+        return false;
+    }
+
+    protected function post_delivery_handler()
+    {
+        $delivery = new VendorDeliveriesModel(FannieDB::get($this->config->get('OP_DB')));
+        $delivery->vendorID(FormLib::get('vID', 0));
+        $delivery->frequency(FormLib::get('frequency', 'weekly'));
+        $delivery->regular( FormLib::get('regular') ? 1 : 0 );
+        $delivery->sunday( FormLib::get('sunday') ? 1 : 0 );
+        $delivery->monday( FormLib::get('monday') ? 1 : 0 );
+        $delivery->tuesday( FormLib::get('tuesday') ? 1 : 0 );
+        $delivery->wednesday( FormLib::get('wednesday') ? 1 : 0 );
+        $delivery->thursday( FormLib::get('thursday') ? 1 : 0 );
+        $delivery->friday( FormLib::get('friday') ? 1 : 0 );
+        $delivery->saturday( FormLib::get('saturday') ? 1 : 0 );
+        $ret = array();
+        if ($delivery->regular()) {
+            $delivery->autoNext();
+            $ts1 = strtotime($delivery->nextDelivery());
+            $ts2 = strtotime($delivery->nextNextDelivery());
+            if ($ts1 !== false && $ts2 !== false) {
+                $ret['next'] = date('D, M jS', $ts1);
+                $ret['nextNext'] = date('D, M jS', $ts2);
+            }
+        }
+        $delivery->save();
+        echo json_encode($ret);
+
+        return false;
     }
 
     private function autoPopulate($vendorID)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         
         $query = '
             SELECT p.upc,
@@ -237,8 +255,7 @@ class VendorIndexPage extends FanniePage {
 
     private function getVendorInfo($id)
     {
-        global $FANNIE_OP_DB,$FANNIE_ROOT;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         $ret = "";
 
         $nameQ = $dbc->prepare("SELECT vendorName FROM vendors WHERE vendorID=?");
@@ -249,7 +266,8 @@ class VendorIndexPage extends FanniePage {
         $ret .= '<div>';
         $ret .= "<b>Id</b>: $id &nbsp; <b>Name</b>: " . $model->vendorName();
         $ret .= ' <label>Active
-            <input type="checkbox" onchange="toggleActive(this, ' . $id . ')" ' . ($model->inactive() == 1 ? '' : 'checked') . ' />
+            <input type="checkbox" onchange="vendorEditor.toggleActive(this, ' . $id . ')" ' 
+                . ($model->inactive() == 1 ? '' : 'checked') . ' />
             </label>';
         $ret .= sprintf(' | <a href="RenameVendorPage.php?id=%d">Rename %s</a>', $id, $model->vendorName());
         $ret .= sprintf(' | <a href="DeleteVendorPage.php?id=%d">Delete %s</a>', $id, $model->vendorName());
@@ -281,7 +299,7 @@ class VendorIndexPage extends FanniePage {
         $ret .= "<br />";
         $ret .= "<a href=\"DefaultUploadPage.php?vid=$id\">Upload new vendor catalog</a>";
         $ret .= "<br />";
-        $ret .= "<a href=\"VendorIndexPage.php?vid=$id&autoAdd=1\">Add existing items to catalog</a>";
+        $ret .= "<a href=\"VendorIndexPage.php?id=$id&autoAdd=1\">Add existing items to catalog</a>";
         $ret .= '</div></div>';
 
         $ret .= '</div><div class="container-fluid col-sm-3">';
@@ -333,7 +351,7 @@ class VendorIndexPage extends FanniePage {
                 <div class="input-group">
                     <span class="input-group-addon">Shipping</span>
                     <input type="text" id="vc-shipping" name="shipping" 
-                        onchange="saveShipping(this.value);"
+                        onchange="vendorEditor.saveShipping(this.value);"
                         title="Markup percentage to account for shipping fees"
                         class="form-control" value="' . $model->shippingMarkup() * 100 . '" />
                     <span class="input-group-addon">%</span>
@@ -344,7 +362,7 @@ class VendorIndexPage extends FanniePage {
                     <span class="input-group-addon">Discount Rate</span>
                     <input type="text" id="vc-discount" name="discount-rate" 
                         title="Markdown percentage from catalog list costs"
-                        onchange="saveDiscountRate(this.value);"
+                        onchange="vendorEditor.saveDiscountRate(this.value);"
                         class="form-control" value="' . $model->discountRate() * 100 . '" />
                     <span class="input-group-addon">%</span>
                 </div>
@@ -358,28 +376,44 @@ class VendorIndexPage extends FanniePage {
                 <div class="panel-heading">Contact Info</div>
                 <div class="panel-body">
                     <div class="form-alerts"></div>';
-        $ret .= '<form role="form" class="form-horizontal" onsubmit="saveVC(' . $id . '); return false;" id="vcForm">';
+        $ret .= '<form role="form" class="form-horizontal" onsubmit="vendorEditor.saveVC(' . $id . '); return false;" id="vcForm">';
         $ret .= '<div class="form-group">
-            <label for="vcPhone" class="control-label col-sm-1">Phone</label>
+            <label for="vcAddress" class="control-label col-sm-1">Address</label>
             <div class="col-sm-10">
-            <input type="tel" class="form-control" id="vcPhone" name="phone" value="' . $model->phone() . '" />
+            <input type="text" class="form-control" id="vcAddress" name="address" value="' . $model->address() . '" />
             </div>
             </div>';
         $ret .= '<div class="form-group">
+            <label for="vcCity" class="control-label col-sm-1">City</label>
+            <div class="col-sm-5">
+            <input type="text" class="form-control" id="vcCity" name="city" value="' . $model->city() . '" />
+            </div>
+            <label for="vcZip" class="control-label col-sm-1">State</label>
+            <div class="col-sm-1">
+            <input type="text" class="form-control" id="vcState" name="state" value="' . $model->state() . '" />
+            </div>
+            <label for="vcZip" class="control-label col-sm-1">Zip</label>
+            <div class="col-sm-2">
+            <input type="text" class="form-control" id="vcZip" name="zip" value="' . $model->zip() . '" />
+            </div>
+            </div>';
+        $ret .= '<div class="form-group">
+            <label for="vcPhone" class="control-label col-sm-1">Phone</label>
+            <div class="col-sm-5">
+            <input type="tel" class="form-control" id="vcPhone" name="phone" value="' . $model->phone() . '" />
+            </div>
             <label for="vcFax" class="control-label col-sm-1">Fax</label>
-            <div class="col-sm-10">
+            <div class="col-sm-4">
             <input type="text" id="vcFax" class="form-control" name="fax" value="' . $model->fax() . '" />
             </div>
             </div>';
         $ret .= '<div class="form-group">
             <label for="vcEmail" class="control-label col-sm-1">Email</label>
-            <div class="col-sm-10">
+            <div class="col-sm-5">
             <input type="text" class="form-control" id="vcEmail" name="email" value="' . $model->email() . '" />
             </div>
-            </div>';
-        $ret .= '<div class="form-group">
             <label for="vcWebsite" class="control-label col-sm-1">Website</label>
-            <div class="col-sm-10">
+            <div class="col-sm-4">
             <input type="text" class="form-control" id="vcWebsite" name="website" value="' . $model->website() . '" />
             </div>
             </div>';
@@ -436,9 +470,9 @@ class VendorIndexPage extends FanniePage {
         echo $ret;
     }
 
-    private function newVendor($name){
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+    private function newVendor($name)
+    {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
 
         $id = 1;    
         $p = $dbc->prepare("SELECT max(vendorID) FROM vendors");
@@ -453,13 +487,12 @@ class VendorIndexPage extends FanniePage {
         $model->vendorAbbreviation(substr($name, 0, 10));
         $model->save();
 
-        echo $id;
+        return $id;
     }
 
-    function body_content()
+    protected function get_view()
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         $vendors = "<option value=\"\">Select a vendor...</option>";
         $vendors .= "<option value=\"new\">New vendor...</option>";
         $q = $dbc->prepare("SELECT * FROM vendors ORDER BY vendorName");
@@ -474,7 +507,8 @@ class VendorIndexPage extends FanniePage {
         ob_start();
         ?>
         <p id="vendorarea">
-        <select onchange="if (this.value=='new') vendorchange(); else location='?vid='+this.value;" id=vendorselect class="form-control">
+        <select onchange="if (this.value=='new') vendorEditor.vendorNew(); else location='?vid='+this.value;" 
+            id=vendorselect class="form-control">
         <?php echo $vendors; ?>
         </select>
         </p>
@@ -531,6 +565,37 @@ class VendorIndexPage extends FanniePage {
             items.</p>
             <p>Contact Info and Delivery Schedule are wholly optional.
             Jot down whatever is useful.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $new = $this->newVendor('TEST VENDOR');
+        $phpunit->assertEquals(true, is_numeric($new));
+        $phpunit->assertNotEquals(0, strlen($this->getVendorInfo($new)));
+        $this->id=$new;
+        $this->get_id_audoAdd_handler();
+
+        $this->rate=100;
+        $this->shipping=100;
+        ob_start();
+        $this->post_id_rate_handler();
+        $this->post_id_shipping_handler();
+        ob_end_clean();
+        $this->inactive = 0;
+        $this->post_id_inactive_handler();
+        $vendor = new VendorsModel($this->connection);
+        $vendor->vendorID($new);
+        $phpunit->assertEquals(true, $vendor->load());
+        $phpunit->assertEquals(1, $vendor->shippingMarkup());
+        $phpunit->assertEquals(1, $vendor->discountRate());
+        $phpunit->assertEquals(0, $vendor->inactive());
+
+        $this->name = 'TEST';
+        ob_start();
+        $this->get_id_new_name_handler();
+        $this->get_info_handler();
+        ob_end_clean();
     }
 }
 
