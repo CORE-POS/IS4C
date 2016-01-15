@@ -1245,7 +1245,7 @@ class EditBatchPage extends FannieRESTfulPage
     public function get_id_view()
     {
         global $FANNIE_URL;
-        $this->add_script('edit.js');
+        $this->add_script('edit.js?20160105');
         $this->add_css_file('index.css');
         $sort = FormLib::get('sort', 'natural');
         ob_start();
