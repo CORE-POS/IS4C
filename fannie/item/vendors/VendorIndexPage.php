@@ -592,7 +592,7 @@ class VendorIndexPage extends FannieRESTfulPage
 
         $this->name = 'TEST';
         ob_start();
-        $this->get_id_new_name_handler();
+        $this->get_new_name_handler();
         $this->get_info_handler();
         ob_end_clean();
     }
