@@ -404,7 +404,7 @@ class BaseItemModule extends ItemModule
             <span class="input-group-addon">$</span>
             <input type="text" id="cost{{store_id}}" name="cost[]" 
                 class="form-control price-field cost-input syncable-input"
-                value="{{cost}}" data-store-id="{{store_id}}"
+                value="{{cost}}" data-store-id="{{store_id}}" maxlength="6"
                 onkeydown="if (typeof nosubmit == 'function') nosubmit(event);"
                 onkeyup="if (typeof nosubmit == 'function') nosubmit(event);" 
                 onchange="$('.default_vendor_cost').val(this.value);"
@@ -417,7 +417,7 @@ class BaseItemModule extends ItemModule
             <span class="input-group-addon">$</span>
             <input type="text" id="price{{store_id}}" name="price[]" 
                 class="form-control price-field price-input syncable-input"
-                data-store-id="{{store_id}}"
+                data-store-id="{{store_id}}" maxlength="6"
                 required value="{{normal_price}}" />
         </div>
     </td>
