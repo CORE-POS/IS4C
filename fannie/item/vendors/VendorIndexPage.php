@@ -573,7 +573,7 @@ class VendorIndexPage extends FannieRESTfulPage
         $new = $this->newVendor('TEST VENDOR');
         $phpunit->assertEquals(true, is_numeric($new));
         $this->id=$new;
-        $this->get_id_audoAdd_handler();
+        $this->get_id_autoAdd_handler();
 
         $this->rate=100;
         $this->shipping=100;
