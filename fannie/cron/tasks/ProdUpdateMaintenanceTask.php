@@ -177,6 +177,10 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             }
 
             $prevPrice = $update->price();
+
+            if ($this->test_mode) {
+                break;
+            }
         }
     }
 
@@ -237,6 +241,10 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             }
 
             $prevPrice = $update->cost();
+
+            if ($this->test_mode) {
+                break;
+            }
         }
     }
 
@@ -290,6 +298,10 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             }
 
             $prevDept = $update->dept();
+
+            if ($this->test_mode) {
+                break;
+            }
         }
     }
 

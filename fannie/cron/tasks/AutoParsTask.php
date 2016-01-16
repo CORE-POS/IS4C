@@ -71,7 +71,11 @@ class AutoParsTask extends FannieTask
             $salesR = $dbc->execute($salesP, array($upc));
             if ($dbc->numRows($salesR) == 0) {
                 $dbc->execute($prodP, array(0, $upc));
-                continue;
+                if ($this->test_mode) {
+                    break;
+                } else {
+                    continue;
+                }
             }
             $max = 0;
             $days = array();
