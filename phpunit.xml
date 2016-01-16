@@ -56,10 +56,10 @@
                 <directory>fannie/install/LaneConfigPages/extra_directory_layer</directory>
                 <directory>fannie/install/LaneConfigPages/lane_install</directory>
                 <directory>fannie/modules</directory>
-                <directory>fannie/cron/CC</dirctory>
-                <directory>fannie/cron/CompressProdUpdate</dirctory>
-                <directory>fannie/cron/LanePush</dirctory>
-                <directory>fannie/cron/Suspensions</dirctory>
+                <directory>fannie/cron/CC</directory>
+                <directory>fannie/cron/CompressProdUpdate</directory>
+                <directory>fannie/cron/LanePush</directory>
+                <directory>fannie/cron/Suspensions</directory>
                 <directory>fannie/per_coop</directory>
                 <directory>fannie/reports/Store-Specific</directory>
                 <directory>fannie/src/Excel</directory>
