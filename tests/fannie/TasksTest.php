@@ -104,6 +104,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task = new AutoParsTask();
         $task->setConfig($config);
         $task->setLogger($logger);
+        $task->testMode(true);
         $task->run();
     }
 
@@ -224,6 +225,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task = new ProdUpdateMaintenanceTask();
         $task->setConfig($config);
         $task->setLogger($logger);
+        $task->testMode(true);
         $task->run();
     }
 
