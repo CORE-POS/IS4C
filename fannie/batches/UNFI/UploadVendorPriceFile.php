@@ -55,7 +55,7 @@ class UploadVendorPriceFile extends FanniePage {
             return false;">Upload Vendor File</button>';
         $ret .= '<hr />';
         $ret .= '<b>Use a Custom import tool</b>:<br /><ul>';
-        $files = scandir('load-classes');
+        $files = scandir(dirname(__FILE__) . '/load-classes');
         foreach($files as $f){
             if($f[0] == '.') continue;
             if (substr($f,-4) != '.php') continue;
