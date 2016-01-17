@@ -35,7 +35,9 @@ class ModelsTest extends PHPUnit_Framework_TestCase
             if ($obj->preferredDB() === 'op') {
                 $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
                 $obj2 = new $model_class($dbc);
+                ob_start();
                 $obj2->normalize(FannieConfig::config('OP_DB'));
+                ob_end_clean();
             }
         }
     }

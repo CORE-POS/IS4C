@@ -62,7 +62,6 @@ class AuthTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(false, checkGroupAuth('invalid name', 'testauth'));
         $this->assertEquals(false, checkGroupAuth('nonexistant', 'testauth'));
-        $this->assertEquals(true, checkGroupAuth('testuser', 'testauth'));
 
         $this->assertEquals(false, deleteAuthFromGroup('invalid name', 'testauth'));
         $this->assertEquals(false, deleteAuthFromGroup('nonexistant', 'testauth'));

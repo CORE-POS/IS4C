@@ -201,7 +201,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     public function unitTest($phpunit)
     {
         $phpunit->assertNotEquals(0, strlen($this->results_content()));
-        $indexes = array('upc'=>0, 'price'=>1, 'abtpr'=>2, 'sku'=>3, 'mult'=>4);
+        $indexes = array('upc'=>0, 'price'=>1, 'abt'=>2, 'sku'=>3, 'mult'=>4);
         $data = array('4011', 0.99, 'ABTPR', '4011', '2/$2');
         for ($i=0; $i<14; $i++) {
             $data[] = 0;
