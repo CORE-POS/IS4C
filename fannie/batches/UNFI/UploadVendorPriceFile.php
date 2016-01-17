@@ -77,7 +77,7 @@ class UploadVendorPriceFile extends FanniePage {
 
     public function unitTest($phpunit)
     {
-        $this->assertNotEquals(0, strlen($this->body_content()));
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
     }
 
 }
