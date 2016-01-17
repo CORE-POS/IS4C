@@ -124,6 +124,9 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
             $signs->setDB($dbc);
             $this->assertInternalType('array', $signs->loadItems());
         }
+
+        $source = new TagDataSource();
+        $this->assertInternalType('array', $source->getTagData($dbc, '4011', false));
     }
 
     public function testConfig()
@@ -251,6 +254,32 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(133, COREPOS\Fannie\API\item\ServiceScaleLib::attributesToLabel('horizontal', false, false));
         $this->assertEquals(23, COREPOS\Fannie\API\item\ServiceScaleLib::attributesToLabel('vertical', true, false));
         $this->assertEquals(103, COREPOS\Fannie\API\item\ServiceScaleLib::attributesToLabel('vertical', false, false));
+    }
+
+    public function testInstallPage()
+    {
+        $page = new COREPOS\Fannie\API\InstallPage();
+        $page->setConfig(FannieConfig::factory());
+        $this->assertNotEquals(0, strlen($page->getHeader()));
+        $this->assertNotEquals(0, strlen($page->getFooter()));
+        $this->assertNotEquals(0, strlen($page->helpContent()));
+    }
+
+    public function testAuth()
+    {
+        $this->assertEquals(true, FannieAuth::createClass('testAuthClass','foo'));
+    }
+
+    public function testAccounting()
+    {
+        $classes = array('COREPOS\\Fannie\\API\\item\\StandardAccounting', 'COREPOS\\Fannie\\API\\item\\Accounting');
+        foreach ($classes as $class) {
+            $this->assertNotEquals('', $class::toPurchaseCode('400'));
+            $this->assertNotEquals('', $class::toPurchaseCode('500'));
+            $this->assertNotEquals('', $class::toSaleCode('400'));
+            $this->assertNotEquals('', $class::toSaleCode('500'));
+            $this->assertNotEquals('', $class::perStoreCode('500', 1));
+        }
     }
 }
 

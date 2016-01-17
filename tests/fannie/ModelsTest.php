@@ -31,6 +31,12 @@ class ModelsTest extends PHPUnit_Framework_TestCase
             }
 
             $this->assertInternalType('string', $obj->doc());
+
+            if ($obj->preferredDB() === 'op') {
+                $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
+                $obj2 = new $model_class($dbc);
+                $obj2->normalize(FannieConfig::config('OP_DB'));
+            }
         }
     }
 

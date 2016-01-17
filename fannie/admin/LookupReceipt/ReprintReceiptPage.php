@@ -33,8 +33,6 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
     protected $header = 'Receipt Search - Fill in any information available';
 
     public $description  = '[Lookup Receipt] finds a POS transaction.';
-    public $themed = true;
-
     private $results = '';
 
     public function preprocess()
@@ -45,201 +43,198 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
 
     function get_date_handler()
     {
-        global $FANNIE_TRANS_DB;
-        if (FormLib::get_form_value('submit', false) !== false) {
-            $date = $this->date;
-            $date2 = FormLib::get_form_value('date2','');
-            if ($date === '' && $date2 !== '') {
-                // only one date is supplied and it's
-                // via the secondary field, still use it
-                $date = $date2;
-            }
-            $trans_num = FormLib::get_form_value('trans_num','');
-            $card_no = FormLib::get_form_value('card_no','');
-            $emp_no = FormLib::get_form_value('emp_no','');
-            $register_no = FormLib::get_form_value('register_no','');
-            $trans_subtype = FormLib::get_form_value('trans_subtype','');
-            $tenderTotal = FormLib::get_form_value('tenderTotal','');
-            $department = FormLib::get_form_value('department','');
-            $trans_no="";
+        $date = $this->date;
+        $date2 = FormLib::get('date2','');
+        if ($date === '' && $date2 !== '') {
+            // only one date is supplied and it's
+            // via the secondary field, still use it
+            $date = $date2;
+        }
+        $trans_num = FormLib::get('trans_num','');
+        $card_no = FormLib::get('card_no','');
+        $emp_no = FormLib::get('emp_no','');
+        $register_no = FormLib::get('register_no','');
+        $trans_subtype = FormLib::get('trans_subtype','');
+        $tenderTotal = FormLib::get('tenderTotal','');
+        $department = FormLib::get('department','');
+        $trans_no="";
 
-            if ($trans_num != "") {
-                $temp = explode("-",$trans_num);
-                if (count($temp) != 3) {
-                    $emp_no=$reg_no=$trans_no=0;
-                } else {
-                    $emp_no = $temp[0];
-                    $register_no=$temp[1];
-                    $trans_no=$temp[2];
-                }
-            }
-
-            $dbc = $this->connection;
-            $dbc->selectDB($this->config->get('OP_DB'));
-            $dlog = $FANNIE_TRANS_DB . $dbc->sep() . "transarchive";
-            $query = "SELECT 
-                year(datetime) AS year,
-                month(datetime) AS month,
-                day(datetime) AS day,
-                emp_no,
-                register_no,
-                trans_no,
-                MAX(card_no) AS card_no,
-                MAX(datetime) AS ts
-            FROM $dlog WHERE 1=1 ";
-            $args = array();
-            if ($date != "") {
-                $date2 = ($date2 != "") ? $date2 : $date;
-                $query .= ' AND datetime BETWEEN ? AND ? ';
-                $args[] = $date.' 00:00:00';
-                $args[] = $date2.' 23:59:59';
-                $dlog = DTransactionsModel::selectDTrans($date, $date2);
-                // update the table we're searching
-                $query = str_replace($FANNIE_TRANS_DB . $dbc->sep() . 'transarchive', $dlog, $query);
+        if ($trans_num !== "") {
+            $temp = explode("-",$trans_num);
+            if (count($temp) !== 3) {
+                $emp_no=$reg_no=$trans_no=0;
             } else {
-                $query .= ' AND datetime >= ? ';
-                $args[] = date('Y-m-d 00:00:00', strtotime('-15 days'));
+                $emp_no = $temp[0];
+                $register_no=$temp[1];
+                $trans_no=$temp[2];
             }
-            if ($card_no != "") {
-                $query .= " AND card_no=? ";
-                $args[] = $card_no;
-            }
-            if ($emp_no != "") {
-                $query .= " AND emp_no=? ";
-                $args[] = $emp_no;
-            }
-            if ($register_no != "") {
-                $query .= " AND register_no=? ";
-                $args[] = $register_no;
-            }
-            if ($trans_no != "") {
-                $query .= " AND trans_no=? ";
-                $args[] = $trans_no;
-            }
-            if (FormLib::get('no-training') == '1') {
-                $query .= ' AND emp_no <> 9999 AND register_no <> 99 ';
-            }
-            if (FormLib::get('no-canceled') == '1') {
-                $query .= ' AND trans_status <> \'X\' ';
-            }
+        }
 
-            $tender_clause = "( 1=1";
-            if ($trans_subtype != "") {
-                $tender_clause .= " AND trans_subtype=? ";
-                $args[] = $trans_subtype;
-            }
-            if ($tenderTotal != "") {
-                $tender_clause .= " AND total=-1*? ";
-                $args[] = $tenderTotal;
-            } else {
-                $tender_clause .= ' AND total <> 0 ';
-            }
-            $tender_clause .= ")";
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $dlog = $this->config->get('TRANS_DB') . $dbc->sep() . "transarchive";
+        $query = "SELECT 
+            year(datetime) AS year,
+            month(datetime) AS month,
+            day(datetime) AS day,
+            emp_no,
+            register_no,
+            trans_no,
+            MAX(card_no) AS card_no,
+            MAX(datetime) AS ts
+        FROM $dlog WHERE 1=1 ";
+        $args = array();
+        if ($date != "") {
+            $date2 = ($date2 != "") ? $date2 : $date;
+            $query .= ' AND datetime BETWEEN ? AND ? ';
+            $args[] = $date.' 00:00:00';
+            $args[] = $date2.' 23:59:59';
+            $dlog = DTransactionsModel::selectDTrans($date, $date2);
+            // update the table we're searching
+            $query = str_replace($this->config->get('TRANS_DB') . $dbc->sep() . 'transarchive', $dlog, $query);
+        } else {
+            $query .= ' AND datetime >= ? ';
+            $args[] = date('Y-m-d 00:00:00', strtotime('-15 days'));
+        }
+        if ($card_no != "") {
+            $query .= " AND card_no=? ";
+            $args[] = $card_no;
+        }
+        if ($emp_no != "") {
+            $query .= " AND emp_no=? ";
+            $args[] = $emp_no;
+        }
+        if ($register_no != "") {
+            $query .= " AND register_no=? ";
+            $args[] = $register_no;
+        }
+        if ($trans_no != "") {
+            $query .= " AND trans_no=? ";
+            $args[] = $trans_no;
+        }
+        if (FormLib::get('no-training') == '1') {
+            $query .= ' AND emp_no <> 9999 AND register_no <> 99 ';
+        }
+        if (FormLib::get('no-canceled') == '1') {
+            $query .= ' AND trans_status <> \'X\' ';
+        }
 
-            /**
-              There is no tender restriction
-              replace with a not-true statements
-              otherwise the OR will match everything
-            */
-            if ($tender_clause == '( 1=1 AND total <> 0 )') {
-                $tender_clause = '1=0';
-            }
+        $tender_clause = "( 1=1";
+        if ($trans_subtype != "") {
+            $tender_clause .= " AND trans_subtype=? ";
+            $args[] = $trans_subtype;
+        }
+        if ($tenderTotal != "") {
+            $tender_clause .= " AND total=-1*? ";
+            $args[] = $tenderTotal;
+        } else {
+            $tender_clause .= ' AND total <> 0 ';
+        }
+        $tender_clause .= ")";
 
-            $or_clause = '(' . $tender_clause;
-            if ($department != "") {
-                $or_clause .= " OR (department=? AND trans_type IN ('I','D')) ";
-                $args[] = $department;
-            }
+        /**
+          There is no tender restriction
+          replace with a not-true statements
+          otherwise the OR will match everything
+        */
+        if ($tender_clause == '( 1=1 AND total <> 0 )') {
+            $tender_clause = '1=0';
+        }
 
-            if (FormLib::get('is_refund', 0) == 1) {
-                $or_clause .= ' OR trans_status=\'R\' ';
-            }
-            if (FormLib::get('mem_discount', 0) == 1) {
-                $or_clause .= ' OR upc=\'DISCOUNT\' ';
-            }
+        $or_clause = '(' . $tender_clause;
+        if ($department != "") {
+            $or_clause .= " OR (department=? AND trans_type IN ('I','D')) ";
+            $args[] = $department;
+        }
 
-            $or_clause .= ")";
-            if ($or_clause == "(1=0)") {
-                $or_clause = "1=1";
-            }
-            $query .= ' AND '.$or_clause;
+        if (FormLib::get('is_refund', 0) == 1) {
+            $or_clause .= ' OR trans_status=\'R\' ';
+        }
+        if (FormLib::get('mem_discount', 0) == 1) {
+            $or_clause .= ' OR upc=\'DISCOUNT\' ';
+        }
 
-            $query .= " GROUP BY year(datetime),month(datetime),day(datetime),emp_no,register_no,trans_no ";
-            $query .= " ORDER BY year(datetime),month(datetime),day(datetime),emp_no,register_no,trans_no ";
+        $or_clause .= ")";
+        if ($or_clause == "(1=0)") {
+            $or_clause = "1=1";
+        }
+        $query .= ' AND '.$or_clause;
 
-            $prep = $dbc->prepare($query);
-            $result = $dbc->execute($prep,$args);
-            if (!empty($trans_num) && !empty($date)) {
-                header("Location: RenderReceiptPage.php?date=$date&receipt=$trans_num");
-                return false;
-            } elseif ($dbc->num_rows($result) == 0) {
-                $this->results = "<b>No receipts match the given criteria</b>";
-            } elseif ($dbc->num_rows($result) == 1){
-                $row = $dbc->fetch_row($result);
+        $query .= " GROUP BY year(datetime),month(datetime),day(datetime),emp_no,register_no,trans_no ";
+        $query .= " ORDER BY year(datetime),month(datetime),day(datetime),emp_no,register_no,trans_no ";
+
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep,$args);
+        if (!empty($trans_num) && !empty($date)) {
+            header("Location: RenderReceiptPage.php?date=$date&receipt=$trans_num");
+            return false;
+        } elseif ($dbc->num_rows($result) == 0) {
+            $this->results = "<b>No receipts match the given criteria</b>";
+        } elseif ($dbc->num_rows($result) == 1){
+            $row = $dbc->fetch_row($result);
+            $year = $row[0];
+            $month = $row[1];
+            $day = $row[2];
+            $trans_num = $row[3].'-'.$row[4].'-'.$row[5];
+            header("Location: RenderReceiptPage.php?year=$year&month=$month&day=$day&receipt=$trans_num");
+            return false;
+        } else {
+            $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
+            $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
+            $this->results = "<b>Matching receipts</b>:<br />";
+            $this->results .= '<table class="table tablesorter">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Receipt</th>
+                        <th>Employee</th>
+                        <th>Lane</th>
+                        <th>Owner</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>';
+            $subTotalP = $dbc->prepare("
+                SELECT SUM(-total) AS subtotal
+                FROM {$dlog} AS d
+                WHERE datetime BETWEEN ? AND ?
+                    AND trans_type='T'
+                    AND department = 0
+                    AND emp_no=?
+                    AND register_no=?
+                    AND trans_no=?
+            ");
+            $num_results = $dbc->numRows($result);
+            while ($row = $dbc->fetch_row($result)) {
+                $this->results .= '<tr>';
                 $year = $row[0];
                 $month = $row[1];
                 $day = $row[2];
+                $this->results .= '<td>' . $row['ts'] . '</td>';
                 $trans_num = $row[3].'-'.$row[4].'-'.$row[5];
-                header("Location: RenderReceiptPage.php?year=$year&month=$month&day=$day&receipt=$trans_num");
-                return false;
-            } else {
-                $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
-                $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
-                $this->results = "<b>Matching receipts</b>:<br />";
-                $this->results .= '<table class="table tablesorter">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Receipt</th>
-                            <th>Employee</th>
-                            <th>Lane</th>
-                            <th>Owner</th>
-                            <th>Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody>';
-                $subTotalP = $dbc->prepare("
-                    SELECT SUM(-total) AS subtotal
-                    FROM {$dlog} AS d
-                    WHERE datetime BETWEEN ? AND ?
-                        AND trans_type='T'
-                        AND department = 0
-                        AND emp_no=?
-                        AND register_no=?
-                        AND trans_no=?
-                ");
-                $num_results = $dbc->numRows($result);
-                while ($row = $dbc->fetch_row($result)) {
-                    $this->results .= '<tr>';
-                    $year = $row[0];
-                    $month = $row[1];
-                    $day = $row[2];
-                    $this->results .= '<td>' . $row['ts'] . '</td>';
-                    $trans_num = $row[3].'-'.$row[4].'-'.$row[5];
-                    $this->results .= "<td><a href=RenderReceiptPage.php?year=$year&month=$month&day=$day&receipt=$trans_num>";
-                    $this->results .= "$trans_num</a></td>";
-                    $this->results .= '<td>' . $row['emp_no'] . '</td>';
-                    $this->results .= '<td>' . $row['register_no'] . '</td>';
-                    $this->results .= '<td>' . $row['card_no'] . '</td>';
-                    if ($num_results < 50) {
-                        $subTotalArgs = array(
-                            date('Y-m-d 00:00:00', strtotime($row['ts'])),
-                            date('Y-m-d 23:59:59', strtotime($row['ts'])),
-                            $row['emp_no'],
-                            $row['register_no'],
-                            $row['trans_no'],
-                        );
-                        $subTotalR = $dbc->execute($subTotalP, $subTotalArgs);
-                        $subTotalW = $dbc->fetchRow($subTotalR);
-                        $subTotal = is_array($subTotalW) ? $subTotalW['subtotal'] : 0;
-                        $this->results .= sprintf('<td>%.2f</td>', $subTotal);
-                    } else {
-                        $this->results .= '<td>n/a</td>';
-                    }
-                    $this->results .= '</tr>';
+                $this->results .= "<td><a href=RenderReceiptPage.php?year=$year&month=$month&day=$day&receipt=$trans_num>";
+                $this->results .= "$trans_num</a></td>";
+                $this->results .= '<td>' . $row['emp_no'] . '</td>';
+                $this->results .= '<td>' . $row['register_no'] . '</td>';
+                $this->results .= '<td>' . $row['card_no'] . '</td>';
+                if ($num_results < 50) {
+                    $subTotalArgs = array(
+                        date('Y-m-d 00:00:00', strtotime($row['ts'])),
+                        date('Y-m-d 23:59:59', strtotime($row['ts'])),
+                        $row['emp_no'],
+                        $row['register_no'],
+                        $row['trans_no'],
+                    );
+                    $subTotalR = $dbc->execute($subTotalP, $subTotalArgs);
+                    $subTotalW = $dbc->fetchRow($subTotalR);
+                    $subTotal = is_array($subTotalW) ? $subTotalW['subtotal'] : 0;
+                    $this->results .= sprintf('<td>%.2f</td>', $subTotal);
+                } else {
+                    $this->results .= '<td>n/a</td>';
                 }
-                $this->results .= '</tbody></table>';
+                $this->results .= '</tr>';
             }
+            $this->results .= '</tbody></table>';
         }
 
         return true;

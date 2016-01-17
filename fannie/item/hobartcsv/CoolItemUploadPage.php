@@ -164,6 +164,14 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
         return $scales;
     }
+    
+    public function unitTest($phunit)
+    {
+        $data = array('4011', '0.99', 'Testlandia');
+        $indexes = array('upc'=>0, 'price'=>1, 'cool'=>2);
+        $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
+        $phpunit->assertNotEquals(0, strlen($this->results_content()));
+    }
 }
 
 FannieDispatch::conditionalExec();

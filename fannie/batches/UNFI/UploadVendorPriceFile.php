@@ -35,7 +35,6 @@ class UploadVendorPriceFile extends FanniePage {
     protected $must_authenticate = true;
 
     public $description = '[Vendor Price File] loads or reloads catalog information from a spreadsheet.';
-    public $themed = true;
 
     function body_content()
     {
@@ -76,7 +75,12 @@ class UploadVendorPriceFile extends FanniePage {
             ';
     }
 
+    public function unitTest($phpunit)
+    {
+        $this->assertNotEquals(0, strlen($this->body_content()));
+    }
+
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
