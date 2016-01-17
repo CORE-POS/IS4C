@@ -112,7 +112,7 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $scale_items[] = $scale_info;
         }
 
-        $scales = $this->getScales(FormLib::get('scales'));
+        $scales = $this->getScales(FormLib::get('scales', array()));
         HobartDgwLib::writeItemsToScales($scale_items, $scales);
         EpScaleLib::writeItemsToScales($scale_items, $scales);
 
