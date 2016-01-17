@@ -9,6 +9,7 @@
         <testsuite name="main">
             <file>tests/fannie/InstallFannieTest.php</file>
             <file>tests/fannie/ApiLibTest.php</file>
+            <file>tests/fannie/AuthTest.php</file>
             <file>tests/fannie/FannieSQLManagerTest.php</file>
             <file>tests/fannie/ItemsTest.php</file>
             <file>tests/fannie/LogTest.php</file>

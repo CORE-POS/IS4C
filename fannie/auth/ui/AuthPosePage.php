@@ -34,7 +34,6 @@ class AuthPosePage extends FannieRESTfulPage {
     protected $auth_classes = array('admin');
     protected $title = 'Fannie : Auth : Pose';
     protected $header = 'Fannie : Auth : Pose';
-    public $themed = true;
 
     public function post_id_handler()
     {
@@ -65,6 +64,11 @@ foreach (getUserList() as $uid => $name) {
         $this->add_onload_command("\$('select.form-control').focus();\n");
 
         return ob_get_clean();
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
     }
 }
 

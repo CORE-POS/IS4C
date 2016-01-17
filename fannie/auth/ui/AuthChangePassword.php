@@ -98,6 +98,13 @@ class AuthChangePassword extends FannieRESTfulPage
 
         return ob_get_clean();
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->post_view()));
+        $this->changed = true;
+        $phpunit->assertNotEquals(0, strlen($this->post_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

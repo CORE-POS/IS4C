@@ -334,6 +334,17 @@ class AuthUsersPage extends FannieRESTfulPage
 
         return ob_get_clean();
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_removeAuth_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_newAuth_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_new_view()));
+        $this->id = 1;
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_remove_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();
