@@ -37,6 +37,16 @@ class ExcelUpload extends \COREPOS\Fannie\API\FannieUploadPage {
 
         return true;
     }
+
+    public function unitTest($phpunit)
+    {
+        $data = array(
+            array('foo', 'bar'),
+            array(1, 2, 3),
+            array(1),
+        );
+        $phpunit->assertEquals(true, $this->process_file($data, array()));
+    }
 }
 
 FannieDispatch::conditionalExec();
