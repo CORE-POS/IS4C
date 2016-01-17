@@ -169,6 +169,7 @@ class AuthClassesPage extends FannieRESTfulPage
         $phpunit->assertNotEquals(0, strlen($this->get_remove_view()));
         $phpunit->assertNotEquals(0, strlen($this->get_edit_view()));
         $this->id = 1;
+        $this->notes = '';
         $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
         $phpunit->assertEquals(true, $this->get_new_handler());
         $phpunit->assertEquals(true, $this->get_id_handler());

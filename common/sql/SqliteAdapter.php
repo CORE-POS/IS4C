@@ -46,7 +46,7 @@ class SqliteAdapter implements DialectAdapter
 
     public function defaultDatabase()
     {
-        return "SELECT '" . $this->default_db . '" AS db_name';
+        return "pragma database list";
     }
 
     public function temporaryTable($name, $source_table)
