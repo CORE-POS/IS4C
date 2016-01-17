@@ -391,6 +391,7 @@ class FannieAPI
         $name = false;
         $basedir = 'unknown';
         $path = realpath($path);
+        $path = str_replace(DIRECTORY_SEPARATOR, '/', $path);
         if (strstr($path, '/modules/plugins2.0/')) {
             $name = 'COREPOS\\Fannie\\Plugin';
             $basedir = 'plugins2.0';
