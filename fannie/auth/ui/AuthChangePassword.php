@@ -101,6 +101,7 @@ class AuthChangePassword extends FannieRESTfulPage
 
     public function unitTest($phpunit)
     {
+        $this->changed = false;
         $phpunit->assertNotEquals(0, strlen($this->post_view()));
         $this->changed = true;
         $phpunit->assertNotEquals(0, strlen($this->post_view()));

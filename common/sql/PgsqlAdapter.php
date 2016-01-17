@@ -94,7 +94,7 @@ class PgsqlAdapter implements DialectAdapter
 
     public function yeardiff($date1, $date2)
     {
-        return "extract(year from age($date1,$date))";
+        return "extract(year from age($date1,$date2))";
     }
 
     public function weekdiff($date1, $date2)
