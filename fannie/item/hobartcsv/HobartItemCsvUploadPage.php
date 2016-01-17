@@ -140,7 +140,7 @@ class HobartItemCsvUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $model->price($line[$indexes['price']]);
             }
 
-            if ($indexes['tare'] !== false && isset($line[$tare_index])) {
+            if ($indexes['tare'] !== false && isset($line[$indexes['tare']])) {
                 $model->tare($line[$indexes['tare']]);
             }
 
