@@ -30,7 +30,9 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $dtrans->datetime('1901-01-01 00:00:00');
         $dtrans->save();
 
+        ob_start();
         $task->run();
+        ob_end_clean();
 
         /**
           Verify the task created new monthly table & view
@@ -94,7 +96,9 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task = new ArHistoryTask();
         $task->setConfig($config);
         $task->setLogger($logger);
+        ob_start();
         $task->run();
+        ob_end_clean();
     }
 
     public function testAutoPars()
@@ -215,7 +219,9 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task = new PriceBatchTask();
         $task->setConfig($config);
         $task->setLogger($logger);
+        ob_start();
         $task->run();
+        ob_end_clean();
     }
 
     public function testProdUpdate()
@@ -226,7 +232,9 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task->setConfig($config);
         $task->setLogger($logger);
         $task->testMode(true);
+        ob_start();
         $task->run();
+        ob_end_clean();
     }
 
     public function testDataCache()
@@ -268,7 +276,9 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task = new SpecialOrdersTask();
         $task->setConfig($config);
         $task->setLogger($logger);
+        ob_start();
         $task->run();
+        ob_end_clean();
     }
 
     public function testSnapshot()
@@ -288,7 +298,9 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task = new VoidHistoryTask();
         $task->setConfig($config);
         $task->setLogger($logger);
+        ob_start();
         $task->run();
+        ob_end_clean();
     }
 
     public function testWeekSummarize()
@@ -299,7 +311,9 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task->setConfig($config);
         $task->setLogger($logger);
         $task->testMode(true);
+        ob_start();
         $task->run();
+        ob_end_clean();
     }
 
     public function testSalesBatches()
@@ -310,7 +324,9 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task->setConfig($config);
         $task->setLogger($logger);
         $task->testMode(true);
+        ob_start();
         $task->run();
+        ob_end_clean();
     }
 }
 

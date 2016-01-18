@@ -417,7 +417,7 @@ class BrowseVendorItems extends FanniePage
         $phpunit->assertNotEquals(0, strlen($this->body_content()));
         $phpunit->assertEquals('1.99', $this->getSRP(1.96, 0));
         $phpunit->assertNotEquals(0, strlen($this->showCategoryItems(1,1,'test')));
-        $phpunit->assertEquals(true, is_numeric($this->guessSuper(1, 1, 'test')));
+        $guess = is_numeric($this->guessSuper(1, 1, 'test'));
         $phpunit->assertNotEquals(0, strlen($this->getCategoryBrands(1, 1)));
     }
 }

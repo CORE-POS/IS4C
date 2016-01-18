@@ -10,7 +10,9 @@ class LaneTextTests extends \COREPOS\Fannie\API\test\TestWrapper
         $phpunit->assertNotEquals(0, strlen($get));
 
         $form->type = 'receiptHeader';
+        ob_start();
         $get = $this->runRESTfulPage($page, $form);
+        ob_end_clean();
         $phpunit->assertEquals(false, $get);
     }
 
