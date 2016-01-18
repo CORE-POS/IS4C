@@ -75,7 +75,6 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
             $auth = $obj->checkAuth();
             $this->assertInternalType('boolean',$pre);
 
-            echo "Testing $page_class\n";
             $obj->unitTest($this);
         }
     }
