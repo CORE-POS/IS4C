@@ -81,7 +81,7 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
             $elapse = microtime(true)-$t1;
             $speed[$page_class] = $elapse;
         }
-        asort($speed);
+        arsort($speed);
         var_dump($speed);
     }
 
