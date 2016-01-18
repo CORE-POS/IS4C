@@ -11,14 +11,14 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         $config = FannieConfig::factory();
         $logger = new FannieLogger();
         $op_db = $config->get('OP_DB');
+        $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
+        $dbc->throwOnFailure(true);
 
         foreach ($reports as $report_class) {
             $obj = new $report_class();
             $obj->setConfig($config);
             $obj->setLogger($logger);
-            $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
             $dbc->selectDB($op_db);
-            $dbc->throwOnFailure(true);
             $obj->setConnection($dbc);
 
             $pre = $obj->preprocess();
