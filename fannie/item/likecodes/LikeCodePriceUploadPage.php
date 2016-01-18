@@ -145,7 +145,14 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
         return $ret;
     }
+
+    public function unitTest($phpunit)
+    {
+        $data = array(1, 1.99, 0.99);
+        $indexes = array('likecode'=>0, 'price'=>1, 'cost'=>2);
+        $this->process_file(array($data), $indexes);
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

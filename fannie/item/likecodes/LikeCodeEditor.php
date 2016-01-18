@@ -100,9 +100,9 @@ class LikeCodeEditor extends FanniePage {
         ?>
 function loadlc(id){
     $.ajax({
-        url: 'ajax.php',
+        url: 'LikeCodeAjax.php',
         type: 'get',
-        data: 'lc='+id+'&action=fetch',
+        data: 'id='+id,
         error: function(request,error){
             console.log(request);
             console.log(error);

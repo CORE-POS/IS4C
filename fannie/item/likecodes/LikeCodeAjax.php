@@ -25,25 +25,40 @@ include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-if (basename($_SERVER['PHP_SELF']) != basename(__FILE__)) {
-    return;
-}
-$dbc = FannieDB::get($FANNIE_OP_DB);
 
-switch(FormLib::get_form_value('action')){
-case 'fetch':
-    $prep = $dbc->prepare("SELECT u.upc,p.description FROM
-            upcLike AS u 
-                " . DTrans::joinProducts('u', 'p', 'INNER') . "
-            WHERE u.likeCode=?
-            ORDER BY p.description");
-    $res = $dbc->execute($prep,array(FormLib::get_form_value('lc',0)));
-    $ret = "";
-    while($row = $dbc->fetch_row($res)){
-        $ret .= "<a style=\"font-size:90%;\" href={$FANNIE_URL}item/itemMaint.php?upc=$row[0]>";
-        $ret .= $row[0]."</a> ".substr($row[1],0,25)."<br />";
+class LikeCodeAjax extends COREPOS\Fannie\API\FannieReadOnlyPage
+{
+    public $discoverable = false;
+
+    protected function get_id_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+
+        $prep = $dbc->prepare("SELECT u.upc,p.description FROM
+                upcLike AS u 
+                    " . DTrans::joinProducts('u', 'p', 'INNER') . "
+                WHERE u.likeCode=?
+                ORDER BY p.description");
+        $res = $dbc->execute($prep,array($this->id));
+        $ret = "";
+        while ($row = $dbc->fetch_row($res)) {
+            $ret .= "<a style=\"font-size:90%;\" href=\"../ItemEditorPage.php?searchupc=$row[0]\">";
+            $ret .= $row[0]."</a> ".substr($row[1],0,25)."<br />";
+        }
+        echo $ret;
+
+        return false;
     }
-    echo $ret;
-    break;
+
+    public function unitTest($phpunit)
+    {
+        ob_start();
+        $this->id = 1;
+        $phpunit->assertEquals(false, $this->get_id_handler());
+        ob_end_clean();
+    }
 }
+
+FannieDispatch::conditionalExec();
 

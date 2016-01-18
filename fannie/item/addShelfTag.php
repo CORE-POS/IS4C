@@ -41,6 +41,8 @@ if (!class_exists('FannieAPI')) {
 
 class addShelfTag extends FannieRESTfulPage
 {
+    public $discoverable = false;
+
     public function preprocess()
     {
         $this->addRoute('get<upc>','post<upc>');
