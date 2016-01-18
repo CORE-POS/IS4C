@@ -310,10 +310,10 @@ class FannieAPI
         }
 
         // recursive search
-        $search = function($path) use (&$search) {
+        $search = function($path, $depth) use (&$search) {
             if (is_file($path) && substr($path,-4)=='.php') {
                 return array($path);
-            } elseif (is_dir($path)) {
+            } elseif (is_dir($path) && $depth < 10) {
                 $dh = opendir($path);
                 $ret = array();
                 while( ($file=readdir($dh)) !== false) {
@@ -321,7 +321,7 @@ class FannieAPI
                     if ($file == 'noauto') continue;
                     if ($file == 'index.php') continue;
                     if ($file == 'Store-Specific') continue;
-                    $ret = array_merge($ret, $search($path.'/'.$file));
+                    $ret = array_merge($ret, $search($path.'/'.$file, $depth+1));
                 }
                 return $ret;
             }
@@ -329,7 +329,7 @@ class FannieAPI
         };
 
         $files = array_reduce($directories,
-            function ($carry, $dir) use ($search) { return array_merge($carry, $search($dir)); },
+            function ($carry, $dir) use ($search) { return array_merge($carry, $search($dir, 0)); },
             array()
         );
 
