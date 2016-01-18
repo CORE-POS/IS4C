@@ -310,7 +310,6 @@ class DTransactionsModel extends BasicModel
             $sql .= ' AND datetime >= ' . $c->curdate();
         }
         if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
-            var_dump($sql);
             $this->connection->query($sql);
         }
 

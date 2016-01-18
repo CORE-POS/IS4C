@@ -20,7 +20,9 @@ class LaneTextTests extends \COREPOS\Fannie\API\test\TestWrapper
         $form->_method = 'post';
         $form->type = 'receiptHeader';
         $form->newLine = 'TEST NEW LINE';
+        ob_start();
         $post = $this->runRESTfulPage($page, $form);
+        ob_end_clean();
 
         $model = new CustomReceiptModel($this->connection);
         $model->type($form->type);
@@ -35,7 +37,9 @@ class LaneTextTests extends \COREPOS\Fannie\API\test\TestWrapper
         $form->type = 'receiptHeader';
         $form->id = array(0);
         $form->line = array('TEST CHANGED LINE');
+        ob_start();
         $post = $this->runRESTfulPage($page, $form);
+        ob_end_clean();
 
         $model = new CustomReceiptModel($this->connection);
         $model->type($form->type);
@@ -51,7 +55,9 @@ class LaneTextTests extends \COREPOS\Fannie\API\test\TestWrapper
         $form->id = array(0);
         $form->line = array('TEST CHANGED LINE');
         $form->del = array(0);
+        ob_start();
         $post = $this->runRESTfulPage($page, $form);
+        ob_end_clean();
 
         $model = new CustomReceiptModel($this->connection);
         $model->type($form->type);

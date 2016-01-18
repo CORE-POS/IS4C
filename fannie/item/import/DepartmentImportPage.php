@@ -160,7 +160,7 @@ class DepartmentImportPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     public function unitTest($phpunit)
     {
-        $this->stats = array('imported'=>0, 'error'=>array('foo'));
+        $this->stats = array('imported'=>0, 'errors'=>array('foo'));
         $phpunit->assertNotEquals(0, strlen($this->results_content()));
         $data = array(1000, 'test dept', '0.5', 0, 1);
         $indexes = array('dept_no'=>0, 'desc'=>1, 'margin'=>2, 'tax'=>3, 'fs'=>4);

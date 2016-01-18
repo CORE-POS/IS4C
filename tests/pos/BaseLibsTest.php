@@ -228,7 +228,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'DiscountType',
             'FooterBox',
             'Kicker',
-            'Parser',
             'PreParser',
             'PriceMethod',
             'SpecialUPC',

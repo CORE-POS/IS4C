@@ -43,6 +43,7 @@ class AuthTest extends PHPUnit_Framework_TestCase
         if (!function_exists('addGroup')) {
             include(dirname(__FILE__) . '/../../fannie/auth/groups.php');
         }
+        ob_start();
 
         $this->assertEquals(false, addGroup('invalid name', 'user'));
         $this->assertEquals(true, addGroup('testgroup', 'testuser'));
@@ -70,6 +71,8 @@ class AuthTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(false, deleteGroup('invalid name'));
         $this->assertEquals(false, deleteGroup('nonexistant'));
         $this->assertEquals(true, deleteGroup('testgroup'));
+
+        ob_end_clean();
     }
 
     public function testUtils()
