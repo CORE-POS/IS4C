@@ -158,7 +158,7 @@ class FannieAuthLoginPage extends FannieRESTfulPage
         $phpunit->assertEquals(true, $this->get_logout_handler());
         $this->name = 'notrealuser';
         $this->password = 'notrealpassword';
-        $phpunit->assertEquals(true, $this->get_name_password_handler());
+        $phpunit->assertEquals(true, $this->post_name_password_handler());
     }
 }
 
