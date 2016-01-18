@@ -793,6 +793,15 @@ static public function receiptDetail($reprint=false, $trans_num='')
         }
     } else { 
         $dbc = Database::tDataConnect();
+        /**
+          The newReceipt=1 option should not be shown in the configuration
+          UI if the view doesn't exist, but if the configuration gets
+          messed up try to do something useful rather than printing
+          nothing.
+        */
+        if (!$dbc->tableExists('rp_receipt_reorder_unions_g')) {
+            return self::receiptFromBuilders($reprint, $trans_num);
+        }
 
         // otherwise use new format 
         $query = "select linetoprint,sequence,dept_name,ordered, 0 as ".

@@ -52,6 +52,14 @@ include('InstallUtilities.php');
         1 => 'Grouped (static, legacy)',
         0 => 'In Order (static, legacy)',
     );
+    /**
+      Nested views no longer creaed by default. Only present
+      the option if views already exist
+    */
+    $dbc = Database::tDataConnect();
+    if (!$dbc->tableExists('rp_receipt_reorder_unions_g')) {
+        unset($receipts[1]);
+    }
     echo InstallUtilities::installSelectField('newReceipt', $receipts, 2);
     ?>
     <span class='noteTxt'>
