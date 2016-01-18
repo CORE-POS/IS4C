@@ -103,6 +103,14 @@ class SubdeptImportPage extends \COREPOS\Fannie\API\FannieUploadPage
     {
         return $this->simpleStats($this->stats);
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->results_content()));
+        $data = array(999, 'test subdept', 1);
+        $indexes = array('sn'=>0, 'desc'=>1, 'dn'=>2);
+        $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
+    }
 }
 
 FannieDispatch::conditionalExec();

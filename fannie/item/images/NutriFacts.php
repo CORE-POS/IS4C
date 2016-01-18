@@ -341,6 +341,16 @@ HTML;
 
         return $ret;
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertEquals('0g', $this->normalizeVal(''));
+        $phpunit->assertEquals('1g', $this->normalizeVal('1'));
+        $phpunit->assertEquals(0, $this->numericVal(''));
+        $phpunit->assertEquals(1, $this->numericVal('1'));
+        $phpunit->assertEquals(1, $this->numericVal('1 g'));
+    }
 }
 
 FannieDispatch::conditionalExec();

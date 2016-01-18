@@ -289,5 +289,37 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $task->run();
     }
 
+    public function testWeekSummarize()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new ProductSummarizeLastQuarter();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->testMode(true);
+        $task->run();
+    }
+
+    public function testPoSummarize()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new PurchaseOrderSummarize();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->testMode(true);
+        $task->run();
+    }
+
+    public function testSalesBatches()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new SalesBatchTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->testMode(true);
+        $task->run();
+    }
 }
 

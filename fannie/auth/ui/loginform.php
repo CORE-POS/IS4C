@@ -71,8 +71,8 @@ class FannieAuthLoginPage extends FannieRESTfulPage
     */
     public function post_name_password_handler()
     {
-        $name = FormLib::get('name');
-        $password = FormLib::get('password');
+        $name = $this->name;
+        $password = $this->password;
         $login = login($name,$password);
         $redirect = FormLib::get('redirect', 'menu.php');
 
@@ -156,6 +156,9 @@ class FannieAuthLoginPage extends FannieRESTfulPage
 
         $phpunit->assertEquals(true, $this->preprocess());
         $phpunit->assertEquals(true, $this->get_logout_handler());
+        $this->name = 'notrealuser';
+        $this->password = 'notrealpassword';
+        $phpunit->assertEquals(true, $this->get_name_password_handler());
     }
 }
 

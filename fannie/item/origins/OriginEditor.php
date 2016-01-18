@@ -614,6 +614,14 @@ class OriginEditor extends FannieRESTfulPage
             what is being tracked and measured.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_country_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_state_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_custom_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

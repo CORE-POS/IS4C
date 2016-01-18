@@ -72,13 +72,15 @@ class AuthTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, deleteGroup('testgroup'));
     }
 
-    public function testPrivs()
+    public function testUtils()
     {
-        if (!function_exists('addGroup')) {
-            include(dirname(__FILE__) . '/../../fannie/auth/privileges.php');
+        if (!function_exists('init_check')) {
+            include(dirname(__FILE__) . '/../../fannie/auth/utilities.php');
         }
-
-        
+        $this->assertEquals(false, init_check());
+        $this->assertEquals(true, is_numeric(getNumUsers()));
+        $this->assertEquals(true, is_numeric(getNumAdmins()));
+        $this->assertInternalType('string', genSessionID());
     }
 }
 

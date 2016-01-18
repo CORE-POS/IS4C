@@ -134,6 +134,10 @@ last thirteen weeks';
                     $dept_sales[$row['dept']] = 0.0;
                 }
                 $dept_sales[$row['dept']] += $row['ttl'];
+
+                if ($this->test_mode) {
+                    break;
+                }
             }
 
             // add entries for this week's items
@@ -151,6 +155,10 @@ last thirteen weeks';
                     $d_ttl == 0 ? 0.0 : $info['ttl'] / $d_ttl,
                 );
                 $dbc->execute($addP, $args);
+            }
+
+            if ($this->test_mode) {
+                break;
             }
         } // end loop on weeks
 

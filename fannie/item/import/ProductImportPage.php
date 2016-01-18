@@ -194,6 +194,14 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
     {
         return $this->simpleStats($this->stats);
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->results_content()));
+        $data = array('9999999999999', 'test item', 9.99, 1);
+        $indexes = array('upc'=>0, 'desc'=>1, 'price'=>2, 'dept'=>3);
+        $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
+    }
 }
 
 FannieDispatch::conditionalExec();

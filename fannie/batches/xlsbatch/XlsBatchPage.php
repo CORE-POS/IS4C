@@ -34,20 +34,17 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected $must_authenticate = true;
 
     public $description = '[Excel Batch] creates a sale or price change batch from a spreadsheet.';
-    public $themed = true;
 
     protected $preview_opts = array(
         'upc_lc' => array(
-            'name' => 'upc_lc',
             'display_name' => 'UPC/LC',
             'default' => 0,
-            'required' => True
+            'required' => true
         ),
         'price' => array(
-            'name' => 'price',
             'display_name' => 'Price',
             'default' => 1,
-            'required' => True
+            'required' => true
         )
     );
 
@@ -182,7 +179,8 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         return $ret;
     }
 
-    function form_content(){
+    function form_content()
+    {
         ob_start();
         ?>
         <div class="well">
@@ -199,7 +197,6 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
     */
     protected function basicForm()
     {
-        global $FANNIE_URL;
         $batchtypes = $this->get_batch_types();
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $owners = new MasterSuperDeptsModel($dbc);
@@ -268,7 +265,18 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
         return ob_get_clean();
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->basicForm()));
+        $phpunit->assertNotEquals(0, strlen($this->preview_content()));
+        $this->results = 'foo';
+        $phpunit->assertNotEquals(0, strlen($this->results_content()));
+        $data = array('4011', 0.99);
+        $indexes = array('upc_lc' => 0, 'price' => 1);
+        $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
