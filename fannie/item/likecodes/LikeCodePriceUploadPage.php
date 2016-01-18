@@ -75,7 +75,8 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 WHERE u.likeCode=?');
             $updateWithCost = $dbc->prepare('
                 UPDATE products
-                SET cost = ?,
+                SET normal_price=?,
+                    cost = ?,
                     modified = ' . $dbc->now() . '
                 FROM products AS p
                     INNER JOIN upcLike AS u ON p.upc=u.upc
