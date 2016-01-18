@@ -334,6 +334,9 @@ class FannieAPI
         );
 
         $ret = array();
+        if (count($files) > 1607) {
+            var_dump($files);
+        }
         foreach($files as $file) {
             $class = substr(basename($file),0,strlen(basename($file))-4);
             // matched base class
