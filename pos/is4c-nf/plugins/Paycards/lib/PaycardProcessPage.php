@@ -122,7 +122,7 @@ class PaycardProcessPage extends BasicCorePage
                         location = destination;
                 },
                 error: function(){
-                    location = '<?php echo $plugin_info->pluginUrl(); ?>/gui/paycardboxMsgAuth.php';
+                    location = '<?php echo $this->page_url; ?>/gui-modules/pos2.php';
                 }
             });
             paycard_processingDisplay();

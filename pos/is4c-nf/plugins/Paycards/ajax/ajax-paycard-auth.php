@@ -62,4 +62,4 @@ if ($result === PaycardLib::PAYCARD_ERR_OK){
     $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 }
 
-echo JsonLib::array_to_json($json);
+echo json_encode($json);
