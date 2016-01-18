@@ -49,7 +49,7 @@ static public function printReport($class=false){
  setting "TenderReportMod". If nothing has been selected,
  the "DefaultTenderReport" module is used.
  */
-static public function get($trClass=false)
+static public function get()
 {
     $trClass = CoreLocal::get("TenderReportMod");
     if ($trClass == '') {

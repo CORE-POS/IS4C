@@ -356,7 +356,7 @@ class TenderEditor extends FannieRESTfulPage
         $phpunit->assertEquals('Kickbacks', $model->ChangeMessage());
     }
 
-    private function saveMin($phpunit, $model)
+    private function saveMin($phpunit)
     {
         $this->saveMin = 5;
         $phpunit->assertInternalType('bool', $this->post_id_saveMin_handler());
