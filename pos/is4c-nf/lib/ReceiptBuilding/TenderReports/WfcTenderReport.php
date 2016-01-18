@@ -64,7 +64,7 @@ static public function get()
     $ref = ReceiptLib::centerString(trim(CoreLocal::get("CashierNo"))." ".trim(CoreLocal::get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
     $receipt = "";
 
-    foreach (self::$DESIRED_TENDERS as $tender_code => $header) { 
+    foreach (self::$DESIRED_TENDERS as $tender_code => $titleStr) { 
         $query = "select tdate,register_no,trans_no,-total AS tender
                    from dlog where emp_no=".CoreLocal::get("CashierNo").
             " and trans_type='T' AND trans_subtype='".$tender_code."'

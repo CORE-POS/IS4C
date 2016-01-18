@@ -30,8 +30,12 @@ class TenderReport extends LibraryClass {
 /**
   Write tender report to the printer
 */
-static public function printReport(){
-    $contents = self::get();
+static public function printReport($class=false){
+    if ($class === false) {
+        $contents = self::get();
+    } else {
+        $contents = $class::get();
+    }
     ReceiptLib::writeLine($contents);
 }
 
@@ -45,10 +49,12 @@ static public function printReport(){
  setting "TenderReportMod". If nothing has been selected,
  the "DefaultTenderReport" module is used.
  */
-static public function get()
+static public function get($trClass=false)
 {
     $trClass = CoreLocal::get("TenderReportMod");
-    if ($trClass == '') $trClass = 'DefaultTenderReport';
+    if ($trClass == '') {
+        $trClass = 'DefaultTenderReport';
+    }
     return $trClass::get();
 }
 
