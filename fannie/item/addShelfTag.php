@@ -139,6 +139,7 @@ HTML;
         $vendor = $tagData['vendor'];
         $ppo = $tagData['pricePerUnit'];
 
+        ob_start();
         ?>
         <div class="container-fluid">
         <form method='post'>
@@ -196,6 +197,8 @@ HTML;
         </form>
         </div>
         <?php
+
+        return ob_get_clean();
     }
 
     public function unitTest($phpunit)
