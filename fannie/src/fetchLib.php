@@ -89,8 +89,6 @@ function docurl($xml){
     curl_setopt($curl_handle, CURLOPT_HTTPHEADER, array("Content-type: text/xml"));
     curl_setopt($curl_handle, CURLOPT_POSTFIELDS, $xml);
 
-    set_time_limit(300);
-
     $response = curl_exec($curl_handle);
 
     $result = array(

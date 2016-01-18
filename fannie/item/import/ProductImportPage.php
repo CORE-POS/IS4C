@@ -161,10 +161,6 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             } else {
                 $this->stats['errors'][] = 'Error importing UPC ' . $upc;
             }
-
-            if ($linecount++ % 100 == 0) {
-                set_time_limit(30);
-            }
         }
 
         return $ret;
