@@ -254,9 +254,11 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $config = FannieConfig::factory();
         $logger = new FannieLogger();
         $task = new SetMemDatesTask();
+        COREPOS\Fannie\API\member\MemberREST::testMode(true);
         $task->setConfig($config);
         $task->setLogger($logger);
         $task->run();
+        COREPOS\Fannie\API\member\MemberREST::testMode(false);
     }
 
     public function testSO()

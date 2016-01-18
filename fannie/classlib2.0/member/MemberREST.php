@@ -50,6 +50,12 @@ class MemberREST
         'lowIncomeBenefits' => array('map'=>'SSI', 'match'=>'strict'),
     );
 
+    private static $test_mode = false;
+    public static function testMode($mode)
+    {
+        self::$test_mode = $mode;
+    }
+
     /**
       Get an array representing a customer account
       @param $id [int] account ID (classically card_no / CardNo)
@@ -422,6 +428,9 @@ class MemberREST
                 'memberCouponsAllowed' => $account['memberStatus'] == 'PC' ? 1 : 0,
             );
             $accounts[$row['CardNo']]['customers'][] = $customer;
+            if (self::$test_mode) {
+                break;
+            }
         }
 
         $ret = array();

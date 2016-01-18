@@ -74,7 +74,9 @@ class MembersTest extends PHPUnit_Framework_TestCase
             }
         }
 
+        COREPOS\Fannie\API\member\MemberREST::testMode(true);
         $all = \COREPOS\Fannie\API\member\MemberREST::get();
+        COREPOS\Fannie\API\member\MemberREST::testMode(false);
         foreach ($all as $a) {
             $this->assertArrayHasKey('cardNo', $a);
             if ($a['cardNo'] == $TEST_ACCOUNT) {

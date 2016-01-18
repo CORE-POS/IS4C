@@ -99,7 +99,7 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $defaults_tables = $this->deptDefaults($dbc);
+        $defaults_table = $this->deptDefaults($dbc);
 
         $ret = true;
         $linecount = 0;
