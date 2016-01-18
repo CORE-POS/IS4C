@@ -12,7 +12,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 
         foreach ($models as $model_class) {
             $obj = new $model_class(null);
-            $columns = $this->getColumns();
+            $columns = $obj->getColumns();
 
             // check column definitions
             $this->assertInternalType('array', $columns);
