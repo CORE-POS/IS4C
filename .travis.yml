@@ -35,7 +35,7 @@ install:
     - npm install acorn
 
 script:
-    - phpunit -c phpunit.xml
+    - phpunit -d max_execution_time=0 -c phpunit.xml
     - sh tests/acorn.sh
 
 after_script:
