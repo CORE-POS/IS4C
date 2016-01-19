@@ -27,7 +27,6 @@ if (!class_exists('FannieAPI'))
 
 class WicableByDepartment extends FannieRESTfulPage 
 {
-    
     protected $header = 'Change Department to Wicable';
     protected $title = 'Change Department to Wicable';
 
@@ -77,34 +76,41 @@ class WicableByDepartment extends FannieRESTfulPage
     
     public function get_view()
     {
-    $this->addOnloadCommand('$(\'input:first\').focus();');
-            $ret = "
-            <form method=\"get\">
-            <div class=\"form-group\">
-                <label>Department</label>
-                <select name=\"id\" class=\"form-control\" />";
+        $this->addOnloadCommand('$(\'input:first\').focus();');
+        $ret = "
+        <form method=\"get\">
+        <div class=\"form-group\">
+            <label>Department</label>
+            <select name=\"id\" class=\"form-control\" />";
 
-            $dbc = $this->connection;
-            $dbc->selectDB($this->config->get('OP_DB'));
-            $query = "SELECT dept_no, dept_name FROM departments GROUP BY dept_no ORDER BY dept_no;";
-            $result = $dbc->query($query);
-            while ($row = $dbc->fetch_row($result)) {
-                $dept_no[] = $row['dept_no'];
-                $dept_name[] = $row['dept_name'];
-            }     
-            for ($i=0; $i<count($dept_no); $i++) {
-                $ret .= "<option value=\"{$dept_no[$i]}\">{$dept_no[$i]} - {$dept_name[$i]}</option>";
-            }
-            
-            $ret .= "
-            </select>
-            </div>
-            <div class=\"form-group\">
-                <button type=\"submit\" class=\"btn btn-default\">Make Department Wicable</button>
-            </div>
-            </form>
-            ";
-    return $ret;
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $query = "SELECT dept_no, dept_name FROM departments GROUP BY dept_no ORDER BY dept_no;";
+        $result = $dbc->query($query);
+        while ($row = $dbc->fetch_row($result)) {
+            $dept_no[] = $row['dept_no'];
+            $dept_name[] = $row['dept_name'];
+        }     
+        for ($i=0; $i<count($dept_no); $i++) {
+            $ret .= "<option value=\"{$dept_no[$i]}\">{$dept_no[$i]} - {$dept_name[$i]}</option>";
+        }
+        
+        $ret .= "
+        </select>
+        </div>
+        <div class=\"form-group\">
+            <button type=\"submit\" class=\"btn btn-default\">Make Department Wicable</button>
+        </div>
+        </form>
+        ";
+        return $ret;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->id = 1;
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
     }
 }
 

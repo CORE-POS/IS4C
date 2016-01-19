@@ -28,7 +28,6 @@ if (!class_exists('FannieAPI')) {
 class NewMemberTool extends FanniePage 
 {
     public $description = '[New Members] creates a block of new member accounts.';
-    public $themed = true;
     protected $title = "Fannie :: Create Members";
     protected $header = "Create Members";
     protected $must_authenticate = True;
@@ -287,7 +286,12 @@ class NewMemberTool extends FanniePage
             first transaction is assigned to the correct membership.</p>
             ';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
