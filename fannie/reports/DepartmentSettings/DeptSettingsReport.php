@@ -86,24 +86,30 @@ class DeptSettingsReport extends FannieReportPage
             ORDER BY d.dept_no");
         $result = $dbc->execute($query,$args);
         $data = array();
-        while($row = $dbc->fetch_row($result)) {
-            $record = array(
-                    $row[0],
-                    (isset($_REQUEST['excel']))?$row[1]:"<a href=\"{$FANNIE_URL}item/departments/DepartmentEditor.php?did=$row[0]\">$row[1]</a>",
-                    $row['super_name'],
-                    $row[2],
-                    sprintf('%.2f%%',$row[3]*100),
-                    $row[4],
-                    $row[5]
-            );
-            if (empty($row['super_name'])) {
-                $record['meta'] = FannieReportPage::META_COLOR;
-                $record['meta_background'] = '#ff9999';
-            }
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        $record = array(
+            $row[0],
+            (isset($_REQUEST['excel']))?$row[1]:"<a href=\"" . $this->config->get('URL') . "item/departments/DepartmentEditor.php?did=$row[0]\">$row[1]</a>",
+            $row['super_name'],
+            $row[2],
+            sprintf('%.2f%%',$row[3]*100),
+            $row[4],
+            $row[5],
+        );
+        if (empty($row['super_name'])) {
+            $record['meta'] = FannieReportPage::META_COLOR;
+            $record['meta_background'] = '#ff9999';
+        }
+
+        return $record;
     }
 
     public function form_content()
@@ -183,6 +189,12 @@ class DeptSettingsReport extends FannieReportPage
     {
         return '<p>This is just a quick list of current margin, tax,
             and foodstamp settings for a set of POS departments.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array(0=>1, 1=>'TEST', 2=>100, 3=>0.5, 4=>0, 5=>1, 'super_name'=>'test');
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

@@ -89,26 +89,25 @@ class ItemOrderHistoryReport extends FannieReportPage
         }
         $result = $dbc->execute($prep, $args);
         $data = array();
-        while($row = $dbc->fetch_row($result)) {
-            $record = array(
-                $row['placedDate'],
-                $row['vendorName'],
-                $row['vendorInvoiceID'],
-                $row['sku'],
-                $row['quantity'],
-                $row['caseSize'],
-                $row['unitCost'],
-                $row['ttl'],
-            );
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
     }
 
-    public function calculate_footers($data)
+    private function rowToRecord($row)
     {
-        return array();
+        return array(
+            $row['placedDate'],
+            $row['vendorName'],
+            $row['vendorInvoiceID'],
+            $row['sku'],
+            $row['quantity'],
+            $row['caseSize'],
+            $row['unitCost'],
+            $row['ttl'],
+        );
     }
 
     public function form_content()
@@ -149,6 +148,14 @@ class ItemOrderHistoryReport extends FannieReportPage
             Lists purchase orders and/or invoices
             containing a particular item.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('placedDate'=>'2000-01-01', 'vendorName'=>'test',
+            'vendorInvoiceID'=>'1234', 'sku'=>'111', 'quantity'=>1,
+            'caseSize'=>5, 'unitCost'=>1, 'ttl'=>5);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

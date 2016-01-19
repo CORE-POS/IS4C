@@ -32,10 +32,7 @@ class DepartmentDiscrepancy extends FanniePage
     protected $header = "Department Discrepancy Page";
 
     public $description = 'Checks for tax and foodstamp discrepancies by department';
-    public $themed = true;
-
     protected $must_authenticate = true;
-    
     private $mode = 'form';
 
     public function preprocess()
@@ -288,10 +285,12 @@ class DepartmentDiscrepancy extends FanniePage
         return '<p>Select a department to compare the number
         of items set to differing tax and foodstamp settings.</p>';
     }
-    
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
     
 FannieDispatch::conditionalExec();
-    
-    
-    
+

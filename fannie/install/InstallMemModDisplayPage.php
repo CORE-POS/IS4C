@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 if (!function_exists('confset')) {
     include(dirname(__FILE__) . '/util.php');
 }
-if (!function_exists('create_if_needed')) {
+if (!function_exists('dropDeprecatedStructure')) {
     include(dirname(__FILE__) . '/db.php');
 }
 
@@ -46,33 +46,12 @@ class InstallMemModDisplayPage extends \COREPOS\Fannie\API\InstallPage {
     Class for the Member Editor Module Display Order configuration page.
     ";
 
-    public function __construct() {
-
-        // To set authentication.
-        FanniePage::__construct();
-
-        // Link to a file of CSS by using a function.
-        $this->add_css_file("../src/style.css");
-        $this->add_css_file("../src/javascript/jquery-ui.css");
-        $this->add_css_file("../src/css/install.css");
-
-        // Link to a file of JS by using a function.
-        $this->add_script("../src/javascript/jquery.js");
-        $this->add_script("../src/javascript/jquery-ui.js");
-
-    // __construct()
-    }
-
     function body_content(){
         global $FANNIE_MEMBER_MODULES;
         ob_start();
 
         $parent = 'InstallMembershipPage.php';
         echo showLinkUp('Back to Membership',"$parent",'');
-
-        if (!$this->themed) {
-            echo "<h1 class='install'>{$this->header}</h1>";
-        }
 
         // Re-order the modules and report.
         if (isset($_REQUEST['ordering'])){
@@ -93,12 +72,7 @@ class InstallMemModDisplayPage extends \COREPOS\Fannie\API\InstallPage {
 
         echo "<form action='$self' method='post'>";
 
-        if (is_writable('../config.php')){
-            echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
-        }
-        else {
-            echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
-        }
+        echo $this->writeCheck(dirname(__FILE__) . '/../config.php');
         echo "<hr />";
 
         $num = count($FANNIE_MEMBER_MODULES);
@@ -130,8 +104,13 @@ class InstallMemModDisplayPage extends \COREPOS\Fannie\API\InstallPage {
     // body_content
     }
 
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
+
 // InstallMemModDisplayPage
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

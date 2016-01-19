@@ -32,6 +32,22 @@ class PosModelsTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+      Create, update, and delete an employee record
+      to cover BasicModel functionality
+    */
+    public function testBasics()
+    {
+        $obj = new COREPOS\pos\lib\models\op\EmployeesModel(Database::pDataConnect());
+        $obj->emp_no(99);
+        $obj->FirstName('test');
+        $obj->save();
+        $this->assertEquals(true, $obj->load());
+        $obj->FirstName('testchange');
+        $this->assertEquals(true, $obj->save());
+        $this->assertEquals(true, $obj->delete());
+    }
+
     public function testTendersModel()
     {
         $obj = new COREPOS\pos\lib\models\op\TendersModel(Database::pDataConnect());

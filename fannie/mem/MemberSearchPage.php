@@ -30,7 +30,6 @@ class MemberSearchPage extends FanniePage {
     protected $header = "Find Members";
 
     public $description = '[Member Search] finds a member account by name, number, or contact info.';
-    public $themed = true;
 
     protected $must_authenticate = true;
     protected $auth_classes = array('editmembers');
@@ -45,9 +44,9 @@ class MemberSearchPage extends FanniePage {
         $this->country = (isset($FANNIE_COUNTRY)&&!empty($FANNIE_COUNTRY))?$FANNIE_COUNTRY:"US";
 
         /* do search */
-        if (FormLib::get_form_value('doSearch',False) !== False){
+        if (FormLib::get('doSearch',False) !== False){
             $dbc = FannieDB::get($FANNIE_OP_DB);
-            $num = FormLib::get_form_value('memNum','');
+            $num = FormLib::get('memNum','');
 
             /* if member number is provided and exists, go
                directly to the result */
@@ -106,13 +105,12 @@ class MemberSearchPage extends FanniePage {
 
     function form_content()
     {
-        global $FANNIE_MEMBER_MODULES, $FANNIE_OP_DB;
         $ret = '';
 
-        $review = FormLib::get_form_value('review',False);
+        $review = FormLib::get('review',False);
         if ($review !== false) {
             $ret .= '<fieldset><legend>Review</legend>';
-            $dbc = FannieDB::get($FANNIE_OP_DB);
+            $dbc = FannieDB::get($this->config->get('OP_DB'));
             $account = \COREPOS\Fannie\API\member\MemberREST::get($review);
             $ret .= 'Saved Member #'.$review.' (';
             if ($account) {
@@ -150,7 +148,7 @@ class MemberSearchPage extends FanniePage {
         $searchJS = '';
         $load = array();
         FannieAPI::listModules('MemberModule');
-        foreach ($FANNIE_MEMBER_MODULES as $mm) {
+        foreach ($this->config->get('MEMBER_MODULES') as $mm) {
             if (class_exists($mm)) {
                 $instance = new $mm();
                 if ($instance->hasSearch()) {
@@ -234,6 +232,12 @@ class MemberSearchPage extends FanniePage {
             yield a single match or not found. Other kinds of searches may
             return multiple members. If there are multiple results, click
             the one you want to view.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $this->config->set('FANNIE_MEMBER_MODULES', array('ContactInfo', 'MemCard'));
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
     }
 }
 

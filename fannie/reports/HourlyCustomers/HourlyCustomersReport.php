@@ -65,27 +65,33 @@ class HourlyCustomersReport extends FannieReportPage
         $dlog = DTransactionsModel::selectDlog($date);
 
         $hour = $dbc->hour('tdate');
-        $q = $dbc->prepare("select $hour as hour,
+        $query = $dbc->prepare("select $hour as hour,
             count(distinct trans_num)
             from $dlog where
             tdate BETWEEN ? AND ?
             group by $hour
             order by $hour");
-        $r = $dbc->execute($q,array($date.' 00:00:00',$date.' 23:59:59'));
+        $res = $dbc->execute($query,array($date.' 00:00:00',$date.' 23:59:59'));
 
         $data = array();
-        while($row = $dbc->fetch_array($r)){
-            $hour = $row[0];
-            if ($hour > 12) {
-                $hour -= 12;
-            }
-            $record = array();
-            $record[] = $hour . ($row[0] < 12 ? ':00 am' : ':00 pm');
-            $record[] = $row[1];
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($res)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        $hour = $row[0];
+        if ($hour > 12) {
+            $hour -= 12;
+        }
+        $record = array();
+        $record[] = $hour . ($row[0] < 12 ? ':00 am' : ':00 pm');
+        $record[] = $row[1];
+
+        return $record;
     }
 
     public function helpContent()
@@ -100,6 +106,12 @@ class HourlyCustomersReport extends FannieReportPage
             are a couple special options in the <em>Buyer/Dept</em> list:
             <em>All</em> is simply all sales and <em>All Retail</em> is
             everything except for super department #0 (zero).</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array(13, 1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

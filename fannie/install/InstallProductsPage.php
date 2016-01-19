@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 if (!function_exists('confset')) {
     include(dirname(__FILE__) . '/util.php');
 }
-if (!function_exists('create_if_needed')) {
+if (!function_exists('dropDeprecatedStructure')) {
     include(dirname(__FILE__) . '/db.php');
 }
 
@@ -45,25 +45,6 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
     public $description = "
     Class for the Products install and config options page.
     ";
-    public $themed = true;
-
-    // This replaces the __construct() in the parent.
-    public function __construct() {
-
-        // To set authentication.
-        FanniePage::__construct();
-
-        // Link to a file of CSS by using a function.
-        $this->add_css_file("../src/style.css");
-        $this->add_css_file("../src/javascript/jquery-ui.css");
-        $this->add_css_file("../src/css/install.css");
-
-        // Link to a file of JS by using a function.
-        $this->add_script("../src/javascript/jquery.js");
-        $this->add_script("../src/javascript/jquery-ui.js");
-
-    // __construct()
-    }
 
     /**
       Define any CSS needed
@@ -79,18 +60,13 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
     //css_content()
     }
 
-    /**
-      Define any javascript needed
-      @return A javascript string
-    function javascript_content(){
-        $js ="";
-        return $js;
-    }
-    */
-
     function body_content()
     {
         include(dirname(__FILE__) . '/../config.php');
+        // set a default if needed
+        if (!isset($FANNIE_PRODUCT_MODULES) || !is_array($FANNIE_PRODUCT_MODULES) || count($FANNIE_PRODUCT_MODULES) === 0) {
+            $FANNIE_PRODUCT_MODULES = array('BaseItemModule' => array('seq'=>0, 'show'=>1, 'expand'=>1));
+        }
 
         ob_start();
 
@@ -98,20 +74,9 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
 ?>
 
         <form action=InstallProductsPage.php method=post>
-        <h1 class="install">
-            <?php 
-            if (!$this->themed) {
-                echo "<h1 class='install'>{$this->header}</h1>";
-            }
-            ?>
         </h1>
         <?php
-        if (is_writable('../config.php')){
-            echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
-        }
-        else {
-            echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
-        }
+        echo $this->writeCheck(dirname(__FILE__) . '/../config.php');
         ?>
         <hr />
         <h4 class="install">Product Information Modules</h4>
@@ -192,15 +157,6 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
             $FANNIE_PRODUCT_MODULES[$name] = $params;
         }
 
-        // set a default if needed
-        if (count($FANNIE_PRODUCT_MODULES) == 0) {
-            $FANNIE_PRODUCT_MODULES['BaseItemModule'] = array(
-                'seq' => 0,
-                'show' => 1,
-                'expand' => 1,
-            );
-        }
-
         $default = array('seq' => 0, 'show' => 0, 'expand' => 0);
         $opts = array('No', 'Yes', 'Auto');
         foreach ($mods as $module) {
@@ -259,10 +215,10 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         <label>Default Shelf Tag Layout</label>
         <?php
         $layouts = 'No Layouts Found!';
-        if (file_exists($FANNIE_ROOT.'admin/labels/scan_layouts.php') && !function_exists('scan_layouts')){
+        if (!function_exists('scan_layouts')) {
             include($FANNIE_ROOT.'admin/labels/scan_layouts.php');
-            $layouts = scan_layouts();
         }
+        $layouts = scan_layouts();
         echo installSelectField('FANNIE_DEFAULT_PDF', $FANNIE_DEFAULT_PDF, $layouts, 'Fannie Standard');
         ?>
         <label>Shelf Tag Data Source</label>
@@ -357,8 +313,13 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
     // body_content
     }
 
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
+
 // InstallProductsPage
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

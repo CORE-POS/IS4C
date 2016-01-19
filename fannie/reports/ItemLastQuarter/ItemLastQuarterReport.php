@@ -74,19 +74,23 @@ class ItemLastQuarterReport extends FannieReportPage
         $result = $dbc->execute($prep, array($upc));
 
         $data = array();
-        while($row = $dbc->fetch_row($result)) {
-            $record = array(
-                'Week ' . date('Y-m-d', strtotime($row['weekStart'])) . ' to ' . date('Y-m-d', strtotime($row['weekEnd'])),
-                sprintf('%.2f', $row['quantity']),
-                sprintf('%.2f', $row['total']),
-                sprintf('%.4f%%', $row['percentageStoreSales'] * 100),
-                sprintf('%.4f%%', $row['percentageSuperDeptSales'] * 100),
-                sprintf('%.4f%%', $row['percentageDeptSales'] * 100),
-            );
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        return array(
+            'Week ' . date('Y-m-d', strtotime($row['weekStart'])) . ' to ' . date('Y-m-d', strtotime($row['weekEnd'])),
+            sprintf('%.2f', $row['quantity']),
+            sprintf('%.2f', $row['total']),
+            sprintf('%.4f%%', $row['percentageStoreSales'] * 100),
+            sprintf('%.4f%%', $row['percentageSuperDeptSales'] * 100),
+            sprintf('%.4f%%', $row['percentageDeptSales'] * 100),
+        );
     }
 
     public function calculate_footers($data)
@@ -132,6 +136,14 @@ class ItemLastQuarterReport extends FannieReportPage
             Lists an item\'s sales over the previous thirteen weeks
             with its percentage of category sales.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('weekStart'=>'2000-01-01', 'weekEnd'=>'2000-01-06',
+            'quantity'=>1, 'total'=>1, 'percentageStoreSales'=>0.1,
+            'percentageSuperDeptSales'=>0.1, 'percentageDeptSales'=>0.1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

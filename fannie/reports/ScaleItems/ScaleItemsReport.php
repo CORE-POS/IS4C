@@ -89,20 +89,24 @@ class ScaleItemsReport extends FannieReportPage
         $result = $dbc->execute($prep, $args);
 
         $data = array();
-        while($row = $dbc->fetch_row($result)) {
-            $record = array(
-                $row['plu'],
-                $row['itemdesc'],
-                $row['weight'],
-                $row['tare'],
-                $row['shelflife'],
-                $row['netWeight'],
-                $row['text'],
-            );
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        return array(
+            $row['plu'],
+            $row['itemdesc'],
+            $row['weight'],
+            $row['tare'],
+            $row['shelflife'],
+            $row['netWeight'],
+            $row['text'],
+        );
     }
 
     public function form_content()
@@ -162,6 +166,12 @@ class ScaleItemsReport extends FannieReportPage
             </p>';
     }
 
+    public function unitTest($phpunit)
+    {
+        $data = array('plu'=>'21234000000', 'itemdesc'=>'test', 'weight'=>0,
+            'tare'=>0.01, 'shelflife'=>5, 'netWeight'=>0, 'text'=>'test');
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
+    }
 }
 
 FannieDispatch::conditionalExec();

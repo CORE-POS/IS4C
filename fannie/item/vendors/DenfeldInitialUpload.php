@@ -78,6 +78,7 @@ class DenfeldInitialUpload extends \COREPOS\Fannie\API\FannieUploadPage
         }
 
         $this->updateInUse($upc);
+        $this->copyItems($upc);
         
         return true;
     }
@@ -114,7 +115,121 @@ class DenfeldInitialUpload extends \COREPOS\Fannie\API\FannieUploadPage
         if (mysql_errno() > 0) {
                 echo mysql_errno() . ": " . mysql_error(). "<br>";
         }
+    }
+    
+    private function copyItems($upc)
+    {
+        $dbc = FannieDB::get($FANNIE_OP_DB);
         
+        $prep = $dbc->prepare('
+            INSERT INTO products
+            ( 
+                upc,
+                description,
+                brand,
+                formatted_name,
+                normal_price,
+                pricemethod,
+                groupprice,
+                quantity,
+                special_price,
+                specialpricemethod,
+                specialgroupprice,
+                specialquantity,
+                special_limit,
+                start_date,
+                end_date,
+                department,
+                size,
+                tax,
+                foodstamp,
+                scale,
+                scaleprice,
+                mixmatchcode,
+                modified,
+                batchID,
+                tareweight,
+                discount,
+                discounttype,
+                line_item_discountable,
+                unitofmeasure,
+                wicable,
+                qttyEnforced,
+                idEnforced,
+                cost,
+                inUse,
+                numflag,
+                subdept,
+                deposit,
+                local,
+                default_vendor_id,
+                current_origin_id,
+                auto_par,
+                price_rule_id,
+                store_id
+        ) VALUES (SELECT
+                upc,
+                description,
+                brand,
+                formatted_name,
+                normal_price,
+                pricemethod,
+                groupprice,
+                quantity,
+                special_price,
+                specialpricemethod,
+                specialgroupprice,
+                specialquantity,
+                special_limit,
+                start_date,
+                end_date,
+                department,
+                size,
+                tax,
+                foodstamp,
+                scale,
+                scaleprice,
+                mixmatchcode,
+                modified,
+                batchID,
+                tareweight,
+                discount,
+                discounttype,
+                line_item_discountable,
+                unitofmeasure,
+                wicable,
+                qttyEnforced,
+                idEnforced,
+                cost,
+                inUse,
+                numflag,
+                subdept,
+                deposit,
+                local,
+                default_vendor_id,
+                current_origin_id,
+                auto_par,
+                price_rule_id
+            FROM products
+            WHERE store_id=1
+                AND upc IN (
+                    SELECT upc
+                    FROM denfeldList
+                )
+                AND upc NOT IN (
+                    SELECT upc 
+                    FROM products 
+                    WHERE store_id=2
+                )
+            ),
+            2
+        )
+        ;');
+        $res = $dbc->execute($prep);
+        $row = $dbc->fetchRow($res);
+        if (mysql_errno() > 0) {
+                echo mysql_errno() . ": " . mysql_error(). "<br>";
+        }
     }
 
     function preview_content()

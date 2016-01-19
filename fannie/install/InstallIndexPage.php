@@ -57,21 +57,12 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
     Creates databases and tables, creates and re-creates views.
     Should be run after every upgrade.
     ";
-    public $themed = true;
 
     // This replaces the __construct() in the parent.
     public function __construct() {
 
         // To set authentication.
         FanniePage::__construct();
-
-        // Link to a file of CSS by using a function.
-        $this->add_css_file("../src/javascript/jquery-ui.css");
-        $this->add_css_file("../src/css/install.css");
-
-        // Link to a file of JS by using a function.
-        $this->add_script("../src/javascript/jquery.js");
-        $this->add_script("../src/javascript/jquery-ui.js");
 
         $this->add_script('../src/javascript/syntax-highlighter/scripts/jquery.syntaxhighlighter.min.js');
         $this->add_onload_command('

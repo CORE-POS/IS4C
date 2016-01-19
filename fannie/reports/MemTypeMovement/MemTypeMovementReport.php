@@ -66,17 +66,22 @@ class MemTypeMovementReport extends FannieReportPage
         $data = array();
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
-        while ($w = $dbc->fetchRow($res)) {
-            $data[] = array(
-                $w['upc'],
-                $w['description'],
-                $w['department'] . ' ' . $w['dept_name'],
-                sprintf('%.2f', $w['qty']),
-                sprintf('%.2f', $w['total']),
-            );
+        while ($row = $dbc->fetchRow($res)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        return array(
+            $row['upc'],
+            $row['description'],
+            $row['department'] . ' ' . $row['dept_name'],
+            sprintf('%.2f', $row['qty']),
+            sprintf('%.2f', $row['total']),
+        );
     }
 
     public function form_content()
@@ -115,6 +120,13 @@ class MemTypeMovementReport extends FannieReportPage
             or taking goods of the shelf for the store\'s
             own use.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('upc'=>'4011', 'description'=>'test',
+            'department'=>1, 'dept_name'=>'test', 'qty'=>1, 'total'=>1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 
