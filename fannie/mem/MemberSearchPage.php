@@ -236,7 +236,7 @@ class MemberSearchPage extends FanniePage {
 
     public function unitTest($phpunit)
     {
-        $this->config->set('FANNIE_MEMBER_MODULES, array('ContactInfo', 'MemCard'));
+        $this->config->set('FANNIE_MEMBER_MODULES', array('ContactInfo', 'MemCard'));
         $phpunit->assertNotEquals(0, strlen($this->body_content()));
     }
 }
