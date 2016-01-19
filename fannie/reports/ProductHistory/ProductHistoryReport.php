@@ -86,24 +86,28 @@ class ProductHistoryReport extends FannieReportPage
         $result = $dbc->execute($prep,$args);
 
         $data = array();
-        while($row = $dbc->fetch_row($result)) {
-            $record = array(
-                $row['modified'],
-                $row['description'],
-                $row['price'],
-                $row['cost'],
-                $row['dept'],
-                $row['tax'],
-                $row['fs'],
-                $row['scale'],
-                $row['forceQty'],
-                $row['noDisc'],
-                $row['user'],
-            );
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        return array(
+            $row['modified'],
+            $row['description'],
+            $row['price'],
+            $row['cost'],
+            $row['dept'],
+            $row['tax'],
+            $row['fs'],
+            $row['scale'],
+            $row['forceQty'],
+            $row['noDisc'],
+            $row['user'],
+        );
     }
     
     public function form_content()
@@ -140,6 +144,14 @@ class ProductHistoryReport extends FannieReportPage
         return '<p>
             List audit log of changes to a given item.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('modified'=>'2000-01-01', 'description'=>'test', 'price'=>1,
+            'cost'=>1, 'dept'=>1, 'tax'=>0, 'fs'=>1, 'scale'=>0, 'forceQty'=>0,
+            'noDisc'=>0, 'user'=>1234);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

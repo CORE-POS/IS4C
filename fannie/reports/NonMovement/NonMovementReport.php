@@ -148,33 +148,39 @@ class NonMovementReport extends FannieReportPage {
           Issue a query, build array of results
         */
         $ret = array();
-        while ($row = $dbc->fetch_array($result)){
-            $record = array();
-            $record[] = $row[0];
-            $record[] = $row[1];
-            $record[] = $row[2];
-            $record[] = $row[3];
-            $record[] = $row[4];
-            if ($this->report_format == 'html') {
-                $record[] = sprintf('<a href="" id="del%s"
-                        onclick="nonMovement.backgroundDeactivate(\'%s\');return false;">
-                        Deactivate this item</a>',$row[0],$row[0]);
-            } else {
-                $record[] = '';
-            }
-            if ($this->report_format == 'html'){
-                $record[] = sprintf('<a href="" id="del%s"
-                        onclick="nonMovement.backgroundDelete(\'%s\',\'%s\');return false;">
-                        Delete this item</a>',$row[0],$row[0],$row[1]);
-            } else {
-                $record[] = '';
-            }
-            $ret[] = $record;
+        while ($row = $dbc->fetchRow($result)) {
+            $ret[] = $this->rowToRecord($row);
         }
 
         $drop = $dbc->prepare("DROP TABLE $tempName");
         $dbc->execute($drop);
         return $ret;
+    }
+
+    private function rowToRecord($row)
+    {
+        $record = array();
+        $record[] = $row[0];
+        $record[] = $row[1];
+        $record[] = $row[2];
+        $record[] = $row[3];
+        $record[] = $row[4];
+        if ($this->report_format == 'html') {
+            $record[] = sprintf('<a href="" id="del%s"
+                    onclick="nonMovement.backgroundDeactivate(\'%s\');return false;">
+                    Deactivate this item</a>',$row[0],$row[0]);
+        } else {
+            $record[] = '';
+        }
+        if ($this->report_format == 'html'){
+            $record[] = sprintf('<a href="" id="del%s"
+                    onclick="nonMovement.backgroundDelete(\'%s\',\'%s\');return false;">
+                    Delete this item</a>',$row[0],$row[0],$row[1]);
+        } else {
+            $record[] = '';
+        }
+
+        return $record;
     }
     
     function form_content()
@@ -237,6 +243,12 @@ class NonMovementReport extends FannieReportPage {
             <p><em>Netted</em> means total sales is not zero.
             This would exclude items that are rung in then
             voided.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('4011', 'test', 'test', 1, 'test');
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

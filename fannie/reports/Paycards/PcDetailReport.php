@@ -64,32 +64,38 @@ class PcDetailReport extends FannieReportPage
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, array($dateID));
         $data = array();
-        while ($w = $dbc->fetchRow($res)) {
-            $record = array(
-                $w['requestDatetime'],
-                $w['empNo'] . '-' . $w['registerNo'] . '-' . $w['transNo'],
-                $w['transID'],
-                sprintf('%.2f', $w['amount']),
-                $w['processor'],
-                $w['issuer'],
-                $w['PAN'],
-                $w['xResultMessage'],
-                $w['seconds'],
-                $w['commErr'],
-                $w['httpCode'],
-                $w['refNum'],
-            );
-            if ($w['commErr'] == 0 && $w['httpCode'] != 200 && $w['httpCode'] != 100) {
-                $record['meta'] = FannieReportPage::META_COLOR;
-                $record['meta_background'] = '#ffe066';
-            } elseif ($w['commErr'] != 0 || $w['httpCode'] != 200) {
-                $record['meta'] = FannieReportPage::META_COLOR;
-                $record['meta_background'] = '#ff8080';
-            }
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($res)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        $record = array(
+            $row['requestDatetime'],
+            $row['empNo'] . '-' . $row['registerNo'] . '-' . $row['transNo'],
+            $row['transID'],
+            sprintf('%.2f', $row['amount']),
+            $row['processor'],
+            $row['issuer'],
+            $row['PAN'],
+            $row['xResultMessage'],
+            $row['seconds'],
+            $row['commErr'],
+            $row['httpCode'],
+            $row['refNum'],
+        );
+        if ($row['commErr'] == 0 && $row['httpCode'] != 200 && $row['httpCode'] != 100) {
+            $record['meta'] = FannieReportPage::META_COLOR;
+            $record['meta_background'] = '#ffe066';
+        } elseif ($row['commErr'] != 0 || $row['httpCode'] != 200) {
+            $record['meta'] = FannieReportPage::META_COLOR;
+            $record['meta_background'] = '#ff8080';
+        }
+
+        return $record;
     }
 
     public function form_content()
@@ -152,6 +158,17 @@ manual verification via reporting on Mercury's side is the only way to determine
 the charge went through.
 </p>
 HTML;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('requestDatetime'=>'2000-01-01', 'empNo'=>1, 'registerNo'=>1,
+            'transNo'=>1, 'transID'=>1, 'amount'=>1.99, 'processor'=>'test',
+            'issuer'=>'test', 'PAN'=>'1111', 'xResultMessage'=>'APPROVED', 'seconds'=>1,
+            'commErr'=>0, 'httpCode'=>403, 'refNum'=>'1234');
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
+        $data['commErr'] = 28;
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

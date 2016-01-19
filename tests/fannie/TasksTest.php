@@ -18,7 +18,10 @@ class TasksTest extends PHPUnit_Framework_TestCase
     public function testTransactionArchiving()
     {
         $config = FannieConfig::factory();
+        $logger = new FannieLogger();
         $task = new TransArchiveTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
 
         $GLOBALS['FANNIE_ARCHIVE_METHOD'] = 'tables';
 
@@ -123,7 +126,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
         // create two test rows in dlog_15
         $today = date('Y-m-d');
         $trans_num = '1-1-1';
-        $dlog = new Dlog15Model($dbc);
+        $dlog = new DLog15Model($dbc);
         $dlog->tdate($today); 
         $dlog->trans_num($trans_num);
         $dlog->department(1);

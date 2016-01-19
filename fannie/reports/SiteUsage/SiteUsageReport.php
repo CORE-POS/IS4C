@@ -61,17 +61,22 @@ class SiteUsageReport extends FannieReportPage
         $res = $dbc->execute($prep, $dates);
 
         $data = array();
-        while ($w = $dbc->fetchRow($res)) {
-            $data[] = array(
-                $w['pageName'],
-                $w['visits'],
-                $w['numUsers'],
-                $w['oldest'],
-                $w['mostRecent'],
-            );
+        while ($row = $dbc->fetchRow($res)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        return array(
+            $row['pageName'],
+            $row['visits'],
+            $row['numUsers'],
+            $row['oldest'],
+            $row['mostRecent'],
+        );
     }
 
     public function form_content()
@@ -114,6 +119,13 @@ class SiteUsageReport extends FannieReportPage
             familiarity with the project is necessary to 
             understand what the report is showing.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('pageName'=>'test', 'visits'=>1, 'numUsers'=>1, 
+            'oldest'=>1, 'mostRecent'=>1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 
 }

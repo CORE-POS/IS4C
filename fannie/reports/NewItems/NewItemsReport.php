@@ -108,19 +108,22 @@ class NewItemsReport extends FannieReportPage
         $result = $dbc->execute($query, $args);
 
         $data = array();
-        while($row = $dbc->fetch_row($result)) {
-            $record = array(
-                $row['entryDate'],
-                $row['upc'],
-                $row['description'],
-                $row['department'],
-                $row['dept_name'],
-            );
-
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        return array(
+            $row['entryDate'],
+            $row['upc'],
+            $row['description'],
+            $row['department'],
+            $row['dept_name'],
+        );
     }
 
     public function form_content()
@@ -134,6 +137,13 @@ class NewItemsReport extends FannieReportPage
             List items that were added to POS
             in the given date range.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('entryDate'=>'2000-01-01','upc'=>'4011',
+            'description'=>'test','department'=>1,'dept_name'=>'test');
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

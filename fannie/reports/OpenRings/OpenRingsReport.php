@@ -121,18 +121,21 @@ class OpenRingsReport extends FannieReportPage
         $result = $dbc->execute($query, $args);
 
         $data = array();
-        while($row = $dbc->fetch_row($result)) {
-            $record = array(
-                sprintf('%d/%d/%d', $row[1], $row[2], $row[0]),
-                sprintf('%.2f', $row['total']),
-                sprintf('%.2f', $row['qty']),
-                sprintf('%.2f%%', $row['percentage']*100),
-            );
-
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($result);
         }
 
         return $data;
+    }
+    
+    private function rowToRecord()
+    {
+        return array(
+            sprintf('%d/%d/%d', $row[1], $row[2], $row[0]),
+            sprintf('%.2f', $row['total']),
+            sprintf('%.2f', $row['qty']),
+            sprintf('%.2f%%', $row['percentage']*100),
+        );
     }
 
     public function calculate_footers($data)
@@ -209,6 +212,12 @@ class OpenRingsReport extends FannieReportPage
             of open rings and value of those rings for each day in the date range.
             The percentage is relative to all items sold in that set of departments
             that day.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array(0=>2000, 1=>1, 2=>2, 'total'=>1, 'qty'=>1, 'percentage'=>1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 
