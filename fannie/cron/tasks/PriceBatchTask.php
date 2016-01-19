@@ -69,7 +69,7 @@ class PriceBatchTask extends FannieTask
 
         /* change prices
         */
-        if (strstr($this->config->get('SERVER_DBMS'), "MYSQL")) {
+        if (strstr(strtoupper($this->config->get('SERVER_DBMS')), "MYSQL")) {
             $chk_vital[] = $sql->query("UPDATE products AS p LEFT JOIN
                 batchList AS l ON l.upc=p.upc LEFT JOIN
                 batches AS b ON b.batchID=l.batchID
@@ -91,7 +91,7 @@ class PriceBatchTask extends FannieTask
         /* likecoded items differentiated
            for char concatenation
         */
-        if (strstr($this->config->get('SERVER_DBMS'), "MYSQL")) {
+        if (strstr(strtoupper($this->config->get('SERVER_DBMS')), "MYSQL")) {
             $chk_vital[] = $sql->query("UPDATE products AS p LEFT JOIN
                 upcLike AS v ON v.upc=p.upc LEFT JOIN
                 batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))

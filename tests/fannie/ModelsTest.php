@@ -7,14 +7,12 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 {
     public function testModels()
     {
+        $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
         $models = FannieAPI::listModules('BasicModel', true);
 
         foreach ($models as $model_class) {
             $obj = new $model_class(null);
-            $rc = new ReflectionClass($obj);
-            $columns = $rc->getProperty('columns');
-            $columns->setAccessible(true);
-            $columns = $columns->getValue($obj);
+            $columns = $obj->getColumns();
 
             // check column definitions
             $this->assertInternalType('array', $columns);
@@ -30,7 +28,33 @@ class ModelsTest extends PHPUnit_Framework_TestCase
             }
 
             $this->assertInternalType('string', $obj->doc());
+
+            if ($obj->preferredDB() === 'op') {
+                $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
+                $obj2 = new $model_class($dbc);
+                ob_start();
+                $obj2->normalize(FannieConfig::config('OP_DB'));
+                ob_end_clean();
+            }
         }
+    }
+
+    public function testBreakdowns()
+    {
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $model = new VendorBreakdownsModel($dbc);
+
+        $pair = $model->getSplit('4/12oz');
+        $this->assertEquals($pair, array(4, '12OZ'));
+
+        $pair = $model->getSplit('5 CT');
+        $this->assertEquals($pair, array(5, ''));
+
+        $pair = $model->getSplit('4PKT');
+        $this->assertEquals($pair, array(4, ''));
+
+        $pair = $model->getSplit('NonSense');
+        $this->assertEquals($pair, array(false, ''));
     }
 
 }

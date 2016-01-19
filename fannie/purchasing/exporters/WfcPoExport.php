@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2012 Whole Foods Co-op
+    Copyright 2015 Whole Foods Co-op
 
     This file is part of CORE-POS.
 
@@ -21,33 +21,23 @@
 
 *********************************************************************************/
 
-require('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-$dbc = FannieDB::get($FANNIE_OP_DB);
+if (!class_exists('DefaultCsvPoExport')) {
+    include(dirname(__FILE__) . '/DefaultCsvPoExport.php');
+}
 
-$page_title = 'Fannie - Sale Signs';
-$header = 'Sale Signs';
-include($FANNIE_ROOT.'src/header.html');
+class WfcPoExport extends DefaultCsvPoExport 
+{
+    public $nice_name = 'WFC';
 
-if (!isset($_REQUEST['signtype'])){
-    echo '<ul>';
-    $dh = opendir('enabled');
-    while(($file=readdir($dh)) !== False){
-        if ($file[0] == ".") continue;
-        if (substr($file,-4) != ".php") continue;
-        printf('<li><a href="index.php?action=start&signtype=%s">%s</a></li>',
-            substr($file,0,strlen($file)-4),
-            substr($file,0,strlen($file)-4)
-        );
+    public function export_order($id)
+    {
+        parent::export_order($id);
+
+        echo "\r\n";
+        echo "Whole Foods Co-op\r\n";
+        echo "610 E 4th St\r\n";
+        echo "\"Duluth, MN 55805\"\r\n";
+        echo "(218) 728-0884\r\n";
     }
-    echo '</ul>';
 }
-else {
-    $class = $_REQUEST['signtype'];
-    include('enabled/'.$class.'.php');
-    $obj = new $class();
-}
-
-
-include($FANNIE_ROOT.'src/footer.html');
 

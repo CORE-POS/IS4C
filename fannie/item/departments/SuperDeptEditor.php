@@ -209,7 +209,7 @@ class SuperDeptEditor extends FanniePage {
         <div id="superdeptdiv">
             <div class="form-group">
             <label class="control-label">Select super department</label>
-            <select class="form-control" id="superselect" onchange="superSelected();">
+            <select class="form-control" id="superselect" onchange="superDept.superSelected();">
             <?php echo $opts; ?>
             <option value=-1>Create a new super department</option>
             </select>
@@ -241,11 +241,11 @@ class SuperDeptEditor extends FanniePage {
             <br />
             <p>
             <button class="btn btn-default" type="submit" value="<<" 
-                onclick="addDepts(); return false;">&lt;&lt;</button>
+                onclick="superDept.addDepts(); return false;">&lt;&lt;</button>
             </p>
             <p>
             <button class="btn btn-default" type="submit" value=">>" 
-                onclick="remDepts(); return false;">&gt;&gt;</button>
+                onclick="superDept.remDepts(); return false;">&gt;&gt;</button>
             </p>
         </div>
         <div class="form-group col-sm-4">
@@ -260,15 +260,15 @@ class SuperDeptEditor extends FanniePage {
         </div>
         </div>
         <p>
-            <button type="submit" value="Save" onclick="saveData(); return false;"
+            <button type="submit" value="Save" onclick="superDept.saveData(); return false;"
                 class="btn btn-default">Save</button>
             &nbsp;&nbsp;&nbsp;&nbsp;
             <a class="btn btn-default"
             href="../../reports/DepartmentSettings/DeptSettingsReport.php?dept1=<?php echo $deptRange['min']; ?>&dept2=<?php echo $deptRange['max']; ?>&submit=by_dr">View All Departments' Primary Super Department</a>
         </p>
         <?php
-        $this->add_script('super.js');
-        $this->addOnloadCommand("\$('#sd_email').keyup(function(e){ if (e.which==13) saveData(); });\n");
+        $this->add_script('super.js?20160106');
+        $this->addOnloadCommand("\$('#sd_email').keyup(function(e){ if (e.which==13) superDept.saveData(); });\n");
 
         return ob_get_clean();
     }

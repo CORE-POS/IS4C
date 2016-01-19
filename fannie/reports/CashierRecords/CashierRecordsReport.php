@@ -30,7 +30,6 @@ class CashierRecordsReport extends FannieReportPage
 {
     public $description = '[Cashier Records] shows per-cashier sales and transaction totals
         over a given date range. "Records" here should be interpretted like "Record Sales Day".';
-    public $themed = true;
     public $report_set = 'Cashiering';
 
     protected $report_headers = array('Emp#', 'Date', '$', '# of Trans');
@@ -49,17 +48,17 @@ class CashierRecordsReport extends FannieReportPage
         $date2 = $this->form->date2;
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
-        $q = $dbc->prepare("select emp_no,sum(-total),count(DISTINCT trans_num),
+        $query = $dbc->prepare("select emp_no,sum(-total),count(DISTINCT trans_num),
                 year(tdate),month(tdate),day(tdate)
                 from $dlog as d where
                 tdate BETWEEN ? AND ?
                 AND trans_type='T'
                 GROUP BY year(tdate),month(tdate),day(tdate),emp_no
                 ORDER BY sum(-total) DESC");
-        $r = $dbc->execute($q,array($date1.' 00:00:00',$date2.' 23:59:59'));
+        $res = $dbc->execute($query,array($date1.' 00:00:00',$date2.' 23:59:59'));
 
         $data = array();
-        while($row = $dbc->fetch_row($r)){
+        while ($row = $dbc->fetchRow($res)) {
             $record = array($row['emp_no'],
                         sprintf('%d/%d/%d',$row[4],$row[5],$row[3]),
                         sprintf('%.2f',$row[1]),
@@ -67,6 +66,14 @@ class CashierRecordsReport extends FannieReportPage
             $data[] = $record;
         }
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        return array($row['emp_no'],
+                    sprintf('%d/%d/%d',$row[4],$row[5],$row[3]),
+                    sprintf('%.2f',$row[1]),
+                    $row[2]);
     }
 
     public function form_content()
@@ -105,6 +112,12 @@ class CashierRecordsReport extends FannieReportPage
             date range. This is trivia cashiers may enjoy
             but likely serves no larger business purpose.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('emp_no'=>1, 1=>100, 2=>5, 3=>2000, 4=>1, 5=>1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

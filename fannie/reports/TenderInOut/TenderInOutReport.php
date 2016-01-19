@@ -69,18 +69,22 @@ class TenderInOutReport extends FannieReportPage
 
 
         $data = array();
-        while ($row = $dbc->fetch_array($result)) {
-            $record = array(
-                date('Y-m-d', strtotime($row['tdate'])),
-                $row['trans_num'],
-                $row['emp_no'],
-                $row['register_no'],
-                $row['total'],
-            );
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        return array(
+            date('Y-m-d', strtotime($row['tdate'])),
+            $row['trans_num'],
+            $row['emp_no'],
+            $row['register_no'],
+            $row['total'],
+        );
     }
 
     public function calculate_footers($data)
@@ -152,6 +156,13 @@ class TenderInOutReport extends FannieReportPage
             Lists each individual use of a given tender
             during the selected date range.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('tdate'=>'2000-01-01', 'trans_num'=>'1-1-1', 'emp_no'=>1,
+            'register_no'=>1, 'total'=>10);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

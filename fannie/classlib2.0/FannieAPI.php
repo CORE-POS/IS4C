@@ -310,10 +310,10 @@ class FannieAPI
         }
 
         // recursive search
-        $search = function($path) use (&$search) {
+        $search = function($path, $depth) use (&$search) {
             if (is_file($path) && substr($path,-4)=='.php') {
                 return array($path);
-            } elseif (is_dir($path)) {
+            } elseif (is_dir($path) && $depth < 10) {
                 $dh = opendir($path);
                 $ret = array();
                 while( ($file=readdir($dh)) !== false) {
@@ -321,7 +321,7 @@ class FannieAPI
                     if ($file == 'noauto') continue;
                     if ($file == 'index.php') continue;
                     if ($file == 'Store-Specific') continue;
-                    $ret = array_merge($ret, $search($path.'/'.$file));
+                    $ret = array_merge($ret, $search($path.'/'.$file, $depth+1));
                 }
                 return $ret;
             }
@@ -329,11 +329,14 @@ class FannieAPI
         };
 
         $files = array_reduce($directories,
-            function ($carry, $dir) use ($search) { return array_merge($carry, $search($dir)); },
+            function ($carry, $dir) use ($search) { return array_merge($carry, $search($dir, 0)); },
             array()
         );
 
         $ret = array();
+        if (count($files) > 1607) {
+            var_dump($files);
+        }
         foreach($files as $file) {
             $class = substr(basename($file),0,strlen(basename($file))-4);
             // matched base class
@@ -391,6 +394,7 @@ class FannieAPI
         $name = false;
         $basedir = 'unknown';
         $path = realpath($path);
+        $path = str_replace(DIRECTORY_SEPARATOR, '/', $path);
         if (strstr($path, '/modules/plugins2.0/')) {
             $name = 'COREPOS\\Fannie\\Plugin';
             $basedir = 'plugins2.0';

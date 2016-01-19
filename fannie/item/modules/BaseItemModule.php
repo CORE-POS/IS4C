@@ -404,7 +404,7 @@ class BaseItemModule extends ItemModule
             <span class="input-group-addon">$</span>
             <input type="text" id="cost{{store_id}}" name="cost[]" 
                 class="form-control price-field cost-input syncable-input"
-                value="{{cost}}" data-store-id="{{store_id}}"
+                value="{{cost}}" data-store-id="{{store_id}}" maxlength="6"
                 onkeydown="if (typeof nosubmit == 'function') nosubmit(event);"
                 onkeyup="if (typeof nosubmit == 'function') nosubmit(event);" 
                 onchange="$('.default_vendor_cost').val(this.value);"
@@ -417,7 +417,7 @@ class BaseItemModule extends ItemModule
             <span class="input-group-addon">$</span>
             <input type="text" id="price{{store_id}}" name="price[]" 
                 class="form-control price-field price-input syncable-input"
-                data-store-id="{{store_id}}"
+                data-store-id="{{store_id}}" maxlength="6"
                 required value="{{normal_price}}" />
         </div>
     </td>
@@ -1036,6 +1036,15 @@ HTML;
         return ob_get_clean();
     }
 
+    private function formNoEx($field, $default)
+    {
+        try {
+            return $this->form->{$field};
+        } catch (Exception $ex) {
+            return $default;
+        }
+    }
+
     function SaveFormData($upc)
     {
         $FANNIE_PRODUCT_MODULES = FannieConfig::config('PRODUCT_MODULES', array());
@@ -1059,23 +1068,23 @@ HTML;
             $model->scaleprice(0);
             $model->inUse(1);
         }
-        $stores = FormLib::get('store_id', array());
+        $stores = $this->formNoEx('store_id', array());
         for ($i=0; $i<count($stores); $i++) {
             $model->store_id($stores[$i]);
 
-            $taxes = FormLib::get('tax');
+            $taxes = $this->formNoEx('tax', array());
             if (isset($taxes[$i])) {
                 $model->tax($taxes[$i]);
             }
-            $fs = FormLib::get('FS', array());
+            $fs = $this->formNoEx('FS', array());
             $model->foodstamp(in_array($stores[$i], $fs) ? 1 : 0);
-            $scale = FormLib::get('Scale', array());
+            $scale = $this->formNoEx('Scale', array());
             $model->scale(in_array($stores[$i], $scale) ? 1 : 0);
-            $qtyFrc = FormLib::get('QtyFrc', array());
+            $qtyFrc = $this->formNoEx('QtyFrc', array());
             $model->qttyEnforced(in_array($stores[$i], $qtyFrc) ? 1 : 0);
             $wic = FormLib::get('prod-wicable', array());
             $model->wicable(in_array($stores[$i], $wic) ? 1 : 0);
-            $discount_setting = FormLib::get('discount');
+            $discount_setting = $this->formNoEx('discount', array());
             if (isset($discount_setting[$i])) {
                 switch ($discount_setting[$i]) {
                     case 0:
@@ -1096,46 +1105,47 @@ HTML;
                         break;
                 }
             }
-            $price = FormLib::get('price');
+            $price = $this->formNoEx('price', array());
             if (isset($price[$i])) {
                 $model->normal_price($price[$i]);
             }
-            $cost = FormLib::get('cost');
+            $cost = $this->formNoEx('cost', array());
             if (isset($cost[$i])) {
                 $model->cost($cost[$i]);
             }
-            $desc = FormLib::get('descript');
+            $desc = $this->formNoEx('descript', array());
             if (isset($desc[$i])) {
                 $model->description(str_replace("'", '', $desc[$i]));
             }
-            $brand = FormLib::get('manufacturer');
+            $brand = $this->formNoEx('manufacturer', array());
             if (isset($brand[$i])) {
                 $model->brand(str_replace("'", '', $brand[$i]));
             }
             $model->pricemethod(0);
             $model->groupprice(0.00);
             $model->quantity(0);
-            $dept = FormLib::get('department');
+            $dept = $this->formNoEx('department', array());
             if (isset($dept[$i])) {
                 $model->department($dept[$i]);
             }
-            $size = FormLib::get('size');
+            $size = $this->formNoEx('size', array());
             if (isset($size[$i])) {
                 $model->size($size[$i]);
             }
             $model->modified(date('Y-m-d H:i:s'));
             $unit = FormLib::get('unitm');
+            $unit = $this->formNoEx('unitm', array());
             if (isset($unit[$i])) {
                 $model->unitofmeasure($unit[$i]);
             }
-            $subdept = FormLib::get('subdept');
+            $subdept = $this->formNoEx('subdept', array());
             if (isset($subdept[$i])) {
                 $model->subdept($subdept[$i]);
             }
 
             // lookup vendorID by name
             $vendorID = 0;
-            $v_input = FormLib::get('distributor');
+            $v_input = $this->formNoEx('distributor', array());
             if (isset($v_input[$i])) {
                 $vendorID = $this->getVendorID($v_input[$i]);
             }
@@ -1170,7 +1180,7 @@ HTML;
             $this->saveVendorItem($model, $vendorID);
         }
 
-        if ($dbc->table_exists('prodExtra')) {
+        if ($dbc->tableExists('prodExtra')) {
             $this->saveProdExtra($model);
         }
 
@@ -1240,7 +1250,7 @@ HTML;
         $extra->manufacturer($product->brand());
         $extra->cost($product->cost());
         try {
-            $extra->distributor($this->form->distributor);
+            $extra->distributor($this->form->distributor[0]);
         } catch (Exception $ex) {
             $extra->distributor('');
         }

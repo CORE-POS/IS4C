@@ -119,24 +119,28 @@ class DDDReport extends FannieReportPage
         $data = array();
         $prep = $dbc->prepare($fullQuery);
         $result = $dbc->execute($prep, $args);
-        while ($row = $dbc->fetch_row($result)) {
-            $record = array(
-                    date('Y-m-d', mktime(0, 0, 0, $row['month'], $row['day'], $row['year'])),
-                    $row['upc'],
-                    $row['description'],
-                    $row['department'],
-                    $row['dept_name'],
-                    $row['salesCode'],
-                    $row['super_name'],
-                    sprintf('%.2f', $row['quantity']),
-                    sprintf('%.2f', $row['total']),
-                    empty($row['shrinkReason']) ? 'n/a' : $row['shrinkReason'],
-                    $row['charflag'] == 'C' ? 'No' : 'Yes',
-            );
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        return array(
+            date('Y-m-d', mktime(0, 0, 0, $row['month'], $row['day'], $row['year'])),
+            $row['upc'],
+            $row['description'],
+            $row['department'],
+            $row['dept_name'],
+            $row['salesCode'],
+            $row['super_name'],
+            sprintf('%.2f', $row['quantity']),
+            sprintf('%.2f', $row['total']),
+            empty($row['shrinkReason']) ? 'n/a' : $row['shrinkReason'],
+            $row['charflag'] == 'C' ? 'No' : 'Yes',
+        );
     }
     
     public function form_content()
@@ -171,6 +175,15 @@ class DDDReport extends FannieReportPage
             List items marked as shrink for a given date range. In this
             context, shrink is tracking losses.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('month'=>1, 'day'=>1, 'year'=>2000, 'upc'=>'4011',
+            'description'=>'test', 'department'=>1, 'dept_name'=>'test',
+            'salesCode'=>100, 'super_name'=>'test', 'quantity'=>1,
+            'total'=>1, 'shrinkReason'=>'test', 'charflag'=>'C');
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

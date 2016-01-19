@@ -15,7 +15,9 @@ class ExcelUpload extends \COREPOS\Fannie\API\FannieUploadPage {
         $headers = $linedata[0]; 
         $headers = array_map(function($i){ return str_replace(' ', '', $i);}, $headers);
         $dbc = $this->connection;
-        $dbc->query('DROP TABLE GenericUpload');
+        if ($dbc->tableExists('GenericUpload')) {
+            $dbc->query('DROP TABLE GenericUpload');
+        }
         $query = 'CREATE TABLE GenericUpload (';
         $query .= array_reduce($headers, function($carry, $i) use ($dbc) { return $carry . ($i === '' ? 'col'.rand(0,9999) : $dbc->identifierEscape($i)) . ' VARCHAR(255),'; });
         $query = substr($query, 0, strlen($query)-1) . ')';
@@ -36,6 +38,16 @@ class ExcelUpload extends \COREPOS\Fannie\API\FannieUploadPage {
 
 
         return true;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array(
+            array('foo', 'bar'),
+            array(1, 2, 3),
+            array(1),
+        );
+        $phpunit->assertEquals(true, $this->process_file($data, array()));
     }
 }
 

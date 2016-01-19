@@ -25,7 +25,7 @@ if (!class_exists('FannieAPI')) {
     include_once(dirname(__FILE__) . '/../../classlib2.0/FannieAPI.php');
 }
 if (!function_exists('checkLogin')) {
-    require('../login.php');
+    require(dirname(__FILE__) . '/../login.php');
 }
 
 class AuthUsersPage extends FannieRESTfulPage 
@@ -333,6 +333,17 @@ class AuthUsersPage extends FannieRESTfulPage
         echo '</table>';
 
         return ob_get_clean();
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_removeAuth_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_newAuth_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_new_view()));
+        $this->id = 1;
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_remove_view()));
     }
 }
 

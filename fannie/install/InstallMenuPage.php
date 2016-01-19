@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 if (!function_exists('confset')) {
     include(dirname(__FILE__) . '/util.php');
 }
-if (!function_exists('create_if_needed')) {
+if (!function_exists('dropDeprecatedStructure')) {
     include(dirname(__FILE__) . '/db.php');
 }
 
@@ -45,54 +45,10 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
     public $description = "
     Class for the Menu install and config options page.
     ";
-    public $themed = true;
-
-    // This replaces the __construct() in the parent.
-    public function __construct() {
-
-        // To set authentication.
-        FanniePage::__construct();
-
-        // Link to a file of CSS by using a function.
-        $this->add_css_file("../src/style.css");
-        $this->add_css_file("../src/javascript/jquery-ui.css");
-        $this->add_css_file("../src/css/install.css");
-
-        // Link to a file of JS by using a function.
-        $this->add_script("../src/javascript/jquery.js");
-        $this->add_script("../src/javascript/jquery-ui.js");
-
-    // __construct()
-    }
-
-    // If chunks of CSS are going to be added the function has to be
-    //  redefined to return them.
-    // If this is to override x.css draw_page() needs to load it after the add_css_file
-    /**
-      Define any CSS needed
-      @return A CSS string
-    */
-    function css_content(){
-        $css ="";
-
-        return $css;
-
-    //css_content()
-    }
-
-    // If chunks of JS are going to be added the function has to be
-    //  redefined to return them.
-    /**
-      Define any javascript needed
-      @return A javascript string
-    function javascript_content(){
-
-    }
-    */
 
     function body_content()
     {
-        include('../config.php'); 
+        include(dirname(__FILE__) . '/../config.php'); 
         ob_start();
         ?>
         <?php
@@ -100,26 +56,8 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
         ?>
 
         <form action=InstallMenuPage.php method=post>
-        <h1 class="install">
-        <?php 
-        if (!$this->themed) {
-            echo "<h1 class='install'>{$this->header}</h1>";
-        }
-        ?>
-        </h1>
         <?php
-
-        if (is_writable('../config.php')){
-            echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
-        } else {
-            echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
-            echo "<br />Full path is: ".'../config.php'."<br />";
-            if (function_exists('posix_getpwuid')){
-                $chk = posix_getpwuid(posix_getuid());
-                echo "PHP is running as: ".$chk['name']."<br />";
-            } else
-                echo "PHP is (probably) running as: ".get_current_user()."<br />";
-        }
+        echo $this->writeCheck(dirname(__FILE__) . '/../config.php');
         ?>
         <hr  />
         <p class="ichunk">
@@ -153,7 +91,7 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
         <?php
         $VALID_MENUS = array('Item Maintenance', 'Sales Batches', 'Reports', 'Membership', 'Synchronize', 'Admin', '__store__');
         if (!isset($FANNIE_MENU) || !is_array($FANNIE_MENU)) {
-            include('../src/init_menu.php');
+            include(dirname(__FILE__) . '/../src/init_menu.php');
             $FANNIE_MENU = $INIT_MENU;
         } else {
             foreach ($FANNIE_MENU as $menu => $content) {
@@ -161,7 +99,7 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
                     // menu is not valid
                     // reset to default
                     // obviously not ideal error recovery
-                    include('../src/init_menu.php');
+                    include(dirname(__FILE__) . '/../src/init_menu.php');
                     $FANNIE_MENU = $INIT_MENU;
                     break;
                 }
@@ -299,6 +237,11 @@ class InstallMenuPage extends \COREPOS\Fannie\API\InstallPage {
         return ob_get_clean();
 
     // body_content
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
     }
 
 // InstallMenuPage

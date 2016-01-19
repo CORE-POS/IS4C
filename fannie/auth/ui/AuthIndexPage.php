@@ -25,7 +25,7 @@ if (!class_exists('FannieAPI')) {
     include_once(dirname(__FILE__) . '/../../classlib2.0/FannieAPI.php');
 }
 if (!function_exists('checkLogin')) {
-    require('../login.php');
+    require(dirname(__FILE__) . '/../login.php');
 }
 
 class AuthIndexPage extends FanniePage {
@@ -105,6 +105,12 @@ class AuthIndexPage extends FanniePage {
                 same or similar jobs and need identical access.
                 </p>';
         }
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $phpunit->assertNotEquals(0, strlen($this->helpContent()));
     }
 
 // class AuthIndexPage

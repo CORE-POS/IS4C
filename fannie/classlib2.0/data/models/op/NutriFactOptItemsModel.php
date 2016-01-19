@@ -1,16 +1,16 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2012 Whole Foods Co-op
+    Copyright 2015 Whole Foods Co-op
 
     This file is part of CORE-POS.
 
-    CORE-POS is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    CORE-POS is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -21,42 +21,22 @@
 
 *********************************************************************************/
 
-class SignClass {
+/**
+  @class NutriFactOptItemsModel
+*/
+class NutriFactOptItemsModel extends BasicModel
+{
 
-    function __construct(){
-        switch($_REQUEST['action']){
-        case 'start':
-            echo $this->start_form();
-            break;
-        case 'edit':
-            echo $this->edit_form();
-            break;
-        case 'preview':
-            echo $this->preview();
-            break;
-        case 'pdf':
-            $this->sign_pdf();
-            break;
-        default:
-            echo 'Unknown action error!';
-            break;
-        }
-    }
+    protected $name = "NutriFactOptItems";
+    protected $preferred_db = 'op';
 
-    function start_form(){
-
-    }
-
-    function edit_form(){
-
-    }
-
-    function preview(){
-
-    }
-
-    function sign_pdf(){
-
-    }
+    protected $columns = array(
+    'nutriFactOptItemID' => array('type'=>'INT', 'index'=>true, 'increment'=>true),
+    'upc' => array('type'=>'VARCHAR(13)', 'index'=>true, 'primary_key'=>true),
+    'name' => array('type'=>'VARCHAR(50)', 'primary_key'=>true),
+    'amount' => array('type'=>'VARCHAR(10)'),
+    'percentDV' => array('type'=>'TINYINT'),
+    );
 
 }
+

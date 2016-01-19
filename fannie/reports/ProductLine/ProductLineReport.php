@@ -78,25 +78,38 @@ class ProductLineReport extends FannieReportPage
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
         $data = array();
-        while ($row = $dbc->fetch_row($result)) {
-            $data[] = array(
-                $row['upc'],
-                $row['brand'],
-                $row['description'],
-                empty($row['altBrand']) ? 'n/a' : $row['altBrand'],
-                empty($row['altDescription']) ? 'n/a' : $row['altDescription'],
-                sprintf('%.2f', $row['normal_price']),
-                empty($row['vendor']) ? 'n/a' : $row['vendor'],
-                empty($row['floorSection']) ? 'n/a' : $row['floorSection'],
-            );
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
     }
 
+    private function rowToRecord($row)
+    {
+        return array(
+            $row['upc'],
+            $row['brand'],
+            $row['description'],
+            empty($row['altBrand']) ? 'n/a' : $row['altBrand'],
+            empty($row['altDescription']) ? 'n/a' : $row['altDescription'],
+            sprintf('%.2f', $row['normal_price']),
+            empty($row['vendor']) ? 'n/a' : $row['vendor'],
+            empty($row['floorSection']) ? 'n/a' : $row['floorSection'],
+        );
+    }
+
     public function form_content()
     {
         return 'No direct entries allowed on this report';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('upc'=>'4011', 'brand'=>'test', 'description'=>'test',
+            'altBrand'=>'test', 'altDescription'=>'test', 'normal_price'=>1,
+            'vendor'=>'test', 'floorSection'=>'test');
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

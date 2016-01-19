@@ -7,6 +7,7 @@ class LogTest extends PHPUnit_Framework_TestCase
 {
     public function testLogger()
     {
+        $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
         $logger = new FannieLogger();
         $tempfile = tempnam(sys_get_temp_dir(), 'FLT');
         $context = array('logfile' => $tempfile);

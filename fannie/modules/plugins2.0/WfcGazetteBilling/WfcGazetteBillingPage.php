@@ -95,7 +95,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             <table class=\"table\">
             <tr><th>Account</th><th>Charge</th><th>Receipt #</th></tr>";
         $sql = FannieDB::get($FANNIE_TRANS_DB); 
-        $dRecord = DTrans::$DEFAULTS;
+        $dRecord = DTrans::defaults();
         $dRecord['emp_no'] = $EMP_NO;
         $dRecord['register_no'] = $LANE_NO;
         $dRecord['trans_type'] = 'D';
@@ -108,7 +108,7 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $insD = $sql->prepare("INSERT INTO dtransactions
                 ({$dParam['columnString']}) VALUES ({$dParam['valueString']})");
 
-        $tRecord = DTrans::$DEFAULTS;
+        $tRecord = DTrans::defaults();
         $tRecord['emp_no'] = $EMP_NO;
         $tRecord['register_no'] = $LANE_NO;
         $tRecord['upc'] = '0';

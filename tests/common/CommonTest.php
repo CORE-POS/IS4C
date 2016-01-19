@@ -188,5 +188,45 @@ class CommonTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(false, $dbc->getMatchingColumns('dlog', $FANNIE_TRANS_DB, 'dlog', $FANNIE_TRANS_DB));
         $this->assertEquals(false, $dbc->getMatchingColumns('SpecialOrderDeptMap', $FANNIE_TRANS_DB, 'dlog', $FANNIE_TRANS_DB));
     }
+
+    public function testWrapper()
+    {
+        include(dirname(__FILE__) . '/../../fannie/config.php');
+        $dbc = new \COREPOS\common\SQLManager($FANNIE_SERVER, $FANNIE_SERVER_DBMS, $FANNIE_OP_DB, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW, true);
+        $wrap = new COREPOS\common\sql\ConnectionWrapper($dbc, $FANNIE_OP_DB);
+        $res = $wrap->query('SELECT 1 AS one');
+        $this->assertEquals(1, $wrap->numRows($res));
+    }
+
+    public function testSqlLib()
+    {
+        $this->assertInternalType('array', COREPOS\common\sql\Lib::getDrivers());
+    }
+
+    public function testAdapters()
+    {
+        $adapters = array('Mssql', 'Mysql', 'Pgsql', 'Sqlite');
+        foreach ($adapters as $adapter) {
+            $class = 'COREPOS\\common\\sql\\' . $adapter . 'Adapter';
+            $obj = new $class();
+            $this->assertInternalType('string', $obj->identifierEscape('foo'));
+            $this->assertInternalType('string', $obj->defaultDatabase());
+            $this->assertInternalType('string', $obj->temporaryTable('foo','bar'));
+            $this->assertInternalType('string', $obj->sep());
+            $this->assertInternalType('string', $obj->addSelectLimit('SELECT * FROM table', 5));
+            $this->assertInternalType('string', $obj->currency());
+            $this->assertInternalType('string', $obj->curtime());
+            $this->assertInternalType('string', $obj->datediff('date1', 'date2'));
+            $this->assertInternalType('string', $obj->monthdiff('date1', 'date2'));
+            $this->assertInternalType('string', $obj->yeardiff('date1', 'date2'));
+            $this->assertInternalType('string', $obj->weekdiff('date1', 'date2'));
+            $this->assertInternalType('string', $obj->seconddiff('date1', 'date2'));
+            $this->assertInternalType('string', $obj->dateymd('date1'));
+            $this->assertInternalType('string', $obj->dayofweek('date1'));
+            $this->assertInternalType('string', $obj->convert('date1','int'));
+            $this->assertInternalType('string', $obj->locate('date1','te'));
+            $this->assertInternalType('string', $obj->concat(array('1','2','3')));
+        }
+    }
 }
 

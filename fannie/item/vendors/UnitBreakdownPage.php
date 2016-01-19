@@ -36,7 +36,6 @@ class UnitBreakdownPage extends FannieRESTfulPage
 
     public $description = '[Vendor Case Breakdowns] manages items where the splits a package
         and sells items individually';
-    public $themed = true;
 
     public function preprocess()
     {
@@ -275,6 +274,12 @@ class UnitBreakdownPage extends FannieRESTfulPage
         return $ret;
     }
 
+    // redirect since ID is required
+    public function get_handler()
+    {
+        return 'VendorIndexPage.php';
+    }
+
     public function css_content()
     {
         return '
@@ -306,6 +311,8 @@ class UnitBreakdownPage extends FannieRESTfulPage
         $phpunit->assertNotEquals(0, strlen($this->get_id_sku_plu_view()));
         $phpunit->assertNotEquals(0, strlen($this->get_id_break_view()));
         $phpunit->assertNotEquals(0, strlen($this->css_content()));
+        $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_handler()));
     }
 }
 

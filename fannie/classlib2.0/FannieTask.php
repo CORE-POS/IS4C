@@ -57,6 +57,7 @@ class FannieTask
 
     protected $options = array();
     protected $arguments = array();
+    protected $test_mode = false;
 
     public function setThreshold($t)
     {
@@ -81,6 +82,11 @@ class FannieTask
     public function setArguments($a)
     {
         $this->arguments = $a;
+    }
+
+    public function testMode($t)
+    {
+        $this->test_mode = $t;
     }
 
     /**

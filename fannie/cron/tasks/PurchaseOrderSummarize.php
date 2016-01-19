@@ -97,6 +97,10 @@ last calendar quarter';
                         $getW['totalQty'], $getW['soldQty'], $getW['returnedQty'],
                         $getW['damagedQty']));
             }
+
+            if ($this->test_mode) {
+                break;
+            }
         }
     }
 }

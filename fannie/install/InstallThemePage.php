@@ -34,48 +34,16 @@ class InstallThemePage extends \COREPOS\Fannie\API\InstallPage
     protected $title = 'Fannie: Theme Settings';
     protected $header = 'Fannie: Theme Settings';
 
-    public $themed = true;
-
-    public function __construct()
-    {
-
-        // To set authentication.
-        FanniePage::__construct();
-
-        // Link to a file of CSS by using a function.
-        $this->add_css_file("../src/style.css");
-        $this->add_css_file("../src/css/configurable.php");
-        $this->add_css_file("../src/javascript/jquery-ui.css");
-        $this->add_css_file("../src/css/install.css");
-
-        // Link to a file of JS by using a function.
-        $this->add_script("../src/javascript/jquery.js");
-        $this->add_script("../src/javascript/jquery-ui.js");
-
-        // __construct()
-    }
-
     function body_content()
     {
-        include('../config.php');
+        include(dirname(__FILE__) . '/../config.php');
         ob_start();
         echo showInstallTabs('Theming');
         ?>
 
         <form action="InstallThemePage.php" method="post">
-        <h1 class="install">
-            <?php 
-            if (!$this->themed) {
-                echo "<h1 class='install'>{$this->header}</h1>";
-            }
-            ?>
-        </h1>
         <?php
-        if (is_writable('../config.php')) {
-            echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
-        } else {
-            echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
-        }
+        echo $this->writeCheck(dirname(__FILE__) . '/../config.php');
 
         echo '<h4 class="install">Colors</h4>';
         echo '<table class="table" id="colorsConfTable">'; 
@@ -144,7 +112,12 @@ class InstallThemePage extends \COREPOS\Fannie\API\InstallPage
 
         return ob_get_clean();
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

@@ -98,27 +98,33 @@ class PluSkuReport extends FannieReportPage
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
         $data = array();
-        while ($w = $dbc->fetchRow($res)) {
-            $record = array(
-                $w['upc'],
-                $w['brand'],
-                $w['description'],
-                ($w['vendorName'] == null ? 'n/a' : $w['vendorName']),
-                ($w['mapSKU'] == null ? 'No' : 'Yes'),
-                ($w['mapSKU'] == null ? 'n/a' : $w['mapSKU']),
-                ($w['catalogSKU'] == null ? 'No' : 'Yes'),
-                ($w['catalogSKU'] == null ? 'n/a' : $w['catalogSKU']),
-            );
-            if ($w['vendorID'] && $this->report_format == 'html') {
-                $text = $record[5];
-                $link = '<a href="../../item/vendors/SkuMapPage.php?id=' . $w['vendorID'] . '">'
-                    . $text . '</a>';
-                $record[5] = $link;
-            }
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($res)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        $record = array(
+            $row['upc'],
+            $row['brand'],
+            $row['description'],
+            ($row['vendorName'] == null ? 'n/a' : $row['vendorName']),
+            ($row['mapSKU'] == null ? 'No' : 'Yes'),
+            ($row['mapSKU'] == null ? 'n/a' : $row['mapSKU']),
+            ($row['catalogSKU'] == null ? 'No' : 'Yes'),
+            ($row['catalogSKU'] == null ? 'n/a' : $row['catalogSKU']),
+        );
+        if ($row['vendorID'] && $this->report_format == 'html') {
+            $text = $record[5];
+            $link = '<a href="../../item/vendors/SkuMapPage.php?id=' . $row['vendorID'] . '">'
+                . $text . '</a>';
+            $record[5] = $link;
+        }
+
+        return $record;
     }
 
     public function form_content()
@@ -142,6 +148,13 @@ class PluSkuReport extends FannieReportPage
             </p>';
     }
 
+    public function unitTest($phpunit)
+    {
+        $data = array('upc'=>'4011', 'brand'=>'test', 'description'=>'test',
+            'vendorName'=>'test', 'mapSKU'=>'9BAN', 'catalogSKU'=>'9BAN',
+            'vendorID'=>1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
+    }
 }
 
 FannieDispatch::conditionalExec();

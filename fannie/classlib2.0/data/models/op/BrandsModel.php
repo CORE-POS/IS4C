@@ -1,16 +1,16 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2013 Whole Foods Co-op
+    Copyright 2016 Whole Foods Co-op
 
     This file is part of CORE-POS.
 
-    CORE-POS is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    CORE-POS is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -21,26 +21,24 @@
 
 *********************************************************************************/
 
-class GiterateTask extends FannieTask
+/**
+  @class BrandsModel
+*/
+class BrandsModel extends BasicModel
 {
 
-    public $name = 'Check for Updates';
+    protected $name = "Brands";
+    protected $preferred_db = 'op';
 
-    public $description = 'No longer in use. Use Fannie install/config "Updates" tab.';
-
-    public $default_schedule = array(
-        'min' => 0,
-        'hour' => 0,
-        'day' => '*',
-        'month' => '*',
-        'weekday' => '*',
+    protected $columns = array(
+    'brandID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
+    'name' => array('type'=>'VARCHAR(255)', 'index'=>true),
+    'address' => array('type'=>'VARCHAR(255)'),
+    'city' => array('type'=>'VARCHAR(50)'),
+    'state' => array('type'=>'VARCHAR(2)'),
+    'zip' => array('type'=>'VARCHAR(10)'),
+    'localOriginID' => array('type'=>'INT', 'default'=>0),
     );
 
-    public function run()
-    {
-        echo $this->cronMsg('giterate no longer supported');
-
-        return false;
-    }
 }
 

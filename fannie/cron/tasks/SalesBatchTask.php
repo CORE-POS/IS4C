@@ -215,7 +215,15 @@ class SalesBatchTask extends FannieTask
                     $product->save();
                     $this->cronMsg("\tUpdated item", FannieLogger::INFO);
                 }
+
+                if ($this->test_mode) {
+                    break;
+                }
             } // end loop on batchList record items
+
+            if ($this->test_mode) {
+                break;
+            }
         } // end loop on batchList records
 
         // No sale items; need a filler value for
@@ -258,6 +266,10 @@ class SalesBatchTask extends FannieTask
             $product->end_date('');
             $product->batchID(0);
             $product->save();
+
+            if ($this->test_mode) {
+                break;
+            }
         }
     }
 }

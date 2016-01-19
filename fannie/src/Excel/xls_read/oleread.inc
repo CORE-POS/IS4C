@@ -158,6 +158,7 @@ class OLERead {
             $pos = ($block + 1) * BIG_BLOCK_SIZE;
             $data = $data.substr($this->data, $pos, BIG_BLOCK_SIZE);
             //echo "pos = $pos data=$data\n";	
+            if (!isset($this->bigBlockChain[$block])) break;
 	    $block = $this->bigBlockChain[$block];
         }
 		return $data;

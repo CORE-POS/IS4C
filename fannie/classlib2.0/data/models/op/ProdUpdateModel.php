@@ -118,7 +118,7 @@ tools/cron jobs/sprocs/etc actually do. They probably
         $this->tax($product->tax());
         $this->fs($product->foodstamp());
         $this->scale($product->scale());
-        $this->modified($product->modified());
+        $this->modified(date('Y-m-d H:i:s'));
         $this->forceQty($product->qttyEnforced());
         $this->noDisc($product->discount());
         $this->inUse($product->inUse());

@@ -8,11 +8,47 @@ class ItemsTest extends PHPUnit_Framework_TestCase
     public function testItems()
     {
         $items = FannieAPI::listModules('ItemModule', true);
+        $conf = FannieConfig::factory();
+        $con = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
 
         foreach($items as $item_class) {
             $obj = new $item_class();
-            $this->assertNotEquals(0, strlen($obj->showEditForm('0000000004011')));
+            $obj->setConnection($con);
+            $obj->setConfig($conf);
+            $this->assertInternalType('string', $obj->showEditForm('0000000004011'));
+            $this->assertInternalType('int', $obj->width());
+            $this->assertInternalType('array', $obj->summaryRows('0000000004011'));
+            $this->assertInternalType('string', $obj->getFormJavascript('0000000004011'));
         }
+    }
+
+    public function testBaseModule()
+    {
+        $config = FannieConfig::factory();
+        $connection = FannieDB::get($config->OP_DB);
+        $mod = new BaseItemModule();
+        $mod->setConfig($config);
+        $mod->setConnection($connection);
+        $this->assertNotEquals(0, strlen($mod->showEditForm('0123456789012')));
+
+        $form = new \COREPOS\common\mvc\ValueContainer();
+        $form->store_id = array(1);
+        $form->tax = array(0);
+        $form->FS = array();
+        $form->Scale = array();
+        $form->QtyFrc = array();
+        $form->discount = array(1);
+        $form->price = array(1);
+        $form->cost = array(0);
+        $form->descript = array('unit test item');
+        $form->manufacturer = array('unit test');
+        $form->department = array(1);
+        $form->subdept = array(0);
+        $form->size = array('');
+        $form->unitm = array('');
+        $form->distributor = array('unit test');
+        $mod->setForm($form);
+        $mod->saveFormData('0123456789012');
     }
 
     public function testItemFlags()
@@ -97,7 +133,7 @@ class ItemsTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, $module->saveFormData('0000000004011'));
     }
 
-    public function textExtraInfo()
+    public function testExtraInfo()
     {
         $config = FannieConfig::factory();
         $connection = FannieDB::get($config->OP_DB);
@@ -109,9 +145,20 @@ class ItemsTest extends PHPUnit_Framework_TestCase
         $form->deposit = 0;
         $form->local = 0;
         $form->inUse = 1;
-        $form->idEnforced = 0;
+        $form->idReq = 0;
         $module->setForm($form);
         $this->assertEquals(true, $module->saveFormData('0000000004011'));
+    }
+
+    public function testItemLinks()
+    {
+        $mod = new ItemLinksModule();
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->newshelftag = 'tag';
+        $mod->setForm($form);
+        ob_start();
+        $mod->saveFormData('4011');
+        $this->assertNotEquals(0, strlen(ob_get_clean()));
     }
 
     public function testLikeCode()

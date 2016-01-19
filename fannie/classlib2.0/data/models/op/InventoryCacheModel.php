@@ -56,7 +56,7 @@ class InventoryCacheModel extends BasicModel
         if (self::$orderStmt === null) {
             self::$orderStmt = $dbc->prepare('
                 SELECT 
-                    SUM(caseSize * (CASE WHEN receivedQty IS NULL THEN quantity ELSE receivedQty END)) AS qty
+                    SUM(CASE WHEN receivedQty IS NULL THEN caseSize*quantity ELSE receivedQty END) AS qty
                 FROM PurchaseOrderItems AS i
                     INNER JOIN PurchaseOrder AS o ON i.orderID=o.orderID
                 WHERE internalUPC=?

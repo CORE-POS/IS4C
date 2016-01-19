@@ -546,7 +546,17 @@ class AdvancedItemSearch extends FannieRESTfulPage
         try {
             if ($form->discountable !== '') {
                 $search->where .= ' AND p.discount=? ';
-                $search->args[] = $form->discountable;
+                if ($form->discountable == 1 || $form->discountable == 2) {
+                    $search->args[] = 1;
+                } else {
+                    $search->args[] = 0;
+                }
+                $search->where .= ' AND p.line_item_discountable=? ';
+                if ($form->discountable == 1 || $form->discountable == 3) {
+                    $search->args[] = 1;
+                } else {
+                    $search->args[] = 0;
+                }
             }
         } catch (Exception $ex) {}
 
@@ -1211,7 +1221,12 @@ class AdvancedItemSearch extends FannieRESTfulPage
             <div class="form-group">
             <label class="control-label small">%Disc</label>
             <select name="discountable" class="form-control input-sm">
-            <option value="">Any</option><option value="1">Yes</option><option value="0">No</option></select>
+                <option value="">Any</option>
+                <option value="1">Yes</option>
+                <option value="0">No</option>
+                <option value="2">Trans Only</option>
+                <option value="3">Line Only</option>
+            </select>
             </div>
             <label class="small" for="serviceScale">
             Service Scale

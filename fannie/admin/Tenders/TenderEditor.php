@@ -301,77 +301,102 @@ class TenderEditor extends FannieRESTfulPage
         $model = $this->getTenderModel(1);
         $phpunit->assertEquals(true, $model->load());
 
-        $this->testCode($phpunit, $model);
-        $this->testName($phpunit, $model);
-        $this->testType($phpunit, $model);
-        $this->testChange($phpunit, $model);
-        $this->testMin($phpunit, $model);
-        $this->testMax($phpunit, $model);
-        $this->testRefund($phpunit, $model);
-        $this->testSalesCode($phpunit, $model);
+        foreach (array('Code', 'Name', 'Type', 'Change', 'Min', 'Max', 'Refund', 'SalesCode') as $method) {
+            $save = 'save' . $method;
+            $this->$save($phpunit);
+        }
+        $model->load();
+        foreach (array('Code', 'Name', 'Type', 'Change', 'Min', 'Max', 'Refund', 'SalesCode') as $method) {
+            $save = 'test' . $method;
+            $this->$save($phpunit, $model);
+        }
+    }
+
+    private function saveCode($phpunit)
+    {
+        $this->saveCode = 'ZZ';
+        $phpunit->assertInternalType('bool', $this->post_id_saveCode_handler());
     }
 
     private function testCode($phpunit, $model)
     {
-        $this->saveCode = 'ZZ';
-        $phpunit->assertInternalType('bool', $this->post_id_saveCode_handler());
-        $model->load();
         $phpunit->assertEquals('ZZ', $model->TenderCode());
+    }
+
+    private function saveName($phpunit)
+    {
+        $this->saveName = 'Test Changed';
+        $phpunit->assertInternalType('bool', $this->post_id_saveName_handler());
     }
 
     private function testName($phpunit, $model)
     {
-        $this->saveName = 'Test Changed';
-        $phpunit->assertInternalType('bool', $this->post_id_saveName_handler());
-        $model->load();
         $phpunit->assertEquals('Test Changed', $model->TenderName());
+    }
+
+    private function saveType($phpunit)
+    {
+        $this->saveType = 'YY';
+        $phpunit->assertInternalType('bool', $this->post_id_saveType_handler());
     }
 
     private function testType($phpunit, $model)
     {
-        $this->saveType = 'YY';
-        $phpunit->assertInternalType('bool', $this->post_id_saveType_handler());
-        $model->load();
         $phpunit->assertEquals('YY', $model->TenderType());
+    }
+
+    private function saveChange($phpunit)
+    {
+        $this->saveCMsg = 'Kickbacks';
+        $phpunit->assertInternalType('bool', $this->post_id_saveCMsg_handler());
     }
 
     private function testChange($phpunit, $model)
     {
-        $this->saveCMsg = 'Kickbacks';
-        $phpunit->assertInternalType('bool', $this->post_id_saveCMsg_handler());
-        $model->load();
         $phpunit->assertEquals('Kickbacks', $model->ChangeMessage());
+    }
+
+    private function saveMin($phpunit)
+    {
+        $this->saveMin = 5;
+        $phpunit->assertInternalType('bool', $this->post_id_saveMin_handler());
     }
 
     private function testMin($phpunit, $model)
     {
-        $this->saveMin = 5;
-        $phpunit->assertInternalType('bool', $this->post_id_saveMin_handler());
-        $model->load();
         $phpunit->assertEquals(5, $model->MinAmount());
+    }
+
+    private function saveMax($phpunit)
+    {
+        $this->saveMax = 15;
+        $phpunit->assertInternalType('bool', $this->post_id_saveMax_handler());
     }
 
     private function testMax($phpunit, $model)
     {
-        $this->saveMax = 15;
-        $phpunit->assertInternalType('bool', $this->post_id_saveMax_handler());
-        $model->load();
         $phpunit->assertEquals(15, $model->MaxAmount());
+    }
+
+    private function saveRefund($phpunit)
+    {
+        $this->saveRLimit = 25;
+        $phpunit->assertInternalType('bool', $this->post_id_saveRLimit_handler());
     }
 
     private function testRefund($phpunit, $model)
     {
-        $this->saveRLimit = 25;
-        $phpunit->assertInternalType('bool', $this->post_id_saveRLimit_handler());
-        $model->load();
         $phpunit->assertEquals(25, $model->MaxRefund());
+    }
+
+    private function saveSalesCode($phpunit)
+    {
+        $this->saveSalesCode = 2500;
+        $phpunit->assertInternalType('bool', $this->post_id_saveSalesCode_handler());
     }
 
     private function testSalesCode($phpunit, $model)
     {
-        $this->saveSalesCode = 2500;
-        $phpunit->assertInternalType('bool', $this->post_id_saveSalesCode_handler());
-        $model->load();
         $phpunit->assertEquals(2500, $model->SalesCode());
     }
 }

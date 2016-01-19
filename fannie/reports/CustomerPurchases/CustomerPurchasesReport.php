@@ -30,7 +30,6 @@ class CustomerPurchasesReport extends FannieReportPage
 {
     public $description = '[Member Purchases] lists items purchased by a given member in a given date range.';
     public $report_set = 'Membership';
-    public $themed = true;
 
     protected $title = "Fannie : What Did I Buy?";
     protected $header = "What Did I Buy? Report";
@@ -72,18 +71,24 @@ class CustomerPurchasesReport extends FannieReportPage
           Issue a query, build array of results
         */
         $ret = array();
-        while ($row = $dbc->fetch_array($result)){
-            $record = array();
-            $record[] = $row[0]."/".$row[1]."/".$row[2];
-            $record[] = $row['upc'];
-            $record[] = $row['description'];
-            $record[] = $row['department'].' '.$row['dept_name'];
-            $record[] = $row['super_name'];
-            $record[] = $row['qty'];
-            $record[] = $row['ttl'];
-            $ret[] = $record;
+        while ($row = $dbc->fetchRow($result)){
+            $ret[] = $this->rowToRecord($row);
         }
         return $ret;
+    }
+
+    private function rowToRecord($row)
+    {
+        $record = array();
+        $record[] = $row[0]."/".$row[1]."/".$row[2];
+        $record[] = $row['upc'];
+        $record[] = $row['description'];
+        $record[] = $row['department'].' '.$row['dept_name'];
+        $record[] = $row['super_name'];
+        $record[] = $row['qty'];
+        $record[] = $row['ttl'];
+
+        return $record;
     }
 
     function report_description_content()
@@ -146,6 +151,14 @@ class CustomerPurchasesReport extends FannieReportPage
         return '<p>
             List items purchased by a given customer in a given date range.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array(0=>1, 1=>1, 2=>2000, 'upc'=>'4011',
+            'description'=>'test', 'department'=>1, 'dept_name'=>'test',
+            'super_name'=>'test', 'qty'=>1, 'ttl'=>1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

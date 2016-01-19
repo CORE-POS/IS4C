@@ -11,7 +11,7 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         $config = FannieConfig::factory();
         $logger = new FannieLogger();
         $op_db = $config->get('OP_DB');
-        $dbc = FannieDB::get($op_db);
+        $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
         $dbc->throwOnFailure(true);
 
         foreach ($reports as $report_class) {
@@ -56,6 +56,7 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
         $dbc = FannieDB::get($op_db);
         $dbc->throwOnFailure(true);
 
+        $speed = array();
         foreach ($pages as $page_class) {
             $obj = new $page_class();
             $obj->setConfig($config);
@@ -75,8 +76,13 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
             $auth = $obj->checkAuth();
             $this->assertInternalType('boolean',$pre);
 
+            $t1 = microtime(true);
             $obj->unitTest($this);
+            $elapse = microtime(true)-$t1;
+            $speed[$page_class] = $elapse;
         }
+        arsort($speed);
+        var_dump($speed);
     }
 
     public function testBase()

@@ -34,3 +34,4 @@ fannie/locale/*.pot
 fannie/INSTALL
 vendor
 composer.lock
+!pos/is4c-nf/scale-drivers/drivers/NewMagellan/.paket/paket.bootstrapper.exe

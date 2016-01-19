@@ -134,7 +134,7 @@ class MemberPreferences extends FannieRESTfulPage
             );
         }
         $ret .=  '</table>';
-        $ret .= '<p><button type="submit" name="savebtn" class="btn btn-default">Save</button></p>';
+        $ret .= '<p><button type="submit" name="savebtn" value="1" class="btn btn-default">Save</button></p>';
         $ret .= '</form>';
 
         return $ret;

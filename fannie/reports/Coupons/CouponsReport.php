@@ -29,7 +29,6 @@ if (!class_exists('FannieAPI')) {
 class CouponsReport extends FannieReportPage {
 
     public $description = '[Manufacturer Coupons] lists coupons totals by UPC for a given date range.';
-    public $themed = true;
     public $report_set = 'Tenders';
 
     protected $title = "Fannie : Coupons Report";
@@ -70,15 +69,20 @@ class CouponsReport extends FannieReportPage {
         $result = $dbc->execute($query, array($d1.' 00:00:00', $d2.' 23:59:59'));
 
         $data = array();
-        while($row = $dbc->fetch_row($result)){
-            $data[] = array(
-                        $row['upc'],
-                        sprintf('%.2f', $row['qty']),
-                        sprintf('%.2f', $row['ttl'])
-                        );
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        return array(
+            $row['upc'],
+            sprintf('%.2f', $row['qty']),
+            sprintf('%.2f', $row['ttl'])
+        );
     }
 
     public function form_content()
@@ -125,6 +129,11 @@ class CouponsReport extends FannieReportPage {
             </p>';
     }
 
+    public function unitTest($phpunit)
+    {
+        $data = array('upc'=>'4011', 'qty'=>1, 'ttl'=>1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
+    }
 }
 
 FannieDispatch::conditionalExec();

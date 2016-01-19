@@ -33,8 +33,6 @@ class FannieAuthLoginPage extends FannieRESTfulPage
     protected $title = 'Fannie : Auth';
     protected $header = 'Fannie : Auth';
 
-    public $themed = true;
-
     /**
      * Force authenticate requirement off
      * to avoid a redirect loop
@@ -73,8 +71,8 @@ class FannieAuthLoginPage extends FannieRESTfulPage
     */
     public function post_name_password_handler()
     {
-        $name = FormLib::get('name');
-        $password = FormLib::get('password');
+        $name = $this->name;
+        $password = $this->password;
         $login = login($name,$password);
         $redirect = FormLib::get('redirect', 'menu.php');
 
@@ -131,31 +129,16 @@ class FannieAuthLoginPage extends FannieRESTfulPage
         } else {
             $redirect = FormLib::get('redirect', 'menu.php');
             echo "<form action=loginform.php method=post>";
-            if ($this->themed) {
-                echo '<p>';
-                echo '<div class="form-group">';
-                echo '<label for="authUserName">Name</label>';
-                echo '<input class="form-control" id="authUserName" name="name" type="text" />';
-                echo '</div>';
-                echo '<div class="form-group">';
-                echo '<label for="authPassword">Password</label>';
-                echo '<input class="form-control" id="authPassword" name="password" type="password" />';
-                echo '</div>';
-                echo '</p>';
-            } else {
-                echo '<table>';
-                echo '<tr><td>';
-                echo '<label for="authUserName">Name</label>';
-                echo '</td><td>';
-                echo '<input class="form-control" id="authUserName" name="name" type="text" />';
-                echo '</td></tr>';
-                echo '<tr><td>';
-                echo '<label for="authPassword">Password</label>';
-                echo '</td><td>';
-                echo '<input class="form-control" id="authPassword" name="password" type="password" />';
-                echo '</td></tr>';
-                echo '</table>';
-            }
+            echo '<p>';
+            echo '<div class="form-group">';
+            echo '<label for="authUserName">Name</label>';
+            echo '<input class="form-control" id="authUserName" name="name" type="text" />';
+            echo '</div>';
+            echo '<div class="form-group">';
+            echo '<label for="authPassword">Password</label>';
+            echo '<input class="form-control" id="authPassword" name="password" type="password" />';
+            echo '</div>';
+            echo '</p>';
             echo '<button type="submit" class="btn btn-default">Login</button>';
             echo "<input type=hidden value=$redirect name=redirect />";
             echo "</form>";
@@ -163,6 +146,19 @@ class FannieAuthLoginPage extends FannieRESTfulPage
         }
 
         return ob_get_clean();
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_logout_view()));
+        $phpunit->assertNotEquals(0, strlen($this->post_name_password_view()));
+
+        $phpunit->assertEquals(true, $this->preprocess());
+        $phpunit->assertEquals(true, $this->get_logout_handler());
+        $this->name = 'notrealuser';
+        $this->password = 'notrealpassword';
+        $phpunit->assertEquals(true, $this->post_name_password_handler());
     }
 }
 

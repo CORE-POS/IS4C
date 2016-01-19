@@ -58,6 +58,7 @@ class FreshDealsMovementReport extends FannieReportPage
         }
 
         $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
         $prep = $dbc->prepare($query);
         // force output order to match input order
         $order = array();

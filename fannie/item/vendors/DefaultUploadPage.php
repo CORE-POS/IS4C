@@ -413,7 +413,12 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             </ul>
         </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->preview_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

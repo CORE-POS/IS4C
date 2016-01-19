@@ -112,7 +112,7 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $scale_items[] = $scale_info;
         }
 
-        $scales = $this->getScales(FormLib::get('scales'));
+        $scales = $this->getScales(FormLib::get('scales', array()));
         HobartDgwLib::writeItemsToScales($scale_items, $scales);
         EpScaleLib::writeItemsToScales($scale_items, $scales);
 
@@ -163,6 +163,14 @@ class CoolItemUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         }
 
         return $scales;
+    }
+    
+    public function unitTest($phpunit)
+    {
+        $data = array('4011', '0.99', 'Testlandia');
+        $indexes = array('upc'=>0, 'price'=>1, 'cool'=>2);
+        $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
+        $phpunit->assertNotEquals(0, strlen($this->results_content()));
     }
 }
 

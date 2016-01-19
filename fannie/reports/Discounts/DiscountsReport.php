@@ -70,14 +70,19 @@ class DiscountsReport extends FannieReportPage {
         $result = $dbc->execute($query, array($d1.' 00:00:00', $d2.' 23:59:59'));
 
         $data = array();
-        while($row = $dbc->fetch_row($result)){
-            $data[] = array(
-                        $row['memDesc'],
-                        sprintf('%.2f', $row['total'])
-                        );
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        return array(
+            $row['memDesc'],
+            sprintf('%.2f', $row['total']),
+        );
     }
 
     public function form_content()
@@ -131,6 +136,12 @@ class DiscountsReport extends FannieReportPage {
             transaction-wide, percentage discounts associated with a
             member (or customer) account.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('memDesc'=>'test', 'total'=>1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 
 }

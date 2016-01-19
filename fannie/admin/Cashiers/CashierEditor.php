@@ -185,6 +185,7 @@ class CashierEditor extends FanniePage {
     public function unitTest($phpunit)
     {
         $this->config->set('FANNIE_STORE_MODE', 'HQ');
+        $this->messages = 'Test Message';
         $phpunit->assertNotEquals(0, strlen($this->body_content()));
         $this->config->set('FANNIE_STORE_MODE', 'STORE');
     }

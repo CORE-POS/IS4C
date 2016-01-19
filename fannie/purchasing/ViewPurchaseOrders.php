@@ -275,16 +275,9 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 
         $ret .= 'Export as: <select id="exporterSelect" class="form-control">';
-        $dir = opendir(dirname(__FILE__) . '/exporters');
-        while( ($file=readdir($dir)) !== False){
-            if (substr($file,-4) != '.php')
-                continue;
-            $class = substr($file,0,strlen($file)-4);
-            if (!class_exists($class)) include('exporters/'.$file);
-            if (!class_exists($class)) continue;
-            $obj = new $class();
-            if (!isset($obj->nice_name)) continue;
-            $ret .= '<option value="'.$class.'">'.$obj->nice_name.'</option>';
+        foreach (COREPOS\Fannie\API\item\InventoryLib::orderExporters() as $class => $name) {
+            $selected = $class === $this->config->get('DEFAULT_PO_EXPORT') ? 'selected' : '';
+            $ret .= '<option ' . $selected . ' value="'.$class.'">'.$name.'</option>';
         }
         $ret .= '</select> ';
         $ret .= '<button type="submit" class="btn btn-default" onclick="doExport('.$this->id.');return false;">Export</button>';

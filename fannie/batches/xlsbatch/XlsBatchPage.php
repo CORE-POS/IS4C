@@ -34,20 +34,17 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected $must_authenticate = true;
 
     public $description = '[Excel Batch] creates a sale or price change batch from a spreadsheet.';
-    public $themed = true;
 
     protected $preview_opts = array(
         'upc_lc' => array(
-            'name' => 'upc_lc',
             'display_name' => 'UPC/LC',
             'default' => 0,
-            'required' => True
+            'required' => true
         ),
         'price' => array(
-            'name' => 'price',
             'display_name' => 'Price',
             'default' => 1,
-            'required' => True
+            'required' => true
         )
     );
 
@@ -64,18 +61,13 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         return $batchtypes;
     }
 
-    function process_file($linedata, $indexes)
+    private function createBatch($dbc)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
         $btype = FormLib::get('btype',0);
         $date1 = FormLib::get('date1',date('Y-m-d'));
         $date2 = FormLib::get('date2',date('Y-m-d'));
         $bname = FormLib::get('bname','');
         $owner = FormLib::get('bowner','');
-        $ftype = FormLib::get('ftype','UPCs');
-        $has_checks = FormLib::get('has_checks') !== '' ? True : False;
 
         $dtQ = $dbc->prepare("SELECT discType FROM batchType WHERE batchTypeID=?");
         $dtR = $dbc->execute($dtQ, array($btype));
@@ -91,6 +83,18 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $insR = $dbc->execute($insQ,$args);
         $batchID = $dbc->insertID();
 
+        return $batchID;
+    }
+
+    function process_file($linedata, $indexes)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $ftype = FormLib::get('ftype','UPCs');
+        $has_checks = FormLib::get('has_checks') !== '' ? True : False;
+
+        $batchID = $this->createBatch($dbc);
         if ($this->config->get('STORE_MODE') === 'HQ') {
             StoreBatchMapModel::initBatch($batchID);
         }
@@ -175,7 +179,8 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         return $ret;
     }
 
-    function form_content(){
+    function form_content()
+    {
         ob_start();
         ?>
         <div class="well">
@@ -192,7 +197,6 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
     */
     protected function basicForm()
     {
-        global $FANNIE_URL;
         $batchtypes = $this->get_batch_types();
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $owners = new MasterSuperDeptsModel($dbc);
@@ -261,7 +265,18 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
         return ob_get_clean();
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->basicForm()));
+        $phpunit->assertNotEquals(0, strlen($this->preview_content()));
+        $this->results = 'foo';
+        $phpunit->assertNotEquals(0, strlen($this->results_content()));
+        $data = array('4011', 0.99);
+        $indexes = array('upc_lc' => 0, 'price' => 1);
+        $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

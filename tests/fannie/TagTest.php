@@ -7,6 +7,7 @@ class TagTest extends PHPUnit_Framework_TestCase
 {
     public function testTagPDFs()
     {
+        $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
         include(dirname(__FILE__) . '/../../fannie/admin/labels/FpdfWithBarcode.php');
         $obj = new FpdfWithBarcode();
         $obj->EAN13('123456789012', 1, 1);

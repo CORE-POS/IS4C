@@ -75,50 +75,64 @@ class ItemEditorPage extends FanniePage
             . '<p><a href="../install/InstallStoresPage.php">Adjust Store Settings</a></p>';
     }
 
-    function preprocess()
+    private $config_converted = false;
+
+    private function getConfiguredModules()
     {
         $FANNIE_PRODUCT_MODULES = $this->config->get('PRODUCT_MODULES');
         if (!is_array($FANNIE_PRODUCT_MODULES)) {
             $FANNIE_PRODUCT_MODULES = array('BaseItemModule' => array('seq'=>0, 'show'=>1, 'expand'=>1));
         }
-        /*
-          Convert old settings to new format.
-        */
-        $legacy_indexes = array();
-        $replacement_values = array();
-        foreach ($FANNIE_PRODUCT_MODULES as $id => $m) {
-            if (preg_match('/^\d+$/', $id)) {
-                // old setting. convert to new.
-                $legacy_indexes[] = $id;
-                $replacement_values[$m] = array(
-                    'seq' => $id,
-                    'show' => 1,
-                    'expand' => 1,
-                );
-            }
-        }
-        foreach ($legacy_indexes as $index) {
-            unset($FANNIE_PRODUCT_MODULES[$index]);
-        }
-        foreach ($replacement_values as $name => $params) {
-            $FANNIE_PRODUCT_MODULES[$name] = $params;
-        }
 
-        // verify modules exist
-        foreach (array_keys($FANNIE_PRODUCT_MODULES) as $name) {
-            if (class_exists($name)) {
-                continue;
-            }
-            $file = dirname(__FILE__) . '/modules/' . $name . '.php';
-            if (!file_exists($file)) {
-                unset($FANNIE_PRODUCT_MODULES[$name]);
-            } else {
-                include_once($file);
-                if (!class_exists($name)) {
-                    unset($FANNIE_PRODUCT_MODULES[$name]);
+        if ($this->config_converted === false) {
+            /*
+              Convert old settings to new format.
+            */
+            $legacy_indexes = array();
+            $replacement_values = array();
+            foreach ($FANNIE_PRODUCT_MODULES as $id => $m) {
+                if (preg_match('/^\d+$/', $id)) {
+                    // old setting. convert to new.
+                    $legacy_indexes[] = $id;
+                    $replacement_values[$m] = array(
+                        'seq' => $id,
+                        'show' => 1,
+                        'expand' => 1,
+                    );
                 }
             }
+            foreach ($legacy_indexes as $index) {
+                unset($FANNIE_PRODUCT_MODULES[$index]);
+            }
+            foreach ($replacement_values as $name => $params) {
+                $FANNIE_PRODUCT_MODULES[$name] = $params;
+            }
+
+            // verify modules exist
+            foreach (array_keys($FANNIE_PRODUCT_MODULES) as $name) {
+                if (class_exists($name)) {
+                    continue;
+                }
+                $file = dirname(__FILE__) . '/modules/' . $name . '.php';
+                if (!file_exists($file)) {
+                    unset($FANNIE_PRODUCT_MODULES[$name]);
+                } else {
+                    include_once($file);
+                    if (!class_exists($name)) {
+                        unset($FANNIE_PRODUCT_MODULES[$name]);
+                    }
+                }
+            }
+
+            $this->config_converted = true;
         }
+
+        return $FANNIE_PRODUCT_MODULES;
+    }
+
+    function preprocess()
+    {
+        $mods = $this->getConfiguredModules();
 
         $this->title = _('Fannie') . ' - ' . _('Item Maintenance');
         $this->header = '';//_('Item Maintenance');
@@ -479,7 +493,7 @@ class ItemEditorPage extends FanniePage
 
     private function editForm($upc,$isNew)
     {
-        $FANNIE_PRODUCT_MODULES = $this->config->get('PRODUCT_MODULES');
+        $FANNIE_PRODUCT_MODULES = $this->getConfiguredModules();
         $FANNIE_URL = $this->config->get('URL');
         $shown = array();
 
@@ -581,7 +595,7 @@ class ItemEditorPage extends FanniePage
 
     private function saveItem($isNew)
     {
-        $FANNIE_PRODUCT_MODULES = $this->config->get('PRODUCT_MODULES');
+        $FANNIE_PRODUCT_MODULES = $this->getConfiguredModules();
         $FANNIE_URL = $this->config->get('URL');
 
         $upc = FormLib::get_form_value('upc','');
@@ -646,6 +660,8 @@ class ItemEditorPage extends FanniePage
             }
         }
         $ret .= '</table>';
+
+        return $ret;
     }
 
     public function helpContent()
@@ -693,6 +709,38 @@ class ItemEditorPage extends FanniePage
         }
 
         return $ret;
+    }
+    
+    public function unitTest($phpunit)
+    {
+        $this->error_msg = '';
+        $upc = '0000000004011';
+        $phpunit->assertNotEquals(0, strlen($this->errorContent()));
+        $phpunit->assertNotEquals(0, strlen($this->searchForm()));
+        foreach (array('SKU','Brand Prefix','UPC') as $type) {
+            $phpunit->assertInternalType('array', $this->searchQuery($upc, $type, 1, 1));
+        }
+
+        list($query, $args) = $this->searchQuery('banana', $type, 0, 1);
+        $prep = $this->connection->prepare($query);
+        $res = $this->connection->execute($prep, $args);
+        $results = array();
+        while ($row = $this->connection->fetchRow($res)) {
+            $results[$row['upc']] = $row;
+        }
+        $phpunit->assertNotEquals(0, strlen($this->multipleResults($results)));
+
+        $phpunit->assertInternalType('boolean', $this->userCanEdit($upc, false));
+        $phpunit->assertInternalType('boolean', $this->userCanEdit($upc, true));
+
+        $phpunit->assertNotEquals(0, strlen($this->editorLinksArea($upc, false, false)));
+        $phpunit->assertNotEquals(0, strlen($this->editorLinksArea($upc, false, true)));
+        $phpunit->assertNotEquals(0, strlen($this->editorLinksArea($upc, true, true)));
+
+        $phpunit->assertNotEquals(0, strlen($this->editForm($upc, false)));
+        $phpunit->assertNotEquals(0, strlen($this->editForm($upc, true)));
+
+        $phpunit->assertNotEquals(0, strlen($this->modulesResult(array('BaseItemModule'=>'irrelevant'), $upc)));
     }
 }
 

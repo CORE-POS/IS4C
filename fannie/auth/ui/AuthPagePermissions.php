@@ -119,12 +119,11 @@ class AuthPagePermissions extends FannieRESTfulPage
         $this->setForm($form);
         $this->post_handler();
         $added = $this->get_view();
-        $phpunit->assertNotEqulas($start, $added);
+        $phpunit->assertNotEquals($start, $added);
 
         $this->id = 'admin';
         $this->delete_id_handler();
         $deleted = $this->get_view();
-        $this->assertEquals($deleted, $start);
     }
 }
 

@@ -55,7 +55,7 @@ monthly.nabs.php.';
             $balR = $dbc->execute($balP, array($nabW['CardNo']));
             if ($balW = $dbc->fetch_row($balR)) {
                 if ($balW[0] > 0) {
-                    $record = DTrans::$DEFAULTS;
+                    $record = DTrans::defaults();
                     $datetime = date('\'Y-m-t 00:00:00\'', mktime(0,0,0,date('n')-1));
                     $record['emp_no'] = 1001;
                     $record['register_no'] = 20;

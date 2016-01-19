@@ -50,6 +50,8 @@ class PluginsTest extends PHPUnit_Framework_TestCase
             } elseif ($name == 'ajax-paycard-auth') {
                 // ajax callbacks are not class-based yet
                 continue;
+            } elseif ($name == 'QuickLookupsModel') {
+                continue;
             }
 
             $provides_class = class_exists($name, false);

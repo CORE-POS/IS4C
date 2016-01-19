@@ -89,7 +89,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             $this->scanPriceChanges($dbc, $limit);
 
             if ($dbc->tableExists('ProdCostHistory')) {
-                $limit = $this->lastUpdateID($dbc, 'prodCostHistory');
+                $limit = $this->lastUpdateID($dbc, 'ProdCostHistory');
                 $this->cronMsg('Scanning cost changes from prodUpdateID '.$limit, FannieLogger::INFO);
                 $this->scanCostChanges($dbc, $limit);
             }
@@ -106,7 +106,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
     private function lastUpdateID($dbc, $table)
     {
         $limitP = $dbc->prepare('SELECT MAX(prodUpdateID) AS lastChange FROM ' . $dbc->identifierEscape($table));
-        $limit = $dbc->getValue($limit);
+        $limit = $dbc->getValue($limitP);
 
         return $limit ? $limit : 0;
     }
@@ -177,6 +177,10 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             }
 
             $prevPrice = $update->price();
+
+            if ($this->test_mode) {
+                break;
+            }
         }
     }
 
@@ -237,6 +241,10 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             }
 
             $prevPrice = $update->cost();
+
+            if ($this->test_mode) {
+                break;
+            }
         }
     }
 
@@ -290,6 +298,10 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
             }
 
             $prevDept = $update->dept();
+
+            if ($this->test_mode) {
+                break;
+            }
         }
     }
 

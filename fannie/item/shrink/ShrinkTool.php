@@ -46,7 +46,7 @@ class ShrinkTool extends FannieRESTfulPage
         global $FANNIE_TRANS_DB, $FANNIE_EMP_NO, $FANNIE_REGISTER_NO;
         $dbc = FannieDB::get($FANNIE_TRANS_DB);
 
-        $record = DTrans::$DEFAULTS;
+        $record = DTrans::defaults();
         $record['emp_no'] = $FANNIE_EMP_NO;
         $record['register_no'] = $FANNIE_REGISTER_NO;
         $record['trans_no'] = DTrans::getTransNo($dbc, $FANNIE_EMP_NO, $FANNIE_REGISTER_NO);

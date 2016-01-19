@@ -166,7 +166,7 @@ class HouseCoupon extends SpecialUPC
             $expired = substr($infoW["endDate"], 0, strrpos($infoW["endDate"], " "));
             return $this->errorOrQuiet(_("coupon expired "). $expired, $quiet);
         } elseif ($infoW['preStart'] > 0) {
-            return $this->errorOrQuiet(_("coupon not available yet "). $expired, $quiet);
+            return $this->errorOrQuiet(_("coupon not available yet "), $quiet);
         }
 
         /* check for member-only, longer use tracking

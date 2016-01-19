@@ -634,7 +634,7 @@ class UPC extends Parser
     */
     private function rewriteScaleSticker($upc)
     {
-        if ($upc == '0028491108110' || $upc == '0028491108310' || $upc == '0028491108010') {
+        if ($upc == '0028491108110' || $upc == '0028491108310' || $upc == '0028491108010' || $upc == '0028491108210') {
             return array($upc, false, 0, 0);
         }
         $scalePrefix = '002';

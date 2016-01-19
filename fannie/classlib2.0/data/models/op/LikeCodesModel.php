@@ -35,6 +35,19 @@ class LikeCodesModel extends BasicModel
     'likeCodeDesc' => array('type'=>'VARCHAR(50)'),
     );
 
+    public function toOptions($selected=0, $id_as_label=false)
+    {
+        $res = $this->connection->query('SELECT likeCode, likeCodeDesc FROM likeCodes ORDER BY likeCode');
+        $ret = '';
+        while ($row = $this->connection->fetchRow($res)) {
+            $ret .= sprintf('<option %s value="%d">%d %s</option>',
+                    ($selected === $row['likeCode'] ? 'selected' : ''),
+                    $row['likeCode'], $row['likeCode'], $row['likeCodeDesc']);
+        }
+
+        return $ret;
+    }
+
     public function doc()
     {
         return '

@@ -116,8 +116,6 @@ class OrderDeptMap extends FannieRESTfulPage
 
     public function unitTest($phpunit)
     {
-        $body = $this->get_view();
-        $phpunit->assertNotEquals(0, strlen($body));
         $form = new COREPOS\common\mvc\ValueContainer();
         $form->id = 1;
         $form->mapID = 2;
@@ -130,8 +128,8 @@ class OrderDeptMap extends FannieRESTfulPage
         $phpunit->assertEquals(true, $model->load());
         $phpunit->assertEquals(2, $model->map_to());
         $phpunit->assertEquals(3, $model->minQty());
-        $body2 = $this->get_view();
-        $phpunit->assertNotEquals($body, $body2);
+        $body = $this->get_view();
+        $phpunit->assertNotEquals(0, strlen($body));
     }
 }
 

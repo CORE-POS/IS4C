@@ -59,6 +59,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $local = FormLib::get('local');
         $brand = FormLib::get('brand');
         $vendor = FormLib::get('vendor');
+        $discount = FormLib::get('discount');
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $vlookup = new VendorsModel($dbc);
@@ -75,9 +76,9 @@ class EditItemsFromSearch extends FannieRESTfulPage
             if (isset($vendor[$i])) {
                 $model = $this->setVendorByName($model, $vlookup, $vendor[$i]);
             }
+            $model = $this->setDiscounts($model, $discount, $i);
 
             $model = $this->setBinaryFlag($model, $upc, 'fs', 'foodstamp');
-            $model = $this->setBinaryFlag($model, $upc, 'disc', 'discount');
             $model = $this->setBinaryFlag($model, $upc, 'scale', 'scale');
             $model->modified(date('Y-m-d H:i:s'));
 
@@ -98,6 +99,26 @@ class EditItemsFromSearch extends FannieRESTfulPage
         }
 
         return true;
+    }
+
+    private function setDiscounts($pmodel, $arr, $index)
+    {
+        if (!isset($arr[$index])) {
+            return $pmodel;
+        }
+
+        if ($arr[$index] == 1 || $arr[$index] == 2) {
+            $pmodel->discount(1);
+        } else {
+            $pmodel->discount(0);
+        }
+        if ($arr[$index] == 1 || $arr[$index] == 3) {
+            $pmodel->line_item_discountable(1);
+        } else {
+            $pmodel->line_item_discountable(0);
+        }
+
+        return $pmodel;
     }
 
     private function setVendorByName($pmodel, $vmodel, $name)
@@ -296,7 +317,9 @@ class EditItemsFromSearch extends FannieRESTfulPage
 
         $ret .= '<td><input type="checkbox" onchange="toggleAll(this, \'.fsCheckBox\');" /></td>';
         $ret .= '<td><input type="checkbox" onchange="toggleAll(this, \'.scaleCheckBox\');" /></td>';
-        $ret .= '<td><input type="checkbox" onchange="toggleAll(this, \'.discCheckBox\');" /></td>';
+        $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.discSelect\');">';
+        $ret .= $this->discountOpts(0, 0);
+        $ret .= '</select></td>';
 
         $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.localSelect\');">';
         $ret .= $this->arrayToOpts($locales);
@@ -307,7 +330,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
         list($in_sql, $args) = $dbc->safeInClause($this->upcs);
         $query = 'SELECT p.upc, p.description, p.department, d.dept_name,
                     p.tax, p.foodstamp, p.discount, p.scale, p.local,
-                    x.manufacturer, x.distributor
+                    x.manufacturer, x.distributor, p.line_item_discountable
                   FROM products AS p
                   LEFT JOIN departments AS d ON p.department=d.dept_no
                   LEFT JOIN prodExtra AS x ON p.upc=x.upc
@@ -331,7 +354,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
                             <td><select name="tax[]" class="taxSelect form-control input-sm">%s</select></td>
                             <td><input type="checkbox" name="fs[]" class="fsCheckBox" value="%s" %s /></td>
                             <td><input type="checkbox" name="scale[]" class="scaleCheckBox" value="%s" %s /></td>
-                            <td><input type="checkbox" name="disc[]" class="discCheckBox" value="%s" %s /></td>
+                            <td><select class="form-control input-sm discSelect" name="discount[]">%s</select></td>
                             <td><select name="local[]" class="localSelect form-control input-sm">%s</select></td>
                             </tr>',
                             $row['upc'], $row['upc'], $row['upc'],
@@ -343,7 +366,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
                             $taxOpts,
                             $row['upc'], ($row['foodstamp'] == 1 ? 'checked' : ''),
                             $row['upc'], ($row['scale'] == 1 ? 'checked' : ''),
-                            $row['upc'], ($row['discount'] == 1 ? 'checked' : ''),
+                            $this->discountOpts($row['discount'], $row['line_item_discountable']),
                             $localOpts
             );
         }
@@ -352,6 +375,27 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $ret .= '<p>';
         $ret .= '<button type="submit" name="save" class="btn btn-default" value="1">Save Changes</button>';
         $ret .= '</form>';
+
+        return $ret;
+    }
+
+    private function discountOpts($reg, $line)
+    {
+        $opts = array('No', 'Yes', 'Trans Only', 'Line Only');
+        $index = 0;
+        if ($reg == 1 && $line == 1) {
+            $index = 1;
+        } elseif ($reg == 1 && $line == 0) {
+            $index = 2;
+        } elseif ($reg == 0 && $line == 1) {
+            $index = 3;
+        }
+
+        $ret = '';
+        foreach ($opts as $key => $val) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                ($index == $key ? 'selected' : ''), $key, $val);
+        }
 
         return $ret;
     }

@@ -42,8 +42,6 @@ class GiftCertificateTender extends TenderModule
     */
     public function preReqCheck()
     {
-        CoreLocal::set("autoReprint",1);
-
         if (CoreLocal::get("enableFranking") != 1) {
             return true;
         }

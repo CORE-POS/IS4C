@@ -1,6 +1,6 @@
 <?php
 
-include('../../config.php');
+include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
         include(dirname(__FILE__).'/../classlib2.0/FannieAPI.php');
 }

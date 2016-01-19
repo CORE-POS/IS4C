@@ -242,6 +242,12 @@ class VendorDepartmentEditor extends FanniePage {
             vendor subcategory #0 or #1.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $phpunit->assertNotEquals(0, strlen($this->vendorDeptDisplay(1)));
+    }
 }
 
 FannieDispatch::conditionalExec();

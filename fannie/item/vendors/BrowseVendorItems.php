@@ -33,7 +33,6 @@ class BrowseVendorItems extends FanniePage
 
     public $description = '[Vendor Items] lists items in the vendor\'s catalog. Must be
     accessed via the Vendor Editor.';
-    public $themed = true;
 
     protected $must_authenticate = true;
     protected $auth_classes = array('pricechange');
@@ -85,7 +84,8 @@ class BrowseVendorItems extends FanniePage
         }
     }
 
-    private function getCategoryBrands($vid,$did){
+    private function getCategoryBrands($vid,$did)
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -155,7 +155,8 @@ class BrowseVendorItems extends FanniePage
         return $defaultSuper;
     }
 
-    private function showCategoryItems($vid,$did,$brand,$ds=-999){
+    private function showCategoryItems($vid,$did,$brand,$ds=-999)
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -308,7 +309,8 @@ class BrowseVendorItems extends FanniePage
         echo "Item added";
     }
 
-    private function getSRP($cost,$margin){
+    private function getSRP($cost,$margin)
+    {
         $srp = sprintf("%.2f",$cost/(1-$margin));
         while (substr($srp,strlen($srp)-1,strlen($srp)) != "5" &&
                substr($srp,strlen($srp)-1,strlen($srp)) != "9")
@@ -409,7 +411,18 @@ class BrowseVendorItems extends FanniePage
             Again CORE will try to guess the correct set.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $phpunit->assertEquals('1.99', $this->getSRP(1.96, 0));
+        $phpunit->assertNotEquals(0, strlen($this->showCategoryItems(1,1,'test')));
+        $guess = is_numeric($this->guessSuper(1, 1, 'test'));
+        ob_start();
+        $this->getCategoryBrands(1, 1);
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

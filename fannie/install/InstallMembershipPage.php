@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 if (!function_exists('confset')) {
     include(dirname(__FILE__) . '/util.php');
 }
-if (!function_exists('create_if_needed')) {
+if (!function_exists('dropDeprecatedStructure')) {
     include(dirname(__FILE__) . '/db.php');
 }
 
@@ -45,72 +45,18 @@ class InstallMembershipPage extends \COREPOS\Fannie\API\InstallPage {
     public $description = "
     Class for the Membership install and config options page.
     ";
-    public $themed = true;
-
-    // This replaces the __construct() in the parent.
-    public function __construct() {
-
-        FanniePage::__construct();
-
-        // Link to a file of CSS by using a function.
-        $this->add_css_file("../src/style.css");
-        $this->add_css_file("../src/javascript/jquery-ui.css");
-        $this->add_css_file("../src/css/install.css");
-
-        // Link to a file of JS by using a function.
-        $this->add_script("../src/javascript/jquery.js");
-        $this->add_script("../src/javascript/jquery-ui.js");
-
-    // __construct()
-    }
-
-    // If chunks of CSS are going to be added the function has to be
-    //  redefined to return them.
-    // If this is to override x.css draw_page() needs to load it after the add_css_file
-    /**
-      Define any CSS needed
-      @return A CSS string
-    function css_content(){
-        $css ="";
-        return $css;
-    //css_content()
-    }
-    */
-
-    // If chunks of JS are going to be added the function has to be
-    //  redefined to return them.
-    /**
-      Define any javascript needed
-      @return A javascript string
-    function javascript_content(){
-        $js ="";
-        return $js;
-    }
-    */
 
     function body_content()
     {
-        include('../config.php');
+        include(dirname(__FILE__) . '/../config.php');
         ob_start();
 
         echo showInstallTabs("Members");
 ?>
 
 <form action=InstallMembershipPage.php method=post>
-<h1 class="install">
-    <?php 
-    if (!$this->themed) {
-        echo "<h1 class='install'>{$this->header}</h1>";
-    }
-    ?>
-</h1>
 <?php
-if (is_writable('../config.php')){
-    echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
-}
-else {
-    echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
-}
+echo $this->writeCheck(dirname(__FILE__) . '/../config.php');
 ?>
 <hr />
 
@@ -229,15 +175,13 @@ $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
         $FANNIE_SERVER_PW);
 if (!$sql) {
     echo "<div class='alert alert-danger'>Cannot connect to database to refresh views.</div>";
-}
-else {
+} else {
     echo "Refreshing database views ... ";
     $this->recreate_views($sql);
     echo "done.";
 }
 
         return ob_get_clean();
-
     // body_content
     }
 
@@ -270,8 +214,13 @@ else {
         $model->createIfNeeded($db_name);
     }
 
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
+
 // InstallMembershipPage
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

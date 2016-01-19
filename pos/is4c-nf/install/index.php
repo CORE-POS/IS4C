@@ -333,7 +333,7 @@ if ($sql === False){
     if (!function_exists('socket_create')){
         echo '<i>Try enabling PHP\'s socket extension in php.ini for better diagnostics</i>';
     }
-    elseif (@MiscLib::pingport(CoreLocal::get('mServer'),CoreLocal::get('DBMS'))){
+    elseif (@MiscLib::pingport(CoreLocal::get('mServer'),CoreLocal::get('mDBMS'))){
         echo '<i>Database found at '.CoreLocal::get('mServer').'. Verify username and password
             and/or database account permissions.</i>';
     }

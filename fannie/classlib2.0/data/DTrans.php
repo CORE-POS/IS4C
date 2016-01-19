@@ -31,11 +31,19 @@ class DTrans
 
     /**
       Array of default values for dtransaction-style tables
-      The column 'datetime' is ommitted. Normally an SQL
+      The column 'datetime' is omitted. Normally an SQL
       function like NOW() is used there and cannot be
       a parameter
     */
-    public static $DEFAULTS = array(
+    public static function defaults()
+    {
+        $ret = self::$DEFAULTS;
+        $ret['store_id'] = (int)FannieConfig::config('STORE_ID');
+
+        return $ret;
+    }
+
+    private static $DEFAULTS = array(
         'register_no'=>0,
         'emp_no'=>0,
         'trans_no'=>0,
@@ -88,9 +96,10 @@ class DTrans
         $columns = !empty($datecol) && !empty($datefunc) ? $datecol.',' : '';
         $values = !empty($datecol) && !empty($datefunc) ? $datefunc.',' : '';
         $args = array();
+        $defaults = self::defaults();
         foreach($arr as $key => $val) {
             // validate column names
-            if (!isset(self::$DEFAULTS[$key])) {
+            if (!isset($defaults[$key])) {
                 continue;
             }
             $columns .= $key.',';
@@ -371,7 +380,7 @@ class DTrans
             }
         }
 
-        $defaults = self::$DEFAULTS;
+        $defaults = self::defaults();
         $skip = array('datetime', 'emp_no', 'register_no', 'trans_no', 'trans_id');
         foreach ($defaults as $name => $value) {
             if (in_array($name, $skip)) {

@@ -206,6 +206,15 @@ class AdTextImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             spreadsheets.</p>'
             . parent::helpContent();
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->stats = array('total'=>0, 'here'=>0);
+        $phpunit->assertNotEquals(0, strlen($this->results_content()));
+        $data = array('4011', 'Nature', 'Bananas', 'per LB', '4011');
+        $indexes = array('upc'=>0, 'brand'=>1, 'desc'=>2, 'size'=>3, 'sku'=>4);
+        $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
+    }
 }
 
 FannieDispatch::conditionalExec();

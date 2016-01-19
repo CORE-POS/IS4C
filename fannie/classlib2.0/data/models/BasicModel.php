@@ -89,7 +89,6 @@ class BasicModel
     {
         $this->connection = $sql;
         $this->record_changed = true;
-        $this->cached_definition = false;
     }
 
     /**
@@ -217,8 +216,13 @@ class BasicModel
 
     public function getDefinition()
     {
-        if ($this->cached_definition == false) {
-            $this->cached_definition = $this->connection->tableDefinition($this->fq_name);
+        return $this->cacheDefinition($this->connection, $this->fq_name);
+    }
+
+    protected function cacheDefinition($con, $name)
+    {
+        if ($this->cached_definition === false) {
+            $this->cached_definition = $con->tableDefinition($name);
         }
 
         return $this->cached_definition;

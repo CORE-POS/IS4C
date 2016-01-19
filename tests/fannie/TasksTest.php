@@ -7,6 +7,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
 {
     public function testTasks()
     {
+        $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
         $tasks = FannieAPI::listModules('FannieTask', true);
 
         foreach($tasks as $task_class) {
@@ -17,7 +18,10 @@ class TasksTest extends PHPUnit_Framework_TestCase
     public function testTransactionArchiving()
     {
         $config = FannieConfig::factory();
+        $logger = new FannieLogger();
         $task = new TransArchiveTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
 
         $GLOBALS['FANNIE_ARCHIVE_METHOD'] = 'tables';
 
@@ -29,7 +33,9 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $dtrans->datetime('1901-01-01 00:00:00');
         $dtrans->save();
 
+        ob_start();
         $task->run();
+        ob_end_clean();
 
         /**
           Verify the task created new monthly table & view
@@ -86,6 +92,29 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, $p->cashed_here(), 'Not marked as cashed');
     }
 
+    public function testArHistory()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new ArHistoryTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testAutoPars()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new AutoParsTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->testMode(true);
+        $task->run();
+    }
+
     public function testEquityHistory()
     {
         $config = FannieConfig::factory();
@@ -97,7 +126,7 @@ class TasksTest extends PHPUnit_Framework_TestCase
         // create two test rows in dlog_15
         $today = date('Y-m-d');
         $trans_num = '1-1-1';
-        $dlog = new Dlog15Model($dbc);
+        $dlog = new DLog15Model($dbc);
         $dlog->tdate($today); 
         $dlog->trans_num($trans_num);
         $dlog->department(1);
@@ -136,5 +165,171 @@ class TasksTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(3, $row[1]);
     }
 
+    public function testInventory()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new InventoryTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testLastSold()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new LastSoldTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testNabs()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new NabsTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testNotInUse()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new NotInUseTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testOrderGen()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new OrderGenTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testPriceChange()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new PriceBatchTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testProdUpdate()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new ProdUpdateMaintenanceTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->testMode(true);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testDataCache()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new ReportDataCacheTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testSameDay()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new SameDayReportingTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testSetDates()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new SetMemDatesTask();
+        COREPOS\Fannie\API\member\MemberREST::testMode(true);
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+        COREPOS\Fannie\API\member\MemberREST::testMode(false);
+    }
+
+    public function testSO()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new SpecialOrdersTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testSnapshot()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new TableSnapshotTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->run();
+    }
+
+    public function testVoid()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new VoidHistoryTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testWeekSummarize()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new ProductSummarizeLastQuarter();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->testMode(true);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
+
+    public function testSalesBatches()
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task = new SalesBatchTask();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->testMode(true);
+        ob_start();
+        $task->run();
+        ob_end_clean();
+    }
 }
 

@@ -143,17 +143,23 @@ class ProductMovementModular extends FannieReportPage
           Issue a query, build array of results
         */
         $ret = array();
-        while ($row = $dbc->fetch_array($result)){
-            $record = array();
-            $record[] = $row[0]."/".$row[1]."/".$row[2];
-            $record[] = $row['upc'];
-            $record[] = $row['brand'] === null ? '' : $row['brand'];
-            $record[] = $row['description'] === null ? '' : $row['description'];
-            $record[] = sprintf('%.2f', $row['qty']);
-            $record[] = sprintf('%.2f', $row['total']);
-            $ret[] = $record;
+        while ($row = $dbc->fetchRow($result)){
+            $ret[] = $this->rowToRecord($row);
         }
         return $ret;
+    }
+
+    private function rowToRecord($row)
+    {
+        $record = array();
+        $record[] = $row[0]."/".$row[1]."/".$row[2];
+        $record[] = $row['upc'];
+        $record[] = $row['brand'] === null ? '' : $row['brand'];
+        $record[] = $row['description'] === null ? '' : $row['description'];
+        $record[] = sprintf('%.2f', $row['qty']);
+        $record[] = sprintf('%.2f', $row['total']);
+
+        return $record;
     }
     
     /**
@@ -273,6 +279,13 @@ function showGraph() {
         return '<p>This report shows per-day total sales for
             a given item. You can type in item names to find the
             appropriate UPC if needed.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array(0=>1, 1=>1, 2=>2000, 'upc'=>'4011', 'brand'=>'test',
+            'description'=>'test', 'qty'=>1, 'total'=>1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

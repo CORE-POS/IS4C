@@ -99,8 +99,8 @@ class CCReport extends FannieReportPage
             $record['meta'] = FannieReportPage::META_COLOR;
             $record['meta_background'] = '#ffffcc';
         }
-        if (strstr($row[9],"APPROVED") || $row[9] == "" || strstr($row[9],"PENDING")){
-            $sum += $row[4];
+        if (strstr($row['xResultMessage'],"APPROVED") || $row['xResultMessage'] == "" || strstr($row['xResultMessage'],"PENDING")){
+            $sum += $row['amount'];
             $htable[$row['amount']."+".$row['PAN']] = 1;
         }
 
@@ -115,6 +115,16 @@ class CCReport extends FannieReportPage
             Report</strong> is newer and probably better but
             this has not been retired yet.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('datetime'=>'2000-01-01', 'PAN'=>'1111', 'amount'=>1,
+            'xResultMessage'=>'APPROVED', 'month'=>1, 'day'=>1, 'year'=>2000,
+            'cashierno'=>1,'laneno'=>1,'transno'=>1);
+        $htable = array('1+1111'=>1);
+        $sum = 0;
+        $phpunit->assertInternalType('array', $this->rowToRecord($data, $htable, $sum));
     }
 }
 

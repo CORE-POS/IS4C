@@ -156,5 +156,5 @@ class VendorDepartmentUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

@@ -173,6 +173,7 @@ class EditBatchTags extends FanniePage
     {
         $phpunit->assertNotEquals(0, strlen($this->body_content()));
         $phpunit->assertNotEquals(0, strlen($this->css_content()));
+        $phpunit->assertNotEquals(0, strlen($this->tagToRow(1, new BatchBarcodesModel($this->connection))));
     }
 }
 

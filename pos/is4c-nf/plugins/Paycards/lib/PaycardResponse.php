@@ -226,7 +226,7 @@ class PaycardResponse
         $sqlColumns .= ",origTransactionID";
         $sqlValues .= sprintf(",'%s'", $this->request->transID);
         $sqlColumns .= ",origRefNum";
-        $sqlValues .= sprintf(",'%d-%d-%d'",$this->original[0], $this->original[1], $this->original[2]);
+        $sqlValues .= sprintf(",'%d-%d-%d'",$this->request->original[0], $this->request->original[1], $this->request->original[2]);
         $sqlColumns .= ",validResponse";
         $sqlValues .= sprintf(",%d",$this->validResponse);
         $sql = "INSERT INTO efsnetRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";

@@ -21,18 +21,20 @@
 
 *********************************************************************************/
 
-class DefaultCsvPoExport {
-
+class DefaultCsvPoExport 
+{
     public $nice_name = 'CSV (Default)';
 
-    function send_headers(){
+    public function send_headers()
+    {
         header("Content-type: text/csv");
         header("Content-Disposition: attachment; filename=order_export.csv");
         header("Pragma: no-cache");
         header("Expires: 0");
     }
 
-    function export_order($id){
+    public function export_order($id)
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
@@ -47,10 +49,10 @@ class DefaultCsvPoExport {
         $vendor->vendorID($order->vendorID());
         $vendor->load();
 
-        echo 'Vendor,"'.$vendor->vendorName().'",Order Date,'.date('Y-m-d')."\r\n";
+        echo '"'.$vendor->vendorName().'",Order Date,'.date('Y-m-d')."\r\n";
         echo "\r\n";
         echo "SKU,\"Order Qty\",\"Case Size\",\"Unit Size\",Description\r\n";
-        foreach($items->find() as $obj){
+        foreach ($items->find() as $obj) {
             echo $obj->sku().',';
             echo $obj->quantity().',';
             echo '"'.$obj->caseSize().'",';

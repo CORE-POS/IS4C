@@ -248,7 +248,9 @@ class paycardSuccess extends BasicCorePage
             $this->add_onload_command("addToForm('doCapture', '1');\n");
         } else {
             echo DisplayLib::boxMsg(CoreLocal::get("boxMsg"), "", true);
-            UdpComm::udpSend('termApproved');
+            if (CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_ENCRYPTED) {
+                UdpComm::udpSend('termApproved');
+            }
         }
         CoreLocal::set("CachePanEncBlock","");
         CoreLocal::set("CachePinEncBlock","");

@@ -190,6 +190,13 @@ class AutoLoader extends LibraryClass
                 continue;
             }
 
+            if (strstr($file,'plugins')) {
+                $parent = Plugin::memberOf($file);
+                if ($base_class !== 'Plugin' && $parent && !Plugin::isEnabled($parent)) {
+                    continue;
+                }
+            }
+
             ob_start();
             $ns_class = self::fileToFullClass($file);
             if (class_exists($ns_class)) {
@@ -199,18 +206,10 @@ class AutoLoader extends LibraryClass
                 continue;
             }
 
-            if (strstr($file,'plugins')) {
-                $parent = Plugin::memberOf($file);
-                if ($parent && Plugin::isEnabled($parent) && is_subclass_of($name,$base_class)) {
-                    $ret[] = $name;
-                } else if ($base_class=="Plugin" && is_subclass_of($name,$base_class)) {
-                    $ret[] = $name;
-                }
-            } else {
-                if (is_subclass_of($name,$base_class)) {
-                    $ret[] = $name;
-                }
+            if (is_subclass_of($name,$base_class)) {
+                $ret[] = $name;
             }
+
             ob_end_clean();
         }
 

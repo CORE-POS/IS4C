@@ -565,8 +565,8 @@ body, table, td, th {
         <div class="form-group form-inline">
         <label>Date</label>:<input class="form-control date-field" type=text id=date name=arg />
         <select class="form-control" name="mode">
-            <option value="cashier">Cashier</option>
             <option value="drawer">Drawer</option>
+            <option value="cashier">Cashier</option>
         </select>
         <?php
         $_REQUEST['store'] = 1;

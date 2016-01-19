@@ -33,7 +33,6 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     public $description = '[Like Code Prices] uploads a spreadsheet of like codes and prices
     and immediately updates the prices for those like coded items.';
-    public $themed = true;
 
     protected $preview_opts = array(
         'likecode' => array(
@@ -52,16 +51,8 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         ),
     );
 
-    public function process_file($linedata, $indexes)
+    private function prepareStatements($dbc)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        $lc_index = $this->get_column_index('likecode');
-        $price_index = $this->get_column_index('price');
-        $cost_index = $this->get_column_index('cost');
-
-        $ret = true;
         $update = $dbc->prepare('
             UPDATE products AS p
                 INNER JOIN upcLike AS u ON p.upc=u.upc
@@ -71,7 +62,8 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $updateWithCost = $dbc->prepare('
             UPDATE products AS p
                 INNER JOIN upcLike AS u ON p.upc=u.upc
-            SET p.cost = ?,
+            SET p.normal_price=?,
+                p.cost = ?,
                 p.modified = ' . $dbc->now() . '
             WHERE u.likeCode=?');
         if ($dbc->dbmsName() == 'mssql') {
@@ -84,32 +76,44 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 WHERE u.likeCode=?');
             $updateWithCost = $dbc->prepare('
                 UPDATE products
-                SET cost = ?,
+                SET normal_price=?,
+                    cost = ?,
                     modified = ' . $dbc->now() . '
                 FROM products AS p
                     INNER JOIN upcLike AS u ON p.upc=u.upc
                 WHERE u.likeCode=?');
         }
+
+        return array($update, $updateWithCost);
+    }
+
+    public function process_file($linedata, $indexes)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $ret = true;
+        list($update, $updateWithCost) = $this->prepareStatements($dbc);
         $this->stats = array('done' => 0, 'error' => array());
         foreach ($linedata as $line) {
-            $lc = trim($line[$lc_index]);
-            $price =  trim($line[$price_index], ' $');  
+            $likecode = trim($line[$indexes['likecode']]);
+            $price =  trim($line[$indexes['price']], ' $');  
             $cost = 0;
-            if ($cost_index !== false && isset($line[$cost_index])) {
-                $cost = trim($line[$cost_index], ' $');
+            if ($indexes['cost'] !== false && isset($line[$indexes['cost']])) {
+                $cost = trim($line[$indexes['cost']], ' $');
             }
             
-            if (!is_numeric($lc)) continue; // skip header(s) or blank rows
+            if (!is_numeric($likecode)) continue; // skip header(s) or blank rows
 
             $try = false;
             if ($cost == 0) {
-                $try = $dbc->execute($update, array($price, $lc));
+                $try = $dbc->execute($update, array($price, $likecode));
             } else {
-                $try = $dbc->execute($updateWithCost, array($price, $cost, $lc));
+                $try = $dbc->execute($updateWithCost, array($price, $cost, $likecode));
             }
             if ($try === false) {
                 $ret = false;
-                $this->stats['error'][] = ' Problem updating LC# ' . $lc . ';';
+                $this->stats['error'][] = ' Problem updating LC# ' . $likecode . ';';
             } else {
                 $this->stats['done']++;
             }
@@ -143,7 +147,14 @@ class LikeCodePriceUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
         return $ret;
     }
+
+    public function unitTest($phpunit)
+    {
+        $data = array(1, 1.99, 0.99);
+        $indexes = array('likecode'=>0, 'price'=>1, 'cost'=>2);
+        $this->process_file(array($data), $indexes);
+    }
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

@@ -25,7 +25,6 @@ namespace COREPOS\Fannie\API\item;
 
 class InventoryLib 
 {
-
     public static function isBreakdown($dbc, $upc, $recurse=true)
     {
         $bdP = $dbc->prepare('
@@ -47,6 +46,33 @@ class InventoryLib
         }
 
         return $bdInfo;
+    }
+
+    public static function orderExporters()
+    {
+        $ret = array();
+        $path = dirname(__FILE__) . '/../../purchasing/exporters/';
+        $dir = opendir($path);
+        while (($file=readdir($dir)) !== false) {
+            if (substr($file,-4) != '.php') {
+                continue;
+            }
+            $class = substr($file,0,strlen($file)-4);
+            if (!class_exists($class)) {
+                include($path . $file);
+            }
+            if (!class_exists($class)) {
+                continue;
+            }
+            $obj = new $class();
+            if (!isset($obj->nice_name)) {
+                continue;
+            }
+
+            $ret[$class] = $obj->nice_name;
+        }
+
+        return $ret;
     }
 }
 

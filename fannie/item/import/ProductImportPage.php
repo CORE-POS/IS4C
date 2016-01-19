@@ -99,7 +99,7 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $defaults_tables = $this->deptDefaults($dbc);
+        $defaults_table = $this->deptDefaults($dbc);
 
         $ret = true;
         $linecount = 0;
@@ -161,10 +161,6 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             } else {
                 $this->stats['errors'][] = 'Error importing UPC ' . $upc;
             }
-
-            if ($linecount++ % 100 == 0) {
-                set_time_limit(30);
-            }
         }
 
         return $ret;
@@ -193,6 +189,14 @@ class ProductImportPage extends \COREPOS\Fannie\API\FannieUploadPage
     function results_content()
     {
         return $this->simpleStats($this->stats);
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->results_content()));
+        $data = array('9999999999999', 'test item', 9.99, 1);
+        $indexes = array('upc'=>0, 'desc'=>1, 'price'=>2, 'dept'=>3);
+        $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
     }
 }
 

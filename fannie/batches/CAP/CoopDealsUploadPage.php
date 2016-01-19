@@ -55,10 +55,6 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             'display_name' => 'SKU',
             'default' => 8,
         ),
-        'sub' => array(
-            'display_name' => 'Sub',
-            'default' => 6,
-        ),
         'mult' => array(
             'display_name' => 'Line Notes',
             'default' => 13,
@@ -200,6 +196,17 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         return '<p>Default column selections correspond to the
             tab/worksheet that lists all A, B, and TPR items</p>'
             . parent::helpContent();
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->results_content()));
+        $indexes = array('upc'=>0, 'price'=>1, 'abt'=>2, 'sku'=>3, 'mult'=>4);
+        $data = array('4011', 0.99, 'ABTPR', '4011', '2/$2');
+        for ($i=0; $i<14; $i++) {
+            $data[] = 0;
+        }
+        $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
     }
 }
 

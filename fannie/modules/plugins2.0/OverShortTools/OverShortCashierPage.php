@@ -48,11 +48,12 @@ class OverShortCashierPage extends FanniePage {
     function ajaxRequest($action){
         global $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
-        $date = FormLib::get_form_value('date');
-        $empno = FormLib::get_form_value('empno');
+        $date = FormLib::get('date');
+        $empno = FormLib::get('empno');
+        $mode = FormLib::get('mode');
         switch($action){
         case 'loadCashier':
-            echo $this->displayCashier($date,$empno);
+            echo $this->displayCashier($date,$empno,$mode);
             break;
         case 'save':
             $tenders = FormLib::get_form_value('tenders');
@@ -63,7 +64,8 @@ class OverShortCashierPage extends FanniePage {
         }
     }
 
-    function displayCashier($date,$empno){
+    function displayCashier($date,$empno,$mode)
+    {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
         $store = FormLib::get('store', 0);
@@ -74,15 +76,17 @@ class OverShortCashierPage extends FanniePage {
         $counts = array();
         $names = array();
         $counts["SCA"] = 0.00;
+        $filter_field = (strtolower($mode)==='cashier') ? 'emp_no' : 'register_no';
+        $filter_label = (strtolower($mode)==='cashier') ? 'Emp.' : 'Lane';
 
-        $args = array($empno,$date.' 00:00:00',$date.' 23:59:59');
+        $args = array($empno, $date.' 00:00:00',$date.' 23:59:59');
         $totalsQ = "SELECT 
             CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END
             as trans_subtype,MAX(TenderName) as TenderName,
             -1*SUM(total) FROM $dlog as d LEFT JOIN "
             .$FANNIE_OP_DB.$dbc->sep()."tenders as t
             ON d.trans_subtype=t.TenderCode
-            WHERE emp_no = ?
+            WHERE $filter_field = ?
             AND tdate BETWEEN ? AND ?
             AND trans_type='T'
             AND d.upc NOT IN ('0049999900001', '0049999900002')";
@@ -95,7 +99,7 @@ class OverShortCashierPage extends FanniePage {
             ORDER BY TenderID";
         $totalsP = $dbc->prepare($totalsQ);
         $totalsR = $dbc->execute($totalsP, $args);
-        while($totalsW = $dbc->fetch_row($totalsR)){
+        while ($totalsW = $dbc->fetchRow($totalsR)){
             if (in_array($totalsW['trans_subtype'], OverShortTools::$EXCLUDE_TENDERS)) {
                 continue;
             }
@@ -126,7 +130,7 @@ class OverShortCashierPage extends FanniePage {
         if (!isset($counts['CK'])) $counts['CK'] = 0.00;
         
         $ret = "";
-        $ret .= "<b>$date</b> - Emp. #$empno<br />";    
+        $ret .= "<b>$date</b> - $filter_label. #$empno<br />";    
         $ret .= '<div class="form-group form-inline">';
         $ret .= "<label>Starting cash</label>: 
             <div class=\"input-group\">
@@ -335,8 +339,8 @@ class OverShortCashierPage extends FanniePage {
         ';  
     }
 
-    function body_content(){
-        global $FANNIE_URL;
+    function body_content()
+    {
         ob_start();
         $this->add_script('js/cashier.js'); 
         if (!$this->window_dressing) {
@@ -349,13 +353,14 @@ class OverShortCashierPage extends FanniePage {
         <div id=input class="form-inline form-group">
         <form id="osForm" style='margin-top:1.0em;' onsubmit="loadCashier(); return false;">
         <label>Date</label>:<input class="form-control date-field" type=text name=date id=date required />
-        <label>Cashier</label>:<input type=text name=empno id=empno class="form-control" required />
+        <select name="mode" class="form-control"><option>Drawer</option><option>Cashier</option></select>
+        :<input type=text name=empno id=empno class="form-control" placeholder="Lane or Employee #" required />
         <?php
         $_REQUEST['store'] = 1;
         $sp = FormLib::storePicker();
         echo $sp['html'];
         ?>
-        <button type=submit class="btn btn-default">Load Cashier</button>
+        <button type=submit class="btn btn-default">Load</button>
         </form>
         </div>
 
