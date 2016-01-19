@@ -76,23 +76,27 @@ class ItemBatchesReport extends FannieReportPage
         $args = array($upc);
         $result = $dbc->execute($prep, $args);
         $data = array();
-        while($row = $dbc->fetch_row($result)) {
-            $record = array(
-                $row['startDate'],
-                $row['endDate'],
-                sprintf('<a href="%s/batches/newbatch/EditBatchPage.php?id=%d" target="_batch%d">%s</a>',
-                    $this->config->get('URL'),
-                    $row['batchID'],
-                    $row['batchID'],
-                    $row['batchName']
-                ),
-                $row['typeDesc'],
-                $row['salePrice'],
-            );
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        return array(
+            $row['startDate'],
+            $row['endDate'],
+            sprintf('<a href="%s/batches/newbatch/EditBatchPage.php?id=%d" target="_batch%d">%s</a>',
+                $this->config->get('URL'),
+                $row['batchID'],
+                $row['batchID'],
+                $row['batchName']
+            ),
+            $row['typeDesc'],
+            $row['salePrice'],
+        );
     }
 
     public function calculate_footers($data)
@@ -121,6 +125,13 @@ class ItemBatchesReport extends FannieReportPage
             Lists all sale batches
             containing a particular item.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('batchID'=>1, 'batchName'=>'test', 'startDate'=>'2000-01-01',
+            'endDate'=>'2000-01-02', 'typeDesc'=>'test', 'salePrice'=>1.99);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

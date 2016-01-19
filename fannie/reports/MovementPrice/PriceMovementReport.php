@@ -117,19 +117,8 @@ class PriceMovementReport extends FannieReportPage
         $result = $dbc->execute($query, $args);
 
         $data = array();
-        while($row = $dbc->fetch_row($result)) {
-            $record = array(
-                $row['upc'],
-                $row['brand'],
-                $row['description'],
-                $row['department'],
-                $row['dept_name'],
-                sprintf('%.2f', $row['price']),
-                sprintf('%.2f', $row['qty']),
-                sprintf('%.2f', $row['total']),
-            );
-
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         // bold items that sold at multiple prices
@@ -145,6 +134,20 @@ class PriceMovementReport extends FannieReportPage
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        return array(
+            $row['upc'],
+            $row['brand'],
+            $row['description'],
+            $row['department'],
+            $row['dept_name'],
+            sprintf('%.2f', $row['price']),
+            sprintf('%.2f', $row['qty']),
+            sprintf('%.2f', $row['total']),
+        );
     }
 
     public function calculate_footers($data)
@@ -216,6 +219,14 @@ class PriceMovementReport extends FannieReportPage
             each item was sold for in the given date range. Sales
             totals are for all sales at a particular price during
             the date range.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('upc'=>'4011', 'brand'=>'test', 'description'=>'test',
+            'department'=>1, 'dept_name'=>'test', 'price'=>1.99,
+            'qty'=>1, 'total'=>1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

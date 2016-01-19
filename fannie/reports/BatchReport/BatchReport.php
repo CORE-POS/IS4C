@@ -35,7 +35,6 @@ class BatchReport extends FannieReportPage
     protected $required_fields = array('batchID');
 
     public $description = '[Batch Report] lists sales for items in a sales batch (or group of sales batches).';
-    public $themed = true;
     public $report_set = 'Batches';
     protected $new_tablesorter = true;
 
@@ -128,17 +127,23 @@ class BatchReport extends FannieReportPage
         */
         $ret = array();
         while ($row = $dbc->fetchRow($salesBatchR)) {
-            $record = array();
-            $record[] = $row['upc'];
-            $record[] = $row['brand'];
-            $record[] = $row['description'];
-            $record[] = sprintf('%.2f',$row['sales']);
-            $record[] = sprintf('%.2f',$row['quantity']);
-            $record[] = $row['rings'];
-            $record[] = $row['location'] === null ? '' : $row['location'];
-            $ret[] = $record;
+            $ret[] = $this->rowToRecord($row);
         }
         return $ret;
+    }
+
+    private function rowToRecord($row)
+    {
+        $record = array();
+        $record[] = $row['upc'];
+        $record[] = $row['brand'];
+        $record[] = $row['description'];
+        $record[] = sprintf('%.2f',$row['sales']);
+        $record[] = sprintf('%.2f',$row['quantity']);
+        $record[] = $row['rings'];
+        $record[] = $row['location'] === null ? '' : $row['location'];
+
+        return $record;
     }
     
     /**
@@ -313,6 +318,13 @@ class BatchReport extends FannieReportPage
             of batches over the given date range. The filters just narrow
             down the list of batches. You still have to make selections in
             the list.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('upc'=>'4011', 'brand'=>'test', 'description'=>'test',
+            'sales'=>1, 'quantity'=>1, 'rings'=>1, 'location'=>'test');
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

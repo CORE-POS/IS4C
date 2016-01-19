@@ -30,7 +30,6 @@ class BadSaleReport extends FannieReportPage
 {
     public $description = '[Bad Sale] lists items in current or future sale batches that
     are on sale for more than their normal retail price.';
-    public $themed = true;
 
     protected $report_headers = array('Batch', 'Item', 'Current', 'Retail', 'Sale');
     protected $title = "Fannie : Bad Sale Report";
@@ -55,24 +54,28 @@ class BadSaleReport extends FannieReportPage
                 AND l.salePrice >= p.normal_price';
         $result = $dbc->query($query);
         $data = array();
-        while ($w = $dbc->fetchRow($result)) {
-            $record = array(
-                '<a href="' 
-                    . $this->config->get('URL') 
-                    . 'batches/newbatch/EditBatchPage.php?id=' 
-                    . $w['batchID'] 
-                    . '">' 
-                    . $w['batchName'] 
-                    . '</a>',
-                $w['upc'],
-                ($w['current'] == 1 ? 'Yes' : 'No'),
-                $w['normal_price'],
-                $w['salePrice'],
-            );
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($result)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        return array(
+            '<a href="' 
+                . $this->config->get('URL') 
+                . 'batches/newbatch/EditBatchPage.php?id=' 
+                . $row['batchID'] 
+                . '">' 
+                . $row['batchName'] 
+                . '</a>',
+            $row['upc'],
+            ($row['current'] == 1 ? 'Yes' : 'No'),
+            $row['normal_price'],
+            $row['salePrice'],
+        );
     }
 
     public function form_content()
@@ -89,6 +92,12 @@ class BadSaleReport extends FannieReportPage
             </p>';
     }
 
+    public function unitTest($phpunit)
+    {
+        $data = array('batchID'=>1, 'batchName'=>'test', 'upc'=>'4011',
+            'current'=>1, 'normal_price'=>1.99, 'salePrice'=>1.99);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
+    }
 }
 
 FannieDispatch::conditionalExec();

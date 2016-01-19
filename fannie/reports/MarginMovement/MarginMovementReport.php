@@ -129,24 +129,11 @@ class MarginMovementReport extends FannieReportPage
         $data = array();
         $sum_total = 0.0;
         $sum_cost = 0.0;
-        while($row = $dbc->fetch_row($result)) {
-            $margin = $row['total'] == 0 ? 0 : ($row['total'] - $row['cost']) / $row['total'] * 100;
-            $record = array(
-                $row['upc'],
-                $row['brand'],
-                $row['description'],
-                $row['department'],
-                $row['dept_name'],
-                sprintf('%.2f', $row['cost']),
-                sprintf('%.2f', $row['total']),
-                sprintf('%.2f', $margin),
-                sprintf('%.2f', $row['qty'] == 0 ? 0 : ($row['total'] - $row['cost']) / $row['qty']),
-            );
-
+        while ($row = $dbc->fetchRow($result)) {
             $sum_total += $row['total'];
             $sum_cost += $row['cost'];
 
-            $data[] = $record;
+            $data[] = $this->rowToRecord($row);
         }
 
         // go through and add a contribution to margin value
@@ -157,6 +144,22 @@ class MarginMovementReport extends FannieReportPage
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        $margin = $row['total'] == 0 ? 0 : ($row['total'] - $row['cost']) / $row['total'] * 100;
+        return array(
+            $row['upc'],
+            $row['brand'],
+            $row['description'],
+            $row['department'],
+            $row['dept_name'],
+            sprintf('%.2f', $row['cost']),
+            sprintf('%.2f', $row['total']),
+            sprintf('%.2f', $margin),
+            sprintf('%.2f', $row['qty'] == 0 ? 0 : ($row['total'] - $row['cost']) / $row['qty']),
+        );
     }
 
     public function calculate_footers($data)
@@ -196,6 +199,13 @@ class MarginMovementReport extends FannieReportPage
             sales and calculates both margin and contribution to
             margin.
             </p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array('total'=>10, 'cost'=>5, 'upc'=>'4011', 'brand'=>'test',
+            'description'=>'test', 'department'=>1, 'dept_name'=>'test', 'qty'=>1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
 

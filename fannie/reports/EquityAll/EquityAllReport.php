@@ -65,7 +65,7 @@ class EquityAllReport extends FannieReportPage
             $num = 'n.memnum';
         }
 
-        $q = "SELECT $num as memnum,c.LastName,c.FirstName,n.payments,m.end_date
+        $query = "SELECT $num as memnum,c.LastName,c.FirstName,n.payments,m.end_date
             FROM custdata AS c LEFT JOIN "
             . $this->config->get('TRANS_DB') . $dbc->sep() . $table . " as n ON
             $num=c.CardNo AND c.personNum=1
@@ -73,25 +73,31 @@ class EquityAllReport extends FannieReportPage
             WHERE $type_restrict AND $equity_restrict
             ORDER BY $num";
 
-        $p = $dbc->prepare($q);
+        $prep = $dbc->prepare($query);
 
-        $r = $dbc->execute($p);
+        $res = $dbc->execute($prep);
         $data = array();
-        while($w = $dbc->fetch_row($r)) {
-            $record = array();
-            if (FormLib::get('excel') === '') {
-                $record[] = sprintf('<a href="%s%d">%d</a>',$this->config->get('URL')."reports/Equity/index.php?memNum=",$w['memnum'],$w['memnum']);
-            } else {
-                $record[] = $w['memnum'];
-            }
-            $record[] = $w['LastName'];
-            $record[] = $w['FirstName'];
-            $record[] = sprintf('%.2f',$w['payments']);
-            $record[] = $w['end_date'];
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($res)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        $record = array();
+        if (FormLib::get('excel') === '') {
+            $record[] = sprintf('<a href="%s%d">%d</a>',$this->config->get('URL')."reports/Equity/index.php?memNum=",$row['memnum'],$row['memnum']);
+        } else {
+            $record[] = $row['memnum'];
+        }
+        $record[] = $row['LastName'];
+        $record[] = $row['FirstName'];
+        $record[] = sprintf('%.2f',$row['payments']);
+        $record[] = $row['end_date'];
+
+        return $record;
     }
 
     public function form_content()
@@ -140,6 +146,11 @@ class EquityAllReport extends FannieReportPage
             </p>';
     }
 
+    public function unitTest($phpunit)
+    {
+        $data = array('memnum'=>1, 'LastName'=>'test', 'FirstName'=>'test', 'payments'=>100, 'end_date'=>'2000-01-01');
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
+    }
 }
 
 FannieDispatch::conditionalExec();

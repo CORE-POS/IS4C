@@ -30,7 +30,6 @@ class ArReport extends FannieReportPage
 {
     public $description = '[AR/Store Charge] lists all AR/Store Charge transactions for a given member';
     public $report_set = 'Membership';
-    public $themed = true;
 
     protected $report_headers = array('Date', 'Receipt', 'Amount', 'Type');
     protected $sort_direction = 1;
@@ -54,21 +53,27 @@ class ArReport extends FannieReportPage
         $r = $dbc->execute($q,array($this->form->memNum));
 
         $data = array();
-        while($w = $dbc->fetch_row($r)) {
-            $record = array();
-            $record[] = sprintf('%d/%d/%d',$w[4],$w[5],$w[3]);
-            if (FormLib::get('excel') !== '') {
-                $record[] = $w[1];
-            } else {
-                $record[] = sprintf('<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?year=%d&month=%d&day=%d&receipt=%s">%s</a>',
-                        $this->config->get('URL'),$w[3],$w[4],$w[5],$w[1],$w[1]);
-            }
-            $record[] = sprintf('%.2f', ($w[0] != 0 ? $w[0] : $w[2]));
-            $record[] = $w[0] != 0 ? 'Charge' : 'Payment';
-            $data[] = $record;
+        while ($row = $dbc->fetchRow($r)) {
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
+    }
+
+    private function rowToRecord($row)
+    {
+        $record = array();
+        $record[] = sprintf('%d/%d/%d',$row[4],$row[5],$row[3]);
+        if (FormLib::get('excel') !== '') {
+            $record[] = $row[1];
+        } else {
+            $record[] = sprintf('<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?year=%d&month=%d&day=%d&receipt=%s">%s</a>',
+                    $this->config->get('URL'),$row[3],$row[4],$row[5],$row[1],$row[1]);
+        }
+        $record[] = sprintf('%.2f', ($row[0] != 0 ? $row[0] : $row[2]));
+        $record[] = $row[0] != 0 ? 'Charge' : 'Payment';
+
+        return $record;
     }
 
     public function form_content()
@@ -92,6 +97,11 @@ class ArReport extends FannieReportPage
             </p>';
     }
 
+    public function unitTest($phpunit)
+    {
+        $data = array(0, '1-1-1', 0, 2000, 1, 1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
+    }
 }
 
 FannieDispatch::conditionalExec();
