@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 if (!function_exists('confset')) {
     include(dirname(__FILE__) . '/util.php');
 }
-if (!function_exists('create_if_needed')) {
+if (!function_exists('dropDeprecatedStructure')) {
     include(dirname(__FILE__) . '/db.php');
 }
 
@@ -63,7 +63,8 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
     function body_content()
     {
         include(dirname(__FILE__) . '/../config.php');
-        if (!is_array($FANNIE_PRODUCT_MODULES)) {
+        // set a default if needed
+        if (!isset($FANNIE_PRODUCT_MODULES) || !is_array($FANNIE_PRODUCT_MODULES) || count($FANNIE_PRODUCT_MODULES) === 0) {
             $FANNIE_PRODUCT_MODULES = array('BaseItemModule' => array('seq'=>0, 'show'=>1, 'expand'=>1));
         }
 
@@ -154,15 +155,6 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         }
         foreach ($replacement_values as $name => $params) {
             $FANNIE_PRODUCT_MODULES[$name] = $params;
-        }
-
-        // set a default if needed
-        if (count($FANNIE_PRODUCT_MODULES) == 0) {
-            $FANNIE_PRODUCT_MODULES['BaseItemModule'] = array(
-                'seq' => 0,
-                'show' => 1,
-                'expand' => 1,
-            );
         }
 
         $default = array('seq' => 0, 'show' => 0, 'expand' => 0);

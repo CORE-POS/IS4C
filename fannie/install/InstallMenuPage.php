@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 if (!function_exists('confset')) {
     include(dirname(__FILE__) . '/util.php');
 }
-if (!function_exists('create_if_needed')) {
+if (!function_exists('dropDeprecatedStructure')) {
     include(dirname(__FILE__) . '/db.php');
 }
 
