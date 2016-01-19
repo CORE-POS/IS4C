@@ -154,7 +154,7 @@ class BasicModel
     {
         $this->connection = $con;
         if (empty($this->unique)) {
-            $this->unique = array_filter($this->columns,
+            $this->unique = array_keys(array_filter($this->columns,
                 function ($definition) {
                     if (isset($definition['primary_key']) && $definition['primary_key']) {
                         return true;
@@ -162,7 +162,7 @@ class BasicModel
                         return false;
                     }
                 }
-            );
+            ));
         }
 
         // fully-qualified name detectetion not working right now...
@@ -804,10 +804,10 @@ class BasicModel
         $sets = substr($sets,0,strlen($sets)-1);
 
         $sql .= ' SET '.$sets.' WHERE '.$where;
-        $all_args = array_reduce($where_args,
-            function ($carry, $item) { return $carry[] = $item; },
-            $set_args
-        );
+        $all_args = $set_args;
+        foreach ($where_args as $a) {
+            $all_args[] = $a;
+        }
         $prep = $this->connection->prepare($sql);
         $result = $this->connection->execute($prep, $all_args);
 
@@ -815,7 +815,7 @@ class BasicModel
             $this->record_changed = false;
         }
 
-        return $result;
+        return $result ? true : false;
     }
 
     /**
