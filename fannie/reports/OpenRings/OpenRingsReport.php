@@ -122,13 +122,13 @@ class OpenRingsReport extends FannieReportPage
 
         $data = array();
         while ($row = $dbc->fetchRow($result)) {
-            $data[] = $this->rowToRecord($result);
+            $data[] = $this->rowToRecord($row);
         }
 
         return $data;
     }
     
-    private function rowToRecord()
+    private function rowToRecord($row)
     {
         return array(
             sprintf('%d/%d/%d', $row[1], $row[2], $row[0]),
