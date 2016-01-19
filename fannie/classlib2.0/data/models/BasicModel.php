@@ -131,7 +131,7 @@ class BasicModel
       extra queries checking table existence and 
       structure every single time
     */
-    protected static $cached_definition = false;
+    protected $cached_definition = false;
 
     /**
       Configuration object
@@ -216,16 +216,16 @@ class BasicModel
 
     public function getDefinition()
     {
-        return static::cacheDefinition($this->connection, $this->fq_name);
+        return $this->cacheDefinition($this->connection, $this->fq_name);
     }
 
-    protected static function cacheDefinition($con, $name)
+    protected function cacheDefinition($con, $name)
     {
-        if (static::$cached_definition === false) {
-            static::$cached_definition = $con->tableDefinition($name);
+        if ($this->cached_definition === false) {
+            $this->cached_definition = $con->tableDefinition($name);
         }
 
-        return static::$cached_definition;
+        return $this->cached_definition;
     }
 
     /**
@@ -316,7 +316,7 @@ class BasicModel
           Clear out any cached definition
         */
         if ($result) {
-            static::$cached_definition = false;
+            $this->cached_definition = false;
         }
 
         return ($result === false) ? false : true;
