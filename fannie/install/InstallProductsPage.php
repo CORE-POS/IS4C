@@ -63,6 +63,9 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
     function body_content()
     {
         include(dirname(__FILE__) . '/../config.php');
+        if (!is_array($FANNIE_PRODUCT_MODULES)) {
+            $FANNIE_PRODUCT_MODULES = array('BaseItemModule' => array('seq'=>0, 'show'=>1, 'expand'=>1));
+        }
 
         ob_start();
 
