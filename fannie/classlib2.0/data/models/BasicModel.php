@@ -216,10 +216,10 @@ class BasicModel
 
     public function getDefinition()
     {
-        return static::definition($this->connection, $this->fq_name);
+        return static::cacheDefinition($this->connection, $this->fq_name);
     }
 
-    protected static function definition($con, $name)
+    protected static function cacheDefinition($con, $name)
     {
         if (static::$cached_definition === false) {
             static::$cached_definition = $con->tableDefinition($name);
