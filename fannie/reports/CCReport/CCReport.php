@@ -100,7 +100,7 @@ class CCReport extends FannieReportPage
             $record['meta_background'] = '#ffffcc';
         }
         if (strstr($row['xResultMessage'],"APPROVED") || $row['xResultMessage'] == "" || strstr($row['xResultMessage'],"PENDING")){
-            $sum += $row[4];
+            $sum += $row['amount'];
             $htable[$row['amount']."+".$row['PAN']] = 1;
         }
 
