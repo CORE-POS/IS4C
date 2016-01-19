@@ -215,10 +215,10 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         <label>Default Shelf Tag Layout</label>
         <?php
         $layouts = 'No Layouts Found!';
-        if (file_exists($FANNIE_ROOT.'admin/labels/scan_layouts.php') && !function_exists('scan_layouts')){
+        if (!function_exists('scan_layouts')) {
             include($FANNIE_ROOT.'admin/labels/scan_layouts.php');
-            $layouts = scan_layouts();
         }
+        $layouts = scan_layouts();
         echo installSelectField('FANNIE_DEFAULT_PDF', $FANNIE_DEFAULT_PDF, $layouts, 'Fannie Standard');
         ?>
         <label>Shelf Tag Data Source</label>
