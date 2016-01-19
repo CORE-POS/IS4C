@@ -44,25 +44,6 @@ class InstallSampleDataPage extends \COREPOS\Fannie\API\InstallPage {
     public $description = "
     Class for the Sample Data install page.
     ";
-    public $themed = true;
-
-    // This replaces the __construct() in the parent.
-    public function __construct() {
-
-        // To set authentication.
-        FanniePage::__construct();
-
-        // Link to a file of CSS by using a function.
-        $this->add_css_file("../../src/style.css");
-        $this->add_css_file("../../src/javascript/jquery-ui.css");
-        $this->add_css_file("../../src/css/install.css");
-
-        // Link to a file of JS by using a function.
-        $this->add_script("../../src/javascript/jquery.js");
-        $this->add_script("../../src/javascript/jquery-ui.js");
-
-    // __construct()
-    }
 
     // If chunks of CSS are going to be added the function has to be
     //  redefined to return them.
@@ -82,20 +63,10 @@ class InstallSampleDataPage extends \COREPOS\Fannie\API\InstallPage {
     //css_content()
     }
 
-    // If chunks of JS are going to be added the function has to be
-    //  redefined to return them.
-    /**
-      Define any javascript needed
-      @return A javascript string
-    function javascript_content(){
-
-    }
-    */
-
     function body_content(){
         //Should this really be done with global?
         //global $FANNIE_URL, $FANNIE_EQUITY_DEPARTMENTS;
-        include('../../config.php'); 
+        include(dirname(__FILE__) . '/../../config.php'); 
         ob_start();
 ?>
 <?php
@@ -103,20 +74,8 @@ echo showInstallTabs("Sample Data", '../');
 ?>
 
 <form action=InstallSampleDataPage.php method=post>
-<h1 class="install">
-    <?php 
-    if (!$this->themed) {
-        echo "<h1 class='install'>{$this->header}</h1>";
-    }
-    ?>
-</h1>
 <?php
-if (is_writable('../../config.php')){
-    echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
-}
-else {
-    echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
-}
+echo $this->writeCheck(dirname(__FILE__) . '/../config.php');
 ?>
 <hr />
 <div class="well"><em>
@@ -164,9 +123,6 @@ if (FormLib::get('employees') !== '') {
 ?>
 </em></div>
 
-<?php /* Display a list of data that can be loaded.
-*/
-?>
 <p class="ichunk">
 Some sample data is available to get a test lane
 up and running quickly and to try Fannie functions.
@@ -240,11 +196,9 @@ utilities to populate the lane tables.
 <hr />
 
 </form>
-
 <?php
 
         return ob_get_clean();
-
     // body_content
     }
 
@@ -300,6 +254,11 @@ utilities to populate the lane tables.
             $dbc->query("TRUNCATE TABLE " . $dbc->identifierEscape($table));
             \COREPOS\Fannie\API\data\DataLoad::loadSampleData($dbc, $table);
         }
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
     }
 }
 

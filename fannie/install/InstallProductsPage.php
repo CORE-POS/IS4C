@@ -45,25 +45,6 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
     public $description = "
     Class for the Products install and config options page.
     ";
-    public $themed = true;
-
-    // This replaces the __construct() in the parent.
-    public function __construct() {
-
-        // To set authentication.
-        FanniePage::__construct();
-
-        // Link to a file of CSS by using a function.
-        $this->add_css_file("../src/style.css");
-        $this->add_css_file("../src/javascript/jquery-ui.css");
-        $this->add_css_file("../src/css/install.css");
-
-        // Link to a file of JS by using a function.
-        $this->add_script("../src/javascript/jquery.js");
-        $this->add_script("../src/javascript/jquery-ui.js");
-
-    // __construct()
-    }
 
     /**
       Define any CSS needed
@@ -79,15 +60,6 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
     //css_content()
     }
 
-    /**
-      Define any javascript needed
-      @return A javascript string
-    function javascript_content(){
-        $js ="";
-        return $js;
-    }
-    */
-
     function body_content()
     {
         include(dirname(__FILE__) . '/../config.php');
@@ -98,20 +70,9 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
 ?>
 
         <form action=InstallProductsPage.php method=post>
-        <h1 class="install">
-            <?php 
-            if (!$this->themed) {
-                echo "<h1 class='install'>{$this->header}</h1>";
-            }
-            ?>
         </h1>
         <?php
-        if (is_writable('../config.php')){
-            echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
-        }
-        else {
-            echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
-        }
+        echo $this->writeCheck(dirname(__FILE__) . '/../config.php');
         ?>
         <hr />
         <h4 class="install">Product Information Modules</h4>
@@ -357,8 +318,13 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
     // body_content
     }
 
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
+
 // InstallProductsPage
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

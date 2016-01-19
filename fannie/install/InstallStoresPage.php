@@ -45,25 +45,6 @@ class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
     public $description = "
     Class for the Stores install and config options page.
     ";
-    public $themed = true;
-
-    // This replaces the __construct() in the parent.
-    public function __construct() {
-
-        // To set authentication.
-        FanniePage::__construct();
-
-        // Link to a file of CSS by using a function.
-        $this->add_css_file("../src/style.css");
-        $this->add_css_file("../src/javascript/jquery-ui.css");
-        $this->add_css_file("../src/css/install.css");
-
-        // Link to a file of JS by using a function.
-        $this->add_script("../src/javascript/jquery.js");
-        $this->add_script("../src/javascript/jquery-ui.js");
-
-    // __construct()
-    }
 
     public function preprocess()
     {
@@ -163,21 +144,9 @@ class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
         ?>
 
 <form action=InstallStoresPage.php method=post>
-<h1 class="install">
-    <?php 
-    if (!$this->themed) {
-        echo "<h1 class='install'>{$this->header}</h1>";
-    }
-    ?>
-</h1>
 <p class="ichunk">Revised 23Apr2014</p>
 <?php
-if (is_writable('../config.php')){
-    echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
-}
-else {
-    echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
-}
+echo $this->writeCheck(dirname(__FILE__) . '/../config.php');
 ?>
 <hr />
 <h4 class="install">Stores</h4>
@@ -311,8 +280,13 @@ confset('FANNIE_READONLY_JSON', "'$FANNIE_READONLY_JSON'");
     // body_content
     }
 
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
+
 // InstallStoresPage
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

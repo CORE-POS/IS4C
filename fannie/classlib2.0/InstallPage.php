@@ -53,6 +53,7 @@ class InstallPage extends \FanniePage
     */
     function getHeader()
     {
+        $this->add_css_file($this->config->get('URL') . 'src/css/install.css');
         ob_start();
         $page_title = $this->title;
         $header = $this->header;
@@ -85,6 +86,15 @@ class InstallPage extends \FanniePage
         }
 
         return ob_get_clean();
+    }
+
+    protected function writeCheck($file)
+    {
+        if (is_writable($file)) {
+            return "<div class=\"alert alert-success\"><i>" . basename($file) . "</i> is writeable</div>";
+        } else {
+            return "<div class=\"alert alert-danger;\"><b>Error</b>: " . basename($file) . " is not writeable</div>";
+        }
     }
 
     public function helpContent()

@@ -45,25 +45,15 @@ class InstallPluginsPage extends \COREPOS\Fannie\API\InstallPage {
     public $description = "
     Class for the Plugins install and config options page.
     ";
-    public $themed = true;
 
     // This replaces the __construct() in the parent.
     public function __construct() {
-
         // To set authentication.
-        FanniePage::__construct();
+        parent::__construct();
 
         $SRC = '../src';
         // Link to a file of CSS by using a function.
-        $this->add_css_file("$SRC/style.css");
-        $this->add_css_file("$SRC/javascript/jquery-ui.css");
-        $this->add_css_file("$SRC/css/install.css");
         $this->add_css_file("$SRC/css/toggle-switch.css");
-
-        // Link to a file of JS by using a function.
-        $this->add_script("$SRC/javascript/jquery.js");
-        $this->add_script("$SRC/javascript/jquery-ui.js");
-
     // __construct()
     }
 
@@ -82,18 +72,6 @@ class InstallPluginsPage extends \COREPOS\Fannie\API\InstallPage {
     //css_content()
     }
 
-    // If chunks of JS are going to be added the function has to be
-    //  redefined to return them.
-    /**
-      Define any javascript needed
-      @return a javascript string
-    function javascript_content(){
-        $js ="";
-        return $js;
-    //js_content()
-    }
-    */
-
     function body_content(){
         //Should this really be done with global?
         global $FANNIE_PLUGIN_LIST, $FANNIE_PLUGIN_SETTINGS;
@@ -103,20 +81,8 @@ class InstallPluginsPage extends \COREPOS\Fannie\API\InstallPage {
     ?>
 
 <form action=InstallPluginsPage.php method=post>
-<h1 class="install">
-    <?php 
-    if (!$this->themed) {
-        echo "<h1 class='install'>{$this->header}</h1>";
-    }
-    ?>
-</h1>
 <?php
-if (is_writable('../config.php')){
-    echo "<div class=\"alert alert-success\"><i>config.php</i> is writeable</div>";
-}
-else {
-    echo "<div class=\"alert alert-danger\"><b>Error</b>: config.php is not writeable</div>";
-}
+echo $this->writeCheck(dirname(__FILE__) . '/../config.php');
 ?>
 
 <h4 class="install">Available plugins</h4>
@@ -276,6 +242,11 @@ confset('FANNIE_PLUGIN_SETTINGS',$saveStr);
         return ob_get_clean();
 
     // body_content
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
     }
 
 // InstallPluginsPage

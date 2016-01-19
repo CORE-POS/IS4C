@@ -45,50 +45,6 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
     public $description = "
     Class for the Updates install and config options page.
     ";
-    public $themed = true;
-
-    // This replaces the __construct() in the parent.
-    public function __construct() {
-
-        // To set authentication.
-        FanniePage::__construct();
-
-        // Link to a file of CSS by using a function.
-        $this->add_css_file("../src/style.css");
-        $this->add_css_file("../src/javascript/jquery-ui.css");
-        $this->add_css_file("../src/css/install.css");
-
-        // Link to a file of JS by using a function.
-        $this->add_script("../src/javascript/jquery.js");
-        $this->add_script("../src/javascript/jquery-ui.js");
-
-    // __construct()
-    }
-
-    // If chunks of CSS are going to be added the function has to be
-    //  redefined to return them.
-    // If this is to override x.css draw_page() needs to load it after the add_css_file
-    /**
-      Define any CSS needed
-      @return A CSS string
-    function css_content(){
-        $css ="";
-        return $css;
-    //css_content()
-    }
-    */
-
-    // If chunks of JS are going to be added the function has to be
-    //  redefined to return them.
-    /**
-      Define any javascript needed
-      @return A javascript string
-    function javascript_content(){
-        $js ="";
-        return $js;
-
-    }
-    */
 
     private function normalize_db_name($name)
     {
@@ -115,14 +71,6 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
         ob_start();
         echo showInstallTabs('Updates');
 ?>
-
-<h1 class="install">
-    <?php 
-    if (!$this->themed) {
-        echo "<h1 class='install'>{$this->header}</h1>";
-    }
-    ?>
-</h1>
 <p class="ichunk">Database Updates.</p>
 <?php
         if (FormLib::get_form_value('mupdate') !== ''){
@@ -199,88 +147,8 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
             }
         }
         echo '</ul>';
-?>
-<hr />
-<p class="ichunk">CORE Updates.</p>
-<em>This is new; consider it alpha-y. Commit any changes before running an update.</em><br />
-<?php
-        $version_info = \COREPOS\Fannie\API\data\DataCache::check('CoreReleases');
-        if ($version_info === false) {
-            ini_set('user_agent', 'CORE-POS');
-            $json = file_get_contents('https://api.github.com/repos/CORE-POS/IS4C/tags');
-            if ($json === false && function_exists('curl_init')) {
-                $ch = curl_init('https://api.github.com/repos/CORE-POS/IS4C/tags');
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURL_TIMEOUT, 10);
-                curl_setopt($ch, CURLOPT_USERAGENT, 'CORE-POS');
-                $json = curl_exec($ch);
-                curl_close($ch);
-            }
-
-            if ($json === false) {
-                echo '<div class="alert alert-danger">Error downloading release information</div>';
-            } else {
-                $decoded = json_decode($json, true);
-                if ($decoded === null) {
-                    echo '<div class="alert alert-danger">Downloaded release information is invalid</div>';
-                    var_dump($json);
-                } else {
-                    $version_info = $json;
-                    \COREPOS\Fannie\API\data\DataCache::freshen($version_info, 'day', 'CoreReleases');
-                }
-            }
-        }
-        $version_info = json_decode($version_info, true);
-        $tags = array();
-        foreach ($version_info as $release) {
-            $tags[] = $release['name'];
-        }
-        usort($tags, array('InstallUpdatesPage', 'versionSort'));
-        $my_version = trim(file_get_contents(dirname(__FILE__) . '/../../VERSION'));
-        if ($tags[count($tags)-1] == $my_version) {
-            echo '<div class="alert alert-success">Up to date</div>';
-        } elseif (!in_array($my_version, $tags)) {
-            echo '<div class="alert alert-warning">Current version <strong>' . $my_version . '</strong> not recognized</div>';
-        } else {
-            echo '<div class="alert alert-info">
-                Current version: <strong>' . $my_version . '</strong><br />
-                Newest version available: <strong>' . $tags[count($tags)-1] . '</strong>
-                </div>';
-            echo '<h3>To get the latest version</h3>';
-            echo '<i>Make note of the big string of letters and numbers produced
-                by the "git log" command. If you want to undo the update, that will be handy</i><br />';
-            echo '<p><code>';
-            $dir = realpath(dirname(__FILE__) . '/../../');
-            echo 'cd "' . $dir . '"<br />';
-            echo 'git log -n1 --pretty=oneline<br />';
-            echo 'git fetch upstream<br />';
-            echo 'git merge ' . $tags[count($tags)-1] . '<br />';
-            echo '</code></p>';
-            echo '<h3>Troubleshooting</h3>';
-            echo '<p>Error message: <i>fatal: \'upstream\' does not appear to be a repository</i><br />';
-            echo 'Solution: add the repository and re-run the update commands above<br />';
-            echo '<code>git remote add upstream https://github.com/CORE-POS/IS4C</code>';
-            echo '</p>';
-            echo '<p>Error message: <i>Automatic merge failed; fix conflicts and then commit the result.</i><br />';
-            echo 'Unfortunately this means the update cannot be applied automatically. If you are a developer
-                you can of course fix the conflicts. If you just need to undo the update attempt and get back
-                to a working state, first try this:<br />
-                <code>git reset --merge</code><br />
-                If problems persist (or you have an old version of git that doesn\'t support that command) use:<br />
-                <code>git reset --hard</code>
-                </p>';
-            echo '<p>Undoing the update<br />
-                If you noted the big string of letters and numbers from "git log", you can go back to that
-                exact point. Replace PREVIOUS with the big string.<br />
-                <code>git reset --merge PREVIOUS</code><br />
-                If not, this should get back to the version you were running before but may not be quite
-                identical.<br />
-                <code>git reset --merge ' . $my_version . '</code>
-                </p>';
-        }
 
         return ob_get_clean();
-
     // body_content
     }
 
@@ -320,5 +188,5 @@ class InstallUpdatesPage extends \COREPOS\Fannie\API\InstallPage {
 // InstallUpdatesPage
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
