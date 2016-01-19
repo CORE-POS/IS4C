@@ -89,7 +89,6 @@ class BasicModel
     {
         $this->connection = $sql;
         $this->record_changed = true;
-        $this->cached_definition = false;
     }
 
     /**
@@ -132,7 +131,7 @@ class BasicModel
       extra queries checking table existence and 
       structure every single time
     */
-    protected $cached_definition = false;
+    protected static $cached_definition = false;
 
     /**
       Configuration object
@@ -217,11 +216,16 @@ class BasicModel
 
     public function getDefinition()
     {
-        if ($this->cached_definition == false) {
-            $this->cached_definition = $this->connection->tableDefinition($this->fq_name);
+        return static::definition($this->connection, $this->fq_name);
+    }
+
+    protected static function definition($con, $name)
+    {
+        if (static::$cached_definition === false) {
+            static::$cached_definition = $con->tableDefinition($name);
         }
 
-        return $this->cached_definition;
+        return static::$cached_definition;
     }
 
     /**
@@ -312,7 +316,7 @@ class BasicModel
           Clear out any cached definition
         */
         if ($result) {
-            $this->cached_definition = false;
+            static::$cached_definition = false;
         }
 
         return ($result === false) ? false : true;
