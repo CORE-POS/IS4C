@@ -51,7 +51,7 @@ class DenfeldInitialUpload extends \COREPOS\Fannie\API\FannieUploadPage
     public function process_file($linedata, $indexes)
     {
         global $FANNIE_OP_DB;
-        $dbc = FannieDB::get('woodshed_no_replicate');
+        $dbc = FannieDB::get($FANNIE_OP_DB);
         
         $pmodel = new ProductsModel($dbc);
         $prep = $dbc->prepare('INSERT INTO denfeldList
@@ -91,7 +91,7 @@ class DenfeldInitialUpload extends \COREPOS\Fannie\API\FannieUploadPage
             UPDATE products AS p
             SET p.inUse=1
             WHERE p.store_id=2
-                AND p.upc IN (SELECT upc FROM woodshed_no_replicate.denfeldList)
+                AND p.upc IN (SELECT upc FROM denfeldList)
         ;');
         $res = $dbc->execute($prep);
         $row = $dbc->fetchRow($res);
@@ -103,7 +103,7 @@ class DenfeldInitialUpload extends \COREPOS\Fannie\API\FannieUploadPage
             UPDATE products AS p
             SET p.inUse=0
             WHERE p.store_id=2
-                AND p.upc NOT IN (SELECT upc FROM woodshed_no_replicate.denfeldList)
+                AND p.upc NOT IN (SELECT upc FROM denfeldList)
                 AND p.department NOT BETWEEN 60 AND 78
                 AND p.department != 150
                 AND p.department NOT BETWEEN 200 AND 239
