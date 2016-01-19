@@ -167,7 +167,8 @@ class DenfeldInitialUpload extends \COREPOS\Fannie\API\FannieUploadPage
                 auto_par,
                 price_rule_id,
                 store_id
-        ) VALUES (SELECT
+        ) 
+        SELECT
                 upc,
                 description,
                 brand,
@@ -209,7 +210,8 @@ class DenfeldInitialUpload extends \COREPOS\Fannie\API\FannieUploadPage
                 default_vendor_id,
                 current_origin_id,
                 auto_par,
-                price_rule_id
+                price_rule_id,
+                2
             FROM products
             WHERE store_id=1
                 AND upc IN (
@@ -221,9 +223,6 @@ class DenfeldInitialUpload extends \COREPOS\Fannie\API\FannieUploadPage
                     FROM products 
                     WHERE store_id=2
                 )
-            ),
-            2
-        )
         ;');
         $res = $dbc->execute($prep);
         $row = $dbc->fetchRow($res);
