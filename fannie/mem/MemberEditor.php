@@ -274,7 +274,7 @@ class MemberEditor extends FanniePage {
     public function unitTest($phpunit)
     {
         $modules = FannieAPI::listModules('\COREPOS\Fannie\API\member\MemberModule');
-        $this->config->MEMBER_MODULES = $modules;
+        $this->config->set('FANNIE_MEMBER_MODULES', $modules);
         $this->memNum = 1;
         $phpunit->assertNotEquals(0, strlen($this->body_content()));
     }
