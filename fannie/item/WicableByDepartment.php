@@ -60,7 +60,7 @@ class WicableByDepartment extends FannieRESTfulPage
     {
         $dbc = $this->connection;
         $prep = $dbc->prepare('SELECT dept_no, dept_name FROM departments WHERE dept_no = ?;');
-        $res = $dbc->execute($prep, $_GET['id']);
+        $res = $dbc->execute($prep, $this->id);
         $row = $dbc->fetchRow($res);
 
         return '<div class="alert alert-warning">Mark all items in this department as WIC?</div>
@@ -68,7 +68,7 @@ class WicableByDepartment extends FannieRESTfulPage
             $row['dept_no'] . ' - ' . $row['dept_name'] . 
             '</p>
             <p>
-            <a href="?confirm=1&id=' . $_GET['id'] . '" class="btn btn-default">Yes, make items WIC</a>
+            <a href="?confirm=1&id=' . $this->id . '" class="btn btn-default">Yes, make items WIC</a>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <a href="WicableByDepartment.php" class="btn btn-default">No, keep items as they are</a>
             </p>';
