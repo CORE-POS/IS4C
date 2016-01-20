@@ -226,7 +226,7 @@ class PriceMovementReport extends FannieReportPage
             'department'=>1, 'dept_name'=>'test', 'price'=>1.99,
             'qty'=>1, 'total'=>1);
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
-        $phpunit->assertInternalType('array', $this->calculate_footers(array($data)));
+        $phpunit->assertInternalType('array', $this->calculate_footers($this->dekey_array(array($data))));
     }
 }
 

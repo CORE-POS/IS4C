@@ -141,7 +141,7 @@ class DiscountsReport extends FannieReportPage {
     {
         $data = array('memDesc'=>'test', 'total'=>1);
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
-        $phpunit->assertInternalType('array', $this->calculate_footers(array($data)));
+        $phpunit->assertInternalType('array', $this->calculate_footers($this->dekey_array(array($data))));
     }
 
 }

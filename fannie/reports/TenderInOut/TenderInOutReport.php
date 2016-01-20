@@ -162,7 +162,7 @@ class TenderInOutReport extends FannieReportPage
         $data = array('tdate'=>'2000-01-01', 'trans_num'=>'1-1-1', 'emp_no'=>1,
             'register_no'=>1, 'total'=>10);
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
-        $phpunit->assertInternalType('array', $this->calculate_footers(array($data)));
+        $phpunit->assertInternalType('array', $this->calculate_footers($this->dekey_array(array($data))));
     }
 }
 

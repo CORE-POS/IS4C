@@ -133,7 +133,7 @@ class CouponsReport extends FannieReportPage {
     {
         $data = array('upc'=>'4011', 'qty'=>1, 'ttl'=>1);
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
-        $phpunit->assertInternalType('array', $this->calculate_footers(array($data)));
+        $phpunit->assertInternalType('array', $this->calculate_footers($this->dekey_array(array($data))));
     }
 }
 

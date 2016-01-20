@@ -217,7 +217,7 @@ class OpenRingsReport extends FannieReportPage
     {
         $data = array(0=>2000, 1=>1, 2=>2, 'total'=>1, 'qty'=>1, 'percentage'=>1);
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
-        $phpunit->assertInternalType('array', $this->calculate_footers(array($data)));
+        $phpunit->assertInternalType('array', $this->calculate_footers($this->dekey_array(array($data))));
     }
 }
 

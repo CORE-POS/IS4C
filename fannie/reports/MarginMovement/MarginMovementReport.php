@@ -205,7 +205,7 @@ class MarginMovementReport extends FannieReportPage
         $data = array('total'=>10, 'cost'=>5, 'upc'=>'4011', 'brand'=>'test',
             'description'=>'test', 'department'=>1, 'dept_name'=>'test', 'qty'=>1);
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
-        $phpunit->assertInternalType('array', $this->calculate_footers(array($data)));
+        $phpunit->assertInternalType('array', $this->calculate_footers($this->dekey_array(array($data))));
     }
 }
 
