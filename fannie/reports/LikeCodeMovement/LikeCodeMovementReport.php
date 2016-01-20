@@ -112,33 +112,13 @@ class LikeCodeMovementReport extends FannieReportPage
             return array();
         }
 
-        /**
-          Use the width of the first record to determine
-          how the data is grouped
-        */
-        switch(count($data[0])) {
-            case 10:
-                return $this->upcFooter($data);
-            case 4:
-                /**
-                  The Department and Weekday datasets are both four
-                  columns wide so I have to resort to form parameters
-                */
-                $this->nonUpcHeaders();
-                return $this->nonUpcFooter($data);
-        }
-    }
-
-    function report_description_content()
-    {
-        $ret = array();
-        $ret[] = "Summed by ".FormLib::get_form_value('sort','');
-        $buyer = FormLib::get_form_value('buyer','');
-        if ($buyer === '0') {
-            $ret[] = "Department ".FormLib::get_form_value('deptStart','').' to '.FormLib::get_form_value('deptEnd','');
+        $sums = array(0, 0);
+        foreach ($data as $row) {
+            $sums[0] += $row[3];
+            $sums[1] += $row[4];
         }
 
-        return $ret;
+        return array('Total', null, null, $sum[0], $sum[1]);
     }
 
     function form_content()
@@ -220,6 +200,13 @@ class LikeCodeMovementReport extends FannieReportPage
                 the department(s) for Mondays in the date range, Tuesdays
                 in the date range, etc.</li>
             </ul>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array(1, 'test', 1, 1, 1);
+        $phpunit->assertInternalType('array', $this->rowToRecord($data));
+        $phpunit->assertInternalType('array', $this->calculate_footers(array($data)));
     }
 }
 

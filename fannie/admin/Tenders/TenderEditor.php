@@ -50,15 +50,18 @@ class TenderEditor extends FannieRESTfulPage
         return parent::preprocess();
     }
 
+    private $model = null;
     protected function getTenderModel($id=false)
     {
-        $this->connection->selectDB($this->config->get('OP_DB')); 
-        $model = new TendersModel($this->connection);
+        if ($this->model === null) {
+            $this->connection->selectDB($this->config->get('OP_DB')); 
+            $this->model = new TendersModel($this->connection);
+        }
         if ($id !== false) {
-            $model->TenderID($id);
+            $this->model->TenderID($id);
         }
 
-        return $model;
+        return $this->model;
     }
 
     protected function post_id_saveCode_handler()

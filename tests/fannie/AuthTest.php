@@ -85,5 +85,19 @@ class AuthTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, is_numeric(getNumAdmins()));
         $this->assertInternalType('string', genSessID());
     }
+
+    public function testPrivs()
+    {
+        if (!function_exists('createClass')) {
+            include(dirname(__FILE__) . '/../../fannie/auth/privileges.php');
+        }
+        ob_start();
+        $this->assetEquals(false, createClass('foo bar', 'blah'));
+        $this->assetEquals(true, createClass('foobar', 'blah'));
+        $this->assetEquals(true, updateAuthNotes('foobar', 'blah'));
+        $this->assetEquals(false, deleteClass('foo bar', 'blah'));
+        $this->assetEquals(true, deleteClass('foobar', 'blah'));
+        ob_end_clean();
+    }
 }
 

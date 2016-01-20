@@ -60,10 +60,10 @@ class ConfigFannieTest extends PHPUnit_Framework_TestCase
 
     public function testPlugins()
     {
-        if (!class_exists('InstallMenuPage')) {
-            include(dirname(__FILE__) . '/../../fannie/install/InstallMenuPage.php');
+        if (!class_exists('InstallPluginsPage')) {
+            include(dirname(__FILE__) . '/../../fannie/install/InstallPluginsPage.php');
         }
-        $obj = new InstallMenuPage();
+        $obj = new InstallPluginsPage();
         $obj = $this->initPage($obj);
         $obj->unitTest($this);
     }
@@ -74,6 +74,16 @@ class ConfigFannieTest extends PHPUnit_Framework_TestCase
             include(dirname(__FILE__) . '/../../fannie/install/InstallProductsPage.php');
         }
         $obj = new InstallProductsPage();
+        $obj = $this->initPage($obj);
+        $obj->unitTest($this);
+    }
+
+    public function testStores()
+    {
+        if (!class_exists('InstallStoresPage')) {
+            include(dirname(__FILE__) . '/../../fannie/install/InstallStoresPage.php');
+        }
+        $obj = new InstallStoresPage();
         $obj = $this->initPage($obj);
         $obj->unitTest($this);
     }

@@ -556,7 +556,12 @@ class CronManagementPage extends FanniePage
         return array($matched, $ret);
     }
 
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
+
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 

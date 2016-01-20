@@ -190,6 +190,7 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(0, strlen(DTrans::joinDepartments('d','p')));
         $this->assertNotEquals(0, strlen(DTrans::joinCustomerAccount('d','p')));
         $this->assertNotEquals(0, strlen(DTrans::joinTenders('d','p')));
+        DTrans::getTransNo(FannieDB::get(FannieConfig::config('TRANS_DB')));
     }
 
     public function testDispatch()

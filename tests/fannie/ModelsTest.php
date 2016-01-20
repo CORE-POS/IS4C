@@ -8,8 +8,10 @@ class ModelsTest extends PHPUnit_Framework_TestCase
     public function testModels()
     {
         $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
-        $models = FannieAPI::listModules('BasicModel', true);
+        $base = new BasicModel($dbc);
+        $models = $base->getModels();
 
+        $normalized = false;
         foreach ($models as $model_class) {
             $obj = new $model_class(null);
             $columns = $obj->getColumns();
@@ -29,12 +31,13 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 
             $this->assertInternalType('string', $obj->doc());
 
-            if ($obj->preferredDB() === 'op') {
+            if (!$normalized && $obj->preferredDB() === 'op') {
                 $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
                 $obj2 = new $model_class($dbc);
                 ob_start();
                 $obj2->normalize(FannieConfig::config('OP_DB'));
                 ob_end_clean();
+                $normalized = true;
             }
         }
     }
