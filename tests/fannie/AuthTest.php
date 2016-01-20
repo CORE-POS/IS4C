@@ -92,11 +92,11 @@ class AuthTest extends PHPUnit_Framework_TestCase
             include(dirname(__FILE__) . '/../../fannie/auth/privileges.php');
         }
         ob_start();
-        $this->assetEquals(false, createClass('foo bar', 'blah'));
-        $this->assetEquals(true, createClass('foobar', 'blah'));
-        $this->assetEquals(true, updateAuthNotes('foobar', 'blah'));
-        $this->assetEquals(false, deleteClass('foo bar', 'blah'));
-        $this->assetEquals(true, deleteClass('foobar', 'blah'));
+        $this->assertEquals(false, createClass('foo bar', 'blah'));
+        $this->assertEquals(true, createClass('foobar', 'blah'));
+        $this->assertEquals(true, updateAuthNotes('foobar', 'blah'));
+        $this->assertEquals(false, deleteClass('foo bar', 'blah'));
+        $this->assertEquals(true, deleteClass('foobar', 'blah'));
         ob_end_clean();
     }
 }
