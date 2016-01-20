@@ -115,7 +115,7 @@ class EmailReport extends FannieRESTfulPage
 
     public function unitTest($phpunit)
     {
-        $phpunit->assertEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
     }
 }
 
