@@ -736,7 +736,9 @@ class InstallUtilities extends LibraryClass
               Split non-quoted values on non-numeric characters
             */
             if (is_array($default_value) && !is_array($current_value)) {
-                if ($quoted) {
+                if ($current_value === '') {
+                    $current_value = array();
+                } elseif ($quoted) {
                     $current_value = preg_split('/[\s,;]+/', $current_value); 
                 } else {
                     $current_value = preg_split('/\D+/', $current_value); 
