@@ -95,7 +95,7 @@ open in a separate tab or window as a reference for Manufacturers and Vendors (D
         echo $this->terminology;
 
         $report_sets = array();
-        $other_reports = array();
+        $other_sets = array();
         $reports = FannieAPI::listModules('FannieReportPage');
         list($report_sets, $other_sets) = $this->classesToSets($reports, $report_sets, $other_sets);
         $tools = FannieAPI::listModules('\COREPOS\Fannie\API\FannieReportTool');
@@ -110,7 +110,7 @@ open in a separate tab or window as a reference for Manufacturers and Vendors (D
             $this->reportSetToLinks($report_sets[$set_name]);
             echo '</ul></li>';
         }
-        $this->reportSetToLinks($other_reports);
+        $this->reportSetToLinks($other_sets);
         echo '</ul>';
 
         return ob_get_clean();
@@ -134,7 +134,7 @@ open in a separate tab or window as a reference for Manufacturers and Vendors (D
                     'info' => $obj->description,
                 );
             } else {
-                $other_reports[] = array(
+                $other_sets[] = array(
                     'url' => $url,
                     'info' => $obj->description,
                 );
