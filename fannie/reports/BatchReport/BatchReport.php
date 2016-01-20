@@ -325,7 +325,7 @@ class BatchReport extends FannieReportPage
         $data = array('upc'=>'4011', 'brand'=>'test', 'description'=>'test',
             'sales'=>1, 'quantity'=>1, 'rings'=>1, 'location'=>'test');
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
-        $phpunit->assertInternalType('array', $this->calculate_footers(array($data)));
+        $phpunit->assertInternalType('array', $this->calculate_footers($this->dekey_array(array($data))));
     }
 }
 
