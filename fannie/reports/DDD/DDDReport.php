@@ -84,7 +84,6 @@ class DDDReport extends FannieReportPage
                     LEFT JOIN MasterSuperDepts AS m ON d.department=m.dept_ID
                   WHERE trans_status = 'Z'
                     AND trans_type IN ('D', 'I')
-                    AND trans_subtype IN ('','0')
                     AND emp_no <> 9999
                     AND register_no <> 99
                     AND upc <> '0'
