@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 class WicTenderReport extends FannieReportPage 
 {
     public $description = '[WIC Tender Report] tracks WIC items sold by tender';
-    public $report_set = 'Reports';
+    public $report_set = 'WIC';
     public $themed = true;
 
     protected $report_headers = array('UPC', 'Description', 'Quantity purchased with WIC Tender', 'Quantity purchased with Non-Wic Tender');

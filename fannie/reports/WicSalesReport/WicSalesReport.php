@@ -31,7 +31,7 @@ class WicSalesReport extends FannieReportPage
     protected $required_fields = array('date1', 'date2');
 
     public $description = '[WIC Movement] lists sales for products eligible for WIC over a given date range.';
-    public $report_set = 'Movement Reports';
+    public $report_set = 'WIC';
     public $themed = true;
 
     protected $new_tablesorter = true;

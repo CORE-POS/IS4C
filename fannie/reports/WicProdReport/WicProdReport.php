@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 class WicProdReport extends FannieReportPage 
 {
     public $description = '[WIC Product Report] lists Information pertaining to WIC items.';
-    public $report_set = 'Reports';
+    public $report_set = 'WIC';
     public $themed = true;
 
     protected $report_headers = array('UPC', 'Brand', 'Description', 'Vendor', 
