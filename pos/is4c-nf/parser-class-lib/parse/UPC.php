@@ -103,6 +103,8 @@ class UPC extends Parser
         $this->source = $this->getPrefix($str);
         if ($this->source == self::GS1_PREFIX) {
             $str = $this->fixGS1($str);
+        }
+        if ($this->source !== false) {
             $prefixes = $this->prefixes();
             $this->status = $prefixes[$this->source];
         } else {
