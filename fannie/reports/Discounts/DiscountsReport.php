@@ -31,7 +31,6 @@ class DiscountsReport extends FannieReportPage {
     public $description = '[Discounts Reports] lists member percentage discounts by member type for a
         a given date range.';
     public $report_set = 'Membership';
-    public $themed = true;
 
     protected $report_headers = array('Type', 'Total');
     protected $title = "Fannie : Discounts Report";
@@ -142,6 +141,7 @@ class DiscountsReport extends FannieReportPage {
     {
         $data = array('memDesc'=>'test', 'total'=>1);
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
+        $phpunit->assertInternalType('array', $this->calculate_footers(array($data)));
     }
 
 }

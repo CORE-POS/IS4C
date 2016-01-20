@@ -30,7 +30,6 @@ class MarginMovementReport extends FannieReportPage
 {
     public $description = '[Margin Movement] lists item movement with margin information.';
     public $report_set = 'Movement Reports';
-    public $themed = true;
 
     protected $title = "Fannie : Margin Movement Report";
     protected $header = "Margin Movement Report";
@@ -206,6 +205,7 @@ class MarginMovementReport extends FannieReportPage
         $data = array('total'=>10, 'cost'=>5, 'upc'=>'4011', 'brand'=>'test',
             'description'=>'test', 'department'=>1, 'dept_name'=>'test', 'qty'=>1);
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
+        $phpunit->assertInternalType('array', $this->calculate_footers(array($data)));
     }
 }
 

@@ -112,6 +112,11 @@ class EmailReport extends FannieRESTfulPage
             maintained for member accounts.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertEquals(0, strlen($this->get_view()));
+    }
 }
 
 FannieDispatch::conditionalExec();

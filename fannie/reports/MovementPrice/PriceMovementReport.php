@@ -36,7 +36,6 @@ class PriceMovementReport extends FannieReportPage
 
     public $description = '[Movement by Price] lists item sales with a separate line for each price point. If an item was sold at more than one price in the given date range, sales from each price are listed separately.';
     public $report_set = 'Movement Reports';
-    public $themed = true;
 
     public function report_description_content()
     {
@@ -227,6 +226,7 @@ class PriceMovementReport extends FannieReportPage
             'department'=>1, 'dept_name'=>'test', 'price'=>1.99,
             'qty'=>1, 'total'=>1);
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
+        $phpunit->assertInternalType('array', $this->calculate_footers(array($data)));
     }
 }
 

@@ -120,6 +120,7 @@ class VendorCategoryReport extends FannieReportPage
         $data = array('upc'=>'4011', 'brand'=>'test', 'description'=>'test',
             'department'=>1, 'dept_name'=>'test', 'cost'=>1, 'normal_price'=>2);
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
+        $phpunit->assertInternalType('array', $this->calculate_footers(array($data)));
     }
 }
 

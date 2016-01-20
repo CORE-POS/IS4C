@@ -159,6 +159,7 @@ class CustomerPurchasesReport extends FannieReportPage
             'description'=>'test', 'department'=>1, 'dept_name'=>'test',
             'super_name'=>'test', 'qty'=>1, 'ttl'=>1);
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
+        $phpunit->assertInternalType('array', $this->calculate_footers(array($data)));
     }
 }
 

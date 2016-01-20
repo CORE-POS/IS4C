@@ -122,6 +122,14 @@ HTML;
             the browser.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $this->form = new COREPOS\common\mvc\ValueContainer();
+        $this->form->id = 'EmployeesModel';
+        $this->hard_limit = 1;
+        $phpunit->assertInternalType('array', $this->fetch_report_data());
+    }
 }
 
 FannieDispatch::conditionalExec();

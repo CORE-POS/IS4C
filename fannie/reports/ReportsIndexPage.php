@@ -181,7 +181,11 @@ open in a separate tab or window as a reference for Manufacturers and Vendors (D
             plugins.
             </p>';
     }
-
+    
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
 FannieDispatch::conditionalExec();

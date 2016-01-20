@@ -93,11 +93,6 @@ class ItemLastQuarterReport extends FannieReportPage
         );
     }
 
-    public function calculate_footers($data)
-    {
-        return array();
-    }
-
     public function form_content()
     {
         $this->add_onload_command('$(\'#upc\').focus();');
