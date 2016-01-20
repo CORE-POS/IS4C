@@ -48,9 +48,13 @@ class AjaxCallback
         $callback_class = get_called_class();
         if (basename($_SERVER['PHP_SELF']) === $callback_class . '.php') {
             ini_set('display_errors', 'off');
-            self::perfStart();
+            /** 
+              timing calls is off by default. uncomment start
+              and end calls to collect data
+            */
+            //self::perfStart();
             self::executeCallback($callback_class);
-            self::perfEnd();
+            //self::perfEnd();
         }
     }
 
