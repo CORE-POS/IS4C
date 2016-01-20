@@ -748,6 +748,7 @@ static public function receiptFromBuilders($reprint=False,$trans_num='')
         $class_name = $record['tag'].'ReceiptFormat';
         if (!class_exists($class_name)) continue;
         $obj = new $class_name();
+        $obj->setPrintHandler(self::$PRINT_OBJ);
 
         $line = $obj->format($record);
 
@@ -1048,6 +1049,7 @@ static private function messageModFooters($receipt, $where, $ref, $reprint)
     foreach(self::messageMods() as $class){
         if (!class_exists($class)) continue;
         $obj = new $class();
+        $obj->setPrintHandler(self::$PRINT_OBJ);
         $modQ .= $obj->select_condition().' AS '.$dbc->identifierEscape($class).',';
         $select_mods[$class] = $obj;
     }
@@ -1146,6 +1148,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
                 $savingsMode = 'DefaultReceiptSavings';
             }
             $savings = new $savingsMode();
+            $savings->setPrintHandler(self::$PRINT_OBJ);
             $receipt['any'] .= $savings->savingsMessage($ref);
 
             /**
@@ -1304,6 +1307,7 @@ static public function memReceiptMessages($card_no)
         $class_name = $row['modifier_module'];
         if (!empty($class_name) && class_exists($class_name)) {
             $obj = new $class_name();
+            $obj->setPrintHandler(self::$PRINT_OBJ);
             $msg_text = $obj->message($row['msg_text']);
             if (is_array($msg_text)) {
                 if (isset($msg_text['any'])) {
