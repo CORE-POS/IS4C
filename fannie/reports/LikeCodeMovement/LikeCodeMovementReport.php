@@ -118,7 +118,7 @@ class LikeCodeMovementReport extends FannieReportPage
             $sums[1] += $row[4];
         }
 
-        return array('Total', null, null, $sum[0], $sum[1]);
+        return array('Total', null, null, $sums[0], $sums[1]);
     }
 
     function form_content()

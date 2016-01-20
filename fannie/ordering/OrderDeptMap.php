@@ -128,6 +128,7 @@ class OrderDeptMap extends FannieRESTfulPage
         $phpunit->assertEquals(true, $model->load());
         $phpunit->assertEquals(2, $model->map_to());
         $phpunit->assertEquals(3, $model->minQty());
+        $this->connection->query('DELETE FROM SpecialOrderDeptMap WHERE dept_ID <> 1');
         $body = $this->get_view();
         $phpunit->assertNotEquals(0, strlen($body));
     }
