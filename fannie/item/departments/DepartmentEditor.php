@@ -117,8 +117,11 @@ class DepartmentEditor extends FannieRESTfulPage
             . '<label class="control-label col-sm-2">Sales Code</label>'
             . '</div>';
         $ret .= '<div class="row form-inline">';
-        $ret .= "<div class=\"col-sm-2\"><input class=\"checkbox\" type=checkbox value=1 
-            name=disc id=deptdisc ". ($dept->dept_discount()>0?'checked':'') . " /></div>";
+        $ret .= "<div class=\"col-sm-2\">
+            <select name=\"disc\" id=\"deptdisc\" class=\"form-control\">
+            " . $this->discountOpts($dept->dept_discount(), $dept->line_item_discount()) . "
+            </select>
+            </div>";
         $ret .= sprintf("<div class=\"col-sm-2\"><div class=\"input-group\">
             <span class=\"input-group-addon\">\$</span>
             <input type=number name=min class=\"form-control\" 
@@ -148,6 +151,26 @@ class DepartmentEditor extends FannieRESTfulPage
         return false;
     }
 
+    private function discountOpts($reg, $line)
+    {
+        $select = 0;
+        if ($reg && $line) {
+            $select = 1;
+        } elseif ($reg && !$line) {
+            $select = 2;
+        } elseif (!$reg && $line) {
+            $select = 3;
+        }
+        $opts = array(0=>'No', 1=>'Yes', 2=>'Trans only', 3=>'Line Only');
+        $ret = '';
+        foreach ($opts as $k => $v) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                ($k == $select ? 'selected' : ''), $k, $v);
+        }
+
+        return $ret;
+    }
+
     protected function post_handler()
     {
         $dbc = $this->connection;
@@ -163,7 +186,17 @@ class DepartmentEditor extends FannieRESTfulPage
         $model->dept_name(FormLib::get('name', ''));
         $model->dept_tax(FormLib::get('tax', 0));
         $model->dept_fs(FormLib::get('fs', 0));
-        $model->dept_discount(FormLib::get('disc', 1));
+        $disc = FormLib::get('disc');
+        if ($disc == 1 || $disc == 2) {
+            $model->dept_discount(1);
+        } else {
+            $model->dept_discount(0);
+        }
+        if ($disc == 1 || $disc == 3) {
+            $model->line_item_discount(1);
+        } else {
+            $model->line_item_discount(0);
+        }
         $model->dept_minimum(FormLib::get('min', 0.01));
         $model->dept_limit(FormLib::get('max', 50.00));
         $model->modified(date('Y-m-d H:i:s'));

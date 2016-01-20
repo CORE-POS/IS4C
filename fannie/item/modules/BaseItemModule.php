@@ -302,6 +302,7 @@ class BaseItemModule extends ItemModule
                 $rowItem['tax'] = $dmodel->dept_tax();
                 $rowItem['foodstamp'] = $dmodel->dept_fs();
                 $rowItem['discount'] = $dmodel->dept_discount();
+                $rowItem['line_item_discountable'] = $dmodel->line_item_discount();
             }
 
             foreach ($stores as $id => $obj) {
@@ -818,10 +819,14 @@ HTML;
                                 else{
                                     $('#FS'+store_id).prop('checked', false);
                                 }
-                                if (data.nodisc) {
+                                if (data.nodisc && !data.line) {
                                     $('#discount-select'+store_id).val(0);
-                                } else {
+                                } else if (!data.nodisc && data.line) {
                                     $('#discount-select'+store_id).val(1);
+                                } else if (!data.nodisc && !data.line) {
+                                    $('#discount-select'+store_id).val(2);
+                                } else {
+                                    $('#discount-select'+store_id).val(3);
                                 }
                             }
                         });
@@ -1344,16 +1349,15 @@ HTML;
                 }
             }
         } elseif (FormLib::get('dept_defaults') !== '') {
-            $json = array('tax'=>0,'fs'=>False,'nodisc'=>False);
+            $json = array('tax'=>0,'fs'=>false,'nodisc'=>false,'line'=>false);
             $dept = FormLib::get_form_value('dept_defaults','');
-            $p = $db->prepare('SELECT dept_tax,dept_fs,dept_discount
-                    FROM departments WHERE dept_no=?');
-            $r = $db->execute($p,array($dept));
-            if ($db->num_rows($r)) {
-                $w = $db->fetch_row($r);
-                $json['tax'] = $w['dept_tax'];
-                if ($w['dept_fs'] == 1) $json['fs'] = True;
-                if ($w['dept_discount'] == 0) $json['nodisc'] = True;
+            $dModel = new DepartmentsModel($db);
+            $dModel->dept_no($dept);
+            if ($dModel->load()) {
+                $json['tax'] = $dModel->dept_tax();
+                $json['fs'] = $dModel->dept_fs() ? true : false;
+                $json['nodisc'] = $dModel->dept_discount() ? false : true;
+                $json['line'] = $dModel->line_item_discount() ? true : false;
             }
         } elseif (FormLib::get('vendorChanged') !== '') {
             $v = new VendorsModel($db);

@@ -47,6 +47,7 @@ class DepartmentsModel extends BasicModel
     'margin' => array('type'=>'DOUBLE'),
     'salesCode' => array('type'=>'INT'),
     'memberOnly' => array('type'=>'SMALLINT', 'default'=>0),
+    'line_item_discount' => array('type'=>'TINYINT', 'default'=>1),
     );
 
     protected function hookAddColumnmargin()

@@ -26,9 +26,6 @@ var deptEdit = (function($) {
 
     mod.deptSave = function() {
         var fields = $('.deptFields :input').serialize();
-        if (!$('#deptdisc').is(':checked')) {
-            fields += '&disc=0';
-        }
 
         $.ajax({
             url: 'DepartmentEditor.php',

@@ -611,20 +611,20 @@ static public function deptkey($price, $dept,$ret=array())
     $dept = $dept/10;
     $discount = 0;
 
+    $dbc = Database::pDataConnect();
+    $row = self::getDepartment($dbc, $dept);
+
     if (CoreLocal::get("casediscount") > 0 && CoreLocal::get("casediscount") <= 100) {
         $case_discount = (100 - CoreLocal::get("casediscount"))/100;
         $price = $case_discount * $price;
-    } elseif (CoreLocal::get('itemPD') > 0 && CoreLocal::get('SecurityLineItemDiscount') == 30 && CoreLocal::get('msgrepeat')==0){
+    } elseif ($row['line_item_discount'] && CoreLocal::get('itemPD') > 0 && CoreLocal::get('SecurityLineItemDiscount') == 30 && CoreLocal::get('msgrepeat')==0){
         $ret['main_frame'] = MiscLib::baseURL() . "gui-modules/adminlogin.php?class=LineItemDiscountAdminLogin";
         return $ret;
-    } elseif (CoreLocal::get('itemPD') > 0) {
+    } elseif ($row['line_item_discount'] && CoreLocal::get('itemPD') > 0) {
         $discount = MiscLib::truncate2($price * (CoreLocal::get('itemPD')/100.00));
         $price -= $discount;
     }
     $discount = $discount * CoreLocal::get('quantity');
-
-    $dbc = Database::pDataConnect();
-    $row = self::getDepartment($dbc, $dept);
 
     if ($row === false) {
         $ret['output'] = DisplayLib::boxMsg(
@@ -672,9 +672,14 @@ static private function getDepartment($dbc, $dept)
         $query .= '0 as dept_see_id,';
     }
     if (isset($table['memberOnly'])) {
-        $query .= 'memberOnly';
+        $query .= 'memberOnly,';
     } else {
-        $query .= '0 AS memberOnly';
+        $query .= '0 AS memberOnly,';
+    }
+    if (isset($table['memberOnly'])) {
+        $query .= 'line_item_discount';
+    } else {
+        $query .= '1 AS line_item_discount';
     }
     $query .= " FROM departments 
                 WHERE dept_no = " . ((int)$dept);
