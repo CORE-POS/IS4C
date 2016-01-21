@@ -139,7 +139,6 @@ class genLabels extends FannieRESTfulPage
             $batchID = array($batchID);
         }
         list($batchIDList, $args) = $dbc->safeInClause($batchID);
-        $batchIDList = substr($batchIDList,0,strlen($batchIDList)-1);
         $testQ = $dbc->prepare("select b.*,p.scale,p.numflag
             FROM batchBarcodes as b 
                 " . DTrans::joinProducts('b', 'p', 'INNER') . "
