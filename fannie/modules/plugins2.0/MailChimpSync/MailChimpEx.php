@@ -58,7 +58,7 @@ class MailChimpEx extends Mailchimp
         if(curl_error($curl)) {
             throw new Mailchimp_HttpError("API call to $url failed: " . curl_error($curl));
         }
-        $result = $this->getResult($this->export_mode);
+        $result = $this->getResult($response_body, $this->export_mode);
         
         if(floor($info['http_code'] / 100) >= 4) {
             throw $this->castError($result);
@@ -85,7 +85,7 @@ class MailChimpEx extends Mailchimp
         }
     }
 
-    private function getResult($export_mode)
+    private function getResult($response_body, $export_mode)
     {
         if ($export_mode) {
             $result = explode("\n", $response_body);

@@ -28,7 +28,7 @@ if (!class_exists('FannieAPI')) {
 
 class MailChimpTask extends FannieTask
 {
-    private function getSettings()
+    protected function getSettings()
     {
         $FANNIE_PLUGIN_SETTINGS = $this->config->get('PLUGIN_SETTINGS');
         $APIKEY='a92f83d3e5f7fe52d4579e7902c6491d-us8';
@@ -39,7 +39,7 @@ class MailChimpTask extends FannieTask
         return array($APIKEY, $LISTID);
     }
 
-    private function initMergeVars($chimp, $LISTID)
+    protected function initMergeVars($chimp, $LISTID)
     {
         $vars = $chimp->lists->mergeVars(array($LISTID));
         $field_id = false;
@@ -73,8 +73,8 @@ class MailChimpTask extends FannieTask
     {
         global $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS, $argv;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $custdata = new CustdataModel($dbc);
-        $meminfo = new MeminfoModel($dbc);
+        $this->custdata = new CustdataModel($dbc);
+        $this->meminfo = new MeminfoModel($dbc);
 
         list($APIKEY, $LISTID) = $this->getSettings();
         if (empty($APIKEY) || empty($LISTID)) {
@@ -117,11 +117,7 @@ class MailChimpTask extends FannieTask
                     printf("Processing %d/%d\r", $line_count, count($full_list));
                 }
                 $line_count++;
-                $card_no = $record[$columns['OWNER NUMBER']];
-                $email = $record[$columns['EMAIL ADDRESS']];
-                $fname = $record[$columns['FIRST NAME']];
-                $lname = $record[$columns['LAST NAME']];
-                $changed = isset($columns['LAST_CHANGED']) && isset($record[$columns['LAST_CHANGED']]) ? $record[$columns['LAST_CHANGED']] : 0;
+                list($card_no, $email, $fname, $lname, $changed) = $this->unpackRecord($record, $columns);
 
                 /** MailChimp has a POS member number tag **/
                 if (!empty($card_no)) {
@@ -132,54 +128,13 @@ class MailChimpTask extends FannieTask
                           for both. If email disagrees, use MailChimp value for both.
                         */
                         case 'subscribed':
-                            $memlist .= sprintf('%d,', $card_no);
-                            $custdata->reset();
-                            $custdata->CardNo($card_no);
-                            $custdata->personNum(1);
-                            $custdata->load();
-                            $update = array();
-                            $meminfo->reset();
-                            $meminfo->card_no($card_no);
-                            $meminfo->load();
-                            if ($meminfo->email_1() != $email && strtotime($changed) > strtotime($meminfo->modified())) {
-                                $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s, Mailchimp is newer",
-                                $meminfo->email_1(), $email), FannieLogger::INFO);
-                                $meminfo->email_1($email);
-                                $meminfo->save();
-                            } elseif ($meminfo->email_1() != $email) {
-                                $update['EMAIL'] = $meminfo->email_1();
-                                $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s, POS is newer",
-                                $meminfo->email_1(), $email), FannieLogger::INFO);
-                            }
-                            if (strtoupper(trim($custdata->FirstName())) != strtoupper($fname)) {
-                                $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s",
-                                    $custdata->FirstName(), $fname), FannieLogger::INFO);
-                                $update['FNAME'] = trim($custdata->FirstName());
-                            }
-                            if (strtoupper(trim($custdata->LastName())) != strtoupper($lname)) {
-                                $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s",
-                                    $custdata->LastName(), $lname), FannieLogger::INFO);
-                                $update['LNAME'] = trim($custdata->LastName());
-                            }
-                            if (count($update) > 0) {
-                                $email_struct = array(
-                                    'euid' => $record[$columns['EUID']],
-                                    'leid' => $record[$columns['LEID']],
-                                );
-                                $this->cronMsg(sprintf("Updating name field(s) for member #%d", $card_no), FannieLogger::INFO);
-                                try {
-                                    $chimp->lists->updateMember($LISTID, $email_struct, $update, '', false);
-                                } catch (Exception $ex) {
-                                    echo $ex;
-                                }
-                                sleep(1);
-                            }
+                            $memlist = $this->isSubscribed($record, $columns, $chimp, $memlist);
                             break;
                         /**
                           Just track the number to avoid re-adding them to the list
                         */
                         case 'unsubscribed':
-                            $memlist .= sprintf('%d,', $card_no);
+                            $memlist = $this->isUnsubscribed($record, $columns, $chimp, $memlist);
                             break;
                         /**
                           Cleaned in MailChimp means the address isn't deliverable
@@ -188,11 +143,7 @@ class MailChimpTask extends FannieTask
                           re-added when a correct email is entered into POS.
                         */
                         case 'cleaned':
-                            $meminfo->reset();
-                            $meminfo->card_no($card_no);
-                            $meminfo->email_1('');
-                            $meminfo->save();
-                            $this->cronMsg(sprintf('CLEANING Member %d, email %s', $card_no, $email), FannieLogger::INFO);
+                            $memlist = $this->isCleaned($record, $columns, $chimp, $memlist);
                             $cleans[] = $record;
                             break;
                     }
@@ -207,35 +158,7 @@ class MailChimpTask extends FannieTask
                     switch ($status) {
                         // subscribed users can be updated easily
                         case 'subscribed':
-                            $update = array();
-                            $meminfo->reset();
-                            $meminfo->email_1($email);
-                            $matches = $meminfo->find();
-                            if (count($matches) == 1) {
-                                $update['CARDNO'] = $matches[0]->card_no();
-                            } else {
-                                $custdata->reset();
-                                $custdata->FirstName($fname);
-                                $custdata->LastName($lname);
-                                $custdata->personNum(1);
-                                $custdata->Type('PC');
-                                $matches = $custdata->find();
-                                if (count($matches) == 1) {
-                                    $update['CARDNO'] = $matches[0]->CardNo();
-                                }
-                            }
-
-                            if (isset($update['CARDNO'])) {
-                                $email_struct = array(
-                                    'email' => $email,
-                                    'euid' => $record[$columns['EUID']],
-                                    'leid' => $record[$columns['LEID']],
-                                );
-                                $this->cronMsg("Assigning member # to account " . $email, FannieLogger::INFO);
-                                $chimp->lists->updateMember($LISTID, $email_struct, $update, '', false);
-                                sleep(1);
-                                $memlist .= sprintf('%d,', $update['CARDNO']);
-                            }
+                            $memlist = $this->unknownSubscribed($record, $columns, $chimp, $memlist);
                             break;
                         /**
                           Unsubscribed are currently ignored. The can't be updated as is.
@@ -245,27 +168,14 @@ class MailChimpTask extends FannieTask
                           to prevent re-adding it.
                         */
                         case 'unsubscribed':
-                            $meminfo->reset();
-                            $this->cronMsg('Checking unsubscribed ' . $email, FannieLogger::INFO);
-                            $meminfo->email_1($email);
-                            $matches = $meminfo->find();
-                            foreach ($matches as $opted_out) {
-                                $memlist .= sprintf('%d,', $opted_out->card_no());
-                                $this->cronMsg('Excluding member ' . $opted_out->card_no(), FannieLogger::INFO);
-                            }
+                            $memlist = $this->unknownUnsubscribed($record, $columns, $chimp, $memlist);
                             break;
                         /**
                           Cleaned are bad addresses. Delete them from POS database
                           then from Mail Chimp.
                         */
                         case 'cleaned':
-                            $meminfo->reset();
-                            $meminfo->email_1($email);
-                            foreach ($meminfo->find() as $bad_address) {
-                                $bad_address->email_1('');
-                                $bad_address->save();
-                                $this->cronMsg(sprintf('CLEANING untagged member %d, email %s', $bad_address->card_no(), $email), FannieLogger::INFO);
-                            }
+                            $memlist = $this->unknownClean($record, $columns, $chimp, $memlist);
                             $cleans[] = $record;
                             break;
                     }
@@ -281,7 +191,7 @@ class MailChimpTask extends FannieTask
         return true;
     }
 
-    private function removalBatch($cleans, $columns) 
+    protected function removalBatch($cleans, $columns) 
     {
         $removal_batch = array();
         foreach ($cleans as $record) {
@@ -299,7 +209,7 @@ class MailChimpTask extends FannieTask
         return $removal_batch;
     }
 
-    private function removeBounces($chimp, $LISTID, $removal_batch)
+    protected function removeBounces($chimp, $LISTID, $removal_batch)
     {
         /**
           Removed bounced from the MailChimp list now that
@@ -311,7 +221,7 @@ class MailChimpTask extends FannieTask
         }
     }
 
-    private function addNew($chimp, $LISTID, $dbc, $memlist)
+    protected function addNew($chimp, $LISTID, $dbc, $memlist)
     {
         /**
           Finally, find new members and add them to MailChimp
@@ -353,6 +263,175 @@ class MailChimpTask extends FannieTask
             $this->cronMsg(sprintf('Adding %d new members', count($add_batch)), FannieLogger::INFO);
             $added = $chimp->lists->batchSubscribe($LISTID, $add_batch, false, true);
         }
+    }
+
+    protected function unpackRecord($record, $columns)
+    {
+        $card_no = $record[$columns['OWNER NUMBER']];
+        $email = $record[$columns['EMAIL ADDRESS']];
+        $fname = $record[$columns['FIRST NAME']];
+        $lname = $record[$columns['LAST NAME']];
+        $changed = isset($columns['LAST_CHANGED']) && isset($record[$columns['LAST_CHANGED']]) ? $record[$columns['LAST_CHANGED']] : 0;
+
+        return array($card_no, $email, $fname, $lname, $changed);
+    }
+
+    /**
+      Callback when list includes an subuscribed entry
+      with a member number
+    */
+    protected function isSubscribed($record, $columns, $chimp, $memlist)
+    {
+        list($card_no, $email, $fname, $lname, $changed) = $this->unpackRecord($record, $columns);
+        $memlist .= sprintf('%d,', $card_no);
+        $this->custdata->reset();
+        $this->custdata->CardNo($card_no);
+        $this->custdata->personNum(1);
+        $this->custdata->load();
+        $update = array();
+        $this->meminfo->reset();
+        $this->meminfo->card_no($card_no);
+        $this->meminfo->load();
+        if ($this->meminfo->email_1() != $email && strtotime($changed) > strtotime($this->meminfo->modified())) {
+            $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s, Mailchimp is newer",
+            $this->meminfo->email_1(), $email), FannieLogger::INFO);
+            $this->meminfo->email_1($email);
+            $this->meminfo->save();
+        } elseif ($this->meminfo->email_1() != $email) {
+            $update['EMAIL'] = $this->meminfo->email_1();
+            $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s, POS is newer",
+            $this->meminfo->email_1(), $email), FannieLogger::INFO);
+        }
+        if (strtoupper(trim($this->custdata->FirstName())) != strtoupper($fname)) {
+            $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s",
+                $this->custdata->FirstName(), $fname), FannieLogger::INFO);
+            $update['FNAME'] = trim($this->custdata->FirstName());
+        }
+        if (strtoupper(trim($this->custdata->LastName())) != strtoupper($lname)) {
+            $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s",
+                $this->custdata->LastName(), $lname), FannieLogger::INFO);
+            $update['LNAME'] = trim($this->custdata->LastName());
+        }
+        if (count($update) > 0) {
+            $email_struct = array(
+                'euid' => $record[$columns['EUID']],
+                'leid' => $record[$columns['LEID']],
+            );
+            $this->cronMsg(sprintf("Updating name field(s) for member #%d", $card_no), FannieLogger::INFO);
+            try {
+                $chimp->lists->updateMember($LISTID, $email_struct, $update, '', false);
+            } catch (Exception $ex) {
+                echo $ex;
+            }
+            sleep(1);
+        }
+
+        return $memlist;
+    }
+
+    /**
+      Callback when list includes an unsubuscribed entry
+      with a member number
+    */
+    protected function isUnsubscribed($record, $columns, $chimp, $memlist)
+    {
+        list($card_no, $email, $fname, $lname, $changed) = $this->unpackRecord($record, $columns);
+        $memlist .= sprintf('%d,', $card_no);
+
+        return $memlist;
+    }
+
+    /**
+      Callback when list includes a cleaned [invalid address] entry
+      with a member number
+    */
+    protected function isCleaned($record, $columns, $chimp, $memlist)
+    {
+        list($card_no, $email, $fname, $lname, $changed) = $this->unpackRecord($record, $columns);
+        $this->meminfo->reset();
+        $this->meminfo->card_no($card_no);
+        $this->meminfo->email_1('');
+        $this->meminfo->save();
+        $this->cronMsg(sprintf('CLEANING Member %d, email %s', $card_no, $email), FannieLogger::INFO);
+
+        return $memlist;
+    }
+
+    /**
+      Callback when list includes a subscribed entry
+      without a member number
+    */
+    protected function unknownSubscribed($record, $columns, $chimp, $memlist)
+    {
+        list($card_no, $email, $fname, $lname, $changed) = $this->unpackRecord($record, $columns);
+        $update = array();
+        $this->meminfo->reset();
+        $this->meminfo->email_1($email);
+        $matches = $this->meminfo->find();
+        if (count($matches) == 1) {
+            $update['CARDNO'] = $matches[0]->card_no();
+        } else {
+            $this->custdata->reset();
+            $this->custdata->FirstName($fname);
+            $this->custdata->LastName($lname);
+            $this->custdata->personNum(1);
+            $this->custdata->Type('PC');
+            $matches = $this->custdata->find();
+            if (count($matches) == 1) {
+                $update['CARDNO'] = $matches[0]->CardNo();
+            }
+        }
+
+        if (isset($update['CARDNO'])) {
+            $email_struct = array(
+                'email' => $email,
+                'euid' => $record[$columns['EUID']],
+                'leid' => $record[$columns['LEID']],
+            );
+            $this->cronMsg("Assigning member # to account " . $email, FannieLogger::INFO);
+            $chimp->lists->updateMember($LISTID, $email_struct, $update, '', false);
+            sleep(1);
+            $memlist .= sprintf('%d,', $update['CARDNO']);
+        }
+
+        return $memlist;
+    }
+
+    /**
+      Callback when list includes an unsubscribed entry
+      without a member number
+    */
+    protected function unknownUnsubscribed($record, $columns, $chimp, $memlist)
+    {
+        list($card_no, $email, $fname, $lname, $changed) = $this->unpackRecord($record, $columns);
+        $this->meminfo->reset();
+        $this->cronMsg('Checking unsubscribed ' . $email, FannieLogger::INFO);
+        $this->meminfo->email_1($email);
+        $matches = $this->meminfo->find();
+        foreach ($matches as $opted_out) {
+            $memlist .= sprintf('%d,', $opted_out->card_no());
+            $this->cronMsg('Excluding member ' . $opted_out->card_no(), FannieLogger::INFO);
+        }
+
+        return $memlist;
+    }
+
+    /**
+      Callback when list includes a cleaned [invalid address] entry
+      without a member number
+    */
+    protected function unknownClean($record, $columns, $chimp, $memlist)
+    {
+        list($card_no, $email, $fname, $lname, $changed) = $this->unpackRecord($record, $columns);
+        $this->meminfo->reset();
+        $this->meminfo->email_1($email);
+        foreach ($this->meminfo->find() as $bad_address) {
+            $bad_address->email_1('');
+            $bad_address->save();
+            $this->cronMsg(sprintf('CLEANING untagged member %d, email %s', $bad_address->card_no(), $email), FannieLogger::INFO);
+        }
+
+        return $memlist;
     }
 
 }
