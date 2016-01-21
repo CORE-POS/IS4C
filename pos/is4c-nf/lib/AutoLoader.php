@@ -144,6 +144,7 @@ class AutoLoader extends LibraryClass
         'DefaultReceiptSort'        => '/ReceiptBuilding/ReceiptSort',
         'DefaultReceiptTag'         => '/ReceiptBuilding/ReceiptTag',
         'DefaultReceiptSavings'     => '/ReceiptBuilding/ReceiptSavings',
+        'DefaultReceiptThanks'      => '/ReceiptBuilding/ThankYou',
         'ReceiptMessage'            => '/ReceiptBuilding/Messages',
         'CustomerReceiptMessage'    => '/ReceiptBuilding/custMessages',
         'VariableWeightReWrite'     => '/Scanning/VariableWeightReWrites',

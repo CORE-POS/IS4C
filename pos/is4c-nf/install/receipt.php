@@ -75,12 +75,6 @@ include('InstallUtilities.php');
     <td><b>List Savings</b>: </td>
     <td>
     <?php
-    $receipts = array(
-        'unified' => 'Single Line',
-        'separate' => 'Separately',
-        'couldhave' => 'Separately (with "could have")',
-        'omit' => 'Do not print',
-    );
     $savings = AutoLoader::listModules('DefaultReceiptSavings', true);
     echo InstallUtilities::installSelectField('ReceiptSavingsMode', $savings, 'DefaultReceiptSavings');
     ?>
@@ -105,6 +99,18 @@ include('InstallUtilities.php');
     Display information about items in the transaction marked "local". This
     can be displayed as the total dollar value or as a percent of all
     items on the receipt.
+    </span>
+    </td>
+</tr>
+<tr>
+    <td><b>Thank You Line</b>: </td>
+    <td>
+    <?php
+    $thanks = AutoLoader::listModules('DefaultReceiptThanks', true);
+    echo InstallUtilities::installSelectField('ReceiptThankYou', $thanks, 'DefaultReceiptThanks');
+    ?>
+    <span class='noteTxt'>
+    Different options for the receipt line(s) thanking the customer and/or member
     </span>
     </td>
 </tr>
