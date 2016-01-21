@@ -676,7 +676,7 @@ static private function getDepartment($dbc, $dept)
     } else {
         $query .= '0 AS memberOnly,';
     }
-    if (isset($table['memberOnly'])) {
+    if (isset($table['line_item_discount'])) {
         $query .= 'line_item_discount';
     } else {
         $query .= '1 AS line_item_discount';
