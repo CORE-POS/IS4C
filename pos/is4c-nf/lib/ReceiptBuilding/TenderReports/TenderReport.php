@@ -71,7 +71,7 @@ static protected function standardLine($tdate, $lane, $trans, $amt)
         .substr($lane . $blank, 0, 9)
         .substr($trans . $blank, 0, 8)
         .substr($blank . number_format("0", 2), -10)
-        .substr($blank . number_format($row["tender"], 2), -14)
+        .substr($blank . number_format($amt, 2), -14)
         ."\n";
 
     return $line;
