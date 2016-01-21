@@ -389,13 +389,10 @@ static public function testremote()
   The following tables are copied:
    - dtransactions
    - suspended
-   - efsnetRequest
-   - efsnetResponse
-   - efsnetRequestMod
-   - efsnetTokens
+   - PaycardTransactions
    - CapturedSignature
 
-  On success the local tables are truncated. The efsnet tables
+  On success the local tables are truncated. The Paycards tables
   are copied in the uploadCCdata() function but that gets called 
   automatically.
 
@@ -573,7 +570,7 @@ static public function uploadCCdata()
     // test for success
     $ret = true;
 
-    $tables = array('PaycardTransactions', 'CapturedSignature', 'efsnetRequest', 'efsnetRequestMod', 'efsnetResponse', 'efsnetTokens');
+    $tables = array('PaycardTransactions', 'CapturedSignature');
     foreach ($tables as $table) {
         if ($sql->tableExists($table)) {
             $cols = self::getMatchingColumns($sql, $table);

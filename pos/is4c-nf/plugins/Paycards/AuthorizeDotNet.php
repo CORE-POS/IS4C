@@ -192,7 +192,7 @@ class AuthorizeDotNet extends BasicCCModule {
             $t_type = 'CC';
             if (CoreLocal::get('paycard_issuer') == 'American Express')
                 $t_type = 'AX';
-            // if the transaction has a non-zero efsnetRequestID,
+            // if the transaction has a non-zero PaycardTransactionID,
             // include it in the tender line
             $record_id = $this->last_paycard_transaction_id;
             $charflag = ($record_id != 0) ? 'PT' : '';

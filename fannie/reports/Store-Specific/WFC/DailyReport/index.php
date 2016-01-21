@@ -103,46 +103,6 @@ echo WfcLib::tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Co
          array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,WfcLib::ALIGN_RIGHT),2);
 
 if ($store != 50) {
-    /*
-    $stamp = strtotime($dstr);
-    $creditQ = "SELECT 1 as num, 
-            MAX(CASE WHEN q.mode IN ('retail_alone_credit','Credit_Return') THEN -amount ELSE amount END) as ttl,
-            CASE WHEN q.refNum LIKE '%-%' THEN 'FAPS' ELSE 'Mercury' END as proc
-        FROM is4c_trans.efsnetRequest AS q LEFT JOIN is4c_trans.efsnetResponse AS r ON q.refNum=r.refNum
-        LEFT JOIN is4c_trans.efsnetRequestMod AS m
-        ON q.date=m.date AND q.cashierNo=m.cashierNo AND q.laneNo=m.laneNo
-        AND q.transNo=m.transNo and q.transID=m.transID
-        WHERE q.date=? and r.httpCode=200 and m.date IS NULL AND
-        (r.xResultMessage LIKE '%approved%' OR r.xResultMessage LIKE '%PENDING%')
-        AND q.CashierNo <> 9999 AND q.laneNo <> 99
-        GROUP BY q.refNum";
-    $creditP = $dbc->prepare($creditQ);
-    $creditR = $dbc->execute($creditP, array( date('Ymd',$stamp) ));
-    $cTallies = array('FAPS'=>array(0.0,0),'Mercury'=>array(0.0,0),
-        'Non-integrated'=>array(0.0,0));
-    while($creditW = $dbc->fetch_row($creditR)){
-        $cTallies[$creditW['proc']][0] += $creditW['ttl'];
-        $cTallies[$creditW['proc']][1]++;
-    }
-    $nonQ = "SELECT count(*) as num, sum(-total) as ttl, 'Non-integrated' as proc
-        FROM $dlog as d LEFT JOIN 
-        (SELECT * FROM is4c_trans.efsnetResponse WHERE date=?
-        and httpCode=200 and 
-        (xResultMessage LIKE '%approved%' OR xResultMessage LIKE '%PENDING%')
-        ) AS r ON d.register_no=r.laneNo and d.emp_no=r.cashierNo and d.trans_no=r.transNo
-        and d.trans_id=r.transID
-        WHERE d.trans_type='T' AND d.trans_subtype='CC' AND r.transID IS NULL 
-        AND d.tdate BETWEEN ? AND ?";
-    $nonP = $dbc->prepare($nonQ);
-    $nonR = $dbc->execute($nonP, array( date('Ymd',$stamp), $dates[0], $dates[1] ));
-    if ($dbc->num_rows($nonR) > 0){
-        $non = $dbc->fetch_row($nonR);
-        $cTallies['Non-integrated'] = array($non['ttl'],$non['num']);
-    }
-    echo '<br /><b>Integrated CC Supplement</b>';
-    echo WfcLib::tablify($cTallies,array(0,1,2),array('Processor','Amount','Count'),
-        array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,WfcLib::ALIGN_RIGHT),1);
-    */
     echo '<br /><a href="../../../Paycards/PcDailyReport.php?date='. $dstr . '">Integrated CC Supplement</a><br />';
 
     $couponQ = "

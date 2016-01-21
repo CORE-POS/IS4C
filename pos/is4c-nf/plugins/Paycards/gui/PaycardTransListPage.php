@@ -50,7 +50,7 @@ class PaycardTransListPage extends NoInputCorePage
         $local = array();
         $other = array();
         $db = Database::tDataConnect();
-        $localQ = 'SELECT amount, PAN, refNum FROM efsnetRequest GROUP BY amount, PAN, refNum';
+        $localQ = 'SELECT amount, PAN, refNum FROM PaycardTransactions GROUP BY amount, PAN, refNum';
         $localR = $db->query($localQ);
         while($w = $db->fetch_row($localR)) {
             $local['_l' . $w['refNum']] = '(CURRENT)' . $w['PAN'] . ' : ' . sprintf('%.2f', $w['amount']);
@@ -62,16 +62,16 @@ class PaycardTransListPage extends NoInputCorePage
             $supervisor = $sec >= 30 ? true : false;
 
             $db = Database::mDataConnect();
-            $otherQ = 'SELECT MIN(datetime) as dt, amount, PAN, refNum,
-                        cashierNo, laneNo, transNo
-                        FROM efsnetRequest 
-                        WHERE date=' . date('Ymd');
+            $otherQ = 'SELECT MIN(requestDatetime) as dt, amount, PAN, refNum,
+                        empNo AS cashierNo, registerNo AS laneNo, transNo
+                        FROM PaycardTransactions 
+                        WHERE dateID=' . date('Ymd');
             if (!$supervisor) {
-                $otherQ .= ' AND laneNo=' . ((int)CoreLocal::get('laneno')) . '
-                           AND cashierNo=' . ((int)CoreLocal::get('CashierNo'));
+                $otherQ .= ' AND registerNo=' . ((int)CoreLocal::get('laneno')) . '
+                           AND empNo=' . ((int)CoreLocal::get('CashierNo'));
             }
             $otherQ .= ' GROUP BY amount, PAN, refNum
-                        ORDER BY datetime DESC';
+                        ORDER BY requestDatetime DESC';
             $otherR = $db->query($otherQ);
             while($w = $db->fetch_row($otherR)) {
                 $other[$w['refNum']] = $w['dt'] . ' : ' 

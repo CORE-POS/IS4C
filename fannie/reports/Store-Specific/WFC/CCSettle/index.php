@@ -13,10 +13,10 @@ $dlog = DTransactionsModel::selectDlog($date);
 list($y,$m,$d) = explode("-",$date);
 
 $q = $dbc->prepare("SELECT d.tdate,-d.total as total,d.trans_num,q.refNum,d.card_no
-    FROM $dlog AS d LEFT JOIN efsnetRequest as q
-    ON d.register_no=q.laneNo AND d.emp_no=q.cashierNo
+    FROM $dlog AS d LEFT JOIN PaycardTransactions as q
+    ON d.register_no=q.registerNo AND d.emp_no=q.empNo
     AND d.trans_no = q.transNo and d.trans_id=q.transID
-    AND q.date=?
+    AND q.dateID=?
     WHERE tdate BETWEEN ? AND ?
     AND d.trans_subtype='CC'
     ORDER BY d.tdate");

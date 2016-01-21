@@ -126,10 +126,7 @@ class BasicCCModule
        session variable "boxMsg".
 
      This function should submit a request to the
-     gateway and process the result. By convention
-     credit card request and response info is stored
-     in the efsnet* tables and gift card request and
-     response info is stored in the valutec* tables.
+     gateway and process the result. 
     
      <b>Do not store full card number when logging
      request and response info</b>.
@@ -185,9 +182,9 @@ class BasicCCModule
     }
 
     /**
-      The given efsnetRequest.refNum value corresponds to the
+      The given PaycardTransactions.refNum value corresponds to the
       format used by this class
-      @param $ref [string] efsnetRequest.refNum
+      @param $ref [string] PaycardTransactions.refNum
       @return [boolean]
     */
     public function myRefNum($ref)
@@ -197,13 +194,13 @@ class BasicCCModule
 
     /**
       Lookup transaction status
-      @param $ref [string] efsnetRequest.refNum
+      @param $ref [string] PaycardTransactions.refNum
       @param $local [int]
-        1 => transaction is in local efsnetRequest table
-        0 => transaction is in server's efsnetRequest table
+        1 => transaction is in local PaycardTransactions table
+        0 => transaction is in server's PaycardTransactions table
       @param $mode [string]
         lookup => just fetch information from the processor
-        verify => update efsnetResponse with retreived information
+        verify => update PaycardTransactions with retreived information
       @return [keyed array]
         output => HTML msg to display for the user
         confirm_dest => URL destination if the user presses enter

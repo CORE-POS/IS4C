@@ -306,41 +306,18 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $dateInt = str_replace("-","",$date1);
         list($emp,$reg,$trans) = explode("-",$transNum);
 
-        $query = $dbc->prepare("SELECT mode, amount, PAN, 
+        $query = $dbc->prepare("SELECT transType AS mode, amount, PAN, 
             CASE WHEN manual=1 THEN 'keyed' ELSE 'swiped' END AS entryMethod, 
             issuer, xResultMessage, xApprovalNumber, xTransactionID, name,
-            q.refNum
-            FROM {$FANNIE_TRANS_DB}{$dbconn}efsnetRequest AS q LEFT JOIN 
-            {$FANNIE_TRANS_DB}{$dbconn}efsnetResponse AS r
-            ON q.refNum=r.refNum  AND q.date=r.date WHERE q.date=? AND
-            q.cashierNo=? AND q.laneNo=? AND q.transNo=?
-            and commErr=0
-            UNION ALL 
-            SELECT m.mode, amount, PAN, 
-            CASE WHEN manual=1 THEN 'keyed' ELSE 'swiped' END AS entryMethod, 
-            issuer, r.xResultMessage, r.xApprovalNumber, r.xTransactionID, name,
-            q.refNum
-            from {$FANNIE_TRANS_DB}{$dbconn}efsnetRequestMod m
-            join {$FANNIE_TRANS_DB}{$dbconn}efsnetRequest q
-              on q.date=m.date
-              and q.cashierNo=m.cashierNo
-              and q.laneNo=m.laneNo
-              and q.transNo=m.transNo
-              and q.transID=m.transID
-            join {$FANNIE_TRANS_DB}{$dbconn}efsnetResponse AS r
-            ON q.refNum=r.refNum  AND q.date=r.date 
-            WHERE q.date=? AND
-            q.cashierNo=? AND q.laneNo=? AND q.transNo=?
-            and m.validResponse=1 and 
-            (m.xResponseCode=0 or m.xResultMessage like '%APPROVE%')
-            and m.commErr=0 AND r.commErr=0");
-        $result = $dbc->execute($query,array(
-                        $dateInt,$emp,$reg,$trans,
-                        $dateInt,$emp,$reg,$trans
-                        ));
+            refNum
+            FROM {$FANNIE_TRANS_DB}{$dbconn}PaycardTransactions
+            WHERE dateID=? AND
+                empNo=? AND registerNo=? AND transNo=?
+                AND commErr=0");
+        $result = $dbc->execute($query,array($dateInt,$emp,$reg,$trans));
         $ret = '';
         $pRef = '';
-        while ($row = $dbc->fetch_row($result)){
+        while ($row = $dbc->fetchRow($result)) {
             if ($pRef == $row['refNum'] && $row['mode'] != 'VOID') continue;
             $ret .= "<hr />";
             $ret .= 'Mode: '.$row['mode'].'<br />';

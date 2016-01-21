@@ -50,28 +50,21 @@ class CCReport extends FannieReportPage
         $start = date('Y-m-d 00:00:00',$seconds);
         $end = date('Y-m-d 23:59:59',$seconds);
         $query = $dbc->prepare("
-            SELECT q.datetime,
-                q.laneno,
-                q.cashierno,
-                q.transno,
-                q.amount,
-                q.PAN, 
-                year(q.datetime) AS year,
-                day(q.datetime) AS day,
-                month(q.datetime) AS month,
-                r.xResultMessage
-            FROM efsnetRequest q LEFT JOIN efsnetResponse r
-            on r.date=q.date and r.cashierNo=q.cashierNo and 
-            r.transNo=q.transNo and r.laneNo=q.laneNo
-            and r.transID=q.transID
-            left join efsnetRequestMod m
-            on m.date = q.date and m.cashierNo=q.cashierNo and
-            m.transNo=q.transNo and m.laneNo=q.laneNo
-            and m.transID=q.transID
-            where q.datetime between ? AND ?
-            and q.laneNo <> 99 and q.cashierNo <> 9999
-            and m.transID is null
-            order by q.datetime,q.laneNo,q.transNo,q.cashierNo");
+            SELECT requestDatetime AS datetime,
+                registerNo AS laneno,
+                empNo AS cashierno,
+                transNo AS transno,
+                amount,
+                PAN, 
+                year(requestDatetime) AS year,
+                day(requestDatetime) AS day,
+                month(requestDatetime) AS month,
+                xResultMessage
+            FROM PaycardTransactions
+            WHERE requestDatetime between ? AND ?
+                and registerNo <> 99 and empNo <> 9999
+                and transID is not null
+            order by requestDatetime,registerNo,transNo,empNo");
         $result = $dbc->execute($query,array($start,$end));
 
         $sum = 0;

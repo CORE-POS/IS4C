@@ -278,12 +278,6 @@ class MercuryE2E extends BasicCCModule
         } catch (Exception $ex) { }
         // void still happened even if logging the result failed
 
-        $tokenRef = $xml->get_first("INVOICENO");
-        $sql = sprintF("DELETE FROM efsnetTokens WHERE refNum='%s'",$tokenRef);
-        if ($dbTrans->table_exists('efsnetTokens')) {
-            PaycardLib::paycard_db_query($sql, $dbTrans);
-        }
-
         if ($authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200) {
             if ($authResult['curlHTTP'] == '0') {
                 CoreLocal::set("boxMsg","No response from processor<br />
@@ -1260,7 +1254,7 @@ class MercuryE2E extends BasicCCModule
             $query_string = 'id=' . ($local ? '_l' : '') . $ref . '&mode=' . $mode;
             $resp['confirm_dest'] = $url_stem . '/gui/PaycardTransLookupPage.php?' . $query_string;
         } else if ($local == 1 && $mode == 'verify') {
-            // Update efsnetResponse record to contain
+            // Update PaycardTransactions record to contain
             // actual processor result and finish
             // the transaction correctly
             $responseCode = -3;
@@ -1322,30 +1316,6 @@ class MercuryE2E extends BasicCCModule
                 CoreLocal::get('paycard_id'),
             );
             $upR = $db->execute($upP, $args);
-
-            $upP = $db->prepare("
-                UPDATE efsnetResponse SET
-                    xResponseCode=?,
-                    xResultCode=?, 
-                    xResultMessage=?,
-                    xTransactionID=?,
-                    xApprovalNumber=?,
-                    commErr=0,
-                    httpCode=200
-                WHERE refNum=?
-                    AND transID=?");
-            $args = array(
-                $responseCode,
-                $resultCode,
-                $rMsg,
-                $xTransID,
-                $apprNumber,
-                $ref,
-                CoreLocal::get('paycard_id')
-            );
-            if ($db->table_exists('efsnetResponse')) {
-                $upR = $db->execute($upP, $args);
-            }
         }
 
         switch(strtoupper($status)) {

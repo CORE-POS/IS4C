@@ -130,9 +130,6 @@ class PaycardRequest
     public function saveRequest()
     {
         $dbTrans = PaycardLib::paycard_db();
-        if ($dbTrans->table_exists('efsnetRequest')) {
-            $this->legacySave($dbTrans);
-        }
 
         $insQ = '
                 INSERT INTO PaycardTransactions (
@@ -159,45 +156,6 @@ class PaycardRequest
         }
     }
 
-    protected function legacySave($dbTrans)
-    {
-        $sql = 'INSERT INTO efsnetRequest (' .
-                    $dbTrans->identifierEscape('date') . ', cashierNo, laneNo, transNo, transID, ' .
-                    $dbTrans->identifierEscape('datetime') . ', refNum, live, mode, amount,
-                    PAN, issuer, manual, name,
-                    sentPAN, sentExp, sentTr1, sentTr2)
-                VALUES (
-                    ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, 
-                    ?, ?, ?, ?)'; 
-        $efsArgs = array(
-            $this->today,
-            $this->cashierNo,
-            $this->laneNo,
-            $this->transNo,
-            $this->transID,
-            $this->now,
-            $this->refNum,
-            $this->live,
-            $this->type . '_' . $this->mode,
-            $this->amount + $this->cashback,
-            $this->pan,
-            $this->issuer,
-            $this->manual,
-            $this->cardholder,
-            $this->sent['pan'],
-            $this->sent['exp'],
-            $this->sent['track1'],
-            $this->sent['track2'],
-        );
-        $prep = $dbTrans->prepare($sql);
-        if (!$dbTrans->execute($prep, $efsArgs)){
-            throw new Exception('Error saving efsnetRequest');
-        }
-        $this->last_req_id = $dbTrans->insertID();
-    }
-    
     public function changeAmount($amt)
     {
         $this->amount = $amt;
@@ -207,15 +165,6 @@ class PaycardRequest
                         WHERE paycardTransactionID=%d',
                         $amt, $this->last_paycard_transaction_id);
         $dbTrans->query($upQ);
-
-        $sql = sprintf("UPDATE efsnetRequest SET amount=%f WHERE "
-            .$dbTrans->identifierEscape('date')."=%d 
-            AND cashierNo=%d AND laneNo=%d AND transNo=%d
-            AND transID=%d",
-            $amt,$this->today, $this->cashierNo, $this->laneNo, $this->transNo, $this->transID);
-        if ($dbTrans->table_exists('efsnetRequest')) {
-            PaycardLib::paycard_db_query($sql, $dbTrans);
-        }
     }
 
     public function updateCardInfo($pan, $name, $issuer)

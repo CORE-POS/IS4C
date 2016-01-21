@@ -85,31 +85,7 @@ class PaycardResponse
         );
         $throw = false;
         if (!$dbTrans->query($finishQ)) {
-            $throw = new Exception('Error updating PaycardTransactions with response data');
-        }
-
-        if ($dbTrans->table_exists('efsnetRequest')) {
-            try {
-                if (!empty($this->token['record'])) {
-                    $this->legacyToken($dbTrans);
-                }
-                if ($this->request instanceof PaycardVoidRequest) {
-                    $this->legacyVoid($dbTrans);
-                } elseif ($this->request instanceof PaycardGiftRequest) {
-                    // pass; no legacy table
-                } else {
-                    $this->legacySave($dbTrans);
-                }
-            } catch (Exception $ex) {
-                if ($throw === false) {
-                    $throw = $ex;
-                }
-            }
-        }
-
-        // delay throwing until both saves have been attempted
-        if ($throw !== false) {
-            throw $throw;
+            throw new Exception('Error updating PaycardTransactions with response data');
         }
     }
 
@@ -159,81 +135,6 @@ class PaycardResponse
     public function setNormalizedCode($n)
     {
         $this->normalizedCode = $n;
-    }
-
-    private function legacyToken($dbTrans)
-    {
-        $tokenSql = sprintf("INSERT INTO efsnetTokens (expireDay, refNum, token, processData, acqRefData) 
-                VALUES ('%s','%s','%s','%s','%s')",
-            $this->now,
-            $this->request->refNum, 
-            $this->token['record'],
-            $this->token['proc'],
-            $this->token['acq']
-        );
-        $dbTrans->query($tokenSql);
-    }
-
-    private function legacySave($dbTrans)
-    {
-        $sqlColumns =
-            $dbTrans->identifierEscape('date').",cashierNo,laneNo,transNo,transID," .
-            $dbTrans->identifierEscape('datetime').",refNum," .
-            "seconds,commErr,httpCode";
-        $sqlValues =
-            sprintf("%d,%d,%d,%d,%d,",  $this->request->today, $this->request->cashierNo, $this->request->laneNo, $this->request->transNo, $this->request->transID) .
-            sprintf("'%s','%s',",            $this->now, $this->request->refNum ) .
-            sprintf("%f,%d,%d",         $this->curlTime, $this->curlErr, $this->curlHttp);
-        $sqlColumns .= ",xResponseCode";
-        $sqlValues .= sprintf(",%d",$this->responseCode);
-        $sqlColumns .= ",xResultCode";
-        $sqlValues .= sprintf(",%d",$this->resultCode);
-        $sqlColumns .= ",xResultMessage";
-        $sqlValues .= sprintf(",'%s'",$this->resultMsg);
-        $sqlColumns .= ",xApprovalNumber";
-        $sqlValues .= sprintf(",'%s'",$this->approvalNum);
-        $sqlColumns .= ",validResponse";
-        $sqlValues .= sprintf(",%d",$this->validResponse);
-        $sqlColumns .= ",xTransactionID";
-        $sqlValues .= sprintf(",'%s'", $this->transactionID);
-        $sqlColumns .= ', efsnetRequestID';
-        $sqlValues .= sprintf(', %d', $this->request->last_req_id);
-        $sql = "INSERT INTO efsnetResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-
-        if (!$dbTrans->query($sql)) {
-            throw new Exception('Error saving efsnetResponse');
-        }
-    }
-
-    private function legacyVoid($dbTrans)
-    {
-        // prepare some fields to store the request and the parsed response; we'll add more as we verify it
-        $sqlColumns =
-            $dbTrans->identifierEscape('date').",cashierNo,laneNo,transNo,transID,".
-            $dbTrans->identifierEscape('datetime').
-            ",origAmount,mode,altRoute," .
-            "seconds,commErr,httpCode";
-        $sqlValues =
-            sprintf("%d,%d,%d,%d,%d,'%s',",  $this->request->today, $this->request->cashierNo, $this->request->laneNo, $this->request->transNo, $this->request->transID, $this->now) .
-            sprintf("%s,'%s',%d,",  $this->request->formattedAmount(), "VOID", 0) .
-            sprintf("%f,%d,%d", $this->curlTime, $this->curlErr, $this->curlHttp);
-        $sqlColumns .= ",xResponseCode";
-        $sqlValues .= sprintf(",%d",$this->responseCode);
-        $sqlColumns .= ",xResultCode";
-        $sqlValues .= sprintf(",%d",$this->resultCode);
-        $sqlColumns .= ",xResultMessage";
-        $sqlValues .= sprintf(",'%s'",$this->resultMsg);
-        $sqlColumns .= ",origTransactionID";
-        $sqlValues .= sprintf(",'%s'", $this->request->transID);
-        $sqlColumns .= ",origRefNum";
-        $sqlValues .= sprintf(",'%d-%d-%d'",$this->request->original[0], $this->request->original[1], $this->request->original[2]);
-        $sqlColumns .= ",validResponse";
-        $sqlValues .= sprintf(",%d",$this->validResponse);
-        $sql = "INSERT INTO efsnetRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-
-        if (!$dbTrans->query($sql)) {
-            throw new Exception('Error saving efsnetRequestMod');
-        }
     }
 }
 

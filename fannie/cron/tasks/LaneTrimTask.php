@@ -72,14 +72,6 @@ Deprecates lanes.clean.php.';
             if ($cleanR === false) {
                 $this->cronMsg("Could not clean $table on lane: ".$ln['host']);
             }
-
-            $table = 'efsnetTokens';
-            $cleanQ = "DELETE FROM $table WHERE ".$sql->datediff($sql->now(),'expireDay')." <> 0 ";
-            $cleanR = $sql->query($cleanQ,$ln['trans']);
-            if ($cleanR === false) {
-                $this->cronMsg("Could not clean $table on lane: ".$ln['host']);
-            }
-
         }
     }
 }

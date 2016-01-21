@@ -88,70 +88,29 @@ class GoEMerchant extends BasicCCModule
         $transNo = CoreLocal::get("transno");
         $transID = CoreLocal::get("paycard_id");
         $cvv2 = CoreLocal::get("paycard_cvv2");
-        $sqlColumns =
-            $dbTrans->identifierEscape('date').",cashierNo,laneNo,transNo,transID," .
-            $dbTrans->identifierEscape('datetime').
-            ",seconds,commErr,httpCode";
-        $sqlValues =
-            sprintf("%d,%d,%d,%d,%d,",  $today, $cashierNo, $laneNo, $transNo, $transID) .
-            sprintf("'%s',",            $now ) .
-            sprintf("%f,%d,%d",         $authResult['curlTime'], $authResult['curlErr'], $authResult['curlHTTP']);
         $validResponse = ($xml->isValid()) ? 1 : 0;
 
         $refNum = $xml->get("ORDER_ID");
-        if ($refNum) {
-            $sqlColumns .= ",refNum";
-            $sqlValues .= sprintf(",'%s'",$refNum);
-        }
         $responseCode = $xml->get("STATUS");
-        if ($responseCode) {
-            $sqlColumns .= ",xResponseCode";
-            $sqlValues .= sprintf(",%d",$responseCode);
-        } else {
+        if (!$responseCode) {
             $validResponse = -3;
         }
         // aren't two separate codes from goemerchant
         $resultCode = $xml->get_first("STATUS");
-        if ($resultCode) {
-            $sqlColumns .= ",xResultCode";
-            $sqlValues .= sprintf(",%d",$resultCode);
-        }
         $resultMsg = $xml->get_first("AUTH_RESPONSE");
         $rMsg = $resultMsg;
         if ($resultMsg) {
-            $sqlColumns .= ",xResultMessage";
             $rMsg = $resultMsg;
             if (strlen($rMsg) > 100) {
                 $rMsg = substr($rMsg,0,100);
             }
-            $sqlValues .= sprintf(",'%s'",$rMsg);
         }
         $xTransID = $xml->get("REFERENCE_NUMBER");
-        if ($xTransID) {
-            $sqlColumns .= ",xTransactionID";
-            $sqlValues .= sprintf(",'%s'",$xTransID);
-        } else {
+        if (!$xTransID) {
             $validResponse = -3;
         }
         $apprNumber = $xml->get("AUTH_CODE");
-        if ($apprNumber) {
-            $sqlColumns .= ",xApprovalNumber";
-            $sqlValues .= sprintf(",'%s'",$apprNumber);
-        }
         // valid credit (return) transactions don't have an approval number
-        $sqlColumns .= ",validResponse";
-        $sqlValues .= sprintf(",%d",$validResponse);
-
-        $table_def = $dbTrans->tableDefinition('efsnetResponse');
-        if (isset($table_def['efsnetRequestID'])) {
-            $sqlColumns .= ', efsnetRequestID';
-            $sqlValues .= sprintf(', %d', $this->last_req_id);
-        }
-
-        $sql = "INSERT INTO efsnetResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-        if ($dbTrans->table_exists('efsnetResponse')) {
-            PaycardLib::paycard_db_query($sql, $dbTrans);
-        }
 
         /**
           Log transaction in newer table
@@ -233,50 +192,21 @@ class GoEMerchant extends BasicCCModule
 
         $dbTrans = PaycardLib::paycard_db();
         // prepare some fields to store the request and the parsed response; we'll add more as we verify it
-        $sqlColumns =
-            $dbTrans->identifierEscape('date').",cashierNo,laneNo,transNo,transID,"
-            .$dbTrans->identifierEscape('datetime').
-            ",origAmount,mode,altRoute," .
-            "seconds,commErr,httpCode";
-        $sqlValues =
-            sprintf("%d,%d,%d,%d,%d,'%s',",  $today, $cashierNo, $laneNo, $transNo, $transID, $now) .
-            sprintf("%s,'%s',%d,",  $amountText, "VOID", 0) .
-            sprintf("%f,%d,%d", $authResult['curlTime'], $authResult['curlErr'], $authResult['curlHTTP']);
 
         $validResponse = ($xml->isValid()) ? 1 : 0;
 
         $responseCode = $xml->get("STATUS1");
-        if ($responseCode) {
-            $sqlColumns .= ",xResponseCode";
-            $sqlValues .= sprintf(",%d",$responseCode);
-        } else {
+        if (!$responseCode) {
             $validResponse = -3;
         }
         $resultCode = $xml->get_first("STATUS1");
-        if ($resultCode) {
-            $sqlColumns .= ",xResultCode";
-            $sqlValues .= sprintf(",%d",$resultCode);
-        }
         $resultMsg = $xml->get_first("RESPONSE1");
         if ($resultMsg) {
-            $sqlColumns .= ",xResultMessage";
             $rMsg = $resultMsg;
             if (strlen($rMsg) > 100) {
                 $rMsg = substr($rMsg,0,100);
             }
             $sqlValues .= sprintf(",'%s'",$rMsg);
-        }
-        $sqlColumns .= ",origTransactionID";
-        $sqlValues .= sprintf(",'%s'",$this->voidTrans);
-        $sqlColumns .= ",origRefNum";
-        $sqlValues .= sprintf(",'%s'",$this->voidRef);
-
-        $sqlColumns .= ",validResponse";
-        $sqlValues .= sprintf(",%d",$validResponse);
-
-        $sql = "INSERT INTO efsnetRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-        if ($dbTrans->table_exists('efsnetRequestMod')) {
-            PaycardLib::paycard_db_query($sql, $dbTrans);
         }
 
         $normalized = ($validResponse == 0) ? 4 : 0;
@@ -477,35 +407,6 @@ class GoEMerchant extends BasicCCModule
             $magstripe .= ";".$cardTr3."?";
         }
 
-        // store request in the database before sending it
-        $sql = 'INSERT INTO efsnetRequest (' .
-                    $dbTrans->identifierEscape('date') . ', cashierNo, laneNo, transNo, transID, ' .
-                    $dbTrans->identifierEscape('datetime') . ', refNum, live, mode, amount,
-                    PAN, issuer, manual, name,
-                    sentPAN, sentExp, sentTr1, sentTr2)
-                VALUES (
-                    ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, 
-                    ?, ?, ?, ?)'; 
-        $efsArgs = array(
-            $today, $cashierNo, $laneNo, $transNo, $transID,
-            $now, $refNum, $live, $mode, $amountText,
-            $cardPANmasked, $cardIssuer, $manual, $cardName,
-            $sendPAN, $sendExp, $sendTr1, $sendTr2);
-        $prep = $dbTrans->prepare($sql);
-        $table_def = $dbTrans->tableDefinition('efsnetRequest');
-
-        if ($dbTrans->table_exists('efsnetRequest') && !$dbTrans->execute($prep, $efsArgs)) {
-            PaycardLib::paycard_reset();
-            // internal error, nothing sent (ok to retry)
-            return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND);
-        }
-
-        if (isset($table_def['efsnetRequestID'])) {
-            $this->last_req_id = $dbTrans->insertID();
-        }
-
         $insQ = '
                 INSERT INTO PaycardTransactions (
                     dateID, empNo, registerNo, transNo, transID,
@@ -627,10 +528,6 @@ class GoEMerchant extends BasicCCModule
                     AND registerNo=' . $laneNo . '
                     AND transNo=' . $transNo . '
                     AND transID=' . $transID;
-        if (!$dbTrans->table_exists('PaycardTransactions')) {
-            $sql = "SELECT refNum,xTransactionID FROM efsnetResponse WHERE ".$dbTrans->identifierEscape('date')."='".$today."'" .
-                " AND cashierNo=".$cashierNo." AND laneNo=".$laneNo." AND transNo=".$transNo." AND transID=".$transID;
-        }
         $result = PaycardLib::paycard_db_query($sql, $dbTrans);
         if (!$result || PaycardLib::paycard_db_num_rows($result) != 1) {
             PaycardLib::paycard_reset();
@@ -801,7 +698,7 @@ class GoEMerchant extends BasicCCModule
             $apprNumber = ''; // not returned by query op
 
             if ($local == 1 && $mode == 'verify') {
-                // Update efsnetResponse record to contain
+                // Update PaycardTransactions record to contain
                 // actual processor result and finish
                 // the transaction correctly
                 $db = Database::tDataConnect(); 
@@ -828,30 +725,6 @@ class GoEMerchant extends BasicCCModule
                     CoreLocal::get('paycard_id'),
                 );
                 $upR = $db->execute($upP, $args);
-
-                $upP = $db->prepare("
-                    UPDATE efsnetResponse SET
-                        xResponseCode=?,
-                        xResultCode=?, 
-                        xResultMessage=?,
-                        xTransactionID=?,
-                        xApprovalNumber=?,
-                        commErr=0,
-                        httpCode=200
-                    WHERE refNum=?
-                        AND transID=?");
-                $args = array(
-                    $responseCode,
-                    $resultCode,
-                    $rMsg,
-                    $xTransID,
-                    $apprNumber,
-                    $ref,
-                    CoreLocal::get('paycard_id')
-                );
-                if ($db->table_exists('efsnetResponse')) {
-                    $upR = $db->execute($upP, $args);
-                }
 
                 if ($status == 'APPROVED') {
                     PaycardLib::paycard_wipe_pan();

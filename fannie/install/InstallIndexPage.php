@@ -739,10 +739,6 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'ArEomSummaryModel',
         'CapturedSignatureModel',
         'CashPerformDayModel',
-        'EfsnetRequestModel',
-        'EfsnetRequestModModel',
-        'EfsnetResponseModel',
-        'EfsnetTokensModel',
         'EquityHistorySumModel',
         'PaycardTransactionsModel',
         'SpecialOrdersModel',
@@ -758,7 +754,6 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'DLog90ViewModel',
         'ArHistoryTodayModel', // requires dlog
         'ArHistoryTodaySumModel', //requires dlog
-        'CcReceiptViewModel',
         'StockSumTodayModel', // requires dlog
         'SuspendedTodayModel',
         'TenderTapeGenericModel', // requires dlog

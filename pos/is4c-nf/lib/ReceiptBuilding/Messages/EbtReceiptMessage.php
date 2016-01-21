@@ -44,51 +44,26 @@ class EbtReceiptMessage extends ReceiptMessage
             $db = Database::mDataConnect();
         }
 
-        $query = "SELECT q.amount, q.name, q.PAN, q.refNum,
-                    CASE 
-                        WHEN q.mode = 'EBTFOOD_Sale' THEN 'Ebt FS Sale'
-                        WHEN q.mode = 'EBTFOOD_Return' THEN 'Ebt FS Refund'
-                        WHEN q.mode = 'EBTCASH_Sale' THEN 'Ebt Cash Sale'
-                        WHEN q.mode = 'EBTCASH_Return' THEN 'Ebt Cash Refund'
-                        ELSE q.mode
-                    END as ebtMode,
-                    r.xResultMessage, r.xTransactionID
-                  FROM efsnetRequest AS q
-                    LEFT JOIN efsnetResponse AS r ON
-                        q.date = r.date AND
-                        q.laneNo = r.laneNo AND
-                        q.transNo = r.transNo AND
-                        q.transID = r.transID AND
-                        q.cashierNo = r.cashierNo
-                  WHERE r.xResultMessage LIKE '%Approve%'
-                        AND q.mode LIKE 'EBT%'
-                        AND r.validResponse=1
-                        AND q.date=" . date('Ymd') . "
-                        AND q.transNo=" . ((int)$trans) . "
-                  ORDER BY q.refNum, q.datetime";;
+        $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
 
-        if ($db->table_exists('PaycardTransactions')) {
-            $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
-
-            $query = "SELECT p.amount,
-                        p.name,
-                        p.PAN,
-                        p.refNum,
-                        $trans_type AS ebtMode,
-                        p.xResultMessage,
-                        p.xTransactionID,
-                        p.xBalance,
-                        p.requestDatetime AS datetime
-                      FROM PaycardTransactions AS p
-                      WHERE dateID=" . date('Ymd') . "
-                        AND empNo=" . $emp . "
-                        AND registerNo=" . $reg . "
-                        AND transNo=" . $trans . "
-                        AND p.validResponse=1
-                        AND p.xResultMessage LIKE '%APPROVE%'
-                        AND p.cardType LIKE 'EBT%'
-                      ORDER BY p.requestDatetime";
-        }
+        $query = "SELECT p.amount,
+                    p.name,
+                    p.PAN,
+                    p.refNum,
+                    $trans_type AS ebtMode,
+                    p.xResultMessage,
+                    p.xTransactionID,
+                    p.xBalance,
+                    p.requestDatetime AS datetime
+                  FROM PaycardTransactions AS p
+                  WHERE dateID=" . date('Ymd') . "
+                    AND empNo=" . $emp . "
+                    AND registerNo=" . $reg . "
+                    AND transNo=" . $trans . "
+                    AND p.validResponse=1
+                    AND p.xResultMessage LIKE '%APPROVE%'
+                    AND p.cardType LIKE 'EBT%'
+                  ORDER BY p.requestDatetime";
 
         $result = $db->query($query);
         $prevRefNum = false;
