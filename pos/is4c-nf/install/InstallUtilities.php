@@ -1393,14 +1393,8 @@ class InstallUtilities extends LibraryClass
         $models = array(
             '\COREPOS\pos\lib\models\trans\DTransactionsModel',
             '\COREPOS\pos\lib\models\trans\SuspendedModel',
-            '\COREPOS\pos\lib\models\trans\EfsnetRequestModel',
-            '\COREPOS\pos\lib\models\trans\EfsnetRequestModModel',
-            '\COREPOS\pos\lib\models\trans\EfsnetResponseModel',
-            '\COREPOS\pos\lib\models\trans\EfsnetTokensModel',
             '\COREPOS\pos\lib\models\trans\PaycardTransactionsModel',
             '\COREPOS\pos\lib\models\trans\CapturedSignatureModel',
-            // Views
-            '\COREPOS\pos\lib\models\trans\CcReceiptViewModel',
         );
         foreach ($models as $class) {
             $obj = new $class($db);
