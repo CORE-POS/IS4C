@@ -33,6 +33,7 @@ class RefundComment extends NoInputCorePage
             $qstr = '';
             if ($input == "CL" || $input == ''){
                 CoreLocal::set("refundComment","");
+                CoreLocal::set("refund",0);
             } elseif ($input == "Other"){
                 return True;
             } else {
