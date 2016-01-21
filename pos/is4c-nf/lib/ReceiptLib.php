@@ -1159,7 +1159,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
             }
             $receipt['any'] .= "\n";
     
-            // 2016-01-21 Leary: comment this out until member footer looks better
+            // 2016-01-20 Leary: suppress member footer until it looks better
             // $receipt = self::memberFooter($receipt);
             $receipt = self::receiptFooters($receipt, $ref);
             $receipt = self::messageModFooters($receipt, $where, $ref, $reprint);
