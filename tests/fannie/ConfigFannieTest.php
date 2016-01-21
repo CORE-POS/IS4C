@@ -107,5 +107,15 @@ class ConfigFannieTest extends PHPUnit_Framework_TestCase
         $obj = $this->initPage($obj);
         $obj->unitTest($this);
     }
+
+    public function testIndex()
+    {
+        if (!class_exists('InstallIndexPage')) {
+            include(dirname(__FILE__) . '/../../fannie/install/sample_data/InstallIndexPage.php');
+        }
+        $obj = new InstallIndexPage();
+        $obj = $this->initPage($obj);
+        $obj->unitTest($this);
+    }
 }
 

@@ -841,6 +841,17 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
     // create_archive_dbs()
     }
 
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->css_content()));
+        list($path, $url) = $this->detectPath();
+        $phpunit->assertNotEquals(0, strlen($this->runningAs()));
+        ob_start();
+        $phpunit->assertInternalType('boolean', $this->canSave($path, $url));
+        $this->checkComposer($path);
+        ob_end_clean();
+    }
+
 // InstallIndexPage
 }
 

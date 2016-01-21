@@ -620,8 +620,7 @@ class OriginEditor extends FannieRESTfulPage
         $phpunit->assertNotEquals(0, strlen($this->get_country_view()));
         $phpunit->assertNotEquals(0, strlen($this->get_state_view()));
         $phpunit->assertNotEquals(0, strlen($this->get_custom_view()));
-        // this is too slow during testing...
-        //$phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
     }
 }
 
