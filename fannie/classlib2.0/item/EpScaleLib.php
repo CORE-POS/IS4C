@@ -42,6 +42,10 @@ class EpScaleLib
         $scale_fields .= 'DNO' . $scale_model->epDeptNo() . chr(253);
         $scale_fields .= 'SAD' . $scale_model->epScaleAddress() . chr(253);
 
+        if (isset($item_info['Label'])) {
+            $item_info['Label'] = ServiceScaleLib::labelTranslate($item_info['Label'], $scale_model->scaleType());
+        }
+
         if ($item_info['RecordType'] == 'WriteOneItem') {
             return self::getAddItemLine($item_info) . $scale_fields;
         } else {
@@ -164,7 +168,7 @@ class EpScaleLib
                         $line .= 'CCL' . $item_info[$key] . chr(253);
                     case 'Label':
                         /** disabled 11Nov2015 - doesn't syncing seems broken **/
-                        //$line .= 'FL1' . $item_info[$key] . chr(253);
+                        $line .= 'LF1' . $item_info[$key] . chr(253);
                         break;
                     case 'Tare':
                         $line .= 'UTA' . floor(100*$item_info[$key]) .'0' . chr(253);
