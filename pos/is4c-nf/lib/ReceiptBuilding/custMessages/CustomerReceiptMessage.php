@@ -28,7 +28,14 @@
   defined in the opdata.custReceiptMessage
   table.
 */
-class CustomerReceiptMessage {
+class CustomerReceiptMessage 
+{
+    protected $print_handler;
+
+    public function setPrintHandler($ph)
+    {
+        $this->print_handler = $ph;
+    }
 
     /**
       Create or modify the message
@@ -41,7 +48,8 @@ class CustomerReceiptMessage {
       It's not necessary to modify the message at all or even
       to provide a modifier_module in custReceiptMessage.
     */
-    function message($str){
+    public function message($str)
+    {
         return $str;
     }
 }

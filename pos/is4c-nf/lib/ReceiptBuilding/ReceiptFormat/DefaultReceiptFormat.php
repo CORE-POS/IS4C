@@ -29,6 +29,12 @@
 */
 class DefaultReceiptFormat 
 {
+    protected $print_handler;
+
+    public function setPrintHandler($ph)
+    {
+        $this->print_handler = $ph;
+    }
     
     /*
       boolean. 

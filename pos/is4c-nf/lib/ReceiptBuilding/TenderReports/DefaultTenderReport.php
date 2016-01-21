@@ -27,6 +27,13 @@
 */
 class DefaultTenderReport extends TenderReport {
 
+static protected $print_handler;
+
+static public function setPrintHandler($ph)
+{
+    self::$print_handler = $ph;
+}
+
 /** 
  Print a tender report
 

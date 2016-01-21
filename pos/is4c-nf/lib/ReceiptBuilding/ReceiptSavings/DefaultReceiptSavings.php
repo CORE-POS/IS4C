@@ -27,6 +27,13 @@
 */
 class DefaultReceiptSavings 
 {
+    protected $print_handler;
+
+    public function setPrintHandler($ph)
+    {
+        $this->print_handler = $ph;
+    }
+
     /**
       Generate a savings message for a given receipt
       @param $trans_num [string] transaction identifier

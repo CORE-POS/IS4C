@@ -26,6 +26,12 @@
 */
 class ReceiptMessage 
 {
+    protected $print_handler;
+
+    public function setPrintHandler($ph)
+    {
+        $this->print_handler = $ph;
+    }
 
     /**
       @return [string] SQL select statement
