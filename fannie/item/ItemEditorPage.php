@@ -37,7 +37,6 @@ class ItemEditorPage extends FanniePage
     private $msgs = '';
 
     public $description = '[Item Editor] is the primary item editing tool.';
-    public $themed = true;
     protected $enable_linea = true;
 
     public function readinessCheck()
@@ -703,8 +702,16 @@ class ItemEditorPage extends FanniePage
                     <li>Checking Scale indicates the item should be weighed at checkout.</li>
                     <li>Checking QtyFrc causes the lane to prompt the cashier for a quantity
                         when the item is entered</li>
-                    <li>Checking NoDisc indicates the item is not eligible for transaction
-                        level percent discounts (e.g., a member discount)</li>
+                    <li>Discount controls which type of discounts apply to the item:
+                        <ul>
+                        <li>Trans only means the item is only eligible for discounts that apply to
+                        the entire transaction such as a member\'s discount</li>
+                        <li>Line only means the item is only eligible for percent discount
+                        explictly applied by the cashier as they ring in the item.</li>
+                        <li>Yes means the item is eligible for both discounts above</li>
+                        <li>No means the item is not eligible for either discount above</li>
+                        </ul>
+                    </li>
                 </ul>';
         }
 
