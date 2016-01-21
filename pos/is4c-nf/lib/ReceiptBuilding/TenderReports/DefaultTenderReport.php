@@ -57,11 +57,21 @@ static public function get()
     $receipt = "";
 
     foreach ($DESIRED_TENDERS as $tender_code => $titleStr) { 
-        $query = "select tdate,register_no,trans_no,tender
-                   from TenderTapeGeneric where emp_no=".CoreLocal::get("CashierNo").
-            " and tender_code = '".$tender_code."' order by tdate";
+        $query = "SELECT datetime AS tdate,
+                    register_no,
+                    trans_no,
+                    CASE
+                        WHEN trans_subtype='CA' AND total >= 0 THEN total
+                        WHEN trans_subtype='CA' AND total < 0 THEN 0
+                        ELSE -1*total
+                    END AS tender
+                  FROM dtransactions 
+                  WHERE emp_no=".CoreLocal::get("CashierNo")."
+                    AND tender_code = '".$tender_code."' 
+                    AND trans_status NOT IN ('X','Z')
+                  ORDER BY datetime";
         $result = $db_a->query($query);
-        $num_rows = $db_a->num_rows($result);
+        $num_rows = $db_a->numRows($result);
         if ($num_rows <= 0) continue;
 
         $titleStr = array_reduce(str_split($titleStr), function($carry,$i){ return $carry . $i . ' '; });

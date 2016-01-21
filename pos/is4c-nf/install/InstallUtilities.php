@@ -1402,7 +1402,7 @@ class InstallUtilities extends LibraryClass
         }
 
         $errors = self::createDlog($db, $name, $errors);
-        $errors = self::createTTG($db, $name, $errors);
+        //$errors = self::createTTG($db, $name, $errors);
 
         return $errors;
     }
@@ -1455,6 +1455,7 @@ class InstallUtilities extends LibraryClass
         return $errors;
     }
 
+    /**
     private static function createTTG($db, $name, $errors)
     {
         $ttG = "
@@ -1482,5 +1483,6 @@ class InstallUtilities extends LibraryClass
 
         return $errors;
     }
+    */
 }
 
