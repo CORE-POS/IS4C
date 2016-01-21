@@ -65,9 +65,9 @@ class DefaultReceiptSavings
             return '';
         }
 
-        return _('Today you saved $') 
+        return _('TODAY YOU SAVED = $') 
             . number_format($row['sales'] + $row['memSales'] + $row['transDiscount'], 2)
-            . " - thanks for shopping with us!\n";
+            . "\n";
     }
 }
 
