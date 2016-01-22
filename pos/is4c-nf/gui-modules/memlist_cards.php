@@ -200,7 +200,7 @@ class memlist_cards extends NoInputCorePage
             // /WEFC_Toronto bit.
             }
 
-            if ($entered != CoreLocal::get("defaultNonMem") && PrehLib::check_unpaid_ar($row["CardNo"]))
+            if ($entered != CoreLocal::get("defaultNonMem") && PrehLib::checkUnpaidAR($row["CardNo"]))
                 $this->change_page($this->page_url."gui-modules/UnpaidAR.php");
             else
                 $this->change_page($this->page_url."gui-modules/memlist_cards.php");

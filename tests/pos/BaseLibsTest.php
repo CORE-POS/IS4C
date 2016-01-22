@@ -293,10 +293,15 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $str = CoreState::getCustomerPref('asdf');
         $this->assertInternalType('string',$str);
         $this->assertEquals('',$str);
+        CoreLocal::set('memberID', 1);
+        $str = CoreState::getCustomerPref('asdf');
+        $this->assertEquals('',$str);
+        CoreLocal::set('memberID', 0);
 
         // non-numeric age converts to zero
         CoreState::cashierLogin(false, 'z');
         $this->assertEquals(0, CoreLocal::get('cashierAge'));
+
     }
 
     public function testDisplayLib()

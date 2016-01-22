@@ -153,7 +153,7 @@ class memlist extends NoInputCorePage
 
             // don't bother with unpaid balance check if there is no balance
             if ($memberID != CoreLocal::get("defaultNonMem") && CoreLocal::get('balance') > 0) {
-                $unpaid = PrehLib::check_unpaid_ar($memberID);
+                $unpaid = PrehLib::checkUnpaidAR($memberID);
                 if ($unpaid) {
                     $this->change_page($this->page_url."gui-modules/UnpaidAR.php");
                 } else {

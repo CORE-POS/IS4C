@@ -440,11 +440,6 @@ static public function checkUnpaidAR($cardno)
     return false;
 }
 
-static public function check_unpaid_ar($cardno)
-{
-    return self::checkUnpaidAR($cardno);
-}
-
 static private function getTenderMods($right)
 {
     $ret = array('TenderModule');
