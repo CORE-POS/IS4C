@@ -67,6 +67,13 @@
                 <directory>fannie/src/Excel</directory>
                 <directory>fannie/src/fpdf</directory>
                 <directory>fannie/sync/special</directory>
+                <file>pos/is4c-nf/ajax-callbacks/ajax-cabreceipt.php</file>
+                <file>pos/is4c-nf/ajax-callbacks/ajax-decision.php</file>
+                <file>pos/is4c-nf/ajax-callbacks/ajax-end.php</file>
+                <file>pos/is4c-nf/ajax-callbacks/ajax-endorse.php</file>
+                <file>pos/is4c-nf/ajax-callbacks/ajax-parser.php</file>
+                <file>pos/is4c-nf/ajax-callbacks/ajax-poll-scale.php</file>
+                <file>pos/is4c-nf/ajax-callbacks/ajax-scale.php</file>
                 <file>pos/is4c-nf/ajax-callbacks/ddd.php</file>
                 <file>pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php</file>
                 <directory>pos/is4c-nf/plugins</directory>
