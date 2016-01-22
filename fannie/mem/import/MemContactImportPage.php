@@ -90,29 +90,19 @@ class MemContactImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
     
     public function process_file($linedata, $indexes)
     {
-        $mn_index = $this->get_column_index('memnum');
-        $st_index = $this->get_column_index('street');
-        $st2_index = $this->get_column_index('street2');
-        $city_index = $this->get_column_index('city');
-        $state_index = $this->get_column_index('state');
-        $zip_index = $this->get_column_index('zip');
-        $ph_index = $this->get_column_index('ph1');
-        $ph2_index = $this->get_column_index('ph2');
-        $email_index = $this->get_column_index('email');
-
         foreach ($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
-            $cardno = $line[$mn_index];
+            $cardno = $line[$indexes['memnum']];
             if (!is_numeric($cardno)) continue; // skip bad record
-            $street = ($st_index !== False) ? $line[$st_index] : "";
-            $street2 = ($st2_index !== False) ? $line[$st2_index] : "";
-            $city = ($city_index !== False) ? $line[$city_index] : "";
-            $state = ($state_index !== False) ? $line[$state_index] : "";
-            $zip = ($zip_index !== False) ? $line[$zip_index] : "";
-            $ph1 = ($ph_index !== False) ? $line[$ph_index] : "";
-            $ph2 = ($ph2_index !== False) ? $line[$ph2_index] : "";
-            $email = ($email_index !== False) ? $line[$email_index] : "";
+            $street = ($indexes['street'] !== false) ? $line[$indexes['street']] : "";
+            $street2 = ($indexes['street2'] !== false) ? $line[$indexes['street2']] : "";
+            $city = ($indexes['city'] !== false) ? $line[$indexes['city']] : "";
+            $state = ($indexes['state'] !== false) ? $line[$indexes['state']] : "";
+            $zip = ($indexes['zip'] !== false) ? $line[$indexes['zip']] : "";
+            $ph1 = ($indexes['ph1'] !== false) ? $line[$indexes['ph1']] : "";
+            $ph2 = ($indexes['ph2'] !== false) ? $line[$indexes['ph2']] : "";
+            $email = ($indexes['email'] !== false) ? $line[$indexes['email']] : "";
 
             $json = array(
                 'cardNo' => $cardno,
@@ -156,6 +146,14 @@ class MemContactImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
     function results_content()
     {
         return $this->simpleStats($this->stats);
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array(1, '123 4th st', 'apt1', 'city', 'st', 12345, '867-5309', '', 'not@email');
+        $indexes = array('memnum'=>0, 'street'=>1, 'street2'=>2, 'city'=>3, 'state'=>4,
+            'zip'=>5, 'ph1'=>6, 'ph2'=>7, 'email'=>8);
+        $phpunit->assertInternalType('array', $this->process_file(array($data), $indexes));
     }
 }
 

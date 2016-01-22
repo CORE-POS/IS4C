@@ -25,12 +25,12 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class MemImportIndex extends FanniePage {
+class MemImportIndex extends FanniePage 
+{
     protected $title = "Fannie :: Member Tools";
     protected $header = "Import Member Information";
 
     public $description = '[Member Import Menu] lists tools for importing member information.';
-    public $themed = true;
     
     function body_content(){
         ob_start();
@@ -53,9 +53,12 @@ class MemImportIndex extends FanniePage {
             for ongoing maintenance.
             </p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+    }
 }
 
-FannieDispatch::conditionalExec(false);
-
-?>
+FannieDispatch::conditionalExec();
 

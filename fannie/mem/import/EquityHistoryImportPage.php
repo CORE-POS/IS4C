@@ -29,13 +29,13 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class EquityHistoryImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
+class EquityHistoryImportPage extends \COREPOS\Fannie\API\FannieUploadPage 
+{
     protected $title = "Fannie :: Member Tools";
     protected $header = "Import Existing Member Equity";
 
     public $description = '[Equity History Import] loads information about members\' pre-existing
     equity balance. Pre-existing means equity was not purchased using this POS.';
-    public $themed = true;
 
     protected $preview_opts = array(
         'memnum' => array(
@@ -69,27 +69,21 @@ class EquityHistoryImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
         $dbc = FannieDB::get($FANNIE_TRANS_DB);
 
-        $mn_index = $this->get_column_index('memnum');
-        $amt_index = $this->get_column_index('amt');
-        $date_index = $this->get_column_index('date');
-        $dept_index = $this->get_column_index('dept');
-        $trans_index = $this->get_column_index('transID');
-
         // prepare statements
         $insP = $dbc->prepare("INSERT INTO stockpurchases (card_no,stockPurchase,
                 tdate,trans_num,dept) VALUES (?,?,?,?,?)");
         foreach($linedata as $line){
             // get info from file and member-type default settings
             // if applicable
-            $cardno = $line[$mn_index];
+            $cardno = $line[$indexes['memnum']];
             if (!is_numeric($cardno)) continue; // skip bad record
-            $amt = $line[$amt_index];
-            $date = ($date_index !== False) ? $line[$date_index] : '0000-00-00';
-            $dept = ($dept_index !== False) ? $line[$dept_index] : 0;   
-            $trans = ($trans_index !== False) ? $line[$trans_index] : "";
+            $amt = $line[$indexes['amt']];
+            $date = ($indexes['date'] !== false) ? $line[$indexes['date']] : '0000-00-00';
+            $dept = ($indexes['dept'] !== false) ? $line[$indexes['dept']] : 0;   
+            $trans = ($indexes['transID'] !== false) ? $line[$indexes['transID']] : "";
 
             $insR = $dbc->execute($insP,array($cardno,$amt,$date,$trans,$dept));
-            if ($insR === False){
+            if ($insR === false){
                 $this->stats['errors'][] = "Error importing entry for member $cardno";
             } else {
                 $this->stats['imported']++;
@@ -112,6 +106,13 @@ class EquityHistoryImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
     function results_content()
     {
         return $this->simpleStates($this->stats);
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array(1, 10, '2000-01-01', 'n/a', 1);
+        $indexes = array('memnum'=>0, 'amt'=>1, 'date'=>2, 'transID'=>3, 'dept'=>4);
+        $phpunit->assertInternalType('array', $this->process_file(array($data), $indexes));
     }
 }
 

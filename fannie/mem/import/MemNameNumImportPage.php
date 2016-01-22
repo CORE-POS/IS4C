@@ -33,7 +33,6 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
 {
     protected $title = "Fannie :: Member Tools";
     protected $header = "Import Member Names &amp; Numbers";
-    public $themed = true;
 
     public $description = '[Member Names and Numbers] loads member names and numbers. This is the
     starting point for importing existing member information. Member numbers need to be established
@@ -73,11 +72,6 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
         global $FANNIE_OP_DB, $FANNIE_NAMES_PER_MEM;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $mn_index = $this->get_column_index('memnum');
-        $fn_index = $this->get_column_index('fn');
-        $ln_index = $this->get_column_index('ln');
-        $t_index = $this->get_column_index('memtype');
-
         $defaults_table = array();
         // get defaults directly from the memtype table if possible
         $mt = $dbc->tableDefinition('memtype');
@@ -98,14 +92,14 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
         foreach ($linedata as $line) {
             // get info from file and member-type default settings
             // if applicable
-            $cardno = $line[$mn_index];
+            $cardno = $line[$indexes['memnum']];
             if (!is_numeric($cardno)) {
                 continue; // skip bad record
             }
 
             $json = array(
                 'cardNo' => $cardno,
-                'customerTypeID' => ($t_index !== false ? $line[$t_index] : 0),
+                'customerTypeID' => ($indexes['memtype'] !== false ? $line[$indexes['memtype']] : 0),
                 'contactAllowed' => 1,
                 'chargeBalance' => 0,
                 'chargeLimit' => 0,
@@ -113,14 +107,14 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             );
             $customer = array();
 
-            $customer['firstName'] = $line[$fn_index];
-            $customer['lastName'] = $line[$ln_index];
+            $customer['firstName'] = $line[$indexes['fn']];
+            $customer['lastName'] = $line[$indexes['ln']];
 
             $type = "PC";
             $discount = 0;
             $staff = 0;
             $SSI = 0;
-            if ($t_index !== false) {
+            if ($indexes['memtype'] !== false) {
                 if (isset($defaults_table[$mtype]['type'])) {
                     $type = $defaults_table[$mtype]['type'];
                 }
@@ -156,7 +150,7 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
         
             $resp = \COREPOS\Fannie\API\member\MemberREST::post($cardno, $json);
             if ($resp['errors'] > 0) {
-                $this->stats['errors'][] = "Error importing member $cardno ({$line[$fn_index]} {$line[$ln_index]})";
+                $this->stats['errors'][] = "Error importing member $cardno ({$line[$indexes['fn']]} {$line[$indexes['ln']]})";
             } else {
                 $this->stats['imported']++;
             }
@@ -178,6 +172,13 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
     function results_content()
     {
         return $this->simpleStats($this->stats);
+    }
+
+    public function unitTest($phpunit)
+    {
+        $data = array(1, 'Joe', 'Bob', 1);
+        $indexes = array('memnum'=>0, 'fn'=>1, 'ln'=>2, 'mtype'=>3);
+        $phpunit->assertInternalType('array', $this->process_file(array($data), $indexes));
     }
 }
 
