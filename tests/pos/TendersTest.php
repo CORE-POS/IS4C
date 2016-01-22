@@ -47,7 +47,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
 
             $change = $obj->ChangeType();
             $this->assertInternalType('string',$change);
-            $this->assertEquals(is_numeric(true), $obj->defaultTotal());
+            $this->assertEquals(true, is_numeric($obj->defaultTotal()));
             $this->assertInternalType('boolean', $obj->allowDefault());
         }
 
