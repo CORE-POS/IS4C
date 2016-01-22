@@ -366,6 +366,14 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         ReceiptLib::frankclassreg(1);
         $this->assertEquals(chr(27).chr(33).chr(5), ReceiptLib::normalFont());
         $this->assertEquals(chr(27).chr(33).chr(9), ReceiptLib::boldFont());
+        CoreLocal::set('receiptHeaderCount', 5);
+        CoreLocal::set('receiptHeader1', 'foo');
+        CoreLocal::set('receiptHeader2', 'WfcLogo2014.bmp');
+        CoreLocal::set('receiptHeader3', 'WfcLogo2014.bmp');
+        CoreLocal::set('receiptHeader4', 'nv123');
+        CoreLocal::set('receiptHeader5', 'bar');
+        CoreLocal::set('receiptFooterCount', 1);
+        CoreLocal::set('receiptFooter1', 'foo');
         $this->assertNotEquals(0, strlen(ReceiptLib::receiptFromBuilders(false, '1-1-1')));
 
         $this->assertEquals(array('any'=>'','print'=>''), ReceiptLib::memReceiptMessages(1));

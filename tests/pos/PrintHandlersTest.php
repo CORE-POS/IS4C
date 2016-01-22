@@ -145,6 +145,34 @@ class PrintHandlersTest extends PHPUnit_Framework_TestCase
             $this->assertNotEquals('', $ph->$m());
         }
 
+        $ph->Tab();
+        $ph->LineFeed(1);
+        $ph->LineFeed(2);
+        $ph->CarriageReturn();
+        $ph->InlineBitmap('12345', 2);
+        $ph->SetTabs(array(1,2));
+        $ph->PaperFeed(1);
+        $ph->PaperFeedBack(1);
+        $ph->PageRegion();
+        $ph->MoveX(-1);
+        $ph->PaperRoll();
+        $ph->DrawerKick();
+        $ph->CharacterZoom();
+        $ph->Test();
+        $ph->BarcodeHRI();
+        $ph->DotPitch();
+        $ph->CutPaper();
+        $ph->MoveY(-1);
+        $ph->BarcodeUPC('123456789012');
+        $ph->BarcodeEAN('1234567890123');
+        $ph->BarcodeITF('1234567890123');
+        $ph->BarcodeCODEABAR('1234567890123');
+        $ph->BarcodeCODE93('1234567890123');
+        $ph->BarcodeCODE128('1234567890123');
+        $ph->RasterBitmap('123456', 1, 1);
+        $fn = dirname(__FILE__) . '/../../pos/is4c-nf/graphics/WfcLogo2014';
+        $ph->RenderBitmapFromFile($fn);
+        $ph->RenderBitmapFromRam(123);
     }
 }
 

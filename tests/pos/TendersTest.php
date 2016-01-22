@@ -37,7 +37,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
                 )
             );
 
-            $pre = $obj->ErrorCheck();
+            $pre = $obj->preReqCheck();
             $this->assertThat($pre,
                 $this->logicalOr(
                     $this->isType('boolean',$pre),
@@ -47,6 +47,8 @@ class TendersTest extends PHPUnit_Framework_TestCase
 
             $change = $obj->ChangeType();
             $this->assertInternalType('string',$change);
+            $this->assertEquals(true, $obj->defaultTotal());
+            $this->assertInternalType('boolean', $obj->allowDefault());
         }
 
     }

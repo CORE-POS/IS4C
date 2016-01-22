@@ -1085,6 +1085,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         foreach (array(UPC::SCANNED_PREFIX, UPC::MACRO_PREFIX, UPC::HID_PREFIX, UPC::GS1_PREFIX) as $prefix) {
             $this->assertEquals(true, $u->check($prefix . '4011'));
         }
+        $scaleUPC = '0020121000199';
+        $u->parse($scaleUPC);
     }
 
     // mostly for coverage's sake
