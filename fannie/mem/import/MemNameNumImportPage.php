@@ -69,7 +69,7 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
     
     public function process_file($linedata, $indexes)
     {
-        global $FANNIE_OP_DB, $FANNIE_NAMES_PER_MEM;
+        global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
         $defaults_table = array();
@@ -80,7 +80,7 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             $defQ = $dbc->prepare("SELECT memtype,cd_type as custdataType,discount,staff,SSI as ssi from memdefaults");
         }
         $defR = $dbc->execute($defQ);
-        while($defW = $dbc->fetch_row($defR)) {
+        while ($defW = $dbc->fetchRow($defR)) {
             $defaults_table[$defW['memtype']] = array(
                 'type' => $defW['custdataType'],
                 'discount' => $defW['discount'],
@@ -136,11 +136,11 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             $customer['lowIncomeBenefits'] = $SSI;
 
             // determine person number
-            if ($FANNIE_NAMES_PER_MEM == 1) {
+            if ($this->config->get('NAMES_PER_MEM') == 1) {
                 $customer['accountHolder'] = 1;
             } else {
-                $account = \COREPOS\Fannie\API\member\MemberREST::get($cardno);
-                if ($account) {
+                $account = COREPOS\Fannie\API\member\MemberREST::search(array('cardNo'=>$cardno, 'customers'=>array()), 1, true);
+                if (count($account) > 0) {
                     $customer['accountHolder'] = 0;
                 } else {
                     $customer['accountHolder'] = 1;
@@ -149,7 +149,7 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
 
             $json['customers'][] = $customer;
         
-            $resp = \COREPOS\Fannie\API\member\MemberREST::post($cardno, $json);
+            $resp = COREPOS\Fannie\API\member\MemberREST::post($cardno, $json);
             if ($resp['errors'] > 0) {
                 $this->stats['errors'][] = "Error importing member $cardno ({$line[$indexes['fn']]} {$line[$indexes['ln']]})";
             } else {
@@ -179,6 +179,7 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
     {
         $data = array(1, 'Joe', 'Bob', 1);
         $indexes = array('memnum'=>0, 'fn'=>1, 'ln'=>2, 'mtype'=>3);
+        $this->config->set('NAMES_PER_MEM', 1);
         $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
     }
 }
