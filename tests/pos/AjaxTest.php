@@ -52,6 +52,13 @@ class AjaxTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('gui-modules/pos2.php', $json['dest_page']);
     }
 
+    public function testEnd()
+    {
+        $ajax = new AjaxEnd();
+        $input = array('receiptType'=>'full', 'ref'=>'1-1-1');
+        $this->assertEquals(array(), $ajax->ajax($input));
+    }
+
     public function testEndorse()
     {
         $ajax = new AjaxEndorse();
@@ -62,6 +69,8 @@ class AjaxTest extends PHPUnit_Framework_TestCase
     {
         $ajax = new AjaxScale();
         $this->assertEquals(' lb', $ajax->ajax());
+        $ajax = new AjaxPollScale();
+        $this->assertInternalType('string', $ajax->ajax());
     }
 }
 

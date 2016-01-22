@@ -247,7 +247,7 @@ class pos2 extends BasicCorePage
         }
         function receiptFetch(r_type, ref){
             $.ajax({
-                url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
+                url: '<?php echo $this->page_url; ?>ajax-callbacks/AjaxEnd.php',
                 type: 'get',
                 data: 'receiptType='+r_type+'&ref='+ref,
                 dataType: 'json',

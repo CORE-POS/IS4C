@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2013 Whole Foods Co-op.
+    Copyright 2015 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,12 +21,30 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','Off');
-include_once(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
+use COREPOS\pos\lib\FormLib;
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-/*
-if (CoreLocal::get("testremote")==0)
-    Database::testremote(); 
-*/
+class AjaxPollScale extends AjaxCallback
+{
+    protected $encoding = 'plain';
 
-echo 'Done';
+    public function ajax($input=array())
+    {
+        $scaleDriver = CoreLocal::get("scaleDriver");
+        $sd = 0;
+        if ($scaleDriver != "") {
+            $sd = new $scaleDriver();
+        }
+
+        if (is_object($sd)) {
+            ob_start();
+            $sd->ReadFromScale();    
+            return ob_get_clean();
+        } else {
+            return "{}"; // no driver => empty json
+        }
+    }
+}
+
+AjaxPollScale::run();
+

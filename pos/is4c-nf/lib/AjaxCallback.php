@@ -65,7 +65,7 @@ class AjaxCallback
 
         switch ($obj->getEncoding()) {
             case 'json':
-                echo JsonLib::array_to_json($output);
+                echo json_encode($output);
                 break;
             case 'plain':
             default:

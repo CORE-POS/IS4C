@@ -47,12 +47,17 @@ CoreLocal::set("plainmsg","items marked as shrink/unsellable");
 CoreLocal::set("End",2);
 CoreLocal::set('shrinkReason', 0);
 
-$_REQUEST['receiptType'] = 'ddd';
-$_REQUEST['ref'] = ReceiptLib::receiptNumber();
+$input = array(
+    'receiptType' => 'ddd',
+    'ref' => ReceiptLib::receiptNumber(),
+);
 TransRecord::finalizeTransaction(true);
-ob_start();
-include(realpath(dirname(__FILE__).'/ajax-end.php'));
-ob_end_clean();
+
+if (!class_exists('AjaxEnd')) {
+    include(dirname(__FILE__) . '/AjaxEnd.php');
+}
+$ajax = new AjaxEnd();
+$ajax->ajax($input);
 if (!headers_sent()) {
     header("Location: ".MiscLib::base_url()."gui-modules/pos2.php");
 }

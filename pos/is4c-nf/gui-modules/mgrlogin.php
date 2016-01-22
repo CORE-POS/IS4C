@@ -61,7 +61,7 @@ class mgrlogin extends NoInputCorePage
                 success: function(data){
                     if (data.cancelOrder){
                         $.ajax({
-                            url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
+                            url: '<?php echo $this->page_url; ?>ajax-callbacks/AjaxEnd.php',
                             type: 'get',
                             data: 'receiptType=cancelled&ref='+data.trans_num,
                             cache: false,

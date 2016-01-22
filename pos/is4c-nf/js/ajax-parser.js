@@ -53,7 +53,7 @@ function parserHandler(data)
 
 	if (data.receipt){
 		$.ajax({
-			url: CORE_JS_PREFIX+'ajax-callbacks/ajax-end.php',
+			url: CORE_JS_PREFIX+'ajax-callbacks/AjaxEnd.php',
 			type: 'GET',
 			data: 'receiptType='+data.receipt+'&ref='+data.trans_num,
 			dataType: 'json',
@@ -64,9 +64,6 @@ function parserHandler(data)
                 $('#receipticon').attr('src', newicon);
             },
 			success: function(data){
-				if (data.sync){
-					ajaxTransactionSync(CORE_JS_PREFIX);
-				}
                 if (data.error) {
                     var icon = $('#receipticon').attr('src');
                     var newicon = icon.replace(/(.*graphics)\/.*/, "$1/deadreceipt.gif");
@@ -81,11 +78,3 @@ function parserHandler(data)
 	}
 }
 
-function ajaxTransactionSync(rel_prefix){
-	$.ajax({
-		url: rel_prefix+'ajax-callbacks/ajax-transaction-sync.php',
-		type: 'GET',
-		cache: false,
-	});
-
-}

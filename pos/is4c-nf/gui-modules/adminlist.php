@@ -75,22 +75,12 @@ class adminlist extends NoInputCorePage
             $ref = SuspendLib::suspendorder();
             $this->add_onload_command("\$.ajax({
                 type:'post',
-                url:'{$this->page_url}ajax-callbacks/ajax-end.php',
+                url:'{$this->page_url}ajax-callbacks/AjaxEnd.php',
                 cache: false,
                 data: 'receiptType=suspended&ref={$ref}',
                 dataType: 'json',
                 success: function(data){
-                    \$.ajax({
-                    type:'post',
-                    url:'{$this->page_url}ajax-callbacks/ajax-transaction-sync.php',
-                    cache: false,
-                    success: function(data){
-                        location='{$this->page_url}gui-modules/pos2.php';
-                    },
-                    error: function(e1){
-                        location='{$this->page_url}gui-modules/pos2.php';
-                    }
-                    });
+                    location='{$this->page_url}gui-modules/pos2.php';
                 },
                 error: function(e1){
                     location='{$this->page_url}gui-modules/pos2.php';

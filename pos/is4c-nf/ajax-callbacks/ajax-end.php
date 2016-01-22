@@ -26,6 +26,7 @@ include_once(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 
 $receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
 $receiptNum = isset($_REQUEST['ref']) ? $_REQUEST['ref'] : '';
+header('Location: AjaxEnd.php?receiptType=' . $receiptType . '&ref=' . $receiptNum);
 
 /**
   Use requested receipt type to determine whether transaction
@@ -40,7 +41,6 @@ $receiptNum = isset($_REQUEST['ref']) ? $_REQUEST['ref'] : '';
   Note: none is currently only used by the RRR parser which
   could probably be refactored into a plugin providing its
   own receipt type implementation via a ReceiptMessage
-*/
 $transFinished = false;
 if ($receiptType == 'full' || $receiptType == 'cancelled' ||
     $receiptType == 'suspended' || $receiptType == 'none' ||
@@ -120,10 +120,8 @@ if (strlen($receiptType) > 0) {
         ReceiptLib::drawerKick();
     }
 
-    /**
-      Disable receipt for cancelled and/or suspended
-      transactions if configured to do so
-    */
+    // Disable receipt for cancelled and/or suspended
+    // transactions if configured to do so
     if ($receiptType == 'cancelled' && CoreLocal::get('CancelReceipt') == 0 && CoreLocal::get('CancelReceipt') !== '') {
         $receiptContent = array();
     } elseif ($receiptType == 'suspended' && CoreLocal::get('SuspendReceipt') == 0 && CoreLocal::get('SuspendReceipt') !== '') {
@@ -169,4 +167,6 @@ function uploadAndReset($type)
 
     return 1;
 }
+
+*/
 

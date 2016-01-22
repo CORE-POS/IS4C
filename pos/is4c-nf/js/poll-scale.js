@@ -4,7 +4,7 @@ function pollScale(rel_prefix)
 {
     if (typeof isNodeWebKit === 'function' && !isNodeWebKit()) {
         SCALE_REL_PRE = rel_prefix;
-        $.ajax({url: SCALE_REL_PRE+'ajax-callbacks/ajax-poll-scale.php',
+        $.ajax({url: SCALE_REL_PRE+'ajax-callbacks/AjaxPollScale.php',
             type: 'post',
             cache: false,
             dataType: 'json',

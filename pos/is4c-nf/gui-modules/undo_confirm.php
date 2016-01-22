@@ -153,7 +153,7 @@ class undo_confirm extends BasicCorePage
           Unify emp_no & trans_no records in the
           database. Logging records from authentication
           may have different values. This step
-          normalizes the transaction. When ajax-end.php
+          normalizes the transaction. When AjaxEnd.php
           runs to close the transaction, the actual
           logged in cashier's values will be restored
           via Database::loadglobalvalues().

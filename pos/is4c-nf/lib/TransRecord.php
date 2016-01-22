@@ -789,7 +789,7 @@ static public function add_log_record($opts)
   2) Rotates data out of localtemptrans
   3) Advances trans_no variable to next available value
 
-  This method replaces older ajax-end.php / end.php operations
+  This method replaces older AjaxEnd.php / end.php operations
   where the receipt was printed first and then steps 1-3
   above happened. This method should be called BEFORE printing
   a receipt. Receipts are now always printed via localtranstoday.

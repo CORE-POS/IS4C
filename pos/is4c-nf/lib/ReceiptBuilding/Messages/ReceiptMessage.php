@@ -77,7 +77,7 @@ class ReceiptMessage
 
     /**
       Message can be printed independently from a regular    
-      receipt. Pass this string to ajax-end.php as URL
+      receipt. Pass this string to AjaxEnd.php as URL
       parameter receiptType to print the standalone receipt.
     */
     public $standalone_receipt_type = '';

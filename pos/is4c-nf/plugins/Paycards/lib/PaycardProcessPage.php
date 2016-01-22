@@ -106,7 +106,7 @@ class PaycardProcessPage extends BasicCorePage
                 success: function(data){
                     var destination = data.main_frame;
                     if (data.receipt){
-                        $.ajax({url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
+                        $.ajax({url: '<?php echo $this->page_url; ?>ajax-callbacks/AjaxEnd.php',
                             cache: false,
                             type: 'post',
                             data: 'receiptType='+data.receipt+'&ref=<?php echo ReceiptLib::receiptNumber(); ?>',
