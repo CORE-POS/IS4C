@@ -536,7 +536,6 @@ class ScanningTest extends PHPUnit_Framework_TestCase
             'CouponCode',
             'DatabarCoupon',
             'HouseCoupon',
-            'MagicPLU',
             'SpecialOrder'
         );
 
@@ -564,11 +563,6 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $hc = new HouseCoupon();
         $this->assertEquals(True,$hc->isSpecial('0049999900001'));
         $this->assertEquals(False,$hc->isSpecial('0001234512345'));
-
-        $mp = new MagicPLU();
-        $this->assertEquals(True,$mp->isSpecial('0000000008005'));
-        $this->assertEquals(True,$mp->isSpecial('0000000008006'));
-        $this->assertEquals(False,$mp->isSpecial('0001234512345'));
 
         $so = new SpecialOrder();
         $this->assertEquals(true, $so->isSpecial('0045400010001'));
