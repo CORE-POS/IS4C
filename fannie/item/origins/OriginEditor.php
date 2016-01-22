@@ -145,7 +145,7 @@ class OriginEditor extends FannieRESTfulPage
             if ($this->hasEntry($this->name, $i) && $this->hasEntry($this->abbr, $i)) {
 
                 $model->countryID($this->countryID[$i]);
-                $this->saveOrDelete($model, $model->countryID());
+                $this->saveOrDelete($model, $model->countryID(), $i);
             }
         }
 
@@ -162,7 +162,7 @@ class OriginEditor extends FannieRESTfulPage
             if ($this->hasEntry($this->name, $i) && $this->hasEntry($this->abbr, $i)) {
 
                 $model->stateProvID($this->stateID[$i]);
-                $this->saveOrDelete($model, $model->stateProvID());
+                $this->saveOrDelete($model, $model->stateProvID(), $i);
             }
         }
 
@@ -556,14 +556,14 @@ class OriginEditor extends FannieRESTfulPage
         }
     }
 
-    private function saveOrDelete($model, $id)
+    private function saveOrDelete($model, $id, $index)
     {
         $delete = FormLib::get('delete', array());
         if (in_array($id, $delete)) {
             $model->delete();
         } else {
-            $model->name($this->name[$i]);
-            $model->abbr($this->abbr[$i]);
+            $model->name($this->name[$index]);
+            $model->abbr($this->abbr[$index]);
             $model->save();
         }
     }
