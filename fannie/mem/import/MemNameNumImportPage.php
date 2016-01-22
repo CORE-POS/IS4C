@@ -99,7 +99,7 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
 
             $json = array(
                 'cardNo' => $cardno,
-                'customerTypeID' => ($indexes['memtype'] !== false ? $line[$indexes['memtype']] : 0),
+                'customerTypeID' => ($indexes['mtype'] !== false ? $line[$indexes['mtype']] : 0),
                 'contactAllowed' => 1,
                 'chargeBalance' => 0,
                 'chargeLimit' => 0,
@@ -114,7 +114,7 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             $discount = 0;
             $staff = 0;
             $SSI = 0;
-            if ($indexes['memtype'] !== false) {
+            if ($indexes['mtype'] !== false) {
                 if (isset($defaults_table[$mtype]['type'])) {
                     $type = $defaults_table[$mtype]['type'];
                 }
