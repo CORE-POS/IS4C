@@ -19,7 +19,7 @@ class AjaxTest extends PHPUnit_Framework_TestCase
         ob_start();
         AjaxCallback::unitTest('AjaxDecision');
         $output = ob_get_clean();
-        $this->assertEquals('{"dest_page":"gui-modules/pos2.php","endorse":false,"cleared":true}', $output);
+        $this->assertEquals('{"dest_page":"gui-modules\/pos2.php","endorse":false,"cleared":true}', $output);
     }
     
     public function testParser()
