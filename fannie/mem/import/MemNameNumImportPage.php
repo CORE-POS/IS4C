@@ -115,6 +115,7 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
             $staff = 0;
             $SSI = 0;
             if ($indexes['mtype'] !== false) {
+                $mtype = $line[$indexes['mtype']];
                 if (isset($defaults_table[$mtype]['type'])) {
                     $type = $defaults_table[$mtype]['type'];
                 }
