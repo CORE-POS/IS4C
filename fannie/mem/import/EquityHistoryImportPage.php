@@ -110,9 +110,9 @@ class EquityHistoryImportPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     public function unitTest($phpunit)
     {
-        $data = array(1, 10, '2000-01-01', 'n/a', 1);
+        $data = array(2, 10, '2000-01-01', 'n/a', 1);
         $indexes = array('memnum'=>0, 'amt'=>1, 'date'=>2, 'transID'=>3, 'dept'=>4);
-        $phpunit->assertInternalType('array', $this->process_file(array($data), $indexes));
+        $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
     }
 }
 

@@ -153,7 +153,7 @@ class MemContactImportPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $data = array(1, '123 4th st', 'apt1', 'city', 'st', 12345, '867-5309', '', 'not@email');
         $indexes = array('memnum'=>0, 'street'=>1, 'street2'=>2, 'city'=>3, 'state'=>4,
             'zip'=>5, 'ph1'=>6, 'ph2'=>7, 'email'=>8);
-        $phpunit->assertInternalType('array', $this->process_file(array($data), $indexes));
+        $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
     }
 }
 

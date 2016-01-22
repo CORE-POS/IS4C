@@ -178,7 +178,7 @@ class MemNameNumImportPage extends \COREPOS\Fannie\API\FannieUploadPage
     {
         $data = array(1, 'Joe', 'Bob', 1);
         $indexes = array('memnum'=>0, 'fn'=>1, 'ln'=>2, 'mtype'=>3);
-        $phpunit->assertInternalType('array', $this->process_file(array($data), $indexes));
+        $phpunit->assertEquals(true, $this->process_file(array($data), $indexes));
     }
 }
 
