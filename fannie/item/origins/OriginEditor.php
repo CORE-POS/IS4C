@@ -28,13 +28,11 @@ if (!class_exists('FannieAPI')) {
 
 class OriginEditor extends FannieRESTfulPage 
 {
-
     protected $header = 'Product Origins';
     protected $title = 'Product Origins';
 
     public $description = '[Origins Editor] manages complex data about where items come from
     geographically.';
-    public $themed = true;
 
     public function preprocess()
     {
@@ -81,9 +79,7 @@ class OriginEditor extends FannieRESTfulPage
 
         $this->normalizeOriginNames();
 
-        header('Location: OriginEditor.php');
-
-        return false;
+        return 'OriginEditor.php';
     }
 
     public function post_newCustom_newState_newCountry_handler()
@@ -103,9 +99,7 @@ class OriginEditor extends FannieRESTfulPage
             $this->normalizeOriginNames();
         }
 
-        header('Location: OriginEditor.php');
-
-        return false;
+        return 'OriginEditor.php';
     }
 
     public function get_new_country_handler()
@@ -116,9 +110,7 @@ class OriginEditor extends FannieRESTfulPage
         $model->name('0 New Country Entry');
         $model->save();
 
-        header('Location: OriginEditor.php?country=1');
-
-        return false;
+        return 'OriginEditor.php?country=1';
     }
 
     public function get_new_state_handler()
@@ -129,9 +121,7 @@ class OriginEditor extends FannieRESTfulPage
         $model->name('0 New State/Prov Entry');
         $model->save();
 
-        header('Location: OriginEditor.php?state=1');
-
-        return false;
+        return 'OriginEditor.php?state=1';
     }
 
     public function get_new_custom_handler()
@@ -142,9 +132,7 @@ class OriginEditor extends FannieRESTfulPage
         $model->name('0 New Custom Region Entry');
         $model->save();
 
-        header('Location: OriginEditor.php?custom=1');
-
-        return false;
+        return 'OriginEditor.php?custom=1';
     }
 
     public function post_countryID_name_abbr_handler()
@@ -161,9 +149,7 @@ class OriginEditor extends FannieRESTfulPage
             }
         }
 
-        header('Location: OriginEditor.php?country=1');
-
-        return false;
+        return 'OriginEditor.php?country=1';
     }
 
     public function post_stateID_name_abbr_handler()
@@ -180,9 +166,7 @@ class OriginEditor extends FannieRESTfulPage
             }
         }
 
-        header('Location: OriginEditor.php?state=1');
-
-        return false;
+        return 'OriginEditor.php?state=1';
     }
 
     public function post_customID_name_handler()
@@ -210,9 +194,7 @@ class OriginEditor extends FannieRESTfulPage
             }
         }
 
-        header('Location: OriginEditor.php?custom=1');
-
-        return false;
+        return 'OriginEditor.php?custom=1';
     }
 
     public function get_country_view()
@@ -621,6 +603,17 @@ class OriginEditor extends FannieRESTfulPage
         $phpunit->assertNotEquals(0, strlen($this->get_state_view()));
         $phpunit->assertNotEquals(0, strlen($this->get_custom_view()));
         $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $this->get_new_country_handler();
+        $this->get_new_state_handler();
+        $this->get_new_custom_handler();
+        $this->countryID = array(1);
+        $this->name = array('TEST');
+        $this->abbr = array('TEST');
+        $this->post_countryID_name_abbr_handler();
+        $this->stateID = array(1);
+        $this->post_stateID_name_abbr_handler();
+        $this->customID = array(1);
+        $this->post_customID_name_handler();
     }
 }
 
