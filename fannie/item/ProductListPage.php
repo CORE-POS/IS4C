@@ -34,37 +34,34 @@ if (!function_exists('login'))
 class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool 
 {
     public $description = '[Product List] is a cross between a report and a tool. It lists current item prices and status flags for a department or set of departments but also allows editing.';
-    public $themed = true;
-
     protected $title = 'Fannie - Product List';
     protected $header = 'Product List';
 
     private $mode = 'form';
 
-    private $canDeleteItems = False;
-    private $canEditItems = False;
+    private $canDeleteItems = false;
+    private $canEditItems = false;
 
-    private $excel = False;
+    private $excel = false;
 
-    function preprocess(){
-        global $FANNIE_URL, $FANNIE_WINDOW_DRESSING;
-
+    function preprocess()
+    {
         $this->canDeleteItems = validateUserQuiet('delete_items');
         $this->canEditItems = validateUserQuiet('pricechange');
 
-        $this->excel = FormLib::get_form_value('excel',False);
+        $this->excel = FormLib::get('excel', false);
 
         if ($this->excel) {
             echo $this->list_content();
             return false;
         }
 
-        if (FormLib::get_form_value('ajax') !== ''){
+        if (FormLib::get('ajax') !== ''){
             $this->ajax_response();
             return false;
         }
 
-        if (FormLib::get_form_value('supertype') !== ''){
+        if (FormLib::get('supertype') !== ''){
             $this->mode = 'list';
         }
 
@@ -73,7 +70,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
 
     function javascript_content()
     {
-        global $FANNIE_URL, $FANNIE_OP_DB;
+        global $FANNIE_OP_DB;
 
         if ($this->excel) return '';
 
@@ -81,12 +78,12 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $depts = array();
         $prep = $dbc->prepare('SELECT dept_no,dept_name FROM departments ORDER BY dept_no');
         $result = $dbc->execute($prep);
-        while($row = $dbc->fetch_row($result))
+        while($row = $dbc->fetchRow($result))
             $depts[$row[0]] = $row[1];
         $taxes = array('-'=>array(0,'NoTax'));
         $prep = $dbc->prepare('SELECT id, description FROM taxrates ORDER BY id');
         $result = $dbc->execute($prep);
-        while($row = $dbc->fetch_row($result)){
+        while($row = $dbc->fetchRow($result)){
             if ($row['id'] == 1)
                 $taxes['X'] = array(1,'Regular');
             else
@@ -292,156 +289,30 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         return ob_get_clean();
     }
 
-    function ajax_response()
+    private function ajax_response()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        switch(FormLib::get_form_value('ajax')){
+        switch(FormLib::get('ajax')){
         case 'save':
-            $upc = FormLib::get_form_value('upc');
+            $upc = FormLib::get('upc');
             $store_id = FormLib::get('store_id');
             $upc = BarcodeLib::padUPC($upc);
-            $values = array();
-            $model = new ProductsModel($dbc);
-            $model->upc($upc);
-            $model->store_id($store_id);
-            $brand = FormLib::get('brand');
-            if ($brand !== '') {
-                $model->brand($brand);
-            }
-            $desc = FormLib::get_form_value('desc');
-            if ($desc !== '') {
-                $model->description($desc);
-            }
-            $dept = FormLib::get_form_value('dept');
-            if ($dept !== '') {
-                $model->department($dept);
-            }
-            $price = rtrim(FormLib::get_form_value('price'),' ');
-            if ($price !== '') {
-                $model->normal_price($price);
-            }
-            $cost = rtrim(FormLib::get_form_value('cost'), ' ');
-            if ($cost !== '') {
-                $model->cost($cost);
-            }
-            $tax = FormLib::get_form_value('tax');
-            if ($tax !== '') {
-                $model->tax($tax);
-            }
-            $fsx = FormLib::get_form_value('fs');
-            if ($fsx !== '') {
-                $model->foodstamp($fsx);
-            }
-            $disc = FormLib::get_form_value('disc');
-            if ($disc !== '') {
-                $model->discount($disc);
-            }
-            $wgt = FormLib::get_form_value('wgt');
-            if ($wgt !== '') {
-                $model->scale($wgt);
-            }
-            $loc = FormLib::get_form_value('local');
-            if ($loc !== '') {
-                $model->local($loc);
-            }
-            $supplier = FormLib::get_form_value('supplier');
-            /**
-              Normalize free-form supplier text
-              Look up corresponding vendor ID
-            */
-            $vendorID = '';
-            $vendors = new VendorsModel($dbc);
-            $vendors->vendorName($supplier);
-            foreach ($vendors->find() as $obj) {
-                $vendorID = $obj->vendorID();
-                break;
-            }
-            if ($vendorID !== '') {
-                $model->default_vendor_id($vendorID);
-            }
-
-            $model->save();
-
-            $chkP = $dbc->prepare('SELECT upc FROM prodExtra WHERE upc=?');
-            $chkR = $dbc->execute($chkP, array($upc));
-            if ($dbc->num_rows($chkR) > 0) {
-                $extraP = $dbc->prepare('UPDATE prodExtra SET manufacturer=?, distributor=? WHERE upc=?');
-                $dbc->execute($extraP, array($brand, $supplier,$upc));
-            } else {
-                $extraP = $dbc->prepare('INSERT INTO prodExtra
-                                (upc, variable_pricing, margin, manufacturer, distributor)
-                                VALUES
-                                (?, 0, 0, ?, ?)');
-
-                $dbc->execute($extraP, array($upc, $brand, $supplier));
-            }
-
-            if ($vendorID !== '') {
-                $item = new VendorItemsModel($dbc);
-                $item->createIfMissing($upc, $vendorID);
-                $item->updateCostByUPC($upc, $cost, $vendorID);
-            }
-            
-            updateProductAllLanes($upc);
+            $form = new COREPOS\common\mvc\FormValueContainer();
+            $this->saveItem($dbc, $upc, $form);
             break;  
         case 'deleteCheck':
-            $upc = FormLib::get_form_value('upc');
+            $upc = FormLib::get('upc');
             $upc = BarcodeLib::padUPC($upc);
-            $encoded_desc = FormLib::get_form_value('desc');
+            $encoded_desc = FormLib::get('desc');
             $desc = base64_decode($encoded_desc);
-            $fetchP = $dbc->prepare("select normal_price,
-                special_price,t.description,
-                case when foodstamp = 1 then 'Yes' else 'No' end as fs,
-                case when scale = 1 then 'Yes' else 'No' end as s
-                from products as p left join taxrates as t
-                on p.tax = t.id
-                where upc=? and p.description=?");
-            $fetchR = $dbc->execute($fetchP,array($upc, $desc));
-            $fetchW = $dbc->fetch_array($fetchR);
-
-            $ret = "Delete item $upc - $desc?\n";
-            $ret .= "Normal price: ".rtrim($fetchW[0])."\n";
-            $ret .= "Sale price: ".rtrim($fetchW[1])."\n";
-            $ret .= "Tax: ".rtrim($fetchW[2])."\n";
-            $ret .= "Foodstamp: ".rtrim($fetchW[3])."\n";
-            $ret .= "Scale: ".rtrim($fetchW[4])."\n";
-
-            $json = array(
-                'alertBox'=>$ret,
-                'upc'=>ltrim($upc, '0'),
-                'enc_desc'=>$encoded_desc
-            );
+            $json = $this->getItemInfo($dbc, $upc, $desc);
             echo json_encode($json);
             break;
         case 'doDelete':
-            $upc = FormLib::get_form_value('upc');
+            $upc = FormLib::get('upc');
             $upc = BarcodeLib::padUPC($upc);
-            $desc = base64_decode(FormLib::get_form_value('desc'));
-
-            $update = new ProdUpdateModel($dbc);
-            $update->upc($upc);
-            $update->logUpdate(ProdUpdateModel::UPDATE_DELETE);
-            
-            $model = new ProductsModel($dbc);
-            $model->upc($upc);
-            $model->delete();
-
-            $model = new ProductUserModel($dbc);
-            $model->upc($upc);
-            $model->delete();
-
-            $model = new ScaleItemsModel($dbc);
-            $model->plu($upc);
-            $model->delete();
-
-            $delP = $dbc->prepare("delete from prodExtra where upc=?");
-            $delXR = $dbc->execute($delP,array($upc));
-
-            $delP = $dbc->prepare("DELETE FROM upcLike WHERE upc=?");
-            $delR = $dbc->execute($delP,array($upc));
-
-            deleteProductAllLanes($upc);
+            $this->deleteItem($dbc, $upc);
             break;
         default:
             echo 'Unknown Action';
@@ -449,25 +320,154 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         }
     }
 
-    function list_content()
+    private $field_map = array(
+        'brand' => 'brand',
+        'desc' => 'description',
+        'dept' => 'department',
+        'price' => 'normal_price',
+        'cost' => 'cost',
+        'tax' => 'tax',
+        'fs' => 'foodstam',
+        'disc' => 'discount',
+        'wgt' => 'scale',
+        'local' => 'local',
+    );
+
+    private function saveItem($dbc, $upc, $form)
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
+        $model = new ProductsModel($dbc);
+        $model->upc($upc);
+        $model->store_id($store_id);
+        foreach ($this->field_map as $field => $col) {
+            try {
+                $model->$col($form->{$field});
+            } catch (Exception $ex) { }
+        }
+
+        $supplier = FormLib::get('supplier');
+        /**
+          Normalize free-form supplier text
+          Look up corresponding vendor ID
+        */
+        $vendorID = '';
+        $vendors = new VendorsModel($dbc);
+        $vendors->vendorName($supplier);
+        foreach ($vendors->find() as $obj) {
+            $vendorID = $obj->vendorID();
+            break;
+        }
+        if ($vendorID !== '') {
+            $model->default_vendor_id($vendorID);
+        }
+
+        $model->save();
+
+        $this->saveExtra($dbc, $upc, $form);
+
+        if ($vendorID !== '') {
+            $item = new VendorItemsModel($dbc);
+            $item->createIfMissing($upc, $vendorID);
+            $item->updateCostByUPC($upc, $cost, $vendorID);
+        }
+        
+        updateProductAllLanes($upc);
+    }
+
+    private function saveExtra($dbc, $upc, $form)
+    {
+        try {
+            $brand = $this->form->brand;
+            $supplier = $this->form->supplier;
+
+            $chkP = $dbc->prepare('SELECT upc FROM prodExtra WHERE upc=?');
+            $chkR = $dbc->execute($chkP, array($upc));
+            if ($dbc->numRows($chkR) > 0) {
+                $extraP = $dbc->prepare('UPDATE prodExtra SET manufacturer=?, distributor=? WHERE upc=?');
+                $dbc->execute($extraP, array($brand, $supplier,$upc));
+            } else {
+                $extraP = $dbc->prepare('INSERT INTO prodExtra
+                                (upc, variable_pricing, margin, manufacturer, distributor)
+                                VALUES
+                                (?, 0, 0, ?, ?)');
+                $dbc->execute($extraP, array($upc, $brand, $supplier));
+            }
+        } catch (Exception $ex) { }
+    }
+
+    private function getItemInfo($dbc, $upc, $desc)
+    {
+        $fetchP = $dbc->prepare("select normal_price,
+            special_price,t.description,
+            case when foodstamp = 1 then 'Yes' else 'No' end as fs,
+            case when scale = 1 then 'Yes' else 'No' end as s
+            from products as p left join taxrates as t
+            on p.tax = t.id
+            where upc=? and p.description=?");
+        $fetchR = $dbc->execute($fetchP,array($upc, $desc));
+        $fetchW = $dbc->fetch_array($fetchR);
+
+        $ret = "Delete item $upc - $desc?\n";
+        $ret .= "Normal price: ".rtrim($fetchW[0])."\n";
+        $ret .= "Sale price: ".rtrim($fetchW[1])."\n";
+        $ret .= "Tax: ".rtrim($fetchW[2])."\n";
+        $ret .= "Foodstamp: ".rtrim($fetchW[3])."\n";
+        $ret .= "Scale: ".rtrim($fetchW[4])."\n";
+
+        return array(
+            'alertBox'=>$ret,
+            'upc'=>ltrim($upc, '0'),
+            'enc_desc'=>$encoded_desc
+        );
+    }
+
+    private function deleteItem($dbc, $upc)
+    {
+        $desc = base64_decode(FormLib::get('desc'));
+
+        $update = new ProdUpdateModel($dbc);
+        $update->upc($upc);
+        $update->logUpdate(ProdUpdateModel::UPDATE_DELETE);
+        
+        $model = new ProductsModel($dbc);
+        $model->upc($upc);
+        $model->delete();
+
+        $model = new ProductUserModel($dbc);
+        $model->upc($upc);
+        $model->delete();
+
+        $model = new ScaleItemsModel($dbc);
+        $model->plu($upc);
+        $model->delete();
+
+        $delP = $dbc->prepare("delete from prodExtra where upc=?");
+        $delXR = $dbc->execute($delP,array($upc));
+
+        $delP = $dbc->prepare("DELETE FROM upcLike WHERE upc=?");
+        $delR = $dbc->execute($delP,array($upc));
+
+        deleteProductAllLanes($upc);
+    }
+
+    private function list_content()
+    {
+        global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $supertype = FormLib::get_form_value('supertype','dept');
-        $manufacturer = FormLib::get_form_value('manufacturer','');
-        $mtype = FormLib::get_form_value('mtype','prefix');
-        $deptStart = FormLib::get_form_value('deptStart',0);
-        $deptEnd = FormLib::get_form_value('deptEnd',0);
+        $supertype = FormLib::get('supertype','dept');
+        $manufacturer = FormLib::get('manufacturer','');
+        $mtype = FormLib::get('mtype','prefix');
+        $deptStart = FormLib::get('deptStart',0);
+        $deptEnd = FormLib::get('deptEnd',0);
         $deptMulti = FormLib::get('departments', array());
         $subDepts = FormLib::get('subdepts', array());
-        $super = FormLib::get_form_value('deptSub');
+        $super = FormLib::get('deptSub');
         $vendorID = FormLib::get('vendor');
         $upc_list = FormLib::get('u', array());
         $inUse = FormLib::get('inUse', 1);
         $store = FormLib::get('store', 0);
 
-        $sort = FormLib::get_form_value('sort','Department');   
+        $sort = FormLib::get('sort','Department');   
         $order = 'dept_name';
         if ($sort === 'UPC') $order = 'i.upc';  
         elseif ($sort === 'Description') $order = 'i.description, i.upc';
@@ -475,11 +475,11 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $ret = 'Report sorted by '.$sort.'<br />';
         if ($supertype == 'dept' && $super === ''){
             $ret .= 'Department '.$deptStart.' to '.$deptEnd.'<br />';
-        } else if ($supertype == 'dept'){
+        } elseif ($supertype == 'dept'){
             $ret .= 'Sub department '.$super.'<br />';
-        } else if ($supertype == 'manu') {
+        } elseif ($supertype == 'manu') {
             $ret .= _('Brand') . ' ' . $manufacturer . '<br />';
-        } else if ($supertype == 'vendor') {
+        } elseif ($supertype == 'vendor') {
             $vendor = new VendorsModel($dbc);
             $vendor->vendorID($vendorID);
             $vendor->load();
@@ -627,7 +627,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
 
-        if ($result === false || $dbc->num_rows($result) == 0) {
+        if ($result === false || $dbc->numRows($result) == 0) {
             return 'No data found!';
         }
 
@@ -642,45 +642,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $ret .= "</tr></thead><tbody>";
 
         $multi = ($this->config->get('STORE_MODE') == 'HQ') ? true : false;
-        while ($row = $dbc->fetch_row($result)) {
-            $ret .= '<tr id="'.$row[0].'">';
-            $enc = base64_encode($row[1]);
-            if (!$this->excel) {
-                $ret .= "<td align=center class=\"td_upc\"><a href=ItemEditorPage.php?searchupc=$row[0]>$row[0]</a>"; 
-                if ($multi) {
-                    $ret .= ' (' . substr($row['storeName'], 0, 1) . ')';
-                }
-                if ($this->canDeleteItems !== false) {
-                    $ret .= " <a href=\"\" onclick=\"deleteCheck('$row[0]','$enc'); return false;\">";
-                    $ret .= \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a>';
-                }
-                $ret .= '</td>';
-                $ret .= '<input type="hidden" class="hidden_upc" value="'.$row[0].'" />';
-                $ret .= '<input type="hidden" class="hidden_store_id" value="'.$row['store_id'].'" />';
-            } else {
-                $ret .= "<td align=center>$row[0]</td>";
-            }
-            $ret .= "<td align=center class=\"td_brand clickable\">{$row['brand']}</td>";
-            $ret .= "<td align=center class=\"td_desc clickable\">{$row['description']}</td>";
-            $ret .= "<td align=center class=\"td_dept clickable\">{$row['department']}</td>";
-            $ret .= "<td align=center class=\"td_supplier clickable\">{$row['distributor']}</td>";
-            $ret .= "<td align=center class=\"td_cost clickable\">".sprintf('%.2f',$row['cost'])."</td>";
-            $ret .= "<td align=center class=\"td_price clickable\">{$row['normal_price']}</td>";
-            $ret .= "<td align=center class=td_tax>{$row['Tax']}</td>";
-            $ret .= "<td align=center class=td_fs>{$row['FS']}</td>";
-            $ret .= "<td align=center class=td_disc>{$row['DISC']}</td>";
-            $ret .= "<td align=center class=td_wgt>{$row['WGHd']}</td>";
-            $ret .= "<td align=center class=td_local>{$row['local']}</td>";
-            if (!$this->excel && $this->canEditItems !== False){
-                $ret .= "<td align=center class=td_cmd><a href=\"\" 
-                    class=\"edit-link\"
-                    onclick=\"edit(\$(this).closest('tr')); return false;\">"
-                    . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . '</a>
-                    <a href="" class="save-link collapse"
-                    onclick="save($(this).closest(\'tr\')); return false;">'
-                    . \COREPOS\Fannie\API\lib\FannieUI::saveIcon() . '</a></td>';
-            }
-            $ret .= "</tr>\n";
+        while ($row = $dbc->fetchRow($result)) {
+            $ret .= $this->rowToTable($row, $multi);
         }
         $ret .= '</tbody></table>';
 
@@ -697,7 +660,51 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         return $ret;
     }
 
-    function form_content()
+    private function rowToTable($row, $multi)
+    {
+        $ret = '<tr id="'.$row[0].'">';
+        $enc = base64_encode($row[1]);
+        if (!$this->excel) {
+            $ret .= "<td align=center class=\"td_upc\"><a href=ItemEditorPage.php?searchupc=$row[0]>$row[0]</a>"; 
+            if ($multi) {
+                $ret .= ' (' . substr($row['storeName'], 0, 1) . ')';
+            }
+            if ($this->canDeleteItems !== false) {
+                $ret .= " <a href=\"\" onclick=\"deleteCheck('$row[0]','$enc'); return false;\">";
+                $ret .= \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a>';
+            }
+            $ret .= '</td>';
+            $ret .= '<input type="hidden" class="hidden_upc" value="'.$row[0].'" />';
+            $ret .= '<input type="hidden" class="hidden_store_id" value="'.$row['store_id'].'" />';
+        } else {
+            $ret .= "<td align=center>$row[0]</td>";
+        }
+        $ret .= "<td align=center class=\"td_brand clickable\">{$row['brand']}</td>";
+        $ret .= "<td align=center class=\"td_desc clickable\">{$row['description']}</td>";
+        $ret .= "<td align=center class=\"td_dept clickable\">{$row['department']}</td>";
+        $ret .= "<td align=center class=\"td_supplier clickable\">{$row['distributor']}</td>";
+        $ret .= "<td align=center class=\"td_cost clickable\">".sprintf('%.2f',$row['cost'])."</td>";
+        $ret .= "<td align=center class=\"td_price clickable\">{$row['normal_price']}</td>";
+        $ret .= "<td align=center class=td_tax>{$row['Tax']}</td>";
+        $ret .= "<td align=center class=td_fs>{$row['FS']}</td>";
+        $ret .= "<td align=center class=td_disc>{$row['DISC']}</td>";
+        $ret .= "<td align=center class=td_wgt>{$row['WGHd']}</td>";
+        $ret .= "<td align=center class=td_local>{$row['local']}</td>";
+        if (!$this->excel && $this->canEditItems !== false){
+            $ret .= "<td align=center class=td_cmd><a href=\"\" 
+                class=\"edit-link\"
+                onclick=\"edit(\$(this).closest('tr')); return false;\">"
+                . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . '</a>
+                <a href="" class="save-link collapse"
+                onclick="save($(this).closest(\'tr\')); return false;">'
+                . \COREPOS\Fannie\API\lib\FannieUI::saveIcon() . '</a></td>';
+        }
+        $ret .= "</tr>\n";
+
+        return $ret;
+    }
+
+    private function form_content()
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -711,7 +718,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             ORDER BY superID");
         $superR = $dbc->execute($superQ);
         $supers = array();
-        while ($superW = $dbc->fetch_row($superR)){
+        while ($superW = $dbc->fetchRow($superR)){
             $supers[$superW['superID']] = $superW['super_name'];
         }
         $subs = array();
@@ -725,7 +732,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 WHERE dept_ID=?
                 ORDER BY subdept_no');
             $subsR = $dbc->execute($subsP, array($first));
-            while ($subsW = $dbc->fetch_row($subsR)) {
+            while ($subsW = $dbc->fetchRow($subsR)) {
                 $subs[$subsW['subdept_no']] = $subsW['subdept_name'];
             }
         }
@@ -815,17 +822,17 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         return ob_get_clean();
     }
 
-    function body_content()
+    public function body_content()
     {
         if ($this->mode == 'form')
             return $this->form_content();
-        else if ($this->mode == 'list')
+        elseif ($this->mode == 'list')
             return $this->list_content();
         else
             return 'Unknown error occurred';
     }
 
-    function css_content()
+    public function css_content()
     {
         if (!$this->excel) {
             return '
