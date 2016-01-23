@@ -1225,7 +1225,7 @@ class $name extends " . $this->new_model_namespace . ($as_view ? 'ViewModel' : '
             }
         }
         $ret = array_reduce($this->find($label_col), 
-            function ($ret, $obj) use ($selected) {
+            function ($ret, $obj) use ($selected, $id_col, $label_col) {
                 return $ret . sprintf('<option %s value="%d">%s</option>',
                         $selected == $obj->$id_col() ? 'selected' : '',
                         $obj->$id_col(),
