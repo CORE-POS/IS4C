@@ -139,6 +139,7 @@ class BasicModel
     public function setConnection($c)
     {
         $this->connection = $c;
+        $this->record_changed = true;
     }
 
     /** check for potential changes **/
@@ -203,6 +204,9 @@ class BasicModel
         if (!isset($this->columns[$name])) {
             foreach ($this->columns as $col => $info) {
                 if (isset($info['replaces']) && $info['replaces'] == $name) {
+                    $name = $col;
+                    break;
+                } elseif (strtolower($col) == strtolower($name)) {
                     $name = $col;
                     break;
                 }
@@ -1202,17 +1206,22 @@ class $name extends " . $this->new_model_namespace . ($as_view ? 'ViewModel' : '
       @param $selected [PK value] marks one of the tags
         as selected.
     */
-    public function toOptions($selected=0)
+    public function toOptions($selected=0, $id_as_label=false)
     {
         if (count($this->unique) != 1) {
             return '';
         }
         $id_col = $this->unique[0];
-        $label_cols = array_keys($this->columns);
-        foreach ($label_cols as $col) {
-            if ($col != $id_col) {
-                $label_col = $col;
-                break;
+        if ($id_as_label) {
+            $label_col = $id_col;
+        } else {
+            // use first non-ID column for the label
+            $label_col = array_keys($this->columns);
+            foreach ($label_col as $col) {
+                if ($col != $id_col) {
+                    $label_col = $col;
+                    break;
+                }
             }
         }
         $ret = array_reduce($this->find($label_col), 
