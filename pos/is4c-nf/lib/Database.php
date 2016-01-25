@@ -413,7 +413,7 @@ static public function uploadtoServer()
                 CoreLocal::get("mUser"),
                 CoreLocal::get("mPass"),
                 False);
-    if !isset($connect->connections[CoreLocal::get("mDatabase")]) ||
+    if (!isset($connect->connections[CoreLocal::get("mDatabase")]) ||
         $connect->connections[CoreLocal::get("mDatabase")] === False){
         CoreLocal::set("standalone",1);
         return 0;    
