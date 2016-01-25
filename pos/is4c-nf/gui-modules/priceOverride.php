@@ -57,7 +57,7 @@ class PriceOverride extends NoInputCorePage {
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
             } elseif (is_numeric($input) && $input != 0){
-                $this->rePrice($input);
+                $this->rePrice($input, $line_id, $this->isBottleReturn($row['department']));
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return false;
             }
@@ -75,21 +75,31 @@ class PriceOverride extends NoInputCorePage {
         $res = $dbc->query($query);
     }
 
-    private function rePrice($input)
+    private function isBottleReturn($dept)
+    {
+        if ($dept == CoreLocal::get("BottleReturnDept")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private function rePrice($input, $line_id, $negate)
     {
         $dbc = Database::tDataConnect();
         $cents = 0;
         $dollars = 0;
-        if (strlen($input)==1 || strlen($input)==2)
+        if (strlen($input)==1 || strlen($input)==2) {
             $cents = $input;
-        else {
+        } else {
             $cents = substr($input,-2);
             $dollars = substr($input,0,strlen($input)-2);
         }
         $ttl = ((int)$dollars) + ((int)$cents / 100.0);
         $ttl = number_format($ttl,2);
-        if ($row['department'] == CoreLocal::get("BottleReturnDept"))
+        if ($negate) {
             $ttl = $ttl * -1;
+        }
             
         $query = sprintf("UPDATE localtemptrans SET unitPrice=%.2f, regPrice=%.2f,
             total = quantity*%.2f, charflag='PO'
