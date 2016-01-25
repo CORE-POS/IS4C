@@ -143,7 +143,7 @@ HTML;
         ?>
         <div class="container-fluid">
         <form method='post'>
-        <input type='hidden' name=upc value='<?php echo $upc; ?>'>
+        <input type='hidden' name=upc value="<?php echo $upc; ?>">
         <div class="form-group form-inline">
             <label>Description</label>
             <input type='text' name='description' maxlength=30

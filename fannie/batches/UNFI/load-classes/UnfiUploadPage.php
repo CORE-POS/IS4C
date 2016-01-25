@@ -203,11 +203,9 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             if (empty($reg) or empty($srp))
                 continue;
 
-            // syntax fixes. kill apostrophes in text fields,
+            // syntax fixes. 
             // trim $ off amounts as well as commas for the
             // occasional > $1,000 item
-            $brand = str_replace("'","",$brand);
-            $description = str_replace("'","",$description);
             $reg = $this->sanitizePrice($reg);
             $net = $this->sanitizePrice($net);
             $srp = $this->sanitizePrice($srp);

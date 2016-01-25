@@ -112,7 +112,6 @@ class AlaffiaUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
 
     private function cleanDescription($description)
     {
-        $description = str_replace("'","",$description);
         if (substr($description, 0, 5) == "*NEW ") {
             $description = substr($description, 5);
         }

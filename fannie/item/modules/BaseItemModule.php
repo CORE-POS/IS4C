@@ -1120,11 +1120,11 @@ HTML;
             }
             $desc = $this->formNoEx('descript', array());
             if (isset($desc[$i])) {
-                $model->description(str_replace("'", '', $desc[$i]));
+                $model->description($desc[$i]);
             }
             $brand = $this->formNoEx('manufacturer', array());
             if (isset($brand[$i])) {
-                $model->brand(str_replace("'", '', $brand[$i]));
+                $model->brand($brand[$i]);
             }
             $model->pricemethod(0);
             $model->groupprice(0.00);

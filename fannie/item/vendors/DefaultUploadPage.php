@@ -256,9 +256,6 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $srp = 0;
             }
 
-            $brand = str_replace("'","",$brand);
-            $description = str_replace("'","",$description);
-
             $args = array(
                 $brand, $sku, $size, $upc,
                 $qty, $reg_unit, $description, $category,

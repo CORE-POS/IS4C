@@ -167,7 +167,6 @@ class GardenOfLifeUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             // syntax fixes. kill apostrophes in text fields,
             // trim $ off amounts as well as commas for the
             // occasional > $1,000 item
-            $description = str_replace("'","",$description);
             $reg = str_replace('$',"",$reg);
             $reg = str_replace(",","",$reg);
             $reg = trim($reg);
