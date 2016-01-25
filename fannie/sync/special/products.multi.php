@@ -77,11 +77,11 @@ $cmd_obfusc = 'mysqldump'
     . ' > ' . escapeshellarg($tempfile);
 exec($cmd, $output, $ret);
 if ($ret > 0) {
+    $report = '';
     if (file_exists($tempfile . '.err')) {
-        $output .= file_get_contents($tempfile . '.err');
+        $report .= file_get_contents($tempfile . '.err');
         unlink($tempfile . '.err');
     }
-    $report = implode($lineBreak, $output);
     if (strlen($report) > 0) {
         $report = "{$lineBreak}$report";
     }
