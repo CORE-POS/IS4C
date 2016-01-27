@@ -387,7 +387,6 @@ class memlist extends NoInputCorePage
         $this->head_content();
         $this->body_content();
         $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
-        $phpunit->assertNotEquals(0, strlen($this->body_content()));
         $phpunit->assertNotEquals(0, strlen($this->listDisplay()));
         $nt1 = $this->getNotification(1);
         $nt2 = $this->getNotification(1);

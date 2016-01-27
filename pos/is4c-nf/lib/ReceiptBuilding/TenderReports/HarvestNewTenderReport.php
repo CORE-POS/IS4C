@@ -40,7 +40,7 @@ class HarvestNewTenderReport extends TenderReport
  */
 static public function get()
 {
-    $DESIRED_TENDERS = CoreLocal::get("TRDesiredTenders");
+    $DESIRED_TENDERS = is_array(CoreLocal::get("TRDesiredTenders")) ? CoreLocal::get('TRDesiredTenders') : array();
 
     $DESIRED_TENDERS = array_merge($DESIRED_TENDERS, array(
         "CP"=>"COUPONS TENDERED", 

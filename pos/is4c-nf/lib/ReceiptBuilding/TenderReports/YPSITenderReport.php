@@ -35,7 +35,7 @@ static public function get()
     $shiftCutoff = date('Y-m-d 00:00:00');
     $excl = " AND emp_no <> 9999 ";
 
-    $DESIRED_TENDERS = CoreLocal::get("TRDesiredTenders");
+    $DESIRED_TENDERS = is_array(CoreLocal::get("TRDesiredTenders")) ? CoreLocal::get('TRDesiredTenders') : array();
 
     $db_a = Database::mDataConnect();
 

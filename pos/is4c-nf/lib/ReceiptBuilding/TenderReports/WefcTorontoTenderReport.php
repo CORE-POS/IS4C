@@ -173,7 +173,7 @@ static public function get(){
         $shiftCutoff = date('Y-m-d 00:00:00');
         self::$shiftCutoff = $shiftCutoff;
 
-        $DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
+        $DESIRED_TENDERS = is_array(CoreLocal::get("TRDesiredTenders")) ? CoreLocal::get('TRDesiredTenders') : array();
 
     self::$dashLine = str_repeat('-',54);
         $receipt = "";
