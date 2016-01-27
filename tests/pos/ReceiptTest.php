@@ -382,8 +382,10 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
     public function testTenderReport()
     {
-        $out = TenderReport::get();
-        $this->assertNotEquals(0, strlen($out));
+        $mods = AutoLoader::listModules('TenderReport', true);
+        foreach ($mods as $mod) {
+            $this->assertInternalType('string', $mod::get());
+        }
     }
 }
 

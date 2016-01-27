@@ -25,9 +25,7 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class suspendedlist extends NoInputCorePage 
 {
-    private $temp_result;
-    private $temp_num_rows;
-    private $temp_db;
+    private $temp_result = array();
 
     function head_content()
     {
@@ -56,6 +54,28 @@ class suspendedlist extends NoInputCorePage
             return false;
         }
 
+
+        $this->temp_result = $this->getTransactins();
+        
+        /* if there are suspended transactions available, 
+         * store the result and row count as class variables
+         * so they can be retrieved in body_content()
+         *
+         * otherwise notify that there are no suspended
+         * transactions
+         */
+        if (count($this->temp_result) > 0) {
+            return true;
+        } else {
+            CoreLocal::set("boxMsg",_("no suspended transaction"));
+            $this->change_page($this->page_url."gui-modules/pos2.php");    
+
+            return false;
+        }
+    } // END preprocess() FUNCTION
+
+    private function getTransactions()
+    {
         $query_local = "SELECT register_no, emp_no, trans_no, SUM(total) AS total "
             ." FROM suspended "
             ." WHERE datetime >= " . date("'Y-m-d 00:00:00'")
@@ -70,37 +90,16 @@ class suspendedlist extends NoInputCorePage
             $result = $dbc_a->query($query_local);
         }
 
-        $num_rows = $result ? $dbc_a->num_rows($result) : 0;
-        
-        /* if there are suspended transactions available, 
-         * store the result and row count as class variables
-         * so they can be retrieved in body_content()
-         *
-         * otherwise notify that there are no suspended
-         * transactions
-         */
-        if ($num_rows > 0){
-            $this->temp_result = $result;
-            $this->temp_num_rows = $num_rows;
-            $this->temp_db = $dbc_a;
-
-            return true;
-        } else {
-            CoreLocal::set("boxMsg",_("no suspended transaction"));
-            $this->change_page($this->page_url."gui-modules/pos2.php");    
-
-            return false;
+        $ret = array();
+        while ($row = $dbc_a->fetchRow($result)) {
+            $ret[] = $row;
         }
 
-        return true;
-    } // END preprocess() FUNCTION
+        return $ret;
+    }
 
     function body_content()
     {
-        $num_rows = $this->temp_num_rows;
-        $result = $this->temp_result;
-        $dbc = $this->temp_db;
-
         echo "<div class=\"baseHeight\">"
             ."<div class=\"listbox\">"
             ."<form id=\"selectform\" method=\"post\" action=\""
@@ -109,8 +108,7 @@ class suspendedlist extends NoInputCorePage
                 id=\"selectlist\">";
 
         $selected = "selected";
-        for ($i = 0; $i < $num_rows; $i++) {
-            $row = $dbc->fetch_array($result);
+        foreach ($this->temp_result as $row) {
             echo "<option value='".$row["register_no"]."::".$row["emp_no"]."::".$row["trans_no"]."' ".$selected
                 ."> lane ".substr(100 + $row["register_no"], -2)." Cashier ".substr(100 + $row["emp_no"], -2)
                 ." #".$row["trans_no"]." -- $".$row["total"]."\n";
@@ -225,6 +223,15 @@ class suspendedlist extends NoInputCorePage
         }
 
         Database::getsubtotals();
+    }
+
+    public function unitTest($phpunit)
+    {
+        $trans = $this->getTransactions();
+        $phpunit->assertInternalType('array', $trans);
+        $this->temp_result = $trans;
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $phpunit->assertNotEquals(0, strlen($this->head_content()));
     }
 }
 

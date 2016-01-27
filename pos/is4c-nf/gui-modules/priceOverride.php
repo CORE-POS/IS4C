@@ -25,8 +25,8 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class PriceOverride extends NoInputCorePage {
 
-    var $description;
-    var $price;
+    private $description = '';
+    private $price = '';
 
     function preprocess()
     {
@@ -126,6 +126,17 @@ class PriceOverride extends NoInputCorePage {
         <?php
         $this->add_onload_command("\$('#reginput').focus();\n");
     } // END body_content() FUNCTION
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertInternalType('boolean', $this->isBottleReturn());
+        $this->rePrice(1, 1, false);
+        $this->rePrice(101, 1, true);
+        $this->markZeroRecord(1);
+        ob_start();
+        $this->body_content();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+    }
 }
 
 AutoLoader::dispatch();
