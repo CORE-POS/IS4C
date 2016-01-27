@@ -306,12 +306,12 @@ class memlist extends NoInputCorePage
         if ($noticeP === false) {
             return '';
         }
-        $noticeR = $dbc->execute($noticeP, array($id)); 
+        $noticeR = $dbc->execute($noticeP, array($card_no)); 
         $notice = '';
         while ($row = $dbc->fetchRow($noticeR)) {
             $notice .= ' ' . $row['message'];
         }
-        $this->notice_cache[$id] = $notice;
+        $this->notice_cache[$card_no] = $notice;
 
         return $notice;
     }

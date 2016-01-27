@@ -167,7 +167,7 @@ function trTotal($k, $label,$i=False)
     }
 
     if (is_array($k)) $k = "'" . implode("','", $k) . "'";
-    elseif (!is_numeric($k)) { 
+    if (!is_numeric($k)) { 
         if ($k[0] == '#') {
             $k = substr($k,1);
             $q = 'card_no';
