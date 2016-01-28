@@ -230,8 +230,10 @@ class suspendedlist extends NoInputCorePage
         $trans = $this->getTransactions();
         $phpunit->assertInternalType('array', $trans);
         $this->temp_result = $trans;
-        $phpunit->assertNotEquals(0, strlen($this->body_content()));
-        $phpunit->assertNotEquals(0, strlen($this->head_content()));
+        ob_start();
+        $this->head_content();
+        $this->body_content();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
     }
 }
 
