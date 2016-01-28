@@ -75,27 +75,28 @@ class memlist extends NoInputCorePage
 
             if (is_numeric($entered) && !$obj->handle_numbers()) {
                 continue;
-            } else if (!is_numeric($entered) && !$obj->handle_text()) {
+            } elseif (!is_numeric($entered) && !$obj->handle_text()) {
                 continue;
-            } else if (is_numeric($entered)) {
+            } elseif (is_numeric($entered)) {
                 $chk = $obj->lookup_by_number($entered);
-                if ($chk['url'] !== false) {
-                    $this->change_page($chk['url']);
-                    throw new Exception('page change requested');
-                }
-                foreach($chk['results'] as $key=>$val) {
-                    $results[$key] = $val;
-                }
+                $results = $this->checkResults($chk, $results);
             } elseif (!is_numeric($entered)) {
                 $chk = $obj->lookup_by_text($entered);
-                if ($chk['url'] !== false) {
-                    $this->change_page($chk['url']);
-                    throw new Exception('page change requested');
-                }
-                foreach ($chk['results'] as $key=>$val) {
-                    $results[$key] = $val;
-                }
+                $results = $this->checkResults($chk, $results);
             }
+        }
+
+        return $results;
+    }
+
+    private function checkResults($chk, $results)
+    {
+        if ($chk['url'] !== false) {
+            $this->change_page($chk['url']);
+            throw new Exception('page change requested');
+        }
+        foreach ($chk['results'] as $key=>$val) {
+            $results[$key] = $val;
         }
 
         return $results;
@@ -217,14 +218,14 @@ class memlist extends NoInputCorePage
             } else {
                 $upc = sprintf("00401229%05d", $memberCard);
                 // Check that it isn't already there, perhaps for someone else.
-                $mQ = "SELECT card_no FROM memberCards where card_no = {$card_no}";
-                $mResult = $db_a->query($mQ);
+                $memQ = "SELECT card_no FROM memberCards where card_no = {$card_no}";
+                $mResult = $db_a->query($memQ);
                 $mNumRows = $db_a->num_rows($mResult);
                 if ($mNumRows > 0) {
                     return "{$card_no} is already associated with another Member Card";
                 } else {
-                    $mQ = "INSERT INTO memberCards (card_no, upc) VALUES ({$card_no}, '$upc')";
-                    $mResult = $db_a->query($mQ);
+                    $memQ = "INSERT INTO memberCards (card_no, upc) VALUES ({$card_no}, '$upc')";
+                    $mResult = $db_a->query($memQ);
                     if ( !$mResult ) {
                         return "Linking membership to Member Card failed.";
                     }

@@ -138,6 +138,30 @@ class suspendedlist extends NoInputCorePage
         $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
     } // END body_content() FUNCTION
 
+    private function safeCols($cols)
+    {
+        $cols = '';
+        foreach($def as $name=>$info){
+            if ($name == 'trans_id') continue;
+            $cols .= $name.',';
+        }
+
+        return substr($cols,0,strlen($cols)-1);
+    }
+
+    private function suspendedQuery($cols, $emp, $reg, $trans)
+    {
+        return sprintf("SELECT {$cols} 
+                    FROM suspended 
+                    WHERE 
+                        register_no = %d
+                        AND emp_no = %d
+                        AND trans_no = %d
+                        AND datetime >= " . date("'Y-m-d 00:00:00'") . "
+                    ORDER BY trans_id",
+                    $reg, $emp, $trans);
+    }
+
     private function doResume($reg,$emp,$trans)
     {
         $query_del = "DELETE FROM suspended WHERE register_no = ".$reg." AND emp_no = "
@@ -156,18 +180,9 @@ class suspendedlist extends NoInputCorePage
             // localtemptrans might not actually be empty; let trans_id
             // populate via autoincrement rather than copying it from
             // the suspended table
-            if(substr($cols,-9) == ',trans_id') {
-                $cols = substr($cols, 0, strlen($cols)-9);
-            }
+            $cols = $this->safeCols($cols);
 
-            $remoteQ = "SELECT {$cols} 
-                        FROM suspended 
-                        WHERE 
-                            register_no = $reg 
-                            AND emp_no = $emp
-                            AND trans_no = $trans
-                            AND datetime >= " . date("'Y-m-d 00:00:00'") . "
-                        ORDER BY trans_id";
+            $remoteQ = $this->suspendedQuery($cols, $emp, $reg, $trans);
             $success = $dbc_a->transfer(CoreLocal::get("mDatabase"),$remoteQ,
                 CoreLocal::get("tDatabase"),"insert into localtemptrans ({$cols})");
             if ($success) {
@@ -179,21 +194,9 @@ class suspendedlist extends NoInputCorePage
             // populate via autoincrement rather than copying it from
             // the suspended table
             $def = $dbc_a->tableDefinition('localtemptrans');
-            $cols = '';
-            foreach($def as $name=>$info){
-                if ($name == 'trans_id') continue;
-                $cols .= $name.',';
-            }
-            $cols = substr($cols,0,strlen($cols)-1);
+            $cols = $this->safeCols(array_keys($def));
 
-            $localQ = "SELECT {$cols} 
-                        FROM suspended 
-                        WHERE 
-                            register_no = $reg 
-                            AND emp_no = $emp
-                            AND trans_no = $trans
-                            AND datetime >= " . date("'Y-m-d 00:00:00'") . "
-                        ORDER BY trans_id";
+            $localQ = $this->suspendedQuery($cols, $emp, $reg, $trans);
             $success = $dbc_a->query("insert into localtemptrans ({$cols}) ".$localQ);
             if ($success) {
                 $dbc_a->query($query_del);
@@ -234,6 +237,9 @@ class suspendedlist extends NoInputCorePage
         $this->head_content();
         $this->body_content();
         $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+        $cols = $this->safeCols(array('trans_no','trans_id'));
+        $phpunit->assertEquals('trans_no', $cols);
+        $phpunit->assertNotEquals(0, strlen($this->suspendedQuery($cols, 1, 1, 1)));
     }
 }
 
