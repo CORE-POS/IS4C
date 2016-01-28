@@ -44,6 +44,7 @@ class DefaultReceiptDataFetch
             $join_table = $op_db . $sql->sep() . 'subdepts';
             $column = 's.subdept_name';
         }
+        $sql = Database::tDataConnect();
         $query = 'SELECT l.upc,l.trans_type,l.description,
             l.total,l.percentDiscount,l.trans_status,
             l.charflag,l.scale,l.quantity,l.unitPrice,
