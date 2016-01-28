@@ -129,7 +129,7 @@ class PriceOverride extends NoInputCorePage {
 
     public function unitTest($phpunit)
     {
-        $phpunit->assertInternalType('boolean', $this->isBottleReturn());
+        $phpunit->assertInternalType('boolean', $this->isBottleReturn(1));
         $this->rePrice(1, 1, false);
         $this->rePrice(101, 1, true);
         $this->markZeroRecord(1);
