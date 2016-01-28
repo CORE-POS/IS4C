@@ -25,7 +25,7 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class PriceOverride extends NoInputCorePage {
 
-    private $description = '';
+    private $item_description = '';
     private $price = '';
 
     function preprocess()
@@ -43,7 +43,7 @@ class PriceOverride extends NoInputCorePage {
             return false;
         }
         $row = $dbc->fetch_row($res);
-        $this->description = $row['description'];
+        $this->item_description = $row['description'];
         $this->price = sprintf('$%.2f',$row['total']);
 
         if (isset($_REQUEST['reginput'])){
@@ -117,7 +117,7 @@ class PriceOverride extends NoInputCorePage {
             id="overrideform" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <input type="text" id="reginput" name='reginput' tabindex="0" onblur="$('#reginput').focus()" />
         </form>
-        <span><?php echo $this->description; ?> - <?php echo $this->price; ?></span>
+        <span><?php echo $this->item_description; ?> - <?php echo $this->price; ?></span>
         <p>
         <span class="smaller">[clear] to cancel</span>
         </p>
