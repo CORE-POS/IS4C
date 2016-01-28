@@ -138,10 +138,10 @@ class suspendedlist extends NoInputCorePage
         $this->add_onload_command("selectSubmit('#selectlist', '#selectform')\n");
     } // END body_content() FUNCTION
 
-    private function safeCols($cols)
+    private function safeCols($arr)
     {
         $cols = '';
-        foreach($def as $name=>$info){
+        foreach ($arr as $name) {
             if ($name == 'trans_id') continue;
             $cols .= $name.',';
         }
@@ -180,7 +180,7 @@ class suspendedlist extends NoInputCorePage
             // localtemptrans might not actually be empty; let trans_id
             // populate via autoincrement rather than copying it from
             // the suspended table
-            $cols = $this->safeCols($cols);
+            $cols = $this->safeCols(explode(',', $cols));
 
             $remoteQ = $this->suspendedQuery($cols, $emp, $reg, $trans);
             $success = $dbc_a->transfer(CoreLocal::get("mDatabase"),$remoteQ,
