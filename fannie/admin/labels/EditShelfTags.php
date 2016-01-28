@@ -89,7 +89,7 @@ class EditShelfTags extends FannieRESTfulPage
         $tag = new ShelftagsModel($this->connection);
         for ($i = 0; $i < count($upcs); $i++){
             $tag->id($this->id);
-            $tag->upc($upc[$i]);
+            $tag->upc($upcs[$i]);
             $tag->description(isset($descs[$i]) ? $descs[$i] : '');
             $tag->normal_price(isset($prices[$i]) ? $prices[$i] : 0);
             $tag->brand(isset($brands[$i]) ? $brands[$i] : '');
