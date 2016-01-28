@@ -28,7 +28,6 @@ if (!class_exists('FannieAPI')) {
 if (!function_exists('checkLogin')) {
     include_once($FANNIE_ROOT . 'auth/login.php');
 }
-if (!function_exists("updateProductAllLanes")) include($FANNIE_ROOT.'item/laneUpdates.php');
 
 class EditBatchPage extends FannieRESTfulPage 
 {
@@ -493,7 +492,7 @@ class EditBatchPage extends FannieRESTfulPage
                 $json['msg'] = 'Error taking item ' . $upc . ' off sale';
             }
             
-            updateProductAllLanes($upc);
+            COREPOS\Fannie\API\data\ItemSync::sync($upc);
         } else {
             $likecode = substr($upc,2);
             if ($this->unsaleLikeCode($likecode) === false) {

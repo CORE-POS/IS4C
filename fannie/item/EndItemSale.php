@@ -57,8 +57,7 @@ class EndItemSale extends FannieRESTfulPage {
             $batchR = $dbc->execute($batchP, array($batchUPC, $batchID));
         }
 
-        require('laneUpdates.php');
-        updateProductAllLanes($upc);
+        COREPOS\Fannie\API\data\ItemSync::sync($upc);
 
         header('Location: ItemEditorPage.php?searchupc='.$upc);
         return False;

@@ -28,7 +28,6 @@ if (!class_exists('FannieAPI')) {
 if (!function_exists('checkLogin')) {
     include_once($FANNIE_ROOT . 'auth/login.php');
 }
-if (!function_exists("updateProductAllLanes")) include($FANNIE_ROOT.'item/laneUpdates.php');
 
 class BatchListPage extends FannieRESTfulPage 
 {

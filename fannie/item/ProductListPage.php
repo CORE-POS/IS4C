@@ -25,9 +25,6 @@ require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-if (!function_exists('addProductAllLanes')) {
-    require('laneUpdates.php');
-}
 if (!function_exists('login'))
     include($FANNIE_ROOT.'auth/login.php');
 
@@ -370,7 +367,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $item->updateCostByUPC($upc, $cost, $vendorID);
         }
         
-        updateProductAllLanes($upc);
+        COREPOS\Fannie\API\data\ItemSync::sync($upc);
     }
 
     private function saveExtra($dbc, $upc, $form)
@@ -446,7 +443,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $delP = $dbc->prepare("DELETE FROM upcLike WHERE upc=?");
         $delR = $dbc->execute($delP,array($upc));
 
-        deleteProductAllLanes($upc);
+        COREPOS\Fannie\API\data\ItemSync::remove($upc);
     }
 
     private function list_content()

@@ -24,9 +24,6 @@
 if (!class_exists('FannieAPI')) {
     include(dirname(__FILE__) . '/../classlib2.0/FannieAPI.php');
 }
-if (!function_exists('updateProductAllLanes')) {
-    include('laneUpdates.php');
-}
 if (!function_exists('updateAllLanes')) {
     include('laneUpdates_WEFC_Toronto.php');
 }
@@ -620,7 +617,7 @@ class ItemEditorPage extends FanniePage
         if (isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto') {
             updateAllLanes($upc, array('products','productUser'));
         } else {
-            updateProductAllLanes($upc);
+            COREPOS\Fannie\API\data\ItemSync::sync($upc);
         }
 
         if ($audited) {
