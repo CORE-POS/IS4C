@@ -55,7 +55,7 @@ class suspendedlist extends NoInputCorePage
         }
 
 
-        $this->temp_result = $this->getTransactins();
+        $this->temp_result = $this->getTransactions();
         
         /* if there are suspended transactions available, 
          * store the result and row count as class variables
