@@ -369,8 +369,11 @@ class BaseItemModule extends ItemModule
 
         $nav_tabs = '<ul id="store-tabs" class="nav nav-tabs small" role="tablist">';
         $ret .= '{{nav_tabs}}<div class="tab-content">';
-        $active_tab = true;
         foreach ($items as $store_id => $rowItem) {
+            $active_tab = false;
+            if (FannieConfig::config('STORE_MODE') !== 'HQ' || $store_id == FannieConfig::config('STORE_ID')) {
+                $active_tab = true;
+            }
             $tabID = 'store-tab-' . $store_id;
             $store_description = 'n/a';
             if (isset($stores[$store_id])) {
@@ -756,7 +759,6 @@ HTML;
             $ret .= '</div>';
 
             $ret = str_replace('{{store_id}}', $store_id, $ret);
-            $active_tab = false;
             if (FannieConfig::config('STORE_MODE') != 'HQ') {
                 break;
             }
