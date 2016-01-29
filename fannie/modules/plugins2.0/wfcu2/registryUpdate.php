@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-
-
 $dbc = FannieDB::get($FANNIE_OP_DB);
 $item = new wfcuRegistryModel($dbc);    
 $ret = array('error'=>0);

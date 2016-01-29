@@ -170,17 +170,17 @@ class wfcu2 extends FanniePage
             $prep = $dbc->prepare("INSERT INTO wfcuRegistry (upc, seat, seatType) VALUES ({$plu}, 1, 0);");
             $resp = $dbc->execute($prep);
         }
+        
         $prep = $dbc->prepare("SELECT seat, first_name FROM wfcuRegistry WHERE seatType=0;");
         $resp = $dbc->execute($prep);
         while ($row = $dbc->fetch_row($resp)) {
             $name = $row['first_name'];
         }
-        $nextSeat = $waitSize + 1;
+        $nextSeat = ($waitSize + 1);
         if ($name) {
             $prep = $dbc->prepare("INSERT INTO wfcuRegistry (upc, seat, seatType) VALUES ({$plu}, {$nextSeat}, 0);");
             $resp = $dbc->execute($prep);
         }
-        
         
         if ($key) {
             
@@ -206,6 +206,7 @@ class wfcu2 extends FanniePage
                 </thead>';
             $ret .= '<tbody>';
             $ret .=  sprintf('<input type="hidden" class="upc" id="upc" name="upc" value="%d" />', $this->plu );
+            
             foreach ($items->find() as $item) {
                 $ret .= sprintf('<tr>
                     <td class="seat">%s</td>
