@@ -109,6 +109,7 @@ class ItemSync
         foreach ($upc as $u) {
             self::syncItem($u);
         }
+        self::notifyStores($upc);
     }
 
     public static function remove($upc)
@@ -118,6 +119,21 @@ class ItemSync
         }
         foreach ($upc as $u) {
             self::deleteProductAllLanes($u);
+        }
+    }
+
+    private static function notifyStores($upc)
+    {
+        if (class_exists('\\Datto\\JsonRpc\\Http\\Client')) {
+            $dbc = \FannieDB::getReadOnly();
+            $prep = $dbc->prepare('
+                SELECT webServiceUrl FROM Stores WHERE hasOwnItems=1 AND storeID<>?
+                ');
+            $res = $dbc->execute($prep, array(\FannieConfig::config('STORE_ID')));
+            while ($row = $dbc->fetchRow($res)) {
+                $client = new \Datto\JsonRpc\Http\Client($row['webServiceUrl']);
+                $client->query(time(), 'COREPOS\\Fannie\\API\\webservices\\FannieItemLaneSync', array('upc'=>$upc));
+            }
         }
     }
 }
