@@ -42,7 +42,7 @@ class FannieItemLaneSync extends FannieWebService
             // missing required arguments
             $ret['error'] = array(
                 'code' => -32602,
-                'message' => 'Invalid parameters needs type',
+                'message' => 'Invalid parameters needs upc',
             );
             return $ret;
         }
@@ -52,7 +52,7 @@ class FannieItemLaneSync extends FannieWebService
         }
 
         $dbc = \FannieDB::get(\FannieConfig::config('OP_DB'));
-        $storeID = \FannieConfig::get('STORE_ID');
+        $storeID = \FannieConfig::config('STORE_ID');
         /**
           In "fast" mode, look up the items and run UPDATE queries
           on each lane. This reduces overhead substantially but will
