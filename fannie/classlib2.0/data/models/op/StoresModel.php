@@ -43,6 +43,7 @@ class StoresModel extends BasicModel
     'push' => array('type'=>'TINYINT', 'default'=>1),
     'pull' => array('type'=>'TINYINT', 'default'=>1),
     'hasOwnItems' => array('type'=>'TINYINT', 'default'=>1),
+    'webServiceUrl' => array('type'=>'VARCHAR(255)'),
     );
 
     public function doc()

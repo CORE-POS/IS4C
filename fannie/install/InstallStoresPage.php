@@ -56,6 +56,7 @@ class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
         if (is_array(FormLib::get('storeID'))) {
             $ids = FormLib::get('storeID');
             $names = FormLib::get('storeName', array());
+            $urls = FormLib::get('storeURL', array());
             $hosts = FormLib::get('storeHost', array());
             $drivers = FormLib::get('storeDriver', array());
             $users = FormLib::get('storeUser', array());
@@ -79,6 +80,7 @@ class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
                 $model->push( in_array($ids[$i], $push) ? 1 : 0 );
                 $model->pull( in_array($ids[$i], $pull) ? 1 : 0 );
                 $model->hasOwnItems( in_array($ids[$i], $items) ? 1 : 0 );
+                $model->webServiceUrl(isset($urls[$i]) ? $urls[$i] : '');
                 $model->save();
             }
 
@@ -153,34 +155,16 @@ echo $this->writeCheck(dirname(__FILE__) . '/../config.php');
 <p class="ichunk" style="margin:0.0em 0em 0.4em 0em;">
 <?php
 $model = new StoresModel(FannieDB::get($FANNIE_OP_DB));
-$model->dbHost($FANNIE_SERVER);
-$myself = $model->find();
-if (count($myself) == 0) {
-    echo '<i>No entry found for this store. Adding one automatically...</i><br />';
-    $model->description('CURRENT STORE');
-    $model->save();
-} else if (count($myself) > 1) {
-    echo '<i>Warning: more than one entry for store host: ' . $FANNIE_SERVER . '</i><br />';
-} else {
-    echo '<i>This store is #' . installTextField('FANNIE_STORE_ID', $FANNIE_STORE_ID, $myself[0]->storeID()) . '</i><br />';
-}
-$model->reset();
+echo '<i>This store is #' . installTextField('FANNIE_STORE_ID', $FANNIE_STORE_ID, 1) . '</i><br />';
 echo '<label>Mode</label>';
 echo installSelectField('FANNIE_STORE_MODE', $FANNIE_STORE_MODE, array('STORE'=>'Single Store', 'HQ'=>'HQ'),'STORE');
 
-$supportedTypes = array('none'=>'');
-if (extension_loaded('pdo') && extension_loaded('pdo_mysql'))
-    $supportedTypes['PDO_MYSQL'] = 'PDO MySQL';
-if (extension_loaded('mysqli'))
-    $supportedTypes['MYSQLI'] = 'MySQLi';
-if (extension_loaded('mysql'))
-    $supportedTypes['MYSQL'] = 'MySQL';
-if (extension_loaded('mssql'))
-    $supportedTypes['MSSQL'] = 'MSSQL';
+$supportedTypes = \COREPOS\common\sql\Lib::getDrivers();
 ?>
 <table class="table">
 <tr>
-    <th>Store #</th><th>Description</th><th>DB Host</th>
+    <th>Store #</th><th>Description</th>
+    <th>Web Services URL</th><th>DB Host</th>
     <th>Driver</th><th>Username</th><th>Password</th>
     <th>Operational DB</th>
     <th>Transaction DB</th>
@@ -193,10 +177,12 @@ if (extension_loaded('mssql'))
     printf('<tr %s>
             <td>%d<input type="hidden" name="storeID[]" value="%d" /></td>
             <td><input type="text" class="form-control" name="storeName[]" value="%s" /></td>
+            <td><input type="text" class="form-control" name="storeURL[]" value="%s" /></td>
             <td><input type="text" class="form-control" name="storeHost[]" value="%s" /></td>',
             ($store->dbHost() == $FANNIE_SERVER ? 'class="info"' : ''),
             $store->storeID(), $store->storeID(),
             $store->description(),
+            $store->webServiceUrl(),
             $store->dbHost()
     );
     echo '<td><select name="storeDriver[]" class="form-control">';
