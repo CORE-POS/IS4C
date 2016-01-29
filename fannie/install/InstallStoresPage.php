@@ -238,7 +238,7 @@ Specify one or more database servers that can be used strictly
 for read operations. If more than one database is listed, read-only
 queries will be load-balanced across them.
 <?php
-if (!isset($FANNIE_READONLY_JSON)) {
+if (!isset($FANNIE_READONLY_JSON) || $FANNIE_READONLY_JSON === 'null') {
     $FANNIE_READONLY_JSON = json_encode(array(array(
         'host' => $FANNIE_SERVER,
         'type' => $FANNIE_SERVER_DBMS,
