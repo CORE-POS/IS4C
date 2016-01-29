@@ -97,6 +97,8 @@ function check_db_host($host,$dbms)
         case 'PGSQL':
             $port = 5432;
             break;
+        default:
+            return false;
     }
 
     if (strstr($host,":")) {
