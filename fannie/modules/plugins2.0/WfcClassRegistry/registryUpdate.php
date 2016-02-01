@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+class registryUpdate {} // compat
+
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
 
     include(dirname(__FILE__).'/../../../config.php');
@@ -28,7 +30,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
         include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
     }
     if (!class_exists('wfcuRegistryModel')) {
-        include_once($FANNIE_ROOT.'modules/plugins2.0/wfcu2/wfcuRegistryModel.php');
+        include_once($FANNIE_ROOT.'modules/plugins2.0/WfcClassRegistry/wfcuRegistryModel.php');
     }
 
     $timeStamp = date('Y-m-d h:i:s');
