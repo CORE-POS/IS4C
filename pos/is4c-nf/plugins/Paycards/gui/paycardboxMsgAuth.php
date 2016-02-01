@@ -86,7 +86,7 @@ class paycardboxMsgAuth extends PaycardProcessPage {
         return False;
     }
 
-    function head_conent()
+    function head_content()
     {
         $url = MiscLib::baseURL();
         echo '<script type="text/javascript" src="' . $url . '/js/singleSubmit.js"></script>';
