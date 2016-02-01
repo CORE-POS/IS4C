@@ -44,7 +44,7 @@ class StoreSummaryReport extends FannieReportPage {
 
     function preprocess()
     {
-
+        parent::preprocess();
         $this->title = "Fannie : Store Summary Report";
         $this->header = "Store Summary Report";
         $this->report_cache = 'none';
