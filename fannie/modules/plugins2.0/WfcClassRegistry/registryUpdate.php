@@ -21,58 +21,62 @@
 
 *********************************************************************************/
 
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF')) {
 
-include(dirname(__FILE__).'/../../../config.php');
-if (!class_exists('FannieAPI')) {
-    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-}
-if (!class_exists('wfcuRegistryModel')) {
-    include_once($FANNIE_ROOT.'modules/plugins2.0/wfcu2/wfcuRegistryModel.php');
-}
-
-$timeStamp = date('Y-m-d h:i:s');
-$dbc = FannieDB::get($FANNIE_OP_DB);
-$item = new wfcuRegistryModel($dbc);    
-$ret = array('error'=>0);
-if (strlen($_POST['upc']) == 8) {
-    $item->upc($_POST['upc']);
-    $item->id($_POST['seat']);
-} else {
-    $ret['error'] = 1;
-}
-
-if ($_POST['field'] === 'editFirst') {
-    $item->first_name($_POST['value']);
-    $item->modified($timeStamp);
-} elseif ($_POST['field'] === 'editLast') {
-    $item->last_name($_POST['value']);
-    $item->modified($timeStamp);
-} elseif ($_POST['field'] === 'editPhone') {
-    $item->phone($_POST['value']);
-    $item->modified($timeStamp);
-} elseif ($_POST['field'] === 'editCard_no') {
-    $item->card_no($_POST['value']);
-    $item->modified($timeStamp);
-} elseif ($_POST['field'] === 'editPayment') {
-    $item->payment($_POST['value']);
-    $item->modified($timeStamp);
-} elseif ($_POST['field'] === 'editNotes') {
-    $item->details($_POST['value']);
-    $item->modified($timeStamp);
-} elseif ($_POST['field'] === 'editRefund') {
-    $item->refund($_POST['value']);
-    $item->modified($timeStamp);
-} else {
-    $ret['error'] = 1;
-    $ret['error_msg'] = 'Unknown field';
-}
-
-if ($ret['error'] == 0) {
-    $saved = $item->save();
-    if (!$saved) {
-        $ret['error'] = 1;
-        $ret['error_msg'] = 'Save failed';
+    include(dirname(__FILE__).'/../../../config.php');
+    if (!class_exists('FannieAPI')) {
+        include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
     }
+    if (!class_exists('wfcuRegistryModel')) {
+        include_once($FANNIE_ROOT.'modules/plugins2.0/wfcu2/wfcuRegistryModel.php');
+    }
+
+    $timeStamp = date('Y-m-d h:i:s');
+    $dbc = FannieDB::get($FANNIE_OP_DB);
+    $item = new wfcuRegistryModel($dbc);    
+    $ret = array('error'=>0);
+    if (strlen($_POST['upc']) == 8) {
+        $item->upc($_POST['upc']);
+        $item->id($_POST['seat']);
+    } else {
+        $ret['error'] = 1;
+    }
+
+    if ($_POST['field'] === 'editFirst') {
+        $item->first_name($_POST['value']);
+        $item->modified($timeStamp);
+    } elseif ($_POST['field'] === 'editLast') {
+        $item->last_name($_POST['value']);
+        $item->modified($timeStamp);
+    } elseif ($_POST['field'] === 'editPhone') {
+        $item->phone($_POST['value']);
+        $item->modified($timeStamp);
+    } elseif ($_POST['field'] === 'editCard_no') {
+        $item->card_no($_POST['value']);
+        $item->modified($timeStamp);
+    } elseif ($_POST['field'] === 'editPayment') {
+        $item->payment($_POST['value']);
+        $item->modified($timeStamp);
+    } elseif ($_POST['field'] === 'editNotes') {
+        $item->details($_POST['value']);
+        $item->modified($timeStamp);
+    } elseif ($_POST['field'] === 'editRefund') {
+        $item->refund($_POST['value']);
+        $item->modified($timeStamp);
+    } else {
+        $ret['error'] = 1;
+        $ret['error_msg'] = 'Unknown field';
+    }
+
+    if ($ret['error'] == 0) {
+        $saved = $item->save();
+        if (!$saved) {
+            $ret['error'] = 1;
+            $ret['error_msg'] = 'Save failed';
+        }
+    }
+
+    echo json_encode($ret);
+
 }
 
-echo json_encode($ret);
