@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF')) {
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
 
     include(dirname(__FILE__).'/../../../config.php');
     if (!class_exists('FannieAPI')) {
