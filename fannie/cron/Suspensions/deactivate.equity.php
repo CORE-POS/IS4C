@@ -65,7 +65,7 @@ $susQ = "INSERT INTO suspensions
          AND YEAR(d.start_date) >= 2013) 
     )
     and c.Type='PC' and n.payments < 100
-    and c.memType in (1,3)
+    and c.memType in (1,3,5)
     and NOT EXISTS(SELECT NULL FROM suspensions as s
     WHERE s.cardno=m.card_no)";
 if (!isset($custdata['ChargeLimit'])) {
