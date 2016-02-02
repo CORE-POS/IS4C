@@ -840,8 +840,6 @@ class SQLManager
     {
         $unquoted = array("money"=>1,"real"=>1,"numeric"=>1,
             "float4"=>1,"float8"=>1,"bit"=>1);
-        $strings = array("varchar"=>1,"nvarchar"=>1,"string"=>1,
-            "char"=>1, 'var_string'=>1);
         $dates = array("datetime"=>1);
 
         if ($val == "" && strstr(strtoupper($type),"INT")) {
@@ -851,8 +849,6 @@ class SQLManager
         }
         if (isset($dates[$type])) {
             $val = $this->cleanDateTime($val);
-        } elseif (isset($strings[$type])) {
-            $val = str_replace("'","''",$val);
         }
 
         return $val;
