@@ -29,6 +29,7 @@ class paycardboxMsgAuth extends PaycardProcessPage {
     function preprocess()
     {
         // check for posts before drawing anything, so we can redirect
+        $this->add_onload_command("singleSubmit.restrict('#formlocal');\n");
         if( isset($_REQUEST['reginput'])) {
             $input = strtoupper(trim($_REQUEST['reginput']));
             // CL always exits
@@ -163,7 +164,6 @@ class paycardboxMsgAuth extends PaycardProcessPage {
         ?>
         </div>
         <?php
-        $this->add_onload_command("singleSubmit.restrict('#formlocal');\n");
     }
 }
 
