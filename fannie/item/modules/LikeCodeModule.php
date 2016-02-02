@@ -140,7 +140,7 @@ class LikeCodeModule extends ItemModule
         $upcR = $dbc->execute($upcP,array($likecode,$upc));
         while ($upcW = $dbc->fetchRow($upcR)) {
             $this->updateItem($dbc, $upcW['upc'], $likecode, $values);
-            updateProductAllLanes($upcW['upc']);
+            COREPOS\Fannie\API\data\ItemSync::sync($upcW['upc']);
         }
 
         return true;
