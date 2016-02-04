@@ -234,7 +234,6 @@ class SalesBatchTask extends FannieTask
         $notOnSale = $this->notOnSaleItems($dbc, $sale_upcs);
         foreach ($notOnSale as $lookupW) {
             $this->cronMsg('Taking ' . $lookupW['upc']  . ':' . $lookupW['store_id'] . ' off sale', FannieLogger::INFO);
-            continue;
 
             $product->reset();
             if ($this->config->get('STORE_MODE') === 'HQ') {
