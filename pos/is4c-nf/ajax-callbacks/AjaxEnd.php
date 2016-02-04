@@ -191,8 +191,8 @@ class AjaxEnd extends AjaxCallback
         }
 
         CoreState::memberReset();
-        CoreState::transReset();
         CoreState::printReset();
+        CoreState::transReset();
 
         Database::getsubtotals();
 
