@@ -98,11 +98,18 @@ class WfcClassRegistryPage extends FanniePage
         
         $ret .= '<div class=\'container\'><form method=\'get\'><select class=\'form-control\' name=\'class_plu\'>';
         $ret .= '<option value=\'1\'>Choose a class...</option>';
+        
+        $date = date('m/d/y');
+        $date = strtotime($date);
+        
+       
         foreach ($className as $key => $name) {
+            $tempDate = substr($classExp[$key], 0, 7);
+            $expirationDate = strtotime($tempDate);
             if (!isset($_GET['expired'])) {
                 $ret .= '<option value=\'' . $key . '\'>' . $classDate[$key] . " :: " . $name . '</option>';
             } else {
-                if ($classExp[$key] < date('Y-m-d h:i:s')) {
+                if ($date <= $expirationDate) {
                     $ret .= '<option value=\'' . $key . '\'>' . $classDate[$key] . " :: " . $name . '</option>';
                 }
             }
@@ -204,7 +211,7 @@ class WfcClassRegistryPage extends FanniePage
         
         }
         
-        if ($key) {
+        if ($key > -1) {
             
             //* Class Roster
             $ret .= "<h2 align=\"center\">" . $className[$key] . "</h2>";
