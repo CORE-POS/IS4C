@@ -7,10 +7,8 @@ function pollScale(rel_prefix)
         $.ajax({url: SCALE_REL_PRE+'ajax-callbacks/AjaxPollScale.php',
             type: 'post',
             cache: false,
-            dataType: 'json',
-            error: scalePollError,
-            success: scalePollSuccess
-        });
+            dataType: 'json'
+        }).done(scalePollSuccess).fail(scalePollError);
     }
 }
 
@@ -93,10 +91,9 @@ function dataCallback(data)
     } else if (/^S1\d+$/.test(data)) {
         $.ajax({url: SCALE_REL_PRE+'ajax-callbacks/AjaxScale.php',
             type: 'post',
-            cache: false,
-            success: function(resp) {
-                $('#scaleBottom').html(resp);	
-            }
+            cache: false
+        }).done(function(resp) {
+            $('#scaleBottom').html(resp);	
         });
     } else if (/^\d+$/.test(data)) {
         var v = $('#reginput').val();

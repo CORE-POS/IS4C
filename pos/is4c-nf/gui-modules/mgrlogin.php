@@ -44,48 +44,7 @@ class mgrlogin extends NoInputCorePage
 
     function head_content(){
         ?>
-        <script type="text/javascript">
-        function submitWrapper(){
-            var passwd = $('#reginput').val();
-            if (passwd == ''){
-                passwd = $('#userPassword').val();
-            }
-            $.ajax({
-                url: '<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>',
-                data: 'input='+passwd,
-                type: 'get',
-                cache: false,
-                dataType: 'json',
-                error: function(data,st,xmlro){
-                },
-                success: function(data){
-                    if (data.cancelOrder){
-                        $.ajax({
-                            url: '<?php echo $this->page_url; ?>ajax-callbacks/AjaxEnd.php',
-                            type: 'get',
-                            data: 'receiptType=cancelled&ref='+data.trans_num,
-                            cache: false,
-                            success: function(data2){
-                                location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
-                            }
-                        });
-                    }
-                    else if (data.giveUp){
-                        location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
-                    }
-                    else {
-                        $('div#cancelLoginBox').removeClass('coloredArea');
-                        $('div#cancelLoginBox').addClass('errorColoredArea');
-                        $('span.larger').html(data.heading);
-                        $('span#localmsg').html(data.msg);
-                        $('#userPassword').val('');
-                        $('#userPassword').focus();
-                    }
-                }
-            });
-            return false;
-        }
-        </script>
+        <script type="text/javascript" src="js/mgrlogin.js"></script>
         <?php
         $this->default_parsewrapper_js();
         $this->scanner_scale_polling(True);
@@ -101,7 +60,8 @@ class mgrlogin extends NoInputCorePage
         <?php echo _("confirm cancellation"); ?>
         </span><br />
         <form name="form" id="formlocal" method="post" 
-            autocomplete="off" onsubmit="return submitWrapper();">
+            autocomplete="off" 
+            onsubmit="return mgrlogin.submitWrapper('<?php echo $this->page_url; ?>');">
         <input type="password" name="userPassword" tabindex="0" 
             onblur="$('#userPassword').focus();" id="userPassword" />
         <input type="hidden" name="reginput" id="reginput" value="" />

@@ -133,17 +133,15 @@ function monitorPaymentStatus(payment_id)
         url: domain + '/api/v1/payment/btc/' + payment_id,
         headers: { 'Authorization': api_key },
         type: 'GET',
-        dataType: 'json',
-        success: function(resp) {
-            if (resp.data && resp.data.status && resp.data.status == 'confirmed') {
-                location = 'BitCoinPaymentPage.php?finish=' + resp.data.settled_amount;
-            } else {
-                setTimeout(function(){ monitorPaymentStatus(payment_id); }, 1000);
-            }
-        },
-        error: function() {
+        dataType: 'json'
+    }).done(function(resp) {
+        if (resp.data && resp.data.status && resp.data.status == 'confirmed') {
+            location = 'BitCoinPaymentPage.php?finish=' + resp.data.settled_amount;
+        } else {
             setTimeout(function(){ monitorPaymentStatus(payment_id); }, 1000);
         }
+    }).fail(function() {
+        setTimeout(function(){ monitorPaymentStatus(payment_id); }, 1000);
     });
 }
 </script>

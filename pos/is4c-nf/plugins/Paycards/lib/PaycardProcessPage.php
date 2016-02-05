@@ -102,28 +102,22 @@ class PaycardProcessPage extends BasicCorePage
             $.ajax({url: '<?php echo $plugin_info->pluginUrl(); ?>/ajax/ajax-paycard-auth.php',
                 cache: false,
                 type: 'post',
-                dataType: 'json',
-                success: function(data){
-                    var destination = data.main_frame;
-                    if (data.receipt){
-                        $.ajax({url: '<?php echo $this->page_url; ?>ajax-callbacks/AjaxEnd.php',
-                            cache: false,
-                            type: 'post',
-                            data: 'receiptType='+data.receipt+'&ref=<?php echo ReceiptLib::receiptNumber(); ?>',
-                            error: function(){
-                                location = destination;
-                            },
-                            success: function(data){
-                                location = destination;
-                            }
-                        });
-                    }
-                    else
-                        location = destination;
-                },
-                error: function(){
-                    location = '<?php echo $this->page_url; ?>/gui-modules/pos2.php';
+                dataType: 'json'
+            }).done(function(data) {
+                var destination = data.main_frame;
+                if (data.receipt){
+                    $.ajax({url: '<?php echo $this->page_url; ?>ajax-callbacks/AjaxEnd.php',
+                        cache: false,
+                        type: 'post',
+                        data: 'receiptType='+data.receipt+'&ref=<?php echo ReceiptLib::receiptNumber(); ?>'
+                    }).always(function() {
+                        window.location = destination;
+                    });
+                } else {
+                    window.location = destination;
                 }
+            }).fail(function(){
+                window.location = '<?php echo $this->page_url; ?>/gui-modules/pos2.php';
             });
             paycard_processingDisplay();
             return false;

@@ -27,48 +27,7 @@ class boxMsg2 extends BasicCorePage
 {
     function head_content(){
         ?>
-        <script type="text/javascript">
-        function submitWrapper(){
-            var str = $('#reginput').val();
-            var endorseType = $('#endorseType').val();
-            var endorseAmt = $('#endorseAmt').val();
-            var cmd = $('#repeat-cmd').val();
-            $.ajax({
-                url: '<?php echo $this->page_url; ?>ajax-callbacks/AjaxDecision.php',
-                type: 'get',
-                data: 'input='+str,
-                dataType: 'json',
-                cache: false,
-                success: function(data){
-                    if (!data.cleared && endorseType != ''){
-                        $.ajax({
-                            url: '<?php echo $this->page_url; ?>ajax-callbacks/AjaxEndorse.php',
-                            type: 'get',
-                            data: 'type='+endorseType+'&amount='+endorseAmt,
-                            cache: false,
-                            success: function(){
-                                var changeTo = data.dest_page;
-                                if (!data.cleared) {
-                                    changeTo += "?reginput=" + encodeURIComponent(cmd);
-                                    changeTo += "&repeat=1";
-                                }
-                                window.location = changeTo;
-                            }
-                        });
-                    }
-                    else {
-                        var changeTo = data.dest_page;
-                        if (!data.cleared) {
-                            changeTo += "?reginput=" + encodeURIComponent(cmd);
-                            changeTo += "&repeat=1";
-                        }
-                        window.location = changeTo;
-                    }
-                }
-            });
-            return false;
-        }
-        </script>
+        <script type="text/javascript" src="js/boxMsg2.js"></script>
         <?php
         $this->noscan_parsewrapper_js();
     }
@@ -93,7 +52,7 @@ class boxMsg2 extends BasicCorePage
 
     function body_content()
     {
-        $this->input_header("onsubmit=\"return submitWrapper();\"");
+        $this->input_header("onsubmit=\"return boxMsg2.submitWrapper('{$this->page_url}');\"");
         ?>
         <div class="baseHeight">
 

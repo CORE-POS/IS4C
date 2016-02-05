@@ -105,13 +105,12 @@ function performLookup()
     $.ajax({
         type: 'get',  
         data: 'doLookup=1&id='+$('#refNum').val()+'&local='+$('#local').val()+'&mode='+$('#lookupMode').val(),
-        dataType: 'json',
-        success: function(resp) {
-            $('.baseHeight').html(resp.output);
-            enter_url = resp.confirm_dest;
-            clear_url = resp.cancel_dest;
-            gettingResult = 0;
-        }
+        dataType: 'json'
+    }).done(function(resp) {
+        $('.baseHeight').html(resp.output);
+        enter_url = resp.confirm_dest;
+        clear_url = resp.cancel_dest;
+        gettingResult = 0;
     });
 }
 function lookupFormCallback()

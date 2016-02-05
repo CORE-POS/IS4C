@@ -30,27 +30,7 @@ class cablist extends NoInputCorePage
     {
         ?>
         <script type="text/javascript" src="../js/selectSubmit.js"></script>
-        <script type="text/javascript">
-        function submitWrapper(){
-            var ref = $('#selectlist').val();
-            if (ref != ""){
-                $.ajax({
-                    url: '<?php echo $this->page_url; ?>ajax-callbacks/AjaxCabReceipt.php',
-                    type: 'get',
-                    cache: false,
-                    data: 'input='+ref,
-                    success: function(data){
-                        location='<?php echo $this->page_url; ?>gui-modules/pos2.php';
-                    }
-                });
-            }
-            else {
-                location='<?php echo $this->page_url; ?>gui-modules/pos2.php';
-            }
-
-            return false;
-        }
-        </script> 
+        <script type="text/javascript" src="js/cablist.js"></script>
         <?php
         $this->add_onload_command("selectSubmit('#selectlist', '#selectform', false, true)\n");
         $this->add_onload_command("\$('#selectlist').focus();\n");
@@ -115,7 +95,8 @@ class cablist extends NoInputCorePage
 
         <div class="baseHeight">
         <div class="listbox">
-        <form id="selectform" name="selectform" onsubmit="return submitWrapper();">
+        <form id="selectform" name="selectform" 
+            onsubmit="return cablist.submitWrapper('<?php echo $this->page_url; ?>');">
         <select name="selectlist" size="15" onblur="$('#selectlist').focus()"
             id="selectlist">
 
