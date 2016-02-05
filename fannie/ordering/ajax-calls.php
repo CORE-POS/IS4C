@@ -524,7 +524,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
             $ins_array['total'] = $pdW['normal_price']*$caseSize*$num_cases;
             $ins_array['regPrice'] = $pdW['normal_price']*$caseSize*$num_cases;
             $ins_array['unitPrice'] = $pdW['normal_price'];
-            if ($pdW['priceRuleTypeID'] == 6 || $pdW['priceRuleID'] == 8) {
+            if ($pdW['priceRuleTypeID'] == 6 || $pdW['priceRuleTypeID'] == 7 || $pdW['priceRuleTypeID'] == 8) {
                 $pdW['discount'] = 0;
             }
             if ($pdW['discount'] != 0 && $pdW['discounttype'] == 1) {
