@@ -87,13 +87,6 @@ class GeneralDayReport extends FannieReportPage
         }
         $data[] = $report;
 
-        $salesQ = $dbc->prepare("SELECT m.super_name,sum(d.quantity) as qty,
-                sum(d.total) as total
-                FROM $dlog AS d LEFT JOIN
-                {$FANNIE_OP_DB}.MasterSuperDepts AS m ON d.department=m.dept_ID
-                WHERE d.tdate BETWEEN ? AND ?
-                    AND d.department <> 0 AND d.trans_type <> 'T'{$shrinkageUsers}
-                GROUP BY m.super_name ORDER BY m.super_name");
         $salesQ = '';
         switch (FormLib::get('sales-by')) {
             case 'Department':
