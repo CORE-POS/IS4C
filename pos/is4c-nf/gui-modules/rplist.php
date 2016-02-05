@@ -33,6 +33,7 @@ class rplist extends NoInputCorePage
         }
         $PRINT_OBJ = new $print_class();
         $saved = CoreLocal::get('receiptToggle');
+        CoreLocal::set('receiptToggle', 1);
         $receipt = ReceiptLib::printReceipt('reprint', $trans);
         CoreLocal::set('receiptToggle', $saved);
         if (session_id() != '') {
