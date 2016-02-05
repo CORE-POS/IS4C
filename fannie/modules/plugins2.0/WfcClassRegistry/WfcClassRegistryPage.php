@@ -77,29 +77,44 @@ class WfcClassRegistryPage extends FanniePage
             SELECT 
                 pu.description, 
                 p.upc,
-                p.size
+                p.size,
+                pe.expires
             FROM products AS p 
                 LEFT JOIN productUser AS pu ON pu.upc=p.upc 
+                LEFT JOIN productExpires AS pe ON pe.upc=p.upc
             WHERE p.description LIKE 'class -%' 
                     AND p.inUse=1
-            ORDER BY pu.description DESC;
+            GROUP BY pu.description
+            ORDER BY pu.description ASC;
             ");
         $result = $dbc->execute($query);
         while($row = $dbc->fetch_row($result)){
             $className[] = substr($row['description'], 11, 100);
             $classUPC[] = substr($row['upc'], 5, 13);
-            $classDate[] = substr($row['description'], 0, 8);
+            $classDate[] = substr($row['description'], 0, 10);
             $classSize[] = $row['size'];
+            $classExp[] = $row['expires'];
         }
         
         $ret .= '<div class=\'container\'><form method=\'get\'><select class=\'form-control\' name=\'class_plu\'>';
         $ret .= '<option value=\'1\'>Choose a class...</option>';
         foreach ($className as $key => $name) {
-            $ret .= '<option value=\'' . $key . '\'>' . $classDate[$key] . " :: " . $name . '</option>';
+            if (!isset($_GET['expired'])) {
+                $ret .= '<option value=\'' . $key . '\'>' . $classDate[$key] . " :: " . $name . '</option>';
+            } else {
+                if ($classExp[$key] < date('Y-m-d h:i:s')) {
+                    $ret .= '<option value=\'' . $key . '\'>' . $classDate[$key] . " :: " . $name . '</option>';
+                }
+            }
         }
-        
+        $ret .= '</select>';
         $ret .= '<input class=\'btn btn-default\' type=\'submit\' value=\'Open Class Registry\'>';
-        $ret .= '</select></form></div>';
+        $ret .= '<input type="checkbox" class="checkbox" name="expired" value="1" ';
+            if (!empty($_GET['expired'])){
+                $ret .= 'checked="checked" ';
+            }
+        $ret .= ' ><i>Don\'t show Expired Classes</i>';
+        $ret .= '</form></div>';
         
         $key = $_GET['class_plu'];
         $plu = $classUPC[$key];
