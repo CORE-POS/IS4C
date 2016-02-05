@@ -29,9 +29,9 @@ class paycardboxMsgAuth extends PaycardProcessPage {
     function preprocess()
     {
         // check for posts before drawing anything, so we can redirect
-        $this->add_onload_command("\$('#formlocal').submit(paycardAuth.submitWrapper);\n");
+        $this->add_onload_command("\$('#formlocal').submit(paycardboxmsgAuth.submitWrapper);\n");
         if (isset($_REQUEST['validate'])) { // ajax callback to validate inputs
-            list($valid, $msg) = $this->validateAmount();
+            list($valid, $msg) = PaycardLib::validateAmount();
             echo json_encode(array('valid'=>$valid, 'msg'=>$msg));
             return false;
         } elseif (isset($_REQUEST['reginput'])) {
@@ -51,7 +51,7 @@ class paycardboxMsgAuth extends PaycardProcessPage {
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
             } elseif ($input == "") {
-                list($valid, $msg) = $this->validateAmount();
+                list($valid, $msg) = PaycardLib::validateAmount();
                 if ($valid) {
                     $this->action = "onsubmit=\"return false;\"";    
                     $this->add_onload_command("paycard_submitWrapper();");
@@ -77,91 +77,9 @@ class paycardboxMsgAuth extends PaycardProcessPage {
         }
     }
 
-    function validateAmount()
-    {
-        $amt = CoreLocal::get('paycard_amount');
-        $due = CoreLocal::get("amtdue");
-        $type = CoreLocal::get("CacheCardType");
-        $cb = CoreLocal::get('CacheCardCashBack');
-        $balance_limit = CoreLocal::get('PaycardRetryBalanceLimit');
-        if ($type == 'EBTFOOD') {
-            $due = CoreLocal::get('fsEligible');
-        }
-        if ($cb > 0) $amt -= $cb;
-        if (!is_numeric($amt) || abs($amt) < 0.005) {
-            return array(false, 'Enter a different amount');
-        } elseif ($amt > 0 && $due < 0) {
-            return array(false, 'Enter a negative amount');
-        } elseif ($amt < 0 && $due > 0) {
-            return array(false, 'Enter a positive amount');
-        } elseif (($amt-$due)>0.005 && $type != 'DEBIT' && $type != 'EBTCASH') {
-            return array(false, 'Cannot exceed amount due');
-        } elseif (($amt-$due-0.005)>$cb && ($type == 'DEBIT' || $type == 'EBTCASH')) {
-            return array(false, 'Cannot exceed amount due plus cashback');
-        } elseif ($balance_limit > 0 && ($amt-$balance_limit) > 0.005) {
-            return array(false, 'Cannot exceed card balance');
-        } else {
-            return array(true, 'valid');
-        }
-
-        return array(false, 'invalid');
-    }
-
     function head_content()
     {
-        ?>
-<script type="text/javascript">
-var paycardAuth = (function($) {
-    var mod = {};
-    var called = false;
-
-    var reloadOnError = function() {
-        window.location = 'paycardboxMsgAuth.php';
-    };
-
-    /**
-      Trying to cope with rare errors where paycard_submitWrapper's
-      AJAX call ends in an error with 0 status, 0 readyState.
-      Originally I tried to use singleSubmit to keep the form from
-      submitting more than once but having the process be:
-        submit => page reload => AJAX call fires
-      seemed to still have the occasional bug. With such generic
-      error information it's tough to say for sure what the problem
-      is. The guess is something triggers page navigation while
-      the AJAX call is processing but that really is just a guess.
-    */
-    mod.submitWrapper = function(e) {
-        if ($('#reginput').val() === '' || called) {
-            e.preventDefault();
-            if (!called) {
-                console.log('ajax');
-                var validate = $.ajax({
-                    data: 'validate=1',
-                    dataType: 'json',
-                }).done(function (resp) {
-                    if (resp.valid) {
-                        console.log('send a request!');
-                        paycard_submitWrapper();
-                    } else {
-                        console.log('no send');
-                        reloadOnError();
-                    }
-                }).fail(function(xhr,stat,msg) {
-                    reloadOnError();
-                });
-            }
-            called = true;
-
-            return false;
-        }
-
-        return true;
-    };
-
-    return mod;
-}(jQuery));
-</script>
-        <?php
+        echo '<script type="text/javascript" src="../js/paycardboxmsgAuth.js"></script>';
     }
 
     function body_content()
@@ -176,7 +94,7 @@ var paycardAuth = (function($) {
         $cb = CoreLocal::get('CacheCardCashBack');
         $balance_limit = CoreLocal::get('PaycardRetryBalanceLimit');
         if ($cb > 0) $amt -= $cb;
-        list($valid, $validmsg) = $this->validateAmount();
+        list($valid, $validmsg) = PaycardLib::validateAmount();
         if ($valid === false) {
             echo PaycardLib::paycard_msgBox($type, "Invalid Amount: $amt",
                 $validmsg, "[clear] to cancel");

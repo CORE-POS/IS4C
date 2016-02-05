@@ -109,8 +109,7 @@ class PaycardEmvCaAdmin extends NoInputCorePage
         } else {
             ?>
 <script type="text/javascript">
-function emvSubmit()
-{
+function emvSubmit() {
     $('div.baseHeight').html('Processing transaction');
     // POST XML request to driver using AJAX
     var xmlData = '<?php echo json_encode($this->xml); ?>';

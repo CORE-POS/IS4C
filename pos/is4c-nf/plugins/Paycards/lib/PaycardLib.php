@@ -747,6 +747,36 @@ static public function setupAuthJson($json)
     return $json;
 }
 
+static public function validateAmount()
+{
+    $amt = CoreLocal::get('paycard_amount');
+    $due = CoreLocal::get("amtdue");
+    $type = CoreLocal::get("CacheCardType");
+    $cb = CoreLocal::get('CacheCardCashBack');
+    $balance_limit = CoreLocal::get('PaycardRetryBalanceLimit');
+    if ($type == 'EBTFOOD') {
+        $due = CoreLocal::get('fsEligible');
+    }
+    if ($cb > 0) $amt -= $cb;
+    if (!is_numeric($amt) || abs($amt) < 0.005) {
+        return array(false, 'Enter a different amount');
+    } elseif ($amt > 0 && $due < 0) {
+        return array(false, 'Enter a negative amount');
+    } elseif ($amt < 0 && $due > 0) {
+        return array(false, 'Enter a positive amount');
+    } elseif (($amt-$due)>0.005 && $type != 'DEBIT' && $type != 'EBTCASH') {
+        return array(false, 'Cannot exceed amount due');
+    } elseif (($amt-$due-0.005)>$cb && ($type == 'DEBIT' || $type == 'EBTCASH')) {
+        return array(false, 'Cannot exceed amount due plus cashback');
+    } elseif ($balance_limit > 0 && ($amt-$balance_limit) > 0.005) {
+        return array(false, 'Cannot exceed card balance');
+    } else {
+        return array(true, 'valid');
+    }
+
+    return array(false, 'invalid');
+}
+
 /*
 summary of ISO standards for credit card magnetic stripe data tracks:
 http://www.cyberd.co.uk/support/technotes/isocards.htm
