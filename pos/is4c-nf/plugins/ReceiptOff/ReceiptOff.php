@@ -41,7 +41,7 @@ class ReceiptOff extends Plugin
     );
 
     public $plugin_description = 'Turns automatic receipt printing off after each transaction;
-    		the user can toggle it back for any given transaction, using the "RP" command or equivalent.';
+            the user can toggle it back for any given transaction, using the "RP" command or equivalent.';
 
     public function plugin_transaction_reset()
     {
