@@ -289,7 +289,7 @@ class DTransactionsModel extends BasicModel
             } elseif($name == 'trans_type') {
                 // type conversion for old records. Newer coupon & discount
                 // records should have correct trans_type when initially created
-                $sql .= "CASE WHEN (trans_subtype IN ('CP','IC') THEN 'T' 
+                $sql .= "CASE WHEN trans_subtype IN ('CP','IC') THEN 'T' 
                     WHEN upc = 'DISCOUNT' THEN 'S' ELSE trans_type END AS trans_type,\n";
             } else {
                 $sql .= $c->identifierEscape($name).",\n";
