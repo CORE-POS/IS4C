@@ -73,5 +73,33 @@ class PriceMethod
     {
         return '';
     }
+
+    /* get price method object  & add item
+    
+       CORE reserves values 0 through 99 in 
+       PriceMethod::$MAP for default methods.
+
+       Additional methods provided by plugins
+       can use values 100 and up. Because
+       the PriceMethodClasses array is zero-indexed,
+       subtract 100 as an offset  
+    */
+    public static function getObject($pricemethod)
+    {
+        $PMClasses = CoreLocal::get("PriceMethodClasses");
+        $PriceMethodObject = null;
+
+        if ($pricemethod < 100 && isset(PriceMethod::$MAP[$pricemethod])) {
+            $class = PriceMethod::$MAP[$pricemethod];
+            $PriceMethodObject = new $class();
+        } else if ($pricemethod >= 100 && isset($PMClasses[($pricemethod-100)])) {
+            $class = $PMClasses[($pricemethod-100)];
+            $PriceMethodObject = new $class();
+        } else {
+            $PriceMethodObject = new BasicPM();
+        }
+
+        return $PriceMethodObject;
+    }
 }
 

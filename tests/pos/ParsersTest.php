@@ -1079,6 +1079,38 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
     }
 
+    function testLineItemDiscount()
+    {
+        $ld = new LineItemDiscount();
+        $this->assertEquals(true, $ld->check('LD'));
+        $ld->parse('LD');
+        lttLib::clear();
+    }
+
+    function testItemPD()
+    {
+        $pd = new ItemPD();
+        $this->assertEquals(true, $pd->check('10PD'));
+        CoreLocal::set('currentid', 0);
+        $pd->parse('10PD');
+        CoreLocal::set('currentid', 1);
+        $pd->parse('10PD');
+        CoreLocal::set('currentid', 0);
+        lttLib::clear();
+    }
+
+    function testDefaultTender()
+    {
+        $t = new DefaultTender();
+        $this->assertEquals(true, $t->check('123ZZ'));
+        $this->assertEquals(true, $t->check('CA'));
+        $this->assertInternalType('array', $t->parse('CA'));
+        $d = new DeptKey();
+        $d->parse('100DP10'); // avoid ending transaction
+        $this->assertInternalType('array', $t->parse('1CA'));
+        lttLib::clear();
+    }
+
     function testUPC()
     {
         $u = new UPC();

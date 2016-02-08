@@ -165,18 +165,7 @@ class UPC extends Parser
             $row['description'] = $row['formatted_name'];
         }
 
-        /* Implementation of inUse flag
-         *   if the flag is not set, display a warning dialog noting this
-         *   and allowing the sale to be confirmed or canceled
-         */
-        if ($row["inUse"] == 0) {
-            TransRecord::addLogRecord(array(
-                'upc' => $row['upc'],
-                'description' => $row['description'],
-                'department' => $row['department'],
-                'charflag' => 'IU',
-            ));
-        }
+        $this->checkInUse();
 
         /**
           Apply special department handlers
@@ -346,61 +335,13 @@ class UPC extends Parser
         $row['foodstamp'] = $foodstamp;
         $row['discount'] = $discountable;
 
-        /**
-          Enforce per-transaction sale limits
-        */
-        if ($row['special_limit'] > 0) {
-            $appliedQ = "
-                SELECT SUM(quantity) AS saleQty
-                FROM " . CoreLocal::get('tDatabase') . $dbc->sep() . "localtemptrans
-                WHERE discounttype <> 0
-                    AND (
-                        upc='{$row['upc']}'
-                        OR (mixMatch='{$row['mixmatchcode']}' AND mixMatch<>''
-                            AND mixMatch<>'0' AND mixMatch IS NOT NULL)
-                    )";
-            $appliedR = $dbc->query($appliedQ);
-            if ($appliedR && $dbc->num_rows($appliedR)) {
-                $appliedW = $dbc->fetch_row($appliedR);
-                if (($appliedW['saleQty']+$quantity) > $row['special_limit']) {
-                    $row['discounttype'] = 0;
-                    $row['special_price'] = 0;
-                    $row['specialpricemethod'] = 0;
-                    $row['specialquantity'] = 0;
-                    $row['specialgroupprice'] = 0;
-                }
-            }
-        }
+        $this->enforceSaleLimit($dbc, $row);
 
         /*
             BEGIN: figure out discounts by type
         */
 
-        /* get discount object 
-
-           CORE reserves values 0 through 63 in 
-           DiscountType::$MAP for default options.
-
-           Additional discounts provided by plugins
-           can use values 64 through 127. Because
-           the DiscountTypeClasses array is zero-indexed,
-           subtract 64 as an offset  
-        */
-        $discounttype = MiscLib::nullwrap($row["discounttype"]);
-        $DiscountObject = null;
-        $DTClasses = CoreLocal::get("DiscountTypeClasses");
-        if ($row['discounttype'] < 64 && isset(DiscountType::$MAP[$row['discounttype']])) {
-            $class = DiscountType::$MAP[$row['discounttype']];
-            $DiscountObject = new $class();
-        } else if ($row['discounttype'] >= 64 && isset($DTClasses[($row['discounttype']-64)])) {
-            $class = $DTClasses[($row['discounttype'])-64];
-            $DiscountObject = new $class();
-        } else {
-            // If the requested discounttype isn't available,
-            // fallback to normal pricing. Debatable whether
-            // this should be a hard error.
-            $DiscountObject = new NormalPricing();
-        }
+        $DiscountObject = DiscountType::getObject($row['discounttype']);
 
         /* add in sticker price and calculate a quantity
            if the item is stickered, scaled, and on sale. 
@@ -437,33 +378,10 @@ class UPC extends Parser
             END: figure out discounts by type
         */
 
-        /* get price method object  & add item
-        
-           CORE reserves values 0 through 99 in 
-           PriceMethod::$MAP for default methods.
-
-           Additional methods provided by plugins
-           can use values 100 and up. Because
-           the PriceMethodClasses array is zero-indexed,
-           subtract 100 as an offset  
-        */
-        $pricemethod = MiscLib::nullwrap($row["pricemethod"]);
-        if ($DiscountObject->isSale())
-            $pricemethod = MiscLib::nullwrap($row["specialpricemethod"]);
-        $PMClasses = CoreLocal::get("PriceMethodClasses");
-        $PriceMethodObject = null;
-
         $row['trans_subtype'] = $this->status;
+        $pricemethod = MiscLib::nullwrap($DiscountObject->isSale() ? $row['specialpricemethod'] : $row["pricemethod"]);
+        $PriceMethodObject = PriceMethod::getObject($pricemethod);
 
-        if ($pricemethod < 100 && isset(PriceMethod::$MAP[$pricemethod])) {
-            $class = PriceMethod::$MAP[$pricemethod];
-            $PriceMethodObject = new $class();
-        } else if ($pricemethod >= 100 && isset($PMClasses[($pricemethod-100)])) {
-            $class = $PMClasses[($pricemethod-100)];
-            $PriceMethodObject = new $class();
-        } else {
-            $PriceMethodObject = new BasicPM();
-        }
         // prefetch: otherwise object members 
         // pass out of scope in addItem()
         $prefetch = $DiscountObject->priceInfo($row,$quantity);
@@ -503,7 +421,7 @@ class UPC extends Parser
         $ret['redraw_footer'] = True;
         $ret['output'] = DisplayLib::lastpage();
 
-        if ($prefetch['unitPrice']==0 && $discounttype == 0){
+        if ($prefetch['unitPrice']==0 && $row['discounttype'] == 0){
             $ret['main_frame'] = $my_url.'gui-modules/priceOverride.php';
         }
 
@@ -809,6 +727,53 @@ class UPC extends Parser
         $result = $dbc->query($query);
 
         return $result;
+    }
+
+    private function checkInUse($row)
+    {
+        /* Implementation of inUse flag
+         *   if the flag is not set, display a warning dialog noting this
+         *   and allowing the sale to be confirmed or canceled
+         */
+        if ($row["inUse"] == 0) {
+            TransRecord::addLogRecord(array(
+                'upc' => $row['upc'],
+                'description' => $row['description'],
+                'department' => $row['department'],
+                'charflag' => 'IU',
+            ));
+        }
+    }
+
+    private function enforceSaleLimit($dbc, $row)
+    {
+        /**
+          Enforce per-transaction sale limits
+        */
+        if ($row['special_limit'] > 0) {
+            $appliedQ = "
+                SELECT SUM(quantity) AS saleQty
+                FROM " . CoreLocal::get('tDatabase') . $dbc->sep() . "localtemptrans
+                WHERE discounttype <> 0
+                    AND (
+                        upc='{$row['upc']}'
+                        OR (mixMatch='{$row['mixmatchcode']}' AND mixMatch<>''
+                            AND mixMatch<>'0' AND mixMatch IS NOT NULL)
+                    )";
+            $appliedR = $dbc->query($appliedQ);
+            if ($appliedR && $dbc->num_rows($appliedR)) {
+                $appliedW = $dbc->fetch_row($appliedR);
+                if (($appliedW['saleQty']+$quantity) > $row['special_limit']) {
+                    $row['discounttype'] = 0;
+                    $row['special_price'] = 0;
+                    $row['specialpricemethod'] = 0;
+                    $row['specialquantity'] = 0;
+                    $row['specialgroupprice'] = 0;
+                }
+            }
+        }
+
+        return $row;
     }
 
     function doc(){

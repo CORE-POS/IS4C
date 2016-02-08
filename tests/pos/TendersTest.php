@@ -202,4 +202,15 @@ class TendersTest extends PHPUnit_Framework_TestCase
         $obj = new DisabledTender('CA', 1);
         $this->assertNotEquals(0, strlen($obj->errorCheck()));
     }
+
+    function testGiftCert()
+    {
+        $obj = new GiftCertificateTender();
+        CoreLocal::set('enableFranking', 1);
+        CoreLocal::set('msgrepeat', 0);
+        $ret = $obj->preReqCheck();
+        $this->assertEquals(true, $ret !== true);
+        CoreLocal::set('enableFranking', 0);
+        CoreLocal::set('msgrepeat', 0);
+    }
 }
