@@ -138,12 +138,11 @@ else {
             url:'index.php',
             type:'get',
             cache: false,
-            data:'loadID='+id,
-            success:function(data){
+            data:'loadID='+id
+            }).done(function(data){
                 var tmp = data.split('`');
                 $('#repName').val(tmp[0]);
                 $('#query').val(tmp[1]);
-            }
             });
         }
     }

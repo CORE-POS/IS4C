@@ -207,14 +207,13 @@ function itemEditing()
         $.ajax({
             type: 'post',
             dataType: 'json',
-            data: 'id='+$('#vendor-id').val()+'&oldSKU='+current_sku+'&newSKU='+$(this).val(),
-            success: function(resp) {
-                if (!resp.error) {
-                    elem.closest('tr').find('.original-sku').val(resp.sku);
-                    showBootstrapPopover(elem, orig, '');
-                } else {
-                    showBootstrapAlert('#alert-area', 'danger', resp.error_msg);
-                }
+            data: 'id='+$('#vendor-id').val()+'&oldSKU='+current_sku+'&newSKU='+$(this).val()
+        }).done(function(resp) {
+            if (!resp.error) {
+                elem.closest('tr').find('.original-sku').val(resp.sku);
+                showBootstrapPopover(elem, orig, '');
+            } else {
+                showBootstrapAlert('#alert-area', 'danger', resp.error_msg);
             }
         });
     });
@@ -227,13 +226,12 @@ function itemEditing()
         $.ajax({
             type: 'post',
             dataType: 'json',
-            data: 'id='+$('#vendor-id').val()+'&sku='+current_sku+'&field='+$(this).attr('name')+'&value='+$(this).val(),
-            success: function(resp) {
-                if (resp.error) {
-                    showBootstrapAlert('#alert-area', 'danger', resp.error_msg);
-                } else {
-                    showBootstrapPopover(elem, orig, '');
-                }
+            data: 'id='+$('#vendor-id').val()+'&sku='+current_sku+'&field='+$(this).attr('name')+'&value='+$(this).val()
+        }).done(function(resp) {
+            if (resp.error) {
+                showBootstrapAlert('#alert-area', 'danger', resp.error_msg);
+            } else {
+                showBootstrapPopover(elem, orig, '');
             }
         });
     });
@@ -256,13 +254,12 @@ function itemEditing()
         $.ajax({
             type: 'post',
             dataType: 'json',
-            data: 'id='+$('#vendor-id').val()+'&sku='+current_sku+'&field=cost&value='+newCost,
-            success: function(resp) {
-                if (resp.error) {
-                    showBootstrapAlert('#alert-area', 'danger', resp.error_msg);
-                } else {
-                    showBootstrapPopover(elem, orig, '');
-                }
+            data: 'id='+$('#vendor-id').val()+'&sku='+current_sku+'&field=cost&value='+newCost
+        }).done(function(resp) {
+            if (resp.error) {
+                showBootstrapAlert('#alert-area', 'danger', resp.error_msg);
+            } else {
+                showBootstrapPopover(elem, orig, '');
             }
         });
     });

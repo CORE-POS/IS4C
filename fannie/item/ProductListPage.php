@@ -233,38 +233,34 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             dstr += '&brand='+encodeURIComponent(brand);
             dstr += '&store_id='+store_id;
             $.ajax({
-            url: 'ProductListPage.php',
-            data: dstr,
-            cache: false,
-            type: 'post',
-            success: function(data){
-            }
+                url: 'ProductListPage.php',
+                data: dstr,
+                cache: false,
+                type: 'post'
             });
         }
         function deleteCheck(upc,desc){
             $.ajax({
-            url: 'ProductListPage.php',
-            data: 'ajax=deleteCheck&upc='+upc+'&desc='+desc,
-            dataType: 'json',
-            cache: false,
-            type: 'post',
-            success: function(data){
+                url: 'ProductListPage.php',
+                data: 'ajax=deleteCheck&upc='+upc+'&desc='+desc,
+                dataType: 'json',
+                cache: false,
+                type: 'post'
+            }).done(function(data) {
                 if (data.alertBox && data.upc && data.enc_desc){
                     if (confirm(data.alertBox)){
                         $.ajax({
-                        url: 'ProductListPage.php',
-                        data: 'ajax=doDelete&upc='+upc+'&desc='+data.enc_desc,
-                        cache: false,
-                        type: 'post',
-                        success: function(data){
+                            url: 'ProductListPage.php',
+                            data: 'ajax=doDelete&upc='+upc+'&desc='+data.enc_desc,
+                            cache: false,
+                            type: 'post'
+                        }).done(function(data){
                             $('#' + upc).remove();
-                        }
                         });
                     }
-                }
-                else
+                } else {
                     alert('Data error: cannot delete');
-            }
+                }
             });
         }
         <?php if ($this->canEditItems) { ?>

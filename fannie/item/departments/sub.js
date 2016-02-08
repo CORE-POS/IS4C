@@ -27,16 +27,14 @@ function showSubsForDept(did){
 		url: 'SubDeptEditor.php',
 		type: 'POST',
 		timeout: 5000,
-		data: d,
-		error: function(){
-            showBootstrapAlert('#alertarea', 'danger', 'Error loading sub departments');
-		},
-		success: function(resp){
-			$('#subselect').html(resp);
-			$('#subdiv').show();
-			$('#formdiv').show();
-			$('#subname').html('Subdepts in '+name);
-		}
+		data: d
+	}).fail(function(){
+        showBootstrapAlert('#alertarea', 'danger', 'Error loading sub departments');
+    }).done(function(resp){
+        $('#subselect').html(resp);
+        $('#subdiv').show();
+        $('#formdiv').show();
+        $('#subname').html('Subdepts in '+name);
 	});
 
 }
@@ -49,15 +47,13 @@ function addSub(){
 		url: 'SubDeptEditor.php',
 		type: 'POST',
 		timeout: 5000,
-		data: d,
-		error: function(){
-            showBootstrapAlert('#alertarea', 'danger', 'Error creating sub department');
-		},
-		success: function(resp){
-			$('#subselect').html(resp);
-			$('#newname').val('');
-            showBootstrapAlert('#alertarea', 'success', 'Added sub department ' + name); 
-		}
+		data: d
+    }).fail(function() {
+        showBootstrapAlert('#alertarea', 'danger', 'Error creating sub department');
+    }).done(function(resp){
+        $('#subselect').html(resp);
+        $('#newname').val('');
+        showBootstrapAlert('#alertarea', 'success', 'Added sub department ' + name); 
 	});
 }
 
@@ -71,13 +67,11 @@ function deleteSub(){
 		url: 'SubDeptEditor.php',
 		type: 'POST',
 		timeout: 5000,
-		data: d,
-		error: function(){
-            showBootstrapAlert('#alertarea', 'danger', 'Error deleting sub department(s)');
-		},
-		success: function(resp){
-			$('#subselect').html(resp);
-            showBootstrapAlert('#alertarea', 'success', 'Deleted subdepartment(s)');
-		}
+		data: d
+    }).fail(function(){
+        showBootstrapAlert('#alertarea', 'danger', 'Error deleting sub department(s)');
+    }).done(function(resp){
+        $('#subselect').html(resp);
+        showBootstrapAlert('#alertarea', 'success', 'Deleted subdepartment(s)');
 	});
 }

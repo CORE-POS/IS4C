@@ -311,10 +311,9 @@ class ItemMarginModule extends ItemModule
             $.ajax({
                 url: '<?php echo FannieConfig::config('URL'); ?>item/modules/ItemMarginModule.php',
                 data: 'p='+$('#price'+store_id).val()+'&d='+$('#department'+store_id).val()+'&c='+$('#cost'+store_id).val()+'&u=<?php echo $upc; ?>',
-                cache: false,
-                success: function(data){
-                    $('#ItemMarginMeter').html(data);
-                }
+                cache: false
+            }).done(function(data){
+                $('#ItemMarginMeter').html(data);
             });
         }
         function nosubmit(event)

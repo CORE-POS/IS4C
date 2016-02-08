@@ -7,11 +7,10 @@ function fetchOrders(){
 		dataStr += '&all=1';	
 	$.ajax({
 		url: 'ViewPurchaseOrders.php?'+dataStr,
-		type: 'get',
-		success: function(data){
-			$('#ordersDiv').html(data);
-            $('.tablesorter').tablesorter([[0, 1]]);
-		}
+		type: 'get'
+    }).done(function(data){
+        $('#ordersDiv').html(data);
+        $('.tablesorter').tablesorter([[0, 1]]);
 	});
 }
 
@@ -22,11 +21,10 @@ function fetchPage(pager) {
     dataStr += '&pager='+pager;
 	$.ajax({
 		url: 'ViewPurchaseOrders.php?'+dataStr,
-		type: 'get',
-		success: function(data){
-			$('#ordersDiv').html(data);
-            window.scrollTo(0,0);
-		}
+		type: 'get'
+    }).done(function(data){
+        $('#ordersDiv').html(data);
+        window.scrollTo(0,0);
     });
 }
 
@@ -44,10 +42,9 @@ function togglePlaced(orderID){
 	$.ajax({
 		url: 'ViewPurchaseOrders.php?',
 		type: 'post',
-		data: dataStr,
-		success: function(data){
-			$('#orderPlacedSpan').html(data);
-		}
+		data: dataStr
+    }).done(function(data){
+        $('#orderPlacedSpan').html(data);
 	});
 }
 
@@ -60,10 +57,9 @@ function deleteOrder(orderID)
     if (confirm('Delete this order?')) {
         $.ajax({
             type: 'delete',
-            data: 'id=' + orderID,
-            success: function(result) {
-                location='ViewPurchaseOrders.php?init=pending';
-            }
+            data: 'id=' + orderID
+        }).done(function(result) {
+            location='ViewPurchaseOrders.php?init=pending';
         });
     }
 }
@@ -73,15 +69,14 @@ function receiveSKU()
     var dstr = $('#receive-form').serialize();
     $.ajax({
         type: 'get',
-        data: dstr,
-        success: function(resp) {
-            $('#item-area').html(resp);
-            if ($('#item-area input').length > 0) {
-                $('#item-area input[type!=hidden]:first').focus();
-                $('#sku-in').val('');
-            } else {
-                $('#sku-in').focus();
-            }
+        data: dstr
+    }).done(function(resp) {
+        $('#item-area').html(resp);
+        if ($('#item-area input').length > 0) {
+            $('#item-area input[type!=hidden]:first').focus();
+            $('#sku-in').val('');
+        } else {
+            $('#sku-in').focus();
         }
     });
 }
@@ -92,11 +87,10 @@ function saveReceive()
     console.log(dstr);
     $.ajax({
         type: 'post',
-        data: dstr,
-        success: function (resp) {
-            $('#item-area').html('');
-            $('#sku-in').focus();
-        }
+        data: dstr
+    }).done(function (resp) {
+        $('#item-area').html('');
+        $('#sku-in').focus();
     });
 }
 

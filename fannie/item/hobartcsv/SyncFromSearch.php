@@ -315,14 +315,13 @@ class SyncFromSearch extends FannieRESTfulPage
             }
             $.ajax({
                 type: 'post',
-                data: 'sendupc='+upc+'&'+scaleStr,
-                success: function(result) {
-                    if (result.error) {
-                        showBootstrapAlert('#alert-area', 'danger', 'Error sending item ' + upc);
-                    } else {
-                        showBootstrapAlert('#alert-area', 'success', 'Sent item ' + upc);
-                        $('#row'+upc).remove();
-                    }
+                data: 'sendupc='+upc+'&'+scaleStr
+            }).done(function(result) {
+                if (result.error) {
+                    showBootstrapAlert('#alert-area', 'danger', 'Error sending item ' + upc);
+                } else {
+                    showBootstrapAlert('#alert-area', 'success', 'Sent item ' + upc);
+                    $('#row'+upc).remove();
                 }
             });
         }

@@ -37,15 +37,14 @@ var batchEdit = (function ($) {
         $.ajax({
             type: 'post',
             dataType: 'json',
-            data: dataStr,
-            success: function(resp) {
-                if (resp.error) {
-                    inputAreaAlert('danger', resp.msg);
-                    $(resp.field).focus().select();
-                } else if (resp.content) {
-                    $('#inputarea').html(resp.content);
-                    $(resp.field).focus();
-                }
+            data: dataStr
+        }).done(function(resp) {
+            if (resp.error) {
+                inputAreaAlert('danger', resp.msg);
+                $(resp.field).focus().select();
+            } else if (resp.content) {
+                $('#inputarea').html(resp.content);
+                $(resp.field).focus();
             }
         });
     };
@@ -58,16 +57,15 @@ var batchEdit = (function ($) {
         $.ajax({
             type: 'post',
             data: dataStr,
-            dataType: 'json',
-            success: function(resp) {
-                $('#inputarea').html(resp.input);
-                $('#addItemUPC').focus();
-                if (resp.added) {
-                    $('#displayarea').html(resp.display);
-                }
-                if (/^LC\d+$/.test(identifier)) {
-                    $('#addItemLikeCode').click();
-                }
+            dataType: 'json'
+        }).done(function(resp) {
+            $('#inputarea').html(resp.input);
+            $('#addItemUPC').focus();
+            if (resp.added) {
+                $('#displayarea').html(resp.display);
+            }
+            if (/^LC\d+$/.test(identifier)) {
+                $('#addItemLikeCode').click();
             }
         });
     };
@@ -77,10 +75,9 @@ var batchEdit = (function ($) {
         $.ajax({
             type: 'post',
             data: 'id='+batchID+'&autotag=1',
-            dataType: 'json',
-            success: function(resp) {
-                inputAreaAlert('success', 'Generated ' + resp.tags + ' tags');
-            }
+            dataType: 'json'
+        }).done(function(resp) {
+            inputAreaAlert('success', 'Generated ' + resp.tags + ' tags');
         });
     };
 
@@ -92,15 +89,13 @@ var batchEdit = (function ($) {
         $.ajax({
             type: 'post',
             data: 'id='+batchID+'&force=1',
-            dataType: 'json',
-            error: function() {
-                $('#progress-bar').hide();
-                inputAreaAlert('danger', 'Network Error forcing batch');
-            },
-            success: function(resp) {
-                inputAreaAlert(colorName(resp), resp.msg);
-                $('#progress-bar').hide();
-            }
+            dataType: 'json'
+        }).fail(function() {
+            $('#progress-bar').hide();
+            inputAreaAlert('danger', 'Network Error forcing batch');
+        }).done(function(resp) {
+            inputAreaAlert(colorName(resp), resp.msg);
+            $('#progress-bar').hide();
         });
     };
 
@@ -109,10 +104,9 @@ var batchEdit = (function ($) {
         $.ajax({
             type: 'post',
             data: 'id='+batchID+'&unsale=1',
-            dataType: 'json',
-            success: function(resp) {
-                inputAreaAlert(colorName(resp), resp.msg);
-            }
+            dataType: 'json'
+        }).done(function(resp) {
+            inputAreaAlert(colorName(resp), resp.msg);
         });
     };
 
@@ -121,16 +115,14 @@ var batchEdit = (function ($) {
         var dataStr = 'id=' + batchID + '&upc=' + upc + '&uid=' + userID + '&cut=' + cutOp;
         $.ajax({
             type: 'post',
-            data: dataStr,
-            success: function()
-            {
-                if (cutOp) {
-                    $('#doCut'+upc).hide();
-                    $('#unCut'+upc).show();
-                } else {
-                    $('#unCut'+upc).hide();
-                    $('#doCut'+upc).show();
-                }
+            data: dataStr
+        }).done(function() {
+            if (cutOp) {
+                $('#doCut'+upc).hide();
+                $('#unCut'+upc).show();
+            } else {
+                $('#unCut'+upc).hide();
+                $('#doCut'+upc).show();
             }
         });
     };
@@ -142,16 +134,15 @@ var batchEdit = (function ($) {
         $.ajax({
             type: 'post',
             data: dataStr,
-            dataType: 'json',
-            success: function(resp) {
-                if (resp.error) {
-                    inputAreaAlert('danger', resp.msg);
-                } else {
-                    clickedElem.closest('tr').hide();
-                    if (/^LC\d+$/.test(upc)) {
-                        var lc = upc.substring(2, upc.length);
-                        $('.lc-item-'+lc).hide();
-                    }
+            dataType: 'json'
+        }).done(function(resp) {
+            if (resp.error) {
+                inputAreaAlert('danger', resp.msg);
+            } else {
+                clickedElem.closest('tr').hide();
+                if (/^LC\d+$/.test(upc)) {
+                    var lc = upc.substring(2, upc.length);
+                    $('.lc-item-'+lc).hide();
                 }
             }
         });
@@ -174,24 +165,23 @@ var batchEdit = (function ($) {
         $.ajax({
             type: 'post',
             data: dataStr,
-            dataType: 'json',
-            success: function(resp) {
-                if (resp.error) {
-                    inputAreaAlert('warning', resp.msg);
+            dataType: 'json'
+        }).done(function(resp) {
+            if (resp.error) {
+                inputAreaAlert('warning', resp.msg);
+            } else {
+                $('#editLink'+upc+' .edit').show();
+                $('#editLink'+upc+' .save').hide();
+                $('#item-qty-'+upc).html(resp.qty + ' for ');
+                $('#sale-price-'+upc).html(resp.price);
+                $('#editable-fields-'+upc+' input[name=qty]').val(resp.qty);
+                $('#editable-fields-'+upc+' input[name=price]').val(resp.price);
+                $('#editable-fields-'+upc).hide();
+                $('#editable-text-'+upc).show();
+                if (resp.qty > 1) {
+                    $('#item-qty-'+upc).show();
                 } else {
-                    $('#editLink'+upc+' .edit').show();
-                    $('#editLink'+upc+' .save').hide();
-                    $('#item-qty-'+upc).html(resp.qty + ' for ');
-                    $('#sale-price-'+upc).html(resp.price);
-                    $('#editable-fields-'+upc+' input[name=qty]').val(resp.qty);
-                    $('#editable-fields-'+upc+' input[name=price]').val(resp.price);
-                    $('#editable-fields-'+upc).hide();
-                    $('#editable-text-'+upc).show();
-                    if (resp.qty > 1) {
-                        $('#item-qty-'+upc).show();
-                    } else {
-                        $('#item-qty-'+upc).hide();
-                    }
+                    $('#item-qty-'+upc).hide();
                 }
             }
         });
@@ -224,7 +214,7 @@ var batchEdit = (function ($) {
         
         $.ajax({
             type: 'post',
-            data: 'id='+batchID+'&limit='+newLimit,
+            data: 'id='+batchID+'&limit='+newLimit
         });
     };
 
@@ -234,15 +224,14 @@ var batchEdit = (function ($) {
         $.ajax({
             type: 'post',
             data: 'id='+$('#batchID').val()+'&upc='+upc+'&swap=1',
-            dataType: 'json',
-            success: function(resp) {
-                if (resp.error) {
-                    inputAreaAlert('danger', resp.error);
-                } else {
-                    $('#qualifier-table').append(tr);
-                    tr.find('.down-arrow').show();
-                    tr.find('.up-arrow').hide();
-                }
+            dataType: 'json'
+        }).done(function(resp) {
+            if (resp.error) {
+                inputAreaAlert('danger', resp.error);
+            } else {
+                $('#qualifier-table').append(tr);
+                tr.find('.down-arrow').show();
+                tr.find('.up-arrow').hide();
             }
         });
     };
@@ -253,15 +242,14 @@ var batchEdit = (function ($) {
         $.ajax({
             type: 'post',
             data: 'id='+$('#batchID').val()+'&upc='+upc+'&swap=1',
-            dataType: 'json',
-            success: function(resp) {
-                if (resp.error) {
-                    inputAreaAlert('danger', resp.error);
-                } else {
-                    $('#discount-table').append(tr);
-                    tr.find('.down-arrow').hide();
-                    tr.find('.up-arrow').show();
-                }
+            dataType: 'json'
+        }).done(function(resp) {
+            if (resp.error) {
+                inputAreaAlert('danger', resp.error);
+            } else {
+                $('#discount-table').append(tr);
+                tr.find('.down-arrow').hide();
+                tr.find('.up-arrow').show();
             }
         });
     };
@@ -273,13 +261,12 @@ var batchEdit = (function ($) {
         $.ajax({
             type: 'post',
             data: dataStr,
-            dataType: 'json',
-            success: function(resp) {
-                if (resp.error) {
-                    inputAreaAlert('danger', resp.error);
-                } else {
-                    inputAreaAlert('success', 'Saved Paired Sale Settings');
-                }
+            dataType: 'json'
+        }).done(function(resp) {
+            if (resp.error) {
+                inputAreaAlert('danger', resp.error);
+            } else {
+                inputAreaAlert('success', 'Saved Paired Sale Settings');
             }
         });
     };
@@ -289,13 +276,12 @@ var batchEdit = (function ($) {
         $.ajax({
             type: 'post',
             data: 'id='+id+'&trim=1',
-            dataType: 'json',
-            success: function(resp) {
-                if (resp.error) {
-                    inputAreaAlert('danger', resp.error);
-                } else {
-                    $('#displayarea').html(resp.display);
-                }
+            dataType: 'json'
+        }).done(function(resp) {
+            if (resp.error) {
+                inputAreaAlert('danger', resp.error);
+            } else {
+                $('#displayarea').html(resp.display);
             }
         });
 
@@ -306,11 +292,10 @@ var batchEdit = (function ($) {
         $.ajax({
             type: 'post',
             data: 'id='+batchID+'&storeID='+storeID,
-            dataType: 'json',
-            success: function(resp) {
-                if (resp.error) {
-                    inputAreaAlert('danger', resp.error);
-                }
+            dataType: 'json'
+        }).done(function(resp) {
+            if (resp.error) {
+                inputAreaAlert('danger', resp.error);
             }
         });
     };

@@ -17,17 +17,16 @@ var wayback = (function($) {
                 url: 'WaybackMachine.php',
                 data: dataStr + '&current='+currentDate.toISOString(),
                 dataType: 'json',
-                async: false,
-                success: function(resp) {
-                    resp.forEach(function(row) {
-                        var tRow = $('<tr>');   
-                        row.forEach(function(item) {
-                            var td = $('<td>').html(item);
-                            tRow.append(td);
-                        });
-                        $('#wayback-table').append(tRow);
+                async: false
+            }).done(function(resp) {
+                resp.forEach(function(row) {
+                    var tRow = $('<tr>');   
+                    row.forEach(function(item) {
+                        var td = $('<td>').html(item);
+                        tRow.append(td);
                     });
-                }
+                    $('#wayback-table').append(tRow);
+                });
             });
             currentDate.setMonth(currentDate.getMonth()-1);
         }

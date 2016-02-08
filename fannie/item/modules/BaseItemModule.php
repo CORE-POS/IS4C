@@ -812,24 +812,23 @@ HTML;
                             url: 'modules/BaseItemModule.php',
                             data: 'dept_defaults='+$('#department'+store_id).val(),
                             dataType: 'json',
-                            cache: false,
-                            success: function(data){
-                                if (data.tax)
-                                    $('#tax'+store_id).val(data.tax);
-                                if (data.fs)
-                                    $('#FS'+store_id).prop('checked',true);
-                                else{
-                                    $('#FS'+store_id).prop('checked', false);
-                                }
-                                if (data.nodisc && !data.line) {
-                                    $('#discount-select'+store_id).val(0);
-                                } else if (!data.nodisc && data.line) {
-                                    $('#discount-select'+store_id).val(1);
-                                } else if (!data.nodisc && !data.line) {
-                                    $('#discount-select'+store_id).val(2);
-                                } else {
-                                    $('#discount-select'+store_id).val(3);
-                                }
+                            cache: false
+                        }).done(function(data){
+                            if (data.tax)
+                                $('#tax'+store_id).val(data.tax);
+                            if (data.fs)
+                                $('#FS'+store_id).prop('checked',true);
+                            else{
+                                $('#FS'+store_id).prop('checked', false);
+                            }
+                            if (data.nodisc && !data.line) {
+                                $('#discount-select'+store_id).val(0);
+                            } else if (!data.nodisc && data.line) {
+                                $('#discount-select'+store_id).val(1);
+                            } else if (!data.nodisc && !data.line) {
+                                $('#discount-select'+store_id).val(2);
+                            } else {
+                                $('#discount-select'+store_id).val(3);
                             }
                         });
                     }
@@ -842,16 +841,15 @@ HTML;
                 url: '<?php echo $FANNIE_URL; ?>item/modules/BaseItemModule.php',
                 data: 'vendorChanged='+newVal,
                 dataType: 'json',
-                cache: false,
-                success: function(resp) {
-                    if (!resp.error) {
-                        $('#local-origin-id').val(resp.localID);
-                        $('.product-case-size').prop('disabled', false);
-                        $('#product-sku-field').prop('disabled', false);
-                    } else {
-                        $('.product-case-size').prop('disabled', true);
-                        $('#product-sku-field').prop('disabled', true);
-                    }
+                cache: false
+            }).done(function(resp) {
+                if (!resp.error) {
+                    $('#local-origin-id').val(resp.localID);
+                    $('.product-case-size').prop('disabled', false);
+                    $('#product-sku-field').prop('disabled', false);
+                } else {
+                    $('.product-case-size').prop('disabled', true);
+                    $('#product-sku-field').prop('disabled', true);
                 }
             });
         }
@@ -894,29 +892,27 @@ HTML;
                 $.ajax({
                     url: '<?php echo $FANNIE_URL; ?>item/modules/BaseItemModule.php',
                     data: data,
-                    dataType: 'json',
-                    error: function() {
-                        $('#newVendorAlert').html('Communication error');
-                    },
-                    success: function(resp){
-                        if (resp.vendorID) {
-                            v_dialog.dialog("close");
-                            $('.vendor_field').each(function(){
-                                var v_field = $(this);
-                                if (v_field.hasClass('chosen-select')) {
-                                    var newopt = $('<option/>').attr('id', resp.vendorID).html(resp.vendorName);
-                                    v_field.append(newopt);
-                                }
-                                v_field.val(resp.vendorName);
-                                if (v_field.hasClass('chosen-select')) {
-                                    v_field.trigger('chosen:updated');
-                                }
-                            });
-                        } else if (resp.error) {
-                            $('#newVendorAlert').html(resp.error);
-                        } else {
-                            $('#newVendorAlert').html('Invalid response');
-                        }
+                    dataType: 'json'
+                }).fail(function() {
+                    $('#newVendorAlert').html('Communication error');
+                }).done(function(resp){
+                    if (resp.vendorID) {
+                        v_dialog.dialog("close");
+                        $('.vendor_field').each(function(){
+                            var v_field = $(this);
+                            if (v_field.hasClass('chosen-select')) {
+                                var newopt = $('<option/>').attr('id', resp.vendorID).html(resp.vendorName);
+                                v_field.append(newopt);
+                            }
+                            v_field.val(resp.vendorName);
+                            if (v_field.hasClass('chosen-select')) {
+                                v_field.trigger('chosen:updated');
+                            }
+                        });
+                    } else if (resp.error) {
+                        $('#newVendorAlert').html(resp.error);
+                    } else {
+                        $('#newVendorAlert').html('Invalid response');
                     }
                 });
             }

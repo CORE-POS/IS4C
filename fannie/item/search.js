@@ -10,13 +10,12 @@ function getResults() {
         url: 'AdvancedItemSearch.php',
         type: 'get',
         data: 'search=1&' + dstr,
-        success: function(data) {
-            $('.progress').hide();
-            $('#resultArea').html(data);
-            // don't run sorting JS on very large result sets
-            if ($('.upcCheckBox').length < 2500) {
-                $('.search-table').tablesorter({headers: { 0: { sorter:false } } });
-            }
+    }).done(function(data) {
+        $('.progress').hide();
+        $('#resultArea').html(data);
+        // don't run sorting JS on very large result sets
+        if ($('.upcCheckBox').length < 2500) {
+            $('.search-table').tablesorter({headers: { 0: { sorter:false } } });
         }
     });
 }
@@ -125,17 +124,16 @@ function chainSuper(superID)
         type: 'post',
         data: JSON.stringify(req),
         dataType: 'json',
-        contentType: 'application/json',
-        success: function(resp) {
-            if (resp.result) {
-                $('#dept-start').empty().append('<option value="">Select Start...</option>');
-                $('#dept-end').empty().append('<option value="">Select End...</option>');
-                for (var i=0; i<resp.result.length; i++) {
-                    var opt = $('<option>').val(resp.result[i]['id'])
-                        .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
-                    $('#dept-start').append(opt.clone());
-                    $('#dept-end').append(opt);
-                }
+        contentType: 'application/json'
+    }).done(function(resp) {
+        if (resp.result) {
+            $('#dept-start').empty().append('<option value="">Select Start...</option>');
+            $('#dept-end').empty().append('<option value="">Select End...</option>');
+            for (var i=0; i<resp.result.length; i++) {
+                var opt = $('<option>').val(resp.result[i]['id'])
+                    .html(resp.result[i]['id'] + ' ' + resp.result[i]['name']);
+                $('#dept-start').append(opt.clone());
+                $('#dept-end').append(opt);
             }
         }
     });

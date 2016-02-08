@@ -163,27 +163,26 @@ function doLookup(mode, term, elem)
         type: 'post',
         data: JSON.stringify(req),
         dataType: 'json',
-        contentType: 'application/json',
-        success: function(data) {
-            if (data.result && (data.result.sku || data.result.upc)) {
-                if (mode === 'sku' && data.result.upc !== '0000000000000') {
-                    elem.closest('tr').find('.item-upc').val(data.result.upc);
-                } else if (mode === 'sku') {
-                    elem.closest('tr').find('.item-upc').val('');
-                } else if (mode === 'upc') {
-                    elem.closest('tr').find('.item-sku').val(data.result.sku);
-                }
-                if (data.result.units !== '') {
-                    elem.closest('tr').find('.item-units').val(data.result.units);
-                }
-                if (data.result.brand !== '') {
-                    elem.closest('tr').find('.item-brand').val(data.result.brand);
-                }
-                if (data.result.description !== '') {
-                    elem.closest('tr').find('.item-description').val(data.result.description);
-                }
+        contentType: 'application/json'
+    }).done(function(data) {
+        if (data.result && (data.result.sku || data.result.upc)) {
+            if (mode === 'sku' && data.result.upc !== '0000000000000') {
+                elem.closest('tr').find('.item-upc').val(data.result.upc);
+            } else if (mode === 'sku') {
+                elem.closest('tr').find('.item-upc').val('');
+            } else if (mode === 'upc') {
+                elem.closest('tr').find('.item-sku').val(data.result.sku);
             }
-        },
+            if (data.result.units !== '') {
+                elem.closest('tr').find('.item-units').val(data.result.units);
+            }
+            if (data.result.brand !== '') {
+                elem.closest('tr').find('.item-brand').val(data.result.brand);
+            }
+            if (data.result.description !== '') {
+                elem.closest('tr').find('.item-description').val(data.result.description);
+            }
+        }
     });
 }
 
@@ -201,15 +200,13 @@ function vendorAutoComplete(ws_url, field_name, search_term, vendor_id, callback
         type: 'post',
         data: JSON.stringify(req),
         dataType: 'json',
-        contentType: 'application/json',
-        success: function(data) {
-            if (data.result) {
-                callback(data.result);
-            }
-        },
-        error: function() {
-            callback([]);
+        contentType: 'application/json'
+    }).done(function(data) {
+        if (data.result) {
+            callback(data.result);
         }
+    }).fail(function() {
+        callback([]);
     });
 }
 
@@ -220,14 +217,13 @@ function saveOrder()
     $.ajax({
         type: 'post',
         data: dataStr,
-        dataType: 'json',
-        success: function(resp) {
-            if (resp.error) {
-                showBootstrapAlert('#alert-area', 'danger', resp.message);
-                $('#save-btn').prop('disabled', false);
-            } else {
-                window.location = 'ViewPurchaseOrders.php?id=' + resp.order_id;
-            }
+        dataType: 'json'
+    }).done(function(resp) {
+        if (resp.error) {
+            showBootstrapAlert('#alert-area', 'danger', resp.message);
+            $('#save-btn').prop('disabled', false);
+        } else {
+            window.location = 'ViewPurchaseOrders.php?id=' + resp.order_id;
         }
     });
 }

@@ -15,14 +15,12 @@ function cscallback(){
 		type: 'POST',
 		dataType: 'text/html',
 		timeout: 5000,
-		data: d,
-		error: function(){
-		alert('Error loading XML document');
-		},
-		success: function(resp){
-			resp = '<legend>Margin</legend>'+resp;
-			$('#marginfs').html(resp);
-		}
+		data: d
+    }).fail(function(){
+        alert('Error loading XML document');
+    }).done(function(resp){
+        resp = '<legend>Margin</legend>'+resp;
+        $('#marginfs').html(resp);
 	});
 }
 
@@ -38,13 +36,11 @@ function updateLC(the_likecode){
 		type: 'POST',
 		dataType: 'text/html',
 		timeout: 5000,
-		data: d,
-		error: function(){
+		data: d
+    }).fail(function(){
 		alert('Error loading XML document');
-		},
-		success: function(resp){
-			$('#lctable').html(resp);
-			$('#lchidden').show();
-		}
+    }).done(function(resp){
+        $('#lctable').html(resp);
+        $('#lchidden').show();
 	});
 }

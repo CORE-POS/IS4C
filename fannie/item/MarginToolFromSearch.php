@@ -571,10 +571,9 @@ function createBatch() {
     $.ajax({
         url: 'MarginToolFromSearch.php',
         type: 'post',
-        data: dstr,
-        success: function(resp) {
-            location = resp;
-        }
+        data: dstr
+    }).done(function(resp) {
+        location = resp;
     });
 }
 function reCalc(upc, price, cost, deptID, superID) {
@@ -614,10 +613,9 @@ function reCalc(upc, price, cost, deptID, superID) {
     $.ajax({
         url: 'MarginToolFromSearch.php',
         type: 'post',
-        data: 'upcs='+upcs+'&deptID='+deptID+'&newprices='+prices,
-        success: function(resp) {
-            $('#dmargin'+deptID).html(resp+"%");
-        }
+        data: 'upcs='+upcs+'&deptID='+deptID+'&newprices='+prices
+    }).done(function(resp) {
+        $('#dmargin'+deptID).html(resp+"%");
     });
 
     // get all prices for items in the superdepartment
@@ -634,10 +632,9 @@ function reCalc(upc, price, cost, deptID, superID) {
     $.ajax({
         url: 'MarginToolFromSearch.php',
         type: 'post',
-        data: 'upcs='+upcs+'&superID='+superID+'&newprices='+prices,
-        success: function(resp) {
-            $('#smargin'+superID).html(resp+"%");
-        }
+        data: 'upcs='+upcs+'&superID='+superID+'&newprices='+prices
+    }).done(function(resp) {
+        $('#smargin'+superID).html(resp+"%");
     });
 }
         <?php

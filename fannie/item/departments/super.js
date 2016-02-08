@@ -36,13 +36,11 @@ var superDept = (function($) {
             url: 'SuperDeptEditor.php',
             type: 'POST',
             timeout: 5000,
-            data: 'sid='+superID+'&action=deptsInSuper',
-            error: function(){
-                showAlert('danger', 'Unable to load department data');
-            },
-            success: function(resp){
-                $('#deptselect').html(resp);	
-            }
+            data: 'sid='+superID+'&action=deptsInSuper'
+        }).fail(function(){
+            showAlert('danger', 'Unable to load department data');
+        }).done(function(resp){
+            $('#deptselect').html(resp);	
         });
     };
 
@@ -51,13 +49,11 @@ var superDept = (function($) {
             url: 'SuperDeptEditor.php',
             type: 'POST',
             timeout: 5000,
-            data: 'sid='+superID+'&action=deptsNotInSuper',
-            error: function(){
-                showAlert('danger', 'Unable to load department data');
-            },
-            success: function(resp){
-                $('#deptselect2').html(resp);	
-            }
+            data: 'sid='+superID+'&action=deptsNotInSuper'
+        }).fail(function(){
+            showAlert('danger', 'Unable to load department data');
+        }).done(function(resp){
+            $('#deptselect2').html(resp);	
         });
     };
 
@@ -65,10 +61,9 @@ var superDept = (function($) {
         $.ajax({
             url: 'SuperDeptEditor.php',
             type: 'get',
-            data: 'sid='+superID+'&action=superDeptEmail',
-            success: function(resp) {
-                $('#sd_email').val(resp);
-            }
+            data: 'sid='+superID+'&action=superDeptEmail'
+        }).done(function(resp) {
+            $('#sd_email').val(resp);
         });
     };
 
@@ -121,19 +116,17 @@ var superDept = (function($) {
             type: 'POST',
             timeout: 5000,
             data: qs,
-            dataType: 'json',
-            error: function(){
-                showAlert('danger', 'Save failed!');
-            },
-            success: function(resp){
-                // reload the page so the form resets
-                // when a new super department is created
-                showAlert('success', 'Saved #' + resp.id + ' ' + resp.name);
-                if (sID === '-1') {
-                    var newOpt = $('<option/>').val(resp.id).html(resp.name);
-                    $('#superselect').append(newOpt);
-                    $('#superselect').val(resp.id);
-                }
+            dataType: 'json'
+        }).fail(function(){
+            showAlert('danger', 'Save failed!');
+        }).done(function(resp){
+            // reload the page so the form resets
+            // when a new super department is created
+            showAlert('success', 'Saved #' + resp.id + ' ' + resp.name);
+            if (sID === '-1') {
+                var newOpt = $('<option/>').val(resp.id).html(resp.name);
+                $('#superselect').append(newOpt);
+                $('#superselect').val(resp.id);
             }
         });
     };

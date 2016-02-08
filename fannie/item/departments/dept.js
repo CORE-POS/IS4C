@@ -32,16 +32,14 @@ var deptEdit = (function($) {
             type: 'post',
             timeout: 5000,
             data: fields,
-            dataType: 'json',
-            error: function(){
+            dataType: 'json'
+        }).fail(function(){
+            showBootstrapAlert('#deptdiv', 'danger', 'Error saving department');
+        }).done(function(resp){
+            if (resp.did && resp.msg) {
+                showBootstrapAlert('#deptdiv', 'success', resp.msg);
+            } else {
                 showBootstrapAlert('#deptdiv', 'danger', 'Error saving department');
-            },
-            success: function(resp){
-                if (resp.did && resp.msg) {
-                    showBootstrapAlert('#deptdiv', 'success', resp.msg);
-                } else {
-                    showBootstrapAlert('#deptdiv', 'danger', 'Error saving department');
-                }
             }
         });
     };
@@ -57,19 +55,17 @@ var deptEdit = (function($) {
             url: 'DepartmentEditor.php',
             type: 'get',
             timeout: 5000,
-            data: 'id='+dID,
-            error: function(){
-                showBootstrapAlert('#deptdiv', 'danger', 'Error loading department');
-            },
-            success: function(resp){
-                $('#infodiv').html(resp);
-                $('#infodiv input[type=text]').keyup(function (e){
-                    if (e.which == 13) {
-                        mod.deptSave();
-                    }
-                });
-                $('#infodiv input[type=text]:first').focus();
-            }
+            data: 'id='+dID
+        }).fail(function(){
+            showBootstrapAlert('#deptdiv', 'danger', 'Error loading department');
+        }).done(function(resp){
+            $('#infodiv').html(resp);
+            $('#infodiv input[type=text]').keyup(function (e){
+                if (e.which == 13) {
+                    mod.deptSave();
+                }
+            });
+            $('#infodiv input[type=text]:first').focus();
         });
     };
 

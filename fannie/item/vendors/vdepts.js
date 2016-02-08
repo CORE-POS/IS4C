@@ -13,16 +13,14 @@ var vDept = (function($) {
                 type: 'POST',
                 dataType: 'json',
                 timeout: 5000,
-                data: 'deptID='+num+'&vid='+vid+'&action=deleteCat',
-                error: function(){
-                    showError('Network error deleting #' + num);
-                },
-                success: function(resp){
-                    if (resp.error) {
-                        showError(resp.error);
-                    } else {
-                        $('#row-'+num).hide();
-                    }
+                data: 'deptID='+num+'&vid='+vid+'&action=deleteCat'
+            }).fail(function(){
+                showError('Network error deleting #' + num);
+            }).done(function(resp){
+                if (resp.error) {
+                    showError(resp.error);
+                } else {
+                    $('#row-'+num).hide();
                 }
             });
         }
@@ -38,22 +36,20 @@ var vDept = (function($) {
             type: 'POST',
             dataType: 'json',
             timeout: 5000,
-            data: 'deptID='+num+'&vid='+vid+'&name='+name+'&action=createCat',
-            error: function(){
-                showError('Network error creating department');
-            },
-            success: function(resp){
-                if (resp.error) {
-                    showError(resp.error);
-                } else if (resp.row) {
-                    $('.table').append(resp.row);
-                    $('#newform').hide();
-                    $('#newform :input').each(function(){
-                        $(this).val('');
-                    });
-                } else {
-                    showError('Error: invalid response from server');
-                }
+            data: 'deptID='+num+'&vid='+vid+'&name='+name+'&action=createCat'
+        }).fail(function(){
+            showError('Network error creating department');
+        }).done(function(resp){
+            if (resp.error) {
+                showError(resp.error);
+            } else if (resp.row) {
+                $('.table').append(resp.row);
+                $('#newform').hide();
+                $('#newform :input').each(function(){
+                    $(this).val('');
+                });
+            } else {
+                showError('Error: invalid response from server');
             }
         });
     };
@@ -78,16 +74,14 @@ var vDept = (function($) {
             type: 'POST',
             dataType: 'json',
             timeout: 5000,
-            data: 'deptID='+did+'&vid='+vid+'&name='+name+'&margin='+margin+'&pos='+pos+'&action=updateCat',
-            error: function(){
-                showError('Network error saving #' + did);
-            },
-            success: function(resp){
-                if (resp.error) {
-                    showError(resp.error);
-                } else {
-                    showBootstrapAlert('#alert-area', 'success', 'Saved #' + did);
-                }
+            data: 'deptID='+did+'&vid='+vid+'&name='+name+'&margin='+margin+'&pos='+pos+'&action=updateCat'
+        }).fail(function(){
+            showError('Network error saving #' + did);
+        }).done(function(resp){
+            if (resp.error) {
+                showError(resp.error);
+            } else {
+                showBootstrapAlert('#alert-area', 'success', 'Saved #' + did);
             }
         });
     };

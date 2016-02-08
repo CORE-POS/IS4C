@@ -345,47 +345,41 @@ HTML;
 function copyOrder(oid){
     if (confirm("Copy this order?")){
         $.ajax({
-        url:'ajax-calls.php',
-        type:'post',
-        data:'action=copyOrder&orderID='+oid,
-        cache: false,
-        error: function(e1,e2,e3){
+            url:'ajax-calls.php',
+            type:'post',
+            data:'action=copyOrder&orderID='+oid,
+            cache: false
+        }).fail(function(e1,e2,e3){
             alert(e1);alert(e2);alert(e3);
-        },
-        success: function(resp){
+        }).done(function(resp){
             location='view.php?orderID='+resp;
-        }
         });
     }
 }
 $(document).ready(function(){
     $.ajax({
-    type: 'get',
-    data: 'customer=1&orderID={{orderID}}',
-    cache: false,
-    error: function(e1,e2,e3){
+        type: 'get',
+        data: 'customer=1&orderID={{orderID}}',
+        cache: false
+    }).fail(function(e1,e2,e3){
         alert(e1);alert(e2);alert(e3);
-    },
-    success: function(resp){
+    }).done(function(resp){
         $('#customerDiv').html(resp);
         var oid = $('#orderID').val();
         $.ajax({
-        type: 'get',
-        data: 'items=1&orderID='+oid+'&nonForm=yes',
-        cache: false,
-        success: function(resp){
+            type: 'get',
+            data: 'items=1&orderID='+oid+'&nonForm=yes',
+            cache: false
+        }).done(function(resp){
             $('#itemDiv').html(resp);
-        }
         });
         $.ajax({
             type: 'get',
             data: 'history=1&orderID='+oid,
-            cache: false,
-            success: function(resp){
-                $('#historyDiv').html(resp);
-            }
+            cache: false
+        }).done(function(resp){
+            $('#historyDiv').html(resp);
         });
-    }
     });
 
 });

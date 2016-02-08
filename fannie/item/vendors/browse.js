@@ -10,14 +10,12 @@ function catchange(){
 			url: 'BrowseVendorItems.php',
 			type: 'post',
 			timeout: 5000,
-			data: 'vid='+vid+'&deptID='+did+'&action=getCategoryBrands',
-			error: function(){
+			data: 'vid='+vid+'&deptID='+did+'&action=getCategoryBrands'
+        }).fail(function(){
 			alert('Error loading XML document');
-			},
-			success: function(resp){
-				$('#brandselect').html(resp);
-                $('#brandselect').focus();
-			}
+        }).done(function(resp){
+            $('#brandselect').html(resp);
+            $('#brandselect').focus();
 		});
 	}
 }
@@ -31,17 +29,15 @@ function addToPos(upc){
 		url: 'BrowseVendorItems.php',
 		type: 'POST',
 		timeout: 5000,
-		data: 'upc='+upc+'&vid='+vid+'&price='+price+'&dept='+dept+'&tags='+tags+'&action=addPosItem',
-		error: function(){
+		data: 'upc='+upc+'&vid='+vid+'&price='+price+'&dept='+dept+'&tags='+tags+'&action=addPosItem'
+    }).fail(function(){
 		alert('Error loading XML document');
-		},
-		success: function(resp){
-			$('#price'+upc).parent().html('&nbsp;');
-			$('#dept'+upc).parent().html('&nbsp;');
-			$('#button'+upc).html('&nbsp;');
-			var cssObj = { "background" : "#ffffcc" }
-			$('#row'+upc).css(cssObj);
-		}
+    }).done(function(resp){
+        $('#price'+upc).parent().html('&nbsp;');
+        $('#dept'+upc).parent().html('&nbsp;');
+        $('#button'+upc).html('&nbsp;');
+        var cssObj = { "background" : "#ffffcc" }
+        $('#row'+upc).css(cssObj);
 	});
 }
 
@@ -58,20 +54,18 @@ function brandchange() {
 			url: 'BrowseVendorItems.php',
 			type: 'post',
 			data: 'vid='+vid+'&deptID='+did+'&brand='+brand+'&action=showCategoryItems',
-            dataType: 'json',
-			error: function(e1,e2){
-				$('#loading-bar').hide();
-                showBootstrapAlert('#contentarea', 'danger', 'Error loading items');
-			},
-			success: function(resp){
-				$('#loading-bar').hide();
-                if (resp.items) {
-                    $('#contentarea').html(resp.items);
-                }
-                if (resp.tags && resp.tags != -999) {
-                    $('#shelftags').val(resp.tags);
-                }
-			}
+            dataType: 'json'
+        }).fail(function() {
+            $('#loading-bar').hide();
+            showBootstrapAlert('#contentarea', 'danger', 'Error loading items');
+        }).done(function(resp){
+            $('#loading-bar').hide();
+            if (resp.items) {
+                $('#contentarea').html(resp.items);
+            }
+            if (resp.tags && resp.tags != -999) {
+                $('#shelftags').val(resp.tags);
+            }
 		});
 	}
 }

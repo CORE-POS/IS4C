@@ -58,30 +58,29 @@ function pollLanes() {
                 type: 'post',
                 data: JSON.stringify(req),
                 dataType: 'json',
-                contentType: 'application/json',
-                success: function(resp) {
-                    for (var i=0; i<resp.result.length; i++) {
-                        var lane = resp.result[i];
-                        var elem = $('<li>');
-                        if (lane.online === false) {
-                            elem.addClass('alert-danger').html('Cannot connect to lane ' + (i+1));
-                        } else if (lane.itemFound === 0) {
-                            elem.addClass('alert-danger').html('Item not found on lane ' + (i+1));
+                contentType: 'application/json'
+            }).done(function(resp) {
+                for (var i=0; i<resp.result.length; i++) {
+                    var lane = resp.result[i];
+                    var elem = $('<li>');
+                    if (lane.online === false) {
+                        elem.addClass('alert-danger').html('Cannot connect to lane ' + (i+1));
+                    } else if (lane.itemFound === 0) {
+                        elem.addClass('alert-danger').html('Item not found on lane ' + (i+1));
+                    } else {
+                        if (lane.itemFound > 1) {
+                            elem.AddClass('alert-danger').html('Item found multiple items on lane ' + (i+1));
                         } else {
-                            if (lane.itemFound > 1) {
-                                elem.AddClass('alert-danger').html('Item found multiple items on lane ' + (i+1));
-                            } else {
-                                elem.html('Item <span style="color:red;">' + lane.itemUPC + '</span> on lane ' + (i+1));
-                            }
-                            var sublist = $('<ul>');
-                            sublist.append($('<li>').html('Price: ' + lane.itemPrice));
-                            if (lane.itemOnSale) {
-                                sublist.append($('<li>').addClass('alert-success').html('On Sale: ' + lane.itemSalePrice));
-                            }
-                            elem.append(sublist);
+                            elem.html('Item <span style="color:red;">' + lane.itemUPC + '</span> on lane ' + (i+1));
                         }
-                        $('#AllLanesFieldsetContent ul:first').append(elem);
+                        var sublist = $('<ul>');
+                        sublist.append($('<li>').html('Price: ' + lane.itemPrice));
+                        if (lane.itemOnSale) {
+                            sublist.append($('<li>').addClass('alert-success').html('On Sale: ' + lane.itemSalePrice));
+                        }
+                        elem.append(sublist);
                     }
+                    $('#AllLanesFieldsetContent ul:first').append(elem);
                 }
             });
         });

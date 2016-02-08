@@ -39,47 +39,12 @@ class GenericBillingPage extends FannieRESTfulPage
     private $EMP_NO=1001;
     private $DEPT=703;
 
-    function javascript_content(){
-        ob_start();
-        ?>
-function getMemInfo(){
-    $.ajax({
-        url: 'GenericBillingPage.php?id='+$('#memnum').val(),
-        type: 'get',
-        success: function(resp){
-            $('#contentArea').html(resp);
-            $('#resultArea').html('');
-        }
-    });
-}
-function postBilling(){
-    var data = 'id='+$('#form_memnum').val();
-    data += '&amount='+$('#amount').val();
-    data += '&desc='+$('#desc').val();
-    $.ajax({
-        url: 'GenericBillingPage.php',
-        type: 'post',
-        data: data,
-        dataType: 'json',
-        success: function(resp) {
-            if (resp.billed) {
-                $('#contentArea').html('');
-                showBootstrapAlert('#resultArea', 'success', resp.msg);
-            } else {
-                showBootstrapAlert('#resultArea', 'danger', resp.msg);
-            }
-        }
-    });
-}
-        <?php
-        return ob_get_clean();
-    }
-
     function get_view()
     {
         $value = FormLib::get_form_value('id');
         $this->add_onload_command('$(\'#memnum\').val($(\'#sel\').val());');
-        $ret = "<form onsubmit=\"getMemInfo(); return false;\">
+        $this->addScript('billing.js');
+        $ret = "<form onsubmit=\"genericBilling.getMemInfo(); return false;\">
             <div class=\"form-group form-inline\">
             <label>Member #</label>:
             <input type=text id=memnum name=id 
@@ -122,7 +87,7 @@ function postBilling(){
         $result = $sql->execute($prep, array($this->id));
         $row = $sql->fetch_row($result);
 
-        printf("<form onsubmit=\"postBilling();return false;\">
+        printf("<form onsubmit=\"genericBilling.postBilling();return false;\">
             <div class=\"col-sm-6\">
             <table class=\"table\">
             <tr>
@@ -215,7 +180,6 @@ function postBilling(){
 
     public function unitTest($phpunit)
     {
-        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
         $phpunit->assertNotEquals(0, strlen($this->get_view()));
         $this->id = 1;
         ob_start();

@@ -8,10 +8,9 @@ var nonMovement = (function($) {
 
         $.ajax({
             url: 'NonMovementReport.php',
-            data: 'deleteItem='+upc,
-            success: function() {
-                $('#del'+upc).closest('tr').remove();
-            }
+            data: 'deleteItem='+upc
+        }).done(function() {
+            $('#del'+upc).closest('tr').remove();
         });
     };
 
@@ -19,10 +18,9 @@ var nonMovement = (function($) {
     {
         $.ajax({
             url: 'NonMovementReport.php',
-            data: 'deactivate='+upc,
-            success: function() {
-                $('#del'+upc).closest('tr').remove();
-            }
+            data: 'deactivate='+upc
+        }).done(function() {
+            $('#del'+upc).closest('tr').remove();
         });
     }
 
