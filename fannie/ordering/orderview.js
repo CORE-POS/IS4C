@@ -67,7 +67,6 @@ var orderView = (function($) {
                     mod.saveConfirmDate(e.target.checked, $('#orderID').val());
                 });
             }
-        }
         });
     };
 
@@ -343,7 +342,6 @@ $(document).ready(function(){
 			$('#itemDiv').html(resp);
             orderView.afterLoadItems();
 		});
-	}
 	});
 });
 

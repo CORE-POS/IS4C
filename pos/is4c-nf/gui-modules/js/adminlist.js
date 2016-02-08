@@ -10,7 +10,7 @@ var adminlist = (function($) {
             dataType: 'json'
         }).always(function() {
             window.location = '../gui-modules/pos2.php';
-        });");
+        });
 
     };
 

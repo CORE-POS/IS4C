@@ -17,7 +17,7 @@ var PaycardTransLookupPage = (function($) {
         });
     };
 
-    mod.formCallback() = function() {
+    mod.formCallback = function() {
         if (gettingResult == 1) {
             return false;
         }
