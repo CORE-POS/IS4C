@@ -145,7 +145,7 @@ class DiscountType
         $discounttype = MiscLib::nullwrap($discounttype);
         $DiscountObject = null;
         $DTClasses = CoreLocal::get("DiscountTypeClasses");
-        if ($row['discounttype'] < 64 && isset(DiscountType::$MAP[$discounttype])) {
+        if ($discounttype < 64 && isset(DiscountType::$MAP[$discounttype])) {
             $class = DiscountType::$MAP[$discounttype];
             $DiscountObject = new $class();
         } else if ($discounttype >= 64 && isset($DTClasses[($discounttype-64)])) {
