@@ -165,7 +165,7 @@ class UPC extends Parser
             $row['description'] = $row['formatted_name'];
         }
 
-        $this->checkInUse();
+        $this->checkInUse($row);
 
         /**
           Apply special department handlers

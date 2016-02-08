@@ -205,7 +205,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
 
     function testGiftCert()
     {
-        $obj = new GiftCertificateTender();
+        $obj = new GiftCertificateTender('TC', 1);
         CoreLocal::set('enableFranking', 1);
         CoreLocal::set('msgrepeat', 0);
         $ret = $obj->preReqCheck();
