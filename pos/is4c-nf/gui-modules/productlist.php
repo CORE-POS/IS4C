@@ -216,7 +216,8 @@ class productlist extends NoInputCorePage
         $res = $this->runSearch('BANA');
         $phpunit->assertInternalType('array', $res);
         $phpunit->assertNotEquals(0, count($res));
-        $this->search_results = array($res[0]); // no need to loop whole list
+        $one = array_pop($res);
+        $this->search_results = array($one); // no need to loop whole list
         ob_start();
         $this->body_content();
         $phpunit->assertNotEquals(0, ob_get_clean());
