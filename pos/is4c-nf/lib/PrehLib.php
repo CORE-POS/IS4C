@@ -1172,29 +1172,21 @@ static public function peekItem($full_record=false, $transID=false)
 static public function fsEligible() 
 {
     Database::getsubtotals();
-    if (CoreLocal::get("fsEligible") < 0 && False) {
-        CoreLocal::set("boxMsg","Foodstamp eligible amount inapplicable<P>Please void out earlier tender and apply foodstamp first");
-        CoreLocal::set('boxMsgButtons', array(
-            'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-        ));
-        return MiscLib::baseURL()."gui-modules/boxMsg2.php";
+    CoreLocal::set("fntlflag",1);
+    Database::setglobalvalue("FntlFlag", 1);
+    if (CoreLocal::get("ttlflag") != 1) {
+        return self::ttl();
     } else {
-        CoreLocal::set("fntlflag",1);
-        Database::setglobalvalue("FntlFlag", 1);
-        if (CoreLocal::get("ttlflag") != 1) {
-            return self::ttl();
-        } else {
-            TransRecord::addRecord(array(
-                'description' => 'Foodstamps Eligible',
-                'trans_type' => '0',
-                'trans_status' => 'D',
-                'unitPrice' => MiscLib::truncate2(CoreLocal::get('fsEligible')),
-                'voided' => 7,
-            ));
-        }
-
-        return true;
+        TransRecord::addRecord(array(
+            'description' => 'Foodstamps Eligible',
+            'trans_type' => '0',
+            'trans_status' => 'D',
+            'unitPrice' => MiscLib::truncate2(CoreLocal::get('fsEligible')),
+            'voided' => 7,
+        ));
     }
+
+    return true;
 }
 
 /**

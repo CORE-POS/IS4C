@@ -27,9 +27,8 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 class productlist extends NoInputCorePage 
 {
 
-    private $temp_result;
-    private $temp_num_rows;
     private $boxSize;
+    private $search_results = array();
 
     private function adjustUPC($entered)
     {
@@ -60,7 +59,6 @@ class productlist extends NoInputCorePage
         elseif (CoreLocal::get("pvsearch") != "")
             $entered = strtoupper(trim(CoreLocal::get("pvsearch")));
         else{
-            $this->temp_num_rows = 0;
             return True;
         }
 
@@ -84,6 +82,13 @@ class productlist extends NoInputCorePage
             $entered = $this->adjustUPC($entered);
         }
 
+        $this->search_results = $this->runSearch($entered);
+
+        return true;
+    } // END preprocess() FUNCTION
+
+    private function runSearch($entered)
+    {
         /* Get all enabled plugins and standard modules of the base. */
         $modules = AutoLoader::ListModules('ProductSearch');
         $results = array();
@@ -107,16 +112,13 @@ class productlist extends NoInputCorePage
             }
         }
 
-        $this->temp_result = $results;
-        $this->temp_num_rows = count($results);
-
-        return True;
-    } // END preprocess() FUNCTION
+        return $results;
+    }
 
     function head_content()
     {
         // Javascript is only really needed if there are results
-        if ($this->temp_num_rows != 0) {
+        if (count($this->search_results) > 0) {
             ?>
             <script type="text/javascript" src="../js/selectSubmit.js"></script>
             <?php
@@ -125,10 +127,7 @@ class productlist extends NoInputCorePage
 
     function body_content()
     {
-        $result = $this->temp_result;
-        $num_rows = $this->temp_num_rows;
-
-        if ($num_rows == 0) {
+        if (count($this->search_results)) {
             $this->productsearchbox(_("no match found")."<br />"._("next search or enter upc"));
         } else {
             $this->add_onload_command("selectSubmit('#search', '#selectform', '#filter-span')\n");
@@ -151,7 +150,7 @@ class productlist extends NoInputCorePage
                 ."ondblclick=\"document.forms['selectform'].submit();\">";
 
             $selected = "selected";
-            foreach($result as $row){
+            foreach ($this->search_results as $row){
                 $price = $row["normal_price"];    
 
                 if ($row["scale"] != 0) $Scale = "S";
@@ -210,6 +209,17 @@ class productlist extends NoInputCorePage
             </div>
         </div>
         <?php
+    }
+
+    public function unitTest($phpunit)
+    {
+        $res = $this->runSearch('BANA');
+        $phpunit->assertInternalType('array', $res);
+        $phpunit->assertNotEquals(0, count($res));
+        $this->search_results = array($res[0]); // no need to loop whole list
+        ob_start();
+        $this->body_content();
+        $phpunit->assertNotEquals(0, ob_get_clean());
     }
 
 }

@@ -632,41 +632,10 @@ static public function loadData()
     $num_rows_local = $db_local->num_rows($result_local);
 
     if ($num_rows_local > 0) {
-        $row_local = $db_local->fetch_array($result_local);
+        $row_local = $db_local->fetchRow($result_local);
         
         if ($row_local["card_no"] && strlen($row_local["card_no"]) > 0) {
-            CoreLocal::set("memberID",$row_local["card_no"]);
-        }
-    }
-
-    if (CoreLocal::get("memberID") == "0") {
-        // not used - andy 4/12/07
-        CoreLocal::set("percentDiscount",0);
-        CoreLocal::set("memType",0);
-    } else {
-        $query_member = "select CardNo,memType,Type,Discount,staff,SSI,
-                blueLine,FirstName,LastName
-                from custdata where CardNo = '".CoreLocal::get("memberID")."'";
-        $db_product = Database::pDataConnect();
-        $result = $db_product->query($query_member);
-        if ($db_product->num_rows($result) > 0) {
-            $row = $db_product->fetch_array($result);
-            CoreLocal::set("memMsg",$row['blueLine']);
-            CoreLocal::set("memType",$row["memType"]);
-            CoreLocal::set("percentDiscount",$row["Discount"]);
-
-            if ($row["Type"] == "PC") {
-                CoreLocal::set("isMember",1);
-            } else {
-                CoreLocal::set("isMember",0);
-            }
-
-            CoreLocal::set("isStaff",$row["staff"]);
-            CoreLocal::set("SSI",$row["SSI"]);
-
-            if (CoreLocal::get("SSI") == 1) {
-                CoreLocal::set("memMsg",CoreLocal::get("memMsg")." #");
-            }
+            PrehLib::setMember($row_local['card_no'], 1);
         }
     }
 }
