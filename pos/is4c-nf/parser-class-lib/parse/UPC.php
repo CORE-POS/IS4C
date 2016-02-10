@@ -133,7 +133,7 @@ class UPC extends Parser
 
         $upc = $this->sanitizeUPC($entered);
 
-        list($upc,$scaleStickerItem,$scalepriceUPC,$scalepricEAN) = $this->rewriteScaleSticker($upc);
+        list($upc,$scaleStickerItem,$scalepriceUPC,$scalepriceEAN) = $this->rewriteScaleSticker($upc);
 
         $row = $this->lookupItem($upc);
         $dbc = Database::pDataConnect();
