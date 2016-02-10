@@ -30,7 +30,7 @@ $span = "'$start 00:00:00' AND '$end 23:59:59'";
 $args = array($start.' 00:00:00',$end.' 23:59:59');
 
 $output = \COREPOS\Fannie\API\data\DataCache::getFile("monthly");
-if (!$output || isset($_REQUEST['recache'])){
+if (true || !$output || isset($_REQUEST['recache'])){
     if (isset($_REQUEST['recache'])) {
         $_SERVER['REQUEST_URI'] = $_SERVER['PHP_SELF']; // remove recache from URI
         $_SERVER['REQUEST_URI'] = str_replace("index.php","",$_SERVER['REQUEST_URI']);
@@ -74,7 +74,9 @@ if (!$output || isset($_REQUEST['recache'])){
     AND l.department < 600 AND l.department <> 0
     AND l.trans_type <> 'T'";
 
-    $query2 = "SELECT t.TenderName,-sum(d.total) as total, COUNT(d.total)
+    $query2 = "SELECT 
+        CASE WHEN d.description='WIC' THEN 'WIC' ELSE t.TenderName END as TenderName,
+        -sum(d.total) as total, COUNT(d.total)
     FROM $dlog AS d
         left join tenders as t ON d.trans_subtype=t.TenderCode
     WHERE d.tdate BETWEEN ? AND ?
@@ -84,7 +86,7 @@ if (!$output || isset($_REQUEST['recache'])){
     and t.TenderName <> 'MAD Coupon'
     AND d.trans_subtype <> 'IC'
     and d.total <> 0
-    GROUP BY t.TenderName";
+    GROUP BY CASE WHEN d.description='WIC' THEN 'WIC' ELSE t.TenderName END";
 
     $queryStoreCoupons = "
         SELECT 

@@ -99,6 +99,7 @@ class WfcLib
 
     private static $tenders = array("Cash"=>array(10120,0.0,0),
             "Check"=>array(10120,0.0,0),
+            "WIC"=>array(10120,0.0,0),
             "Electronic Check"=>array(10120,0.0,0),
             "Rebate Check"=>array(10120,0.0,0),
             "Credit Card"=>array(10120,0.0,0),
