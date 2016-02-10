@@ -142,11 +142,11 @@ class UPC extends Parser
         if (!$row) {
             return $this->nonProductUPCs($upc, $ret);
         } else {
-            return $this->handleItem($upc, $scaleStickerItem, $scalepriceUPC, $scalePriceEAN);
+            return $this->handleItem($upc, $scaleStickerItem, $scalepriceUPC, $scalepriceEAN);
         }
     }
 
-    private function handleItem($upc, $scaleStickerItem, $scalepriceUPC, $scalePriceEAN)
+    private function handleItem($upc, $scaleStickerItem, $scalepriceUPC, $scalepriceEAN)
     {
         $ret = $this->default_json();
         $my_url = MiscLib::base_url();
