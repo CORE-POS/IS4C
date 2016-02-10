@@ -33,7 +33,7 @@ class VendorListReport extends FannieReportPage
     public $report_set = 'Vendors';
     protected $title = "Fannie : Vendor List";
     protected $header = "Vendor List Report";
-    protected $report_headers = array('Vendor', 'Phone', 'Fax', 'Email', '# of items');
+    protected $report_headers = array('Vendor', 'Phone', 'Fax', 'Email', 'Notes','# of items');
 
     public function fetch_report_data()
     {
@@ -51,6 +51,7 @@ class VendorListReport extends FannieReportPage
                 v.phone,
                 v.fax,
                 v.email,
+                v.notes,
                 COUNT(p.upc) AS skus
             FROM vendors AS v
                 LEFT JOIN products AS p ON p.default_vendor_id=v.vendorID
@@ -78,6 +79,7 @@ class VendorListReport extends FannieReportPage
             $row['phone'] == null ? '' : $row['phone'],
             $row['fax'] == null ? '' : $row['fax'],
             $row['email'] == null ? '' : $row['email'],
+            $row['notes'] == null ? '' : $row['notes'],
             $row['skus'],
         );
     }
