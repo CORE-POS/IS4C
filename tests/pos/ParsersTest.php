@@ -1119,6 +1119,15 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         }
         $scaleUPC = '0020121000199';
         $u->parse($scaleUPC);
+
+        $weighUPC = '4011';
+        $u->parse($weighUPC);
+        CoreLocal::set('weight', 1);
+        $u->parse($weighUPC);
+        CoreLocal::set('lastWeight', 1);
+        $u->parse($weighUPC);
+        CoreLocal::set('weight', 0);
+        CoreLocal::set('lastWeight', 0);
     }
 
     // mostly for coverage's sake

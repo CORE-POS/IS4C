@@ -122,9 +122,8 @@ class UPC extends Parser
         return $this->upcscanned($str);
     }
 
-    function upcscanned($entered) 
+    private function upcscanned($entered) 
     {
-        $my_url = MiscLib::base_url();
         $ret = $this->default_json();
 
         $ret = $this->genericSecurity($ret);
@@ -134,26 +133,32 @@ class UPC extends Parser
 
         $upc = $this->sanitizeUPC($entered);
 
+        list($upc,$scaleStickerItem,$scalepriceUPC,$scalepricEAN) = $this->rewriteScaleSticker($upc);
+
+        $row = $this->lookupItem($upc);
+        $dbc = Database::pDataConnect();
+
+        /* check for special upcs that aren't really products */
+        if (!$row) {
+            return $this->nonProductUPCs($upc, $ret);
+        } else {
+            return $this->handleItem($upc, $scaleStickerItem, $scalepriceUPC, $scalePriceEAN);
+        }
+    }
+
+    private function handleItem($upc, $scaleStickerItem, $scalepriceUPC, $scalePriceEAN)
+    {
+        $ret = $this->default_json();
+        $my_url = MiscLib::base_url();
+
         $quantity = CoreLocal::get("quantity");
         if (CoreLocal::get("quantity") == 0 && CoreLocal::get("multiple") == 0) {
             $quantity = 1;
         }
 
-        list($upc,$scaleStickerItem,$scalepriceUPC,$scalepricEAN) = $this->rewriteScaleSticker($upc);
-
-        $result = $this->lookupItem($upc);
-        $dbc = Database::pDataConnect();
-        $num_rows = $dbc->num_rows($result);
-
-        /* check for special upcs that aren't really products */
-        if ($num_rows == 0){
-            return $this->nonProductUPCs($upc, $ret);
-        }
-
         /* product exists
            BEGIN error checking round #1
         */
-        $row = $dbc->fetch_array($result);
 
         /**
           If formatted_name is present, copy it directly over
@@ -725,8 +730,9 @@ class UPC extends Parser
         }
         $query .= " FROM products WHERE upc = '".$upc."'";
         $result = $dbc->query($query);
+        $row = $dbc->fetchRow();
 
-        return $result;
+        return $row;
     }
 
     private function checkInUse($row)
