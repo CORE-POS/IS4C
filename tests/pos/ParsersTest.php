@@ -1128,6 +1128,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $u->parse($weighUPC);
         CoreLocal::set('weight', 0);
         CoreLocal::set('lastWeight', 0);
+
+        lttLib::clear();
     }
 
     // mostly for coverage's sake

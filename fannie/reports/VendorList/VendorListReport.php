@@ -111,7 +111,7 @@ class VendorListReport extends FannieReportPage
 
     public function unitTest($phpunit)
     {
-        $data = array('vendorName'=>'foo', 'phone'=>1, 'fax'=>1, 'email'=>1, 'skus'=>1);
+        $data = array('vendorName'=>'foo', 'phone'=>1, 'fax'=>1, 'email'=>1, 'skus'=>1, 'notes'=>'foo');
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }
