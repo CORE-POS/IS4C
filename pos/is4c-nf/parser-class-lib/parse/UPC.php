@@ -730,7 +730,7 @@ class UPC extends Parser
         }
         $query .= " FROM products WHERE upc = '".$upc."'";
         $result = $dbc->query($query);
-        $row = $dbc->fetchRow();
+        $row = $dbc->fetchRow($result);
 
         return $row;
     }
