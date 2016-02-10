@@ -699,9 +699,21 @@ trans_type indicates the record\'s type Values include
          always, \'0\' (e.g., manufacturer coupons
          have their own UPCs)
     0 => another commentary line
+    L => log record. Used for login/out, bad scans,
+        member ID, a few other purposes.
+    S => discount line. upc will be \'DISCOUNT\',
+        unitPrice and total will hold the dollar
+        amount of the discount, discountPercent will
+        hold the discount percentage (5% discount => 5).
 
 trans_subtype refines the record\'s type. Values include
 (but may not be limited to at all co-ops):
+    NA => default subtype of type \'I\', probably stands for
+          Not Available.
+    AD => Auto Deposit item, for returnable water bottles.
+    SS => scanner scale.
+    KB => programmed key.
+    HI => USB scanner.
     CM => record is a cashier-written comment.
           Used to make notes on a transaction
     (tender code) => goes with trans_type \'T\',
