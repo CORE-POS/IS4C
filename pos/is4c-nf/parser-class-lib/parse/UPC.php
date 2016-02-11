@@ -64,9 +64,8 @@ class UPC extends Parser
       Using something like 0XB instead would probably be
       an improvement.
     */
-    function check($str)
+    public function check($str)
     {
-        $prefixes = $this->prefixes();
         if (is_numeric($str) && strlen($str) < 16) {
             return true;
         } elseif ($this->getPrefix($str) !== false) { 
@@ -98,6 +97,17 @@ class UPC extends Parser
         return false;
     }
 
+    private function getStatus($source)
+    {
+        foreach ($this->prefixes() as $status => $prefix) {
+            if ($source == $prefix) {
+                return $status;
+            }
+        }
+
+        return self::GENERIC_STATUS;
+    }
+
     function parse($str)
     {
         $this->source = $this->getPrefix($str);
@@ -105,8 +115,7 @@ class UPC extends Parser
             $str = $this->fixGS1($str);
         }
         if ($this->source !== false) {
-            $prefixes = $this->prefixes();
-            $this->status = $prefixes[$this->source];
+            $this->status = $this->getStatus($this->source);
         } else {
             $this->status = self::GENERIC_STATUS;
         }

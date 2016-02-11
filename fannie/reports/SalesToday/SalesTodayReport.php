@@ -140,7 +140,8 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
         }
         echo "<tr><th width=60px class='text-left'>Total</th><td class='text-right'>";
         if ($this->selected != -1) {
-            echo number_format($sum2,2)."</td><td>".round($sum2/$sum*100,2)."%";
+            echo number_format($sum2,2)."</td><td>"
+                . ($sum == 0 ? 0: round($sum2/$sum*100,2)) . "%";
         } else {
             echo number_format($sum,2);
         }
