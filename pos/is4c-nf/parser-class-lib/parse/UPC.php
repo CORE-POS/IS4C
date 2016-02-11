@@ -136,7 +136,6 @@ class UPC extends Parser
         list($upc,$scaleStickerItem,$scalepriceUPC,$scalepriceEAN) = $this->rewriteScaleSticker($upc);
 
         $row = $this->lookupItem($upc);
-        $dbc = Database::pDataConnect();
 
         /* check for special upcs that aren't really products */
         if (!$row) {
@@ -150,6 +149,7 @@ class UPC extends Parser
     {
         $ret = $this->default_json();
         $my_url = MiscLib::base_url();
+        $dbc = Database::pDataConnect();
 
         $quantity = CoreLocal::get("quantity");
         if (CoreLocal::get("quantity") == 0 && CoreLocal::get("multiple") == 0) {
