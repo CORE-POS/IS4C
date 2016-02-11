@@ -205,7 +205,7 @@ class BaseItemModule extends ItemModule
                 'size' => '',
                 'unitofmeasure' => '',
                 'modified' => '',
-                'ledesc' => '',
+                'ldesc' => '',
                 'manufacturer' => '',
                 'distributor' => '',
                 'default_vendor_id' => 0,
