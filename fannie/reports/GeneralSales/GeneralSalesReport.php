@@ -277,7 +277,7 @@ class GeneralSalesReport extends FannieReportPage
     {
         $supers = array(
             0=>array('sales'=>0),
-            1=>array('sales'=>1, 'qty'=>1, 'name'=>'foo', 'depts'=>array('name'=>'bar', 'sales'=>1, 'qty'=>1)),
+            1=>array('sales'=>1, 'qty'=>1, 'name'=>'foo', 'depts'=>array(array('name'=>'bar', 'sales'=>1, 'qty'=>1))),
         );
         $data = $this->toReportData($supers, 1);
         $phpunit->assertInternalType('array', $data);
