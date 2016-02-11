@@ -280,8 +280,8 @@ class GeneralSalesReport extends FannieReportPage
             1=>array('sales'=>1, 'qty'=>1, 'name'=>'foo', 'depts'=>array('name'=>'bar', 'sales'=>1, 'qty'=>1)),
         );
         $data = $this->toReportData($supers, 1);
-        $this->assertInternalType('array', $data);
-        $this->assertInternalType('array', $this->calculate_footers($data));
+        $phpunit->assertInternalType('array', $data);
+        $phpunit->assertInternalType('array', $this->calculate_footers($data));
     }
 
 }
