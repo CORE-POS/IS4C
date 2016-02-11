@@ -1117,21 +1117,26 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         foreach (array(UPC::SCANNED_PREFIX, UPC::MACRO_PREFIX, UPC::HID_PREFIX, UPC::GS1_PREFIX) as $prefix) {
             $this->assertEquals(true, $u->check($prefix . '4011'));
         }
-        $scaleUPC = '0020121000199';
+        $scaleUPC = '0XA0020121000199';
         $u->parse($scaleUPC);
 
         $weighUPC = '4011';
         // trigger wait-for-scale message
         $u->parse($weighUPC);
         CoreLocal::set('weight', 1);
+        CoreLocal::set('tare', 1.05);
+        // trigger invalid tare message
+        $u->parse($weighUPC);
         // add weight item
+        CoreLocal::set('tare', 0.05);
         $u->parse($weighUPC);
         CoreLocal::set('lastWeight', 1);
-        $weighUPC = 'GS1~XX10000000004011';
+        $weighUPC = 'GS1~0010000000004011';
         // trigger same-last-weight and cover GS1 prefix removal
         $u->parse($weighUPC);
         CoreLocal::set('weight', 0);
         CoreLocal::set('lastWeight', 0);
+        CoreLocal::set('tare', 0.00);
 
         $upce = array(
             '0991230' => '09900000123',
@@ -1150,6 +1155,9 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
         // cover item-not-found
         $this->assertInternalType('array', $u->parse('0041234512345'));
+        CoreLocal::set('tare', 0.05);
+        $this->assertInternalType('array', $u->parse('0XA0041234512345'));
+        CoreLocal::set('tare', 0.00);
 
         lttLib::clear();
     }
