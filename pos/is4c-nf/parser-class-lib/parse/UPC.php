@@ -498,7 +498,7 @@ class UPC extends Parser
 
         // GTIN-14; return w/o check digit,
         // ignore any other fields for now
-        if (substr($str,0,1) == "10")
+        if (substr($str,0,2) == "10")
             return substr($str,2,13);
         
         // application identifier not recognized
@@ -671,7 +671,7 @@ class UPC extends Parser
     private function nonProductUPCs($upc, $ret)
     {
         $dbc = Database::pDataConnect();
-        $objs = CoreLocal::get("SpecialUpcClasses");
+        $objs = is_array(CoreLocal::get("SpecialUpcClasses")) ? CoreLocal::get('SpecialUpcClasses') : array();
         foreach($objs as $class_name){
             $instance = new $class_name();
             if ($instance->isSpecial($upc)){

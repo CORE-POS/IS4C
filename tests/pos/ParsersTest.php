@@ -1121,13 +1121,35 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $u->parse($scaleUPC);
 
         $weighUPC = '4011';
+        // trigger wait-for-scale message
         $u->parse($weighUPC);
         CoreLocal::set('weight', 1);
+        // add weight item
         $u->parse($weighUPC);
         CoreLocal::set('lastWeight', 1);
+        $weighUPC = 'GS1~XX10000000004011';
+        // trigger same-last-weight and cover GS1 prefix removal
         $u->parse($weighUPC);
         CoreLocal::set('weight', 0);
         CoreLocal::set('lastWeight', 0);
+
+        $upce = array(
+            '0991230' => '09900000123',
+            '0991231' => '09910000123',
+            '0991232' => '09920000123',
+            '0999123' => '09990000012',
+            '0999914' => '09999000001',
+            '0999995' => '09999900005',
+        );
+        foreach ($upce as $e => $a) {
+            $this->assertEquals($a, $u->expandUPCE($e));
+        }
+
+        $this->assertEquals(false, UPC::requestInfoCallback('foo'));
+        $this->assertNotEquals(false, UPC::requestInfoCallback('20000101'));
+
+        // cover item-not-found
+        $this->assertInternalType('array', $u->parse('0041234512345'));
 
         lttLib::clear();
     }
