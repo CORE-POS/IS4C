@@ -49,6 +49,7 @@ class LikeCodeMovementReport extends FannieReportPage
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
         $lc1 = $this->form->start;
         $lc2 = $this->form->end;
+        $store = FormLib::get('store', 0);
 
         $lcP = $dbc->prepare('SELECT upc FROM upcLike WHERE likeCode BETWEEN ? AND ?');
         $lcR = $dbc->execute($lcP, array($lc1, $lc2));
@@ -76,7 +77,9 @@ class LikeCodeMovementReport extends FannieReportPage
                   AND t.trans_type = 'I'
                   AND t.tdate BETWEEN ? AND ?
                   AND t.upc IN ($inStr)
+                  AND " . DTrans::isStoreID($store, 't') . "
               group by u.likeCode,l.likeCodeDesc";
+        $args[] = $store;
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
         $data = array();
