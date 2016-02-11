@@ -243,9 +243,6 @@ HTML;
 
     private function getNameAndDates($batchID, $bStart, $bEnd)
     {
-        if (!is_array($batchID)) {
-            $batchID = array($batchID);
-        }
         $dbc = $this->connection;
         list($inClause, $inArgs) = $dbc->safeInClause($batchID);
         $batchInfoQ = $dbc->prepare("
@@ -278,6 +275,9 @@ HTML;
         $bStart = FormLib::get('date1','');
         $bEnd = FormLib::get('date2','');
         $batchID = $this->form->batchID;
+        if (!is_array($batchID)) {
+            $batchID = array($batchID);
+        }
         list($bName, $bStart, $bEnd) = $this->getNameAndDates($batchID, $bStart, $bEnd);
         $ret[] = '<br /><span style="font-size:150%;">'.$bName.'</span>';
         if ($this->report_format == 'html') {
