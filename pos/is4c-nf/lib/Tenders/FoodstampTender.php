@@ -48,7 +48,7 @@ class FoodstampTender extends TenderModule
             );
         } elseif ($this->amount !== false && $this->amount <= 0 && $this->amount < (CoreLocal::get("fsEligible") - 0.005)) {
             return DisplayLib::xboxMsg(
-                _('Foodstamp return cannot exceed eligible amount' . $info), 
+                _('Foodstamp return cannot exceed eligible amount' . CoreLocal::get('fsEligible')), 
                 DisplayLib::standardClearButton()
             );
         }
