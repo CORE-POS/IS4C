@@ -156,7 +156,7 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
                 FROM {$TRANS}SpecialOrders AS o
                 WHERE o.noteSuperID IN (?)
                 GROUP BY o.specialOrderID
-                ORDER BY p.order_id DESC");
+                ORDER BY o.specialOrderID DESC");
             $noteR = $dbc->execute($noteP, array($buyer));
             while ($row = $dbc->fetchRow($noteR)) {
                 $valid_ids[$row['specialOrderID']] = true;
