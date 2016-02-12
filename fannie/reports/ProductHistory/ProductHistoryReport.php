@@ -104,7 +104,7 @@ class ProductHistoryReport extends FannieReportPage
             $row['dept'],
             $row['tax'],
             $row['fs'],
-            $row['wic'],
+            $row['wic'] === null ? 'n/a' : $row['wic'],
             $row['scale'],
             $row['forceQty'],
             $row['noDisc'],
