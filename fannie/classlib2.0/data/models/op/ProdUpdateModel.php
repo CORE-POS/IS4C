@@ -46,6 +46,7 @@ class ProdUpdateModel extends BasicModel
     'dept' => array('type'=>'INT'),
     'tax' => array('type'=>'TINYINT'),
     'fs' => array('type'=>'TINYINT'),
+    'wic' => array('type'=>'TINYINT'),
     'scale' => array('type'=>'TINYINT'),
     'likeCode' => array('type'=>'INT'),
     'modified' => array('type'=>'DATETIME'),
@@ -117,6 +118,7 @@ tools/cron jobs/sprocs/etc actually do. They probably
         $this->dept($product->department());
         $this->tax($product->tax());
         $this->fs($product->foodstamp());
+        $this->wic($product->wicable());
         $this->scale($product->scale());
         $this->modified(date('Y-m-d H:i:s'));
         $this->forceQty($product->qttyEnforced());
@@ -161,6 +163,7 @@ tools/cron jobs/sprocs/etc actually do. They probably
             'dept' => 'department',
             'tax' => 'tax',
             'fs' => 'foodstamp',
+            'wic' => 'wicable',
             'scale' => 'scale',
             'modified' => 'modified',
             'forceQty' => 'qttyEnforced',
