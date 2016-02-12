@@ -134,11 +134,15 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
             LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
             WHERE 1=1 $filter
-            GROUP BY p.order_id";
+            GROUP BY p.order_id
+            ORDER BY p.order_id DESC";
         $bothP = $dbc->prepare($bothQ);
         $bothR = $dbc->execute($bothP, $args);
         while ($row = $dbc->fetchRow($bothR)) {
             $valid_ids[$row['order_id']] = true;
+            if (count($valid_ids) > 1000) {
+                break;
+            }
         }
 
         /**
@@ -151,10 +155,14 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
                 SELECT o.specialOrderID 
                 FROM {$TRANS}SpecialOrders AS o
                 WHERE o.noteSuperID IN (?)
-                GROUP BY o.specialOrderID");
+                GROUP BY o.specialOrderID
+                ORDER BY p.order_id DESC");
             $noteR = $dbc->execute($noteP, array($buyer));
             while ($row = $dbc->fetchRow($noteR)) {
                 $valid_ids[$row['specialOrderID']] = true;
+                if (count($valid_ids) > 1000) {
+                    break;
+                }
             }
         }
 
