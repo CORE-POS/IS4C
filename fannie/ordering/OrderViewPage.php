@@ -1114,6 +1114,9 @@ HTML;
         $tester->testDeleteItem($this, $phpunit);
         $tester->testEditCustomer($this, $phpunit);
         $tester->testToggles($this, $phpunit);
+
+        $phpunit->assertNotEquals(0, strlen($this->getQtyForm(1, 3, 1, 'foo')));
+        $phpunit->assertNotEquals(0, strlen($this->getDeptForm(1, 1, 'foo')));
     }
 }
 

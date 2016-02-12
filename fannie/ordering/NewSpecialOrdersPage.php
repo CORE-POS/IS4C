@@ -186,21 +186,24 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
         $items = array();
         $suppliers = array();
         while ($itemsW = $dbc->fetchRow($itemsR)) {
-            if (!isset($items[$itemsW['order_id']])) {
-                $items[$itemsW['order_id']] = $itemsW['description'];
-            } else {
-                $items[$itemsW['order_id']] .= "; ".$itemsW['description'];
-            }
+            $items = $this->appendByID($items, $itemsW['orderID'], $itemsW['description']);
             if (!empty($itemsW['mixMatch'])) {
-                if (!isset($suppliers[$itemsW['order_id']])) {
-                    $suppliers[$itemsW['order_id']] = $itemsW['mixMatch'];
-                } else {
-                    $suppliers[$itemsW['order_id']] .= "; ".$itemsW['mixMatch'];
-                }
+                $suppliers = $this->appendByID($suppliers, $itemsW['orderID'], $itemsW['mixMatch']);
             }
         }
 
         return array($items, $suppliers);
+    }
+
+    private function appendByID($arr, $id, $text)
+    {
+        if (!isset($arr[$id])) {
+            $arr[$id] = $text;
+        } else {
+            $arr[$id] .= '; ' . $text;
+        }
+
+        return $arr;
     }
 
     protected function limitTextSize($items, $prefix, $lenLimit)
@@ -504,6 +507,15 @@ JAVASCRIPT;
         $form->f3 = '';
         $this->setForm($form);
         $phpunit->assertNotEquals(0, strlen($this->get_view()));
+
+        $items = array(1=>'foobar');
+        $long = $this->limitTextSize($items, 'foo', 10);
+        $short = $this->limitTextSize($items, 'foo', 3);
+        $phpunit->assertNotEquals($long, $short);
+
+        $arr = $this->appendByID(array(), 1, 'foo');
+        $arr = $this->appendByID($arr, 1, 'foo');
+        $this->assertEquals('foo; foo', $arr[1]);
     }
 }
 
