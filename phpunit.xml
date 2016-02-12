@@ -15,6 +15,7 @@
             <file>tests/fannie/LogTest.php</file>
             <file>tests/fannie/MembersTest.php</file>
             <file>tests/fannie/ModelsTest.php</file>
+            <file>tests/fannie/OrdersTest.php</file>
             <file>tests/fannie/PagesFannieTest.php</file>
             <file>tests/fannie/PluginFannieTest.php</file>
             <file>tests/fannie/TagTest.php</file>
