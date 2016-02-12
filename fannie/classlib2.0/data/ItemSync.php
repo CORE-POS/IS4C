@@ -125,7 +125,7 @@ class ItemSync
     private static function notifyStores($upc)
     {
         if (class_exists('\\Datto\\JsonRpc\\Http\\Client')) {
-            $dbc = \FannieDB::getReadOnly();
+            $dbc = \FannieDB::getReadOnly(\FannieConfig::config('OP_DB'));
             $prep = $dbc->prepare('
                 SELECT webServiceUrl FROM Stores WHERE hasOwnItems=1 AND storeID<>?
                 ');
