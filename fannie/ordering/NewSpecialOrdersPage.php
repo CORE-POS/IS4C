@@ -515,7 +515,7 @@ JAVASCRIPT;
 
         $arr = $this->appendByID(array(), 1, 'foo');
         $arr = $this->appendByID($arr, 1, 'foo');
-        $this->assertEquals('foo; foo', $arr[1]);
+        $phpunit->assertEquals('foo; foo', $arr[1]);
     }
 }
 
