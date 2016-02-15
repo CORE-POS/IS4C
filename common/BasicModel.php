@@ -396,6 +396,11 @@ class BasicModel
         }
     }
 
+    private function isIncrement($col)
+    {
+        return (isset($col['increment']) && $col['increment']);
+    }
+
     protected function hasIncrement()
     {
         foreach ($this->columns as $name => $def) {
@@ -1025,6 +1030,7 @@ class BasicModel
         return $recase_columns;
     }
 
+
     private function normalizeColumnAttributes($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK)
     {
         $current = $this->connection->detailedDefinition($this->name);
@@ -1039,17 +1045,17 @@ class BasicModel
                             ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to change":"Changing", 
                             $col_name, $current[$col_name]['type'], $type);
                     $rebuild = true;
-                } else if (isset($this->columns[$col_name]['default']) && trim($this->columns[$col_name]['default'],"'") != $current[$col_name]['default']) {
+                } elseif (!$this->isIncrement($this->columns[$col_name]) && isset($this->columns[$col_name]['default']) && trim($this->columns[$col_name]['default'],"'") != $current[$col_name]['default']) {
                     printf("%s column %s default value from %s to %s\n", 
                             ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to change":"Changing", 
                             $col_name, $current[$col_name]['default'], $this->columns[$col_name]['default']);
                     $rebuild = true;
-                } else if (isset($this->columns[$col_name]['increment']) && $this->columns[$col_name]['increment'] && $current[$col_name]['increment'] === false) {
+                } elseif ($this->isIncrement($this->columns[$col_name]) && $current[$col_name]['increment'] === false) {
                     printf("%s for column %s\n", 
                             ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to set increment":"Setting increment", 
                             $col_name);
                     $rebuild = true;
-                } else if (isset($this->columns[$col_name]['primary_key']) && $this->columns[$col_name]['primary_key'] && $current[$col_name]['primary_key'] === false) {
+                } elseif ($this->isPrimaryKey($this->columns[$col_name]) && $current[$col_name]['primary_key'] === false) {
                     $redo_pk = true;
                 }
                 if ($rebuild) {
@@ -1124,13 +1130,16 @@ class BasicModel
         }
         $sql .= ' ADD PRIMARY KEY(';
         foreach ($this->columns as $col_name => $info) {
-            if ($this->isPrimaryKey($col_name)) {
+            if ($this->isPrimaryKey($this->columns[$col_name])) {
                 $sql .= $this->connection->identifierEscape($col_name) . ',';
             }
         }
         $sql = substr($sql, 0, strlen($sql)-1);
         $sql .= ')';
         echo "\tSQL Details: $sql\n";
+        if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
+            $newPK = $this->connection->query($sql);
+        }
 
         return 'PRIMARY KEY';
     }
