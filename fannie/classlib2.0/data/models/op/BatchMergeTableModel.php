@@ -33,9 +33,9 @@ class BatchMergeTableModel extends BasicModel
     protected $columns = array(
         'startDate' => array('type'=>'DATETIME'),
         'endDate' => array('type'=>'DATETIME'),
-        'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
+        'upc' => array('type'=>'VARCHAR(13)', 'index'=>true),
         'description' => array('type'=>'VARCHAR(30)'),
-        'batchID' => array('type'=>'INT', 'primary_key'=>true)
+        'batchID' => array('type'=>'INT', 'index'=>true)
     );
 
     public function doc()
