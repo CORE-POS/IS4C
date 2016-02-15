@@ -29,6 +29,7 @@ class productlist extends NoInputCorePage
 
     private $boxSize;
     private $search_results = array();
+    private $quantity = 1;
 
     private function adjustUPC($entered)
     {
@@ -51,29 +52,42 @@ class productlist extends NoInputCorePage
         return $entered;
     }
 
+    private function getQuantity($entered)
+    {
+        if (strstr($entered, '*')) {
+            list($qty,$rest) = explode('*', $entered, 2);
+            $qty = is_numeric($qty) ? $qty : 1;
+        } elseif (isset($_REQUEST['qty'])) {
+            $qty = is_numeric($_REQUEST['qty']) ? $_REQUEST['qty'] : 1;
+        }
+
+        return array($qty, $entered);
+    }
+
     function preprocess()
     {
         $entered = "";
-        if (isset($_REQUEST["search"]))
+        if (isset($_REQUEST["search"])) {
             $entered = strtoupper(trim($_REQUEST["search"]));
-        elseif (CoreLocal::get("pvsearch") != "")
-            $entered = strtoupper(trim(CoreLocal::get("pvsearch")));
-        else{
+        } else {
             return True;
         }
 
         // canceled
-        if (empty($entered)){
+        if (empty($entered)) {
             $this->change_page($this->page_url."gui-modules/pos2.php");
             return False;
         }
+
+        list($qty, $entered) = $this->getQuantity($entered);
+        $this->quantity = $qty;
 
         // picked an item from the list
         if (is_numeric($entered) && strlen($entered) == 13) {
             $this->change_page(
                 $this->page_url
                 . "gui-modules/pos2.php"
-                . '?reginput=' . urlencode($entered)
+                . '?reginput=' . urlencode($qty . '*' . $entered)
                 . '&repeat=1');
             return false;
         }
@@ -127,7 +141,7 @@ class productlist extends NoInputCorePage
 
     function body_content()
     {
-        if (count($this->search_results)) {
+        if (count($this->search_results) == 0) {
             $this->productsearchbox(_("no match found")."<br />"._("next search or enter upc"));
         } else {
             $this->add_onload_command("selectSubmit('#search', '#selectform', '#filter-span')\n");
@@ -181,6 +195,7 @@ class productlist extends NoInputCorePage
                     Cancel <span class="smaller">[clear]</span>
                     </button></p>'
                 ."</div><!-- /.listboxText coloredText .centerOffset -->"
+                .'<input type="hidden" name="qty" value="' . $this->quantity . '" />'
                 ."</form>"
                 ."<div class=\"clear\"></div>";
             echo "</div>";
@@ -200,6 +215,7 @@ class productlist extends NoInputCorePage
             <p>
             <input type="text" name="search" size="15" id="search"
                 onblur="$('#search').focus();" />
+            <input type="hidden" name="qty" value="<?php echo $this->quantity; ?>" />
             </p>
             <button class="pos-button" type="button"
                 onclick="$('#search').val('');$(this).closest('form').submit();">
