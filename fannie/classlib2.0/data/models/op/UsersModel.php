@@ -26,13 +26,12 @@
 */
 class UsersModel extends BasicModel
 {
-
     protected $name = "Users";
     protected $preferred_db = 'op';
 
     protected $columns = array(
     'name' => array('type'=>'VARCHAR(50)', 'primary_key'=>true),
-    'password' => array('type'=>'VARCHAR(50)'),
+    'password' => array('type'=>'VARCHAR(255)'),
     'salt' => array('type'=>'VARCHAR(10)'),
     'uid' => array('type'=>'VARCHAR(4)'),
     'session_id' => array('type'=>'VARCHAR(50)'),
