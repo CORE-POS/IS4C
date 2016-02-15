@@ -359,12 +359,10 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
         $obj->check('PVASDF');
         $out = $obj->parse('PVASDF');
-        $this->assertEquals('/productlist.php', substr($out['main_frame'], -16));
-        $this->assertEquals('ASDF', CoreLocal::get('pvsearch'));
+        $this->assertEquals('/productlist.php?search=ASDF', substr($out['main_frame'], -28));
         $obj->check('TESTPV');
         $out = $obj->parse('TESTPV');
-        $this->assertEquals('/productlist.php', substr($out['main_frame'], -16));
-        $this->assertEquals('TEST', CoreLocal::get('pvsearch'));
+        $this->assertEquals('/productlist.php?search=TEST', substr($out['main_frame'], -28));
 
         CoreLocal::set('LastID', 1);
         $obj->check('UNDO');
