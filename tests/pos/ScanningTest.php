@@ -909,6 +909,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
         $brd = new BottleReturnDept();
         CoreLocal::set('msgrepeat', 0);
+        CoreLocal::set('strEntered', '100DP10');
         $json = $brd->handle(10, 1, array());
         $this->assertEquals('-100DP10', CoreLocal::get('strEntered'));
         $this->assertEquals('?autoconfirm=1', substr($json['main_frame'], -14));
