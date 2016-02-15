@@ -58,11 +58,26 @@ class PISearchPage extends PIKillerPage {
                 return false;
             }
 
-            $json = array('idCardUPC' => BarcodeLib::padUPC($this->id));
+            $json = array(
+                'idCardUPC' => BarcodeLib::padUPC($this->id),
+            );
             $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json, 0, true);
             foreach ($accounts as $a) {
                 header('Location: PIMemberPage.php?id='.$a['cardNo']);
                 return false;
+            }
+
+            $json = array(
+                'customers' => array(
+                    array('phone' => $this->phoneMarkup($this->id)),
+                ),
+            );
+            $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json, 0, true);
+            if (count($accounts) == 1) {
+                header('Location: PIMemberPage.php?id='.$accounts[0]['cardNo']);
+                return false;
+            } else {
+                $this->results = $accounts;
             }
         } else {
             $json = array(
@@ -83,6 +98,17 @@ class PISearchPage extends PIKillerPage {
         }
 
         return true;
+    }
+
+    private function phoneMarkup($number)
+    {
+        if (strlen($number) === 7) {
+            return substr($number, 0, 3) . '-' . substr($number, 3, 4);
+        } elseif (strlen($number) === 10) {
+            return substr($number, 0, 3) . '-' . substr($number, 3, 3) . '-' . substr($number, 6, 4);
+        } else {
+            return $number;
+        }
     }
 
     public function get_view()
