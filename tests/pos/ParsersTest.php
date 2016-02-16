@@ -1160,6 +1160,13 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
     }
 
+    function testDriverStatus()
+    {
+        $ds = new DriverStatus();
+        $this->assertEquals(true, $ds->check('POS'));
+        $this->assertInternalType('array', $ds->parse('POS'));
+    }
+
     // mostly for coverage's sake
     function testBaseClasses()
     {

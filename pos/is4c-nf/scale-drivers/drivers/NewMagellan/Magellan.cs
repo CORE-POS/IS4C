@@ -157,9 +157,22 @@ public class Magellan : DelegateForm
             mq_enabled = true;
         } else if (msg == "mq_down") {
             mq_enabled = false;
+        } else if (msg == "status") {
+            byte[] body = System.Text.Encoding.ASCII.GetBytes(Status());
+            getClient().Send(body, body.Length); 
         } else {
             sph.ForEach(s => { s.HandleMsg(msg); });
         }
+    }
+
+    private string Status()
+    {
+        string ret = "";
+        foreach (var s in sph) {
+            ret += s.Status() + "\n";
+        }
+
+        return ret;
     }
 
     public void MsgSend(string msg)
