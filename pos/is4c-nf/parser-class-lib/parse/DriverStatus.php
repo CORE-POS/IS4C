@@ -30,12 +30,16 @@ class DriverStatus extends Parser
 
     public function parse($str)
     {
-        // 9451
         $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
         socket_bind($socket, '127.0.0.1', 9451);
         socket_set_option($socket,SOL_SOCKET,SO_RCVTIMEO,array("sec"=>1,"usec"=>0));
         UdpComm::udpSend('status');
-        if (socket_recvfrom($socket, $buffer, 1024, 0, $host, $port)) {
+        /**
+          Yes, error suppression. PHP5.3 throws a warning here that
+          breaks a unit test. PHP5.6 doesn't have the same issue so
+          this can go away once the min supported version increases
+        */
+        if (@socket_recvfrom($socket, $buffer, 1024, 0, $host, $port)) {
             $msg = str_replace("\n", '<br>', $buffer);
         } else {
             $msg = 'No response to status request';
