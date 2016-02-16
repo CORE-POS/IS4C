@@ -157,20 +157,25 @@ class FormLib extends \COREPOS\common\FormLib
     /**
       Get <select> box for the store ID
       @param $field_name [string] select.name (default 'store')
+      $param $all [string] include an "all" option (default true)
       @return keyed [array]
         - html => [string] select box
         - names => [array] store names
     */
-    public static function storePicker($field_name='store')
+    public static function storePicker($field_name='store', $all=true)
     {
         $op_db = FannieConfig::config('OP_DB');
         $dbc = FannieDB::getReadOnly($op_db);
 
         $stores = new StoresModel($dbc);
         $current = FormLib::get($field_name, 0);
-        $labels = array(0 => _('All Stores'));
         $ret = '<select name="' . $field_name . '" class="form-control">';
-        $ret .= '<option value="0">' . $labels[0] . '</option>';
+        if ($all) {
+            $labels = array(0 => _('All Stores'));
+            $ret .= '<option value="0">' . $labels[0] . '</option>';
+        } else {
+            $labels = array();
+        }
         foreach($stores->find('storeID') as $store) {
             $ret .= sprintf('<option %s value="%d">%s</option>',
                     ($store->storeID() == $current ? 'selected' : ''),
