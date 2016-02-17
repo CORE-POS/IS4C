@@ -591,6 +591,13 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             }
             $inp = substr($inp, 0, strlen($inp)-1);
             $query .= ' AND i.upc IN (' . $inp . ') ';
+        } elseif (count($deptMulti) > 0) {
+                $query .= ' AND i.department IN (';
+                foreach ($deptMulti as $d) {
+                    $query .= '?,';
+                    $args[] = $d;
+                }
+                $query = substr($query, 0, strlen($query)-1) . ')';
         } else {
             $query .= ' AND i.department BETWEEN ? AND ? ';
             $args = array($deptStart, $deptEnd);
@@ -621,7 +628,9 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
 
-        if ($result === false || $dbc->numRows($result) == 0) {
+        if ($result === false) {
+            return 'Search failed. Please see the system administrator and/or the log.';
+        } elseif ($dbc->num_rows($result) == 0) {
             return 'No data found!';
         }
 
