@@ -44,11 +44,11 @@ class TenderOut extends Parser
             );
             return $ret;
         } else {
-            return $this->tenderOut();
+            return $this->doTenderOut();
         }
     }
 
-    private function tenderOut()
+    private function doTenderOut()
     {
         $ret = $this->default_json();
         Database::getsubtotals();
