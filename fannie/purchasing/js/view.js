@@ -5,6 +5,7 @@ function fetchOrders(){
     dataStr += '&year='+$('#viewYear').val();
 	if ($('#orderShow').val() == '1')
 		dataStr += '&all=1';	
+    dataStr += '&store=' + $('#storeID').val();
 	$.ajax({
 		url: 'ViewPurchaseOrders.php?'+dataStr,
 		type: 'get'
