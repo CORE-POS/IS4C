@@ -1085,18 +1085,6 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
     }
 
-    function testItemPD()
-    {
-        $pd = new ItemPD();
-        $this->assertEquals(true, $pd->check('10PD'));
-        CoreLocal::set('currentid', 0);
-        $pd->parse('10PD');
-        CoreLocal::set('currentid', 1);
-        $pd->parse('10PD');
-        CoreLocal::set('currentid', 0);
-        lttLib::clear();
-    }
-
     function testDefaultTender()
     {
         $t = new DefaultTender();
