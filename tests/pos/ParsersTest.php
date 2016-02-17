@@ -112,40 +112,6 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('PluginList', $plugins);
     }
 
-    function testCaseDiscount()
-    {
-        $obj = new CaseDiscount();
-        $this->assertEquals(true, $obj->check('10CT4011'));
-
-        $out = $obj->parse('11CT4011');
-        $this->assertEquals('cdinvalid', $out);
-
-        CoreLocal::set('isStaff', 0);
-        CoreLocal::set('SSI', 0);
-        CoreLocal::set('isMember', 0);
-        $out = $obj->parse('10CT4011');
-        $this->assertEquals('4011', $out);
-        $this->assertEquals(5, CoreLocal::get('casediscount'));
-
-        CoreLocal::set('isMember', 1);
-        $out = $obj->parse('10CT4011');
-        $this->assertEquals('4011', $out);
-        $this->assertEquals(10, CoreLocal::get('casediscount'));
-
-        CoreLocal::set('SSI', 1);
-        $out = $obj->parse('10CT4011');
-        $this->assertEquals('cdSSINA', $out);
-
-        CoreLocal::set('isStaff', 1);
-        $out = $obj->parse('10CT4011');
-        $this->assertEquals('cdStaffNA', $out);
-
-        CoreLocal::set('isStaff', 0);
-        CoreLocal::set('SSI', 0);
-        CoreLocal::set('isMember', 0);
-        CoreLocal::set('casediscount', 0);
-    }
-
     function testMemStatusToggle()
     {
         $obj = new MemStatusToggle();
@@ -702,17 +668,6 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $obj->parse('100CQ');
         $this->assertEquals(100, CoreLocal::get('tenderTotal'));
         $this->assertEquals('/checklist.php', substr($out['main_frame'], -14));
-    }
-
-    function testCaseDiscMsgs()
-    {
-        $obj = new CaseDiscMsgs();
-        $inputs = array('cdinvalid', 'cdStaffNA', 'cdSSINA');
-        foreach ($inputs as $input) {
-            $this->assertEquals(true, $obj->check($input));
-            $out = $obj->parse($input);
-            $this->assertNotEquals(0, strlen($out['output']));
-        }
     }
 
     function testAutoTare()
