@@ -600,6 +600,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                     $query .= '?,';
                     $args[] = $s;
                 }
+                $query = substr($query, 0, strlen($query)-1) . ')';
             }
         }
         if ($inUse == 1) {
