@@ -197,7 +197,7 @@ class InvCountPage extends FannieRESTfulPage
         $prep = $this->connection->prepare($query);
         $ret = '<form method="post">
             <input type="hidden" name="vendor" value="' . $this->vendor . '" />
-            <input type="hidden" name="store" value="' . $this->store . '" />
+            <input type="hidden" name="store" value="' . $store . '" />
             <table class="table table-bordered table-striped small">
             <tr>
                 <th>UPC</th>
