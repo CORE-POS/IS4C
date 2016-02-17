@@ -172,9 +172,13 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $t->parse('TETL');
         $this->assertEquals('=Totals', substr($out['main_frame'], -7));
         lttLib::clear();
+        CoreLocal::set('percentDiscount', 10);
+        CoreLocal::set('fsTaxExempt', 1);
         $out = $t->parse('FTTL');
         $this->assertNotEquals(0, strlen($out['output']));
         $this->assertEquals(true, $out['redraw_footer']);
+        CoreLocal::set('percentDiscount', 0);
+        CoreLocal::set('fsTaxExempt', 0);
         lttLib::clear();
         $out = $t->parse('TL');
         $this->assertEquals('/memlist.php', substr($out['main_frame'], -12));
@@ -186,6 +190,12 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
         $out = $t->parse('WICTL');
         $this->assertNotEquals(0, strlen($out['output']));
+        $this->assertEquals(true, Totals::requestInfoCallback('1234'));
+        lttLib::clear();
+
+        // just for coverage of omtr_ttl 
+        $out = $t->parse('MTL');
+        lttLib::clear();
     }
 
     function testTenderOut()
@@ -201,6 +211,13 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         PrehLib::deptkey(10, 100);
         $out = $to->parse('TO');
         $this->assertNotEquals(0, strlen($out['output']));
+
+        lttLib::clear();
+        CoreLocal::set('amtdue', 0);
+        $out = $to->parse('TO');
+        $this->assertEquals(1, CoreLocal::get('End'));
+        $this->assertEquals('full', $out['receipt']);
+        CoreLocal::set('End', 0);
     }
 
     function testTenderKey()
@@ -300,14 +317,23 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     function testReceiptCoupon()
     {
         $rc = new ReceiptCoupon();
-        $one = 'RC209901001';
-        $two = 'RC200001001';
+        $one = 'RC9901001'; // expire 2099-01-01
+        $two = 'RC0001001'; // expire 2000-01-01
         $this->assertEquals(true, $rc->check($one));
         $this->assertEquals(true, $rc->check($two));
         $out = $rc->parse($one);
         $this->assertNotEquals(0, strlen($out['output']));
         $out = $rc->parse($two);
         $this->assertNotEquals(0, strlen($out['output']));
+    }
+
+    function testEndOfShift()
+    {
+        $e = new EndOfShift();
+        $this->assertEquals(true, $e->check('ES'));
+        $out = $e->parse('ES');
+        lttLib::clear();
+        CoreState::transReset();
     }
 
     function testSteering()
