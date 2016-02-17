@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class TenderReport extends FannieReportPage
+class BackendTenderReport extends FannieReportPage
 {
     public $description = '[Tender Report] receates a basic tender report for an employee or register';
     public $report_set = 'Tenders';
@@ -134,7 +134,7 @@ class TenderReport extends FannieReportPage
     {
         ob_start();
         ?>
-<form method="get" action="TenderReport.php">
+<form method="get" action="BackendTenderReport.php">
     <div class="form-group"> 
         <label>Employee #</label>
         <input type="text" name="emp" class="form-control"
