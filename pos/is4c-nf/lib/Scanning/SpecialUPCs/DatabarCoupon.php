@@ -426,9 +426,9 @@ class DatabarCoupon extends SpecialUPC
             case '0': // various qtty requirements
             case '3':
             case '4':
-                return $this->validateQty($row['qty'], $req, $json);
+                return $this->validateQty($row['qty'], $row['couponqtty'], $req, $json);
             case '1':
-                return $this->validateQty($row['total'], $req, $json);
+                return $this->validateQty($row['total'], $row['couponqtty'], $req, $json);
             case '9':
                 $json['output'] = DisplayLib::boxMsg("Tender coupon manually");
                 return false;
@@ -460,12 +460,12 @@ class DatabarCoupon extends SpecialUPC
         return true;
     }
 
-    private function validateQty($qty, &$req, &$json)
+    private function validateQty($qty, $couponqtty, &$req, &$json)
     {
-        $available_qty = $qty - ($row['couponqtty'] * $req['value']);
+        $available_qty = $qty - ($couponqtty * $req['value']);
         if ($available_qty < $req['value']) {
             // Coupon requirement not met
-            if ($row['couponqtty'] > 0) {
+            if ($couponqtty > 0) {
                 $json['output'] = DisplayLib::boxMsg("Coupon already applied");
             } else {
                 $json['output'] = DisplayLib::boxMsg("Coupon requires ".$req['value']." items");
