@@ -321,8 +321,11 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             $ret .= '<a class="btn btn-default"
                 href="ManualPurchaseOrderPage.php?id=' . $order->vendorID() . '&adjust=' . $this->id . '">Edit Order</a>';
             $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<a class="btn btn-default id="receiveBtn"
+            $ret .= '<a class="btn btn-default" id="receiveBtn"
                 href="ViewPurchaseOrders.php?id=' . $this->id . '&receive=1">Receive Order</a>';
+            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+            $ret .= '<a class="btn btn-default" id="receiveBtn"
+                href="TransferPurchaseOrder.php?id=' . $this->id . '">Transfer Order</a>';
             $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
             $ret .= '<a class="btn btn-default"
                 href="ViewPurchaseOrders.php?id=' . $this->id . '&recode=1">Alter Codings</a>';
