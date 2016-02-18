@@ -25,12 +25,67 @@ include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
 }
+if (!function_exists('installSelectField')) {
+    include_once($FANNIE_ROOT . 'install/util.php');
+}
 
 class DashBoard extends FannieRESTfulPage
 {
     public $description = '[Dashboard] displays current system status';
     protected $header = 'Dashboard';
     protected $title = 'Dashboard';
+
+    protected function post_handler()
+    {
+        $eat = $this->emailConfiguration();
+        return 'DashBoard.php';
+    }
+
+    private function emailConfiguration()
+    {
+        include(dirname(__FILE__) . '/../config.php');
+        $warn = !class_exists('PHPMailer') ? '<div class="alert alert-warning">PHPMailer is missing. Use composer to install it or notifications will not be sent.</div>' : '';
+        $ret = '<div class="panel panel-default">
+            <div class="panel-heading">
+                <a href="" onclick="$(\'#email-config\').toggle(); return false;">
+                Notification Configuration</a>
+            </div>
+            <div class="panel-body collapse" id="email-config">
+                <form method="post">
+                ' . $warn . '
+                <div class="form-group">
+                <label>Notification Email Address(es)</label>
+                ' . installTextField('MON_SMTP_ADDR', $MON_SMTP_ADDR, '') . '
+                </div>
+                <div class="form-group">
+                <label>SMTP Host</label>
+                ' . installTextField('MON_SMTP_HOST', $MON_SMTP_HOST, '127.0.0.1') . '
+                </div>
+                <div class="form-group">
+                <label>SMTP Port</label>
+                ' . installTextField('MON_SMTP_PORT', $MON_SMTP_PORT, '25') . '
+                </div>
+                <div class="form-group">
+                <label>SMTP SSL/TLS</label>
+                ' . installSelectField('MON_SMTP_ENC', $MON_SMTP_ENC, array('None','SSL','TLS'), 'None') . '
+                <label>SMTP Auth</label>
+                ' . installSelectField('MON_SMTP_AUTH', $MON_SMTP_AUTH, array('No', 'Yes'), 'No') . '
+                </div>
+                <div class="form-group">
+                <label>SMTP Auth Username</label>
+                ' . installTextField('MON_SMTP_USER', $MON_SMTP_USER, '') . '
+                </div>
+                <div class="form-group">
+                <label>SMTP Auth Password</label>
+                ' . installTextField('MON_SMTP_PW', $MON_SMTP_PW, '') . '
+                </div>
+                <p>
+                    <button type="submit" class="btn btn-default btn-core">Save Settings</button>
+                </p>
+            </div>
+            </div>';
+        return $ret;
+    }
 
     public function get_view()
     {
@@ -40,6 +95,7 @@ class DashBoard extends FannieRESTfulPage
             return '<div class="alert alert-danger">No Dashboard data available. Is the Monitoring Task enabled?</div>';
         }
         ob_start();
+        echo $this->emailConfiguration();
         foreach ($mods as $class) {
             if (!isset($cache[$class])) {
                 echo "No data for $class<br />";
