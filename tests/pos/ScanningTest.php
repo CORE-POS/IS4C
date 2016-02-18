@@ -543,7 +543,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(False,$dat->isSpecial('8110123456790'));
         $this->assertEquals(False,$dat->isSpecial('0001234512345'));
         // just coverage; have not explored what this should do
-        $dat->handle('8110100707340143853100110110');
+        $dat->handle('8110100707340143853100110110', array());
         lttLib::clear();
 
         $hc = new HouseCoupon();
