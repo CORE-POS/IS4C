@@ -218,6 +218,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, CoreLocal::get('End'));
         $this->assertEquals('full', $out['receipt']);
         CoreLocal::set('End', 0);
+        $dbc = Database::tDataConnect();
+        $dbc->query('TRUNCATE TABLE localtranstoday');
     }
 
     function testTenderKey()
@@ -334,6 +336,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $e->parse('ES');
         lttLib::clear();
         CoreState::transReset();
+        $dbc = Database::tDataConnect();
+        $dbc->query('TRUNCATE TABLE localtranstoday');
     }
 
     function testSteering()
