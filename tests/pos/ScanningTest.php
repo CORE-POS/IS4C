@@ -14,7 +14,6 @@ class ScanningTest extends PHPUnit_Framework_TestCase
             'StaffSale',
             'SlidingMemSale',
             'PercentMemSale',
-            'CasePriceDiscount'
         );
 
         $all = AutoLoader::ListModules('DiscountType',False);
@@ -206,22 +205,6 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1.99,$info['unitPrice']);
         $this->assertEquals(0,$info['discount']);
         $this->assertEquals(1.79,$info['memDiscount']);
-
-        CoreLocal::set('casediscount',10);
-        $norm = new CasePriceDiscount();
-        $info = $norm->priceInfo($row, 1);
-        $this->assertInternalType('array',$info);
-        $this->assertArrayHasKey('regPrice',$info);
-        $this->assertArrayHasKey('unitPrice',$info);
-        $this->assertArrayHasKey('discount',$info);
-        $this->assertArrayHasKey('memDiscount',$info);
-        $this->assertEquals(1.79,$info['regPrice']);
-        $this->assertEquals(1.79,$info['unitPrice']);
-        $this->assertEquals(0,$info['discount']);
-        $this->assertEquals(0,$info['memDiscount']);
-        $this->assertEquals(False,$norm->isSale());
-        $this->assertEquals(False,$norm->isMemberOnly());
-        $this->assertEquals(False,$norm->isStaffOnly());
     }
 
     public function testPriceMethods()
