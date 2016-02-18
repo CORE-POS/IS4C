@@ -62,6 +62,23 @@ $num = 1; // count tags
 $x = $left;
 $y = $top;
 //cycle through result array of query
+for ($ocount=0;$ocount<$offset;$ocount++){
+   // move right by tag width
+   $x += $width;
+
+   if ($num % 32 == 0){
+    $pdf->AddPage();
+    $x = $left;
+    $y = $top;
+   }
+   else if ($num % 4 == 0){
+    $x = $left;
+    $y += $height;
+   }
+
+   $num++;
+}
+
 foreach($data as $row){
 
     if (strlen(ltrim($row['upc'], '0')) <= 4) continue;
