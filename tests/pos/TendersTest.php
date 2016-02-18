@@ -246,10 +246,10 @@ class TendersTest extends PHPUnit_Framework_TestCase
 
         CoreLocal::set('isMember', 1);
         CoreLocal::set('dollarOver', 0);
-        CoreLocal::se('amtdue', 0.50);
+        CoreLocal::set('amtdue', 0.50);
         $this->assertNotEquals(0, strlen($obj->ErrorCheck()));
         CoreLocal::set('isMember', 0);
-        CoreLocal::se('amtdue', 0);
+        CoreLocal::set('amtdue', 0);
     }
 
     function testFoodstamp()
