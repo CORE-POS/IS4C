@@ -44,7 +44,7 @@ class GeneralDayReport extends FannieReportPage
     protected $no_sort_but_style = true;
 
     protected $report_headers = array('Desc','Qty','Amount');
-    protected $required_fields = array('date1');
+    protected $required_fields = array('date');
 
     function fetch_report_data()
     {
@@ -52,7 +52,7 @@ class GeneralDayReport extends FannieReportPage
             $FANNIE_COOP_ID;
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $d1 = $this->form->date1;
+        $d1 = $this->form->date;
         $dates = array($d1.' 00:00:00',$d1.' 23:59:59');
         $data = array();
 
@@ -331,7 +331,7 @@ class GeneralDayReport extends FannieReportPage
                 Date
                 (<a href="../GeneralRange/">Range of Dates</a>)
             </label>
-            <input type=text id=date1 name=date1 
+            <input type=text id=date name=date 
                 class="form-control date-field" required />
         </div>
         <div class="form-group">
