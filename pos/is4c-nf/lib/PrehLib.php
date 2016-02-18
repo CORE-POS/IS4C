@@ -609,10 +609,7 @@ static public function deptkey($price, $dept,$ret=array())
     $dbc = Database::pDataConnect();
     $row = self::getDepartment($dbc, $dept);
 
-    if (CoreLocal::get("casediscount") > 0 && CoreLocal::get("casediscount") <= 100) {
-        $case_discount = (100 - CoreLocal::get("casediscount"))/100;
-        $price = $case_discount * $price;
-    } elseif ($row['line_item_discount'] && CoreLocal::get('itemPD') > 0 && CoreLocal::get('SecurityLineItemDiscount') == 30 && CoreLocal::get('msgrepeat')==0){
+    if ($row['line_item_discount'] && CoreLocal::get('itemPD') > 0 && CoreLocal::get('SecurityLineItemDiscount') == 30 && CoreLocal::get('msgrepeat')==0){
         $ret['main_frame'] = MiscLib::baseURL() . "gui-modules/adminlogin.php?class=LineItemDiscountAdminLogin";
         return $ret;
     } elseif ($row['line_item_discount'] && CoreLocal::get('itemPD') > 0) {

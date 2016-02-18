@@ -33,10 +33,7 @@ class ScrollItems extends Parser {
 
     function parse($str)
     {
-        $lines = CoreLocal::get('screenLines');
-        if (!$lines === '' || !is_numeric($lines)) {
-            $lines = 11;
-        }
+        $lines = DisplayLib::screenLines();
 
         $ret = $this->default_json();
         if ($str == "U")

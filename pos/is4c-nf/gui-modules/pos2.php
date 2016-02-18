@@ -108,10 +108,7 @@ class pos2 extends BasicCorePage
 
     function body_content()
     {
-        $lines = CoreLocal::get('screenLines');
-        if (!$lines === '' || !is_numeric($lines)) {
-            $lines = 11;
-        }
+        $lines = DisplayLib::screenLines();
         $this->input_header('action="pos2.php" onsubmit="return pos2.submitWrapper();"');
         if (CoreLocal::get("timeout") != "") {
             $timeout = sprintf('%d', CoreLocal::get('timeout'));

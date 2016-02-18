@@ -565,10 +565,7 @@ static public function drawNotifications()
 */
 static public function listItems($top_item, $highlight) 
 {
-    $lines = CoreLocal::get('screenLines');
-    if (!$lines === '' || !is_numeric($lines)) {
-        $lines = 11;
-    }
+    $lines = self::screenLines();
 
     Database::getsubtotals();
     $LastID = CoreLocal::get("LastID");
@@ -743,10 +740,7 @@ static public function drawItems($top_item, $rows, $highlight)
 */
 static public function lastpage($readOnly=False) 
 {
-    $lines = CoreLocal::get('screenLines');
-    if (!$lines === '' || !is_numeric($lines)) {
-        $lines = 11;
-    }
+    $lines = self::screenLines();
 
     if (!$readOnly) {
         Database::getsubtotals();
@@ -942,6 +936,13 @@ static public function touchScreenScrollButtons($selector='#search')
             onclick="pageDown(\''. $selector . '\');">
             <img src="' . $stem . 'pagedown.png" width="16" height="16" />
         </button>';
+}
+
+static public function screenLines()
+{
+    $valid = function($var) { return ($var !== '' && is_numeric($var)); };
+
+    return $valid(CoreLocal::get('screenLines')) ? CoreLocal::get('screenLines') : 11;
 }
 
 } // end class DisplayLib

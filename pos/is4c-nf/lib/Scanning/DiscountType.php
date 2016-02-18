@@ -35,7 +35,6 @@ class DiscountType
         3   => 'PercentMemSale',
         4   => 'StaffSale',
         5   => 'SlidingMemSale',
-        6   => 'CasePriceDiscount',
     );
 
     /**
