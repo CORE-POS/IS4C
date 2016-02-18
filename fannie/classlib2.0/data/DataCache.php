@@ -144,12 +144,8 @@ class DataCache
     */
     static public function getFile($ttl, $key=false)
     {
-        $type = strtolower($ttl);
-        if ($type[0] == 'm') {
-            $type = 'monthly';
-        } else if ($type[0] == 'd') {
-            $type = 'daily';
-        } else {
+        $type = self::validateTTL($ttl);
+        if ($type === false) {
             return false;
         }
 
@@ -172,12 +168,8 @@ class DataCache
     */
     static public function putFile($ttl, $content, $key=false)
     {
-        $type = strtolower($ttl);
-        if ($type[0] == 'm') {
-            $type = 'monthly';
-        } else if ($type[0] == 'd') {
-            $type = 'daily';
-        } else {
+        $type = self::validateTTL($ttl);
+        if ($type === false) {
             return false;
         }
 
@@ -195,6 +187,20 @@ class DataCache
         }
     }
 
+    static private function validateTTL($ttl)
+    {
+        $type = strtolower($ttl);
+        if ($type[0] == 'm') {
+            return 'monthly';
+        } elseif ($type[0] == 'd') {
+            return 'daily';
+        } elseif (strtolower($ttl) == 'forever') {
+            return 'forever';
+        } else {
+            return false;
+        }
+    }
+
     /**
       Get filesystem path for storing cache data
       Auto-creates directories as needed
@@ -203,7 +209,7 @@ class DataCache
     */
     static public function fileCacheDir($type)
     {
-        if ($type !== 'monthly' && $type !== 'daily') {
+        if ($type !== 'monthly' && $type !== 'daily' && $type !== 'forever') {
             return false;
         }
 
