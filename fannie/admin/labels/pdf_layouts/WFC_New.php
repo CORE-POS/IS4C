@@ -52,6 +52,11 @@ $height = 31; // tag height in mm
 $left = 5; // left margin
 $top = 15; // top margin
 
+// undo margin if offset is true
+if($offset) {
+    $top = 0;
+}
+
 $pdf->SetTopMargin($top);  //Set top margin of the page
 $pdf->SetLeftMargin($left);  //Set left margin of the page
 $pdf->SetRightMargin($left);  //Set the right margin of the page
@@ -63,21 +68,22 @@ $x = $left;
 $y = $top;
 //cycle through result array of query
 for ($ocount=0;$ocount<$offset;$ocount++){
-   // move right by tag width
-   $x += $width;
+    // move right by tag width
+    $x += $width;
 
-   if ($num % 32 == 0){
-    $pdf->AddPage();
-    $x = $left;
-    $y = $top;
-   }
-   else if ($num % 4 == 0){
-    $x = $left;
-    $y += $height;
-   }
+    if ($num % 32 == 0){
+        $pdf->AddPage();
+        $x = $left;
+        $y = $top;
+    }
+    else if ($num % 4 == 0){
+        $x = $left;
+        $y += $height;
+    }
 
-   $num++;
+    $num++;
 }
+
 
 foreach($data as $row){
 
