@@ -706,8 +706,8 @@ HTML;
                 <tr>
                     <th class="small text-right">Case Size</th>
                     <td class="col-sm-1">
-                        <input type="text" name="caseSize" class="form-control input-sm"
-                            id="product-case-size"
+                        <input type="text" name="caseSize" 
+                            class="form-control input-sm product-case-size"
                             value="' . $rowItem['caseSize'] . '" 
                             onchange="$(\'#vunits' . $jsVendorID . '\').val(this.value);" 
                             ' . ($jsVendorID == 'no-vendor' || !$active_tab ? 'disabled' : '') . ' />
@@ -845,10 +845,10 @@ HTML;
             }).done(function(resp) {
                 if (!resp.error) {
                     $('#local-origin-id').val(resp.localID);
-                    $('.product-case-size').prop('disabled', false);
+                    $('.tab-pane.active .product-case-size').prop('disabled', false);
                     $('#product-sku-field').prop('disabled', false);
                 } else {
-                    $('.product-case-size').prop('disabled', true);
+                    $('.tab-pane.active .product-case-size').prop('disabled', true);
                     $('#product-sku-field').prop('disabled', true);
                 }
             });
