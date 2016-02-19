@@ -53,19 +53,16 @@ $x = 42; //y location of Brand info for label
 $down = 31.0;
 
 if($offset>0) {
-    
-    /* Need to set the beginnig y values so they 
-     * line up with the top of the page. 
-    $delta = -12
+
+    $delta = 18.0;
     $n = $n+$delta; 
     $j = $j+$delta;
     $l = $l+$delta;
     //$n = $n+$delta;
     $r = $r+$delta;
     $t = $t+$delta;
-    $x = $x+$delta
-    */
-
+    $x = $x+$delta;
+    
     $m = $offset;
     //increment counters
     $i = $i + 52.7 * $offset;
@@ -76,8 +73,6 @@ if($offset>0) {
     $w = $w + 52.7 * $offset;
 
 }
-
-
 
 //cycle through result array of query
 foreach($data as $row){
