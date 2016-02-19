@@ -845,10 +845,10 @@ HTML;
             }).done(function(resp) {
                 if (!resp.error) {
                     $('#local-origin-id').val(resp.localID);
-                    $('.product-case-size').prop('disabled', false);
+                    $('#product-case-size').prop('disabled', false);
                     $('#product-sku-field').prop('disabled', false);
                 } else {
-                    $('.product-case-size').prop('disabled', true);
+                    $('#product-case-size').prop('disabled', true);
                     $('#product-sku-field').prop('disabled', true);
                 }
             });
