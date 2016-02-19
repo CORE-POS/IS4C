@@ -38,6 +38,13 @@ class DashBoard extends FannieRESTfulPage
     protected function post_handler()
     {
         $eat = $this->emailConfiguration();
+        $mon_conf = 'array(';
+        foreach (FormLib::get('mon', array()) as $mod) {
+            $mon_conf .= "'" . str_replace(':', '\\', $mod) . "',";
+        }
+        $mon_conf = rtrim($mon_conf, ',') . ')';
+        confset('MON_ENABLED', $mon_conf);
+
         return 'DashBoard.php';
     }
 
@@ -87,6 +94,40 @@ class DashBoard extends FannieRESTfulPage
         return $ret;
     }
 
+    private function monitorConfiguration()
+    {
+        $mods = FannieAPI::listModules('\COREPOS\Fannie\API\monitor\Monitor');
+        include(dirname(__FILE__) . '/../config.php');
+        if (!isset($MON_ENABLED) || !is_array($MON_ENABLED)) {
+            $MON_ENABLED = array();
+        }
+        $ret = '<div class="panel panel-default">
+            <div class="panel-heading">
+                <a href="" onclick="$(\'#mon-config\').toggle(); return false;">
+                Monitors Configuration</a>
+            </div>
+            <div class="panel-body collapse" id="mon-config">
+                <form method="post">
+            <table class="table table-bordered small">';
+        foreach ($mods as $mod) {
+            $ret .= sprintf('<tr>
+                <td><input type="checkbox" name="mon[]" value="%s" %s /></td>
+                <td>%s</td>
+                </tr>',
+                str_replace('\\', ':', $mod),
+                (in_array($mod, $MON_ENABLED) ? 'checked' : ''),
+                $mod);
+        }
+        $ret .= '</table>
+                <p>
+                    <button type="submit" class="btn btn-default btn-core">Save Settings</button>
+                </p>
+            </div>
+            </div>';
+
+        return $ret;
+    }
+
     public function get_view()
     {
         $mods = FannieAPI::listModules('\COREPOS\Fannie\API\monitor\Monitor');
@@ -96,7 +137,12 @@ class DashBoard extends FannieRESTfulPage
         }
         ob_start();
         echo $this->emailConfiguration();
+        echo $this->monitorConfiguration();
+        $enabled = $this->config->get('MON_ENABLED');
         foreach ($mods as $class) {
+            if (is_array($enabled) && !in_array($class, $enabled)) {
+                continue;
+            }
             if (!isset($cache[$class])) {
                 echo "No data for $class<br />";
             } else {

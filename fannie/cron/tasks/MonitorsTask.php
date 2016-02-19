@@ -43,7 +43,11 @@ to assess conditions, generate reports, and populate the dashboard.';
         $cache = array();
         $objs = FannieAPI::listModules('\COREPOS\Fannie\API\monitor\Monitor');
         $escalate = false;
+        $enabled = $this->config->get('MON_ENABLED');
         foreach ($objs as $class) {
+            if (is_array($enabled) && !in_array($class, $enabled)) {
+                continue;
+            }
             $mon = new $class($this->config);
             $cache[$class] = $mon->check();
             $escalate |= $mon->escalate($cache[$class]);
