@@ -54,7 +54,7 @@ $top = 15; // top margin
 
 // undo margin if offset is true
 if($offset) {
-    $top = 0;
+    $top = 32;
 }
 
 $pdf->SetTopMargin($top);  //Set top margin of the page
