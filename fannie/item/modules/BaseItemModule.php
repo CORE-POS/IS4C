@@ -606,7 +606,9 @@ HTML;
             $jsVendorID = $rowItem['default_vendor_id'] > 0 ? $rowItem['default_vendor_id'] : 'no-vendor';
             $ret .= '<select name="subdept[]" id="subdept{{store_id}}" 
                 class="form-control chosen-select syncable-input">';
-            $ret .= isset($subs[$rowItem['department']]) ? $subs[$rowItem['department']] : '<option value="0">None</option>';
+            $ret .= sprintf('<option %s value="0">None</option>',
+                ($rowItem['subdept'] == 0 ? 'selected':''));
+            $ret .= isset($subs[$rowItem['department']]) ? $subs[$rowItem['department']] : '';
             $ret .= '</select>';
             $ret .= '</td>
                 <th class="small text-right">SKU</th>
