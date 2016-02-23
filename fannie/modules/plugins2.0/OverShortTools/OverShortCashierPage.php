@@ -88,8 +88,10 @@ class OverShortCashierPage extends FanniePage {
             ON d.trans_subtype=t.TenderCode
             WHERE $filter_field = ?
             AND tdate BETWEEN ? AND ?
-            AND trans_type='T'
-            AND d.upc NOT IN ('0049999900001', '0049999900002')";
+            AND trans_type='T' ";
+        if ($this->config->get('COOP_ID') == 'WFC_Duluth') {
+            $totalsQ .= " AND d.upc NOT IN ('0049999900001', '0049999900002') ";
+        }
         if ($store != 0) {
             $totalsQ .= ' AND d.store_id = ? ';
             $args[] = $store;
