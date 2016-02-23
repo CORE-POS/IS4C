@@ -186,9 +186,9 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
         $items = array();
         $suppliers = array();
         while ($itemsW = $dbc->fetchRow($itemsR)) {
-            $items = $this->appendByID($items, $itemsW['orderID'], $itemsW['description']);
+            $items = $this->appendByID($items, $itemsW['order_id'], $itemsW['description']);
             if (!empty($itemsW['mixMatch'])) {
-                $suppliers = $this->appendByID($suppliers, $itemsW['orderID'], $itemsW['mixMatch']);
+                $suppliers = $this->appendByID($suppliers, $itemsW['order_id'], $itemsW['mixMatch']);
             }
         }
 

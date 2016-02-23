@@ -144,7 +144,6 @@ class ObfMappingPage extends FannieRESTfulPage
                                 $obj->growthTarget()*100,
                                 $obj->obfCategoryID(), $obj->superID()
                 );
-                unset($sdepts[$obj->superID()]);
             }
         }
         $ret .= '</table>';

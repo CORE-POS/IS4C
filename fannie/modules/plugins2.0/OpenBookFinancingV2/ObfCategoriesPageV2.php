@@ -55,10 +55,12 @@ class ObfCategoriesPageV2 extends FannieRESTfulPage
         $growth = FormLib::get('growth', array());
         $hours = FormLib::get('hours', array());
         $splh = FormLib::get('splh', array());
+        $stores = FormLib::get('store', array());
         for ($i=0; $i<count($ids); $i++) {
             $model->reset();
             $model->obfCategoryID($ids[$i]);
             $model->name($names[$i]);
+            $model->storeID($stores[$i]);
             $model->hasSales( in_array($ids[$i], $sales) ? 1 : 0 );
             $model->growthTarget($growth[$i] / 100.00);
             $model->salesPerLaborHourTarget($splh[$i]);
@@ -98,14 +100,17 @@ class ObfCategoriesPageV2 extends FannieRESTfulPage
         $ret .= '<table class="table">';
         $ret .= '<tr>
                     <th>Name</th>
+                    <th>Store</th>
                     <th>Has Sales</th>
                     <th>Sales Growth Goal</th>
                     <th>SPLH Goal</th>
                  </tr>';
+        $stores = FormLib::storePicker(); 
         foreach($model->find() as $cat) {
             $ret .= sprintf('<tr>
                             <input type="hidden" name="id[]" value="%d" />
                             <td><input type="text" name="cat[]" class="form-control" required value="%s" /></td>
+                            <td><select name="store[]" class="form-control">%s</select></td>
                             <td><input type="checkbox" name="hasSales[]" value="%d" %s /></td>
                             <td><div class="input-group">
                                 <input type="text" class="form-control" required name="growth[]" value="%.2f" />
@@ -115,6 +120,7 @@ class ObfCategoriesPageV2 extends FannieRESTfulPage
                             </tr>',
                             $cat->obfCategoryID(),
                             $cat->name(),
+                            $this->storeOpts($stores['names'], $cat->storeID()),
                             $cat->obfCategoryID(), ($cat->hasSales() == 1 ? 'checked' : ''),
                             $cat->growthTarget() * 100,
                             $cat->salesPerLaborHourTarget()
@@ -124,6 +130,17 @@ class ObfCategoriesPageV2 extends FannieRESTfulPage
         $ret .= '<p><button type="submit" class="btn btn-default">Save</button>
                 <a href="' . $_SERVER['PHP_SELF'] . '?_method=put" class="btn btn-default">Add Category</a></p>';
         $ret .= '</form>';
+
+        return $ret;
+    }
+
+    private function storeOpts($stores, $sID)
+    {
+        $ret = '';
+        foreach ($stores as $id => $name) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                ($id == $sID ? 'selected' : ''), $id, $name);
+        }
 
         return $ret;
     }

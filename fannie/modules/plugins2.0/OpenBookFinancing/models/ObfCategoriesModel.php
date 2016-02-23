@@ -31,6 +31,7 @@ class ObfCategoriesModel extends BasicModel
 
     protected $columns = array(
     'obfCategoryID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
+    'storeID' => array('type'=>'INT','default'=>0),
     'name' => array('type'=>'VARCHAR(50)'),
     'hasSales' => array('type'=>'TINYINT', 'default'=>1),
     'growthTarget' => array('type'=>'DOUBLE'),
