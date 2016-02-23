@@ -57,6 +57,7 @@ class QuantityEntryPage extends BasicCorePage
 
     const MODE_INTEGER = 0;
     const MODE_PRECISE = 1;
+    const MODE_VERBATIM = 2;
 
     private function getPrefixes($input_string)
     {
@@ -76,11 +77,23 @@ class QuantityEntryPage extends BasicCorePage
         return array($plu, $prefix);
     }
 
+    /**
+      Transpose $mode based on ManualWeightMode
+    */
+    private function refineMode($mode)
+    {
+        if ($mode == self::MODE_PRECISE) {
+            return CoreLocal::get('ManualWeightMode') == 1 ? self::MODE_VERBATIM : self::MODE_PRECISE;
+        } else {
+            return $mode;
+        }
+    }
+
     function preprocess()
     {
         $this->box_color="coloredArea";
         $this->msg = _("quantity required");
-        $mode = FormLib::get('qty-mode');
+        $mode = $this->refindMode(FormLib::get('qty-mode'));
         if ($mode == self::MODE_PRECISE) {
             $this->msg = _('precision weight required');
         }
@@ -134,7 +147,10 @@ class QuantityEntryPage extends BasicCorePage
           of hundreths. If the number is valid it's converted
           back to decimal in precision mode.
         */
-        if ($qtty != ((int)$qtty)) {
+	if ($mode == self::MODE_VERBATIM && !is_numeric($qtty)) {
+            $this->msg = _('invalid quantity<br />enter number');
+            return true;
+        } elseif ($mode != self::MODE_VERBATIM && $qtty != ((int)$qtty)) {
             $this->box_color="errorColoredArea";
             if ($mode == self::MODE_PRECISE) {
                 $this->msg = _("invalid precision weight") 

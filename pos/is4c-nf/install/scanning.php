@@ -49,6 +49,31 @@ body {
     </td>
 </tr>
 <tr>
+<td colspan="2">
+    <hr />
+    <b>Forced Keyed Weight</b>
+    <p>
+    By-weight / scaleable items will prompt the cashier to key a weight when QtyFrc is also enabled.
+    This is commonly used when items must be weighed on a non-integrated scale. In Three Digit Thousandths
+    mode the cashier must enter exactly three digits and these will be interpretted as thousandths of a
+    pound (i.e., 123 = 0.123 lb.). This is intended for very light items. In Verbatim mode the cashier's
+    entry is taken exactly as entered, with or without decimal. This provides greater flexibility but cannot
+    enforce a range of valid values.
+    </p>
+</td>
+</tr>
+<tr>
+    <td style="width: 30%;">
+        <b>Entry Mode</b>
+    </td>
+    <td>
+    <?php
+    $opts = array(1=>'Verbatim', 0=>'Three Digit Thousandths');
+    echo InstallUtilities::installSelectField('ManualWeightMode', $opts, 0);
+    ?>
+    </td>
+</tr>
+<tr>
     <td style="width: 30%;">
         <b>EANs</b>
     </td>
