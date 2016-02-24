@@ -31,8 +31,8 @@ to assess conditions, generate reports, and populate the dashboard.';
     public $log_start_stop = false;
 
     public $default_schedule = array(
-        'min' => 22,
-        'hour' => 3,
+        'min' => '*/15',
+        'hour' => '*',
         'day' => '*',
         'month' => '*',
         'weekday' => '*',

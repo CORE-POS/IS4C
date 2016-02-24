@@ -155,6 +155,20 @@ class DashBoard extends FannieRESTfulPage
 
         return ob_get_clean();
     }
+
+    public function helpContent()
+    {
+        return '<p>The Dashboard configures monitoring modules and displays
+            their most recent output.</p>
+            <p>Click <em>Notification Configuration</em> to access email notification
+            settings. An SMTP connection is required to send emails.</p>
+            <p>Click <em>Monitors Configuration</em> to choose which monitors
+            are enabled.</p>
+            <p>The main section of the page displays each active monitor\'s
+            most recent assessment of system status. If this page is blank
+            make sure at least one monitor is active and the Monitoring Task
+            is enabled in scheduled tasks.</p>';
+    }
 }
 
 FannieDispatch::conditionalExec();
