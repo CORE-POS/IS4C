@@ -147,7 +147,7 @@ class QuantityEntryPage extends BasicCorePage
           of hundreths. If the number is valid it's converted
           back to decimal in precision mode.
         */
-	if ($mode == self::MODE_VERBATIM && !is_numeric($qtty)) {
+        if ($mode == self::MODE_VERBATIM && !is_numeric($qtty)) {
             $this->msg = _('invalid quantity<br />enter number');
             return true;
         } elseif ($mode != self::MODE_VERBATIM && $qtty != ((int)$qtty)) {
