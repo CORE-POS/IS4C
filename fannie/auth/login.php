@@ -148,6 +148,11 @@ function ldap_login($name,$passwd)
     $conn = ldap_connect($config->get('LDAP_SERVER'), $config->get('LDAP_PORT'));
     if (!$conn) return false;
 
+    $user_dn = $config->get('LDAP_SEARCH_FIELD').'='.$name.','.$config->get('LDAP_DN');
+    if (!ldap_bind($conn,$user_dn,$passwd)){
+        return false;
+    }
+
     $search_result = ldap_search($conn,$config->get('LDAP_DN'),
                      $config->get('LDAP_SEARCH_FIELD')."=".$name);
     if (!$search_result) return false;
@@ -159,17 +164,12 @@ function ldap_login($name,$passwd)
         return false;
     }
 
-    $user_dn = $ldap_info[0]["dn"];
     $uid = $ldap_info[0][$config->get('LDAP_UID_FIELD')][0];
     $fullname = $ldap_info[0][$config->get('LDAP_RN_FIELD')][0];
 
-    if (ldap_bind($conn,$user_dn,$passwd)){
-        syncUserLDAP($name,$uid,$fullname); 
-        doLogin($name);
-        return true;
-    }
-
-    return false;
+    syncUserLDAP($name,$uid,$fullname); 
+    doLogin($name);
+    return true;
 }
 
 /*
