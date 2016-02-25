@@ -93,7 +93,7 @@ class QuantityEntryPage extends BasicCorePage
     {
         $this->box_color="coloredArea";
         $this->msg = _("quantity required");
-        $mode = $this->refindMode(FormLib::get('qty-mode'));
+        $mode = $this->refineMode(FormLib::get('qty-mode'));
         if ($mode == self::MODE_PRECISE) {
             $this->msg = _('precision weight required');
         }
