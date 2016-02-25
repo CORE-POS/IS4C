@@ -152,6 +152,7 @@ class EpScaleLib
                     case 'PLU':
                         $line .= 'PNO' . $item_info[$key] . chr(253);
                         $line .= 'UPC' . '002' . str_pad($item_info[$key],4,'0',STR_PAD_LEFT) . '000000' . chr(253);
+                        $line .= 'INO' . $item_info[$key] . chr(253);
                         break;
                     case 'Description':
                         if (strstr($item_info[$key], "\n")) {
