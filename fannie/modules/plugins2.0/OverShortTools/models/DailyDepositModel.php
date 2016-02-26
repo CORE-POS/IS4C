@@ -26,10 +26,11 @@ class DailyDepositModel extends BasicModel {
     protected $name = 'dailyDeposit';
 
     protected $columns = array(
-    'dateStr' => array('type'=>'VARCHAR(21)','primary_key'=>True),
-    'rowName' => array('type'=>'VARCHAR(15)','primary_key'=>True),
-    'denomination' => array('type'=>'VARCHAR(6)','primary_key'=>True),
-    'amt' => array('type'=>'MONEY','default'=>0)
+    'dateStr' => array('type'=>'VARCHAR(21)','primary_key'=>true),
+    'rowName' => array('type'=>'VARCHAR(15)','primary_key'=>true),
+    'denomination' => array('type'=>'VARCHAR(6)','primary_key'=>true),
+    'amt' => array('type'=>'MONEY','default'=>0),
+    'storeID' => array('type'=>'INT','primary_key'=>true),
     );
 }
 

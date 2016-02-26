@@ -28,7 +28,8 @@ class OverShortsLogModel extends BasicModel {
     protected $columns = array(
     'date' => array('type'=>'VARCHAR(10)','primary_key'=>True),
     'username' => array('type'=>'VARCHAR(25)'),
-    'resolved' => array('type'=>'TINYINT','default'=>0)
+    'resolved' => array('type'=>'TINYINT','default'=>0),
+    'storeID' => array('type'=>'INT','primary_key'=>true),
     );
 }
 

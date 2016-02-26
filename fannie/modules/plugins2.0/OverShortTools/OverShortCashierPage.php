@@ -59,7 +59,8 @@ class OverShortCashierPage extends FanniePage {
             $tenders = FormLib::get_form_value('tenders');
             $notes = FormLib::get_form_value('notes');
             $checks = FormLib::get_form_value('checks');
-            echo $this->save($empno,$date,$tenders,$checks,$notes);
+            $store = FormLib::get('store');
+            echo $this->save($empno,$date,$store,$tenders,$checks,$notes);
             break;
         }
     }
@@ -68,7 +69,7 @@ class OverShortCashierPage extends FanniePage {
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
-        $store = FormLib::get('store', 0);
+        $store = FormLib::get('store', 1);
 
         $dlog = DTransactionsModel::selectDlog($date);
 
@@ -118,6 +119,7 @@ class OverShortCashierPage extends FanniePage {
         $model = new DailyCountsModel($dbc);
         $model->date($date);
         $model->emp_no($empno);
+        $model->storeID($store);
         foreach($model->find() as $obj)
             $counts[$obj->tender_type()] = $obj->amt();
 
@@ -178,6 +180,7 @@ class OverShortCashierPage extends FanniePage {
         $model = new DailyChecksModel($dbc);
         $model->date($date);
         $model->emp_no($empno);
+        $model->storeID($store);
         $model->load();
         $checks = "";
         foreach( explode(",",$model->checks()) as $c){
@@ -264,6 +267,7 @@ class OverShortCashierPage extends FanniePage {
         $model = new DailyNotesModel($dbc);
         $model->date($date);
         $model->emp_no($empno);
+        $model->storeID($store);
         $model->load();
         $note = str_replace("''","'",$model->note());
         $ret .= "<td colspan=5 rowspan=2><textarea id=notes class=\"form-control\">$note</textarea></td></tr>";
@@ -281,17 +285,19 @@ class OverShortCashierPage extends FanniePage {
 
         $ret .= "<input type=hidden id=current_empno value=\"$empno\" />";
         $ret .= "<input type=hidden id=current_date value=\"$date\" />";
+        $ret .= "<input type=hidden id=current_store value=\"$store\" />";
 
         return $ret;
     }
 
-    function save($empno,$date,$tenders,$checks,$notes){
+    function save($empno,$date,$store,$tenders,$checks,$notes){
         global $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
     
         $model = new DailyNotesModel($dbc);
         $model->date($date);
         $model->emp_no($empno);
+        $model->storeID($store);
         $notes = str_replace("'","''",urldecode($notes));
         $model->note($notes);
         $model->save();
@@ -299,12 +305,14 @@ class OverShortCashierPage extends FanniePage {
         $model = new DailyChecksModel($dbc);
         $model->date($date);
         $model->emp_no($empno);
+        $model->storeID($store);
         $model->checks($checks);
         $model->save();
 
         $model = new DailyCountsModel($dbc);
         $model->date($date);
         $model->emp_no($empno);
+        $model->storeID($store);
         $tarray = explode("|",$tenders);
         foreach($tarray as $t){
             $temp = explode(":",$t);
@@ -358,8 +366,7 @@ class OverShortCashierPage extends FanniePage {
         <select name="mode" class="form-control"><option>Drawer</option><option>Cashier</option></select>
         :<input type=text name=empno id=empno class="form-control" placeholder="Lane or Employee #" required />
         <?php
-        $_REQUEST['store'] = 1;
-        $sp = FormLib::storePicker();
+        $sp = FormLib::storePicker('store', false);
         echo $sp['html'];
         ?>
         <button type=submit class="btn btn-default">Load</button>

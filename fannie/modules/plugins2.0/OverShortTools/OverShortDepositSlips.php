@@ -52,6 +52,7 @@ class OverShortDepositSlips extends FanniePage
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
         $start = FormLib::get_form_value('startDate');
         $end = FormLib::get_form_value('endDate');
+        $store = FormLib::get('store');
 
         $font_size = 12;
 
@@ -71,12 +72,13 @@ class OverShortDepositSlips extends FanniePage
         */
         $query = "select checks from dailyChecks where
             date BETWEEN ? AND ?
+                AND storeID=?
             order by 
               case when id >= 68 then id+1
               when id = 43 then 68
               else id end";
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, array($start, $end));
+        $result = $dbc->execute($prep, array($start, $end, $store));
         $acc = array();
         $counts = array();
         $ckSum = 0;
@@ -231,9 +233,9 @@ class OverShortDepositSlips extends FanniePage
         $dbstack = array('buyAmount'=>array(),
                  'depositAmount'=>array());
         $dbQ = "SELECT rowName,denomination,amt FROM dailyDeposit WHERE
-            dateStr = ? AND rowName IN ('buyAmount','depositAmount')";
+            dateStr = ? AND AND storeID=? rowName IN ('buyAmount','depositAmount')";
         $dbP = $dbc->prepare($dbQ);
-        $dbR = $dbc->execute($dbP,array($dateClause));
+        $dbR = $dbc->execute($dbP,array($dateClause,$store));
         while($dbW = $dbc->fetch_row($dbR)){
             $dbstack[$dbW[0]][$dbW[1]] = $dbW[2];
         }
@@ -338,6 +340,17 @@ class OverShortDepositSlips extends FanniePage
                     }
                     ?>
                     </select>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">Store</div>
+            <div class="panel-body">
+                <div class="form-group">
+                <?php
+                $stores = FormLib::storePicker('store', false);
+                echo $stores['html'];
+                ?>
                 </div>
             </div>
         </div>

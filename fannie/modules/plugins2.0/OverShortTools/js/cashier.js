@@ -67,8 +67,9 @@ function save(){
 	var notes = escape($('#notes').val());
 	var empno = $('#current_empno').val();
 	var tdate = $('#current_date').val();
+    var store = $('#current_store').val();
 
-	var args = 'action=save&empno='+empno+'&date='+tdate+'&tenders='+tenders+'&checks='+checks+'&notes='+notes;
+	var args = 'action=save&empno='+empno+'&date='+tdate+'&tenders='+tenders+'&checks='+checks+'&notes='+notes+'&store='+store;
 	$.ajax({
 		url: 'OverShortCashierPage.php',
 		type: 'post',
