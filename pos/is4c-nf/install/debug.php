@@ -54,10 +54,54 @@ available for those. If not, find a better browser.
 <?php
 echo InstallUtilities::installTextField('CoreCharSet', 'utf-8');
 ?>
+<p>
 Change the character set used to display pages. Common values are "utf-8" and "iso-8859-1".
+This value is embedded in the content of pages but may be overriden by your web server.
+</p/>
+<b>Additional Character Set Information</b>
+<?php 
+$this_page = $_SERVER['REQUEST_URI'];
+$test_page = str_replace('install/debug.php', 'test/phpinfo.php', $this_page);
+$headers = get_headers('http://' . $_SERVER['HTTP_HOST'] . $test_page);
+echo '<p><em>Headers sent by the web server for ' . $test_page . '</em>';
+echo '<pre style="background-color:#ccc;">';
+foreach ($headers as $header) {
+    echo $header . "\n";
+}
+echo '</pre>';
+?>
+If these headers include a <em>charset</em> other than your desired charset your
+webserver configuration needs to be adjusted.
+</p>
+<p><em>Character Set used by Database Connections</em><br />
+Local connection:
+<?php echo getCharset(Database::pDataConnect()); ?><br />
+Server connection:
+<?php echo getCharset(Database::mDataConnect()); ?><br />
+<br />
+To correctly display characters the database character set settings
+should match the one used for serving webpages above. In MySQL you can
+adjust this in the [mysql] section of the configuration file (my.cnf on
+Linux, my.ini on Windows).
+Note: "latin1" and "ISO-8859-1" are the same thing.
+</p>
 <hr />
 <input type=submit value="Save Changes" />
 </form>
 </div> <!--    wrapper -->
 </body>
 </html>
+<?php
+
+function getCharset($dbc)
+{
+    $res = $dbc->query("SHOW VARIABLES LIKE '%char%'");
+    $ret = '';
+    while ($row = $dbc->fetchRow($res)) { 
+        if ($row[0] === 'character_set_client' || $row[0] === 'character_set_connection' || $row[0] === 'character_set_results') {
+            $ret .= $row[0] . ': ' . $row[1] . ', ';
+        }
+    }
+
+    return $ret;
+}
