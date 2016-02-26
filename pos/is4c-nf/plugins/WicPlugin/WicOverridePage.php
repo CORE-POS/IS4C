@@ -32,6 +32,8 @@ class WicOverridePage extends BasicCorePage
     private $errMsg;
     private $upc;
 
+    protected $mask_input = true;
+
     public function preprocess()
     {
         $this->upc = FormLib::get('upc');
