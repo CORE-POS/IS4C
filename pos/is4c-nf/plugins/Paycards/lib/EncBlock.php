@@ -100,6 +100,61 @@ class EncBlock extends LibraryClass
         return $ret;
     }
 
+    private static function decodeTrack1($str, $pos, $kl, $ret)
+    {
+        // read name and masked PAN from track 1
+        $caret = strpos($str,"5E",$pos);
+        $pan = substr($str,$pos,$caret-$pos);
+        $pan = substr($pan,4); // remove leading %*
+        $caret2 = strpos($str,"5E",$caret+2);
+        if ($caret2 < ($pos + ($kl*2))) { // still in track 1
+            $name = substr($str,$caret+2,$caret2-$caret-2);
+            $ret['Name'] = self::dehexify($name);    
+        }
+        $pan = self::dehexify($pan);
+        $ret['Last4'] = substr($pan,-4);
+        $ret['Issuer'] = PaycardLib::paycard_issuer(str_replace("*","0",$pan));
+
+        return $ret;
+    }
+
+    private static function decodeTrack2($str, $pos, $kl, $ret)
+    {
+        $equal = strpos($str,"3D",$pos);
+        $pan = substr($str,$pos,$equal-$pos);
+        $pan = substr($pan,2); // remove leading ;
+        $pan = self::dehexify($pan);
+        $ret['Last4'] = substr($pan,-4);
+        $ret['Issuer'] = PaycardLib::paycard_issuer(str_replace("*",0,$pan));
+
+        return $ret;
+    }
+
+    private static function parseTrack1($str, $pos, $kl, $ret)
+    {
+        $tr1 = substr($str, $pos, $kl);
+        $pieces = explode('^', $tr1);
+        if (isset($pieces[1])) {
+            $ret['Name'] = $pieces[1];
+        }
+        $pan = str_replace('*', '0', substr($pieces[0],2));
+        $ret['Last4'] = substr($pan,-4);
+        $ret['Issuer'] = PaycardLib::paycard_issuer(str_replace("*","0",$pan));
+
+        return $ret;
+    }
+
+    private static function parseTrack2($str, $pos, $kl, $ret)
+    {
+        $tr2 = substr($str, $pos, $kl);
+        $pieces = explode('=', $tr2);
+        $pan = str_replace('*', '0', substr($pieces[0],1));
+        $ret['Last4'] = substr($pan,-4);
+        $ret['Issuer'] = PaycardLib::paycard_issuer(str_replace("*","0",$pan));
+
+        return $ret;
+    }
+
     private static function idtechBlock($str, $ret)
     {
         // read track length from block
@@ -109,32 +164,26 @@ class EncBlock extends LibraryClass
             3 => hexdec(substr($str,14,2))
         );
 
+        $decoded = strstr($str, '***');
+
         // skip to track data start point
         $pos = 20;
         // move through masked track data
         foreach ($track_length as $num=>$kl) {
             if ($num == 1 && $kl > 0) {
-                // read name and masked PAN from track 1
-                $caret = strpos($str,"5E",$pos);
-                $pan = substr($str,$pos,$caret-$pos);
-                $pan = substr($pan,4); // remove leading %*
-                $caret2 = strpos($str,"5E",$caret+2);
-                if ($caret2 < ($pos + ($kl*2))) { // still in track 1
-                    $name = substr($str,$caret+2,$caret2-$caret-2);
-                    $ret['Name'] = self::dehexify($name);    
+                if ($decoded) {
+                    $ret = self::parseTrack1($str, $pos, $kl, $ret);
+                } else {
+                    $ret = self::decodeTrack1($str, $pos, $kl, $ret);
                 }
-                $pan = self::dehexify($pan);
-                $ret['Last4'] = substr($pan,-4);
-                $ret['Issuer'] = PaycardLib::paycard_issuer(str_replace("*","0",$pan));
-            } else if ($num == 2 && $kl > 0) {
-                $equal = strpos($str,"3D",$pos);
-                $pan = substr($str,$pos,$equal-$pos);
-                $pan = substr($pan,2); // remove leading ;
-                $pan = self::dehexify($pan);
-                $ret['Last4'] = substr($pan,-4);
-                $ret['Issuer'] = PaycardLib::paycard_issuer(str_replace("*",0,$pan));
+            } elseif ($num == 2 && $kl > 0) {
+                if ($decoded) {
+                    $ret = self::parseTrack2($str, $pos, $kl, $ret);
+                } else {
+                    $ret = self::decodeTrack2($str, $pos, $kl, $ret);
+                }
             }
-            $pos += $kl*2;
+            $pos += ($decoded ? $kl : $kl*2);
         }
 
         // mercury rejects track 1

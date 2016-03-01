@@ -197,6 +197,9 @@ static public function paycard_info($pan)
     } elseif (substr($pan,0,8) == "02E60080" || substr($pan, 0, 5) == "23.0%" || substr($pan, 0, 5) == "23.0;") {
         $type = self::PAYCARD_TYPE_ENCRYPTED;
         $accepted = true;
+    } elseif (substr($pan,0,2) === '02' && substr($pan,-2) === '03' && strstr($pan, '***')) {
+        $type = self::PAYCARD_TYPE_ENCRYPTED;
+        $accepted = true;
     }
     return array('type'=>$type, 'issuer'=>$issuer, 'accepted'=>$accepted, 'test'=>$test);
 } // paycard_info()

@@ -37,6 +37,9 @@ class paycardEntered extends Parser
         } elseif (substr($str,0,8) == "02E60080" || substr($str,0,7)=="2E60080" || substr($str, 0, 5) == "23.0%" || substr($str, 0, 5) == "23.0;") {
             $this->swipetype = PaycardLib::PAYCARD_TYPE_ENCRYPTED;
             return true;
+        } elseif (substr($str, 0, 2) === "02" && substr($str, -2) === "03" && strstr($str, '***')) {
+            $this->swipetype = PaycardLib::PAYCARD_TYPE_ENCRYPTED;
+            return true;
         } elseif ((is_numeric($str) && strlen($str) >= 16) || (is_numeric(substr($str,2)) && strlen($str) >= 18)) {
             $this->manual = true;
             return true;
