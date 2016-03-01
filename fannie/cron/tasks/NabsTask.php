@@ -48,6 +48,19 @@ monthly.nabs.php.';
             WHERE memType=4 and personNum=1';
         $nabR = $dbc->query($nabQ);
 
+        /**
+          ar_history_today* views filter on tdate=current_date
+          This means ar_live_balance is off from midnight until
+          ArHistoryTask runs. Since this task runs in that window
+          it needs to manually account for the current day's 
+          activity.
+        */
+        $todayP = $dbc->prepare("
+            SELECT SUM(CASE WHEN trans_subtype='MI' THEN -total ELSE 0 END)
+                - SUM(CASE WHEN department=990 THEN total ELSE 0 END) AS today
+            FROM dlog WHERE (trans_subtype='MI' OR department=990)
+                AND card_no=?");
+
         $balQ = 'SELECT balance FROM ar_live_balance where card_no=?';
         $balP = $dbc->prepare($balQ);
         $trans_no = 1;
@@ -55,6 +68,8 @@ monthly.nabs.php.';
             $balR = $dbc->execute($balP, array($nabW['CardNo']));
             if ($balW = $dbc->fetch_row($balR)) {
                 if ($balW[0] > 0) {
+                    $today = $dbc->getValue($todayP, array($nabW['CardNo']));
+                    $balW[0] += $today;
                     $record = DTrans::defaults();
                     $datetime = date('\'Y-m-t 00:00:00\'', mktime(0,0,0,date('n')-1));
                     $record['emp_no'] = 1001;
