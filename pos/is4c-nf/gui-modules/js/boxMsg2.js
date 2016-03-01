@@ -31,7 +31,6 @@ var boxMsg2 = (function($) {
             dataType: 'json',
             cache: false
         }).done(function(data) {
-            alert(data.cleared);
             if (!data.cleared && endorseType != ''){
                 endorse(endorseType, endorseAmt, function() {
                     changePage(data, cmd);
