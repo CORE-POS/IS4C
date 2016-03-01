@@ -216,6 +216,7 @@ class WfcClassRegistryPage extends FanniePage
             //* Class Roster
             $ret .= "<h2 align=\"center\">" . $className[$key] . "</h2>";
             $ret .= "<h3 align=\"center\">" . $classDate[$key] . "</h3>";
+            $ret .= "<h5 align=\"center\"> <i>Plu</i>: " . $plu . "</h5>";
             $ret .= "<div id=\"line-div\"></div>";
             
             $items = new wfcuRegistryModel($dbc);
@@ -500,7 +501,6 @@ class WfcClassRegistryPage extends FanniePage
         $this->add_script('../../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->addCssFile('../../src/javascript/tablesorter/themes/blue/style.css');
         $this->add_onload_command("\$('.tablesorter').tablesorter({sortList:[[0,0]], widgets:['zebra']});");
-        $ret .= "<h5 align=\"right\"> <i>Plu for this class</i>: " . $plu . "</h5>";
         
         $dbc->close();
         
