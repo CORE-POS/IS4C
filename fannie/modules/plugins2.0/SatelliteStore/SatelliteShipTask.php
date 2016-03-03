@@ -56,9 +56,20 @@ satellite store to HQ. Runs repeatedly throughout the day.';
             return false;
         }
 
+        /** get exclusive lock or exist **/
+        $lock = fopen(dirname(__FILE__) . '/lockfile', 'r');
+        if (!flock($lock, LOCK_EX | LOCK_NB)) {
+            fclose($lock);
+            return false;
+        }
+
         $this->shipDTrans($remote, $local);
         $this->shipPaycards($remote, $local);
         $this->shipSigs($remote, $local);
+
+        /** release lock **/
+        flock($lock, LOCK_UN);
+        fclose($lock);
     }
 
     /**
