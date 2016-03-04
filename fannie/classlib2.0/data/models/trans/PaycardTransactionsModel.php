@@ -63,6 +63,7 @@ class PaycardTransactionsModel extends BasicModel
     'xToken' => array('type'=>'VARCHAR(64)'),
     'xProcessorRef' => array('type'=>'VARCHAR(24)'),
     'xAcquirerRef' => array('type'=>'VARCHAR(100)'),
+    'storeRowId' => array('type'=>'INT', 'increment'=>true, 'index'=>true),
     );
 
     public function doc()
