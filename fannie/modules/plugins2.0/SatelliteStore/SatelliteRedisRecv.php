@@ -30,8 +30,6 @@ class SatelliteRedisRecv extends FannieTask
     public function run()
     {
         $conf = $this->config->get('PLUGIN_SETTINGS');
-        $my_db = $conf['SatelliteDB'];
-        $myID = $conf['SatelliteStoreID'];
         $redis = $conf['SatelliteRedis'];
 
         $dbc = FannieDB::get($this->config->get('TRANS_DB'));
@@ -42,14 +40,16 @@ class SatelliteRedisRecv extends FannieTask
 
         $redis = new Predis\Client();
 
-        $this->getTrans($dbc, $redis);
+        $this->getTrans($dbc, $redis, new DTransactionsModel(null));
+        $this->getTrans($dbc, $redis, new PaycardTransactionsModel(null));
+        $this->getTrans($dbc, $redis, new CapturedSignatureModel(null), array('capturedSignatureID'));
     }
 
-    private function sendTrans($dbc, $redis)
+    private function getTrans($dbc, $redis, $model, $skip_columns=array())
     {
         try {
-            $model = new DTransactionsModel();
             $cols = array_keys($model->getColumns());
+            $cols = array_filter($cols, function($i) use ($skip_columns) { return !in_array($i, $skip_columns); });
 
             $names = '';
             $vals = '';
@@ -57,13 +57,13 @@ class SatelliteRedisRecv extends FannieTask
                 $names .= $dbc->identifierEscape($col) . ',';
                 $vals .= '?,';
             }
-            $insQ = 'INSERT INTO dtransactions
+            $insQ = 'INSERT INTO ' . $model->getName() . '
                 (' . substr($names, 0, strlen($names)-1) . ') 
                 VALUES 
                 (' . substr($vals, 0, strlen($vals)-1) . ')';
             $insP = $dbc->prepare($insQ);
 
-            while (($json = $redis->rpop('dtransactions')) !== null) {
+            while (($json = $redis->rpop($model->getName())) !== null) {
                 $row = json_decode($json, true);
                 $args = array();
                 foreach ($cols as $col) {
@@ -75,17 +75,6 @@ class SatelliteRedisRecv extends FannieTask
             // connection to redis failed. 
             // no cleanup required
         }
-    }
-
-    private function localDB($dbc, $myID, $my_db)
-    {
-        $prep = $dbc->prepare('
-            SELECT *
-            FROM ' . $this->config->get('OP_DB') . $dbc->sep() . 'Stores
-            WHERE storeID=?');
-        $row = $dbc->getRow($prep, array($myID));
-
-        return new SQLManager($row['dbHost'], $row['dbDriver'], $my_db, $row['dbUser'], $row['dbPassword']);
     }
 }
 

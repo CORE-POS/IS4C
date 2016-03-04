@@ -48,27 +48,45 @@ class SatelliteRedisSend extends FannieTask
 
         $redis = new Predis\Client();
 
-        $this->sendTrans($local, $redis, $myID);
+        $this->sendTable($local, $redis, $myID, 'dtransactions', 'store_row_id');
+        $this->sendTable($local, $redis, $myID, 'PaycardTransactions', 'storeRowId');
+        $this->sendTable($local, $redis, $myID, 'CapturedSignature', 'capturedSignatureID');
     }
 
-    private function sendTrans($local, $redis, $myID)
+    /**
+      Send table data to Redis
+      @param $local [SQLManager] connection to local SQL database
+      @param $redis [Predis\Client] connection to Redis database
+      @param $myID [int] store ID
+      @param $table [string] name of table
+      @param $column [string] name of unique, incrementing column in table
+
+      This sets a redis key $table:$column:$myID containing the highest
+      column value that has been queued from this store. It's important
+      that $column be both unique and sequential to avoid missing or
+      duplicating records.
+
+      Any record(s) that have not yet been sent based on $column value
+      are JSON-encoded and LPUSH'd into a list named $table. The HQ
+      side is responsible for RPOP'ing the records 
+    */
+    private function sendTable($local, $redis, $myID, $table, $column)
     {
         try {
-            $lastID = $redis->get('store_row_id:' . $myID);
+            $lastID = $redis->get($table . ':' . $column . ':' . $myID);
             if ($lastID === null) {
                 $lastID = 0;
             }
-            $prep = $local->prepare('SELECT * FROM dtransactions WHERE store_row_id > ?');
+            $prep = $local->prepare('SELECT * FROM ' . $table . ' WHERE ' . $column . ' > ?');
             $res = $local->execute($prep, array($lastID));
             $max = $lastID;
             while ($row = $local->fetchRow($res)) {
-                if ($row['store_row_id'] > $max) {
-                    $max = $row['store_row_id'];
+                if ($row[$column] > $max) {
+                    $max = $row[$column];
                 }
-                $redis->lpush('dtransactions', json_encode($row));
+                $redis->lpush($table, json_encode($row));
             }
-            $redis->set('store_row_id:' . $myID, $max);
-
+            $redis->set($table . ':' . $column . ':' . $myID, $max);
         } catch (Exception $ex) {
             // connection to redis failed. 
             // no cleanup required
