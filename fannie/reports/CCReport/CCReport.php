@@ -30,7 +30,7 @@ class CCReport extends FannieReportPage
     public function form_content()
     {
         $this->add_onload_command("\$('input:first').datepicker({dateFormat:'yy-mm-dd',changeYear:true});\n");
-        return "<form action=index.php method=get>
+        return "<form action=CCReport.php method=get>
             <b>Date</b>: <input type=text name=date /> <input type=submit value=Submit />
             </form>";
     }
