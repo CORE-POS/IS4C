@@ -82,11 +82,15 @@ function deleteEmp(emp_no,filter){
     {
         try {
             $filter = $this->form->filter;
-            $order = $this->form->order;
         } catch (Exception $ex) {
             $filter = 1;
+        }
+        try {
+            $order = $this->form->order;
+        } catch (Exception $ex) {
             $order = 'num';
         }
+
         $orderby = '';
         switch($order) {
             case 'num':
