@@ -54,6 +54,7 @@ $down = 31.0;
 
 if($offset>0) {
 
+    //increment values in respect to Y
     $delta = 18.0;
     $n = $n+$delta; 
     $j = $j+$delta;
@@ -64,14 +65,16 @@ if($offset>0) {
     $x = $x+$delta;
     
     $m = $offset;
-    //increment counters
+    /*
+    //increment counters in respect to X
     $i = $i + 52.7 * $offset;
     $k = $k + 52.7 * $offset;
     $m = $m + 1;
     $p = $p + 52.7 * $offset;
     $u = $u + 52.7 * $offset;
     $w = $w + 52.7 * $offset;
-
+    */
+    
 }
 
 //cycle through result array of query
