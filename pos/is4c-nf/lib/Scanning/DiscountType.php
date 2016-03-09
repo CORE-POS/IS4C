@@ -35,7 +35,6 @@ class DiscountType
         3   => 'PercentMemSale',
         4   => 'StaffSale',
         5   => 'SlidingMemSale',
-        6   => 'CasePriceDiscount',
     );
 
     /**
@@ -128,6 +127,37 @@ class DiscountType
     public function isStaffSale()
     {
         return $this->isStaffOnly();
+    }
+
+    /* get discount object 
+
+       CORE reserves values 0 through 63 in 
+       DiscountType::$MAP for default options.
+
+       Additional discounts provided by plugins
+       can use values 64 through 127. Because
+       the DiscountTypeClasses array is zero-indexed,
+       subtract 64 as an offset  
+    */
+    public static function getObject($discounttype)
+    {
+        $discounttype = MiscLib::nullwrap($discounttype);
+        $DiscountObject = null;
+        $DTClasses = CoreLocal::get("DiscountTypeClasses");
+        if ($discounttype < 64 && isset(DiscountType::$MAP[$discounttype])) {
+            $class = DiscountType::$MAP[$discounttype];
+            $DiscountObject = new $class();
+        } else if ($discounttype >= 64 && isset($DTClasses[($discounttype-64)])) {
+            $class = $DTClasses[($discounttype)-64];
+            $DiscountObject = new $class();
+        } else {
+            // If the requested discounttype isn't available,
+            // fallback to normal pricing. Debatable whether
+            // this should be a hard error.
+            $DiscountObject = new NormalPricing();
+        }
+
+        return $DiscountObject;
     }
 
 }

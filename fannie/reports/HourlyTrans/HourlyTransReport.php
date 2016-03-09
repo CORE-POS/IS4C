@@ -113,6 +113,7 @@ class HourlyTransReport extends FannieReportPage
         $deptEnd = FormLib::get('deptEnd');
         $deptMulti = FormLib::get('departments', array());
         $weekday = FormLib::get('weekday', 0);
+        $store = FormLib::get('store', 0);
     
         $buyer = FormLib::get('buyer', '');
 
@@ -132,6 +133,7 @@ class HourlyTransReport extends FannieReportPage
             list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args);
             $where .= $conditional;
         }
+        $args[] = $store;
 
         $date_selector = 'year(tdate), month(tdate), day(tdate)';
         $day_names = array();
@@ -159,6 +161,7 @@ class HourlyTransReport extends FannieReportPage
         $query .= "WHERE d.trans_type IN ('I','D')
                     AND d.tdate BETWEEN ? AND ?
                     AND $where
+                    AND " . DTrans::isStoreID($store, 'd') . "
                    GROUP BY $date_selector, $hour
                    ORDER BY $date_selector, $hour";
 

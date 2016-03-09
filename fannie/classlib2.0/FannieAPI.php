@@ -293,6 +293,9 @@ class FannieAPI
             case '\COREPOS\Fannie\API\item\FannieSignage':
                 $directories[] = dirname(__FILE__) . '/item/signage/';
                 break;
+            case '\COREPOS\Fannie\API\monitor\Monitor':
+                $directories[] = dirname(__FILE__) . '/monitor/';
+                break;
             case 'FanniePage':
                 $directories[] = dirname(__FILE__).'/../admin/';
                 $directories[] = dirname(__FILE__).'/../batches/';

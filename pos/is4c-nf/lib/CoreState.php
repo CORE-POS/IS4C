@@ -248,16 +248,6 @@ static public function transReset()
     CoreLocal::set("refund",0);
 
     /**
-      @var casediscount
-      Line item case discount percentage (as
-      integer; 5 = 5%). This feature may be redundant
-      in that it could be handled with the generic
-      line-item discount. It more or less just differs
-      in that the messages say "Case".
-    */
-    CoreLocal::set("casediscount",0);
-
-    /**
       @var multiple
       Cashier used the "*" key to enter
       a multiplier. This currently makes the
@@ -388,89 +378,6 @@ static public function transReset()
     */
     CoreLocal::set("lastWeight",0.00);
 
-    /**
-      @var CachePanEncBlcok
-      Stores the encrypted string of card information
-      provided by the CC terminal. If the terminal is
-      facing the customer, the customer may swipe their
-      card before the cashier is done ringing in items
-      so the value is stored in session until the
-      cashier is ready to process payment
-    */
-    CoreLocal::set("CachePanEncBlock","");
-
-    /**
-      @var CachePinEncBlock
-      Stores the encrypted string of PIN data.
-      Similar to CachePanEncBlock.
-    */
-    CoreLocal::set("CachePinEncBlock","");
-
-    /**
-      @var CacheCardType
-      Stores the selected card type.
-      Similar to CachePanEncBlock.
-      Known values are:
-      - CREDIT
-      - DEBIT
-      - EBTFOOD
-      - EBTCASH
-    */
-    CoreLocal::set("CacheCardType","");
-
-    /**
-      @var CacheCardCashBack
-      Stores the select cashback amount.
-      Similar to CachePanEncBlock.
-    */
-    CoreLocal::set("CacheCardCashBack",0);
-
-    /**
-      @var ccTermState
-      Stores a string representing the CC 
-      terminals current display. This drives
-      an optional on-screen icon to let the 
-      cashier know what the CC terminal is
-      doing if they cannot see its screen.
-    */
-    CoreLocal::set('ccTermState','swipe');
-
-    /**
-      @var paycard_voiceauthcode
-      Stores a voice authorization code for use
-      with a paycard transaction. Not normally used
-      but required to pass Mercury's certification
-      script.
-    */
-    CoreLocal::set("paycard_voiceauthcode","");
-
-    /**
-      @var ebt_authcode
-      Stores a foodstamp authorization code.
-      Similar to paycard_voiceauthcode.
-    */
-    CoreLocal::set("ebt_authcode","");
-
-    /**
-      @var ebt_vnum
-      Stores a foodstamp voucher number.
-      Similar to paycard_voiceauthcode.
-    */
-    CoreLocal::set("ebt_vnum","");
-
-    /**
-      @var paycard_keyed
-      - True => card number was hand keyed
-      - False => card was swiped
-
-      Normally POS figures this out automatically
-      but it has to be overriden to pass Mercury's
-      certification script. They require some
-      keyed transactions even though the CC terminal
-      is only capable of producing swipe-style data.
-    */
-    CoreLocal::set("paycard_keyed",False);
-    
     if (!is_array(CoreLocal::get('PluginList'))) {
         CoreLocal::set('PluginList', array());
     }
@@ -632,41 +539,10 @@ static public function loadData()
     $num_rows_local = $db_local->num_rows($result_local);
 
     if ($num_rows_local > 0) {
-        $row_local = $db_local->fetch_array($result_local);
+        $row_local = $db_local->fetchRow($result_local);
         
         if ($row_local["card_no"] && strlen($row_local["card_no"]) > 0) {
-            CoreLocal::set("memberID",$row_local["card_no"]);
-        }
-    }
-
-    if (CoreLocal::get("memberID") == "0") {
-        // not used - andy 4/12/07
-        CoreLocal::set("percentDiscount",0);
-        CoreLocal::set("memType",0);
-    } else {
-        $query_member = "select CardNo,memType,Type,Discount,staff,SSI,
-                blueLine,FirstName,LastName
-                from custdata where CardNo = '".CoreLocal::get("memberID")."'";
-        $db_product = Database::pDataConnect();
-        $result = $db_product->query($query_member);
-        if ($db_product->num_rows($result) > 0) {
-            $row = $db_product->fetch_array($result);
-            CoreLocal::set("memMsg",$row['blueLine']);
-            CoreLocal::set("memType",$row["memType"]);
-            CoreLocal::set("percentDiscount",$row["Discount"]);
-
-            if ($row["Type"] == "PC") {
-                CoreLocal::set("isMember",1);
-            } else {
-                CoreLocal::set("isMember",0);
-            }
-
-            CoreLocal::set("isStaff",$row["staff"]);
-            CoreLocal::set("SSI",$row["SSI"]);
-
-            if (CoreLocal::get("SSI") == 1) {
-                CoreLocal::set("memMsg",CoreLocal::get("memMsg")." #");
-            }
+            PrehLib::setMember($row_local['card_no'], 1);
         }
     }
 }

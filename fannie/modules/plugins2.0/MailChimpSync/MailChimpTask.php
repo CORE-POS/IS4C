@@ -128,7 +128,7 @@ class MailChimpTask extends FannieTask
                           for both. If email disagrees, use MailChimp value for both.
                         */
                         case 'subscribed':
-                            $memlist = $this->isSubscribed($record, $columns, $chimp, $memlist);
+                            $memlist = $this->isSubscribed($record, $columns, $chimp, $LISTID, $memlist);
                             break;
                         /**
                           Just track the number to avoid re-adding them to the list
@@ -280,7 +280,7 @@ class MailChimpTask extends FannieTask
       Callback when list includes an subuscribed entry
       with a member number
     */
-    protected function isSubscribed($record, $columns, $chimp, $memlist)
+    protected function isSubscribed($record, $columns, $chimp, $LISTID, $memlist)
     {
         list($card_no, $email, $fname, $lname, $changed) = $this->unpackRecord($record, $columns);
         $memlist .= sprintf('%d,', $card_no);

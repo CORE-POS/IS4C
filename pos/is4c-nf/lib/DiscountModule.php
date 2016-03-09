@@ -145,7 +145,6 @@ class DiscountModule
                     'upc' => 'DISCLINEITEM',
                     'description' => $name,
                     'amount1' => $obj->percentage(),
-                    'amount2' => $obj->calculate(CoreLocal::get('discountableTotal')),
                 ));
             }
         }
@@ -155,23 +154,6 @@ class DiscountModule
     {
         $this->my_discount = $percent;
         $this->name = $name;
-    }
-
-    /**
-      Calculate the discount based on current
-      transaction state
-      @return double discount amount
-
-      Note return value should be positive unless
-      you're doing something odd
-    */
-    public function calculate($discountable_total=0)
-    {
-        if ($discountable_total == 0) {
-            $discountable_total = CoreLocal::get('discountableTotal');
-        }
-
-        return MiscLib::truncate2(($this->my_discount/100.00) * $discountable_total);
     }
 
     /**

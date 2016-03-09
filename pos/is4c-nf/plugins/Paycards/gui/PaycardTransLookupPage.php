@@ -66,7 +66,7 @@ class PaycardTransLookupPage extends BasicCorePage
 
     function body_content()
     {
-        $this->input_header('onsubmit="lookupFormCallback();return false;"');
+        $this->input_header('onsubmit="PaycardTransLookupPage.formCallback();return false;"');
         echo '<div class="baseHeight">';
         $id = $_REQUEST['id'];
         $local = false;
@@ -90,48 +90,12 @@ class PaycardTransLookupPage extends BasicCorePage
         echo DisplayLib::printfooter();
         echo "</div>\n";
 
-        $this->add_onload_command('performLookup();');
+        $this->add_onload_command('PaycardTransLookupPage.performLookup();');
     }
 
     function head_content()
     {
-        ?>
-<script type="text/javascript">
-var gettingResult = 1;
-var enter_url = '';
-var clear_url = '';
-function performLookup()
-{
-    $.ajax({
-        type: 'get',  
-        data: 'doLookup=1&id='+$('#refNum').val()+'&local='+$('#local').val()+'&mode='+$('#lookupMode').val(),
-        dataType: 'json',
-        success: function(resp) {
-            $('.baseHeight').html(resp.output);
-            enter_url = resp.confirm_dest;
-            clear_url = resp.cancel_dest;
-            gettingResult = 0;
-        }
-    });
-}
-function lookupFormCallback()
-{
-    if (gettingResult == 1) {
-        return false;
-    }
-
-    var reginput = $('#reginput').val();
-
-    if (reginput == '') {
-        location = enter_url;
-    } else if (reginput.toUpperCase() == 'CL') {
-        location = clear_url;
-    } else {
-        $('#reginput').val('');
-    }
-}
-</script>
-        <?php
+        echo '<script type="text/javascript" src="../js/PaycardTransLookupPage.js"></script>';
     }
 }
 

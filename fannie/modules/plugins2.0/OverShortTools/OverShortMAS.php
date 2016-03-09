@@ -110,7 +110,7 @@ class OverShortMAS extends FannieRESTfulPage {
                 FROM $dlog AS d LEFT JOIN
                 tenders AS t ON d.trans_subtype=t.TenderCode
                 WHERE trans_type='T'
-                AND d.store_id=1
+                AND d.store_id IN (1,50)
                 AND tdate BETWEEN ? AND ?
                 AND department <> 703
                 GROUP BY type HAVING SUM(total) <> 0 ORDER BY type";
@@ -131,7 +131,7 @@ class OverShortMAS extends FannieRESTfulPage {
             CASE WHEN staff=1 OR memType IN (1,3) THEN 'Staff Discounts'
             ELSE 'Member Discounts' END as name
             FROM $dlog WHERE upc='DISCOUNT'
-                AND store_id=1
+                AND store_id IN (1,50)
             AND total <> 0 AND tdate BETWEEN ? AND ?
             GROUP BY name ORDER BY name";
         $discountP = $dbc->prepare($discountQ);
@@ -158,7 +158,7 @@ class OverShortMAS extends FannieRESTfulPage {
             AND tdate BETWEEN ? AND ?
             AND m.superID > 0
             AND register_no <> 20
-                AND d.store_id=1
+                AND d.store_id IN (1,50)
             GROUP BY salesCode HAVING sum(total) <> 0 
             ORDER BY salesCode";
         $salesP = $dbc->prepare($salesQ);
@@ -197,7 +197,7 @@ class OverShortMAS extends FannieRESTfulPage {
             AND m.superID = 0
             AND d.department <> 703
             AND register_no <> 20
-            AND d.store_id=1
+            AND d.store_id IN (1,50)
             GROUP BY salesCode HAVING sum(total) <> 0 
             ORDER BY salesCode";
         $salesP = $dbc->prepare($salesQ);
@@ -236,7 +236,7 @@ class OverShortMAS extends FannieRESTfulPage {
 
         $miscQ = "SELECT total as amount, description as name,
             trans_num, tdate FROM $dlog WHERE department=703
-            AND store_id=1
+            AND store_id IN (1,50)
             AND trans_subtype <> 'IC'
             AND tdate BETWEEN ? AND ? ORDER BY tdate";
         $miscP = $dbc->prepare($miscQ);
@@ -244,7 +244,7 @@ class OverShortMAS extends FannieRESTfulPage {
         $detailP = $dbc->prepare("SELECT description 
             FROM $dtrans WHERE trans_type='C'
             AND trans_subtype='CM' AND datetime BETWEEN ? AND ?
-            AND store_id=1
+            AND store_id IN (1,50)
             AND emp_no=? and register_no=? and trans_no=? ORDER BY trans_id");
         while($w = $dbc->fetch_row($miscR)){
             $coding = 63350;
@@ -272,7 +272,7 @@ class OverShortMAS extends FannieRESTfulPage {
 
         $miscQ = "SELECT SUM(-total) as amount
             FROM $dlog WHERE department=703
-            AND store_id=1
+            AND store_id IN (1,50)
             AND trans_subtype = 'IC'
             AND tdate BETWEEN ? AND ? ORDER BY tdate";
         $miscP = $dbc->prepare($miscQ);

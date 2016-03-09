@@ -29,6 +29,8 @@ class SameDayReportingTask extends FannieTask
 day\'s transactions into dlog_15. Can be run
 repeatedly throughout the day.';
 
+    public $log_start_stop = false;
+
     public $default_schedule = array(
         'min' => '*/5',
         'hour' => '7-22',

@@ -61,6 +61,8 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
         $labor = new ObfLaborModelV2($dbc);
         $labor->obfWeekID($week->obfWeekID());
+
+        $store = FormLib::get('store');
         
         /**
            Timestamps for the start and end of
@@ -117,6 +119,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         */
         $categories = new ObfCategoriesModelV2($dbc);
         $categories->hasSales(1);
+        $categories->storeID($store);
         foreach ($categories->find('name') as $category) {
             $data[] = $this->headerRow($category->name());
             $sum = array(0.0, 0.0);
@@ -283,6 +286,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         */
         $cat = new ObfCategoriesModelV2($dbc);
         $cat->hasSales(0);
+        $cat->storeID($store);
         $cat->name('Admin', '<>');
         foreach ($cat->find('name') as $c) {
             $data[] = $this->headerRow($c->name());

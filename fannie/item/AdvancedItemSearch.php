@@ -452,10 +452,14 @@ class AdvancedItemSearch extends FannieRESTfulPage
     {
         try {
             if ($form->price_rule !== '') {
-                if ($form->price_rule == 1) {
+                if ($form->price_rule == -1) {
                     $search->where .= ' AND p.price_rule_id <> 0 ';
                 } elseif ($form->price_rule == 0) {
                     $search->where .= ' AND p.price_rule_id = 0 ';
+                } else {
+                    $search->from .= ' INNER JOIN PriceRules AS r ON p.price_rule_id=r.priceRuleID ';
+                    $search->where .= ' AND r.priceRuleTypeID=? ';
+                    $search->args[] = $form->price_rule;
                 }
             }
         } catch (Exception $ex) {}
@@ -1143,8 +1147,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 <label class="control-label small">Pricing Rule</label>
                 <select name="price_rule" class="form-control input-sm">
                     <option value="">Any</option>
-                    <option value="0">Standard</option>
-                    <option value="1">Variable</option>
+                    <option value="0">Standard</option>';
+        $rule = new PriceRuleTypesModel($dbc);
+        $ret .= $rule->toOptions();
+        $ret .= '<option value="-11">Variable</option>
                 </select>
             </td>
             </td>';

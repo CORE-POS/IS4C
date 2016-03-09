@@ -148,7 +148,7 @@ class ItemMarginModule extends ItemModule
 
     public function saveFormData($upc)
     {
-        $db = $this->db();
+        $dbc = $this->db();
         try {
             $new_rule = $this->form->price_rule_id;
             $old_rule = $this->form->current_price_rule_id;
@@ -158,10 +158,9 @@ class ItemMarginModule extends ItemModule
         }
 
         if ($new_rule != $old_rule) {
-            $prod = new ProductsModel($db);
+            $prod = new ProductsModel($dbc);
             $prod->upc(BarcodeLib::padUPC($upc));
-            $prod->store_id(1);
-            $rule = new PriceRulesModel($db);
+            $rule = new PriceRulesModel($dbc);
             switch ($new_rule) {
                 case 0: // no custom rule
                 case 1: // generic variable pricing
@@ -196,7 +195,15 @@ class ItemMarginModule extends ItemModule
                     }
             }
             $prod->enableLogging(false);
-            $prod->save();
+            if (FannieConfig::config('STORE_MODE') === 'HQ') {
+                $res = $dbc->query('SELECT storeID FROM Stores WHERE hasOwnItems=1');
+                while ($row = $dbc->fetchRow($res)) {
+                    $prod->store_id($row['storeID']);
+                    $prod->save();
+                }
+            } else {
+                $prod->save();
+            }
         }
 
         return true;
@@ -304,10 +311,9 @@ class ItemMarginModule extends ItemModule
             $.ajax({
                 url: '<?php echo FannieConfig::config('URL'); ?>item/modules/ItemMarginModule.php',
                 data: 'p='+$('#price'+store_id).val()+'&d='+$('#department'+store_id).val()+'&c='+$('#cost'+store_id).val()+'&u=<?php echo $upc; ?>',
-                cache: false,
-                success: function(data){
-                    $('#ItemMarginMeter').html(data);
-                }
+                cache: false
+            }).done(function(data){
+                $('#ItemMarginMeter').html(data);
             });
         }
         function nosubmit(event)

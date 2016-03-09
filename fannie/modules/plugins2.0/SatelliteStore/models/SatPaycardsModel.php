@@ -1,9 +1,10 @@
 <?php
+
 /*******************************************************************************
 
-    Copyright 2013 Whole Foods Co-op
+    Copyright 2016 Whole Foods Co-op
 
-    This file is part of IT CORE.
+    This file is part of CORE-POS.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,18 +21,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+        
 
-class NeedDiscountModule extends DiscountModule 
+/**
+  @class SatTransModel
+*/
+class SatPaycardsModel extends PaycardTransactionsModel
 {
-    public function calculate($discountable_total=0)
-    {
-        $discount = parent::calculate();
-        if (CoreLocal::get('NeedDiscountFlag')===1){
-            $extra = 0.05 * CoreLocal::get('discountableTotal');
-            $discount = MiscLib::truncate2($discount + $extra);
-        }
-
-        return $discount;
-    }
+    protected $preferred_db = 'plugin:SatelliteDB';
 }
 

@@ -836,23 +836,30 @@ class SQLManager
         return $ret;
     }
 
+    private function isIntegerType($type)
+    {
+        foreach (array('INT', 'LONG', 'SHORT') as $str) {
+            if (strstr(strtoupper($type), $str)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function sanitizeValue($val, $type)
     {
         $unquoted = array("money"=>1,"real"=>1,"numeric"=>1,
-            "float4"=>1,"float8"=>1,"bit"=>1);
-        $strings = array("varchar"=>1,"nvarchar"=>1,"string"=>1,
-            "char"=>1, 'var_string'=>1);
+            "float4"=>1,"float8"=>1,"bit"=>1,"double"=>1,"newdecimal"=>1);
         $dates = array("datetime"=>1);
 
-        if ($val == "" && strstr(strtoupper($type),"INT")) {
+        if ($val == "" && $this->isIntegerType($type)) {
             $val = 0;    
         } elseif ($val == "" && isset($unquoted[$type])) {
             $val = 0;    
         }
         if (isset($dates[$type])) {
             $val = $this->cleanDateTime($val);
-        } elseif (isset($strings[$type])) {
-            $val = str_replace("'","''",$val);
         }
 
         return $val;

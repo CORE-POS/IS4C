@@ -81,9 +81,12 @@ TenderType and TenderID are mostly ignored.
 
     public function hookAddColumnTenderModule()
     {
-        CoreLocal::refresh();
-        CoreState::loadParams();
-        $current_map = CoreLocal::get('TenderMap');
+        \CoreLocal::refresh();
+        \CoreState::loadParams();
+        $current_map = \CoreLocal::get('TenderMap');
+        if (!is_array($current_map)) {
+            $current_map = array();
+        }
         $update = $this->connection->prepare('
             UPDATE tenders
             SET TenderModule=?

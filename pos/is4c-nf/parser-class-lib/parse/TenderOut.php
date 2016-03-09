@@ -43,22 +43,19 @@ class TenderOut extends Parser
                 DisplayLib::standardClearButton()
             );
             return $ret;
-        }
-        else {
-            return $this->tender_out("");
+        } else {
+            return $this->doTenderOut();
         }
     }
 
-    function tender_out($asTender)
+    private function doTenderOut()
     {
         $ret = $this->default_json();
         Database::getsubtotals();
         if (CoreLocal::get("amtdue") <= 0.005) {
             CoreLocal::set("change",-1 * CoreLocal::get("amtdue"));
             $cash_return = CoreLocal::get("change");
-            if ($asTender != "FS") {
-                TransRecord::addchange($cash_return,'CA');
-            }
+            TransRecord::addchange($cash_return,'CA');
             CoreLocal::set("End",1);
             $ret['output'] = DisplayLib::printReceiptFooter();
             $ret['redraw_footer'] = true;

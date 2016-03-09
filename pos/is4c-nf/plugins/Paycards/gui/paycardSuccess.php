@@ -141,16 +141,15 @@ class paycardSuccess extends BasicCorePage
                 $.ajax({url: '<?php echo $this->page_url; ?>ajax-callbacks/AjaxEnd.php',
                     cache: false,
                     type: 'post',
-                    data: 'receiptType='+$('#rp_type').val()+'&ref=<?php echo ReceiptLib::receiptNumber(); ?>',
-                    success: function(data) {
-                        // If a paper signature slip is requested during
-                        // electronic signature capture, abort capture
-                        // Paper slip will be used instead.
-                        if ($('input[name=doCapture]').length != 0) {
-                            $('input[name=doCapture]').val(0);    
-                            $('div.boxMsgAlert').html('Verify Signature');
-                            $('#sigInstructions').html('[enter] to approve, [void] to reverse the charge<br />[reprint] to print slip');
-                        }
+                    data: 'receiptType='+$('#rp_type').val()+'&ref=<?php echo ReceiptLib::receiptNumber(); ?>'
+                }).done(function(data) {
+                    // If a paper signature slip is requested during
+                    // electronic signature capture, abort capture
+                    // Paper slip will be used instead.
+                    if ($('input[name=doCapture]').length != 0) {
+                        $('input[name=doCapture]').val(0);    
+                        $('div.boxMsgAlert').html('Verify Signature');
+                        $('#sigInstructions').html('[enter] to approve, [void] to reverse the charge<br />[reprint] to print slip');
                     }
                 });
                 $('#reginput').val('');

@@ -197,6 +197,9 @@ static public function paycard_info($pan)
     } elseif (substr($pan,0,8) == "02E60080" || substr($pan, 0, 5) == "23.0%" || substr($pan, 0, 5) == "23.0;") {
         $type = self::PAYCARD_TYPE_ENCRYPTED;
         $accepted = true;
+    } elseif (substr($pan,0,2) === '02' && substr($pan,-2) === '03' && strstr($pan, '***')) {
+        $type = self::PAYCARD_TYPE_ENCRYPTED;
+        $accepted = true;
     }
     return array('type'=>$type, 'issuer'=>$issuer, 'accepted'=>$accepted, 'test'=>$test);
 } // paycard_info()
@@ -745,6 +748,36 @@ static public function setupAuthJson($json)
     $json['output'] = '';
 
     return $json;
+}
+
+static public function validateAmount()
+{
+    $amt = CoreLocal::get('paycard_amount');
+    $due = CoreLocal::get("amtdue");
+    $type = CoreLocal::get("CacheCardType");
+    $cb = CoreLocal::get('CacheCardCashBack');
+    $balance_limit = CoreLocal::get('PaycardRetryBalanceLimit');
+    if ($type == 'EBTFOOD') {
+        $due = CoreLocal::get('fsEligible');
+    }
+    if ($cb > 0) $amt -= $cb;
+    if (!is_numeric($amt) || abs($amt) < 0.005) {
+        return array(false, 'Enter a different amount');
+    } elseif ($amt > 0 && $due < 0) {
+        return array(false, 'Enter a negative amount');
+    } elseif ($amt < 0 && $due > 0) {
+        return array(false, 'Enter a positive amount');
+    } elseif (($amt-$due)>0.005 && $type != 'DEBIT' && $type != 'EBTCASH') {
+        return array(false, 'Cannot exceed amount due');
+    } elseif (($amt-$due-0.005)>$cb && ($type == 'DEBIT' || $type == 'EBTCASH')) {
+        return array(false, 'Cannot exceed amount due plus cashback');
+    } elseif ($balance_limit > 0 && ($amt-$balance_limit) > 0.005) {
+        return array(false, 'Cannot exceed card balance');
+    } else {
+        return array(true, 'valid');
+    }
+
+    return array(false, 'invalid');
 }
 
 /*

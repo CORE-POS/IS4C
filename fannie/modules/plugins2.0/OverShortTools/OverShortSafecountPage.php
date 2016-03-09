@@ -48,15 +48,16 @@ class OverShortSafecountPage extends FanniePage {
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
         $d1 = FormLib::get_form_value('date1');
         $d2 = FormLib::get_form_value('date2');
+        $store = FormLib::get('store');
     
         $dateStr = $d1." ".$d2;
         if ($d1 == $d2) $dateStr = $d1;
         switch($action){
         case 'loader':
-            echo $this->displayUI($dateStr);
+            echo $this->displayUI($dateStr, $store);
             break;
         case 'save':
-            echo $this->save($dateStr,
+            echo $this->save($dateStr, $store,
                 FormLib::get_form_value('changeOrder'),
                 FormLib::get_form_value('openSafeCount'),
                 FormLib::get_form_value('closeSafeCount'),
@@ -69,24 +70,25 @@ class OverShortSafecountPage extends FanniePage {
         }
     }
 
-    function save($dateStr,$changeOrder,$openSafeCount,$closeSafeCount,$buyAmount,$dropAmount,$depositAmount,$atmAmount){
-        $this->saveInputs($dateStr,'changeOrder',$changeOrder);
-        $this->saveInputs($dateStr,'openSafeCount',$openSafeCount);
-        $this->saveInputs($dateStr,'closeSafeCount',$closeSafeCount);
-        $this->saveInputs($dateStr,'buyAmount',$buyAmount);
-        $this->saveInputs($dateStr,'dropAmount',$dropAmount);
-        $this->saveInputs($dateStr,'depositAmount',$depositAmount);
-        $this->saveInputs($dateStr,'atm',$atmAmount);
+    function save($dateStr,$store,$changeOrder,$openSafeCount,$closeSafeCount,$buyAmount,$dropAmount,$depositAmount,$atmAmount){
+        $this->saveInputs($dateStr,$store,'changeOrder',$changeOrder);
+        $this->saveInputs($dateStr,$store,'openSafeCount',$openSafeCount);
+        $this->saveInputs($dateStr,$store,'closeSafeCount',$closeSafeCount);
+        $this->saveInputs($dateStr,$store,'buyAmount',$buyAmount);
+        $this->saveInputs($dateStr,$store,'dropAmount',$dropAmount);
+        $this->saveInputs($dateStr,$store,'depositAmount',$depositAmount);
+        $this->saveInputs($dateStr,$store,'atm',$atmAmount);
     
         return 'Saved';
     }
 
-    function saveInputs($dateStr,$row,$data){
+    function saveInputs($dateStr,$store,$row,$data){
         global $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
 
         $model = new DailyDepositModel($dbc);
         $model->dateStr($dateStr);
+        $model->storeID($store);
         $model->rowName($row);
 
         $temp = explode('|',$data);
@@ -104,7 +106,7 @@ class OverShortSafecountPage extends FanniePage {
         }
     }
 
-    function displayUI($dateStr){
+    function displayUI($dateStr, $store){
         global $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
 
@@ -135,6 +137,8 @@ class OverShortSafecountPage extends FanniePage {
 
         $model = new DailyDepositModel($dbc);
         $model->dateStr($dateStr);
+        var_dump($store);
+        $model->storeID($store);
         foreach($model->find() as $obj){
             if ($obj->rowName() == 'buyAmount')
                 continue;
@@ -181,8 +185,8 @@ class OverShortSafecountPage extends FanniePage {
         $dateArgs = array($dateStr);
         if (strstr($dateStr," ")){
             $dates = explode(" ",$dateStr);
-            $dateClause = ' date BETWEEN ? AND ?';
-            $dateArgs = array($dates[0],$dates[1]);
+            $dateClause = ' date BETWEEN ? AND ? AND storeID = ? ';
+            $dateArgs = array($dates[0],$dates[1], $store);
         }
         $countQ = "SELECT tender_type,sum(amt) from dailyCounts where tender_type in ('CA','CK','SCA') and $dateClause GROUP BY tender_type";
         $countP = $dbc->prepare($countQ);
@@ -256,7 +260,7 @@ class OverShortSafecountPage extends FanniePage {
         $accountableTotal -= (168*$bags);
 
         $fills = array('0.01'=>1,'0.05'=>2,'0.10'=>5,'0.25'=>10,'1.00'=>50,'5.00'=>50,'10.00'=>50);
-        $pars = array("0.01"=>50,"0.05"=>70,"0.10"=>250,"0.25"=>1100,"1.00"=>2330,"5.00"=>1000,"10.00"=>1300);
+        $pars = array("0.01"=>60,"0.05"=>120,"0.10"=>320,"0.25"=>1200,"1.00"=>2600,"5.00"=>1000,"10.00"=>1300);
 
         $ret .= "<tr class=\"color\"><th>Deposit Amount</th>";
         $sum = 0;
@@ -401,7 +405,9 @@ class OverShortSafecountPage extends FanniePage {
         $ret .= "<td id=buyAmountTotal>".array_sum($buyAmounts)."</td></tr>";
 
         $dlog = DTransactionsModel::selectDlog($startDate,$endDate);
-        $posTotalQ = "SELECT -1*sum(d.total) FROM $dlog as d WHERE ".str_replace(" date "," d.tdate ",$dateClause)." AND d.trans_subtype IN ('CA','CK')";
+        $dlogClause = str_replace(' date ', ' d.tdate ', $dateClause);
+        $dlogClause = str_replace(' storeID ', ' d.store_id ', $dlogClause);
+        $posTotalQ = "SELECT -1*sum(d.total) FROM $dlog as d WHERE ". $dlogClause . " AND d.trans_subtype IN ('CA','CK')";
         $posTotalP = $dbc->prepare($posTotalQ);   
         $posTotalR = $dbc->execute($posTotalP, $dateArgs);
         $posTotalW = $dbc->fetch_row($posTotalR);
@@ -423,9 +429,10 @@ class OverShortSafecountPage extends FanniePage {
                     WHEN tender_type = 'SCA' THEN -amt
                 ELSE 0 end) AS total
                 FROM dailyCounts WHERE date BETWEEN ? AND ?
+                    AND storeID=?
                 GROUP BY date";
         $countP = $dbc->prepare($countQ);
-        $countR = $dbc->execute($countP, array($startDate,$endDate));
+        $countR = $dbc->execute($countP, array($startDate,$endDate,$store));
         while($row = $dbc->fetch_row($countR)){
             $d = $row['date'];
             if (!isset($dailies[$d])) $dailies[$d] = array(0,0);
@@ -434,9 +441,10 @@ class OverShortSafecountPage extends FanniePage {
         $posQ = "SELECT YEAR(tdate),MONTH(tdate),DAY(tdate),
                 SUM(case when trans_subtype in ('CA','CK') then -total ELSE 0 END) as total
                 FROM $dlog AS d WHERE tdate BETWEEN ? AND ?
+                    AND d.store_id=?
                 GROUP BY YEAR(tdate),MONTH(tdate),DAY(tdate)";
         $posP = $dbc->prepare($posQ);
-        $posR = $dbc->execute($posP, array($startDate.' 00:00:00',$endDate.' 23:59:59'));
+        $posR = $dbc->execute($posP, array($startDate.' 00:00:00',$endDate.' 23:59:59',$store));
         while($row = $dbc->fetch_row($posR)){
             $d = $row[0]."-".str_pad($row[1],2,'0',STR_PAD_LEFT)."-".str_pad($row[2],2,'0',STR_PAD_LEFT);
             if (!isset($dailies[$d])) $dailies[$d] = array(0,0);
@@ -461,6 +469,7 @@ class OverShortSafecountPage extends FanniePage {
         $ret .= "</table>";
         $ret .= "<input type=hidden id=savedDate1 value=\"$startDate\" />";
         $ret .= "<input type=hidden id=savedDate2 value=\"$endDate\" />";
+        $ret .= "<input type=hidden id=savedStore value=\"$store\" />";
         foreach($denoms as $d){
             $ret .= "<input type=\"hidden\" class=\"denom\" value=\"$d\" />";
         }
@@ -537,6 +546,13 @@ class OverShortSafecountPage extends FanniePage {
         </tr>
         <tr>
             <th>End Date</th><td><input type=text id=endDate /></td>
+            <td>Store</td>
+            <td>
+            <?php
+            $stores = FormLib::storePicker('store', false);
+            echo $stores['html'];
+            ?>
+            </td>
         </tr>
         </table>
         </div>

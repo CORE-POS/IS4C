@@ -49,7 +49,8 @@ class PaycardEmvPage extends PaycardProcessPage
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
             } elseif ($input == "" || $input == 'MANUAL') {
-                if ($this->validate_amount()) {
+                list($valid, $msg) = PaycardLib::validateAmount();
+                if ($valid) {
                     $this->action = "onsubmit=\"return false;\"";    
                     $this->add_onload_command("emvSubmit();");
                     if ($input == 'MANUAL') {
@@ -85,14 +86,14 @@ class PaycardEmvPage extends PaycardProcessPage
     {
         $url = MiscLib::baseURL();
         echo '<script type="text/javascript" src="' . $url . '/js/singleSubmit.js"></script>';
+        echo '<script type="text/javascript" src="../js/emv.js"></script>';
         if (!$this->run_transaction) {
             return '';
         }
         $e2e = new MercuryE2E();
         ?>
 <script type="text/javascript">
-function emvSubmit()
-{
+function emvSubmit() {
     $('div.baseHeight').html('Processing transaction');
     // POST XML request to driver using AJAX
     var xmlData = '<?php echo json_encode($e2e->prepareDataCapAuth(CoreLocal::get('CacheCardType'), CoreLocal::get('paycard_amount'), $this->prompt)); ?>';
@@ -100,60 +101,10 @@ function emvSubmit()
         location = '<?php echo MiscLib::baseURL(); ?>gui-modules/boxMsg2.php';
         return false;
     }
-    $.ajax({
-        url: 'http://localhost:8999',
-        type: 'POST',
-        data: xmlData,
-        dataType: 'text',
-        success: function(resp) {
-            // POST result to PHP page in POS to
-            // process the result.
-            $('div.baseHeight').html('Finishing transaction');
-            var f = $('<form id="js-form"></form>');
-            f.append($('<input type="hidden" name="xml-resp" />').val(resp));
-            $('body').append(f);
-            $('#js-form').submit();
-        },
-        error: function(xhr, stat, err) {
-            // display error to user?
-            // go to dedicated error page?
-            $('div.baseHeight').html('Finishing transaction');
-            var f = $('<form id="js-form"></form>');
-            if (xhr.responseXml != null) {
-                f.append($('<input type="hidden" name="xml-resp" />').val(xhr.responseXml));
-            } else if (xhr.responseText != null) {
-                f.append($('<input type="hidden" name="xml-resp" />').val(xhr.responseText));
-            } else {
-                f.append($('<input type="hidden" name="xml-resp" />').val(''));
-            }
-            f.append($('<input type="hidden" name="err-info" />').val(JSON.stringify(xhr)+'-'+stat+'-'+err));
-            $('body').append(f);
-            $('#js-form').submit();
-        }
-    });
+    emv.submit(xmlData);
 }
 </script>
         <?php
-    }
-
-    function validate_amount()
-    {
-        $amt = CoreLocal::get("paycard_amount");
-        $due = CoreLocal::get("amtdue");
-        $type = CoreLocal::get("CacheCardType");
-        $cb = CoreLocal::get('CacheCardCashBack');
-        if ($type == 'EBTFOOD') {
-            $due = CoreLocal::get('fsEligible');
-        }
-        if( !is_numeric($amt) || abs($amt) < 0.005) {
-        } else if( $amt > 0 && $due < 0) {
-        } else if( $amt < 0 && $due > 0) {
-        } else if ( ($amt-$due)>0.005 && $type != 'DEBIT' && $type != 'EBTCASH'){
-        } else if ( ($amt-$due-0.005)>$cb && ($type == 'DEBIT' || $type == 'EBTCASH')){
-        } else {
-            return True;
-        }
-        return False;
     }
 
     function body_content()
@@ -165,31 +116,13 @@ function emvSubmit()
         $type = CoreLocal::get("paycard_type");
         $mode = CoreLocal::get("paycard_mode");
         $amt = CoreLocal::get("paycard_amount");
-        $due = CoreLocal::get("amtdue");
         $cb = CoreLocal::get('CacheCardCashBack');
         $balance_limit = CoreLocal::get('PaycardRetryBalanceLimit');
-        if ($type == 'EBTFOOD') {
-            $due = CoreLocal::get('fsEligible');
-        }
         if ($cb > 0) $amt -= $cb;
-        if( !is_numeric($amt) || abs($amt) < 0.005) {
-            echo PaycardLib::paycard_msgBox($type,"Invalid Amount: $amt",
-                "Enter a different amount","[clear] to cancel");
-        } else if( $amt > 0 && $due < 0) {
-            echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
-                "Enter a negative amount","[clear] to cancel");
-        } else if( $amt < 0 && $due > 0) {
-            echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
-                "Enter a positive amount","[clear] to cancel");
-        } else if ( ($amt-$due)>0.005 && $type != 'DEBIT' && $type != 'EBTCASH'){
-            echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
-                "Cannot exceed amount due","[clear] to cancel");
-        } else if ( ($amt-$due-0.005)>$cb && ($type == 'DEBIT' || $type == 'EBTCASH')){
-            echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
-                "Cannot exceed amount due plus cashback","[clear] to cancel");
-        } else if ($balance_limit > 0 && ($amt-$balance_limit) > 0.005) {
-            echo PaycardLib::paycard_msgBox($type,"Exceeds Balance",
-                "Cannot exceed card balance","[clear] to cancel");
+        list($valid, $validmsg) = PaycardLib::validateAmount();
+        if ($valid === false) {
+            echo PaycardLib::paycard_msgBox($type, "Invalid Amount: $amt",
+                $validmsg, "[clear] to cancel");
         } else if ($balance_limit > 0) {
             $msg = "Tender ".PaycardLib::paycard_moneyFormat($amt);
             if (CoreLocal::get("CacheCardType") != "") {

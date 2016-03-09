@@ -148,7 +148,7 @@ class LaneTextStringPage extends FannieRESTfulPage
         $this->addScript('lane-text.js');
         ob_start();
 ?>
-<form action=LaneTextStringPage.php onsubmit="saveString(this); return false;">
+<form action=LaneTextStringPage.php onsubmit="laneText.saveString(this); return false;">
 
 <p class="ichunk">Use this utility to enter and edit the lines of text that appear on
 receipts, the lane Welcome screen, and elsewhere.
@@ -160,7 +160,7 @@ receipts, the lane Welcome screen, and elsewhere.
 </p>
 <div class="form-group">
     <select class="form-control" name="type" class="form-control" 
-        onchange="loadStrings(this.value);">
+        onchange="laneText.loadStrings(this.value);">
     <option value="">Choose...</option>
 <?php
 foreach ($this->TRANSLATE as $short=>$long) {

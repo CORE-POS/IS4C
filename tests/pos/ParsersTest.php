@@ -112,40 +112,6 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('PluginList', $plugins);
     }
 
-    function testCaseDiscount()
-    {
-        $obj = new CaseDiscount();
-        $this->assertEquals(true, $obj->check('10CT4011'));
-
-        $out = $obj->parse('11CT4011');
-        $this->assertEquals('cdinvalid', $out);
-
-        CoreLocal::set('isStaff', 0);
-        CoreLocal::set('SSI', 0);
-        CoreLocal::set('isMember', 0);
-        $out = $obj->parse('10CT4011');
-        $this->assertEquals('4011', $out);
-        $this->assertEquals(5, CoreLocal::get('casediscount'));
-
-        CoreLocal::set('isMember', 1);
-        $out = $obj->parse('10CT4011');
-        $this->assertEquals('4011', $out);
-        $this->assertEquals(10, CoreLocal::get('casediscount'));
-
-        CoreLocal::set('SSI', 1);
-        $out = $obj->parse('10CT4011');
-        $this->assertEquals('cdSSINA', $out);
-
-        CoreLocal::set('isStaff', 1);
-        $out = $obj->parse('10CT4011');
-        $this->assertEquals('cdStaffNA', $out);
-
-        CoreLocal::set('isStaff', 0);
-        CoreLocal::set('SSI', 0);
-        CoreLocal::set('isMember', 0);
-        CoreLocal::set('casediscount', 0);
-    }
-
     function testMemStatusToggle()
     {
         $obj = new MemStatusToggle();
@@ -206,9 +172,13 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $t->parse('TETL');
         $this->assertEquals('=Totals', substr($out['main_frame'], -7));
         lttLib::clear();
+        CoreLocal::set('percentDiscount', 10);
+        CoreLocal::set('fsTaxExempt', 1);
         $out = $t->parse('FTTL');
         $this->assertNotEquals(0, strlen($out['output']));
         $this->assertEquals(true, $out['redraw_footer']);
+        CoreLocal::set('percentDiscount', 0);
+        CoreLocal::set('fsTaxExempt', 0);
         lttLib::clear();
         $out = $t->parse('TL');
         $this->assertEquals('/memlist.php', substr($out['main_frame'], -12));
@@ -220,6 +190,12 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
         $out = $t->parse('WICTL');
         $this->assertNotEquals(0, strlen($out['output']));
+        $this->assertEquals(true, Totals::requestInfoCallback('1234'));
+        lttLib::clear();
+
+        // just for coverage of omtr_ttl 
+        $out = $t->parse('MTL');
+        lttLib::clear();
     }
 
     function testTenderOut()
@@ -235,6 +211,15 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         PrehLib::deptkey(10, 100);
         $out = $to->parse('TO');
         $this->assertNotEquals(0, strlen($out['output']));
+
+        lttLib::clear();
+        CoreLocal::set('amtdue', 0);
+        $out = $to->parse('TO');
+        $this->assertEquals(1, CoreLocal::get('End'));
+        $this->assertEquals('full', $out['receipt']);
+        CoreLocal::set('End', 0);
+        $dbc = Database::tDataConnect();
+        $dbc->query('TRUNCATE TABLE localtranstoday');
     }
 
     function testTenderKey()
@@ -334,14 +319,25 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     function testReceiptCoupon()
     {
         $rc = new ReceiptCoupon();
-        $one = 'RC209901001';
-        $two = 'RC200001001';
+        $one = 'RC9901001'; // expire 2099-01-01
+        $two = 'RC0001001'; // expire 2000-01-01
         $this->assertEquals(true, $rc->check($one));
         $this->assertEquals(true, $rc->check($two));
         $out = $rc->parse($one);
         $this->assertNotEquals(0, strlen($out['output']));
         $out = $rc->parse($two);
         $this->assertNotEquals(0, strlen($out['output']));
+    }
+
+    function testEndOfShift()
+    {
+        $e = new EndOfShift();
+        $this->assertEquals(true, $e->check('ES'));
+        $out = $e->parse('ES');
+        lttLib::clear();
+        CoreState::transReset();
+        $dbc = Database::tDataConnect();
+        $dbc->query('TRUNCATE TABLE localtranstoday');
     }
 
     function testSteering()
@@ -359,12 +355,10 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
         $obj->check('PVASDF');
         $out = $obj->parse('PVASDF');
-        $this->assertEquals('/productlist.php', substr($out['main_frame'], -16));
-        $this->assertEquals('ASDF', CoreLocal::get('pvsearch'));
+        $this->assertEquals('/productlist.php?search=ASDF', substr($out['main_frame'], -28));
         $obj->check('TESTPV');
         $out = $obj->parse('TESTPV');
-        $this->assertEquals('/productlist.php', substr($out['main_frame'], -16));
-        $this->assertEquals('TEST', CoreLocal::get('pvsearch'));
+        $this->assertEquals('/productlist.php?search=TEST', substr($out['main_frame'], -28));
 
         CoreLocal::set('LastID', 1);
         $obj->check('UNDO');
@@ -704,17 +698,6 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $obj->parse('100CQ');
         $this->assertEquals(100, CoreLocal::get('tenderTotal'));
         $this->assertEquals('/checklist.php', substr($out['main_frame'], -14));
-    }
-
-    function testCaseDiscMsgs()
-    {
-        $obj = new CaseDiscMsgs();
-        $inputs = array('cdinvalid', 'cdStaffNA', 'cdSSINA');
-        foreach ($inputs as $input) {
-            $this->assertEquals(true, $obj->check($input));
-            $out = $obj->parse($input);
-            $this->assertNotEquals(0, strlen($out['output']));
-        }
     }
 
     function testAutoTare()
@@ -1079,14 +1062,82 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
     }
 
+    function testLineItemDiscount()
+    {
+        $ld = new LineItemDiscount();
+        $this->assertEquals(true, $ld->check('LD'));
+        $ld->parse('LD');
+        lttLib::clear();
+    }
+
+    function testDefaultTender()
+    {
+        $t = new DefaultTender();
+        $this->assertEquals(true, $t->check('123ZZ'));
+        $this->assertEquals(true, $t->check('CA'));
+        $this->assertInternalType('array', $t->parse('CA'));
+        $d = new DeptKey();
+        $d->parse('100DP10'); // avoid ending transaction
+        $this->assertInternalType('array', $t->parse('1CA'));
+        lttLib::clear();
+    }
+
     function testUPC()
     {
         $u = new UPC();
         foreach (array(UPC::SCANNED_PREFIX, UPC::MACRO_PREFIX, UPC::HID_PREFIX, UPC::GS1_PREFIX) as $prefix) {
             $this->assertEquals(true, $u->check($prefix . '4011'));
         }
-        $scaleUPC = '0020121000199';
+        $scaleUPC = '0XA0020121000199';
         $u->parse($scaleUPC);
+
+        $weighUPC = '4011';
+        // trigger wait-for-scale message
+        $u->parse($weighUPC);
+        CoreLocal::set('weight', 1);
+        CoreLocal::set('tare', 1.05);
+        // trigger invalid tare message
+        $u->parse($weighUPC);
+        // add weight item
+        CoreLocal::set('tare', 0.05);
+        $u->parse($weighUPC);
+        CoreLocal::set('lastWeight', 1);
+        $weighUPC = 'GS1~0010000000004011';
+        // trigger same-last-weight and cover GS1 prefix removal
+        $u->parse($weighUPC);
+        CoreLocal::set('weight', 0);
+        CoreLocal::set('lastWeight', 0);
+        CoreLocal::set('tare', 0.00);
+
+        $upce = array(
+            '0991230' => '09900000123',
+            '0991231' => '09910000123',
+            '0991232' => '09920000123',
+            '0999123' => '09990000012',
+            '0999914' => '09999000001',
+            '0999995' => '09999900005',
+        );
+        foreach ($upce as $e => $a) {
+            $this->assertEquals($a, $u->expandUPCE($e));
+        }
+
+        $this->assertEquals(false, UPC::requestInfoCallback('foo'));
+        $this->assertNotEquals(false, UPC::requestInfoCallback('20000101'));
+
+        // cover item-not-found
+        $this->assertInternalType('array', $u->parse('0041234512345'));
+        CoreLocal::set('tare', 0.05);
+        $this->assertInternalType('array', $u->parse('0XA0041234512345'));
+        CoreLocal::set('tare', 0.00);
+
+        lttLib::clear();
+    }
+
+    function testDriverStatus()
+    {
+        $ds = new DriverStatus();
+        $this->assertEquals(true, $ds->check('POS'));
+        $this->assertInternalType('array', $ds->parse('POS'));
     }
 
     // mostly for coverage's sake

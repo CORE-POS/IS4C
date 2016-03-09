@@ -55,6 +55,11 @@ public class SerialPortHandler {
         this.port = p;
         this.verbose_mode = 0;
     }
+
+    public string Status()
+    {
+        return this.GetType().Name + ": " + this.port;
+    }
     
     public void SetParent(DelegateForm p){ parent = p; }
     public void SetVerbose(int v){ verbose_mode = v; }

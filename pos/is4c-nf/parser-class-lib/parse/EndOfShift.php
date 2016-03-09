@@ -44,7 +44,7 @@ class EndOfShift extends Parser
             'trans_type' => 'S',
         ));
         Database::getsubtotals();
-        $chk = self::ttl();
+        $chk = PrehLib::ttl();
         if ($chk !== true) {
             $json['main_frame'] = $chk;
             return $json;

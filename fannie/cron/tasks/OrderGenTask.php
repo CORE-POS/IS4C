@@ -48,6 +48,12 @@ class OrderGenTask extends FannieTask
         $this->vendors = $v;
     }
 
+    private $store = 0;
+    public function setStore($s)
+    {
+        $this->store = $s;
+    }
+
     private function freshenCache($dbc)
     {
         $items = $dbc->query('
@@ -90,6 +96,9 @@ class OrderGenTask extends FannieTask
           the par value
         */
         list($inStr, $args) = $dbc->safeInClause($this->vendors);
+        if ($this->store != 0) {
+            $args[] = $this->store;
+        }
         $prep = $dbc->prepare('
             SELECT i.upc,
                 i.storeID,
@@ -99,6 +108,7 @@ class OrderGenTask extends FannieTask
                 INNER JOIN products AS p ON i.upc=p.upc AND i.storeID=p.store_id
             WHERE i.mostRecent=1
                 AND p.default_vendor_id IN (' . $inStr . ')
+                ' . ($this->store != 0 ? ' AND i.storeID=? ' : '') . '
             ORDER BY p.default_vendor_id, i.upc, i.storeID, i.countDate DESC');
         $res = $dbc->execute($prep, $args);
         $orders = array();
@@ -114,12 +124,13 @@ class OrderGenTask extends FannieTask
                   Allocate a purchase order to hold this vendors'
                   item(s)
                 */
-                if (!isset($orders[$row['vid']])) {
+                if (!isset($orders[$row['vid'].'-'.$row['storeID']])) {
                     $order = new PurchaseOrderModel($dbc);
                     $order->vendorID($row['vid']);
                     $order->creationDate(date('Y-m-d H:i:s'));
+                    $order->storeID($row['storeID']);
                     $poID = $order->save();
-                    $orders[$row['vid']] = $poID;
+                    $orders[$row['vid'].'-'.$row['storeID']] = $poID;
                 }
                 $itemR = $dbc->getRow($catalogP, array($row['upc'], $row['vid']));
 
@@ -159,7 +170,7 @@ class OrderGenTask extends FannieTask
                     $cases++;
                 }
                 $poi = new PurchaseOrderItemsModel($dbc);
-                $poi->orderID($orders[$row['vid']]);
+                $poi->orderID($orders[$row['vid'].'-'.$row['storeID']]);
                 $poi->sku($itemR['sku']);
                 $poi->quantity($cases);
                 $poi->unitCost($itemR['saleCost'] ? $itemR['saleCost'] : $itemR['cost']);

@@ -39,35 +39,11 @@ class SalesBatchTask extends FannieTask
         'weekday' => '*',
     );
 
-    public function run()
+    private function getSaleItems($dbc)
     {
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $now = date('Y-m-d 00:00:00');
-        $sale_upcs = array();
-
-        // ensure likecode items are mixmatch-able
-        if ($dbc->dbmsName() == 'mssql') {
-            $dbc->query("UPDATE products
-                SET mixmatchcode=convert(varchar,u.likecode+500)
-                FROM 
-                products AS p
-                INNER JOIN upcLike AS u
-                ON p.upc=u.upc");
-        } else {
-            $dbc->query("UPDATE products AS p
-                INNER JOIN upcLike AS u ON p.upc=u.upc
-                SET p.mixmatchcode=convert(u.likeCode+500,char)");
-        }
-
-        $likeP = $dbc->prepare('SELECT u.upc 
-                                FROM upcLike AS u
-                                    INNER JOIN products AS p ON u.upc=p.upc
-                                WHERE likeCode=?');
-        $product = new ProductsModel($dbc);
         $b_def = $dbc->tableDefinition('batches');
+        $t_def = $dbc->tableDefinition('batchList');
 
-        // lookup current batches
         $query = 'SELECT l.upc, 
                     l.batchID, 
                     l.pricemethod, 
@@ -85,7 +61,6 @@ class SalesBatchTask extends FannieTask
                     AND b.endDate >= ?
                   ORDER BY l.upc,
                     l.salePrice DESC';
-        $t_def = $dbc->tableDefinition('batchList');
         if (!isset($t_def['groupSalePrice'])) {
             $query = str_replace('l.groupSalePrice', 'NULL AS groupSalePrice', $query);
         }
@@ -97,9 +72,30 @@ class SalesBatchTask extends FannieTask
             $query = str_replace('WHERE', ' LEFT JOIN StoreBatchMap AS s ON b.batchID=s.batchID WHERE ', $query);
             $query = str_replace('SELECT', 'SELECT s.storeID,', $query);
         }
-        $prep = $dbc->prepare($query);
+
+        return $query;
+    }
+
+    public function run()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $now = date('Y-m-d 00:00:00');
+        $sale_upcs = array();
+
+        // ensure likecode items are mixmatch-able
+        $this->setLikeCodeMixMatch($dbc);
+
+        $likeP = $dbc->prepare('SELECT u.upc 
+                                FROM upcLike AS u
+                                    INNER JOIN products AS p ON u.upc=p.upc
+                                WHERE likeCode=?');
+        $product = new ProductsModel($dbc);
+
+        // lookup current batches
+        $prep = $dbc->prepare($this->getSaleItems($dbc));
         $result = $dbc->execute($prep, array($now, $now));
-        while ($row = $dbc->fetch_row($result)) {
+        while ($row = $dbc->fetchRow($result)) {
             // all items affected by this bathcList record
             // could be more than one in the case of likecodes
             $item_upcs = array();
@@ -167,7 +163,7 @@ class SalesBatchTask extends FannieTask
                     continue;
                 }
                 // list of UPCs that should be on sale
-                $sale_upcs[] = $upc;
+                $sale_upcs = $this->addSaleUPC($sale_upcs, $upc, $product->store_id());
 
                 $changed = false;
                 if ($product->special_price() != $special_price) {
@@ -230,32 +226,18 @@ class SalesBatchTask extends FannieTask
         // the query below
         if (count($sale_upcs) == 0) {
             $this->cronMsg('Notice: nothing is currently on sale', FannieLogger::WARNING);
-            $sale_upcs[] = 'notValidUPC';
+            $sale_upcs = array(1 => array('notValidUPC'));
         }
+
         // now look for anything on sale that should not be
         // and take those items off sale
-        $upc_in = '';
-        foreach($sale_upcs as $upc) {
-            $upc_in .= '?,';
-        }
-        $upc_in = substr($upc_in, 0, strlen($upc_in)-1);
-        $lookupQ = 'SELECT p.upc
-                    FROM products AS p
-                    WHERE upc NOT IN (' . $upc_in . ')
-                        AND (
-                            p.discounttype <> 0
-                            OR p.special_price <> 0
-                            OR p.specialpricemethod <> 0
-                            OR p.specialgroupprice <> 0
-                            OR p.specialquantity <> 0
-                        )';
-        $lookupP = $dbc->prepare($lookupQ);
-        $lookupR = $dbc->execute($lookupP, $sale_upcs);
-        while($lookupW = $dbc->fetch_row($lookupR)) {
-            $this->cronMsg('Taking ' . $lookupW['upc'] . ' off sale', FannieLogger::INFO);
+        $notOnSale = $this->notOnSaleItems($dbc, $sale_upcs);
+        foreach ($notOnSale as $lookupW) {
+            $this->cronMsg('Taking ' . $lookupW['upc']  . ':' . $lookupW['store_id'] . ' off sale', FannieLogger::INFO);
+
             $product->reset();
             if ($this->config->get('STORE_MODE') === 'HQ') {
-                $product->store_id($this->config->get('STORE_ID'));
+                $product->store_id($lookupW['store_id']);
             }
             $product->upc($lookupW['upc']);
             $product->discounttype(0);
@@ -271,6 +253,72 @@ class SalesBatchTask extends FannieTask
                 break;
             }
         }
+    }
+
+    private function setLikeCodeMixMatch($dbc)
+    {
+        if ($dbc->dbmsName() == 'mssql') {
+            $dbc->query("UPDATE products
+                SET mixmatchcode=convert(varchar,u.likecode+500)
+                FROM 
+                products AS p
+                INNER JOIN upcLike AS u
+                ON p.upc=u.upc");
+        } else {
+            $dbc->query("UPDATE products AS p
+                INNER JOIN upcLike AS u ON p.upc=u.upc
+                SET p.mixmatchcode=convert(u.likeCode+500,char)");
+        }
+    }
+
+    /**
+      Find all items that are on sale but not attached
+      to a current batch. $sale_upcs contains lists of
+      UPCs that are on sale at each store
+    */
+    private function notOnSaleItems($dbc, $sale_upcs)
+    {
+        $lookupBase = 'SELECT p.upc,p.store_id
+                    FROM products AS p
+                    WHERE (
+                            p.discounttype <> 0
+                            OR p.special_price <> 0
+                            OR p.specialpricemethod <> 0
+                            OR p.specialgroupprice <> 0
+                            OR p.specialquantity <> 0
+                        ) ';
+        $ret = array();
+        foreach ($sale_upcs as $storeID => $items) {
+            $args = array($storeID);    
+            list($inStr, $args) = $dbc->safeInClause($items, $args);
+            $lookupQ = $lookupBase . ' AND p.store_id=? AND p.upc NOT IN (' . $inStr . ')';
+            $lookupP = $dbc->prepare($lookupQ);
+            $lookupR = $dbc->execute($lookupP, $args);
+            while ($lookupW = $dbc->fetchRow($lookupR)) {
+                $ret[] = $lookupW;
+            }
+        }
+
+        return $ret;
+    }
+
+    /**
+      Build tiered array of sale UPCs by store
+      $sale_upcs
+        => storeID 1
+            => upc1, upc2, upc3, etc
+        => storeID 2
+            => upc1, upc2, upc3, etc
+        (etc)
+    */
+    private function addSaleUPC($sale_upcs, $upc, $storeID)
+    {
+        if (!isset($sale_upcs[$storeID])) {
+            $sale_upcs[$storeID] = array();
+        }
+        $sale_upcs[$storeID][] = $upc;
+
+        return $sale_upcs;
     }
 }
 

@@ -40,12 +40,11 @@ var vendorEditor = (function($) {
             url: 'VendorIndexPage.php',
             data: 'delivery=1&vID='+vid+'&'+data,
             method: 'post',
-            dataType: 'json',
-            success: function(resp){
-                if (resp.next && resp.nextNext) {
-                    $('#nextDelivery').html(resp.next);
-                    $('#nextNextDelivery').html(resp.nextNext);
-                }
+            dataType: 'json'
+        }).done(function(resp){
+            if (resp.next && resp.nextNext) {
+                $('#nextDelivery').html(resp.next);
+                $('#nextNextDelivery').html(resp.nextNext);
             }
         });
     };
@@ -56,13 +55,11 @@ var vendorEditor = (function($) {
             url: 'VendorIndexPage.php',
             type: 'POST',
             timeout: 5000,
-            data: 'name='+name+'&new=1',
-            error: function(){
-                window.alert('Error loading XML document');
-            },
-            success: function(resp){
-                window.top.location='VendorIndexPage.php?vid='+resp;
-            }
+            data: 'name='+name+'&new=1'
+        }).fail(function(){
+            window.alert('Error loading XML document');
+        }).done(function(){
+            window.top.location='VendorIndexPage.php?vid='+resp;
         });
     };
 
@@ -73,22 +70,21 @@ var vendorEditor = (function($) {
             url: 'VendorIndexPage.php',
             method: 'post',
             data: dataStr,
-            dataType: 'json',
-            success: function(resp){
-                var elem = $('<div></div>');
-                elem.addClass('alert');
-                elem.addClass('alert-dismissable');
-                if (resp.error) {
-                    elem.addClass('alert-danger');
-                } else {
-                    elem.addClass('alert-success');
-                }
-                var btn = $('<button type="button" class="close" data-dismiss="alert"></button>');
-                btn.append('<span aria-hidden="true">&times;</span><span class="sr-only">Close</span>');
-                elem.append(btn);
-                elem.append(resp.msg);
-                $('.form-alerts').append(elem);
+            dataType: 'json'
+        }).done(function(resp){
+            var elem = $('<div></div>');
+            elem.addClass('alert');
+            elem.addClass('alert-dismissable');
+            if (resp.error) {
+                elem.addClass('alert-danger');
+            } else {
+                elem.addClass('alert-success');
             }
+            var btn = $('<button type="button" class="close" data-dismiss="alert"></button>');
+            btn.append('<span aria-hidden="true">&times;</span><span class="sr-only">Close</span>');
+            elem.append(btn);
+            elem.append(resp.msg);
+            $('.form-alerts').append(elem);
         });
     };
 
@@ -98,11 +94,10 @@ var vendorEditor = (function($) {
             url: 'VendorIndexPage.php',
             method: 'post',
             data: dstr,
-            dataType: 'json',
-            success: function(resp) {
-                var elem = $('#vc-shipping');
-                showBootstrapPopover(elem, 0, resp.error);
-            }
+            dataType: 'json'
+        }).done(function(resp) {
+            var elem = $('#vc-shipping');
+            showBootstrapPopover(elem, 0, resp.error);
         });
     };
 
@@ -112,11 +107,10 @@ var vendorEditor = (function($) {
             url: 'VendorIndexPage.php',
             method: 'post',
             data: dstr,
-            dataType: 'json',
-            success: function(resp) {
-                var elem = $('#vc-discount');
-                showBootstrapPopover(elem, 0, resp.error);
-            }
+            dataType: 'json'
+        }).done(function(resp) {
+            var elem = $('#vc-discount');
+            showBootstrapPopover(elem, 0, resp.error);
         });
     };
 

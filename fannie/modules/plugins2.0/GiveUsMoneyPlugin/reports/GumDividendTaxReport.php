@@ -93,7 +93,7 @@ class GumDividendTaxReport extends FannieReportPage
             $record[] = $row['zip'];
             $record[] = sprintf('%.2f', $row['dividendAmount']);
             $record[] = 'XXX-XX-' . $row['maskedTaxIdentifier'];
-            $record[] = $this->unmask($row['maskedTaxIdentifier'], $privkey);
+            $record[] = $this->unmask($row['encryptedTaxIdentifier'], $privkey);
             $data[] = $record;
         }
 
@@ -105,8 +105,8 @@ class GumDividendTaxReport extends FannieReportPage
         if (!$privkey) {
             return 'No key';
         } elseif ($val !== 'n/a') {
-            $try = openssl_private_decrypt($row['encryptedTaxIdentifier'], $decrypted, $privkey);
-            return $try ? $decrypted : 'Error';
+            $try = openssl_private_decrypt($val, $decrypted, $privkey);
+            return $try ? $decrypted : openssl_error_string();
         } else {
             return 'n/a';
         }

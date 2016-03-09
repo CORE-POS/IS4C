@@ -2,7 +2,8 @@ function loader(){
 	$('#display').html('');
 	var date1 = $('#startDate').val();
 	var date2 = $('#endDate').val();
-	var args = 'action=loader&date1='+date1+'&date2='+date2;
+    var store = $('select[name=store]').val();
+	var args = 'action=loader&date1='+date1+'&date2='+date2+'&store='+store;
 	$.ajax({
 		url: 'OverShortSafecountPage.php',
 		data: args,
@@ -15,6 +16,7 @@ function loader(){
 function save(){
 	var date1 = $('#startDate').val();
 	var date2 = $('#endDate').val();
+    var store = $('#savedStore').val();
 
 	var changeOrder = saveChangeOrder();
 	var openSafeCount = saveOpenSafeCount();
@@ -24,7 +26,7 @@ function save(){
 	var depositAmount = saveRow('depositAmount');
 	var atmAmount = saveAtmAmount();
 
-	var args = 'action=save&date1='+date1+'&date2='+date2+'&changeOrder='+changeOrder+'&openSafeCount='+openSafeCount+'&closeSafeCount='+closeSafeCount+'&buyAmount='+buyAmount+'&dropAmount='+dropAmount+"&depositAmount="+depositAmount+'&atmAmount='+atmAmount;
+	var args = 'action=save&date1='+date1+'&date2='+date2+'&changeOrder='+changeOrder+'&openSafeCount='+openSafeCount+'&closeSafeCount='+closeSafeCount+'&buyAmount='+buyAmount+'&dropAmount='+dropAmount+"&depositAmount="+depositAmount+'&atmAmount='+atmAmount+'&store='+store;
 
 	$.ajax({
 		url: 'OverShortSafecountPage.php',

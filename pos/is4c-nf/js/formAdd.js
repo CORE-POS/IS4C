@@ -5,6 +5,5 @@ function formAdd(form_selector, input_name, input_value)
         .attr('type', 'hidden')
         .val(input_value);
     $(form_selector).append(inp);
-    console.log($(form_selector).length);
 }
 

@@ -196,13 +196,19 @@ class SpecialOrderTags extends FannieRESTfulPage
 
     public function get_view()
     {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
-        $TRANS = $this->config->get('TRANS_DB').$dbc->sep();
         $oids = FormLib::get('oids', array());
         if (!is_array($oids) || count($oids) == 0) {
             return '<div class="alert alert-danger">No order(s) selected</div>';
+        } else {
+            return $this->formTable($oids);
         }
+    }
+
+    private function formTable($oids)
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $TRANS = $this->config->get('TRANS_DB').$dbc->sep();
         ob_start();
         echo '<form method="get">';
         echo '<input type="checkbox" id="sa" onclick="toggleChecked(this.checked);" />';
@@ -220,9 +226,11 @@ class SpecialOrderTags extends FannieRESTfulPage
             FROM {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id > 0");
         foreach ($oids as $oid) {
             $row = $dbc->getRow($infoP, array($oid));
-            printf('<tr><td colspan="2">Order #%d (%s, %s)</td><td>Amt: $%.2f</td>
-                <td>Items: %d</td><td>&nbsp;</td></tr>',
-                $oid,$row['orderDate'],$row['name'],$row['value'],$row['items']);
+            if ($row) {
+                printf('<tr><td colspan="2">Order #%d (%s, %s)</td><td>Amt: $%.2f</td>
+                    <td>Items: %d</td><td>&nbsp;</td></tr>',
+                    $oid,$row['orderDate'],$row['name'],$row['value'],$row['items']);
+            }
 
             $res = $dbc->execute($itemP, array($oid));
             while ($row = $dbc->fetch_row($res)){
@@ -259,6 +267,7 @@ class SpecialOrderTags extends FannieRESTfulPage
         ob_start();
         $phpunit->assertEquals(false, $this->get_toIDs_handler());
         $pdf = ob_get_clean();
+        $phpunit->assertNotEquals(0, strlen($this->formTable(array(1))));
     }
 }
 

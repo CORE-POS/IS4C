@@ -134,11 +134,15 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
             LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
             WHERE 1=1 $filter
-            GROUP BY p.order_id";
+            GROUP BY p.order_id
+            ORDER BY p.order_id DESC";
         $bothP = $dbc->prepare($bothQ);
         $bothR = $dbc->execute($bothP, $args);
         while ($row = $dbc->fetchRow($bothR)) {
             $valid_ids[$row['order_id']] = true;
+            if (count($valid_ids) > 1000) {
+                break;
+            }
         }
 
         /**
@@ -151,10 +155,14 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
                 SELECT o.specialOrderID 
                 FROM {$TRANS}SpecialOrders AS o
                 WHERE o.noteSuperID IN (?)
-                GROUP BY o.specialOrderID");
+                GROUP BY o.specialOrderID
+                ORDER BY o.specialOrderID DESC");
             $noteR = $dbc->execute($noteP, array($buyer));
             while ($row = $dbc->fetchRow($noteR)) {
                 $valid_ids[$row['specialOrderID']] = true;
+                if (count($valid_ids) > 1000) {
+                    break;
+                }
             }
         }
 
@@ -178,21 +186,24 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
         $items = array();
         $suppliers = array();
         while ($itemsW = $dbc->fetchRow($itemsR)) {
-            if (!isset($items[$itemsW['order_id']])) {
-                $items[$itemsW['order_id']] = $itemsW['description'];
-            } else {
-                $items[$itemsW['order_id']] .= "; ".$itemsW['description'];
-            }
+            $items = $this->appendByID($items, $itemsW['order_id'], $itemsW['description']);
             if (!empty($itemsW['mixMatch'])) {
-                if (!isset($suppliers[$itemsW['order_id']])) {
-                    $suppliers[$itemsW['order_id']] = $itemsW['mixMatch'];
-                } else {
-                    $suppliers[$itemsW['order_id']] .= "; ".$itemsW['mixMatch'];
-                }
+                $suppliers = $this->appendByID($suppliers, $itemsW['order_id'], $itemsW['mixMatch']);
             }
         }
 
         return array($items, $suppliers);
+    }
+
+    private function appendByID($arr, $id, $text)
+    {
+        if (!isset($arr[$id])) {
+            $arr[$id] = $text;
+        } else {
+            $arr[$id] .= '; ' . $text;
+        }
+
+        return $arr;
     }
 
     protected function limitTextSize($items, $prefix, $lenLimit)
@@ -462,22 +473,20 @@ function applyMemNum(n){
 }
 function updateStatus(oid,val){
     $.ajax({
-    url: 'ajax-calls.php',
-    type: 'post',
-    data: 'action=UpdateStatus&orderID='+oid+'&val='+val,
-    cache: false,
-    success: function(resp){
+        url: 'ajax-calls.php',
+        type: 'post',
+        data: 'action=UpdateStatus&orderID='+oid+'&val='+val,
+        cache: false
+    }).done(function(resp){
         $('#statusdate'+oid).html(resp);    
-    }
     });
 }
 function togglePrint(username,oid){
     $.ajax({
-    url: 'ajax-calls.php',
-    type: 'post',
-    data: 'action=UpdatePrint&orderID='+oid+'&user='+username,
-    cache: false,
-    success: function(resp){}
+        url: 'ajax-calls.php',
+        type: 'post',
+        data: 'action=UpdatePrint&orderID='+oid+'&user='+username,
+        cache: false
     });
 }
 JAVASCRIPT;
@@ -498,6 +507,15 @@ JAVASCRIPT;
         $form->f3 = '';
         $this->setForm($form);
         $phpunit->assertNotEquals(0, strlen($this->get_view()));
+
+        $items = array(1=>'foobar');
+        $long = $this->limitTextSize($items, 'foo', 10);
+        $short = $this->limitTextSize($items, 'foo', 3);
+        $phpunit->assertNotEquals($long, $short);
+
+        $arr = $this->appendByID(array(), 1, 'foo');
+        $arr = $this->appendByID($arr, 1, 'foo');
+        $phpunit->assertEquals('foo; foo', $arr[1]);
     }
 }
 

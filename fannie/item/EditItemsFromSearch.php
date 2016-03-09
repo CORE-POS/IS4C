@@ -303,8 +303,10 @@ class EditItemsFromSearch extends FannieRESTfulPage
         */
         $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.vendorField\');">';
         $ret .= '<option value=""></option><option>DIRECT</option>';
-        $vendors = new VendorsModel($dbc);
-        $ret .= $vendors->toOptions();
+        $res = $dbc->query('SELECT vendorName FROM vendors ORDER BY vendorName');
+        while ($row = $dbc->fetchRow($res)) {
+            $ret .= '<option>' . $row['vendorName'] . '</option>';
+        }
         $ret .= '</select></td>';
 
         $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.deptSelect\');">';

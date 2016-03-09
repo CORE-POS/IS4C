@@ -107,29 +107,36 @@ class ViewPurchaseOrders extends FannieRESTfulPage
     protected function get_orders($placed)
     {
         $dbc = $this->connection;
+        $store = FormLib::get('store', 0);
 
         $month = FormLib::get('month');
         $year = FormLib::get('year');
         $start = date('Y-m-01 00:00:00', mktime(0, 0, 0, $month, 1, $year));
         $end = date('Y-m-t 23:59:59', mktime(0, 0, 0, $month, 1, $year));
+        $args = array($placed, $start, $end);
         
         $query = 'SELECT p.orderID, p.vendorID, MIN(creationDate) as creationDate,
                 MIN(placedDate) as placedDate, COUNT(i.orderID) as records,
                 SUM(i.unitCost*i.caseSize*i.quantity) as estimatedCost,
                 SUM(i.receivedTotalCost) as receivedCost, v.vendorName,
                 MAX(i.receivedDate) as receivedDate,
-                p.vendorInvoiceID
+                MAX(p.vendorInvoiceID) AS vendorInvoiceID,
+                MAX(s.description) AS storeName
             FROM PurchaseOrder as p
                 LEFT JOIN PurchaseOrderItems AS i ON p.orderID = i.orderID
                 LEFT JOIN vendors AS v ON p.vendorID=v.vendorID
+                LEFT JOIN Stores AS s ON p.storeID=s.storeID
             WHERE placed=? 
                 AND creationDate BETWEEN ? AND ? ';
         if (!$this->show_all) {
             $query .= 'AND userID=? ';
         }
+        if ($store != 0) {
+            $query .= ' AND p.storeID=? ';
+            $args[] = $store;
+        }
         $query .= 'GROUP BY p.orderID, p.vendorID, v.vendorName 
                    ORDER BY MIN(creationDate) DESC';
-        $args = array($placed, $start, $end);
         if (!$this->show_all) $args[] = FannieAuth::getUID($this->current_user);
 
         $prep = $dbc->prepare($query);
@@ -137,7 +144,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
 
         $ret = '<div class="table-responsive">
             <table class="table table-striped table-bordered tablesorter">';
-        $ret .= '<thead><tr><th>Created</th><th>Invoice#</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
+        $ret .= '<thead><tr><th>Created</th><th>Invoice#</th><th>Store</th><th>Vendor</th><th># Items</th><th>Est. Cost</th>
             <th>Placed</th><th>Received</th><th>Rec. Cost</th></tr></thead><tbody>';
         $count = 1;
         while ($row = $dbc->fetchRow($result)) {
@@ -152,10 +159,11 @@ class ViewPurchaseOrders extends FannieRESTfulPage
     {
         return sprintf('<tr><td><a href="ViewPurchaseOrders.php?id=%d">%s</a></td>
                 <td>%s</td>
+                <td>%s</td>
                 <td>%s</td><td>%d</td><td>%.2f</td>
                 <td>%s</td><td>%s</td><td>%.2f</td></tr>',
                 $row['orderID'],
-                $row['creationDate'], $row['vendorInvoiceID'], $row['vendorName'], $row['records'],
+                $row['creationDate'], $row['vendorInvoiceID'], $row['storeName'], $row['vendorName'], $row['records'],
                 $row['estimatedCost'],
                 ($placed == 1 ? $row['placedDate'] : '&nbsp;'),
                 (!empty($row['receivedDate']) ? $row['receivedDate'] : '&nbsp;'),
@@ -263,7 +271,13 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $vendor->vendorID($order->vendorID());
         $vendor->load();
 
+        $store = new StoresModel($dbc);
+        $store->storeID($order->storeID());
+        $store->load();
+
         $ret = '<p><div class="form-inline">';
+        $ret .= '<b>Store</b>: '.$store->description();
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<b>Vendor</b>: '.$vendor->vendorName();
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<b>Created</b>: '.$order->creationDate();
@@ -307,8 +321,11 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             $ret .= '<a class="btn btn-default"
                 href="ManualPurchaseOrderPage.php?id=' . $order->vendorID() . '&adjust=' . $this->id . '">Edit Order</a>';
             $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<a class="btn btn-default id="receiveBtn"
+            $ret .= '<a class="btn btn-default" id="receiveBtn"
                 href="ViewPurchaseOrders.php?id=' . $this->id . '&receive=1">Receive Order</a>';
+            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+            $ret .= '<a class="btn btn-default" id="receiveBtn"
+                href="TransferPurchaseOrder.php?id=' . $this->id . '">Transfer Order</a>';
             $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
             $ret .= '<a class="btn btn-default"
                 href="ViewPurchaseOrders.php?id=' . $this->id . '&recode=1">Alter Codings</a>';
@@ -585,6 +602,11 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         else
             $ret .= '<option selected value="0">My Orders</option><option value="1">All Orders</option>';
         $ret .= '</select>';
+
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+
+        $stores = FormLib::storePicker();
+        $ret .= str_replace('<select ', '<select id="storeID" onchange="fetchOrders();" ', $stores['html']);
 
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         

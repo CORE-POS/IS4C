@@ -140,8 +140,8 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
         }
 
         $con->query('DELETE FROM departments WHERE dept_no > 10');
-        $con->query('DELETE FROM originCountry WHERE countryID > 10');
-        $con->query('DELETE FROM originStateProv WHERE stateProvID > 10');
+        $con->query('DELETE FROM originCountry WHERE countryID > 5');
+        $con->query('DELETE FROM originStateProv WHERE stateProvID > 5');
         $con->query('DELETE FROM custdata WHERE CardNo > 1000');
     }
 }

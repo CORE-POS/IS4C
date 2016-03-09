@@ -131,7 +131,7 @@ class WfcAbandonEquityImport extends \COREPOS\Fannie\API\FannieUploadPage
             $this->termAccount($dbc, $card_no, $custdata, $meminfo);
 
             if (isset($data[$indexes['note']]) && !empty($data[$indexes['note']])) {
-                $this->saveNote($dbc, $card_no, $indexes['note']);
+                $this->saveNote($dbc, $card_no, $data[$indexes['note']]);
             }
 
             $trans_id = 1;

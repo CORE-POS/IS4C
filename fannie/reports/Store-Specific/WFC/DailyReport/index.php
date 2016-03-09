@@ -75,7 +75,7 @@ $OP_DB = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_OP_DB.'.dbo.' : $FANNIE_OP_DB.'.
 $TRANS = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_TRANS_DB.'.dbo.' : $FANNIE_TRANS_DB.'.';
 
 $tenderQ = $dbc->prepare("SELECT 
-CASE WHEN d.trans_subtype IN ('CC','AX') then 'Credit Card' ELSE t.TenderName END as TenderName,
+CASE WHEN d.trans_subtype IN ('CC','AX') then 'Credit Card' WHEN description='WIC' THEN 'WIC' ELSE t.TenderName END as TenderName,
 -sum(d.total) as total, COUNT(d.total)
 FROM $dlog as d ,{$OP_DB}tenders as t 
 WHERE d.tdate BETWEEN ? AND ?
@@ -83,7 +83,7 @@ AND d.trans_status <>'X'
 AND d.trans_subtype = t.TenderCode
 and d.total <> 0
 AND " . DTrans::isStoreID($store, 'd') . "
-GROUP BY CASE WHEN d.trans_subtype IN ('CC','AX') then 'Credit Card' ELSE t.TenderName END");
+GROUP BY CASE WHEN d.trans_subtype IN ('CC','AX') then 'Credit Card' WHEN description='WIC' THEN 'WIC' ELSE t.TenderName END");
 $tenderR = $dbc->execute($tenderQ, $store_dates);
 $tenders = WfcLib::getTenders();
 $mad = array(0.0,0);

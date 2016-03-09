@@ -23,19 +23,18 @@ function reCalcSRPs() {
     $.ajax({
         type: 'post',
         dataType: 'json',
-        data: info,
-        success: function(resp) {
-            for (var i=0; i<resp.length; i++) {
-                var item = resp[i];
-                $('tr.batchItem').each(function(){
-                    var upc = $(this).find('.itemUPC').val(); 
-                    if (upc == item.upc) {
-                        $(this).find('.itemSRP').val(item.srp);
+        data: info
+    }).done(function(resp) {
+        for (var i=0; i<resp.length; i++) {
+            var item = resp[i];
+            $('tr.batchItem').each(function(){
+                var upc = $(this).find('.itemUPC').val(); 
+                if (upc == item.upc) {
+                    $(this).find('.itemSRP').val(item.srp);
 
-                        return false;
-                    }
-                });
-            }
+                    return false;
+                }
+            });
         }
     });
 }

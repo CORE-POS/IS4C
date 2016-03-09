@@ -45,8 +45,8 @@ class RecentSalesReport extends FannieReportPage
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
-    private $upc;
-    private $likecode;
+    private $upc = '';
+    private $likecode = '';
 
     public function preprocess() {
         // custom: one of the fields is required but not both
@@ -75,8 +75,15 @@ class RecentSalesReport extends FannieReportPage
         $prod->load();
         $ret = array('Recent Sales For ' . $prod->upc() . ' ' . $prod->description() . '<br />');
         if ($this->report_format == 'html') {
+            $stores = FormLib::storePicker();
+            $ret[] = $stores['html'] . ' | ';
             $ret[] = sprintf('<a href="../ItemLastQuarter/ItemLastQuarterReport.php?upc=%s">Weekly Sales Details</a> | ', $prod->upc());
             $ret[] = sprintf('<a href="../ItemOrderHistory/ItemOrderHistoryReport.php?upc=%s">Recent Order History</a>', $prod->upc());
+            $this->addScript('../../src/javascript/jquery.js');
+            $this->addScript('recentSales.js');
+            $field = ($this->likecode !== '' ? 'likecode' : 'upc');
+            $val = ($this->likecode !== '' ? $this->likecode : $this->upc);
+            $this->addOnloadCommand("recentSales.bindSelect('{$field}', '{$val}');\n");
         }
 
         return $ret;
@@ -121,8 +128,9 @@ class RecentSalesReport extends FannieReportPage
         if ($this->likecode !== '') {
             list($where, $item) = array('u.likeCode = ?', $this->likecode);
         }
+        $store = FormLib::get('store', 0);
 
-        $qtyQ = "SELECT SUM(CASE WHEN trans_status='M' THEN 0 ELSE quantity END) as qty,
+        $qtyQ = "SELECT " . DTrans::sumQuantity('d') . " AS qty,
             SUM(total) as ttl
             FROM $dlog as d ";
         if ($this->likecode !== '') {
@@ -130,12 +138,13 @@ class RecentSalesReport extends FannieReportPage
         }
         $qtyQ .= "WHERE $where
             AND tdate < " . $dbc->curdate() . "
-            AND tdate BETWEEN ? AND ?";
+            AND tdate BETWEEN ? AND ? 
+            AND ". DTrans::isStoreID($store, 'd');
         $prep = $dbc->prepare($qtyQ);
         
         $data = array();
         foreach ($dates as $label => $span) {
-            $args = array($item, $span[0].' 00:00:00', $span[1].' 23:59:59');
+            $args = array($item, $span[0].' 00:00:00', $span[1].' 23:59:59', $store);
             $row = $dbc->getRow($prep, $args);
             if ($row === false) {
                 $row = array('qty'=>0, 'ttl'=>0);

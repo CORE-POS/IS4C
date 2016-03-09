@@ -57,6 +57,7 @@ class SaItemList extends SaHandheldPage
             return true;
         } elseif (FormLib::get('export') === '1') {
             echo $this->exportList();
+            $this->enable_linea=false;
             return false;
         }
 

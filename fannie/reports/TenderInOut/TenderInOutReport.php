@@ -112,7 +112,7 @@ class TenderInOutReport extends FannieReportPage
 <form method = "get" action="TenderInOutReport.php">
 <div class="col-sm-4">
     <div class="form-group"> 
-        <label>Reason</label>
+        <label>Tender</label>
         <select name="tendercode" class="form-control">
             <?php foreach($tenders as $code=>$name) {
                 printf('<option value="%s">%s</option>',$code,$name);

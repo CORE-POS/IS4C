@@ -97,37 +97,5 @@ may be used for custom settings. Currently defined values:
     3 => Any custdata account *except* the default non-member account
         ';
     }
-
-    protected function hookAddColumnmargin()
-    {
-        if ($this->connection->table_exists('deptMargin')) {
-            $dataR = $this->connection->query('SELECT dept_ID, margin FROM deptMargin');
-            $tempModel = new DepartmentsModel($this->connection);
-            while($dataW = $this->connection->fetch_row($dataR)) {
-                $tempModel->reset();
-                $tempModel->dept_no($dataW['dept_ID']);
-                if ($tempModel->load()) {
-                    $tempModel->margin($dataW['margin']);
-                    $tempModel->save();
-                }
-            }
-        }
-    }
-
-    protected function hookAddColumnsalesCode()
-    {
-        if ($this->connection->table_exists('deptSalesCodes')) {
-            $dataR = $this->connection->query('SELECT dept_ID, salesCode FROM deptSalesCodes');
-            $tempModel = new DepartmentsModel($this->connection);
-            while($dataW = $this->connection->fetch_row($dataR)) {
-                $tempModel->reset();
-                $tempModel->dept_no($dataW['dept_ID']);
-                if ($tempModel->load()) {
-                    $tempModel->salesCode($dataW['salesCode']);
-                    $tempModel->save();
-                }
-            }
-        }
-    }
 }
 

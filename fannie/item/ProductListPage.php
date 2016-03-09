@@ -233,38 +233,34 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             dstr += '&brand='+encodeURIComponent(brand);
             dstr += '&store_id='+store_id;
             $.ajax({
-            url: 'ProductListPage.php',
-            data: dstr,
-            cache: false,
-            type: 'post',
-            success: function(data){
-            }
+                url: 'ProductListPage.php',
+                data: dstr,
+                cache: false,
+                type: 'post'
             });
         }
         function deleteCheck(upc,desc){
             $.ajax({
-            url: 'ProductListPage.php',
-            data: 'ajax=deleteCheck&upc='+upc+'&desc='+desc,
-            dataType: 'json',
-            cache: false,
-            type: 'post',
-            success: function(data){
+                url: 'ProductListPage.php',
+                data: 'ajax=deleteCheck&upc='+upc+'&desc='+desc,
+                dataType: 'json',
+                cache: false,
+                type: 'post'
+            }).done(function(data) {
                 if (data.alertBox && data.upc && data.enc_desc){
                     if (confirm(data.alertBox)){
                         $.ajax({
-                        url: 'ProductListPage.php',
-                        data: 'ajax=doDelete&upc='+upc+'&desc='+data.enc_desc,
-                        cache: false,
-                        type: 'post',
-                        success: function(data){
+                            url: 'ProductListPage.php',
+                            data: 'ajax=doDelete&upc='+upc+'&desc='+data.enc_desc,
+                            cache: false,
+                            type: 'post'
+                        }).done(function(data){
                             $('#' + upc).remove();
-                        }
                         });
                     }
-                }
-                else
+                } else {
                     alert('Data error: cannot delete');
-            }
+                }
             });
         }
         <?php if ($this->canEditItems) { ?>
@@ -484,8 +480,6 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         }
         $ret .= date("F j, Y, g:i a").'<br />'; 
         
-        $page_url = sprintf('ProductListPage.php?supertype=%s&deptStart=%s&deptEnd=%s&deptSub=%s&manufacturer=%s&mtype=%s&vendor=%d',
-                $supertype, $deptStart, $deptEnd, $super, $manufacturer, $mtype, $vendorID);
         if (!$this->excel) {
             $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post" id="excel-form">
                 <input type="hidden" name="supertype" value="' . $supertype . '" />
@@ -497,6 +491,11 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 <input type="hidden" name="vendor" value="' . $vendorID . '" />
                 <input type="hidden" name="inUse" value="' . $inUse . '" />
                 <input type="hidden" name="excel" value="yes" />';
+            if (is_array($deptMulti)) {
+                foreach ($deptMulti as $d) {
+                    $ret .= '<input type="hidden" name="departments[]" value="' . $d . '" />';
+                }
+            }
             if (is_array($subDepts)) {
                 foreach ($subDepts as $s) {
                     $ret .= '<input type="hidden" name="subdepts[]" value="' . $s . '" />';
@@ -551,32 +550,29 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             the lookup type **/
         $query .= ' WHERE 1=1 ';
         $args = array();
-        if ($supertype == 'dept' && $super !== '') {
-            if ($super >= 0) {
+        if ($supertype == 'dept') {
+            // superdept requriements, if any
+            if ($super !== '' && $super >= 0) {
                 $query .= ' AND s.superID=? ';
                 $args = array($super);
             } elseif ($super == -2) {
                 $query .= ' AND s.superID <> 0 ';
             }
+
+            // department requirements
             if ($deptStart != 0 && $deptEnd != 0) {
                 $query .= ' AND i.department BETWEEN ? AND ? ';
                 $args[] = $deptStart;
                 $args[] = $deptEnd;
             } elseif (count($deptMulti) > 0) {
-                $query .= ' AND i.department IN (';
-                foreach ($deptMulti as $d) {
-                    $query .= '?,';
-                    $args[] = $d;
-                }
-                $query = substr($query, 0, strlen($query)-1) . ')';
+                list($inStr, $args) = $dbc->safeInClause($deptMulti, $args);
+                $query .= ' AND i.department IN (' . $inStr . ') ';
             }
+
+            // subdept requirements, if any
             if (is_array($subDepts) && count($subDepts) > 0) {
-                $query .= ' AND i.subdept IN (';
-                foreach ($subDepts as $s) {
-                    $query .= '?,';
-                    $args[] = $s;
-                }
-                $query = substr($query, 0, strlen($query)-1) . ')';
+                list($inStr, $args) = $dbc->safeInClause($subDepts, $args);
+                $query .= ' AND i.subdept IN (' . $inStr . ') ';
             }
         } elseif ($supertype == 'manu' && $mtype == 'prefix') {
             $query .= ' AND i.upc LIKE ? ';
@@ -588,29 +584,12 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $query .= ' AND (i.default_vendor_id=? OR z.vendorID=?) ';
             $args = array($vendorID, $vendorID);
         } elseif ($supertype == 'upc') {
-            $inp = '';
-            foreach ($upc_list as $u) {
-                $inp .= '?,';
-                $args[] = $u;
-            }
-            $inp = substr($inp, 0, strlen($inp)-1);
-            $query .= ' AND i.upc IN (' . $inp . ') ';
+            list($inStr, $args) = $dbc->safeInClause($upc_list, $args);
+            $query .= ' AND i.upc IN (' . $inStr . ') ';
         } else {
-            $query .= ' AND i.department BETWEEN ? AND ? ';
-            $args = array($deptStart, $deptEnd);
-            if (is_array($subDepts) && count($subDepts) > 0) {
-                $query .= ' AND i.subdept IN (';
-                foreach ($subDepts as $s) {
-                    $query .= '?,';
-                    $args[] = $s;
-                }
-            }
+            return 'Unknown search method';
         }
-        if ($inUse == 1) {
-            $query .= ' AND i.inUse=1 ';
-        } else {
-            $query .= ' AND i.inUse=0 ';
-        }
+        $query .= ' AND i.inUse=' . ($inUse==1 ? 1 : 0) . ' ';
         if ($store > 0) {
             $query .= ' AND i.store_id=? ';
             $args[] = $store;
@@ -624,7 +603,9 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
 
-        if ($result === false || $dbc->numRows($result) == 0) {
+        if ($result === false) {
+            return 'Search failed. Please see the system administrator and/or the log.';
+        } elseif ($dbc->num_rows($result) == 0) {
             return 'No data found!';
         }
 

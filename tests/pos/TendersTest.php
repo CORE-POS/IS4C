@@ -178,6 +178,26 @@ class TendersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, $st->errorCheck());
         CoreLocal::set('amtdue', 0);
     }
+    
+    function testGiftCard()
+    {
+        $st = new GiftCardTender('GD', 5);
+        CoreLocal::set('amtdue', 1);
+        $this->assertNotEquals(0, strlen($st->errorCheck()));
+        CoreLocal::set('amtdue', 8);
+        $this->assertEquals(true, $st->errorCheck());
+        CoreLocal::set('amtdue', 0);
+    }
+
+    function testCreditCard()
+    {
+        $st = new CreditCardTender('GD', 5);
+        CoreLocal::set('amtdue', 1);
+        $this->assertNotEquals(0, strlen($st->errorCheck()));
+        CoreLocal::set('amtdue', 8);
+        $this->assertEquals(true, $st->errorCheck());
+        CoreLocal::set('amtdue', 0);
+    }
 
     function testManagerApproveTender()
     {
@@ -201,5 +221,52 @@ class TendersTest extends PHPUnit_Framework_TestCase
     {
         $obj = new DisabledTender('CA', 1);
         $this->assertNotEquals(0, strlen($obj->errorCheck()));
+    }
+
+    function testGiftCert()
+    {
+        $obj = new GiftCertificateTender('TC', 1);
+        CoreLocal::set('enableFranking', 1);
+        CoreLocal::set('msgrepeat', 0);
+        $ret = $obj->preReqCheck();
+        $this->assertEquals(true, $ret !== true);
+        CoreLocal::set('enableFranking', 0);
+        CoreLocal::set('msgrepeat', 0);
+    }
+
+    function testCheck()
+    {
+        $obj = new CheckTender('CK', 1);
+        CoreLocal::set('enableFranking', 1);
+        CoreLocal::set('msgrepeat', 0);
+        $ret = $obj->preReqCheck();
+        $this->assertEquals(true, $ret !== true);
+        CoreLocal::set('enableFranking', 0);
+        CoreLocal::set('msgrepeat', 0);
+
+        CoreLocal::set('isMember', 1);
+        CoreLocal::set('dollarOver', 0);
+        CoreLocal::set('amtdue', 0.50);
+        $this->assertNotEquals(0, strlen($obj->ErrorCheck()));
+        CoreLocal::set('isMember', 0);
+        CoreLocal::set('amtdue', 0);
+    }
+
+    function testFoodstamp()
+    {
+        $obj = new FoodstampTender('EF', 10);
+        CoreLocal::set('fntlflag', 1);
+        CoreLocal::set('fsEligible', 1);
+        $this->assertNotEquals(0, strlen($obj->ErrorCheck()));
+        CoreLocal::set('fsEligible', 15);
+        $this->assertEquals(true, $obj->ErrorCheck());
+        $obj = new FoodstampTender('EF', -10);
+        $this->assertNotEquals(0, strlen($obj->ErrorCheck()));
+        CoreLocal::set('fsEligible', -9);
+        $this->assertNotEquals(0, strlen($obj->ErrorCheck()));
+        CoreLocal::set('fsEligible', -10);
+        $this->assertEquals(true, $obj->ErrorCheck());
+        CoreLocal::set('fntlflag', 0);
+        CoreLocal::set('fsEligible', 0);
     }
 }

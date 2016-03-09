@@ -140,7 +140,7 @@ class LikeCodeModule extends ItemModule
         $upcR = $dbc->execute($upcP,array($likecode,$upc));
         while ($upcW = $dbc->fetchRow($upcR)) {
             $this->updateItem($dbc, $upcW['upc'], $likecode, $values);
-            updateProductAllLanes($upcW['upc']);
+            COREPOS\Fannie\API\data\ItemSync::sync($upcW['upc']);
         }
 
         return true;
@@ -220,15 +220,14 @@ class LikeCodeModule extends ItemModule
                 url: '<?php echo $FANNIE_URL; ?>item/modules/LikeCodeModule.php',
                 data: 'lc='+val,
                 dataType: 'json',
-                cache: false,
-                success: function(data){
-                    if (data.items){
-                        $('#LikeCodeItemList').html(data.items);
-                    }
-                    if (data.link){
-                        $('#LikeCodeHistoryLink').html(data.link);
-                        $('#LikeCodeHistoryLink a.fancyboxLink').fancybox();
-                    }
+                cache: false
+            }).done(function(data){
+                if (data.items){
+                    $('#LikeCodeItemList').html(data.items);
+                }
+                if (data.link){
+                    $('#LikeCodeHistoryLink').html(data.link);
+                    $('#LikeCodeHistoryLink a.fancyboxLink').fancybox();
                 }
             });
         }
@@ -270,21 +269,19 @@ class LikeCodeModule extends ItemModule
                 $.ajax({
                     url: '<?php echo $FANNIE_URL; ?>item/modules/LikeCodeModule.php',
                     data: data,
-                    dataType: 'json',
-                    error: function() {
-                        $('#addLikeAreaAlert').html('Communication error');
-                    },
-                    success: function(resp) {
-                        if (resp.error) {
-                            $('#addLikeAreaAlert').html(resp.error);
-                        } else {
-                            var newOpt = $('<option></option>');
-                            newOpt.val(resp.likeCode);
-                            newOpt.html(resp.likeCode + ' ' + resp.likeCodeDesc);
-                            $('#LikeCodeFieldSet select').append(newOpt);
-                            $('#LikeCodeFieldSet select').val(resp.likeCode);
-                            lc_dialog.dialog("close");
-                        }
+                    dataType: 'json'
+                }).fail(function() {
+                    $('#addLikeAreaAlert').html('Communication error');
+                }).done(function(resp) {
+                    if (resp.error) {
+                        $('#addLikeAreaAlert').html(resp.error);
+                    } else {
+                        var newOpt = $('<option></option>');
+                        newOpt.val(resp.likeCode);
+                        newOpt.html(resp.likeCode + ' ' + resp.likeCodeDesc);
+                        $('#LikeCodeFieldSet select').append(newOpt);
+                        $('#LikeCodeFieldSet select').val(resp.likeCode);
+                        lc_dialog.dialog("close");
                     }
                 });
             }

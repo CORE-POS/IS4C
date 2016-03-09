@@ -50,6 +50,7 @@ class PurchasingIndexPage extends FannieRESTfulPage
             $task->setLogger($this->logger);
             $task->setSilent(true);
             $task->setVendors($vendors);
+            $task->setStore($this->form->store);
             $task->run();
 
             return 'ViewPurchaseOrders.php?init=pending';
@@ -60,6 +61,7 @@ class PurchasingIndexPage extends FannieRESTfulPage
 
     protected function put_view()
     {
+        $stores = FormLib::storePicker('store', false);
         $res = $this->connection->query('
             SELECT v.vendorID, v.vendorName
             FROM vendors AS v
@@ -81,6 +83,10 @@ class PurchasingIndexPage extends FannieRESTfulPage
                 $row['vendorName'], $row['vendorID']);
         }
         $ret .= '</table>
+            <p>
+                <label>Store</label>
+                ' . $stores['html'] . '
+            </p>
             <p>
                 <button type="submit" class="btn btn-default">Generate Orders</button>
             </p>

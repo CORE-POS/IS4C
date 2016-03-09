@@ -289,13 +289,8 @@ class DTransactionsModel extends BasicModel
             } elseif($name == 'trans_type') {
                 // type conversion for old records. Newer coupon & discount
                 // records should have correct trans_type when initially created
-                $sql .= "CASE WHEN (trans_subtype IN ('CP','IC') OR upc like('%000000052')) then 'T' 
-                    WHEN upc = 'DISCOUNT' then 'S' else trans_type end as trans_type,\n";
-            } elseif($name == 'trans_subtype'){
-                // type conversion for old records. Probably WFC quirk that can
-                // eventually go away entirely
-                $sql .= "CASE WHEN upc = 'MAD Coupon' THEN 'MA' 
-                   WHEN upc like('%00000000052') THEN 'RR' ELSE trans_subtype END as trans_subtype,\n";
+                $sql .= "CASE WHEN trans_subtype IN ('CP','IC') THEN 'T' 
+                    WHEN upc = 'DISCOUNT' THEN 'S' ELSE trans_type END AS trans_type,\n";
             } else {
                 $sql .= $c->identifierEscape($name).",\n";
             }
@@ -704,9 +699,21 @@ trans_type indicates the record\'s type Values include
          always, \'0\' (e.g., manufacturer coupons
          have their own UPCs)
     0 => another commentary line
+    L => log record. Used for login/out, bad scans,
+        member ID, a few other purposes.
+    S => discount line. upc will be \'DISCOUNT\',
+        unitPrice and total will hold the dollar
+        amount of the discount, discountPercent will
+        hold the discount percentage (5% discount => 5).
 
 trans_subtype refines the record\'s type. Values include
 (but may not be limited to at all co-ops):
+    NA => default subtype of type \'I\', probably stands for
+          Not Available.
+    AD => Auto Deposit item, for returnable water bottles.
+    SS => scanner scale.
+    KB => programmed key.
+    HI => USB scanner.
     CM => record is a cashier-written comment.
           Used to make notes on a transaction
     (tender code) => goes with trans_type \'T\',

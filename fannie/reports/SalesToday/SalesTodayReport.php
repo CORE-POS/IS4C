@@ -36,17 +36,24 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
 {
     public $description = '[Today\'s Sales] shows current day totals by hour.';
     public $report_set = 'Sales Reports';
-    public $themed = true;
 
-    protected $selected;
+    protected $selected = -1;
+    protected $store = 0;
     protected $name = "";
-    protected $supers;
+    protected $supers = array();
 
     public function preprocess()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $this->selected = (isset($_GET['super']))?$_GET['super']:-1;
+        $this->form = new COREPOS\common\mvc\FormValueContainer();
+        try {
+            $this->selected = $this->form->super;
+        } catch (Exception $ex) { }
+        try {
+            $this->store = $this->form->store;
+        } catch (Exception $ex) { }
+
 
         /* Populate an array of superdepartments from which to
          *  select for filtering this report in the next run
@@ -56,8 +63,8 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
         $superP = $dbc->prepare("SELECT superID,super_name FROM MasterSuperDepts ORDER BY super_name");
         $superR = $dbc->execute($superP);
         $this->supers = array();
-        $this->supers[-1] = "All";
-        while($row = $dbc->fetch_row($superR)) {
+        $this->supers[-1] = "All Departments";
+        while ($row = $dbc->fetchRow($superR)) {
             $this->supers[$row[0]] = $row[1];
             if ($this->selected == $row[0]) {
                 $this->name = $row[1];
@@ -67,12 +74,41 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
         $this->title = "Fannie : Today's $this->name Sales";
         $this->header = '';
 
-        $this->has_menus(True);
-        $this->add_script($this->config->get('URL').'src/javascript/d3.js/d3.v3.min.js');
+        $this->addScript($this->config->get('URL').'src/javascript/d3.js/d3.v3.min.js');
+        $this->addScript('../../src/javascript/d3.js/charts/singleline/singleline.js');
+        $this->addCssFile('../../src/javascript/d3.js/charts/singleline/singleline.css');
+        $this->addScript('salesToday.js');
 
         return True;
 
     // preprocess()
+    }
+
+    private function salesQuery($dbc)
+    {
+        $args = array();
+        $query1 ="
+            SELECT ".$dbc->hour('tdate').", 
+                SUM(total) AS Sales ";
+        if ($this->selected != -1) {
+            $query1 .= ', SUM(CASE WHEN t.superID=? THEN total ELSE 0 END) AS prodSales ';
+            $args[] = $this->selected; 
+        }
+        $query1 .= '
+            FROM '.$this->config->get('TRANS_DB').$dbc->sep()."dlog AS d 
+                LEFT JOIN MasterSuperDepts AS t ON d.department = t.dept_ID
+            WHERE d.tdate >= " . $dbc->curdate() . "
+                AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
+                AND (t.superID > 0 or t.superID IS NULL) ";
+        if ($this->store != 0) {
+            $query1 .= ' AND d.store_id=? ';
+            $args[] = $this->store;
+        }
+
+        $query1 .= ' GROUP BY ' . $dbc->hour('tdate')
+                .  ' ORDER BY ' . $dbc->hour('tdate');
+
+        return array($query1, $args);
     }
 
     public function body_content()
@@ -81,32 +117,7 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $today = date("Y-m-d");
-
-        $query1="SELECT ".$dbc->hour('tdate').", 
-                sum(total)as Sales
-            FROM ".$FANNIE_TRANS_DB.$dbc->sep()."dlog AS d left join MasterSuperDepts AS t
-                ON d.department = t.dept_ID
-            WHERE ".$dbc->datediff('tdate',$dbc->now())."=0
-                AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
-                AND (t.superID > 0 or t.superID IS NULL)
-            GROUP BY ".$dbc->hour('tdate')."
-            ORDER BY ".$dbc->hour('tdate');
-        $args = array();
-        if ($this->selected != -1) {
-            $query1="SELECT ".$dbc->hour('tdate').", 
-                    sum(total)as Sales,
-                    sum(case when t.superID=? then total else 0 end) as prodSales
-                FROM ".$FANNIE_TRANS_DB.$dbc->sep()."dlog AS d left join MasterSuperDepts AS t
-                    ON d.department = t.dept_ID
-                WHERE ".$dbc->datediff('tdate',$dbc->now())."=0
-                    AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
-                    AND t.superID > 0
-                GROUP BY ".$dbc->hour('tdate')."
-                ORDER BY ".$dbc->hour('tdate');
-            $args = array($this->selected);
-        }
-
+        list($query1, $args) = $this->salesQuery($dbc);
         $prep = $dbc->prepare($query1);
         $result = $dbc->execute($query1,$args);
 
@@ -116,7 +127,7 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
         echo "<tr><td><b>Hour</b></td><td><b>Sales</b></td></tr>";
         $sum = 0;
         $sum2 = 0;
-        while($row=$dbc->fetch_row($result)){
+        while ($row=$dbc->fetchRow($result)){
             printf("<tr class=\"datarow\"><td class=\"x-data\">%d</td><td class=\"y-data text-right\">%.2f</td><td class='%s'>%.2f%%</td></tr>",
                 $row[0],
                 ($this->selected==-1)?$row[1]:$row[2],
@@ -129,16 +140,19 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
         }
         echo "<tr><th width=60px class='text-left'>Total</th><td class='text-right'>";
         if ($this->selected != -1) {
-            echo number_format($sum2,2)."</td><td>".round($sum2/$sum*100,2)."%";
+            echo number_format($sum2,2)."</td><td>"
+                . ($sum == 0 ? 0: round($sum2/$sum*100,2)) . "%";
         } else {
             echo number_format($sum,2);
         }
         echo "</td></tr></table>";
 
-        echo '<div class="form-group form-inline">Also available: 
-            <select onchange="top.location=\'SalesTodayReport.php?super=\'+this.value;"
-                class="form-control">';
-        foreach($this->supers as $k=>$v) {
+        $stores = FormLib::storePicker();
+
+        echo '<div class="form-group form-inline">For: '
+            . $stores['html'] . ' and
+            <select name="dept" class="form-control">';
+        foreach ($this->supers as $k=>$v) {
             echo "<option value=$k";
             if ($k == $this->selected) {
                 echo " selected";
@@ -149,7 +163,8 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
 
         echo '<div id="chartDiv"></div>';
 
-        $this->add_onload_command('graphData();');
+        $this->addOnloadCommand('salesToday.graphData();');
+        $this->addOnloadCommand("\$('select').change(salesToday.reloadGraph);\n");
 
         echo '</div>';
 
@@ -159,142 +174,27 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
 
     public function css_content()
     {
-        ob_start();
-        ?>
+        return <<<CSS
 .no-bs-table {
     width: auto !important;
     margin-left: auto;
     margin-right: auto;
 }
-/* tell the SVG path to be a thin blue line without any area fill */
-path {
-    stroke: steelblue;
-    stroke-width: 2;
-    fill: none;
-}
-                                                                                        
-.axis {
-    shape-rendering: crispEdges;
-}
-
-.x.axis line {
-    stroke: lightgrey;
-}
-
-.x.axis .minor {
-    stroke-opacity: .5;
-}
-
-.x.axis path {
-    display: none;
-}
-
-.y.axis line, .y.axis path {
-    fill: none;
-    stroke: #000;
-    stroke-width: 1;
-}
-        <?php
-        return ob_get_clean();
-    }
-
-    public function javascript_content()
-    {
-        ob_start();
-        ?>
-function graphData()
-{
-    var data = Array();
-    var xmin = 24;
-    var xmax = 0;
-    var ymin = 999999999;
-    var ymax = 0;
-
-    $('.datarow').each(function(){
-        var x = Number($(this).find('.x-data').html());
-        var y = Number($(this).find('.y-data').html());
-        if (x < xmin) {
-            xmin = x;
-        }
-        if (x > xmax) {
-            xmax = x;
-        }
-        if (y < ymin) {
-            ymin = y;
-        }
-        if (y > ymax) {
-            ymax = y;
-        }
-        data.push(Array(x, y));
-    });
-
-    drawLineGraph(data, Array(xmin, xmax), Array(ymin, ymax));
-}
-
-function drawLineGraph(data, xrange, yrange) 
-{
-    /* implementation heavily influenced by http://bl.ocks.org/1166403 */
-                
-    // define dimensions of graph
-    var m = [80, 80, 80, 80]; // margins
-    var w = 650 - m[1] - m[3]; // width
-    var h = 400 - m[0] - m[2]; // height
-                                                        
-    // X scale will fit all values from data[] within pixels 0-w
-    var x = d3.scale.linear().domain(xrange).range([0, w]);
-    // Y scale will fit values from 0-10 within pixels h-0 (Note the inverted domain for the y-scale: bigger is up!)
-    var y = d3.scale.linear().domain(yrange).range([h, 0]);
-
-    // create a line function that can convert data[] into x and y points
-    var line = d3.svg.line()
-        .x(function(d,i) { 
-            // verbose logging to show what's actually being done
-            //console.log('Plotting X value for data point: ' + d + ' using index: ' + i + ' to be at: ' + x(d[0]) + ' using our xScale.');
-            // return the X coordinate where we want to plot this datapoint
-            return x(d[0]); 
-        })
-        .y(function(d) { 
-            // verbose logging to show what's actually being done
-            //console.log('Plotting Y value for data point: ' + d + ' to be at: ' + y(d) + " using our yScale.");
-            // return the Y coordinate where we want to plot this datapoint
-            return y(d[1]); 
-        })
-
-        // Add an SVG element with the desired dimensions and margin.
-        var graph = d3.select("#chartDiv").append("svg:svg")
-            .attr("width", w + m[1] + m[3])
-            .attr("height", h + m[0] + m[2])
-            .append("svg:g")
-            .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
-
-        // create yAxis
-        var xAxis = d3.svg.axis().scale(x).tickSize(-h).tickSubdivide(true);
-        // Add the x-axis.
-        graph.append("svg:g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + h + ")")
-            .call(xAxis);
-
-        // create left yAxis
-        var yAxisLeft = d3.svg.axis().scale(y).ticks(4).orient("left");
-        // Add the y-axis to the left
-        graph.append("svg:g")
-            .attr("class", "y axis")
-            .attr("transform", "translate(-25,0)")
-            .call(yAxisLeft);
-
-        // Add the line by appending an svg:path element with the data line we created above
-        // do this AFTER the axes above so that the line is above the tick-lines
-        graph.append("svg:path").attr("d", line(data));
-}
-        <?php
-        return ob_get_clean();
+CSS;
     }
 
     public function helpContent()
     {
         return '<p>Hourly Sales for the current day. The drop down menu
             can switch the report to a single super department.</p>';
+    }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $this->selected = 1;
+        $this->store = 1;
+        $phpunit->assertNotEquals(0, strlen($this->body_content()));
     }
 
 // SalesTodayReport

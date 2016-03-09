@@ -51,8 +51,9 @@ class DateCountPage extends FannieRESTfulPage
                 SET i.countDate=?
                 WHERE p.default_vendor_id=?
                     AND i.mostRecent=1
+                    AND i.storeID=?
             ');
-            $upR = $this->connection->execute($upP, array($date, $this->vendor));
+            $upR = $this->connection->execute($upP, array($date, $this->vendor,$this->form->store));
         } catch (Exception $ex) {
         }
 
@@ -66,6 +67,7 @@ class DateCountPage extends FannieRESTfulPage
         if (!$vendor->load()) {
             return '<div class="alert alert-danger">Unknown vendor</div>';
         }
+        $stores = FormLib::storePicker('store', false);
 
         $ret = '<form method="post">
             <div class="form-group">
@@ -76,6 +78,10 @@ class DateCountPage extends FannieRESTfulPage
             <div class="form-group">
                 <label>Set Count Date to</label>
                 <input type="text" name="date" class="form-control date-field" />
+            </div>
+            <div class="form-group">
+                <label>Store</label>
+                ' . $stores['html'] . '
             </div>
             <div class="form-group">
                 <button type="submit" class="btn btn-default">Update</button>
@@ -90,12 +96,14 @@ class DateCountPage extends FannieRESTfulPage
         $upc = BarcodeLib::padUPC($this->id);
         try {
             $date = $this->form->date;
+            $store = $this->form->store;
             $upP = $this->connection->prepare('
                 UPDATE InventoryCounts
                 SET countDate=?
                 WHERE upc=?
-                    AND mostRecent=1');
-            $upR = $this->connection->execute($upP, array($date, $upc));
+                    AND mostRecent=1
+                    AND storeID=?');
+            $upR = $this->connection->execute($upP, array($date, $upc, $store));
         } catch (Exception $ex) {
         }
 
@@ -104,11 +112,14 @@ class DateCountPage extends FannieRESTfulPage
 
     public function get_id_view()
     {
+        $stores = FormLib::storePicker('store', false);
+        $store = FormLib::get('store', 1);
         $upc = BarcodeLib::padUPC($this->id);
         $inv = new InventoryCountsModel($this->connection);
         $inv->upc($upc);
         $inv->mostRecent(1);
         $inv->setFindLimit(1);
+        $inv->storeID($store);
         if (count($inv->find()) == 0) {
             return '<div class="alert alert-danger">No count for item ' . $upc . '</div>';
         }
@@ -124,6 +135,10 @@ class DateCountPage extends FannieRESTfulPage
                 <input type="text" name="date" class="form-control date-field" />
             </div>
             <div class="form-group">
+                <label>Store</label>
+                ' . $stores['html'] . '
+            </div>
+            <div class="form-group">
                 <button type="submit" class="btn btn-default">Update</button>
             </div>
             </form>';
@@ -134,6 +149,10 @@ class DateCountPage extends FannieRESTfulPage
     public function unitTest($phpunit)
     {
         $this->id = '4011';
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->store=1;
+        $form->date = date('Y-m-d');
+        $this->setForm($form);
         $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
         $phpunit->assertNotEquals(0, strlen($this->post_id_handler()));
         $this->vendor = 1;

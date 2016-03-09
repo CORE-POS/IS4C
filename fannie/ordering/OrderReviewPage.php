@@ -223,48 +223,55 @@ class OrderReviewPage extends FannieRESTfulPage
             WHERE order_id=? AND trans_type='I'
             ORDER BY trans_id DESC");
         $r = $dbc->execute($q, array($this->orderID));
-        while($w = $dbc->fetch_row($r)) {
-            $ret .= sprintf('<tr>
-                    <td>%s</td>
-                    <td>%s</td>
-                    <td>%s</td>
-                    <td>%d</td>
-                    <td>%.2f</td>
-                    <td>%.2f</td>
-                    <td>%.2f</td>',
-                    $w['upc'],
-                    (!empty($w['sku'])?$w['sku']:'&nbsp;'),
-                    $w['description'],
-                    $w['ItemQtty'],
-                    $w['regPrice'],
-                    $w['total'],
-                    $w['quantity']
-                );
-                $ret .= '<td>' . $w['department'] . ' ' . $depts[$w['department']] . '</td>';
-                $ret .= '</tr>';
-                $ret .= '<tr>';
-                $ret .= sprintf('<td colspan="2" align="right">Unit Price: $%.2f</td>',
-                    ($w['regPrice']/$w['ItemQtty']/$w['quantity']));
-                $ret .= sprintf('<td>From: %s</td>',$w['mixMatch']);
-                $ret .= '<td>Discount</td>';
-                if ($w['discounttype'] == 1 || $w['discounttype'] == 2) {
-                    $ret .= '<td id="discPercent'.$w['upc'].'">Sale</td>';
-                } else if ($w['regPrice'] != $w['total']) {
-                    $ret .= sprintf('<td id="discPercent%s">%d%%</td>',$w['upc'],
-                        round(100*(($w['regPrice']-$w['total'])/$w['regPrice'])));
-                } else {
-                    $ret .= '<td id="discPercent'.$w['upc'].'">0%</td>';
-                }
-                $ret .= sprintf('<td colspan="4">Printed: %s</td>',
-                        ($w['charflag']=='P'?'Yes':'No'));
-                $ret .= '</tr>';
-                $ret .= '<tr class="small"><td class="small" colspan="8"><span style="font-size:1;">&nbsp;</span></td></tr>';
+        while ($row = $dbc->fetch_row($r)) {
+            $ret .= $this->printItemRow($row, $depts);
         }
         $ret .= '</table>';
 
         echo $ret;
 
         return false;
+    }
+
+    private function printItemRow($row, $depts)
+    {
+        $ret = sprintf('<tr>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%d</td>
+                <td>%.2f</td>
+                <td>%.2f</td>
+                <td>%.2f</td>',
+                $row['upc'],
+                (!empty($row['sku'])?$row['sku']:'&nbsp;'),
+                $row['description'],
+                $row['ItemQtty'],
+                $row['regPrice'],
+                $row['total'],
+                $row['quantity']
+        );
+        $ret .= '<td>' . $row['department'] . ' ' . $depts[$row['department']] . '</td>';
+        $ret .= '</tr>';
+        $ret .= '<tr>';
+        $ret .= sprintf('<td colspan="2" align="right">Unit Price: $%.2f</td>',
+            ($row['regPrice']/$row['ItemQtty']/$row['quantity']));
+        $ret .= sprintf('<td>From: %s</td>',$row['mixMatch']);
+        $ret .= '<td>Discount</td>';
+        if ($row['discounttype'] == 1 || $row['discounttype'] == 2) {
+            $ret .= '<td id="discPercent'.$row['upc'].'">Sale</td>';
+        } else if ($row['regPrice'] != $row['total']) {
+            $ret .= sprintf('<td id="discPercent%s">%d%%</td>',$row['upc'],
+                round(100*(($row['regPrice']-$row['total'])/$row['regPrice'])));
+        } else {
+            $ret .= '<td id="discPercent'.$row['upc'].'">0%</td>';
+        }
+        $ret .= sprintf('<td colspan="4">Printed: %s</td>',
+                ($row['charflag']=='P'?'Yes':'No'));
+        $ret .= '</tr>';
+        $ret .= '<tr class="small"><td class="small" colspan="8"><span style="font-size:1;">&nbsp;</span></td></tr>';
+
+        return $ret;
     }
 
     public function get_orderID_history_handler()
@@ -286,27 +293,34 @@ class OrderReviewPage extends FannieRESTfulPage
                     <th>Details</th>
                  </tr>';
         while ($row = $dbc->fetch_row($result)) {
-            if ($row['entry_type'] == 'PURCHASED') {
-                $trans_num = $row['entry_value'];
-                $tdate = date('Y-m-d', strtotime($row['entry_date']));
-                $link = '../admin/LookupReceipt/RenderReceiptPage.php?date=' . $tdate . '&receipt=' . $trans_num;
-                $row['entry_value'] = sprintf('<a href="%s" target="_%s">%s</a>', $link, $trans_num, $trans_num);
-            }
-            $ret .= sprintf('<tr>
-                                <td>%s</td>
-                                <td>%s</td>
-                                <td>%s</td>
-                             </tr>',
-                                $row['entry_date'],
-                                $row['entry_type'],
-                                $row['entry_value']
-            );
+            $ret .= $this->printHistory($row);
         }
         $ret .= '</table>';
 
         echo $ret;
 
         return false;
+    }
+
+    private function printHistory($row)
+    {
+        if ($row['entry_type'] == 'PURCHASED') {
+            $trans_num = $row['entry_value'];
+            $tdate = date('Y-m-d', strtotime($row['entry_date']));
+            $link = '../admin/LookupReceipt/RenderReceiptPage.php?date=' . $tdate . '&receipt=' . $trans_num;
+            $row['entry_value'] = sprintf('<a href="%s" target="_%s">%s</a>', $link, $trans_num, $trans_num);
+        }
+        $ret = sprintf('<tr>
+                            <td>%s</td>
+                            <td>%s</td>
+                            <td>%s</td>
+                         </tr>',
+                            $row['entry_date'],
+                            $row['entry_type'],
+                            $row['entry_value']
+        );
+
+        return $ret;
     }
 
     public function get_view()
@@ -345,47 +359,41 @@ HTML;
 function copyOrder(oid){
     if (confirm("Copy this order?")){
         $.ajax({
-        url:'ajax-calls.php',
-        type:'post',
-        data:'action=copyOrder&orderID='+oid,
-        cache: false,
-        error: function(e1,e2,e3){
+            url:'ajax-calls.php',
+            type:'post',
+            data:'action=copyOrder&orderID='+oid,
+            cache: false
+        }).fail(function(e1,e2,e3){
             alert(e1);alert(e2);alert(e3);
-        },
-        success: function(resp){
+        }).done(function(resp){
             location='view.php?orderID='+resp;
-        }
         });
     }
 }
 $(document).ready(function(){
     $.ajax({
-    type: 'get',
-    data: 'customer=1&orderID={{orderID}}',
-    cache: false,
-    error: function(e1,e2,e3){
+        type: 'get',
+        data: 'customer=1&orderID={{orderID}}',
+        cache: false
+    }).fail(function(e1,e2,e3){
         alert(e1);alert(e2);alert(e3);
-    },
-    success: function(resp){
+    }).done(function(resp){
         $('#customerDiv').html(resp);
         var oid = $('#orderID').val();
         $.ajax({
-        type: 'get',
-        data: 'items=1&orderID='+oid+'&nonForm=yes',
-        cache: false,
-        success: function(resp){
+            type: 'get',
+            data: 'items=1&orderID='+oid+'&nonForm=yes',
+            cache: false
+        }).done(function(resp){
             $('#itemDiv').html(resp);
-        }
         });
         $.ajax({
             type: 'get',
             data: 'history=1&orderID='+oid,
-            cache: false,
-            success: function(resp){
-                $('#historyDiv').html(resp);
-            }
+            cache: false
+        }).done(function(resp){
+            $('#historyDiv').html(resp);
         });
-    }
     });
 
 });
@@ -410,6 +418,14 @@ JAVASCRIPT;
         ob_start();
         $this->get_orderID_history_handler();
         $phpunit->assertNotEquals(0, strlen(ob_get_clean()));
+
+        $item = array('upc'=>'1234','sku'=>'1234','description'=>'foo','ItemQtty'=>1,
+            'regPrice'=>1,'total'=>1,'quantity'=>1,'department'=>1,'mixMatch'=>'foo',
+            'discounttype'=>1, 'charflag'=>'P');
+        $phpunit->assertNotEquals(0, strlen($this->printItemRow($item, array(1=>'foo'))));
+
+        $entry = array('entry_type'=>'PURCHASED', 'entry_date'=>'2000-01-01', 'entry_value'=>1);
+        $phpunit->assertNotEquals(0, strlen($this->printHistory($entry)));
     }
 }
 

@@ -170,16 +170,13 @@ class AddCashierPage extends FannieRESTfulPage
             echo '<div class="form-group">';
             $dbc = $this->connection;
             $stores = new StoresModel($dbc);
-            $mapP = $dbc->prepare('SELECT storeID FROM StoreEmployeeMap WHERE storeID=? AND empNo=?');
             foreach ($stores->find('storeID') as $s) {
-                $mapR = $dbc->execute($mapP, array($s->storeID(), $emp_no));
-                $checked = ($mapR && $dbc->numRows($mapR)) ? 'checked' : '';
                 printf('<label>
-                    <input type="checkbox" name="store[]" value="%d" %s />
+                    <input type="checkbox" name="store[]" value="%d" />
                     %s
                     </label> | ',
                     $s->storeID(),
-                    $checked, $s->description());
+                    $s->description());
             }
             echo '</div>';
         }

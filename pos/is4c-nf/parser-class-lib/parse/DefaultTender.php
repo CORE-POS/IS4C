@@ -31,9 +31,7 @@ class DefaultTender extends Parser
         } elseif (strlen($str) == 2 && !is_numeric($str)){
             $dbc = Database::pDataConnect();
             $res = $dbc->query("SELECT TenderCode FROM tenders WHERE TenderCode='$str'");
-            if ($dbc->num_rows($res) > 0) {
-                return true;
-            }
+            return $dbc->numRows($res) > 0 ? true : false;
         }
         return false;
     }

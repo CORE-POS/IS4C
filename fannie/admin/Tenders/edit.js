@@ -25,10 +25,9 @@ var tenderEditor = (function($) {
         $.ajax({
             type:'post',
             url: ajax_url,
-            data: 'saveCode='+val+'&id='+t_id,
-            success: function(data){
-                _popover(data, elem, orig);
-            }   
+            data: 'saveCode='+val+'&id='+t_id
+        }).done(function(data){
+            _popover(data, elem, orig);
         });
     };
 
@@ -38,10 +37,9 @@ var tenderEditor = (function($) {
         $.ajax({
             type:'post',
             url: ajax_url,
-            data: 'saveName='+val+'&id='+t_id,
-            success: function(data){
-                _popover(data, elem, orig);
-            }
+            data: 'saveName='+val+'&id='+t_id
+        }).done(function(data){
+            _popover(data, elem, orig);
         });
     };
 
@@ -51,10 +49,9 @@ var tenderEditor = (function($) {
         $.ajax({
             type:'post',
             url: ajax_url,
-            data: 'saveType='+val+'&id='+t_id,
-            success: function(data){
-                _popover(data, elem, orig);
-            }   
+            data: 'saveType='+val+'&id='+t_id
+        }).done(function(data){
+            _popover(data, elem, orig);
         });
     };
 
@@ -64,10 +61,9 @@ var tenderEditor = (function($) {
         $.ajax({
             type:'post',
             url: ajax_url,
-            data: 'saveCMsg='+val+'&id='+t_id,
-            success: function(data){
-                _popover(data, elem, orig);
-            }   
+            data: 'saveCMsg='+val+'&id='+t_id
+        }).done(function(data){
+            _popover(data, elem, orig);
         });
     };
 
@@ -77,10 +73,9 @@ var tenderEditor = (function($) {
         $.ajax({
             type:'post',
             url: ajax_url,
-            data: 'saveMin='+val+'&id='+t_id,
-            success: function(data){
-                _popover(data, elem, orig);
-            }   
+            data: 'saveMin='+val+'&id='+t_id
+        }).done(function(data){
+            _popover(data, elem, orig);
         });
     };
 
@@ -90,10 +85,9 @@ var tenderEditor = (function($) {
         $.ajax({
             type:'post',
             url: ajax_url,
-            data: 'saveMax='+val+'&id='+t_id,
-            success: function(data){
-                _popover(data, elem, orig);
-            }   
+            data: 'saveMax='+val+'&id='+t_id
+        }).done(function(data){
+            _popover(data, elem, orig);
         });
     };
 
@@ -103,10 +97,9 @@ var tenderEditor = (function($) {
         $.ajax({
             type:'post',
             url: ajax_url,
-            data: 'saveRLimit='+val+'&id='+t_id,
-            success: function(data){
-                _popover(data, elem, orig);
-            }   
+            data: 'saveRLimit='+val+'&id='+t_id
+        }).done(function(data){
+            _popover(data, elem, orig);
         });
     };
 
@@ -116,10 +109,9 @@ var tenderEditor = (function($) {
         $.ajax({
             type:'post',
             url: ajax_url,
-            data: 'saveSalesCode='+val+'&id='+t_id,
-            success: function(data){
-                _popover(data, elem, orig);
-            }   
+            data: 'saveSalesCode='+val+'&id='+t_id
+        }).done(function(data){
+            _popover(data, elem, orig);
         });
     };
 
@@ -127,10 +119,9 @@ var tenderEditor = (function($) {
         $.ajax({
             type:'post',
             url: ajax_url,
-            data:'newTender=yes',
-            success: function(data){
-                $('#mainDisplay').html(data);
-            }
+            data:'newTender=yes'
+        }).done(function(data){
+            $('#mainDisplay').html(data);
         });
     };
 

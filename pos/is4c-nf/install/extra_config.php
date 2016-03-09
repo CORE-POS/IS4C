@@ -131,52 +131,52 @@ include('InstallUtilities.php');
 //  and flag type of port choice: "other" or not.
 if (FormLib::get('PPORT',false) !== false) {
     $PPORT = FormLib::get('PPORT');
-    $otherport = FormLib::get('otherport', false);
-    if ($PPORT === 'other' && $otherport !== false) {
-        CoreLocal::set('printerPort',trim($otherpport));
-        $otherpport = True;
-        $otherpportValue = trim($otherpport);
+    $otherPortText = FormLib::get('otherpport', false);
+    if ($PPORT === 'other' && $otherPortText !== false) {
+        CoreLocal::set('printerPort',trim($otherPortText));
+        $otherPortChecked = True;
+        $otherPortText = trim($otherPortText);
     } else {
         CoreLocal::set('printerPort',$PPORT);
-        $otherpport = False;
-        $otherpportValue = "";
+        $otherPortChecked = False;
+        $otherPortText = "";
     }
 } else {
     $pport = CoreLocal::get('printerPort');
     if (isset($pport) && $pport !== False && $pport != "") {
         $pports = array("/dev/lp0","/dev/usb/lp0","LPT1:","fakereceipt.txt");
         if (in_array($pport,$pports)) {
-            $otherpport = False;
-            $otherpportValue = "";
+            $otherPortChecked = False;
+            $otherPortText = "";
         } else {
-            $otherpport = True;
-            $otherpportValue = "$pport";
+            $otherPortChecked = True;
+            $otherPortText = "$pport";
         }
     } else {
-        $otherpport = False;
-        $otherpportValue = "";
+        $otherPortChecked = False;
+        $otherPortText = "";
     }
 }
 ?>
 <input type="radio" name=PPORT value="/dev/lp0" id="div-lp0"
-    <?php if (!$otherpport && CoreLocal::get('printerPort')=="/dev/lp0")
+    <?php if (!$otherPortChecked && CoreLocal::get('printerPort')=="/dev/lp0")
             echo "checked";
     ?> /><label for="div-lp0">/dev/lp0 (*nix)</label><br />
 <input type="radio" name=PPORT value="/dev/usb/lp0" id="div-usb-lp0"
-    <?php if (!$otherpport && CoreLocal::get('printerPort')=="/dev/usb/lp0")
+    <?php if (!$otherPortChecked && CoreLocal::get('printerPort')=="/dev/usb/lp0")
             echo "checked"; ?> /><label for="div-usb-lp0">/dev/usb/lp0 (*nix)</label><br />
 <input type="radio" name=PPORT value="LPT1:" id="lpt1-"
-    <?php if (!$otherpport && CoreLocal::get('printerPort')=="LPT1:")
+    <?php if (!$otherPortChecked && CoreLocal::get('printerPort')=="LPT1:")
                 echo "checked"; ?> /><label for="lpt1-">LPT1: (windows)</label><br />
 <input type="radio" name=PPORT value="fakereceipt.txt" id="fakercpt"
-    <?php if (!$otherpport && CoreLocal::get('printerPort')=="fakereceipt.txt")
+    <?php if (!$otherPortChecked && CoreLocal::get('printerPort')=="fakereceipt.txt")
                 echo "checked";
     ?> /><label for="fakercpt">fakereceipt.txt</label><br />
 <input type="radio" name=PPORT value="other"
-    <?php if ($otherpport)
+    <?php if ($otherPortChecked)
                 echo "checked";
 ?> /> <input type=text name="otherpport"
-    value="<?php echo "$otherpportValue"; ?>"><br />
+    value="<?php echo "$otherPortText"; ?>"><br />
 <span class='noteTxt' style="top:-110px;"> <?php printf("<p>Current value: <span class='pre'>%s</span></p>",CoreLocal::get('printerPort')); ?>
 Path to the printer. Select from common values, or enter a custom path.
 Some ubuntu distros might put your USB printer at /dev/usblp0</span>

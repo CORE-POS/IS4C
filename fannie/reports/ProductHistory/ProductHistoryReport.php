@@ -34,7 +34,7 @@ class ProductHistoryReport extends FannieReportPage
 
     protected $title = "Fannie : Product History";
     protected $header = "Product History Report";
-    protected $report_headers = array('Date','Description', 'Price', 'Cost', 'Dept#', 'Tax', 'FS', 'Scale', 'Qty Rq\'d', 'NoDisc', 'UserID');
+    protected $report_headers = array('Date','Description', 'Price', 'Cost', 'Dept#', 'Tax', 'FS', 'WIC', 'Scale', 'Qty Rq\'d', 'NoDisc', 'UserID');
     protected $required_fields = array('upc');
 
     protected $sort_direction = 1;
@@ -64,6 +64,7 @@ class ProductHistoryReport extends FannieReportPage
                     dept,
                     tax,
                     fs,
+                    wic,
                     scale,
                     likeCode,
                     modified,
@@ -103,6 +104,7 @@ class ProductHistoryReport extends FannieReportPage
             $row['dept'],
             $row['tax'],
             $row['fs'],
+            $row['wic'] === null ? 'n/a' : $row['wic'],
             $row['scale'],
             $row['forceQty'],
             $row['noDisc'],
@@ -150,7 +152,7 @@ class ProductHistoryReport extends FannieReportPage
     {
         $data = array('modified'=>'2000-01-01', 'description'=>'test', 'price'=>1,
             'cost'=>1, 'dept'=>1, 'tax'=>0, 'fs'=>1, 'scale'=>0, 'forceQty'=>0,
-            'noDisc'=>0, 'user'=>1234);
+            'noDisc'=>0, 'user'=>1234, 'wic'=>1);
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }

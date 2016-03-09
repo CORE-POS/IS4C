@@ -102,14 +102,12 @@ function loadlc(id){
     $.ajax({
         url: 'LikeCodeAjax.php',
         type: 'get',
-        data: 'id='+id,
-        error: function(request,error){
-            console.log(request);
-            console.log(error);
-        },
-        success: function(resp){
-            $('#rightdiv').html(resp);
-        }
+        data: 'id='+id
+    }).fail(function(request,error){
+        console.log(request);
+        console.log(error);
+    }).done(function(resp){
+        $('#rightdiv').html(resp);
     });
 }
         <?php

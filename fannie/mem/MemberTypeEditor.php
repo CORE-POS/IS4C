@@ -209,10 +209,9 @@ class MemberTypeEditor extends FannieRESTfulPage
                 cache: false,
                 type: 'post',
                 data: 'id='+t_id+'&type='+cd_type,
-                dataType: 'json',
-                success: function(data){
-                    showBootstrapPopover(elem, orig, data.msg);
-                }
+                dataType: 'json'
+            }).done(function(data){
+                showBootstrapPopover(elem, orig, data.msg);
             });
         }
 
@@ -225,10 +224,9 @@ class MemberTypeEditor extends FannieRESTfulPage
                 cache: false,
                 type: 'post',
                 data: 'id='+t_id+'&staff='+staff,
-                dataType: 'json',
-                success: function(data){
-                    showBootstrapPopover(elem, orig, data.msg);
-                }
+                dataType: 'json'
+            }).done(function(data){
+                showBootstrapPopover(elem, orig, data.msg);
             });
         }
 
@@ -241,10 +239,9 @@ class MemberTypeEditor extends FannieRESTfulPage
                 cache: false,
                 type: 'post',
                 data: 't_id='+t_id+'&saveSSI='+ssi,
-                dataType: 'json',
-                success: function(data){
-                    showBootstrapPopover(elem, orig, data.msg);
-                }
+                dataType: 'json'
+            }).done(function(data){
+                showBootstrapPopover(elem, orig, data.msg);
             });
         }
 
@@ -255,10 +252,9 @@ class MemberTypeEditor extends FannieRESTfulPage
                 cache: false,
                 type: 'post',
                 data: 'id='+t_id+'&discount='+disc,
-                dataType: 'json',
-                success: function(data){
-                    showBootstrapPopover(elem, orig, data.msg);
-                }
+                dataType: 'json'
+            }).done(function(data){
+                showBootstrapPopover(elem, orig, data.msg);
             });
         }
 
@@ -269,10 +265,9 @@ class MemberTypeEditor extends FannieRESTfulPage
                 cache: false,
                 type: 'post',
                 dataType: 'json',
-                data: 'id='+t_id+'&description='+typedesc,
-                success: function(data){
-                    showBootstrapPopover(elem, orig, data.msg);
-                }
+                data: 'id='+t_id+'&description='+typedesc
+            }).done(function(data){
+                showBootstrapPopover(elem, orig, data.msg);
             });
         }
 
@@ -283,10 +278,9 @@ class MemberTypeEditor extends FannieRESTfulPage
                 cache: false,
                 type: 'post',
                 dataType: 'json',
-                data: 'id='+t_id+'&salesCode='+account,
-                success: function(data){
-                    showBootstrapPopover(elem, orig, data.msg);
-                }
+                data: 'id='+t_id+'&salesCode='+account
+            }).done(function(data){
+                showBootstrapPopover(elem, orig, data.msg);
             });
         }
         <?php

@@ -82,6 +82,7 @@ class PaycardEmvVoid extends PaycardProcessPage
         }
         $e2e = new MercuryE2E();
         ?>
+<script type="text/javascript" src="../js/emv.js"></script>
 <script type="text/javascript">
 function emvSubmit()
 {
@@ -92,32 +93,7 @@ function emvSubmit()
         location = '<?php echo MiscLib::baseURL(); ?>gui-modules/boxMsg2.php';
         return false;
     }
-    $.ajax({
-        url: 'http://localhost:8999',
-        type: 'POST',
-        data: xmlData,
-        dataType: 'text',
-        success: function(resp) {
-            // POST result to PHP page in POS to
-            // process the result.
-            console.log('success');
-            console.log(resp);
-            var f = $('<form id="js-form"></form>');
-            f.append($('<input type="hidden" name="xml-resp" />').val(resp));
-            $('body').append(f);
-            $('#js-form').submit();
-        },
-        error: function(resp) {
-            // display error to user?
-            // go to dedicated error page?
-            console.log('error');
-            console.log(resp);
-            var f = $('<form id="js-form"></form>');
-            f.append($('<input type="hidden" name="xml-resp" />').val(resp));
-            $('body').append(f);
-            $('#js-form').submit();
-        }
-    });
+    emv.submit(xmlData);
 }
 </script>
         <?php

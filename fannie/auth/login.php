@@ -63,13 +63,48 @@ function login($name,$password){
   $gatherRow = $sql->fetch_array($gatherR);
   $crypt_pass = $gatherRow[0];
   $salt = $gatherRow[1];
-  if (crypt($password,$salt) != $crypt_pass){
+  if (!checkPass($password, $crypt_pass, $salt, $name)) {
+  //if (crypt($password,$salt) != $crypt_pass){
     return false;
   }
 
   doLogin($name);
 
   return true;
+}
+
+function checkPass($password, $crypt_pass, $salt, $name) {
+    if (!function_exists('password_hash')) {
+        return crypt($password, $salt) == $crypt_pass;
+    } elseif (!empty($salt)) {
+        if (crypt($password, $salt) == $crypt_pass) {
+            migratePass($name, $password);
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return password_verify($password, $crypt_pass); 
+    }
+}
+
+function migratePass($name, $password) {
+    $hashed = password_hash($password, PASSWORD_DEFAULT);
+    if (password_verify($password, $hashed)) {
+        $dbc = dbconnect();
+        $table = $dbc->detailedDefinition('Users');
+        foreach ($table as $col_name => $info) {
+            if ($col_name === 'password' && $info['type'] === 'VARCHAR(255)') {
+                $upP = $dbc->prepare('
+                    UPDATE Users SET password=?, salt=\'\'
+                    WHERE name=?');
+                $upR = $dbc->execute($upP, array($hashed, $name));
+
+                return $upR;
+            }
+        }
+    }
+    return false;
 }
 
 /* 
@@ -113,6 +148,11 @@ function ldap_login($name,$passwd)
     $conn = ldap_connect($config->get('LDAP_SERVER'), $config->get('LDAP_PORT'));
     if (!$conn) return false;
 
+    $user_dn = $config->get('LDAP_SEARCH_FIELD').'='.$name.','.$config->get('LDAP_DN');
+    if (!ldap_bind($conn,$user_dn,$passwd)){
+        return false;
+    }
+
     $search_result = ldap_search($conn,$config->get('LDAP_DN'),
                      $config->get('LDAP_SEARCH_FIELD')."=".$name);
     if (!$search_result) return false;
@@ -124,17 +164,12 @@ function ldap_login($name,$passwd)
         return false;
     }
 
-    $user_dn = $ldap_info[0]["dn"];
     $uid = $ldap_info[0][$config->get('LDAP_UID_FIELD')][0];
     $fullname = $ldap_info[0][$config->get('LDAP_RN_FIELD')][0];
 
-    if (ldap_bind($conn,$user_dn,$passwd)){
-        syncUserLDAP($name,$uid,$fullname); 
-        doLogin($name);
-        return true;
-    }
-
-    return false;
+    syncUserLDAP($name,$uid,$fullname); 
+    doLogin($name);
+    return true;
 }
 
 /*

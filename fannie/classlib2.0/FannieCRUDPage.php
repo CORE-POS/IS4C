@@ -288,13 +288,12 @@ class FannieCRUDPage extends \FannieRESTfulPage
             {
                 $.ajax({
                     method: "PUT",
-                    dataType: "json",
-                    success: function(resp) {
-                        if (resp.added) {
-                            $("form.crud-form").submit();
-                        } else {
-                            showBootstrapAlert(".flash-div", "danger", "Error adding entry");
-                        }
+                    dataType: "json"
+                }).done(function(resp) {
+                    if (resp.added) {
+                        $("form.crud-form").submit();
+                    } else {
+                        showBootstrapAlert(".flash-div", "danger", "Error adding entry");
                     }
                 });
             }

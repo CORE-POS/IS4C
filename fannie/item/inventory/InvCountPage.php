@@ -107,7 +107,7 @@ class InvCountPage extends FannieRESTfulPage
             $upc = $this->form->upc;
             $count = $this->form->count;
             $par = $this->form->par;
-            $storeID = FormLib::get('storeID', 1);
+            $storeID = FormLib::get('store', 1);
             for ($i=0; $i<count($upc); $i++) {
                 if (!isset($count[$i]) || $count[$i] === '') {
                     if (isset($par[$i]) && is_numeric($par[$i])) {
@@ -122,16 +122,17 @@ class InvCountPage extends FannieRESTfulPage
             }
         } catch (Exception $ex) {}
 
-        return 'InvCountPage.php?vendor=' . $this->vendor;
+        return 'InvCountPage.php?vendor=' . $this->vendor . '&store=' . $storeID;
     }
 
     protected function get_id_view()
     {
         $upc = BarcodeLib::padUPC($this->id);
-        $info = $this->getMostRecent($upc);
+        $store = FormLib::get('store', 1);
+        $info = $this->getMostRecent($upc, $store);
         $prod = new ProductsModel($this->connection);
         $prod->upc($upc);
-        $prod->store_id(1);
+        $prod->store_id($store);
         $prod->load();
         if ($info === false) {
             $info['countDate'] = 'n/a';
@@ -148,6 +149,7 @@ class InvCountPage extends FannieRESTfulPage
         $ret .= '<form method="post">
             <div class="form-group">
                 <input type="hidden" name="id" value="' . $this->id . '" />
+                <input type="hidden" name="storeID" value="' . $store . '" />
                 <label>Update Count</label>
                 <input type="number" min="0" max="500" step="0.01" class="form-control" 
                     id="count-field" required name="count" />
@@ -167,6 +169,12 @@ class InvCountPage extends FannieRESTfulPage
 
     protected function get_vendor_view()
     {
+        try {
+            $store = $this->form->store;
+        } catch (Exception $ex) {
+            return '<div class="alert alert-danger">No store selected</div>';
+        }
+
         $query = '
             SELECT p.upc,
                 p.brand,
@@ -176,8 +184,8 @@ class InvCountPage extends FannieRESTfulPage
                 LEFT JOIN vendorItems AS v ON v.upc=p.upc AND v.vendorID=p.default_vendor_id
             WHERE p.default_vendor_id=?
                 AND p.inUse=1
-                AND p.store_id=1 ';
-        $args = array($this->vendor);
+                AND p.store_id=? ';
+        $args = array($this->vendor, $store);
         try {
             if ($this->form->super !== '') {
                 $args[] = $this->form->super;
@@ -189,6 +197,7 @@ class InvCountPage extends FannieRESTfulPage
         $prep = $this->connection->prepare($query);
         $ret = '<form method="post">
             <input type="hidden" name="vendor" value="' . $this->vendor . '" />
+            <input type="hidden" name="store" value="' . $store . '" />
             <table class="table table-bordered table-striped small">
             <tr>
                 <th>UPC</th>
@@ -208,7 +217,7 @@ class InvCountPage extends FannieRESTfulPage
             if ($this->isBreakable($row['upc'], $this->vendor)) {
                 continue;
             }
-            $info = $this->getMostRecent($row['upc']);
+            $info = $this->getMostRecent($row['upc'], $store);
             $ret .= sprintf('<tr %s>
                 <td>%s<input type="hidden" name="upc[]" value="%s" /></td>
                 <td>%s</td>
@@ -225,7 +234,8 @@ class InvCountPage extends FannieRESTfulPage
                 $row['sku'],
                 $row['brand'],
                 $row['description'],
-                ($info ? '<a href="DateCountPage.php?id=' . $row['upc'] . '">' . $info['countDate'] . '</a>' : 'n/a'),
+                ($info ? '<a href="DateCountPage.php?id=' . $row['upc'] . '&store=' . $store . '">' 
+                    . $info['countDate'] . '</a>' : 'n/a'),
                 ($info ? $info['count'] : 'n/a'),
                 ($info ? $info['par'] : 'n/a'),
                 ($info ? $info['par'] : '0')
@@ -234,7 +244,7 @@ class InvCountPage extends FannieRESTfulPage
         $ret .= '</table>
             <p>
                 <button type="submit" class="btn btn-default">Save</button>
-                <a href="DateCountPage.php?vendor=' . $this->vendor . '"
+                <a href="DateCountPage.php?vendor=' . $this->vendor . '&store=' . $store . '"
                     class="btn btn-default btn-reset">Adjust Dates</a>
             </p>
             </form>';
@@ -264,6 +274,12 @@ class InvCountPage extends FannieRESTfulPage
 
     protected function get_live_view()
     {
+        try {
+            $store = $this->form->store;
+        } catch (Exception $ex) {
+            return '<div class="alert alert-danger">No store selected</div>';
+        }
+
         $prep = $this->connection->prepare('
             SELECT p.upc,
                 p.brand,
@@ -277,14 +293,14 @@ class InvCountPage extends FannieRESTfulPage
             FROM products AS p
                 INNER JOIN InventoryCache AS i ON p.upc=i.upc AND p.store_id=i.storeID
                 INNER JOIN InventoryCounts AS c ON p.upc=c.upc AND p.store_id=c.storeID AND c.mostRecent=1
-            WHERE p.store_id=1
+            WHERE p.store_id=?
                 AND p.default_vendor_id=?
             ORDER BY p.upc');
         $today = $this->connection->prepare('
             SELECT ' . DTrans::sumQuantity() . ' AS qty
             FROM ' . DTransactionsModel::selectDlog(date('Y-m-d')) . '
             WHERE upc=?');
-        $res = $this->connection->execute($prep, array($this->live));
+        $res = $this->connection->execute($prep, array($store, $this->live));
         $ret = '<table class="table table-bordered table-striped">';
         $ret .= '<tr>
             <th>UPC</th>
@@ -348,6 +364,7 @@ class InvCountPage extends FannieRESTfulPage
     {
         $vendors = new VendorsModel($this->connection);
         $supers = new SuperDeptNamesModel($this->connection);
+        $stores = FormLib::storePicker('store', false);
         $this->addOnloadCommand("enableLinea('#linea-field');\n");
         return '<div class="panel panel-default">
             <div class="panel-heading">Enter Item Count</div>
@@ -356,6 +373,10 @@ class InvCountPage extends FannieRESTfulPage
                 <div class="form-group">
                     <label>UPC</label>
                     <input type="text" name="id" id="linea-field" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label>Store</label>
+                    ' . $stores['html'] . '
                 </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-default">Submit</button>
@@ -381,6 +402,10 @@ class InvCountPage extends FannieRESTfulPage
                     </select>
                 </div>
                 <div class="form-group">
+                    <label>Store</label>
+                    ' . $stores['html'] . '
+                </div>
+                <div class="form-group">
                     <button type="submit" class="btn btn-default">Submit</button>
                 </div>
             </form>
@@ -404,6 +429,10 @@ class InvCountPage extends FannieRESTfulPage
                     </select>
                 </div>
                 <div class="form-group">
+                    <label>Store</label>
+                    ' . $stores['html'] . '
+                </div>
+                <div class="form-group">
                     <button type="submit" class="btn btn-default">Submit</button>
                 </div>
             </form>
@@ -417,8 +446,12 @@ class InvCountPage extends FannieRESTfulPage
         $this->id = '4011';
         $this->vendor = 1;
         $this->live = 1;
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->store = 1;
         $phpunit->assertNotEquals(0, strlen($this->get_view()));
         $phpunit->assertNotEquals(0, strlen($this->get_id_view()));
+        $phpunit->assertNotEquals(0, strlen($this->get_vendor_view()));
+        $this->setForm($form);
         $phpunit->assertNotEquals(0, strlen($this->get_vendor_view()));
         $phpunit->assertNotEquals(0, strlen($this->get_live_view()));
     }

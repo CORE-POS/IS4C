@@ -14,12 +14,11 @@ function addToBatch(upc)
     var price = $('#row'+upc).find('.srp').html();
     $.ajax({
         url: 'batchAjax.php',
-        data: dstr + '&action=batchAdd&price='+price,
-        success: function(data){
-            $('#row'+upc).attr('class','selection');
-            $('#row'+upc).find('.add-button').hide();
-            $('#row'+upc).find('.remove-button').show();
-        }
+        data: dstr + '&action=batchAdd&price='+price
+    }).done(function(data){
+        $('#row'+upc).attr('class','selection');
+        $('#row'+upc).find('.add-button').hide();
+        $('#row'+upc).find('.remove-button').show();
     });
 }
 function removeFromBatch(upc)
@@ -27,18 +26,17 @@ function removeFromBatch(upc)
     var dstr = "upc="+upc+"&vendorID="+vid+"&queueID="+qid+"&batchID="+bid;
     $.ajax({
         url: 'batchAjax.php',
-        data: dstr + '&action=batchDel',
-        success: function(data){
-            if ($('tr#row'+upc+' input.varp:checked').length > 0)
-                $('#row'+upc).attr('class','white');
-            else if ($('tr#row'+upc+' td.price').html() < $('tr#row'+upc+' td.srp').html())
-                $('#row'+upc).attr('class','red');
-            else
-                $('#row'+upc).attr('class','green');
+        data: dstr + '&action=batchDel'
+    }).done(function(data){
+        if ($('tr#row'+upc+' input.varp:checked').length > 0)
+            $('#row'+upc).attr('class','white');
+        else if ($('tr#row'+upc+' td.price').html() < $('tr#row'+upc+' td.srp').html())
+            $('#row'+upc).attr('class','red');
+        else
+            $('#row'+upc).attr('class','green');
 
-            $('#row'+upc).find('.add-button').show();
-            $('#row'+upc).find('.remove-button').hide();
-        }
+        $('#row'+upc).find('.add-button').show();
+        $('#row'+upc).find('.remove-button').hide();
     });
 }
 function toggleV(upc){
@@ -47,10 +45,7 @@ function toggleV(upc){
         $('#row'+upc).attr('class','white');
         $.ajax({
             url: 'batchAjax.php',
-            data: 'action=addVarPricing&upc='+upc,
-            success: function(data){
-
-            }
+            data: 'action=addVarPricing&upc='+upc
         });
     }
     else {
@@ -62,10 +57,7 @@ function toggleV(upc){
             $('#row'+upc).attr('class','red');
         $.ajax({
             url: 'batchAjax.php',
-            data: 'action=delVarPricing&upc='+upc,
-            success: function(data){
-
-            }
+            data: 'action=delVarPricing&upc='+upc
         });
     }
 }
@@ -98,8 +90,7 @@ function saveprice(upc){
     $.ajax({
         url: 'batchAjax.php',
         data: dstr+'&action=newPrice&price='+srp+'&batchID='+bid,
-        cache: false,
-        success: function(data){}
+        cache: false
     });
 }
 

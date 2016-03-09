@@ -27,9 +27,9 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 class productlist extends NoInputCorePage 
 {
 
-    private $temp_result;
-    private $temp_num_rows;
     private $boxSize;
+    private $search_results = array();
+    private $quantity = 1;
 
     private function adjustUPC($entered)
     {
@@ -52,30 +52,42 @@ class productlist extends NoInputCorePage
         return $entered;
     }
 
+    private function getQuantity($entered)
+    {
+        if (strstr($entered, '*')) {
+            list($qty,$rest) = explode('*', $entered, 2);
+            $qty = is_numeric($qty) ? $qty : 1;
+        } elseif (isset($_REQUEST['qty'])) {
+            $qty = is_numeric($_REQUEST['qty']) ? $_REQUEST['qty'] : 1;
+        }
+
+        return array($qty, $entered);
+    }
+
     function preprocess()
     {
         $entered = "";
-        if (isset($_REQUEST["search"]))
+        if (isset($_REQUEST["search"])) {
             $entered = strtoupper(trim($_REQUEST["search"]));
-        elseif (CoreLocal::get("pvsearch") != "")
-            $entered = strtoupper(trim(CoreLocal::get("pvsearch")));
-        else{
-            $this->temp_num_rows = 0;
+        } else {
             return True;
         }
 
         // canceled
-        if (empty($entered)){
+        if (empty($entered)) {
             $this->change_page($this->page_url."gui-modules/pos2.php");
             return False;
         }
+
+        list($qty, $entered) = $this->getQuantity($entered);
+        $this->quantity = $qty;
 
         // picked an item from the list
         if (is_numeric($entered) && strlen($entered) == 13) {
             $this->change_page(
                 $this->page_url
                 . "gui-modules/pos2.php"
-                . '?reginput=' . urlencode($entered)
+                . '?reginput=' . urlencode($qty . '*' . $entered)
                 . '&repeat=1');
             return false;
         }
@@ -84,6 +96,13 @@ class productlist extends NoInputCorePage
             $entered = $this->adjustUPC($entered);
         }
 
+        $this->search_results = $this->runSearch($entered);
+
+        return true;
+    } // END preprocess() FUNCTION
+
+    private function runSearch($entered)
+    {
         /* Get all enabled plugins and standard modules of the base. */
         $modules = AutoLoader::ListModules('ProductSearch');
         $results = array();
@@ -107,16 +126,13 @@ class productlist extends NoInputCorePage
             }
         }
 
-        $this->temp_result = $results;
-        $this->temp_num_rows = count($results);
-
-        return True;
-    } // END preprocess() FUNCTION
+        return $results;
+    }
 
     function head_content()
     {
         // Javascript is only really needed if there are results
-        if ($this->temp_num_rows != 0) {
+        if (count($this->search_results) > 0) {
             ?>
             <script type="text/javascript" src="../js/selectSubmit.js"></script>
             <?php
@@ -125,10 +141,7 @@ class productlist extends NoInputCorePage
 
     function body_content()
     {
-        $result = $this->temp_result;
-        $num_rows = $this->temp_num_rows;
-
-        if ($num_rows == 0) {
+        if (count($this->search_results) == 0) {
             $this->productsearchbox(_("no match found")."<br />"._("next search or enter upc"));
         } else {
             $this->add_onload_command("selectSubmit('#search', '#selectform', '#filter-span')\n");
@@ -151,7 +164,7 @@ class productlist extends NoInputCorePage
                 ."ondblclick=\"document.forms['selectform'].submit();\">";
 
             $selected = "selected";
-            foreach($result as $row){
+            foreach ($this->search_results as $row){
                 $price = $row["normal_price"];    
 
                 if ($row["scale"] != 0) $Scale = "S";
@@ -182,6 +195,7 @@ class productlist extends NoInputCorePage
                     Cancel <span class="smaller">[clear]</span>
                     </button></p>'
                 ."</div><!-- /.listboxText coloredText .centerOffset -->"
+                .'<input type="hidden" name="qty" value="' . $this->quantity . '" />'
                 ."</form>"
                 ."<div class=\"clear\"></div>";
             echo "</div>";
@@ -201,6 +215,7 @@ class productlist extends NoInputCorePage
             <p>
             <input type="text" name="search" size="15" id="search"
                 onblur="$('#search').focus();" />
+            <input type="hidden" name="qty" value="<?php echo $this->quantity; ?>" />
             </p>
             <button class="pos-button" type="button"
                 onclick="$('#search').val('');$(this).closest('form').submit();">
@@ -210,6 +225,18 @@ class productlist extends NoInputCorePage
             </div>
         </div>
         <?php
+    }
+
+    public function unitTest($phpunit)
+    {
+        $res = $this->runSearch('BANA');
+        $phpunit->assertInternalType('array', $res);
+        $phpunit->assertNotEquals(0, count($res));
+        $one = array_pop($res);
+        $this->search_results = array($one); // no need to loop whole list
+        ob_start();
+        $this->body_content();
+        $phpunit->assertNotEquals(0, ob_get_clean());
     }
 
 }

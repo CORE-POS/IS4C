@@ -10,15 +10,14 @@ function newBatch()
         url: 'BatchListPage.php',
         type: 'post',
         data: dataStr,
-        dataType: 'json',
-        success: function(resp) {
-            if (resp.error) {
-                showBootstrapAlert('#inputarea', 'danger', resp.msg);
-            } else {
-                showBootstrapAlert('#inputarea', 'success', resp.msg);
-                $('#displayarea').html(resp.new_list);
-                $('#newBatchForm')[0].reset();
-            }
+        dataType: 'json'
+    }).done(function(resp) {
+        if (resp.error) {
+            showBootstrapAlert('#inputarea', 'danger', resp.msg);
+        } else {
+            showBootstrapAlert('#inputarea', 'success', resp.msg);
+            $('#displayarea').html(resp.new_list);
+            $('#newBatchForm')[0].reset();
         }
     });
 }
@@ -76,13 +75,12 @@ function saveBatchLine(id)
         url: 'BatchListPage.php',
         type: 'post',
         data: dataStr,
-        dataType: 'json',
-        success: function(resp) {
-            if (resp.error) {
-                showBootstrapAlert('#inputarea', 'danger', resp.msg);
-            } else {
-                showBootstrapAlert('#inputarea', 'success', resp.msg);
-            }
+        dataType: 'json'
+    }).done(function(resp) {
+        if (resp.error) {
+            showBootstrapAlert('#inputarea', 'danger', resp.msg);
+        } else {
+            showBootstrapAlert('#inputarea', 'success', resp.msg);
         }
     });
 
@@ -122,14 +120,13 @@ function deleteBatch(id, name)
             url: 'BatchListPage.php',
             data: dataStr,
             type: 'post',
-            dataType: 'json',
-            success: function(resp) {
-                if (resp.error) {
-                    showBootstrapAlert('#inputarea', 'danger', resp.msg);
-                } else {
-                    showBootstrapAlert('#inputarea', 'success', resp.msg);
-                    $('tr#batchRow'+id).hide();
-                }
+            dataType: 'json'
+        }).done(function(resp) {
+            if (resp.error) {
+                showBootstrapAlert('#inputarea', 'danger', resp.msg);
+            } else {
+                showBootstrapAlert('#inputarea', 'success', resp.msg);
+                $('tr#batchRow'+id).hide();
             }
         });
     }
@@ -153,9 +150,8 @@ function batchListPager(filter,mode,batchID)
     $.ajax({
         url: 'BatchListPage.php',
         type: 'get',
-        data: data,
-        success: function(resp) {
-            $('#displayarea').html(resp);
-        }
+        data: data
+    }).done(function(resp) {
+        $('#displayarea').html(resp);
     });
 }

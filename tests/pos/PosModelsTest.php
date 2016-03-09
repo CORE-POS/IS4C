@@ -52,6 +52,7 @@ class PosModelsTest extends PHPUnit_Framework_TestCase
     {
         $obj = new COREPOS\pos\lib\models\op\TendersModel(Database::pDataConnect());
         $this->assertInternalType('array', $obj->getMap());
+        $obj->hookAddColumnTenderModule();
     }
 
     public function testParametersModel()

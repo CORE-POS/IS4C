@@ -87,6 +87,7 @@ class tenderlist extends NoInputCorePage
         $db = Database::pDataConnect();
         $q = "SELECT TenderCode,TenderName FROM tenders 
             WHERE MaxAmount > 0
+                AND TenderModule <> 'DisabledTender'
             ORDER BY TenderName";
         $r = $db->query($q);
 

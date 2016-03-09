@@ -44,6 +44,7 @@ class BatchReport extends FannieReportPage
         $dbc->selectDB($this->config->get('OP_DB'));
         $bStart = FormLib::get_form_value('date1','');
         $bEnd = FormLib::get_form_value('date2','');
+        $store = FormLib::get('store', 0);
         $model = new BatchesModel($dbc);
 
         /**
@@ -54,48 +55,19 @@ class BatchReport extends FannieReportPage
         if (!is_array($batchID)) {
             $batchID = array($batchID);
         }
-        $inArgs = array();
-        $inClause = '(';
         $upcs = array();
         foreach ($batchID as $bID) {
-            $inClause .= '?,';
-            $inArgs[] = $bID;
             $upcs = array_merge($upcs, $model->getUPCs($bID));
         }
         $upcs = array_unique($upcs);
-        $inClause = rtrim($inClause,',').')';
-
-        $batchInfoQ = '
-            SELECT batchName,
-                year(startDate) as sy, 
-                month(startDate) as sm, 
-                day(startDate) as sd,
-                year(endDate) as ey, 
-                month(endDate) as em, 
-                day(endDate) as ed
-            FROM batches 
-            WHERE batchID IN '.$inClause;
-        $batchInfoP = $dbc->prepare($batchInfoQ);
-        $batchInfoR = $dbc->execute($batchInfoP, $inArgs);
-
-        $bName = "";
-        while ($batchInfoW = $dbc->fetchRow($batchInfoR)) {
-            $bName .= $batchInfoW['batchName']." ";
-            if (empty($bStart)) {
-                $bStart = sprintf("%d-%02d-%02d",$batchInfoW['sy'],
-                    $batchInfoW['sm'],$batchInfoW['sd']);
-            }
-            if (empty($bEnd)){ 
-                $bEnd = sprintf("%d-%02d-%02d",$batchInfoW['ey'],
-                    $batchInfoW['em'],$batchInfoW['ed']);
-            }
-        }
+        list($bName, $bStart, $bEnd) = $this->getNameAndDates($batchID, $bStart, $bEnd);
         
         $dlog = DTransactionsModel::selectDlog($bStart,$bEnd);
         $bStart .= ' 00:00:00';
         $bEnd .= ' 23:59:59';
         $reportArgs = array($bStart, $bEnd);
         list($in_sql, $reportArgs) = $dbc->safeInClause($upcs, $reportArgs);
+        $reportArgs[] = $store;
 
         $salesBatchQ ="
             SELECT d.upc, 
@@ -112,12 +84,11 @@ class BatchReport extends FannieReportPage
             LEFT JOIN FloorSections as f ON f.floorSectionID=l.floorSectionID
             WHERE d.tdate BETWEEN ? AND ?
                 AND d.upc IN ($in_sql)
+                AND " . DTrans::isStoreID($store, 'd') . "
             GROUP BY d.upc, 
                 p.description
             ORDER BY d.upc";
         $salesBatchP = $dbc->prepare($salesBatchQ);
-        $inArgs[] = $bStart;
-        $inArgs[] = $bEnd;
         $salesBatchR = $dbc->execute($salesBatchP, $reportArgs);
 
         /**
@@ -161,6 +132,29 @@ class BatchReport extends FannieReportPage
         return array('Total',null,null,$sumSales,$sumQty);
     }
 
+    private function getBatches($dbc, $filter1, $filter2)
+    {
+        $batchQ = "
+            SELECT b.batchID,
+                batchName 
+            FROM batches AS b
+            WHERE 1=1 ";
+        $args = array();
+        if ($filter1 !== "") {
+            $batchQ .= " AND batchType=? ";
+            $args[] = $filter1;
+        }
+        if ($filter2 !== "") {
+            $batchQ .= " AND owner=? ";
+            $args[] = $filter2;
+        }
+        $batchQ .= "ORDER BY b.batchID desc";
+        $batchP = $dbc->prepare($batchQ);
+        $batchR = $dbc->execute($batchP, $args);
+
+        return $batchR;
+    }
+
     function form_content()
     {
         $dbc = $this->connection;
@@ -182,18 +176,8 @@ class BatchReport extends FannieReportPage
                 $ownerW[0]);
         }
 
-        $typeQ = $dbc->prepare("
-            SELECT batchTypeID,
-                typeDesc 
-            FROM batchType 
-            ORDER BY batchTypeID");
-        $typeR = $dbc->execute($typeQ);
-        $t_opts = "<option value=\"\">Select type</option>";
-        while ($typeW = $dbc->fetchRow($typeR)) {
-            $t_opts .= sprintf("<option %s value=%d>%s</option>",
-                (($filter1==$typeW[0])?'selected':''),
-                $typeW[0],$typeW[1]);
-        }
+        $types = new BatchTypeModel($dbc);
+        $t_opts = '<option value="">Select type</option>' . $types->toOptions($filter1);
 
         ob_start();
 
@@ -212,48 +196,74 @@ class BatchReport extends FannieReportPage
 
         echo '<hr />';
 
-        $batchQ = "
-            SELECT b.batchID,
-                batchName 
-            FROM batches AS b
-            WHERE 1=1 ";
-        $args = array();
-        if ($filter1 !== "") {
-            $batchQ .= " AND batchType=? ";
-            $args[] = $filter1;
-        }
-        if ($filter2 !== "") {
-            $batchQ .= " AND owner=? ";
-            $args[] = $filter2;
-        }
-        $batchQ .= "ORDER BY b.batchID desc";
-        $batchP = $dbc->prepare($batchQ);
-        $batchR = $dbc->execute($batchP, $args);
-
         echo '<form action="BatchReport.php" method="get">';
         echo '<div class="row">';
         echo '<div class="col-sm-5">';
         echo '<select size="15" multiple name=batchID[] class="form-control" required>';
+        $batchR = $this->getBatches($dbc, $filter1, $filter2);
         while ($batchW = $dbc->fetchRow($batchR)) {
             printf('<option value="%d">%s</option>',
                 $batchW['batchID'],$batchW['batchName']);
         }
         echo '</select>';
         echo '</div>';
-        echo '<div class="col-sm-7">';
-        echo '<label>Start Date</label>';
-        echo '<input class="form-control date-field" name="date1" id="date1" />';
-        echo '<label>End Date</label>';
-        echo '<input class="form-control date-field" name="date2" id="date2" />';
-        echo '<p><label>Excel ';
-        echo '<input type="checkbox" name="excel" value="xls" /></label></p>';
-        echo '<p><button type="submit" class="btn btn-default">Run Report</button></p>';
-        echo '</div>';
-        echo '</div>';
+
+        $rightCol = <<<HTML
+<div class="col-sm-7">
+    <p>
+        <label>Start Date</label>
+        <input class="form-control date-field" name="date1" id="date1" />
+    </p>
+    <p>
+        <label>End Date</label>
+        <input class="form-control date-field" name="date2" id="date2" />
+    </p>
+    <p>
+        <label>Store(s)
+        {{STORES}}
+    </p>
+    <p>
+        <label>Excel 
+        <input type="checkbox" name="excel" value="xls" />
+        </label>
+    </p>
+    <p>
+        <button type="submit" class="btn btn-default">Run Report</button>
+    </p>
+</div>
+</div>
+HTML;
+        $stores = FormLib::storePicker();
+        echo str_replace('{{STORES}}', $stores['html'], $rightCol);
 
         echo '</form>';
 
         return ob_get_clean();
+    }
+
+    private function getNameAndDates($batchID, $bStart, $bEnd)
+    {
+        $dbc = $this->connection;
+        list($inClause, $inArgs) = $dbc->safeInClause($batchID);
+        $batchInfoQ = $dbc->prepare("
+            SELECT batchName,
+                startDate AS startDate,
+                endDate AS endDate 
+            FROM batches 
+            WHERE batchID IN ($inClause)");
+        $batchInfoR = $dbc->execute($batchInfoQ,$inArgs);
+        $bName = "";
+        while ($batchInfoW = $dbc->fetchRow($batchInfoR)) {
+            $bName .= $batchInfoW['batchName'] . ' ';
+            if (empty($bStart) && strtotime($batchInfoW['startDate'])) {
+                $bStart = date('Y-m-d', strtotime($batchInfoW['startDate']));
+            }
+            if (empty($bEnd) && strtotime($batchInfoW['endDate'])) {
+                $bEnd = date('Y-m-d', strtotime($batchInfoW['endDate']));
+            }
+        }
+
+        return array($bName, $bStart, $bEnd);
     }
 
     function report_description_content()
@@ -268,33 +278,14 @@ class BatchReport extends FannieReportPage
         if (!is_array($batchID)) {
             $batchID = array($batchID);
         }
-        list($inClause, $inArgs) = $dbc->safeInClause($batchID);
-        $batchInfoQ = $dbc->prepare("
-            SELECT batchName,
-                startDate AS startDate,
-                endDate AS endDate 
-            FROM batches 
-            WHERE batchID IN ($inClause)");
-        $batchInfoR = $dbc->execute($batchInfoQ,$inArgs);
-        $bName = "";
-        while ($batchInfoW = $dbc->fetchRow($batchInfoR)) {
-            $bName .= $batchInfoW['batchName']." ";
-            if (empty($bStart)) {
-                $bStart = $batchInfoW['startDate'];
-            }
-            if (empty($bEnd)) {
-                $bEnd = $batchInfoW['endDate'];
-            }
-        }
+        list($bName, $bStart, $bEnd) = $this->getNameAndDates($batchID, $bStart, $bEnd);
         $ret[] = '<br /><span style="font-size:150%;">'.$bName.'</span>';
         if ($this->report_format == 'html') {
-            if (!$this->new_tablesorter) {
-                $this->add_script($FANNIE_URL.'src/javascript/jquery.js');
-                $this->add_script($FANNIE_URL.'src/javascript/jquery-ui.js');
-                $this->add_css_file($FANNIE_URL.'src/javascript/jquery-ui.css');
-            }
-            $ret[] = '<p><form action="BatchReport.php" method="get">';
-            $ret[] = "<span style=\"color:black; display:inline;\">From: 
+            $store = FormLib::storePicker();
+            $ret[] = '<p><form action="BatchReport.php" method="get" class="form-inline">';
+            $ret[] = "<span style=\"color:black; display:inline;\">
+                    Store: {$store['html']} 
+                    From: 
                     <input type=\"text\" name=\"date1\" size=\"10\" value=\"$bStart\" id=\"date1\" />
                     to: 
                     <input type=\"text\" name=\"date2\" size=\"10\" value=\"$bEnd\" id=\"date2\" />

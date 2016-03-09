@@ -5,10 +5,9 @@ var batchTypeEditor = (function($) {
             url: 'BatchTypeEditor.php',
             type: 'post',
             data: action+'='+val+'&bid='+bid,
-            dataType: 'json',
-            success: function(data){
-                showBootstrapPopover(elem, orig, data.error);
-            }
+            dataType: 'json'
+        }).done(function(data){
+            showBootstrapPopover(elem, orig, data.error);
         });
 
     };

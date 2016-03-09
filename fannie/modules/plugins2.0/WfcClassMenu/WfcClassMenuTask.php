@@ -46,6 +46,7 @@ class WfcClassMenuTask extends FannieTask
                         INNER JOIN productUser AS u ON p.upc=u.upc 
                         LEFT JOIN productExpires AS e ON p.upc=e.upc 
                     WHERE p.department=708 AND CURDATE() <= e.expires
+                        AND p.store_id=1
                     ORDER BY u.description');
         $insP = $dbc->prepare('
             INSERT INTO QuickLookups

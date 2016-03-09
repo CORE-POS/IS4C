@@ -258,8 +258,6 @@ class VendorIndexPage extends FannieRESTfulPage
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $ret = "";
 
-        $nameQ = $dbc->prepare("SELECT vendorName FROM vendors WHERE vendorID=?");
-        $nameR = $dbc->execute($nameQ,array($id));
         $model = new VendorsModel($dbc);
         $model->vendorID($id);
         $model->load();

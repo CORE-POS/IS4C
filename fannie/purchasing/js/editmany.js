@@ -5,21 +5,20 @@ function itemSearch(){
 	$.ajax({
 		url: 'EditManyPurchaseOrders.php?'+dataStr,
 		type: 'get',
-		dataType: 'json',
-		success: function(data){
-			if (data.length == 0){
-				$('#SearchResults').html('No item found');
-				$('#searchField').focus();
-			}
-			else if (data.length == 1){
-				$('#SearchResults').html(oneResultForm(data[0], 0));
-				$('#srQty0').focus();	
-			}
-			else {
-				$('#SearchResults').html(manyResultForm(data));
-				$('#srQty0').focus();	
-			}
-		}
+		dataType: 'json'
+    }).done(function(data){
+        if (data.length == 0){
+            $('#SearchResults').html('No item found');
+            $('#searchField').focus();
+        }
+        else if (data.length == 1){
+            $('#SearchResults').html(oneResultForm(data[0], 0));
+            $('#srQty0').focus();	
+        }
+        else {
+            $('#SearchResults').html(manyResultForm(data));
+            $('#srQty0').focus();	
+        }
 	});
 }
 
@@ -73,16 +72,15 @@ function saveItem(resultNum){
 	$.ajax({
 		url: 'EditManyPurchaseOrders.php?'+dstr,
 		method: 'get',
-		dataType: 'json',
-		success: function(data){
-			if (data.error){
-				$('#SearchResults').html(data.error);
-			}
-			else if (data.sidebar){
-				$('#orderInfo').html(data.sidebar);
-				$('#SearchResults').html('Item added to order');
-			}
-			$('#searchField').focus();
-		}
+		dataType: 'json'
+    }).done(function(data){
+        if (data.error){
+            $('#SearchResults').html(data.error);
+        }
+        else if (data.sidebar){
+            $('#orderInfo').html(data.sidebar);
+            $('#SearchResults').html('Item added to order');
+        }
+        $('#searchField').focus();
 	});
 }

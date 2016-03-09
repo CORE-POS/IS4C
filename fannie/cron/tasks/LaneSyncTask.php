@@ -45,15 +45,6 @@ Replaces nightly.lanesync.php and/or lanesync.api.php';
 
         set_time_limit(0);
 
-        foreach (array('valutecRequest', 'valutecRequestMod', 'valutecResponse') as $table) {
-            $result = SyncLanes::pullTable("$table", 'trans', SyncLanes::TRUNCATE_SOURCE);
-            /**
-            @severity: error message may indicate lane down or connectivity problem
-            */
-            $severity = strstr($result['messages'], 'Error:') ? FannieTask::TASK_LARGE_ERROR : FannieTask::TASK_NO_ERROR;
-            $this->cronMsg($result['messages'], $severity);
-        }
-
         $regularPushTables = array(
             'products',
             'custdata',

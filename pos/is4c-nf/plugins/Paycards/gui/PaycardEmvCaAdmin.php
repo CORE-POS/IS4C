@@ -109,8 +109,7 @@ class PaycardEmvCaAdmin extends NoInputCorePage
         } else {
             ?>
 <script type="text/javascript">
-function emvSubmit()
-{
+function emvSubmit() {
     $('div.baseHeight').html('Processing transaction');
     // POST XML request to driver using AJAX
     var xmlData = '<?php echo json_encode($this->xml); ?>';
@@ -123,27 +122,25 @@ function emvSubmit()
         url: 'http://localhost:8999',
         type: 'POST',
         data: xmlData,
-        dataType: 'text',
-        success: function(resp) {
-            // POST result to PHP page in POS to
-            // process the result.
-            $('div.baseHeight').html('Finishing transaction');
-            var f = $('<form id="js-form"></form>');
-            f.append($('<input type="hidden" name="xml-resp" />').val(resp));
-            f.append($('<input type="hidden" name="output-method" />').val(output_method);
-            $('body').append(f);
-            $('#js-form').submit();
-        },
-        error: function(resp) {
-            // display error to user?
-            // go to dedicated error page?
-            $('div.baseHeight').html('Finishing transaction');
-            var f = $('<form id="js-form"></form>');
-            f.append($('<input type="hidden" name="xml-resp" />').val(resp));
-            f.append($('<input type="hidden" name="output-method" />').val(output_method);
-            $('body').append(f);
-            $('#js-form').submit();
-        }
+        dataType: 'text'
+    }).done(function(resp) {
+        // POST result to PHP page in POS to
+        // process the result.
+        $('div.baseHeight').html('Finishing transaction');
+        var f = $('<form id="js-form"></form>');
+        f.append($('<input type="hidden" name="xml-resp" />').val(resp));
+        f.append($('<input type="hidden" name="output-method" />').val(output_method);
+        $('body').append(f);
+        $('#js-form').submit();
+    }).fail(function(resp) {
+        // display error to user?
+        // go to dedicated error page?
+        $('div.baseHeight').html('Finishing transaction');
+        var f = $('<form id="js-form"></form>');
+        f.append($('<input type="hidden" name="xml-resp" />').val(resp));
+        f.append($('<input type="hidden" name="output-method" />').val(output_method);
+        $('body').append(f);
+        $('#js-form').submit();
     });
 }
 </script>

@@ -46,6 +46,7 @@ class ProdUpdateModel extends BasicModel
     'dept' => array('type'=>'INT'),
     'tax' => array('type'=>'TINYINT'),
     'fs' => array('type'=>'TINYINT'),
+    'wic' => array('type'=>'TINYINT'),
     'scale' => array('type'=>'TINYINT'),
     'likeCode' => array('type'=>'INT'),
     'modified' => array('type'=>'DATETIME'),
@@ -117,6 +118,7 @@ tools/cron jobs/sprocs/etc actually do. They probably
         $this->dept($product->department());
         $this->tax($product->tax());
         $this->fs($product->foodstamp());
+        $this->wic($product->wicable());
         $this->scale($product->scale());
         $this->modified(date('Y-m-d H:i:s'));
         $this->forceQty($product->qttyEnforced());
@@ -139,6 +141,25 @@ tools/cron jobs/sprocs/etc actually do. They probably
         return true;
     }
 
+    private $col_map = array(
+        'upc' => 'p.upc',
+        'description' => 'description',
+        'price' => 'normal_price',
+        'salePrice' => 'special_price',
+        'cost' => 'cost',
+        'dept' => 'department',
+        'tax' => 'tax',
+        'fs' => 'foodstamp',
+        'wic' => 'wicable',
+        'scale' => 'scale',
+        'modified' => 'modified',
+        'forceQty' => 'qttyEnforced',
+        'noDisc' => 'discount',
+        'inUse' => 'inUse',
+        'likeCode' => 'likeCode',
+        'storeID' => 'store_id',
+    );
+
     /**
       Log updates to many products at once
       @param $upcs [array] of UPCs
@@ -152,23 +173,6 @@ tools/cron jobs/sprocs/etc actually do. They probably
             // nothing to log
             return true;
         }
-        $col_map = array(
-            'upc' => 'p.upc',
-            'description' => 'description',
-            'price' => 'normal_price',
-            'salePrice' => 'special_price',
-            'cost' => 'cost',
-            'dept' => 'department',
-            'tax' => 'tax',
-            'fs' => 'foodstamp',
-            'scale' => 'scale',
-            'modified' => 'modified',
-            'forceQty' => 'qttyEnforced',
-            'noDisc' => 'discount',
-            'inUse' => 'inUse',
-            'likeCode' => 'likeCode',
-            'storeID' => 'store_id',
-        );
 
         if (!$user) {
             $user = FannieAuth::getUID(FannieAuth::checkLogin());
@@ -176,7 +180,7 @@ tools/cron jobs/sprocs/etc actually do. They probably
 
         $select_cols = '?,?,';
         $insert_cols = 'updateType,' . $this->connection->identifierEscape('user') . ',';
-        foreach ($col_map as $insert => $select) {
+        foreach ($this->col_map as $insert => $select) {
             $insert_cols .= $this->connection->identifierEscape($insert) . ',';
             // identifier escape does not handle alias prefix
             $select_cols .= ($select == 'p.upc' ? $select :$this->connection->identifierEscape($select)) . ',';
