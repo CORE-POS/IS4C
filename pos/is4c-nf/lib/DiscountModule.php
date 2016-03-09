@@ -145,7 +145,6 @@ class DiscountModule
                     'upc' => 'DISCLINEITEM',
                     'description' => $name,
                     'amount1' => $obj->percentage(),
-                    'amount2' => $obj->calculate(CoreLocal::get('discountableTotal')),
                 ));
             }
         }
