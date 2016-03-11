@@ -25,7 +25,17 @@
 */
 class SatelliteRedisRecv extends FannieTask
 {
-    public $name = 'Satellite Store Transaction Sync';
+    public $name = 'Satellite Store Redis Receive'
+
+    public $log_start_stop = false;
+
+    public $default_schedule = array(
+        'min' => '4,9,14,19,24,29,34,39,44,49,54,57',
+        'hour' => '7-22',
+        'day' => '*',
+        'month' => '*',
+        'weekday' => '*',
+    );
     
     public function run()
     {
