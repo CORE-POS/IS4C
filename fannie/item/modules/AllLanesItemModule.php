@@ -69,7 +69,7 @@ function pollLanes() {
                         elem.addClass('alert-danger').html('Item not found on lane ' + (i+1));
                     } else {
                         if (lane.itemFound > 1) {
-                            elem.AddClass('alert-danger').html('Item found multiple items on lane ' + (i+1));
+                            elem.addClass('alert-danger').html('Item found multiple items on lane ' + (i+1));
                         } else {
                             elem.html('Item <span style="color:red;">' + lane.itemUPC + '</span> on lane ' + (i+1));
                         }

@@ -51,6 +51,7 @@ class UIGLib
         $findPO = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? AND vendorOrderID=?');
         $plu = $dbc->prepare('SELECT upc FROM vendorSKUtoPLU WHERE vendorID=? AND sku LIKE ?');
         $clear = $dbc->prepare('DELETE FROM PurchaseOrderItems WHERE orderID=?');
+        $storeID = FannieConfig::config('STORE_ID');
 
         for ($i=0; $i<$za->numFiles; $i++) {
             $info = $za->statIndex($i);
@@ -87,7 +88,7 @@ class UIGLib
                     // date has not been downloaded before OR
                     // date previously did not include this invoice
                     $dbc->execute($create, array($vendorID, $header_info['placedDate'], $header_info['placedDate'],
-                                    $header_info['vendorOrderID'], $header_info['vendorInvoiceID'], 1));
+                                    $header_info['vendorOrderID'], $header_info['vendorInvoiceID'], $storeID));
                     $id = $dbc->insertID();
                 }
 
