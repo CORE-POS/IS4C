@@ -67,6 +67,8 @@ $num = 1; // count tags
 $x = $left;
 $y = $top;
 //cycle through result array of query
+
+/*
 for ($ocount=0;$ocount<$offset;$ocount++){
     // move right by tag width
     $x += $width;
@@ -83,7 +85,7 @@ for ($ocount=0;$ocount<$offset;$ocount++){
 
     $num++;
 }
-
+*/
 
 foreach($data as $row){
 
