@@ -633,7 +633,18 @@ static public function loadParams()
         CoreLocal::set($key, $value);
     }
 
-    // apply local settings next
+    // apply store-specific settings next
+    // with any overrides that occur
+    $parameters->reset();
+    $parameters->store_id(CoreLocal::get('store_id'));
+    $parameters->lane_id(0);
+    foreach ($parameters->find() as $local) {
+        $key = $local->param_key();
+        $value = $local->materializeValue();
+        CoreLocal::set($key, $value);
+    }
+
+    // apply lane-specific settings last
     // with any overrides that occur
     $parameters->reset();
     $parameters->lane_id(CoreLocal::get('laneno'));
