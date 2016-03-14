@@ -28,8 +28,8 @@ if (!class_exists('FannieAPI')) {
 
 class ProdLocationEditor extends FannieRESTfulPage
 {
-    protected $header = 'Bad Scans';
-    protected $title = 'Bad Scans';
+    protected $header = 'Product Location Update';
+    protected $title = 'Product Location Update';
 
     public $description = '[Bad Scan Tool] shows information about UPCs that were scanned
     at the lanes but not found in POS.';
@@ -40,7 +40,47 @@ class ProdLocationEditor extends FannieRESTfulPage
     function preprocess()
     {
         $this->__routes[] = 'get<id1>';
+        $this->__routes[] = 'get<locations_selected>';
+            
         return parent::preprocess();
+    }
+    
+    function get_locations_selected_view()
+    {
+        
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $id1 = $_GET['id1'];
+        $id2 = $_GET['id2'];
+        $ret = "";
+        $query = $dbc->prepare('
+                select 
+                    p.upc
+                from products as p 
+                    left join prodPhysicalLocation as pp on pp.upc=p.upc 
+                    left join batchList as bl on b  l.upc=p.upc 
+                    left join batches as b on b.batchID=bl.batchID 
+                where b.batchID >= ' . $id1 . '
+                    and b.batchID <= ' . $id2 . ' 
+                    and pp.floorSectionID is NULL 
+                order by p.department;
+            ');
+            $result = $dbc->execute($query);
+            $count = 0;
+            while($row = $dbc->fetch_row($result)) {
+                $count++;
+            }
+            if (mysql_errno() > 0) {
+                echo mysql_errno() . ": " . mysql_error(). "<br>";
+            } 
+            if ($count > 0) {
+                $ret .= 'Something went wrong, there are still ' . $count . ' products
+                    missing locations in the selected range of batches.';
+            } else {
+                $ret .= '<div class="text-success"><h3>You have successfully updated the products in the declared 
+                    batch range.</h3></div>';
+            }
+            
+        return $ret;
     }
 
     function get_id1_view()
@@ -58,26 +98,31 @@ class ProdLocationEditor extends FannieRESTfulPage
             $query = $dbc->prepare('
                 select 
                     p.upc, 
-                    p.description, 
-                    p.department 
+                    p.description as pdesc, 
+                    p.department,
+                    pu.description as pudesc,
+                    pu.brand,
+                    d.dept_name
                 from products as p 
                     left join prodPhysicalLocation as pp on pp.upc=p.upc 
                     left join batchList as bl on bl.upc=p.upc 
                     left join batches as b on b.batchID=bl.batchID 
+                    left join productUser as pu on pu.upc=p.upc
+                    left join departments as d on d.dept_no=p.department
                 where b.batchID >= ' . $id1 . '
                     and b.batchID <= ' . $id2 . ' 
                     and pp.floorSectionID is NULL 
                 order by p.department;
             ');
             $result = $dbc->execute($query);
-            echo var_dump($result);
             $item = array();
             while($row = $dbc->fetch_row($result)) {
                 $item[$row['upc']]['upc'] = $row['upc'];
                 $item[$row['upc']]['dept'] = $row['department'];
-                $item[$row['upc']]['desc'] = $row['description'];
+                $item[$row['upc']]['desc'] = $row['pudesc'];
+                $item[$row['upc']]['brand'] = $row['brand'];
+                $item[$row['upc']]['dept_name'] = $row['dept_name'];
             }
-            echo count($item);
             if (mysql_errno() > 0) {
                 echo mysql_errno() . ": " . mysql_error(). "<br>";
             } 
@@ -96,7 +141,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             }    
             
             $ret = "";
-            print '<table class="table">
+            $ret .= '<table class="table">
                 <form method="get">
                     <input type="hidden" name="locations_selected" value="1">
                     <input type="hidden" name="id1" value="' . $id1 . '">
@@ -104,8 +149,10 @@ class ProdLocationEditor extends FannieRESTfulPage
                 ';
             foreach ($item as $key => $row) {
                 $ret .= '
-                    <tr><td>' . $key . '</td>
+                    <tr><td><a href="http://key/git/fannie/item/ItemEditorPage.php?searchupc=' . $key . '" target="">' . $key . '</a></td>
+                    <td>' . $row['brand'] . '</td>
                     <td>' . $row['desc'] . '</td>
+                    <td>' . $row['dept_name'] . '</td>
                     <td>' . $row['dept'] . '</td>
                     <td><Span class="collapse"> </span>
                         <select class="form-control input-sm" name="' . $key . '" value="" />
@@ -117,19 +164,19 @@ class ProdLocationEditor extends FannieRESTfulPage
                             
                     $ret .= '</tr>';
             }
-            print $ret;
-            print '<tr><td><input type="submit" class="form-control" value="Update Locations"></td></table>
+            
+            $ret .= '<tr><td><input type="submit" class="form-control" value="Update Locations"></td></table>
                 </form>';   
             
         }
-
+        
         if(isset($_GET['locations_selected'])) {
             echo "<h1>you've pressed the submit button</h1>";
             
-            foreach($_GET as $key => $value){
+            foreach($_GET as $key => $floorsection){
                 if (strlen($key) == 13) {
                         $query = $dbc->prepare('UPDATE prodPhysicalLocation 
-                        SET floorSectionID=' . $value . ' 
+                        SET floorSectionID=' . $floorsection . ' 
                         WHERE upc=' . $key . '
                     ');
                     $result = $dbc->execute($query);
