@@ -25,14 +25,24 @@
 */
 class SatelliteRedisSend extends FannieTask
 {
-    public $name = 'Satellite Store Transaction Sync';
+    public $name = 'Satellite Store Redis Send';
+
+    public $log_start_stop = false;
+
+    public $default_schedule = array(
+        'min' => '2,7,12,17,22,27,32,37,42,47,52,57',
+        'hour' => '7-22',
+        'day' => '*',
+        'month' => '*',
+        'weekday' => '*',
+    );
     
     public function run()
     {
         $conf = $this->config->get('PLUGIN_SETTINGS');
         $my_db = $conf['SatelliteDB'];
         $myID = $conf['SatelliteStoreID'];
-        $redis = $conf['SatelliteRedis'];
+        $redis_host = $conf['SatelliteRedis'];
 
         $remote = FannieDB::get($this->config->get('TRANS_DB'));
         if (!$remote->isConnected()) {
@@ -46,7 +56,7 @@ class SatelliteRedisSend extends FannieTask
             return false;
         }
 
-        $redis = new Predis\Client();
+        $redis = new Predis\Client($redis_host);
 
         $this->sendTable($local, $redis, $myID, 'dtransactions', 'store_row_id');
         $this->sendTable($local, $redis, $myID, 'PaycardTransactions', 'storeRowId');
