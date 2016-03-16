@@ -623,6 +623,11 @@ class MercuryE2E extends BasicCCModule
     */
     public function prepareDataCapVoid($pcID)
     {
+        $dbc = Database::tDataConnect();
+        $prep = $dbc->prepare('SELECT transNo, registerNo FROM PaycardTransactions WHERE paycardTransactionID=?');
+        $row = $dbc->getRow($prep, $pcID);
+        CoreLocal::set('paycard_trans', CoreLocal::get('CashierNo') . '-' . $row['registerNo'] . '-' . $row['transNo']);
+
         $request = new PaycardVoidRequest($this->refnum(CoreLocal::get('paycard_id')));
         $request->setProcessor('MercuryE2E');
 

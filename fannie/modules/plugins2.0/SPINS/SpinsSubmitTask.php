@@ -98,6 +98,15 @@ class SpinsSubmitTask extends FannieTask
 
         $this->cronMsg('SPINS data for week #' . $spins_week . '(' . date('Y-m-d', $start) . ' to ' . date('Y-m-d', $end) . ')', FannieLogger::INFO);
 
+        $filename = $FANNIE_PLUGIN_SETTINGS['SpinsPrefix'];
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $filename .= sprintf('%02d', $this->config->get('STORE_ID'));
+        }
+        if (!empty($filename)) {
+            $filename .= '_';
+        }
+        $filename .= date('mdY', $end) . '.csv';
+
         // Odd "CASE" statement is to deal with special order
         // line items the have case size & number of cases
         $dataQ = "SELECT d.upc, p.description,
@@ -109,14 +118,17 @@ class SpinsSubmitTask extends FannieTask
                   WHERE p.Scale = 0
                     AND d.upc > '0000000999999' 
                     AND tdate BETWEEN ? AND ?
+                    " . ($this->config->get('STORE_MODE') == 'HQ' ? ' AND d.store_id=? ' : '') . "
                   GROUP BY d.upc, p.description";
 
-        $filename = date('mdY', $end) . '.csv';
         $outfile = sys_get_temp_dir()."/".$filename;
         $fp = fopen($outfile,"w");
 
         $dataP = $dbc->prepare($dataQ);
         $args = array(date('Y-m-d 00:00:00', $start), date('Y-m-d 23:59:59', $end));
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $args[] = $this->config->get('STORE_ID');
+        }
         $dataR = $dbc->execute($dataP, $args);
         while($row = $dbc->fetch_row($dataR)){
             for($i=0;$i<4; $i++){
