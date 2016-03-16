@@ -48,13 +48,13 @@ class FannieMemberLaneSync extends FannieWebService
         }
 
         $dbc = \FannieDB::get(\FannieConfig::config('OP_DB'));
-        $custdata = new CustdataModel($dbc);
+        $custdata = new \CustdataModel($dbc);
         $custdata->CardNo($args->id);
         foreach ($custdata->find() as $c) {
             $c->pushToLanes();
         }
 
-        $cards = new MemberCardsModel($dbc);
+        $cards = new \MemberCardsModel($dbc);
         $cards->card_no($args->id);
         $cards->load();
         $cards->pushToLanes();

@@ -12,7 +12,7 @@ var boxMsg2 = (function($) {
 
     var endorse = function(endorseType, endorseAmt, callback) {
         $.ajax({
-            url: urlStem + 'ajax-callbacks/AjaxEndorse.php',
+            url: '../ajax-callbacks/AjaxEndorse.php',
             type: 'get',
             data: 'type='+endorseType+'&amount='+endorseAmt,
             cache: false
