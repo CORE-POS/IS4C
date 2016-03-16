@@ -176,10 +176,12 @@ $q = "SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
     o.subStatus AS sub_status,
     CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name,
     MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag,
-    MAX(p.card_no) AS card_no
+    MAX(p.card_no) AS card_no,
+    MAX(s.description) AS storeName
     FROM {$TRANS}PendingSpecialOrder as p
         LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
         LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
+        LEFT JOIN Stores AS s ON o.storeID=s.storeID
     $filterstring
     GROUP BY p.order_id,statusFlag,subStatus
     HAVING 
@@ -272,6 +274,7 @@ $ret = '<form id="pdfform" action="tagpdf.php" method="get">';
 $ret .= sprintf('<table cellspacing="0" cellpadding="4" border="1">
     <tr>
     <th><a href="" onclick="resort(\'%s\');return false;">Order Date</a></th>
+    <th><a href="" onclick="resort(\'%s\');return false;">Store</a></th>
     <th><a href="" onclick="resort(\'%s\');return false;">Name</a></th>
     <th>Desc</th>
     <th>Supplier</th>
@@ -280,6 +283,7 @@ $ret .= sprintf('<table cellspacing="0" cellpadding="4" border="1">
     <th><a href="" onclick="resort(\'%s\');return false;">Status</a></th>
     <th>Printed</th>',
     base64_encode("min(datetime)"),
+    base64_encode("MAX(s.description)"),
     base64_encode("CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END"),
     base64_encode("sum(total)"),
     base64_encode("count(*)-1"),
@@ -294,6 +298,7 @@ foreach($orders as $w){
     if (!isset($valid_ids[$w['order_id']])) continue;
 
     $ret .= sprintf('<tr class="%s"><td><a href="view.php?orderID=%d&k=%s">%s</a></td>
+        <td>%s</td>
         <td><a href="" onclick="applyMemNum(%d);return false;">%s</a></td>
         <td style="font-size:75%%;">%s</td>
         <td style="font-size:75%%;">%s</td>
@@ -301,6 +306,7 @@ foreach($orders as $w){
         ($w['charflag']=='P'?'arrived':'notarrived'),
         $w['order_id'],$key,
         array_shift(explode(' ',$w['orderDate'])),
+        $w['storeName'],
         $w['card_no'],$w['name'],
         (isset($items[$w['order_id']])?$items[$w['order_id']]:'&nbsp;'),
         (isset($suppliers[$w['order_id']])?$suppliers[$w['order_id']]:'&nbsp;'),

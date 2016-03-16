@@ -1099,7 +1099,7 @@ function getCustomerForm($orderID,$memNum="0")
     }
     $ret .= '</select><p />';
     $ret .= '<b>Store</b>: ';
-    $ret .= sprintf('<select onchange="updateStore(%d, this.value);">', $orderID);
+    $ret .= sprintf('<select id="oStoreID" onchange="updateStore(%d, this.value);">', $orderID);
     $stores = new StoresModel($dbc);
     $ret .= '<option value="0">Choose...</option>';
     $ret .= $stores->toOptions($orderModel->storeID());

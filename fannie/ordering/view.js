@@ -352,6 +352,11 @@ function validateAndHome(){
 	var nT = $('#nText').val();
 	if (nT !== "" && nD === '0') {
 		window.alert("Assign your notes to a department");
+		return false;
+    }
+
+    if ($('#oStoreID').val() == 0) {
+        window.alert('Choose a store');
 	} else {
 		window.location = $('#redirectURL').val();
     }
