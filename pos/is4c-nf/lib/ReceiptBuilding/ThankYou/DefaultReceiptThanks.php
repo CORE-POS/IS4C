@@ -49,6 +49,8 @@ class DefaultReceiptThanks
         $ret .= $this->print_handler->centerString($thanks, true);
         $ret .= $this->print_handler->TextStyle(true);
         $ret .= "\n\n";
+
+        return $ret;
     }
 }
 
