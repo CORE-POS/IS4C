@@ -64,7 +64,7 @@ $dates = array($dstr.' 00:00:00',$dstr.' 23:59:59');
 $store_dates = array($dstr.' 00:00:00',$dstr.' 23:59:59', $store);
 
 if ($excel === false) {
-    echo "<br /><a href=index.php?date=$repDate&excel=yes>Click here for Excel version</a>";
+    echo "<br /><a href=index.php?date=$repDate&store=$store&excel=yes>Click here for Excel version</a>";
 }
 
 echo '<br>Report run ' . $today. ' for ' . $repDate."<br />";
