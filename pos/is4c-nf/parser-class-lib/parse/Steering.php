@@ -80,7 +80,7 @@ class Steering extends Parser
             case "PV":
                 $this->ret['main_frame'] = $my_url."gui-modules/productlist.php";
                 if (isset($pvsearch) && $pvsearch != '') {
-                    $this->ret['main_fram'] .= "?search=" . $pvsearch;
+                    $this->ret['main_frame'] .= "?search=" . $pvsearch;
                 }
                 return true;
 
