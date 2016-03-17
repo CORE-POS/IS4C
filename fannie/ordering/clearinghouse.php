@@ -94,6 +94,12 @@ $status = array(
     5 => "Arrived"
 );
 
+$stores = array(
+    0 => 'All',
+    1 => 'Hillside',
+    2 => 'Denfeld',
+);
+
 $assignments = array();
 $q = "SELECT superID,super_name FROM MasterSuperDepts
     GROUP BY superID,super_name ORDER BY superID";
@@ -113,10 +119,18 @@ while($w = $dbc->fetch_row($r)){
 $f1 = (isset($_REQUEST['f1']) && $_REQUEST['f1'] !== '')?(int)$_REQUEST['f1']:'';
 $f2 = (isset($_REQUEST['f2']) && $_REQUEST['f2'] !== '')?$_REQUEST['f2']:'';
 $f3 = (isset($_REQUEST['f3']) && $_REQUEST['f3'] !== '')?$_REQUEST['f3']:'';
+$f4 = (isset($_REQUEST['f4']) && $_REQUEST['f4'] !== '')?$_REQUEST['f4']:'';
 
 $filterstring = "";
 if ($f1 !== ''){
     $filterstring = sprintf("WHERE statusFlag=%d",$f1);
+}
+if ($f4) {
+    if (empty($filterstring)) {
+        $filterstring .= sprintf(' WHERE o.storeID=%d ', $f4);
+    } else {
+        $filterstring .= sprintf(' AND o.storeID=%d ', $f4);
+    }
 }
 
 echo '<a href="index.php">Main Menu</a>';
@@ -154,6 +168,13 @@ echo '<b>Supplier</b>: <select id="f_3" onchange="refilter();">';
 foreach($suppliers as $v){
     printf("<option %s>%s</option>",
         ($v===$f3?'selected':''),$v);
+}
+echo '</select>';
+echo '&nbsp;';
+echo '<b>Store</b>: <select id="f_4" onchange="refilter();">';
+foreach($stores as $k => $v){
+    printf("<option %s value=\"%s\">%s</option>",
+        ($k==$f4?'selected':''),$k, $v);
 }
 echo '</select>';
 echo '<hr />';
@@ -335,8 +356,9 @@ function refilter(){
     var f1 = $('#f_1').val();
     var f2 = $('#f_2').val();
     var f3 = $('#f_3').val();
+    var f4 = $('#f_4').val();
 
-    var loc = 'clearinghouse.php?f1='+f1+'&f2='+f2+'&f3='+f3;
+    var loc = 'clearinghouse.php?f1='+f1+'&f2='+f2+'&f3='+f3+'&f4='+f4;
     if ($('#cardno').length!=0)
         loc += '&card_no='+$('#cardno').val();
     if ($('#orderSetting').length!=0)
