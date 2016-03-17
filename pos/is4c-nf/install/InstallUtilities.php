@@ -1366,6 +1366,7 @@ class InstallUtilities extends LibraryClass
         }
 
         $rplttR = str_replace('ltt_receipt', 'rp_ltt_receipt', $lttR);
+        $rplttR = str_replace('select', 'select emp_no, register_no, trans_no, ', $rplttR);
         self::dbStructureModify($db,'rp_ltt_receipt','DROP VIEW rp_ltt_receipt',$errors);
         if(!$db->table_exists('rp_ltt_receipt',$name)){
             self::dbStructureModify($db,'rp_ltt_receipt',$rplttR,$errors);
@@ -1373,6 +1374,7 @@ class InstallUtilities extends LibraryClass
 
         $rprV = str_replace('VIEW receipt AS', 'VIEW rp_receipt AS', $receiptV);
         $rprV = str_replace('ltt_receipt', 'rp_ltt_receipt', $rprV);
+        $rprV = str_replace('select', 'select emp_no, register_no, trans_no, ', $rprV);
         if(!$db->table_exists('rp_receipt',$name)){
             self::dbStructureModify($db,'rp_receipt',$rprV,$errors);
         }
