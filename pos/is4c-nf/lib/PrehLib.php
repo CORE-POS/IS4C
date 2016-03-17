@@ -1210,11 +1210,10 @@ static public function percentDiscount($strl,$json=array())
             DisplayLib::standardClearButton()
         );
     } else {
-        if ($strl != 0) {
-            TransRecord::discountnotify($strl);
-        }
         $dbc = Database::tDataConnect();
         $dbc->query("update localtemptrans set percentDiscount = ".$strl);
+        CoreLocal::set('percentDiscount', $strl);
+        DiscountModule::transReset();
         $chk = self::ttl();
         if ($chk !== true) {
             $json['main_frame'] = $chk;
