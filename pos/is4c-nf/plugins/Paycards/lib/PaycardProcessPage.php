@@ -117,7 +117,7 @@ class PaycardProcessPage extends BasicCorePage
                     window.location = destination;
                 }
             }).fail(function(){
-                window.location = '<?php echo $this->page_url; ?>/gui-modules/pos2.php';
+                window.location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
             });
             paycard_processingDisplay();
             return false;
