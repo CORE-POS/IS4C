@@ -34,7 +34,7 @@ class PriceOverride extends NoInputCorePage {
         $line_id = CoreLocal::get("currentid");
         $dbc = Database::tDataConnect();
         
-        $query = "SELECT description,total,department,scale FROM localtemptrans
+        $query = "SELECT description,unitPrice,department,scale FROM localtemptrans
             WHERE trans_type IN ('I','D') AND upc <> '0'
             AND trans_id=".((int)$line_id);
         $res = $dbc->query($query);
