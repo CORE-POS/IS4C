@@ -31,43 +31,75 @@ class ProdLocationEditor extends FannieRESTfulPage
     protected $header = 'Product Location Update';
     protected $title = 'Product Location Update';
 
-    public $description = '[Bad Scan Tool] shows information about UPCs that were scanned
-    at the lanes but not found in POS.';
+    public $description = '[Product Location Update] find and update products missing 
+        floor section locations.';
     public $has_unit_tests = true;
 
     private $date_restrict = 1;
+    private $data = array();
 
     function preprocess()
     {
+        
         $this->__routes[] = 'get<id1>';
-        $this->__routes[] = 'get<locations_selected>';
-            
+        $this->__routes[] = 'post<save>';
         return parent::preprocess();
     }
     
-    function get_locations_selected_view()
+    function post_save_view()
     {
         
+        global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        $store_id = $_POST['store_id'];
         $id1 = $_GET['id1'];
         $id2 = $_GET['id2'];
-        $ret = "";
+        $ret = '';
+        $item = array();
+        foreach ($_POST as $upc => $section) {
+            if (strlen($upc) == 13) $item[$upc] = $section;
+        }
+            
+        foreach ($item as $upc => $section) {
+            $query = $dbc->prepare('
+                UPDATE prodPhysicalLocation 
+                SET floorSectionID=' . $section . ' 
+                WHERE upc=' . $upc . '
+                    AND store_id = ' . $store_id . ' 
+            ;');
+            $result = $dbc->execute($query);
+        }
+        
         $query = $dbc->prepare('
                 select 
-                    p.upc
+                    p.upc,
+                    pp.floorSectionID
                 from products as p 
                     left join prodPhysicalLocation as pp on pp.upc=p.upc 
-                    left join batchList as bl on b  l.upc=p.upc 
+                    left join batchList as bl on bl.upc=p.upc 
                     left join batches as b on b.batchID=bl.batchID 
                 where b.batchID >= ' . $id1 . '
                     and b.batchID <= ' . $id2 . ' 
                     and pp.floorSectionID is NULL 
+                    AND department NOT BETWEEN 508 AND 998
+                    AND department NOT BETWEEN 250 AND 259
+                    AND department NOT BETWEEN 225 AND 234
+                    AND department NOT BETWEEN 1 AND 25
+                    AND department NOT BETWEEN 61 AND 78
+                    AND department != 46
+                    AND department != 150
+                    AND department != 208
+                    AND department != 235
+                    AND department != 240
+                    AND department != 500
+                group by p.upc
                 order by p.department;
             ');
             $result = $dbc->execute($query);
             $count = 0;
             while($row = $dbc->fetch_row($result)) {
                 $count++;
+                //$ret .= $row['upc'] . " location updated to " . $row['floorSectionID'] . "<br>";
             }
             if (mysql_errno() > 0) {
                 echo mysql_errno() . ": " . mysql_error(). "<br>";
@@ -79,7 +111,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                 $ret .= '<div class="text-success"><h3>You have successfully updated the products in the declared 
                     batch range.</h3></div>';
             }
-            
+        
         return $ret;
     }
 
@@ -88,12 +120,10 @@ class ProdLocationEditor extends FannieRESTfulPage
         
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        //$dbc = $this->connection;
         
-        if (isset($_GET['id1'])) {
-            
-            $id1 = $_GET['id1'];
-            $id2 = $_GET['id2'];
+        $id1 = $_GET['id1'];
+        $id2 = $_GET['id2'];
+        $store_id = $_GET['store_id'];
             
             $query = $dbc->prepare('
                 select 
@@ -111,7 +141,19 @@ class ProdLocationEditor extends FannieRESTfulPage
                     left join departments as d on d.dept_no=p.department
                 where b.batchID >= ' . $id1 . '
                     and b.batchID <= ' . $id2 . ' 
+                    and p.store_id= ' . $store_id . '
                     and pp.floorSectionID is NULL 
+                    AND department NOT BETWEEN 508 AND 998
+                    AND department NOT BETWEEN 250 AND 259
+                    AND department NOT BETWEEN 225 AND 234
+                    AND department NOT BETWEEN 1 AND 25
+                    AND department NOT BETWEEN 61 AND 78
+                    AND department != 46
+                    AND department != 150
+                    AND department != 208
+                    AND department != 235
+                    AND department != 240
+                    AND department != 500
                 order by p.department;
             ');
             $result = $dbc->execute($query);
@@ -142,10 +184,11 @@ class ProdLocationEditor extends FannieRESTfulPage
             
             $ret = "";
             $ret .= '<table class="table">
-                <form method="get">
-                    <input type="hidden" name="locations_selected" value="1">
+                <form method="post">
+                    <input type="hidden" name="save" value="1">
                     <input type="hidden" name="id1" value="' . $id1 . '">
                     <input type="hidden" name="id2" value="' . $id2 . '">
+                    <input type="hidden" name="store_id" value="' . $store_id . '">
                 ';
             foreach ($item as $key => $row) {
                 $ret .= '
@@ -168,23 +211,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             $ret .= '<tr><td><input type="submit" class="form-control" value="Update Locations"></td></table>
                 </form>';   
             
-        }
         
-        if(isset($_GET['locations_selected'])) {
-            echo "<h1>you've pressed the submit button</h1>";
-            
-            foreach($_GET as $key => $floorsection){
-                if (strlen($key) == 13) {
-                        $query = $dbc->prepare('UPDATE prodPhysicalLocation 
-                        SET floorSectionID=' . $floorsection . ' 
-                        WHERE upc=' . $key . '
-                    ');
-                    $result = $dbc->execute($query);
-                }
-            }
-            
-        }
-              
         return $ret;
     }
     
@@ -196,6 +223,9 @@ class ProdLocationEditor extends FannieRESTfulPage
             <p> 
                 Enter range of batchIDs to check for items missing location.
             </p>
+                <select class="form-control inline" name="store_id" required>
+                <option value="1">Hillside</option>
+                <option value="2">Denfeld</option>
                 <input type="text" class="form-control inline" name="id1" autofocus required>
                 <input type="text" class="form-control inline" name="id2" required>
                 <input type="submit" class="btn btn-default" value="Go">
