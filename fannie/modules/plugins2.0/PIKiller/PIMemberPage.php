@@ -222,6 +222,7 @@ class PIMemberPage extends PIKillerPage {
         $prep = $dbc->prepare('
             SELECT webServiceUrl FROM Stores WHERE hasOwnItems=1 AND storeID<>?
             ');
+        $res = $dbc->execute($prep, array(\FannieConfig::config('STORE_ID')));
         $client = new \Datto\JsonRpc\Http\Client($row['webServiceUrl']);
         while ($row = $dbc->fetchRow($res)) {
             $client = new \Datto\JsonRpc\Http\Client($row['webServiceUrl']);
