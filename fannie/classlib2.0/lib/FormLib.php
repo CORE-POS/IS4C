@@ -167,8 +167,11 @@ class FormLib extends \COREPOS\common\FormLib
         $op_db = FannieConfig::config('OP_DB');
         $dbc = FannieDB::getReadOnly($op_db);
 
+        $clientIP = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+        $ranges = FannieConfig::config('STORE_NETS');
+
         $stores = new StoresModel($dbc);
-        $current = FormLib::get($field_name, 0);
+        $current = FormLib::get($field_name, false);
         $ret = '<select name="' . $field_name . '" class="form-control">';
         if ($all) {
             $labels = array(0 => _('All Stores'));
@@ -177,8 +180,19 @@ class FormLib extends \COREPOS\common\FormLib
             $labels = array();
         }
         foreach($stores->find('storeID') as $store) {
+            $selected = '';
+            if ($store->storeID() == $current) {
+                $selected = 'selected';
+            } elseif (
+                $current === false
+                && isset($ranges[$store->storeID()]) 
+                && class_exists('\\Symfony\\Component\\HttpFoundation\\IpUtils')
+                && \Symfony\Component\HttpFoundation\IpUtils::checkIp($clientIP, $ranges[$store->storeID()])
+                ) {
+                $selected = 'selected';
+            }
             $ret .= sprintf('<option %s value="%d">%s</option>',
-                    ($store->storeID() == $current ? 'selected' : ''),
+                    $selected,
                     $store->storeID(),
                     $store->description()
             );

@@ -44,8 +44,24 @@ class BatchReport extends FannieReportPage
         $dbc->selectDB($this->config->get('OP_DB'));
         $bStart = FormLib::get_form_value('date1','');
         $bEnd = FormLib::get_form_value('date2','');
-        $store = FormLib::get('store', 0);
+        $store = FormLib::get('store', false);
         $model = new BatchesModel($dbc);
+
+        if ($store === false) {
+            $clientIP = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+            $ranges = $this->config->get('STORE_NETS');
+            foreach ($ranges as $storeID => $range) {
+                if (
+                    class_exists('\\Symfony\\Component\\HttpFoundation\\IpUtils')
+                    && \Symfony\Component\HttpFoundation\IpUtils::checkIp($clientIP, $range)
+                    ) {
+                    $store = $storeID;
+                }
+            }
+            if ($store === false) {
+                $store = 0;
+            }
+        }
 
         /**
           Assemble argument array and appropriate string
