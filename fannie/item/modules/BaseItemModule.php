@@ -1058,24 +1058,24 @@ HTML;
 
         $model = new ProductsModel($dbc);
         $model->upc($upc);
-        if (!$model->load()) {
-            // fully init new record
-            $model->special_price(0);
-            $model->specialpricemethod(0);
-            $model->specialquantity(0);
-            $model->specialgroupprice(0);
-            $model->advertised(0);
-            $model->tareweight(0);
-            $model->start_date('0000-00-00');
-            $model->end_date('0000-00-00');
-            $model->discounttype(0);
-            $model->wicable(0);
-            $model->scaleprice(0);
-            $model->inUse(1);
-        }
         $stores = $this->formNoEx('store_id', array());
         for ($i=0; $i<count($stores); $i++) {
             $model->store_id($stores[$i]);
+            if (!$model->load()) {
+                // fully init new record
+                $model->special_price(0);
+                $model->specialpricemethod(0);
+                $model->specialquantity(0);
+                $model->specialgroupprice(0);
+                $model->advertised(0);
+                $model->tareweight(0);
+                $model->start_date('0000-00-00');
+                $model->end_date('0000-00-00');
+                $model->discounttype(0);
+                $model->wicable(0);
+                $model->scaleprice(0);
+                $model->inUse(1);
+            }
 
             $taxes = $this->formNoEx('tax', array());
             if (isset($taxes[$i])) {
