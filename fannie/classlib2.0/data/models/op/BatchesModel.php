@@ -186,7 +186,6 @@ those same items revert to normal pricing.
             $scaleQ = "
                 UPDATE scaleItems AS s
                     INNER JOIN batchList AS l ON l.upc=s.plu
-                    INNER JOIN StoreBatchMap AS m ON l.batchID=m.batchID and p.store_id=m.storeID
                 SET s.price = l.salePrice,
                     s.modified = now()
                 WHERE l.upc not like 'LC%'
@@ -452,6 +451,18 @@ those same items revert to normal pricing.
                 }
                 $args[] = $upc;
                 $lane_sql->execute($updateP, $args);
+            }
+        }
+
+        if (FannieConfig::config('STORE_MODE') === 'HQ' && class_exists('\\Datto\\JsonRpc\\Http\\Client')) {
+            $prep = $this->connection->prepare('
+                SELECT webServiceUrl FROM Stores WHERE hasOwnItems=1 AND storeID<>?
+                ');
+            $res = $this->connection->execute($prep, array(\FannieConfig::config('STORE_ID')));
+            while ($row = $this->connection->fetchRow($res)) {
+                $client = new \Datto\JsonRpc\Http\Client($row['webServiceUrl']);
+                $client->query(time(), 'COREPOS\\Fannie\\API\\webservices\\FannieItemLaneSync', array('upc'=>$upcs, 'fast'=>true));
+                $client->send();
             }
         }
 
