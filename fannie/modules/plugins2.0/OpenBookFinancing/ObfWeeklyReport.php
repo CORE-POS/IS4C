@@ -868,7 +868,7 @@ class ObfWeeklyReport extends FannieReportPage
         */
         $salesQ = 'SELECT 
                     m.obfCategoryID as id,
-                    m.storeID,
+                    c.storeID,
                     m.superID,
                     SUM(t.total) AS sales
                    FROM __table__ AS t
@@ -881,7 +881,7 @@ class ObfWeeklyReport extends FannieReportPage
                    WHERE c.hasSales=1
                     AND t.tdate BETWEEN ? AND ?
                     AND t.trans_type IN (\'I\', \'D\')
-                   GROUP BY m.obfCategoryID, m.storeID, m.superID';
+                   GROUP BY m.obfCategoryID, c.storeID, m.superID';
         /**
           Lookup number of transactions 
           in a given date range
