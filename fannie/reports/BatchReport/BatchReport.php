@@ -47,7 +47,7 @@ class BatchReport extends FannieReportPage
         $store = FormLib::get('store', false);
         $model = new BatchesModel($dbc);
 
-        if ($store === false) {
+        if ($store === false && is_array($this->config->get('STORE_NETS'))) {
             $clientIP = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
             $ranges = $this->config->get('STORE_NETS');
             foreach ($ranges as $storeID => $range) {

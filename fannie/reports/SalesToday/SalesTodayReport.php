@@ -55,12 +55,14 @@ class SalesTodayReport extends \COREPOS\Fannie\API\FannieReportTool
         } catch (Exception $ex) { 
             $clientIP = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
             $ranges = $this->config->get('STORE_NETS');
-            foreach ($ranges as $storeID => $range) {
-                if (
-                    class_exists('\\Symfony\\Component\\HttpFoundation\\IpUtils')
-                    && \Symfony\Component\HttpFoundation\IpUtils::checkIp($clientIP, $range)
-                    ) {
-                    $this->store = $storeID;
+            if (is_array($ranges)) {
+                foreach ($ranges as $storeID => $range) {
+                    if (
+                        class_exists('\\Symfony\\Component\\HttpFoundation\\IpUtils')
+                        && \Symfony\Component\HttpFoundation\IpUtils::checkIp($clientIP, $range)
+                        ) {
+                        $this->store = $storeID;
+                    }
                 }
             }
         }
