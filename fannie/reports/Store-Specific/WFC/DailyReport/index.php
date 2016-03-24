@@ -59,7 +59,21 @@ if (FormLib::get('date') !== '') {
    $stamp = strtotime($repDate);
    if ($stamp) $dstr = date("Y-m-d",$stamp);
 }
-$store = FormLib::get('store', 0);
+$store = FormLib::get('store', false);
+if ($store === false) {
+    $clientIP = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+    foreach ($FANNIE_STORE_NETS as $storeID => $range) {
+        if (
+            class_exists('\\Symfony\\Component\\HttpFoundation\\IpUtils')
+            && \Symfony\Component\HttpFoundation\IpUtils::checkIp($clientIP, $range)
+            ) {
+            $store = $storeID;
+        }
+    }
+    if ($store === false) {
+        $store = 0;
+    }
+}
 $dates = array($dstr.' 00:00:00',$dstr.' 23:59:59');
 $store_dates = array($dstr.' 00:00:00',$dstr.' 23:59:59', $store);
 
