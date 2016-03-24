@@ -166,7 +166,7 @@ class EditBatchPage extends FannieRESTfulPage
         }
 
         $overlap = $this->checkOverlap($id, $upc);
-        if ($overlap !== false) {
+        if ($this->config->get('STORE_MODE') != 'HQ' && $overlap !== false) {
             $error = 'Item already in concurrent batch: '
                 . '<a style="color:blue;" href="EditBatchPage.php?id=' . $overlap['batchID'] . '">'
                 . $overlap['batchName'] . '</a> ('
@@ -850,6 +850,7 @@ class EditBatchPage extends FannieRESTfulPage
             . date('Y-m-d', strtotime($model->endDate())) . '<br />';
         if ($this->config->get('STORE_MODE') === 'HQ') {
             $stores = new StoresModel($dbc);
+            $stores->hasOwnItems(1);
             $mapP = $dbc->prepare('SELECT storeID FROM StoreBatchMap WHERE storeID=? AND batchID=?');
             foreach ($stores->find('storeID') as $s) {
                 $mapR = $dbc->execute($mapP, array($s->storeID(), $id));
