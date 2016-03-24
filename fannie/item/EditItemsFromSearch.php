@@ -63,11 +63,13 @@ class EditItemsFromSearch extends FannieRESTfulPage
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $vlookup = new VendorsModel($dbc);
+        $model = new StoresModel($dbc);
+        $model->hasOwnItems(1);
+        $stores = $model->find();
         for ($i=0; $i<count($upcs); $i++) {
             $model = new ProductsModel($dbc);
             $upc = BarcodeLib::padUPC($upcs[$i]);
             $model->upc($upc);
-            $model->store_id(1);
             
             $model = $this->setArrayValue($model, 'department', $dept, $i);
             $model = $this->setArrayValue($model, 'tax', $tax, $i);
@@ -80,9 +82,17 @@ class EditItemsFromSearch extends FannieRESTfulPage
 
             $model = $this->setBinaryFlag($model, $upc, 'fs', 'foodstamp');
             $model = $this->setBinaryFlag($model, $upc, 'scale', 'scale');
+            $model = $this->setBinaryFlag($model, $upc, 'inUse', 'inUse');
             $model->modified(date('Y-m-d H:i:s'));
 
-            $try = $model->save();
+            if ($this->config->get('STORE_MODE') == 'HQ') {
+                foreach ($stores as $store) {
+                    $model->store_id($store->storeID());
+                    $try = $model->save();
+                }
+            } else {
+                $try = $model->save();
+            }
             if ($try) {
                 $model->pushToLanes();
             } else {
@@ -285,6 +295,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
                 <th>Scale</th>
                 <th>%Disc</th>
                 <th>Local</th>
+                <th>InUse</th>
                 </tr>';
         $ret .= '<tr><th colspan="2">Change All &nbsp;&nbsp;&nbsp;<button type="reset" 
                 class="btn btn-default">Reset</button></th>';
@@ -326,13 +337,15 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $ret .= '<td><select class="form-control input-sm" onchange="updateAll(this.value, \'.localSelect\');">';
         $ret .= $this->arrayToOpts($locales);
         $ret .= '</select></td>';
+        $ret .= '<td><input type="checkbox" onchange="toggleAll(this, \'.inUseCheckBox\');" /></td>';
 
         $ret .= '</tr>';
 
         list($in_sql, $args) = $dbc->safeInClause($this->upcs);
         $query = 'SELECT p.upc, p.description, p.department, d.dept_name,
                     p.tax, p.foodstamp, p.discount, p.scale, p.local,
-                    x.manufacturer, x.distributor, p.line_item_discountable
+                    x.manufacturer, x.distributor, p.line_item_discountable,
+                    p.inUse
                   FROM products AS p
                   LEFT JOIN departments AS d ON p.department=d.dept_no
                   LEFT JOIN prodExtra AS x ON p.upc=x.upc
@@ -358,6 +371,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
                             <td><input type="checkbox" name="scale[]" class="scaleCheckBox" value="%s" %s /></td>
                             <td><select class="form-control input-sm discSelect" name="discount[]">%s</select></td>
                             <td><select name="local[]" class="localSelect form-control input-sm">%s</select></td>
+                            <td><input type="checkbox" name="inUse[]" class="inUseCheckBox" value="%s" %s /></td>
                             </tr>',
                             $row['upc'], $row['upc'], $row['upc'],
                             $row['upc'],
@@ -369,7 +383,8 @@ class EditItemsFromSearch extends FannieRESTfulPage
                             $row['upc'], ($row['foodstamp'] == 1 ? 'checked' : ''),
                             $row['upc'], ($row['scale'] == 1 ? 'checked' : ''),
                             $this->discountOpts($row['discount'], $row['line_item_discountable']),
-                            $localOpts
+                            $localOpts,
+                            $row['upc'], ($row['inUse'] == 1 ? 'checked' : '')
             );
         }
         $ret .= '</table>';
@@ -408,9 +423,9 @@ class EditItemsFromSearch extends FannieRESTfulPage
         ?>
 function toggleAll(elem, selector) {
     if (elem.checked) {
-        $(selector).attr('checked', true);
+        $(selector).prop('checked', true);
     } else {
-        $(selector).attr('checked', false);
+        $(selector).prop('checked', false);
     }
 }
 function updateAll(val, selector) {
