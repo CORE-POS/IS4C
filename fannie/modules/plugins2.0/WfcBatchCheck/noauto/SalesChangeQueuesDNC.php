@@ -1,6 +1,8 @@
 <?php 
-include('/var/www/html/git/fannie/config.php');
-include('/var/www/html/git/fannie/classlib2.0/FannieAPI.php');
+include(dirname(__FILE__) '/../../../../config.php');
+if (!class_exists('FannieAPI.php')) {
+    include($FANNIE_ROOT . 'classlib2.0/FannieAPI.php');
+}
 session_start();
 ?>
 <html>
