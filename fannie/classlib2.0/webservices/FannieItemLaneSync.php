@@ -145,7 +145,7 @@ class FannieItemLaneSync extends FannieWebService
             $query .= '?,';
             $params[] = \BarcodeLib::padUPC($upc);
         }
-        $query = substr($query, 0, strlen($query)-1);
+        $query = substr($query, 0, strlen($query)-1) . ')';
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $params);
         while ($w = $dbc->fetchRow($result)) {

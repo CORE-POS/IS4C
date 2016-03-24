@@ -461,7 +461,7 @@ those same items revert to normal pricing.
             $res = $this->connection->execute($prep, array(\FannieConfig::config('STORE_ID')));
             while ($row = $this->connection->fetchRow($res)) {
                 $client = new \Datto\JsonRpc\Http\Client($row['webServiceUrl']);
-                $client->query(time(), 'COREPOS\\Fannie\\API\\webservices\\FannieItemLaneSync', array('upc'=>$upcs, 'fast'=>true));
+                $client->query(time(), 'COREPOS\\Fannie\\API\\webservices\\FannieItemLaneSync', array('upc'=>array_keys($upcs), 'fast'=>true));
                 $client->send();
             }
         }
