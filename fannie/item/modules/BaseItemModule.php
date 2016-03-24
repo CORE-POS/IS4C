@@ -497,10 +497,12 @@ HTML;
                         b.batchID 
                     FROM batches AS b 
                         LEFT JOIN batchList as l on b.batchID=l.batchID 
+                        LEFT JOIN StoreBatchMap AS m ON b.batchID=m.batchID
                     WHERE '" . date('Y-m-d') . "' BETWEEN b.startDate AND b.endDate 
-                        AND (l.upc=? OR l.upc=?)"
+                        AND (l.upc=? OR l.upc=?)
+                        AND m.storeID=?"
                 );
-                $batchR = $dbc->execute($batchP,array($upc,'LC'.$likeCode));
+                $batchR = $dbc->execute($batchP,array($upc,'LC'.$likeCode,$store_id));
                 $batch = array('batchID'=>0, 'batchName'=>"Unknown");
                 if ($dbc->num_rows($batchR) > 0) {
                     $batch = $dbc->fetch_row($batchR);
