@@ -149,11 +149,6 @@ class FannieItemLaneSync extends FannieWebService
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $params);
         while ($w = $dbc->fetchRow($result)) {
-            foreach (array_keys($w) as $key) {
-                if (!is_numeric($key)) {
-                    unset($w[$key]);
-                }
-            }
             $upc_data[$w['upc']] = $w;
         }
 
