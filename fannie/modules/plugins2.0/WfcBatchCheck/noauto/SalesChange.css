@@ -1,0 +1,55 @@
+body {
+    background-color: #6fd160;
+}
+table, th, td {
+    border: 1px solid #6fd160;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 5px;
+	background-color: #8dfc81;
+}
+input {
+    padding: 0px;
+    width: 100%;
+    height: 100%;
+    border: 0px solid white;
+    background-color: white;
+}
+td.c{
+    text-align: center;
+    width: 20%;
+    align: center;
+    background-color: #e0fcde;
+    border: 1px solid #d0fccc;
+}
+form {
+    width: 100%;
+}
+button {
+	width: 100%;
+	height: 15%;
+    border-radius: 5px;
+}
+button.good {
+	background-color: lightgreen;
+}
+button.error {
+	background-color: #fa7d7d;
+}
+button.missing {
+	background-color: #f0f56c;
+}
+button.addItem {
+    background-color: #27e5f2;
+}
+button.unchecked {
+    background-color: white;
+}
+.smallFont {
+    font-size: 12;
+}
+button.store {
+    width: 150px;
+    height: 50px;
+}
