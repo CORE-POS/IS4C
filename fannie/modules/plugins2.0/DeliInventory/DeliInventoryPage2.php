@@ -5,7 +5,7 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class DeliInventoryPage extends FanniePage
+class DeliInventoryPage2 extends FanniePage
 {
     public $page_set = 'Plugin :: DeliInventory';
     protected $window_dressing = false;
@@ -175,7 +175,7 @@ if (isset($_GET['action'])){
         $oldcat = preg_replace("/_/"," ",$_GET['oldcat']);
         $newcat = preg_replacE("/_/"," ",$_GET['newcat']);
 
-        $update = $sql->prepare('UPDATE deliInventoryCat SET category=? WHERE category=?');
+        $update = $sql->prepare('UPDATE deliInventoryCat2 SET category=? WHERE category=?');
         $sql->execute($update, array($newcat, $oldcat));
 
         $out .= $this->gettable();
@@ -184,7 +184,7 @@ if (isset($_GET['action'])){
         $id = $_GET['id'];
         $cat = preg_replace("/_/"," ",$_GET['category']);
         
-        $fetchQ = "select category from deliInventoryCat
+        $fetchQ = "select category from deliInventoryCat2
                group by category order by category";
         $fetchR = $sql->query($fetchQ);
         
@@ -216,7 +216,7 @@ if (isset($_GET['action'])){
         echo json_encode($ret);
         break;
     case 'clearAll':
-        $clearQ = "update deliInventoryCat set cases=0, fraction=0,
+        $clearQ = "update deliInventoryCat2 set cases=0, fraction=0,
             totalstock=0, total=0";
         $clearR = $sql->query($clearQ);
         $out .= $this->gettable();
@@ -248,7 +248,7 @@ if (isset($_GET['action'])){
                case when fraction='0' then NULL else fraction end as fraction,
                case when totalstock='0' then NULL else totalstock end as totalstock,
                price,total,category,id
-                   from deliInventoryCat
+                   from deliInventoryCat2
                WHERE 1=1 ";
         $args = array();
         if ($limit){
@@ -259,7 +259,7 @@ if (isset($_GET['action'])){
         $fetchP = $sql->prepare($fetchQ); 
         $fetchR = $sql->execute($fetchP, $args);
 
-        $ret .= '<h3>Currently Hillside - <a href="DeliInventoryPage2.php">Switch</a></h3>';
+        $ret .= '<h3>Currently Denfeld - <a href="DeliInventoryPage.php">Switch</a></h3>';
         $ret .= "<a href=\"\" onclick=\"saveAll();return false;\">Save all changes</a> | <a href=\"\" onclick=\"clearAll();return false;\">Clear all totals</a><br /><br />";
 
         $currentCat = "";
@@ -378,7 +378,7 @@ if (isset($_GET['action'])){
         global $FANNIE_OP_DB, $FANNIE_URL;
         $sql = FannieDB::get($FANNIE_OP_DB);
 
-        $prep = $sql->prepare('UPDATE deliInventoryCat SET id=? WHERE id=?');
+        $prep = $sql->prepare('UPDATE deliInventoryCat2 SET id=? WHERE id=?');
 
         $sql->execute($prep, array(-1*$id2, $id2));
         $sql->execute($prep, array($id2, $id1));
@@ -401,7 +401,7 @@ if (isset($_GET['action'])){
 <html>
 <head><title>Inventory</title>
 <script type="text/javascript" src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js"></script>
-<script type="text/javascript" src="index.js"></script>
+<script type="text/javascript" src="index2.js"></script>
 <link rel="stylesheet" type="text/css" href="index.css">
 </head>
 <body>
