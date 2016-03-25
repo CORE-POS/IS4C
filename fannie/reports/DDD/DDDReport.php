@@ -58,6 +58,8 @@ class DDDReport extends FannieReportPage
             $date1 = '';
             $date2 = '';
         }
+        $store = FormLib::get('store', 0);
+        $args[] = $store;
 
         /**
           I'm using {{placeholders}}
@@ -88,6 +90,7 @@ class DDDReport extends FannieReportPage
                     AND register_no <> 99
                     AND upc <> '0'
                     {{date_clause}}
+                    AND " . DTrans::isStoreID($store, 'd') . "
                   GROUP BY
                     YEAR(datetime),
                     MONTH(datetime),
@@ -113,6 +116,9 @@ class DDDReport extends FannieReportPage
             $query2 = str_replace('{{table}}', $dtrans, $query);
             $query2 = str_replace('{{date_clause}}', '', $query2);
             $fullQuery = $query1 . ' UNION ALL ' . $query2;
+            // prepend store argument as both queries will have a store
+            // clause requiring the parameter
+            array_unshift($args, $store);
         }
 
         $data = array();
@@ -144,6 +150,7 @@ class DDDReport extends FannieReportPage
     
     public function form_content()
     {
+        $store = FormLib::storePicker();
         return '
         <form action="' . $_SERVER['PHP_SELF'] . '" method="get">
 <div class="well">Dates are optional; omit for last quarter</div>
@@ -155,6 +162,10 @@ class DDDReport extends FannieReportPage
     <div class="form-group">
     <label>Date End</label>
     <input type=text id=date2 name=date2 class="form-control date-field" />
+    </div>
+    <div class="form-group">
+    <label>Store</label>
+    ' . $store['html'] . '
     </div>
     <p>
     <button type=submit name=submitted value=1 class="btn btn-default btn-core">Submit</button>
