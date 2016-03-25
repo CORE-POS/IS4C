@@ -369,9 +369,10 @@ class BaseItemModule extends ItemModule
 
         $nav_tabs = '<ul id="store-tabs" class="nav nav-tabs small" role="tablist">';
         $ret .= '{{nav_tabs}}<div class="tab-content">';
+        $netStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
         foreach ($items as $store_id => $rowItem) {
             $active_tab = false;
-            if (FannieConfig::config('STORE_MODE') !== 'HQ' || $store_id == FannieConfig::config('STORE_ID')) {
+            if (FannieConfig::config('STORE_MODE') !== 'HQ' || $netStore == $store_id || ($netStore == false && $store_id == FannieConfig::config('STORE_ID'))) {
                 $active_tab = true;
             }
             $tabID = 'store-tab-' . $store_id;
@@ -771,7 +772,10 @@ HTML;
         // sync button will copy current tab values to all other store tabs
         if (!$new_item && FannieConfig::config('STORE_MODE') == 'HQ') {
             $nav_tabs .= '<li><label title="Apply update to all stores">
-                <input type="checkbox" id="store-sync" checked /> Sync</label></li>';
+                <input type="checkbox" id="store-sync" ';
+            $audited = FannieAuth::validateUserQuiet('audited_pricechange');
+            $nav_tabs .= ($audited) ? 'disabled' : 'checked';
+            $nav_tabs .= ' /> Sync</label></li>';
         }
         $nav_tabs .= '</ul>';
         // only show the store tabs in HQ mode
