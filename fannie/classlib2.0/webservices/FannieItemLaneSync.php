@@ -82,6 +82,7 @@ class FannieItemLaneSync extends FannieWebService
                     p.tax = ?,
                     p.foodstamp = ?,
                     p.discount=?,
+                    p.scale=?,
                     p.qttyEnforced=?,
                     p.idEnforced=?,
                     p.inUse=?,
@@ -134,6 +135,7 @@ class FannieItemLaneSync extends FannieWebService
                 tax,
                 foodstamp,
                 discount,
+                scale,
                 qttyEnforced,
                 idEnforced,
                 inUse,
@@ -176,9 +178,11 @@ class FannieItemLaneSync extends FannieWebService
                 $data['tax'],
                 $data['foodstamp'],
                 $data['discount'],
+                $data['scale'],
                 $data['qttyEnforced'],
                 $data['idEnforced'],
                 $data['inUse'],
+                $data['wicable'],
                 $upc,
             );
             $lane_sql->execute($updateP, $lane_args);
