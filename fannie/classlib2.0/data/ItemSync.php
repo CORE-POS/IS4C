@@ -133,7 +133,7 @@ class ItemSync
             while ($row = $dbc->fetchRow($res)) {
                 $client = new \Datto\JsonRpc\Http\Client($row['webServiceUrl']);
                 $args = array('upc'=>$upc);
-                if (is_array($upc)) {
+                if (is_array($upc) && count($upc) > 1) {
                     $args['fast'] = true;
                 }
                 $client->query(time(), 'COREPOS\\Fannie\\API\\webservices\\FannieItemLaneSync', $args);

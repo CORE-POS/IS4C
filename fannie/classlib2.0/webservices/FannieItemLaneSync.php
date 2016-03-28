@@ -84,7 +84,8 @@ class FannieItemLaneSync extends FannieWebService
                     p.discount=?,
                     p.qttyEnforced=?,
                     p.idEnforced=?,
-                    p.inUse=?
+                    p.inUse=?,
+                    p.wicable = ?
                 WHERE p.upc = ?';
             $FANNIE_LANES = \FannieConfig::config('LANES');
             for ($i = 0; $i < count($FANNIE_LANES); $i++) {
@@ -136,6 +137,7 @@ class FannieItemLaneSync extends FannieWebService
                 qttyEnforced,
                 idEnforced,
                 inUse,
+                wicable,
                 upc
             FROM products
             WHERE store_id=?
