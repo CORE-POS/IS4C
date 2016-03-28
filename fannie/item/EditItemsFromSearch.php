@@ -66,8 +66,8 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $model = new StoresModel($dbc);
         $model->hasOwnItems(1);
         $stores = $model->find();
+        $model = new ProductsModel($dbc);
         for ($i=0; $i<count($upcs); $i++) {
-            $model = new ProductsModel($dbc);
             $upc = BarcodeLib::padUPC($upcs[$i]);
             $model->upc($upc);
             
@@ -93,9 +93,9 @@ class EditItemsFromSearch extends FannieRESTfulPage
             } else {
                 $try = $model->save();
             }
-            if ($try) {
+            if ($try && count($upcs) <= 10) {
                 $model->pushToLanes();
-            } else {
+            } elseif (!$try) {
                 $this->save_results[] = 'Error saving item '.$upc;    
             }
 
@@ -131,13 +131,19 @@ class EditItemsFromSearch extends FannieRESTfulPage
         return $pmodel;
     }
 
+    private $vcache = array();
     private function setVendorByName($pmodel, $vmodel, $name)
     {
-        $vmodel->reset();
-        $vmodel->vendorName($name);
-        foreach ($vmodel->find('vendorID') as $obj) {
-            $pmodel->default_vendor_id($obj->vendorID());
-            break;
+        if (isset($this->vcache[$name])) {
+            $pmodel->default_vendor_id($this->vcache[$name]);
+        } else {
+            $vmodel->reset();
+            $vmodel->vendorName($name);
+            foreach ($vmodel->find('vendorID') as $obj) {
+                $pmodel->default_vendor_id($obj->vendorID());
+                $this->vcache[$name] = $obj->vendorID();
+                break;
+            }
         }
 
         return $pmodel;
