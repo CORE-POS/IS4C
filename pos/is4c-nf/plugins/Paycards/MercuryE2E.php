@@ -557,7 +557,7 @@ class MercuryE2E extends BasicCCModule
             $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
             return 'Error';
         }
-        CoreLocal::set('LastEmvPcId', array($request->last_paycard_transaction_id, $request->last_req_id));
+        CoreLocal::set('LastEmvPcId', $request->last_paycard_transaction_id);
         CoreLocal::set('LastEmvReqType', 'normal');
 
         // start with fields common to PDCX and EMVX
@@ -642,7 +642,7 @@ class MercuryE2E extends BasicCCModule
 
         try {
             $request->saveRequest();
-        CoreLocal::set('LastEmvPcId', array($request->last_paycard_transaction_id, $request->last_req_id));
+            CoreLocal::set('LastEmvPcId', $request->last_paycard_transaction_id);
             CoreLocal::set('LastEmvReqType', 'void');
         } catch (Exception $ex) {
             $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
@@ -839,7 +839,7 @@ class MercuryE2E extends BasicCCModule
             $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); 
             return 'Error';
         }
-        CoreLocal::set('LastEmvPcId', array($request->last_paycard_transaction_id, $request->last_req_id));
+        CoreLocal::set('LastEmvPcId', $request->last_paycard_transaction_id);
         CoreLocal::set('LastEmvReqType', 'gift');
         CoreLocal::set('paycard_amount', $amount);
         CoreLocal::set('paycard_id', CoreLocal::get('LastID'+1));
@@ -879,9 +879,7 @@ class MercuryE2E extends BasicCCModule
         $rawXml = $xml;
         $ref = $this->refnum(CoreLocal::get('paycard_id'));
         $request = $this->getRequestObj($ref);
-        $id_set = CoreLocal::get('LastEmvPcId');
-        $request->last_paycard_transaction_id = $id_set[0];
-        $request->last_req_id = $id_set[1];
+        $request->last_paycard_transaction_id = CoreLocal::get('LastEmvPcId');
         $this->last_paycard_transaction_id = $request->last_paycard_transaction_id;
         $response = new PaycardResponse($request,array(
             'curlTime' => 0,
