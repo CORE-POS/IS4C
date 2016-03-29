@@ -27,7 +27,7 @@ class AutoTare extends Parser
     {
         if (substr($str,-2) == "TW") {
             $left = substr($str,0,strlen($str)-2);
-            if ($left == "" || is_numeric($left)) {
+            if ($left == "" || (is_numeric($left) && !strstr($left, '.'))) {
                 return true;
             }
         }
