@@ -48,7 +48,8 @@ class LastSoldTask extends FannieTask
         $update = $dbc->prepare('
             UPDATE products
             SET last_sold=?
-            WHERE upc=?');
+            WHERE upc=?
+                AND store_id=?');
 
         $dlog = $this->config->get('TRANS_DB') . $dbc->sep() . 'dlog_15';
         /**
@@ -63,6 +64,7 @@ class LastSoldTask extends FannieTask
                 MONTH(tdate),
                 DAY(tdate),
                 trans_num,
+                store_id,
                 MAX(tdate) AS last_sold
             FROM ' . $dlog . '
             WHERE trans_type=\'I\'
@@ -71,13 +73,14 @@ class LastSoldTask extends FannieTask
                 MONTH(tdate),
                 DAY(tdate),
                 trans_num,
+                store_id,
                 upc
             HAVING SUM(total) <> 0
             ORDER BY tdate
             ';
         $res = $dbc->query($query);
         while ($w = $dbc->fetchRow($res)) {
-            $dbc->execute($update, array($w['last_sold'], $w['upc']));
+            $dbc->execute($update, array($w['last_sold'], $w['upc'], $w['store_id']));
         }
     }
 }

@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2014 Whole Foods Co-op
+    Copyright 2013 Whole Foods Co-op
 
     This file is part of CORE-POS.
 
@@ -22,21 +22,24 @@
 *********************************************************************************/
 
 /**
-  @class SaInventoryModel
+  @class DeliInventoryCatModel
 */
-class SaInventoryModel extends BasicModel
-{
+class DeliInventoryCat2Model extends BasicModel {
 
-    protected $name = "sa_inventory";
+    protected $name = "deliInventoryCat2";
 
     protected $columns = array(
-    'id' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
-    'datetime' => array('type'=>'DATETIME'),
-    'upc' => array('type'=>'VARCHAR(13)', 'index'=>true),
-    'clear' => array('type'=>'TINYINT'),
-    'quantity' => array('type'=>'DOUBLE'),
-    'section' => array('type'=>'INT'),
-    'storeID' => array('type'=>'SMALLINT', 'default'=>1),
+    'id' => array('type'=>'INT', 'primary_key' => True, 'increment'=>True),
+    'item' => array('type'=>'VARCHAR(50)'),
+    'orderno' => array('type'=>'VARCHAR(15)'),
+    'units' => array('type'=>'VARCHAR(10)'),
+    'cases' => array('type'=>'FLOAT'),
+    'fraction' => array('type'=>'VARCHAR(10)'),
+    'totalstock' => array('type'=>'FLOAT'),
+    'price' => array('type'=>'MONEY'),
+    'total' => array('type'=>'MONEY'),
+    'size' => array('type'=>'VARCHAR(20)'),
+    'category' => array('type'=>'VARCHAR(50)', 'index'=>True)
     );
 }
 
