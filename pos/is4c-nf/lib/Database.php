@@ -101,6 +101,27 @@ static public function mDataConnect()
     return $sql;
 }
 
+/**
+  Get the name of the primary server database
+  This is only relevant in multi-store setups where the lane
+  is shipping data to a temporary holding database to be
+  relayed to the master HQ server later. Most operations can
+  work off this holding database but a few may need to reference
+  the some overarching, all-location data.
+
+  @return database name w/ . separator or an empty string if
+    no alternate is defined.
+*/
+static public function mAltName()
+{
+    $ret = CoreLocal::get('mAlternate');
+    if ($ret) {
+        return $ret . '.';
+    } else {
+        return '';
+    }
+}
+
 // ----------getsubtotals()----------
 
 // getsubtotals() updates the values held in our session variables.
