@@ -83,42 +83,6 @@ class FannieDispatch
     }
 
     /**
-      Log page load in usageStats table
-      @param $dbc [SQLManager] database connection
-      @return [boolean] success / fail
-    */
-    static protected function logUsage(SQLManager $dbc, $op_db)
-    {
-        if (php_sapi_name() === 'cli') {
-            // don't log cli usage
-            return false;
-        }
-
-        $user = FannieAuth::checkLogin();
-        if ($user === false) {
-            $user = 'n/a';
-        }
-
-        $prep = $dbc->prepare(
-            'INSERT INTO usageStats
-                (tdate, pageName, referrer, userHash, ipHash)
-             VALUES
-                (?, ?, ?, ?, ?)');
-        $args = array(
-            date('Y-m-d H:i:s'),
-            basename(filter_input(INPUT_SERVER, 'PHP_SELF')),
-        );
-        $referrer = isset($_SERVER['HTTP_REFERER']) ? basename($_SERVER['HTTP_REFERER']) : 'n/a';
-        $referrer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
-        $args[] = $referrer === null ? 'n/a' : basename($referrer);
-        $args[] = sha1($user);
-        $ip_addr = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
-        $args[] = sha1($ip_addr);
-
-        return $dbc->execute($prep, $args);
-    }
-
-    /**
       Lookup custom permissions for a page 
     */
     static protected function authOverride(SQLManager $dbc, $op_db, $page_class)
@@ -192,7 +156,6 @@ class FannieDispatch
                 $obj = new $class();
                 if ($dbc && $dbc->isConnected($op_db)) {
                     // write URL log
-                    self::logUsage($dbc, $op_db);
                     /*
                     $auth = self::authOverride($dbc, $op_db, $class);
                     if ($auth) {

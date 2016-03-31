@@ -84,35 +84,6 @@ class ReportMetricsTask extends FannieTask
         $msg .= $this->custdataStats($dbc);
         $msg .= $this->productStats($dbc);
 
-        $dbc->selectDB($this->config->get('OP_DB'));
-        $res = $dbc->query('
-            SELECT COUNT(*) AS total,
-                COUNT(DISTINCT userHash) AS users,
-                COUNT(DISTINCT ipHash) AS hosts
-            FROM usageStats
-            WHERE tdate >= \'' . date('Y-m-d') . '\'');
-        $row = $dbc->fetchRow($res);
-        $msg .= 'Pages served: ' . $row['total'] . "\n";
-        $msg .= 'Unique users: ' . $row['users'] . "\n";
-        $msg .= 'Unique IPs: ' . $row['hosts'] . "\n";
-        $res = $dbc->query('
-            SELECT COUNT(*) AS total,
-                pageName
-            FROM usageStats
-            WHERE tdate >= \'' . date('Y-m-d') . '\'
-            GROUP BY pageName
-            ORDER BY COUNT(*) DESC');
-        $msg .= 'Most popular pages: ' . "\n";
-        $page_list = 0;
-        while ($w = $dbc->fetchRow($res)) {
-            $msg .= $w['total'] . ' ' . $w['pageName'] . "\n";
-            $page_list++;
-            if ($page_list > 9) {
-                break;
-            }
-        }
-        $msg .= "\n";
-
         $LOG_MAX = 100;
         $syslog_date = date('M j ');
         $msg .= "\nLog Entries:\n";
