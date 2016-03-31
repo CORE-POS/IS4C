@@ -57,7 +57,7 @@ class DateCountPage extends FannieRESTfulPage
         } catch (Exception $ex) {
         }
 
-        return 'InvCountPage.php?vendor=' . $this->vendor;
+        return 'InvCountPage.php?vendor=' . $this->vendor . '&store=' . $this->form->store;
     }
 
     public function get_vendor_view()
