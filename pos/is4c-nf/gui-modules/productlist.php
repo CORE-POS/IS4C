@@ -29,7 +29,7 @@ class productlist extends NoInputCorePage
 
     private $boxSize;
     private $search_results = array();
-    private $quantity = 1;
+    private $quantity = 0;
 
     private function adjustUPC($entered)
     {
@@ -58,7 +58,9 @@ class productlist extends NoInputCorePage
             list($qty,$rest) = explode('*', $entered, 2);
             $qty = is_numeric($qty) ? $qty : 1;
         } elseif (isset($_REQUEST['qty'])) {
-            $qty = is_numeric($_REQUEST['qty']) ? $_REQUEST['qty'] : 1;
+            $qty = is_numeric($_REQUEST['qty']) ? $_REQUEST['qty'] : 0;
+        } else {
+            $qty = 0;
         }
 
         return array($qty, $entered);
@@ -84,10 +86,11 @@ class productlist extends NoInputCorePage
 
         // picked an item from the list
         if (is_numeric($entered) && strlen($entered) == 13) {
+            $inp = $qty ? $qty . '*' . $entered : $entered;
             $this->change_page(
                 $this->page_url
                 . "gui-modules/pos2.php"
-                . '?reginput=' . urlencode($qty . '*' . $entered)
+                . '?reginput=' . urlencode($inp)
                 . '&repeat=1');
             return false;
         }
