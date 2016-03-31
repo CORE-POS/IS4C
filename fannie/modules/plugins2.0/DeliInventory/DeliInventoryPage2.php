@@ -61,7 +61,7 @@ if (isset($_GET['action'])){
         }
         $total = $stocktotal * $price;
             
-        $model = new DeliInventoryCatModel($sql);
+        $model = new DeliInventoryCat2Model($sql);
         $model->item($item);
         $model->orderno($orderno);
         $model->units($units);
@@ -105,7 +105,7 @@ if (isset($_GET['action'])){
         }
         $total = $stocktotal * $price;
         
-        $model = new DeliInventoryCatModel($sql);
+        $model = new DeliInventoryCat2Model($sql);
         $model->id($id);
         $model->item($item);
         $model->orderno($orderno);
@@ -141,7 +141,7 @@ if (isset($_GET['action'])){
     case 'deleteitem':
         $id = $_GET['id'];
         
-        $model = new DeliInventoryCatModel($sql);
+        $model = new DeliInventoryCat2Model($sql);
         $model->id($id);
         $cat = $model->category();
         $model->delete();
@@ -202,7 +202,7 @@ if (isset($_GET['action'])){
         $id = $_GET['id'];
         $newcat = $_GET['newcat'];
 
-        $model = new DeliInventoryCatModel($sql);
+        $model = new DeliInventoryCat2Model($sql);
         $model->id($id);
         $model->category($newcat);
         $model->save();
