@@ -114,7 +114,7 @@ static public function mDataConnect()
 */
 static public function mAltName()
 {
-    $ret = CoreLocal::get('mAlternate');
+    $ret = CoreLocal::get('mAlternative');
     if ($ret) {
         return $ret . '.';
     } else {
