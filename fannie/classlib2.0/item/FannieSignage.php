@@ -844,6 +844,10 @@ class FannieSignage
 
     protected function formatSize($size, $item)
     {
+        if (strlen(ltrim($item['upc'], '0')) < 5 && $item['scale']) {
+            return 'PLU# ' . ltrim($item['upc'], '0'); // show PLU #s on by-weight
+        }
+
         $size = trim(strtolower($size));
         if ($size == '0' || $size == '00' || $size == '') {
             return '';
@@ -853,9 +857,6 @@ class FannieSignage
         }
         if (substr($size, 0, 1) == '.') {
             $size = '0' . $size; // add leading zero on decimal qty
-        }
-        if (strlen(ltrim($item['upc'], '0')) < 5 && $item['scale']) {
-            $size = 'PLU# ' . ltrim($item['upc'], '0'); // show PLU #s on by-weight
         }
 
         return $size;
