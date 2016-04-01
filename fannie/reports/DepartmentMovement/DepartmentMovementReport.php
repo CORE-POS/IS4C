@@ -267,12 +267,12 @@ class DepartmentMovementReport extends FannieReportPage
         $sumSales = 0.0;
         $sumRings = 0.0;
         foreach($data as $row) {
-            $sumRings += $row[2];
-            $sumQty += $row[3];
-            $sumSales += $row[4];
+            $sumRings += $row[3];
+            $sumQty += $row[4];
+            $sumSales += $row[5];
         }
 
-        return array('Total',null,$sumRings,$sumQty,$sumSales,'',null,null,null);
+        return array('Total',null,null,$sumRings,$sumQty,$sumSales,'',null,null,null);
     }
 
     private function nonUpcHeaders()
