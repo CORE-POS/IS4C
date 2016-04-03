@@ -318,7 +318,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
                                 FROM products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc
                                 LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
                                 WHERE p.upc=? ORDER BY v.vendorID');
-            $tag = new ShelfTagModel($dbc);
+            $tag = new ShelftagsModel($dbc);
             for($i=0; $i<count($this->upcs);$i++) {
                 $upc = $this->upcs[$i];
                 if (!isset($this->newprices[$i])) {
