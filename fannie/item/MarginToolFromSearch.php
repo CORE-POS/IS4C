@@ -347,7 +347,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
             }
         }
 
-        echo $FANNIE_URL . 'newbatch/BatchManagementTool.php?startAt=' . $id;
+        echo $FANNIE_URL . 'batches/newbatch/BatchManagementTool.php?startAt=' . $id;
 
         return false;
     }
