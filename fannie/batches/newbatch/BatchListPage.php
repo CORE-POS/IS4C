@@ -415,7 +415,7 @@ class BatchListPage extends FannieRESTfulPage
                 </a>
                 </td>";
             $ret .= "<td bgcolor=$colors[$c]><a href=\"\" class=\"btn btn-danger btn-xs\"
-                onclick=\"deleteBatch({$id},'" . str_replace("'", '', $fetchW['batchName']) . "'); return false;\">"
+                onclick=\"deleteBatch({$id},'" . htmlspecialchars($fetchW['batchName']) . "'); return false;\">"
                 . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a></td>';
             $ret .= "<td bgcolor=$colors[$c]><a href=\"batchReport.php?batchID={$id}\">Report</a></td>";
             $ret .= "</tr>";
