@@ -6,6 +6,28 @@ $dbc = FannieDB::get($FANNIE_OP_DB);
 if (isset($_GET['excel'])){
     header('Content-Type: application/ms-excel');
     header('Content-Disposition: attachment; filename="dailyReport.xls"');
+} else {
+    $storeInfo = FormLib::storePicker();
+    echo '<form action="index.php" method="get">'
+        . $storeInfo['html'] . 
+        '<input type="submit" value="Change" />
+        </form>';
+}
+
+$store = FormLib::get('store', false);
+if ($store === false) {
+    $clientIP = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+    foreach ($FANNIE_STORE_NETS as $storeID => $range) {
+        if (
+            class_exists('\\Symfony\\Component\\HttpFoundation\\IpUtils')
+            && \Symfony\Component\HttpFoundation\IpUtils::checkIp($clientIP, $range)
+            ) {
+            $store = $storeID;
+        }
+    }
+    if ($store === false) {
+        $store = 0;
+    }
 }
 
 $ALIGN_RIGHT = 1;
@@ -48,7 +70,7 @@ $dlog = "is4c_trans.dlog_90_view";
 $dlog = "trans_archive.dlogBig";
 echo " NABS</b><br />";
 if (!isset($_GET["excel"]))
-    echo "<a href=index.php?excel=xls&monthMinus=$monthMinus>Save to Excel</a>";
+    echo "<a href=index.php?excel=xls&monthMinus=$monthMinus&store=$store>Save to Excel</a>";
 echo "<p />";
 
 $output = \COREPOS\Fannie\API\data\DataCache::getFile('monthly');
@@ -81,10 +103,12 @@ if (!$output){
         and (l.department < 600 or l.department = 902)
         and l.department <> 0 and l.trans_type <> 'T'
         and tdate BETWEEN ? AND ?
+        AND " . DTrans::isStoreID($store, 'l') . "
         GROUP BY card_no
         ORDER BY card_no");
     $args[] = $span[0];
     $args[] = $span[1];
+    $args[] = $store;
     $totalR = $dbc->execute($totalQ,$args);
     $data = array();
     while ($totalW=$dbc->fetch_row($totalR)){
@@ -108,6 +132,7 @@ if (!$output){
         and (l.department < 600 or l.department = 902)
         and l.department <> 0 and l.trans_type <> 'T'
         and tdate BETWEEN ? AND ?
+        AND " . DTrans::isStoreID($store, 'l') . "
         GROUP BY d.salesCode,d.margin
         ORDER BY d.salesCode");
     $totalR = $dbc->execute($totalQ,$args);
@@ -132,11 +157,12 @@ if (!$output){
         and (l.department < 600 or l.department = 902)
         and l.department <> 0 and l.trans_type <> 'T'
         and tdate BETWEEN ? AND ?
+        AND " . DTrans::isStoreID($store, 'l') . "
         GROUP BY d.salesCode,d.margin
         ORDER BY d.salesCode");
     foreach ($accounts as $account){
         echo "<br /><b>Total for $account</b>";
-        $totalR = $dbc->execute($totalQ,array($account,$span[0],$span[1]));
+        $totalR = $dbc->execute($totalQ,array($account,$span[0],$span[1],$store));
         $data = array();
         while ($totalW=$dbc->fetch_row($totalR)){
             if (empty($data["$totalW[0]"])){

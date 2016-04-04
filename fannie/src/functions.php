@@ -140,6 +140,36 @@ function select_to_table2($query,$args,$border,$bgcolor,$width="120",$spacing="0
     echo "</font>";
 }
 
+function select_to_table3($arr,$number_cols,$border,$bgcolor, $no_end=false)
+{
+    echo "<font size = 2>";
+    echo "<table border = $border bgcolor=$bgcolor cellspacing=0 cellpadding=3>\n";
+    //layout table body
+    foreach ($arr as $row)
+    {
+        echo "<tr align left>\n";
+        for ($i=0;$i<$number_cols; $i++) {
+            echo "<td width=";
+            if(is_numeric($row[$i]) || !isset($row[$i])) { echo "89";} else { echo "170";} 
+            echo " align=";
+            if(is_numeric($row[$i]) || !isset($row[$i])) { echo "right";} else { echo "left";} 
+            echo "><font size = 2>";
+            if(!isset($row[$i])) {//test for null value
+                echo "0.00";
+            }elseif (is_numeric($row[$i]) && strstr($row[$i],".")){
+                printf("%.2f",$row[$i]);
+            }else{
+                echo $row[$i];
+            }
+            echo "</font></td>\n";
+        } echo "</tr>\n";
+    } 
+    if (!$no_end) {
+        echo "</table>\n";
+        echo "</font>";
+    }
+}
+
 /* pads upc with zeroes to make $upc into IT CORE compliant upc*/
 
 function str_pad_upc($upc)
