@@ -758,6 +758,9 @@ class FannieSignage
             return $price;
         } elseif (strstr($price, '/') || strstr($price, '%')) {
             return $price;
+        } elseif ($price < 1) {
+            // weird contortions because floating-point rounding
+            return substr(sprintf('%.2f', $price),-2) . chr(0xA2);
         } else {
             return sprintf('$%.2f', $price);
         }
