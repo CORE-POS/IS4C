@@ -43,16 +43,17 @@ repeatedly throughout the day.';
     {
         $dbc = FannieDB::get($this->config->get('TRANS_DB'));
         $lookup = $dbc->prepare('
-            SELECT MAX(store_row_id) FROM dlog_15
+            SELECT MAX(store_row_id), store_id FROM dlog_15 GROUP BY store_id
         ');
-        $max = $dbc->getValue($lookup);
-        if ($max) {
+        $res = $dbc->execute($lookup);
+        while ($row = $dbc->fetchRow($res)) {
             $rotate = $dbc->prepare('
                 INSERT INTO dlog_15
                 SELECT * FROM dlog
                 WHERE store_row_id > ?
+                    AND store_id=?
             ');
-            $dbc->execute($rotate, array($max));
+            $dbc->execute($rotate, array($row[0], $row[1]));
         }
     }
 }
