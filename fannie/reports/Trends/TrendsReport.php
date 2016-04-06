@@ -45,6 +45,7 @@ class TrendsReport extends FannieReportPage
         $date1 = $this->form->date1;
         $date2 = $this->form->date2;
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
+        $store = FormLib::get('store', 0);
 
         $from_where = FormLib::standardItemFromWhere();
         
@@ -76,6 +77,7 @@ class TrendsReport extends FannieReportPage
             " . $from_where['query'] . "
                 AND trans_status <> 'M'
                 AND trans_type = 'I'
+                AND " . DTrans::isStoreID($store, 't') . "
             GROUP BY YEAR(t.tdate),
                 MONTH(t.tdate),
                 DAY(t.tdate),
@@ -85,6 +87,7 @@ class TrendsReport extends FannieReportPage
                 MONTH(t.tdate),
                 DAY(t.tdate)";
         $prep = $dbc->prepare($query);
+        $from_where['args'][] = $store;
         $result = $dbc->execute($prep,$from_where['args']);
     
         // variable columns. one per dates
@@ -167,6 +170,7 @@ class TrendsReport extends FannieReportPage
     public function form_content()
     {
         ob_start();
+        $stores = FormLib::storePicker();
         ?>
 <form method=get action=TrendsReport.php class="form">
 <div class="row">
@@ -174,7 +178,11 @@ class TrendsReport extends FannieReportPage
     <?php echo FormLib::standardDateFields(); ?>
 </div>
 <p>
+    <div class="form-inline">
+    <label>Store</label>
+    <?php echo $stores['html']; ?>
     <button type="submit" class="btn btn-default">Submit</button>
+    </div>
 </p>
 </form>
         <?php
