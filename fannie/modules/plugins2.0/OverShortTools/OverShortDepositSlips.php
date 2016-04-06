@@ -233,7 +233,7 @@ class OverShortDepositSlips extends FanniePage
         $dbstack = array('buyAmount'=>array(),
                  'depositAmount'=>array());
         $dbQ = "SELECT rowName,denomination,amt FROM dailyDeposit WHERE
-            dateStr = ? AND AND storeID=? rowName IN ('buyAmount','depositAmount')";
+            dateStr = ? AND storeID=? AND rowName IN ('buyAmount','depositAmount')";
         $dbP = $dbc->prepare($dbQ);
         $dbR = $dbc->execute($dbP,array($dateClause,$store));
         while($dbW = $dbc->fetch_row($dbR)){

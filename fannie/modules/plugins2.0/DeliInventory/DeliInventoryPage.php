@@ -259,6 +259,7 @@ if (isset($_GET['action'])){
         $fetchP = $sql->prepare($fetchQ); 
         $fetchR = $sql->execute($fetchP, $args);
 
+        $ret .= '<h3>Currently Hillside - <a href="DeliInventoryPage2.php">Switch</a></h3>';
         $ret .= "<a href=\"\" onclick=\"saveAll();return false;\">Save all changes</a> | <a href=\"\" onclick=\"clearAll();return false;\">Clear all totals</a><br /><br />";
 
         $currentCat = "";

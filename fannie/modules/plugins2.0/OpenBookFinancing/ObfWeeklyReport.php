@@ -868,7 +868,7 @@ class ObfWeeklyReport extends FannieReportPage
         */
         $salesQ = 'SELECT 
                     m.obfCategoryID as id,
-                    m.storeID,
+                    c.storeID,
                     m.superID,
                     SUM(t.total) AS sales
                    FROM __table__ AS t
@@ -881,7 +881,7 @@ class ObfWeeklyReport extends FannieReportPage
                    WHERE c.hasSales=1
                     AND t.tdate BETWEEN ? AND ?
                     AND t.trans_type IN (\'I\', \'D\')
-                   GROUP BY m.obfCategoryID, m.storeID, m.superID';
+                   GROUP BY m.obfCategoryID, c.storeID, m.superID';
         /**
           Lookup number of transactions 
           in a given date range
@@ -1011,6 +1011,61 @@ class ObfWeeklyReport extends FannieReportPage
                     }
                 }
                 $sales->save();
+            }
+
+            /** plugged new store numbers **/
+            foreach (array(7, 8, 9) as $catID) {
+                $sales->lastYearTransactions($trans_info[2]);
+                $sales->obfCategoryID($catID);
+                if ($future) {
+                    $sales->actualSales(0);
+                    $labor = $class_lib::getLabor($dbc);
+                    $labor->obfWeekID($week->obfWeekID());
+                    $labor->obfCategoryID($catID);
+                    foreach ($labor->find() as $l) {
+                        $sales->growthTarget($l->growthTarget());
+                    }
+                }
+                if ($catID == 7) {
+                    $sales->superID(6);
+                    $sales->lastYearSales(25576.85);
+                    $sales->save();
+                } elseif ($catID == 8) {
+                    $sales->superID(10); 
+                    $sales->lastYearSales(5088.447);
+                    $sales->save();
+                    $sales->superID(11); 
+                    $sales->lastYearSales(16961.49);
+                    $sales->save();
+                    $sales->superID(16); 
+                    $sales->lastYearSales(6219.213);
+                    $sales->save();
+                } elseif ($catID == 9) {
+                    $sales->superID(1); 
+                    $sales->lastYearSales(12788.43);
+                    $sales->save();
+                    $sales->superID(4); 
+                    $sales->lastYearSales(28942.23);
+                    $sales->save();
+                    $sales->superID(5); 
+                    $sales->lastYearSales(11105.74);
+                    $sales->save();
+                    $sales->superID(7); 
+                    $sales->lastYearSales(134.62);
+                    $sales->save();
+                    $sales->superID(8); 
+                    $sales->lastYearSales(8076.90);
+                    $sales->save();
+                    $sales->superID(9); 
+                    $sales->lastYearSales(1211.54);
+                    $sales->save();
+                    $sales->superID(13); 
+                    $sales->lastYearSales(7403.83);
+                    $sales->save();
+                    $sales->superID(17); 
+                    $sales->lastYearSales(12451.89);
+                    $sales->save();
+                }
             }
         }
     }

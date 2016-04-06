@@ -82,9 +82,11 @@ class FannieItemLaneSync extends FannieWebService
                     p.tax = ?,
                     p.foodstamp = ?,
                     p.discount=?,
+                    p.scale=?,
                     p.qttyEnforced=?,
                     p.idEnforced=?,
-                    p.inUse=?
+                    p.inUse=?,
+                    p.wicable = ?
                 WHERE p.upc = ?';
             $FANNIE_LANES = \FannieConfig::config('LANES');
             for ($i = 0; $i < count($FANNIE_LANES); $i++) {
@@ -133,9 +135,11 @@ class FannieItemLaneSync extends FannieWebService
                 tax,
                 foodstamp,
                 discount,
+                scale,
                 qttyEnforced,
                 idEnforced,
                 inUse,
+                wicable,
                 upc
             FROM products
             WHERE store_id=?
@@ -145,7 +149,7 @@ class FannieItemLaneSync extends FannieWebService
             $query .= '?,';
             $params[] = \BarcodeLib::padUPC($upc);
         }
-        $query = substr($query, 0, strlen($query)-1);
+        $query = substr($query, 0, strlen($query)-1) . ')';
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $params);
         while ($w = $dbc->fetchRow($result)) {
@@ -174,9 +178,11 @@ class FannieItemLaneSync extends FannieWebService
                 $data['tax'],
                 $data['foodstamp'],
                 $data['discount'],
+                $data['scale'],
                 $data['qttyEnforced'],
                 $data['idEnforced'],
                 $data['inUse'],
+                $data['wicable'],
                 $upc,
             );
             $lane_sql->execute($updateP, $lane_args);

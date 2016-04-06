@@ -851,6 +851,9 @@ $(document).ready(function(){ setupDatePickers(); });
 </script>
 </head>
 <body onload="document.getElementById('newBatchName').focus();">
+<div style="text-align:center; background-color:#5cb85c; color:#fff; width:100%; padding: 10px;">
+The BatchMobile is unaware of our second store. Please use the <a style="color:#fff; text-decoration: underline;" href="/git/fannie/newbatch/BatchListPage.php">New Batch Editor</a>. This page will remain available until IT has verified the newer one is working correctly for everyone.
+</div>
 <div style="text-align:center;" id="batchmobile">
 <a href="batchmobile-large.png"><img src="batchmobile-small.png" border=0 /></a>
 <br />

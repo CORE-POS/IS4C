@@ -132,7 +132,11 @@ class ItemSync
             $res = $dbc->execute($prep, array(\FannieConfig::config('STORE_ID')));
             while ($row = $dbc->fetchRow($res)) {
                 $client = new \Datto\JsonRpc\Http\Client($row['webServiceUrl']);
-                $client->query(time(), 'COREPOS\\Fannie\\API\\webservices\\FannieItemLaneSync', array('upc'=>$upc));
+                $args = array('upc'=>$upc);
+                if (is_array($upc) && count($upc) > 1) {
+                    $args['fast'] = true;
+                }
+                $client->query(time(), 'COREPOS\\Fannie\\API\\webservices\\FannieItemLaneSync', $args);
                 $client->send();
             }
         }

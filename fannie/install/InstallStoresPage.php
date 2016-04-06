@@ -117,6 +117,18 @@ class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
                 $FANNIE_READONLY_JSON = json_encode(json_decode(FormLib::get('FANNIE_READONLY_JSON')));
                 confset('FANNIE_READONLY_JSON', "'$FANNIE_READONLY_JSON'");
             }
+            $netIDs = FormLib::get('storeNetId');
+            $nets = FormLib::get('storeNet');
+            $saveStr = 'array(';
+            for ($i=0; $i<count($netIDs); $i++) {
+                $saveStr .= $netIDs[$i] . '=>array(';
+                foreach (explode(',', $nets[$i]) as $net) {
+                    $saveStr .= "'" . trim($net) . '\',';
+                }
+                $saveStr .= '),';
+            }
+            $saveStr .= ')';
+            confset('FANNIE_STORE_NETS', "$saveStr");
             header('Location: InstallStoresPage.php');
             return false;
         }
@@ -252,6 +264,20 @@ confset('FANNIE_READONLY_JSON', "'$FANNIE_READONLY_JSON'");
 <?php echo \COREPOS\Fannie\API\lib\FannieUI::prettyJSON($FANNIE_READONLY_JSON); ?>
 </textarea>
 <hr />
+<h4 class="install">Store Network(s)</h4>
+<p class="ichunk" style="margin:0.0em 0em 0.4em 0em;">
+List the network or network(s) in use at each store so clients default to
+the correct store (e.g., 192.168.0.0/24)<br />
+<?php 
+$model->hasOwnItems(1);
+foreach($model->find('storeID') as $store) {
+    echo 'Store #' . $store->storeID();
+    echo '<input type="hidden" name="storeNetId[]" value="' . $store->storeID() . '" />';
+    echo '<input type="text" name="storeNet[]" class="form-control" value="'
+        . implode(', ', $FANNIE_STORE_NETS[$store->storeID()])
+        . ' " /><br />';
+} ?>
+</p>
 <p>
 <button type=submit name="saveButton" value="Save" class="btn btn-default">Save</button>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

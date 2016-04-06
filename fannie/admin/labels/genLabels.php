@@ -154,7 +154,7 @@ class genLabels extends FannieRESTfulPage
             'units' => $row['units'],
             'size' => $row['size'],
             'sku' => $row['sku'],
-            'pricePerUnit' => '',
+            'pricePerUnit' => COREPOS\Fannie\API\lib\PriceLib::pricePerUnit($row['normal_price'], $row['size']),
             'upc' => $row['upc'],
             'vendor' => $row['vendor'],
             'scale' => $row['scale'],

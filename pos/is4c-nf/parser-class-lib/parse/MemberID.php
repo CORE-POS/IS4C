@@ -55,7 +55,7 @@ class MemberID extends Parser
             }
             return $ret;
         } elseif ($str === 'ID') {
-            $ret['main_frame'] = MiscLib::baseURL() . '/gui-modules/memlist.php';
+            $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/memlist.php';
             return $ret;
         } else {
             // always re-apply other member numbers

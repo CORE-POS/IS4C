@@ -53,6 +53,8 @@ public class Magellan : DelegateForm
 {
     private List<SerialPortHandler> sph;
     private UDPMsgBox u;
+    private Object msgLock = new Object();
+    private ushort msgCount = 0;
 
     private bool mq_enabled = false;
     private bool full_udp = false;
@@ -186,16 +188,29 @@ public class Magellan : DelegateForm
             rabbit_channel.BasicPublish("", "core-pos", null, body);
             #endif
         } else {
-            string filename = System.Guid.NewGuid().ToString();
-            string my_location = AppDomain.CurrentDomain.BaseDirectory;
-            char sep = Path.DirectorySeparatorChar;
+            lock (msgLock) {
+                string filename = System.Guid.NewGuid().ToString();
+                string my_location = AppDomain.CurrentDomain.BaseDirectory;
+                char sep = Path.DirectorySeparatorChar;
+                /**
+                  Depending on msg rate I may replace "1" with a bigger value
+                  as long as the counter resets at least once per 65k messages
+                  there shouldn't be sequence issues. But real world disk I/O
+                  may be trivial with a serial message source
+                */
+                if (msgCount % 1 == 0 && Directory.GetFiles(my_location+sep+"ss-output/").Length == 0) {
+                    msgCount = 0;
+                }
+                filename = msgCount.ToString("D5") + filename;
+                msgCount++;
 
-            TextWriter sw = new StreamWriter(my_location + sep + "ss-output/" +sep+"tmp"+sep+filename);
-            sw = TextWriter.Synchronized(sw);
-            sw.WriteLine(msg);
-            sw.Close();
-            File.Move(my_location+sep+"ss-output/" +sep+"tmp"+sep+filename,
-                  my_location+sep+"ss-output/" +sep+filename);
+                TextWriter sw = new StreamWriter(my_location + sep + "ss-output/" +sep+"tmp"+sep+filename);
+                sw = TextWriter.Synchronized(sw);
+                sw.WriteLine(msg);
+                sw.Close();
+                File.Move(my_location+sep+"ss-output/" +sep+"tmp"+sep+filename,
+                      my_location+sep+"ss-output/" +sep+filename);
+            }
         }
     }
 

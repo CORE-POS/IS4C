@@ -24,7 +24,7 @@
 class Wakeup extends Parser {
     function check($str)
     {
-        if ($str == "WAKEUP"){
+        if ($str == "WAKEUP" || $str == 'WAKEUP2'){
             return True;
         }
         return False;
@@ -32,7 +32,7 @@ class Wakeup extends Parser {
 
     function parse($str){
         $ret = $this->default_json();
-        $ret['udpmsg'] = 'rePoll';
+        $ret['udpmsg'] = $str == 'WAKEUP' ? 'rePoll' : 'reBoot';
         return $ret;
     }
 

@@ -54,6 +54,7 @@ Replaces nightly.lanesync.php and/or lanesync.api.php';
             'employees',
             'departments',
             'houseCoupons',
+            'houseCouponItems',
             'houseVirtualCoupons'
         );
         foreach ($regularPushTables as $table) {

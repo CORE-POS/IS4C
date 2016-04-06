@@ -756,8 +756,11 @@ class FannieSignage
             return sprintf('%d/$%d', $mult, round($mult*$price));
         } elseif (substr($price, 0, 1) == '$') {
             return $price;
-        } elseif (strstr($price, '/')) {
+        } elseif (strstr($price, '/') || strstr($price, '%')) {
             return $price;
+        } elseif ($price < 1) {
+            // weird contortions because floating-point rounding
+            return substr(sprintf('%.2f', $price),-2) . chr(0xA2);
         } else {
             return sprintf('$%.2f', $price);
         }
@@ -844,6 +847,10 @@ class FannieSignage
 
     protected function formatSize($size, $item)
     {
+        if (strlen(ltrim($item['upc'], '0')) < 5 && $item['scale']) {
+            return 'PLU# ' . ltrim($item['upc'], '0'); // show PLU #s on by-weight
+        }
+
         $size = trim(strtolower($size));
         if ($size == '0' || $size == '00' || $size == '') {
             return '';
@@ -853,9 +860,6 @@ class FannieSignage
         }
         if (substr($size, 0, 1) == '.') {
             $size = '0' . $size; // add leading zero on decimal qty
-        }
-        if (strlen(ltrim($item['upc'], '0')) < 5 && $item['scale']) {
-            $size = 'PLU# ' . ltrim($item['upc'], '0'); // show PLU #s on by-weight
         }
 
         return $size;

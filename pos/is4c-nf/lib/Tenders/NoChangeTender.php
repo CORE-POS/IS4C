@@ -26,7 +26,7 @@ class NoChangeTender extends TenderModule
 
     public function errorCheck()
     {
-        if ($this->amount - CoreLocal::get('amtdue') > 0 && CoreLocal::get('amtdue') > 0) {
+        if (($this->amount > (CoreLocal::get("amtdue") + 0.005)) && CoreLocal::get("amtdue") >= 0) {
             return DisplayLib::boxMsg(
                 _('max tender is ') . CoreLocal::get('amtdue'),
                 _('no change allowed'),

@@ -89,7 +89,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $sales->obfWeekID($week->obfWeekID());
         $sales->actualSales(0, '>');
         $num_cached = $sales->find();
-        if (count($num_cached) == 0 || true) {
+        if (count($num_cached) == 0) {
             $dateInfo = array(
                 'start_ts' => $start_ts,
                 'end_ts' => $end_ts,

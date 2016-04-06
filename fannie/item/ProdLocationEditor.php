@@ -60,14 +60,12 @@ class ProdLocationEditor extends FannieRESTfulPage
             if (strlen($upc) == 13) $item[$upc] = $section;
         }
             
+        $model = new ProdPhysicalLocationModel($dbc);
         foreach ($item as $upc => $section) {
-            $query = $dbc->prepare('
-                UPDATE prodPhysicalLocation 
-                SET floorSectionID=' . $section . ' 
-                WHERE upc=' . $upc . '
-                    AND store_id = ' . $store_id . ' 
-            ;');
-            $result = $dbc->execute($query);
+            $model->upc($upc);
+            $model->store_id($store_id);
+            $model->floorSectionID($section);
+            $result = $model->save();
         }
         
         $query = $dbc->prepare('
@@ -142,7 +140,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                 where b.batchID >= ' . $id1 . '
                     and b.batchID <= ' . $id2 . ' 
                     and p.store_id= ' . $store_id . '
-                    and pp.floorSectionID is NULL 
+                    and (pp.floorSectionID is NULL OR pp.floorSectionID=0)
                     AND department NOT BETWEEN 508 AND 998
                     AND department NOT BETWEEN 250 AND 259
                     AND department NOT BETWEEN 225 AND 234

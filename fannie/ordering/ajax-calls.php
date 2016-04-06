@@ -1091,15 +1091,24 @@ function getCustomerForm($orderID,$memNum="0")
 
     $ret .= '<td valign="top">';
     $ret .= '<b>Status</b>: ';
-    $ret .= sprintf('<select id="orderStatus" onchange="updateStatus(%d, this.value);">', $orderID);
-    foreach($status as $k => $v) {
-        $ret .= sprintf('<option %s value="%d">%s</option>',
-                    ($k == $order_status ? 'selected' : ''),
-                    $k, $v);
+    if ($canEdit) {
+        $ret .= sprintf('<select id="orderStatus" onchange="updateStatus(%d, this.value);">', $orderID);
+        foreach($status as $k => $v) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                        ($k == $order_status ? 'selected' : ''),
+                        $k, $v);
+        }
+        $ret .= '</select>';
+    } else {
+        foreach ($status as $k=>$v) {
+            if ($k == $order_status) {
+                $ret .= $v;
+            }
+        }
     }
-    $ret .= '</select><p />';
+    $ret .= '<p />';
     $ret .= '<b>Store</b>: ';
-    $ret .= sprintf('<select onchange="updateStore(%d, this.value);">', $orderID);
+    $ret .= sprintf('<select id="oStoreID" onchange="updateStore(%d, this.value);">', $orderID);
     $stores = new StoresModel($dbc);
     $ret .= '<option value="0">Choose...</option>';
     $ret .= $stores->toOptions($orderModel->storeID());

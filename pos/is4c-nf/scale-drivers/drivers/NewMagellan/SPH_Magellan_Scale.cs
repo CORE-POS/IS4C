@@ -49,10 +49,11 @@ namespace SPH {
 
 public class SPH_Magellan_Scale : SerialPortHandler 
 {
-    private string last_message;
 
-    enum WeighState { Zero, NonZero, None };
+    enum WeighState { None, Motion, Over, Zero, NonZero, Under };
     private WeighState scale_state;
+    private Object writeLock = new Object();
+    private string last_weight;
 
     public SPH_Magellan_Scale(string p) : base(p)
     {
@@ -66,8 +67,8 @@ public class SPH_Magellan_Scale : SerialPortHandler
         sp.Handshake = Handshake.None;
         sp.ReadTimeout = 500;
         
-        last_message = null;
         scale_state = WeighState.None;
+        last_weight = "0000";
 
         sp.Open();
     }
@@ -87,17 +88,33 @@ public class SPH_Magellan_Scale : SerialPortHandler
             Beeps(2);
         } else if (msg == "rePoll") {
             scale_state = WeighState.None;
-            sp.Write("S14\r");
+            GetStatus();
+        } else if (msg == "reBoot") {
+            scale_state = WeighState.None;
+            lock (writeLock) {
+                sp.Write("S10\r");
+                Thread.Sleep(500);
+                sp.Write("S14\r");
+            }
         }
     }
 
     private void Beeps(int num)
     {
-        int count = 0;
-        while(count < num) {
-            sp.Write("S334\r");
-            Thread.Sleep(150);
-            count++;
+        lock (writeLock) {
+            int count = 0;
+            while(count < num) {
+                sp.Write("S334\r");
+                Thread.Sleep(150);
+                count++;
+            }
+        }
+    }
+
+    private void GetStatus()
+    {
+        lock (writeLock) {
+            sp.Write("S14\r");
         }
     }
 
@@ -107,7 +124,7 @@ public class SPH_Magellan_Scale : SerialPortHandler
         if (this.verbose_mode > 0) {
             System.Console.WriteLine("Reading serial data");
         }
-        sp.Write("S14\r");
+        GetStatus();
         while (SPH_Running) {
             try {
                 int b = sp.ReadByte();
@@ -116,7 +133,6 @@ public class SPH_Magellan_Scale : SerialPortHandler
                         System.Console.WriteLine("RECV FROM SCALE: "+buffer);
                     }
                     buffer = this.ParseData(buffer);
-                    last_message = buffer;
                     if (buffer != null) {
                         if (this.verbose_mode > 0) {
                             System.Console.WriteLine("PASS TO POS: "+buffer);
@@ -164,46 +180,61 @@ public class SPH_Magellan_Scale : SerialPortHandler
               the next stable non-zero weight.
               S14 is "get state". This tells the scale to return its
               current state.
-              The "scale_state" variable tracks whether the scale is
-              currently at a stable zero weight, stable non-zero weight,
-              or neither (i.e., None).
 
-              Future: maybe stop using S11 entirely? Send a hard reset (S10)
-              in some situations?
+              The "scale_state" variable tracks all six known scale states.
+              The state is only changed if the status response is different
+              than the current state and this only returns a non-null string
+              when the state changes. The goal is to only pass a message back
+              to POS once per state change. The "last_weight" is tracked in
+              case the scale jumps directly from one stable, non-zero weight
+              to another without passing through another state in between.
             */
             if (s.Substring(0,3) == "S11") { // stable weight following weight request
-                sp.Write("S14\r");
-                scale_state = WeighState.NonZero;
-                return s;
+                GetStatus();
+                if (scale_state != WeighState.NonZero || last_weight != s.Substring(3)) {
+                    scale_state = WeighState.NonZero;
+                    last_weight = s.Substring(3);
+                    return s;
+                }
             } else if (s.Substring(0,4) == "S140") { // scale not ready
-                scale_state = WeighState.None;
-                sp.Write("S14\r");
-                return "S140";
+                GetStatus();
+                if (scale_state != WeighState.None) {
+                    scale_state = WeighState.None;
+                    return "S140";
+                }
             } else if (s.Substring(0,4) == "S141") { // weight not stable
-                scale_state = WeighState.None;
-                sp.Write("S14\r");
-                return "S141";
+                GetStatus();
+                if (scale_state != WeighState.Motion) {
+                    scale_state = WeighState.Motion;
+                    return "S141";
+                }
             } else if (s.Substring(0,4) == "S142") { // weight over max
-                scale_state = WeighState.None;
-                sp.Write("S14\r");
-                return "S142";
+                GetStatus();
+                if (scale_state != WeighState.Over) {
+                    scale_state = WeighState.Over;
+                    return "S142";
+                }
             } else if (s.Substring(0,4) == "S143") { // stable zero weight
-                sp.Write("S14\r");
+                GetStatus();
                 if (scale_state != WeighState.Zero) {
                     scale_state = WeighState.Zero;
                     return "S110000";
                 }
             } else if (s.Substring(0,4) == "S144") { // stable non-zero weight
-                if (scale_state != WeighState.NonZero) {
-                    sp.Write("S11\r");
-                } else {
-                    sp.Write("S14\r");
+                GetStatus();
+                if (scale_state != WeighState.NonZero || last_weight != s.Substring(4)) {
+                    scale_state = WeighState.NonZero;
+                    last_weight = s.Substring(4);
+                    return "S11"+s.Substring(4);
                 }
             } else if (s.Substring(0,4) == "S145") { // scale under zero weight
-                scale_state = WeighState.None;
-                sp.Write("S14\r");
-                return "S145";
+                GetStatus();
+                if (scale_state != WeighState.Under) {
+                    scale_state = WeighState.Under;
+                    return "S145";
+                }
             } else {
+                GetStatus();
                 return s; // catch all
             }
         } else { // not scanner or scale message

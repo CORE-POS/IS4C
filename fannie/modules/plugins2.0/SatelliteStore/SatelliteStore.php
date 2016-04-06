@@ -35,6 +35,8 @@ class SatelliteStore extends \COREPOS\Fannie\API\FanniePlugin
             'description'=>'This Store ID#'),
     'SatelliteDB' => array('default'=>'satellite_trans', 'label'=>'Transaction DB',
         'description'=>'Database containing satellite store transaction data'),
+    'SatelliteRedis' => array('default'=>'tcp://127.0.0.1:6379', 'label'=>'Redis Host',
+        'description'=>'Database used for shipping data'),
     );
 
     public $plugin_description = 'Plugin for managing transaction data flow from

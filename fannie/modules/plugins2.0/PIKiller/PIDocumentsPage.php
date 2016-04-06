@@ -51,7 +51,7 @@ class PIDocumentsPage extends PIKillerPage {
 
         echo '</td></tr>';
         echo '<tr><td style="padding-left: 20px;">
-            <button type="button" onclick="window.location=\'PISignaturePage.php\';">Sign</button>
+            <button type="button" onclick="window.location=\'PISignaturePage.php?id=' . $this->id . '\';">Sign</button>
             </td></tr>';
         return ob_get_clean();
     }

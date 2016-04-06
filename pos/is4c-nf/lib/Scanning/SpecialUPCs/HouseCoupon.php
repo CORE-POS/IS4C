@@ -339,6 +339,7 @@ class HouseCoupon extends SpecialUPC
         if ($infoW["memberOnly"] == 1 && CoreLocal::get("standalone")==0 
             && CoreLocal::get('memberID') != CoreLocal::get('visitingMem')) {
             $mDB = Database::mDataConnect();
+            $mAlt = Database::mAltName();
 
             // Lookup usage of this coupon by this member
             // Subquery is to combine today (dlog)
@@ -370,7 +371,7 @@ class HouseCoupon extends SpecialUPC
                      GROUP BY s.upc, s.card_no";
 
             $mRes = $mDB->query("SELECT quantity 
-                               FROM houseCouponThisMonth
+                               FROM {$mAlt}houseCouponThisMonth
                                WHERE card_no=" . CoreLocal::get("memberID") . " and
                                upc='$upc'");
             if ($mDB->num_rows($mRes) > 0) {

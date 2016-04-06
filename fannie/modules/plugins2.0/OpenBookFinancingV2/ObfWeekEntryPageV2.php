@@ -242,7 +242,7 @@ class ObfWeekEntryPageV2 extends FannieRESTfulPage
         $ret .= '<td><input type="text" class="form-control date-field" name="date2" id="date2"
                         value="' . $end2 . '" required /></td>';
         $ret .= '<td><div class="input-group">
-                <input type="number" min="0" max="100" step="0.01"
+                <input type="number" min="-100" max="100" step="0.01"
                     class="form-control" name="growthTarget" 
                     value="' . sprintf('%.2f', $this->weekModel->growthTarget() * 100) . '" />
                 <span class="input-group-addon">%</span></div></td>';

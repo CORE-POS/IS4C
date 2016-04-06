@@ -138,9 +138,13 @@ class LikeCodeModule extends ItemModule
            in the like code */
         $upcP = $dbc->prepare('SELECT upc FROM upcLike WHERE likeCode=? AND upc<>?');
         $upcR = $dbc->execute($upcP,array($likecode,$upc));
+        $upcs = array();
         while ($upcW = $dbc->fetchRow($upcR)) {
             $this->updateItem($dbc, $upcW['upc'], $likecode, $values);
-            COREPOS\Fannie\API\data\ItemSync::sync($upcW['upc']);
+            $upcs[] = $upcW['upc'];
+        }
+        if (count($upcs) <= 10) {
+            COREPOS\Fannie\API\data\ItemSync::sync($upcs);
         }
 
         return true;

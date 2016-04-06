@@ -48,12 +48,12 @@ class PaycardEmvPage extends PaycardProcessPage
                 UdpComm::udpSend("termReset");
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
-            } elseif ($input == "" || $input == 'MANUAL') {
+            } elseif ($input == "" || $input == 'MANUAL' || $input === 'M') {
                 list($valid, $msg) = PaycardLib::validateAmount();
                 if ($valid) {
                     $this->action = "onsubmit=\"return false;\"";    
                     $this->add_onload_command("emvSubmit();");
-                    if ($input == 'MANUAL') {
+                    if ($input == 'MANUAL' || $input === 'M') {
                         $this->prompt = true;
                     }
                     $this->run_transaction = true;

@@ -128,7 +128,13 @@ class RecentSalesReport extends FannieReportPage
         if ($this->likecode !== '') {
             list($where, $item) = array('u.likeCode = ?', $this->likecode);
         }
-        $store = FormLib::get('store', 0);
+        $store = FormLib::get('store', false);
+        if ($store === false) {
+            $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+            if ($store === false) {
+                $store = 0;
+            }
+        }
 
         $qtyQ = "SELECT " . DTrans::sumQuantity('d') . " AS qty,
             SUM(total) as ttl

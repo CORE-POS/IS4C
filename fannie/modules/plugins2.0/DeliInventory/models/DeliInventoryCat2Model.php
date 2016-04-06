@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2014 Whole Foods Co-op
+    Copyright 2013 Whole Foods Co-op
 
     This file is part of CORE-POS.
 
@@ -22,29 +22,24 @@
 *********************************************************************************/
 
 /**
-  @class UsageStatsModel
+  @class DeliInventoryCatModel
 */
-class UsageStatsModel extends BasicModel
-{
+class DeliInventoryCat2Model extends BasicModel {
 
-    protected $name = "usageStats";
-    protected $preferred_db = 'op';
+    protected $name = "deliInventoryCat2";
 
     protected $columns = array(
-    'usageID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
-    'tdate' => array('type'=>'DATETIME'),
-    'pageName' => array('type'=>'VARCHAR(100)'),
-    'referrer' => array('type'=>'VARCHAR(100)'),
-    'userHash' => array('type'=>'VARCHAR(40)'),
-    'ipHash' => array('type'=>'VARCHAR(40)'),
+    'id' => array('type'=>'INT', 'primary_key' => True, 'increment'=>True),
+    'item' => array('type'=>'VARCHAR(50)'),
+    'orderno' => array('type'=>'VARCHAR(15)'),
+    'units' => array('type'=>'VARCHAR(10)'),
+    'cases' => array('type'=>'FLOAT'),
+    'fraction' => array('type'=>'VARCHAR(10)'),
+    'totalstock' => array('type'=>'FLOAT'),
+    'price' => array('type'=>'MONEY'),
+    'total' => array('type'=>'MONEY'),
+    'size' => array('type'=>'VARCHAR(20)'),
+    'category' => array('type'=>'VARCHAR(50)', 'index'=>True)
     );
-
-    public function doc()
-    {
-        return '
-Use:
-Internal usage metrics. Tracks visits
-        ';
-    }
 }
 

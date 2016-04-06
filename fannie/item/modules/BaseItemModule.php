@@ -369,9 +369,10 @@ class BaseItemModule extends ItemModule
 
         $nav_tabs = '<ul id="store-tabs" class="nav nav-tabs small" role="tablist">';
         $ret .= '{{nav_tabs}}<div class="tab-content">';
+        $netStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
         foreach ($items as $store_id => $rowItem) {
             $active_tab = false;
-            if (FannieConfig::config('STORE_MODE') !== 'HQ' || $store_id == FannieConfig::config('STORE_ID')) {
+            if (FannieConfig::config('STORE_MODE') !== 'HQ' || $netStore == $store_id || ($netStore == false && $store_id == FannieConfig::config('STORE_ID'))) {
                 $active_tab = true;
             }
             $tabID = 'store-tab-' . $store_id;
@@ -497,10 +498,12 @@ HTML;
                         b.batchID 
                     FROM batches AS b 
                         LEFT JOIN batchList as l on b.batchID=l.batchID 
+                        LEFT JOIN StoreBatchMap AS m ON b.batchID=m.batchID
                     WHERE '" . date('Y-m-d') . "' BETWEEN b.startDate AND b.endDate 
-                        AND (l.upc=? OR l.upc=?)"
+                        AND (l.upc=? OR l.upc=?)
+                        AND m.storeID=?"
                 );
-                $batchR = $dbc->execute($batchP,array($upc,'LC'.$likeCode));
+                $batchR = $dbc->execute($batchP,array($upc,'LC'.$likeCode,$store_id));
                 $batch = array('batchID'=>0, 'batchName'=>"Unknown");
                 if ($dbc->num_rows($batchR) > 0) {
                     $batch = $dbc->fetch_row($batchR);
@@ -769,7 +772,10 @@ HTML;
         // sync button will copy current tab values to all other store tabs
         if (!$new_item && FannieConfig::config('STORE_MODE') == 'HQ') {
             $nav_tabs .= '<li><label title="Apply update to all stores">
-                <input type="checkbox" id="store-sync" checked /> Sync</label></li>';
+                <input type="checkbox" id="store-sync" ';
+            $audited = FannieAuth::validateUserQuiet('audited_pricechange');
+            $nav_tabs .= ($audited) ? 'disabled' : 'checked';
+            $nav_tabs .= ' /> Sync</label></li>';
         }
         $nav_tabs .= '</ul>';
         // only show the store tabs in HQ mode
@@ -1058,24 +1064,24 @@ HTML;
 
         $model = new ProductsModel($dbc);
         $model->upc($upc);
-        if (!$model->load()) {
-            // fully init new record
-            $model->special_price(0);
-            $model->specialpricemethod(0);
-            $model->specialquantity(0);
-            $model->specialgroupprice(0);
-            $model->advertised(0);
-            $model->tareweight(0);
-            $model->start_date('0000-00-00');
-            $model->end_date('0000-00-00');
-            $model->discounttype(0);
-            $model->wicable(0);
-            $model->scaleprice(0);
-            $model->inUse(1);
-        }
         $stores = $this->formNoEx('store_id', array());
         for ($i=0; $i<count($stores); $i++) {
             $model->store_id($stores[$i]);
+            if (!$model->load()) {
+                // fully init new record
+                $model->special_price(0);
+                $model->specialpricemethod(0);
+                $model->specialquantity(0);
+                $model->specialgroupprice(0);
+                $model->advertised(0);
+                $model->tareweight(0);
+                $model->start_date('0000-00-00');
+                $model->end_date('0000-00-00');
+                $model->discounttype(0);
+                $model->wicable(0);
+                $model->scaleprice(0);
+                $model->inUse(1);
+            }
 
             $taxes = $this->formNoEx('tax', array());
             if (isset($taxes[$i])) {

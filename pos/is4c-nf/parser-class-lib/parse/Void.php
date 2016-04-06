@@ -424,13 +424,17 @@ class Void extends Parser
             $query_upc .= ' AND unitPrice = ' . $scaleprice;
         }
         if ($item_num != -1) {
-            $query_upc .= ' AND trans_id = ' . $item_num;
+            $query_upc .= ' AND trans_id = ' . $item_num . ' AND voided=0 ';
         } else {
             $query_upc .= ' AND voided=0 ORDER BY total';
         }
 
         $result = $dbc->query($query_upc);
-        return $dbc->fetch_array($result);
+        if ($dbc->numRows($result) > 0) {
+            return $dbc->fetch_array($result);
+        } else {
+            return $this->findUpcLine($upc, $scaleprice, $deliflag, -1);
+        }
     }
 
     private function adjustUnitPrice($upc, $row)
@@ -520,6 +524,9 @@ class Void extends Parser
             $this->checkUpcQuantities($voidable, $quantity, $scale);
 
             $row = $this->findUpcLine($upc, $scaleprice, $deliflag, $item_num);
+            // if the selected line was already voided, findUpcLine() might locate
+            // a different, equivalent line to proceed with
+            $item_num = $row['trans_id'];
             $foodstamp = MiscLib::nullwrap($row["foodstamp"]);
             $discounttype = MiscLib::nullwrap($row["discounttype"]);
             $mixMatch = MiscLib::nullwrap($row["mixMatch"]);

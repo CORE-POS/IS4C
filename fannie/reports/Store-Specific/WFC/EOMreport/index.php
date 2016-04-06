@@ -6,12 +6,35 @@ if (!class_exists('FannieAPI')) {
     include(dirname(__FILE__).'/../../../../classlib2.0/FannieAPI.php');
 }
 include($FANNIE_ROOT.'src/functions.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (isset($_GET["excel"])){
 header('Content-Type: application/ms-excel');
 header('Content-Disposition: attachment; filename="EOMreport.xls"');
 $_SERVER['REQUEST_URI'] = $_SERVER['PHP_SELF']; // grab excel from cache
 $_SERVER['REQUEST_URI'] = str_replace("index.php","",$_SERVER['REQUEST_URI']);
+} else {
+    $storeInfo = FormLib::storePicker();
+    echo '<form action="index.php" method="get">'
+        . $storeInfo['html'] . 
+        '<input type="submit" value="Change" />
+        </form>';
+}
+
+$store = FormLib::get('store', false);
+if ($store === false) {
+    $clientIP = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+    foreach ($FANNIE_STORE_NETS as $storeID => $range) {
+        if (
+            class_exists('\\Symfony\\Component\\HttpFoundation\\IpUtils')
+            && \Symfony\Component\HttpFoundation\IpUtils::checkIp($clientIP, $range)
+            ) {
+            $store = $storeID;
+        }
+    }
+    if ($store === false) {
+        $store = 0;
+    }
 }
 
 $today = date("m/j/y");
@@ -26,8 +49,7 @@ $stamp = mktime(0,0,0,$month-1,1,$year);
 $dlog = "is4c_trans.dlog_90_view";
 $start = date("Y-m-01",$stamp);
 $end = date("Y-m-t",$stamp);
-$span = "'$start 00:00:00' AND '$end 23:59:59'";
-$args = array($start.' 00:00:00',$end.' 23:59:59');
+$args = array($start.' 00:00:00',$end.' 23:59:59', $store);
 
 $output = \COREPOS\Fannie\API\data\DataCache::getFile("monthly");
 if (true || !$output || isset($_REQUEST['recache'])){
@@ -45,12 +67,11 @@ if (true || !$output || isset($_REQUEST['recache'])){
     s.superID,
     d.salesCode,d.dept_name,
     SUM(t.total)
-    FROM $dlog as t LEFT JOIN
-        departments as d ON t.department = d.dept_no
-        LEFT JOIN MasterSuperDepts AS s
-        ON s.dept_ID = d.dept_no    
+    FROM $dlog as t 
+        INNER JOIN departments as d ON t.department = d.dept_no
+        LEFT JOIN MasterSuperDepts AS s ON s.dept_ID = d.dept_no    
     WHERE tdate BETWEEN ? AND ?
-        AND t.department < 600
+        AND " . DTrans::isStoreID($store, 't') . "
         AND t.department <> 0
         AND t.trans_type <> 'T'
         AND t.trans_type IN ('I', 'D')
@@ -58,29 +79,13 @@ if (true || !$output || isset($_REQUEST['recache'])){
     s.superID,t.department,d.dept_name,d.salesCode
     order by s.superID,t.department";
 
-    $query15 = "SELECT s.superID,sum(l.total) as total 
-    FROM $dlog as l left join departments as d on l.department = d.dept_no
-    LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
-    WHERE l.tdate BETWEEN ? AND ?
-    AND l.department < 600 AND l.department <> 0
-    AND l.trans_type <> 'T'
-    AND l.trans_type IN ('I','D')
-    GROUP BY s.superID
-    order by s.superID";
-
-    $query16 = "SELECT sum(l.total) as totalSales
-    FROM $dlog as l 
-    WHERE l.tdate BETWEEN ? AND ?
-    AND l.department < 600 AND l.department <> 0
-    AND l.trans_type <> 'T'";
-
     $query2 = "SELECT 
         CASE WHEN d.description='WIC' THEN 'WIC' ELSE t.TenderName END as TenderName,
         -sum(d.total) as total, COUNT(d.total)
     FROM $dlog AS d
         left join tenders as t ON d.trans_subtype=t.TenderCode
     WHERE d.tdate BETWEEN ? AND ?
-    AND d.trans_status <>'X'  
+        AND " . DTrans::isStoreID($store, 'd') . "
     AND d.trans_type='T'
     AND d.trans_subtype <> 'MA'
     and t.TenderName <> 'MAD Coupon'
@@ -100,7 +105,7 @@ if (true || !$output || isset($_REQUEST['recache'])){
         FROM $dlog AS d
             LEFT JOIN houseCoupons AS h ON d.upc=concat('00499999', lpad(convert(h.coupID, char), 5, '0'))
         WHERE d.tdate BETWEEN ? AND ?
-            AND d.trans_status <>'X'  
+            AND " . DTrans::isStoreID($store, 'd') . "
             AND d.trans_type='T'
             AND d.trans_subtype = 'IC'
             and d.total <> 0
@@ -108,47 +113,22 @@ if (true || !$output || isset($_REQUEST['recache'])){
 
     $query3 = "SELECT c.salesCode,s.superID,sum(l.total) as total 
     FROM $dlog as l left join MasterSuperDepts AS s ON
-    l.department = s.dept_ID LEFT JOIN departments AS c
+    l.department = s.dept_ID INNER JOIN departments AS c
     ON l.department = c.dept_no
     WHERE l.tdate BETWEEN ? AND ?
+        AND " . DTrans::isStoreID($store, 'l') . "
     AND l.department < 600 AND l.department <> 0
     AND l.trans_type <> 'T'
+    AND l.trans_type IN ('I','D')
     GROUP BY c.salesCode,s.superID
     order by c.salesCode,s.superID";
-
-    $query4 = "SELECT sum(l.total) as totalSales
-    FROM $dlog as l 
-    WHERE l.tdate BETWEEN ? AND ?
-    AND l.department < 600 AND l.department <> 0
-    AND l.trans_type <> 'T'";
-
-    $query5 = "SELECT d.department,t.dept_name, sum(total) as total 
-    FROM $dlog as d join departments as t ON d.department = t.dept_no
-    LEFT JOIN MasterSuperDepts AS m ON t.dept_no=m.dept_ID
-    WHERE d.tdate BETWEEN ? AND ?
-    AND (d.department >300)AND d.Department <> 0
-    AND m.superID = 0
-    AND d.trans_type IN('I','D') and 
-    (d.register_no <> 20 or d.department = 703)
-    GROUP BY d.department, t.dept_name";
-
-    $query6 = "SELECT d.card_no,t.dept_name, sum(total) as total 
-    FROM $dlog as d join departments  as t ON d.department = t.dept_no
-    WHERE d.tdate BETWEEN ? AND ?
-    AND (d.department =991)AND d.Department <> 0
-    GROUP BY d.card_no, t.dept_name";
-
-    $query7 = "SELECT d.card_no,t.dept_name, sum(total) as total 
-    FROM $dlog as d join departments  as t ON d.department = t.dept_no
-    WHERE d.tdate BETWEEN ? AND ?
-    AND (d.department =990)AND d.Department <> 0 and d.register_no <> 20
-    GROUP BY d.card_no, t.dept_name";
 
     $query13 = "SELECT   m.memDesc,SUM(d.total) AS Sales
     FROM         $dlog d INNER JOIN
                   custdata c ON d.card_no = c.CardNo INNER JOIN
                   memtype m ON c.memType = m.memtype
     WHERE d.tdate BETWEEN ? AND ?
+        AND " . DTrans::isStoreID($store, 'd') . "
     AND (d.department < 600) AND d.department <> 0 AND (c.personnum= 1 or c.personnum is null)
     AND d.trans_type <> 'T'
     GROUP BY m.memDesc
@@ -157,6 +137,7 @@ if (true || !$output || isset($_REQUEST['recache'])){
     $query21 = "SELECT m.memdesc, COUNT(d.card_no)
     FROM is4c_trans.transarchive AS d left join memtype m on d.memType = m.memtype
     WHERE datetime BETWEEN ? AND ? AND (d.memType <> 4)
+        AND " . DTrans::isStoreID($store, 'd') . "
     AND register_no<>99 and emp_no<>9999 AND trans_status NOT IN ('X','Z')
     AND trans_id=1 AND upc <> 'RRR'
     GROUP BY m.memdesc";
@@ -166,28 +147,17 @@ if (true || !$output || isset($_REQUEST['recache'])){
             custdata c ON d.card_no = c.CardNo LEFT JOIN
             memtype m ON c.memType = m.memtype
             WHERE d.tdate BETWEEN ? AND ?
+            AND " . DTrans::isStoreID($store, 'd') . "
             AND (d.department < 600) AND d.department <> 0 
             AND d.trans_type <> 'T'
             AND (c.personnum= 1 or c.personnum is null)";
-
-    $query12 = "SELECT d.salesCode,sum(L.total)as returns
-    FROM $dlog as L,departments as d
-    WHERE d.dept_no = L.department
-     AND L.tdate BETWEEN ? AND ?
-    AND(trans_status = 'R' OR upc LIKE '%dp606')
-    GROUP BY d.salesCode";
-
-    $query14 = "SELECT 'Total Sales', sum(l.total) as totalSales
-    FROM $dlog as l 
-    WHERE l.tdate BETWEEN ? AND ?
-    AND l.department < 600 AND l.department <> 0
-    AND l.trans_status = 'R'";
 
     $query8 = "SELECT     m.memDesc, SUM(d.total) AS Discount 
     FROM         $dlog d INNER JOIN
                   custdata c ON d.card_no = c.CardNo INNER JOIN
                   memtype m ON c.memType = m.memtype
     WHERE d.tdate BETWEEN ? AND ?
+    AND " . DTrans::isStoreID($store, 'd') . "
     AND (d.upc = 'DISCOUNT') AND c.personnum= 1
     GROUP BY c.memType, m.memDesc, d.upc
     ORDER BY c.memType";
@@ -197,18 +167,14 @@ if (true || !$output || isset($_REQUEST['recache'])){
                   custdata c ON d.card_no = c.CardNo INNER JOIN
                   memtype m ON c.memType = m.memtype
     WHERE d.tdate BETWEEN ? AND ?
+    AND " . DTrans::isStoreID($store, 'd') . "
     AND (d.upc = 'DISCOUNT') AND c.personnum = 1
     GROUP BY d.upc";
-
-    $queryMAD = "select 'MAD Coupon',sum(d.total),count(*) as discount
-    from $dlog as d
-    where tdate BETWEEN ? AND ?
-    and trans_status <> 'X'
-    and trans_subtype = 'MA'";
 
     $query11 = "SELECT  sum(total) as tax_collected
     FROM $dlog as d 
     WHERE d.tdate BETWEEN ? AND ?
+    AND " . DTrans::isStoreID($store, 'd') . "
     AND (d.upc = 'tax')
     GROUP BY d.upc";
 
@@ -217,24 +183,13 @@ if (true || !$output || isset($_REQUEST['recache'])){
     FROM $dlog as l left join departments as d on l.department = d.dept_no
         INNER JOIN custdata AS c ON c.CardNo=l.card_no AND c.personNum=1
     WHERE l.tdate BETWEEN ? AND ?
+    AND " . DTrans::isStoreID($store, 'l') . "
     AND (l.department < 600 or l.department = 902) AND l.department <> 0
     AND l.trans_type <> 'T'
     AND card_no BETWEEN 5500 AND 5950
     AND c.memType=4
     GROUP BY d.salesCode,card_no,d.margin
     order by card_no,d.salesCode";
-
-    $query22="SELECT d.salesCode,sum(l.total) as total,
-    (sum(l.total)-(sum(l.total)* d.margin)) as cost
-    FROM $dlog as l left join departments as d on l.department = d.dept_no
-        INNER JOIN custdata AS c ON c.CardNo=l.card_no AND c.personNum=1
-    WHERE l.tdate BETWEEN ? AND ?
-    AND (l.department < 600 or l.department = 902) AND l.department <> 0
-    AND l.trans_type <> 'T'
-    AND card_no BETWEEN 5500 AND 5950
-    AND c.memType=4
-    GROUP BY d.salesCode,d.margin
-    order by d.salesCode";
 
     $queryRRR = "
     SELECT sum(case when volSpecial is null then 0 
@@ -244,6 +199,7 @@ if (true || !$output || isset($_REQUEST['recache'])){
     is4c_trans.transarchive as t
     where upc = 'RRR'
     and t.datetime BETWEEN ? AND ?
+    AND " . DTrans::isStoreID($store, 't') . "
     and emp_no <> 9999 and register_no <> 99
     and trans_status <> 'X'";
 
@@ -258,9 +214,27 @@ if (true || !$output || isset($_REQUEST['recache'])){
         <td width=120><u><font size=2><b>Group</b></u></font></td>
           <td width=120><u><font size=2><b>Sales</b></u></font></td>
         </table>';
-    select_to_table($query1,$args,0,'ffffff');
+    $prep = $dbc->prepare($query1);
+    $res =  $dbc->execute($query1, $args);
+    $depts = array();
+    $supers = array();
+    $misc = array();
+    while ($w = $dbc->fetchRow($res)) {
+        $s = $w['superID'];
+        if ($s > 0) {
+            $depts[] = $w;
+        } else {
+            $misc[] = $w;
+        }
+        if (!isset($supers[$s])) {
+            $supers[$s] = array($s, 0.0);
+        } 
+        $supers[$s][1] += $w[4];
+    }
+    unset($supers[0]);
+    select_to_table3($depts,5,0,'ffffff');
     echo '<b>Total Sales by Group</b>';
-    select_to_table($query15,$args,0,'ffffff');
+    select_to_table3($supers,2,0,'ffffff');
 
     echo '<font size = 2>';
     echo '<br>';
@@ -276,10 +250,18 @@ if (true || !$output || isset($_REQUEST['recache'])){
     echo '<br>------------------------------';
     echo '<table><td width=120><u><font size=2><b>pCode</b></u></font></td>
           <td width=120><u><font size=2><b>Sales</b></u></font></td></table>';
-    select_to_table($query3,$args,0,'ffffff');
+    $prep = $dbc->prepare($query3);
+    $res = $dbc->execute($query3, $args);
+    $sales = array();
+    $ttl = 0.0;
+    while ($w = $dbc->fetchRow($res)) {
+        $sales[] = $w;
+        $ttl += $w[2];
+    }
+    select_to_table3($sales,3,0,'ffffff');
     echo '<b>Total Sales</b>';
 
-    select_to_table($query4,$args,0,'ffffff');
+    select_to_table3(array(array($ttl)),1,0,'ffffff');
 
     echo '<br>';
     echo 'Other income';
@@ -287,29 +269,49 @@ if (true || !$output || isset($_REQUEST['recache'])){
     echo '<table><td width=120><u><font size=2><b>Dept</b></u></font></td>
           <td width=120><u><font size=2><b>Description</b></u></font></td>
           <td width=120><u><font size=2><b>Amount</b></u></font></td></table>';
-    select_to_table($query5,$args,0,'ffffff');
+    select_to_table3($misc,5,0,'ffffff');
     echo 'Discounts';
     echo '<br>------------------------------';
     echo '<table><td width=120><u><font size=2><b>Mem Type</b></u></font></td>
           <td width=120><u><font size=2><b>Discounts</b></u></font></td></table>';
     select_to_table($query8,$args,0,'ffffff');
     select_to_table($query9,$args,0,'ffffff');
-    select_to_table($queryMAD,$args,0,'ffffff');
     echo '<br>';
     echo 'Member Sales';
     echo '<br>------------------------------';
     echo '<table><td width=120><u><font size=2><b>Mem Type</b></u></font></td>
           <td width=120><u><font size=2><b>Sales</b></u></font></td></table>';
-    select_to_table($query13,$args,0,'ffffff');
-    select_to_table($query20,$args,0,'ffffff');
+    $prep = $dbc->prepare($query13);
+    $res = $dbc->execute($prep, $args);
+    $mems = array();
+    $ttl = 0.0;
+    while ($w = $dbc->fetchRow($res)) {
+        $mems[] = $w;
+        $ttl += $w[1];
+    }
+    select_to_table3($mems,2,0,'ffffff');
+    select_to_table3(array(array($ttl)),1,0,'ffffff');
     echo '<br>';
     echo 'Nabs';
     echo '<br>------------------------------';
     echo '<table><td width=120><u><font size=2><b>pCode</b></u></font></td>
           <td width=120><u><font size=2><b>Retail</b></u></font></td>
           <td>Dept Number</td><td>WholeSale</td></table>';
-    select_to_table($query23,$args,0,'ffffff');
-    select_to_table($query22,$args,0,'ffffff');
+    $prep = $dbc->prepare($query23);
+    $res = $dbc->execute($prep, $args);
+    $nabs = array();
+    $bycode = array();
+    while ($w = $dbc->fetchRow($res)) {
+        $nabs[] = $w;
+        $code = $w[0];
+        if (!isset($bycode[$code])) {
+            $bycode[$code] = array($code, 0.0, 0.0);
+        }
+        $bycode[$code][1] += $w['total'];
+        $bycode[$code][2] += $w['cost'];
+    }
+    select_to_table3($nabs,4,0,'ffffff');
+    select_to_table3($bycode,3,0,'ffffff');
     echo '<br>';
     echo 'Transactions';
     echo '<br>------------------------------';
@@ -318,21 +320,6 @@ if (true || !$output || isset($_REQUEST['recache'])){
     select_to_table($query21,$args,0,'ffffff');
     echo '<br>';
     echo '<br>';
-    /**
-    echo 'Sales Tax';
-    echo '<br>------------------------------';
-    echo '<table><td width=120><u><font size=2><b>Taxable Sales</b></u></font></td>
-          <td width=120><u><font size=2><b>Total Tax</b><u></font></td>
-          <td width=120><u><font size=2><b>State Taxable</b></u></font></td>
-          <td width=120><u><font size=2><b>State Tax</b></u></font></td>
-          <td width=120><u><font size=2><b>City Taxable</b></u></font></td>
-          <td width=120><u><font size=2><b>City Tax</b></u></font></td>
-          <td width=120><u><font size=2><b>Deli Taxable</b></u></font></td>
-          <td width=120><u><font size=2><b>Deli Tax</b></u></font></td></table>';
-    $queryCorrect = "select TaxableSales,TotalTax,StateTaxable,StateTax,CityTaxable,CityTax,DeliTaxable,DeliTax
-            from is4c_trans.taxReport_corrected";
-    select_to_table($queryCorrect,array(),0,'ffffff');
-    */
     echo '<br>';
     echo '<b>Actual Tax Collected</b>';
     select_to_table($query11,$args,0,'ffffff');
@@ -355,8 +342,9 @@ echo $output;
     $newTaxQ = 'SELECT description,
                     SUM(regPrice) AS ttl,
                     numflag AS taxID
-                FROM is4c_trans.transarchive
+                FROM is4c_trans.transarchive AS t
                 WHERE datetime BETWEEN ? AND ?
+                    AND ' . DTrans::isStoreID($store, 't') . '
                     AND upc=\'TAXLINEITEM\'
                     AND ' . DTrans::isNotTesting() . '
                 GROUP BY taxID, description';

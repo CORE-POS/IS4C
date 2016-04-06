@@ -59,6 +59,7 @@ class ItemStatusPage extends FannieRESTfulPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $product = new ProductsModel($dbc);
         $product->upc($this->upc);
+        $product->store_id($this->config->get('STORE_ID'));
         $product->load();
         $info = $product->getTagData();
 
@@ -113,7 +114,7 @@ class ItemStatusPage extends FannieRESTfulPage
             <div class="panel-heading">' . $upc . '</div>
             <div class="panel-body">';
 
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::getReadOnly($FANNIE_OP_DB);
         $product = new ProductsModel($dbc);
         $vendor = new VendorsModel($dbc);
         $product->upc($upc);

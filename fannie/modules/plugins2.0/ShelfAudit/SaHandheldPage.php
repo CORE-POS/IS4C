@@ -69,15 +69,16 @@ class SaHandheldPage extends FanniePage {
         if ($ajax === 'save'){
             $upc = FormLib::get_form_value('upc','');
             $qty = FormLib::get_form_value('qty',0);
+            $store = FormLib::get('store', 0);
 
             $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['ShelfAuditDB']);
             $delP = $dbc->prepare('DELETE FROM sa_inventory
-                    WHERE upc=? AND clear=0 AND section=?');
-            $insP = $dbc->prepare('INSERT INTO sa_inventory (datetime,upc,clear,quantity,section)
-                    VALUES ('.$dbc->now().',?,0,?,?)');
-            $dbc->execute($delP, array($upc, $this->section));
+                    WHERE upc=? AND clear=0 AND section=? AND storeID=?');
+            $insP = $dbc->prepare('INSERT INTO sa_inventory (datetime,upc,clear,quantity,section,storeID)
+                    VALUES ('.$dbc->now().',?,0,?,?,?)');
+            $dbc->execute($delP, array($upc, $this->section, $store));
             if ($qty > 0){
-                $dbc->execute($insP, array($upc, $qty, $this->section));
+                $dbc->execute($insP, array($upc, $qty, $this->section, $store));
             }
             echo $qty;
             echo 'quantity updated';
@@ -87,25 +88,28 @@ class SaHandheldPage extends FanniePage {
         /* upc scan; lookup item */
         $upc = FormLib::get_form_value('upc_in','');
         if ($upc !== ''){
-            $dbc = FannieDB::get($FANNIE_OP_DB);
+            $dbc = FannieDB::getReadOnly($FANNIE_OP_DB);
             $upc = BarcodeLib::padUPC($upc);
             $this->current_item_data['upc'] = $upc;     
+            $store = FormLib::get('store', 0);
             $q = 'SELECT p.description,v.brand,s.quantity,v.units FROM
                 products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc
                 LEFT JOIN '.$FANNIE_PLUGIN_SETTINGS['ShelfAuditDB'].$dbc->sep().
-                'sa_inventory AS s ON p.upc=s.upc AND s.clear=0
-                WHERE p.upc=? ORDER BY v.vendorID';
+                'sa_inventory AS s ON p.upc=s.upc AND s.clear=0 AND s.storeID=?
+                WHERE p.upc=? 
+                ORDER BY v.vendorID';
             $p = $dbc->prepare($q);
-            $r = $dbc->execute($p,array($upc));
+            $r = $dbc->execute($p,array($store, $upc));
             if($dbc->num_rows($r)==0){
                 // try again; item on-hand but not in products
                 $q = 'SELECT v.description,v.brand,s.quantity,v.units FROM
                     vendorItems AS v 
                     LEFT JOIN '.$FANNIE_PLUGIN_SETTINGS['ShelfAuditDB'].$dbc->sep().
-                    'sa_inventory AS s ON s.upc=v.upc AND s.clear=0
-                    WHERE v.upc=? ORDER BY v.vendorID';
+                    'sa_inventory AS s ON s.upc=v.upc AND s.clear=0 AND s.storeID=?
+                    WHERE v.upc=? 
+                    ORDER BY v.vendorID';
                 $p = $dbc->prepare($q);
-                $r = $dbc->execute($p,array($upc));
+                $r = $dbc->execute($p,array($store, $upc));
             }
 
             
@@ -174,7 +178,7 @@ function update_qty(amt){
     $('#live-qty').html(cur);
 
     // save new quantity, return cursor to upc input
-    var args = 'action=save&upc='+$('#cur_upc').val()+'&qty='+cur;
+    var args = 'action=save&upc='+$('#cur_upc').val()+'&qty='+cur+'&store='+$('#store').val();
     $.ajax({
         data: args,
         cache: false,
@@ -193,7 +197,7 @@ function qty_typed(ev){
     var cur = Number($('#cur_qty').val()) + Number($('#old-qty').html());
     $('#live-qty').html(cur);
     // save new quantity, return cursor to upc input
-    var args = 'action=save&upc='+$('#cur_upc').val()+'&qty='+cur;
+    var args = 'action=save&upc='+$('#cur_upc').val()+'&qty='+cur+'&store='+$('#store').val();
     $.ajax({
         data: args,
         cache: false,
@@ -250,11 +254,14 @@ ScannerDevice.registerListener(Device);
         return ob_get_clean();
     }
 
-    protected function upcForm($elem)
+    protected function upcForm($elem, $store)
     {
         ?>
 <form method="get" id="upcScanForm">
-<a href="SaMenuPage.php">Menu</a><br />
+<a href="SaMenuPage.php">Menu</a>
+ - Store # <?php echo $store; ?>
+<input type="hidden" name="store" id="store" value="<?php echo ((int)$store); ?>" />
+<br />
 <div class="form-group form-inline">
     <div class="input-group">
         <label class="input-group-addon">UPC</label>
@@ -294,9 +301,10 @@ ScannerDevice.registerListener(Device);
     {
         ob_start();
         $elem = '#upc_in';
+        $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
         if (isset($this->current_item_data['upc']) && isset($this->current_item_data['desc'])) $elem = '#cur_qty';
         $this->add_onload_command('$(\'' . $elem . '\').focus();');
-        $this->upcForm($elem);
+        $this->upcForm($elem, $store);
 if (isset($this->current_item_data['upc'])){
     if (!isset($this->current_item_data['desc'])){
         echo '<div class="alert alert-danger">Item not found (';

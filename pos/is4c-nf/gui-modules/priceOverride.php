@@ -27,13 +27,14 @@ class PriceOverride extends NoInputCorePage {
 
     private $item_description = '';
     private $price = '';
+    private $scale = 0;
 
     function preprocess()
     {
         $line_id = CoreLocal::get("currentid");
         $dbc = Database::tDataConnect();
         
-        $query = "SELECT description,total,department FROM localtemptrans
+        $query = "SELECT description,unitPrice,department,scale FROM localtemptrans
             WHERE trans_type IN ('I','D') AND upc <> '0'
             AND trans_id=".((int)$line_id);
         $res = $dbc->query($query);
@@ -44,7 +45,8 @@ class PriceOverride extends NoInputCorePage {
         }
         $row = $dbc->fetch_row($res);
         $this->item_description = $row['description'];
-        $this->price = sprintf('$%.2f',$row['total']);
+        $this->price = sprintf('$%.2f',$row['unitPrice']);
+        $this->scale = $row['scale'];
 
         if (isset($_REQUEST['reginput'])){
             $input = strtoupper($_REQUEST['reginput']);
@@ -125,7 +127,8 @@ class PriceOverride extends NoInputCorePage {
             id="overrideform" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <input type="text" id="reginput" name='reginput' tabindex="0" onblur="$('#reginput').focus()" />
         </form>
-        <span><?php echo $this->item_description; ?> - <?php echo $this->price; ?></span>
+        <span><?php echo $this->item_description; ?> - <?php echo $this->price; ?>
+            <?php echo ($this->scale ? ' /lb' : 'each'); ?></span>
         <p>
         <span class="smaller">[clear] to cancel</span>
         </p>

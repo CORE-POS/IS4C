@@ -66,10 +66,11 @@ class SpecialOrder extends SpecialUPC
         }
 
         $db = Database::mDataConnect();
+        $mAlt = Database::mAltName();
         $query = sprintf("SELECT upc,description,department,
                 quantity,unitPrice,total,regPrice,d.dept_tax,d.dept_fs,
                 ItemQtty,p.discountable
-                FROM PendingSpecialOrder as p LEFT JOIN
+                FROM {$mAlt}PendingSpecialOrder as p LEFT JOIN
                 is4c_op.departments AS d ON p.department=d.dept_no
                 WHERE order_id=%d AND trans_id=%d",
                 $orderID,$transID);

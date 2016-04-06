@@ -51,7 +51,6 @@ class ServerMonitor extends Monitor
         $ret = array(
             'versions' => $this->versionInfo(),
             'disk' => $this->diskSpace(),
-            'pages' => $this->pageStats($dbc),
             'products' => $this->productStats($dbc),
             'custdata' => $this->custdataStats($dbc),
         );
@@ -59,44 +58,6 @@ class ServerMonitor extends Monitor
         $ret['archiving'] = $this->archiveStatus($dbc);
 
         return json_encode($ret);
-    }
-
-    private function pageStats($dbc)
-    {
-        $res = $dbc->query('
-            SELECT COUNT(*) AS total,
-                COUNT(DISTINCT userHash) AS users,
-                COUNT(DISTINCT ipHash) AS hosts
-            FROM usageStats
-            WHERE tdate >= \'' . date('Y-m-d') . '\'');
-        $row = $dbc->fetchRow($res);
-        $ret = array(
-            'total' => $row['total'],
-            'users' => $row['users'],
-            'hosts' => $row['hosts'],
-            'popular' => array(),
-        );
-        $res = $dbc->query('
-            SELECT COUNT(*) AS total,
-                pageName
-            FROM usageStats
-            WHERE tdate >= \'' . date('Y-m-d') . '\'
-            GROUP BY pageName
-            ORDER BY COUNT(*) DESC');
-        $msg .= 'Most popular pages: ' . "\n";
-        $page_list = 0;
-        while ($row = $dbc->fetchRow($res)) {
-            $ret['popular'][] = array(
-                'page' => $row['pageName'],
-                'views' => $row['total'],
-            );
-            $page_list++;
-            if ($page_list > 9) {
-                break;
-            }
-        }
-
-        return $ret;
     }
 
     private function productStats($dbc)
