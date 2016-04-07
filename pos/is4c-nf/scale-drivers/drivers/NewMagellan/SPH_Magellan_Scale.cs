@@ -93,7 +93,7 @@ public class SPH_Magellan_Scale : SerialPortHandler
             scale_state = WeighState.None;
             lock (writeLock) {
                 sp.Write("S10\r");
-                Thread.Sleep(500);
+                Thread.Sleep(1500);
                 sp.Write("S14\r");
             }
         }
