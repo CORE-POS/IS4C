@@ -260,7 +260,7 @@ class FannieAPI
         [optional, default false]
       @return [array] of [string] class names
     */
-    static public function listModules($base_class, $include_base=false)
+    static public function listModules($base_class, $include_base=false, $debug=false)
     {
         $directories = array();
         $directories[] = dirname(__FILE__).'/../modules/plugins2.0/';
@@ -336,10 +336,11 @@ class FannieAPI
             array()
         );
 
-        $ret = array();
-        if (count($files) > 1607) {
-            var_dump($files);
+        if ($debug) {
+            return $files;
         }
+
+        $ret = array();
         foreach($files as $file) {
             $class = substr(basename($file),0,strlen(basename($file))-4);
             // matched base class
