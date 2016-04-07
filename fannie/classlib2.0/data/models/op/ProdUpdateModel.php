@@ -104,6 +104,9 @@ tools/cron jobs/sprocs/etc actually do. They probably
 
         $product = new ProductsModel($this->connection);
         $product->upc($this->upc());
+        if ($this->storeID()) {
+            $product->store_id($this->storeID());
+        }
         $exists = $product->load();
         if (!$exists) {
             return false;

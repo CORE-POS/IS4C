@@ -364,6 +364,7 @@ it won\'t *do* anything.
         if ($try && !$lane_push && $this->log_updates && $this->connection->tableExists('prodUpdate')) {
             $update = new ProdUpdateModel($this->connection);
             $update->upc($this->upc());
+            $update->storeID($this->store_id());
             $update->logUpdate(ProdUpdateModel::UPDATE_EDIT);
         }
 
