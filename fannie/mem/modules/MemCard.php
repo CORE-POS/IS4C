@@ -130,7 +130,8 @@ class MemCard extends \COREPOS\Fannie\API\member\MemberModule {
 
     // Update, insert or delete the Member Card#.
     // Return "" on success or an error message.
-    function saveFormData($memNum){
+    public function saveFormData($memNum, $json=array())
+    {
 
         global $FANNIE_MEMBER_UPC_PREFIX, $FANNIE_ROOT;
         $dbc = $this->db();

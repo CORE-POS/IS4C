@@ -77,7 +77,8 @@ class ContactPref extends \COREPOS\Fannie\API\member\MemberModule {
 
     // Update or insert the Contact Preference.
     // Return "" on success or an error message.
-    function saveFormData($memNum){
+    public function saveFormData($memNum, $json=array())
+    {
         $dbc = $this->db();
 
         $formPref = FormLib::get_form_value('MemContactPref',-1);

@@ -101,25 +101,10 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
         return $ret;
     }
 
-    function saveFormData($memNum)
+    public function saveFormData($memNum, $json=array())
     {
-        /**
-          Use primary member for default column values
-        */
-        $account = self::getAccount();
-        if (!$account) {
-            return "Error: Problem saving household members<br />"; 
-        }
-
-        $json = array(
-            'cardNo' => $memNum,
-            'customerTypeID' => $account['customerTypeID'],
-            'memberStatus' => $account['memberStatus'],
-            'activeStatus' => $account['activeStatus'],
-            'customers' => array()
-        );
         $primary = array('discount'=>0, 'staff'=>0, 'lowIncomeBenefits'=>0, 'chargeAllowed'=>0, 'checksAllowed'=>0);
-        foreach ($account['customers'] as $c) {
+        foreach ($json['customers'] as $c) {
             if ($c['accountHolder']) {
                 $primary = $c;
                 break;
@@ -134,27 +119,38 @@ class HouseholdSeparateDiscounts extends \COREPOS\Fannie\API\member\MemberModule
         $ids = FormLib::get('HouseholdMembers_ID', array());
         $pn = 2;
         for ($i=0; $i<count($lns); $i++) {
-            $json['customers'][] = array(
-                'customerID' => $ids[$i],
-                'firstName' => $fns[$i],
-                'lastName' => $lns[$i],
-                'accountHolder' => 0,
-                'discount' => $discs[$i],
-                'staff' => $primary['staff'],
-                'lowIncomeBenefits' => in_array($pn, $ssi) ? 1 : 0,
-                'chargeAllowed' => $primary['chargeAllowed'],
-                'checksAllowed' => in_array($pn, $checks) ? 1 : 0,
-            );
-            $pn++;
+            if ($ids[$i] == 0) { // add new name
+                $json['customers'][] = array(
+                    'customerID' => $ids[$i],
+                    'firstName' => $fns[$i],
+                    'lastName' => $lns[$i],
+                    'accountHolder' => 0,
+                    'discount' => $discs[$i],
+                    'staff' => $primary['staff'],
+                    'lowIncomeBenefits' => in_array($pn, $ssi) ? 1 : 0,
+                    'chargeAllowed' => $primary['chargeAllowed'],
+                    'checksAllowed' => in_array($pn, $checks) ? 1 : 0,
+                );
+                $pn++;
+            } else { // update or remove existing name
+                for ($j=0; $j<count($json['customers']); $j++) {
+                    if ($json['customers'][$j]['customerID'] == $ids[$i]) {
+                        if ($fns[$i] == '' && $lns[$i] == '') {
+                            unset($json['customers'][$j]);
+                        } else {
+                            $json['customers'][$j]['firstName'] = $fns[$i];
+                            $json['customers'][$j]['lastName'] = $lns[$i];
+                            $json['customers'][$j]['accountHolder'] = 0;
+                            $json['customers'][$j]['discount'] = $discs[$i];
+                            $json['customers'][$j]['lowIncomeBenefits'] = in_array($pn, $ssi) ? 1 : 0;
+                            $json['customers'][$j]['checksAllowed'] = in_array($pn, $checks) ? 1 : 0;
+                        }
+                    }
+                }
+            }
         }
 
-        $resp = \COREPOS\Fannie\API\member\MemberREST::post($memNum, $json);
-
-        if ($resp['errors'] > 0) {
-            return "Error: Problem saving household members<br />"; 
-        }
-
-        return '';
+        return $json;
     }
 }
 

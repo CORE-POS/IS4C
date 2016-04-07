@@ -102,7 +102,7 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
         return $ret;
     }
 
-    function saveFormData($memNum)
+    public function saveFormData($memNum, $json=array())
     {
         $dbc = $this->db();
 
@@ -115,27 +115,7 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
         }
 
         // Default values for custdata fields that depend on Member Type.
-        $json = array(
-            'cardNo' => $memNum,
-            'memberStatus' => 'REG',
-            'customerTypeID' => $mtype,
-            'customers' => array(
-                array(
-                    'accountHolder' => 1,
-                    'staff' => 0,
-                    'discount' => 0,
-                    'lowIncomeBenefits' => 0,
-                ),
-            ),
-        );
-        $account = self::getAccount();
-        foreach ($account['customers'] as $c) {
-            if ($c['accountHolder']) {
-                $json['customers'][0]['customerID'] = $c['customerID'];
-            }
-        }
-        $account['customerTypeID'] = $mtype;
-        $account['memberStatus'] = 'REG';
+        $json['customerTypeID'] = $mtype;
 
         // Get any special values for this Member Type.
         $mt = $dbc->tableDefinition('memtype');
@@ -148,22 +128,14 @@ class MemType extends \COREPOS\Fannie\API\member\MemberModule {
         if ($dbc->num_rows($r) > 0){
             $w = $dbc->fetch_row($r);
             $json['memberStatus'] = $w['custdataType'];
-            $account['memberStatus'] = $w['custdataType'];
-            $json['customers'][0]['discount'] = $w['discount'];
-            $json['customers'][0]['staff'] = $w['staff'];
-            $json['customers'][0]['lowIncomeBenefits'] = $w['ssi'];
+            for ($i=0; $i<count($json['customers']); $i++) {
+                $json['customers'][$i]['discount'] = $w['discount'];
+                $json['customers'][$i]['staff'] = $w['staff'];
+                $json['customers'][$i]['lowIncomeBenefits'] = $w['ssi'];
+            }
         }
 
-        $resp = \COREPOS\Fannie\API\member\MemberREST::post($memNum, $json);
-        
-        if ($resp['errors'] > 0) {
-            return "Error: problem saving Member Type<br />";
-        } else {
-            // update current account object so subsequent save
-            // operations don't overwrite changes
-            self::setAccount($account);
-            return "";
-        }
+        return $json;
     }
 }
 

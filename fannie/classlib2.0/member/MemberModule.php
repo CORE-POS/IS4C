@@ -64,11 +64,12 @@ class MemberModule
       Extract data from GET/POST and save
       member information
       @param $memNum [int] member number
+      @param $json [array] current member information
       @return [string] message. empty string indicates success
     */
-    public function saveFormData($memNum)
+    public function saveFormData($memNum, $json=array())
     {
-        return '';
+        return $json;
     }
 
     /**

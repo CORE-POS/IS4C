@@ -87,8 +87,22 @@ class MemberEditor extends FanniePage {
                 foreach($FANNIE_MEMBER_MODULES as $mm){
                     if (class_exists($mm)) {
                         $instance = new $mm();
-                        $this->msgs .= $instance->saveFormData($this->memNum);
+                        $saved = $instance->saveFormData($this->memNum, $account);
+                        /**
+                          The API return type is changing here. Any un-updated
+                          module that still returns a string should not clobber
+                          the $account info.
+                        */
+                        if (is_array($saved)) {
+                            $account = $saved;
+                        } else {
+                            $this->msgs .= $saved;
+                        }
                     }
+                }
+                $post_result = \COREPOS\Fannie\API\member\MemberREST::post($this->memNum, $account);
+                if ($post_result['errors'] > 0) {
+                    $this->msgs .= 'Error saving account';
                 }
 
                 $dbc = FannieDB::get($FANNIE_OP_DB);

@@ -109,34 +109,41 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         return $ret;
     }
 
-    function saveFormData($memNum)
+    public function saveFormData($memNum, $json=array())
     {
-        $json = array(
-            'addressFirstLine' => FormLib::get_form_value('ContactInfo_addr1',''),
-            'addressSecondLine' => FormLib::get_form_value('ContactInfo_addr2',''),
-            'city' => FormLib::get_form_value('ContactInfo_city',''),
-            'state' => FormLib::get_form_value('ContactInfo_state',''),
-            'zip' => FormLib::get_form_value('ContactInfo_zip',''),
-            'contactAllowed' => (FormLib::get_form_value('ContactInfo_mail')!=='' ? 1 : 0),
-            'customers' => array(),
-        );
-        $account = self::getAccount();
-        foreach ($account['customers'] as $c) {
-            if ($c['accountHolder']) {
-                $json['customers'][] = array(
-                    'customerID' => $c['customerID'],
-                    'accountHolder' => 1,
-                    'lastName' => FormLib::get('ContactInfo_ln', ''),
-                    'firstName' => FormLib::get('ContactInfo_fn', ''),
-                    'phone' => FormLib::get_form_value('ContactInfo_ph1',''),
-                    'altPhone' => FormLib::get_form_value('ContactInfo_ph2',''),
-                    'email' => FormLib::get_form_value('ContactInfo_email',''),
-                );
+        $json['addressFirstLine'] = FormLib::get('ContactInfo_addr1');
+        $json['addressSecondLine'] = FormLib::get('ContactInfo_addr2');
+        $json['city'] = FormLib::get('ContactInfo_city');
+        $json['state'] = FormLib::get('ContactInfo_state');
+        $json['zip'] = FormLib::get('ContactInfo_zip');
+        $json['contactAllowed'] = (FormLib::get('ContactInfo_mail')!=='' ? 1 : 0);
+        for ($i = 0; $i<count($json['customers']); $i++) {
+            if ($json['customers'][$i]['accountHolder']) {
+                $json['customers'][$i]['lastName'] = FormLib::get('ContactInfo_ln');
+                $json['customers'][$i]['firstName'] = FormLib::get('ContactInfo_fn');
+                $json['customers'][$i]['phone'] = FormLib::get('ContactInfo_ph1');
+                $json['customers'][$i]['altPhone'] = FormLib::get('ContactInfo_ph2');
+                $json['customers'][$i]['email'] = FormLib::get('ContactInfo_email');
+
+                // Phone# style: ###-###-####
+                if (preg_match("/^[MKLP]/", $json['zip']) ) {
+                    if (preg_match("/^[-() .0-9]+$/",$json['customers'][$i]['phone']) ) {
+                        $phone = preg_replace("/[^0-9]/", '' ,$json['customers'][$i]['phone']);
+                        if (preg_match("/^\d{10}$/",$phone)) {
+                            $json['customers'][$i]['phone'] = preg_replace("/(\d{3})(\d{3})(\d{4})/",'${1}-${2}-${3}',$phone);
+                        }
+                    }
+                    if (preg_match("/^[-() .0-9]+$/",$json['customers'][$i]['altPhone']) ) {
+                        $phone = preg_replace("/[^0-9]/", '' ,$json['customers'][$i]['altPhone']);
+                        if (preg_match("/^\d{10}$/",$phone)) {
+                            $json['customers'][$i]['altPhone'] = preg_replace("/(\d{3})(\d{3})(\d{4})/",'${1}-${2}-${3}',$phone);
+                        }
+                    }
+                }
             }
         }
 
         /* Canadian Postal Code, and City and Province
-         * Phone style: ###-###-####
         */
         if (preg_match("/^[A-Z]\d[A-Z]/i", $json['zip']) ) {
             $json['zip'] = strtoupper($json['zip']);
@@ -149,30 +156,9 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
                 $json['city'] = 'Toronto';
                 $json['state'] = 'ON';
             }
-            // Phone# style: ###-###-####
-            if (preg_match("/^[MKLP]/", $json['zip']) ) {
-                if (preg_match("/^[-() .0-9]+$/",$json['customers'][0]['phone']) ) {
-                    $phone = preg_replace("/[^0-9]/", '' ,$json['customers'][0]['phone']);
-                    if (preg_match("/^\d{10}$/",$phone)) {
-                        $json['customers'][0]['phone'] = preg_replace("/(\d{3})(\d{3})(\d{4})/",'${1}-${2}-${3}',$phone);
-                    }
-                }
-                if (preg_match("/^[-() .0-9]+$/",$json['customers'][0]['altPhone']) ) {
-                    $phone = preg_replace("/[^0-9]/", '' ,$json['customers'][0]['altPhone']);
-                    if (preg_match("/^\d{10}$/",$phone)) {
-                        $json['customers'][0]['altPhone'] = preg_replace("/(\d{3})(\d{3})(\d{4})/",'${1}-${2}-${3}',$phone);
-                    }
-                }
-            }
         }
 
-        $resp = \COREPOS\Fannie\API\member\MemberREST::post($memNum, $json);
-
-        if ($resp['errors'] > 0) {
-            return "Error: problem saving Contact Information<br />";
-        } else {
-            return '';
-        }
+        return $json;
     }
 
     function hasSearch(){ return True; }
