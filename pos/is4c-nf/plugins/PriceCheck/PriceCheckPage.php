@@ -100,7 +100,7 @@ class PriceCheckPage extends NoInputCorePage
     {
         $DTClasses = CoreLocal::get("DiscountTypeClasses");
         if ($discounttype < 64 && isset(DiscountType::$MAP[$discounttype])) {
-            $class = DiscountType::$MAP[$row['discounttype']];
+            $class = DiscountType::$MAP[$discounttype];
             $DiscountObject = new $class();
         } else if ($discounttype > 64 && isset($DTClasses[($discounttype-64)])) {
             $class = $DTClasses[($discounttype)-64];
