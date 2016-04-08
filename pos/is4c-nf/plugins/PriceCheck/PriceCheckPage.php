@@ -144,6 +144,8 @@ class PriceCheckPage extends NoInputCorePage
             _("[scan] another item"),
             _("[clear] to cancel"),
         );
+        
+        return array($info, $inst);
     }
 
     private function upcText()
@@ -161,6 +163,8 @@ class PriceCheckPage extends NoInputCorePage
             _("[enter] to ring this item"),
             _("[clear] to cancel"),
         );
+        
+        return array($info, $inst);
     }
 
     function body_content()
@@ -173,11 +177,11 @@ class PriceCheckPage extends NoInputCorePage
         );
         if (!empty($this->upc)) {
             if (!$this->found) {
-                $this->noUpcText();
+                list($info, $inst) = $this->noUpcText();
                 $this->upc = "";
                 MiscLib::errorBeep();                
             } else {
-                $this->upcText();
+                list($info, $inst) = $this->upcText();
             }
         }
         ?>
