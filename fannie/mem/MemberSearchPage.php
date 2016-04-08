@@ -78,8 +78,8 @@ class MemberSearchPage extends FanniePage {
             /* if modules find exactly one member, go directly to
                the result */
             if (count($this->results) == 1){
-                $num = array_pop(array_keys($this->results));
-                header("Location: MemberEditor.php?memNum=".$num);
+                $mem = array_pop($this->results);
+                header("Location: MemberEditor.php?memNum=".$mem['cardNo']);
                 return False;
             }
 
