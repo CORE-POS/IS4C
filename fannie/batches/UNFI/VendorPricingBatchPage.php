@@ -120,6 +120,9 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $b->discountType(0);
             $b->priority(0);
             $batchID = $b->save();
+            if ($this->config->get('STORE_MODE') === 'HQ') {
+                StoreBatchMapModel::initBatch($batchID);
+            }
         } else { 
             $bidW = $dbc->fetchRow($bidR);
             $batchID = $bidW['batchID'];
