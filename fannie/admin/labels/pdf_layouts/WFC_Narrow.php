@@ -87,6 +87,7 @@ foreach($data as $row){
     $l = 30; //y location of size and price on label
     $k = 8; //x location of date and price on label
     $m = 0;  //number of labels created
+    $m = 0;  //number of labels created
     $n = 18; //y location of description for label
     $r = 24; //y location of date for label
     $p = 6;  //x location fields on label
@@ -112,7 +113,7 @@ foreach($data as $row){
    }
    $price = $row['normal_price'];
    $desc = strtoupper(substr($row['description'],0,27));
-   $brand = ucwords(strtolower(substr($row['brand'],0,13)));
+   $brand = ucwords(strtolower(substr($row['brand'],0,30)));
    $pak = $row['units'];
    $size = $row['units'] . "-" . $row['size'];
    $sku = $row['sku'];
@@ -120,7 +121,6 @@ foreach($data as $row){
    $check = $pdf->GetCheckDigit($upc);
    $tagdate = date('m/d/y');
    $vendor = substr($row['vendor'],0,7);
-   $brand = substr($row['brand'],0,27);
    
    //Start laying out a label 
    $pdf->SetFont('Arial','',8);  //Set the font 
@@ -151,7 +151,30 @@ foreach($data as $row){
 
    $pdf->TEXT($p,$r,$tagdate);  //Add date to label
    $pdf->TEXT($p+12,$r,$size);  //Add size to label
-   $pdf->TEXT($w,$x,$brand);  //add brand
+   
+   
+   $words = preg_split('/[ ,-]+/',$brand);
+   $curStr = "";
+   $curCnt = 0;
+   $length = 0;
+   foreach ($words as $word) {
+       if ($curCnt == 0) {
+           $curStr .= $word . " ";
+           $length += strlen($word)+1;
+       } elseif ($curCnt == 1 && ($length + strlen($word + 1)) < 17) {
+           $curStr .= $word . " ";
+           $length += strlen($word)+1;
+       } elseif ($curCnt > 1 && ($length + 1) < 17) {
+           $chars = str_split($word);
+           foreach ($chars as $char) {
+               $curStr .= strtoupper($char);
+               $length += 2;
+               break;
+            }
+       }
+       $curCnt++;
+   }
+   $pdf->TEXT($w,$x,$curStr);  //add brand
    $pdf->SetFont('Arial','B',18); //change font for price
    $pdf->TEXT($k,$l,$price);  //add price
 
