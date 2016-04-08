@@ -37,6 +37,7 @@ class BatchTypeModel extends BasicModel
         'datedSigns' => array('type'=>'TINYINT', 'default'=>1),
         'specialOrderEligible' => array('type'=>'TINYINT', 'default'=>1),
         'editorUI' => array('type'=>'TINYINT', 'default'=>1),
+        'allowSingleStore' => array('type'=>'TINYINT', 'default'=>0),
     );
 
     public function doc()

@@ -855,12 +855,13 @@ class EditBatchPage extends FannieRESTfulPage
             foreach ($stores->find('storeID') as $s) {
                 $mapR = $dbc->execute($mapP, array($s->storeID(), $id));
                 $checked = ($mapR && $dbc->numRows($mapR)) ? 'checked' : '';
+                $disabled = $typeModel->allowSingleStore() ? '' : 'disabled';
                 $ret .= sprintf('<label>
-                    <input type="checkbox" onchange="batchEdit.toggleStore(%d, %d);" %s />
+                    <input type="checkbox" onchange="batchEdit.toggleStore(%d, %d);" %s %s />
                     %s
                     </label> | ',
                     $s->storeID(), $id,
-                    $checked, $s->description());
+                    $disabled, $checked, $s->description());
             }
             $ret .= '<br />';
         }
