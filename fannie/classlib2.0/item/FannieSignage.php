@@ -847,7 +847,8 @@ class FannieSignage
 
     protected function formatSize($size, $item)
     {
-        if (strlen(ltrim($item['upc'], '0')) < 5 && $item['scale']) {
+        $plu = ltrim($item['upc'], '0');
+        if (strlen($plu) < 5 && strlen($plu) > 0 && $item['scale']) {
             return 'PLU# ' . ltrim($item['upc'], '0'); // show PLU #s on by-weight
         }
 
