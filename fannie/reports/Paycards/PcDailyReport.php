@@ -61,6 +61,7 @@ class PcDailyReport extends FannieReportPage
         $dbc->selectDB($this->config->get('TRANS_DB'));
 
         $date_id = date('Ymd', strtotime(FormLib::get('date', date('Y-m-d'))));
+        $store = FormLib::get('store', 0);
 
         $dataset = array();
         $integrated_trans_ids = array();
@@ -91,6 +92,11 @@ class PcDailyReport extends FannieReportPage
                 AND empNo <> 9999
                 AND registerNo <> 99
                 AND processor='MercuryE2E'";
+        if ($store == 1) {
+            $mercuryQ .= ' AND registerNo BETWEEN 1 AND 10 ';
+        } elseif ($store == 2) {
+            $mercuryQ .= ' AND registerNo BETWEEN 11 AND 20 ';
+        }
         $mercuryP = $dbc->prepare($mercuryQ);
         $mercuryR = $dbc->execute($mercuryP, array($date_id));
         $proc = array();
@@ -172,6 +178,11 @@ class PcDailyReport extends FannieReportPage
                 AND empNo <> 9999
                 AND registerNo <> 99
                 AND processor='GoEMerchant'";
+        if ($store == 1) {
+            $fapsQ .= ' AND registerNo BETWEEN 1 AND 6 ';
+        } elseif ($store == 2) {
+            $fapsQ .= ' AND registerNo BETWEEN 11 AND 15 ';
+        }
         $fapsP = $dbc->prepare($fapsQ);
         $fapsR = $dbc->execute($fapsP, array($date_id));
         $proc = array(
@@ -245,10 +256,11 @@ class PcDailyReport extends FannieReportPage
                   WHERE tdate BETWEEN ? AND ?
                     AND trans_type = 'T'
                     AND total <> 0
+                    AND " . DTrans::isStoreID($store, 'd') . "
                     AND trans_subtype IN ('CC', 'AX', 'EF', 'EC')";
         $prep = $dbc->prepare($query);
         $date = FormLib::get('date', date('Y-m-d'));
-        $result = $dbc->execute($prep, array($date.' 00:00:00', $date.' 23:59:59'));
+        $result = $dbc->execute($prep, array($date.' 00:00:00', $date.' 23:59:59', $store));
         $proc = array();
         while($row = $dbc->fetch_row($result)) {
             $cardType = $row['cardType'];
@@ -381,11 +393,13 @@ class PcDailyReport extends FannieReportPage
     {
         global $FANNIE_URL;
         $this->add_onload_command('$(\'#date\').datepicker({dateFormat:\'yy-mm-dd\'});');
+        $stores = FormLib::storePicker();
         return '<form method="get" action="PcDailyReport.php">
             <div class="col-sm-6">
             <div class="row form-group form-inline">
             <label>Change Date</label> <input type="text" name="date" id="date" 
                 class="form-control" required />
+            ' . $stores['html'] . '
             <button type="submit" class="btn btn-default">Get Report</button>
             </div>
             </div>
