@@ -39,8 +39,33 @@ class InvCountPage extends FannieRESTfulPage
         $this->addRoute('get<live>');
         $this->addRoute('get<vendor>');
         $this->addRoute('post<vendor>');
+        $this->addRoute('get<recalc><store>');
+        $this->addRoute('get<recalc><live>');
 
         return parent::preprocess();
+    }
+
+    protected function get_recalc_store_handler()
+    {
+        if (!class_exists('InventoryTask')) {
+            include(dirname(__FILE__) . '/../../cron/tasks/InventoryTask.php');
+        }
+        $task = new InventoryTask();
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->setStoreID($this->store);
+        $task->setVendorID($this->recalc);
+        $task->run();
+
+        return 'InvCountPage.php?recalc=1&live=' . $this->recalc . '&store=' . $this->store;
+    }
+
+    protected function get_recalc_live_view()
+    {
+        return '<div class="alert alert-success">Refreshed totals</div>'
+            . $this->get_live_view();
     }
 
     protected function post_id_handler()
@@ -344,6 +369,10 @@ class InvCountPage extends FannieRESTfulPage
             );
         }
         $ret .= '</table>';
+        $ret .= '<p>
+            <a href="?recalc=' . $this->live . '&store=' . $store . '"
+                class="btn btn-default">Recalculate Totals</a>
+            </p>';
 
         return $ret;
     }
