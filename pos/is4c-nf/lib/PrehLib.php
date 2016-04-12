@@ -196,10 +196,14 @@ static public function setAltMemMsg($store, $member, $personNumber, $row)
                 $query = "SELECT ChargeLimit AS CLimit
                     FROM custdata
                     WHERE personNum=1 AND CardNo = $member";
-                $table_def = $conn->tableDefinition('custdata');
-                // 3Jan14 schema may not have been updated
-                if (!isset($table_def['ChargeLimit'])) {
+                if (CoreLocal::get('NoCompat') == 1) {
                     $query = str_replace('ChargeLimit', 'MemDiscountLimit', $query);
+                } else {
+                    $table_def = $conn->tableDefinition('custdata');
+                    // 3Jan14 schema may not have been updated
+                    if (!isset($table_def['ChargeLimit'])) {
+                        $query = str_replace('ChargeLimit', 'MemDiscountLimit', $query);
+                    }
                 }
                 $result = $conn->query($query);
                 $num_rows = $conn->num_rows($result);
@@ -455,10 +459,15 @@ static private function getTenderMods($right)
       if the schema supports it
       16Mar2015
     */
-    $tender_table = $dbc->tableDefinition('tenders');
-    if (isset($tender_table['TenderModule'])) {
+    if (CoreLocal::get('NoCompat') == 1) {
         $tender_model = new \COREPOS\pos\lib\models\op\TendersModel($dbc);
         $map = $tender_model->getMap();
+    } else {
+        $tender_table = $dbc->tableDefinition('tenders');
+        if (isset($tender_table['TenderModule'])) {
+            $tender_model = new \COREPOS\pos\lib\models\op\TendersModel($dbc);
+            $map = $tender_model->getMap();
+        }
     }
     if (is_array($map) && isset($map[$right])) {
         $class = $map[$right];
@@ -657,21 +666,25 @@ static private function getDepartment($dbc, $dept)
         dept_limit,
         dept_minimum,
         dept_discount,";
-    $table = $dbc->tableDefinition('departments');
-    if (isset($table['dept_see_id'])) {
-        $query .= 'dept_see_id,';
+    if (CoreLocal::get('NoCompat') == 1) {
+        $query .= 'dept_see_id, memberOnly, line_item_discount';
     } else {
-        $query .= '0 as dept_see_id,';
-    }
-    if (isset($table['memberOnly'])) {
-        $query .= 'memberOnly,';
-    } else {
-        $query .= '0 AS memberOnly,';
-    }
-    if (isset($table['line_item_discount'])) {
-        $query .= 'line_item_discount';
-    } else {
-        $query .= '1 AS line_item_discount';
+        $table = $dbc->tableDefinition('departments');
+        if (isset($table['dept_see_id'])) {
+            $query .= 'dept_see_id,';
+        } else {
+            $query .= '0 as dept_see_id,';
+        }
+        if (isset($table['memberOnly'])) {
+            $query .= 'memberOnly,';
+        } else {
+            $query .= '0 AS memberOnly,';
+        }
+        if (isset($table['line_item_discount'])) {
+            $query .= 'line_item_discount';
+        } else {
+            $query .= '1 AS line_item_discount';
+        }
     }
     $query .= " FROM departments 
                 WHERE dept_no = " . ((int)$dept);
@@ -1244,10 +1257,14 @@ static public function chargeOk()
         c.Balance, c.ChargeOk
         FROM custdata AS c 
         WHERE c.personNum=1 AND c.CardNo = " . ((int)CoreLocal::get("memberID"));
-    $table_def = $conn->tableDefinition('custdata');
-    // 3Jan14 schema may not have been updated
-    if (!isset($table_def['ChargeLimit'])) {
+    if (CoreLocal::get('NoCompat') == 1) {
         $query = str_replace('c.ChargeLimit', 'c.MemDiscountLimit', $query);
+    } else {
+        $table_def = $conn->tableDefinition('custdata');
+        // 3Jan14 schema may not have been updated
+        if (!isset($table_def['ChargeLimit'])) {
+            $query = str_replace('c.ChargeLimit', 'c.MemDiscountLimit', $query);
+        }
     }
 
     $result = $conn->query($query);
