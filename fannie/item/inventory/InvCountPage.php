@@ -324,7 +324,8 @@ class InvCountPage extends FannieRESTfulPage
         $today = $this->connection->prepare('
             SELECT ' . DTrans::sumQuantity() . ' AS qty
             FROM ' . DTransactionsModel::selectDlog(date('Y-m-d')) . '
-            WHERE upc=?');
+            WHERE upc=?
+                AND store_id=?');
         $res = $this->connection->execute($prep, array($store, $this->live));
         $ret = '<table class="table table-bordered table-striped">';
         $ret .= '<tr>
@@ -341,7 +342,7 @@ class InvCountPage extends FannieRESTfulPage
             if ($this->isBreakable($row['upc'], $this->live)) {
                 continue;
             }
-            $adj = $this->connection->getValue($today, array($row['upc']));
+            $adj = $this->connection->getValue($today, array($row['upc'], $store));
             if ($adj) {
                 $row['sold'] += $adj;
                 $row['onHand'] -= $adj;
