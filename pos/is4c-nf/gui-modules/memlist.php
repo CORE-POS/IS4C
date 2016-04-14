@@ -182,7 +182,7 @@ class memlist extends NoInputCorePage
     private function getCallbackAction($card_no)
     {
         $dbc = Database::pDataConnect();
-        if (!$dbc->tableExists('CustomerNotifications')) {
+        if (CoreLocal::get('NoCompat') != 1 && !$dbc->tableExists('CustomerNotifications')) {
             echo 'no notifications';
             return false;
         }
@@ -282,7 +282,7 @@ class memlist extends NoInputCorePage
             return $this->notice_statement;
         }
 
-        if ($dbc->tableExists('CustomerNotifications')) {
+        if (CoreLocal::get('NoCompat') == 1 || $dbc->tableExists('CustomerNotifications')) {
             $this->notice_statement = $dbc->prepare('
                 SELECT message
                 FROM CustomerNotifications
