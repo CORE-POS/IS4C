@@ -1210,6 +1210,8 @@ class ObfWeeklyReport extends FannieReportPage
             date('Y-m-d 23:59:59', $end_ly),
         );
         $last_week = $this->getStock($dbc, $args4);
+        $days = date('t', $start_ly);
+        $last_week = round(($last_week / $days) * 7);
 
         return array(
             'Ownership This Week',
