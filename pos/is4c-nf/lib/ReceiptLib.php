@@ -1285,7 +1285,7 @@ static public function memReceiptMessages($card_no)
           WHERE card_no=' . ((int)$card_no) . '
           ORDER BY msg_text';
     // use newer CustomerNotifications table if present
-    if ($dbc->tableExists('CustomerNotifications')) {
+    if (CoreLocal::get('NoCompat') == 1 || $dbc->tableExists('CustomerNotifications')) {
         $memQ = '
             SELECT message AS msg_text,
                 modifierModule AS modifier_module

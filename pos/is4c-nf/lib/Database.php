@@ -372,7 +372,7 @@ static public function gettransno($CashierNo)
         // on some installs localtranstoday might be
         // a view pointed at localtrans_today
         $cleanQ = 'DELETE FROM localtranstoday WHERE datetime < ' . $connection->curdate();
-        if ($connection->isView('localtranstoday')) {
+        if (CoreLocal::get('NoCompat') != 1 && $connection->isView('localtranstoday')) {
             $cleanQ = str_replace('localtranstoday', 'localtrans_today', $cleanQ);
         }
         $connection->query($cleanQ);
@@ -593,7 +593,7 @@ static public function uploadCCdata()
 
     $tables = array('PaycardTransactions', 'CapturedSignature');
     foreach ($tables as $table) {
-        if ($sql->tableExists($table)) {
+        if (CoreLocal::get('NoCompat') == 1 || $sql->tableExists($table)) {
             $cols = self::getMatchingColumns($sql, $table);
             $success = $sql->transfer(CoreLocal::get('tDatabase'),
                 "SELECT {$cols} FROM {$table}",
@@ -794,11 +794,11 @@ static public function rotateTempData()
 
     $connection->query("insert into localtrans select * from localtemptrans");
     // localtranstoday converted from view to table
-    if (!$connection->isView('localtranstoday')) {
+    if (CoreLocal::get('NoCompat') == 1 || !$connection->isView('localtranstoday')) {
         $connection->query("insert into localtranstoday select * from localtemptrans");
     }
     // legacy table when localtranstoday is still a view
-    if ($connection->table_exists('localtrans_today')) {
+    if (CoreLocal::get('NoCompat') != 1 && $connection->table_exists('localtrans_today')) {
         $connection->query("insert into localtrans_today select * from localtemptrans");
     }
 

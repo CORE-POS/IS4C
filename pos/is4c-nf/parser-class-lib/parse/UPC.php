@@ -186,7 +186,7 @@ class UPC extends Parser
           based on item's department
         */
         $deptmods = CoreLocal::get('SpecialDeptMap');
-        if (!is_array($deptmods) && $dbc->table_exists('SpecialDeptMap')) {
+        if (!is_array($deptmods) && (CoreLocal::get('NoCompat') == 1 || $dbc->table_exists('SpecialDeptMap'))) {
             $model = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($dbc);
             $deptmods = $model->buildMap();
             CoreLocal::set('SpecialDeptMap', $deptmods);
@@ -689,7 +689,7 @@ class UPC extends Parser
         }
 
         // no match; not a product, not special
-        if ($dbc->table_exists('IgnoredBarcodes')) {
+        if (CoreLocal::get('NoCompat') == 1 || $dbc->table_exists('IgnoredBarcodes')) {
             // lookup UPC in tabe of ignored barcodes
             // this just suppresses any error message from
             // coming back

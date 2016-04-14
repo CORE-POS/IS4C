@@ -147,7 +147,7 @@ class CoreLocal
                         // SpecialDeptMap has a weird array structure
                         // and gets moved to a dedicated table
                         $db = Database::pDataConnect();
-                        if ($db->table_exists('SpecialDeptMap')) {
+                        if (CoreLocal::get('NoCompat') == 1 || $db->table_exists('SpecialDeptMap')) {
                             $mapModel = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($db);
                             $mapModel->initTable($sconf);
                             InstallUtilities::confRemove($key);

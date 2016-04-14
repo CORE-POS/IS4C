@@ -263,7 +263,7 @@ static private function defaultMemMsg($member, $row)
         $memMsg .= " #";
     }
     $conn = Database::pDataConnect();
-    if ($conn->tableExists('CustomerNotifications')) {
+    if (CoreLocal::get('NoCompat') == 1 || $conn->tableExists('CustomerNotifications')) {
         $blQ = '
             SELECT message
             FROM CustomerNotifications
@@ -340,7 +340,7 @@ static public function setMember($member, $personNumber, $row=array())
       Optinonally use memtype table to normalize attributes
       by member type
     */
-    if (CoreLocal::get('useMemTypeTable') == 1 && $conn->table_exists('memtype')) {
+    if (CoreLocal::get('useMemTypeTable') == 1 && (CoreLocal::get('NoCompat') == 1 || $conn->table_exists('memtype'))) {
         $prep = $conn->prepare('SELECT discount, staff, ssi 
                                 FROM memtype
                                 WHERE memtype=?');
@@ -415,7 +415,7 @@ static public function checkUnpaidAR($cardno)
 
     $dbc = Database::mDataConnect();
 
-    if (!$dbc->table_exists("unpaid_ar_today")) return false;
+    if (CoreLocal::get('NoCompat') != 1 && !$dbc->table_exists("unpaid_ar_today")) return false;
 
     $query = "SELECT old_balance,recent_payments FROM unpaid_ar_today
         WHERE card_no = $cardno";

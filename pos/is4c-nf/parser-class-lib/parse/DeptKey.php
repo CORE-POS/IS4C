@@ -92,7 +92,7 @@ class DeptKey extends Parser
     {
         $deptmods = CoreLocal::get('SpecialDeptMap');
         $dbc = Database::pDataConnect();
-        if (!is_array($deptmods) && $dbc->table_exists('SpecialDeptMap')) {
+        if (!is_array($deptmods) && (CoreLocal::get('NoCompat') == 1 || $dbc->table_exists('SpecialDeptMap'))) {
             $model = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($dbc);
             $deptmods = $model->buildMap();
             CoreLocal::set('SpecialDeptMap', $deptmods);

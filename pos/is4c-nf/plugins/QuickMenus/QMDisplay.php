@@ -100,7 +100,7 @@ class QMDisplay extends NoInputCorePage
                 Get menu options from QuickLookups table
             */
             $dbc = Database::pDataConnect();
-            if ($dbc->table_exists('QuickLookups')) {
+            if (CoreLocal::get('NoCompat') == 1 || $dbc->table_exists('QuickLookups')) {
                 $model = new COREPOS\pos\plugins\QuickMenus\QuickLookupsModel($dbc);
                 $model->lookupSet(CoreLocal::get('qmNumber'));
                 foreach($model->find(array('sequence', 'label')) as $obj) {
