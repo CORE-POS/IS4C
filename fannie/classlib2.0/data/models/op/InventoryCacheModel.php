@@ -62,7 +62,7 @@ class InventoryCacheModel extends BasicModel
                 WHERE internalUPC=?
                     AND placedDate IS NOT NULL
                     AND storeID=?
-                    AND placedDate >= ?');
+                    AND (placedDate >= ? OR receivedDate >= ?)');
         }
 
         return self::$orderStmt;
@@ -71,7 +71,7 @@ class InventoryCacheModel extends BasicModel
     public static function calculateOrdered($dbc, $upc, $storeID, $date)
     {
         $orderP = self::orderStatement($dbc);
-        $ordered = $dbc->getValue($orderP, array($upc, $storeID, $date));
+        $ordered = $dbc->getValue($orderP, array($upc, $storeID, $date, $date));
 
         return $ordered ? $ordered : 0;
     }
