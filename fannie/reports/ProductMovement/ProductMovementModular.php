@@ -76,6 +76,7 @@ class ProductMovementModular extends FannieReportPage
         if (is_numeric($upc)) {
             $upc = BarcodeLib::padUPC($upc);
         }
+        $store = FormLib::get('store', 0);
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
 
@@ -92,6 +93,7 @@ class ProductMovementModular extends FannieReportPage
                     " . DTrans::joinProducts('t', 'p', 'LEFT') . "
                   WHERE t.upc = ? AND
                     t.tdate BETWEEN ? AND ?
+                    AND " . DTrans::isStoreID($store, 't') . "
                   GROUP BY 
                     YEAR(t.tdate),
                     MONTH(t.tdate),
@@ -99,7 +101,7 @@ class ProductMovementModular extends FannieReportPage
                     t.upc,
                     p.description
                   ORDER BY year(t.tdate),month(t.tdate),day(t.tdate)";
-        $args = array($upc,$date1.' 00:00:00',$date2.' 23:59:59');
+        $args = array($upc,$date1.' 00:00:00',$date2.' 23:59:59', $store);
     
         if (strtolower($upc) == "rrr" || $upc == "0000000000052"){
             if ($dlog == "dlog_90_view" || $dlog=="dlog_15")
@@ -115,6 +117,7 @@ class ProductMovementModular extends FannieReportPage
                 $dlog as t
                 where upc = ?
                 AND datetime BETWEEN ? AND ?
+                AND " . DTrans::isStoreID($store, 't') . "
                 and emp_no <> 9999 and register_no <> 99
                 and trans_status <> 'X'
                 GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)
@@ -130,6 +133,7 @@ class ProductMovementModular extends FannieReportPage
                 $dlog as t
                 where upc = ?
                 AND datetime BETWEEN ? AND ?
+                AND " . DTrans::isStoreID($store, 't') . "
                 and emp_no <> 9999 and register_no <> 99
                 and (trans_status <> 'X' || trans_type='L')
                 GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)";
@@ -227,6 +231,7 @@ function showGraph() {
     function form_content()
     {
         global $FANNIE_URL;
+        $stores = FormLib::storePicker();
         ob_start();
 ?>
 <form method = "get" action="ProductMovementModular.php" class="form-horizontal">
@@ -235,6 +240,12 @@ function showGraph() {
             <label class="control-label col-sm-4">UPC</label>
             <div class="col-sm-8">
                 <input type=text name=upc id=upc class="form-control" required />
+            </div>
+        </div>
+        <div class="form-group"> 
+            <label class="control-label col-sm-4">Store</label>
+            <div class="col-sm-8">
+                <?php echo $stores['html']; ?>
             </div>
         </div>
         <div class="form-group"> 
