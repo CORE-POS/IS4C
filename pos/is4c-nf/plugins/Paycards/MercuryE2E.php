@@ -924,7 +924,7 @@ class MercuryE2E extends BasicCCModule
         }
 
         $issuer = $xml->query('/RStream/TranResponse/CardType');
-        $resp_balance = $xml->query('/RStream/TranResponse/Balance');
+        $resp_balance = $xml->query('/RStream/TranResponse/Amount/Balance');
         $ebtbalance = 0;
         if ($issuer == 'Foodstamp' && $resp_balance !== false) {
             $issuer = 'EBT';
