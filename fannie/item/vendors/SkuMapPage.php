@@ -56,9 +56,11 @@ class SkuMapPage extends FannieRESTfulPage
                 AND sku=?
                 AND upc=?');
         $delR = $dbc->execute($delP, array($this->id, $sku, $plu));
-        $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'success', 'Deleted entry for PLU #{$plu}')\n");
 
-        return true;
+        $resp = array('error'=>($delR === false ? 1 : 0));
+        echo json_encode($resp);
+
+        return false;
     }
 
     protected function get_id_apply_handler()
@@ -158,11 +160,6 @@ class SkuMapPage extends FannieRESTfulPage
         $insR = $dbc->execute($insP, array($id, $sku, $plu));
     }
 
-    protected function delete_id_view()
-    {
-        return '<div id="alert-area"></div>' . $this->get_id_view();
-    }
-
     protected function get_id_apply_view()
     {
         return '<div id="alert-area"></div>' . $this->get_id_view();
@@ -176,6 +173,7 @@ class SkuMapPage extends FannieRESTfulPage
     protected function get_id_view()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $this->addScript('skuMap.js');
 
         $prep = $dbc->prepare("
             SELECT m.sku,
@@ -240,16 +238,15 @@ class SkuMapPage extends FannieRESTfulPage
                 <td>%s</td>
                 <td>%s</td>
                 <td>
-                    <a href="?_method=delete&id=%d&sku=%s&plu=%s" 
-                    onclick="return confirm(\'Delete entry for PLU #%s?\');">%s</a>
+                    <a href=""
+                    onclick="return skuMap.deleteRow(%d, \'%s\', \'%s\', this);">%s</a>
                 </td>
             </tr>',
             $row['sku'],
             $row['upc'], $row['upc'],
             $row['vendorDescript'],
             $row['storeDescript'],
-            $this->id, $row['sku'], $row['upc'],
-            $row['upc'], COREPOS\Fannie\API\lib\FannieUI::deleteIcon()
+            $this->id, $row['sku'], $row['upc'], COREPOS\Fannie\API\lib\FannieUI::deleteIcon()
         );
     }
 
@@ -277,7 +274,6 @@ class SkuMapPage extends FannieRESTfulPage
     public function unitTest($phpunit)
     {
         $this->id = 1;
-        $phpunit->assertNotEquals(0, strlen($this->delete_id_view()));
         $phpunit->assertNotEquals(0, strlen($this->get_id_apply_view()));
         $phpunit->assertNotEquals(0, strlen($this->get_id_sku_plu_view()));
         $phpunit->assertNotEquals(0, strlen($this->css_content()));
