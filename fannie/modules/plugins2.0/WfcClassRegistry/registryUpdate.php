@@ -77,6 +77,16 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
             $ret['error_msg'] = 'Save failed';
         }
     }
+    
+    $prep = $dbc->prepare('SELECT first_name FROM wfcuRegistry WHERE upc=' . $_POST['upc'] . ' AND first_name IS NOT NULL;');
+    $result = $dbc->execute($prep);
+    $countRows = 0;
+    while($row = $dbc->fetch_row($result)) {
+        $countRows++;
+    }
+    if ($countRows == $classSize) {
+        mail('it@wholefoodscoop.com','WFCU Class Signup Full for class PLU#' . $_POST['upc'],'This class may be full');
+    }
 
     echo json_encode($ret);
 
