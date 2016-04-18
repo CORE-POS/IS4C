@@ -496,7 +496,7 @@ class WfcClassRegistryPage extends FanniePage
             $ret .= '</tbody></table>';
         }
 
-        $this->add_onload_command('itemEditing();');
+        $this->add_onload_command('itemEditing(' . $classSize . ');');
         $this->add_onload_command('withdraw();');
         $this->add_script('../../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->addCssFile('../../src/javascript/tablesorter/themes/blue/style.css');
@@ -587,7 +587,7 @@ class WfcClassRegistryPage extends FanniePage
     {
         ob_start();
         ?>
-function itemEditing()
+function itemEditing(size)
 {
     
     $('.editable').change(function(){
@@ -600,7 +600,7 @@ function itemEditing()
             type: 'post',
             url: 'registryUpdate.php',
             dataType: 'json',
-            data: 'upc='+$('#upc').val()+'&seat='+current_seat+'&field='+$(this).attr('name')+'&value='+$(this).val(),
+            data: 'upc='+$('#upc').val()+'&seat='+current_seat+'&field='+$(this).attr('name')+'&value='+$(this).val()+'&size='+size,
             success: function(resp) {
                 if (resp.error) {
                     showBootstrapAlert('#alert-area', 'danger', resp.error_msg);
