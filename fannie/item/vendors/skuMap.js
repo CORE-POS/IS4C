@@ -5,8 +5,8 @@ var skuMap = (function($) {
     mod.deleteRow = function(id, sku, plu, elem) {
         if (window.confirm('Delete entry for PLU #' + plu + '?')) {
             $.ajax({
-                type: 'delete',
-                data: 'id='+id+'&sku='+sku+'&plu='+plu,
+                type: 'get',
+                data: '_method=delete&id='+id+'&sku='+sku+'&plu='+plu,
                 dataType: 'json'
             }).done(function (resp) {
                 if (resp.error) {
