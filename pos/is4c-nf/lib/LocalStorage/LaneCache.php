@@ -41,27 +41,27 @@ class LaneCache
 
     public static function get($key)
     {
-        if ($instance === null) {
-            $instance = new COREPOS\common\cache\file\CacheItemPool('lane.cache');
+        if (self::$instance === null) {
+            self::$instance = new COREPOS\common\cache\file\CacheItemPool('lane.cache');
         }
 
-        return $instance->getItem($key);
+        return self::$instance->getItem($key);
     }
 
     public static function set($item)
     {
-        if ($instance === null) {
-            $instance = new COREPOS\common\cache\file\CacheItemPool('lane.cache');
+        if (self::$instance === null) {
+            self::$instance = new COREPOS\common\cache\file\CacheItemPool('lane.cache');
         }
-        $instance->save($item);
+        self::$instance->save($item);
     }
 
     public static function clear()
     {
-        if ($instance === null) {
-            $instance = new COREPOS\common\cache\file\CacheItemPool('lane.cache');
+        if (self::$instance === null) {
+            self::$instance = new COREPOS\common\cache\file\CacheItemPool('lane.cache');
         }
-        $instance->clear();
+        self::$instance->clear();
         $instance->commit();
     }
 }
