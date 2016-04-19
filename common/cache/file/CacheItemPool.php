@@ -34,9 +34,9 @@ class CacheItemPool
     private $items = array();
     private $file = 'core.cache';
 
-    public function __construct()
+    public function __construct($file='core.cache')
     {
-        $this->file = $this->getCacheFile($this->file);
+        $this->file = $this->getCacheFile($file);
         $this->items = $this->loadFromFile($this->file);
     }
 
