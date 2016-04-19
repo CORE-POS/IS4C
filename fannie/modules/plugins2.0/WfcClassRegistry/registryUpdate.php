@@ -33,6 +33,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
         include_once($FANNIE_ROOT.'modules/plugins2.0/WfcClassRegistry/wfcuRegistryModel.php');
     }
 
+    $classSize = $_POST['size'];
     $timeStamp = date('Y-m-d h:i:s');
     $dbc = FannieDB::get($FANNIE_OP_DB);
     $item = new wfcuRegistryModel($dbc);    
@@ -47,6 +48,26 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
     if ($_POST['field'] === 'editFirst') {
         $item->first_name($_POST['value']);
         $item->modified($timeStamp);
+        
+        $prep = $dbc->prepare('SELECT first_name FROM wfcuRegistry WHERE upc=' . $_POST['upc'] . ' AND first_name IS NOT NULL;');
+        $result = $dbc->execute($prep);
+        $countRows = 0;
+        while($row = $dbc->fetch_row($result)) {
+            $countRows++;
+        }
+        
+        $prep = $dbc->prepare('SELECT soldOut FROM productUser WHERE upc=' . $_POST['upc'];
+        $result = $dbc->execute($prep);
+        $soldOut = $dbc->fetch_row($result);
+        
+        if ( ($countRows > $classSize - 3) && $soldOut) {
+            mail(
+                'it@wholefoodscoop.com',
+                'WFC-U Class Signup Full for class PLU#' . $_POST['upc'],
+                'This class is close to being full, please make "sold out."', 
+                'From: automail@wholefoods.coop
+            ');
+        }
     } elseif ($_POST['field'] === 'editLast') {
         $item->last_name($_POST['value']);
         $item->modified($timeStamp);
@@ -77,18 +98,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
             $ret['error_msg'] = 'Save failed';
         }
     }
-    
-    $prep = $dbc->prepare('SELECT first_name FROM wfcuRegistry WHERE upc=' . $_POST['upc'] . ' AND first_name IS NOT NULL;');
-    $result = $dbc->execute($prep);
-    $countRows = 0;
-    while($row = $dbc->fetch_row($result)) {
-        $countRows++;
-    }
-    if ($countRows == $classSize) {
-        mail('it@wholefoodscoop.com','WFCU Class Signup Full for class PLU#' . $_POST['upc'],'This class may be full');
-    }
 
     echo json_encode($ret);
 
 }
-
