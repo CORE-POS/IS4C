@@ -8,6 +8,7 @@ $CORE_LOCAL = new WrappedStorage();
 CoreLocal::refresh();
 define('CONF_LOADED', true);
 include(dirname(__FILE__).'/../../pos/is4c-nf/lib/AutoLoader.php');
+LaneCache::clear();
 AutoLoader::loadMap();
 CoreState::loadParams();
 AutoLoader::blacklist('CoopCred');

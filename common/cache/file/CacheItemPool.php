@@ -122,7 +122,7 @@ class CacheItemPool
 
     private function illegalKey($key)
     {
-        if (preg_match('#\{\}\(\)/\\@:#/', $key)) {
+        if (preg_match('#\{\}\(\)/\\@:#', $key)) {
             return true;
         } else {
             return false;

@@ -46,11 +46,15 @@ class AjaxParser extends AjaxCallback
          * This chain should be used for checking prefixes/suffixes
          * to set up appropriate session variables.
          */
-        $parser_lib_path = MiscLib::base_url()."parser-class-lib/";
-        if (!is_array(CoreLocal::get("preparse_chain")))
-            CoreLocal::set("preparse_chain",PreParser::get_preparse_chain());
+        $preItem = LaneCache::get('preparse_chain');
+        $preChain = $preItem->get();
+        if (!is_array($preChain)) {
+            $preChain = PreParser::get_preparse_chain();
+            $preItem->set($preChain);
+            LaneCache::set($preItem);
+        }
 
-        foreach (CoreLocal::get("preparse_chain") as $cn){
+        foreach ($preChain as $cn){
             if (!class_exists($cn)) continue;
             $pre = new $cn();
             if ($pre->check($entered))
@@ -70,11 +74,16 @@ class AjaxParser extends AjaxCallback
          * completely. The return value of parse() determines
          * whether to call lastpage() [list the items on screen]
          */
-        if (!is_array(CoreLocal::get("parse_chain")))
-            CoreLocal::set("parse_chain",Parser::get_parse_chain());
+        $parseItem = LaneCache::get('parse_chain');
+        $parseChain = $parseItem->get();
+        if (!is_array($parseChain)) {
+            $parseChain = Parser::get_parse_chain();
+            $parseItem->set($parseChain);
+            LaneCache::set($parseItem);
+        }
 
         $result = False;
-        foreach (CoreLocal::get("parse_chain") as $cn){
+        foreach ($parseChain as $cn){
             if (!class_exists($cn)) continue;
             $parse = new $cn();
             if ($parse->check($entered)){
@@ -89,10 +98,14 @@ class AjaxParser extends AjaxCallback
     private function runPostParsers($result)
     {
         // postparse chain: modify result
-        if (!is_array(CoreLocal::get("postparse_chain"))) {
-            CoreLocal::set("postparse_chain",PostParser::getPostParseChain());
+        $postItem = LaneCache::get('postparse_chain');
+        $postChain = $postItem->get();
+        if (!is_array($postChain)) {
+            $postChain = PostParser::getPostParseChain();
+            $postItem->set($postChain);
+            LaneCache::set($postItem);
         }
-        foreach (CoreLocal::get('postparse_chain') as $class) {
+        foreach ($postChain as $class) {
             if (!class_exists($class)) {
                 continue;
             }

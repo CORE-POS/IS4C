@@ -31,7 +31,7 @@
 
 $elog = realpath(dirname(__FILE__).'/../../log/').'/php-errors.log';
 ini_set('error_log',$elog);
-ini_set('display_errors', false);
+//ini_set('display_errors', false);
 
 $LOCAL_STORAGE_MECHANISM = 'SessionStorage';
 
