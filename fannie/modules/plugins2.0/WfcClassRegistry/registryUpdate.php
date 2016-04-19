@@ -49,15 +49,15 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
         $item->first_name($_POST['value']);
         $item->modified($timeStamp);
         
-        $prep = $dbc->prepare('SELECT first_name FROM wfcuRegistry WHERE upc=' . $_POST['upc'] . ' AND first_name IS NOT NULL;');
-        $result = $dbc->execute($prep);
+        $prep = $dbc->prepare('SELECT first_name FROM wfcuRegistry WHERE upc=? AND first_name IS NOT NULL;');
+        $result = $dbc->execute($prep, array($_POST['upc']));
         $countRows = 0;
         while($row = $dbc->fetch_row($result)) {
             $countRows++;
         }
         
-        $prep = $dbc->prepare('SELECT soldOut FROM productUser WHERE upc=' . $_POST['upc'];
-        $result = $dbc->execute($prep);
+        $prep = $dbc->prepare('SELECT soldOut FROM productUser WHERE upc=?');
+        $result = $dbc->execute($prep, array($_POST['upc']));
         $soldOut = $dbc->fetch_row($result);
         
         if ( ($countRows > $classSize - 3) && $soldOut) {
