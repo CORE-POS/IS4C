@@ -33,6 +33,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
         include_once($FANNIE_ROOT.'modules/plugins2.0/WfcClassRegistry/wfcuRegistryModel.php');
     }
 
+    $classSize = $_POST['size'];
     $timeStamp = date('Y-m-d h:i:s');
     $dbc = FannieDB::get($FANNIE_OP_DB);
     $item = new wfcuRegistryModel($dbc);    
@@ -84,11 +85,15 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
     while($row = $dbc->fetch_row($result)) {
         $countRows++;
     }
-    if ($countRows == $classSize) {
-        mail('it@wholefoodscoop.com','WFCU Class Signup Full for class PLU#' . $_POST['upc'],'This class may be full');
+    if ($countRows > $classSize - 3) {
+        mail(
+            'it@wholefoodscoop.com',
+            'WFCU Class Signup Full for class PLU#' . $_POST['upc'],
+            'This class may be full', 
+            'From: automail@wholefoods.coop
+        ');
     }
 
     echo json_encode($ret);
 
 }
-
