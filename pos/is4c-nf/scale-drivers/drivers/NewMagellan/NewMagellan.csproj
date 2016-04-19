@@ -117,6 +117,7 @@
     <SPH Include="SPH_IngenicoRBA_RS232.cs" />
     <SPH Include="SPH_IngenicoRBA_IP.cs" />
     <SPH Include="SPH_IngenicoRBA_USB.cs" />
+    <SPH Include="RBA_Stub.cs" />
     <SPH Include="SPH_Parallel_Writer.cs" />
     <SPH Include="SPH_Datacap_IPTran.cs" />
     <SPH Include="SPH_Datacap_PDCX.cs" Condition=" Exists('DSIPDCXLib.dll') And Exists('AxDSIPDCXLib.dll') " />

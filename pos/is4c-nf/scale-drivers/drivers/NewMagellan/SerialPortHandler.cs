@@ -49,6 +49,9 @@ public class SerialPortHandler {
     protected string port;
     protected int verbose_mode;
 
+    // to allow RBA_Stub
+    public SerialPortHandler() {}
+
     public SerialPortHandler(string p){ 
         this.SPH_Thread = new Thread(new ThreadStart(this.Read));    
         this.SPH_Running = true;

@@ -238,6 +238,9 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
     protected const string EBT_CA = "1 0 4  0  14 10000 1 1 1 0      0 132 0 1 0 D 0 0 406";
     protected const string EBT_FS = "1 0 4  0  14     0 1 1 1 0      0 133 0 1 0 D 0 0 406";
 
+    // to allow RBA_Stub
+    public SPH_IngenicoRBA_Common() { }
+
     public SPH_IngenicoRBA_Common(string p) : base(p)
     {
         last_message = null;
@@ -828,7 +831,7 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
     {
         System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
         byte[] form_name = enc.GetBytes("pay1.K3Z");
-        byte[] msg = new byte[6 + form_name.Length];
+        byte[] msg = new byte[6 + form_name.Length + 0];
 
         msg[0] = 0x2;
         msg[1] = 0x32;
@@ -842,6 +845,17 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
         }
 
         msg[pos] = 0x1c; // FS
+
+        /*
+        msg[pos+1] = 0x42;
+        msg[pos+2] = 0x62;
+        msg[pos+3] = 0x74;
+        msg[pos+4] = 0x6e;
+        msg[pos+5] = 0x61;
+        msg[pos+6] = 0x2c;
+        msg[pos+7] = 0x53;
+        */
+
         msg[pos+1] = 0x3;
 
         return msg;
