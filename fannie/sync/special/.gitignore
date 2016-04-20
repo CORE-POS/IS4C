@@ -1,4 +1,5 @@
 *.php
+!products.notinUse.php
 !generic.mysql.php
 !products.multi.php
 !employees.multi.php
