@@ -791,7 +791,7 @@ class SQLManager
                   could be more memory efficient to avoid adding the last
                   comma just to remove it again with a substr() call.
                 */
-                if ($i < $num_fields-1) {
+                if ($i < $numFields-1) {
                     $big_values .= ',';
                 }
             }
