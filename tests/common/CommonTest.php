@@ -259,7 +259,7 @@ class CommonTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, $pool->deleteItem('foo'));
         $this->assertEquals(false, $pool->hasItem('foo'));
 
-        $baz = $pool->get('baz');
+        $baz = $pool->getItem('baz');
         $baz->set('deferred');
         $this->assertEquals(true, $pool->saveDeferred($baz));
         $this->assertEquals(true, $pool->commit());
