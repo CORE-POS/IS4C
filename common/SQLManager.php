@@ -785,10 +785,28 @@ class SQLManager
                 $row[$i] = $this->sanitizeValue($row[$i], $type);
                 $args[] = $row[$i];
                 $big_args[] = $row[$i];
-                $big_values .= '?,';
+                $big_values .= '?';
+                  /**
+                  Since we can be dealing with very large strings here, it
+                  could be more memory efficient to avoid adding the last
+                  comma just to remove it again with a substr() call.
+                */
+                if ($i < $num_fields-1) {
+                    $big_values .= ',';
+                }
             }
             $arg_sets[] = $args;
-            $big_values = substr($big_values, 0, strlen($big_values)-1) . '),';
+            /**
+              If the limit's exceeded and the data won't be
+              sent as one giant query there's no need to continue
+              building components of that query.
+            */
+            if (count($arg_sets) < 500) {
+                $big_values .= '),';
+            } else {
+                $big_values = '';
+                $big_args = array();
+            }
         }
         $big_values = substr($big_values, 0, strlen($big_values)-1);
         $prep .= str_repeat('?,', count($arg_sets[0]));
