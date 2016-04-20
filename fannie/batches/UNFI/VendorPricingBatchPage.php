@@ -120,6 +120,9 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $b->discountType(0);
             $b->priority(0);
             $batchID = $b->save();
+            if ($this->config->get('STORE_MODE') === 'HQ') {
+                StoreBatchMapModel::initBatch($batchID);
+            }
         } else { 
             $bidW = $dbc->fetchRow($bidR);
             $batchID = $bidW['batchID'];
@@ -218,11 +221,18 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $background = "white";
             if (isset($batchUPCs[$row['upc']])) {
                 $background = 'selection';
-            } elseif ($row['variable_pricing'] == 0) {
+            } elseif ($row['variable_pricing'] == 0 && $row['normal_price'] < 10.00) {
                 $background = ( ($row['normal_price']+0.10 < $row['rawSRP'])
                     && ($row['normal_price'] < $row['srp']) ) ?'red':'green';
                 if ($row['normal_price']-.10 > $row['rawSRP']) {
                     $background = ($row['normal_price']-.10 > $row['rawSRP']
+                        && ($row['normal_price'] > $row['srp']) )?'yellow':'green';
+                }
+            } elseif ($row['variable_pricing'] == 0 && $row['normal_price'] >= 10.00) {
+                $background = ( ($row['normal_price']+1.00 < $row['rawSRP'])
+                    && ($row['normal_price'] < $row['srp']) ) ?'red':'green';
+                if ($row['normal_price']-1.00 > $row['rawSRP']) {
+                    $background = ($row['normal_price']-1.00 > $row['rawSRP']
                         && ($row['normal_price'] > $row['srp']) )?'yellow':'green';
                 }
             }

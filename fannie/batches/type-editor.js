@@ -38,6 +38,11 @@ var batchTypeEditor = (function($) {
         saveBtField('saveSO', val, bid, $(this), this.defaultValue);
     };
 
+    mod.savePartial = function(bid){
+        var val = checkedVal(this);
+        saveBtField('savePartial', val, bid, $(this), this.defaultValue);
+    };
+
     mod.saveUI = function(val,bid){
         saveBtField('saveUI', val, bid, $(this), this.defaultValue);
     };

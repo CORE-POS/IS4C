@@ -65,6 +65,11 @@ class LikeCodePricingReport extends FannieReportPage
 
         return $data;
     }
+
+    public function form_content()
+    {
+        return '<!-- not needed -->';
+    }
 }
 
 FannieDispatch::conditionalExec();

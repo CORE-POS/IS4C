@@ -354,7 +354,11 @@ class BatchFromSearch extends FannieRESTfulPage
         $ret .= '</form>';
 
         // auto-detect likely owner & tag set by super department
-        $tagPage = array_search(max($superDetect), $superDetect);
+        if (count($superDetect) > 0) {
+            $tagPage = array_search(max($superDetect), $superDetect);
+        } else {
+            $tagPage = false;
+        }
         if ($tagPage !== false) {
             $this->add_onload_command("\$('#tagset').val($tagPage);\n");
             $this->add_onload_command("\$('#batchOwner').val(\$('#tagset option:selected').text());\n");

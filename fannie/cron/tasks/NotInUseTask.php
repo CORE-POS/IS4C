@@ -70,6 +70,9 @@ report when items are sold that have been marked not inUse.';
             $msg = sprintf('%s (%s) was sold %d times while not inUse',
                 $w['description'], $w['upc'], $w['occurences']);
             $email = \COREPOS\Fannie\API\lib\AuditLib::getAddresses($w['department']);
+            if ($this->config->get('COOP_ID') === 'WFC_Duluth') {
+                $email = 'it@wholefoods.coop';
+            }
             if ($email) {
                 $subject = 'Not In Use Report';
                 $from = "From: automail\r\n";

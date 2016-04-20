@@ -253,6 +253,9 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
             cursor: hand;
             cursor: pointer;
         }
+        .ui-datepicker {
+            z-index: 100 !important;
+        }
         ';
     }
 

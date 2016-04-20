@@ -244,7 +244,7 @@ class OverShortDayPage extends FanniePage
                     if ($dbc->num_rows($fetchR) != 0) {
                         $fetchW = $dbc->fetch_row($fetchR);
                         $value = $fetchW[0];
-                    } elseif ($code !== 'CA' && $code !== 'CK' && $code !== 'TK' && $code !== 'WT') {
+                    } elseif ($code !== 'CA' && $code !== 'CK' && $code !== 'WT') {
                         $value = $posAmt;
                     }
                     $output .= "<td><div class=\"input-group\">

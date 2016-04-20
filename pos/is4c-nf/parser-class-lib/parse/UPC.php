@@ -186,7 +186,7 @@ class UPC extends Parser
           based on item's department
         */
         $deptmods = CoreLocal::get('SpecialDeptMap');
-        if (!is_array($deptmods) && $dbc->table_exists('SpecialDeptMap')) {
+        if (!is_array($deptmods) && (CoreLocal::get('NoCompat') == 1 || $dbc->table_exists('SpecialDeptMap'))) {
             $model = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($dbc);
             $deptmods = $model->buildMap();
             CoreLocal::set('SpecialDeptMap', $deptmods);
@@ -689,7 +689,7 @@ class UPC extends Parser
         }
 
         // no match; not a product, not special
-        if ($dbc->table_exists('IgnoredBarcodes')) {
+        if (CoreLocal::get('NoCompat') == 1 || $dbc->table_exists('IgnoredBarcodes')) {
             // lookup UPC in tabe of ignored barcodes
             // this just suppresses any error message from
             // coming back
@@ -713,29 +713,33 @@ class UPC extends Parser
     private function lookupItem($upc)
     {
         $dbc = Database::pDataConnect();
-        $table = $dbc->tableDefinition('products');
         $query = "SELECT inUse,upc,description,normal_price,scale,deposit,
             qttyEnforced,department,local,cost,tax,foodstamp,discount,
             discounttype,specialpricemethod,special_price,groupprice,
             pricemethod,quantity,specialgroupprice,specialquantity,
             mixmatchcode,idEnforced,tareweight,scaleprice";
-        // New column 16Apr14
-        if (isset($table['line_item_discountable'])) {
-            $query .= ', line_item_discountable';
+        if (CoreLocal::get('NoCompat') == 1) {
+            $query .= ', line_item_discountable, formatted_name, special_limit ';
         } else {
-            $query .= ', 1 AS line_item_discountable';
-        }
-        // New column 16Apr14
-        if (isset($table['formatted_name'])) {
-            $query .= ', formatted_name';
-        } else {
-            $query .= ', \'\' AS formatted_name';
-        }
-        // New column 25Nov14
-        if (isset($table['special_limit'])) {
-            $query .= ', special_limit';
-        } else {
-            $query .= ', 0 AS special_limit';
+            $table = $dbc->tableDefinition('products');
+            // New column 16Apr14
+            if (isset($table['line_item_discountable'])) {
+                $query .= ', line_item_discountable';
+            } else {
+                $query .= ', 1 AS line_item_discountable';
+            }
+            // New column 16Apr14
+            if (isset($table['formatted_name'])) {
+                $query .= ', formatted_name';
+            } else {
+                $query .= ', \'\' AS formatted_name';
+            }
+            // New column 25Nov14
+            if (isset($table['special_limit'])) {
+                $query .= ', special_limit';
+            } else {
+                $query .= ', 0 AS special_limit';
+            }
         }
         $query .= " FROM products WHERE upc = '".$upc."'";
         $result = $dbc->query($query);

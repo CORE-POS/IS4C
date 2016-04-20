@@ -619,7 +619,7 @@ static public function loadParams()
 
     // newer & optional table. should not fail
     // if it's missing
-    if (!$dbc->table_exists('parameters')) {
+    if (CoreLocal::get('NoCompat') != 1 && !$dbc->table_exists('parameters')) {
         return;
     }
     

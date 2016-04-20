@@ -50,6 +50,9 @@ class BatchImportExportPage extends FannieRESTfulPage
         $batch->owner($json['owner']);
         $batch->transLimit($json['transLimit']);
         $batchID = $batch->save();
+        if ($this->config->get('STORE_MODE') === 'HQ') {
+            StoreBatchMapModel::initBatch($batchID);
+        }
 
         $item = new BatchListModel($this->connection);
         $item->batchID($batchID);

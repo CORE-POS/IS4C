@@ -95,7 +95,8 @@ class OverShortMAS extends FannieRESTfulPage {
         );
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $args = array($this->startDate.' 00:00:00', $this->endDate.' 23:59:59');
+        $store = FormLib::get('store', 0);
+        $args = array($store, $this->startDate.' 00:00:00', $this->endDate.' 23:59:59');
 
         $tenderQ = "SELECT SUM(total) AS amount,
                 CASE WHEN description='REBATE CHECK' THEN 'RB'
@@ -110,7 +111,7 @@ class OverShortMAS extends FannieRESTfulPage {
                 FROM $dlog AS d LEFT JOIN
                 tenders AS t ON d.trans_subtype=t.TenderCode
                 WHERE trans_type='T'
-                AND d.store_id IN (1,50)
+                AND " . DTrans::isStoreID($store, 'd') . "
                 AND tdate BETWEEN ? AND ?
                 AND department <> 703
                 GROUP BY type HAVING SUM(total) <> 0 ORDER BY type";
@@ -130,8 +131,8 @@ class OverShortMAS extends FannieRESTfulPage {
         $discountQ = "SELECT SUM(total) as amount,
             CASE WHEN staff=1 OR memType IN (1,3) THEN 'Staff Discounts'
             ELSE 'Member Discounts' END as name
-            FROM $dlog WHERE upc='DISCOUNT'
-                AND store_id IN (1,50)
+            FROM $dlog AS d WHERE upc='DISCOUNT'
+                AND " . DTrans::isStoreID($store, 'd') . "
             AND total <> 0 AND tdate BETWEEN ? AND ?
             GROUP BY name ORDER BY name";
         $discountP = $dbc->prepare($discountQ);
@@ -155,10 +156,10 @@ class OverShortMAS extends FannieRESTfulPage {
             INNER JOIN MasterSuperDepts AS m
             ON d.department=m.dept_ID
             WHERE d.trans_type IN ('I','D')
+            AND " . DTrans::isStoreID($store, 'd') . "
             AND tdate BETWEEN ? AND ?
             AND m.superID > 0
             AND register_no <> 20
-                AND d.store_id IN (1,50)
             GROUP BY salesCode HAVING sum(total) <> 0 
             ORDER BY salesCode";
         $salesP = $dbc->prepare($salesQ);
@@ -174,7 +175,10 @@ class OverShortMAS extends FannieRESTfulPage {
             $records[] = $row;
         }
 
-        $taxQ = "SELECT SUM(total) FROM $dlog WHERE tdate BETWEEN ? AND ?
+        $taxQ = "SELECT SUM(total) FROM $dlog AS d
+        WHERE 
+            " . DTrans::isStoreID($store, 'd') . "
+            AND tdate BETWEEN ? AND ?
             AND upc='TAX'";
         $taxP = $dbc->prepare($taxQ);
         $taxR = $dbc->execute($taxP, $args);
@@ -193,11 +197,11 @@ class OverShortMAS extends FannieRESTfulPage {
             INNER JOIN MasterSuperDepts AS m
             ON d.department=m.dept_ID
             WHERE d.trans_type IN ('I','D')
+            AND " . DTrans::isStoreID($store, 'd') . "
             AND tdate BETWEEN ? AND ?
             AND m.superID = 0
             AND d.department <> 703
             AND register_no <> 20
-            AND d.store_id IN (1,50)
             GROUP BY salesCode HAVING sum(total) <> 0 
             ORDER BY salesCode";
         $salesP = $dbc->prepare($salesQ);
@@ -216,7 +220,9 @@ class OverShortMAS extends FannieRESTfulPage {
         $explorersQ = '
             SELECT SUM(quantity) AS qty
             FROM ' . $dlog . ' AS d
-            WHERE tdate BETWEEN ? AND ?
+            WHERE 
+                ' . DTrans::isStoreID($store, 'd') . '
+                AND tdate BETWEEN ? AND ?
                 AND upc = ?';
         $explorersP = $dbc->prepare($explorersQ);
         $explorersR = $dbc->execute($explorersP, array_merge($args, array('0000000004792')));
@@ -235,16 +241,16 @@ class OverShortMAS extends FannieRESTfulPage {
         );
 
         $miscQ = "SELECT total as amount, description as name,
-            trans_num, tdate FROM $dlog WHERE department=703
-            AND store_id IN (1,50)
+            trans_num, tdate FROM $dlog AS d WHERE department=703
+            AND " . DTrans::isStoreID($store, 'd') . "
             AND trans_subtype <> 'IC'
             AND tdate BETWEEN ? AND ? ORDER BY tdate";
         $miscP = $dbc->prepare($miscQ);
         $miscR = $dbc->execute($miscP, $args);
         $detailP = $dbc->prepare("SELECT description 
-            FROM $dtrans WHERE trans_type='C'
+            FROM $dtrans AS d WHERE trans_type='C'
+            AND " . DTrans::isStoreID($store, 'd') . "
             AND trans_subtype='CM' AND datetime BETWEEN ? AND ?
-            AND store_id IN (1,50)
             AND emp_no=? and register_no=? and trans_no=? ORDER BY trans_id");
         while($w = $dbc->fetch_row($miscR)){
             $coding = 63350;
@@ -252,7 +258,7 @@ class OverShortMAS extends FannieRESTfulPage {
             list($e,$r,$t) = explode('-',$w['trans_num']);
             // lookup comments on the transaction
             $detailR = $dbc->execute($detailP, array(
-                $date.' 00:00:00', $date.' 23:59:59',
+                $store, $date.' 00:00:00', $date.' 23:59:59',
                 $e, $r, $t
             ));
             if ($dbc->num_rows($detailR) > 0){
@@ -271,8 +277,8 @@ class OverShortMAS extends FannieRESTfulPage {
         }
 
         $miscQ = "SELECT SUM(-total) as amount
-            FROM $dlog WHERE department=703
-            AND store_id IN (1,50)
+            FROM $dlog AS d WHERE department=703
+            AND " . DTrans::isStoreID($store, 'd') . "
             AND trans_subtype = 'IC'
             AND tdate BETWEEN ? AND ? ORDER BY tdate";
         $miscP = $dbc->prepare($miscQ);
@@ -315,8 +321,9 @@ class OverShortMAS extends FannieRESTfulPage {
         $ret = '';
         $debit = $credit = 0.0;
         if (FormLib::get_form_value('excel','') === ''){
-            $ret .= sprintf('<a href="OverShortMAS.php?startDate=%s&endDate=%s&excel=yes">Download</a>',
-                    $this->startDate, $this->endDate);
+            $store = FormLib::get('store', 0);
+            $ret .= sprintf('<a href="OverShortMAS.php?startDate=%s&endDate=%s&store=%s&excel=yes">Download</a>',
+                    $this->startDate, $this->endDate, $store);
             $ret .= '<table class="table table-bordered small">';
             foreach($records as $r){
                 if (preg_match('/\(\d+-\d+-\d+ \d+-\d+-\d+\)/',$r[5])){
@@ -352,6 +359,7 @@ class OverShortMAS extends FannieRESTfulPage {
 
     function get_view(){
         global $FANNIE_URL;
+        $stores  = FormLib::storePicker();
         $ret = '<form action="OverShortMAS.php" method="get">
             <div class="col-sm-4">
             <div class="form-group">
@@ -361,6 +369,10 @@ class OverShortMAS extends FannieRESTfulPage {
             <div class="form-group">
                 <label>End Date</label>
                 <input name="endDate" class="form-control date-field" required id="date2" />
+            </div>
+            <div class="form-group">
+                <label>Store</label>
+                ' . $stores['html'] . '
             </div>
             <p>
                 <button type="submit" class="btn btn-default">Get Data</button>

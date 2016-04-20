@@ -117,6 +117,10 @@ class PluRangePage extends FannieRESTfulPage
                           WHERE upc BETWEEN ? AND ?
                             AND upc NOT BETWEEN '0000000003000' AND '0000000004999'
                             AND upc NOT BETWEEN '0000000093000' AND '0000000094999'";
+            if (FormLib::get('type') === 'Scale' && $this->length == 4 && $this->number == 1) {
+                $min = '002' . $min . '000000';
+                $max = '002' . $max . '000000';
+            }
             $minP = $dbc->prepare($actualMin);
             $min = $dbc->getValue($minP, array(BarcodeLib::padUPC($min), BarcodeLib::padUPC($max)));
 
@@ -143,7 +147,7 @@ class PluRangePage extends FannieRESTfulPage
             $check = $dbc->getValue($lookup, BarcodeLib::padUPC($current));
             if ($count++ > 9999999) break; // prevent inf. loop
             if ($check !== false) {
-                $current++;
+                $current = $this->nextPlu($current);
             } else {
                 // found an opening; check range
                 $range_start = $current;
@@ -152,7 +156,7 @@ class PluRangePage extends FannieRESTfulPage
                     if ($check !== false) {
                         // collision
                         $range_start = false;
-                        $current = $current + $i + 1;
+                        $current = $this->nextPlu($current);
                         break;
                     }
                 }
@@ -163,6 +167,17 @@ class PluRangePage extends FannieRESTfulPage
         }
 
         return $range_start;
+    }
+
+    private function nextPlu($plu)
+    {
+        if (substr($plu, -6) === '000000') {
+            $plu = substr($plu, 0, strlen($plu)-6);
+            $plu++;
+            return $plu . '000000';
+        } else {
+            return $plu + 1;
+        }
     }
 
     public function get_length_number_view()
@@ -209,7 +224,14 @@ class PluRangePage extends FannieRESTfulPage
         $ret .= '<label># needed</label>';
         $ret .= '<input type="number" name="number" class="form-control" 
                     required value="1" />';
-        $ret .= '</div>';
+        $ret .= '</div>
+            <div class="form-group">
+            <label>PLU Type</label>
+            <select name="type" class="form-control">
+                <option>Regular</option>
+                <option>Scale</option>
+            </select></div>
+        ';
         $ret .= '<p><button type="submit" class="btn btn-default">Find PLUs</button></p>';
         $ret .= '</form>';
 

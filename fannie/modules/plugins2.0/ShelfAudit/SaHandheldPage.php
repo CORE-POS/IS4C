@@ -260,7 +260,7 @@ ScannerDevice.registerListener(Device);
 <form method="get" id="upcScanForm">
 <a href="SaMenuPage.php">Menu</a>
  - Store # <?php echo $store; ?>
-<input type="hidden" name="store" id="store" value="<?php echo $store; ?>" />
+<input type="hidden" name="store" id="store" value="<?php echo ((int)$store); ?>" />
 <br />
 <div class="form-group form-inline">
     <div class="input-group">

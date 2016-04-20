@@ -83,6 +83,9 @@ class SaReportPage extends FanniePage {
         if ($this->store === false ) {
             $this->store = COREPOS\Fannie\API\lib\Store::getIdByIp();
         }
+        if ($this->config->get('STORE_MODE') !== 'HQ') {
+            $store = 0;
+        }
         $q= $dbc->prepare('SELECT
             s.id,
             s.datetime,

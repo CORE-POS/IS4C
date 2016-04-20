@@ -33,6 +33,16 @@ Optional logs:
 <div class="alert"><?php InstallUtilities::checkWritable('../log/core_local.log','True'); ?></div>
 <hr />
 <form action=debug.php method=post>
+<b>Disable DB Compatibility checks</b>:
+<?php
+echo InstallUtilities::installSelectField('NoCompat', array(1=>'Yes',0=>'No'), 0);
+?>
+<br />
+By default CORE will often query the status of tables to verify whether newer columns
+exist before attempting to use them. Disabling these checks may yield modest performance
+gains but if database schemas are not up to date any resulting crashes will not be
+graceful.
+<hr />
 <b>Log State Changes</b>: 
 <?php
 echo InstallUtilities::installSelectField('Debug_CoreLocal', array(1=>'Yes',0=>'No'), 0);

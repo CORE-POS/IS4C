@@ -93,7 +93,7 @@ class EquityPaymentPlan extends \COREPOS\Fannie\API\member\MemberModule {
         return $ret;
     }
 
-    public function saveFormData($memNum)
+    public function saveFormData($memNum, $json=array())
     {
         $dbc = $this->db();
         $model = new EquityPaymentPlanAccountsModel($dbc);

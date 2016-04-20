@@ -81,7 +81,8 @@ class Notes extends \COREPOS\Fannie\API\member\MemberModule {
         return $ret;
     }
 
-    function saveFormData($memNum){
+    public function saveFormData($memNum, $json=array())
+    {
 
         /* entry blank. do not save */
         $note = FormLib::get_form_value('Notes_text');

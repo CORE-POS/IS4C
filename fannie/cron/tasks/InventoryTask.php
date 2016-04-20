@@ -37,10 +37,77 @@ class InventoryTask extends FannieTask
         'weekday' => '*',
     );
 
+    private $store_id = 0;
+    private $vendor_id = 0;
+
+    public function setStoreID($s)
+    {
+        $this->store_id = $s;
+    }
+
+    public function setVendorID($v)
+    {
+        $this->vendor_id = $v;
+    }
+
+    /**
+      Normal nightly behavior is to clear the whole cache and
+      recalculate everything. But if store and vendor IDs have 
+      been specified then only those applicable entries are
+      cleared
+    */
+    private function clearEntries($dbc, $store_id, $vendor_id)
+    {
+        if ($store_id && $vendor_id) {
+            $prep = $dbc->prepare('
+                DELETE FROM InventoryCache
+                WHERE storeID=?
+                    AND upc IN (
+                    SELECT upc FROM products WHERE store_id=? AND default_vendor_id=?
+                    )');
+            $dbc->execute($prep, array($store_id, $store_id, $vendor_id));
+        } else {
+            $dbc->query('TRUNCATE TABLE InventoryCache');
+        }
+    }
+
+    /**
+      Normal nightly behavior is to get all base counts and
+      rebuild cache but if store and vendor IDs have been
+      specified only those entires are recalculated
+    */
+    private function getCounts($dbc, $store_id, $vendor_id)
+    {
+        $countQ = '
+            SELECT i.upc,
+                storeID,
+                count,
+                countDate,
+                par
+            FROM InventoryCounts AS i ';
+        $countArgs = array();
+        if ($store_id && $vendor_id) {
+            $countQ .= '
+                INNER JOIN products AS p ON p.upc=i.upc AND p.store_id=i.storeID
+                WHERE mostRecent=1 
+                    AND i.storeID=?
+                    AND p.default_vendor_id=?
+                ORDER BY countDate DESC';
+            $countArgs[] = $store_id;
+            $countArgs[] = $vendor_id;
+        } else {
+            $countQ .= ' WHERE mostRecent=1
+                ORDER BY countDate DESC';
+        }
+        $countP = $dbc->prepare($countQ);
+
+        return $dbc->execute($countP, $countArgs);
+    }
+
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $dbc->query('TRUNCATE TABLE InventoryCache');
+        $this->clearEntries($dbc, $this->store_id, $this->vendor_id);
 
         $insP = $dbc->prepare('
             INSERT INTO InventoryCache
@@ -48,15 +115,7 @@ class InventoryTask extends FannieTask
             VALUES
                 (?, ?, ?, ?, ?, ?, ?, ?)');
 
-        $countR = $dbc->query('
-            SELECT upc,
-                storeID,
-                count,
-                countDate,
-                par
-            FROM InventoryCounts
-            WHERE mostRecent=1
-            ORDER BY countDate DESC');
+        $countR = $this->getCounts($dbc, $this->store_id, $this->vendor_id);
         $last = array(false, false);
         while ($row = $dbc->fetchRow($countR)) {
             if ($last[0] == $row['upc'] && $last[1] == $row['storeID']) {
@@ -71,7 +130,7 @@ class InventoryTask extends FannieTask
                 $sales += ($bdInfo['units'] * $bdSales);
             }
 
-            $orders = InventoryCacheModel::calculateOrdered($dbc, $row['upc'], $row['countDate']);
+            $orders = InventoryCacheModel::calculateOrdered($dbc, $row['upc'], $row['storeID'], $row['countDate']);
 
             $dtrans = DTransactionsModel::selectDTrans($row['countDate'], date('Y-m-d', strtotime('yesterday')));
             $shrinkP = $dbc->prepare('

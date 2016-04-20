@@ -72,7 +72,7 @@ class QuickKeyLauncher extends Parser
     {
         $dbc = Database::pDataConnect();
         $my_keys = array();
-        if ($dbc->table_exists('QuickLookups')) {
+        if (CoreLocal::get('NoCompat') == 1 || $dbc->table_exists('QuickLookups')) {
             $prep = $dbc->prepare('
                 SELECT label,
                     action

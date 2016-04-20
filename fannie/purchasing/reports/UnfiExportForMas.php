@@ -75,7 +75,8 @@ class UnfiExportForMas extends FannieReportPage
                         o.salesCode, 
                         i.vendorInvoiceID, 
                         SUM(o.receivedTotalCost) as rtc,
-                        MAX(o.receivedDate) AS rdate
+                        MAX(o.receivedDate) AS rdate,
+                        MAX(i.storeID) AS storeID
                     FROM PurchaseOrderItems AS o
                         LEFT JOIN PurchaseOrder as i ON o.orderID=i.orderID 
                     WHERE i.vendorID=? 
@@ -96,7 +97,7 @@ class UnfiExportForMas extends FannieReportPage
                 continue;
             }
             $code = $accounting::toPurchaseCode($codingW['salesCode']);
-            $code = $this->wfcCoding($code);
+            $code = $this->wfcCoding($code, $codingW['storeID']);
             if (empty($code) && $this->report_format == 'html') {
                 $code = 'n/a';
             }
@@ -135,14 +136,14 @@ class UnfiExportForMas extends FannieReportPage
         return $report;
     }
 
-    private function wfcCoding($code)
+    private function wfcCoding($code,$storeID)
     {
         if (substr($code, 0, 3) === '512' || $code === '51600') {
-            return $code . '0120';
+            return $code . '0' . $storeID . '20';
         } elseif ($code === '51300' || $code === '51310' || $code === '51315') {
-            return $code . '0130';
+            return $code . '0' . $storeID . '30';
         } else {
-            return $code . '0160';
+            return $code . '0' . $storeID . '60';
         }
     }
     

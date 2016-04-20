@@ -48,9 +48,9 @@ class DiscountApplied extends Parser
                     false,
                     DisplayLib::standardClearButton()
                 );
-            } elseif ($strl <= 0) {
+            } elseif ($strl < 0) {
                 $this->ret['output'] = DisplayLib::boxMsg(
-                    _("discount must be greater than zero"),
+                    _("discount cannot be negative"),
                     '',
                     false,
                     DisplayLib::standardClearButton()

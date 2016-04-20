@@ -114,8 +114,8 @@ class SaScanningPage extends FanniePage {
             $qty = rtrim($qty,'z');
             $args = array($upc);
             $stmt = $dbc->prepare('INSERT INTO sa_inventory 
-                    (id,datetime,upc,clear,quantity,section)
-                    VALUES (NULL,'.$dbc->now().',?,0,?,?)');
+                    (id,datetime,upc,clear,quantity,section,storeID)
+                    VALUES (NULL,'.$dbc->now().',?,0,?,?,0)');
                     
             if ($qty != '' && ctype_digit($qty)){
                 $args[] = $qty;

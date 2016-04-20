@@ -44,11 +44,13 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $this->__routes[] = 'post<id><setPlaced>';
         $this->__routes[] = 'get<id><export>';
         $this->__routes[] = 'get<id><receive>';
+        $this->__routes[] = 'get<id><receiveAll>';
         $this->__routes[] = 'get<id><sku>';
         $this->__routes[] = 'get<id><recode>';
         $this->__routes[] = 'post<id><sku><recode>';
         $this->__routes[] = 'post<id><sku><qty><cost>';
         $this->__routes[] = 'post<id><sku><upc><brand><description><orderQty><orderCost><receiveQty><receiveCost>';
+        $this->__routes[] = 'post<id><sku><qty><receiveAll>';
         if (FormLib::get_form_value('all') === '0')
             $this->show_all = false;
         return parent::preprocess();
@@ -73,6 +75,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $model = new PurchaseOrderModel(FannieDB::get($FANNIE_OP_DB));
         $model->orderID($this->id);
+        $model->load();
         $model->placed($this->setPlaced);
         if ($this->setPlaced == 1) {
             $model->placedDate(date('Y-m-d H:m:s'));
@@ -85,7 +88,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $poi->orderID($this->id);
         $cache = new InventoryCacheModel($this->connection);
         foreach ($poi->find() as $item) {
-            $cache->recalculateOrdered($item->internalUPC(), 1);
+            $cache->recalculateOrdered($item->internalUPC(), $model->storeID());
         }
         echo ($this->setPlaced == 1) ? $model->placedDate() : 'n/a';
 
@@ -189,6 +192,37 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         echo 'deleted';
 
         return false;
+    }
+
+    protected function post_id_sku_qty_receiveAll_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $model = new PurchaseOrderItemsModel($dbc);
+        $model->orderID($this->id);
+        for ($i=0; $i<count($this->sku); $i++) {
+            $model->sku($this->sku[$i]);
+            $model->load();
+            $model->receivedQty($this->qty[$i]);
+            $model->receivedTotalCost($model->receivedQty()*$model->unitCost());
+            if ($model->receivedDate() === null) {
+                $model->receivedDate(date('Y-m-d H:i:s'));
+            }
+            $model->save();
+        }
+
+        $prep = $dbc->prepare('
+            SELECT o.storeID, i.internalUPC
+            FROM PurchaseOrder AS o
+                INNER JOIN PurchaseOrderItems AS i ON o.orderID=i.orderID
+            WHERE o.orderID=?');
+        $res = $dbc->execute($prep, array($this->id));
+        $cache = new InventoryCacheModel($dbc);
+        while ($row = $dbc->fetchRow($res)) {
+            $cache->recalculateOrdered($row['internalUPC'], $row['storeID']);
+        }
+
+        return 'ViewPurchaseOrders.php?id=' . $this->id;
     }
 
     protected function post_id_sku_recode_handler()
@@ -414,11 +448,57 @@ class ViewPurchaseOrders extends FannieRESTfulPage
                 <input type="text" name="sku" id="sku-in" class="form-control" />
                 <input type="hidden" name="id" value="' . $this->id . '" />
                 <button type="submit" class="btn btn-default">Continue</button>
+                <a href="?id=' . $this->id . '&receiveAll=1" class="btn btn-default btn-reset">All</a>
                 </form>
             </div></p>
             <div id="item-area">
             </div>';
         $this->addOnloadCommand("\$('#sku-in').focus();\n");
+
+        return $ret;
+    }
+
+    protected function get_id_receiveAll_view()
+    {
+        $dbc = FannieDB::getReadOnly($this->config->get('OP_DB'));
+        $poi = new PurchaseOrderItemsModel($dbc);
+        $poi->orderID($this->id);
+        $ret = '<form method="post">
+            <input type="hidden" name="id" value="' . $this->id . '" />
+            <input type="hidden" name="receiveAll" value="1" />
+            <table class="table table-bordered table-striped">
+            <tr>
+                <th>SKU</th>
+                <th>Brand</th>
+                <th>Description</th>
+                <th>Unit Size</th>
+                <th>Qty Ordered</th>
+                <th>Qty Receveived</th>
+            </tr>';
+        foreach ($poi->find() as $item) {
+            $qty = $item->caseSize() * $item->quantity();
+            $ret .= sprintf('<tr>
+                <td><input type="hidden" name="sku[]" value="%s" />%s</td>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%s</td>
+                <td>%.2f</td>
+                <td><input type="text" class="form-control input-sm" name="qty[]" value="%.2f" /></td>
+                </tr>',
+                $item->sku(), $item->sku(),
+                $item->brand(),
+                $item->description(),
+                $item->unitSize(),
+                $qty,
+                ($item->receivedQty() === null ? $qty : $item->receivedQty())
+            );
+        }
+        $ret .= '</table>
+            <p>
+                <button type="submit" class="btn btn-default btn-core">Receive Order</button>
+                <button type="reset" class="btn btn-default btn-reset">Reset</button>
+            </p>
+            </form>';
 
         return $ret;
     }
