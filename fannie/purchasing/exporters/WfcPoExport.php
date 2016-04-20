@@ -33,11 +33,24 @@ class WfcPoExport extends DefaultCsvPoExport
     {
         parent::export_order($id);
 
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $order = new PurchaseOrderModel($dbc);
+        $order->orderID($id);
+        $order->load();
+
+
         echo "\r\n";
-        echo "Whole Foods Co-op\r\n";
-        echo "610 E 4th St\r\n";
-        echo "\"Duluth, MN 55805\"\r\n";
-        echo "(218) 728-0884\r\n";
+        if ($order->storeID() == 1) {
+            echo "Whole Foods Co-op\r\n";
+            echo "610 E 4th St\r\n";
+            echo "\"Duluth, MN 55805\"\r\n";
+            echo "(218) 728-0884\r\n";
+        } elseif ($order->storeID() == 2) {
+            echo "Whole Foods Co-op\r\n";
+            echo "4426 Grand Ave\r\n";
+            echo "\"Duluth, MN 55807\"\r\n";
+            echo "(218) 728-0884\r\n";
+        }
     }
 }
 
