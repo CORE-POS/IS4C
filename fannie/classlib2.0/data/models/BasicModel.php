@@ -870,7 +870,7 @@ class BasicModel
                 echo "==========================================\n\n";
                 return true;
             }
-        } elseif ($this->connection->isView($this->name) && !($this instanceof ViewModel)) {
+        } elseif ($this->connection->isView($this->name) && !($this instanceof ViewModel) && !($this instanceof DTransactionsModel)) {
             if ($mode == BasicModel::NORMALIZE_MODE_CHECK) {
                 echo "Table {$this->name} is currently a view but should be a table\n";
                 echo "==========================================\n";
