@@ -80,7 +80,7 @@ class CacheItem
             $this->expires = time() + $time;
         } elseif (is_object($time) && method_exists($time, 'format')) {
             $this->expires = time() + $time->format('%s');
-        } elseif ($expiration === null) {
+        } elseif ($time === null) {
             $this->expires = $this->defaultExpire();
         }
 
