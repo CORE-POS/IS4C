@@ -62,7 +62,7 @@ class LaneCache
             self::$instance = new COREPOS\common\cache\file\CacheItemPool('lane.cache');
         }
         self::$instance->clear();
-        $instance->commit();
+        self::$instance->commit();
     }
 }
 
