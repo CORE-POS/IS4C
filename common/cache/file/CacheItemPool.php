@@ -92,14 +92,14 @@ class CacheItemPool
 
     public function save($item)
     {
-        $this->items[$key] = $this->itemToInternal($item);
+        $this->items[$item->getKey()] = $this->itemToInternal($item);
 
         return $this->saveToFile($this->file, $this->items);
     }
 
     public function saveDeferred($item)
     {
-        $this->items[$key] = $this->itemToInternal($item);
+        $this->items[$item->getKey()] = $this->itemToInternal($item);
 
         return true;
     }
