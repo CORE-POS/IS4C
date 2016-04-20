@@ -181,8 +181,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         AutoLoader::loadClass('LocalStorage');
         $this->assertEquals(true, class_exists('LocalStorage', false));
 
-        AutoLoader::loadMap();
-        $class_map = CoreLocal::get('ClassLookup');
+        $class_map = AutoLoader::loadMap();
         $this->assertInternalType('array', $class_map);
         $this->assertNotEmpty($class_map);
         
