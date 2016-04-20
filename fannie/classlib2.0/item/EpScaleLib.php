@@ -86,7 +86,7 @@ class EpScaleLib
         $line .= 'PNO' . $item_info['PLU'] . chr(253);
         $line .= 'UPC' . '002' . str_pad($item_info['PLU'],4,'0',STR_PAD_LEFT) . '000000' . chr(253);
         $desc = (isset($item_info['Description'])) ? $item_info['Description'] : '';
-        $line .= self::wrapDescription($desc, 30);
+        $line .= self::wrapDescription($desc, 26);
         $line .= 'DS1' . '0' . chr(253);
         if (!strstr($line, 'DN2')) {
             $line .= 'DN2' . chr(253);
@@ -160,7 +160,7 @@ class EpScaleLib
                             $line .= 'DN1' . $line1 . chr(253);
                             $line .= 'DN2' . $line2 . chr(253);
                         } elseif (strlen($item_info[$key]) > 22) {
-                            $line .= self::wrapDescription($item_info[$key], 30);
+                            $line .= self::wrapDescription($item_info[$key], 26);
                         } else {
                             $line .= 'DN1' . $item_info[$key] . chr(253);
                         }
