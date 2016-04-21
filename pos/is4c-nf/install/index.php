@@ -152,7 +152,8 @@ if (is_array(CoreLocal::get('LaneMap'))) {
     <td>
     <?php
     $db_opts = \COREPOS\common\sql\Lib::getDrivers();
-    echo InstallUtilities::installSelectField('DBMS', $db_opts, $db_opts[0], InstallUtilities::INI_SETTING);
+    $default = $db_opts[array_keys($db_opts)[0]];
+    echo InstallUtilities::installSelectField('DBMS', $db_opts, $default, InstallUtilities::INI_SETTING);
     ?>
     </td>
 </tr>
@@ -297,7 +298,8 @@ if ($gotDBs == 2 && CoreLocal::get('laneno') != 0) {
     <td>
     <?php
     $db_opts = \COREPOS\common\sql\Lib::getDrivers();
-    echo InstallUtilities::installSelectField('mDBMS', $db_opts, $db_opts[0]);
+    $default = $db_opts[array_keys($db_opts)[0]];
+    echo InstallUtilities::installSelectField('mDBMS', $db_opts, $default);
     ?>
     </td>
 </tr>
