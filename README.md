@@ -15,6 +15,11 @@ version branches.
 
 ### [Documentation](https://github.com/CORE-POS/IS4C/wiki)
 
+### [Issues](https://github.com/CORE-POS/IS4C/issues)
+Feel free to open an issue relating to any subject - development, usage, or otherwise. Be aware that:
+* Developer questions pertaining to older versions *may* be answered with "Please upgrade to the latest release first"
+* Issues that haven't had any response in 30+ days may be closed and tagged *Closed Pending Feedback*. Re-opening these issues is to provide feedback is fine.
+
 ### Quick overview
 In this directory you'll find:
 * common
