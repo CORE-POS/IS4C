@@ -83,7 +83,7 @@ class PriceDiscrepancyTask extends FannieTask
         $ret .= "\n";
         //  Replace this link with the link to the Fannie Page once it exists.
         $ret .= 'To make Corrections, visit ';
-        $ret .= 'http://key/scancoord/price_discrep_test.php';
+        $ret .= 'http://key/git/fannie/item/PriceDiscrepancyScanner/PriceDiscrepancyPage.php';
         $ret = wordwrap($ret, 10, '\n');
         $ret = str_replace('\n', '', $ret);
         mail('it@wholefoods.coop', count($item) . ' Price Discrepancies found in POS', $ret, 'From: automail@wholefoods.coop');
