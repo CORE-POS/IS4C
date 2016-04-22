@@ -438,11 +438,11 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $obj->parse('MSTG');
         $this->assertNotEquals(0, strlen($out['output']));
         CoreLocal::set('memType', 0);
-        CoreLocal::set('SecuritySR', 21);
+        CoreLocal::set('SecuritySR', 21, true);
         $obj->check('MSTG');
         $out = $obj->parse('MSTG');
         $this->assertEquals('=MemStatusAdminLogin', substr($out['main_frame'], -20));
-        CoreLocal::set('SecuritySR', 0);
+        CoreLocal::set('SecuritySR', 0, true);
         $obj->check('MSTG');
         $out = $obj->parse('MSTG');
         $this->assertNotEquals(0, strlen($out['output']));
