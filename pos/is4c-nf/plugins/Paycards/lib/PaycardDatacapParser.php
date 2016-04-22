@@ -65,7 +65,7 @@ class PaycardDatacapParser extends Parser
     {
         $ret = $this->default_json();
         if (CoreLocal::get("ttlflag") != 1) { // must subtotal before running card
-            $ret['output'] = PaycardLib::paycard_msgBox($type,"No Total",
+            $ret['output'] = PaycardLib::paycard_msgBox('',"No Total",
                 "Transaction must be totaled before tendering or refunding","[clear] to cancel");
             return $ret;
         }
