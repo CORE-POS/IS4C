@@ -123,13 +123,14 @@ class CoreLocal
             return false;
         } elseif (file_exists($json)) {
             $settings = self::readIniJson();
+            $settings = $settings->iteratorKeys();
         } else {
             $settings = array();
         }
 
         $all = true;
         foreach (self::$INI_SETTINGS as $key) {
-            if (!isset($settings[$key])) {
+            if (!in_array($key, $settings)) {
                 $all = false;
                 break;
             }
@@ -221,6 +222,9 @@ class CoreLocal
         $json = array();
         foreach ($php as $key => $val) {
             $json[$key] = $val;
+        }
+        if (!class_exists('JsonLib')) {
+            include(dirname(__FILE__) . '/../JsonLib.php');
         }
 
         return JsonLib::prettyJSON(json_encode($json));
