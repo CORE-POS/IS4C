@@ -200,12 +200,13 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $dbc->selectDB($this->config->get('OP_DB'));
         $model = new PurchaseOrderItemsModel($dbc);
         $model->orderID($this->id);
+        $re_date = FormLib::get('re-date', false);
         for ($i=0; $i<count($this->sku); $i++) {
             $model->sku($this->sku[$i]);
             $model->load();
             $model->receivedQty($this->qty[$i]);
             $model->receivedTotalCost($model->receivedQty()*$model->unitCost());
-            if ($model->receivedDate() === null) {
+            if ($model->receivedDate() === null || $re_date) {
                 $model->receivedDate(date('Y-m-d H:i:s'));
             }
             $model->save();
@@ -497,6 +498,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             <p>
                 <button type="submit" class="btn btn-default btn-core">Receive Order</button>
                 <button type="reset" class="btn btn-default btn-reset">Reset</button>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <label>Update Received Date <input type="checkbox" name="re-date" value="1" /></label>
             </p>
             </form>';
 

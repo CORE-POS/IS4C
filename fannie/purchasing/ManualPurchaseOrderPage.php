@@ -123,15 +123,6 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
             $units = $caseSize[$i];
             $qty = $cases[$i];
             $unitCost = $total[$i] / $qty / $units;
-            /**
-              Multiple same-SKU records
-              Sum the quantities and costs to merge
-              into a single record
-            */
-            if ($pitem->load()) {
-                $qty += $pitem->receivedQty();
-                $total[$i] += $pitem->receivedTotalCost();
-            }
 
             $pitem->quantity($qty);
             $pitem->caseSize($units);
