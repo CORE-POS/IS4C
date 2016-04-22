@@ -21,8 +21,8 @@ body {
 <b>Logs</b><br />
 Default logs:
 <ul>
-    <li><i>php-errors.log</i> contains PHP errors, warnings, notices, etc depending on error reporting settings for PHP installation.</li>
-    <li><i>queries.log</i> lists failed queries</li>
+    <li><i>debug_lane.log</i> contains failed queries, PHP errors, warnings, notices, etc depending on error reporting settings for PHP installation.</li>
+    <li><i>lane.log</i> contains informational logging</li>
 </ul>
 <div class="alert"><?php InstallUtilities::checkWritable('../log/php-errors.log'); ?></div>
 <div class="alert"><?php InstallUtilities::checkWritable('../log/queries.log'); ?></div>

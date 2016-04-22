@@ -1604,9 +1604,7 @@ class SQLManager
 
     /**
       Assign a query log
-      @param [mixed] $log
-        - an [object] implementing the PSR3 log interface
-        - a [string] filename
+      @param [mixed] [object] implementing the PSR3 log interface
     */
     public function setQueryLog($log)
     {
@@ -1624,16 +1622,6 @@ class SQLManager
             $this->QUERY_LOG->debug($str);
 
             return true;
-        } elseif (is_string($this->QUERY_LOG)) {
-            $fptr = @fopen($this->QUERY_LOG, 'a');
-            if ($fptr) {
-                fwrite($fptr, date('r') . ': ' . $str);
-                fclose($fptr);
-
-                return true;
-            } else {
-                return false;
-            }
         }
 
         return false;

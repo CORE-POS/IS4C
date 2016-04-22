@@ -214,8 +214,8 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
 
     $config = FannieConfig::factory();
     $logger = new FannieLogger();
-    FannieDispatch::setLogger($logger);
-    FannieDispatch::setErrorHandlers();
+    COREPOS\common\ErrorHandler::setLogger($logger);
+    COREPOS\common\ErrorHandler::setErrorHandlers();
 
     // prepopulate autoloader
     $preload = FannieAPI::listModules('FannieTask');
