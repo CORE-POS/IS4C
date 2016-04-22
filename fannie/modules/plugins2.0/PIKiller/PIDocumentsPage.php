@@ -45,7 +45,7 @@ class PIDocumentsPage extends PIKillerPage {
         echo '<tr><td>';
 
         echo '<iframe width="90%" height="300"
-            src="/cgi-bin/docfile/index.cgi?memID='.$this->id.'"
+            src="http://key:8888/cgi-bin/docfile/index.cgi?memID='.$this->id.'"
             style="border: 0px;">
         </iframe>';
 
