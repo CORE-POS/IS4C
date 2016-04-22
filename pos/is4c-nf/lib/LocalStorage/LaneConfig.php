@@ -62,7 +62,7 @@ class LaneConfig
         if (self::$instance === null) {
             self::$instance = new COREPOS\common\cache\file\CacheItemPool('lane.config.cache');
         }
-        $item = self::$instance->get($key);
+        $item = self::$instance->getItem($key);
         $item->set($val);
         self::$instance->save($item);
     }
