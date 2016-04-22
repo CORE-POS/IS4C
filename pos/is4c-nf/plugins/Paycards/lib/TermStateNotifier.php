@@ -57,6 +57,18 @@ class TermStateNotifier extends Notifier
             case 'cashback':
                 return $ret.'Cash<br />Back</div>';
                 break;
+            case 'DCDC':
+                return $ret.'DC';
+                break;
+            case 'DCCC':
+                return $ret.'CC';
+                break;
+            case 'DCEF':
+                return $ret.'EF';
+                break;
+            case 'DCEC':
+                return $ret.'EC';
+                break;
         }
 
         return '';

@@ -119,6 +119,9 @@ class SigTermCommands extends Parser
             $res = $db->execute($prep, array(CoreLocal::get('laneno')));
 
             return true;
+        } elseif (substr($str, 0, 7) == "TERM:DC") { 
+            CoreLocal::set('ccTermState', substr($str, -4));
+            return true;
         } else if (substr($str,0,5) == "TERM:") {
             CoreLocal::set("CacheCardType",substr($str,5));
             switch(CoreLocal::get('CacheCardType')) {

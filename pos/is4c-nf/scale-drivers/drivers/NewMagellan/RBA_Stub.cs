@@ -166,23 +166,20 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         return ret;
     }
 
+    private void showPaymentScreen()
+    {
+        WriteMessageToDevice(GetCardType());
+        Thread.Sleep(1000);
+        char fs = (char)0x1c;
+        string buttons = "Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+        WriteMessageToDevice(UpdateScreenMessage(buttons));
+    }
+
     // main read loop
     override public void Read()
     {
-        WriteMessageToDevice(OfflineMessage());
-        // enable ebt cash
-        //WriteMessageToDevice(WriteConfigMessage("11", "3", EBT_CA));
-        // enable ebt food
-        //WriteMessageToDevice(WriteConfigMessage("11", "4", EBT_FS));
-        // mute beep volume
-        //WriteMessageToDevice(WriteConfigMessage("7", "14", "5"));
-        // new style save/restore state
-        //WriteMessageToDevice(WriteConfigMessage("7", "15", "1"));
-        // do not show messages between screens
-        //WriteMessageToDevice(WriteConfigMessage("7", "1", "0"));
-        //WriteMessageToDevice(WriteConfigMessage("7", "9", "1"));
-        WriteMessageToDevice(OnlineMessage());
-        WriteMessageToDevice(GetCardType());
+        showPaymentScreen();
+        System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
 
         ArrayList bytes = new ArrayList();
         while (SPH_Running) {
@@ -215,10 +212,13 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                     byte[] buffer = new byte[bytes.Count];
                     for (int i=0; i<bytes.Count; i++) {
                         buffer[i] = (byte)((int)bytes[i] & 0xff);
+                        System.Console.Write(buffer[i] + " ");
                     }
-                    // deal with message, clear arraylist for the
-                    // next one
-                    HandleMessageFromDevice(buffer);
+                    if (Choice(enc.GetString(buffer))) {
+                        WriteMessageToDevice(SimpleMessageScreen("Waiting for total"));
+                    } else {
+                        showPaymentScreen();
+                    }
                     bytes.Clear();
                 }
             } catch (TimeoutException) {
@@ -233,6 +233,40 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         if (this.verbose_mode > 0) {
             System.Console.WriteLine("Crashed?");
         }
+    }
+
+    private bool Choice(string str)
+    {
+        System.Console.WriteLine(str);
+        bool ret = false;
+        if (str.Substring(1,4) == "24.0") {
+            switch (str.Substring(5,1)) {
+                case "A":
+                    // debit
+                    ret = true;
+                    parent.MsgSend("TERM:DCDC");
+                    break;
+                case "B":
+                    // credit
+                    ret = true;
+                    parent.MsgSend("TERM:DCCC");
+                    break;
+                case "C":
+                    // ebt food
+                    parent.MsgSend("TERM:DCEF");
+                    ret = true;
+                    break;
+                case "D":
+                    // ebt cash
+                    parent.MsgSend("TERM:DCEC");
+                    ret = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return ret;
     }
 
     /**

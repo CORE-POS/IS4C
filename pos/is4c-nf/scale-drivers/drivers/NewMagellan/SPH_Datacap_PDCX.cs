@@ -46,6 +46,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
     protected int LISTEN_PORT = 8999; // acting as a Datacap stand-in
     protected short CONNECT_TIMEOUT = 60;
     private bool log_xml = true;
+    private RBA_Stub rba = null;
 
     public SPH_Datacap_PDCX(string p) : base(p)
     { 
@@ -56,6 +57,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             device_identifier = parts[0];
             com_port = parts[1];
         }
+        rba = new RBA_Stub("COM"+com_port);
     }
 
     /**
@@ -71,6 +73,10 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             InitPDCX();
         }
         ax_control.CancelRequest();
+        if (rba != null) {
+            rba.SetParent(this.parent);
+            rba.stubStart();
+        }
 
         return true;
     }
@@ -101,6 +107,10 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                             bytes_read = stream.Read(buffer, 0, buffer.Length);
                             message += System.Text.Encoding.ASCII.GetString(buffer, 0, bytes_read);
                         } while (stream.DataAvailable);
+
+                        if (rba != null) {
+                            rba.stubStop();
+                        }
 
                         message = GetHttpBody(message);
                         message = message.Replace("{{SecureDevice}}", this.device_identifier);
@@ -181,6 +191,9 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         switch(msg) {
             case "termReset":
             case "termReboot":
+                if (rba != null) {
+                    rba.stubStop();
+                }
                 ax_control.CancelRequest();
                 initDevice();
                 break;
@@ -189,6 +202,9 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             case "termApproved":
                 break;
             case "termSig":
+                if (rba != null) {
+                    rba.stubStop();
+                }
                 GetSignature();
                 break;
             case "termGetType":
