@@ -630,7 +630,7 @@ static public function loadParams()
     foreach ($parameters->find() as $global) {
         $key = $global->param_key();
         $value = $global->materializeValue();
-        CoreLocal::set($key, $value);
+        CoreLocal::set($key, $value, true);
     }
 
     // apply store-specific settings next
@@ -641,7 +641,7 @@ static public function loadParams()
     foreach ($parameters->find() as $local) {
         $key = $local->param_key();
         $value = $local->materializeValue();
-        CoreLocal::set($key, $value);
+        CoreLocal::set($key, $value, true);
     }
 
     // apply lane-specific settings last
@@ -652,7 +652,7 @@ static public function loadParams()
     foreach ($parameters->find() as $local) {
         $key = $local->param_key();
         $value = $local->materializeValue();
-        CoreLocal::set($key, $value);
+        CoreLocal::set($key, $value, true);
     }
 }
 

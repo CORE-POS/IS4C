@@ -24,6 +24,9 @@
 if (!class_exists("LocalStorage")) {
     include_once(realpath(dirname(__FILE__).'/LocalStorage.php'));
 }
+if (!class_exists('LaneConfig')) {
+    include(dirname(__FILE__) . '/LaneConfig.php');
+}
 
 /**
   @class CoreLocal
@@ -56,6 +59,7 @@ class CoreLocal
         } else {
             self::$storage_object = new SessionStorage();
         }
+        LaneConfig::clear();    
     }
 
     /**
@@ -68,7 +72,11 @@ class CoreLocal
             self::init();
         }
 
-        return self::$storage_object->get($key);
+        if (LaneConfig::has($key)) {
+            return LaneConfig::get($key);
+        } else {
+            return self::$storage_object->get($key);
+        }
     }
 
     /**
@@ -84,8 +92,12 @@ class CoreLocal
         if (self::$storage_object === null) {
             self::init();
         }
-
-        return self::$storage_object->set($key, $val, $immutable);
+        
+        if ($immutable) {
+            LaneConfig::set($key, $val);
+        } else {
+            return self::$storage_object->set($key, $val);
+        }
     }
 
     /**
@@ -106,7 +118,7 @@ class CoreLocal
     */
     private static function validateJsonIni()
     {
-        $json = dirname(__FILE__) . '/../../ini.json');
+        $json = dirname(__FILE__) . '/../../ini.json';
         if (!file_exists($json) && !is_writable($json)) {
             return false;
         } elseif (file_exists($json)) {
@@ -160,7 +172,7 @@ class CoreLocal
                 // eventually these settings should be
                 // ignored
             }
-            self::set($key, $value);
+            self::set($key, $value, true);
         }
     }
 
@@ -269,11 +281,7 @@ class CoreLocal
     */
     public static function isImmutable($key)
     {
-        if (self::$storage_object === null) {
-            self::init();
-        }
-
-        return self::$storage_object->isImmutable($key);
+        return LaneConfig::has($key);
     }
 
     /**
