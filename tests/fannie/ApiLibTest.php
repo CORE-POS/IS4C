@@ -193,15 +193,6 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         DTrans::getTransNo(FannieDB::get(FannieConfig::config('TRANS_DB')));
     }
 
-    public function testDispatch()
-    {
-        $logger = new FannieLogger();
-        FannieDispatch::setLogger($logger);
-        FannieDispatch::errorHandler(1, 'foo');
-        FannieDispatch::exceptionHandler(new Exception('foo'));
-        FannieDispatch::catchFatal();
-    }
-
     public function testMargin()
     {
         $this->assertEquals(108, COREPOS\Fannie\API\item\Margin::adjustedCost(100, 0.10, 0.20));
