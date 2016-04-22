@@ -77,12 +77,12 @@ class StatementsPluginBusiness extends FannieRESTfulPage
         $transR = $dbc->execute($transP, $trans_args);
 
         $arRows = array();
-        while ($w = $dbc->fetch_row($transR)) {
-            if (!isset($arRows[$w['card_no']])) {
-                $arRows[$w['card_no']] = array();
+        while ($row = $dbc->fetch_row($transR)) {
+            if (!isset($arRows[$row['card_no']])) {
+                $arRows[$row['card_no']] = array();
             }
-            $arRows[$w['card_no']][] = $w;
-            $date = explode(' ',$w['tdate']);
+            $arRows[$row['card_no']][] = $row;
+            $date = explode(' ',$row['tdate']);
             $date_id = date('Ymd', strtotime($date[0]));
         }
 
@@ -114,36 +114,36 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                 if ($info['charges'] != 0) {
                     $found_charge = true;
                 }
-                $dt = strtotime($info['tdate']);
+                $tstamp = strtotime($info['tdate']);
                 $args = array(
-                    date('Y-m-d 00:00:00', $dt),
-                    date('Y-m-d 23:59:59', $dt),
+                    date('Y-m-d 00:00:00', $tstamp),
+                    date('Y-m-d 23:59:59', $tstamp),
                     $info['trans_num'],
                     $info['card_no'],
                 );
                 if ($info['timespan'] == 'TODAY') {
-                    $r = $dbc->execute($todayP, $args);
+                    $res = $dbc->execute($todayP, $args);
                 } else {
-                    $r = $dbc->execute($detailsP, $args);
+                    $res = $dbc->execute($detailsP, $args);
                 }
-                while ($w = $dbc->fetch_row($r)) {
-                    $tn = $w['trans_num'];
-                    if (!isset($details[$w['card_no']])) {
-                        $details[$w['card_no']] = array();
+                while ($row = $dbc->fetch_row($res)) {
+                    $trans_num = $row['trans_num'];
+                    if (!isset($details[$row['card_no']])) {
+                        $details[$row['card_no']] = array();
                     }
-                    if (!isset($details[$w['card_no']][$tn])) {
-                        $details[$w['card_no']][$tn] = array();
+                    if (!isset($details[$row['card_no']][$trans_num])) {
+                        $details[$row['card_no']][$trans_num] = array();
                     }
-                    $details[$w['card_no']][$tn][] = $w['description'];
+                    $details[$row['card_no']][$trans_num][] = $row['description'];
                 }
             }
             if ($found_charge) {
                 $actual = array();
-                $i=0;
-                while ($arRows[$card_no][$i]['charges'] == 0) {
-                    $i++;
+                $num=0;
+                while ($arRows[$card_no][$num]['charges'] == 0) {
+                    $num++;
                 }
-                for ($i; $i<count($arRows[$card_no]); $i++) {
+                for ($i=$num; $i<count($arRows[$card_no]); $i++) {
                     $actual[] = $arRows[$card_no][$i];
                 }
                 $arRows[$card_no] = $actual;
