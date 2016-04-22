@@ -32,6 +32,17 @@ class ErrorHandler
 {
     private static $logger;
 
+    /**
+      The @ error suppression operator is normally
+      ignored by logging but if an error REALLY merits
+      suppression it can be marked down here.
+      Format:
+      [filename]-[line#]-[error type]
+    */
+    private static $ignore = array(
+        'MiscLib.php-116-2' => true,
+    );
+
     static public function setLogger($l)
     {
         self::$logger = $l;
@@ -43,11 +54,13 @@ class ErrorHandler
     */
     static public function errorHandler($errno, $errstr, $errfile='', $errline=0, $errcontext=array())
     {
-        $msg = $errstr . ' Line '
-                . $errline
-                . ', '
-                . $errfile;
-        self::$logger->debug($msg);
+        if (!isset(self::$ignore[basename($errfile) . '-' . $errline . '-' . $errno])) {
+            $msg = $errstr . ' Line '
+                    . $errline
+                    . ', '
+                    . $errfile;
+            self::$logger->debug($msg);
+        }
 
         return true;
     }
