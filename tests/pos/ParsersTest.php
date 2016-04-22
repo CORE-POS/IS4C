@@ -105,7 +105,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     function testCcMenu()
     {
         $plugins = CoreLocal::get('PluginList');
-        CoreLocal::set('PluginList', array('Paycards'));
+        CoreLocal::set('PluginList', array('Paycards'), true);
         $obj = new CCMenu();
         $this->assertEquals(true, $obj->check('CC'));
         $this->assertEquals('QM1', $obj->parse('CC'));
@@ -376,7 +376,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $obj->parse('DDD');
         $this->assertEquals('/DDDReason.php', substr($out['main_frame'], -14));
 
-        CoreLocal::set('SecuritySR', 21);
+        CoreLocal::set('SecuritySR', 21, true);
         $obj->check('MG');
         $out = $obj->parse('MG');
         $this->assertEquals('=SusResAdminLogin', substr($out['main_frame'], -17));
@@ -579,8 +579,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $m->parse('1ID');
         $this->assertEquals('/memlist.php?idSearch=1', substr($out['main_frame'], -23));
         CoreLocal::set('memberID', 1);
-        CoreLocal::set('defaultNonMem', 99999);
-        CoreLocal::set('RestrictDefaultNonMem', 1);
+        CoreLocal::set('defaultNonMem', 99999, true);
+        CoreLocal::set('RestrictDefaultNonMem', 1, true);
         $out = $m->parse('99999ID');
         $this->assertNotEquals(0, strlen($out['output']));
         CoreState::memberReset();
@@ -600,7 +600,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     function testDonationKey()
     {
         $d = new DonationKey();
-        CoreLocal::set('roundUpDept', 1);
+        CoreLocal::set('roundUpDept', 1, true);
         $this->assertEquals(true, $d->check('RU'));
         $this->assertEquals(true, $d->check('2RU'));
         $dbc = Database::tDataConnect();
@@ -651,7 +651,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('RF100', CoreLocal::get('departmentAmount'));
         $this->assertInternalType('array', CoreLocal::get('SpecialDeptMap'));
         CoreLocal::set('refundComment', '');
-        CoreLocal::set('SecurityRefund', 21);
+        CoreLocal::set('SecurityRefund', 21, true);
         $out = $d->parse('100DP10');
         $this->assertEquals('=RefundAdminLogin', substr($out['main_frame'], -17));
         CoreLocal::set('SecurityRefund', 0);

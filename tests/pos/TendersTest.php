@@ -226,26 +226,26 @@ class TendersTest extends PHPUnit_Framework_TestCase
     function testGiftCert()
     {
         $obj = new GiftCertificateTender('TC', 1);
-        CoreLocal::set('enableFranking', 1);
+        CoreLocal::set('enableFranking', 1, true);
         CoreLocal::set('msgrepeat', 0);
         $ret = $obj->preReqCheck();
         $this->assertEquals(true, $ret !== true);
-        CoreLocal::set('enableFranking', 0);
+        CoreLocal::set('enableFranking', 0, true);
         CoreLocal::set('msgrepeat', 0);
     }
 
     function testCheck()
     {
         $obj = new CheckTender('CK', 1);
-        CoreLocal::set('enableFranking', 1);
+        CoreLocal::set('enableFranking', 1, true);
         CoreLocal::set('msgrepeat', 0);
         $ret = $obj->preReqCheck();
         $this->assertEquals(true, $ret !== true);
-        CoreLocal::set('enableFranking', 0);
+        CoreLocal::set('enableFranking', 0, true);
         CoreLocal::set('msgrepeat', 0);
 
         CoreLocal::set('isMember', 1);
-        CoreLocal::set('dollarOver', 0);
+        CoreLocal::set('dollarOver', 0, true);
         CoreLocal::set('amtdue', 0.50);
         $this->assertNotEquals(0, strlen($obj->ErrorCheck()));
         CoreLocal::set('isMember', 0);
