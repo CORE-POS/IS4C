@@ -380,7 +380,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $obj->check('MG');
         $out = $obj->parse('MG');
         $this->assertEquals('=SusResAdminLogin', substr($out['main_frame'], -17));
-        CoreLocal::set('SecuritySR', 0);
+        CoreLocal::set('SecuritySR', 0, true);
         $obj->check('MG');
         $out = $obj->parse('MG');
         $this->assertEquals('/adminlist.php', substr($out['main_frame'], -14));
@@ -654,7 +654,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('SecurityRefund', 21, true);
         $out = $d->parse('100DP10');
         $this->assertEquals('=RefundAdminLogin', substr($out['main_frame'], -17));
-        CoreLocal::set('SecurityRefund', 0);
+        CoreLocal::set('SecurityRefund', 0, true);
         $out = $d->parse('100DP10');
         $this->assertEquals('/refundComment.php', substr($out['main_frame'], -18));
         CoreLocal::set('refund', 0);
