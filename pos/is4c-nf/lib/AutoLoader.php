@@ -314,6 +314,9 @@ if (file_exists(dirname(__FILE__) . '/../../../vendor/autoload.php')) {
     include_once(dirname(__FILE__) . '/../../../vendor/autoload.php');
 }
 
+COREPOS\common\ErrorHandler::setLogger(new LaneLogger());
+COREPOS\common\ErrorHandler::setErrorHandlers();
+
 /** 
   Internationalization 
   setlocale() probably always exists

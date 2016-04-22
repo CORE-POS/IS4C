@@ -24,64 +24,6 @@
 class FannieDispatch 
 {
 
-    private static $logger;
-
-    static public function setLogger($l)
-    {
-        self::$logger = $l;
-    }
-
-    /**
-      Error handler function. Can register as PHP's error
-      handling function and use Fannie's output format
-    */
-    static public function errorHandler($errno, $errstr, $errfile='', $errline=0, $errcontext=array())
-    {
-        $msg = $errstr . ' Line '
-                . $errline
-                . ', '
-                . $errfile;
-        self::$logger->debug($msg);
-
-        return true;
-    }
-
-    /**
-      Exception handler function. Can register as PHP's exception
-      handling function and use Fannie's output format
-    */
-    static public function exceptionHandler($exception)
-    {
-        $msg = $exception->getMessage()
-                . " Line "
-                . $exception->getLine()
-                . ", "
-                . $exception->getFile();
-        self::$logger->debug($msg);
-    }
-    
-    /**
-      Try to print a call stack on fatal errors
-      if the environment / configuration permits
-    */
-    static public function catchFatal()
-    {
-        $error = error_get_last();
-        if ($error["type"] == E_ERROR) {
-            self::errorHandler($error["type"], $error["message"], $error["file"], $error["line"]);
-            /**
-              Put fatals in the error log as well as the debug log
-              For good measure, put them in STDERR too. Try to
-              ensure somebody notices.
-            */
-            $msg = $error['message']
-                . ' Line ' . $error['line']
-                . ', File ' . $error['file'];
-            self::$logger->error($msg);
-            file_put_contents('php://stderr', $msg, FILE_APPEND);
-        }
-    }
-
     /**
       Lookup custom permissions for a page 
     */
@@ -105,13 +47,6 @@ class FannieDispatch
             bind_textdomain_codeset('messages', 'UTF-8');
             textdomain('messages');
         }
-    }
-
-    static public function setErrorHandlers()
-    {
-        set_error_handler(array('FannieDispatch','errorHandler'));
-        set_exception_handler(array('FannieDispatch','exceptionHandler'));
-        register_shutdown_function(array('FannieDispatch','catchFatal'));
     }
 
     /**
@@ -142,10 +77,10 @@ class FannieDispatch
             }
             $op_db = $config->get('OP_DB');
             $dbc = FannieDB::get($op_db);
-            self::setLogger($logger);
 
             // setup error logging
-            self::setErrorHandlers();
+            COREPOS\common\ErrorHandler::setLogger($logger);
+            COREPOS\common\ErrorHandler::setErrorHandlers();
             // initialize locale & gettext
             self::i18n();
 
