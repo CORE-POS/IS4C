@@ -989,7 +989,6 @@ class MercuryE2E extends BasicCCModule
         $pan = $xml->query('/RStream/TranResponse/AcctNo');
         $resp_name = $xml->query('/RStream/TranResponse/CardholderName');
         $name = $resp_name ? $resp_name : 'Cardholder';
-        $issuer = $xml->query('/RStream/TranResponse/CardType');
         $request->updateCardInfo($pan, $name, $issuer);
 
         switch (strtoupper($xml->query('/RStream/CmdResponse/CmdStatus'))) {
