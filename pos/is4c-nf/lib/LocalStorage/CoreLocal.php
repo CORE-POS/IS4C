@@ -98,10 +98,44 @@ class CoreLocal
     }
 
     /**
+       Check whether ini.json has all required settings
+       If it does not, try to migrate ini.php to ini.json
+       @return
+        - true if all settings present or successful migration
+        - false otherwise
+    */
+    private static function validateJsonIni()
+    {
+        $json = dirname(__FILE__) . '/../../ini.json');
+        if (!file_exists($json) && !is_writable($json)) {
+            return false;
+        } elseif (file_exists($json)) {
+            $settings = self::readIniJson();
+        } else {
+            $settings = array();
+        }
+
+        $all = true;
+        foreach (self::$INI_SETTINGS as $key) {
+            if (!isset($settings[$key])) {
+                $all = false;
+                break;
+            }
+        }
+
+        if ($all) {
+            return true;
+        } else {
+            $jsonStr = self::convertIniPhpToJson();
+            return file_put_contents($json, $jsonStr) ? true : false;
+        }
+    }
+
+    /**
       Load values from an ini file. 
       Will read the first file found from:
-      1. ini.php
-      2. ini.json
+      1. ini.json
+      2. ini.php
     */
     private static function loadIni()
     {
@@ -115,10 +149,10 @@ class CoreLocal
             include(dirname(__FILE__) . '/UnitTestStorage.php');
         }
         $settings = array();
-        if (file_exists(dirname(__FILE__) . '/../../ini.php')) {
-            $settings = self::readIniPhp();
-        } elseif (file_exists(dirname(__FILE__) . '/../../ini.json')) {
+        if (self::validateJsonIni()) {
             $settings = self::readIniJson();
+        } elseif (file_exists(dirname(__FILE__) . '/../../ini.php')) {
+            $settings = self::readIniPhp();
         }
         foreach ($settings as $key => $value) {
             if (!in_array($key, self::$INI_SETTINGS)) {

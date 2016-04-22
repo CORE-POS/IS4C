@@ -2,7 +2,6 @@
 use COREPOS\pos\lib\FormLib;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-include('../ini.php');
 CoreState::loadParams();
 include('InstallUtilities.php');
 ?>
@@ -20,8 +19,8 @@ body {
 <div id="wrapper">
 <h2>IT CORE Lane Installation: Scanning Options</h2>
 
+<div class="alert"><?php InstallUtilities::checkWritable('../ini.json', False, 'JSON'); ?></div>
 <div class="alert"><?php InstallUtilities::checkWritable('../ini.php', False, 'PHP'); ?></div>
-<div class="alert"><?php InstallUtilities::checkWritable('../ini-local.php', True, 'PHP'); ?></div>
 
 <form action=scanning.php method=post>
 <table id="install" border=0 cellspacing=0 cellpadding=4>
@@ -341,7 +340,7 @@ $sconf = CoreLocal::get('SpecialDeptMap');
 /**
   If a mapping exists and the new table is available,
   migrate existing settings to the table and remove
-  the setting from ini and/or ini-local
+  the setting from ini 
 */
 if (is_array($sconf) && $specialDeptMapExists) {
     $mapModel->initTable($sconf);

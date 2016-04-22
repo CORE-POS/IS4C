@@ -2,7 +2,6 @@
 use COREPOS\pos\lib\FormLib;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-include('../ini.php');
 CoreState::loadParams();
 include('InstallUtilities.php');
 ?>
@@ -18,8 +17,8 @@ include('InstallUtilities.php');
 <div id="wrapper">    
 <h2>IT CORE Lane Installation: Additional Configuration (Extras)</h2>
 
+<div class="alert"><?php InstallUtilities::checkWritable('../ini.json', False, 'JSON'); ?></div>
 <div class="alert"><?php InstallUtilities::checkWritable('../ini.php', False, 'PHP'); ?></div>
-<div class="alert"><?php InstallUtilities::checkWritable('../ini-local.php', True, 'PHP'); ?></div>
 
 <form action=extra_config.php method=post>
 <table id="install" border=0 cellspacing=0 cellpadding=4>
