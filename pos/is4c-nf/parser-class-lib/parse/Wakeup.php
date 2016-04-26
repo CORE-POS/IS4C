@@ -32,7 +32,7 @@ class Wakeup extends Parser {
 
     function parse($str){
         $ret = $this->default_json();
-        $ret['udpmsg'] = $str == 'WAKEUP' ? 'rePoll' : 'reBoot';
+        $ret['udpmsg'] = $str == 'WAKEUP' ? 'wakeup' : 'reBoot';
         return $ret;
     }
 

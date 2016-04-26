@@ -91,15 +91,16 @@ public class SPH_Magellan_Scale : SerialPortHandler
             scale_state = WeighState.None;
             GetStatus();
             */
+        } else if (msg == "wakeup") {
+            scale_state = WeighState.None;
+            GetStatus();
         } else if (msg == "reBoot") {
             scale_state = WeighState.None;
-            /*
             lock (writeLock) {
                 sp.Write("S10\r");
-                Thread.Sleep(1500);
+                Thread.Sleep(5000);
                 sp.Write("S14\r");
             }
-            */
         }
     }
 
