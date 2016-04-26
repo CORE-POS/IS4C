@@ -511,7 +511,12 @@ class VendorIndexPage extends FannieRESTfulPage
         </select>
         </p>
         <p id="contentarea">
-        <?php if ($vid) { echo $this->getVendorInfo($vid); } ?>
+        <?php 
+        if ($vid) { 
+            echo $this->getVendorInfo($vid); 
+            $this->addOnloadCommand("\$('.delivery').change(vendorEditor.saveDelivery);\n");
+        } 
+        ?>
         </p>
         <?php
 
