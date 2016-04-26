@@ -85,7 +85,8 @@ class DepartmentEditor extends FannieRESTfulPage
             . '<label class="control-label col-sm-2">Dept #</label>'
             . '<label class="control-label col-sm-4">Name</label>'
             . '<label class="control-label col-sm-2">Tax</label>'
-            . '<label class="control-label col-sm-2">FS</label>'
+            . '<label class="control-label col-sm-1">FS</label>'
+            . '<label class="control-label col-sm-1">WIC</label>'
             . '</div>';
         $ret .= '<div class="row">';
         $ret .= '<div class="col-sm-2">';
@@ -106,8 +107,11 @@ class DepartmentEditor extends FannieRESTfulPage
             }
         }
         $ret .= "</select></div>";
-        $ret .= "<div class=\"col-sm-2\"><input type=checkbox value=1 name=fs id=deptfs "
+        $ret .= "<div class=\"col-sm-1\"><input type=checkbox value=1 name=fs id=deptfs "
             . ($dept->dept_fs()==1?'checked':'') . " class=\"checkbox\" /></div>";
+        $ret .= "</div>";
+        $ret .= "<div class=\"col-sm-1\"><input type=checkbox value=1 name=wic id=deptwic "
+            . ($dept->dept_wicable()==1?'checked':'') . " class=\"checkbox\" /></div>";
         $ret .= "</div>";
         $ret .= '<div class="row">'
             . '<label class="control-label col-sm-2">Discount</label>'
@@ -186,6 +190,7 @@ class DepartmentEditor extends FannieRESTfulPage
         $model->dept_name(FormLib::get('name', ''));
         $model->dept_tax(FormLib::get('tax', 0));
         $model->dept_fs(FormLib::get('fs', 0));
+        $model->dept_wicable(FormLib::get('wic', 0));
         $disc = FormLib::get('disc');
         if ($disc == 1 || $disc == 2) {
             $model->dept_discount(1);
