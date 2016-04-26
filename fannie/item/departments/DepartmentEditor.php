@@ -109,7 +109,6 @@ class DepartmentEditor extends FannieRESTfulPage
         $ret .= "</select></div>";
         $ret .= "<div class=\"col-sm-1\"><input type=checkbox value=1 name=fs id=deptfs "
             . ($dept->dept_fs()==1?'checked':'') . " class=\"checkbox\" /></div>";
-        $ret .= "</div>";
         $ret .= "<div class=\"col-sm-1\"><input type=checkbox value=1 name=wic id=deptwic "
             . ($dept->dept_wicable()==1?'checked':'') . " class=\"checkbox\" /></div>";
         $ret .= "</div>";
