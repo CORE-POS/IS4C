@@ -35,6 +35,7 @@ class EditBatchPage extends FannieRESTfulPage
     protected $auth_classes = array('batches','batches_audited');
     protected $title = 'Sales Batches Tool';
     protected $header = 'Sales Batches Tool';
+    protected $enable_linea = true;
 
     public $description = '[Sales Batches] is the primary tool for creating, editing, and managing 
     sale and price change batches.';
