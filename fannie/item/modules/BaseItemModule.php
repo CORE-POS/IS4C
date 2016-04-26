@@ -303,6 +303,7 @@ class BaseItemModule extends ItemModule
                 $rowItem['foodstamp'] = $dmodel->dept_fs();
                 $rowItem['discount'] = $dmodel->dept_discount();
                 $rowItem['line_item_discountable'] = $dmodel->line_item_discount();
+                $rowItem['wicable'] = $dmodel->dept_wicable();
             }
 
             foreach ($stores as $id => $obj) {
@@ -663,7 +664,7 @@ HTML;
                 </label>
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 <label>WIC
-                <input type="checkbox" value="{{store_id}}" name="prod-wicable[]" 
+                <input type="checkbox" value="{{store_id}}" id="wic{{store_id}}" name="prod-wicable[]" 
                     class="prod-wicable-checkbox syncable-checkbox"
                     ' . ($rowItem['wicable'] == 1 ? 'checked' : '') . '  />
                 </label>
@@ -828,6 +829,11 @@ HTML;
                                 $('#FS'+store_id).prop('checked',true);
                             else{
                                 $('#FS'+store_id).prop('checked', false);
+                            }
+                            if (data.wic) {
+                                $('#wic'+store_id).prop('checked', true);
+                            } else {
+                                $('#wic'+store_id).prop('checked', false);
                             }
                             if (data.nodisc && !data.line) {
                                 $('#discount-select'+store_id).val(0);
@@ -1364,6 +1370,7 @@ HTML;
                 $json['fs'] = $dModel->dept_fs() ? true : false;
                 $json['nodisc'] = $dModel->dept_discount() ? false : true;
                 $json['line'] = $dModel->line_item_discount() ? true : false;
+                $json['wic'] = $dModel->dept_wicable() ? true : false;
             }
         } elseif (FormLib::get('vendorChanged') !== '') {
             $v = new VendorsModel($db);
