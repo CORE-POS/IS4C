@@ -208,9 +208,13 @@ class GumLoanPayoffPage extends FannieRESTfulPage
         $ssn = 'Unknown';
         if ($this->taxid->load()) {
             $ssn = 'xxx-xx-' . $this->taxid->maskedTaxIdentifier();
+            $key = file_get_contents('/path/to/key');
+            $privkey = openssl_pkey_get_private($key);
+            $try = openssl_private_decrypt($this->taxid->encryptedTaxIdentifier(), $decrypted, $privkey);
+            if ($try) $ssn = $decrypted;
         }
         $form =  new GumTaxFormTemplate($this->custdata, $this->meminfo, $ssn, date('Y'), $fields, $this->loan->accountNumber());
-        $ret .= $form->renderAsPDF($pdf, 105);
+        $ret = $form->renderAsPDF($pdf, 105);
 
         $check = new GumCheckTemplate($this->custdata, $this->meminfo, $loan_info['balance'], 'Loan Repayment', $this->check_info->checkNumber());
         $check->renderAsPDF($pdf);

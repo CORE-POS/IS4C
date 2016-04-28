@@ -33,6 +33,67 @@ class GumTaxFormTemplate
 
     private $my_federal_id = 'xx-xxxxxxx';
     private $my_state_id = 'xxxxxx';
+
+    public function __construct($custdata, $meminfo, $tax_id, $tax_year, $fields, $account_number='')
+    {
+        global $FANNIE_PLUGIN_SETTINGS;
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
+        $settings = new GumSettingsModel($dbc);
+
+        $this->tax_id = $tax_id;
+        $this->tax_year = $tax_year;
+        $this->fields = $fields;
+        $this->account_number = $account_number;
+
+        $this->their_address[] = $custdata->FirstName() . ' ' . $custdata->LastName();
+        $this->their_address[] = $meminfo->street();
+        $this->their_address[] = $meminfo->city() . ', ' . $meminfo->state() . ' ' . $meminfo->zip();
+
+        $settings->key('storeFederalID');
+        if ($settings->load()) {
+            $this->my_federal_id = $settings->value();
+        }
+
+        $settings->key('storeStateID');
+        if ($settings->load()) {
+            $this->my_state_id = $settings->value();
+        }
+
+        $this->my_address[0] = 'Name of Co-op';
+        $settings->key('storeName');
+        if ($settings->load()) {
+            $this->my_address[0] = $settings->value();
+        }
+        $this->my_address[1] = 'Street Address';
+        $settings->key('storeAddress');
+        if ($settings->load()) {
+            $this->my_address[1] = $settings->value();
+        }
+        $this->my_address[2] = '';
+        $settings->key('storeCity');
+        if ($settings->load()) {
+            $this->my_address[2] .= $settings->value() . ', ';
+        } else {
+            $this->my_address[2] .= 'City, ';
+        }
+        $settings->key('storeState');
+        if ($settings->load()) {
+            $this->my_address[2] .= $settings->value() . ' ';
+        } else {
+            $this->my_address[2] .= 'XX ';
+        }
+        $settings->key('storeZip');
+        if ($settings->load()) {
+            $this->my_address[2] .= $settings->value();
+        } else {
+            $this->my_address[2] .= '12345';
+        }
+        $this->my_address[3] = '555-867-5309';
+        $settings->key('storePhone');
+        if ($settings->load()) {
+            $this->my_address[3] = $settings->value();
+        }
+    }
     
     public function renderAsHTML()
     {
