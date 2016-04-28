@@ -149,7 +149,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, $obj->check('WAKEUP'));
 
         $out = $obj->parse('WAKEUP');
-        $this->assertEquals('rePoll', $out['udpmsg']);
+        $this->assertEquals('wakeup', $out['udpmsg']);
     }
 
     function testToggleReceipt()
