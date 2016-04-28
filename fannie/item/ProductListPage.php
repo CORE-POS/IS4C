@@ -228,9 +228,10 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             elem.find('.td_cmd:first .edit-link').show();
             elem.find('.td_cmd:first .save-link').hide();
 
-            var dstr = 'ajax=save&upc='+upc+'&desc='+desc+'&dept='+dept+'&price='+price+'&cost='+cost;
+            var dstr = 'ajax=save&upc='+upc+'&dept='+dept+'&price='+price+'&cost='+cost;
             dstr += '&tax='+tax[1]+'&fs='+fs+'&disc='+disc+'&wgt='+wgt+'&supplier='+supplier+'&local='+local[1];
             dstr += '&brand='+encodeURIComponent(brand);
+            dstr += '&desc='+encodeURIComponent(desc);
             dstr += '&store_id='+store_id;
             $.ajax({
                 url: 'ProductListPage.php',
