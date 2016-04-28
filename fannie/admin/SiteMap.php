@@ -55,6 +55,9 @@ class SiteMap extends FannieRESTfulPage
             if (!$obj->discoverable) {
                 continue;
             }
+            $obj->setConfig($this->config);
+            $obj->setLogger($this->logger);
+            $obj->setConnection($this->connection);
             $reflect = new ReflectionClass($obj);
             $file = $reflect->getFileName();
             if (DIRECTORY_SEPARATOR == '\\') {
