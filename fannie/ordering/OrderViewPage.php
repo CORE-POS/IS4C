@@ -416,12 +416,16 @@ class OrderViewPage extends FannieRESTfulPage
             }
             $ret .= '</select><p />';
         }
-        $ret .= '<b>Store</b>: ';
-        $ret .= '<select id="orderStore" class="form-control input-sm">';
-        $ret .= '<option value="0">Choose...</option>';
-        $stores = new StoresModel($dbc);
-        $ret .= $stores->toOptions($orderModel->storeID());
-        $ret .= '</select>';
+        if ($this->config->get('STORE_MODE') === 'HQ') {
+            $ret .= '<b>Store</b>: ';
+            $ret .= '<select id="orderStore" class="form-control input-sm">';
+            $ret .= '<option value="0">Choose...</option>';
+            $stores = new StoresModel($dbc);
+            $ret .= $stores->toOptions($orderModel->storeID());
+            $ret .= '</select>';
+        } else {
+            $ret .= '<input type="hidden" id="orderStore" value="1" />';
+        }
         $ret .= '</div><div class="col-sm-4 text-right">';
 
         $ret .= "<a href=\"\" class=\"btn btn-default btn-sm done-btn\">Done</a>";
