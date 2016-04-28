@@ -439,7 +439,7 @@ class OrderViewPage extends FannieRESTfulPage
                 (isset($prints[$orderID])?'checked':''),
                 $username,$orderID
             );
-        $ret .= sprintf('<br /><a href="tagpdf.php?oids[]=%d" target="_tags%d">Print Now</a>',
+        $ret .= sprintf('<br /><a href="SpecialOrderTags.php?oids[]=%d" target="_tags%d">Print Now</a>',
                 $orderID,$orderID);
         $ret .= '</div></div>';
 
