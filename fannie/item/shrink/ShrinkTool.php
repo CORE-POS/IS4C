@@ -32,6 +32,7 @@ class ShrinkTool extends FannieRESTfulPage
     protected $title = 'Enter Shrink';
     public $themed = true;
     public $description = '[Shrink Entry] adds items to shrink counts. Duplicates lane functionality to allow backend entry.';
+    public $enable_linea = false;
 
     public function preprocess()
     {
@@ -216,6 +217,7 @@ HTML;
         $ws = $FANNIE_URL . 'ws/';
         $this->add_onload_command("bindAutoComplete('#upc-field', '$ws', 'item');\n");
         $this->add_onload_command("\$('#upc-field').focus();");
+        $this->addOnloadCommand("enableLinea('#upc-field');\n");
 
         return '<form action="' . $_SERVER['PHP_SELF'] . '" method="get">
             <div id="alert-area"></div>

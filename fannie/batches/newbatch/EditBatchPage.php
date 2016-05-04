@@ -1273,6 +1273,7 @@ class EditBatchPage extends FannieRESTfulPage
     
         $ret .= "<input type=hidden id=buttonimgpath value=\"{$FANNIE_URL}src/img/buttons/\" />";
         $this->add_onload_command('$(\'#addItemUPC\').focus()');
+        $this->addOnloadCommand("enableLinea('#addItemUPC');\n");
 
         if ($this->enable_linea) {
             echo '<script type="text/javascript">';
