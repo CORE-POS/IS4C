@@ -76,24 +76,16 @@ class PluSkuReport extends FannieReportPage
             $query .= ' AND s.superID<>0 ';
         } 
         if (count($departments) > 0) {
-            $query .= ' AND p.department IN (';
-            foreach ($departments as $d) {
-                $query .= '?,';
-                $args[] = $d;
-            }
-            $query = substr($query, 0, strlen($query-1)) . ') ';
+            list($inStr, $args) = $dbc->safeInClause($departments, $args);
+            $query .= ' AND p.department IN (' . $inStr . ') ';
         } else {
             $query .= ' AND p.department BETWEEN ? AND ? ';
             $args[] = $deptStart;
             $args[] = $deptEnd;
         }
         if (count($subdepts) > 0) {
-            $query .= ' AND p.subdept IN (';
-            foreach ($subdepts as $d) {
-                $query .= '?,';
-                $args[] = $d;
-            }
-            $query = substr($query, 0, strlen($query-1)) . ') ';
+            list($inStr, $args) = $dbc->safeInClause($subdepts, $args);
+            $query .= ' AND p.subdept IN (' . $inStr . ') ';
         }
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
