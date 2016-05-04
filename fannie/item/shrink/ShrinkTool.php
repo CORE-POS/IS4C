@@ -32,7 +32,7 @@ class ShrinkTool extends FannieRESTfulPage
     protected $title = 'Enter Shrink';
     public $themed = true;
     public $description = '[Shrink Entry] adds items to shrink counts. Duplicates lane functionality to allow backend entry.';
-    public $enable_linea = false;
+    public $enable_linea = true;
 
     public function preprocess()
     {
