@@ -57,7 +57,9 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             device_identifier = parts[0];
             com_port = parts[1];
         }
-        rba = new RBA_Stub("COM"+com_port);
+        if (device_identifier == "INGENICOISC250_MERCURY_E2E") {
+            rba = new RBA_Stub("COM"+com_port);
+        }
     }
 
     /**
@@ -287,6 +289,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
             case "VX805XPI_MERCURY_E2E":
                 return "VX805";
             case "INGENICOISC250":
+            case "INGENICOISC250_MERCURY_E2E":
                 return "ISC250";
             default:
                 return device;

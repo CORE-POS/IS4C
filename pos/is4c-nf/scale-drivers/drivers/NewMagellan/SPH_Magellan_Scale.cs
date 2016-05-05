@@ -87,7 +87,7 @@ public class SPH_Magellan_Scale : SerialPortHandler
             Thread.Sleep(300);
             Beeps(2);
         } else if (msg == "rePoll") {
-            /*
+            /* ignore these commands on purpose
             scale_state = WeighState.None;
             GetStatus();
             */
