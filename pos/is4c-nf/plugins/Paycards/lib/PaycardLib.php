@@ -696,6 +696,13 @@ static private function getTenderConfig($type)
                 'CC',
                 'Credit Card',
             );
+        case 'GIFT':
+        case 'PREPAID':
+            return array(
+                array(CoreLocal::get('PaycardsTenderCodeGift')),
+                'GD',
+                'Gift Card',
+            );
         case 'CREDIT':
         default:
             return array(

@@ -157,7 +157,9 @@ class MercuryGift extends BasicCCModule
             case PaycardLib::PAYCARD_MODE_ADDVALUE:
             case PaycardLib::PAYCARD_MODE_ACTIVATE:
                 $ttl = CoreLocal::get("paycard_amount");
-                PrehLib::deptkey($ttl*100,9020);
+                $dept = CoreLocal::get('PaycardDepartmentGift');
+                $dept = $dept == '' ? 902 : $dept;
+                PrehLib::deptkey($ttl*100, $dept . '0');
                 $resp = CoreLocal::get("paycard_response");    
                 CoreLocal::set("boxMsg","<b>Success</b><font size=-1>
                                            <p>New card balance: $" . $resp["Balance"] . "
@@ -169,7 +171,9 @@ class MercuryGift extends BasicCCModule
                 $amt = "".(-1*(CoreLocal::get("paycard_amount")));
                 $record_id = $this->last_paycard_transaction_id;
                 $charflag = ($record_id != 0) ? 'PT' : '';
-                TransRecord::addFlaggedTender("Gift Card", "GD", $amt, $record_id, $charflag);
+                $tcode = CoreLocal::get('PaycardsTenderCodeGift');
+                $tcode = $tcode == '' ? 'GD' : $tcode;
+                TransRecord::addFlaggedTender("Gift Card", $tcode, $amt, $record_id, $charflag);
                 $resp = CoreLocal::get("paycard_response");
                 CoreLocal::set("boxMsg","<b>Approved</b><font size=-1>
                                            <p>Used: $" . CoreLocal::get("paycard_amount") . "

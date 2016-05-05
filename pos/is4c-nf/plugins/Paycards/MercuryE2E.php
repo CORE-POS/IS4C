@@ -320,7 +320,9 @@ class MercuryE2E extends BasicCCModule
             case PaycardLib::PAYCARD_MODE_ACTIVATE:
                 CoreLocal::set("autoReprint",1);
                 $ttl = CoreLocal::get("paycard_amount");
-                PrehLib::deptkey($ttl*100,9020);
+                $dept = CoreLocal::get('PaycardDepartmentGift');
+                $dept = $dept == '' ? 902 : $dept;
+                PrehLib::deptkey($ttl*100, $dept . '0');
                 $bal = CoreLocal::get('GiftBalance');
                 CoreLocal::set("boxMsg","<b>Success</b><font size=-1>
                                            <p>New card balance: $" . $bal . "

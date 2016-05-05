@@ -163,7 +163,7 @@ messages from POS?',
             'description' => 'Two-letter tender code for EBT Cash transactions',
             'default' => 'EC',
         ),
-        'PaycardsTenderCodeEbtEmv' => array(
+        'PaycardsTenderCodeEmv' => array(
             'label' => 'EMV Tender Code',
             'description' => 'Two-letter tender code for EMV transactions',
             'default' => 'CC',
@@ -187,6 +187,16 @@ messages from POS?',
             'label' => 'American Express-Specific Tender Code',
             'description' => 'Two-letter tender code for American Express transactions. If blank, uses credit or debit code.',
             'default' => '',
+        ),
+        'PaycardsTenderCodeGift' => array(
+            'label' => 'Gift Card Tender Code',
+            'description' => 'Two-letter tender code for gift transactions',
+            'default' => 'GD',
+        ),
+        'PaycardsDepartmentGift' => array(
+            'label' => 'Gift Card Issue Department',
+            'description' => 'Department number used when selling/issuing gift cards',
+            'default' => '902', // historically hardcoded default
         ),
         'MercuryE2ETerminalID' => array(
             'label' => 'Mercury E2E Terminal ID',
