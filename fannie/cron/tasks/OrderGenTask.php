@@ -93,7 +93,7 @@ class OrderGenTask extends FannieTask
         $shP = $dbc->prepare('
             SELECT ' . DTrans::sumQuantity() . '
             FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'dtransactions
-            WHERE tdate > ?
+            WHERE datetime > ?
                 AND upc=?
                 AND store_id=?
                 AND trans_status = \'Z\'
