@@ -240,9 +240,9 @@ class BatchListPage extends FannieRESTfulPage
             $ret .= "<option value=$id>$desc</option>";
         }
         $ret .= "</select></div>";
-        $ret .= '<div class="col-sm-2"><input class="form-control" type=text id=newBatchName name="newName" /></div>';
-        $ret .= '<div class="col-sm-2"><input class="form-control date-field" type=text id=newBatchStartDate name="newStart" /></div>';
-        $ret .= '<div class="col-sm-2"><input class="form-control date-field" type=text id=newBatchEndDate name="newEnd" /></div>';
+        $ret .= '<div class="col-sm-2"><input class="form-control" type=text placeholder="Batch Name" id=newBatchName name="newName" /></div>';
+        $ret .= '<div class="col-sm-2"><input class="form-control date-field" placeholder="Start Date" type=text id=newBatchStartDate name="newStart" /></div>';
+        $ret .= '<div class="col-sm-2"><input class="form-control date-field" placeholder="End Date" type=text id=newBatchEndDate name="newEnd" /></div>';
         $ret .= '<div class="col-sm-2"><select class="form-control" id=newBatchOwner name="newOwner">';
         $ret .= '<option value=""></option>';
         foreach ($owners as $o) {
