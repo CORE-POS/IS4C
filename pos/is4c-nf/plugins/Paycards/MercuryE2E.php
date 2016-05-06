@@ -660,27 +660,27 @@ class MercuryE2E extends BasicCCModule
         $tran_code = '';
         $tran_type = '';
         $card_type = false;
-        if ($prev['transType'] == 'EMVSale') {
+        if ($prev['mode'] == 'EMVSale') {
             $tran_code = 'EMVVoidSale';
             $tran_type = 'EMV';
-        } elseif ($prev['transType'] == 'EMVReturn') {
+        } elseif ($prev['mode'] == 'EMVReturn') {
             $tran_code = 'EMVVoidReturn';
             $tran_type = 'EMV';
-        } elseif ($prev['transType'] == 'NoNSFSale') {
+        } elseif ($prev['mode'] == 'NoNSFSale') {
             $tran_type = 'PrePaid';
             $tran_code = 'VoidSale';
         } else {
             switch ($prev['cardType']) {
                 case 'Credit':
-                    $tran_code = ($prev['transType'] == 'Sale') ? 'VoidSaleByRecordNo' : 'VoidReturnByRecordNo';
+                    $tran_code = ($prev['mode'] == 'Sale') ? 'VoidSaleByRecordNo' : 'VoidReturnByRecordNo';
                     $tran_type = 'Credit';
                     break;
                 case 'Debit':
-                    $tran_code = ($prev['transType'] == 'Sale') ? 'ReturnByRecordNo' : 'SaleByRecordNo';
+                    $tran_code = ($prev['mode'] == 'Sale') ? 'ReturnByRecordNo' : 'SaleByRecordNo';
                     $tran_type = 'Debit';
                     break;
                 case 'EBT':
-                    $tran_code = ($prev['transType'] == 'Sale') ? 'ReturnByRecordNo' : 'SaleByRecordNo';
+                    $tran_code = ($prev['mode'] == 'Sale') ? 'ReturnByRecordNo' : 'SaleByRecordNo';
                     $tran_type = 'EBT';
                     $card_type = $prev['issuer'];
                     break;
@@ -725,14 +725,14 @@ class MercuryE2E extends BasicCCModule
         /**
           Add token and reversal data fields if available
         */
-        if ($prev['xToken']) {
-            $msgXml .= '<RecordNo>' . $prev['xToken'] . '</RecordNo>';
+        if ($prev['token']) {
+            $msgXml .= '<RecordNo>' . $prev['token'] . '</RecordNo>';
         }
-        if ($prev['xProcessorRef']) {
-            $msgXml .= '<ProcessData>' . $prev['xProcessorRef'] . '</ProcessData>';
+        if ($prev['processData']) {
+            $msgXml .= '<ProcessData>' . $prev['processData'] . '</ProcessData>';
         }
-        if ($prev['xAcquirerRef']) {
-            $msgXml .= '<AcqRefData>' . $prev['xAcquirerRef'] . '</AcqRefData>';
+        if ($prev['acqRefData']) {
+            $msgXml .= '<AcqRefData>' . $prev['acqRefData'] . '</AcqRefData>';
         }
         $msgXml .= '
             <AuthCode>' . $prev['xApprovalNumber'] . '</AuthCode>
@@ -1177,6 +1177,7 @@ class MercuryE2E extends BasicCCModule
             if (CoreLocal::get('CacheCardType') == 'EMV') {
                 return '337234005'; // emv
             } else {
+                return '019588466313922';
                 return '118725340908147'; // newer
             }
             //return "395347308=E2ETKN"; // old test ID

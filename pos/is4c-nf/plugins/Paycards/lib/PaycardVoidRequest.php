@@ -70,7 +70,8 @@ class PaycardVoidRequest extends PaycardRequest
                     xProcessorRef as processData,
                     xAcquirerRef AS acqRefData,
                     xApprovalNumber,
-                    transType AS mode
+                    transType AS mode,
+                    cardType
                 FROM PaycardTransactions
                 WHERE dateID=' . $this->today . '
                     AND empNo=' . $this->cashierNo . '
