@@ -326,6 +326,14 @@ class InvCountPage extends FannieRESTfulPage
             FROM ' . DTransactionsModel::selectDlog(date('Y-m-d')) . '
             WHERE upc=?
                 AND store_id=?');
+        $shrink = $this->connection->prepare('
+            SELECT ' . DTrans::sumQuantity() . ' AS qty
+            FROM ' . DTransactionsModel::selectDTrans(date('Y-m-d')) . '
+            WHERE upc=?
+                AND store_id=?
+                AND trans_status=\'Z\'
+                AND register_no <> 99
+                AND emp_no <> 9999');
         $res = $this->connection->execute($prep, array($store, $this->live));
         $ret = '<table class="table table-bordered table-striped">';
         $ret .= '<tr>
@@ -345,6 +353,11 @@ class InvCountPage extends FannieRESTfulPage
             $adj = $this->connection->getValue($today, array($row['upc'], $store));
             if ($adj) {
                 $row['sold'] += $adj;
+                $row['onHand'] -= $adj;
+            }
+            $adj = $this->connection->getValue($shrink, array($row['upc'], $store));
+            if ($adj) {
+                $row['shrunk'] += $adj;
                 $row['onHand'] -= $adj;
             }
             $ret .= sprintf('<tr>

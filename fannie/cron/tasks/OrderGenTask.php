@@ -90,6 +90,15 @@ class OrderGenTask extends FannieTask
                 AND upc=?
                 AND store_id=?
                 AND trans_status <> \'R\'');
+        $shP = $dbc->prepare('
+            SELECT ' . DTrans::sumQuantity() . '
+            FROM ' . $this->config->get('TRANS_DB') . $dbc->sep() . 'dtransactions
+            WHERE tdate > ?
+                AND upc=?
+                AND store_id=?
+                AND trans_status = \'Z\'
+                AND emp_no <> 9999
+                AND register_no <> 99');
         /**
           Look up all items that have a count and
           compare current [estimated] inventory to
@@ -119,6 +128,8 @@ class OrderGenTask extends FannieTask
             }
             $sales = $dbc->getValue($dtP, array($cache['cacheEnd'], $row['upc'], $row['storeID']));
             $cur = $sales ? $cache['onHand'] - $sales : $cache['onHand'];
+            $shrink = $dbc->getValue($shP, array($cache['cacheEnd'], $row['upc'], $row['storeID']));
+            $cur = $shrink ? $cur - $shrink : $cur;
             if ($cur !== false && $cur < $row['par']) {
                 /**
                   Allocate a purchase order to hold this vendors'
