@@ -66,12 +66,11 @@ namespace SPH {
 */
 public class RBA_Stub : SPH_IngenicoRBA_Common 
 {
-    private SerialPort sp = null;
+    new private SerialPort sp = null;
 
     public RBA_Stub(string p)
     {
         this.port = p;
-        this.verbose_mode = 10;
     }
 
     private void initPort()
@@ -98,7 +97,6 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
 
     public void stubStop()
     {
-        System.Console.WriteLine("stop requested");
         SPH_Running = false;
         try {
             sp.Close();
@@ -229,15 +227,10 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                 }
             }
         }
-        
-        if (this.verbose_mode > 0) {
-            System.Console.WriteLine("Crashed?");
-        }
     }
 
     private bool Choice(string str)
     {
-        System.Console.WriteLine(str);
         bool ret = false;
         if (str.Substring(1,4) == "24.0") {
             switch (str.Substring(5,1)) {
@@ -252,13 +245,13 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                     parent.MsgSend("TERM:DCCC");
                     break;
                 case "C":
-                    // ebt food
-                    parent.MsgSend("TERM:DCEF");
+                    // ebt cash
+                    parent.MsgSend("TERM:DCEC");
                     ret = true;
                     break;
                 case "D":
-                    // ebt cash
-                    parent.MsgSend("TERM:DCEC");
+                    // ebt food
+                    parent.MsgSend("TERM:DCEF");
                     ret = true;
                     break;
                 default:

@@ -50,7 +50,6 @@ public class SPH_Datacap_PDCX : SerialPortHandler
 
     public SPH_Datacap_PDCX(string p) : base(p)
     { 
-        verbose_mode = 1;
         device_identifier=p;
         if (p.Contains(":")) {
             string[] parts = p.Split(new char[]{':'}, 2);
@@ -77,6 +76,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         ax_control.CancelRequest();
         if (rba != null) {
             rba.SetParent(this.parent);
+            rba.SetVerbose(this.verbose_mode);
             rba.stubStart();
         }
 
