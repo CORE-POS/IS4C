@@ -39,19 +39,12 @@ class WrappedStorage extends LocalStorage
         return CoreLocal::get($key);
     }
 
-    public function set($key,$val,$immutable=false)
+    public function set($key,$val)
     {
-        return CoreLocal::set($key, $val, $immutable);
-    }
-
-    public function isImmutable($key)
-    {
-        return CoreLocal::isImmutable($key);
-    }
-
-    public function iteratorKeys()
-    {
-        return CoreLocal::iteratorKeys();
+        // WrappedStorage is used to load configuration
+        // values from ini.php. These should be treated
+        // as immutable
+        return CoreLocal::set($key, $val, true);
     }
 }
 

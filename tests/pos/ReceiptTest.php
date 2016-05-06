@@ -345,7 +345,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
         ReceiptLib::endorse('foo');
 
-        CoreLocal::set('dualDrawerMode', 1);
+        CoreLocal::set('dualDrawerMode', 1, true);
         ReceiptLib::freeDrawer(1);
         ReceiptLib::freeDrawer(2);
         $this->assertEquals(0, ReceiptLib::currentDrawer());

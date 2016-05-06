@@ -23,9 +23,7 @@
 
 if (!class_exists("AutoLoader")) include("lib/AutoLoader.php");
 
-CoreLocal::set("parse_chain",'');
-CoreLocal::set("preparse_chain",'');
-CoreLocal::set("postparse_chain",'');
+LaneCache::clear();
 
 AutoLoader::loadMap();
 

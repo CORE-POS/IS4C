@@ -498,7 +498,8 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
       and the cache may be wrong so always requery in
       that case.
     */
-    $cache = CoreLocal::get('MatchingColumnCache');
+    $cacheItem = LaneCache::get('MatchingColumnCache');
+    $cache = $cacheItem->get();
     if (!is_array($cache)) {
         $cache = array();
     }
@@ -531,8 +532,10 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
         $ret .= $col.",";
     }
     $ret = rtrim($ret,",");
+
     $cache[$table_name] = $ret;
-    CoreLocal::set('MatchingColumnCache', $cache);
+    $cacheItem->set($cache);
+    LaneCache::set($cacheItem);
 
     return $ret;
 }

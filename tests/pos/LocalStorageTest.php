@@ -41,18 +41,6 @@ class LocalStorageTest extends PHPUnit_Framework_TestCase
             $this->assertInternalType('array',$get, 'Array test failed for ' . $class);
             $this->assertEquals(array(1, 2), $get, 'Array equality failed for ' . $class);
 
-            $obj->set('imm','imm',True);
-            $get = $obj->get('imm');
-            $this->assertInternalType('string',$get);
-            $this->assertEquals('imm',$get);
-
-            $is = $obj->isImmutable('imm');
-            $isNot = $obj->isImmutable('testArray');
-            $this->assertInternalType('boolean',$is);
-            $this->assertInternalType('boolean',$isNot);
-            $this->assertEquals(True,$is);
-            $this->assertEquals(False,$isNot);
-
             foreach ($obj as $key => $val) {
                 // is iterable
             }

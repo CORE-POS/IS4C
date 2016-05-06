@@ -24,6 +24,9 @@
 if (!defined('CONF_LOADED')) {
     include_once(dirname(__FILE__).'/LocalStorage/conf.php');
 }
+if (!class_exists('LaneCache', false)) {
+    include(dirname(__FILE__) . '/LocalStorage/LaneCache.php');
+}
 
 /**
   @class LibraryClass
@@ -51,11 +54,11 @@ class AutoLoader extends LibraryClass
     static public function loadClass($name)
     {
         global $CORE_LOCAL;
-        $map = CoreLocal::get("ClassLookup");
+        $mapItem = LaneCache::get("ClassLookup");
+        $map = $mapItem->get();
         if (!is_array($map)) {
             // attempt to build map before giving up
-            self::loadMap();
-            $map = CoreLocal::get("ClassLookup");
+            $map = self::loadMap();
             if (!is_array($map)) {
                 return;
             }
@@ -65,8 +68,7 @@ class AutoLoader extends LibraryClass
             // file is missing. 
             // rebuild map to see if the class is
             // gone or the file just moved
-            self::loadMap();
-            $map = CoreLocal::get("ClassLookup");
+            $map = self::loadMap();
             if (!is_array($map)) {
                 return;
             }
@@ -90,8 +92,7 @@ class AutoLoader extends LibraryClass
             // class is unknown
             // rebuild map to see if the definition
             // file has been added
-            self::loadMap();
-            $map = CoreLocal::get("ClassLookup");
+            $map = self::loadMap();
             if (!is_array($map)) {
                 return;
             }
@@ -120,7 +121,11 @@ class AutoLoader extends LibraryClass
         $class_map = array();
         $search_path = realpath(dirname(__FILE__).'/../');
         self::recursiveLoader($search_path, $class_map);
-        CoreLocal::set("ClassLookup",$class_map);
+        $map = LaneCache::get('ClassLookup');
+        $map->set($class_map);
+        LaneCache::set($map);
+
+        return $class_map;
     }
 
     static private $class_paths = array(

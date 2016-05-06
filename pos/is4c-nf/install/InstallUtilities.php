@@ -94,14 +94,13 @@ class InstallUtilities extends LibraryClass
       Save entry to config file(s)
       @param $key string key
       @param $value string value
-      @param $prefer_local use ini-local if it exists
       @return boolean success
 
       Values are written to a file and must be valid
       PHP code. For example, a PHP string should include
       single or double quote delimiters in $value.
     */
-    static public function confsave($key, $value, $prefer_local=false)
+    static public function confsave($key, $value)
     {
         // lane #0 is the server config editor
         // no ini.php file to write values to
@@ -113,11 +112,11 @@ class InstallUtilities extends LibraryClass
         $ini_json = dirname(__FILE__) . '/../ini.json';
         $save_php = null;
         $save_json = null;
-        if (file_exists($ini_php)) {
-            $save_php = self::phpConfSave($key, $value, $prefer_local);
-        }
         if (file_exists($ini_json)) {
             $save_json = self::jsonConfSave($key, $value);
+        }
+        if (file_exists($ini_php)) {
+            $save_php = self::phpConfSave($key, $value);
         }
 
         if ($save_php === false || $save_json === false) {
@@ -173,49 +172,31 @@ class InstallUtilities extends LibraryClass
     }
 
     /**
-      Save entry to ini.php or ini-local.php.
+      Save entry to ini.php
       This is called by confsave() if ini.php exists.
       Should not be called directly
       @param $key string key
       @param $value string value
-      @param $prefer_local use ini-local if it exists
       @return boolean success
     */
-    static private function phpConfSave($key, $value, $prefer_local=false)
+    static private function phpConfSave($key, $value)
     {
-        /*
-        Attempt to update settings in both ini.php and ini-local.php.
-        If found in both, return False if (and only if) ini-local.php
-        couldn't be set to the correct value. If not found in either,
-        add to whichever is writeable; if both writeable, respect the
-        $prefer_local setting. If neither is writeable, return False.
-        */
-
         $path_global = '../ini.php';
-        $path_local = '../ini-local.php';
-
         $writeable_global = is_writable($path_global);
-        $writeable_local = is_writable($path_local);
 
-        if (!$writeable_global && !$writeable_local)
+        if (!$writeable_global) {
             return false;
+        }
 
         $orig_global = file_get_contents($path_global);
         $orig_global = self::addOpenTag($orig_global);
-        $orig_local = $writeable_local ? file_get_contents($path_local) : '';
-        $orig_local = self::addOpenTag($orig_local);
 
         $written_global = self::rewritePhpSetting($key, $value, $orig_global, $path_global);
-        $written_local = self::rewritePhpSetting($key, $value, $orig_local, $path_local);
 
-        if ($written_global || $written_local) {
+        if ($written_global) {
             return true;    // successfully written somewhere relevant
-        }
-
-        if (!$writeable_local || !$prefer_local) {
-            return self::addPhpSetting($key, $value, $orig_global, $path_global);
         } else {
-            return self::addPhpSetting($key, $value, $orig_local, $path_local);
+            return self::addPhpSetting($key, $value, $orig_global, $path_global);
         }
     }
 
@@ -260,18 +241,16 @@ class InstallUtilities extends LibraryClass
     /**
       Remove a value from config file(s)
       @param $key string key
-      @param $local boolean optional default false
-        remove from ini-local.php if applicable
       @return boolean success
     */
-    static public function confRemove($key, $local=false)
+    static public function confRemove($key)
     {
         $ini_php = dirname(__FILE__) . '/../ini.php';
         $ini_json = dirname(__FILE__) . '/../ini.json';
         $save_php = null;
         $save_json = null;
         if (file_exists($ini_php)) {
-            $save_php = self::phpConfRemove($key, $local);
+            $save_php = self::phpConfRemove($key);
         }
         if (file_exists($ini_json)) {
             $save_json = self::jsonConfRemove($key);
@@ -289,22 +268,19 @@ class InstallUtilities extends LibraryClass
     }
 
     /**
-      Remove a value from ini.php or ini-local.php
+      Remove a value from ini.php
       Called by confRemove() if ini.php exists.
       Should not be called directly.
       @param $key string key
-      @param $local boolean optional default false
-        remove from ini-local.php if applicable
       @return boolean success
     */
-    static private function phpConfRemove($key, $local=false)
+    static private function phpConfRemove($key)
     {
         $path_global = dirname(__FILE__) . '/../ini.php';
-        $path_local = dirname(__FILE__) .  '/../ini-local.php';
         $ret = false;
 
         $orig_setting = '|\$CORE_LOCAL->set\([\'"]'.$key.'[\'"],\s*(.+)\);[\r\n]|';
-        $file = $local ? $path_local : $path_global;
+        $file = $path_global;
         $current_conf = file_get_contents($file);
         if (preg_match($orig_setting, $current_conf) == 1) {
             $removed = preg_replace($orig_setting, '', $current_conf);
@@ -339,17 +315,16 @@ class InstallUtilities extends LibraryClass
         return ($saved === false) ? false : true;
     }
 
-    static public function confExists($key, $local=False)
+    static public function confExists($key)
     {
         $path_global = '../ini.php';
-        $path_local = '../ini-local.php';
 
-        if (!file_exists($local ? $path_local : $path_global)) {
+        if (!file_exists($path_global)) {
             return false;
         }
 
         $orig_setting = '|\$CORE_LOCAL->set\([\'"]'.$key.'[\'"],\s*(.+)\);[\r\n]|';
-        $current_conf = ($local) ? file_get_contents($path_local) : file_get_contents($path_global);
+        $current_conf = file_get_contents($path_global);
 
         if (preg_match($orig_setting, $current_conf) == 1) {
             return True;

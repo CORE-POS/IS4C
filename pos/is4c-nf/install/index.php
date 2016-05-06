@@ -46,9 +46,8 @@ body {
 
 <form action=index.php method=post>
 
-<div class="alert"><?php InstallUtilities::checkWritable('../ini.php', False, 'PHP'); ?></div>
 <div class="alert"><?php InstallUtilities::checkWritable('../ini.json', false, 'JSON'); ?></div>
-<div class="alert"><?php InstallUtilities::checkWritable('../ini-local.php', True, 'PHP'); ?></div>
+<div class="alert"><?php InstallUtilities::checkWritable('../ini.php', False, 'PHP'); ?></div>
 
 PHP is running as: <?php echo InstallUtilities::whoami(); ?><br />
 <?php
@@ -96,7 +95,7 @@ if (is_array(CoreLocal::get('LaneMap'))) {
                     . ' it should be set to ' . $map[$ip]['register_id'] . '</td></tr>';
             } else {
                 // map entry matches
-                // should maybe delete ini.php entry if it exists?
+                // should maybe delete ini entry if it exists?
                 $lane_id_is_mapped = true;
             }
 

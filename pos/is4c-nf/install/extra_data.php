@@ -1,7 +1,6 @@
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-include(realpath(dirname(__FILE__).'/../ini.php'));
 include('InstallUtilities.php');
 ?>
 <html>
