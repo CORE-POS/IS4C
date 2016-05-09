@@ -273,5 +273,20 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
             $this->assertNotEquals('', $class::perStoreCode('500', 1));
         }
     }
+
+    public function testDataUtil()
+    {
+        $this->assertInternalType('boolean', COREPOS\Fannie\API\data\Util::checkHost('127.0.0.1', 'MYSQLI'));
+        $this->assertInternalType('boolean', COREPOS\Fannie\API\data\Util::checkHost('127.0.0.1', 'MSSQL'));
+        $this->assertInternalType('boolean', COREPOS\Fannie\API\data\Util::checkHost('127.0.0.1', 'PGSQL'));
+        $this->assertInternalType('boolean', COREPOS\Fannie\API\data\Util::checkHost('127.0.0.1', 'FOOBAR'));
+    }
+
+    public function testUploadLib()
+    {
+        foreach (array(UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE, UPLOAD_ERR_PARTIAL, UPLOAD_ERR_NO_FILE, UPLOAD_ERR_NO_TMP_DIR, UPLOAD_ERR_CANT_WRITE, 'foo') as $error_code) {
+            $this->assertInternalType('string', COREPOS\Fannie\API\lib\UploadLib::errorToMessage($error_code));
+        }
+    }
 }
 
