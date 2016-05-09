@@ -121,6 +121,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                         if (this.verbose_mode > 0) {
                             Console.WriteLine(message);
                         }
+                        ax_control.CancelRequest();
                         string result = ax_control.ProcessTransaction(message, 1, null, null);
                         result = WrapHttpResponse(result);
                         if (this.verbose_mode > 0) {
