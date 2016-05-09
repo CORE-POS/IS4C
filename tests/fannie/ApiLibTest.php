@@ -127,6 +127,26 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
 
         $source = new \COREPOS\Fannie\API\item\TagDataSource();
         $this->assertInternalType('array', $source->getTagData($dbc, '4011', false));
+
+        $signs->addOverride('0000000004011', 'description', 'foo');
+        $signs->addExclude('0000000004011'); 
+
+        $this->assertEquals('2/$5', $signs->formatPrice(2.50, 2));
+        $this->assertEquals('3/$1', $signs->formatPrice(0.33, 1));
+        $this->assertEquals('3/$2', $signs->formatPrice(0.66, 1));
+        $this->assertEquals('2/$5', $signs->formatPrice(2.50, 1));
+        $this->assertEquals('5/$4', $signs->formatPrice(0.80, 1));
+        $this->assertEquals('4/$1', $signs->formatPrice(0.25, 1));
+        $this->assertEquals('5/$5', $signs->formatPrice(1.00, 1));
+        $this->assertEquals('4/$8', $signs->formatPrice(2.00, 1));
+        $this->assertEquals('$1.99', $signs->formatPrice('$1.99', 1));
+        $this->assertEquals('4/$2', $signs->formatPrice('4/$2', 1));
+
+        $this->assertEquals('1.99', $signs->formatPrice(1.99, -1, 0));
+        $this->assertEquals('$1 OFF', $signs->formatPrice(1.99, -1, 2.99));
+        $this->assertEquals('$0.50 OFF', $signs->formatPrice(1.99, -1, 2.49));
+        $this->assertEquals('SAVE 50%', $signs->formatPrice(1.00, -2, 2.00));
+        $this->assertEquals('BUY ONE GET ONE FREE', $signs->formatPrice(1.00, -3, 2.00));
     }
 
     public function testConfig()

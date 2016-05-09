@@ -384,6 +384,8 @@ class FannieAPI
                 $ret[] = $class;
             } elseif (class_exists($namespaced_class, false) && is_subclass_of($namespaced_class, $base_class)) {
                 $ret[] = $namespaced_class;
+            } elseif (class_exists($namespaced_class, false) && $namespaced_class == $base_class && $include_base) {
+                $ret[] = $namespaced_class;
             }
         }
 
