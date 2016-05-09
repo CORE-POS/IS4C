@@ -24,11 +24,6 @@ class WebServicesTest extends PHPUnit_Framework_TestCase
         $ret = $ws->run($args);
         $this->assertEquals(-32602, $ret['error']['code']);
 
-        $args->dept_no = array(1);
-        unset($args->superID);
-        $ret = $ws->run($args);
-        $this->assertEquals(-32602, $ret['error']['code']);
-
         $args->type = 'invalid';
         $ret = $ws->run($args);
         $this->assertEquals(-32602, $ret['error']['code']);
