@@ -421,6 +421,7 @@ class CorePage
 
         include(dirname(__FILE__) . '/../../fannie/config.php');
         $this->connection = new \COREPOS\common\SQLManager($FANNIE_SERVER, $FANNIE_SERVER_DBMS, $FANNIE_OP_DB, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW, true);
+        $this->config = FannieConfig::factory();
         $phpunit->assertEquals(true, $this->tableExistsReadinessCheck($FANNIE_OP_DB, 'products'));
         $phpunit->assertEquals(false, $this->tableExistsReadinessCheck($FANNIE_OP_DB, 'NOTproducts'));
         $phpunit->assertEquals(true, $this->tableHasColumnReadinessCheck($FANNIE_OP_DB, 'products', 'upc'));
