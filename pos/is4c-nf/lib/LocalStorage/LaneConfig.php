@@ -42,12 +42,16 @@ class LaneConfig
 {
     private static $instance = null;
 
-    public static function get($key)
+    private static function init()
     {
         if (self::$instance === null) {
             self::$instance = new COREPOS\common\cache\file\CacheItemPool('lane.config.cache');
         }
+    }
 
+    public static function get($key)
+    {
+        self::init();
         $item = self::$instance->getItem($key);
 
         if (!$item->isHit() || $item->get() === null) {
@@ -59,9 +63,7 @@ class LaneConfig
 
     public static function set($key, $val)
     {
-        if (self::$instance === null) {
-            self::$instance = new COREPOS\common\cache\file\CacheItemPool('lane.config.cache');
-        }
+        self::init();
         $item = self::$instance->getItem($key);
         $item->set($val);
         self::$instance->save($item);
@@ -69,18 +71,14 @@ class LaneConfig
 
     public static function has($key)
     {
-        if (self::$instance === null) {
-            self::$instance = new COREPOS\common\cache\file\CacheItemPool('lane.config.cache');
-        }
+        self::init();
 
         return self::$instance->hasItem($key);
     }
 
     public static function clear()
     {
-        if (self::$instance === null) {
-            self::$instance = new COREPOS\common\cache\file\CacheItemPool('lane.config.cache');
-        }
+        self::init();
         self::$instance->clear();
         self::$instance->commit();
     }

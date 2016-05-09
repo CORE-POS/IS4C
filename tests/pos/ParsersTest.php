@@ -1067,6 +1067,11 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $ld = new LineItemDiscount();
         $this->assertEquals(true, $ld->check('LD'));
         $ld->parse('LD');
+        $upc = new UPC();
+        $upc->parse('111');
+        $ld->parse('LD');
+        TransRecord::addtender('tender', 'TT', 1);
+        $ld->parse('LD');
         lttLib::clear();
     }
 

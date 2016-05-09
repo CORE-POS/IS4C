@@ -366,6 +366,8 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         ReceiptLib::frankclassreg(1);
         $this->assertEquals(chr(27).chr(33).chr(5), ReceiptLib::normalFont());
         $this->assertEquals(chr(27).chr(33).chr(9), ReceiptLib::boldFont());
+        ReceiptLib::bold();
+        ReceiptLib::unbold();
         CoreLocal::set('receiptHeaderCount', 5);
         CoreLocal::set('receiptHeader1', 'foo');
         CoreLocal::set('receiptHeader2', 'WfcLogo2014.bmp');
@@ -374,10 +376,25 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('receiptHeader5', 'bar');
         CoreLocal::set('receiptFooterCount', 1);
         CoreLocal::set('receiptFooter1', 'foo');
+        $this->assertNotEquals(0, strlen(ReceiptLib::printReceiptHeader(date('Y-m-d H:i:s'), '1-1-1')));
         $this->assertNotEquals(0, strlen(ReceiptLib::receiptFromBuilders(false, '1-1-1')));
+
+        $col1 = array('a', 'b', 'c');
+        $col2 = array('a', 'b');
+        $this->assertNotEquals(0, strlen(ReceiptLib::twoColumns($col1, $col2)));
+        $this->assertNotEquals(0, strlen(ReceiptLib::twoColumns($col2, $col1)));
 
         $this->assertEquals(array('any'=>'','print'=>''), ReceiptLib::memReceiptMessages(1));
         $this->assertEquals('EmailPrintHandler', ReceiptLib::emailReceiptMod());
+
+        $port = CoreLocal::get('printerPort');
+        $temp_file = tempnam(sys_get_temp_dir(), 'ppp');
+        CoreLocal::set('printerPort', $temp_file);
+        CoreLocal::set('print', 1);
+        ReceiptLib::writeLine('foo');
+        CoreLocal::set('print', 0);
+        CoreLocal::set('printerPort', $port);
+        unlink($temp_file);
     }
 
     public function testTenderReport()
