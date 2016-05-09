@@ -308,5 +308,15 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
             $this->assertInternalType('string', COREPOS\Fannie\API\lib\UploadLib::errorToMessage($error_code));
         }
     }
+
+    public function testDispatch()
+    {
+        if (!class_exists('AdminIndexPage')) {
+            include(dirname(__FILE__) . '/../../fannie/admin/AdminIndexPage.php');
+        }
+        ob_start();
+        FannieDispatch::runPage('AdminIndexPage');
+        ob_end_clean();
+    }
 }
 

@@ -25,6 +25,7 @@ class WebServicesTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(-32602, $ret['error']['code']);
 
         $args->dept_no = array(1);
+        unset($args->superID);
         $ret = $ws->run($args);
         $this->assertEquals(-32602, $ret['error']['code']);
 
@@ -62,12 +63,15 @@ class WebServicesTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(-32602, $ret['error']['code']);
 
         $args->type = 'invalid';
+        $ret = $ws->run($args);
         $this->assertEquals(-32602, $ret['error']['code']);
 
         $args->type = 'vendor';
+        $ret = $ws->run($args);
         $this->assertEquals(-32602, $ret['error']['code']);
 
         $args->vendor_id = 1;
+        $ret = $ws->run($args);
         $this->assertEquals(-32602, $ret['error']['code']);
 
         $args->upc = '0000000004011';
@@ -108,7 +112,7 @@ class WebServicesTest extends PHPUnit_Framework_TestCase
 
     public function testAutoComplete()
     {
-        $ws = new COREPOS\Fannie\API\webservices\FannieMemberLaneSync();
+        $ws = new COREPOS\Fannie\API\webservices\FannieAutoComplete();
         $args = new stdClass();
         $ret = $ws->run($args);
         $this->assertEquals(-32602, $ret['error']['code']);

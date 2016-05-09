@@ -49,6 +49,44 @@ class FannieDispatch
         }
     }
 
+    static public function runPage($class)
+    {
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        if ($config->get('SYSLOG_SERVER')) {
+            $logger->setRemoteSyslog(
+                $config->get('SYSLOG_SERVER'),
+                $config->get('SYSLOG_PORT'),
+                $config->get('SYSLOG_PROTOCOL')
+            );
+        }
+        $op_db = $config->get('OP_DB');
+        $dbc = FannieDB::get($op_db);
+
+        // setup error logging
+        COREPOS\common\ErrorHandler::setLogger($logger);
+        COREPOS\common\ErrorHandler::setErrorHandlers();
+        // initialize locale & gettext
+        self::i18n();
+
+        $obj = new $class();
+        if ($dbc && $dbc->isConnected($op_db)) {
+            /*
+            $auth = self::authOverride($dbc, $op_db, $class);
+            if ($auth) {
+                $obj->setPermissions($auth);
+            }
+            */
+        }
+        $obj->setConfig($config);
+        $obj->setLogger($logger);
+        if (is_a($obj, 'FannieReportPage')) {
+            $dbc = FannieDB::getReadOnly($op_db);
+        }
+        $obj->setConnection($dbc);
+        $obj->draw_page();
+    }
+
     /**
       Render the current page if appropriate
       The page is only shown if it's accessed
@@ -66,45 +104,11 @@ class FannieDispatch
         $frames = debug_backtrace();
         // conditionalExec() is the only function on the stack
         if (count($frames) == 1) {
-            $config = FannieConfig::factory();
-            $logger = new FannieLogger();
-            if ($config->get('SYSLOG_SERVER')) {
-                $logger->setRemoteSyslog(
-                    $config->get('SYSLOG_SERVER'),
-                    $config->get('SYSLOG_PORT'),
-                    $config->get('SYSLOG_PROTOCOL')
-                );
-            }
-            $op_db = $config->get('OP_DB');
-            $dbc = FannieDB::get($op_db);
-
-            // setup error logging
-            COREPOS\common\ErrorHandler::setLogger($logger);
-            COREPOS\common\ErrorHandler::setErrorHandlers();
-            // initialize locale & gettext
-            self::i18n();
-
             // draw current page
             $page = basename(filter_input(INPUT_SERVER, 'PHP_SELF'));
             $class = substr($page,0,strlen($page)-4);
             if ($class != 'index' && class_exists($class)) {
-                $obj = new $class();
-                if ($dbc && $dbc->isConnected($op_db)) {
-                    // write URL log
-                    /*
-                    $auth = self::authOverride($dbc, $op_db, $class);
-                    if ($auth) {
-                        $obj->setPermissions($auth);
-                    }
-                    */
-                }
-                $obj->setConfig($config);
-                $obj->setLogger($logger);
-                if (is_a($obj, 'FannieReportPage')) {
-                    $dbc = FannieDB::getReadOnly($op_db);
-                }
-                $obj->setConnection($dbc);
-                $obj->draw_page();
+                self::runPage($class);
             } else {
                 trigger_error('Missing class '.$class, E_USER_NOTICE);
             }

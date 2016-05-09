@@ -66,6 +66,8 @@ class CommonTest extends PHPUnit_Framework_TestCase
         ob_start();
         $this->assertEquals(false, $router->handler($page));
         ob_get_clean();
+
+        $page->baseTest($this);
     }
 
     public function testLogger()

@@ -408,5 +408,23 @@ class CorePage
             echo '</script>';
         }
     }
+
+    public function baseTest($phpunit)
+    {
+        $this->assertEquals($this->getHeader(), $this->get_header());
+        $this->assertEquals($this->getFooter(), $this->get_footer());
+        $this->addCssFile('/url.css');
+        $this->addScript('/url.css');
+        ob_start();
+        $this->drawPage();
+        $phpunit->assertNotEquals(0, strlen(ob_get_clean())); 
+
+        include(dirname(__FILE__) . '/../../fannie/config.php');
+        $this->connection = new \COREPOS\common\SQLManager($FANNIE_SERVER, $FANNIE_SERVER_DBMS, $FANNIE_OP_DB, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW, true);
+        $phpunit->assertEquals(true, $this->tableExistsReadinessCheck($FANNIE_OP_DB, 'products'));
+        $phpunit->assertEquals(false, $this->tableExistsReadinessCheck($FANNIE_OP_DB, 'NOTproducts'));
+        $phpunit->assertEquals(true, $this->tableHasColumnReadinessCheck($FANNIE_OP_DB, 'products', 'upc'));
+        $phpunit->assertEquals(false, $this->tableHasColumnReadinessCheck($FANNIE_OP_DB, 'products', 'NOTupc'));
+    }
 }
 
