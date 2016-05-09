@@ -411,8 +411,8 @@ class CorePage
 
     public function baseTest($phpunit)
     {
-        $this->assertEquals($this->getHeader(), $this->get_header());
-        $this->assertEquals($this->getFooter(), $this->get_footer());
+        $phpunit->assertEquals($this->getHeader(), $this->get_header());
+        $phpunit->assertEquals($this->getFooter(), $this->get_footer());
         $this->addCssFile('/url.css');
         $this->addScript('/url.css');
         ob_start();
