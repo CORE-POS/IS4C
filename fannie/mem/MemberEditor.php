@@ -83,7 +83,7 @@ class MemberEditor extends FanniePage {
                 /** get current account settings for reference **/
                 $account = \COREPOS\Fannie\API\member\MemberREST::get($this->memNum);
                 \COREPOS\Fannie\API\member\MemberModule::setAccount($account);
-                FannieAPI::listModules('MemberModule');
+                FannieAPI::listModules('COREPOS\Fannie\API\member\MemberModule');
                 foreach($FANNIE_MEMBER_MODULES as $mm){
                     if (class_exists($mm)) {
                         $instance = new $mm();
@@ -219,7 +219,7 @@ class MemberEditor extends FanniePage {
         $current_width = 100;
         $account = \COREPOS\Fannie\API\member\MemberREST::get($this->memNum);
         \COREPOS\Fannie\API\member\MemberModule::setAccount($account);
-        FannieAPI::listModules('MemberModule');
+        FannieAPI::listModules('COREPOS\Fannie\API\member\MemberModule');
         foreach ($this->config->get('MEMBER_MODULES') as $mm) {
             if (!class_exists($mm)) {
                 continue;

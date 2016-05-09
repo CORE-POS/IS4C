@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API {
+namespace COREPOS\Fannie\API;
 
 /**
   @class FannieCRUDPage
@@ -323,7 +323,5 @@ class FannieCRUDPage extends \FannieRESTfulPage
         $model->floorSectionID($json['id']);
         $phpunit->assertEquals(false, $model->load());
     }
-}
-
 }
 

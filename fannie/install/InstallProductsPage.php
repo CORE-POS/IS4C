@@ -91,7 +91,7 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         <br />
         <br /><b>Available Modules</b> <br />
         <?php
-        $mods = FannieAPI::ListModules('ItemModule',True);
+        $mods = FannieAPI::ListModules('COREPOS\Fannie\API\item\ItemModule',True);
         sort($mods);
         ?>
         <table class="table">
@@ -223,7 +223,7 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         ?>
         <label>Shelf Tag Data Source</label>
         <?php
-        $mods = FannieAPI::listModules('TagDataSource');
+        $mods = FannieAPI::listModules('COREPOS\Fannie\API\item\TagDataSource');
         $source = array('' => 'Default');
         foreach ($mods as $m) {
             $source[$m] = $m;

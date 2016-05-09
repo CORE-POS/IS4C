@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\item {
+namespace COREPOS\Fannie\API\item;
 
 class EpScaleLib 
 {
@@ -329,11 +329,5 @@ class EpScaleLib
             $counter++;
         }
     }
-}
-
-}
-
-namespace {
-    class EpScaleLib extends \COREPOS\Fannie\API\item\EpScaleLib {}
 }
 

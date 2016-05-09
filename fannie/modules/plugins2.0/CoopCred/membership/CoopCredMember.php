@@ -29,7 +29,7 @@
  * For bootstrapped v.2 re-code the table with floating divs.
  */
 
-class CoopCredMember extends MemberModule 
+class CoopCredMember extends COREPOS\Fannie\API\member\MemberModule 
 {
 
     protected $regularMemberMin = 1;

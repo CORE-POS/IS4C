@@ -264,13 +264,16 @@ class FannieAPI
     {
         $directories = array();
         $directories[] = dirname(__FILE__).'/../modules/plugins2.0/';
+        // leading backslash is ignored
+        if ($base_class[0] == '\\') {
+            $base_class = substr($base_class, 1);
+        }
 
         switch($base_class) {
-            case 'ItemModule':
+            case 'COREPOS\Fannie\API\item\ItemModule':
                 $directories[] = dirname(__FILE__).'/../item/modules/';
                 break;
-            case 'MemberModule':
-            case '\COREPOS\Fannie\API\member\MemberModule':
+            case 'COREPOS\Fannie\API\member\MemberModule':
                 $directories[] = dirname(__FILE__).'/../mem/modules/';
                 break;
             case 'FannieTask':
@@ -280,20 +283,20 @@ class FannieAPI
                 $directories[] = dirname(__FILE__).'/data/models/';
                 break;
             case 'BasicModelHook':
-            case '\COREPOS\Fannie\API\data\hooks\BasicModelHook':
+            case 'COREPOS\Fannie\API\data\hooks\BasicModelHook':
                 $directories[] = dirname(__FILE__).'/data/hooks/';
                 break;
             case 'FannieReportPage':
                 $directories[] = dirname(__FILE__).'/../reports/';
                 $directories[] = dirname(__FILE__).'/../purchasing/reports/';
                 break;
-            case '\COREPOS\Fannie\API\FannieReportTool':
+            case 'COREPOS\Fannie\API\FannieReportTool':
                 $directories[] = dirname(__FILE__).'/../reports/';
                 break;
-            case '\COREPOS\Fannie\API\item\FannieSignage':
+            case 'COREPOS\Fannie\API\item\FannieSignage':
                 $directories[] = dirname(__FILE__) . '/item/signage/';
                 break;
-            case '\COREPOS\Fannie\API\monitor\Monitor':
+            case 'COREPOS\Fannie\API\monitor\Monitor':
                 $directories[] = dirname(__FILE__) . '/monitor/';
                 break;
             case 'FanniePage':

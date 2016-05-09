@@ -25,7 +25,7 @@ if (!class_exists('FannieAPI')) {
     include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
 }
 
-class BaseItemModule extends ItemModule 
+class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule 
 {
 
     private function getBarcodeType($upc)

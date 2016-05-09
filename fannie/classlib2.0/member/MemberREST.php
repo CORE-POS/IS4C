@@ -21,8 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\member
-{
+namespace COREPOS\Fannie\API\member;
 
 class MemberREST
 {
@@ -1291,10 +1290,3 @@ class MemberREST
     }
 }
 
-}
-
-namespace 
-{
-    // global namespace wrapper class
-    class MemberREST extends \COREPOS\Fannie\API\member\MemberREST {}
-}

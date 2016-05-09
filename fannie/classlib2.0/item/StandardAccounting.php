@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\item {
+namespace COREPOS\Fannie\API\item;
 
 /**
   @class StandardAccounting
@@ -74,7 +74,5 @@ class StandardAccounting extends Accounting
     {
         return $code . '-' . str_pad($store_id, 2, '0', STR_PAD_LEFT);
     }
-}
-
 }
 

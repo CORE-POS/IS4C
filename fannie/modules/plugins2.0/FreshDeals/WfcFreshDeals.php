@@ -1,6 +1,6 @@
 <?php
 
-class WfcFreshDeals extends ItemModule 
+class WfcFreshDeals extends \COREPOS\Fannie\API\item\ItemModule 
 {
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {

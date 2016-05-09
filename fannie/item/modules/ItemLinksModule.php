@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class ItemLinksModule extends ItemModule 
+class ItemLinksModule extends \COREPOS\Fannie\API\item\ItemModule 
 {
 
     public function width()

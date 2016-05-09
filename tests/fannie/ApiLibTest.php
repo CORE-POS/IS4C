@@ -125,7 +125,7 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
             $this->assertInternalType('array', $signs->loadItems());
         }
 
-        $source = new TagDataSource();
+        $source = new \COREPOS\Fannie\API\item\TagDataSource();
         $this->assertInternalType('array', $source->getTagData($dbc, '4011', false));
     }
 

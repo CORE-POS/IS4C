@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API {
+namespace COREPOS\Fannie\API;
 
 if (!class_exists('\FannieAPI')) {
     include_once(dirname(__FILE__).'/FannieAPI.php');
@@ -832,11 +832,5 @@ class FannieUploadPage extends \FanniePage
         );
         $phpunit->assertInternalType('string', $this->simpleStats($stats));
     }
-}
-
-}
-
-namespace {
-    class FannieUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {}
 }
 

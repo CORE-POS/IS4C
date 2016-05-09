@@ -21,10 +21,9 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\webservices 
-{
+namespace COREPOS\Fannie\API\webservices; 
 
-class FannieAutoComplete extends FannieWebService 
+class FannieAutoComplete extends \COREPOS\Fannie\API\webservices\FannieWebService 
 {
     
     public $type = 'json'; // json/plain by default
@@ -196,11 +195,4 @@ class FannieAutoComplete extends FannieWebService
     }
 }
 
-}
-
-namespace 
-{
-    // global namespace wrapper class
-    class FannieAutoComplete extends \COREPOS\Fannie\API\webservices\FannieAutoComplete {}
-}
 

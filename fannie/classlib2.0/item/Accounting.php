@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\item {
+namespace COREPOS\Fannie\API\item;
 
 /**
   @class Accounting
@@ -65,7 +65,5 @@ class Accounting
     {
         return $code;
     }
-}
-
 }
 

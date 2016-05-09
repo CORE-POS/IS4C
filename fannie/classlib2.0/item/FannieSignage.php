@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\item {
+namespace COREPOS\Fannie\API\item;
 
 class FannieSignage 
 {
@@ -954,11 +954,5 @@ class FannieSignage
 
         return $pdf;
     }
-}
-
-}
-
-namespace {
-    class FannieSignage extends \COREPOS\Fannie\API\item\FannieSignage {}
 }
 

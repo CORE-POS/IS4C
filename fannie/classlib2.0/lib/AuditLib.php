@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\lib {
+namespace COREPOS\Fannie\API\lib;
 
 /**
   @class AuditLib
@@ -223,11 +223,5 @@ class AuditLib
 
         return ($emails === '') ? false : $emails;
     }
-}
-
-}
-
-namespace {
-    class AuditLib extends \COREPOS\Fannie\API\lib\AuditLib {}
 }
 
