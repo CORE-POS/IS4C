@@ -10,27 +10,27 @@ class WebServicesTest extends PHPUnit_Framework_TestCase
         $ws = new COREPOS\Fannie\API\webservices\FannieDeptLookup();
         $args = new stdClass();
         $ret = $ws->run($args);
-        $this->assertEquals(-32602, $ret['code']);
+        $this->assertEquals(-32602, $ret['error']['code']);
 
         $args->type = 'settings';
         $ret = $ws->run($args);
-        $this->assertEquals(-32602, $ret['code']);
+        $this->assertEquals(-32602, $ret['error']['code']);
 
         $args->type = 'children';
         $ret = $ws->run($args);
-        $this->assertEquals(-32602, $ret['code']);
+        $this->assertEquals(-32602, $ret['error']['code']);
 
         $args->superID = array(1);
         $ret = $ws->run($args);
-        $this->assertEquals(-32602, $ret['code']);
+        $this->assertEquals(-32602, $ret['error']['code']);
 
         $args->dept_no = array(1);
         $ret = $ws->run($args);
-        $this->assertEquals(-32602, $ret['code']);
+        $this->assertEquals(-32602, $ret['error']['code']);
 
         $args->type = 'invalid';
         $ret = $ws->run($args);
-        $this->assertEquals(-32602, $ret['code']);
+        $this->assertEquals(-32602, $ret['error']['code']);
 
         $args = new stdClass();
         $args->type = 'settings';
@@ -59,16 +59,16 @@ class WebServicesTest extends PHPUnit_Framework_TestCase
         $ws = new COREPOS\Fannie\API\webservices\FannieItemInfo();
         $args = new stdClass();
         $ret = $ws->run($args);
-        $this->assertEquals(-32602, $ret['code']);
+        $this->assertEquals(-32602, $ret['error']['code']);
 
         $args->type = 'invalid';
-        $this->assertEquals(-32602, $ret['code']);
+        $this->assertEquals(-32602, $ret['error']['code']);
 
         $args->type = 'vendor';
-        $this->assertEquals(-32602, $ret['code']);
+        $this->assertEquals(-32602, $ret['error']['code']);
 
         $args->vendor_id = 1;
-        $this->assertEquals(-32602, $ret['code']);
+        $this->assertEquals(-32602, $ret['error']['code']);
 
         $args->upc = '0000000004011';
         $ret = $ws->run($args);
@@ -90,7 +90,7 @@ class WebServicesTest extends PHPUnit_Framework_TestCase
 
     public function testLaneStatus()
     {
-        $ws = new COREPOS\Fannie\API\webservices\FannieItemLaneStatus();
+        $ws = new COREPOS\Fannie\API\webservices\FannieLaneStatusService();
         $args = new stdClass();
         $args->upc = '0000000004011';
         $ret = $ws->run($args);
@@ -111,12 +111,12 @@ class WebServicesTest extends PHPUnit_Framework_TestCase
         $ws = new COREPOS\Fannie\API\webservices\FannieMemberLaneSync();
         $args = new stdClass();
         $ret = $ws->run($args);
-        $this->assertEquals(-32602, $ret['code']);
+        $this->assertEquals(-32602, $ret['error']['code']);
 
         $args->field = 'item';
         $args->search = '';
         $ret = $ws->run($args);
-        $this->assertEquals(-32602, $ret['code']);
+        $this->assertEquals(-32602, $ret['error']['code']);
 
         $args->search = '401';
         $ret = $ws->run($args);
