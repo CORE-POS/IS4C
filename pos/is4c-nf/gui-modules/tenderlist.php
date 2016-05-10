@@ -91,7 +91,7 @@ class tenderlist extends NoInputCorePage
             FROM tenders 
             WHERE MaxAmount > 0
                 AND TenderModule <> 'DisabledTender'
-            ORDER BY TenderName";
+            ORDER BY TenderName");
 
         echo "<div class=\"baseHeight\">"
             ."<div class=\"listbox\">"
@@ -120,7 +120,7 @@ class tenderlist extends NoInputCorePage
         } else {
             echo _("refunding").' $';
         }
-        printf('%.2f',abs($amount))/100);
+        printf('%.2f',abs($amount)/100);
         echo '<br />';
         echo _("use arrow keys to navigate")
             . '<p><button type="submit" class="pos-button wide-button coloredArea">
