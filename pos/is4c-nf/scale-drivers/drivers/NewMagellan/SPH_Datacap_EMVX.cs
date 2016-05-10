@@ -27,6 +27,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Xml;
 using CustomForms;
+using BitmapBPP;
 using DSIEMVXLib;
 using AxDSIEMVXLib;
 using DSIPDCXLib;
@@ -40,14 +41,13 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     private DsiPDCX pdc_ax_control = null; // can I include both?
     private string device_identifier = null;
     private string com_port = "0";
-    protected string server_list = "x1.mercurydev.net;x2.mercurydev.net";
+    protected string server_list = "x1.mercurypay.com;x2.backuppay.com";
     protected int LISTEN_PORT = 8999; // acting as a Datacap stand-in
     protected string sequence_no = null;
     private bool log_xml = true;
 
     public SPH_Datacap_EMVX(string p) : base(p)
     { 
-        verbose_mode = 1;
         device_identifier=p;
         if (p.Contains(":")) {
             string[] parts = p.Split(new char[]{':'}, 2);
@@ -332,6 +332,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             + "<MerchantID>MerchantID</MerchantID>"
             + "<TranCode>GetSignature</TranCode>"
             + "<SecureDevice>"+ this.device_identifier + "</SecureDevice>"
+            + "<ComPort>" + this.com_port + "</ComPort>"
             + "<Account>"
             + "<AcctNo>SecureDevice</AcctNo>"
             + "</Account>"
@@ -346,6 +347,17 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 return null;
             }
             string sigdata = doc.SelectSingleNode("RStream/Signature").Value;
+            List<Point> points = SigDataToPoints(sigdata);
+
+            int ticks = Environment.TickCount;
+            string my_location = AppDomain.CurrentDomain.BaseDirectory;
+            char sep = Path.DirectorySeparatorChar;
+            while (File.Exists(my_location + sep + "ss-output/"  + sep + ticks)) {
+                ticks++;
+            }
+            string filename = my_location + sep + "ss-output"+ sep + "tmp" + sep + ticks + ".bmp";
+            BitmapBPP.Signature sig = new BitmapBPP.Signature(filename, points);
+            parent.MsgSend("TERMBMP" + ticks + ".bmp");
         } catch (Exception) {
             return null;
         }
@@ -363,6 +375,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             case "VX805XPI_MERCURY_E2E":
                 return "VX805";
             case "INGENICOISC250":
+            case "INGENICOISC250_MERCURY_E2E":
                 return "ISC250";
             default:
                 return device;
@@ -378,6 +391,8 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             case "VX805XPI":
             case "VX805XPI_MERCURY_E2E":
                 return "EMV_VX805_MERCURY";
+            case "INGENICOISC250_MERCURY_E2E":
+                return "EMV_ISC250_MERCURY";
             default:
                 return "EMV_" + device;
         }
@@ -393,6 +408,28 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 return true;
             default:
                 return false;
+        }
+    }
+
+    protected List<Point> SigDataToPoints(string data)
+    {
+        char[] comma = new char[]{','};
+        char[] colon = new char[]{':'};
+        var pairs = from pair in data.Split(colon) 
+            select pair.Split(comma);
+        var points = from pair in pairs 
+            where pair.Length == 2
+            select new Point(CoordsToInt(pair[0]), CoordsToInt(pair[1]));
+
+        return points.ToList();
+    }
+
+    protected int CoordsToInt(string coord)
+    {
+        if (coord == "#") {
+            return 0;
+        } else {
+            return Int32.Parse(coord);
         }
     }
 }
