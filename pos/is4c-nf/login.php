@@ -29,10 +29,6 @@ AutoLoader::loadMap();
 
 CoreState::initiate_session();
 
-if (CoreLocal::get("SessionFirstRun") == "") {
-    CoreLocal::set("SessionFirstRun",1);
-}
-
 CoreLocal::migrateSettings();
 
 if (MiscLib::pingport('127.0.0.1:15674', 'not a database')) {

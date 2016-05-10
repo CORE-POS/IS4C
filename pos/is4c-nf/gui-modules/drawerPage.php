@@ -38,7 +38,6 @@ class drawerPage extends NoInputCorePage
             Database::setglobalvalue("LoggedIn", 0);
             CoreLocal::set("LoggedIn",0);
             CoreLocal::set("training",0);
-            CoreLocal::set("gui-scale","no");
             $this->change_page($this->page_url."gui-modules/login2.php");
         } else {
             $this->change_page($this->page_url."gui-modules/pos2.php");

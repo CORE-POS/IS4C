@@ -63,11 +63,8 @@ class DeptKey extends Parser
                 $amt = "RF" . $amt;
             }
 
-            // save entered amount
-            CoreLocal::set("departmentAmount",$amt);
-
             // go to the department select screen
-            $ret['main_frame'] = $my_url.'gui-modules/deptlist.php';
+            $ret['main_frame'] = $my_url.'gui-modules/deptlist.php?in=' . $amt;
         } elseif (CoreLocal::get("refund")==1 && CoreLocal::get("refundComment") == "") {
             if (CoreLocal::get("SecurityRefund") > 20) {
                 $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=RefundAdminLogin";

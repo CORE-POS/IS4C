@@ -30,6 +30,61 @@ class GroupSavingsSort extends DefaultReceiptSort
 {
 
     /**
+      Find coupons and member special lines
+    */
+    private function getCouponsAndSpecials($items)
+    {
+        $splice = array();
+        $coupons = array();
+        $memspecial = array();
+        for ($i=0; $i<count($items); $i++) {
+            $item = $items[$i];
+            if (!isset($item['trans_type']) || !isset($item['trans_status'])) {
+                continue;
+            }
+            if ($item['trans_type'] == 'T' && $item['department'] != 0) {
+                $splice[] = $i;
+                $coupons[] = $item;
+            } elseif ($item['trans_status'] == 'M') {
+                $splice[] = $i;
+                $memspecial[] = $item;
+            }
+        }
+
+        return array($coupons, $memspecial, $splice);
+    }
+
+    /**
+      Insert $lines adjacent to an $item where they
+      share a common $field value
+    */
+    private function addLinesNearField($items, $lines, $field)
+    {
+        foreach ($lines as $line) {
+            if ($line['total'] == 0) {
+                continue;
+            }
+            $added = false;
+            for ($i=0; $i<count($items); $i++) {
+                if (!isset($items[$i][$field])) {
+                    continue;
+                }
+                if ($items[$i][$field] == $line[$field]) {
+                    $replacement = array($items[$i], $line);
+                    array_splice($items, $i, 1, $replacement);
+                    $added = true;
+                    break;
+                }
+                if (!$added) {
+                    $items[] = $line;
+                }
+            }
+        }
+
+        return $items;
+    }
+
+    /**
       Sorting function
       @param $rowset an array of records
       @return an array of records
@@ -52,25 +107,7 @@ class GroupSavingsSort extends DefaultReceiptSort
             }
         }
 
-        /**
-          Find coupons and member special lines
-        */
-        $splice = array();
-        $coupons = array();
-        $memspecial = array();
-        for ($i=0; $i<count($items); $i++) {
-            $item = $items[$i];
-            if (!isset($item['trans_type']) || !isset($item['trans_status'])) {
-                continue;
-            }
-            if ($item['trans_type'] == 'T' && $item['department'] != 0) {
-                $splice[] = $i;
-                $coupons[] = $item;
-            } elseif ($item['trans_status'] == 'M') {
-                $splice[] = $i;
-                $memspecial[] = $item;
-            }
-        }
+        list($coupons, $memspecial, $splice) = $this->getCouponsAndSpecials($items);
 
         /**
           Remove coupon and member special lines
@@ -79,50 +116,8 @@ class GroupSavingsSort extends DefaultReceiptSort
             array_splice($items, $index, 1);
         }
 
-        /**
-          Insert member specials back in
-        */
-        foreach ($memspecial as $special) {
-            if ($special['total'] == 0) {
-                continue;
-            }
-            $added = false;
-            for ($i=0; $i<count($items); $i++) {
-                if (!isset($items[$i]['upc'])) {
-                    continue;
-                }
-                if ($items[$i]['upc'] == $special['upc']) {
-                    $replacement = array($items[$i], $special);
-                    array_splice($items, $i, 1, $replacement);
-                    $added = true;
-                    break;
-                }
-                if (!$added) {
-                    $items[] = $coupon;
-                }
-            }
-        }
-
-        /**
-          Insert coupons back in
-        */
-        foreach ($coupons as $coupon) {
-            $added = false;
-            for ($i=0; $i<count($items); $i++) {
-                if (!isset($items[$i]['department'])) {
-                    continue;
-                }
-                if ($items[$i]['department'] == $coupon['department']) {
-                    $replacement = array($items[$i], $coupon);
-                    array_splice($items, $i, 1, $replacement);
-                    $added = true;
-                    break;
-                }
-                if (!$added) {
-                    $items[] = $coupon;
-                }
-            }
-        }
+        $items = $this->addLinesNearField($items, $memspecial, 'upc');
+        $items = $this->addLinesNearField($items, $coupons, 'department');
 
         return array_merge($items, $middle, $tenders);
     }

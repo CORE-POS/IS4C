@@ -79,7 +79,6 @@ class boxMsg2 extends BasicCorePage
         
         CoreLocal::set("boxMsg",'');
         CoreLocal::set("boxMsgButtons", array());
-        CoreLocal::set("msgrepeat",2);
         if (!isset($_REQUEST['quiet']))
             MiscLib::errorBeep();
     } // END body_content() FUNCTION

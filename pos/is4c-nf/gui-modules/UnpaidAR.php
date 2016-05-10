@@ -94,7 +94,6 @@ class UnpaidAR extends BasicCorePage
         echo "<div id=\"footer\">";
         echo DisplayLib::printfooter();
         echo "</div>";
-        CoreLocal::set("msgrepeat",2);
     } // END body_content() FUNCTION
 }
 

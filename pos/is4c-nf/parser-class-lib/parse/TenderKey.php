@@ -44,9 +44,7 @@ class TenderKey extends Parser
             $amt = 100*CoreLocal::get("amtdue");
         }
         $ret = $this->default_json();
-
-        CoreLocal::set("tenderTotal",$amt);
-        $ret['main_frame'] = $my_url.'gui-modules/tenderlist.php';
+        $ret['main_frame'] = $my_url.'gui-modules/tenderlist.php?amt=' . $amt;
 
         return $ret;
     }

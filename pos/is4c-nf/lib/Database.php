@@ -153,8 +153,6 @@ static public function getsubtotals()
     }
     // runningTotal => SUM(localtemptrans.total)
     CoreLocal::set("runningTotal", (!$row || !isset($row['runningTotal'])) ? 0 : (double)$row["runningTotal"] );
-    // complicated, but replaced by taxView & LineItemTaxes() method
-    CoreLocal::set("taxTotal", (!$row || !isset($row['taxTotal'])) ? 0 : (double)$row["taxTotal"] );
     // discountTTL => SUM(localtemptrans.total) where discounttype=1
     // probably not necessary
     CoreLocal::set("discounttotal", (!$row || !isset($row['discountTTL'])) ? 0 : (double)$row["discountTTL"] );
@@ -170,8 +168,6 @@ static public function getsubtotals()
     }
     // transDiscount => lttsummary.discountableTTL * lttsummary.percentDiscount
     CoreLocal::set("transDiscount", (!$row || !isset($row['transDiscount'])) ? 0 : (double)$row["transDiscount"] );
-    // complicated, but replaced by taxView & LineItemTaxes() method
-    CoreLocal::set("fsTaxExempt", (!$row || !isset($row['fsTaxExempt'])) ? 0 : (double)$row["fsTaxExempt"] );
     // foodstamp total net percentdiscount minus previous foodstamp tenders
     CoreLocal::set("fsEligible", (!$row || !isset($row['fsEligible'])) ? 0 : (double)$row["fsEligible"] );
     // chargeTotal => hardcoded to localtemptrans.trans_subtype MI or CX
@@ -202,7 +198,6 @@ static public function getsubtotals()
          localtemptrans.total is negative on tenders
          so the query uses an addition sign but in 
          effect it's subracting.
-    */
     $replacementQ = "
         SELECT
             CASE WHEN MAX(trans_id) IS NULL THEN 0 ELSE MAX(trans_id) END AS LastID,
@@ -230,6 +225,7 @@ static public function getsubtotals()
         FROM localtemptrans AS l
         WHERE trans_type <> 'L'
     ";
+    */
 
     /* ENABLED LIVE 15Aug2013
        Calculate taxes & exemptions separately from

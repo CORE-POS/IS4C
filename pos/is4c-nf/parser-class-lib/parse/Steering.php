@@ -178,7 +178,6 @@ class Steering extends Parser
                     Database::setglobalvalue("LoggedIn", 0);
                     CoreLocal::set("LoggedIn",0);
                     CoreLocal::set("training",0);
-                    CoreLocal::set("gui-scale","no");
                     /**
                       An empty transaction may still contain
                       invisible, logging records. Rotate those
@@ -212,12 +211,10 @@ class Steering extends Parser
                 return true;
 
             case 'GD':
-                CoreLocal::set("msgrepeat",0);
                 $this->ret['main_frame'] = $my_url."gui-modules/giftcardlist.php";
                 return true;
 
             case 'IC':
-                CoreLocal::set("msgrepeat",0);
                 $this->ret['main_frame'] = $my_url."gui-modules/HouseCouponList.php";
                 return true;
 

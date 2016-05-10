@@ -190,7 +190,6 @@ class SigCapturePage extends BasicCorePage
         $this->add_onload_command("addToForm('code', '{$_REQUEST['code']}');\n");
         
         CoreLocal::set("boxMsg",'');
-        CoreLocal::set("msgrepeat",2);
     } // END body_content() FUNCTION
 }
 

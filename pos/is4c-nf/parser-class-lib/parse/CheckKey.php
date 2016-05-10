@@ -45,11 +45,8 @@ class CheckKey extends Parser {
         if (empty($split[1])){
             // no department specified, just amount followed by DP
             
-            // save entered amount
-            CoreLocal::set("tenderTotal",$amt);
-
             // go to the department select screen
-            $ret['main_frame'] = $my_url.'gui-modules/checklist.php';
+            $ret['main_frame'] = $my_url.'gui-modules/checklist.php?amt=' . $amt;
         }
 
         if (!$ret['main_frame'])
