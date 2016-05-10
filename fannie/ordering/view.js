@@ -45,9 +45,9 @@ function confirmC(oid,tid){
 
 	if (window.confirm("Are you sure you want to close this order as "+t[tid]+"?")){
 		$.ajax({
-		url: 'ajax-calls.php',
+		url: 'OrderAjax.php',
 		type: 'post',
-		data: 'action=closeOrder&orderID='+oid+'&status='+tid,
+		data: 'id='+oid+'&close='+tid,
 		cache: false,
 		success: function(resp){
 			//location = 'review.php?orderID='+oid;
@@ -142,7 +142,11 @@ function saveSRP(new_price,tid){
 	});
 }
 function saveCtC(val,oid){
-    saveByOrderID(oid, 'saveCtC', 'val', val);
+    $.ajax({
+        url: 'OrderAjax.php',
+        type: 'post',
+        data: 'id='+oid+'&ctc='+val
+    });
 }
 function saveQty(new_qty,tid){
 	var oid = $('#orderID').val();
@@ -267,14 +271,18 @@ function saveText(oid,val){
     saveByOrderID(oid, 'saveText', 'val', val);
 }
 function savePN(oid,val){
-    saveByOrderID(oid, 'savePN', 'val', val);
+    $.ajax({
+        url: 'OrderAjax.php',
+        type: 'post',
+        data: 'pn='+val+'&id='+oid
+    });
 }
 function saveConfirmDate(val,oid){
 	if (val){
 		$.ajax({
-		url: 'ajax-calls.php',
+		url: 'OrderAjax.php',
 		type: 'post',
-		data: 'action=confirmOrder&orderID='+oid,
+        data: 'id='+oid+'&confirm=1',
 		cache: false,
 		success: function(resp){
 			$('#confDateSpan').html('Confirmed '+resp);
@@ -283,9 +291,9 @@ function saveConfirmDate(val,oid){
 	}
 	else {
 		$.ajax({
-		url: 'ajax-calls.php',
+		url: 'OrderAjax.php',
 		type: 'post',
-		data: 'action=unconfirmOrder&orderID='+oid,
+        data: 'id='+oid+'&confirm=0',
 		cache: false,
 		success: function(resp){
 			$('#confDateSpan').html('Not confirmed');
@@ -365,9 +373,9 @@ function validateAndHome(){
 }
 function updateStatus(oid,val){
 	$.ajax({
-	url: 'ajax-calls.php',
+	url: 'OrderAjax.php',
 	type: 'post',
-	data: 'action=UpdateStatus&orderID='+oid+'&val='+val,
+    data: 'id='+oid+'&status='+val,
 	cache: false,
 	success: function(resp){
 		$('#statusdate'+oid).html(resp);	
@@ -375,6 +383,9 @@ function updateStatus(oid,val){
 	});
 }
 function updateStore(oid,val){
-	var dstr = 'action=UpdateStore&orderID='+oid+'&val='+val;
-    silentSave(dstr);
+    $.ajax({
+        url: 'OrderAjax.php',
+        type: 'post',
+        data: 'id='+oid+'&store='+val
+    });
 }

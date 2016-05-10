@@ -103,33 +103,6 @@ switch (FormLib::get('action')) {
             description=? WHERE order_id=? AND trans_id=?");
         $dbc->execute($upP, array($desc,$orderID,FormLib::get('transID')));
         break;
-    case 'saveCtC':
-        if (sprintf("%d",FormLib::get('val')) === "2") {
-            break; // don't save with no selection
-        }
-        $timestamp = time();
-        $upP = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET
-            numflag=? WHERE order_id=? AND trans_id=0");
-        $dbc->execute($upP, array(FormLib::get('val'),$orderID));
-
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
-        $soModel = new SpecialOrdersModel($dbc);
-        $soModel->specialOrderID($orderID);
-        $soModel->statusFlag( (FormLib::get('val') == 1) ? 3 : 0 );
-        $soModel->subStatus($timestamp);
-        $soModel->save();
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        if ($dbc->table_exists($TRANS . 'SpecialOrderStatus')) {
-            $statusP = $dbc->prepare("UPDATE {$TRANS}SpecialOrderStatus SET status_flag=?,sub_status=?
-                WHERE order_id=? AND status_flag in (0,3)");
-            if (FormLib::get('val') == 1) {
-                $dbc->execute($statusP,array(3,$timestamp,$orderID));
-            } else if (FormLib::get('val') == 0) {
-                $dbc->execute($statusP,array(0,$timestamp,$orderID));
-            }
-        }
-        break;
     case 'savePrice':
         $upP = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET
             total=? WHERE order_id=? AND trans_id=?");
@@ -222,29 +195,6 @@ switch (FormLib::get('action')) {
     case 'saveEmail':
         saveContactField($orderID, 'email', FormLib::get('email'), 'email_1');
         break;
-    case 'UpdateStatus':
-        $timestamp = time();
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
-        $soModel = new SpecialOrdersModel($dbc);
-        $soModel->specialOrderID($orderID);
-        $soModel->statusFlag($_REQUEST['val']);
-        $soModel->subStatus($timestamp);
-        $soModel->save();
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        if ($dbc->table_exists($TRANS . 'SpecialOrderStatus')) {
-            $p = $dbc->prepare("UPDATE {$TRANS}SpecialOrderStatus SET
-                status_flag=?,sub_status=? WHERE order_id=?");
-            $dbc->execute($p, array($_REQUEST['val'],$timestamp,$orderID));
-        }
-        echo date("m/d/Y");
-        break;
-    case 'UpdateStore':
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
-        $soModel = new SpecialOrdersModel($dbc);
-        $soModel->specialOrderID($orderID);
-        $soModel->storeID($_REQUEST['val']);
-        $soModel->save();
-        break;
     case 'saveNoteDept':
         $dbc = FannieDB::get($FANNIE_TRANS_DB);
         $soModel = new SpecialOrdersModel($dbc);
@@ -272,51 +222,6 @@ switch (FormLib::get('action')) {
                 notes=? WHERE order_id=?");
             $dbc->execute($p,array($_REQUEST['val'],$orderID));
         }
-        break;
-    case 'confirmOrder':
-        $p = $dbc->prepare("INSERT INTO {$TRANS}SpecialOrderHistory 
-                                        (order_id, entry_type, entry_date, entry_value)
-                                        VALUES
-                                        (?,'CONFIRMED',".$dbc->now().",'')");
-        $dbc->execute($p,array($orderID));
-        echo date("M j Y g:ia");
-        break;
-    case 'unconfirmOrder':
-        $p = $dbc->prepare("DELETE FROM {$TRANS}SpecialOrderHistory WHERE
-            order_id=? AND entry_type='CONFIRMED'");
-        $dbc->execute($p,array($orderID));
-        break;
-    case 'savePN':
-        $v = (int)$_REQUEST['val'];
-        if ($v == 0) $v = 1;
-        $p = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET
-            voided=? WHERE order_id=?");
-        $dbc->execute($p,array($v,$orderID));
-        break;
-    case 'closeOrder':
-        $timestamp = time();
-        $dbc = FannieDB::get($FANNIE_TRANS_DB);
-        $soModel = new SpecialOrdersModel($dbc);
-        $soModel->specialOrderID($orderID);
-        $soModel->statusFlag($_REQUEST['status']);
-        $soModel->subStatus($timestamp);
-        $soModel->save();
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        if ($dbc->table_exists($TRANS . 'SpecialOrderStatus')) {
-            $p = $dbc->prepare("UPDATE {$TRANS}SpecialOrderStatus SET
-                status_flag=?,sub_status=? WHERE order_id=?");
-            $dbc->execute($p, array($_REQUEST['status'],$timestamp,$orderID));
-        }
-
-        $moveP = $dbc->prepare("INSERT INTO {$TRANS}CompleteSpecialOrder
-                SELECT * FROM {$TRANS}PendingSpecialOrder
-                WHERE order_id=?");
-        $dbc->execute($moveP, array($orderID));
-        
-        $cleanP = $dbc->prepare("DELETE FROM {$TRANS}PendingSpecialOrder
-                WHERE order_id=?");
-        $dbc->execute($cleanP, array($orderID));
         break;
     case 'copyOrder':
         $oid = sprintf("%d",$orderID);

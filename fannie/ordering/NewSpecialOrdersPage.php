@@ -477,9 +477,9 @@ function applyMemNum(n){
 }
 function updateStatus(oid,val){
     $.ajax({
-        url: 'ajax-calls.php',
+        url: 'OrderAjax.php',
         type: 'post',
-        data: 'action=UpdateStatus&orderID='+oid+'&val='+val,
+        data: 'id='+oid+'&status='+val,
         cache: false
     }).done(function(resp){
         $('#statusdate'+oid).html(resp);    
@@ -487,9 +487,9 @@ function updateStatus(oid,val){
 }
 function togglePrint(username,oid){
     $.ajax({
-        url: 'ajax-calls.php',
+        url: 'OrderViewPage.php',
         type: 'post',
-        data: 'action=UpdatePrint&orderID='+oid+'&user='+username,
+        data: 'orderID='+oid+'&togglePrint=1',
         cache: false
     });
 }
