@@ -109,6 +109,34 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         return $ret;
     }
 
+    private function formatPhone($phone)
+    {
+        if (preg_match("/^[-() .0-9]+$/",$phone)) {
+            $digits = preg_replace("/[^0-9]/", '' ,$phone);
+            if (preg_match("/^\d{10}$/",$digits)) {
+                return preg_replace("/(\d{3})(\d{3})(\d{4})/",'${1}-${2}-${3}', $digits);
+            }
+        }
+
+        return $phone;
+    }
+
+    private function canadafication($json)
+    {
+        $json['zip'] = strtoupper($json['zip']);
+        if (strlen($json['zip']) == 6) {
+            $json['zip'] = substr($json['zip'],0,3).' '. substr($json['zip'],3,3);
+        }
+        // Postal code M* supply City and Province
+        if (preg_match("/^M/", $json['zip']) &&
+                $json['city'] == '' && $json['state'] == '') {
+            $json['city'] = 'Toronto';
+            $json['state'] = 'ON';
+        }
+
+        return $json;
+    } 
+
     public function saveFormData($memNum, $json=array())
     {
         $json['addressFirstLine'] = FormLib::get('ContactInfo_addr1');
@@ -127,18 +155,8 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
 
                 // Phone# style: ###-###-####
                 if (preg_match("/^[MKLP]/", $json['zip']) ) {
-                    if (preg_match("/^[-() .0-9]+$/",$json['customers'][$i]['phone']) ) {
-                        $phone = preg_replace("/[^0-9]/", '' ,$json['customers'][$i]['phone']);
-                        if (preg_match("/^\d{10}$/",$phone)) {
-                            $json['customers'][$i]['phone'] = preg_replace("/(\d{3})(\d{3})(\d{4})/",'${1}-${2}-${3}',$phone);
-                        }
-                    }
-                    if (preg_match("/^[-() .0-9]+$/",$json['customers'][$i]['altPhone']) ) {
-                        $phone = preg_replace("/[^0-9]/", '' ,$json['customers'][$i]['altPhone']);
-                        if (preg_match("/^\d{10}$/",$phone)) {
-                            $json['customers'][$i]['altPhone'] = preg_replace("/(\d{3})(\d{3})(\d{4})/",'${1}-${2}-${3}',$phone);
-                        }
-                    }
+                    $json['customers'][$i]['phone'] = $this->formatPhone($json['customers'][$i]['phone']);
+                    $json['customers'][$i]['altPhone'] = $this->formatPhone($json['customers'][$i]['altPhone']);
                 }
             }
         }
@@ -146,16 +164,7 @@ class ContactInfo extends \COREPOS\Fannie\API\member\MemberModule {
         /* Canadian Postal Code, and City and Province
         */
         if (preg_match("/^[A-Z]\d[A-Z]/i", $json['zip']) ) {
-            $json['zip'] = strtoupper($json['zip']);
-            if (strlen($json['zip']) == 6) {
-                $json['zip'] = substr($json['zip'],0,3).' '. substr($json['zip'],3,3);
-            }
-            // Postal code M* supply City and Province
-            if (preg_match("/^M/", $json['zip']) &&
-                    $json['city'] == '' && $json['state'] == '') {
-                $json['city'] = 'Toronto';
-                $json['state'] = 'ON';
-            }
+            $json = $this->canadafication($json);
         }
 
         return $json;
