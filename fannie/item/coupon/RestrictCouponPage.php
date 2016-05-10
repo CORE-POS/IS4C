@@ -39,7 +39,7 @@ class RestrictCouponPage extends FannieRESTfulPage {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $ret = '<form onsubmit="save();return false;">
+        $ret = '<form onsubmit="restrictCoupon.save();return false;">
             <div class="form-group">
                 <label>UPC</label>
                 <input type="text" id="upc" class="form-control" required />
@@ -63,9 +63,9 @@ class RestrictCouponPage extends FannieRESTfulPage {
         $ret .= '<table class="table">
             <tr><th>UPC</th><th>Limit</th><th>Reason</th><th></th></tr>';
         foreach($model->find('upc') as $obj){
-            $ret .= sprintf('<tr><td><a href="" onclick="loadcoupon(\'%s\');return false;">%s</a></td>
+            $ret .= sprintf('<tr><td><a href="" onclick="restrictCoupon.load(\'%s\');return false;">%s</a></td>
                     <td>%d</td><td>%s</td>
-                    <td><a href="" onclick="deletecoupon(\'%s\');return false;">%s</a></td>
+                    <td><a href="" onclick="restrictCoupon.remove(\'%s\');return false;">%s</a></td>
                     </tr>',
                     $obj->upc(), $obj->upc(), $obj->threshold(),
                     $obj->reason(), $obj->upc(), \COREPOS\Fannie\API\lib\FannieUI::deleteIcon()
@@ -73,6 +73,7 @@ class RestrictCouponPage extends FannieRESTfulPage {
         }
         $ret .= '</table>';
         $this->add_onload_command("\$('#upc').focus();\n");
+        $this->addScript('restrictCoupon.js');
 
         return $ret;
     }
@@ -125,49 +126,6 @@ class RestrictCouponPage extends FannieRESTfulPage {
         return False;
     }
 
-    function javascript_content(){
-        ob_start();
-        ?>
-function loadcoupon(upc){
-    $.ajax({
-        url: 'RestrictCouponPage.php?id='+upc,
-        type: 'get',
-        dataType: 'json',
-    }).done(function(data){
-        $('#upc').val(upc);
-        if (data.limit)
-            $('#limit').val(data.limit);
-        if (data.reason)
-            $('#reason').val(data.reason);
-    });
-}
-function save(){
-    var dstr = 'id='+$('#upc').val();
-    dstr += '&limit='+$('#limit').val();
-    dstr += '&reason='+$('#reason').val();
-    $.ajax({
-        url: 'RestrictCouponPage.php',
-        type: 'post',
-        data: dstr
-    }).done(function(){
-        location='RestrictCouponPage.php';
-    }
-    });
-}
-function deletecoupon(upc){
-    if (confirm('Remove restrictions for '+upc+'?')){
-        $.ajax({
-            url: 'RestrictCouponPage.php?id='+upc,
-            type: 'delete'
-        }).done(function(){
-            location='RestrictCouponPage.php';
-        });
-    }
-}
-        <?php
-        return ob_get_clean();
-    }
-
     public function helpContent()
     {
         return '<p>
@@ -180,7 +138,6 @@ function deletecoupon(upc){
     public function unitTest($phpunit)
     {
         $phpunit->assertNotEquals(0, strlen($this->get_view()));
-        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
         $this->id = 1;
         ob_start();
         $phpunit->assertEquals(false, $this->post_id_handler());
