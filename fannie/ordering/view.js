@@ -302,16 +302,25 @@ function saveConfirmDate(val,oid){
 	}
 }
 function togglePrint(username,oid){
-	var dstr = 'action=UpdatePrint&orderID='+oid+'&user='+username;
-    silentSave(dstr);
+    $.ajax({
+        url: 'OrderViewPage.php',
+        dataType: 'post',
+        data: 'togglePrint=1&orderID='+oid
+    });
 }
 function toggleO(oid,tid){
-	var dstr = 'action=UpdateItemO&orderID='+oid+'&transID='+tid;
-    silentSave(dstr);
+    $.ajax({
+        url: 'OrderViewPage.php',
+        dataType: 'post',
+        data: 'toggleMemType=1&orderID='+oid+'&transID='+tid
+    });
 }
 function toggleA(oid,tid){
-	var dstr = 'action=UpdateItemA&orderID='+oid+'&transID='+tid;
-    silentSave(dstr);
+    $.ajax({
+        url: 'OrderViewPage.php',
+        dataType: 'post',
+        data: 'toggleStaff=1&orderID='+oid+'&transID='+tid
+    });
 }
 function doSplit(oid,tid){
 	var dcheck=false;

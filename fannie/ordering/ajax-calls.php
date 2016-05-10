@@ -208,35 +208,6 @@ switch (FormLib::get('action')) {
         splitOrder($oid,$tid);
         echo getItemForm($oid);
         break;
-    case 'UpdatePrint':
-        $user = $_REQUEST['user'];
-        $cachepath = sys_get_temp_dir()."/ordercache/";
-        $prints = unserialize(file_get_contents("{$cachepath}{$user}.prints"));
-        if (isset($prints[$orderID])) {
-            unset($prints[$orderID]);
-        } else {
-            $prints[$orderID] = array();
-        }
-        $fptr = fopen("{$cachepath}{$user}.prints",'w');
-        fwrite($fptr,serialize($prints));
-        fclose($fptr);
-        break;
-    case 'UpdateItemO':
-        $oid = sprintf("%d",$orderID);
-        $tid = sprintf("%d",$_REQUEST['transID']);
-        $p = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET
-                memType=(memType+1)%2 WHERE order_id=?
-                AND trans_id=?");
-        $dbc->execute($p, array($oid,$tid));
-        break;
-    case 'UpdateItemA':
-        $oid = sprintf("%d",$orderID);
-        $tid = sprintf("%d",$_REQUEST['transID']);
-        $p = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET
-                staff=(staff+1)%2 WHERE order_id=?
-                AND trans_id=?");   
-        $dbc->execute($p, array($oid,$tid));
-        break;
 }
 
 function addUPC($orderID,$memNum,$upc,$num_cases=1)
