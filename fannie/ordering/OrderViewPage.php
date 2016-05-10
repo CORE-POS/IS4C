@@ -664,15 +664,6 @@ class OrderViewPage extends FannieRESTfulPage
         $dbc->query('INSERT ' . $TRANS . 'SpecialOrders ' . $values);
         $orderID = $dbc->insertID();
 
-        /**
-          @deprecated 24Apr14
-          New SpecialOrders table is standard now
-        */
-        if ($dbc->table_exists($TRANS . 'SpecialOrderID')) {
-            $soP = $dbc->prepare('INSERT INTO ' . $TRANS . 'SpecialOrderID (id) VALUES (?)');
-            $soR = $dbc->execute($soP, array($orderID));
-        }
-
         $ins_array = $this->genericRow($orderID);
         $ins_array['numflag'] = 2;
         $ins_array['mixMatch'] = $user;
@@ -699,10 +690,6 @@ class OrderViewPage extends FannieRESTfulPage
         $s_order->noteSuperID($note_vals['superID']);
         $s_order->save();
         $dbc->selectDB($this->config->get('TRANS_DB')); // switch back to previous
-
-        if ($dbc->table_exists($TRANS . 'SpecialOrderStatus')) {
-            $dbc->smartInsert("{$TRANS}SpecialOrderStatus",$status_vals);
-        }
 
         $this->createContactRow($orderID);
 

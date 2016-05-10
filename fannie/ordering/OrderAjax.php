@@ -137,11 +137,6 @@ class OrderAjax extends FannieRESTfulPage
         $soModel->subStatus($timestamp);
         $soModel->save();
 
-        if ($dbc->tableExists('SpecialOrderStatus')) {
-            $prep = $dbc->prepare("UPDATE SpecialOrderStatus SET
-                status_flag=?,sub_status=? WHERE order_id=?");
-            $dbc->execute($prep, array($this->status,$timestamp,$this->id));
-        }
         echo date("m/d/Y");
 
         return false;
