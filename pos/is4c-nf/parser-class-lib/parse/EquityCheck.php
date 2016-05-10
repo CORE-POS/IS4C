@@ -36,15 +36,17 @@ class EquityCheck extends Parser
     {
         $equityPaid = 0;
         $equityBalance = 0;
-        $dbc = Database::mDataConnect();
-        $query = $dbc->prepare('SELECT payments FROM equity_live_balance WHERE memnum= ? ');
+		$dbc = Database::mDataConnect();
+		$db_name = Database::mAltName();
+
+        $query = $dbc->prepare('SELECT payments FROM ' . $db_name . 'equity_live_balance WHERE memnum= ? ');
         $args = CoreLocal::get('memberID');
         $result = $dbc->execute($query, $args);
         while ($row = $dbc->fetch_row($result)) {
-            $equityPaid = $row['payments'];
+            $equityPaid = $row['payments']; 
         }
         $equityBalance = 10000 - $equityPaid;
-        
+
         $ret = $this->default_json();
         $title = _('Member #') . CoreLocal::get('memberID');
         $msg = _("Current amount of Equity paid is ") . $equityPaid . "<br />"
