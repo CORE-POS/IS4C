@@ -74,7 +74,9 @@ var pos2 = (function($) {
         } else {
             saveTimeout = timeout;
         }
-        screenLockVar = setTimeout(lockScreen, Number(timeout));
+        if (timeout) {
+            screenLockVar = setTimeout(lockScreen, Number(timeout));
+        }
     };
 
     mod.receiptFetch = function(r_type, ref){
