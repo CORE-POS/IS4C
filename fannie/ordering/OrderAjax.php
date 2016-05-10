@@ -43,7 +43,7 @@ class OrderAjax extends FannieRESTfulPage
         return parent::preprocess();
     }
 
-    private function db()
+    private function tdb()
     {
         $this->connection->selectDB($this->config->get('TRANS_DB'));
         return $this->connection;
@@ -55,7 +55,7 @@ class OrderAjax extends FannieRESTfulPage
         $this->status = $this->close();
         $this->post_id_status_handler();
 
-        $dbc = $this->db();
+        $dbc = $this->tdb();
         $moveP = $dbc->prepare("INSERT INTO CompleteSpecialOrder
                 SELECT * FROM PendingSpecialOrder
                 WHERE order_id=?");
@@ -70,7 +70,7 @@ class OrderAjax extends FannieRESTfulPage
 
     protected function post_id_store_handler()
     {
-        $dbc = $this->db();
+        $dbc = $this->tdb();
         $soModel = new SpecialOrdersModel($dbc);
         $soModel->specialOrderID($this->id);
         $soModel->storeID($this->store);
@@ -79,7 +79,7 @@ class OrderAjax extends FannieRESTfulPage
 
     protected function post_id_confirm_handler()
     {
-        $dbc = $this->db();
+        $dbc = $this->tdb();
         if ($this->confirm) {
             $ins = $dbc->prepare("INSERT INTO SpecialOrderHistory 
                                 (order_id, entry_type, entry_date, entry_value)
@@ -101,7 +101,7 @@ class OrderAjax extends FannieRESTfulPage
         if ($this->pn == 0) {
             $this->pn = 1;
         }
-        $dbc = $this->db();
+        $dbc = $this->tdb();
         $prep = $dbc->prepare("UPDATE PendingSpecialOrder SET
             voided=? WHERE order_id=?");
         $dbc->execute($prep,array($this->pn,$this->id));
@@ -113,7 +113,7 @@ class OrderAjax extends FannieRESTfulPage
     {
         // skip save if no selection was made
         if (sprintf("%d", $this->ctc) !== "2") {
-            $dbc = $this->db();
+            $dbc = $this->tdb();
             // set numflag for CTC on trans_id=0 recrod
             $upP = $dbc->prepare("UPDATE PendingSpecialOrder SET
                 numflag=? WHERE order_id=? AND trans_id=0");
@@ -129,7 +129,7 @@ class OrderAjax extends FannieRESTfulPage
 
     protected function post_id_status_handler()
     {
-        $dbc = $this->db();
+        $dbc = $this->tdb();
         $timestamp = time();
         $soModel = new SpecialOrdersModel($dbc);
         $soModel->specialOrderID($this->id);
@@ -140,6 +140,24 @@ class OrderAjax extends FannieRESTfulPage
         echo date("m/d/Y");
 
         return false;
+    }
+
+    public function unitTest($phpunit)
+    {
+        $this->connection->throwOnFailure(true);
+        $this->id = 9999;
+        $this->close = 9;
+        $this->post_id_close_handler();
+        $this->store = 1;
+        $this->post_id_store_handler();
+        $this->confirm = 1;
+        $this->post_id_confirm_handler();
+        $this->confirm = 0;
+        $this->post_id_confirm_handler();
+        $this->pn = 0;
+        $this->post_id_pn_handler();
+        $this->ctc = 1;
+        $this->post_id_ctc_handler();
     }
 }
 
