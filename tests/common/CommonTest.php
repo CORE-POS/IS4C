@@ -122,6 +122,17 @@ class CommonTest extends PHPUnit_Framework_TestCase
         ob_get_clean();
     }
 
+    public function testModelInstance()
+    {
+        include(dirname(__FILE__) . '/../../fannie/config.php');
+        $dbc = new \COREPOS\common\SQLManager($FANNIE_SERVER, $FANNIE_SERVER_DBMS, $FANNIE_OP_DB, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW, true);
+        if (!class_exists('CommonTestModel', false)) {
+            include(dirname(__FILE__) . '/TestModel.php');
+        }
+        $obj = new CommonTestModel($dbc);
+        $obj->unitTest($this, $dbc);
+    }
+
     public function testSQL()
     {
         include(dirname(__FILE__) . '/../../fannie/config.php');
