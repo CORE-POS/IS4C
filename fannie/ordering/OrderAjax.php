@@ -52,7 +52,7 @@ class OrderAjax extends FannieRESTfulPage
     protected function post_id_close_handler()
     {
         // update status
-        $this->status = $this->close();
+        $this->status = $this->close;
         $this->post_id_status_handler();
 
         $dbc = $this->tdb();
