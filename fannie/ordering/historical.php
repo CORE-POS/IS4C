@@ -28,6 +28,10 @@ include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
+if (FannieConfig::config('SO_UI') === 'bootstrap') {
+    header('Location: OldSpecialOrdersPage.php');
+    return;
+}
 if (!function_exists('checkLogin')) {
     include($FANNIE_ROOT.'auth/login.php');
 }

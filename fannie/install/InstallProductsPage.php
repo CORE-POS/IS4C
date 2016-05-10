@@ -212,6 +212,15 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         echo installSelectField('FANNIE_REPORT_DEPT_MODE', $FANNIE_REPORT_DEPT_MODE, $report_opts, 'range');
         ?>
         <hr />
+        <label>Special Order Interface</label>
+        <?php
+        $so_opts = array(
+            'bootstrap' => 'Consistent',
+            'legacy' => 'Legacy',
+        ); 
+        echo installSelectField('FANNIE_SO_UI', $FANNIE_SO_UI, $so_opts, 'bootstrap');
+        ?>
+        <hr />
         <label>Default Shelf Tag Layout</label>
         <?php
         $layouts = 'No Layouts Found!';

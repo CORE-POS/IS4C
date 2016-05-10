@@ -366,7 +366,7 @@ function copyOrder(oid){
         }).fail(function(e1,e2,e3){
             alert(e1);alert(e2);alert(e3);
         }).done(function(resp){
-            location='view.php?orderID='+resp;
+            location='OrderViewPage.php?orderID='+resp;
         });
     }
 }

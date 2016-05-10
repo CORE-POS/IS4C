@@ -444,6 +444,10 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
         }
         fclose($fptr);
         $ret .= "</tbody></table>";
+        $ret .= '<p>
+            <button type="submit" class="btn btn-default">Print Selected</button>
+            </p>
+            </form>';
 
         $this->add_script('../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->add_onload_command("\$('.tablesorter').tablesorter();");

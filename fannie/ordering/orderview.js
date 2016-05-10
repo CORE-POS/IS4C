@@ -86,6 +86,11 @@ var orderView = (function($) {
         });
         $('#orderStatus').change(function() {
             mod.updateStatus($('#orderID').val(), $(this).val());
+            if ($(this).val() == 0) { // New No Call
+                $('#ctcselect').val(0); // No
+            } else if ($(this).val() == 3) { // New Call
+                $('#ctcselect').val(1); // Yes
+            }
         });
         $('#orderStore').change(function() {
             mod.updateStore($('#orderID').val(), $(this).val());
