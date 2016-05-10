@@ -36,8 +36,8 @@ class EquityCheck extends Parser
     {
         $equityPaid = 0;
         $equityBalance = 0;
-		$dbc = Database::mDataConnect();
-		$db_name = Database::mAltName();
+        $dbc = Database::mDataConnect();
+        $db_name = Database::mAltName();
 
         $query = $dbc->prepare('SELECT payments FROM ' . $db_name . 'equity_live_balance WHERE memnum= ? ');
         $args = CoreLocal::get('memberID');
