@@ -227,12 +227,11 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $tk = new TenderKey();
         $this->assertEquals(true, $tk->check('TT'));
         $out = $tk->parse('TT');
-        $this->assertEquals('/tenderlist.php', substr($out['main_frame'], -15));
+        $this->assertNotEquals(false, strstr($out['main_frame'], '/tenderlist.php'));
 
         $this->assertEquals(true, $tk->check('100TT'));
         $out = $tk->parse('100TT');
-        $this->assertEquals('/tenderlist.php', substr($out['main_frame'], -15));
-        $this->assertEquals(100, CoreLocal::get('tenderTotal'));
+        $this->assertNotEquals(false, strstr($out['main_frame'], '/tenderlist.php'));
     }
 
     function testSigTermCommands()
@@ -647,8 +646,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('refund', 1);
         CoreLocal::set('SpecialDeptMap', false);
         $out = $d->parse('1.00DP');
-        $this->assertEquals('/deptlist.php', substr($out['main_frame'], -13));
-        $this->assertEquals('RF100', CoreLocal::get('departmentAmount'));
+        $this->assertNotEquals(false, strstr($out['main_frame'], '/deptlist.php'));
         $this->assertInternalType('array', CoreLocal::get('SpecialDeptMap'));
         CoreLocal::set('refundComment', '');
         CoreLocal::set('SecurityRefund', 21, true);
@@ -696,8 +694,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     {
         $obj = new CheckKey();
         $out = $obj->parse('100CQ');
-        $this->assertEquals(100, CoreLocal::get('tenderTotal'));
-        $this->assertEquals('/checklist.php', substr($out['main_frame'], -14));
+        $this->assertNotEquals(false, strstr($out['main_frame'], '/checklist.php'));
     }
 
     function testAutoTare()
