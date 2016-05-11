@@ -36,6 +36,7 @@ class ADODB_pdo_mysql extends ADODB_pdo {
 		#$parentDriver->_bindInputArray = false;
 		$parentDriver->hasInsertID = true;
 		$parentDriver->_connectionID->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY,true);
+        $this->database = $parentDriver->database;
 	}
 
 	function _connect($argDSN, $argUsername, $argPassword, $argDatabasename, $persist=false){
