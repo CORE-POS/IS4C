@@ -8,6 +8,44 @@
         </testsuite>
         <testsuite name="main">
             <file>tests/fannie/InstallFannieTest.php</file>
+            <file>tests/fannie/ApiLibTest.php</file>
+            <file>tests/fannie/AuthTest.php</file>
+            <file>tests/fannie/FannieSQLManagerTest.php</file>
+            <file>tests/fannie/ItemsTest.php</file>
+            <file>tests/fannie/LogTest.php</file>
+            <file>tests/fannie/MembersTest.php</file>
+            <file>tests/fannie/ModelsTest.php</file>
+            <file>tests/fannie/MonitorsTest.php</file>
+            <file>tests/fannie/OrdersTest.php</file>
+            <file>tests/fannie/PagesFannieTest.php</file>
+            <file>tests/fannie/PluginFannieTest.php</file>
+            <file>tests/fannie/TagTest.php</file>
+            <file>tests/fannie/TasksTest.php</file>
+            <file>tests/fannie/WebServicesTest.php</file>
+            <file>tests/fannie/ConfigFannieTest.php</file>
+
+            <file>tests/common/CommonTest.php</file>
+
+            <file>tests/pos/InstallTest.php</file>
+            <file>tests/pos/AdminLoginTest.php</file>
+            <file>tests/pos/AjaxTest.php</file>
+            <file>tests/pos/BaseLibsTest.php</file>
+            <file>tests/pos/DisplayTest.php</file>
+            <file>tests/pos/FooterBoxesTest.php</file>
+            <file>tests/pos/KickersTest.php</file>
+            <file>tests/pos/LocalStorageTest.php</file>
+            <file>tests/pos/PagesTest.php</file>
+            <file>tests/pos/ParsersTest.php</file>
+            <file>tests/pos/PluginsTest.php</file>
+            <file>tests/pos/PosModelsTest.php</file>
+            <file>tests/pos/PrintHandlersTest.php</file>
+            <file>tests/pos/ReceiptTest.php</file>
+            <file>tests/pos/SQLManagerTest.php</file>
+            <file>tests/pos/ScaleTest.php</file>
+            <file>tests/pos/ScanningTest.php</file>
+            <file>tests/pos/SearchTest.php</file>
+            <file>tests/pos/TendersTest.php</file>
+            <file>tests/pos/TotalActionsTest.php</file>
         </testsuite>
     </testsuites>
     <filter>

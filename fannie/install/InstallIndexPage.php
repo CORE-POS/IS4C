@@ -779,13 +779,11 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
 
         $ret = array();
         foreach ($this->trans_models as $class) {
-            echo "Pre $class: " . $con->defaultDatabase() . "\n";
             $obj = new $class($con);
             if (method_exists($obj, 'addExtraDB')) {
                 $obj->addExtraDB($op_db_name);
             }
             $ret[] = $obj->createIfNeeded($trans_db_name);
-            echo "Post $class: " . $con->defaultDatabase() . "\n";
         }
 
         $ret[] = dropDeprecatedStructure($con, $trans_db_name, 'InvDelivery', false);
