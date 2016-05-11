@@ -113,6 +113,10 @@ class ADODB_pdo_mysql extends ADODB_pdo {
 		$this->_findschema($table,$schema);
 		if ($schema) {
 			$dbName = $this->database;
+            if (empty($dbName)) {
+                var_dump(debug_backtrace());
+                throw new Exception('database unknown');
+            }
 			$this->SelectDB($schema);
 		}
 		global $ADODB_FETCH_MODE;
