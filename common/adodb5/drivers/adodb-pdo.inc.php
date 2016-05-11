@@ -237,6 +237,18 @@ class ADODB_pdo extends ADOConnection {
     {
         return $this->_driver->SelectDB($dbName);
     }
+
+    function Concat()
+    {
+		$arr = func_get_args();
+
+        return call_user_func_array(array($this->_driver, 'Concat'), $arr);
+    }
+
+	function SQLDate($fmt, $col=false)
+    {
+        return $this->_driver->SQLDate($fmt, $col);
+    }
 	
 	function ErrorMsg()
 	{
