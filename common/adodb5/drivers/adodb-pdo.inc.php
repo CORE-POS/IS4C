@@ -169,6 +169,7 @@ class ADODB_pdo extends ADOConnection {
 			
 			$this->_driver->_connectionID = $this->_connectionID;
 			$this->_UpdatePDO();
+            $this->_driver->database = $this->database;
 			return true;
 		}
 		$this->_driver = new ADODB_pdo_base();
@@ -230,6 +231,11 @@ class ADODB_pdo extends ADOConnection {
 	function OffsetDate($dayFraction,$date=false)
     {   
         return $this->_driver->OffsetDate($dayFraction,$date);
+    }
+
+	function SelectDB($dbName)
+    {
+        return $this->_driver->SelectDB($dbName);
     }
 	
 	function ErrorMsg()
