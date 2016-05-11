@@ -428,7 +428,7 @@ class BasicModel
         $exists = $this->connection->tableExists($this->fq_name);
         if (!$exists && !$this->create()) {
             $ret['error'] = 1;
-            $ret['details'] = $this->connection->error($db_name);
+            $ret['error_msg'] = $this->connection->error($db_name);
             $reflect = new \ReflectionClass($this);
             $ret['query'] = $reflect->getName() . '::create()';
         }

@@ -420,7 +420,7 @@ function sqlErrorsToList($errors)
             $error['struct']);
         printf('<ul style="display:none;" id="eDetails%s">',$error['struct']);
         echo '<li>Query: <pre>'.$error['query'].'</pre></li>';
-        echo '<li>Error Message: '.$error['details'].'</li>';
+        echo '<li>Error Message: '.$error['error_msg'].'</li>';
         echo '</ul>';
         echo '</li>';
     }
