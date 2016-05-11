@@ -120,8 +120,6 @@ class SQLManager
         if (!$connected) {
             $this->last_connect_error = $conn->ErrorMsg();
             return $this->connectAndCreate($server, $type, $username, $password, $database);
-        } else {
-            $conn->SelectDB($database);
         }
 
         return true;
@@ -261,10 +259,10 @@ class SQLManager
 
         $this->default_db = $db_name;
         if ($this->isConnected()) {
-            $selected = $this->query('USE ' . $this->identifierEscape($db_name), $db_name);
+            $selected = $this->connections[$db_name]->SelectDB($db_name);
             if (!$selected) {
                 $this->query('CREATE DATABASE ' . $this->identifierEscape($db_name), $db_name);
-                $selected = $this->query('USE ' . $this->identifierEscape($db_name), $db_name);
+                $selected = $this->connections[$db_name]->SelectDB($db_name);
             }
             if ($selected) {
                 $this->connections[$db_name]->database = $db_name;
