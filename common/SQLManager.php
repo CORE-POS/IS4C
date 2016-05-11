@@ -79,6 +79,11 @@ class SQLManager
         }
     }
 
+    private function isPDO($type)
+    {
+        return (substr(strtolower($type), 0, 4) === 'pdo_');
+    }
+
     /** Add another connection
         @param $server Database server host
         @param $type Database type. Most supported are
@@ -99,15 +104,15 @@ class SQLManager
             return false;
         }
 
-        $conn = ADONewConnection($type);
+        $conn = ADONewConnection($this->isPDO($type) ? 'pdo' : $type);
         $conn->SetFetchMode(ADODB_FETCH_BOTH);
         $connected = false;
         if (isset($this->connections[$database]) || $new) {
-            $connected = $conn->NConnect($server,$username,$password,$database);
+            $connected = $conn->NConnect($this->getDSN($server,$type,$database),$username,$password,$database);
         } elseif ($persistent) {
-            $connected = $conn->PConnect($server,$username,$password,$database);
+            $connected = $conn->PConnect($this->getDSN($server,$type,$database),$username,$password,$database);
         } else {
-            $connected = $conn->Connect($server,$username,$password,$database);
+            $connected = $conn->Connect($this->getDSN($server,$type,$database),$username,$password,$database);
         }
         $this->connections[$database] = $conn;
 
@@ -121,14 +126,39 @@ class SQLManager
     }
 
     /**
+      PDO drivers expect a dsn string rather than just a hostname
+      This returns a dsn string for those drivers or just
+      the $server value unchanged for other drivers.
+    */
+    private function getDSN($server, $type, $database)
+    {
+        if ($this->isPDO($type)) {
+            $dsn = substr(strtolower($type), 4) . ':';
+            if (strstr($server, ':')) {
+                list($host, $port) = explode(':', $server, 2);
+                $dsn .= 'host=' . $host . ';port=' . $port; 
+            } else {
+                $dsn .= 'host=' . $server;
+            }
+            if ($database) {
+                $dsn .= ';dbname=' . $database;
+            }
+
+            return $dsn;
+        } else {
+            return $server;
+        }
+    }
+
+    /**
       Try connecting without specifying a database
       and then creating the requested database
     */
     private function connectAndCreate($server, $type, $username, $password, $database)
     {
-        $conn = ADONewConnection($type);
+        $conn = ADONewConnection($this->isPDO($type) ? 'pdo' : $type);
         $conn->SetFetchMode(ADODB_FETCH_BOTH);
-        $connected = $conn->Connect($server,$username,$password);
+        $connected = $conn->Connect($this->getDSN($server,$type,false),$username,$password,$database);
         if ($connected) {
             $this->last_connection_error = false;
             $stillok = $conn->Execute("CREATE DATABASE $database");

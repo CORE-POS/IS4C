@@ -16,10 +16,6 @@
         "source": "https://github.com/CORE-POS/IS4C"
     },
     "repositories": {
-        "adodb": {
-            "type": "vcs",
-            "url": "https://github.com/gohanman/adodb"
-        },
         "xpdf": {
             "type": "vcs",
             "url": "https://github.com/gohanman/PHP-XPDF"
@@ -29,7 +25,6 @@
         "components/jquery": "1.11.1",
         "components/bootstrap": "3.2.*",
         "components/bootstrap-default": "~3.2",
-        "adodb/adodb-php": "dev-master",
         "php-xpdf/php-xpdf" : "dev-master",
         "phpmailer/phpmailer": "~5.2",
         "psr/log": "~1.0",
@@ -43,7 +38,8 @@
         "predis/predis": "^1.0",
         "symfony/http-foundation": "^2.6",
         "domisys/image_barcode2": "^3.0",
-        "everyman/neo4jphp": "dev-master"
+        "everyman/neo4jphp": "dev-master",
+        "adodb/adodb-php": "^5.20"
     },
     "require-dev": {
         "phpunit/phpunit": "4.5.*",
