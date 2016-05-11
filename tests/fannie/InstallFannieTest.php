@@ -14,7 +14,10 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
             include_once(dirname(__FILE__) . '/../../fannie/install/InstallIndexPage.php');
         }
         $page = new InstallIndexPage();
+        echo "Expecting op\n";
+        echo $con->defaultDatabase() . "\n";
         $results = $page->create_op_dbs($con, $op_db);
+        echo $con->defaultDatabase() . "\n";
         $this->assertNotEmpty($results,'create_op_dbs did not return an array');
         foreach ($results as $result) {
 
@@ -43,7 +46,10 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
             include_once(dirname(__FILE__) . '/../../fannie/install/InstallIndexPage.php');
         }
         $page = new InstallIndexPage();
+        echo "Expecting trans\n";
+        echo $con->defaultDatabase() . "\n";
         $results = $page->create_trans_dbs($con, $trans_db, $op_db);
+        echo $con->defaultDatabase() . "\n";
         $this->assertNotEmpty($results,'create_trans_dbs did not return an array');
         foreach ($results as $result) {
 
@@ -71,7 +77,10 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
             include_once(dirname(__FILE__) . '/../../fannie/install/InstallIndexPage.php');
         }
         $page = new InstallIndexPage();
+        echo "Expecting arch\n";
+        echo $con->defaultDatabase() . "\n";
         $results = $page->create_archive_dbs($con, $arch_db, 'partitions');
+        echo $con->defaultDatabase() . "\n";
         $this->assertNotEmpty($results,'create_trans_dbs did not return an array');
         foreach ($results as $result) {
 
@@ -109,6 +118,8 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
                 $this->assertEquals(true, $exists, 'Structure ' . $result['struct'] . ' was not created.');
             }
         }
+
+        exit;
     }
 
     public function testSampleData()
