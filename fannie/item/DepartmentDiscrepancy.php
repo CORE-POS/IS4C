@@ -120,11 +120,11 @@ class DepartmentDiscrepancy extends FanniePage
         }
         $key = array_search(FormLib::get('dept'), $dp_no);
         
-        echo "<a href=\"http://key/git/fannie/item/DepartmentDiscrepancy.php?dept=";
+        echo "<a href=\"DepartmentDiscrepancy.php?dept=";
         echo $dp_no[$key - 1];
         echo "\" class=\"btn btn-default\">PREV </a>&nbsp;";
         
-        echo "<a href=\"http://key/git/fannie/item/DepartmentDiscrepancy.php?dept=";
+        echo "<a href=\"DepartmentDiscrepancy.php?dept=";
         echo $dp_no[$key + 1];
         echo "\" class=\"btn btn-default\">NEXT </a><br>";
         

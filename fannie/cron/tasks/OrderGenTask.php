@@ -222,10 +222,10 @@ class OrderGenTask extends FannieTask
             while ($deptW = $dbc->fetchRow($deptR)) {
                 $sendTo[] = $deptW['emailAddress'];
             }
-            $sendTo = 'andy@wholefoods.coop';
+            $sendTo = $this->config->get('ADMIN_EMAIL');
             if (count($sendTo) > 0) {
                 $msg_body = 'Created new order' . "\n";
-                $msg_body .= "http://" . 'key' . '/' . $this->config->get('URL')
+                $msg_body .= "http://" . $this->config->get('HTTP_HOST') . '/' . $this->config->get('URL')
                     . 'purchasing/ViewPurchaseOrders.php?id=' . $oid . "\n";
                 mail($sendTo, 'Generated Purchase Order', $msg_body);
             }
