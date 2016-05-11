@@ -45,8 +45,6 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
         $page = new InstallIndexPage();
         $results = $page->create_trans_dbs($con, $trans_db, $op_db);
         $this->assertNotEmpty($results,'create_trans_dbs did not return an array');
-        throw new Exception('die please');
-        exit;
         foreach ($results as $result) {
 
             $this->assertArrayHasKey('error',$result,'Invalid result entry');
@@ -111,8 +109,6 @@ class InstallFannieTest extends PHPUnit_Framework_TestCase
                 $this->assertEquals(true, $exists, 'Structure ' . $result['struct'] . ' was not created.');
             }
         }
-
-        exit;
     }
 
     public function testSampleData()
