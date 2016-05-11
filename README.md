@@ -13,6 +13,13 @@ The master branch is not intended to be completely stable.
 Non-developer users would be best served tracking one of the
 version branches.
 
+### Quick Start
+Install PHP, MySQL, and a webserver
+`git clone --depth 1 https://github.com/CORE-POS/IS4C.git`
+If desired, checkout the lastest version branch instead of master.
+Browse to `fannie/install/` to set up the back end.
+Browse to `pos/is4c-nf/install/` to set up the lane.
+
 ### [Documentation](https://github.com/CORE-POS/IS4C/wiki)
 
 ### [Issues](https://github.com/CORE-POS/IS4C/issues)
