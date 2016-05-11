@@ -120,6 +120,8 @@ class SQLManager
         if (!$connected) {
             $this->last_connect_error = $conn->ErrorMsg();
             return $this->connectAndCreate($server, $type, $username, $password, $database);
+        } else {
+            $conn->SelectDB($database);
         }
 
         return true;
@@ -168,6 +170,7 @@ class SQLManager
                 return false;
             }
             $conn->Execute("USE $database");
+            $conn->SelectDB($database);
             $this->connections[$database] = $conn;
         } else {
             $this->last_connect_error = $conn->ErrorMsg();
