@@ -80,6 +80,14 @@ class FileData
     */
     public static function xlsToArray($filename, $limit)
     {
+        /** 
+          PHPExcel can read both file variants just fine if it's
+          available.
+        */
+        if (class_exists('\\PHPExcel_IOFactory')) {
+            return self::xlsxToArray($filename, $limit);
+        }
+
         if (!class_exists('Spreadsheet_Excel_Reader')) {
             include_once(dirname(__FILE__).'/../../src/Excel/xls_read/reader.php');
         }
@@ -115,8 +123,8 @@ class FileData
     */
     public static function xlsxToArray($filename, $limit)
     {
-        if (!class_exists('PHPExcel_IOFactory')) {
-            include_once(dirname(__FILE__).'/../../src/Excel/xlsx_read/Classes/PHPExcel.php');
+        if (!class_exists('\\PHPExcel_IOFactory')) {
+            return false;
         }
 
         $objPHPExcel = \PHPExcel_IOFactory::load($filename);
@@ -128,12 +136,6 @@ class FileData
             $new = array_map(function ($j) use ($i, &$sheet) {
                 return $sheet->getCellByColumnAndRow($j, $i)->getValue();
             }, range(0, $cols));
-            /*
-            $new = array();
-            for($j=0; $j<=$cols; $j++) {
-                $new[] = $sheet->getCellByColumnAndRow($j,$i)->getValue();
-            }
-            */
             $ret[] = $new;
             if ($limit != 0 && count($ret) >= $limit) {
                 break;

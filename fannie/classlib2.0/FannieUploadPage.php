@@ -26,12 +26,6 @@ namespace COREPOS\Fannie\API;
 if (!class_exists('\FannieAPI')) {
     include_once(dirname(__FILE__).'/FannieAPI.php');
 }
-if (!class_exists('\Spreadsheet_Excel_Reader')) {
-    include_once(dirname(__FILE__).'/../src/Excel/xls_read/reader.php');
-}
-if (!class_exists('\PHPExcel_IOFactory')) {
-    include_once(dirname(__FILE__).'/../src/Excel/xlsx_read/Classes/PHPExcel.php');
-}
 
 /**
   @class FanniePage
