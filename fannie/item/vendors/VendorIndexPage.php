@@ -422,10 +422,16 @@ class VendorIndexPage extends FannieRESTfulPage
                 <option value="0">No</option>';
         $origins = new OriginsModel($dbc);
         $origins->local(1);
-        foreach ($origins->find('shortName') as $origin) {
-            $ret .= sprintf('<option %s value="%d">%s</option>',
-                ($origin->originID() == $model->localOriginID() ? 'selected' : ''),
-                $origin->originID(), $origin->shortName());
+        $locals = $origins->find('shortName');
+        if (count($locals) == 0) {
+            $ret .= sprintf('<option value="1" %s>Yes</option>',
+                    ($model->localOriginID() == 1 ? 'selected' : ''));
+        } else {
+            foreach ($locals as $origin) {
+                $ret .= sprintf('<option %s value="%d">%s</option>',
+                    ($origin->originID() == $model->localOriginID() ? 'selected' : ''),
+                    $origin->originID(), $origin->shortName());
+            }
         }
         $ret .= '</select>
                 </div>
