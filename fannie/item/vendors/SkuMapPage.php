@@ -41,8 +41,48 @@ class SkuMapPage extends FannieRESTfulPage
     {
         $this->__routes[] = 'get<id><sku><plu>';
         $this->__routes[] = 'get<id><apply>';
+        $this->__routes[] = 'get<id><print>';
 
         return parent::preprocess();
+    }
+
+    protected function get_id_print_handler()
+    {
+        $pdf = new FPDF('P', 'mm', 'Letter');
+        $pdf->AddPage();
+        $pdf->SetMargins(10,10,10);
+        $pdf->SetFont('Arial', '', 8);
+        $dbc = $this->connection;
+        $prep = $dbc->prepare('
+            SELECT p.description, v.sku
+            FROM products AS p
+                INNER JOIN vendorSKUtoPLU AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+            WHERE v.vendorID=? 
+            GROUP BY p.description, v.sku LIMIT 33'); 
+        $res = $dbc->execute($prep, $this->id);
+        $posX = 5;
+        $posY = 20;
+        while ($row = $dbc->fetchRow($res)) {
+            $pdf->SetXY($posX+5, $posY);
+            $pdf->Cell(0, 5, $row['description']);
+            $img = Image_Barcode2::draw($row['sku'], 'code128', 'png', false, 20, 1, false);
+            $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
+            imagepng($img, $file);
+            $pdf->Image($file, $posX, $posY+5);
+            unlink($file);
+            $posX += 52;
+            if ($posX > 170) {
+                $posX = 5;
+                $posY += 31;
+                if ($posY > 250) {
+                    $posY = 20;
+                    $pdf->AddPage();
+                }
+            }
+        }
+        $pdf->Output('skus.pdf', 'I');
+
+        return false;
     }
 
     protected function delete_id_handler()
