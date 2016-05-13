@@ -321,6 +321,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 <input type="hidden" name="mtype" value="' . $mtype . '" />
                 <input type="hidden" name="vendor" value="' . $vendorID . '" />
                 <input type="hidden" name="inUse" value="' . $inUse . '" />
+                <input type="hidden" name="store" value="' . $store . '" />
                 <input type="hidden" name="excel" value="yes" />';
             if (is_array($deptMulti)) {
                 foreach ($deptMulti as $d) {
