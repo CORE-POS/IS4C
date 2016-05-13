@@ -99,7 +99,7 @@ if (isset($_REQUEST['k']) && file_exists($cachepath.$_REQUEST['k'])){
 <div id="itemDiv"></div>
 </fieldset>
 <div id="footerDiv"></div>
-<script type="text/javascript" src="view.js?date=20160510">
+<script type="text/javascript" src="view.js?date=20160513">
 </script>
 <?php
 printf("<input type=hidden value=\"%d\" id=\"init_oid\" />",$orderID);

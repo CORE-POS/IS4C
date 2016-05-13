@@ -304,21 +304,21 @@ function saveConfirmDate(val,oid){
 function togglePrint(username,oid){
     $.ajax({
         url: 'OrderViewPage.php',
-        dataType: 'post',
+        type: 'post',
         data: 'togglePrint=1&orderID='+oid
     });
 }
 function toggleO(oid,tid){
     $.ajax({
         url: 'OrderViewPage.php',
-        dataType: 'post',
+        type: 'post',
         data: 'toggleMemType=1&orderID='+oid+'&transID='+tid
     });
 }
 function toggleA(oid,tid){
     $.ajax({
         url: 'OrderViewPage.php',
-        dataType: 'post',
+        type: 'post',
         data: 'toggleStaff=1&orderID='+oid+'&transID='+tid
     });
 }

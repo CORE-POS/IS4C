@@ -103,6 +103,7 @@ $stores = array(
     1 => 'Hillside',
     2 => 'Denfeld',
 );
+$myStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
 $assignments = array();
 $q = "SELECT superID,super_name FROM MasterSuperDepts
@@ -123,7 +124,7 @@ while($w = $dbc->fetch_row($r)){
 $f1 = (isset($_REQUEST['f1']) && $_REQUEST['f1'] !== '')?(int)$_REQUEST['f1']:'';
 $f2 = (isset($_REQUEST['f2']) && $_REQUEST['f2'] !== '')?$_REQUEST['f2']:'';
 $f3 = (isset($_REQUEST['f3']) && $_REQUEST['f3'] !== '')?$_REQUEST['f3']:'';
-$f4 = (isset($_REQUEST['f4']) && $_REQUEST['f4'] !== '')?$_REQUEST['f4']:'';
+$f4 = (isset($_REQUEST['f4']) && $_REQUEST['f4'] !== '')?$_REQUEST['f4']:$myStore;
 
 $filterstring = "";
 if ($f1 !== ''){
@@ -353,9 +354,20 @@ foreach($orders as $w){
 fclose($fp);
 $ret .= "</table>";
 
+$ret .= '<p>
+    <a href="" onclick="orderPlacer(); return false;">Place Some of These</a>
+</p>';
+
 echo $ret;
 ?>
 <script type="text/javascript">
+function orderPlacer() {
+    var ids = '';
+    $('input[name^=oids]').each(function() {
+        ids += 'id[]='+$(this).val() + '&';
+    });
+    window.location = 'OrderPlacer.php?' + ids;
+}
 function refilter(){
     var f1 = $('#f_1').val();
     var f2 = $('#f_2').val();
