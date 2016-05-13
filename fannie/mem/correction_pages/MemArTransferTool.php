@@ -94,7 +94,7 @@ class MemArTransferTool extends FannieRESTfulPage
                 ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
         }
 
-        return parent::preprocess;
+        return parent::preprocess();
     }
 
     protected function getName($num)
