@@ -252,15 +252,7 @@ class FannieAPI
         return array();
     }
 
-    /**
-      Get a list of all available classes implementing a given
-      base class
-      @param $base_class [string] name of base class
-      @param $include_base [boolean] include base class name in the result set
-        [optional, default false]
-      @return [array] of [string] class names
-    */
-    static public function listModules($base_class, $include_base=false, $debug=false)
+    static private function searchDirectories($base_class)
     {
         $directories = array();
         $directories[] = dirname(__FILE__).'/../modules/plugins2.0/';
@@ -314,6 +306,21 @@ class FannieAPI
                 */
                 break;
         }
+
+        return $directories;
+    }
+
+    /**
+      Get a list of all available classes implementing a given
+      base class
+      @param $base_class [string] name of base class
+      @param $include_base [boolean] include base class name in the result set
+        [optional, default false]
+      @return [array] of [string] class names
+    */
+    static public function listModules($base_class, $include_base=false, $debug=false)
+    {
+        $directories = self::searchDirectories($base_class);
 
         // recursive search
         $search = function($path, $depth) use (&$search) {

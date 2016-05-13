@@ -25,9 +25,6 @@ include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
-if (!class_exists('wfcuRegistryModel')) {
-    include_once($FANNIE_ROOT.'modules/plugins2.0/wfcu2/wfcuRegistryModel.php');
-}
 
 /**
   @class HouseCouponEditor
@@ -50,9 +47,9 @@ class WfcClassRegistryPage extends FanniePage
     {
         $this->display_function = 'listClasses';
         
-        if($_GET['cancel']) {
+        if (FormLib::get('cancel', false) !== false) {
             $this->display_function = 'cancel_vew';
-        } elseif ($_GET['sign_pay']) {
+        } elseif (FormLib::get('sign_pay', false) !== false) {
             $this->display_function = 'sign_pay_view';
         }
         
@@ -106,7 +103,7 @@ class WfcClassRegistryPage extends FanniePage
         foreach ($className as $key => $name) {
             $tempDate = substr($classExp[$key], 0, 7);
             $expirationDate = strtotime($tempDate);
-            if (!isset($_GET['expired'])) {
+            if (FormLib::get('expired') === '') {
                 $ret .= '<option value=\'' . $key . '\'>' . $classDate[$key] . " :: " . $name . '</option>';
             } else {
                 if ($date <= $expirationDate) {
@@ -117,18 +114,18 @@ class WfcClassRegistryPage extends FanniePage
         $ret .= '</select>';
         $ret .= '<input class=\'btn btn-default\' type=\'submit\' value=\'Open Class Registry\'>';
         $ret .= '<input type="checkbox" class="checkbox" name="expired" value="1" ';
-            if (!empty($_GET['expired'])){
+            if (FormLib::get('expired')) {
                 $ret .= 'checked="checked" ';
             }
         $ret .= ' ><i>Don\'t show Expired Classes</i>';
         $ret .= '</form></div>';
         
-        $key = $_GET['class_plu'];
+        $key = FormLib::get('class_plu');
         $plu = $classUPC[$key];
         $this->plu = $classUPC[$key];
         
         //* Create table if it doesn't exist
-        $p1 = $dbc->prepare("CREATE TABLE IF NOT EXISTS
+        $prep = $dbc->prepare("CREATE TABLE IF NOT EXISTS
             wfcuRegistry (
                 id INT(6) PRIMARY KEY AUTO_INCREMENT,
                 upc VARCHAR(13), 
@@ -144,8 +141,8 @@ class WfcClassRegistryPage extends FanniePage
                 details TEXT
             );   
         ");
-        $r1 = $dbc->execute($p1);
-        if (!$r1) {
+        $res = $dbc->execute($prep);
+        if (!$res) {
             echo $dbc->error() . '<br />';
         }
         
@@ -236,79 +233,7 @@ class WfcClassRegistryPage extends FanniePage
                 </thead>';
             $ret .= '<tbody>';
             $ret .=  sprintf('<input type="hidden" class="upc" id="upc" name="upc" value="%d" />', $this->plu );
-            $i=0;
-            foreach ($items->find() as $item) {
-                $i+=1;
-                $ret .= sprintf('<tr>
-                    <td class="id collapse">%s</td>
-                    <td class="seat">%d</td>
-                    <td><span class="collapse">%s</span>
-                        <input type="text" class="form-control input-sm editable" name="editFirst" value="%s" /></td>
-                    <td><span class="collapse">%s</span>
-                        <input type="text" class="form-control input-sm editable" name="editLast" value="%s" /></td>
-                    <td><span class="collapse">%s</span>
-                        <input type="text" class="form-control input-sm editable" name="editCard_no" value="%s" /></td>
-                    <td><span class="collapse">%s</span>
-                        <input type="text" class="form-control input-sm editable" name="editPhone" value="%s" /></td>
-                    <td><span class="collapse">%s</span>
-                        <select class="form-control input-sm editable" name="editPayment">
-                            <option value="student has not paid">*unpaid*</option>',
-                    $item->id(),
-                    $i,
-                    $item->first_name(),
-                    $item->first_name(),
-                    $item->last_name(),
-                    $item->last_name(),
-                    $item->card_no(),
-                    $item->card_no(),
-                    $item->phone(),
-                    $item->phone(),
-                    $item->payment()
-                );
-                $ret .= '<option value="Cash" ';
-                if ($item->payment() == 'Cash') {
-                    $ret .= 'selected';
-                }
-                $ret .= '>Cash</option>';
-                $ret .= '<option value="Card" ';
-                if ($item->payment() == 'Card') {
-                    $ret .= 'selected';
-                }
-                $ret .= '>Card</option>';
-                $ret .= '<option value="Gift Card" ';
-                if ($item->payment() == 'Gift Card') {
-                    $ret .= 'selected';
-                }
-                $ret .= '>Gift Card</option>';
-                $ret .= '<option value="Check" ';
-                if ($item->payment() == 'Check') {
-                    $ret .= 'selected';
-                }
-                $ret .= '>Check</option>';
-                $ret .= '<option value="other" ';
-                if ($item->payment() == 'other') {
-                    $ret .= 'selected';
-                }
-                $ret .= '>other</option>';
-                $ret .= sprintf('
-                            </select>
-                    <td><span class="collapse">%s</span>
-                        <textarea class="form-control editable" name="editNotes" value="%s" rows="1" cols="30" />%s</textarea></td>',
-                    $item->payment(),
-                    $item->details(),
-                    $item->details()
-                );  
-                
-                if ($item->first_name()) {
-                    $ret .= sprintf('
-                        <td><a class="btn btn-default" href="?class_plu=%d&id=%d&cancel=1&key=%d">Cancel</button></td>',                
-                        $item->upc(),
-                        $item->id(),
-                        $key
-                    );
-                }
-                
-            }
+            $ret .= $this->printItems($items);
             $ret .= '</tr></tbody></table>';
             
             $items->reset();
@@ -328,78 +253,7 @@ class WfcClassRegistryPage extends FanniePage
                 <th>Notes</th></thead>';
             $ret .= '<tbody>';
             $ret .=  sprintf('<input type="hidden" class="upc" id="upc" name="upc" value="%d" />', $this->plu );
-            $i=0;
-            foreach ($items->find() as $item) {
-                $i+=1;
-                $ret .= sprintf('<tr>
-                    <td class="id collapse">%s</td>
-                    <td class="seat">%d</td>
-                    <td><span class="collapse">%s</span>
-                        <input type="text" class="form-control input-sm editable" name="editFirst" value="%s" /></td>
-                    <td><span class="collapse">%s</span>
-                        <input type="text" class="form-control input-sm editable" name="editLast" value="%s" /></td>
-                    <td><span class="collapse">%s</span>
-                        <input type="text" class="form-control input-sm editable" name="editCard_no" value="%s" /></td>
-                    <td><span class="collapse">%s</span>
-                        <input type="text" class="form-control input-sm editable" name="editPhone" value="%s" /></td>
-                    <td><span class="collapse">%s</span>
-                        <select class="form-control input-sm editable" name="editPayment">
-                            <option value="student has not paid">*unpaid*</option>',
-                    $item->id(),
-                    $i,
-                    $item->first_name(),
-                    $item->first_name(),
-                    $item->last_name(),
-                    $item->last_name(),
-                    $item->card_no(),
-                    $item->card_no(),
-                    $item->phone(),
-                    $item->phone(),
-                    $item->payment()
-                );
-                $ret .= '<option value="Cash" ';
-                if ($item->payment() == 'Cash') {
-                    $ret .= 'selected';
-                }
-                $ret .= '>Cash</option>';
-                $ret .= '<option value="Card" ';
-                if ($item->payment() == 'Card') {
-                    $ret .= 'selected';
-                }
-                $ret .= '>Card</option>';
-                $ret .= '<option value="Gift Card" ';
-                if ($item->payment() == 'Gift Card') {
-                    $ret .= 'selected';
-                }
-                $ret .= '>Gift Card</option>';
-                $ret .= '<option value="Check" ';
-                if ($item->payment() == 'Check') {
-                    $ret .= 'selected';
-                }
-                $ret .= '>Check</option>';
-                $ret .= '<option value="other" ';
-                if ($item->payment() == 'other') {
-                    $ret .= 'selected';
-                }
-                $ret .= '>other</option>';
-                $ret .= sprintf('
-                            </select>
-                    <td><span class="collapse">%s</span>
-                        <textarea class="form-control editable" name="editNotes" value="%s" rows="1" cols="30" />%s</textarea></td>',
-                    $item->payment(),
-                    $item->details(),
-                    $item->details()
-                );  
-                
-                if ($item->first_name()) {
-                    $ret .= sprintf('
-                        <td><a class="btn btn-default" href="?class_plu=%d&id=%d&sign_pay=1&key=%d">Sign / Pay</button></tr>',
-                        $item->upc(),
-                        $item->id(),
-                        $key
-                    );
-                }
-            }
+            $ret .= $this->printItems($items);
             $ret.= '<tr><td><button type="button" class="btn btn-default" onclick="window.location.reload();">Add Row</button></tr>';
             $ret .= '</tbody></table>';
             
@@ -421,78 +275,8 @@ class WfcClassRegistryPage extends FanniePage
                 <th>Refund Type</th>
                 <th>Notes</th></thead>';
             $ret .= '<tbody>';
-            $i = 0;
             $ret .=  sprintf('<input type="hidden" class="upc" id="upc" name="upc" value="%d" />', $this->plu );
-            foreach ($items->find() as $item) {
-                $i+=1;
-                $ret .= sprintf('<tr>
-                    <td class="id collapse">%s</td>
-                    <td class="seat">%d</td>
-                    <td><span class="collapse">%s</span>
-                        <input readonly="readonly" type="text" class="form-control input-sm" name="editFirst" value="%s" /></td>
-                    <td><span class="collapse">%s</span>
-                        <input readonly="readonly" type="text" class="form-control input-sm editable" name="editLast" value="%s" /></td>
-                    <td><span class="collapse">%s</span>
-                        <input readonly="readonly" type="text" class="form-control input-sm editable" name="editCard_no" value="%s" /></td>
-                    <td><span class="collapse">%s</span>
-                        <input readonly="readonly" type="text" class="form-control input-sm editable" name="editPhone" value="%s" /></td>
-                    <td><span class="collapse">%s</span>
-                        <input readonly="readonly" class="form-control input-sm editable" name="editPayment" value="%s">
-                    <td><span class="collapse">%s</span>
-                        <select class="form-control input-sm editable" name="editRefund">
-                            <option value="student has been refunded">*has not been issued refund*</option>',
-                    $item->id(),
-                    $i,
-                    $item->first_name(),
-                    $item->first_name(),
-                    $item->last_name(),
-                    $item->last_name(),
-                    $item->card_no(),
-                    $item->card_no(),
-                    $item->phone(),
-                    $item->phone(),
-                    $item->payment(),
-                    $item->payment(),
-                    $item->refund()
-                );    
-                    $ret .= '<option value="Cash" ';
-                    if ($item->refund() == 'Cash') {
-                        $ret .= 'selected';
-                    }
-                    $ret .= '>Cash</option>';
-                    $ret .= '<option value="Card" ';
-                    if ($item->refund() == 'Card') {
-                        $ret .= 'selected';
-                    }
-                    $ret .= '>Card</option>';
-                    $ret .= '<option value="Gift Card" ';
-                    if ($item->refund() == 'Gift Card') {
-                        $ret .= 'selected';
-                    }
-                    $ret .= '>Gift Card</option>';
-                    $ret .= '<option value="Check" ';
-                    if ($item->refund() == 'Check') {
-                        $ret .= 'selected';
-                    }
-                    $ret .= '>Check</option>';
-                    $ret .= '<option value="other" ';
-                    if ($item->refund() == 'other') {
-                        $ret .= 'selected';
-                    }
-                    $ret .= '>other</option>';
-                    
-                
-                
-                $ret .= sprintf('
-                        </select>
-                    <td><span class="collapse">%s</span>
-                        <textarea class="form-control editable" name="editNotes" value="%s" rows="1" cols="30" />%s</textarea></td>
-                    </tr>',
-                    $item->payment(),
-                    $item->details(),
-                    $item->details()
-                );  
-            }
+            $ret .= $this->printItems($items, false);
             $ret .= '</tbody></table>';
         }
 
@@ -509,12 +293,12 @@ class WfcClassRegistryPage extends FanniePage
     
     private function cancel_vew()
     {
-        $key = $_GET['key'];
+        $key = FormLib::get('key');
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $info = new wfcuRegistryModel($dbc);
         $move = new wfcuRegistryModel($dbc);
-        $info->upc($_GET['class_plu']);
-        $info->id($_GET['id']);
+        $info->upc(FormLib::get('class_plu'));
+        $info->id(FormLib::get('id'));
         
         $ret .= '<p class="bg-success" align="center"> <b>';
         
@@ -539,12 +323,12 @@ class WfcClassRegistryPage extends FanniePage
     
     private function sign_pay_view()
     {
-        $key = $_GET['key'];
+        $key = FormLib::get('key');
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         
         $locateEmptySeat = new wfcuRegistryModel($dbc);
         $locateEmptySeat->seatType(1);
-        $locateEmptySeat->upc($_GET['class_plu']);
+        $locateEmptySeat->upc(FormLib::get('class_plu'));
         foreach ($locateEmptySeat->find() as $seat) {
             if (is_null($seat->first_name())) {
                 $id = $seat->id();
@@ -553,9 +337,9 @@ class WfcClassRegistryPage extends FanniePage
         }
         
         $info = new wfcuRegistryModel($dbc);
-        $info->upc($_GET['class_plu']);
+        $info->upc(FormLib::get('class_plu'));
         $info->seatType(0);
-        $info->id($_GET['id']);
+        $info->id(FormLib::get('id'));
         $move = new wfcuRegistryModel($dbc);
         
         if ($id) {
@@ -647,6 +431,65 @@ function withdraw()
                 <li>Students who have cancelled their seat in class will appear in Cancellation list</li>
             </ul>
             </p>';
+    }
+
+    private function printItems($items, $withCancel=true)
+    {
+        $ret = '';
+        $i = 0;
+        foreach ($items->find() as $item) {
+            $i+=1;
+            $ret .= sprintf('<tr>
+                <td class="id collapse">%s</td>
+                <td class="seat">%d</td>
+                <td><span class="collapse">%s</span>
+                    <input type="text" class="form-control input-sm editable" name="editFirst" value="%s" /></td>
+                <td><span class="collapse">%s</span>
+                    <input type="text" class="form-control input-sm editable" name="editLast" value="%s" /></td>
+                <td><span class="collapse">%s</span>
+                    <input type="text" class="form-control input-sm editable" name="editCard_no" value="%s" /></td>
+                <td><span class="collapse">%s</span>
+                    <input type="text" class="form-control input-sm editable" name="editPhone" value="%s" /></td>
+                <td><span class="collapse">%s</span>
+                    <select class="form-control input-sm editable" name="editPayment">
+                        <option value="student has not paid">*unpaid*</option>',
+                $item->id(),
+                $i,
+                $item->first_name(),
+                $item->first_name(),
+                $item->last_name(),
+                $item->last_name(),
+                $item->card_no(),
+                $item->card_no(),
+                $item->phone(),
+                $item->phone(),
+                $item->payment()
+            );
+            foreach (array('Cash', 'Card', 'Gift Card', 'Check', 'Other') as $tender) {
+                $ret .= sprintf('<option %s value="%s>%s</option>',
+                    ($tender == $item->payment() ? 'selected' : ''),
+                    $tender, $tender);
+            }
+            $ret .= sprintf('
+                        </select>
+                <td><span class="collapse">%s</span>
+                    <textarea class="form-control editable" name="editNotes" value="%s" rows="1" cols="30" />%s</textarea></td>',
+                $item->payment(),
+                $item->details(),
+                $item->details()
+            );  
+            
+            if ($withCancel && $item->first_name()) {
+                $ret .= sprintf('
+                    <td><a class="btn btn-default" href="?class_plu=%d&id=%d&cancel=1&key=%d">Cancel</button></td>',                
+                    $item->upc(),
+                    $item->id(),
+                    $key
+                );
+            }
+        }
+
+        return $ret;
     }
     
 }
