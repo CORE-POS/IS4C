@@ -142,7 +142,7 @@ class SubDeptEditor extends FanniePage
         ?>
         <div id="alertarea"></div>
         <label class="control-label">Choose a department</label>
-        <select class="form-control" id=deptselect onchange="showSubsForDept(this.value);">
+        <select class="form-control" id=deptselect onchange="subDept.show(this.value);">
         <?php echo $opts ?>
         </select>
         <hr />
@@ -156,11 +156,11 @@ class SubDeptEditor extends FanniePage
             <label class="control-label">Add Sub Department</label>
             <input type=text class="form-control" id=newname placeholder="New Sub Department Name" /> 
             <p>
-                <button type=submit value=Add onclick="addSub(); return false;"
+                <button type=submit value=Add onclick="subDept.add(); return false;"
                     class="btn btn-default">Add</button>
             </p>
             <p>
-                <button type=submit value="Delete Selected" onclick="deleteSub(); return false;"
+                <button type=submit value="Delete Selected" onclick="subDept.del(); return false;"
                     class="btn btn-default">Delete Selected</button>
             </p>
         </div>

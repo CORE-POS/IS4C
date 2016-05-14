@@ -81,30 +81,18 @@ HTML;
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
 
-        $upc = FormLib::get('upc');
-        $description = FormLib::get('description');
-        $brand = FormLib::get('brand');
-        $units = FormLib::get('units');
-        $size = FormLib::get('size');
-        $ppo = FormLib::get('ppo');
-        $vendor = FormLib::get('vendor');
-        $sku = FormLib::get('sku');
-        $price = FormLib::get('price');
-        $tagsetID = FormLib::get('subID', 0);
-        $count = FormLib::get('count', 1);
-
         $shelftag = new ShelftagsModel($dbc);
-        $shelftag->id($tagsetID);
-        $shelftag->upc($upc);
-        $shelftag->normal_price($price);
-        $shelftag->pricePerUnit($ppo);
-        $shelftag->description($description);
-        $shelftag->brand($brand);
-        $shelftag->sku($sku);
-        $shelftag->size($size);
-        $shelftag->units($units);
-        $shelftag->vendor($vendor);
-        $shelftag->count($count);
+        $shelftag->id(FormLib::get('subID', 0));
+        $shelftag->upc(FormLib::get('upc'));
+        $shelftag->normal_price(FormLib::get('price'));
+        $shelftag->pricePerUnit(FormLib::get('ppo'));
+        $shelftag->description(FormLib::get('description'));
+        $shelftag->brand(FormLib::get('brand'));
+        $shelftag->sku(FormLib::get('sku'));
+        $shelftag->size(FormLib::get('size'));
+        $shelftag->units(FormLib::get('units'));
+        $shelftag->vendor(FormLib::get('vendor'));
+        $shelftag->count(FormLib::get('count', 1));
         $insR = $shelftag->save();
 
         if ($insR === false) {
@@ -189,8 +177,8 @@ HTML;
         <label>Barcode page</label>
         <select name=subID class="form-control">
         <?php
-        $qm = new ShelfTagQueuesModel($dbc);
-        echo $qm->toOptions($superID);
+        $qmodel = new ShelfTagQueuesModel($dbc);
+        echo $qmodel->toOptions($superID);
         ?>
         </select>
         </div>

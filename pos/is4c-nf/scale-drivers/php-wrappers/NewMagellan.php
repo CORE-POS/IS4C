@@ -37,9 +37,9 @@ class NewMagellan extends ScaleDriverWrapper {
         $scans = array();
         $files = scandir($readdir);
         $files = array_filter($files, function($file) use ($readdir) { return !is_dir($readdir . '/' . $file); });
-        foreach ($files as $fn) {
-            $data = file_get_contents($readdir."/".$fn);
-            unlink($readdir."/".$fn);
+        foreach ($files as $file) {
+            $data = file_get_contents($readdir."/".$file);
+            unlink($readdir."/".$file);
             $line = rtrim($data,"\r\n");
             if (empty($line)) continue;
             if ($line[0] == 'S'){
@@ -66,20 +66,21 @@ class NewMagellan extends ScaleDriverWrapper {
         }
     }
 
-    function ReadReset(){
+    function ReadReset()
+    {
         $readdir = dirname(__FILE__) . '/../drivers/NewMagellan/ss-output';
-        $dh  = opendir($readdir);
-        while (false !== ($fn = readdir($dh))) {
-            if (is_dir($readdir."/".$fn)) continue;
-            unlink($readdir."/".$fn);
+        $dir  = opendir($readdir);
+        while (false !== ($file = readdir($dir))) {
+            if (is_dir($readdir."/".$file)) continue;
+            unlink($readdir."/".$file);
         }
-        closedir($dh);
-        //$this->WriteToScale('rePoll');
+        closedir($dir);
     }
 
     /* just wraps UDP send because commands 
        ARE case-sensitive on the c# side */
-    function WriteToScale($str){
+    function WriteToScale($str)
+    {
         switch(strtolower($str)){
         case 'goodbeep':
             UdpComm::udpSend('goodBeep');

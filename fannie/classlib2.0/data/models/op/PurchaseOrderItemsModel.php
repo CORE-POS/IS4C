@@ -86,10 +86,9 @@ different product, this record will still
             FROM products AS p
                 INNER JOIN departments AS d ON p.department=d.dept_no
             WHERE p.upc=?');
-        $deptR = $dbc->execute($deptP, array($this->internalUPC()));
-        if ($dbc->numRows($deptR)) {
-            $w = $dbc->fetchRow($deptR);
-            return $w['salesCode'];
+        $code = $dbc->getValue($deptP, array($this->internalUPC()));
+        if ($code) {
+            return $code;
         }
 
         $order = new PurchaseOrderModel($dbc);
@@ -105,10 +104,9 @@ different product, this record will still
                 INNER JOIN departments AS d ON p.department=d.dept_no
             WHERE v.sku=?
                 AND v.vendorID=?');
-        $deptR = $dbc->execute($deptP, array($this->sku(), $order->vendorID()));
-        if ($dbc->numRows($deptR)) {
-            $w = $dbc->fetchRow($deptR);
-            return $w['salesCode'];
+        $code = $dbc->getValue($deptP, array($this->sku(), $order->vendorID()));
+        if ($code) {
+            return $code;
         }
 
         // case 3: item is not normally carried but is in a vendor catalog
@@ -120,10 +118,9 @@ different product, this record will still
                 INNER JOIN departments AS d ON z.posDeptID=d.dept_no
             WHERE v.sku=?
                 AND v.vendorID=?');
-        $deptR = $dbc->execute($deptP, array($this->sku(), $order->vendorID()));
-        if ($dbc->numRows($deptR)) {
-            $w = $dbc->fetchRow($deptR);
-            return $w['salesCode'];
+        $code = $dbc->getValue($deptP, array($this->sku(), $order->vendorID()));
+        if ($code) {
+            return $code;
         }
 
         return false;
@@ -137,7 +134,7 @@ different product, this record will still
     {
         $dbc = FannieDB::get($db_name);
         $this->connection = $dbc;
-        if (!$dbc->table_exists($this->name)) {
+        if (!$dbc->tableExists($this->name)) {
             return parent::normalize($db_name, $mode, $doCreate);
         }
         $def = $dbc->tableDefinition($this->name);

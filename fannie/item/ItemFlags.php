@@ -30,86 +30,98 @@ class ItemFlags extends FanniePage {
     
     private $msgs;
 
+    protected $title = 'Fannie - Product Flag Maintenance';
+    protected $header = 'Product Flag Maintenance';
     public $description = '[Item Flags] are extra fields that can be associated with an item.';
-    public $themed = true;
 
-    function preprocess(){
-        global $FANNIE_OP_DB;
-        $this->title = 'Fannie - Product Flag Maintenance';
-        $this->header = 'Product Flag Maintenance';
+    private function addCallback($dbc, $desc)
+    {
+        $bit=1;
+        $bit_number=1;
+        $chkP = $dbc->prepare("SELECT bit_number FROM prodFlags WHERE bit_number=?");
+        for ($i=0; $i<30; $i++) {
+            $chkR = $dbc->execute($chkP,array($bit_number));
+            if ($dbc->num_rows($chkR) == 0) break;
+            $bit *= 2;
+            $bit_number++;
+        }
+        if ($bit > (1<<30)) {
+            $this->msgs[] = 'Error: can\'t add more flags';
+        } else {
+            $insP = $dbc->prepare("INSERT INTO prodFlags 
+                        (bit_number, description) VALUES (?,?)");
+            $dbc->execute($insP,array($bit_number,$desc));    
+        }
+    }
+
+    private function updateCallback($dbc, $ids, $descs, $active)
+    {
+        $upP = $dbc->prepare("
+            UPDATE prodFlags 
+            SET description=?,
+                active=?
+            WHERE bit_number=?");
+        for ($i=0;$i<count($ids);$i++) {
+            if (isset($descs[$i]) && !empty($descs[$i])) {
+                $a = in_array($ids[$i], $active) ? 1 : 0;
+                $dbc->execute($upP,array($descs[$i],$a,$ids[$i]));   
+            }
+        }
+    }
+
+    private function delCallback($dbc, $ids)
+    {
+        $delP = $dbc->prepare("DELETE FROM prodFlags WHERE bit_number=?");
+        foreach ($ids as $id) {
+            $dbc->execute($delP,array($id));
+        }
+    }
+
+    function preprocess()
+    {
         $this->msgs = array();
-        $db = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
 
-        if (FormLib::get_form_value('addBtn') !== ''){
-            $desc = FormLib::get_form_value('new');         
-            if (empty($desc)) $this->msgs[] = 'Error: no new description given';
-            else {
-                $bit=1;
-                $bit_number=1;
-                $chkP = $db->prepare("SELECT bit_number FROM prodFlags WHERE bit_number=?");
-                for($i=0; $i<30; $i++){
-                    $chkR = $db->execute($chkP,array($bit_number));
-                    if ($db->num_rows($chkR) == 0) break;
-                    $bit *= 2;
-                    $bit_number++;
-                }
-                if ($bit > (1<<30)) $this->msgs[] = 'Error: can\'t add more flags';
-                else {
-                    $insP = $db->prepare("INSERT INTO prodFlags 
-                                (bit_number, description) VALUES (?,?)");
-                    $db->execute($insP,array($bit_number,$desc));    
-                }
+        if (FormLib::get('addBtn') !== ''){
+            $desc = FormLib::get('new');         
+            if (empty($desc)) {
+                $this->msgs[] = 'Error: no new description given';
+            } else {
+                $this->addCallback($dbc, $desc);
             }
-        } elseif (FormLib::get_form_value('updateBtn') !== '') {
-            $ids = FormLib::get_form_value('mask',array());
-            $descs = FormLib::get_form_value('desc',array());
+        } elseif (FormLib::get('updateBtn') !== '') {
+            $ids = FormLib::get('mask',array());
+            $descs = FormLib::get('desc',array());
             $active = FormLib::get('active', array());
-            $upP = $db->prepare("
-                UPDATE prodFlags 
-                SET description=?,
-                    active=?
-                WHERE bit_number=?");
-            for($i=0;$i<count($ids);$i++){
-                if (isset($descs[$i]) && !empty($descs[$i])){
-                    $a = in_array($ids[$i], $active) ? 1 : 0;
-                    $db->execute($upP,array($descs[$i],$a,$ids[$i]));   
-                }
-            }
-        }
-        elseif (FormLib::get_form_value('delBtn') !== ''){
-            $ids = FormLib::get_form_value('del',array());
-            $delP = $db->prepare("DELETE FROM prodFlags WHERE bit_number=?");
-            foreach($ids as $id)
-                $db->execute($delP,array($id));
+            $this->updateCallback($dbc, $ids, $descs, $active);
+        } elseif (FormLib::get('delBtn') !== ''){
+            $ids = FormLib::get('del',array());
+            $this->delCallback($dbc, $ids);
         }
 
-        for($i=1; $i<=count($this->msgs); $i++) {
-            $db->logger($this->msgs[($i-1)]);
-        }
-
-        return True;
+        return true;
     }
 
     function body_content()
     {
-        global $FANNIE_OP_DB;
         global $FANNIE_COOP_ID;
         ob_start();
         // If there were errors in preprocess().
-        if (count($this->msgs) > 0){
+        if (count($this->msgs) > 0) {
             echo '<ul>';
             foreach($this->msgs as $m) echo '<li>'.$m.'</li>';
             echo '</ul>';
         }
-        echo '<form action="'.$_SERVER['PHP_SELF'].'" method="post">';
-        $db = FannieDB::get($FANNIE_OP_DB);
+        $self = filter_input(INPUT_SERVER, 'PHP_SELF');
+        echo '<form action="'.$self.'" method="post">';
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
         if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' ) {
-            $q = $db->prepare("SELECT bit_number,description,active FROM prodFlags ORDER BY bit_number");
+            $prep = $dbc->prepare("SELECT bit_number,description,active FROM prodFlags ORDER BY bit_number");
             $excelCols = array('','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ');
         } else {
-            $q = $db->prepare("SELECT bit_number,description,active FROM prodFlags ORDER BY description");
+            $prep = $dbc->prepare("SELECT bit_number,description,active FROM prodFlags ORDER BY description");
         }
-        $r = $db->execute($q);
+        $res = $dbc->execute($prep);
         echo '<div class="row">
             <div class="col-sm-6">';
         echo '<table class="table form-horizontal">';
@@ -118,7 +130,7 @@ class ItemFlags extends FanniePage {
             <th>Enabled</th>
             <th><span class="glyphicon glyphicon-trash"></span></th>
             </tr>';
-        while ($w = $db->fetch_row($r)) {
+        while ($w = $dbc->fetchRow($res)) {
             if (isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' ) {
                 printf('<tr><td>%d. %s <input type="text" name="desc[]" 
                     class="form-control" value="%s" />
@@ -161,7 +173,7 @@ class ItemFlags extends FanniePage {
         echo '</div>
             <div class="col-sm-4 panel panel-default">
             <div class="panel-body">';
-        echo '<form action="'.$_SERVER['PHP_SELF'].'" method="post"
+        echo '<form action="'.$self.'" method="post"
                 class="form-inline">';
         echo '<label>New</label>: <input type="text" name="new" class="form-control" /> ';
         echo '<button type="submit" name="addBtn" value="1"
@@ -186,6 +198,11 @@ class ItemFlags extends FanniePage {
     {
         $this->msgs = array('foo');
         $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $dbc = $this->connection;
+        $dbc->SelectDB($this->config->get('OP_DB'));
+        $this->addCallback($dbc, 'test');
+        $this->updateCallback($dbc, array(1), array('update'), array(1));
+        $this->delCallback($dbc, array(1));
     }
 
 }
