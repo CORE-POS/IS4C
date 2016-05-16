@@ -115,18 +115,20 @@ class CWCouponReport extends FannieReportPage
             $record[] = $basket[0];
             $record[] = '';
 
-            $r = $dbc->execute($beforeBasketP, array($w['card_no'], $date_id, $basket['start_time']));
             $before_count = 0;
             $avg_before = 0.0;
             $befores = array();
-            while ($before = $dbc->fetchRow($r)) {
-                $befores[] = substr($before[0], 0, 4) . '-' . substr($before[0], 4, 2) . '-' . substr($before[0], -2) . ' ' . $before[2];
-                $avg_before += $before[2];
-                $before_count++;
-                if ($before_count > 5) {
-                    break;
+            if ($w['card_no'] != 11 && $w['card_no'] != 9) {
+                $r = $dbc->execute($beforeBasketP, array($w['card_no'], $date_id, $basket['start_time']));
+                while ($before = $dbc->fetchRow($r)) {
+                    $befores[] = substr($before[0], 0, 4) . '-' . substr($before[0], 4, 2) . '-' . substr($before[0], -2) . ' ' . $before[2];
+                    $avg_before += $before[2];
+                    $before_count++;
+                    if ($before_count > 5) {
+                        break;
+                    }
                 }
-            }
+            } 
             if ($before_count != 0) {
                 $avg_before /= $before_count;
             } else {
@@ -141,15 +143,17 @@ class CWCouponReport extends FannieReportPage
             $record[] = sprintf('%.2f', $avg_before);
             $record[] = '';
 
-            $r = $dbc->execute($afterBasketP, array($w['card_no'], $date_id, $basket['start_time']));
             $after_count = 0;
             $avg_after = 0.0;
-            while ($after = $dbc->fetchRow($r)) {
-                $record[] = substr($after[0], 0, 4) . '-' . substr($after[0], 4, 2) . '-' . substr($after[0], -2) . ' ' . $after[2];
-                $avg_after += $after[2];
-                $after_count++;
-                if ($after_count > 5) {
-                    break;
+            if ($w['card_no'] != 11 && $w['card_no'] != 9) {
+                $r = $dbc->execute($afterBasketP, array($w['card_no'], $date_id, $basket['start_time']));
+                while ($after = $dbc->fetchRow($r)) {
+                    $record[] = substr($after[0], 0, 4) . '-' . substr($after[0], 4, 2) . '-' . substr($after[0], -2) . ' ' . $after[2];
+                    $avg_after += $after[2];
+                    $after_count++;
+                    if ($after_count > 5) {
+                        break;
+                    }
                 }
             }
             if ($after_count != 0) {
