@@ -53,8 +53,8 @@ class ReverseTransPage extends FannieRESTfulPage
 
         $query = "select d.upc,d.trans_type,d.trans_subtype,d.trans_status,
               d.total,d.card_no,p.description,t.TenderName 
-              from $dlog as d left join
-              products as p on d.upc = p.upc 
+              from $dlog as d 
+              " . DTrans::joinProducts('d', 'p') . "
               left join tenders AS t ON d.trans_subtype=t.TenderCode
               where tdate BETWEEN ? AND ?
               and trans_num=?
