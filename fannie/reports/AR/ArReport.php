@@ -46,14 +46,21 @@ class ArReport extends FannieReportPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
-        $q = $dbc->prepare("select charges,trans_num,payments,
+        $prep = $dbc->prepare("
+            SELECT charges,trans_num,payments,
                 year(tdate),month(tdate),day(tdate)
-                from ar_history AS s 
-                WHERE s.card_no=? ORDER BY tdate DESC");
-        $r = $dbc->execute($q,array($this->form->memNum));
+            FROM ar_history_today
+            WHERE card_no=?
+            UNION ALL
+            SELECT charges,trans_num,payments,
+                year(tdate),month(tdate),day(tdate)
+            FROM ar_history
+            WHERE card_no=? 
+            ORDER BY tdate DESC");
+        $res = $dbc->execute($prep,array($this->form->memNum, $this->form->memNum));
 
         $data = array();
-        while ($row = $dbc->fetchRow($r)) {
+        while ($row = $dbc->fetchRow($res)) {
             $data[] = $this->rowToRecord($row);
         }
 
