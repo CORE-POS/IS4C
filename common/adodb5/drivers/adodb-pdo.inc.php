@@ -378,6 +378,21 @@ class ADODB_pdo extends ADOConnection {
 		#adodb_backtrace();
 		#var_dump($this->_bindInputArray);
 		if ($stmt) {
+            if (!isset($this->_driver)) {
+                ob_start();
+                $fp = fopen(__DIR__ . '/../../fannie/logs/debug_fannie.log', 'a');
+                fwrite($fp, "_driver is undefined\n");
+                debug_print_backtrace();
+                fwrite($fp, ob_end_clean() . "\n");
+                fclose($fp);
+            } elseif (!isset($this->debug)) {
+                ob_start();
+                $fp = fopen(__DIR__ . '/../../fannie/logs/debug_fannie.log', 'a');
+                fwrite($fp, "debug is undefined\n");
+                debug_print_backtrace();
+                fwrite($fp, ob_end_clean() . "\n");
+                fclose($fp);
+            }
 			$this->_driver->debug = $this->debug;
 			if ($inputarr) $ok = $stmt->execute($inputarr);
 			else $ok = $stmt->execute();

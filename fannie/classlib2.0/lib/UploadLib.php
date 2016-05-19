@@ -43,25 +43,5 @@ class UploadLib
                 return 'Unknown problem uploading the file.';
         }
     }
-
-    public static function pdfUploadEnabled()
-    {
-        if (!class_exists('\XPDF\PdfToText')) {
-            return 'Missing dependency php-xpdf/php-xpdf; install it using composer';
-        } else {
-            try {
-                $obj = \XPDF\PdfToText::create();
-            } catch (\XPDF\Exception\BinaryNotFoundException $e) {
-                return 'Cannot locate required binary "pdftotext". Package name
-                    may be "poppler-utils" or "xpdf-utils" on Debian based distros or "xpdf"
-                    on Red Hat based distros.';
-            } catch (Exception $e) {
-                return 'Unexpected error initializing pdftotext wrapper. Details: '
-                    . $e->getMessage();
-            }
-        }
-        
-        return true;
-    }
 }
 
