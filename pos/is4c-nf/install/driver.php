@@ -7,6 +7,10 @@ CoreState::loadParams();
 include('InstallUtilities.php');
 $known_good_modules = array(
     'SPH_Magellan_Scale' => array(
+        'description' => 'Magellan Scanner/scale (recommended)',
+        'common-ports' => array('COM*', '/dev/ttyS*'),
+    ),
+        'SPH_Magellan_Classic' => array(
         'description' => 'Magellan Scanner/scale',
         'common-ports' => array('COM*', '/dev/ttyS*'),
     ),
@@ -19,6 +23,7 @@ $known_good_modules = array(
         'common-ports' => array(
             'VX805XPI:*' => 'Verifone VX805 on COM*',
             'VX805XPI_MERCURY_E2E:*' => 'Verifone VX805 with Mercury encryption on COM*',
+            'INGENICOISC250_MERCURY_E2E' => 'Ingenico iSC250 with Mercury encryption on COM*',
         ),
     ),
     'SPH_Datacap_EMVX' => array(
@@ -26,6 +31,7 @@ $known_good_modules = array(
         'common-ports' => array(
             'VX805XPI:*' => 'Verifone VX805 on COM*',
             'VX805XPI_MERCURY_E2E:*' => 'Verifone VX805 with Mercury encryption on COM*',
+            'INGENICOISC250_MERCURY_E2E' => 'Ingenico iSC250 with Mercury encryption on COM*',
         ),
     ),
     'SPH_SignAndPay_Native' => array(
