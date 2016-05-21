@@ -173,7 +173,7 @@ class MemberLib extends \LibraryClass
                                     ?  \CoreLocal::get("{$programCode}tenderKeyCap")
                                     : 'CCr' . \CoreLocal::get("CCredProgramID");
                                 $programBalance =
-                                    \(CoreLocal::get("{$programCode}availBal")) ?
+                                    (\CoreLocal::get("{$programCode}availBal")) ?
                                     \CoreLocal::get("{$programCode}availBal") :
                                     \CoreLocal::get("{$programCode}availCreditBalance");
 
