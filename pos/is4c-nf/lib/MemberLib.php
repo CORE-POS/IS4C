@@ -481,5 +481,20 @@ class MemberLib extends \LibraryClass
         return ($num_rows == 0 || !$row['ChargeOk']) ? 0 : 1;
     }
 
+    static public function getChgName() 
+    {
+        $query = "select LastName, FirstName from custdata where CardNo = '" .CoreLocal::get("memberID") ."'";
+        $connection = \Database::pDataConnect();
+        $result = $connection->query($query);
+        $num_rows = $connection->num_rows($result);
+
+        if ($num_rows > 0) {
+            $LastInit = substr(\CoreLocal::get("lname"), 0, 1).".";
+            return trim(\CoreLocal::get("fname")) ." ". $LastInit;
+        } else {
+            return \CoreLocal::get('memMsg');
+        }
+    }
+
 }
 

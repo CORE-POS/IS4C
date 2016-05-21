@@ -79,7 +79,7 @@ class CCredSigSlip extends ReceiptMessage {
         if ($conn === False) {
             return "Error: ccDataConnect() failed." . $lineEnd;
         }
-        $chgName = ReceiptLib::getChgName();
+        $chgName = COREPOS\pos\lib\MemberLib::getChgName();
         
         $dateTimeStamp = time();
         $date = ReceiptLib::build_time($dateTimeStamp);

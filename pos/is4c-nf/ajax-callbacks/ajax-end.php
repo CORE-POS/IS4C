@@ -61,8 +61,6 @@ ob_start();
 
 if (strlen($receiptType) > 0) {
 
-    register_shutdown_function(array('ReceiptLib', 'shutdownFunction'));
-
     $receiptContent = array();
 
     if ($transFinished) {

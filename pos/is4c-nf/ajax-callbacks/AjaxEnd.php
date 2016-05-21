@@ -45,7 +45,6 @@ class AjaxEnd extends AjaxCallback
             $receiptNum = ReceiptLib::mostRecentReceipt();
         }
 
-        register_shutdown_function(array('ReceiptLib', 'shutdownFunction'));
         $dokick = $this->doKick($receiptNum, $transFinished);
         list($doEmail, $customerEmail) = $this->sendEmail();
 

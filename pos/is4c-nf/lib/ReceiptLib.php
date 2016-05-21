@@ -204,7 +204,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
 //#'C - is this never called?
 static public function printChargeFooterCust($dateTimeStamp, $ref, $program="charge") 
 {
-    $chgName = self::getChgName();            // added by apbw 2/14/05 SCR
+    $chgName = COREPOS\pos\lib\MemberLib::getChgName();            // added by apbw 2/14/05 SCR
 
     $date = self::build_time($dateTimeStamp);
 
@@ -254,7 +254,7 @@ static public function printChargeFooterCust($dateTimeStamp, $ref, $program="cha
 */
 static public function printChargeFooterStore($dateTimeStamp, $ref, $program="charge") 
 {
-    $chgName = self::getChgName();            // added by apbw 2/14/05 SCR
+    $chgName = COREPOS\pos\lib\MemberLib::getChgName();            // added by apbw 2/14/05 SCR
     
     $date = self::build_time($dateTimeStamp);
 
@@ -310,12 +310,6 @@ static public function printChargeFooterStore($dateTimeStamp, $ref, $program="ch
 
 static public function printCabCoupon($dateTimeStamp, $ref)
 {
-    /* no cut
-    $receipt = "\n\n\n\n\n\n\n"
-           .chr(27).chr(105)
-           .chr(27).chr(33).chr(5)
-           ."\n";
-     */
     $receipt = "\n";
 
     $receipt .= self::biggerFont(self::centerBig("WHOLE FOODS COMMUNITY CO-OP"))."\n\n";
@@ -374,12 +368,8 @@ static public function chargeBalance($receipt, $program="charge", $trans_num='')
     COREPOS\pos\lib\MemberLib::chargeOk();
 
     $labels = array();
-    $labels['charge'] = array("Current IOU Balance:"
-            , 1
-    );
-    $labels['debit'] = array("Debit available:"
-            , -1
-    );
+    $labels['charge'] = array("Current IOU Balance:" , 1);
+    $labels['debit'] = array("Debit available:", -1);
 
     $dbc = Database::tDataConnect();
     list($emp, $reg, $trans) = self::parseRef($trans_num);
@@ -412,37 +402,6 @@ static public function chargeBalance($receipt, $program="charge", $trans_num='')
     }
     
     return $receipt;
-}
-
-static public function getChgName() {
-    /*      
-        the name that appears beneath the signature 
-        line on the customer copy is pulled from the session. 
-        Pulling the name here from custdata w/o respecting
-        personNum can cause this name to differ from the 
-        signature line, so I'm using the session value here too. I'm 
-        leaving the query in place as a check that memberID
-        is valid; shouldn't slow anything down noticably.
-
-        I also changed the memberID strlen qualifier because the 
-        != 4 or == 4 decision was causing inconsistent behavior 
-        with older memberships that have memberIDs shorter than 
-        4 digits.
-
-        andy
-    */
-    $query = "select LastName, FirstName from custdata where CardNo = '" .CoreLocal::get("memberID") ."'";
-    $connection = Database::pDataConnect();
-    $result = $connection->query($query);
-    $num_rows = $connection->num_rows($result);
-
-    if ($num_rows > 0) {
-        $LastInit = substr(CoreLocal::get("lname"), 0, 1).".";
-        return trim(CoreLocal::get("fname")) ." ". $LastInit;
-    }
-    else{
-        return CoreLocal::get('memMsg');
-    }
 }
 
 static public function normalFont() {
@@ -1132,17 +1091,6 @@ static public function memReceiptMessages($card_no)
     }
 
     return $ret;
-}
-
-static public function shutdownFunction()
-{
-    $error = error_get_last(); 
-    if ($error !== null && $error['type'] == 1) {
-        // fatal error occurred
-        ob_end_clean();
-
-        echo '{ "error" : "Printer is not responding" }';
-    }
 }
 
 /**
