@@ -47,6 +47,8 @@ class InstallTest extends PHPUnit_Framework_TestCase
     public function testMinServer()
     {
         $db = Database::mDataConnect();
+        var_dump($db->isConnected());
+        var_dump(CoreLocal::get('mDBMS'));
         $errors = COREPOS\pos\install\db\Creator::createMinServer($db, CoreLocal::get('mDatabase'));
 
         $this->assertInternalType('array', $errors);
