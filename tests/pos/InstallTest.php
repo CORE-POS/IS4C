@@ -44,31 +44,6 @@ class InstallTest extends PHPUnit_Framework_TestCase
         }
     }
 
-    public function testMinServer()
-    {
-        $db = Database::mDataConnect();
-        var_dump($db->isConnected());
-        var_dump(CoreLocal::get('mDBMS'));
-        $errors = COREPOS\pos\install\db\Creator::createMinServer($db, CoreLocal::get('mDatabase'));
-
-        $this->assertInternalType('array', $errors);
-
-        $this->assertInternalType('array', $errors);
-        foreach ($errors as $error) {
-            $this->assertInternalType('array', $error, 'Invalid status entry');
-            $this->assertArrayHasKey('error', $error, 'Status entry missing key: error');
-            $this->assertEquals(0, $error['error'], 'Error creating ' . $error['struct']
-                . ', ' . print_r($error, true));
-            if (isset($error['query']) && stristr($error['query'], 'DROP VIEW')) {
-                // don't check for existence on DROP VIEW queries
-                continue;
-            }
-            $exists = $db->table_exists($error['struct']);
-            $this->assertEquals(true, $exists, 'Failed to create ' . $error['struct']
-                . ', ' . print_r($error, true));
-        }
-    }
-
     public function testSampleData()
     {
         $samples = array(
@@ -98,6 +73,30 @@ class InstallTest extends PHPUnit_Framework_TestCase
 
         $dbc = Database::tDataConnect();
         $dbc->query('INSERT INTO taxrates (id, rate, description) VALUES (1, 0.05, \'SalesTax\')');
+    }
+
+    public function testMinServer()
+    {
+        CoreState::loadParams();
+        $db = Database::mDataConnect();
+        $errors = COREPOS\pos\install\db\Creator::createMinServer($db, CoreLocal::get('mDatabase'));
+
+        $this->assertInternalType('array', $errors);
+
+        $this->assertInternalType('array', $errors);
+        foreach ($errors as $error) {
+            $this->assertInternalType('array', $error, 'Invalid status entry');
+            $this->assertArrayHasKey('error', $error, 'Status entry missing key: error');
+            $this->assertEquals(0, $error['error'], 'Error creating ' . $error['struct']
+                . ', ' . print_r($error, true));
+            if (isset($error['query']) && stristr($error['query'], 'DROP VIEW')) {
+                // don't check for existence on DROP VIEW queries
+                continue;
+            }
+            $exists = $db->table_exists($error['struct']);
+            $this->assertEquals(true, $exists, 'Failed to create ' . $error['struct']
+                . ', ' . print_r($error, true));
+        }
     }
 }
 
