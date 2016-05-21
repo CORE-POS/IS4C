@@ -213,7 +213,7 @@ class undo extends NoInputCorePage
                 }
             }
 
-            PrehLib::setMember($card_no, 1);
+            COREPOS\pos\lib\MemberLib::setMember($card_no, 1);
             CoreLocal::set("autoReprint",0);
 
             /* do NOT restore logged in cashier until this transaction is complete */

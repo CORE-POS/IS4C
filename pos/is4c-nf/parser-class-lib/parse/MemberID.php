@@ -36,7 +36,7 @@ class MemberID extends Parser
     {
         if ($str == "0ID") {
             // Member zero clears member info from the transaction
-            PrehLib::clearMember();
+            COREPOS\pos\lib\MemberLib::clear();
             $ret = array("main_frame"=>false,
                 "output"=>DisplayLib::lastpage(),
                 "target"=>".baseHeight",
@@ -59,7 +59,7 @@ class MemberID extends Parser
             return $ret;
         } else {
             // always re-apply other member numbers
-            $ret = PrehLib::memberID(substr($str,0,strlen($str)-2));
+            $ret = COREPOS\pos\lib\MemberLib::memberID(substr($str,0,strlen($str)-2));
             return $ret;
         }
     }

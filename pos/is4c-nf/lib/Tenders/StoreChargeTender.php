@@ -34,7 +34,7 @@ class StoreChargeTender extends TenderModule
     */
     public function errorCheck()
     {
-        $charge_ok = PrehLib::chargeOk();
+        $charge_ok = COREPOS\pos\lib\MemberLib::chargeOk();
     
         $buttons = array('[clear]' => 'parseWrapper(\'CL\');');
         if ($charge_ok == 0) {

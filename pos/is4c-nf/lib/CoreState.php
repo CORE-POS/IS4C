@@ -542,7 +542,7 @@ static public function loadData()
         $row_local = $db_local->fetchRow($result_local);
         
         if ($row_local["card_no"] && strlen($row_local["card_no"]) > 0) {
-            PrehLib::setMember($row_local['card_no'], 1);
+            COREPOS\pos\lib\MemberLib::setMember($row_local['card_no'], 1);
         }
     }
 }

@@ -183,7 +183,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $t->parse('TL');
         $this->assertEquals('/memlist.php', substr($out['main_frame'], -12));
         lttLib::clear();
-        PrehLib::setMember(1, 1);
+        COREPOS\pos\lib\MemberLib::setMember(1, 1);
         $out = $t->parse('TL');
         $this->assertNotEquals(0, strlen($out['output']));
         $this->assertEquals(true, $out['redraw_footer']);

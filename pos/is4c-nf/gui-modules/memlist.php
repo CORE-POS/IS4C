@@ -145,7 +145,7 @@ class memlist extends NoInputCorePage
             if ($memberID == CoreLocal::get('defaultNonMem')) {
                 $personNum = 1;
             }
-            PrehLib::setMember($memberID, $personNum);
+            COREPOS\pos\lib\MemberLib::setMember($memberID, $personNum);
 
             if (CoreLocal::get('store') == "WEFC_Toronto") {
                 $error_msg = $this->wefcCardCheck($memberID);
@@ -158,7 +158,7 @@ class memlist extends NoInputCorePage
 
             // don't bother with unpaid balance check if there is no balance
             if ($memberID != CoreLocal::get("defaultNonMem") && CoreLocal::get('balance') > 0) {
-                $unpaid = PrehLib::checkUnpaidAR($memberID);
+                $unpaid = COREPOS\pos\lib\MemberLib::checkUnpaidAR($memberID);
                 if ($unpaid) {
                     $this->change_page($this->page_url."gui-modules/UnpaidAR.php");
                 } else {

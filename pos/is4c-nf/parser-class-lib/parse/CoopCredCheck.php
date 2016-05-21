@@ -32,7 +32,7 @@ class CoopCredCheck extends Parser {
     {
         $ret = $this->default_json();
         // Sets $balance and $availBal.
-        $chargeOk = PrehLib::chargeOk();
+        $chargeOk = COREPOS\pos\lib\MemberLib::chargeOk();
         // $memChargeCommitted isn't used here.
         $memChargeCommitted=CoreLocal::get("availBal") - CoreLocal::get("memChargeTotal");
         $message = "<p style='font-weight:bold; text-align:center; margin: 0em 0em 0em -1.0em;'>".
