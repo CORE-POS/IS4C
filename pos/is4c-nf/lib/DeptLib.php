@@ -262,7 +262,7 @@ class DeptLib extends \LibraryClass
         $tax = $dept["dept_tax"];
         $foodstamp = $dept['dept_fs'] != 0 ? 1 : 0;
         $deptDiscount = $dept["dept_discount"];
-        list($tax, $foodstamp, $deptDiscount) = self::applyToggles($tax, $foodstamp, $deptDiscount);
+        list($tax, $foodstamp, $deptDiscount) = \PrehLib::applyToggles($tax, $foodstamp, $deptDiscount);
 
         $minMaxButtons = array(
             'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',
