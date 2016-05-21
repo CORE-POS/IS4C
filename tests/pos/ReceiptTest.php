@@ -343,9 +343,6 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
     public function testLib()
     {
-        $ck = ReceiptLib::center_check('foo');
-        $this->assertEquals(str_repeat(' ', 28) . 'foo', $ck);
-
         Franking::endorse('foo');
 
         CoreLocal::set('dualDrawerMode', 1, true);
