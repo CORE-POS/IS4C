@@ -45,10 +45,10 @@ class DonationKey extends Parser
             $ttl = CoreLocal::get("amtdue");    
             $next = ceil($ttl);
             $amt = sprintf('%.2f',(($ttl == $next) ? 1.00 : ($next - $ttl)));
-            $ret = PrehLib::deptkey($amt*100, $dept.'0', $ret);
+            $ret = COREPOS\pos\lib\DeptLib::deptkey($amt*100, $dept.'0', $ret);
         } else {
             $amt = substr($str,0,strlen($str)-2);
-            $ret = PrehLib::deptkey($amt, $dept.'0', $ret);
+            $ret = COREPOS\pos\lib\DeptLib::deptkey($amt, $dept.'0', $ret);
         }
 
         return $ret;

@@ -129,7 +129,7 @@ class Valutec extends BasicCCModule
             case PaycardLib::PAYCARD_MODE_ACTIVATE:
                 CoreLocal::set("autoReprint",1);
                 $ttl = CoreLocal::get("paycard_amount");
-                PrehLib::deptkey($ttl*100,9020);
+                COREPOS\pos\lib\DeptLib::deptkey($ttl*100,9020);
                 $resp = CoreLocal::get("paycard_response");    
                 CoreLocal::set("boxMsg","<b>Success</b><font size=-1>
                                            <p>New card balance: $" . $resp["Balance"] . "

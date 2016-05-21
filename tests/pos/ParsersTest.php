@@ -208,7 +208,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(0, strlen($out['output']));
 
         lttLib::clear();
-        PrehLib::deptkey(10, 100);
+        COREPOS\pos\lib\DeptLib::deptkey(10, 100);
         $out = $to->parse('TO');
         $this->assertNotEquals(0, strlen($out['output']));
 

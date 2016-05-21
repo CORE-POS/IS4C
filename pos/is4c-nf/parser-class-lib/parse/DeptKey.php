@@ -79,7 +79,7 @@ class DeptKey extends Parser
         $ret = $this->applyMods($deptmods, $dept, $amt, $ret);
         
         if (!$ret['main_frame']) {
-            $ret = PrehLib::deptkey($amt, $dept, $ret);
+            $ret = COREPOS\pos\lib\DeptLib::deptkey($amt, $dept, $ret);
         }
 
         return $ret;

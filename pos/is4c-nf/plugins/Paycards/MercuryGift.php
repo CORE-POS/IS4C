@@ -159,7 +159,7 @@ class MercuryGift extends BasicCCModule
                 $ttl = CoreLocal::get("paycard_amount");
                 $dept = CoreLocal::get('PaycardDepartmentGift');
                 $dept = $dept == '' ? 902 : $dept;
-                PrehLib::deptkey($ttl*100, $dept . '0');
+                COREPOS\pos\lib\DeptLib::deptkey($ttl*100, $dept . '0');
                 $resp = CoreLocal::get("paycard_response");    
                 CoreLocal::set("boxMsg","<b>Success</b><font size=-1>
                                            <p>New card balance: $" . $resp["Balance"] . "
