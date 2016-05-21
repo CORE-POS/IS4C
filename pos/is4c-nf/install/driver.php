@@ -1,3 +1,9 @@
+<?php
+
+use COREPOS\pos\install\conf\Conf;
+use COREPOS\pos\install\conf\JsonConf;
+
+?>
 <!DOCTYPE html>
 <html>
 <?php
@@ -79,7 +85,7 @@ function expand_port_list($list)
 <div id="wrapper">    
 <h2>IT CORE Lane Installation: Hardware Driver Settings (NewMagellan)</h2>
 
-<div class="alert"><?php InstallUtilities::checkWritable('../ini.json', false, 'JSON'); ?></div>
+<div class="alert"><?php Conf::checkWritable('../ini.json', false, 'JSON'); ?></div>
 
 <form action=driver.php method=post>
 <table id="install" border=0 cellspacing=0 cellpadding=4>
@@ -160,7 +166,7 @@ foreach ($json['NewMagellanPorts'] as $port) {
     $i++;
 }
 $json['NewMagellanPorts'] = $valid;
-InstallUtilities::jsonConfSave('NewMagellanPorts', $json['NewMagellanPorts']);
+JsonConf::save('NewMagellanPorts', $json['NewMagellanPorts']);
 ?>
 <tr>
     <td colspan=3 class="tblHeader">&nbsp;</td>

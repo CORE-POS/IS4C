@@ -1,8 +1,10 @@
 <?php
+use COREPOS\pos\install\conf\FormFactory;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 CoreState::loadParams();
 include('InstallUtilities.php');
+$form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')));
 ?>
 <html>
 <head>
@@ -22,7 +24,7 @@ body {
 <tr>
     <td><b>Scale Beep on Login</b>: </td>
     <td>
-    <?php echo InstallUtilities::installSelectField('LoudLogins', array(1=>'Yes',0=>'No'), 0); ?>
+    <?php echo $form->selectField('LoudLogins', array(1=>'Yes',0=>'No'), 0); ?>
     (Scale makes noise when admin login attempted)
     </td>
 </tr>
@@ -31,7 +33,7 @@ body {
     <td>
     <?php
     $privLevels = array(30=>'Admin only', 25=>'Current & Admin', 20=>'All');
-    echo InstallUtilities::installSelectField('SecurityCancel', $privLevels, 20);
+    echo $form->selectField('SecurityCancel', $privLevels, 20);
     ?>
     </td>
 </tr>
@@ -40,27 +42,27 @@ body {
     <td>
     <?php
     $privLevels = array(30=>'Admin only', 20=>'All');
-    echo InstallUtilities::installSelectField('SecuritySR', $privLevels, 20);
+    echo $form->selectField('SecuritySR', $privLevels, 20);
     ?>
     </td>
 </tr>
 <tr>
     <td><b>Print Tender Report</b>: </td>
-    <td><?php echo InstallUtilities::installSelectField('SecurityTR', $privLevels, 20); ?></td>
+    <td><?php echo $form->selectField('SecurityTR', $privLevels, 20); ?></td>
 </tr>
 <tr>
     <td><b>Refund Item</b>: </td>
-    <td><?php echo InstallUtilities::installSelectField('SecurityRefund', $privLevels, 20); ?></td>
+    <td><?php echo $form->selectField('SecurityRefund', $privLevels, 20); ?></td>
 </tr>
 <tr>
     <td><b>Line Item Discount</b>: </td>
-    <td><?php echo InstallUtilities::installSelectField('SecurityLineItemDiscount', $privLevels, 20); ?></td>
+    <td><?php echo $form->selectField('SecurityLineItemDiscount', $privLevels, 20); ?></td>
 </tr>
 <tr>
     <td><b>Void Limit</b>:</td>
     <td>
     <?php
-    echo InstallUtilities::installTextField('VoidLimit', 0);
+    echo $form->textField('VoidLimit', 0);
     ?> 
     (in dollars, per transaction. Zero for unlimited).
     </td>

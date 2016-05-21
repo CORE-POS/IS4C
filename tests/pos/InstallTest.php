@@ -8,7 +8,7 @@ class InstallTest extends PHPUnit_Framework_TestCase
     public function testOpdata()
     {
         $db = Database::pDataConnect();
-        $errors = InstallUtilities::createOpDBs($db, CoreLocal::get('pDatabase'));
+        $errors = COREPOS\pos\install\db\Creator::createOpDBs($db, CoreLocal::get('pDatabase'));
 
         $this->assertInternalType('array', $errors);
         foreach ($errors as $error) {
@@ -24,7 +24,7 @@ class InstallTest extends PHPUnit_Framework_TestCase
     public function testTranslog()
     {
         $db = Database::tDataConnect();
-        $errors = InstallUtilities::createTransDBs($db, CoreLocal::get('tDatabase'));
+        $errors = COREPOS\pos\install\db\Creator::createTransDBs($db, CoreLocal::get('tDatabase'));
 
         $this->assertInternalType('array', $errors);
 
@@ -47,7 +47,7 @@ class InstallTest extends PHPUnit_Framework_TestCase
     public function testMinServer()
     {
         $db = Database::mDataConnect();
-        $errors = InstallUtilities::createMinServer($db, CoreLocal::get('mDatabase'));
+        $errors = COREPOS\pos\install\db\Creator::createMinServer($db, CoreLocal::get('mDatabase'));
 
         $this->assertInternalType('array', $errors);
 
@@ -88,7 +88,7 @@ class InstallTest extends PHPUnit_Framework_TestCase
         foreach ($samples as $sample) {
             ob_start();
             $dbc->query('TRUNCATE TABLE ' . $dbc->identifierEscape($sample));
-            $loaded = InstallUtilities::loadSampleData($dbc, $sample, false);
+            $loaded = COREPOS\pos\install\data\Loader::loadSampleData($dbc, $sample, false);
             $output = ob_get_clean();
 
             $this->assertEquals(true, $loaded, 'Error with sample data for ' . $sample . ' (' . $output . ')');

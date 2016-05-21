@@ -1,3 +1,7 @@
+<?php
+use COREPOS\pos\install\conf\Conf;
+use COREPOS\pos\install\conf\FormFactory;
+?>
 <!DOCTYPE html>
 <html>
 <?php
@@ -5,6 +9,7 @@ include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 CoreState::loadParams();
 include('InstallUtilities.php');
+$form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')));
 ?>
 <head>
 <title>IT CORE Lane Installation: Receipt Configuration</title>
@@ -16,8 +21,8 @@ include('InstallUtilities.php');
 <div id="wrapper">    
 <h2>IT CORE Lane Installation: Receipt Configuration</h2>
 
-<div class="alert"><?php InstallUtilities::checkWritable('../ini.json', False, 'JSON'); ?></div>
-<div class="alert"><?php InstallUtilities::checkWritable('../ini.php', False, 'PHP'); ?></div>
+<div class="alert"><?php Conf::checkWritable('../ini.json', False, 'JSON'); ?></div>
+<div class="alert"><?php Conf::checkWritable('../ini.php', False, 'PHP'); ?></div>
 
 <form action=receipt.php method=post>
 <table id="install" border=0 cellspacing=0 cellpadding=4>
@@ -28,19 +33,19 @@ include('InstallUtilities.php');
 </tr>
 <tr>
     <td style="width: 30%;"></td>
-    <td><?php echo InstallUtilities::installCheckBoxField('print', 'Enable receipts', 0); ?></td>
+    <td><?php echo $form->checkboxField('print', 'Enable receipts', 0); ?></td>
 </tr>
 <tr>
     <td style="width: 30%;"></td>
-    <td><?php echo InstallUtilities::installCheckBoxField('CancelReceipt', 'Print receipt on canceled transaction', 1); ?></td>
+    <td><?php echo $form->checkboxField('CancelReceipt', 'Print receipt on canceled transaction', 1); ?></td>
 </tr>
 <tr>
     <td style="width: 30%;"></td>
-    <td><?php echo InstallUtilities::installCheckBoxField('SuspendReceipt', 'Print receipt on suspended transaction', 1); ?></td>
+    <td><?php echo $form->checkboxField('SuspendReceipt', 'Print receipt on suspended transaction', 1); ?></td>
 </tr>
 <tr>
     <td style="width: 30%;"></td>
-    <td><?php echo InstallUtilities::installCheckBoxField('ShrinkReceipt', 'Print receipt on shrink/DDD transaction', 1); ?></td>
+    <td><?php echo $form->checkboxField('ShrinkReceipt', 'Print receipt on shrink/DDD transaction', 1); ?></td>
 </tr>
 <tr>
     <td><b>Receipt Type</b>: </td>
@@ -59,7 +64,7 @@ include('InstallUtilities.php');
     if (!$dbc->tableExists('rp_receipt_reorder_unions_g')) {
         unset($receipts[1]);
     }
-    echo InstallUtilities::installSelectField('newReceipt', $receipts, 2);
+    echo $form->selectField('newReceipt', $receipts, 2);
     ?>
     <span class='noteTxt'>
     The Modular receipt uses the modules below to assemble the receipt's contents.
@@ -75,7 +80,7 @@ include('InstallUtilities.php');
     <td>
     <?php
     $savings = AutoLoader::listModules('DefaultReceiptSavings', true);
-    echo InstallUtilities::installSelectField('ReceiptSavingsMode', $savings, 'DefaultReceiptSavings');
+    echo $form->selectField('ReceiptSavingsMode', $savings, 'DefaultReceiptSavings');
     ?>
     <span class='noteTxt'>
     Different options for displaying lines about total savings from
@@ -92,7 +97,7 @@ include('InstallUtilities.php');
         'percent' => 'As % of Purchase',
         'omit' => 'Do not print',
     );
-    echo InstallUtilities::installSelectField('ReceiptLocalMode', $local, 'total');
+    echo $form->selectField('ReceiptLocalMode', $local, 'total');
     ?>
     <span class='noteTxt'>
     Display information about items in the transaction marked "local". This
@@ -106,7 +111,7 @@ include('InstallUtilities.php');
     <td>
     <?php
     $thanks = AutoLoader::listModules('DefaultReceiptThanks', true);
-    echo InstallUtilities::installSelectField('ReceiptThankYou', $thanks, 'DefaultReceiptThanks');
+    echo $form->selectField('ReceiptThankYou', $thanks, 'DefaultReceiptThanks');
     ?>
     <span class='noteTxt'>
     Different options for the receipt line(s) thanking the customer and/or member
@@ -118,7 +123,7 @@ include('InstallUtilities.php');
     <td>
     <?php
     $mods = AutoLoader::listModules('PrintHandler',True);
-    echo InstallUtilities::installSelectField('ReceiptDriver', $mods, 'ESCPOSPrintHandler');
+    echo $form->selectField('ReceiptDriver', $mods, 'ESCPOSPrintHandler');
     ?>
     <span class="noteTxt"></span>
     </td>
@@ -132,7 +137,7 @@ include('InstallUtilities.php');
     <?php
     $mods = AutoLoader::listModules('DefaultReceiptDataFetch', true);
     sort($mods);
-    echo InstallUtilities::installSelectField('RBFetchData', $mods, 'DefaultReceiptDataFetch');
+    echo $form->selectField('RBFetchData', $mods, 'DefaultReceiptDataFetch');
     ?>
     </td>
 </tr>
@@ -142,7 +147,7 @@ include('InstallUtilities.php');
     <?php
     $mods = AutoLoader::listModules('DefaultReceiptFilter',True);
     sort($mods);
-    echo InstallUtilities::installSelectField('RBFilter', $mods, 'DefaultReceiptFilter');
+    echo $form->selectField('RBFilter', $mods, 'DefaultReceiptFilter');
     ?>
     </td>
 </tr>
@@ -152,7 +157,7 @@ include('InstallUtilities.php');
     <?php
     $mods = AutoLoader::listModules('DefaultReceiptSort',True);
     sort($mods);
-    echo InstallUtilities::installSelectField('RBSort', $mods, 'DefaultReceiptSort');
+    echo $form->selectField('RBSort', $mods, 'DefaultReceiptSort');
     ?>
     </td>
 </tr>
@@ -162,7 +167,7 @@ include('InstallUtilities.php');
     <?php
     $mods = AutoLoader::listModules('DefaultReceiptTag',True);
     sort($mods);
-    echo InstallUtilities::installSelectField('RBTag', $mods, 'DefaultReceiptTag');
+    echo $form->selectField('RBTag', $mods, 'DefaultReceiptTag');
     ?>
     </td>
 </tr>
@@ -201,35 +206,35 @@ InstallUtilities::paramSave('ReceiptMessageMods',CoreLocal::get('ReceiptMessageM
 </tr>
 <tr>
     <td><b>Email Receipt Sender Address</b>:</td>
-    <td><?php echo InstallUtilities::installTextField('emailReceiptFrom', ''); ?></td>
+    <td><?php echo $form->textField('emailReceiptFrom', ''); ?></td>
 </tr>
 <tr>
     <td><b>Email Receipt Sender Name</b>:</td>
-    <td><?php echo InstallUtilities::installTextField('emailReceiptName', 'CORE-POS'); ?></td>
+    <td><?php echo $form->textField('emailReceiptName', 'CORE-POS'); ?></td>
 </tr>
 <tr>
     <td><b>Use SMTP</b>:</td>
-    <td><?php echo InstallUtilities::installSelectField('emailReceiptSmtp', array(1=>'Yes',0=>'No'), 0); ?></td>
+    <td><?php echo $form->selectField('emailReceiptSmtp', array(1=>'Yes',0=>'No'), 0); ?></td>
 </tr>
 <tr>
     <td><b>STMP Server</b>:</td>
-    <td><?php echo InstallUtilities::installTextField('emailReceiptHost', '127.0.0.1'); ?></td>
+    <td><?php echo $form->textField('emailReceiptHost', '127.0.0.1'); ?></td>
 </tr>
 <tr>
     <td><b>STMP Port</b>:</td>
-    <td><?php echo InstallUtilities::installTextField('emailReceiptPort', '25'); ?></td>
+    <td><?php echo $form->textField('emailReceiptPort', '25'); ?></td>
 </tr>
 <tr>
     <td><b>STMP Username</b>:</td>
-    <td><?php echo InstallUtilities::installTextField('emailReceiptUser', ''); ?></td>
+    <td><?php echo $form->textField('emailReceiptUser', ''); ?></td>
 </tr>
 <tr>
     <td><b>STMP Password</b>:</td>
-    <td><?php echo InstallUtilities::installTextField('emailReceiptPw', '', InstallUtilities::PARAM_SETTING, true, array('type'=>'password')); ?></td>
+    <td><?php echo $form->textField('emailReceiptPw', '', Conf::PARAM_SETTING, true, array('type'=>'password')); ?></td>
 </tr>
 <tr>
     <td><b>STMP Security</b>:</td>
-    <td><?php echo InstallUtilities::installSelectField('emailReceiptSSL', array('none', 'SSL', 'TLS'), 'none'); ?></td>
+    <td><?php echo $form->selectField('emailReceiptSSL', array('none', 'SSL', 'TLS'), 'none'); ?></td>
 </tr>
 <tr>
     <td><b>HTML Receipt Builder</b>:</td>
@@ -241,7 +246,7 @@ InstallUtilities::paramSave('ReceiptMessageMods',CoreLocal::get('ReceiptMessageM
         $e_mods[$m] = $m;
     }
     ?>
-    <td><?php echo InstallUtilities::installSelectField('emailReceiptHtml', $e_mods, ''); ?></td>
+    <td><?php echo $form->selectField('emailReceiptHtml', $e_mods, ''); ?></td>
 </tr>
 <tr><td colspan=2 class="submitBtn">
 <input type=submit name=esubmit value="Save Changes" />

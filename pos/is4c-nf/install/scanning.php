@@ -1,9 +1,12 @@
 <?php
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\install\conf\Conf;
+use COREPOS\pos\install\conf\FormFactory;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 CoreState::loadParams();
 include('InstallUtilities.php');
+$form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')));
 ?>
 <html>
 <head>
@@ -19,8 +22,8 @@ body {
 <div id="wrapper">
 <h2>IT CORE Lane Installation: Scanning Options</h2>
 
-<div class="alert"><?php InstallUtilities::checkWritable('../ini.json', False, 'JSON'); ?></div>
-<div class="alert"><?php InstallUtilities::checkWritable('../ini.php', False, 'PHP'); ?></div>
+<div class="alert"><?php Conf::checkWritable('../ini.json', False, 'JSON'); ?></div>
+<div class="alert"><?php Conf::checkWritable('../ini.php', False, 'PHP'); ?></div>
 
 <form action=scanning.php method=post>
 <table id="install" border=0 cellspacing=0 cellpadding=4>
@@ -43,7 +46,7 @@ body {
     <td>
     <?php
     $checkOpts = array(1=>'Include Check Digits', 0=>'Omit Check Digits');
-    echo InstallUtilities::installSelectField('UpcIncludeCheckDigits', $checkOpts, 0);
+    echo $form->selectField('UpcIncludeCheckDigits', $checkOpts, 0);
     ?>
     </td>
 </tr>
@@ -68,7 +71,7 @@ body {
     <td>
     <?php
     $opts = array(1=>'Verbatim', 0=>'Three Digit Thousandths');
-    echo InstallUtilities::installSelectField('ManualWeightMode', $opts, 0);
+    echo $form->selectField('ManualWeightMode', $opts, 0);
     ?>
     </td>
 </tr>
@@ -78,7 +81,7 @@ body {
     </td>
     <td>
     <?php
-    echo InstallUtilities::installSelectField('EanIncludeCheckDigits', $checkOpts, 0);
+    echo $form->selectField('EanIncludeCheckDigits', $checkOpts, 0);
     ?>
     </td>
 </tr>
@@ -88,7 +91,7 @@ body {
 <tr>
 <tr>
     <td><b>Unknown Item Handler</b></td>
-    <td><?php echo InstallUtilities::installSelectField('ItemNotFound', AutoLoader::listModules('ItemNotFound', true), 'ItemNotFound'); ?>
+    <td><?php echo $form->selectField('ItemNotFound', AutoLoader::listModules('ItemNotFound', true), 'ItemNotFound'); ?>
     <span class='noteTxt'>Module called when a UPC does not match any item or Special UPC handler</span>
     </td>
 </tr>
@@ -99,10 +102,10 @@ body {
     <td>
     <?php
     $mods = AutoLoader::listModules('SpecialUPC');
-    echo InstallUtilities::installSelectField('SpecialUpcClasses',
+    echo $form->selectField('SpecialUpcClasses',
         $mods,
         array(),
-        InstallUtilities::EITHER_SETTING,
+        Conf::EITHER_SETTING,
         true,
         array('multiple'=>'multiple', 'size'=>10)
     );
@@ -111,7 +114,7 @@ body {
 </tr>
 <tr>
     <td><b>House Coupon Prefix</b></td>
-    <td><?php echo InstallUtilities::installTextField('houseCouponPrefix', '00499999'); ?>
+    <td><?php echo $form->textField('houseCouponPrefix', '00499999'); ?>
     <span class='noteTxt'>Set the barcode prefix for houseCoupons.  Should be 8 digits starting with 004. Default is 00499999.</span>
     </td>
 </tr>
@@ -120,7 +123,7 @@ body {
     <td>
     <?php
     $couponTax = array(1=>'Tax pre-coupon total', 0=>'Tax post-coupon total');
-    echo InstallUtilities::installSelectField('CouponsAreTaxable', $couponTax, 1);
+    echo $form->selectField('CouponsAreTaxable', $couponTax, 1);
     ?>
     <span class='noteTxt'>Apply sales tax based on item price before any coupons, or
     apply sales tax to item price inclusive of coupons.</span>
@@ -139,7 +142,7 @@ body {
             $default[] = $row['dept_no'];
         }
     }
-    echo InstallUtilities::installTextField('EquityDepartments', $default, InstallUtilities::EITHER_SETTING, false);
+    echo $form->textField('EquityDepartments', $default, Conf::EITHER_SETTING, false);
     ?>
     <span class='noteTxt'>Set the department number(s) that are considered member equity</span>
     </td>
@@ -148,7 +151,7 @@ body {
     <td><b>Open Ring Min/Max Limits</b></td>
     <td>
     <?php
-    echo InstallUtilities::installSelectField('OpenRingHardMinMax', array(1=>'Absolute Limit', 0=>'Warning Only'), 0);
+    echo $form->selectField('OpenRingHardMinMax', array(1=>'Absolute Limit', 0=>'Warning Only'), 0);
     ?>
     <span class='noteTxt'>
     Set whether open ring department limits are bypassable warnings or complete blocks.
@@ -168,7 +171,7 @@ body {
             $default[] = $row['dept_no'];
         }
     }
-    echo InstallUtilities::installTextField('ArDepartments', $default, InstallUtilities::EITHER_SETTING, false);
+    echo $form->textField('ArDepartments', $default, Conf::EITHER_SETTING, false);
     ?>
     <span class='noteTxt'>Set the department number(s) that are store charge balance payments. 
         Also known as AR or accounts receivable.</span>
@@ -186,7 +189,7 @@ body {
         $row = $dbc->fetch_row($lookup);
         $default = $row['dept_no'];
     }
-    echo InstallUtilities::installTextField('roundUpDept', $default);
+    echo $form->textField('roundUpDept', $default);
     ?>
     <span class='noteTxt'>Set the department number for lines entered via the "round up" donation function.</span>
     </td>
@@ -344,12 +347,6 @@ $sconf = CoreLocal::get('SpecialDeptMap');
 */
 if (is_array($sconf) && $specialDeptMapExists) {
     $mapModel->initTable($sconf);
-    if (InstallUtilities::confExists('SpecialDeptMap')) {
-        InstallUtilities::confRemove('SpecialDeptMap');
-    }
-    if (InstallUtilities::confExists('SpecialDeptMap', true)) {
-        InstallUtilities::confRemove('SpecialDeptMap', true);
-    }
 }
 if (!is_array($sconf)) $sconf = array();
 if (is_array(FormLib::get('SDEPT_MAP_LIST'))) {
@@ -412,7 +409,7 @@ if (!$specialDeptMapExists) {
         $saveStr = rtrim($saveStr,',').'),';
     }
     $saveStr = rtrim($saveStr,',').')';
-    InstallUtilities::confsave('SpecialDeptMap',$saveStr);
+    Conf::save('SpecialDeptMap',$saveStr);
 }
 ?>
 </td></tr>
@@ -434,7 +431,7 @@ if (!$specialDeptMapExists) {
     <td>
     <?php
     $mods = AutoLoader::listModules('VariableWeightReWrite');
-    echo InstallUtilities::installSelectField('VariableWeightReWriter', $mods, 'ZeroedPriceReWrite');
+    echo $form->selectField('VariableWeightReWriter', $mods, 'ZeroedPriceReWrite');
     ?>
     </td>
 </tr>
