@@ -117,7 +117,7 @@ class MemberLib extends \LibraryClass
     static public function setAltMemMsg($store, $member, $personNumber, $row)
     {
         if ($store == 'WEFC_Toronto') {
-            $chargeOk = \PrehLib::chargeOk();
+            $chargeOk = self::chargeOk();
             /* Doesn't quite allow for StoreCharge/PrePay for regular members
              * either instead of or in addition to CoopCred
              */
@@ -253,7 +253,7 @@ class MemberLib extends \LibraryClass
         if (!empty($row['blueLine'])) {
             $memMsg = $row['blueLine'];
         }
-        $chargeOk = \PrehLib::chargeOk();
+        $chargeOk = self::chargeOk();
         if (\CoreLocal::get("balance") != 0 && $member != \CoreLocal::get("defaultNonMem")) {
             $memMsg .= _(" AR");
         }

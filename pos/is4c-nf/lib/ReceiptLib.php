@@ -371,7 +371,7 @@ static public function centerBig($text) {
 /***** CvR 06/28/06 calculate current balance for receipt ****/
 static public function chargeBalance($receipt, $program="charge", $trans_num='')
 {
-    PrehLib::chargeOK();
+    COREPOS\pos\lib\MemberLib::chargeOk();
 
     $labels = array();
     $labels['charge'] = array("Current IOU Balance:"
