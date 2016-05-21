@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\Drawers;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 AutoLoader::LoadMap();
 CoreState::loadParams();
@@ -151,15 +152,15 @@ class login2 extends BasicCorePage
         /**
           Find a drawer for the cashier
         */
-        $my_drawer = ReceiptLib::currentDrawer();
+        $my_drawer = Drawers::current();
         if ($my_drawer == 0) {
-            $available = ReceiptLib::availableDrawers();    
+            $available = Drawers::available();    
             if (count($available) > 0) { 
-                ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$available[0]);
+                Drawers::assign(CoreLocal::get('CashierNo'),$available[0]);
                 $my_drawer = $available[0];
             }
         } else {
-            ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$my_drawer);
+            Drawers::assign(CoreLocal::get('CashierNo'),$my_drawer);
         }
 
         return $my_drawer;
@@ -178,7 +179,7 @@ class login2 extends BasicCorePage
         $kicker_class = (CoreLocal::get("kickerModule")=="") ? 'Kicker' : CoreLocal::get('kickerModule');
         $kicker_object = new $kicker_class();
         if ($kicker_object->kickOnSignIn()) {
-            ReceiptLib::drawerKick();
+            Drawers::kick();
         }
     }
 

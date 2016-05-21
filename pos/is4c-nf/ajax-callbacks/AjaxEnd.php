@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\Drawers;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 /**
@@ -75,7 +76,7 @@ class AjaxEnd extends AjaxCallback
         }
 
         if ($receiptType == "full" && $dokick) {
-            ReceiptLib::drawerKick();
+            Drawers::kick();
         }
 
         $PRINT_OBJ = $this->printObj();

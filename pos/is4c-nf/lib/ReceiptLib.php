@@ -122,25 +122,6 @@ static public function printToServer($printer_server, $text)
     }
 }
 // --------------------------------------------------------------
-static public function center_check($text) {
-
-//    return str_repeat(" ", 22).center($text, 60);    // apbw 03/24/05 Wedge printer swap patch
-    return self::center($text, 60);                // apbw 03/24/05 Wedge printer swap patch
-}
-
-// --------------------------------------------------------------
-// concatenated by tt/apbw 3/16/05 old wedge printer Franking Patch II
-
-static public function endorse($text) {
-
-    self::writeLine(chr(27).chr(64).chr(27).chr(99).chr(48).chr(4)      
-    // .chr(27).chr(33).chr(10)
-    .$text
-    .chr(27).chr(99).chr(48).chr(1)
-    .chr(12)
-    .chr(27).chr(33).chr(5));
-}
-// -------------------------------------------------------------
 
 static public function center($text, $linewidth) {
     $blank = str_repeat(" ", 59);
@@ -151,89 +132,6 @@ static public function center($text, $linewidth) {
 }
 
 // -------------------------------------------------------------
-static public function drawerKick() {
-    // do not open drawer on non-local requests
-    // this may not work on all web servers or 
-    // network configurations
-    /**
-      30Apr14 - Does not work correctly
-      Needs more investigation. IPv6 maybe?
-    if (isset($_SERVER) && isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] != '127.0.0.1') {
-        return;
-    }
-    */
-    $pin = self::currentDrawer();
-    if ($pin == 1)
-        self::writeLine(chr(27).chr(112).chr(0).chr(48)."0");
-    elseif ($pin == 2)
-        self::writeLine(chr(27).chr(112).chr(1).chr(48)."0");
-    //self::writeLine(chr(27).chr(112).chr(48).chr(55).chr(121));
-}
-
-/**
-  Which drawer is currently in use
-  @return
-    1 - Use the first drawer
-    2 - Use the second drawer
-    0 - Current cashier has no drawer
-
-  This always returns 1 when dual drawer mode
-  is enabled. Assignments in the table aren't
-  relevant.
-*/
-static public function currentDrawer()
-{
-    if (CoreLocal::get('dualDrawerMode') !== 1) return 1;
-    $dbc = Database::pDataConnect();
-    $chkQ = 'SELECT drawer_no FROM drawerowner WHERE emp_no='.CoreLocal::get('CashierNo');
-    $chkR = $dbc->query($chkQ);
-    if ($dbc->num_rows($chkR) == 0) return 0;
-    else {
-        $chkW = $dbc->fetchRow($chkR);
-        return $chkW['drawer_no'];
-    }
-}
-
-/**
-  Assign drawer to cashier
-  @param $emp the employee number
-  @param $num the drawer number
-  @return success True/False
-*/
-static public function assignDrawer($emp,$num){
-    $dbc = Database::pDataConnect();
-    $upQ = sprintf('UPDATE drawerowner SET emp_no=%d WHERE drawer_no=%d',$emp,$num);
-    $upR = $dbc->query($upQ);
-    return ($upR !== False) ? True : False;
-}
-
-/**
-  Unassign drawer
-  @param $num the drawer number
-  @return success True/False
-*/
-static public function freeDrawer($num){
-    $dbc = Database::pDataConnect();
-    $upQ = sprintf('UPDATE drawerowner SET emp_no=NULL WHERE drawer_no=%d',$num);
-    $upR = $dbc->query($upQ);
-    return ($upR !== False) ? True : False;
-}
-
-/**
-  Get list of available drawers
-  @return array of drawer numbers
-*/
-static public function availableDrawers()
-{
-    $dbc = Database::pDataConnect();
-    $query = 'SELECT drawer_no FROM drawerowner WHERE emp_no IS NULL ORDER BY drawer_no';
-    $res = $dbc->query($query);
-    $ret = array();
-    while ($row = $dbc->fetch_row($res)) {
-        $ret[] = $row['drawer_no'];
-    }
-    return $ret;
-}
 
 // -------------------------------------------------------------
 static public function printReceiptHeader($dateTimeStamp, $ref) 
@@ -300,10 +198,6 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
     $receipt .= $time.str_repeat(' ',$spaces).$ref."\n";
             
     return $receipt;
-}
-// -------------------------------------------------------------
-static public function promoMsg() {
-
 }
 
 // Charge Footer split into two functions by apbw 2/1/05
@@ -455,87 +349,6 @@ static public function printCabCoupon($dateTimeStamp, $ref)
         ."subject to the terms and conditions noted above.\n"; 
 
     return $receipt;
-}
-
-// -------------  frank.php incorporated into printlib on 3/24/05 apbw (from here to eof) -------
-
-static public function frank($amount) 
-{
-    $date = strftime("%m/%d/%y %I:%M %p", time());
-    $ref = trim(CoreLocal::get("memberID"))." ".trim(CoreLocal::get("CashierNo"))." ".trim(CoreLocal::get("laneno"))." ".trim(CoreLocal::get("transno"));
-    $tender = "AMT: ".MiscLib::truncate2($amount)."  CHANGE: ".MiscLib::truncate2(CoreLocal::get("change"));
-    $output = self::center_check($ref)."\n"
-        .self::center_check($date)."\n"
-        .self::center_check(CoreLocal::get("ckEndorse1"))."\n"
-        .self::center_check(CoreLocal::get("ckEndorse2"))."\n"
-        .self::center_check(CoreLocal::get("ckEndorse3"))."\n"
-        .self::center_check(CoreLocal::get("ckEndorse4"))."\n"
-        .self::center_check($tender)."\n";
-
-
-
-    self::endorse($output);
-}
-
-// -----------------------------------------------------
-
-static public function frankgiftcert($amount) 
-{
-    $ref = trim(CoreLocal::get("CashierNo"))."-".trim(CoreLocal::get("laneno"))."-".trim(CoreLocal::get("transno"));
-    $time_now = strftime("%m/%d/%y", time());                // apbw 3/10/05 "%D" didn't work - Franking patch
-    $next_year_stamp = mktime(0,0,0,date("m"), date("d"), date("Y")+1);
-    $next_year = strftime("%m/%d/%y", $next_year_stamp);        // apbw 3/10/05 "%D" didn't work - Franking patch
-    // lines 200-207 edited 03/24/05 apbw Wedge Printer Swap Patch
-    $output = "";
-    $output .= str_repeat("\n", 6);
-    $output .= "ref: " .$ref. "\n";
-    $output .= str_repeat(" ", 5).$time_now;
-    $output .= str_repeat(" ", 12).$next_year;
-    $output .= str_repeat("\n", 3);
-    $output .= str_repeat(" ", 75);
-    $output .= "$".MiscLib::truncate2($amount);
-    self::endorse($output); 
-
-}
-
-// -----------------------------------------------------
-
-static public function frankstock($amount) 
-{
-    $time_now = strftime("%m/%d/%y", time());        // apbw 3/10/05 "%D" didn't work - Franking patch
-    /* pointless
-    if (CoreLocal::get("franking") == 0) {
-        CoreLocal::set("franking",1);
-    }
-     */
-    $ref = trim(CoreLocal::get("CashierNo"))."-".trim(CoreLocal::get("laneno"))."-".trim(CoreLocal::get("transno"));
-    $output  = "";
-    $output .= str_repeat("\n", 40);    // 03/24/05 apbw Wedge Printer Swap Patch
-    if (CoreLocal::get("equityAmt")){
-        $output = "Equity Payment ref: ".$ref."   ".$time_now; // WFC 
-        CoreLocal::set("equityAmt","");
-        CoreLocal::set("LastEquityReference",$ref);
-    }
-    else {
-        $output .= "Stock Payment $".$amount." ref: ".$ref."   ".$time_now; // apbw 3/24/05 Wedge Printer Swap Patch
-    }
-
-    self::endorse($output);
-}
-//-------------------------------------------------------
-
-
-static public function frankclassreg() 
-{
-    $ref = trim(CoreLocal::get("CashierNo"))."-".trim(CoreLocal::get("laneno"))."-".trim(CoreLocal::get("transno"));
-    $time_now = strftime("%m/%d/%y", time());        // apbw 3/10/05 "%D" didn't work - Franking patch
-    $output  = "";        
-    $output .= str_repeat("\n", 11);        // apbw 3/24/05 Wedge Printer Swap Patch
-    $output .= str_repeat(" ", 5);        // apbw 3/24/05 Wedge Printer Swap Patch
-    $output .= "Validated: ".$time_now."  ref: ".$ref;     // apbw 3/24/05 Wedge Printer Swap Patch
-
-    self::endorse($output);    
-
 }
 
 /***** jqh 09/29/05 functions added for new receipt *****/

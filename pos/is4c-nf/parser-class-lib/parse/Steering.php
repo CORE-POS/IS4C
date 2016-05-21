@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Drawers;
+
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
  *
  * 17Feb2013 Eric Lee Support argument to PV, either before or after.
@@ -194,9 +196,9 @@ class Steering extends Parser
                         $kicker_class = (CoreLocal::get("kickerModule")=="") ? 'Kicker' : CoreLocal::get('kickerModule');
                         $kicker_object = new $kicker_class();
                         if ($kicker_object->kickOnSignOut()) {
-                            ReceiptLib::drawerKick();
+                            Drawers::kick();
                         }
-                        ReceiptLib::freeDrawer(ReceiptLib::currentDrawer());
+                        Drawers::free(Drawers::current());
                     }
                     $this->ret['main_frame'] = $my_url."login.php";
                 }

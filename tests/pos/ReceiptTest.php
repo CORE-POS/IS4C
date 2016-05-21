@@ -1,5 +1,8 @@
 <?php
 
+use COREPOS\pos\lib\Drawers;
+use COREPOS\pos\lib\Franking;
+
 /**
  * @backupGlobals disabled
  */
@@ -343,27 +346,27 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         $ck = ReceiptLib::center_check('foo');
         $this->assertEquals(str_repeat(' ', 28) . 'foo', $ck);
 
-        ReceiptLib::endorse('foo');
+        Franking::endorse('foo');
 
         CoreLocal::set('dualDrawerMode', 1, true);
-        ReceiptLib::freeDrawer(1);
-        ReceiptLib::freeDrawer(2);
-        $this->assertEquals(0, ReceiptLib::currentDrawer());
+        Drawers::free(1);
+        Drawers::free(2);
+        $this->assertEquals(0, Drawers::current());
         $emp = CoreLocal::get('CashierNo');
         CoreLocal::set('CashierNo', 1);
-        $this->assertEquals(true, ReceiptLib::assignDrawer(1, 2));
-        $this->assertEquals(2, ReceiptLib::currentDrawer());
-        ReceiptLib::drawerKick();
-        ReceiptLib::freeDrawer(2);
+        $this->assertEquals(true, Drawers::assign(1, 2));
+        $this->assertEquals(2, Drawers::current());
+        Drawers::kick();
+        Drawers::free(2);
         CoreLocal::set('CashierNo', $emp);
 
         $this->assertNotEquals(0, strlen(ReceiptLib::printChargeFooterCust(time(), '1-1-1')));
         $this->assertNotEquals(0, strlen(ReceiptLib::printChargeFooterStore(time(), '1-1-1')));
         $this->assertNotEquals(0, strlen(ReceiptLib::printCabCoupon(time(), '1-1-1')));
-        ReceiptLib::frank(1);
-        ReceiptLib::frankgiftcert(1);
-        ReceiptLib::frankstock(1);
-        ReceiptLib::frankclassreg(1);
+        Franking::frank(1);
+        Franking::frankgiftcert(1);
+        Franking::frankstock(1);
+        Franking::frankclassreg(1);
         $this->assertEquals(chr(27).chr(33).chr(5), ReceiptLib::normalFont());
         $this->assertEquals(chr(27).chr(33).chr(9), ReceiptLib::boldFont());
         ReceiptLib::bold();

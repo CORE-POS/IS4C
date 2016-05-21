@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\Franking;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class AjaxEndorse extends AjaxCallback
@@ -42,19 +43,19 @@ class AjaxEndorse extends AjaxCallback
             switch ($endorseType) {
 
                 case "check":
-                    ReceiptLib::frank($amount);
+                    Franking::frank($amount);
                     break;
 
                 case "giftcert":
-                    ReceiptLib::frankgiftcert($amount);
+                    Franking::frankgiftcert($amount);
                     break;
 
                 case "stock":
-                    ReceiptLib::frankstock($amount);
+                    Franking::frankstock($amount);
                     break;
 
                 case "classreg":
-                    ReceiptLib::frankclassreg();
+                    Franking::frankclassreg();
                     break;
 
                 default:
