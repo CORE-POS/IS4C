@@ -483,7 +483,7 @@ class MemberLib extends \LibraryClass
 
     static public function getChgName() 
     {
-        $query = "select LastName, FirstName from custdata where CardNo = '" .CoreLocal::get("memberID") ."'";
+        $query = "select LastName, FirstName from custdata where CardNo = '" .\CoreLocal::get("memberID") ."'";
         $connection = \Database::pDataConnect();
         $result = $connection->query($query);
         $num_rows = $connection->num_rows($result);
