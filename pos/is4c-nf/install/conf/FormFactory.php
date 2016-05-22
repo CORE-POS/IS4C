@@ -219,22 +219,6 @@ class FormFactory
         return $current_value;
     }
 
-    private function sanitizeString($current_value)
-    {
-        // quoted must not contain single quotes
-        $current_value = str_replace("'", '', $current_value);
-        // must not start with backslash
-        while (strlen($current_value) > 0 && substr($current_value, 0, 1) == "\\") {
-            $current_value = substr($current_value, 1);
-        }
-        // must not end with backslash
-        while (strlen($current_value) > 0 && substr($current_value, -1) == "\\") {
-            $current_value = substr($current_value, 0, strlen($current_value)-1);
-        }
-
-        return $current_value;
-    }
-
     private function storageAttribute($name, $storage)
     {
         if ($storage == Conf::INI_SETTING) {
