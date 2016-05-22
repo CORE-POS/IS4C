@@ -260,18 +260,13 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 // work with just one department field set
                 if ($dept1 === '') {
                     $dept1 = $dept2;
-                } else if ($dept2 === '') {
+                } elseif ($dept2 === '') {
                     $dept2 = $dept1;
                 }
-                // swap order if needed
-                if ($dept2 < $dept1) {
-                    $tmp = $dept1;
-                    $dept1 = $dept2;
-                    $dept2 = $tmp;
-                }
                 $search->where .= ' AND p.department BETWEEN ? AND ? ';
-                $search->args[] = $dept1;
-                $search->args[] = $dept2;
+                // add dept lower then higher
+                $search->args[] = $dept1 < $dept2 ? $dept1 : $dept2;
+                $search->args[] = $dept2 > $dept1 ? $dept2 : $dept1;
             }
         } catch (Exception $ex) {}
 
@@ -309,36 +304,16 @@ class AdvancedItemSearch extends FannieRESTfulPage
         try {
             if ($form->modDate !== '') {
                 switch ($form->modOp) {
-                case 'Modified Before':
-                    $search->where .= ' AND p.modified < ? ';
-                    $search->args[] = $form->modDate . ' 00:00:00';
-                    if (isset($form->serviceScale)) {
-                        $search->where = str_replace('p.modified', '(p.modified', $search->where)
-                            . ' OR h.modified < ?) ';
-                        $search->args[] = $form->modDate . ' 00:00:00';
-                    }
-                    break;
-                case 'Modified After':
-                    $search->where .= ' AND p.modified > ? ';
-                    $search->args[] = $form->modDate . ' 23:59:59';
-                    if (isset($form->serviceScale)) {
-                        $search->where = str_replace('p.modified', '(p.modified', $search->where)
-                            . ' OR h.modified > ?) ';
-                        $search->args[] = $form->modDate . ' 23:59:59';
-                    }
-                    break;
-                case 'Modified On':
-                default:
-                    $search->where .= ' AND p.modified BETWEEN ? AND ? ';
-                    $search->args[] = $form->modDate . ' 00:00:00';
-                    $search->args[] = $form->modDate . ' 23:59:59';
-                    if (isset($form->serviceScale)) {
-                        $search->where = str_replace('p.modified', '(p.modified', $search->where)
-                            . ' OR h.modified BETWEEN ? AND ?) ';
-                        $search->args[] = $form->modDate . ' 00:00:00';
-                        $search->args[] = $form->modDate . ' 23:59:59';
-                    }
-                    break;
+                    case 'Modified Before':
+                        $search = $this->modifiedBeforeAfter($search, $form, '<');
+                        break;
+                    case 'Modified After':
+                        $search = $this->modifiedBeforeAfter($search, $form, '>');
+                        break;
+                    case 'Modified On':
+                    default:
+                        $search = $this->modifiedOn($search, $form);
+                        break;
                 }
             }
         } catch (Exception $ex) {}
@@ -346,6 +321,35 @@ class AdvancedItemSearch extends FannieRESTfulPage
         return $search;
     }
 
+    private function modifiedOn($search, $form)
+    {
+        $search->where .= ' AND p.modified BETWEEN ? AND ? ';
+        $search->args[] = $form->modDate . ' 00:00:00';
+        $search->args[] = $form->modDate . ' 23:59:59';
+        if (isset($form->serviceScale)) {
+            $search->where = str_replace('p.modified', '(p.modified', $search->where)
+                . ' OR h.modified BETWEEN ? AND ?) ';
+            $search->args[] = $form->modDate . ' 00:00:00';
+            $search->args[] = $form->modDate . ' 23:59:59';
+        }
+
+        return $search;
+    }
+
+    private function modifiedBeforeAfter($search, $form, $op)
+    {
+        $time = $op === '<' ? '00:00:00' : '23:59:59';
+        $search->where .= ' AND p.modified ' . $op . ' ? ';
+        $search->args[] = $form->modDate . ' ' . $time;
+        if (isset($form->serviceScale)) {
+            $search->where = str_replace('p.modified', '(p.modified', $search->where)
+                . ' OR h.modified ' . $op . ' ?) ';
+            $search->args[] = $form->modDate . ' ' . $time;
+        }
+
+        return $search;
+    }
+    
     /**
       Search vendor by ID (as opposed to by name). 
       @param $search [Search Object] see runSearchMethods()
@@ -391,20 +395,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
     {
         try {
             if ($form->price !== '') {
-                switch ($form->price_op) {
-                    case '=':
-                        $search->where .= ' AND p.normal_price = ? ';
-                        $search->args[] = $form->price;
-                        break;
-                    case '<':
-                        $search->where .= ' AND p.normal_price < ? ';
-                        $search->args[] = $form->price;
-                        break;
-                    case '>':
-                        $search->where .= ' AND p.normal_price > ? ';
-                        $search->args[] = $form->price;
-                        break;
-                }
+                $search = $this->numericComparison($search, $form->price_op, 'p.normal_price', $form->price);
             }
         } catch (Exception $ex) {}
 
@@ -422,22 +413,29 @@ class AdvancedItemSearch extends FannieRESTfulPage
     {
         try {
             if ($form->cost !== '') {
-                switch ($form->cost_op) {
-                    case '=':
-                        $search->where .= ' AND p.cost = ? ';
-                        $search->args[] = $form->cost;
-                        break;
-                    case '<':
-                        $search->where .= ' AND p.cost < ? ';
-                        $search->args[] = $form->cost;
-                        break;
-                    case '>':
-                        $search->where .= ' AND p.cost > ? ';
-                        $search->args[] = $form->cost;
-                        break;
-                }
+                $search = $this->numericComparison($search, $form->cost_op, 'p.cost', $form->cost);
             }
         } catch (Exception $ex) {}
+
+        return $search;
+    }
+
+    private function numericComparison($search, $op, $field, $value)
+    {
+        switch ($op) {
+            case '=':
+                $search->where .= ' AND ' . $field. ' = ? ';
+                $search->args[] = $value;
+                break;
+            case '<':
+                $search->where .= ' AND ' . $field. ' < ? ';
+                $search->args[] = $value;
+                break;
+            case '>':
+                $search->where .= ' AND ' . $field. ' > ? ';
+                $search->args[] = $value;
+                break;
+        }
 
         return $search;
     }
@@ -697,15 +695,15 @@ class AdvancedItemSearch extends FannieRESTfulPage
                     // all permutations where one of the times is zero
                     if ($prev == 1 && $now == 1) {
                         $where .= ' AND b.endDate <= ' . $dbc->curdate();
-                    } else if ($prev == 1 && $next == 1) {
+                    } elseif ($prev == 1 && $next == 1) {
                         $where .= ' AND (b.endDate < ' . $dbc->curdate() . ' OR b.startDate > ' . $dbc->curdate() . ') ';
-                    } else if ($prev == 1) {
+                    } elseif ($prev == 1) {
                         $where .= ' AND b.endDate < ' . $dbc->curdate();
-                    } else if ($now == 1 && $next == 1) {
+                    } elseif ($now == 1 && $next == 1) {
                         $where .= ' AND b.endDate >= ' . $dbc->curdate();
-                    } else if ($now == 1) {
+                    } elseif ($now == 1) {
                         $where .= ' AND b.endDate >= ' . $dbc->curdate() . ' AND b.startDate <= ' . $dbc->curdate();
-                    } else if ($next == 1) {
+                    } elseif ($next == 1) {
                         $where .= ' AND b.startDate > ' .$dbc->curdate();
                     }
                 }
@@ -760,9 +758,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $dlog = DTransactionsModel::selectDlog($movementStart, $movementEnd);
 
                 $args = array($movementStart.' 00:00:00', $movementEnd.' 23:59:59');
-                $args = array_merge($args, array_keys($items));
-                $upc_in = str_repeat('?,', count(array_keys($items)));
-                $upc_in = substr($upc_in, 0, strlen($upc_in)-1);
+                list($upc_in, $args) = $this->connection->safeInClause($items, $args);
 
                 $query = "SELECT t.upc
                           FROM $dlog AS t
@@ -1004,8 +1000,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
+
         $url = $this->config->get('URL');
         $today = date('Y-m-d');
+
         $this->addScript('search.js');
         $this->addScript('autocomplete.js');
         $this->addOnloadCommand("bindAutoComplete('#brand-field', '../ws/', 'brand');\n");
@@ -1039,23 +1037,15 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $localOpts = '<option value="1">Yes</option>';
         }
 
-        $lcs = $dbc->query('SELECT likeCode, likeCodeDesc FROM likeCodes ORDER BY likeCode');
-        $lcOpts = '';
-        while ($row = $dbc->fetchRow($lcs)) {
-            $lcOpts .= sprintf('<option value="%d">%d %s</option>', $row['likeCode'], $row['likeCode'], $row['likeCodeDesc']);
-        }
+        $model = new LikeCodesModel($dbc);
+        $lcOpts = $model->toOptions();
 
-        $taxes = $dbc->query('SELECT id, description FROM taxrates');
-        $taxOpts = '';
-        while ($row = $dbc->fetchRow($taxes)) {
-            $taxOpts .= sprintf('<option value="%d">%s</option>', $row['id'], $row['description']);
-        }
+        $model = new TaxRatesModel($dbc);
+        $taxOpts = $model->toOptions();
 
-        $btype = $dbc->query('SELECT batchTypeID, typeDesc FROM batchType WHERE discType <> 0');
-        $btOpts = '';
-        while ($row = $dbc->fetchRow($btype)) {
-            $btOpts .= sprintf('<option value="%d">%s</option>', $row['batchTypeID'], $row['typeDesc']);
-        }
+        $model = new BatchTypeModel($dbc);
+        $model->discType(0, '<>');
+        $btOpts = $model->toOptions();
 
         return <<<HTML
 <div class="col-sm-10">
@@ -1066,7 +1056,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
             <td class="text-right">
                 <label class="small control-label">
                     <a href="" class="btn btn-default btn-xs"
-                    onclick="$(\'.upc-in\').toggle(); return false;">+</a>
+                    onclick="$('.upc-in').toggle(); return false;">+</a>
                     UPC
                 </label>
             </td>
@@ -1143,7 +1133,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
              </td>
              <td>
                 <select name="vendor" class="form-control input-sm"
-                    onchange="if(this.value===\'\' || this.value===\'0\') $(\'#vendorSale\').attr(\'disabled\',\'disabled\'); else $(\'#vendorSale\').removeAttr(\'disabled\');" >
+                    onchange="if(this.value==='' || this.value==='0') $('#vendorSale').attr('disabled','disabled'); else $('#vendorSale').removeAttr('disabled');" >
                     <option value="">Any</option>
                     <option value="0">Not Assigned</option>
                     {$vendorOpts}
@@ -1279,7 +1269,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
             <td colspan="6" class="form-inline">
                 <label class="control-label small">In Sale Batch</label>
                 <select name="onsale" class="form-control input-sm"
-                    onchange="if(this.value===\'\') $(\'.saleField\').attr(\'disabled\',\'disabled\'); else $(\'.saleField\').removeAttr(\'disabled\');" >
+                    onchange="if(this.value==='') $('.saleField').attr('disabled','disabled'); else $('.saleField').removeAttr('disabled');" >
                     <option value="">Any</option>
                     <option value="1">Yes</option>
                     <option value="0">No</option>
