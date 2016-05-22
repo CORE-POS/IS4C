@@ -108,15 +108,7 @@ class Conf
             $save_php = PhpConf::save($key, $value);
         }
 
-        if ($save_php === false || $save_json === false) {
-            // error occurred saving
-            return false;
-        } elseif ($save_php === null || $save_json === null) {
-            // neither config file found
-            return false;
-        } else {
-            return true;
-        }
+        return self::savedEither($save_php, $save_json);
     }
 
     /**
@@ -137,10 +129,15 @@ class Conf
             $save_json = JsonConf::remove($key);
         }
         
-        if ($save_php === false || $save_json === false) {
+        return self::savedEither($save_php, $save_json);
+    }
+
+    static private function savedEither($php, $json)
+    {
+        if ($php === false || $json === false) {
             // error occurred saving
             return false;
-        } elseif ($save_php === null || $save_json === null) {
+        } elseif ($php === null || $json === null) {
             // neither config file found
             return false;
         } else {

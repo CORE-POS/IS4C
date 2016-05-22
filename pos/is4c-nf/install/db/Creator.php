@@ -411,20 +411,11 @@ class Creator
             'details' => '',
         );
         foreach ($queries as $query) {
-            ob_start();
-            $try = @$sql->query($query);
-            ob_end_clean();
+            $try = $sql->query($query);
             if ($try === false){
                 $error['query'] .= $query . '; ';
-                if (stristr($query, "DROP ") && stristr($query,"VIEW ")) {
-                    /* suppress unimportant errors
-                    $errors[] = array(
-                    'struct' => $struct_name,
-                    'query' => $query,
-                    'important' => False
-                    );
-                    */
-                } else {
+                // failing to drop a view is fine
+                if (!(stristr($query, "DROP ") && stristr($query,"VIEW "))) {
                     $error['error'] = 1;
                     $error['details'] = $sql->error() . '; ';
                     $error['important'] = true;
