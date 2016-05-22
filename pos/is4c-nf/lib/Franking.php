@@ -32,7 +32,7 @@ class Franking extends \LibraryClass
     {
         $date = strftime("%m/%d/%y %I:%M %p", time());
         $ref = trim(\CoreLocal::get("memberID"))." ".trim(\CoreLocal::get("CashierNo"))." ".trim(\CoreLocal::get("laneno"))." ".trim(\CoreLocal::get("transno"));
-        $tender = "AMT: ".\MiscLib::truncate2($amount)."  CHANGE: ".MiscLib::truncate2(\CoreLocal::get("change"));
+        $tender = "AMT: ".\MiscLib::truncate2($amount)."  CHANGE: ".\MiscLib::truncate2(\CoreLocal::get("change"));
         $output = self::center_check($ref)."\n"
             .self::center_check($date)."\n"
             .self::center_check(\CoreLocal::get("ckEndorse1"))."\n"
