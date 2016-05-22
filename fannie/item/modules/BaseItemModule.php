@@ -21,13 +21,8 @@
 
 *********************************************************************************/
 
-if (!class_exists('FannieAPI')) {
-    include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
-}
-
 class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule 
 {
-
     private function getBarcodeType($upc)
     {
         $trimmed = ltrim($upc, '0');
@@ -488,7 +483,7 @@ HTML;
             if ($normalizedVendorID || empty($rowItem['distributor'])) {
                 $ret .= '<td colspan="3" class="form-inline"><select name="distributor[]" 
                             class="chosen-select form-control vendor_field syncable-input"
-                            onchange="vendorChanged(this.value);">';
+                            onchange="baseItem.vendorChanged(this.value);">';
                 $ret .= '<option value="0">Select a vendor</option>';
                 $vendR = $dbc->query('SELECT vendorID, vendorName FROM vendors ORDER BY vendorName');
                 while ($vendW = $dbc->fetchRow($vendR)) {
@@ -640,14 +635,14 @@ HTML;
                 dept_start:'#department{$store_id}', 
                 callback:function(){
                     \$('#department{$store_id}').trigger('chosen:updated');
-                    baseItemChainSubs({$store_id});
+                    baseItem.chainSubs({$store_id});
                 }
             });">
             {$superOpts}
         </select>
         <select name="department[]" id="department{$store_id}" 
             class="form-control chosen-select syncable-input" 
-            onchange="baseItemChainSubs({$store_id});">
+            onchange="baseItem.chainSubs({$store_id});">
             {$deptOpts}
         </select>
         <select name="subdept[]" id="subdept{$store_id}" 
@@ -1072,61 +1067,6 @@ HTML;
         return $vitem->save();
     }
 
-    function AjaxCallback()
-    {
-        $db = $this->db();
-        $json = array();
-        if (FormLib::get('action') == 'addVendor') {
-            $name = FormLib::get('newVendorName');
-            if (empty($name)) {
-                $json['error'] = 'Name is required';
-            } else {
-                $vendor = new VendorsModel($db);
-                $vendor->vendorName($name);
-                if (count($vendor->find()) > 0) {
-                    $json['error'] = 'Vendor "' . $name . '" already exists';
-                } else {
-                    $max = $db->query('SELECT MAX(vendorID) AS max
-                                       FROM vendors');
-                    $newID = 1;
-                    if ($max && $maxW = $db->fetch_row($max)) {
-                        $newID = ((int)$maxW['max']) + 1;
-                    }
-                    $vendor->vendorAbbreviation(substr($name, 0, 10));
-                    $vendor->vendorID($newID);
-                    $vendor->save();
-                    $json['vendorID'] = $newID;
-                    $json['vendorName'] = $name;
-                }
-            }
-        } elseif (FormLib::get('dept_defaults') !== '') {
-            $json = array('tax'=>0,'fs'=>false,'nodisc'=>false,'line'=>false);
-            $dept = FormLib::get_form_value('dept_defaults','');
-            $dModel = new DepartmentsModel($db);
-            $dModel->dept_no($dept);
-            if ($dModel->load()) {
-                $json['tax'] = $dModel->dept_tax();
-                $json['fs'] = $dModel->dept_fs() ? true : false;
-                $json['nodisc'] = $dModel->dept_discount() ? false : true;
-                $json['line'] = $dModel->line_item_discount() ? true : false;
-                $json['wic'] = $dModel->dept_wicable() ? true : false;
-            }
-        } elseif (FormLib::get('vendorChanged') !== '') {
-            $v = new VendorsModel($db);
-            $v->vendorName(FormLib::get('vendorChanged'));
-            $matches = $v->find();
-            $json = array('error'=>false);
-            if (count($matches) == 1) {
-                $json['localID'] = $matches[0]->localOriginID();
-                $json['vendorID'] = $matches[0]->vendorID();
-            } else {
-                $json['error'] = true;
-            }
-        }
-
-        echo json_encode($json);
-    }
-
     function summaryRows($upc)
     {
         $dbc = $this->db();
@@ -1221,16 +1161,5 @@ HTML;
 
         return array($superID, $supers, $depts, $subs);
     }
-}
-
-/**
-  This form does some fancy tricks via AJAX calls. This block
-  ensures the AJAX functionality only runs when the script
-  is accessed via the browser and not when it's included in
-  another PHP script.
-*/
-if (basename($_SERVER['SCRIPT_NAME']) == basename(__FILE__)){
-    $obj = new BaseItemModule();
-    $obj->AjaxCallback();   
 }
 

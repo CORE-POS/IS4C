@@ -547,12 +547,12 @@ class ItemEditorPage extends FanniePage
             $this->add_onload_command("bindAutoComplete('input.vendor_field', '$wsUrl', 'vendor');\n");
             $this->add_onload_command("bindAutoComplete('.unit-of-measure', '$wsUrl', 'unit');\n");
             $this->add_onload_command("\$('.unit-of-measure').autocomplete('option', 'minLength', 1);\n");
-            $this->add_onload_command("addVendorDialog();\n");
+            $this->add_onload_command("baseItem.addVendorDialog();\n");
             if ($this->config->get('STORE_MODE') == 'HQ') {
-                $this->addOnloadCommand("\$('#item-editor-form').submit(syncStoreTabs);\n");
-                $this->addOnloadCommand("\$('.syncable-input').change(syncStoreTabs);\n");
-                $this->addOnloadCommand("\$('.syncable-checkbox').change(syncStoreTabs);\n");
-                $this->addOnloadCommand("markUnSynced();\n");
+                $this->addOnloadCommand("\$('#item-editor-form').submit(baseItem.syncStoreTabs);\n");
+                $this->addOnloadCommand("\$('.syncable-input').change(baseItem.syncStoreTabs);\n");
+                $this->addOnloadCommand("\$('.syncable-checkbox').change(baseItem.syncStoreTabs);\n");
+                $this->addOnloadCommand("baseItem.markUnSynced();\n");
             }
         }
 
