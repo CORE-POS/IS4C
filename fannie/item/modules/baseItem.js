@@ -138,7 +138,7 @@ var baseItem = (function($) {
         return ret;
     };
 
-    var syncLabels = fuction(selector, fieldcb, synced) {
+    var syncLabels = function(selector, fieldcb, synced) {
         $(selector).each(function(){
             if ($(this).attr('name').length > 0) {
                 var name = $(this).attr('name');
