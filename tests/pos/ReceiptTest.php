@@ -228,9 +228,6 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         foreach($mods as $filter_class) {
             $obj = new $filter_class();
 
-            $db = Database::tDataConnect();
-            $db->setTestData($this->test_records);
-
             $resultset = $obj->filter($this->test_records);
             $this->assertInternalType('array', $resultset);
 

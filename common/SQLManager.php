@@ -292,11 +292,7 @@ class SQLManager
             $which_connection=$this->default_db;
         }
 
-        /** toggle test_mode off while checking database connection **/
-        $current_tm = $this->test_mode;
-        $this->test_mode = false;
         $current_db = $this->defaultDatabase($which_connection);
-        $this->test_mode = $current_tm;
         if ($current_db === false) {
             // no connection; cannot switch database
             return false;
@@ -315,11 +311,6 @@ class SQLManager
     */
     public function query($query_text,$which_connection='',$params=false)
     {
-        if ($this->test_mode && substr($query_text, 0, 4) != 'USE ') {
-            // called when 
-            $this->test_mode = false;
-        }
-
         $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
         $con = $this->connections[$which_connection];
 
@@ -485,10 +476,6 @@ class SQLManager
     */
     public function fetchArray($result_object,$which_connection='')
     {
-        if ($this->test_mode) {
-            return $this->getTestDataRow();
-        }
-
         if (is_null($result_object)) return false;
         if ($result_object === false) return false;
 
@@ -1539,8 +1526,6 @@ class SQLManager
     */
     public function execute($sql, $input_array=array(), $which_connection='')
     {
-        $this->test_mode = false;
-
         if ($which_connection == '') {
             $which_connection=$this->default_db;
         }
@@ -1738,35 +1723,6 @@ class SQLManager
         $query = $adapter->temporaryTable($name, $source_table);
         $created = $this->query($query, $which_connection);
         return $created ? $name : false;
-    }
-
-    /**
-      Test data is for faking queries.
-      Setting the test data then running
-      a unit test means the test will get
-      predictable results.
-    */
-
-    private $test_data = array();
-    private $test_counter = 0;
-    private $test_mode = false;
-    public function setTestData($records)
-    {
-        $this->test_data = $records;
-        $this->test_counter = 0;
-        $this->test_mode = true;
-    }
-
-    public function getTestDataRow()
-    {
-        if (isset($this->test_data[$this->test_counter])) {
-            $next = $this->test_data[$this->test_counter];
-            $this->test_counter++;
-            return $next;
-        } else {
-            $this->test_mode = false; // no more test data
-            return false;
-        }
     }
 
     /**
