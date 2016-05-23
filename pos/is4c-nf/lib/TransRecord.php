@@ -589,18 +589,20 @@ static public function addcdnotify()
   @param $strupc coupon UPC
   @param $intdepartment associated POS department
   @param $dbltotal coupon amount (should be negative)
-  @param $foodstamp mark coupon foodstamp-able
-  @param $tax mark coupon as taxable
+  @param $statusFlags array of optional status flags. Supported keys:
+    - tax
+    - foodstamp
+    - discountable
 
   Marking a coupon as taxable will *reduce* the taxable
   total by the coupon amount. This is not desirable in 
   all tax jurisdictions. The ini setting 'CouponsAreTaxable'
   controls whether the tax parameter is used.
 */
-static public function addCoupon($strupc, $intdepartment, $dbltotal, $foodstamp=0, $tax=0) 
+static public function addCoupon($strupc, $intdepartment, $dbltotal, $statusFlags=array())
 {
     if (CoreLocal::get('CouponsAreTaxable') !== 0) {
-        $tax = 0;
+        $statusFlags['tax'] = 0;
     }
 
     self::addRecord(array(
@@ -615,8 +617,9 @@ static public function addCoupon($strupc, $intdepartment, $dbltotal, $foodstamp=
         'unitPrice' => $dbltotal,
         'total' => $dbltotal,
         'regPrice' => $dbltotal,
-        'tax' => $tax,
-        'foodstamp' => $foodstamp,
+        'tax' => isset($statusFlags['tax']) ? $statusFlags['tax'] : 0,
+        'foodstamp' => isset($statusFlags['foodstamp']) ? $statusFlags['foodstamp'] : 0,
+        'discountable' => isset($statusFlags['discountable']) ? $statusFlags['discountable'] : 0,
     ));
 }
 
