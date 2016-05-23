@@ -157,11 +157,7 @@ class BasicModel
         if (empty($this->unique)) {
             $this->unique = array_keys(array_filter($this->columns,
                 function ($definition) {
-                    if (isset($definition['primary_key']) && $definition['primary_key']) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    return (isset($definition['primary_key']) && $definition['primary_key']);
                 }
             ));
         }
