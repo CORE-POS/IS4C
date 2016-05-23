@@ -55,7 +55,8 @@ Replaces nightly.lanesync.php and/or lanesync.api.php';
             'departments',
             'houseCoupons',
             'houseCouponItems',
-            'houseVirtualCoupons'
+            'houseVirtualCoupons',
+            'custPreferences',
         );
         foreach ($regularPushTables as $table) {
             $result = SyncLanes::pushTable("$table", 'op', SyncLanes::TRUNCATE_DESTINATION);
