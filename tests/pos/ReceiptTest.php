@@ -194,6 +194,8 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
             $queryResult = $obj->fetch($dbc);
             $this->assertNotEquals(false, $queryResult);
+            $queryResult = $obj->fetch($dbc, 1, 1, 1);
+            $this->assertNotEquals(false, $queryResult);
         }
     }
 
@@ -327,12 +329,6 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
                 }
             }
         }
-    }
-
-    public function testFetch()
-    {
-        $obj = new DefaultReceiptDataFetch();
-        $this->assertNotEquals(false, $obj->fetch(1, 1, 1));
     }
 
     public function testHtml()
