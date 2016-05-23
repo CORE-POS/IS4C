@@ -227,8 +227,11 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
         foreach($mods as $filter_class) {
             $obj = new $filter_class();
+    
+            $dbc = new COREPOS\common\sql\TestManager('127.0.0.1', 'mysqli', 'foo', 'bar', 'baz');
+            $dbc->setTestData($this->test_records);
 
-            $resultset = $obj->filter($this->test_records);
+            $resultset = $obj->filter($dbc, $this->test_records);
             $this->assertInternalType('array', $resultset);
 
             foreach($resultset as $result) {

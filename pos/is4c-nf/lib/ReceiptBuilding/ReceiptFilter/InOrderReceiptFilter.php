@@ -30,10 +30,11 @@ class InOrderReceiptFilter extends DefaultReceiptFilter
 
     /**
       Filtering function
+      @param $dbc a SQLManager object
       @param $data an SQL result object
       @return an array of records
     */
-    public function filter($data)
+    public function filter($dbc, $data)
     {
         $tenderTTL = 0.00;
         $tax = false;
@@ -41,7 +42,6 @@ class InOrderReceiptFilter extends DefaultReceiptFilter
         $returnset = array();
 
         // walk through backwards and pick rows to keep
-        $dbc = Database::tDataConnect();
         $count = 0;
         while($row = $dbc->fetch_row($data)) {
             if ($tax === false && $row['upc'] == 'TAX') {

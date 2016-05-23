@@ -499,7 +499,8 @@ static public function receiptFromBuilders($reprint=False,$trans_num='')
     $FETCH_MOD = self::getFetch();
     $mod = new $FETCH_MOD();
     $data = array();
-    $data = $mod->fetch($empNo,$laneNo,$transNo);
+    $dbc = Database::tDataConnect();
+    $data = $mod->fetch($dbc,$empNo,$laneNo,$transNo);
 
     // load module configuration
     $FILTER_MOD = self::getFilter();
@@ -507,7 +508,7 @@ static public function receiptFromBuilders($reprint=False,$trans_num='')
     $TAG_MOD = self::getTag();
 
     $fil = new $FILTER_MOD();
-    $recordset = $fil->filter($data);
+    $recordset = $fil->filter($dbc, $data);
 
     $sort = new $SORT_MOD();
     $recordset = $sort->sort($recordset);
