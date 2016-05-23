@@ -35,7 +35,7 @@ for ($i = 0; $i < 3; $i++){
      echo "<th>Complete date</th>";
   echo "</tr>";
   $r = $sql->query($q[$i]);
-  while ($row = $sql->fetch_array($r)){
+  while ($row = $sql->fetchRow($r)){
     echo "<tr>";
     echo "<td><a href=project.php?projID={$row[3]}>$row[0]</a></td><td>$row[1]</td><td>$row[2]</td><td align=center>$row[4]</td>";
     if ($i == 2)

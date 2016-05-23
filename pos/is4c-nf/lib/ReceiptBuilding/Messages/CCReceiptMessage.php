@@ -97,7 +97,7 @@ class CCReceiptMessage extends ReceiptMessage {
                 AND transID=?
         ');
         
-        while ($row = $db->fetch_array($result)) {
+        while ($row = $db->fetchRow($result)) {
             $slip .= ReceiptLib::centerString("................................................")."\n";
             // do not look for EmvReceipt server side; use classic receipt
             $emvR = $reprint ? false : $db->execute($emvP, array(date('Ymd'), $emp, $reg, $trans, $row['transID']));

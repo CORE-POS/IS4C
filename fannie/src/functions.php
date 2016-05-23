@@ -121,7 +121,7 @@ function select_to_table2($query,$args,$border,$bgcolor,$width="120",$spacing="0
         echo "</tr>";
         $b = 1;
     }
-    while($row = $dbc->fetch_array($results))
+    while($row = $dbc->fetchRow($results))
     {
         echo "<tr align left>\n";
         for ($i=0;$i<$number_cols; $i++)

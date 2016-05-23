@@ -89,7 +89,7 @@ function getUID($name){
   if ($sql->num_rows($fetchR) == 0){
     return false;
   }
-  $uid = $sql->fetch_array($fetchR);
+  $uid = $sql->fetchRow($fetchR);
   $uid = $uid[0];
   return $uid;
 }
@@ -138,7 +138,7 @@ function getGID($group)
     if ($sql->num_rows($gidR) == 0)
         return false;
 
-    $row = $sql->fetch_array($gidR);
+    $row = $sql->fetchRow($gidR);
     return $row[0];
 }
 

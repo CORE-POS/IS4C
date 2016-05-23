@@ -59,7 +59,7 @@ class TimesheetExport extends FannieReportPage {
             <select class="form-control" name="period">
             <option>Please select a payperiod to view.</option>';
 
-        while ($per = $ts_db->fetch_array($result)) {
+        while ($per = $ts_db->fetchRow($result)) {
             echo "<option value=\"" . $per['periodID'] . "\"";
             if ($per['periodID'] == ($ID)) { echo ' SELECTED';}
             echo ">(" . $per['periodStart'] . " - " . $per['periodEnd'] . ")</option>";
@@ -78,7 +78,7 @@ class TimesheetExport extends FannieReportPage {
         $perDatesQ = $ts_db->prepare("SELECT * FROM ".
             $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".payperiods WHERE periodID = ?");
         $perDatesR = $ts_db->execute($perDatesQ,array($periodID));
-        $perDates = $ts_db->fetch_array($perDatesR);
+        $perDates = $ts_db->fetchRow($perDatesR);
 
         $dumpQ = $ts_db->prepare("
             SELECT t.tdate, 

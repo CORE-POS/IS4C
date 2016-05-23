@@ -100,7 +100,7 @@ class CustomerCountReport extends FannieReportPage {
           when the same type is encountered again
         */
         $ret = array();
-        while ($row = $dbc->fetch_array($result)){
+        while ($row = $dbc->fetchRow($result)){
             $stamp = date("M j, Y",mktime(0,0,0,$row['month'],$row['day'],$row['year']));
             if (!isset($ret[$stamp])){ 
                 $ret[$stamp] = array("date"=>$stamp);

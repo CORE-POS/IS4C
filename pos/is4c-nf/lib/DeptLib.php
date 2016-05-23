@@ -157,7 +157,7 @@ class DeptLib extends \LibraryClass
             );
             $ret['udpmsg'] = 'errorBeep';
         } else {
-            $row2 = $db2->fetch_array($result2);
+            $row2 = $db2->fetchRow($result2);
             if ($price > $row2["total"]) {
                 $ret['output'] = \DisplayLib::boxMsg(
                     _("coupon amount greater than department total"),

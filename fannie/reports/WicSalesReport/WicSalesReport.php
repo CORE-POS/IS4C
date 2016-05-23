@@ -128,7 +128,7 @@ class WicSalesReport extends FannieReportPage
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep,$args);
         $ret = array();
-        while ($row = $dbc->fetch_array($result)) {
+        while ($row = $dbc->fetchRow($result)) {
             $record = array();
             if ($groupby == "date") {
                 $record[] = $row['month'] . '/' . $row['day'] . '/' . $row['year'];

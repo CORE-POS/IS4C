@@ -57,7 +57,7 @@ while($codesW=$sql->fetch_row($codesR))
 
 $q = $sql->prepare("select username,post,postdate,reasoncode from suspension_history where cardno=? order by postdate desc");
 $r = $sql->execute($q, array($memNum));
-while($w = $sql->fetch_array($r)){
+while($w = $sql->fetchRow($r)){
     echo "<b>$w[2] - status changed by $w[0]</b><br />";
     $reasonCode = (int)$w[3];
     if ($reasonCode == -1)

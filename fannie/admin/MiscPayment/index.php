@@ -128,14 +128,14 @@ function bill($amt,$desc,$dept,$tender){
 
     $tnQ = $dbc->prepare("SELECT TenderName FROM tenders WHERE TenderCode=?");
     $tnR = $dbc->execute($tnQ,array($tender));
-    $tname = array_pop($dbc->fetch_array($tnR));
+    $tname = array_pop($dbc->fetchRow($tnR));
 
     $dbc = FannieDB::get($FANNIE_TRANS_DB);
 
     $transQ = $dbc->prepare("SELECT MAX(trans_no) FROM dtransactions
         WHERE emp_no=? AND register_no=?");
     $transR = $dbc->execute($transQ,array($EMP_NO,$LANE_NO));
-    $t_no = array_pop($dbc->fetch_array($transR));
+    $t_no = array_pop($dbc->fetchRow($transR));
     if ($t_no == "") $t_no = 1;
     else $t_no++;
 

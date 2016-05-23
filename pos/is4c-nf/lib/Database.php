@@ -135,7 +135,7 @@ static public function getsubtotals()
     $query = "SELECT * FROM subtotals";
     $connection = self::tDataConnect();
     $result = $connection->query($query);
-    $row = $connection->fetch_array($result);
+    $row = $connection->fetchRow($result);
 
     // reset a few variables
     if (!$row || $row["LastID"] == 0) {
@@ -361,7 +361,7 @@ static public function gettransno($CashierNo)
         .((int)$CashierNo)." and register_no = "
         .((int)$register_no).' AND datetime >= ' . $connection->curdate();
     $result = $connection->query($query);
-    $row = $connection->fetch_array($result);
+    $row = $connection->fetchRow($result);
     if (!$row || !$row["maxtransno"]) {
         $trans_no = 1;
         // automatically trim the relevant table
@@ -618,7 +618,7 @@ static public function loadglobalvalues()
         FntlFlag,TaxExempt from globalvalues";
     $dbc = self::pDataConnect();
     $result = $dbc->query($query);
-    $row = $dbc->fetch_array($result);
+    $row = $dbc->fetchRow($result);
 
     CoreLocal::set("CashierNo",$row["CashierNo"]);
     CoreLocal::set("cashier",$row["Cashier"]);

@@ -25,7 +25,7 @@ if (isset($_GET['action'])){
         
         $idQ = "select max(id) from categories";
         $idR = $sql->query($idQ);
-        $idRow = $sql->fetch_array($idR);
+        $idRow = $sql->fetchRow($idR);
         $id = $idRow[0]+1;
         
         $insQ = $sql->prepare("insert into categories values (?, ?)");
@@ -50,7 +50,7 @@ if (isset($_GET['action'])){
         
         $idQ = "select max(id) from recipes";
         $idR = $sql->query($idQ);
-        $idRow = $sql->fetch_array($idR);
+        $idRow = $sql->fetchRow($idR);
         $id = $idRow[0]+1;
     
         $insQ = $sql->prepare("insert into recipes values (?,?,?,0,?,?,?,0,?)");
@@ -217,7 +217,7 @@ if (isset($_GET['action'])){
         
         $upcQ = $sql->prepare("select upc from recipes where id=?");
         $upcR = $sql->execute($upcQ, array($id));
-        $upcW = $sql->fetch_array($upcR);
+        $upcW = $sql->fetchRow($upcR);
         $upc = $upcW[0];
         
         setPrice($upc,$price);
@@ -232,7 +232,7 @@ if (isset($_GET['action'])){
         
         $fetchQ = $sql->prepare("select margin from recipes where id=?");
         $fetchR = $sql->execute($fetchQ, array($id));
-        $fetchW = $sql->fetch_array($fetchR);
+        $fetchW = $sql->fetchRow($fetchR);
         
         if ($current_margin < $fetchW[0])
             $out .= currentMarginDiv($current_margin,'#bb0000');
@@ -245,7 +245,7 @@ if (isset($_GET['action'])){
         // get info
         $fetchQ = $sql->prepare("select price,current_margin,margin,servings,upc from recipes where id=?");
         $fetchR = $sql->execute($fetchQ, array($id));
-        $fetchW = $sql->fetch_array($fetchR);
+        $fetchW = $sql->fetchRow($fetchR);
         
         // calculate a price to meet desired margin
         $recipe_cost = $fetchW['price'] - $fetchW['current_margin'];
@@ -290,7 +290,7 @@ if (isset($_GET['action'])){
         $r = $sql->query($q);
 
         $out .= "<select id=categoryselect>";
-        while ($w = $sql->fetch_array($r)){
+        while ($w = $sql->fetchRow($r)){
             if ($w[0] == $current)
                 $out .= "<option selected>$w[0]</option>";
             else
@@ -304,7 +304,7 @@ if (isset($_GET['action'])){
         $cat = $_GET['cat'];
     
         $q = $sql->prepare("select id from categories where name=?");
-        $catID = array_pop($sql->fetch_array($sql->execute($q, array($cat))));
+        $catID = array_pop($sql->fetchRow($sql->execute($q, array($cat))));
 
         $q = $sql->prepare("update recipes set categoryID=? where id=?");
         $r = $sql->execute($q, array($catID, $id));
@@ -319,7 +319,7 @@ if (isset($_GET['action'])){
         $out .= "<table><tr>";
         $out .= "<td>Name</td><td><input type=text id=name /></td></tr>";
         $out .= "<tr><td>Recipe to copy</td><td><select id=tocopy>";
-        while ($w = $sql->fetch_array($r))
+        while ($w = $sql->fetchRow($r))
             $out .= "<option value=$w[1]>$w[0]</option>";
         $out .= "</select></td></tr>";
         $out .= "<tr><td><input type=submit value=Copy /></td></tr></table>";
@@ -361,7 +361,7 @@ function getCategories(){
     $q = "select name,id from categories order by name";
     $r = $sql->query($q);
     if ($sql->num_rows($r) != 0){
-        while ($w = $sql->fetch_array($r)){
+        while ($w = $sql->fetchRow($r)){
             $ret .= "<li><a href=\"\" onClick=\"viewRecipes(".$w[1]."); return false;\">";
             $ret .= $w[0]."</a></li>";
         }
@@ -376,7 +376,7 @@ function getRecipes($id){
     global $sql;
     $q = $sql->prepare("select name from categories where id=?");
     $r = $sql->execute($q, array($id));
-    $w = $sql->fetch_array($r);
+    $w = $sql->fetchRow($r);
     $catName = $w[0];    
 
     $ret = "<b>Category</b>: ".$catName."<br />";
@@ -387,7 +387,7 @@ function getRecipes($id){
     $q = $sql->prepare("select name,id from recipes where categoryID = ? order by name");
     $r = $sql->execute($q, array($id));
     if ($sql->num_rows($r) != 0){
-        while ($w = $sql->fetch_array($r)){
+        while ($w = $sql->fetchRow($r)){
             $ret .= "<li><a href=\"\" onClick=\"displayRecipe(".$w[1]."); return false;\">";
             $ret .= $w[0]."</a></li>";
         }
@@ -403,7 +403,7 @@ function getUnitsSelector(){
     $ret = "<select name=units id=units>";
     $q = "select distinct output from convertor";
     $r = $sql->query($q);
-    while ($w = $sql->fetch_array($r)){
+    while ($w = $sql->fetchRow($r)){
         $ret .= "<option>".$w[0]."</option>";
     }
     $ret .= "</select>";
@@ -420,7 +420,7 @@ function displayRecipe($id){
           from recipes as r, info as i, categories as c
            where r.id=i.recipeID and c.id=r.categoryID and r.id=?");
     $r = $sql->execute($q, array($id));
-    $w = $sql->fetch_array($r);
+    $w = $sql->fetchRow($r);
     
     $name = $w['name'];
     $upc = $w['upc'];
@@ -512,7 +512,7 @@ function getSteps($id){
     $q = $sql->prepare("select step from steps where recipeID = ? order by ord");
     $r = $sql->execute($q, array($id));
     $i = 1;
-    while ($w = $sql->fetch_array($r)){
+    while ($w = $sql->fetchRow($r)){
         if ($i % 2 != 0)
             $ret .= "<tr style=\"background: #cccccc;\">";
         else
@@ -544,7 +544,7 @@ function getIngredients($id){
     $r = $sql->execute($q, array($id));
     $i = 1;
     $numbering = 1;
-    while ($w = $sql->fetch_array($r)){
+    while ($w = $sql->fetchRow($r)){
         if ($i % 2 != 0)
             $ret .= "<tr style=\"background: #cccccc;\">";
         else
@@ -592,7 +592,7 @@ function fixOrder($table,$ord){
     
     $maxQ = "select max(ord) from $table";
     $maxR = $sql->query($maxQ);
-    $maxW = $sql->fetch_array($maxR);
+    $maxW = $sql->fetchRow($maxR);
     $max = $maxW[0];
     
     $upQ = $sql->prepare("update $table set ord=? where ord=?");
@@ -609,7 +609,7 @@ function ingredientSelect(){
     $ret = "";
     $fetchQ = "select name,id from ingredients where id > 0 order by name";
     $fetchR = $sql->query($fetchQ);
-    while ($row = $sql->fetch_array($fetchR))
+    while ($row = $sql->fetchRow($fetchR))
         $ret .= $row[1].":".$row[0]."|";
     return substr($ret,0,strlen($ret)-1);
 }
@@ -626,7 +626,7 @@ function margin($id){
     
     // accumulate cost
     $cost = 0.0;
-    while ($row = $sql->fetch_array($fetchR)){
+    while ($row = $sql->fetchRow($fetchR)){
         $insize = $row['measure'];
         $inunit = $row['unit'];
         $outsize = $row['volume'];
@@ -645,14 +645,14 @@ function margin($id){
             $q = $sql->prepare("select multiplier from convertor where input = ?
                   and output=?");
             $r = $sql->execute($q, array($outunit, $inunit));
-            $w = $sql->fetch_array($r);
+            $w = $sql->fetchRow($r);
             // if that fails, try a weight conversion
             // (one of these 2 is assumed to work)
             if ($w[0] == ''){
                 $q = $sql->prepare("select multiplier from convertor where input = ?
                       and output = ?");
                 $r = $sql->execute($q, array($outunit2, $inunit));
-                $w = $sql->fetch_array($r);
+                $w = $sql->fetchRow($r);
                 //echo "IN: $outunit2 OUT: $inunit MULT: $w[0]<br />";
                 $outsize = $outsize2 * $w[0];
                 $item_cost *= $w[0];
@@ -668,7 +668,7 @@ function margin($id){
     
     $priceQ = $sql->prepare("select price,servings from recipes where id=?");
     $priceR = $sql->execute($priceQ, array($id));
-    $priceW = $sql->fetch_array($priceR);
+    $priceW = $sql->fetchRow($priceR);
     
     $current_margin = $priceW[0] - ($cost / $priceW[1]);
     $current_margin = round($current_margin,2);
@@ -701,7 +701,7 @@ function getStatus($id){
           ) order by name");
     $r = $sql->execute($q, array($id, $id));
     $ret = '';
-    while ($w = $sql->fetch_array($r)){
+    while ($w = $sql->fetchRow($r)){
         $ret .= $w[0].", ";
     }
     
@@ -712,7 +712,7 @@ function copyRecipe($id,$name){
     global $sql;
     $idQ = "select max(id) from recipes";
     $idR = $sql->query($idQ);
-    $idRow = $sql->fetch_array($idR);
+    $idRow = $sql->fetchRow($idR);
     $newid = $idRow[0]+1;
 
     $recipesQ = $sql->prepare("insert into recipes

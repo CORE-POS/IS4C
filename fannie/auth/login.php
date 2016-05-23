@@ -60,7 +60,7 @@ function login($name,$password){
     return false;
   }
   
-  $gatherRow = $sql->fetch_array($gatherR);
+  $gatherRow = $sql->fetchRow($gatherR);
   $crypt_pass = $gatherRow[0];
   $salt = $gatherRow[1];
   if (!checkPass($password, $crypt_pass, $salt, $name)) {

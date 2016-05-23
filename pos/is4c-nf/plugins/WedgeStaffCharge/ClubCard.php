@@ -46,7 +46,7 @@ class ClubCard extends Parser
         $num_rows = $connection->num_rows($result);
 
         if ($num_rows > 0) {
-            $row = $connection->fetch_array($result);
+            $row = $connection->fetchRow($result);
             $strUPC = $row["upc"];
             $strDescription = $row["description"];
             $dblVolSpecial = $row["VolSpecial"];            

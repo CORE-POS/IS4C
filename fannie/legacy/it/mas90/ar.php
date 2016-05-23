@@ -16,7 +16,7 @@ $NL = "\r\n";
 
 $query = "select num from lastMasInvoice";
 $result = $sql->query($query);
-$INV_NUM = (int)array_pop($sql->fetch_array($result));
+$INV_NUM = (int)array_pop($sql->fetchRow($result));
 
 $query = "select card_no,trans_num,
     -1*total,

@@ -54,7 +54,7 @@ class WedgeScParser extends Parser
         $pConn = Database::pDataConnect();
         $result = $pConn->query($pQuery);
         $num_rows = $pConn->num_rows($result);
-        $row = $pConn->fetch_array($result);
+        $row = $pConn->fetchRow($result);
 
         if ($num_rows == 0) {
             $json['output'] = DisplayLib::xboxMsg(

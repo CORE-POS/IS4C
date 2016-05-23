@@ -210,7 +210,7 @@ class GeneralDayReport extends FannieReportPage
             group by q.trans_num,q.transaction_type");
         $transR = $dbc->execute($transQ,$dates);
         $transinfo = array();
-        while($row = $dbc->fetch_array($transR)){
+        while($row = $dbc->fetchRow($transR)){
             if (!isset($transinfo[$row[2]]))
                 $transinfo[$row[2]] = array(0,0.0,0.0,0.0,0.0);
             $transinfo[$row[2]][0] += 1;

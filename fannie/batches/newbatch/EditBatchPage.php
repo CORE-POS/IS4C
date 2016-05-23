@@ -658,7 +658,7 @@ class EditBatchPage extends FannieRESTfulPage
         $ret .= "<select id=lcselect onchange=\"\$('#addItemLC').val(this.value);\" class=\"form-control\" disabled>";
         $lcQ = $dbc->prepare("select likecode,likecodeDesc from likeCodes order by likecode");
         $lcR = $dbc->execute($lcQ);
-        while ($lcW = $dbc->fetch_array($lcR)) {
+        while ($lcW = $dbc->fetchRow($lcR)) {
             $ret .= "<option value=$lcW[0]>$lcW[0] $lcW[1]</option>";
         }
         $ret .= "</select>";
@@ -942,7 +942,7 @@ class EditBatchPage extends FannieRESTfulPage
 
         $colors = array('#ffffff','#ffffcc');
         $cur = 0;
-        while ($fetchW = $dbc->fetch_array($fetchR)) {
+        while ($fetchW = $dbc->fetchRow($fetchR)) {
             $cur = ($cur + 1) % 2;
             $ret .= "<tr>";
             $fetchW['upc'] = rtrim($fetchW['upc']);
@@ -1088,7 +1088,7 @@ class EditBatchPage extends FannieRESTfulPage
         $cur = 0;
         $FANNIE_URL = $this->config->get('URL');
         $ret = '';
-        while ($fetchW = $dbc->fetch_array($result)) {
+        while ($fetchW = $dbc->fetchRow($result)) {
             $cur = ($cur + 1) % 2;
             $ret .= "<tr>";
             $fetchW[0] = rtrim($fetchW[0]);

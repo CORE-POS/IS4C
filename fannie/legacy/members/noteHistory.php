@@ -51,7 +51,7 @@ $memID = $memNum;
 
 $q = $sql->prepare("select username,note,stamp from memberNotes where cardno=? order by stamp desc");
 $r = $sql->execute($q, array($memNum));
-while($w = $sql->fetch_array($r)){
+while($w = $sql->fetchRow($r)){
     $text = stripslashes($w[1]);
     if (empty($text)) continue;
     echo "<b>$w[2] - note added by $w[0]</b><br />";

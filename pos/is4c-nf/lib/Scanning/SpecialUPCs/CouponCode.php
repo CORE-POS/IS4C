@@ -240,7 +240,7 @@ class CouponCode extends SpecialUPC
         $available = array();
         $emp_no=$transno=$dept=$foodstamp=$tax=-1;
         $act_qty = 0;
-        while($row = $dbc->fetch_array($result)) {
+        while($row = $dbc->fetchRow($result)) {
             if ($row["itemQtty"] - $row["couponQtty"] > 0) {
                 $trans_id = $row["trans_id"];
                 $available[$trans_id] = array(0,0);

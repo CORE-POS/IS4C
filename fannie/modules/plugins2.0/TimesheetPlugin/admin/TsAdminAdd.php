@@ -174,7 +174,7 @@ class TsAdminAdd extends FanniePage {
         $query = $ts_db->prepare("SELECT FirstName, emp_no FROM ".
                 $FANNIE_OP_DB.$ts_db->sep()."employees where EmpActive=1 ORDER BY FirstName ASC");
         $result = $ts_db->execute($query);
-        while ($row = $ts_db->fetch_array($result)) {
+        while ($row = $ts_db->fetchRow($result)) {
             echo "<option value=\"$row[1]\">$row[0]</option>\n";
         }
         echo '</select></div></div>

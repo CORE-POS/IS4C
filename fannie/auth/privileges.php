@@ -157,7 +157,7 @@ function showAuths($name){
   $fetchQ = $sql->prepare("select auth_class,sub_start,sub_end from userPrivs where uid=?");
   $fetchR = $sql->execute($fetchQ,array($uid));
   $ret = array();
-  while ($row = $sql->fetch_array($fetchR)){
+  while ($row = $sql->fetchRow($fetchR)){
     $ret[] = array($row[0], $row[1], $row[2]);
   }
 
@@ -176,7 +176,7 @@ function showClasses(){
   $sql = dbconnect();
   $fetchQ = $sql->prepare("select auth_class,notes from userKnownPrivs order by auth_class");
   $fetchR = $sql->execute($fetchQ);
-  while ($row = $sql->fetch_array($fetchR)){
+  while ($row = $sql->fetchRow($fetchR)){
     echo "<tr>";
     echo "<td>$row[0]</td><td>".(empty($row[1])?'&nbsp;':$row[1])."</td>";
     echo "</tr>";

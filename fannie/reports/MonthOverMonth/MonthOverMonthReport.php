@@ -121,7 +121,7 @@ class MonthOverMonthReport extends FannieReportPage {
         $result = $dbc->execute($queryP, $qArgs);
 
         $ret = array();
-        while ($row = $dbc->fetch_array($result)){
+        while ($row = $dbc->fetchRow($result)){
             if (!isset($ret[$row[0]])){
                 $ret[$row[0]] = array('num'=>$row[0],'desc'=>$row[1]);
                 foreach($this->months as $mkey)

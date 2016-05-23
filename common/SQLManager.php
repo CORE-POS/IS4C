@@ -180,14 +180,6 @@ class SQLManager
     }
 
     /**
-      @deprecated
-    */
-    public function add_connection($server,$type,$database,$username,$password='',$persistent=false,$new=false)
-    {
-        return $this->addConnection($server, $type, $database, $username, $password, $persistent,$new);
-    }
-
-    /**
       Verify object is connected to the database
       @param $which_connection [string] database name (optional)
       @return [boolean] 
@@ -397,15 +389,6 @@ class SQLManager
     }
 
     /**
-      @deprecated
-    */
-    public function identifier_escape($str,$which_connection='')
-    {
-        return $this->identifierEscape($str, $which_connection);
-    }
-
-    
-    /**
       Get number of rows in a result set
       @param $result_object A result set
       @param $which_connection see method close()
@@ -461,14 +444,6 @@ class SQLManager
     }
 
     /**
-      @deprecated
-    */
-    public function num_fields($result_object,$which_connection='')
-    {
-        return $this->numFields($result_object, $which_connection);
-    }
-
-    /**
       Get next record from a result set
       @param $result_object A result set
       @param $which_connection see method close()
@@ -507,7 +482,7 @@ class SQLManager
     }
 
     /**
-      An alias for the method fetch_array()
+      An alias for the method fetchArray()
     */
     public function fetchRow($result_object,$which_connection='')
     {
@@ -795,7 +770,7 @@ class SQLManager
         $big_values = '';
         $big_args = array();
 
-        while ($row = $this->fetch_array($result,$source_db)) {
+        while ($row = $this->fetchArray($result,$source_db)) {
             $big_values .= '(';
             $args = array();
             for ($i=0; $i<$numFields; $i++) {
@@ -1150,14 +1125,6 @@ class SQLManager
     }
 
     /**
-      @deprecated
-    */
-    public function table_definition($table_name,$which_connection='')
-    {
-        return $this->tableDefinition($table_name, $which_connection);
-    }
-
-    /**
       More detailed table definition
        @param $table_name The table's name
        @param which_connection see method close
@@ -1365,14 +1332,6 @@ class SQLManager
     }
 
     /**
-      @deprecated
-    */
-    public function insert_id($which_connection='')
-    {
-        return $this->insertID($which_connection);
-    }
-
-    /**
       Check how many rows the last query affected
       @param which_connection see method close
       @returns Number of rows
@@ -1425,14 +1384,6 @@ class SQLManager
         $ret = $this->execute($insertP, $args, $which_connection);
 
         return $ret;
-    }
-
-    /**
-      @deprecated
-    */
-    public function smart_insert($table_name,$values,$which_connection='')
-    {
-        return $this->smartInsert($table_name, $values, $which_connection);
     }
 
     /** 
@@ -1504,14 +1455,6 @@ class SQLManager
         return $con->Prepare($sql);
     }
 
-    /**
-      @deprecated
-    */
-    public function prepare_statement($sql,$which_connection="")
-    {
-        return $this->prepare($sql, $which_connection);
-    }
-
    /**
       Execute a prepared statement with the given
       set of parameters
@@ -1534,14 +1477,6 @@ class SQLManager
         }
 
         return $this->query($sql,$which_connection,$input_array);
-    }
-
-    /**
-      @deprecated
-    */
-    public function exec_statement($sql, $input_array=array(), $which_connection='')
-    {
-        return $this->execute($sql, $input_array, $which_connection);
     }
 
     /**

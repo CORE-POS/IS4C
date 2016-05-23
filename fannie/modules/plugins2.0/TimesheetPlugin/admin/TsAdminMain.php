@@ -40,7 +40,7 @@ class TsAdminMain extends FanniePage {
         echo '<div class="form-group">';
         echo '<label>Name</label><select class="form-control" name="emp_no">
         <option value="0">Whose sheet?</option>';
-        while ($row = $ts_db->fetch_array($result)) {
+        while ($row = $ts_db->fetchRow($result)) {
             echo "<option value=\"$row[1]\">$row[0]</option>\n";
         }
         echo '</select></div>';
@@ -59,7 +59,7 @@ class TsAdminMain extends FanniePage {
         echo '<label>Pay Period</label><select class="form-control" name="periodID">
             <option>Please select a payperiod to view.</option>';
 
-        while ($row = $ts_db->fetch_array($result)) {
+        while ($row = $ts_db->fetchRow($result)) {
             echo "<option value=\"$row[2]\"";
             if ($row[2] == $ID) { echo ' SELECTED';}
                 echo ">($row[0] - $row[1])</option>";

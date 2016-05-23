@@ -380,7 +380,7 @@ class BatchListPage extends FannieRESTfulPage
         
         $count = 0;
         $lastBatchID = 0;
-        while ($fetchW = $dbc->fetch_array($fetchR)) {
+        while ($fetchW = $dbc->fetchRow($fetchR)) {
             /**
               strtotime() and date() are not reciprocal functions
               date('Y-m-d', strtotime('0000-00-00')) results in

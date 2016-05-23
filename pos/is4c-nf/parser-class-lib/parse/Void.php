@@ -180,7 +180,7 @@ class Void extends Parser
                    from localtemptrans where trans_id = ".$item_num;
         $dbc = Database::tDataConnect();
         $result = $dbc->query($query);
-        return $dbc->fetch_array($result);
+        return $dbc->fetchRow($result);
     }
 
     /**
@@ -351,7 +351,7 @@ class Void extends Parser
             ));
         }
 
-        return $dbc->fetch_array($result);
+        return $dbc->fetchRow($result);
     }
 
     private function checkUpcQuantities($voidable, $quantity, $scale)
@@ -431,7 +431,7 @@ class Void extends Parser
 
         $result = $dbc->query($query_upc);
         if ($dbc->numRows($result) > 0) {
-            return $dbc->fetch_array($result);
+            return $dbc->fetchRow($result);
         } else {
             return $this->findUpcLine($upc, $scaleprice, $deliflag, -1);
         }
@@ -455,7 +455,7 @@ class Void extends Parser
             $dbc_p = Database::pDataConnect();
             $query_p = "select special_price from products where upc = '".$upc."'";
             $result_p = $dbc_p->query($query_p);
-            $row_p = $dbc_p->fetch_array($result_p);
+            $row_p = $dbc_p->fetchRow($result_p);
             
             $unitPrice = $row_p["special_price"];
         }
@@ -701,7 +701,7 @@ class Void extends Parser
         $result = $dbc->query($query);
 
         if ($result && $dbc->numRows($result) > 0) {
-            $row = $dbc->fetch_array($result);
+            $row = $dbc->fetchRow($result);
 
             $ret['voided'] = $row['voided'];
             $ret['scaleprice'] = $row['unitPrice'];

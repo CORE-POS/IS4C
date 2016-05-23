@@ -29,7 +29,7 @@ include('../../db.php');
 
 $getBatchIDQ = "SELECT max(batchID) FROM batches";
 $getBatchIDR = $sql->query($getBatchIDQ);
-$getBatchIDW = $sql->fetch_array($getBatchIDR);
+$getBatchIDW = $sql->fetchRow($getBatchIDR);
 
 $batchID = $_GET['batchID'];
 

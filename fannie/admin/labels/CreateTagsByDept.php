@@ -79,7 +79,7 @@ class CreateTagsByDept extends FanniePage {
         $qmodel = new ShelfTagQueuesModel($dbc);
         $deptSubList = $qmodel->toOptions();
 
-        while ($deptsW = $dbc->fetch_array($deptsR))
+        while ($deptsW = $dbc->fetchRow($deptsR))
           $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
 
         $ret = '';

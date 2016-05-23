@@ -349,7 +349,7 @@ class LiabilityReport extends FannieReportPage
             $lastProgramID = 0;
             $record = array('',0,0,0,0,0,0,0);
             $rowCount = 0;
-            while ($row = $dbc->fetch_array($results)) {
+            while ($row = $dbc->fetchRow($results)) {
                 if ($row['programID'] != $lastProgramID && $lastProgramID != 0) {
                     // Finish the Program row.
                     $record[2] = ($record[2] * -1); // as positive

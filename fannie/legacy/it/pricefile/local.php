@@ -35,7 +35,7 @@ if (isset($_POST["MAX_FILE_SIZE"])){
             echo "<i>Error - unknown like code #".$data[$LC_COL]."</i><br />";
             continue;
         }
-        $row = $sql->fetch_array($r);
+        $row = $sql->fetchRow($r);
 
         $local = 'No';
         if (!empty($data[$LOCAL_COL]) && $data[$LOCAL_COL] == 2) $local = '300';

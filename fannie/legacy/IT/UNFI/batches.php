@@ -38,7 +38,7 @@ else if(isset($_REQUEST['submit']) && $_REQUEST['submit']=="submit"){
        $infoQ = $sql->prepare("select b.batchName,l.salePrice from batchListTest as l left join batchTest as b on b.batchID
         = l.batchID where b.batchID = ? and l.upc = ?");
        $infoR = $sql->execute($infoQ, array($batchID, $upc1));
-       $infoW = $sql->fetch_array($infoR);
+       $infoW = $sql->fetchRow($infoR);
        $name = $infoW[0];
        preg_match("/priceUpdate(.*?)\d+/",$name,$matches);
        $name = $matches[1];
@@ -58,7 +58,7 @@ else if(isset($_REQUEST['submit']) && $_REQUEST['submit']=="submit"){
 
 $batchInfoQ = $sql->prepare("SELECT * FROM batchTest WHERE batchID = ?");
 $batchInfoR = $sql->execute($batchInfoQ, array($batchID));
-$batchInfoW = $sql->fetch_array($batchInfoR);
+$batchInfoW = $sql->fetchRow($batchInfoR);
 
 
 $selBItemsQ = $sql->prepare("SELECT b.*,p.*  from batchListTest as b LEFT JOIN 
@@ -76,7 +76,7 @@ echo "<td><input type=submit value=\"Change Dates\" name=datechange></td></tr>";
 echo "<input type=hidden name=batchID value=$batchID>";
 echo "</form>";
 echo "<th>UPC<th>Description<th>Normal Price<th>UNFI SRP<th>Delete";
-while($selBItemsW = $sql->fetch_array($selBItemsR)){
+while($selBItemsW = $sql->fetchRow($selBItemsR)){
    $upc = $selBItemsW[1];
    $field = 'sale'.$upc;
    $del = 'del'.$upc;

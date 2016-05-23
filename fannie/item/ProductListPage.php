@@ -398,7 +398,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             on p.tax = t.id
             where upc=? and p.description=?");
         $fetchR = $dbc->execute($fetchP,array($upc, $desc));
-        $fetchW = $dbc->fetch_array($fetchR);
+        $fetchW = $dbc->fetchRow($fetchR);
 
         $ret = "Delete item $upc - $desc?\n";
         $ret .= "Normal price: ".rtrim($fetchW[0])."\n";
@@ -690,7 +690,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $deptQ = $dbc->prepare("select dept_no,dept_name from departments order by dept_no");
         $deptR = $dbc->execute($deptQ);
         $depts = array();
-        while ($deptW = $dbc->fetch_array($deptR)){
+        while ($deptW = $dbc->fetchRow($deptR)){
             $depts[$deptW['dept_no']] = $deptW['dept_name'];
         }
         $superQ = $dbc->prepare("SELECT superID,super_name FROM superDeptNames 

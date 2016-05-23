@@ -36,7 +36,7 @@ echo "<th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>
     so it can be bolded when it's dumped out
     as well as sum each day's customer count for a total
 */
-while ($hourlyW = $sql->fetch_array($hourlyR)){
+while ($hourlyW = $sql->fetchRow($hourlyR)){
     if ($curyear != $hourlyW[0] || $curmonth != $hourlyW[1] || $curday != $hourlyW[2]){
         if ($curyear != ''){
             $sum = 0;
@@ -101,7 +101,7 @@ $sum = 0;
     on both charts. so technically the totals are off a little bit, but variance
     introduced isn't much - the trends still show through.
 */
-while($monthlyW = $sql->fetch_array($monthlyR)){
+while($monthlyW = $sql->fetchRow($monthlyR)){
     if ($curyear != $monthlyW[0] || $curmonth != $monthlyW[1] || $curday != $monthlyW[2]){
         if ($curyear != '')
             echo "<td>$sum</td></tr>";

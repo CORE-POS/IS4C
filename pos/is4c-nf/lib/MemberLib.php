@@ -165,7 +165,7 @@ class MemberLib extends \LibraryClass
                         }
 
                         $message = "";
-                        while ($row = $conn->fetch_array($ccR)) {
+                        while ($row = $conn->fetchRow($ccR)) {
                             $programOK = \CoopCredLib::programOK($row['tenderType'], $conn);
                             if ($programOK === True) {
                                 $programCode = 'CCred' . \CoreLocal::get("CCredProgramID");
@@ -208,7 +208,7 @@ class MemberLib extends \LibraryClass
                     $result = $conn->query($query);
                     $num_rows = $conn->num_rows($result);
                     if ($num_rows > 0) {
-                        $row2 = $conn->fetch_array($result);
+                        $row2 = $conn->fetchRow($result);
                     } else {
                         $row2 = array();
                     }
@@ -471,7 +471,7 @@ class MemberLib extends \LibraryClass
 
         $result = $conn->query($query);
         $num_rows = $conn->num_rows($result);
-        $row = $conn->fetch_array($result);
+        $row = $conn->fetchRow($result);
 
         $availBal = $row["availBal"] + \CoreLocal::get("memChargeTotal");
         

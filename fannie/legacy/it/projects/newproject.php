@@ -18,7 +18,7 @@ if (isset($_POST['projDesc'])){
   
   $q = "select max(projID) from projects";
   $r = $sql->query($q);
-  $row = $sql->fetch_array($r);
+  $row = $sql->fetchRow($r);
   $projID = $row[0] + 1;
   $date = date("Y-m-d");
   if(isset($_POST['party'])){
@@ -44,7 +44,7 @@ if (isset($_POST['projDesc'])){
   $r = $sql->execute($q, array($projID));
   $to_string = 'it@wholefoods.coop';
   if ($sql->num_rows($r) > 0){
-    while($row = $sql->fetch_array($r)){
+    while($row = $sql->fetchRow($r)){
       $to_string .= ", ".$row[0]."@wholefoods.coop";
     }
   }

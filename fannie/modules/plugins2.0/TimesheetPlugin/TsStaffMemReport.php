@@ -82,7 +82,7 @@ class TsStaffMemReport extends FanniePage {
             <div class="col-sm-5"><select name="period" class="form-control">
             <option>Please select a starting pay period.</option>';
 
-        while ($row = $ts_db->fetch_array($result)) {
+        while ($row = $ts_db->fetchRow($result)) {
             echo "<option value=\"" . $row['periodID'] . "\"";
             if ($row['periodID'] == $ID) { echo ' SELECTED';}
             echo ">(" . $row['periodStart'] . " - " . $row['periodEnd'] . ")</option>";
@@ -96,7 +96,7 @@ class TsStaffMemReport extends FanniePage {
                 <select name="end" class="form-control">
             <option value=0>Please select an ending pay period.</option>';
         $result = $ts_db->execute($query);
-        while ($row = $ts_db->fetch_array($result)) {
+        while ($row = $ts_db->fetchRow($result)) {
             echo "<option value=\"" . $row['periodID'] . "\"";
             if ($row['periodID'] == $ID) { echo ' SELECTED';}
             echo ">(" . $row['periodStart'] . " - " . $row['periodEnd'] . ")</option>";
@@ -187,7 +187,7 @@ class TsStaffMemReport extends FanniePage {
 
                 $shiftInfo = array();
                 echo "<table class=\"table table-bordered table-striped\"><thead>\n<tr><th>Week</th><th>Name</th><th>Wage</th>";
-                while ($areas = $ts_db->fetch_array($areasr)) {
+                while ($areas = $ts_db->fetchRow($areasr)) {
                     echo "<div id='vth'><th>" . substr($areas[0],0,6) . "</th></div>";  // -- TODO vertical align th, static col width
                     $shiftInfo[$areas['ShiftID']] = $areas['ShiftName'];
                 }

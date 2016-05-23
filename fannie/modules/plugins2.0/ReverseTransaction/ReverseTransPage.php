@@ -72,7 +72,7 @@ class ReverseTransPage extends FannieRESTfulPage
         $ret .= "<th>Type</th><th>Status</th><th>UPC</th><th>Description</th><th>Total</th>";
         $ret .= "<tr>";
         $cardno = "";
-        while ($row = $dbc->fetch_array($result)){
+        while ($row = $dbc->fetchRow($result)){
             $cardno = $row['card_no'];
             $ret .= "<tr>";
             $ret .= "<td>";

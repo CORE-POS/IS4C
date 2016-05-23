@@ -492,7 +492,7 @@ elseif (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] == -1){
 
 $deptQ = "SELECT dept_no, dept_name FROM departments ORDER BY dept_no";
 $deptR = $dbc->query($deptQ);
-$row = $dbc->fetch_array($deptR);
+$row = $dbc->fetchRow($deptR);
 $firstDeptNo = $row['dept_no'];
 $firstDeptName = $row['dept_name'];
 
@@ -500,7 +500,7 @@ $query1 = "SELECT upc,description,normal_price,department,subdept,
         foodstamp,scale,qttyEnforced,discount,inUse,deposit
          FROM products WHERE upc = '$upc'";
 $result1 = $dbc->query($query1);
-$row = $dbc->fetch_array($result1);
+$row = $dbc->fetchRow($result1);
 
 echo "<table border=0>";
         echo "<tr><td align=right><b>UPC</b></td><td><font color='red'>".$row['upc']."</font><input type=hidden value='{$row['upc']}' name=upc></td>";
@@ -514,7 +514,7 @@ echo "<table border=0>";
         if (is_numeric($dept)) {
             $query2 = "SELECT dept_name FROM departments where dept_no = " .$dept;
             $result2 = $dbc->query($query2);
-            $row2 = $dbc->fetch_array($result2);
+            $row2 = $dbc->fetchRow($result2);
         } else {
             $row2 = array('dept_name' => "");
         }
@@ -523,7 +523,7 @@ echo "<table border=0>";
         if (is_numeric($subdept)) {
             $query2a = "SELECT subdept_name FROM subdepts WHERE subdept_no = " .$subdept;
             $result2a = $dbc->query($query2a);
-            $row2a = $dbc->fetch_array($result2a);
+            $row2a = $dbc->fetchRow($result2a);
         } else {
             $row2a = array('subdept_name' => "");
         }

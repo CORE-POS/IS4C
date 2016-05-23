@@ -17,7 +17,7 @@ if(isset($_POST['name'])){
   // get the project description
   $nameQ = $sql->prepare("select projDesc from projects where projID=?");
   $nameR = $sql->execute($nameQ, array($projID));
-  $row = $sql->fetch_array($nameR);
+  $row = $sql->fetchRow($nameR);
   $projDesc = $row['projDesc'];
 
   $checkQ = $sql->prepare("select * from projects left outer join project_parties
@@ -40,7 +40,7 @@ if(isset($_POST['name'])){
   $r = $sql->execute($q, array($projID));
   $to_string = 'it@wholefoods.coop';
   if ($mail == 'all' && $sql->num_rows($r) > 0){
-    while($row = $sql->fetch_array($r)){
+    while($row = $sql->fetchRow($r)){
       $to_string .= ", ".$row[0]."@wholefoods.coop";
     }
   }

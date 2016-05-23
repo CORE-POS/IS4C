@@ -110,7 +110,7 @@ class TrendsReport extends FannieReportPage
         $data = array();
         // track upc while going through the rows, storing 
         // all data about a given upc before printing
-        while ($row = $dbc->fetch_array($result)){  
+        while ($row = $dbc->fetchRow($result)){  
             if ($current['upc'] != $row['prodID']){
                 if ($current['upc'] != ""){
                     $record = array(
