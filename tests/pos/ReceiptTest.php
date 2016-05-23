@@ -187,11 +187,12 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
     public function testDataFetch()
     {
         $mods = AutoLoader::listModules('DefaultReceiptDataFetch');
+        $dbc = Database::tDataConnect();
 
         foreach($mods as $message_class) {
             $obj = new $message_class();
 
-            $queryResult = $obj->fetch();
+            $queryResult = $obj->fetch($dbc);
             $this->assertNotEquals(false, $queryResult);
         }
     }
