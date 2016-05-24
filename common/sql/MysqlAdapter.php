@@ -25,6 +25,16 @@ namespace COREPOS\common\sql;
 
 class MysqlAdapter implements DialectAdapter
 {
+    public function createNamedDB($name)
+    {
+        return 'CREATE DATABASE ' . $this->identifierEscape($name);
+    }
+
+    public function useNamedDB($name)
+    {
+        return 'USE ' . $this->identifierEscape($name);
+    }
+
     public function identifierEscape($str)
     {
         return '`' . $str . '`';

@@ -356,6 +356,8 @@ class BasicModel
         if (isset($definition['increment']) && $definition['increment']) {
             if ($dbms == 'mssql') {
                 $sql .= ' IDENTITY (1, 1) NOT NULL';
+            } elseif ($dbms === 'pgsql' || $dbms === 'pdo_pgsql') {
+                $sql = preg_replace('/$' . $type . '/', 'SERIAL', $sql, 1);
             } else {
                 $sql .= ' NOT NULL AUTO_INCREMENT';
             }
@@ -631,7 +633,7 @@ class BasicModel
       @param $dbms string DB name
       @return string
     */
-    protected function getMeta($type, $dbms)
+    public function getMeta($type, $dbms)
     {
         if (!isset($this->meta_types[strtoupper($type)])) {
             return $type;

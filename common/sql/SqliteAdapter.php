@@ -25,6 +25,16 @@ namespace COREPOS\common\sql;
 
 class SqliteAdapter implements DialectAdapter
 {
+    public function createNamedDB($name)
+    {
+        return 'SELECT 1';
+    }
+
+    public function useNamedDB($name)
+    {
+        return 'SELECT 1';
+    }
+
     public function identifierEscape($str)
     {
         return '"' . $str . '"';

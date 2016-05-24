@@ -75,7 +75,8 @@ class SQLManager
         $this->default_db = $database;
         $this->addConnection($server,$type,$database,$username,$password,$persistent,$new);
         if ($this->isConnected($database)) {
-            $this->query('USE ' . $this->identifierEscape($database));
+            $adapter = $this->getAdapter(strtolower($type));
+            $this->query($adapter->useNamedDB($database));
         }
     }
 
@@ -161,13 +162,14 @@ class SQLManager
         $connected = $conn->Connect($this->getDSN($server,$type,false),$username,$password,$database);
         if ($connected) {
             $this->last_connection_error = false;
-            $stillok = $conn->Execute("CREATE DATABASE $database");
+            $adapter = $this->getAdapter(strtolower($type));
+            $stillok = $conn->Execute($adapter->createNamedDB($database));
             if (!$stillok) {
                 $this->last_connect_error = $conn->ErrorMsg();
                 $this->connections[$database] = false;
                 return false;
             }
-            $conn->Execute("USE $database");
+            $conn->Execute($adapter->useNamedDB($database));
             $conn->SelectDB($database);
             $this->connections[$database] = $conn;
         } else {
@@ -250,10 +252,11 @@ class SQLManager
         }
 
         $this->default_db = $db_name;
+        $adapter = $this->getAdapter($this->connectionType($db_name));
         if ($this->isConnected()) {
             $selected = $this->connections[$db_name]->SelectDB($db_name);
             if (!$selected) {
-                $this->query('CREATE DATABASE ' . $this->identifierEscape($db_name), $db_name);
+                $this->query($adapter->createNamedDB($db_name), $db_name);
                 $selected = $this->connections[$db_name]->SelectDB($db_name);
             }
             if ($selected) {
@@ -1702,6 +1705,7 @@ class SQLManager
         'pdo'       => 'COREPOS\common\sql\MysqlAdapter',
         'mssql'     => 'COREPOS\common\sql\MssqlAdapter',
         'pgsql'     => 'COREPOS\common\sql\PgsqlAdapter',
+        'pdo_pgsql'     => 'COREPOS\common\sql\PgsqlAdapter',
         'sqlite3'   => 'COREPOS\common\sql\SqliteAdapter',
     );
 
