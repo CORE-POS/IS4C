@@ -765,8 +765,14 @@ class OrderViewPage extends FannieRESTfulPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
+
+        if (FannieAuth::validateUserQuiet('ordering_edit')) {
+            $items = $this->editableItemList($this->orderID);
+        } else {
+            $items = itemList($this->orderID);
+        }
         
-        $ret = <<<HTML
+        echo <<<HTML
 <form> 
 <div class="form-inline">
     <div class="input-group">
@@ -785,28 +791,21 @@ class OrderViewPage extends FannieRESTfulPage
 </div>
 </form>
 <p />
+{$items}
+<p />
+<b><a href="" onclick="\$('#manualclosebuttons').toggle();return false;">Manually close order</a></b>
+<span id="manualclosebuttons" class="collapse"> as:
+    <a href="" class="btn btn-default close-order-btn" data-close="7">Completed</a>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="" class="btn btn-default close-order-btn" data-close="8">Canceled</a>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="" class="btn btn-default close-order-btn" data-close="9">Inquiry</a>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br />
+    <div class="alert alert-danger">
+        Closing an order means slips for these items will no longer scan at the registers
+    </div>
+</span>
 HTML;
-
-        if (FannieAuth::validateUserQuiet('ordering_edit')) {
-            $ret .= $this->editableItemList($this->orderID);
-        } else {
-            $ret .= itemList($this->orderID);
-        }
-
-        $ret .= '<p />';
-        $ret .= '<b><a href="" onclick="$(\'#manualclosebuttons\').toggle();return false;">Manually close order</a></b>';
-        $ret .= sprintf('<span id="manualclosebuttons" class="collapse"> as:
-                <a href="" class="btn btn-default close-order-btn" data-close="7">Completed</a>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="" class="btn btn-default close-order-btn" data-close="8">Canceled</a>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="" class="btn btn-default close-order-btn" data-close="9">Inquiry</a>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br />
-                <div class="alert alert-danger">Closing an order means slips for these
-                items will no longer scan at the registers</div></span>',
-                $this->orderID,$this->orderID,$this->orderID);
-
-        echo $ret;
 
         return false;
     }
@@ -920,19 +919,17 @@ HTML;
 
     private function getQtyForm($orderID,$default,$transID,$description)
     {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
-        $ret = '<i>This item ('.$description.') requires a quantity</i><br />';
-        $ret .= "<form data-order=\"$orderID\" data-trans=\"$transID\">";
-        $ret .= '<div class="form-inline">';
-        $ret .= '<label>Qty</label>: <input type="text" id="newqty" 
-            class="form-control input-sm" value="'.$default.'" maxlength="3" size="4" />';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<button type="submit" class="btn btn-default">Enter Qty</button>';
-        $ret .= '</div>';
-        $ret .= '</form>';
-
-        return $ret;
+        return <<<HTML
+<i>This item ({$description}) requires a quantity</i><br />
+<form data-order="{$orderID}" data-trans="{$transID}">
+    <div class="form-inline">
+        <label>Qty</label>: <input type="text" id="newqty" 
+            class="form-control input-sm" value="{$default}" maxlength="3" size="4" />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <button type="submit" class="btn btn-default">Enter Qty</button>
+    </div>
+</form>
+HTML;
     }
 
     private function getDeptForm($orderID,$transID,$description)
@@ -940,10 +937,6 @@ HTML;
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
-        $ret = '<i>This item ('.$description.') requires a department</i><br />';
-        $ret .= "<form data-order=\"$orderID\" data-trans=\"$transID\">";
-        $ret .= '<div class="form-inline">';
-        $ret .= '<select id="newdept" class="form-control">';
         $prep = $dbc->prepare("select super_name,
             CASE WHEN MIN(map_to) IS NULL THEN MIN(m.dept_ID) ELSE MIN(map_to) END
             from MasterSuperDepts
@@ -952,16 +945,23 @@ HTML;
             where m.superID > 0
             group by super_name ORDER BY super_name");
         $res = $dbc->execute($prep);
-        while ($row = $dbc->fetch_row($res)) {
-            $ret .= sprintf('<option value="%d">%s</option>',$row[1],$row[0]);
+        $opts = '';
+        while ($row = $dbc->fetchRow($res)) {
+            $opts .= sprintf('<option value="%d">%s</option>',$row[1],$row[0]);
         }
-        $ret .= "</select>";
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<button type="submit" class="btn btn-default">Enter Dept</button>';
-        $ret .= '</div>';
-        $ret .= '</form>';
-        
-        return $ret;
+
+        return <<<HTML
+<i>This item ({$description}) requires a department</i><br />
+<form data-order="{$orderID}" data-trans="{$transID}">
+    <div class="form-inline">
+        <select id="newdept" class="form-control">
+            {$opts}
+        </select>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <button type="submit" class="btn btn-default">Enter Dept</button>
+    </div>
+</form>
+HTML;
     }
 
     private function reprice($oid,$tid,$reg=false)
@@ -1025,7 +1025,7 @@ HTML;
 
     protected function get_orderID_view()
     {
-        $orderID = $this->orderID;
+        $orderID = (int)$this->orderID;
         $refer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
         $return_path = ($refer && strstr($refer,'fannie/ordering/NewSpecialOrdersPage.php')) ? $refer : '';
         if (!empty($return_path)) {
@@ -1035,19 +1035,18 @@ HTML;
         } else {
             $return_path = $this->config->get('URL') . "ordering/";
         }
-        $ret = sprintf("<input type=hidden id=redirectURL value=\"%s\" />",$return_path);
+        $ret = '';
 
-        $prev = -1;
-        $next = -1;
-        $found = False;
+        $prev = $next = -1;
+        $found = false;
         $cachepath = sys_get_temp_dir()."/ordercache/";
         $cachekey = FormLib::get('k');
         if ($cachekey && file_exists($cachepath.$cachekey)) {
             $fptr = fopen($cachepath.$cachekey,'r');
             while (($buffer = fgets($fptr, 4096)) !== false) {
-                if ((int)$buffer == $orderID) $found = True;
-                else if (!$found) $prev = (int)$buffer;
-                else if ($found) {
+                if ((int)$buffer == $orderID) $found = true;
+                elseif (!$found) $prev = (int)$buffer;
+                elseif ($found) {
                     $next = (int)$buffer;
                     break;
                 }
@@ -1070,10 +1069,11 @@ HTML;
                     <span class="glyphicon glyphicon-chevron-right"></span>Next</a>',$next,$cachekey);
             }
             $ret .= '</div></div>';
-            $ret .= '<p />';
         }
 
         $ret .= <<<HTML
+<p />
+<input type=hidden id=redirectURL value="{$return_path}" />
 <div class="panel panel-default">
     <div class="panel-heading">Customer Information</div>
     <div class="panel-body" id="customerDiv"></div>
@@ -1083,8 +1083,8 @@ HTML;
     <div class="panel-body" id="itemDiv"></div>
 </div>
 <div id="footerDiv"></div>
+<input type=hidden value="{$orderID}" id="init_oid" />
 HTML;
-        $ret .= sprintf("<input type=hidden value=\"%d\" id=\"init_oid\" />",$orderID);
 
         $this->addScript('orderview.js');
 

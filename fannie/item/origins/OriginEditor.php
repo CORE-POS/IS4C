@@ -347,17 +347,20 @@ class OriginEditor extends FannieRESTfulPage
         }
 
         $origins = new OriginsModel($dbc);
-        $ret = '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">';
-        $ret .= '<h3>Edit Origins</h3>';
-        $ret .= '<table class="table">';
-        $ret .= '<tr>
-                <th>Short Name</th>
-                <th>Full Name</th>
-                <th><a href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?custom=1">Region</a></th>
-                <th><a href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?state=1">State/Prov</a></th>
-                <th><a href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?country=1">Country</a></th>
-                <th>Local</th>
-                </tr>';
+        $self = filter_input(INPUT_SERVER, 'PHP_SELF');
+        $ret = <<<HTML
+<form action="{$self}" method="post">
+    <h3>Edit Origins</h3>
+    <table class="table">
+        <tr>
+            <th>Short Name</th>
+            <th>Full Name</th>
+            <th><a href="{$self}'?custom=1">Region</a></th>
+            <th><a href="{$self}'?state=1">State/Prov</a></th>
+            <th><a href="{$self}'?country=1">Country</a></th>
+            <th>Local</th>
+        </tr>
+HTML;
         foreach ($origins->find('name') as $o) {
             $ret .= sprintf('<tr>
                             <input type="hidden" name="originID[]" value="%d" />
@@ -401,41 +404,45 @@ class OriginEditor extends FannieRESTfulPage
         $ret .= '<p><button type="submit" class="btn btn-default">Save Origins</button></p>';
         $ret .= '</form>';
 
-        $ret .= '<hr />';
+        $customOpts .= $this->arrayToSelect($customs);
+        $stateOpts .= $this->arrayToSelect($states);
+        $countryOpts .= $this->arrayToSelect($countries);
+        $ret .= <<<HTML
+<hr />
+<form action="{$self}" method="post">
+    <h3>Create New Origin</h3>
+    <table class="table">
+        <tr>
+            <th><a href="{$self}?custom=1">Region</a></th>
+            <th><a href="{$self}'?state=1">State/Prov</a></th>
+            <th><a href="{$self}?country=1">Country</a></th>
+        </tr>
+        <tr>
+            <td><select name="newCustom" class="form-control"><option value="">n/a</option>
+                {$customOpts}
+            </select></td>
+            <td><select name="newState" class="form-control"><option value="">n/a</option>
+                {$stateOpts}
+            </select></td>
+            <td><select name="newCountry" class="form-control"><option value="">n/a</option>
+                {$countryOpts}
+            </select></td>
+        </tr>
+    </table>
+    <p><button type="submit" class="btn btn-default">Create</button></p>
+</form>
+HTML;
 
-        $ret = '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">';
-        $ret .= '<h3>Create New Origin</h3>';
-        $ret .= '<table class="table">';
-        $ret .= '<tr>
-                <th><a href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?custom=1">Region</a></th>
-                <th><a href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?state=1">State/Prov</a></th>
-                <th><a href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?country=1">Country</a></th>
-                </tr>';
-        $ret .= '<tr>';
-        $ret .= '<td><select name="newCustom" class="form-control"><option value="">n/a</option>';
-        foreach ($customs as $id => $label) {
+        return $ret;
+    }
+
+    private function arrayToSelect($arr)
+    {
+        $ret = '';
+        foreach ($arr as $id => $label) {
             $ret .= sprintf('<option value="%d">%s</option>',
                         $id, $label);
         }
-        $ret .= '</select></td>';
-
-        $ret .= '<td><select name="newState" class="form-control"><option value="">n/a</option>';
-        foreach ($states as $id => $label) {
-            $ret .= sprintf('<option value="%d">%s</option>',
-                        $id, $label);
-        }
-        $ret .= '</select></td>';
-
-        $ret .= '<td><select name="newCountry" class="form-control"><option value="">n/a</option>';
-        foreach ($countries as $id => $label) {
-            $ret .= sprintf('<option value="%d">%s</option>',
-                        $id, $label);
-        }
-        $ret .= '</select></td>';
-        $ret .= '</tr>';
-        $ret .= '</table>';
-        $ret .= '<p><button type="submit" class="btn btn-default">Create</button></p>';
-        $ret .= '</form>';
 
         return $ret;
     }

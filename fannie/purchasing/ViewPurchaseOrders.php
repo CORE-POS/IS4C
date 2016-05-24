@@ -667,66 +667,65 @@ class ViewPurchaseOrders extends FannieRESTfulPage
     {
         $init = FormLib::get('init', 'placed');
 
-        $ret = '<div class="form-group form-inline">
-            <label>Status</label> <select id="orderStatus" onchange="fetchOrders();" class="form-control">';
-        $status = array('pending', 'placed');
-        foreach ($status as $s) {
-            $ret .= sprintf('<option %s value="%s">%s</option>',
-                        ($init == $s ? 'selected' : ''),
-                        $s, ucwords($s));
-        }
-        $ret .= '</select>';
-
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-
-        $ret .= '<label>Showing</label> <select id="orderShow" onchange="fetchOrders();" class="form-control">';
-        if ($this->show_all)
-            $ret .= '<option value="0">My Orders</option><option selected value="1">All Orders</option>';
-        else
-            $ret .= '<option selected value="0">My Orders</option><option value="1">All Orders</option>';
-        $ret .= '</select>';
-
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-
-        $stores = FormLib::storePicker();
-        $ret .= str_replace('<select ', '<select id="storeID" onchange="fetchOrders();" ', $stores['html']);
-
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        
-        $ret .= '<label>During</label> ';
-        $ret .= '<select id="viewMonth" onchange="fetchOrders();" class="form-control">';
         $month = date('n');
+        $monthOpts = '';
         for($i=1; $i<= 12; $i++) {
             $label = date('F', mktime(0, 0, 0, $i)); 
-            $ret .= sprintf('<option %s value="%d">%s</option>',
+            $monthOpts .= sprintf('<option %s value="%d">%s</option>',
                         ($i == $month ? 'selected' : ''),
                         $i, $label);
         }
-        $ret .= '</select>';
 
-        $ret .= '&nbsp;';
-        $ret .= '<select id="viewYear" onchange="fetchOrders();" class="form-control">';
-        $year = date('Y');
-        for($i = $year; $i >= 2013; $i--) {
-            $ret .= '<option>' . $i . '</option>';
+        $statusOpts = '';
+        foreach (array('pending', 'placed') as $s) {
+            $statusOpts .= sprintf('<option %s value="%s">%s</option>',
+                        ($init == $s ? 'selected' : ''),
+                        $s, ucwords($s));
         }
-        $ret .= '</select>';
 
-        $ret .= '&nbsp;';
+        $stores = FormLib::storePicker();
+        $storeSelect = str_replace('<select ', '<select id="storeID" onchange="fetchOrders();" ', $stores['html']);
 
-        $ret .= '<button class="btn btn-default" onclick="location=\'PurchasingIndexPage.php\'; return false;">Home</button>';
+        $yearOpts = '';
+        for ($i = date('Y'); $i >= 2013; $i--) {
+            $yearOpts .= '<option>' . $i . '</option>';
+        }
 
-        $ret .= '</div>';
+        $allSelected = $this->show_all ? 'selected' : '';
+        $mySelected = !$this->show_all ? 'selected' : '';
 
-        $ret .= '<hr />';
-        
-        $ret .= '<div id="ordersDiv"></div>';   
+        $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.min.js');
+        $this->addScript('js/view.js');
+        $this->addOnloadCommand("fetchOrders();\n");
 
-        $this->add_script('../src/javascript/tablesorter/jquery.tablesorter.min.js');
-        $this->add_script('js/view.js');
-        $this->add_onload_command("fetchOrders();\n");
-
-        return $ret;
+        return <<<HTML
+<div class="form-group form-inline">
+    <label>Status</label> 
+    <select id="orderStatus" onchange="fetchOrders();" class="form-control">
+        {$statusOpts}
+    </select>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <label>Showing</label> 
+    <select id="orderShow" onchange="fetchOrders();" class="form-control">
+        <option {$mySelected} value="0">My Orders</option><option {$allSelected} value="1">All Orders</option>
+    </select>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    {$storeSelect}
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <label>During</label> 
+    <select id="viewMonth" onchange="fetchOrders();" class="form-control">
+        {$monthOpts}
+    </select>
+    &nbsp;
+    <select id="viewYear" onchange="fetchOrders();" class="form-control">
+        {$yearOpts}
+    </select>
+    &nbsp;
+    <button class="btn btn-default" onclick="location='PurchasingIndexPage.php'; return false;">Home</button>
+</div>
+<hr />
+<div id="ordersDiv"></div>
+HTML;
     }
 
     public function css_content()

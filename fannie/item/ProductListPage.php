@@ -98,188 +98,18 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         foreach ($vModel->find('vendorName') as $v) {
             $vendors[] = $v->vendorName();
         }
+        if ($this->canEditItems) {
+            $this->addOnloadCommand('productList.enableEditing()');
+        }
+        $this->addScript('productList.js');
         ob_start();
         ?>
         var deptObj = <?php echo json_encode($depts); ?>;
         var taxObj = <?php echo json_encode($taxes); ?>;
         var localObj = <?php echo json_encode($local_opts); ?>;
         var vendorObj = <?php echo json_encode($vendors); ?>;
-        function edit(elem){
-            var brand = elem.find('.td_brand:first').html();
-            var content = "<input type=text class=\"in_brand form-control input-sm\" size=8 value=\""+brand+"\" />";   
-            elem.find('.td_brand:first').html(content);
-
-            var desc = elem.find('.td_desc:first').html();
-            var content = "<input type=text class=\"in_desc form-control input-sm\" size=10 value=\""+desc+"\" />";   
-            elem.find('.td_desc:first').html(content);
-
-            var dept = elem.find('.td_dept:first').text();
-            var content = '<select class=\"in_dept form-control input-sm\"><optgroup style="font-size: 90%;">';
-            for(dept_no in deptObj){
-                content += "<option value=\""+dept_no+"\" "+((dept==deptObj[dept_no])?'selected':'')+">";
-                content += deptObj[dept_no]+"</option>";
-            }
-            content += '</optgroup></select>';
-            elem.find('.td_dept:first').html(content);
-
-            var supplier = elem.find('.td_supplier:first').text();
-            var content = '<select class=\"in_supplier form-control input-sm\"><optgroup style="font-size: 90%;">';
-            for(var i in vendorObj){
-                content += "<option "+((supplier==vendorObj[i])?'selected':'')+">";
-                content += vendorObj[i]+"</option>";
-            }
-            content += '</optgroup></select>';
-            elem.find('.td_supplier:first').html(content);
-
-            var cost = elem.find('.td_cost:first').html();
-            var content = "<input type=text class=\"in_cost form-control input-sm\" size=4 value=\""+cost+"\" />";    
-            elem.find('.td_cost:first').html(content);
-
-            var price = elem.find('.td_price:first').html();
-            var content = "<input type=text class=\"in_price form-control input-sm\" size=4 value=\""+price+"\" />";  
-            elem.find('.td_price:first').html(content);
-
-            var tax = elem.find('.td_tax:first').html();
-            var content = '<select class=\"in_tax form-control input-sm\">';
-            for (ch in taxObj){
-                var sel = (tax == ch) ? 'selected' : '';
-                content += "<option value=\""+ch+":"+taxObj[ch][0]+"\" "+sel+">";
-                content += taxObj[ch][1]+"</option>";
-            }
-            elem.find('.td_tax:first').html(content);
-
-            var fs = elem.find('.td_fs:first').html();
-            var content = "<input type=checkbox class=in_fs "+((fs=='X')?'checked':'')+" />";
-            elem.find('.td_fs:first').html(content);
-
-            var disc = elem.find('.td_disc:first').html();
-            var content = "<input type=checkbox class=in_disc "+((disc=='X')?'checked':'')+" />";
-            elem.find('.td_disc:first').html(content);
-
-            var wgt = elem.find('.td_wgt:first').html();
-            var content = "<input type=checkbox class=in_wgt "+((wgt=='X')?'checked':'')+" />";
-            elem.find('.td_wgt:first').html(content);
-
-            var local = elem.find('.td_local:first').html();
-            //var content = "<input type=checkbox class=in_local "+((local=='X')?'checked':'')+" />";
-            var content = '<select class=\"in_local form-control input-sm\">';
-            for (ch in localObj){
-                var sel = (local == ch) ? 'selected' : '';
-                content += "<option value=\""+ch+":"+localObj[ch][0]+"\" "+sel+">";
-                content += localObj[ch][1]+"</option>";
-            }
-            elem.find('.td_local:first').html(content);
-
-            elem.find('.td_cmd:first .edit-link').hide();
-            elem.find('.td_cmd:first .save-link').show();
-
-            elem.find('input:text').keydown(function(event) {
-                if (event.which == 13) {
-                    save(elem);
-                }
-            });
-            elem.find('.clickable input:text').click(function(event){
-                // do nothing
-                event.stopPropagation();
-            });
-            elem.find('.clickable select').click(function(event){
-                // do nothing
-                event.stopPropagation();
-            });
-        }
-        function save(elem){
-            var upc = elem.find('.hidden_upc:first').val();
-            var store_id = elem.find('.hidden_store_id:first').val();
-
-            var brand = elem.find('.in_brand:first').val();
-            elem.find('.td_brand:first').html(brand);
-
-            var desc = elem.find('.in_desc:first').val();
-            elem.find('.td_desc:first').html(desc);
-        
-            var dept = elem.find('.in_dept:first').val();
-            elem.find('.td_dept:first').html(deptObj[dept]);
-
-            var supplier = elem.find('.in_supplier:first').val();
-            elem.find('.td_supplier:first').html(supplier);
-
-            mathField(elem.find('.in_cost:first').get(0));
-            var cost = elem.find('.in_cost:first').val();
-            elem.find('.td_cost:first').html(cost);
-
-            var price = elem.find('.in_price:first').val();
-            elem.find('.td_price:first').html(price);
-
-            var tax = elem.find('.in_tax:first').val().split(':');
-            elem.find('.td_tax:first').html(tax[0]);
-            
-            var fs = elem.find('.in_fs:first').is(':checked') ? 1 : 0;
-            elem.find('.td_fs:first').html((fs==1)?'X':'-');
-
-            var disc = elem.find('.in_disc:first').is(':checked') ? 1 : 0;
-            elem.find('.td_disc:first').html((disc==1)?'X':'-');
-
-            var wgt = elem.find('.in_wgt:first').is(':checked') ? 1 : 0;
-            elem.find('.td_wgt:first').html((wgt==1)?'X':'-');
-
-            var local = elem.find('.in_local:first').val().split(':');
-            elem.find('.td_local:first').html(local[0]);
-
-            elem.find('.td_cmd:first .edit-link').show();
-            elem.find('.td_cmd:first .save-link').hide();
-
-            var dstr = 'ajax=save&upc='+upc+'&dept='+dept+'&price='+price+'&cost='+cost;
-            dstr += '&tax='+tax[1]+'&fs='+fs+'&disc='+disc+'&wgt='+wgt+'&supplier='+supplier+'&local='+local[1];
-            dstr += '&brand='+encodeURIComponent(brand);
-            dstr += '&desc='+encodeURIComponent(desc);
-            dstr += '&store_id='+store_id;
-            $.ajax({
-                url: 'ProductListPage.php',
-                data: dstr,
-                cache: false,
-                type: 'post'
-            });
-        }
-        function deleteCheck(upc,desc){
-            $.ajax({
-                url: 'ProductListPage.php',
-                data: 'ajax=deleteCheck&upc='+upc+'&desc='+desc,
-                dataType: 'json',
-                cache: false,
-                type: 'post'
-            }).done(function(data) {
-                if (data.alertBox && data.upc && data.enc_desc){
-                    if (confirm(data.alertBox)){
-                        $.ajax({
-                            url: 'ProductListPage.php',
-                            data: 'ajax=doDelete&upc='+upc+'&desc='+data.enc_desc,
-                            cache: false,
-                            type: 'post'
-                        }).done(function(data){
-                            $('#' + upc).remove();
-                        });
-                    }
-                } else {
-                    alert('Data error: cannot delete');
-                }
-            });
-        }
-        <?php if ($this->canEditItems) { ?>
-        $(document).ready(function(){
-            $('tr').each(function(){
-                if ($(this).find('.hidden_upc').length != 0) {
-                    var upc = $(this).find('.hidden_upc').val();
-                    $(this).find('.clickable').click(function() {
-                        if ($(this).find(':input').length == 0) {
-                            edit($(this).closest('tr'));
-                            $(this).find(':input').select();
-                        }
-                    });
-                }
-            });
-        });
         <?php
-        }
+
         return ob_get_clean();
     }
 
@@ -649,7 +479,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 $ret .= ' (' . substr($row['storeName'], 0, 1) . ')';
             }
             if ($this->canDeleteItems !== false) {
-                $ret .= " <a href=\"\" onclick=\"deleteCheck('$row[0]','$enc'); return false;\">";
+                $ret .= " <a href=\"\" onclick=\"productList.deleteCheck('$row[0]','$enc'); return false;\">";
                 $ret .= \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</a>';
             }
             $ret .= '</td>';
@@ -672,10 +502,10 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         if (!$this->excel && $this->canEditItems !== false){
             $ret .= "<td align=center class=td_cmd><a href=\"\" 
                 class=\"edit-link\"
-                onclick=\"edit(\$(this).closest('tr')); return false;\">"
+                onclick=\"productList.edit(\$(this).closest('tr')); return false;\">"
                 . \COREPOS\Fannie\API\lib\FannieUI::editIcon() . '</a>
                 <a href="" class="save-link collapse"
-                onclick="save($(this).closest(\'tr\')); return false;">'
+                onclick="productList.save($(this).closest(\'tr\')); return false;">'
                 . \COREPOS\Fannie\API\lib\FannieUI::saveIcon() . '</a></td>';
         }
         $ret .= "</tr>\n";
@@ -687,78 +517,58 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $deptQ = $dbc->prepare("select dept_no,dept_name from departments order by dept_no");
-        $deptR = $dbc->execute($deptQ);
-        $depts = array();
-        while ($deptW = $dbc->fetchRow($deptR)){
-            $depts[$deptW['dept_no']] = $deptW['dept_name'];
+
+        $deptFields = FormLib::standardDepartmentFields('deptSub'); 
+        $brand = _('Brand');
+        $brandName = _('Brand name');
+        $vendors = new VendorsModel($dbc);
+        $vOpts = $vendors->toOptions();
+        $stores = '';
+        if ($this->config->get('STORE_MODE') == 'HQ') { 
+            $picker = FormLib::storePicker();
+            $stores = '<div class="form-group form-inline">
+                <label>Store</label> '
+                . $picker['html']
+                . '</div>';
         }
-        $superQ = $dbc->prepare("SELECT superID,super_name FROM superDeptNames 
-            ORDER BY superID");
-        $superR = $dbc->execute($superQ);
-        $supers = array();
-        while ($superW = $dbc->fetchRow($superR)){
-            $supers[$superW['superID']] = $superW['super_name'];
-        }
-        $subs = array();
-        if (count($depts) > 0) {
-            $dept_numbers = array_keys($depts);
-            $first = $dept_numbers[0];
-            $subsP = $dbc->prepare('
-                SELECT subdept_no,
-                    subdept_name
-                FROM subdepts
-                WHERE dept_ID=?
-                ORDER BY subdept_no');
-            $subsR = $dbc->execute($subsP, array($first));
-            while ($subsW = $dbc->fetchRow($subsR)) {
-                $subs[$subsW['subdept_no']] = $subsW['subdept_name'];
-            }
-        }
-        ob_start();
-        ?>
-        <form method="get" action="ProductListPage.php">
-        <ul class="nav nav-tabs" role="tablist">
-            <li class="active"><a href="#dept-tab" data-toggle="tab"
-                onclick="$('#supertype').val('dept');">By Department</a></li>
-            <li><a href="#manu-tab" data-toggle="tab"
-                onclick="$('#supertype').val('manu');">By Brand</a></li>
-            <li><a href="#vendor-tab" data-toggle="tab"
-                onclick="$('#supertype').val('vendor');">By Vendor</a></li>
-        </ul>
-        <input id="supertype" name="supertype" type="hidden" value="dept" />
-        <div class="tab-content">
-            <p>
+
+        $ret = <<<HTML
+<form method="get" action="ProductListPage.php">
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="active"><a href="#dept-tab" data-toggle="tab"
+            onclick="\$('#supertype').val('dept');">By Department</a></li>
+        <li><a href="#manu-tab" data-toggle="tab"
+            onclick="\$('#supertype').val('manu');">By Brand</a></li>
+        <li><a href="#vendor-tab" data-toggle="tab"
+            onclick="\$('#supertype').val('vendor');">By Vendor</a></li>
+    </ul>
+    <input id="supertype" name="supertype" type="hidden" value="dept" />
+    <div class="tab-content">
+        <p>
             <div class="tab-pane active" id="dept-tab">
                 <div class="row form-horizontal">
                     <div class="col-sm-8">
-                    <?php echo FormLib::standardDepartmentFields('deptSub'); ?>
+                    {$deptFields}
                     </div>
                 </div>
             </div>
             <div class="tab-pane" id="manu-tab">
                 <div class="form-group form-inline">
-                    <label><?php echo _('Brand'); ?></label>
+                    <label>{$brand}</label>
                     <input type=text name=manufacturer class="form-control" />
                 </div>
                 <div class="form-group form-inline">
                     <label><input type=radio name=mtype value=prefix checked />
                         UPC prefix</label>
                     <label><input type=radio name=mtype value=name />
-                        <?php echo _('Brand name'); ?></label>
+                        {$brandName}</label>
                 </div>
             </div>
             <div class="tab-pane" id="vendor-tab">
                 <div class="form-group form-inline">
                     <label>Vendor</label>
                     <select name="vendor" class="form-control">
-                    <?php
-                    $vendors = new VendorsModel($dbc);
-                    foreach ($vendors->find('vendorName') as $v) {
-                        printf('<option value="%d">%s</option>',
-                            $v->vendorID(), $v->vendorName());
-                    }
-                    ?>
+                    {$vOpts}
                     </select>
                 </div>
             </div>
@@ -781,24 +591,14 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 Excel
             </label>
         </div>
-        <?php 
-        if ($this->config->get('STORE_MODE') == 'HQ') { 
-            $picker = FormLib::storePicker();
-            echo '<div class="form-group form-inline">
-                <label>Store</label> '
-                . $picker['html']
-                . '</div>';
-        }
-        ?>
+        {$stores}
         <p> 
             <button type=submit name=submit class="btn btn-default btn-core">Submit</button>
             <button type=reset id="reset-btn" class="btn btn-default btn-reset"
-                onclick="$('#super-id').val('').trigger('change');">Start Over</button>
+                onclick="\$('#super-id').val('').trigger('change');">Start Over</button>
         </p>
         </form>
-        <?php
-
-        return ob_get_clean();
+HTML;
     }
 
     public function body_content()

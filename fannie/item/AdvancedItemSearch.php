@@ -116,39 +116,35 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchUPC($search, $form)
     {
-        try {
-            if ($form->upc !== '') {
-                if (strstr($form->upc, '*')) {
-                    $upc = str_replace('*', '%', $form->upc);
-                    $search->where .= ' AND p.upc LIKE ? ';
-                    $search->args[] = $upc;
-                } elseif (substr(BarcodeLib::padUPC($form->upc), 0, 8) == '00499999') {
-                    $couponID = (int)substr(BarcodeLib::padUPC($form->upc), 8);
-                    $search->from .= ' LEFT JOIN houseCouponItems AS h ON p.upc=h.upc ';
-                    $search->where .= ' AND h.coupID=? ';
-                    $search->args[] = $couponID;
-                } else {
-                    $upc = str_pad($form->upc, 13, '0', STR_PAD_LEFT);
-                    $search->where .= ' AND p.upc = ? ';
-                    $search->args[] = $upc;
-                }
+        if ($form->upc !== '') {
+            if (strstr($form->upc, '*')) {
+                $upc = str_replace('*', '%', $form->upc);
+                $search->where .= ' AND p.upc LIKE ? ';
+                $search->args[] = $upc;
+            } elseif (substr(BarcodeLib::padUPC($form->upc), 0, 8) == '00499999') {
+                $couponID = (int)substr(BarcodeLib::padUPC($form->upc), 8);
+                $search->from .= ' LEFT JOIN houseCouponItems AS h ON p.upc=h.upc ';
+                $search->where .= ' AND h.coupID=? ';
+                $search->args[] = $couponID;
+            } else {
+                $upc = str_pad($form->upc, 13, '0', STR_PAD_LEFT);
+                $search->where .= ' AND p.upc = ? ';
+                $search->args[] = $upc;
             }
-        } catch (Exception $ex) {}
+        }
 
         return $search;
     }
 
     private function searchUPCs($search, $form)
     {
-        try {
-            if ($form->upcs !== '') {
-                $upcs = explode("\n", $form->upcs);
-                $upcs = array_map(function($i){ return BarcodeLib::padUPC(trim($i)); }, $upcs);
-                $search->args = array_merge($search->args, $upcs);
-                $search->where .= ' AND p.upc IN (' . str_repeat('?,', count($upcs));
-                $search->where = substr($search->where, 0, strlen($search->where)-1) . ')';
-            }
-        } catch (Exception $ex) {}
+        if ($form->upcs !== '') {
+            $upcs = explode("\n", $form->upcs);
+            $upcs = array_map(function($i){ return BarcodeLib::padUPC(trim($i)); }, $upcs);
+            $search->args = array_merge($search->args, $upcs);
+            $search->where .= ' AND p.upc IN (' . str_repeat('?,', count($upcs));
+            $search->where = substr($search->where, 0, strlen($search->where)-1) . ')';
+        }
 
         return $search;
     }
@@ -161,18 +157,16 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchDescription($search, $form)
     {
-        try {
-            if ($form->description !== '') {
-                if (isset($form->serviceScale)) {
-                    $search->where .= ' AND (p.description LIKE ? OR h.itemdesc LIKE ?) ';
-                    $search->args[] = '%' . $form->description . '%';
-                    $search->args[] = '%' . $form->description . '%';
-                } else {
-                    $search->where .= ' AND p.description LIKE ? ';
-                    $search->args[] = '%' . $form->description . '%';
-                }
+        if ($form->description !== '') {
+            if (isset($form->serviceScale)) {
+                $search->where .= ' AND (p.description LIKE ? OR h.itemdesc LIKE ?) ';
+                $search->args[] = '%' . $form->description . '%';
+                $search->args[] = '%' . $form->description . '%';
+            } else {
+                $search->where .= ' AND p.description LIKE ? ';
+                $search->args[] = '%' . $form->description . '%';
             }
-        } catch (Exception $ex) {}
+        }
 
         return $search;
     }
@@ -218,28 +212,26 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchSuperDepartment($search, $form)
     {
-        try {
-            if ($form->superID !== '') {
-                /**
-                  Unroll superdepartment into a list of department
-                  numbers so products.department index can be utilizied
-                */
-                $superP = $this->connection->prepare('
-                    SELECT dept_ID
-                    FROM superdepts
-                    WHERE superID=?'
-                );
-                $superR = $this->connection->execute($superP, array($form->superID));
-                if ($superR && $this->connection->numRows($superR) > 0) {
-                    $search->where .= ' AND p.department IN (';
-                    while ($superW = $this->connection->fetch_row($superR)) {
-                        $search->where .= '?,';
-                        $search->args[] = $superW['dept_ID'];
-                    }
-                    $search->where = substr($search->where, 0, strlen($search->where)-1) . ') ';
+        if ($form->superID !== '') {
+            /**
+              Unroll superdepartment into a list of department
+              numbers so products.department index can be utilizied
+            */
+            $superP = $this->connection->prepare('
+                SELECT dept_ID
+                FROM superdepts
+                WHERE superID=?'
+            );
+            $superR = $this->connection->execute($superP, array($form->superID));
+            if ($superR && $this->connection->numRows($superR) > 0) {
+                $search->where .= ' AND p.department IN (';
+                while ($superW = $this->connection->fetch_row($superR)) {
+                    $search->where .= '?,';
+                    $search->args[] = $superW['dept_ID'];
                 }
-            }
-        } catch (Exception $ex) {}
+                $search->where = substr($search->where, 0, strlen($search->where)-1) . ') ';
+                }
+        }
 
         return $search;
     }
@@ -253,22 +245,20 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchDepartments($search, $form)
     {
-        try {
-            $dept1 = $form->deptStart;
-            $dept2 = $form->deptEnd;
-            if ($dept1 !== '' || $dept2 !== '') {
-                // work with just one department field set
-                if ($dept1 === '') {
-                    $dept1 = $dept2;
-                } elseif ($dept2 === '') {
-                    $dept2 = $dept1;
-                }
-                $search->where .= ' AND p.department BETWEEN ? AND ? ';
-                // add dept lower then higher
-                $search->args[] = $dept1 < $dept2 ? $dept1 : $dept2;
-                $search->args[] = $dept2 > $dept1 ? $dept2 : $dept1;
+        $dept1 = $form->deptStart;
+        $dept2 = $form->deptEnd;
+        if ($dept1 !== '' || $dept2 !== '') {
+            // work with just one department field set
+            if ($dept1 === '') {
+                $dept1 = $dept2;
+            } elseif ($dept2 === '') {
+                $dept2 = $dept1;
             }
-        } catch (Exception $ex) {}
+            $search->where .= ' AND p.department BETWEEN ? AND ? ';
+            // add dept lower then higher
+            $search->args[] = $dept1 < $dept2 ? $dept1 : $dept2;
+            $search->args[] = $dept2 > $dept1 ? $dept2 : $dept1;
+        }
 
         return $search;
     }
@@ -281,12 +271,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchServiceScale($search, $form)
     {
-        try {
-            if ($form->serviceScale !== '') {
-                $search->from .= ' INNER JOIN scaleItems AS h ON h.plu=p.upc ';
-                $search->where = str_replace('p.modified', 'h.modified', $search->where);
-            }
-        } catch (Exception $ex) {}
+        if ($form->serviceScale !== '') {
+            $search->from .= ' INNER JOIN scaleItems AS h ON h.plu=p.upc ';
+            $search->where = str_replace('p.modified', 'h.modified', $search->where);
+        }
 
         return $search;
     }
@@ -301,22 +289,20 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchModifiedDate($search, $form)
     {
-        try {
-            if ($form->modDate !== '') {
-                switch ($form->modOp) {
-                    case 'Modified Before':
-                        $search = $this->modifiedBeforeAfter($search, $form, '<');
-                        break;
-                    case 'Modified After':
-                        $search = $this->modifiedBeforeAfter($search, $form, '>');
-                        break;
-                    case 'Modified On':
-                    default:
-                        $search = $this->modifiedOn($search, $form);
-                        break;
-                }
+        if ($form->modDate !== '') {
+            switch ($form->modOp) {
+                case 'Modified Before':
+                    $search = $this->modifiedBeforeAfter($search, $form, '<');
+                    break;
+                case 'Modified After':
+                    $search = $this->modifiedBeforeAfter($search, $form, '>');
+                    break;
+                case 'Modified On':
+                default:
+                    $search = $this->modifiedOn($search, $form);
+                    break;
             }
-        } catch (Exception $ex) {}
+        }
 
         return $search;
     }
@@ -358,28 +344,26 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchVendor($search, $form)
     {
-        try {
-            if ($form->vendor === '0') {
-                $search->where .= ' AND p.default_vendor_id=0 ';
-            } elseif ($form->vendor !== '') {
-                $search->where .= ' AND (v.vendorID=? or p.default_vendor_id=?)';
-                $search->args[] = $form->vendor;
-                $search->args[] = $form->vendor;
-                if (!strstr($search->from, 'vendorItems')) {
-                    $search->from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID = p.default_vendor_id ';
-                    /* May at some point want to support this less restrictive selection.
-                     * $from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc ';
-                     */
-                }
-
-                if (isset($form->vendorSale)) {
-                    $search->where .= ' AND v.saleCost <> 0 ';
-                    $search->where .= ' AND p.default_vendor_id=? ';
-                    $search->where .= ' AND p.default_vendor_id=v.vendorID ';
-                    $search->args[] = $form->vendor;
-                }
+        if ($form->vendor === '0') {
+            $search->where .= ' AND p.default_vendor_id=0 ';
+        } elseif ($form->vendor !== '') {
+            $search->where .= ' AND (v.vendorID=? or p.default_vendor_id=?)';
+            $search->args[] = $form->vendor;
+            $search->args[] = $form->vendor;
+            if (!strstr($search->from, 'vendorItems')) {
+                $search->from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID = p.default_vendor_id ';
+                /* May at some point want to support this less restrictive selection.
+                 * $from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc ';
+                 */
             }
-        } catch (Exception $ex) {}
+
+            if (isset($form->vendorSale)) {
+                $search->where .= ' AND v.saleCost <> 0 ';
+                $search->where .= ' AND p.default_vendor_id=? ';
+                $search->where .= ' AND p.default_vendor_id=v.vendorID ';
+                $search->args[] = $form->vendor;
+            }
+        }
 
         return $search;
     }
@@ -393,11 +377,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchPrice($search, $form)
     {
-        try {
-            if ($form->price !== '') {
-                $search = $this->numericComparison($search, $form->price_op, 'p.normal_price', $form->price);
-            }
-        } catch (Exception $ex) {}
+        if ($form->price !== '') {
+            $search = $this->numericComparison($search, $form->price_op, 'p.normal_price', $form->price);
+        }
 
         return $search;
     }
@@ -411,11 +393,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchCost($search, $form)
     {
-        try {
-            if ($form->cost !== '') {
-                $search = $this->numericComparison($search, $form->cost_op, 'p.cost', $form->cost);
-            }
-        } catch (Exception $ex) {}
+        if ($form->cost !== '') {
+            $search = $this->numericComparison($search, $form->cost_op, 'p.cost', $form->cost);
+        }
 
         return $search;
     }
@@ -448,19 +428,17 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchPriceRule($search, $form)
     {
-        try {
-            if ($form->price_rule !== '') {
-                if ($form->price_rule == -1) {
-                    $search->where .= ' AND p.price_rule_id <> 0 ';
-                } elseif ($form->price_rule == 0) {
-                    $search->where .= ' AND p.price_rule_id = 0 ';
-                } else {
-                    $search->from .= ' INNER JOIN PriceRules AS r ON p.price_rule_id=r.priceRuleID ';
-                    $search->where .= ' AND r.priceRuleTypeID=? ';
-                    $search->args[] = $form->price_rule;
-                }
+        if ($form->price_rule !== '') {
+            if ($form->price_rule == -1) {
+                $search->where .= ' AND p.price_rule_id <> 0 ';
+            } elseif ($form->price_rule == 0) {
+                $search->where .= ' AND p.price_rule_id = 0 ';
+            } else {
+                $search->from .= ' INNER JOIN PriceRules AS r ON p.price_rule_id=r.priceRuleID ';
+                $search->where .= ' AND r.priceRuleTypeID=? ';
+                $search->args[] = $form->price_rule;
             }
-        } catch (Exception $ex) {}
+        }
 
         return $search;
     }
@@ -473,12 +451,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchTax($search, $form)
     {
-        try {
-            if ($form->tax !== '') {
-                $search->where .= ' AND p.tax=? ';
-                $search->args[] = $form->tax;
-            }
-        } catch (Exception $ex) {}
+        if ($form->tax !== '') {
+            $search->where .= ' AND p.tax=? ';
+            $search->args[] = $form->tax;
+        }
 
         return $search;
     }
@@ -491,12 +467,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchLocal($search, $form)
     {
-        try {
-            if ($form->local !== '') {
-                $search->where .= ' AND p.local=? ';
-                $search->args[] = $form->local;
-            }
-        } catch (Exception $ex) {}
+        if ($form->local !== '') {
+            $search->where .= ' AND p.local=? ';
+            $search->args[] = $form->local;
+        }
 
         return $search;
     }
@@ -509,12 +483,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchFoodstamp($search, $form)
     {
-        try {
-            if ($form->fs !== '') {
-                $search->where .= ' AND p.foodstamp=? ';
-                $search->args[] = $form->fs;
-            }
-        } catch (Exception $ex) {}
+        if ($form->fs !== '') {
+            $search->where .= ' AND p.foodstamp=? ';
+            $search->args[] = $form->fs;
+        }
 
         return $search;
     }
@@ -527,12 +499,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchInUse($search, $form)
     {
-        try {
-            if ($form->in_use !== '') {
-                $search->where .= ' AND p.inUse=? ';
-                $search->args[] = $form->in_use;
-            }
-        } catch (Exception $ex) {}
+        if ($form->in_use !== '') {
+            $search->where .= ' AND p.inUse=? ';
+            $search->args[] = $form->in_use;
+        }
 
         return $search;
     }
@@ -545,22 +515,20 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchDiscountable($search, $form)
     {
-        try {
-            if ($form->discountable !== '') {
-                $search->where .= ' AND p.discount=? ';
-                if ($form->discountable == 1 || $form->discountable == 2) {
-                    $search->args[] = 1;
-                } else {
-                    $search->args[] = 0;
-                }
-                $search->where .= ' AND p.line_item_discountable=? ';
-                if ($form->discountable == 1 || $form->discountable == 3) {
-                    $search->args[] = 1;
-                } else {
-                    $search->args[] = 0;
-                }
+        if ($form->discountable !== '') {
+            $search->where .= ' AND p.discount=? ';
+            if ($form->discountable == 1 || $form->discountable == 2) {
+                $search->args[] = 1;
+            } else {
+                $search->args[] = 0;
             }
-        } catch (Exception $ex) {}
+            $search->where .= ' AND p.line_item_discountable=? ';
+            if ($form->discountable == 1 || $form->discountable == 3) {
+                $search->args[] = 1;
+            } else {
+                $search->args[] = 0;
+            }
+        }
 
         return $search;
     }
@@ -573,15 +541,13 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchLocation($search, $form)
     {
-        try {
-            if ($form->location !== '') {
-                if ($form->location == '1') {
-                    $search->from .= ' INNER JOIN prodPhysicalLocation AS y ON p.upc=y.upc ';
-                } else {
-                    $search->where .= ' AND p.upc NOT IN (SELECT upc FROM prodPhysicalLocation) ';
-                }
+        if ($form->location !== '') {
+            if ($form->location == '1') {
+                $search->from .= ' INNER JOIN prodPhysicalLocation AS y ON p.upc=y.upc ';
+            } else {
+                $search->where .= ' AND p.upc NOT IN (SELECT upc FROM prodPhysicalLocation) ';
             }
-        } catch (Exception $ex) {}
+        }
 
         return $search;
     }
@@ -594,24 +560,22 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchSignage($search, $form)
     {
-        try {
-            if ($form->signinfo !== '') {
-                if (!strstr($search->from, 'productUser')) {
-                    $search->from .= ' LEFT JOIN productUser AS s ON p.upc=s.upc ';
-                }
-                if ($form->signinfo == '1') {
-                    $search->where .= " AND s.brand IS NOT NULL 
-                        AND s.description IS NOT NULL
-                        AND s.brand <> ''
-                        AND s.description <> '' ";
-                } else {
-                    $search->where .= " AND (s.brand IS NULL 
-                        OR s.description IS NULL
-                        OR s.brand = ''
-                        OR s.description = '') ";
-                }
+        if ($form->signinfo !== '') {
+            if (!strstr($search->from, 'productUser')) {
+                $search->from .= ' LEFT JOIN productUser AS s ON p.upc=s.upc ';
             }
-        } catch (Exception $ex) {}
+            if ($form->signinfo == '1') {
+                $search->where .= " AND s.brand IS NOT NULL 
+                    AND s.description IS NOT NULL
+                    AND s.brand <> ''
+                    AND s.description <> '' ";
+            } else {
+                $search->where .= " AND (s.brand IS NULL 
+                    OR s.description IS NULL
+                    OR s.brand = ''
+                    OR s.description = '') ";
+            }
+        }
 
         return $search;
     }
@@ -624,14 +588,12 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchOrigin($search, $form)
     {
-        try {
-            if ($form->origin != 0) {
-                $search->from .= ' INNER JOIN ProductOriginsMap AS g ON p.upc=g.upc ';
-                $search->where .= ' AND (p.current_origin_id=? OR g.originID=?) ';
-                $search->args[] = $form->origin;
-                $search->args[] = $form->origin;
-            }
-        } catch (Exception $ex) {}
+        if ($form->origin != 0) {
+            $search->from .= ' INNER JOIN ProductOriginsMap AS g ON p.upc=g.upc ';
+            $search->where .= ' AND (p.current_origin_id=? OR g.originID=?) ';
+            $search->args[] = $form->origin;
+            $search->args[] = $form->origin;
+        }
 
         return $search;
     }
@@ -646,21 +608,19 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchLikeCode($search, $form)
     {
-        try {
-            if ($form->likeCode !== '') {
-                if (!strstr($search->from, 'upcLike')) {
-                    $search->from .= ' LEFT JOIN upcLike AS u ON p.upc=u.upc ';
-                }
-                if ($form->likeCode == 'ANY') {
-                    $search->where .= ' AND u.upc IS NOT NULL ';
-                } else if ($form->likeCode == 'NONE') {
-                    $search->where .= ' AND u.upc IS NULL ';
-                } else {
-                    $search->where .= ' AND u.likeCode=? ';
-                    $search->args[] = $form->likeCode;
-                }
+        if ($form->likeCode !== '') {
+            if (!strstr($search->from, 'upcLike')) {
+                $search->from .= ' LEFT JOIN upcLike AS u ON p.upc=u.upc ';
             }
-        } catch (Exception $ex) {}
+            if ($form->likeCode == 'ANY') {
+                $search->where .= ' AND u.upc IS NOT NULL ';
+            } else if ($form->likeCode == 'NONE') {
+                $search->where .= ' AND u.upc IS NULL ';
+            } else {
+                $search->where .= ' AND u.likeCode=? ';
+                $search->args[] = $form->likeCode;
+            }
+        }
 
         return $search;
     }
@@ -674,70 +634,68 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function filterSales($items, $form)
     {
-        try {
-            if ($form->onsale !== '') {
+        if ($form->onsale !== '') {
 
-                $where = '1=1';
-                $args = array();
-                $dbc = $this->connection;
+            $where = '1=1';
+            $args = array();
+            $dbc = $this->connection;
 
-                if ($form->saletype !== '') {
-                    $where .= ' AND b.batchType = ? ';
-                    $args[] = $form->saletype;
-                }
+            if ($form->saletype !== '') {
+                $where .= ' AND b.batchType = ? ';
+                $args[] = $form->saletype;
+            }
 
-                $all = isset($form->sale_all) ? 1 : 0;
-                $prev = isset($form->sale_past) ? 1 : 0;
-                $now = isset($form->sale_current) ? 1 : 0;
-                $next = isset($form->sale_upcoming) ? 1 : 0;
-                // all=1 or all three times = 1 means no date filter
-                if ($all == 0 && ($prev == 0 || $now == 0 || $next == 0)) {
-                    // all permutations where one of the times is zero
-                    if ($prev == 1 && $now == 1) {
-                        $where .= ' AND b.endDate <= ' . $dbc->curdate();
-                    } elseif ($prev == 1 && $next == 1) {
-                        $where .= ' AND (b.endDate < ' . $dbc->curdate() . ' OR b.startDate > ' . $dbc->curdate() . ') ';
-                    } elseif ($prev == 1) {
-                        $where .= ' AND b.endDate < ' . $dbc->curdate();
-                    } elseif ($now == 1 && $next == 1) {
-                        $where .= ' AND b.endDate >= ' . $dbc->curdate();
-                    } elseif ($now == 1) {
-                        $where .= ' AND b.endDate >= ' . $dbc->curdate() . ' AND b.startDate <= ' . $dbc->curdate();
-                    } elseif ($next == 1) {
-                        $where .= ' AND b.startDate > ' .$dbc->curdate();
-                    }
-                }
-
-                $query = 'SELECT l.upc FROM batchList AS l INNER JOIN batches AS b
-                            ON b.batchID=l.batchID WHERE ' . $where . ' 
-                            GROUP BY l.upc';
-                $prep = $this->connection->prepare($query);
-                $result = $this->connection->execute($prep, $args);
-                $saleUPCs = array();
-                while ($row = $this->connection->fetchRow($result)) {
-                    $saleUPCs[] = $row['upc'];
-                }
-
-                if ($form->onsale == 0) {
-                    // only items that are not selected sales
-                    foreach($saleUPCs as $s_upc) {
-                        if (isset($items[$s_upc])) {
-                            unset($items[$s_upc]);
-                        }
-                    }
-                } else {
-                    // only items that are in selected sales
-                    // collect items in both sets
-                    $valid = array();
-                    foreach($saleUPCs as $s_upc) {
-                        if (isset($items[$s_upc])) {
-                            $valid[$s_upc] = $items[$s_upc];
-                        }
-                    }
-                    $items = $valid;
+            $all = isset($form->sale_all) ? 1 : 0;
+            $prev = isset($form->sale_past) ? 1 : 0;
+            $now = isset($form->sale_current) ? 1 : 0;
+            $next = isset($form->sale_upcoming) ? 1 : 0;
+            // all=1 or all three times = 1 means no date filter
+            if ($all == 0 && ($prev == 0 || $now == 0 || $next == 0)) {
+                // all permutations where one of the times is zero
+                if ($prev == 1 && $now == 1) {
+                    $where .= ' AND b.endDate <= ' . $dbc->curdate();
+                } elseif ($prev == 1 && $next == 1) {
+                    $where .= ' AND (b.endDate < ' . $dbc->curdate() . ' OR b.startDate > ' . $dbc->curdate() . ') ';
+                } elseif ($prev == 1) {
+                    $where .= ' AND b.endDate < ' . $dbc->curdate();
+                } elseif ($now == 1 && $next == 1) {
+                    $where .= ' AND b.endDate >= ' . $dbc->curdate();
+                } elseif ($now == 1) {
+                    $where .= ' AND b.endDate >= ' . $dbc->curdate() . ' AND b.startDate <= ' . $dbc->curdate();
+                } elseif ($next == 1) {
+                    $where .= ' AND b.startDate > ' .$dbc->curdate();
                 }
             }
-        } catch (Exception $ex) {}
+
+            $query = 'SELECT l.upc FROM batchList AS l INNER JOIN batches AS b
+                        ON b.batchID=l.batchID WHERE ' . $where . ' 
+                        GROUP BY l.upc';
+            $prep = $this->connection->prepare($query);
+            $result = $this->connection->execute($prep, $args);
+            $saleUPCs = array();
+            while ($row = $this->connection->fetchRow($result)) {
+                $saleUPCs[] = $row['upc'];
+            }
+
+            if ($form->onsale == 0) {
+                // only items that are not selected sales
+                foreach($saleUPCs as $s_upc) {
+                    if (isset($items[$s_upc])) {
+                        unset($items[$s_upc]);
+                    }
+                }
+            } else {
+                // only items that are in selected sales
+                // collect items in both sets
+                $valid = array();
+                foreach($saleUPCs as $s_upc) {
+                    if (isset($items[$s_upc])) {
+                        $valid[$s_upc] = $items[$s_upc];
+                    }
+                }
+                $items = $valid;
+            }
+        }
 
         return $items;
     }
@@ -751,31 +709,29 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function filterMovement($items, $form)
     {
-        try {
-            if ($form->soldOp !== '') {
-                $movementStart = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j')-$form->soldOp-1, date('Y')));
-                $movementEnd = date('Y-m-d', strtotime('yesterday'));
-                $dlog = DTransactionsModel::selectDlog($movementStart, $movementEnd);
+        if ($form->soldOp !== '') {
+            $movementStart = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j')-$form->soldOp-1, date('Y')));
+            $movementEnd = date('Y-m-d', strtotime('yesterday'));
+            $dlog = DTransactionsModel::selectDlog($movementStart, $movementEnd);
 
-                $args = array($movementStart.' 00:00:00', $movementEnd.' 23:59:59');
-                list($upc_in, $args) = $this->connection->safeInClause($items, $args);
+            $args = array($movementStart.' 00:00:00', $movementEnd.' 23:59:59');
+            list($upc_in, $args) = $this->connection->safeInClause($items, $args);
 
-                $query = "SELECT t.upc
-                          FROM $dlog AS t
-                          WHERE tdate BETWEEN ? AND ?
-                            AND t.upc IN ($upc_in)
-                          GROUP BY t.upc";
-                $prep = $this->connection->prepare($query);
-                $result = $this->connection->execute($prep, $args);
-                $valid = array();
-                while ($row = $this->connection->fetchRow($result)) {
-                    if (isset($items[$row['upc']])) {
-                        $valid[$row['upc']] = $items[$row['upc']];
-                    }
+            $query = "SELECT t.upc
+                      FROM $dlog AS t
+                      WHERE tdate BETWEEN ? AND ?
+                        AND t.upc IN ($upc_in)
+                      GROUP BY t.upc";
+            $prep = $this->connection->prepare($query);
+            $result = $this->connection->execute($prep, $args);
+            $valid = array();
+            while ($row = $this->connection->fetchRow($result)) {
+                if (isset($items[$row['upc']])) {
+                    $valid[$row['upc']] = $items[$row['upc']];
                 }
-                $items = $valid;
             }
-        } catch (Exception $ex) {}
+            $items = $valid;
+        }
 
         return $items;
     }
@@ -791,40 +747,38 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function filterSavedItems($items, $form)
     {
-        try {
-            $savedItems = $form->u;
-            if (is_array($savedItems) && count($savedItems) > 0) {
-                $savedQ = '
-                    SELECT p.upc, 
-                        p.brand,
-                        p.description, 
-                        m.super_name, 
-                        p.department, 
-                        d.dept_name,
-                        p.normal_price, p.special_price,
-                        CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale,
-                        1 as selected
-                   FROM products AS p 
-                       LEFT JOIN departments AS d ON p.department=d.dept_no
-                       LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
-                   WHERE p.upc IN (';
-                foreach ($savedItems as $item) {
-                    $savedQ .= '?,';
-                }
-                $savedQ = substr($savedQ, 0, strlen($savedQ)-1);
-                $savedQ .= ')';
+        $savedItems = $form->u;
+        if (is_array($savedItems) && count($savedItems) > 0) {
+            $savedQ = '
+                SELECT p.upc, 
+                    p.brand,
+                    p.description, 
+                    m.super_name, 
+                    p.department, 
+                    d.dept_name,
+                    p.normal_price, p.special_price,
+                    CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale,
+                    1 as selected
+               FROM products AS p 
+                   LEFT JOIN departments AS d ON p.department=d.dept_no
+                   LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+               WHERE p.upc IN (';
+            foreach ($savedItems as $item) {
+                $savedQ .= '?,';
+            }
+            $savedQ = substr($savedQ, 0, strlen($savedQ)-1);
+            $savedQ .= ')';
 
-                $savedP = $this->connection->prepare($savedQ);
-                $savedR = $this->connection->execute($savedP, $savedItems);
-                while ($savedW = $this->connection->fetchRow($savedR)) {
-                    if (isset($items[$savedW['upc']])) {
-                        $items[$savedW['upc']]['selected'] = 1;
-                    } else {
-                        $items[$savedW['upc']] = $savedW;
-                    }
+            $savedP = $this->connection->prepare($savedQ);
+            $savedR = $this->connection->execute($savedP, $savedItems);
+            while ($savedW = $this->connection->fetchRow($savedR)) {
+                if (isset($items[$savedW['upc']])) {
+                    $items[$savedW['upc']]['selected'] = 1;
+                } else {
+                    $items[$savedW['upc']] = $savedW;
                 }
             }
-        } catch (Exception $ex) {}
+        }
 
         return $items;
     }
@@ -854,7 +808,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $search->where = '1=1';
         $search->args = array();
         foreach ($this->search_methods as $method) {
-            $search = $this->$method($search, $form);
+            try {
+                $search = $this->$method($search, $form);
+            } catch (Exception $ex) {}
         }
 
         if ($search->where == '1=1') {
@@ -897,7 +853,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
     private function runFilterMethods($items, $form)
     {
         foreach ($this->filter_methods as $method) {
-            $items = $this->$method($items, $form);
+            try {
+                $items = $this->$method($items, $form);
+            } catch (Exception $ex) {}
         }
         
         return $items;
@@ -1047,312 +1005,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $model->discType(0, '<>');
         $btOpts = $model->toOptions();
 
-        return <<<HTML
-<div class="col-sm-10">
-    <form method="post" id="searchform" onsubmit="getResults(); return false;" onreset="formReset();">
-
-    <table class="table table-bordered">
-        <tr>
-            <td class="text-right">
-                <label class="small control-label">
-                    <a href="" class="btn btn-default btn-xs"
-                    onclick="$('.upc-in').toggle(); return false;">+</a>
-                    UPC
-                </label>
-            </td>
-            <td>
-                <textarea class="upc-in form-control input-sm collapse" name="upcs"></textarea>
-                <input type="text" name="upc" class="upc-in form-control input-sm" 
-                    placeholder="UPC or PLU" />
-            </td>
-            <td class="text-right">
-                <label class="control-label small">Descript.</label>
-            </td>
-            <td>
-                <input type="text" name="description" class="form-control input-sm" 
-                    placeholder="Item Description" />
-            </td>
-            <td class="text-right">
-                <label class="control-label small">Brand</label>
-            </td>
-            <td>
-                <input type="text" name="brand" class="form-control input-sm" 
-                    placeholder="Brand Name" id="brand-field" />
-            </td>
-        </tr>
-        <tr>
-            <td class="text-right">
-                <label class="control-label small">Super Dept</label>
-            </td>
-            <td>
-                <select name="superID" class="form-control input-sm" onchange="chainSuper(this.value);" >
-                    <option value="">Select Super...</option>
-                    {$superOpts}
-                </select>
-            </td>
-            <td class="text-right">
-                <label class="control-label small">Dept Start</label>
-            </td>
-            <td>
-                <select name="deptStart" id="dept-start" class="form-control input-sm">
-                    <option value="">Select Start...</option>
-                    {$deptOpts}
-                </select>
-            </td>
-            <td class="text-right">
-                <label class="control-label small">Dept End</label>
-            </td>
-            <td>
-                <select name="deptEnd" id="dept-end" class="form-control input-sm">
-                    <option value="">Select End...</option>
-                    {$deptOpts}
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <select class="form-control input-sm" name="modOp">
-                    <option>Modified On</option>
-                    <option>Modified Before</option>
-                    <option>Modified After</option>
-                </select>
-            </td>
-            <td>
-            <input type="text" name="modDate" id="modDate" class="form-control input-sm date-field" 
-                    placeholder="Modified date" />
-           </td>
-           <td class="text-right">
-                <label class="control-label small">Movement</label>
-            </td>
-            <td>
-                <select name="soldOp" class="form-control input-sm"><option value="">n/a</option><option value="7">Last 7 days</option>
-                    <option value="30">Last 30 days</option><option value="90">Last 90 days</option></select>
-            </td>
-            <td class="text-right">
-                <label class="control-label small">Vendor</label>
-             </td>
-             <td>
-                <select name="vendor" class="form-control input-sm"
-                    onchange="if(this.value==='' || this.value==='0') $('#vendorSale').attr('disabled','disabled'); else $('#vendorSale').removeAttr('disabled');" >
-                    <option value="">Any</option>
-                    <option value="0">Not Assigned</option>
-                    {$vendorOpts}
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td class="text-right">
-                <label class="control-label small">Price</label>
-            </td>
-            <td class="form-inline">
-                <select name="price_op" class="form-control input-sm">
-                    <option>=</option>
-                    <option>&lt;</option>
-                    <option>&gt;</option>
-                </select>
-                <input type="text" class="form-control input-sm price-field"
-                    name="price" placeholder="$0.00" />
-            </td>
-            <td class="text-right">
-                <label class="control-label small">Cost</label>
-            </td>
-            <td class="form-inline">
-                <select name="cost_op" class="form-control input-sm">
-                    <option>=</option>
-                    <option>&lt;</option>
-                    <option>&gt;</option>
-                </select>
-                <input type="text" class="form-control input-sm price-field"
-                    name="cost" placeholder="$0.00" />
-            </td>
-            <td class="form-inline" colspan="2">
-                <label class="control-label small">Pricing Rule</label>
-                <select name="price_rule" class="form-control input-sm">
-                    <option value="">Any</option>
-                    <option value="0">Standard</option>
-                    {$ruleOpts}
-                    <option value="-1">Variable</option>
-                </select>
-            </td>
-            </td>
-        </tr>
-        <tr>
-            <td class="text-right">
-                <label class="control-label small">Origin</label>
-            </td>
-            <td>
-                <select name="originID" class="form-control input-sm"><option value="0">Any Origin</option>
-                    {$originOpts}
-                </select>
-            </td>
-            <td class="text-right">
-                <label class="control-label small">Likecode</label> 
-            </td>
-            <td>
-                <select name="likeCode" class="form-control input-sm"><option value="">Choose Like Code</option>
-                    <option value="ANY">In Any Likecode</option>
-                    <option value="NONE">Not in a Likecode</option>
-                    {$lcOpts}
-                </select>
-            </td>
-            <td colspan="2">
-                <label class="small" for="vendorSale">
-                    On Vendor Sale
-                    <input type="checkbox" id="vendorSale" name="vendorSale" class="checkbox-inline" disabled />
-                </label>
-                 | 
-                <label class="small" for="in_use">
-                    InUse
-                    <input type="checkbox" name="in_use" id="in_use" value="1" checked class="checkbox-inline" />
-                </label>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2" class="form-inline">
-                <div class="form-group">
-                    <label class="control-label small">Tax</label>
-                    <select name="tax" class="form-control input-sm">
-                        <option value="">Any</option>
-                        <option value="0">NoTax</option>
-                        {$taxOpts}
-                    </select>
-                </div>
-                &nbsp;&nbsp;
-                <div class="form-group">
-                    <label class="control-label small">FS</label>
-                    <select name="fs" class="form-control input-sm">
-                    <option value="">Any</option><option value="1">Yes</option><option value="0">No</option></select>
-                </div>
-            </td>
-            <td colspan="2" class="form-inline">
-                <div class="form-group">
-                    <label class="control-label small">Local</label>
-                    <select name="local" class="form-control input-sm">
-                        <option value="">Any</option>
-                        <option value="0">No</option>
-                        {$localOpts}
-                    </select>
-                </div>
-                &nbsp;&nbsp;
-                <div class="form-group">
-                    <label class="control-label small">%Disc</label>
-                    <select name="discountable" class="form-control input-sm">
-                        <option value="">Any</option>
-                        <option value="1">Yes</option>
-                        <option value="0">No</option>
-                        <option value="2">Trans Only</option>
-                        <option value="3">Line Only</option>
-                    </select>
-                </div>
-                <label class="small" for="serviceScale">
-                    Service Scale
-                    <input type="checkbox" id="serviceScale" name="serviceScale" class="checkbox-inline" />
-                </label>
-            </td>
-            <td colspan="2" class="form-inline">
-                <div class="form-group">
-                    <label class="control-label small">Location</label>
-                    <select name="location" class="form-control input-sm">
-                    <option value="">Any</option><option value="1">Yes</option><option value="0">No</option>
-                    </select>
-                </div>
-                &nbsp;&nbsp;
-                <div class="form-group">
-                    <label class="control-label small">Sign Info</label>
-                    <select name="signinfo" class="form-control input-sm">
-                    <option value="">Any</option><option value="1">Yes</option><option value="0">No</option>
-                    </select>
-                </div>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="6" class="form-inline">
-                <label class="control-label small">In Sale Batch</label>
-                <select name="onsale" class="form-control input-sm"
-                    onchange="if(this.value==='') $('.saleField').attr('disabled','disabled'); else $('.saleField').removeAttr('disabled');" >
-                    <option value="">Any</option>
-                    <option value="1">Yes</option>
-                    <option value="0">No</option>
-                </select>
-                &nbsp;&nbsp;
-                <label class="control-label small">Sale Type</label>
-                <select disabled class="saleField form-control input-sm" name="saletype">
-                    <option value="">Any Sale Type</option>
-                    {$btOpts}
-                </select>
-                &nbsp;&nbsp;
-                <label class="small">
-                    All Sales
-                    <input type="checkbox" disabled class="saleField checkbox-inline" name="sale_all" id="sale_all" value="1" /> 
-                </label> | 
-                <label class="small">
-                    Past Sales
-                    <input type="checkbox" disabled class="saleField checkbox-inline" name="sale_past" id="sale_past" value="1" /> 
-                </label> | 
-                <label class="small">
-                    Current Sales
-                    <input type="checkbox" disabled class="saleField checkbox-inline" name="sale_current" id="sale_current" value="1" /> 
-                </label> | 
-                <label class="small">
-                    Upcoming Sales
-                    <input type="checkbox" disabled class="saleField checkbox-inline" name="sale_upcoming" id="sale_upcoming" value="1" /> 
-                </label>
-            </td>
-        </tr>
-    </table>
-    <button type="submit" class="btn btn-default btn-core">Find Items</button>
-    <button type="reset" class="btn btn-default btn-reset">Clear Settings</button>
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    <span id="selection-counter"></span>
-    </form>
-
-    <hr />
-
-    <div class="progress collapse">
-        <div class="progress-bar progress-bar-striped active"  role="progressbar" 
-            aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
-            <span class="sr-only">Searching</span>
-        </div>
-    </div>
-
-    <div id="resultArea"></div>
-</div> <!-- // end col-sm-10 -->
-<div class="col-sm-2">
-    <div class="panel panel-default">
-        <div class="panel-heading">Selected Items</div>
-        <div class="panel-body">
-            <p><button type="submit" class="btn btn-default btn-xs" 
-                onclick="goToBatch();">Price or Sale Batch</button></p>
-            <p><button type="submit" class="btn btn-default btn-xs" 
-                onclick="goToEdit();">Group Edit Items</button></p>
-            <p><button type="submit" class="btn btn-default btn-xs" 
-                onclick="goToList();">Product List Tool</button></p>
-            <p><button class="btn btn-default btn-xs" type="submit" 
-                onclick="goToSigns();">Tags/Signs</button></p>
-            <p><button class="btn btn-default btn-xs" type="submit" 
-                onclick="goToMargins();">Margins</button></p>
-            <p><button class="btn btn-default btn-xs" type="submit" 
-                onclick="goToCoupons();">Store Coupons</button></p>
-            <p><button class="btn btn-default btn-xs" type="submit" 
-                onclick="goToSync();">Scale Sync</button></p>
-        </div>
-    </div>
-    <div class="panel panel-default">
-        <div class="panel-heading">Report on Items</div>
-        <div class="panel-body">
-            <select id="reportURL" class="form-control input-sm">
-                <option value="{$url}reports/DepartmentMovement/SmartMovementReport.php?date1={$today}&date2={$today}&lookup-type=u">
-                    Movement</option>
-                <option value="{$url}reports/from-search/PercentageOfSales/PercentageOfSalesReport.php">
-                    %% of Sales</option>
-            </select>
-            <p><button class="btn btn-default btn-xs" type="submit" 
-                onclick="goToReport();">Get Report</button></p>
-        </div>
-    </div>
-    <form method="post" id="actionForm" target="__advs_act"></form>
-</div>
-HTML;
+        return include(__DIR__ . '/search.template.html');
     }
 
     public function helpContent()

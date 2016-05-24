@@ -464,7 +464,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
                             $tagW['superID'], $tagW['super_name']);
         }
         $ret .= '</select></div>';
-        $ret .= '<p><button type="submit" onclick="createBatch(); return false;" class="btn btn-default">Create Batch</button></p>';
+        $ret .= '<p><button type="submit" onclick="marginTool.createBatch(); return false;" class="btn btn-default">Create Batch</button></p>';
         $ret .= '</div></div>';
 
         // list the actual items
@@ -507,7 +507,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
                             <td id="margin%s">%.4f%%</td>
                             <td class="dept%d super%d">
                                 <input type="text" size="5" name="price[]" class="newprice form-control input-sm"
-                                value="%.2f" onchange="reCalc(\'%s\', this.value, %f, %d, %d);" />
+                                value="%.2f" onchange="marginTool.reCalc(\'%s\', this.value, %f, %d, %d);" />
                                 <input type="hidden" name="upc[]" class="itemupc" value="%s" />
                             </td>
                             </tr>',
@@ -531,114 +531,9 @@ class MarginToolFromSearch extends FannieRESTfulPage
         $ret .= '</div>';
 
         $this->add_onload_command("\$('#maintable').tablesorter({sortList: [[0,0]], widgets: ['zebra']});");
+        $this->addScript('marginTool.js');
 
         return $ret;
-    }
-
-    function javascript_content()
-    {
-        ob_start();
-        ?>
-function createBatch() {
-    var cArray = Array();
-    var pArray = Array();
-    var uArray = Array();
-    $('.itemrow').each(function(){
-        cArray.push($(this).find('.currentprice').html());
-        pArray.push($(this).find('.newprice').val());
-        uArray.push($(this).find('.itemupc').val());
-    });
-
-    var changeUPC = Array();
-    var changePrice = Array();
-    for(var i=0; i<pArray.length; i++) {
-        if (pArray[i] != cArray[i]) {
-            changePrice.push(pArray[i]);
-            changeUPC.push(uArray[i]);
-        }
-    }
-
-    if (changePrice.length == 0) {
-        alert('No prices have been changed!');
-        return;
-    }
-
-    var prices = JSON.stringify(changePrice);
-    var upcs = JSON.stringify(changeUPC);
-    var tags = $('#shelftagSet').val();
-    var batchName = $('#batchName').val();
-    var dstr = 'newbatch='+batchName+'&tags='+tags+'&upcs='+upcs+'&newprices='+prices;
-    $.ajax({
-        url: 'MarginToolFromSearch.php',
-        type: 'post',
-        data: dstr
-    }).done(function(resp) {
-        location = resp;
-    });
-}
-function reCalc(upc, price, cost, deptID, superID) {
-    var newprice = Number(price);
-    if (cost == 0 || isNaN(newprice)) {
-        return false;
-    }
-
-    var curprice = Number($('#row'+upc).find('.currentprice').html());
-    if (curprice == newprice) {
-        $('#row'+upc).css('font-weight', 'normal');
-        $('#row'+upc+' td').each(function() {
-            $(this).css('background-color', '');
-        });
-    } else {
-        $('#row'+upc).css('font-weight', 'bold');
-        $('#row'+upc+' td').each(function() {
-            $(this).css('background-color', '#ffc');
-        });
-    }
-
-    var itemMargin = (price - cost) / price * 100;
-    itemMargin = Math.round(itemMargin * 10000) / 10000;
-    $('#margin'+upc).html(itemMargin+"%");
-
-    // get all prices for items in the department
-    // currently being displayed (and editable)
-    var pArray = Array();
-    var uArray = Array();
-    $('.dept'+deptID).each(function(){
-        pArray.push($(this).find('.newprice').val());
-        uArray.push($(this).find('.itemupc').val());
-    });
-    var prices = JSON.stringify(pArray);
-    var upcs = JSON.stringify(uArray);
-
-    $.ajax({
-        url: 'MarginToolFromSearch.php',
-        type: 'post',
-        data: 'upcs='+upcs+'&deptID='+deptID+'&newprices='+prices
-    }).done(function(resp) {
-        $('#dmargin'+deptID).html(resp+"%");
-    });
-
-    // get all prices for items in the superdepartment
-    // currently being displayed (and editable)
-    var pArray = Array();
-    var uArray = Array();
-    $('.super'+superID).each(function(){
-        pArray.push($(this).find('.newprice').val());
-        uArray.push($(this).find('.itemupc').val());
-    });
-    var prices = JSON.stringify(pArray);
-    var upcs = JSON.stringify(uArray);
-
-    $.ajax({
-        url: 'MarginToolFromSearch.php',
-        type: 'post',
-        data: 'upcs='+upcs+'&superID='+superID+'&newprices='+prices
-    }).done(function(resp) {
-        $('#smargin'+superID).html(resp+"%");
-    });
-}
-        <?php
-        return ob_get_clean();
     }
 
     public function helpContent()
@@ -658,7 +553,6 @@ function reCalc(upc, price, cost, deptID, superID) {
 
     public function unitTest($phpunit)
     {
-        $phpunit->assertNotEquals(0, strlen($this->javascript_content()));
         $this->u = 'foo';
         $phpunit->assertEquals(false, $this->post_u_handler());
         $this->u = '4011';
