@@ -41,7 +41,7 @@ var productList = (function($) {
 
     mod.edit = function(elem) {
         var text = [{name:'brand',size:8}, {name:'desc',size:10}, {name:'cost',size:4}, {name:'price',size:4}];
-        var.forEach(function(i) {
+        text.forEach(function(i) {
             drawTextBox(elem, 'td_'+i.name, 'in_'+i.name, i.size);
         });
 
