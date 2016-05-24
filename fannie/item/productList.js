@@ -7,12 +7,12 @@ var productList = (function($) {
         elem.find('.td_brand:first').html(content);
 
         var desc = elem.find('.td_desc:first').html();
-        var content = "<input type=text class=\"in_desc form-control input-sm\" size=10 value=\""+desc+"\" />";   
+        content = "<input type=text class=\"in_desc form-control input-sm\" size=10 value=\""+desc+"\" />";   
         elem.find('.td_desc:first').html(content);
 
         var dept = elem.find('.td_dept:first').text();
-        var content = '<select class=\"in_dept form-control input-sm\"><optgroup style="font-size: 90%;">';
-        for(dept_no in deptObj){
+        content = '<select class=\"in_dept form-control input-sm\"><optgroup style="font-size: 90%;">';
+        for (var dept_no in deptObj) {
             content += "<option value=\""+dept_no+"\" "+((dept==deptObj[dept_no])?'selected':'')+">";
             content += deptObj[dept_no]+"</option>";
         }
@@ -20,7 +20,7 @@ var productList = (function($) {
         elem.find('.td_dept:first').html(content);
 
         var supplier = elem.find('.td_supplier:first').text();
-        var content = '<select class=\"in_supplier form-control input-sm\"><optgroup style="font-size: 90%;">';
+        content = '<select class=\"in_supplier form-control input-sm\"><optgroup style="font-size: 90%;">';
         for(var i in vendorObj){
             content += "<option "+((supplier==vendorObj[i])?'selected':'')+">";
             content += vendorObj[i]+"</option>";
@@ -29,39 +29,39 @@ var productList = (function($) {
         elem.find('.td_supplier:first').html(content);
 
         var cost = elem.find('.td_cost:first').html();
-        var content = "<input type=text class=\"in_cost form-control input-sm\" size=4 value=\""+cost+"\" />";    
+        content = "<input type=text class=\"in_cost form-control input-sm\" size=4 value=\""+cost+"\" />";    
         elem.find('.td_cost:first').html(content);
 
         var price = elem.find('.td_price:first').html();
-        var content = "<input type=text class=\"in_price form-control input-sm\" size=4 value=\""+price+"\" />";  
+        content = "<input type=text class=\"in_price form-control input-sm\" size=4 value=\""+price+"\" />";  
         elem.find('.td_price:first').html(content);
 
         var tax = elem.find('.td_tax:first').html();
-        var content = '<select class=\"in_tax form-control input-sm\">';
-        for (ch in taxObj){
-            var sel = (tax == ch) ? 'selected' : '';
-            content += "<option value=\""+ch+":"+taxObj[ch][0]+"\" "+sel+">";
+        content = '<select class=\"in_tax form-control input-sm\">';
+        for (var ch in taxObj) {
+            var t_sel = (tax == ch) ? 'selected' : '';
+            content += "<option value=\""+ch+":"+taxObj[ch][0]+"\" "+t_sel+">";
             content += taxObj[ch][1]+"</option>";
         }
         elem.find('.td_tax:first').html(content);
 
         var fs = elem.find('.td_fs:first').html();
-        var content = "<input type=checkbox class=in_fs "+((fs=='X')?'checked':'')+" />";
+        content = "<input type=checkbox class=in_fs "+((fs==='X')?'checked':'')+" />";
         elem.find('.td_fs:first').html(content);
 
         var disc = elem.find('.td_disc:first').html();
-        var content = "<input type=checkbox class=in_disc "+((disc=='X')?'checked':'')+" />";
+        content = "<input type=checkbox class=in_disc "+((disc==='X')?'checked':'')+" />";
         elem.find('.td_disc:first').html(content);
 
         var wgt = elem.find('.td_wgt:first').html();
-        var content = "<input type=checkbox class=in_wgt "+((wgt=='X')?'checked':'')+" />";
+        content = "<input type=checkbox class=in_wgt "+((wgt==='X')?'checked':'')+" />";
         elem.find('.td_wgt:first').html(content);
 
         var local = elem.find('.td_local:first').html();
-        var content = '<select class=\"in_local form-control input-sm\">';
-        for (ch in localObj){
-            var sel = (local == ch) ? 'selected' : '';
-            content += "<option value=\""+ch+":"+localObj[ch][0]+"\" "+sel+">";
+        content = '<select class=\"in_local form-control input-sm\">';
+        for (var ch in localObj){
+            var l_sel = (local == ch) ? 'selected' : '';
+            content += "<option value=\""+ch+":"+localObj[ch][0]+"\" "+l_sel+">";
             content += localObj[ch][1]+"</option>";
         }
         elem.find('.td_local:first').html(content);
@@ -70,7 +70,7 @@ var productList = (function($) {
         elem.find('.td_cmd:first .save-link').show();
 
         elem.find('input:text').keydown(function(event) {
-            if (event.which == 13) {
+            if (event.which === 13) {
                 mod.save(elem);
             }
         });
@@ -111,13 +111,13 @@ var productList = (function($) {
         elem.find('.td_tax:first').html(tax[0]);
         
         var fs = elem.find('.in_fs:first').is(':checked') ? 1 : 0;
-        elem.find('.td_fs:first').html((fs==1)?'X':'-');
+        elem.find('.td_fs:first').html((fs===1)?'X':'-');
 
         var disc = elem.find('.in_disc:first').is(':checked') ? 1 : 0;
-        elem.find('.td_disc:first').html((disc==1)?'X':'-');
+        elem.find('.td_disc:first').html((disc===1)?'X':'-');
 
         var wgt = elem.find('.in_wgt:first').is(':checked') ? 1 : 0;
-        elem.find('.td_wgt:first').html((wgt==1)?'X':'-');
+        elem.find('.td_wgt:first').html((wgt===1)?'X':'-');
 
         var local = elem.find('.in_local:first').val().split(':');
         elem.find('.td_local:first').html(local[0]);
@@ -165,10 +165,10 @@ var productList = (function($) {
 
     mod.enableEditing = function() {
         $('tr').each(function(){
-            if ($(this).find('.hidden_upc').length != 0) {
+            if ($(this).find('.hidden_upc').length !== 0) {
                 var upc = $(this).find('.hidden_upc').val();
                 $(this).find('.clickable').click(function() {
-                    if ($(this).find(':input').length == 0) {
+                    if ($(this).find(':input').length === 0) {
                         mod.edit($(this).closest('tr'));
                         $(this).find(':input').select();
                     }
