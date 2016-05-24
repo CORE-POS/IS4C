@@ -91,17 +91,14 @@ var productList = (function($) {
         var store_id = elem.find('.hidden_store_id:first').val();
         var dstr = 'ajax=save';
 
-        dstr = formToCell(elem, 'brand', dstr);
-        dstr = formToCell(elem, 'desc', dstr);
+        mathField(elem.find('.in_cost:first').get(0));
+        var cells = ['brand', 'desc', 'supplier', 'cost', 'price'];
+        cells.forEach(function(i) {
+            dstr = formToCell(elem, i, dstr);
+        });
 
         var dept = elem.find('.in_dept:first').val();
         elem.find('.td_dept:first').html(deptObj[dept]);
-
-        dstr = formToCell(elem, 'supplier', dstr);
-
-        mathField(elem.find('.in_cost:first').get(0));
-        dstr = formToCell(elem, 'cost', dstr);
-        dstr = formToCell(elem, 'price', dstr);
 
         var tax = elem.find('.in_tax:first').val().split(':');
         elem.find('.td_tax:first').html(tax[0]);
