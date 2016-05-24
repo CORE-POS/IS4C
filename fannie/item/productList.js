@@ -91,24 +91,24 @@ var productList = (function($) {
         var store_id = elem.find('.hidden_store_id:first').val();
         var dstr = 'ajax=save';
 
-        var dstr = formToCell(elem, 'brand', dstr);
-        var dstr = formToCell(elem, 'desc', dstr);
+        dstr = formToCell(elem, 'brand', dstr);
+        dstr = formToCell(elem, 'desc', dstr);
 
         var dept = elem.find('.in_dept:first').val();
         elem.find('.td_dept:first').html(deptObj[dept]);
 
-        var dstr = formToCell(elem, 'supplier', dstr);
+        dstr = formToCell(elem, 'supplier', dstr);
 
         mathField(elem.find('.in_cost:first').get(0));
-        var dstr = formToCell(elem, 'cost', dstr);
-        var dstr = formToCell(elem, 'price', dstr);
+        dstr = formToCell(elem, 'cost', dstr);
+        dstr = formToCell(elem, 'price', dstr);
 
         var tax = elem.find('.in_tax:first').val().split(':');
         elem.find('.td_tax:first').html(tax[0]);
         
-        var dstr = checkBoxToCell(elem, 'fs', dstr);
-        var dstr = checkBoxToCell(elem, 'disc', dstr);
-        var dstr = checkBoxToCell(elem, 'wgt', dstr);
+        dstr = checkBoxToCell(elem, 'fs', dstr);
+        dstr = checkBoxToCell(elem, 'disc', dstr);
+        dstr = checkBoxToCell(elem, 'wgt', dstr);
 
         var local = elem.find('.in_local:first').val().split(':');
         elem.find('.td_local:first').html(local[0]);
