@@ -80,13 +80,10 @@ class ObfTrendReport extends FannieReportPage
                 AND obfCategoryID=?
             ORDER BY obfWeekID');
 
-        $sales = array();
-        $growth = array();
+        $sales=$growth=$labor=$slph=array();
+        $headers = array();
         $res = $dbc->execute($categoryP, array($start, $end, $store));
         $first = true;
-        $headers = array();
-        $labor = array();
-        $splh = array();
         while ($row = $dbc->fetchRow($res)) {
             $catID = $row['catID'];
             $catName = $row['name'];
@@ -145,19 +142,7 @@ class ObfTrendReport extends FannieReportPage
         }
         $this->report_headers = $headers;
 
-        $sttl = array('Total Sales');
-        // -1 because meta
-        for ($i=1; $i<count($sales[0])-1; $i++) {
-            $ssum = 0;
-            for ($j=0; $j<count($sales); $j++) {
-                if (!isset($sales[$j]['meta'])) {
-                    continue;
-                }
-                $ssum += $sales[$j][$i];
-            }
-            $sttl[] = $ssum;
-        }
-        $sttl['meta'] = FannieReportPage::META_BOLD;
+        $sttl = $this->sumSales($sales);
         $sales[] = $sttl;
 
         $noSalesP = $dbc->prepare('
@@ -181,6 +166,49 @@ class ObfTrendReport extends FannieReportPage
         }
 
 
+        $lttl = $this->sumLabor($labor);
+        array_unshift($labor, $lttl);
+
+        $pttl = $this->sumSPLH($sttl, $lttl);
+        array_unshift($splh, $pttl);
+
+        return array_merge($sales, $growth, $labor, $splh);
+    }
+
+    private function sumSPLH($sttl, $lttl)
+    {
+        $pttl = array('SPLH Total');
+        foreach ($sttl as $id => $val) {
+            if ($id !== 'meta' && $id !== 0) {
+                $pttl[$id] = round($sttl[$id] / $lttl[$id], 2);
+            }
+        }
+        $pttl['meta'] = FannieReportPage::META_BOLD;
+
+        return $pttl;
+    }
+
+    private function sumSales($sales)
+    {
+        $sttl = array('Total Sales');
+        // -1 because meta
+        for ($i=1; $i<count($sales[0])-1; $i++) {
+            $ssum = 0;
+            for ($j=0; $j<count($sales); $j++) {
+                if (!isset($sales[$j]['meta'])) {
+                    continue;
+                }
+                $ssum += $sales[$j][$i];
+            }
+            $sttl[] = $ssum;
+        }
+        $sttl['meta'] = FannieReportPage::META_BOLD;
+        
+        return $sttl; 
+    }
+
+    private function sumLabor($labor)
+    {
         $lttl = array('Total Labor');
         for ($i = 1; $i<count($labor[0]); $i++) {
             $lsum = 0;
@@ -190,18 +218,8 @@ class ObfTrendReport extends FannieReportPage
             $lttl[] = $lsum;
         }
         $lttl['meta'] = FannieReportPage::META_BOLD;
-        array_unshift($labor, $lttl);
 
-        $pttl = array('SPLH Total');
-        foreach ($sttl as $id => $val) {
-            if ($id !== 'meta' && $id !== 0) {
-                $pttl[$id] = round($sttl[$id] / $lttl[$id], 2);
-            }
-        }
-        $pttl['meta'] = FannieReportPage::META_BOLD;
-        array_unshift($splh, $pttl);
-
-        return array_merge($sales, $growth, $labor, $splh);
+        return $lttl;
     }
 
     public function form_content()
