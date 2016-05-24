@@ -164,9 +164,10 @@ class ItemEditorPage extends FanniePage
         $vars = array(
             'enter' => _('Enter'),
             'orName' => _('or product name here'),
-            'advancedSeach' => _('Advanced Search'),
+            'advancedSearch' => _('Advanced Search'),
             'openPLU' => _('Find Open PLU Range'),
             'self' => filter_input(INPUT_SERVER, 'PHP_SELF'),
+            'msgs' => '',
         );
         if (!empty($this->msgs)) {
             $vars['msgs'] = '<blockquote style="border:solid 1px black;">'
