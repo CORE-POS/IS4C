@@ -117,7 +117,7 @@ var productList = (function($) {
         elem.find('.td_cmd:first .save-link').hide();
 
         dstr += '&upc='+upc+'&dept='+dept+'&store_id='+store_id;
-        dstr += '&tax='+tax[1]+wgt+'&local='+local[1];
+        dstr += '&tax='+tax[1]+'&local='+local[1];
         $.ajax({
             url: 'ProductListPage.php',
             data: dstr,
