@@ -148,7 +148,7 @@ class OrderViewPage extends FannieRESTfulPage
 
         $upP = $dbc->prepare('
             UPDATE PendingSpecialOrder 
-            SET memType = (staff+1)%2
+            SET staff = (staff+1)%2
             WHERE order_id=? 
                 AND trans_id=?');
         $dbc->execute($upP, array($this->orderID, $this->transID));
