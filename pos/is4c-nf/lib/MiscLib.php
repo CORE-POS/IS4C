@@ -339,5 +339,10 @@ public static function centStrToDouble($str)
     return $ret;
 }
 
+public static function jqueryFile()
+{
+    return self::win32() ? 'jquery-1.8.3.min.js' : 'jquery.js';
+}
+
 } // end class MiscLib
 

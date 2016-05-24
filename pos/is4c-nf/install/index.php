@@ -41,7 +41,7 @@ body {
     line-height: 1.5em;
 }
 </style>
-<script type="text/javascript" src="../js/jquery.js"></script>
+<script type="text/javascript" src="../js/<?php echo MiscLib::jqueryFile(); ?>"></script>
 </head>
 <body>
 <?php include('tabs.php'); ?>
