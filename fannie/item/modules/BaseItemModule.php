@@ -321,7 +321,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
         if ($exists) {
             $items = $exists;
             $rowItem = current($items);
-            $new_item = true;
+            $new_item = false;
 
             $rowItem['distributor'] = $this->getVendorName($rowItem['default_vendor_id']);
 
@@ -343,7 +343,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
             }
         } else {
             $rowItem = $this->getNewItem($upc);
-            $new_item = false;
+            $new_item = true;
 
             foreach ($stores as $id => $obj) {
                 $items[$id] = $rowItem;
