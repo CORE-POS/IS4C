@@ -532,7 +532,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 . '</div>';
         }
 
-        $ret = <<<HTML
+        return <<<HTML
 <form method="get" action="ProductListPage.php">
     <ul class="nav nav-tabs" role="tablist">
         <li class="active"><a href="#dept-tab" data-toggle="tab"
