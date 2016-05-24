@@ -1,19 +1,19 @@
 var productList = (function($) {
     var mod = {};
 
-    var drawCheckbox = function(cell, field) {
+    var drawCheckbox = function(elem, cell, field) {
         var fs = elem.find('.' + cell + ':first').html();
         var content = "<input type=checkbox class=" + field + " "+((fs==='X')?'checked':'')+" />";
         elem.find('.' + cell + ':first').html(content);
     };
 
-    var drawTextBox = function(cell, field, size) {
+    var drawTextBox = function(elem, cell, field, size) {
         var brand = elem.find('.' + cell + ':first').html();
         var content = "<input type=text class=\"" + field + " form-control input-sm\" size="+size+" value=\""+brand+"\" />";   
         elem.find('.' + cell + ':first').html(content);
     };
 
-    var drawKeyValSelect = function(cell, field, obj) {
+    var drawKeyValSelect = function(elem, cell, field, obj) {
         var dept = elem.find('.' + cell + ':first').text();
         var content = '<select class=\"" + field + " form-control input-sm\"><optgroup style="font-size: 90%;">';
         for (var i in obj) {
@@ -26,7 +26,7 @@ var productList = (function($) {
         elem.find('.' + cell + ':first').html(content);
     };
 
-    var drawTupleSelect = function(cell, field, obj) {
+    var drawTupleSelect = function(elem, cell, field, obj) {
         var tax = elem.find('.' + cell + ':first').html();
         var content = '<select class=\"" + field + " form-control input-sm\">';
         for (var ch in obj) {
@@ -40,22 +40,21 @@ var productList = (function($) {
     };
 
     mod.edit = function(elem) {
-        drawTextBox('td_brand', 'in_brand', 8);
-        drawTextBox('td_desc', 'in_desc', 10);
+        var text = [{name:'brand',size:8}, {name:'desc',size:10}, {name:'cost',size:4}, {name:'price',size:4}];
+        var.forEach(function(i) {
+            drawTextBox(elem, 'td_'+i.name, 'in_'+i.name, i.size);
+        });
 
-        drawKeyValSelect('td_dept', 'in_dept', deptObj);
-        drawKeyValSelect('td_supplier', 'in_supplier', vendorObj);
+        drawKeyValSelect(elem, 'td_dept', 'in_dept', deptObj);
+        drawKeyValSelect(elem, 'td_supplier', 'in_supplier', vendorObj);
 
-        drawTextBox('td_cost', 'in_cost', 4);
-        drawTextBox('td_price', 'in_price', 4);
+        var checks = ['fs', 'disc', 'wgt'];
+        checks.forEach(function(i) {
+            drawCheckbox(elem, 'td_'+i, 'in_'+i);
+        });
 
-        drawTupleSelect('td_tax', 'in_tax', taxObj);
-
-        drawCheckbox('td_fs', 'in_fs');
-        drawCheckbox('td_disc', 'in_disc');
-        drawCheckbox('td_wgt', 'in_wgt');
-
-        drawTupleSelect('td_local', 'in_local', taxObj);
+        drawTupleSelect(elem, 'td_tax', 'in_tax', taxObj);
+        drawTupleSelect(elem, 'td_local', 'in_local', taxObj);
 
         elem.find('.td_cmd:first .edit-link').hide();
         elem.find('.td_cmd:first .save-link').show();
@@ -75,40 +74,41 @@ var productList = (function($) {
         });
     };
 
-    var formToCell = function(cell, field) {
-        var brand = elem.find('.' + field + ':first').val();
-        elem.find('.' + cell + ':first').html(brand);
-        return brand;
+    var formToCell = function(elem, name, str) {
+        var brand = elem.find('.in_' + name + ':first').val();
+        elem.find('.td_' + name + ':first').html(brand);
+        return str + '&' + name + '=' + encodeURIComponent(brand);
     };
 
-    var checkBoxToCell = function(cell, field) {
-        var fs = elem.find('.'+field+':first').is(':checked') ? 1 : 0;
-        elem.find('.'+cell+':first').html((fs===1)?'X':'-');
-        return fs;
+    var checkBoxToCell = function(elem, name, str) {
+        var fs = elem.find('.in_'+name+':first').is(':checked') ? 1 : 0;
+        elem.find('.td_'+name+':first').html((fs===1)?'X':'-');
+        return str + '&' + name + '=' + encodeURIComponent(fs);
     };
 
     mod.save = function(elem) {
         var upc = elem.find('.hidden_upc:first').val();
         var store_id = elem.find('.hidden_store_id:first').val();
+        var dstr = 'ajax=save';
 
-        var brand = formToCell('td_brand', 'in_brand');
-        var desc = formToCell('td_desc', 'in_desc');
+        var dstr = formToCell(elem, 'brand', dstr);
+        var dstr = formToCell(elem, 'desc', dstr);
 
         var dept = elem.find('.in_dept:first').val();
         elem.find('.td_dept:first').html(deptObj[dept]);
 
-        var supplier = formToCell('td_supplier', 'in_supplier');
+        var dstr = formToCell(elem, 'supplier', dstr);
 
         mathField(elem.find('.in_cost:first').get(0));
-        var cost = formToCell('td_cost', 'in_cost');
-        var price = formToCell('td_price', 'in_price');
+        var dstr = formToCell(elem, 'cost', dstr);
+        var dstr = formToCell(elem, 'price', dstr);
 
         var tax = elem.find('.in_tax:first').val().split(':');
         elem.find('.td_tax:first').html(tax[0]);
         
-        var fs = checkBoxToCell('td_fs', 'in_fs');
-        var disc = checkBoxToCell('td_disc', 'in_disc');
-        var wgt = checkBoxToCell('td_wgt', 'in_wgt');
+        var dstr = checkBoxToCell(elem, 'fs', dstr);
+        var dstr = checkBoxToCell(elem, 'disc', dstr);
+        var dstr = checkBoxToCell(elem, 'wgt', dstr);
 
         var local = elem.find('.in_local:first').val().split(':');
         elem.find('.td_local:first').html(local[0]);
@@ -116,11 +116,8 @@ var productList = (function($) {
         elem.find('.td_cmd:first .edit-link').show();
         elem.find('.td_cmd:first .save-link').hide();
 
-        var dstr = 'ajax=save&upc='+upc+'&dept='+dept+'&price='+price+'&cost='+cost;
-        dstr += '&tax='+tax[1]+'&fs='+fs+'&disc='+disc+'&wgt='+wgt+'&supplier='+supplier+'&local='+local[1];
-        dstr += '&brand='+encodeURIComponent(brand);
-        dstr += '&desc='+encodeURIComponent(desc);
-        dstr += '&store_id='+store_id;
+        dstr += '&upc='+upc+'&dept='+dept+'&store_id='+store_id;
+        dstr += '&tax='+tax[1]+wgt'&local='+local[1];
         $.ajax({
             url: 'ProductListPage.php',
             data: dstr,
