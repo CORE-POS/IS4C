@@ -85,6 +85,27 @@ class SQLManager
         return (substr(strtolower($type), 0, 4) === 'pdo_');
     }
 
+    private function setConnectTimeout($conn, $type)
+    {
+        if (strtolower($type) === 'mysqli') {
+            $conn->optionFlags[] = array(MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+        } elseif (strtolower($type) === 'pdo_mysql') {
+            $this->save_socket_timeout = ini_get('default_socket_timeout');
+            ini_set('default_socket_timeout', 5);
+        }
+
+        return $conn;
+    }
+
+    private function clearConnectTimeout($conn, $type)
+    {
+        if (strtolower($type) === 'pdo_mysql') {
+            ini_set('default_socket_timeout', $this->save_socket_timeout);
+        }
+
+        return $conn;
+    }
+
     /** Add another connection
         @param $server Database server host
         @param $type Database type. Most supported are
@@ -107,6 +128,7 @@ class SQLManager
 
         $conn = ADONewConnection($this->isPDO($type) ? 'pdo' : $type);
         $conn->SetFetchMode(ADODB_FETCH_BOTH);
+        $conn = $this->setConnectTimeout($conn, $type);
         $connected = false;
         if (isset($this->connections[$database]) || $new) {
             $connected = $conn->NConnect($this->getDSN($server,$type,$database),$username,$password,$database);
@@ -115,6 +137,7 @@ class SQLManager
         } else {
             $connected = $conn->Connect($this->getDSN($server,$type,$database),$username,$password,$database);
         }
+        $conn = $this->clearConnectTimeout($conn, $type);
         $this->connections[$database] = $conn;
 
         $this->last_connection_error = false;
@@ -159,7 +182,9 @@ class SQLManager
     {
         $conn = ADONewConnection($this->isPDO($type) ? 'pdo' : $type);
         $conn->SetFetchMode(ADODB_FETCH_BOTH);
+        $conn = $this->setConnectTimeout($conn, $type);
         $connected = $conn->Connect($this->getDSN($server,$type,false),$username,$password,$database);
+        $conn = $this->clearConnectTimeout($conn, $type);
         if ($connected) {
             $this->last_connection_error = false;
             $adapter = $this->getAdapter(strtolower($type));
