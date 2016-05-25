@@ -47,7 +47,7 @@ if (!isset($FANNIE_LANES) || !is_array($FANNIE_LANES)) {
     $FANNIE_LANES = array();
 }
 
-set_time_limit(0);
+set_time_limit(60);
 
 foreach($FANNIE_LANES as $ln){
 
