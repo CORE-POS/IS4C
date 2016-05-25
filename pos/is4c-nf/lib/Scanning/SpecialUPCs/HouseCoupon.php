@@ -546,7 +546,7 @@ class HouseCoupon extends SpecialUPC
                 $row = $transDB->fetch_row($valR);
                 $value = $row[0] * $infoW["discountValue"];
                 break;
-            case "%DS": // percent discount on all items in give department(s)
+            case "%S": // percent discount on all items in give department(s)
                         // excluding sale items
                 $valQ = "select sum(total) 
                     " . $this->baseSQL($transDB, $coupID, 'department') . "
