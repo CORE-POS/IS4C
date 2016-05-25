@@ -39,21 +39,39 @@ class ViewPurchaseOrders extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->__routes[] = 'get<pending>';
-        $this->__routes[] = 'get<placed>';
-        $this->__routes[] = 'post<id><setPlaced>';
-        $this->__routes[] = 'get<id><export>';
-        $this->__routes[] = 'get<id><receive>';
-        $this->__routes[] = 'get<id><receiveAll>';
-        $this->__routes[] = 'get<id><sku>';
-        $this->__routes[] = 'get<id><recode>';
-        $this->__routes[] = 'post<id><sku><recode>';
-        $this->__routes[] = 'post<id><sku><qty><cost>';
-        $this->__routes[] = 'post<id><sku><upc><brand><description><orderQty><orderCost><receiveQty><receiveCost>';
-        $this->__routes[] = 'post<id><sku><qty><receiveAll>';
+        $this->addRoute(
+            'get<pending>',
+            'get<placed>',
+            'post<id><setPlaced>',
+            'get<id><export>',
+            'get<id><receive>',
+            'get<id><receiveAll>',
+            'get<id><sku>',
+            'get<id><recode>',
+            'post<id><sku><recode>',
+            'post<id><sku><qty><cost>',
+            'post<id><sku><upc><brand><description><orderQty><orderCost><receiveQty><receiveCost>',
+            'post<id><sku><qty><receiveAll>',
+            'post<id><note>'
+        );
         if (FormLib::get_form_value('all') === '0')
             $this->show_all = false;
         return parent::preprocess();
+    }
+
+    protected function post_id_note_handler()
+    {
+        $this->connection->selectDB($this->config->get('OP_DB'));
+        $note = new PurchaseOrderNotesModel($this->connection);
+        $note->orderID($this->id);
+        $note->notes(trim($this->note));
+        if ($note->notes() === '') {
+            $note->delete();
+        } else {
+            $note->save();
+        }
+
+        return false;
     }
 
     protected function get_id_export_handler()
@@ -301,6 +319,10 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $order = new PurchaseOrderModel($dbc);
         $order->orderID($this->id);
         $order->load();
+    
+        $note = new PurchaseOrderNotesModel($dbc);
+        $note->orderID($this->id);
+        $note->load();
 
         $vendor = new VendorsModel($dbc);
         $vendor->vendorID($order->vendorID());
@@ -337,10 +359,18 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $ret .= '</div></p>';
 
         $ret .= '<div class="row"><div class="col-sm-6">';
-        $ret .= '<table class="table table-bordered"><tr><th colspan="2">Coding(s)</th>';
-        $ret .= '<td><b>PO#</b>: '.$order->vendorOrderID().'</td>';
-        $ret .= '<td><b>Invoice#</b>: '.$order->vendorInvoiceID().'</td>';
-        $ret .= '</tr>';
+        $ret .= '<table class="table table-bordered">
+                <tr>
+                <td><b>PO#</b>: '.$order->vendorOrderID().'</td>
+                <td><b>Invoice#</b>: '.$order->vendorInvoiceID().'</td>
+                <th colspan="2">Coding(s)</th>
+                </tr>
+                <tr> 
+                <td rowspan="10" colspan="2">
+                <label>Notes</label>
+                <textarea class="form-control" onkeypress="autoSaveNotes(' . $this->id . ', this);">'
+                . $note->notes() . '</textarea>
+                </td>';
         $ret .= '{{CODING}}';
         $ret .= '</table>';
         $ret .= '</div><div class="col-sm-6">';

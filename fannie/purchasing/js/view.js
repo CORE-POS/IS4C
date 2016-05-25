@@ -85,7 +85,6 @@ function receiveSKU()
 function saveReceive()
 {
     var dstr = $('#item-area :input').serialize();
-    console.log(dstr);
     $.ajax({
         type: 'post',
         data: dstr
@@ -93,5 +92,18 @@ function saveReceive()
         $('#item-area').html('');
         $('#sku-in').focus();
     });
+}
+
+var autoTimeout;
+function autoSaveNotes(oid, elem) {
+    clearTimeout(autoTimeout);
+    autoTimeout = setTimeout(function() {
+        var dstr = 'id='+oid+'&note='+encodeURIComponent($(elem).val());
+        $.ajax({
+            type: 'post',
+            data: dstr
+        });
+
+    }, 2000);
 }
 
