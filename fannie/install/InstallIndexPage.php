@@ -669,6 +669,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'ProdPriceHistoryModel',
         'PurchaseOrderModel',
         'PurchaseOrderItemsModel',
+        'PurchaseOrderNotesModel',
         'PurchaseOrderSummaryModel',
         'ReasoncodesModel',
         'ScaleItemsModel',
