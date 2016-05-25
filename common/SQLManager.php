@@ -841,6 +841,7 @@ class SQLManager
           common one.
         */
         if (count($arg_sets) < 500) {
+            $this->lockTimeout(5, $dest_db);
             $big_prep = $this->prepare($big_query . $big_values, $dest_db);
             $bigR = $this->execute($big_prep, $big_args, $dest_db);
             return ($bigR) ? true : false;
@@ -848,6 +849,15 @@ class SQLManager
             return $this->executeAsTransaction($prep, $arg_sets, $dest_db);
         }
     }
+
+    private function lockTimeout($seconds, $which_connection)
+    {
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+
+        return $this->query($adapter->setLockTimeout($seconds), $which_connection);
+    }
+
 
     /**
       Execute a statement repeatedly as transaction.
@@ -858,8 +868,9 @@ class SQLManager
     {
         $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
         $ret = true;
-        $this->startTransaction($which_connection);
         $statement = $this->prepare($query, $which_connection);
+        $this->startTransaction($which_connection);
+        $this->lockTimeout(5, $which_connection);
         foreach ($arg_sets as $args) {
             if (!$this->execute($statement, $args, $which_connection)) {
                 $ret = false;

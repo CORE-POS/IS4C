@@ -138,5 +138,10 @@ class MysqlAdapter implements DialectAdapter
         
         return substr($ret, 0, strlen($ret)-1) . ')';
     }
+
+    public function setLockTimeout($seconds)
+    {
+        return sprintf('SET SESSION innodb_lock_wait_timeout = %d', $seconds);
+    }
 }
 
