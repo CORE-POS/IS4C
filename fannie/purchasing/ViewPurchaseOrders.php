@@ -55,11 +55,14 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             'post<id><note>',
             'post<id><sku><isSO>'
         );
-        if (FormLib::get_form_value('all') === '0')
+        if (FormLib::get('all') === '0')
             $this->show_all = false;
         return parent::preprocess();
     }
 
+    /**
+      Callback: save item's isSpecialOrder setting
+    */
     protected function post_id_sku_isSO_handler()
     {
         $this->connection->selectDB($this->config->get('OP_DB'));
@@ -72,6 +75,9 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         return false;
     }
 
+    /**
+      Callback: save notes associated with order
+    */
     protected function post_id_note_handler()
     {
         $this->connection->selectDB($this->config->get('OP_DB'));
@@ -103,8 +109,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage
 
     protected function post_id_setPlaced_handler()
     {
-        global $FANNIE_OP_DB;
-        $model = new PurchaseOrderModel(FannieDB::get($FANNIE_OP_DB));
+        $this->connection->selectDB($this->config->get('OP_DB'));
+        $model = new PurchaseOrderModel(FannieDB::get($this->connection));
         $model->orderID($this->id);
         $model->load();
         $model->placed($this->setPlaced);
@@ -363,18 +369,18 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         <input type="checkbox" {$placedCheck} id="placedCheckbox"
                 onclick="togglePlaced({$this->id});" />
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        Export as: <select id="exporterSelect" class="form-control">
+        Export as: <select id="exporterSelect" class="form-control input-sm">
             {$exportOpts}
         </select> 
-        <button type="submit" class="btn btn-default" onclick="doExport({$this->id});return false;">Export</button>
+        <button type="submit" class="btn btn-default btn-sm" onclick="doExport({$this->id});return false;">Export</button>
         &nbsp;&nbsp;&nbsp;
-        <a type="button" class="btn btn-default" 
+        <a type="button" class="btn btn-default btn-sm" 
             href="ViewPurchaseOrders.php?{$init}">All Orders</a>
     </div>
 </p>
 <div class="row">
     <div class="col-sm-6">
-        <table class="table table-bordered">
+        <table class="table table-bordered small">
             <tr>
                 <td><b>PO#</b>: {$orderObj->vendorOrderID}</td>
                 <td><b>Invoice#</b>: {$orderObj->vendorInvoiceID}</td>
@@ -392,25 +398,30 @@ class ViewPurchaseOrders extends FannieRESTfulPage
     <div class="col-sm-6">
 HTML;
         if (!$order->placed()) {
-            $ret .= '<button class="btn btn-default"
-                onclick="location=\'EditOnePurchaseOrder.php?id=' . $this->id . '\'; return false;">Add Items</button>';
-            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<a class="btn btn-default collapse" id="receiveBtn"
-                href="ViewPurchaseOrders.php?id=' . $this->id . '&receive=1">Receive Order</a>';
-            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<button class="btn btn-default" onclick="deleteOrder(' . $this->id . '); return false;">Delete Order</button>';
+            $ret .= <<<HTML
+<a class="btn btn-default btn-sm"
+    href="EditOnePurchaseOrder.php?id={$this->id}">Add Items</a>
+&nbsp;&nbsp;&nbsp;&nbsp;';
+<a class="btn btn-default btn-sm collapse" id="receiveBtn"
+    href="ViewPurchaseOrders.php?id={$this->id}&receive=1">Receive Order</a>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<button class="btn btn-default btn-sm" 
+    onclick="deleteOrder({$this->id}); return false;">Delete Order</button>
+HTML;
         } else {
-            $ret .= '<a class="btn btn-default"
-                href="ManualPurchaseOrderPage.php?id=' . $order->vendorID() . '&adjust=' . $this->id . '">Edit Order</a>';
-            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<a class="btn btn-default" id="receiveBtn"
-                href="ViewPurchaseOrders.php?id=' . $this->id . '&receive=1">Receive Order</a>';
-            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<a class="btn btn-default" id="receiveBtn"
-                href="TransferPurchaseOrder.php?id=' . $this->id . '">Transfer Order</a>';
-            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<a class="btn btn-default"
-                href="ViewPurchaseOrders.php?id=' . $this->id . '&recode=1">Alter Codings</a>';
+            $ret .= <<<HTML
+<a class="btn btn-default btn-sm"
+    href="ManualPurchaseOrderPage.php?id={$orderObj->vendorID}&adjust={$this->id}">Edit Order</a>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<a class="btn btn-default btn-sm" id="receiveBtn"
+    href="ViewPurchaseOrders.php?id={$this->id}&receive=1">Receive Order</a>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<a class="btn btn-default btn-sm" id="receiveBtn"
+    href="TransferPurchaseOrder.php?id={$this->id}">Transfer Order</a>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<a class="btn btn-default btn-sm"
+    href="ViewPurchaseOrders.php?id={$this->id}&recode=1">Alter Codings</a>
+HTML;
         }
         $ret .= '</div></div>';
 
@@ -422,10 +433,10 @@ HTML;
             $accounting = '\COREPOS\Fannie\API\item\Accounting';
         }
 
-        $ret .= '<table class="table tablesorter"><thead>';
+        $ret .= '<table class="table tablesorter table-bordered small"><thead>';
         $ret .= '<tr><th>Coding</th><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
             <th>Unit Size</th><th>Units/Case</th><th>Cases</th>
-            <th>Est. Cost</th><th>&nbsp;</th><th>Received</th>
+            <th>Est. Cost</th><th>Received</th>
             <th>Rec. Qty</th><th>Rec. Cost</th><th>SO</th></tr></thead><tbody>';
         foreach ($model->find() as $obj) {
             $css = $this->qtyToCss($order->placed(), $obj->quantity(),$obj->receivedQty());
@@ -443,7 +454,7 @@ HTML;
             $ret .= sprintf('<tr %s><td>%d</td><td>%s</td>
                     <td><a href="../item/ItemEditorPage.php?searchupc=%s">%s</a></td><td>%s</td><td>%s</td>
                     <td>%s</td><td>%s</td><td>%d</td><td>%.2f</td>
-                    <td>&nbsp;</td><td>%s</td><td>%d</td><td>%.2f</td>
+                    <td>%s</td><td>%d</td><td>%.2f</td>
                     <td>
                         <select class="form-control input-sm" onchange="isSO(%d, \'%s\', this.value);">
                         %s
