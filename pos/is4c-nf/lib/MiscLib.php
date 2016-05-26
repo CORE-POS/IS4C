@@ -110,13 +110,13 @@ static public function pingport($host, $dbms)
     if (strstr($host,":")) {
         list($host,$port) = explode(":",$host);
     }
-    $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-    socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
-    socket_set_block($sock);
-    $test = @socket_connect($sock,$host,$port);
-    socket_close($sock);
-
-    return ($test ? 1 : 0);
+    $sock = @stream_socket_client('tcp://' . $host . ':' . $port, $errno, $error, 1);
+    if ($sock) {
+        fclose($sock);
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**

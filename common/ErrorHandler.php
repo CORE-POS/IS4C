@@ -40,7 +40,7 @@ class ErrorHandler
       [filename]-[line#]-[error type]
     */
     private static $ignore = array(
-        'MiscLib.php-116-2' => true,
+        'MiscLib.php-113-2' => true,
     );
 
     static public function setLogger($l)
