@@ -1205,6 +1205,22 @@ class $name extends " . $this->new_model_namespace . ($as_view ? 'ViewModel' : '
         return json_encode($this->instance);
     }
 
+    public function toStdClass()
+    {
+        $ret = new \stdClass();
+        foreach ($this->columns as $name => $info) {
+            $val = null;
+            if (isset($this->instance[$name])) {
+                $val = $this->instance[$name];
+            } elseif (isset($this->instance['default'])) {
+                $val = $this->instance['default'];
+            }
+            $ret->{$name} = $val;
+        }
+
+        return $ret;
+    }
+
     /**
       Return an HTML string with <option> tags for
       each record. Table must have a single column 

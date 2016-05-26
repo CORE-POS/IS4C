@@ -107,3 +107,10 @@ function autoSaveNotes(oid, elem) {
     }, 2000);
 }
 
+function isSO(oid, sku, isSO) {
+    $.ajax({
+        type: 'post',
+        data: 'id='+oid+'&sku='+sku+'&isSO='+isSO
+    });
+}
+
