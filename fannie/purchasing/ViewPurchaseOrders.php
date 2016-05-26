@@ -52,11 +52,24 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             'post<id><sku><qty><cost>',
             'post<id><sku><upc><brand><description><orderQty><orderCost><receiveQty><receiveCost>',
             'post<id><sku><qty><receiveAll>',
-            'post<id><note>'
+            'post<id><note>',
+            'post<id><sku><isSO>'
         );
         if (FormLib::get_form_value('all') === '0')
             $this->show_all = false;
         return parent::preprocess();
+    }
+
+    protected function post_id_sku_isSO_handler()
+    {
+        $this->connection->selectDB($this->config->get('OP_DB'));
+        $item = new PurchaseOrderItemsModel($this->connection);
+        $item->orderID($this->id);
+        $item->sku($this->sku);
+        $item->isSpecialOrder($this->isSO);
+        $item->save();
+
+        return false;
     }
 
     protected function post_id_note_handler()
@@ -319,61 +332,65 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $order = new PurchaseOrderModel($dbc);
         $order->orderID($this->id);
         $order->load();
+        $orderObj = $order->toStdClass();
+        $orderObj->placedDate = $orderObj->placed ? $orderObj->placedDate : 'n/a';
+        $placedCheck = $orderObj->placed ? 'checked' : '';
+        $init = $orderObj->placed ? 'init=placed' : 'init=pending';
     
-        $note = new PurchaseOrderNotesModel($dbc);
-        $note->orderID($this->id);
-        $note->load();
+        $notes = $dbc->prepare('SELECT notes FROM PurchaseOrderNotes WHERE orderID=?');
+        $notes = $dbc->getValue($notes, $this->id);
+        $vname = $dbc->prepare('SELECT vendorName FROM vendors WHERE vendorID=?');
+        $vname = $dbc->getValue($vname, array($orderObj->vendorID));
+        $sname = $dbc->prepare('SELECT description FROM Stores WHERE storeID=?');
+        $sname = $dbc->getValue($sname, array($orderObj->storeID));
 
-        $vendor = new VendorsModel($dbc);
-        $vendor->vendorID($order->vendorID());
-        $vendor->load();
-
-        $store = new StoresModel($dbc);
-        $store->storeID($order->storeID());
-        $store->load();
-
-        $ret = '<p><div class="form-inline">';
-        $ret .= '<b>Store</b>: '.$store->description();
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<b>Vendor</b>: '.$vendor->vendorName();
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<b>Created</b>: '.$order->creationDate();
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<b>Placed</b>: <span id="orderPlacedSpan">'.($order->placed() ? $order->placedDate() : 'n/a').'</span>';
-        $ret .= '<input type="checkbox" '.($order->placed() ? 'checked' : '').' id="placedCheckbox"
-                onclick="togglePlaced('.$this->id.');" />';
-
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-
-        $ret .= 'Export as: <select id="exporterSelect" class="form-control">';
+        $exportOpts = '';
         foreach (COREPOS\Fannie\API\item\InventoryLib::orderExporters() as $class => $name) {
             $selected = $class === $this->config->get('DEFAULT_PO_EXPORT') ? 'selected' : '';
-            $ret .= '<option ' . $selected . ' value="'.$class.'">'.$name.'</option>';
+            $exportOpts .= '<option ' . $selected . ' value="'.$class.'">'.$name.'</option>';
         }
-        $ret .= '</select> ';
-        $ret .= '<button type="submit" class="btn btn-default" onclick="doExport('.$this->id.');return false;">Export</button>';
-        $ret .= '&nbsp;&nbsp;&nbsp;';
-        $init = ($order->placed() ? 'init=placed' : 'init=pending');
-        $ret .= '<button type="button" class="btn btn-default" 
-            onclick="location=\'ViewPurchaseOrders.php?' . $init . '\'; return false;">All Orders</button>';
-        $ret .= '</div></p>';
 
-        $ret .= '<div class="row"><div class="col-sm-6">';
-        $ret .= '<table class="table table-bordered">
-                <tr>
-                <td><b>PO#</b>: '.$order->vendorOrderID().'</td>
-                <td><b>Invoice#</b>: '.$order->vendorInvoiceID().'</td>
+        $ret = <<<HTML
+<p>
+    <div class="form-inline">
+        <b>Store</b>: {$sname}
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <b>Vendor</b>: {$vname}
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <b>Created</b>: {$orderObj->creationDate}
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <b>Placed</b>: <span id="orderPlacedSpan">{$orderObj->placedDate}</span>
+        <input type="checkbox" {$placedCheck} id="placedCheckbox"
+                onclick="togglePlaced({$this->id});" />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Export as: <select id="exporterSelect" class="form-control">
+            {$exportOpts}
+        </select> 
+        <button type="submit" class="btn btn-default" onclick="doExport({$this->id});return false;">Export</button>
+        &nbsp;&nbsp;&nbsp;
+        <a type="button" class="btn btn-default" 
+            href="ViewPurchaseOrders.php?{$init}">All Orders</a>
+    </div>
+</p>
+<div class="row">
+    <div class="col-sm-6">
+        <table class="table table-bordered">
+            <tr>
+                <td><b>PO#</b>: {$orderObj->vendorOrderID}</td>
+                <td><b>Invoice#</b>: {$orderObj->vendorInvoiceID}</td>
                 <th colspan="2">Coding(s)</th>
-                </tr>
-                <tr> 
+            </tr>
+            <tr> 
                 <td rowspan="10" colspan="2">
-                <label>Notes</label>
-                <textarea class="form-control" onkeypress="autoSaveNotes(' . $this->id . ', this);">'
-                . $note->notes() . '</textarea>
-                </td>';
-        $ret .= '{{CODING}}';
-        $ret .= '</table>';
-        $ret .= '</div><div class="col-sm-6">';
+                    <label>Notes</label>
+                    <textarea class="form-control" 
+                        onkeypress="autoSaveNotes({$this->id}', this);">{$notes}</textarea>
+                </td>
+            {{CODING}}
+        </table>
+    </div>
+    <div class="col-sm-6">
+HTML;
         if (!$order->placed()) {
             $ret .= '<button class="btn btn-default"
                 onclick="location=\'EditOnePurchaseOrder.php?id=' . $this->id . '\'; return false;">Add Items</button>';
@@ -409,15 +426,9 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $ret .= '<tr><th>Coding</th><th>SKU</th><th>UPC</th><th>Brand</th><th>Description</th>
             <th>Unit Size</th><th>Units/Case</th><th>Cases</th>
             <th>Est. Cost</th><th>&nbsp;</th><th>Received</th>
-            <th>Rec. Qty</th><th>Rec. Cost</th></tr></thead><tbody>';
-        foreach($model->find() as $obj){
-            $css = '';
-            if ($order->placed() == 0) {
-            } elseif ($obj->receivedQty() == 0 && $obj->quantity() != 0) {
-                $css = 'class="danger"';
-            } elseif ($obj->receivedQty() < $obj->quantity()) {
-                $css = 'class="warning"';
-            }
+            <th>Rec. Qty</th><th>Rec. Cost</th><th>SO</th></tr></thead><tbody>';
+        foreach ($model->find() as $obj) {
+            $css = $this->qtyToCss($order->placed(), $obj->quantity(),$obj->receivedQty());
             if ($obj->salesCode() == '') {
                 $code = $obj->guessCode();
                 $obj->salesCode($code);
@@ -433,6 +444,10 @@ class ViewPurchaseOrders extends FannieRESTfulPage
                     <td><a href="../item/ItemEditorPage.php?searchupc=%s">%s</a></td><td>%s</td><td>%s</td>
                     <td>%s</td><td>%s</td><td>%d</td><td>%.2f</td>
                     <td>&nbsp;</td><td>%s</td><td>%d</td><td>%.2f</td>
+                    <td>
+                        <select class="form-control input-sm" onchange="isSO(%d, \'%s\', this.value);">
+                        %s
+                        </select>
                     </tr>',
                     $css,
                     $accounting::toPurchaseCode($obj->salesCode()),
@@ -445,7 +460,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage
                     ($obj->quantity() * $obj->caseSize() * $obj->unitCost()),
                     strtotime($obj->receivedDate()) ? date('Y-m-d', strtotime($obj->receivedDate())) : 'n/a',
                     $obj->receivedQty(),
-                    $obj->receivedTotalCost()
+                    $obj->receivedTotalCost(),
+                    $this->id, $obj->sku(), $this->specialOrderSelect($obj->isSpecialOrder())
             );
         }
         $ret .= '</tbody></table>';
@@ -462,6 +478,28 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
 
         return $ret;
+    }
+
+    private function qtyToCss($placed, $ordered, $received)
+    {
+        if (!$placed) {
+            return '';
+        } elseif ($received == 0 && $ordered != 0) {
+            return 'class="danger"';
+        } elseif ($received < $quantity) {
+            return 'class="warning"';
+        } else {
+            return '';
+        }
+    }
+
+    private function specialOrderSelect($isSO)
+    {
+        if ($isSO) {
+            return '<option value="1" selected>Yes</option><option value="0">No</option>';
+        } else {
+            return '<option value="1">Yes</option><option value="0" selected>No</option>';
+        }
     }
 
     /**

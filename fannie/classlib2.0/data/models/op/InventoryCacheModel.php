@@ -62,6 +62,7 @@ class InventoryCacheModel extends BasicModel
                 WHERE internalUPC=?
                     AND placedDate IS NOT NULL
                     AND storeID=?
+                    AND i.isSpecialOrder = 0
                     AND (placedDate >= ? OR receivedDate >= ?)');
         }
 
