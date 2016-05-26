@@ -181,7 +181,7 @@ class EditBatchPage extends FannieRESTfulPage
                 $json['error'] = 1;
                 $json['msg'] = 'Item not found: ' . $upc;
             } else {
-                $json['content'] = $this->addItemPriceInput($upc, false, $product->description(), $product->normal_price());
+                $json['content'] = $this->addItemPriceInput($upc, $product->description(), $product->normal_price());
                 $json['field'] = '#add-item-price';
             }
         }
@@ -224,7 +224,7 @@ class EditBatchPage extends FannieRESTfulPage
             $json['error'] = 1;
             $json['msg'] = 'Like code #' . $this->addLC . ' not found';
         } else {
-            $json['content'] = $this->addItemPriceInput('LC' . $this->addLC, false, $infoW['likeCodeDesc'], $infoW['normal_price']);
+            $json['content'] = $this->addItemPriceInput('LC' . $this->addLC, $infoW['likeCodeDesc'], $infoW['normal_price']);
             $json['field'] = '#add-item-price';
         }
 
