@@ -248,7 +248,8 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         <div class="row form-group form-horizontal">
             <label class="col-sm-2 control-label">Type</label>
             <div class="col-sm-4">
-                <select name="ftype" class="form-control">
+                <select name="ftype" class="form-control" required>
+                    <option value="">Select one...</option>
                     <option>UPCs</option>
                     <option>Likecodes</option>
                 </select>
