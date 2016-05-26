@@ -402,6 +402,9 @@ those same items revert to normal pricing.
             $upcs[$w['upc']] = $w;
         }
 
+        $update = new ProdUpdateModel($this->connection);
+        $update->logManyUpdates(array_keys($upcs), $updateType);
+
         $updateQ = '
             UPDATE products AS p SET
                 p.normal_price = ?,
@@ -465,9 +468,6 @@ those same items revert to normal pricing.
                 $client->send();
             }
         }
-
-        $update = new ProdUpdateModel($this->connection);
-        $update->logManyUpdates(array_keys($upcs), $updateType);
     }
 
     /**
