@@ -977,7 +977,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
         }
 
         $model = new VendorsModel($dbc);
-        $vendorOpts = $model->toOptions(-1);
+        $vendorOpts = $model->toOptions(-999);
 
         $rule = new PriceRuleTypesModel($dbc);
         $ruleOpts = $rule->toOptions();
