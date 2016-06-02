@@ -453,8 +453,8 @@ HTML;
             $codings[$coding] += $obj->receivedTotalCost();
             $ret .= sprintf('<tr %s><td>%d</td><td>%s</td>
                     <td><a href="../item/ItemEditorPage.php?searchupc=%s">%s</a></td><td>%s</td><td>%s</td>
-                    <td>%s</td><td>%s</td><td>%d</td><td>%.2f</td>
-                    <td>%s</td><td>%d</td><td>%.2f</td>
+                    <td>%s</td><td>%s</td><td>%s</td><td>%.2f</td>
+                    <td>%s</td><td>%s</td><td>%.2f</td>
                     <td>
                         <select class="form-control input-sm" onchange="isSO(%d, \'%s\', this.value);">
                         %s
