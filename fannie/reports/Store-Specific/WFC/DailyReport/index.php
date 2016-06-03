@@ -376,7 +376,7 @@ $transinfo = array("Member"=>array(0,0.0,0.0,0.0,0.0),
            "Non Member"=>array(0,0.0,0.0,0.0,0.0),
            "Staff Member"=>array(0,0.0,0.0,0.0,0.0),
            "Staff NonMem"=>array(0,0.0,0.0,0.0,0.0));
-while($row = $dbc->fetch_array($transR)){
+while($row = $dbc->fetchRow($transR)){
     if (!isset($transinfo[$row[2]])) continue;
     $transinfo[$row[2]][0] += 1;
     $transinfo[$row[2]][1] += $row[1];

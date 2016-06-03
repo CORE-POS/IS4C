@@ -454,7 +454,7 @@ class UPC extends Parser
 
         if ($dbc->num_rows($result) <= 0) return;
 
-        $row = $dbc->fetch_array($result);
+        $row = $dbc->fetchRow($result);
         
         $description = $row["description"];
         $description = str_replace("'", "", $description);

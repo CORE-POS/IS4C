@@ -32,17 +32,18 @@ class PurchaseOrderItemsModel extends BasicModel
     protected $columns = array(
     'orderID' => array('type'=>'INT','primary_key'=>True),
     'sku' => array('type'=>'VARCHAR(13)','primary_key'=>True),
-    'quantity' => array('type'=>'INT'),
+    'quantity' => array('type'=>'DOUBLE'),
     'unitCost' => array('type'=>'MONEY'),
-    'caseSize' => array('type'=>'INT'),
+    'caseSize' => array('type'=>'DOUBLE'),
     'receivedDate' => array('type'=>'DATETIME'),
-    'receivedQty' => array('type'=>'INT'),
+    'receivedQty' => array('type'=>'DOUBLE'),
     'receivedTotalCost' => array('type'=>'MONEY'),
     'unitSize' => array('type'=>'VARCHAR(25)'),
     'brand' => array('type'=>'VARCHAR(50)'),
     'description' => array('type'=>'VARCHAR(50)'),
     'internalUPC' => array('type'=>'VARCHAR(13)'),
     'salesCode' => array('type'=>'INT'),
+    'isSpecialOrder' => array('type'=>'TINYINT', 'default'=>0),
     );
 
     protected $preferred_db = 'op';

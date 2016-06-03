@@ -660,7 +660,7 @@ static public function drawItems($top_item, $rows, $highlight)
     $query = "select count(*) as count from localtemptrans";
     $dbc = Database::tDataConnect();
     $result = $dbc->query($query);
-    $row = $dbc->fetch_array($result);
+    $row = $dbc->fetchRow($result);
     $rowCount = $row["count"];
 
     if ($rowCount == 0) {

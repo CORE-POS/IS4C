@@ -81,7 +81,7 @@ $taxfsQ = "SELECT dept_tax,dept_fs, dept_discount, superID
     WHERE d.dept_no = {$ins_array['department']}";
 $taxfsR = $dbc->query($taxfsQ);
 if ($dbc->num_rows($taxfsR) > 0){
-    $taxfsW = $dbc->fetch_array($taxfsR);
+    $taxfsW = $dbc->fetchRow($taxfsR);
     $ins_array['tax'] = $taxfsW['dept_tax'];
     $ins_array['foodstamp'] = $taxfsW['dept_fs'];
     $ins_array['discount'] = $taxfsW['dept_discount'];
@@ -416,13 +416,13 @@ $dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 
 $deptQ = "SELECT dept_no, dept_name FROM departments ORDER BY dept_no";
 $deptR = $dbc->query($deptQ);
-$row = $dbc->fetch_array($deptR);
+$row = $dbc->fetchRow($deptR);
 $firstDeptNo = $row['dept_no'];
 $firstDeptName = $row['dept_name'];
 
 $prodQ = "SELECT * FROM products WHERE upc = ".$upc;
 $prodR = $dbc->query($prodQ);
-$row = $dbc->fetch_array($prodR);
+$row = $dbc->fetchRow($prodR);
 
         echo "<table border=0>";
         echo "<tr><td align=right><b>UPC</b></td><td><font color='red'>".$upc."</font><input type=hidden value='".$upc."' name=upc></td>";
@@ -437,7 +437,7 @@ $row = $dbc->fetch_array($prodR);
         if (is_numeric($dept)) {
             $query2 = "SELECT * FROM departments where dept_no = ".$row["department"];
             $result2 = $dbc->query($query2);
-            $row2 = $dbc->fetch_array($result2);
+            $row2 = $dbc->fetchRow($result2);
         } else {
             $row2 = array('dept_name' => "");
         }
@@ -446,7 +446,7 @@ $row = $dbc->fetch_array($prodR);
         if (is_numeric($subdept)) {
             $query2a = "SELECT * FROM subdepts WHERE subdept_no = ".$subdept;
             $result2a = $dbc->query($query2a);
-            $row2a = $dbc->fetch_array($result2a);
+            $row2a = $dbc->fetchRow($result2a);
         } else {
             $row2a = array('subdept_name' => "");
         }

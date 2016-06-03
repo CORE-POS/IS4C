@@ -25,6 +25,16 @@ namespace COREPOS\common\sql;
 
 class PgsqlAdapter implements DialectAdapter
 {
+    public function createNamedDB($name)
+    {
+        return 'CREATE SCHEMA ' . $this->identifierEscape($name);
+    }
+
+    public function useNamedDB($name)
+    {
+        return 'SET search_path TO ' . $this->identifierEscape($name);
+    }
+
     public function identifierEscape($str)
     {
         return '"' . $str . '"';
@@ -132,6 +142,11 @@ class PgsqlAdapter implements DialectAdapter
         $ret = array_reduce($expressions, function($carry, $e) { return $carry . $e . '||'; }, '');
         
         return substr($ret, 0, strlen($ret)-1);
+    }
+
+    public function setLockTimeout($seconds)
+    {
+        return sprintf('SET LOCAL lock_timeout = \'%ds\'', $seconds);
     }
 }
 

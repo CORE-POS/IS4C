@@ -191,7 +191,7 @@ static private $SQL_CONNECTION = null;
                 ".";
         }
 
-        $mem = $conn->fetch_array($result);
+        $mem = $conn->fetchRow($result);
 
         /* Suspended or not activated for either purchasing or input.
          */
@@ -288,7 +288,7 @@ static private $SQL_CONNECTION = null;
         if ($subsR === False) {
             return "Error: query() failed for query: $subsQ";
         } else {
-            $row = $conn->fetch_array($subsR);
+            $row = $conn->fetchRow($subsR);
             $CORE_LOCAL->set("{$pc}chargeTotal",
                 (!$row || !isset($row['chargeTotal']))
                     ? 0 : (double)$row["chargeTotal"] );

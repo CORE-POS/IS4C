@@ -2786,7 +2786,7 @@ function civiTestAndDie($dbConn) {
     // Quick test.
     echo "Civi Members Numbered\n";
     //mysqli: while ( $row = $civim->fetch_row() ) {}
-    while ( $row = $dbConn->fetch_array($civim) ) {
+    while ( $row = $dbConn->fetchRow($civim) ) {
         // The numeric keys come first. 0,2,4. Name keys 1, 3, 5.
         $flds = getNameKeys($row);
         //$flds = array_keys($row);
@@ -2825,7 +2825,7 @@ function civiTestAndDie2($dbConn) {
     // Quick test.
     echo "Civi Contacts, Numbered\n";
     //mysqli: while ( $row = $civim->fetch_row() ) {}
-    while ( $row = $dbConn->fetch_array($civim) ) {
+    while ( $row = $dbConn->fetchRow($civim) ) {
         // The numeric keys come first. 0,2,4. Name keys 1, 3, 5.
         //$flds = getNameKeys($row);
         //$lineOut = implode("\t", $flds) . "\n";

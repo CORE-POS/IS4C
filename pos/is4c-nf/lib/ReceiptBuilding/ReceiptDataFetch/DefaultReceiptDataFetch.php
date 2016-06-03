@@ -34,17 +34,15 @@ class DefaultReceiptDataFetch
       Implementation function
       @return SQL result object
     */
-    public function fetch($empNo=false,$laneNo=false,$transNo=false)
+    public function fetch($sql, $empNo=false,$laneNo=false,$transNo=false)
     {
         $op_db = CoreLocal::get('pDatabase');
-        $sql = Database::tDataConnect();
         $join_table = $op_db . $sql->sep() . 'MasterSuperDepts';
         $column = 's.super_name';
         if (!$sql->table_exists($join_table)) {
             $join_table = $op_db . $sql->sep() . 'subdepts';
             $column = 's.subdept_name';
         }
-        $sql = Database::tDataConnect();
         $query = 'SELECT l.upc,l.trans_type,l.description,
             l.total,l.percentDiscount,l.trans_status,
             l.charflag,l.scale,l.quantity,l.unitPrice,

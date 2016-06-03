@@ -13,7 +13,7 @@ $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')))
 <head>
 <title>IT CORE Lane Installation: Additional Configuration</title>
 <link rel="stylesheet" href="../css/toggle-switch.css" type="text/css" />
-<script type="text/javascript" src="../js/jquery.js"></script>
+<script type="text/javascript" src="../js/<?php echo MiscLib::jqueryFile(); ?>"></script>
 </head>
 <body>
 <?php include('tabs.php'); ?>

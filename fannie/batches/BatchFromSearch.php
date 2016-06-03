@@ -37,7 +37,6 @@ class BatchFromSearch extends FannieRESTfulPage
 
     public $description = '[Batch From Search] takes a set of advanced search results and
     creates a sale or price change batch. Must be accessed via Advanced Search.';
-    public $has_unit_tests = true;
 
     private $upcs = array();
 
@@ -216,58 +215,96 @@ class BatchFromSearch extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $this->addScript('from-search.js');
-        $ret = '<form action="BatchFromSearch.php" method="post">';
-
-        $ret .= '<div class="form-group form-inline">';
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $types = $dbc->query('SELECT batchTypeID, typeDesc, discType FROM batchType');
-        $discTypes = array();
-        $ret .= '<select name="batchType" id="batchType" class="form-control"
-            onchange="discountTypeFixup()">';
-            while($row = $dbc->fetch_row($types)) {
-                $ret .= sprintf('<option value="%d">%s</option>',
-                            $row['batchTypeID'], $row['typeDesc']
+        $btOpts=$dtOpts='';
+        while ($row = $dbc->fetchRow($types)) {
+            $btOpts .= sprintf('<option value="%d">%s</option>',
+                        $row['batchTypeID'], $row['typeDesc']
             );
-            $discTypes[] = $row;
-        }
-        $ret .= '</select>';
-        foreach($discTypes as $row) {
-            $ret .= sprintf('<input type="hidden" id="discType%d" value="%d" />',
+            $dtOpts .= sprintf('<input type="hidden" id="discType%d" value="%d" />',
                             $row['batchTypeID'], $row['discType']
             );
         }
+        $ret .= '</select>';
 
         $name = FannieAuth::checkLogin();
-        $ret .= '
-                <label>Name</label>: ';
-        $ret .= '<input type="text" class="form-control" name="batchName" value="'
-                . ($name ? $name : 'Batch') . ' '
-                . date('M j')
-                . '" />';
-
-        $ret .= '
-                <label>Start</label>: <input type="text" class="form-control date-field" id="startDate" value="'
-                . date('Y-m-d') . '" name="startDate" />
-                ';
-
-        $ret .= '
-                <label>End</label>: <input type="text" class="form-control date-field" id="endDate" value="'
-                . date('Y-m-d') . '" name="endDate" />
-                </div>';
-
+        $batchName = ($name ? $name : 'Batch') . ' ' . date('M j');
+        $today = date('Y-m-d');
         $owners = $dbc->query('SELECT super_name FROM MasterSuperDepts GROUP BY super_name ORDER BY super_name');
-        $ret .= '<div class="form-group form-inline">
-            <label>Owner</label>: <select name="batchOwner" class="form-control" id="batchOwner"><option value=""></option>';
-        while($row = $dbc->fetch_row($owners)) {
-            $ret .= '<option>' . $row['super_name'] . '</option>';
+        $oOpts = '';
+        while ($row = $dbc->fetchRow($owners)) {
+            $oOpts .= '<option>' . $row['super_name'] . '</option>';
         }
-        $ret .= '<option>IT</option></select>
-                <button type="submit" name="createBatch" value="1"
-                    class="btn btn-default">Create Batch</button>
-                </div>';
 
-        $ret .= '<hr />';
+        $vendors = new VendorsModel($dbc);
+        $vOpts = $vendors->toOptions();
+        $queues = new ShelfTagQueuesModel($dbc);
+        $qOpts = $queues->toOptions();
+
+        $ret = <<<HTML
+<form action="BatchFromSearch.php" method="post">
+<div class="form-group form-inline">
+    <select name="batchType" id="batchType" class="form-control" onchange="discountTypeFixup()">
+        {$btOpts}
+    </select>
+    {$dtOpts}
+    <label>Name</label>: 
+    <input type="text" class="form-control" name="batchName" value="{$batchName}" />
+    <label>Start</label>: 
+    <input type="text" class="form-control date-field" id="startDate" value="{$today}" name="startDate" />
+    <label>End</label>: 
+    <input type="text" class="form-control date-field" id="endDate" value="{$today}" name="endDate" />
+</div>
+<div class="form-group form-inline">
+    <label>Owner</label>: 
+    <select name="batchOwner" class="form-control" id="batchOwner"><option value=""></option>';
+        {$oOpts}
+        <option>IT</option>
+    </select>
+    <button type="submit" name="createBatch" value="1"
+            class="btn btn-default">Create Batch</button>
+</div>
+<hr />
+<div id="saleTools" class="form-group form-inline">
+    <label>Markdown</label>
+    <div class="input-group">
+        <input type="text" id="mdPercent" class="form-control" value="10" onchange="markDown(this.value);" />
+        <span class="input-group-addon">%</span>
+    </div>
+    <button type="submit" class="btn btn-default" onclick="markDown(\$('#mdPercent').val()); return false;">Go</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <label>or</label>
+    <div class="input-group">
+        <span class="input-group-addon">\$</span>
+        <input type="text" id="mdDollar" class="form-control" value="0.00" onchange="discount(this.value);" />
+    </div>
+    <button type="submit" class="btn btn-default" onclick="discount(\$('#mdDollar').val()); return false;">Go</button>
+</div>
+<div id="priceChangeTools" class="form-group form-inline">
+    <button type="submit" class="btn btn-default" onclick="useSRPs(); return false;">Use Vendor SRPs</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <select name="preferredVendor" class="form-control" onchange="reCalcSRPs();">
+        <option value="0">Auto Choose Vendor</option>';
+        {$vOpts}
+    </select>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <label>Markup</label>
+    <div class="input-group">
+        <input type="text" id="muPercent" class="form-control" value="10" onchange="markUp(this.value);" />
+        <span class="input-group-addon">%</span>
+    </div>
+    <button type="submit" class="btn btn-default" onclick="markUp(\$('#muPercent').val()); return false">Go</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <label>Tags</label> <select name="tagset" class="form-control" id="tagset"><option value="">No Tags</option>
+    {$qOpts}
+    </select>
+</div>
+<table class="table">
+    <tr><th>UPC</th><th>Description</th><th>Retail</th>
+    <th id="newPriceHeader">Sale Price</th></tr>
+HTML;
 
         list($in_sql, $args) = $dbc->safeInClause($this->upcs);
         $query = 'SELECT p.upc, p.description, p.normal_price, m.superID,
@@ -281,52 +318,8 @@ class BatchFromSearch extends FannieRESTfulPage
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
 
-        $ret .= '<div id="saleTools" class="form-group form-inline">';
-        $ret .= '<label>Markdown</label>
-                <div class="input-group">
-                    <input type="text" id="mdPercent" class="form-control" value="10" onchange="markDown(this.value);" />
-                    <span class="input-group-addon">%</span>
-                </div>
-                <button type="submit" class="btn btn-default" onclick="markDown($(\'#mdPercent\').val()); return false">Go</button>';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<label>or</label>
-                <div class="input-group">
-                    <span class="input-group-addon">$</span>
-                    <input type="text" id="mdDollar" class="form-control" value="0.00" onchange="discount(this.value);" />
-                </div>
-                <button type="submit" class="btn btn-default" onclick="discount($(\'#mdDollar\').val()); return false">Go</button>';
-        $ret .= '</div>';
-
-        $ret .= '<div id="priceChangeTools" class="form-group form-inline">';
-        $ret .= '<button type="submit" class="btn btn-default" onclick="useSRPs(); return false;">Use Vendor SRPs</button>';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<select name="preferredVendor" class="form-control" onchange="reCalcSRPs();">
-            <option value="0">Auto Choose Vendor</option>';
-        $vendors = new VendorsModel($dbc);
-        foreach ($vendors->find('vendorName') as $vendor) {
-            $ret .= sprintf('<option value="%d">%s</option>',
-                        $vendor->vendorID(), $vendor->vendorName());
-        }
-        $ret .= '</select>';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<label>Markup</label>
-                <div class="input-group">
-                    <input type="text" id="muPercent" class="form-control" value="10" onchange="markUp(this.value);" />
-                    <span class="input-group-addon">%</span>
-                </div>
-                <button type="submit" class="btn btn-default" onclick="markUp($(\'#muPercent\').val()); return false">Go</button>';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<label>Tags</label> <select name="tagset" class="form-control" id="tagset"><option value="">No Tags</option>';
-        $queues = new ShelfTagQueuesModel($dbc);
-        $ret .= $queues->toOptions();
-        $ret .= '</select>';
-        $ret .= '</div>';
-
-        $ret .= '<table class="table">';
-        $ret .= '<tr><th>UPC</th><th>Description</th><th>Retail</th>
-                <th id="newPriceHeader">Sale Price</th></tr>';
         $superDetect = array();
-        while($row = $dbc->fetch_row($result)) {
+        while ($row = $dbc->fetchRow($result)) {
             $ret .= sprintf('<tr class="batchItem">
                             <td><input type="hidden" name="upc[]" class="itemUPC" value="%s" />%s</td>
                             <td>%s</td>
@@ -350,7 +343,6 @@ class BatchFromSearch extends FannieRESTfulPage
             $superDetect[$row['superID']]++;
         }
         $ret .= '</table>';
-
         $ret .= '</form>';
 
         // auto-detect likely owner & tag set by super department

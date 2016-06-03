@@ -75,13 +75,35 @@ class SQLManager
         $this->default_db = $database;
         $this->addConnection($server,$type,$database,$username,$password,$persistent,$new);
         if ($this->isConnected($database)) {
-            $this->query('USE ' . $this->identifierEscape($database));
+            $adapter = $this->getAdapter(strtolower($type));
+            $this->query($adapter->useNamedDB($database));
         }
     }
 
     private function isPDO($type)
     {
         return (substr(strtolower($type), 0, 4) === 'pdo_');
+    }
+
+    private function setConnectTimeout($conn, $type)
+    {
+        if (strtolower($type) === 'mysqli') {
+            $conn->optionFlags[] = array(MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+        } elseif (strtolower($type) === 'pdo_mysql') {
+            $this->save_socket_timeout = ini_get('default_socket_timeout');
+            ini_set('default_socket_timeout', 5);
+        }
+
+        return $conn;
+    }
+
+    private function clearConnectTimeout($conn, $type)
+    {
+        if (strtolower($type) === 'pdo_mysql') {
+            ini_set('default_socket_timeout', $this->save_socket_timeout);
+        }
+
+        return $conn;
     }
 
     /** Add another connection
@@ -106,6 +128,7 @@ class SQLManager
 
         $conn = ADONewConnection($this->isPDO($type) ? 'pdo' : $type);
         $conn->SetFetchMode(ADODB_FETCH_BOTH);
+        $conn = $this->setConnectTimeout($conn, $type);
         $connected = false;
         if (isset($this->connections[$database]) || $new) {
             $connected = $conn->NConnect($this->getDSN($server,$type,$database),$username,$password,$database);
@@ -114,6 +137,7 @@ class SQLManager
         } else {
             $connected = $conn->Connect($this->getDSN($server,$type,$database),$username,$password,$database);
         }
+        $conn = $this->clearConnectTimeout($conn, $type);
         $this->connections[$database] = $conn;
 
         $this->last_connection_error = false;
@@ -158,16 +182,19 @@ class SQLManager
     {
         $conn = ADONewConnection($this->isPDO($type) ? 'pdo' : $type);
         $conn->SetFetchMode(ADODB_FETCH_BOTH);
+        $conn = $this->setConnectTimeout($conn, $type);
         $connected = $conn->Connect($this->getDSN($server,$type,false),$username,$password,$database);
+        $conn = $this->clearConnectTimeout($conn, $type);
         if ($connected) {
             $this->last_connection_error = false;
-            $stillok = $conn->Execute("CREATE DATABASE $database");
+            $adapter = $this->getAdapter(strtolower($type));
+            $stillok = $conn->Execute($adapter->createNamedDB($database));
             if (!$stillok) {
                 $this->last_connect_error = $conn->ErrorMsg();
                 $this->connections[$database] = false;
                 return false;
             }
-            $conn->Execute("USE $database");
+            $conn->Execute($adapter->useNamedDB($database));
             $conn->SelectDB($database);
             $this->connections[$database] = $conn;
         } else {
@@ -177,14 +204,6 @@ class SQLManager
         }
 
         return true;
-    }
-
-    /**
-      @deprecated
-    */
-    public function add_connection($server,$type,$database,$username,$password='',$persistent=false,$new=false)
-    {
-        return $this->addConnection($server, $type, $database, $username, $password, $persistent,$new);
     }
 
     /**
@@ -258,10 +277,11 @@ class SQLManager
         }
 
         $this->default_db = $db_name;
+        $adapter = $this->getAdapter($this->connectionType($db_name));
         if ($this->isConnected()) {
             $selected = $this->connections[$db_name]->SelectDB($db_name);
             if (!$selected) {
-                $this->query('CREATE DATABASE ' . $this->identifierEscape($db_name), $db_name);
+                $this->query($adapter->createNamedDB($db_name), $db_name);
                 $selected = $this->connections[$db_name]->SelectDB($db_name);
             }
             if ($selected) {
@@ -292,11 +312,7 @@ class SQLManager
             $which_connection=$this->default_db;
         }
 
-        /** toggle test_mode off while checking database connection **/
-        $current_tm = $this->test_mode;
-        $this->test_mode = false;
         $current_db = $this->defaultDatabase($which_connection);
-        $this->test_mode = $current_tm;
         if ($current_db === false) {
             // no connection; cannot switch database
             return false;
@@ -315,11 +331,6 @@ class SQLManager
     */
     public function query($query_text,$which_connection='',$params=false)
     {
-        if ($this->test_mode && substr($query_text, 0, 4) != 'USE ') {
-            // called when 
-            $this->test_mode = false;
-        }
-
         $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
         $con = $this->connections[$which_connection];
 
@@ -406,15 +417,6 @@ class SQLManager
     }
 
     /**
-      @deprecated
-    */
-    public function identifier_escape($str,$which_connection='')
-    {
-        return $this->identifierEscape($str, $which_connection);
-    }
-
-    
-    /**
       Get number of rows in a result set
       @param $result_object A result set
       @param $which_connection see method close()
@@ -470,14 +472,6 @@ class SQLManager
     }
 
     /**
-      @deprecated
-    */
-    public function num_fields($result_object,$which_connection='')
-    {
-        return $this->numFields($result_object, $which_connection);
-    }
-
-    /**
       Get next record from a result set
       @param $result_object A result set
       @param $which_connection see method close()
@@ -485,10 +479,6 @@ class SQLManager
     */
     public function fetchArray($result_object,$which_connection='')
     {
-        if ($this->test_mode) {
-            return $this->getTestDataRow();
-        }
-
         if (is_null($result_object)) return false;
         if ($result_object === false) return false;
 
@@ -520,7 +510,7 @@ class SQLManager
     }
 
     /**
-      An alias for the method fetch_array()
+      An alias for the method fetchArray()
     */
     public function fetchRow($result_object,$which_connection='')
     {
@@ -808,7 +798,7 @@ class SQLManager
         $big_values = '';
         $big_args = array();
 
-        while ($row = $this->fetch_array($result,$source_db)) {
+        while ($row = $this->fetchArray($result,$source_db)) {
             $big_values .= '(';
             $args = array();
             for ($i=0; $i<$numFields; $i++) {
@@ -851,6 +841,7 @@ class SQLManager
           common one.
         */
         if (count($arg_sets) < 500) {
+            $this->lockTimeout(5, $dest_db);
             $big_prep = $this->prepare($big_query . $big_values, $dest_db);
             $bigR = $this->execute($big_prep, $big_args, $dest_db);
             return ($bigR) ? true : false;
@@ -858,6 +849,15 @@ class SQLManager
             return $this->executeAsTransaction($prep, $arg_sets, $dest_db);
         }
     }
+
+    private function lockTimeout($seconds, $which_connection)
+    {
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+
+        return $this->query($adapter->setLockTimeout($seconds), $which_connection);
+    }
+
 
     /**
       Execute a statement repeatedly as transaction.
@@ -868,8 +868,9 @@ class SQLManager
     {
         $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
         $ret = true;
-        $this->startTransaction($which_connection);
         $statement = $this->prepare($query, $which_connection);
+        $this->startTransaction($which_connection);
+        $this->lockTimeout(5, $which_connection);
         foreach ($arg_sets as $args) {
             if (!$this->execute($statement, $args, $which_connection)) {
                 $ret = false;
@@ -1163,14 +1164,6 @@ class SQLManager
     }
 
     /**
-      @deprecated
-    */
-    public function table_definition($table_name,$which_connection='')
-    {
-        return $this->tableDefinition($table_name, $which_connection);
-    }
-
-    /**
       More detailed table definition
        @param $table_name The table's name
        @param which_connection see method close
@@ -1378,14 +1371,6 @@ class SQLManager
     }
 
     /**
-      @deprecated
-    */
-    public function insert_id($which_connection='')
-    {
-        return $this->insertID($which_connection);
-    }
-
-    /**
       Check how many rows the last query affected
       @param which_connection see method close
       @returns Number of rows
@@ -1438,14 +1423,6 @@ class SQLManager
         $ret = $this->execute($insertP, $args, $which_connection);
 
         return $ret;
-    }
-
-    /**
-      @deprecated
-    */
-    public function smart_insert($table_name,$values,$which_connection='')
-    {
-        return $this->smartInsert($table_name, $values, $which_connection);
     }
 
     /** 
@@ -1517,14 +1494,6 @@ class SQLManager
         return $con->Prepare($sql);
     }
 
-    /**
-      @deprecated
-    */
-    public function prepare_statement($sql,$which_connection="")
-    {
-        return $this->prepare($sql, $which_connection);
-    }
-
    /**
       Execute a prepared statement with the given
       set of parameters
@@ -1539,8 +1508,6 @@ class SQLManager
     */
     public function execute($sql, $input_array=array(), $which_connection='')
     {
-        $this->test_mode = false;
-
         if ($which_connection == '') {
             $which_connection=$this->default_db;
         }
@@ -1549,14 +1516,6 @@ class SQLManager
         }
 
         return $this->query($sql,$which_connection,$input_array);
-    }
-
-    /**
-      @deprecated
-    */
-    public function exec_statement($sql, $input_array=array(), $which_connection='')
-    {
-        return $this->execute($sql, $input_array, $which_connection);
     }
 
     /**
@@ -1741,35 +1700,6 @@ class SQLManager
     }
 
     /**
-      Test data is for faking queries.
-      Setting the test data then running
-      a unit test means the test will get
-      predictable results.
-    */
-
-    private $test_data = array();
-    private $test_counter = 0;
-    private $test_mode = false;
-    public function setTestData($records)
-    {
-        $this->test_data = $records;
-        $this->test_counter = 0;
-        $this->test_mode = true;
-    }
-
-    public function getTestDataRow()
-    {
-        if (isset($this->test_data[$this->test_counter])) {
-            $next = $this->test_data[$this->test_counter];
-            $this->test_counter++;
-            return $next;
-        } else {
-            $this->test_mode = false; // no more test data
-            return false;
-        }
-    }
-
-    /**
       Cache a table definition to avoid future lookups
     */
     public function cacheTableDefinition($table, $definition, $which_connection='')
@@ -1811,6 +1741,7 @@ class SQLManager
         'pdo'       => 'COREPOS\common\sql\MysqlAdapter',
         'mssql'     => 'COREPOS\common\sql\MssqlAdapter',
         'pgsql'     => 'COREPOS\common\sql\PgsqlAdapter',
+        'pdo_pgsql'     => 'COREPOS\common\sql\PgsqlAdapter',
         'sqlite3'   => 'COREPOS\common\sql\SqliteAdapter',
     );
 

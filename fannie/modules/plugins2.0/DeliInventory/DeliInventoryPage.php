@@ -196,7 +196,7 @@ if (isset($_GET['action'])){
         
         $out .= "$id"."`";
         $out .= "<select onchange=\"saveCat($id);\" id=catSelect$id>";
-        while ($fetchW = $sql->fetch_array($fetchR)){
+        while ($fetchW = $sql->fetchRow($fetchR)){
             if ($fetchW[0] == $cat)
                 $out .= "<option selected>$fetchW[0]</option>";
             else
@@ -275,7 +275,7 @@ if (isset($_GET['action'])){
 
         $currentCat = "";
         $sum = 0.0;
-        while ($fetchW = $sql->fetch_array($fetchR)){
+        while ($fetchW = $sql->fetchRow($fetchR)){
             $catfixed = $currentCat;
             if ($fetchW['category'] != $currentCat){
                 if ($currentCat != ""){

@@ -143,7 +143,7 @@ class VirtCoupDisplay extends NoInputCorePage
 
             $selectFlag = (isset($selectFlag)?$selectFlag:0);
             for ($i = 0; $i < $num_rows; $i++) {
-                $row = $db->fetch_array($result);
+                $row = $db->fetchRow($result);
                 if( $i == 0 && $selectFlag == 0) {
                     $selected = "selected";
                 } else {

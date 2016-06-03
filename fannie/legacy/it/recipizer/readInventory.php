@@ -19,7 +19,7 @@ $r = $mssql->query($q,$db);
 echo "<table cellspacing=3 cellpadding=0 border=1>";
 echo "<tr><th>Name</th><th>Pkg size</th><th>Pkg/case</th><th>Cost</th><th>Pkg amt</th><th>Pkg units</th><th>Case contents</th></tr>";
 $prev_name = "";
-while ($w = $mssql->fetch_array($r)){
+while ($w = $mssql->fetchRow($r)){
     if ($w[0] == $prev_name || $w[3] == 0)
         continue;
     echo "<tr>";

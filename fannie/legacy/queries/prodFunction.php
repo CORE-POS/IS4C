@@ -168,7 +168,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
             $guessR = $sql->execute($guessQ, array($upc_split.'%'));
             $guess = 60;
             if ($sql->num_rows($guessR) > 0)
-                $guessW = $sql->fetch_array($guessR);
+                $guessW = $sql->fetchRow($guessR);
                 $guess = $guessW['department'];
                 echo '<select name="dept">';
                 $result2 = $sql->query($query2);
@@ -196,7 +196,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
                 echo "<option value=\"\">(none)</option>";
                 $likelistQ = "select * from likeCodes order by likecode";
                 $likelistR = $sql->query($likelistQ);
-                while ($llRow = $sql->fetch_array($likelistR)){
+                while ($llRow = $sql->fetchRow($likelistR)){
                   echo "<option value={$llRow[0]}";
                   if (isset($likecode) && $llRow[0] == $likecode){
                     echo " selected";
@@ -221,7 +221,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
     $upcs = array();
     $descriptions = array();
         for($i=0;$i < $num;$i++){
-            $rowItem= $sql->fetch_array($resultItem);
+            $rowItem= $sql->fetchRow($resultItem);
         $upcs[$i] = $rowItem['upc'];
         $descriptions[$i] = $rowItem['description'];
         $modified[$i] = $rowItem['modified'];
@@ -244,7 +244,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
     }
     }else{
         oneItem($upc);
-    $rowItem = $sql->fetch_array($resultItem);
+    $rowItem = $sql->fetchRow($resultItem);
     $upc = $rowItem['upc'];
 
     
@@ -286,13 +286,13 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
               where b.batchID = l.batchID and l.upc like ?
               and ".$sql->curdate()." BETWEEN b.startDate AND b.endDate");
        $findBatchR = $sql->execute($findBatchQ, array($upc));
-       $batchName = ($sql->num_rows($findBatchR) == 0) ? "Unknown" :array_pop($sql->fetch_array($findBatchR));
+       $batchName = ($sql->num_rows($findBatchR) == 0) ? "Unknown" :array_pop($sql->fetchRow($findBatchR));
        if ($batchName == "Unknown" && $likecode != ""){
         $findBatchQ = $sql->prepare("select batchName from batches as b, batchList as l
                 where b.batchID=l.batchID and l.upc = ?
                   and ".$sql->curdate()." BETWEEN b.startDate AND b.endDate");
         $findBatchR = $sql->execute($findBatchQ, array('LC'.$likecode));
-        $batchName = ($sql->num_rows($findBatchR) == 0) ? "Unknown" :array_pop($sql->fetch_array($findBatchR));
+        $batchName = ($sql->num_rows($findBatchR) == 0) ? "Unknown" :array_pop($sql->fetchRow($findBatchR));
        }
        echo "<tr><td colspan=4><b>Batch: $batchName</b> ";
        if (validateUserQuiet('pricechange') || substr($upc,0,3) == "002" ){
@@ -313,7 +313,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
                 LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
                 WHERE dept_no = ?");
                         $result3 = $sql->execute($query3, $rowItem['department']);
-                        $row3 = $sql->fetch_array($result3);
+                        $row3 = $sql->fetchRow($result3);
                 echo '<select name="dept">';
                 $result2 = $sql->query($query2);
                 while($row2 = $sql->fetch_row($result2)) {
@@ -363,7 +363,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
         echo "<option value=-1>(none)</option>";
         $likelistQ = "select * from likeCodes order by likecode";
         $likelistR = $sql->query($likelistQ);
-        while ($llRow = $sql->fetch_array($likelistR)){
+        while ($llRow = $sql->fetchRow($likelistR)){
           echo "<option value={$llRow[0]}";
           if ($llRow[0] == $likecode){
             echo " selected";
@@ -511,7 +511,7 @@ function likedtotable($query,$args,$border,$bgcolor)
     global $sql;
         $prep = $sql->prepare($query);
         $results = $sql->execute($prep, $args); 
-        $number_cols = $sql->num_fields($results);
+        $number_cols = $sql->numFields($results);
         //display query
         //echo "<b>query: $query</b>";
         //layout table header
@@ -631,14 +631,14 @@ function deptPrevNext($dept,$upc,&$prev,&$next){
     $deptQ = $sql->prepare("select upc from products where department = ? order by upc");
     $deptR = $sql->execute($deptQ, array($dept));    
     $p = -1;
-    while ($row = $sql->fetch_array($deptR)){
+    while ($row = $sql->fetchRow($deptR)){
         if ($upc == $row[0]){
             $prev = $p;
             break;    
         }
         $p = $row[0];
     }
-    $row = $sql->fetch_array($deptR);
+    $row = $sql->fetchRow($deptR);
     if ($row)
         $next = $row[0];
     else

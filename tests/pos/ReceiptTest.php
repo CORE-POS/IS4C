@@ -187,11 +187,14 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
     public function testDataFetch()
     {
         $mods = AutoLoader::listModules('DefaultReceiptDataFetch');
+        $dbc = Database::tDataConnect();
 
         foreach($mods as $message_class) {
             $obj = new $message_class();
 
-            $queryResult = $obj->fetch();
+            $queryResult = $obj->fetch($dbc);
+            $this->assertNotEquals(false, $queryResult);
+            $queryResult = $obj->fetch($dbc, 1, 1, 1);
             $this->assertNotEquals(false, $queryResult);
         }
     }
@@ -227,11 +230,11 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
         foreach($mods as $filter_class) {
             $obj = new $filter_class();
+    
+            $dbc = new COREPOS\common\sql\TestManager('127.0.0.1', 'mysqli', 'foo', 'bar', 'baz');
+            $dbc->setTestData($this->test_records);
 
-            $db = Database::tDataConnect();
-            $db->setTestData($this->test_records);
-
-            $resultset = $obj->filter($this->test_records);
+            $resultset = $obj->filter($dbc, $this->test_records);
             $this->assertInternalType('array', $resultset);
 
             foreach($resultset as $result) {
@@ -326,12 +329,6 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
                 }
             }
         }
-    }
-
-    public function testFetch()
-    {
-        $obj = new DefaultReceiptDataFetch();
-        $this->assertNotEquals(false, $obj->fetch(1, 1, 1));
     }
 
     public function testHtml()

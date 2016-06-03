@@ -235,7 +235,7 @@ class ProgramEventsReport extends FannieReportPage {
         $transferOut = 0;
         $otherOut = 0;
         $rowCount = 0;
-        while ($row = $dbc->fetch_array($result)){
+        while ($row = $dbc->fetchRow($result)){
             $memberNumber = $row['card_no'];
             $suffix = "";
             if ($row['trans_status'] == 'V') {

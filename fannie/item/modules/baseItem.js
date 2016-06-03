@@ -1,4 +1,4 @@
-var baseItem = (function($) {
+var baseItem = (function() {
     var mod = {};
 
     mod.chainSubs = function(store_id) {
@@ -228,4 +228,4 @@ var baseItem = (function($) {
     };
 
     return mod;
-}(jQuery));
+}());

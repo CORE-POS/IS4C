@@ -91,7 +91,7 @@ if(!validateUserQuiet('staffar')){
    $sum = 0;
    $colors = array('#ffffff','#ffffaa');
    $c = 1;
-   while($row = $sql->fetch_array($result)){
+   while($row = $sql->fetchRow($result)){
       echo "<tr><td bgcolor=$colors[$c]>".$row['cardNo']."</td>"
       ."<td bgcolor=$colors[$c]>".$row['adpID']."</td>"
       ."<td bgcolor=$colors[$c]>".$row['lastName']."</td>"

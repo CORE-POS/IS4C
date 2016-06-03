@@ -89,7 +89,7 @@ MasterSuperDepts AS s ON d.dept_no=s.dept_ID
 where dept_no = ?");
 $taxfsR = $sql->execute($taxfsQ, array($dept));
 if ($sql->num_rows($taxfsR) == 1){
-  $taxfsRow = $sql->fetch_array($taxfsR);
+  $taxfsRow = $sql->fetchRow($taxfsR);
   $tax = $taxfsRow[0];
   $FS = $taxfsRow[1];
   if ($taxfsRow[3] == 0)
@@ -205,7 +205,7 @@ if(isset($likeCode) && $likeCode > 0){
 
 $query1 = $sql->prepare("SELECT * FROM products WHERE upc = ?");
 $result1 = $sql->execute($query1, array($upc));
-$row = $sql->fetch_array($result1);
+$row = $sql->fetchRow($result1);
 //echo '<br>'.$query1;
 
 if (isset($_REQUEST['shelftag'])){
@@ -226,7 +226,7 @@ echo "<table>";
         $query2 = $sql->prepare("SELECT * FROM departments where dept_no = ?");
         $result2 = $sql->execute($query2, array($dept));
     $num = $sql->num_rows($result2);
-    $row2 = $sql->fetch_array($result2);
+    $row2 = $sql->fetchRow($result2);
     echo "<td>";
         echo $dept.' ' . $row2['dept_name'];
         echo " </td>";  

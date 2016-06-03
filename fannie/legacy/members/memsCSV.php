@@ -14,7 +14,7 @@ header('Content-Type: application/ms-excel');
 header('Content-Disposition: attachment; filename="memberData.csv"');
 
 echo "MemberID,Name,Address1,Address2,City,State,Zip,Phone,TermsCode,TaxSchedule,Type\r\n";
-while ($row = $sql->fetch_array($result)){
+while ($row = $sql->fetchRow($result)){
 echo $row['cardno'].",";
 echo "\"".$row['firstname']." ".$row['lastname']."\",";
 if (strstr($row['street'],"\n") === False)

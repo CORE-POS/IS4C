@@ -35,7 +35,7 @@ function forceBatch($batchID)
 
     $batchInfoQ = $sql->prepare("SELECT batchType,discountType FROM batches WHERE batchID = ?");
     $batchInfoR = $sql->execute($batchInfoQ, array($batchID));
-    $batchInfoW = $sql->fetch_array($batchInfoR);
+    $batchInfoW = $sql->fetchRow($batchInfoR);
 
     $forceQ = "";
     $forceLCQ = "";

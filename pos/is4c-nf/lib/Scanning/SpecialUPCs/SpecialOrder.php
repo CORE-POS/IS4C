@@ -86,7 +86,7 @@ class SpecialOrder extends SpecialUPC
             return $json;
         }
 
-        $row = $db->fetch_array($result);
+        $row = $db->fetchRow($result);
         TransRecord::addRecord(array(
             'upc' => $row['upc'],
             'description' => $row['description'],

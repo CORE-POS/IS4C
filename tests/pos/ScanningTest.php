@@ -613,6 +613,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $record['department'] = 181;
         $record['quantity'] = 1;
         $record['ItemQtty'] = 1;
+        $record['discountable'] = 1;
         $record['unitPrice'] = -4.59;
         $record['total'] = -4.59;
         $record['regPrice'] = -4.59;

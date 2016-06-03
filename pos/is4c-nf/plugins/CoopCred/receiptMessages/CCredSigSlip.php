@@ -195,7 +195,7 @@ class CCredSigSlip extends ReceiptMessage {
 
         $result = $db->query($query);
         
-        while($row = $db->fetch_array($result)){
+        while($row = $db->fetchRow($result)){
             $trantype = $row['tranType'];  
             if ($row['amount'] < 0) {
                 $amt = "-$".number_format(-1*$row['amount'],2);

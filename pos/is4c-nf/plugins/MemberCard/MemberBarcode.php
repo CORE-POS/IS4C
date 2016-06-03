@@ -60,7 +60,7 @@ class MemberBarcode extends SpecialUPC
             return $json;
         }
 
-        $row = $db->fetch_array($result);
+        $row = $db->fetchRow($result);
         CoreLocal::set("memberCardUsed",1);
         $json = COREPOS\pos\lib\MemberLib::memberID($row[0]);
 

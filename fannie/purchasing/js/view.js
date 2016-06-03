@@ -85,13 +85,32 @@ function receiveSKU()
 function saveReceive()
 {
     var dstr = $('#item-area :input').serialize();
-    console.log(dstr);
     $.ajax({
         type: 'post',
         data: dstr
     }).done(function (resp) {
         $('#item-area').html('');
         $('#sku-in').focus();
+    });
+}
+
+var autoTimeout;
+function autoSaveNotes(oid, elem) {
+    clearTimeout(autoTimeout);
+    autoTimeout = setTimeout(function() {
+        var dstr = 'id='+oid+'&note='+encodeURIComponent($(elem).val());
+        $.ajax({
+            type: 'post',
+            data: dstr
+        });
+
+    }, 2000);
+}
+
+function isSO(oid, sku, isSO) {
+    $.ajax({
+        type: 'post',
+        data: 'id='+oid+'&sku='+sku+'&isSO='+isSO
     });
 }
 

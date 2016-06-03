@@ -62,7 +62,7 @@ function addressList($memNum)
             left join reasoncodes r on s.reasoncode & r.mask <> 0
             where cardno=?");
     $suspensionR = $sql->execute($suspensionQ, array($memNum));
-    $suspensionW = $sql->fetch_array($suspensionR);
+    $suspensionW = $sql->fetchRow($suspensionR);
     $suspended = $sql->num_rows($suspensionR);
 
     echo "<table>";
@@ -77,7 +77,7 @@ function addressList($memNum)
                 if ($suspensionW['reason'] != '') echo $suspensionW['reason'];
                 else {
                   $reasons = $suspensionW['textStr'];
-                  while($suspensionW=$sql->fetch_array($suspensionR))
+                  while($suspensionW=$sql->fetchRow($suspensionR))
                   $reasons .= ", ".$suspensionW['textStr'];
                   echo $reasons;
                 }
@@ -186,7 +186,7 @@ function addressList($memNum)
             $noteR = $sql->execute($noteQ, array($memNum));
             $notetext = "";
             if ($sql->num_rows($noteR) == 1)
-                $notetext = stripslashes(array_pop($sql->fetch_array($noteR)));
+                $notetext = stripslashes(array_pop($sql->fetchRow($noteR)));
             echo "<td colspan=4 width=\"300px\" rowspan=8>$notetext</td>";
                 echo "</tr>";
         for($i=0;$i<$nameRows;$i++){
@@ -206,7 +206,7 @@ function addressForm($memNum)
     global $sql;
     $custQ = $sql->prepare("SELECT * FROM custdata where CardNo = ? and personnum= 1");
     $custR = $sql->execute($custQ, array($memNum));
-    $typeRow = $sql->fetch_array($custR);
+    $typeRow = $sql->fetchRow($custR);
     $type = trim($typeRow['memType']," ");
     $status = trim($typeRow['Type']," ");
     $memcoupons = $typeRow['memCoupons'];
@@ -257,7 +257,7 @@ function addressForm($memNum)
 
     $suspensionQ = $sql->prepare("select type,reason from suspensions where cardno=?");
     $suspensionR = $sql->execute($suspensionQ, array($memNum));
-    $suspensionW = $sql->fetch_array($suspensionR);
+    $suspensionW = $sql->fetchRow($suspensionR);
     $suspended = $sql->num_rows($suspensionR);
 
     echo "<form method=post action=insertEdit.php name=edit>";
@@ -348,7 +348,7 @@ function addressForm($memNum)
             <?php
             $selMemTypeQ = "SELECT * FROM memTypeID";
             $selMemTypeR = $sql->query($selMemTypeQ);
-            while($selMemTypeW = $sql->fetch_array($selMemTypeR)){
+            while($selMemTypeW = $sql->fetchRow($selMemTypeR)){
                 if($selMemTypeW['memTypeID'] == $type){
                    echo "<option value=".$selMemTypeW['memTypeID']." selected>"
                         .$selMemTypeW['memDesc']." ".$selMemTypeW['memTypeID']."</option>";
@@ -394,7 +394,7 @@ function addressForm($memNum)
             $noteR = $sql->execute($noteQ, array($memNum));
             $notetext = "";
             if ($sql->num_rows($noteR) == 1){
-                $notetext = stripslashes(array_pop($sql->fetch_array($noteR)));
+                $notetext = stripslashes(array_pop($sql->fetchRow($noteR)));
                 $notetext = preg_replace("/<br \/>/","\n",$notetext);
             }
             echo "<td rowspan=4 colspan=3><textarea name=notetext rows=7 cols=50>$notetext</textarea></td>";
@@ -523,10 +523,10 @@ function deactivate($memNum,$type,$reason,$reasonCode){
   if ($type == 'TERM'){
     $query = $sql->prepare("select memType,Type,ChargeLimit,Discount from custdata where CardNo=?");
     $result = $sql->execute($query, array($memNum));
-    $row = $sql->fetch_array($result);
+    $row = $sql->fetchRow($result);
     $otherQ = $sql->prepare("select ads_OK from meminfo where card_no=?");
     $otherR = $sql->execute($otherQ, array($memNum));
-    $otherW = $sql->fetch_array($otherR);
+    $otherW = $sql->fetchRow($otherR);
     $mailflag = $otherW['ads_OK'];
     
     $now = date('Y-m-d h:i:s');
@@ -560,10 +560,10 @@ function deactivate($memNum,$type,$reason,$reasonCode){
   }elseif($type=='INACT' || $type=='INACT2'){
     $query = $sql->prepare("select memType,Type,ChargeLimit,Discount from custdata where CardNo=?");
     $result = $sql->execute($query, array($memNum));
-    $row = $sql->fetch_array($result);
+    $row = $sql->fetchRow($result);
     $otherQ = $sql->prepare("select ads_OK from meminfo where card_no=?");
     $otherR = $sql->execute($otherQ, array($memNum));
-    $otherW = $sql->fetch_array($otherR);
+    $otherW = $sql->fetchRow($otherR);
     $mailflag = $otherW['ads_OK'];
     
     $now = date('Y-m-d h:i:s');
@@ -624,7 +624,7 @@ function activate($memNum){
 
   $query = $sql->prepare("select type,memtype1,memtype2,discount,chargelimit,mailflag from suspensions where cardno=?");
   $result = $sql->execute($query, array($memNum));
-  $row = $sql->fetch_array($result);
+  $row = $sql->fetchRow($result);
   // type S shouldn't exist any more, in here to deal with historical rows
   $mQ = $sql->prepare("update meminfo set ads_OK=? where card_no=?");
   $cQ = $sql->prepare("update custdata set memType=?, Type=?,ChargeOk=1,Discount=?,MemDiscountLimit=?,ChargeLimit=?
@@ -671,7 +671,7 @@ function addressFormLimited($memNum)
     global $sql;
     $custQ = $sql->prepare("SELECT * FROM custdata where CardNo = ? and personnum= 1");
     $custR = $sql->execute($custQ, array($memNum));
-    $typeRow = $sql->fetch_array($custR);
+    $typeRow = $sql->fetchRow($custR);
     $type = trim($typeRow['memType']," ");
     $status = trim($typeRow['Type']," ");
     $memcoupons = $typeRow['memCoupons'];
@@ -701,7 +701,7 @@ function addressFormLimited($memNum)
 
     $suspensionQ = $sql->prepare("select type,reason from suspensions where cardno=?");
     $suspensionR = $sql->execute($suspensionQ, array($memNum));
-    $suspensionW = $sql->fetch_array($suspensionR);
+    $suspensionW = $sql->fetchRow($suspensionR);
     $suspended = $sql->num_rows($suspensionR);
 
     echo "<form method=post action=limitedSave.php name=edit>";
@@ -790,7 +790,7 @@ function addressFormLimited($memNum)
             $noteR = $sql->execute($noteQ, array($memNum));
             $notetext = "";
             if ($sql->num_rows($noteR) == 1){
-                $notetext = stripslashes(array_pop($sql->fetch_array($noteR)));
+                $notetext = stripslashes(array_pop($sql->fetchRow($noteR)));
                 $notetext = preg_replace("/<br \/>/","\n",$notetext);
             }
             echo "<td rowspan=4 colspan=3><textarea name=notetext rows=7 cols=50>$notetext</textarea></td>";

@@ -512,7 +512,7 @@ function select_to_drop($table,$value,$label,$name)
     //display query
     echo "<b>query: $query</b>";
     echo "<select name=$name id=$name>";
-    while ($row_members = $sql->fetch_array($results))
+    while ($row_members = $sql->fetchRow($results))
     {  
           echo "<option value=" .$row_members[$value] . ">";
           echo $row_members[$label];
@@ -531,7 +531,7 @@ function query_to_drop($query,$value,$label,$name,$line)
     //echo $number_cols;
         //echo "<b>query: $query</b>";
     echo "<select name=$name id=$name>";
-        while ($row_members = $sql->fetch_array($results))
+        while ($row_members = $sql->fetchRow($results))
         {
        if($label == 'dept_name'){
          $label1 = $row_members['dept_no'] . " " . $row_members['dept_name'];

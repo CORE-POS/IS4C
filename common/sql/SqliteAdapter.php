@@ -25,6 +25,16 @@ namespace COREPOS\common\sql;
 
 class SqliteAdapter implements DialectAdapter
 {
+    public function createNamedDB($name)
+    {
+        return 'SELECT 1';
+    }
+
+    public function useNamedDB($name)
+    {
+        return 'SELECT 1';
+    }
+
     public function identifierEscape($str)
     {
         return '"' . $str . '"';
@@ -129,6 +139,11 @@ class SqliteAdapter implements DialectAdapter
         $ret = array_reduce($expressions, function($carry, $e) { return $carry . $e . '||'; }, '');
         
         return substr($ret, 0, strlen($ret)-1);
+    }
+
+    public function setLockTimeout($seconds)
+    {
+        return sprintf('PRAGMA busy_timeout = %d', 1000*$seconds);
     }
 }
 

@@ -136,7 +136,7 @@ class PayrollSummaryPage extends FanniePage {
                     WHERE t.emp_no = ?
                     AND t.periodID = ?
                     AND t.area =100");
-                while ($row = $ts_db->fetch_array($result)) {
+                while ($row = $ts_db->fetchRow($result)) {
                     $emp_no = $row[1];
                     $cn = $row[5];
 
@@ -312,7 +312,7 @@ class PayrollSummaryPage extends FanniePage {
                 <select class="form-control" name="period">
                 <option>Please select a payperiod to view.</option>';
 
-            while ($row = $ts_db->fetch_array($result)) {
+            while ($row = $ts_db->fetchRow($result)) {
                 echo "<option value=\"$row[2]\"";
                 if ($row[2] == $ID) { echo ' SELECTED';}
                 echo ">$row[0] - $row[1]</option>";

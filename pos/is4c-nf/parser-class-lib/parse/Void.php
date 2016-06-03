@@ -23,8 +23,6 @@
 
 class Void extends Parser 
 {
-    private $discounttype = 0;
-    private $discountable = 0;
     private $caseprice = 0;
     private $scaleprice = 0;
 
@@ -56,45 +54,9 @@ class Void extends Parser
                 $trans_id = CoreLocal::get("currentid");
 
                 $status = $this->checkstatus($trans_id);
-                $this->discounttype = $status['discounttype'];
-                $this->discountable = $status['discountable'];
-                $this->caseprice = $status['caseprice'];
                 $this->scaleprice = $status['scaleprice'];
 
-                /**
-                  Voided values:
-                    2 => "you saved" line
-                    3 => subtotal line
-                    4 => discount notice
-                    5 => % Discount line
-                    6 => tare weight, case disc notice,
-                    8 => FS change, regular change
-                    10 => tax exempt
-                */
-                if ($status['voided'] == 2) {
-                    // void preceeding item
-                    $ret = $this->voiditem($trans_id - 1, $ret);
-                } else if ($status['voided'] == 3 || $status['voided'] == 6 || $status['voided'] == 8) {
-                    $ret['output'] = DisplayLib::boxMsg(
-                        _("Cannot void this entry"),
-                        '',
-                        false,
-                        DisplayLib::standardClearButton()
-                    );
-                } else if ($status['voided'] == 4 || $status['voided'] == 5) {
-                    PrehLib::percentDiscount(0);
-                } else if ($status['voided'] == 10) {
-                    TransRecord::reverseTaxExempt();
-                } else if ($status['status'] == "V") {
-                    $ret['output'] = DisplayLib::boxMsg(
-                        _("Item already voided"),
-                        '',
-                        false,
-                        DisplayLib::standardClearButton()
-                    );
-                } else {
-                    $ret = $this->voiditem($trans_id, $ret);
-                }
+                $ret = $this->branchByVoided($status['voided'], $trans_id, $ret);
             }
 
             if (empty($ret['output']) && empty($ret['main_frame'])) {
@@ -108,8 +70,47 @@ class Void extends Parser
             $ret['main_frame'] = $ex->getMessage();
         }
 
-
         return $ret;
+    }
+
+    private function branchByVoided($voided, $trans_id, $ret)
+    {
+        /**
+          Voided values:
+            2 => "you saved" line
+            3 => subtotal line
+            4 => discount notice
+            5 => % Discount line
+            6 => tare weight, case disc notice,
+            8 => FS change, regular change
+            10 => tax exempt
+        */
+        if ($voided == 2) {
+            // void preceeding item
+            $ret = $this->voiditem($trans_id - 1, $ret);
+        } elseif ($voided == 3 || $voided == 6 || $voided == 8) {
+            $ret['output'] = DisplayLib::boxMsg(
+                _("Cannot void this entry"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            );
+        } elseif ($voided == 4 || $voided == 5) {
+            PrehLib::percentDiscount(0);
+        } elseif ($voided == 10) {
+            TransRecord::reverseTaxExempt();
+        } elseif ($status == "V") {
+            $ret['output'] = Exception(DisplayLib::boxMsg(
+                _("Item already voided"),
+                '',
+                false,
+                DisplayLib::standardClearButton()
+            ));
+        } else {
+            $ret = $this->voiditem($trans_id, $ret);
+        }
+
+        return $rete;
     }
 
     /**
@@ -131,32 +132,17 @@ class Void extends Parser
                     false,
                     DisplayLib::standardClearButton()
                 );
-                return $json;
+            } elseif ($row['voided'] == 1 && $this->voidableNonUpc($row)) {
+                $json['output'] = DisplayLib::boxMsg(
+                    _("Item already voided"),
+                    '',
+                    false,
+                    DisplayLib::standardClearButton()
+                );
+            } elseif ($this->voidableNonUpc($row)) {
+                $json = $this->voidid($item_num, $json);
             } else {
-                $this->discounttype = $row['discounttype'];
-                $this->discountable = $row['discountable'];
-
-                if ($row['voided'] == 1 &&
-                     (!$row["upc"] || strlen($row["upc"]) < 1 
-                     || $row['trans_type'] == 'D' 
-                     || $row['charflag'] == 'SO')
-                    ) {
-                    $json['output'] = DisplayLib::boxMsg(
-                        _("Item already voided"),
-                        '',
-                        false,
-                        DisplayLib::standardClearButton()
-                    );
-                    return $json;
-                } elseif (!$row["upc"] || strlen($row["upc"]) < 1 
-                           || $row['trans_type'] == 'D'
-                           || $row['charflag'] == 'SO') {
-                    $json = $this->voidid($item_num, $json);
-                    return $json;
-                } else {
-                    $json = $this->voidupc($row["ItemQtty"] . "*" . $row["upc"], $json, $item_num);
-                    return $json;
-                }
+                $json = $this->voidupc($row["ItemQtty"] . "*" . $row["upc"], $json, $item_num);
             }
         } else {
             $json['output'] = DisplayLib::boxMsg(
@@ -165,9 +151,19 @@ class Void extends Parser
                 false,
                 DisplayLib::standardClearButton()
             );
-
-            return $json;
         }
+
+        return $json;
+    }
+
+    private function voidableNonUpc($row)
+    {
+        return (
+            !$row["upc"] 
+            || strlen($row["upc"]) < 1 
+            || $row['trans_type'] === 'D'
+            || $row['charflag'] === 'SO'
+        );
     }
 
     private function getLine($item_num)
@@ -180,7 +176,7 @@ class Void extends Parser
                    from localtemptrans where trans_id = ".$item_num;
         $dbc = Database::tDataConnect();
         $result = $dbc->query($query);
-        return $dbc->fetch_array($result);
+        return $dbc->fetchRow($result);
     }
 
     /**
@@ -351,7 +347,7 @@ class Void extends Parser
             ));
         }
 
-        return $dbc->fetch_array($result);
+        return $dbc->fetchRow($result);
     }
 
     private function checkUpcQuantities($voidable, $quantity, $scale)
@@ -431,7 +427,7 @@ class Void extends Parser
 
         $result = $dbc->query($query_upc);
         if ($dbc->numRows($result) > 0) {
-            return $dbc->fetch_array($result);
+            return $dbc->fetchRow($result);
         } else {
             return $this->findUpcLine($upc, $scaleprice, $deliflag, -1);
         }
@@ -455,7 +451,7 @@ class Void extends Parser
             $dbc_p = Database::pDataConnect();
             $query_p = "select special_price from products where upc = '".$upc."'";
             $result_p = $dbc_p->query($query_p);
-            $row_p = $dbc_p->fetch_array($result_p);
+            $row_p = $dbc_p->fetchRow($result_p);
             
             $unitPrice = $row_p["special_price"];
         }
@@ -675,9 +671,6 @@ class Void extends Parser
       @return array of status information with keys:
        - voided (int)
        - scaleprice (numeric)
-       - discountable (int)
-       - discounttype (int)
-       - caseprice (numeric)
        - refund (boolean)
        - status (string)
     */
@@ -686,9 +679,6 @@ class Void extends Parser
         $ret = array(
             'voided' => 0,
             'scaleprice' => 0,
-            'discountable' => 0,
-            'discounttype' => 0,
-            'caseprice' => 0,
             'refund' => false,
             'status' => ''
         );
@@ -700,14 +690,10 @@ class Void extends Parser
         $dbc = Database::tDataConnect();
         $result = $dbc->query($query);
 
-        if ($result && $dbc->numRows($result) > 0) {
-            $row = $dbc->fetch_array($result);
+        if ($row = $dbc->fetchRow($result)) {
 
             $ret['voided'] = $row['voided'];
             $ret['scaleprice'] = $row['unitPrice'];
-            $ret['discountable'] = $row['discountable'];
-            $ret['discounttype'] = $row['discounttype'];
-            $ret['caseprice'] = $row['unitPrice'];
 
             if ($row["trans_status"] == "V") {
                 $ret['status'] = 'V';

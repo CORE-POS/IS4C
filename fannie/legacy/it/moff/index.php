@@ -55,7 +55,7 @@ if (isset($_GET['excel'])){
     echo "</tr>\n";//create table header
     $qtysum = 0;
     $salesum = 0;
-    while ($myrow = $sql->fetch_array($result)){
+    while ($myrow = $sql->fetchRow($result)){
         printf("<tr><td>%s</td><td>%s</td><td>%.2f</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>\n",$myrow[0], $myrow[1],$myrow[2], $myrow[3], $myrow[4], $myrow[5],$myrow[6]);
         $qtysum += $myrow[2];
         $salesum += $myrow[3];

@@ -624,7 +624,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         lttLib::clear();
 
-        TransRecord::addCoupon('0051234512345',123,-1.23,1);
+        TransRecord::addCoupon('0051234512345',123,-1.23,array('foodstamp'=>1));
         $record = lttLib::genericRecord();
         $record['upc'] = '0051234512345';
         $record['description'] = ' * Manufacturers Coupon';

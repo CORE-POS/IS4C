@@ -32,7 +32,8 @@
         "symfony/http-foundation": "^2.6",
         "domisys/image_barcode2": "^3.0",
         "everyman/neo4jphp": "dev-master",
-        "sebastian/git": "^2.1"
+        "sebastian/git": "^2.1",
+        "corepos/composer-installer": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "4.5.*",

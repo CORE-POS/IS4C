@@ -392,7 +392,7 @@ class MemberSummaryReport extends FannieReportPage
 
         if ($this->reportType == "detail") {
             // Compose the rows of the table.
-            while ($row = $dbc->fetch_array($results)) {
+            while ($row = $dbc->fetchRow($results)) {
                 // Array of cells of a row in the report table.
                 $record = array();
                 if ($this->reportType == "detail")
@@ -435,7 +435,7 @@ class MemberSummaryReport extends FannieReportPage
             $lastCardNo = 0;
             $record = array();
             $rowCount = 0;
-            while ($row = $dbc->fetch_array($results)) {
+            while ($row = $dbc->fetchRow($results)) {
                 if ($row['cardNo'] != $lastCardNo && $lastCardNo != 0) {
                     $ret[] = $record;
                     // Array of cells of a row in the report table.

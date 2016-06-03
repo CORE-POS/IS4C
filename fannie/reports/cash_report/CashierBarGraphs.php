@@ -116,7 +116,7 @@ class CashierBarGraphs extends FannieRESTfulPage
         calculate rates
         remove the time from the week
         */
-        while ($row = $dbc->fetch_array($result)){
+        while ($row = $dbc->fetchRow($result)){
             $temp = explode(" ",$row[8]);
             $temp = explode("-",$temp[0]);
             $week[$i] = $temp[0]." ".$temp[1]." ".$temp[2];

@@ -51,24 +51,28 @@ class SkuMapPage extends FannieRESTfulPage
         $pdf = new FPDF('P', 'mm', 'Letter');
         $pdf->AddPage();
         $pdf->SetMargins(10,10,10);
-        $pdf->SetFont('Arial', '', 8);
+        $pdf->SetFont('Arial', '', 7);
         $dbc = $this->connection;
         $prep = $dbc->prepare('
-            SELECT p.description, v.sku
+            SELECT p.description, v.sku, n.vendorName
             FROM products AS p
                 INNER JOIN vendorSKUtoPLU AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
+                INNER JOIN vendors AS n ON p.default_vendor_id=n.vendorID
             WHERE v.vendorID=? 
-            GROUP BY p.description, v.sku LIMIT 33'); 
+            GROUP BY p.description, v.sku, n.vendorName'); 
         $res = $dbc->execute($prep, $this->id);
         $posX = 5;
         $posY = 20;
         while ($row = $dbc->fetchRow($res)) {
-            $pdf->SetXY($posX+5, $posY);
+            $pdf->SetXY($posX+3, $posY);
             $pdf->Cell(0, 5, $row['description']);
+            $pdf->Ln(3);
+            $pdf->SetX($posX+3);
+            $pdf->Cell(0, 5, $row['vendorName'] . ' - ' . $row['sku']);
             $img = Image_Barcode2::draw($row['sku'], 'code128', 'png', false, 20, 1, false);
             $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
             imagepng($img, $file);
-            $pdf->Image($file, $posX, $posY+5);
+            $pdf->Image($file, $posX, $posY+7);
             unlink($file);
             $posX += 52;
             if ($posX > 170) {
@@ -256,7 +260,8 @@ class SkuMapPage extends FannieRESTfulPage
             $ret .= $this->rowToTable($row);
         }
 
-        $ret .= '</tbody></table>';
+        $ret .= '</tbody></table>
+            <p><a href="?print=1&id=' . $this->id . '" class="btn btn-default">Print Order Tags</a></p>';
         $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->addOnloadCommand("\$('.table').tablesorter([[1,0]]);\n");
 

@@ -193,7 +193,7 @@ $transinfo = array("Member"=>array(0,0.0,0.0,0.0,0.0),
            "Non Member"=>array(0,0.0,0.0,0.0,0.0),
            "Staff Member"=>array(0,0.0,0.0,0.0,0.0),
            "Staff NonMem"=>array(0,0.0,0.0,0.0,0.0));
-while($row = $dbc->fetch_array($transR)){
+while($row = $dbc->fetchRow($transR)){
     if (!isset($transinfo[$row[3]])) continue;
     $transinfo[$row[3]] = array($row[2],$row[1],
         round($row[1]/$row[2],2),$row[0],

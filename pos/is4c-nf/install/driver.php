@@ -78,7 +78,7 @@ function expand_port_list($list)
 <head>
 <title>IT CORE Lane Installation: NewMagellan Driver</title>
 <link rel="stylesheet" href="../css/toggle-switch.css" type="text/css" />
-<script type="text/javascript" src="../js/jquery.js"></script>
+<script type="text/javascript" src="../js/<?php echo MiscLib::jqueryFile(); ?>"></script>
 </head>
 <body>
 <?php include('tabs.php'); ?>

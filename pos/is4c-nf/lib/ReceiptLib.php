@@ -499,7 +499,8 @@ static public function receiptFromBuilders($reprint=False,$trans_num='')
     $FETCH_MOD = self::getFetch();
     $mod = new $FETCH_MOD();
     $data = array();
-    $data = $mod->fetch($empNo,$laneNo,$transNo);
+    $dbc = Database::tDataConnect();
+    $data = $mod->fetch($dbc,$empNo,$laneNo,$transNo);
 
     // load module configuration
     $FILTER_MOD = self::getFilter();
@@ -507,7 +508,7 @@ static public function receiptFromBuilders($reprint=False,$trans_num='')
     $TAG_MOD = self::getTag();
 
     $fil = new $FILTER_MOD();
-    $recordset = $fil->filter($data);
+    $recordset = $fil->filter($dbc, $data);
 
     $sort = new $SORT_MOD();
     $recordset = $sort->sort($recordset);
@@ -561,7 +562,7 @@ static public function receiptDetail($reprint=false, $trans_num='')
         $num_rows = $dbc->num_rows($result);
         // loop through the results to generate the items listing.
         for ($i = 0; $i < $num_rows; $i++) {
-            $row = $dbc->fetch_array($result);
+            $row = $dbc->fetchRow($result);
             $detail .= $row[0]."\n";
         }
     } else { 
@@ -613,7 +614,7 @@ static public function receiptDetail($reprint=false, $trans_num='')
                 1 as sequence,null as dept_name,3 as ordered,'' as upc
                 from lttsummary";
                 $resultExempt = $dbc->query($queryExempt);
-                $rowExempt = $dbc->fetch_array($resultExempt);
+                $rowExempt = $dbc->fetchRow($resultExempt);
                 $detail .= $rowExempt[0]."\n";
             } else {
                 if (CoreLocal::get("promoMsg") == 1 && $row[4] == 1 ){ 
@@ -736,7 +737,7 @@ static private function setupReprint($where)
     $queryID = "select LastName,FirstName,Type,blueLine from custdata 
         where CardNo = '".CoreLocal::get("memberID")."' and personNum=1";
     $result = $dbc->query($queryID);
-    $row = $dbc->fetch_array($result);
+    $row = $dbc->fetchRow($result);
 
     // set session variables from member info
     CoreLocal::set("lname",$row["LastName"]);
@@ -1017,7 +1018,7 @@ static private function simpleReceipt($receipt, $arg1, $where)
 
     // loop through the results to generate the items listing.
     for ($i = 0; $i < $num_rows; $i++) {
-        $row = $dbc->fetch_array($result);
+        $row = $dbc->fetchRow($result);
         $receipt .= $row[0]."\n";
     }
     /***** jqh end change *****/
@@ -1119,7 +1120,7 @@ static public function mostRecentReceipt()
     if ($dbc->num_rows($result) == 0) {
         return false;
     } else {
-        $row = $dbc->fetch_array($result);
+        $row = $dbc->fetchRow($result);
         return $row['emp_no'] . '-' . $row['register_no'] . '-' . $row['trans_no'];
     }
 }

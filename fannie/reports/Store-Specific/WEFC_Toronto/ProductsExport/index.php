@@ -88,7 +88,7 @@ if (isset($_REQUEST['submit'])){
     $taxRates = array(0 => 0);
     $tQ = "SELECT id, description,rate FROM core_op.taxrates WHERE id > 0 ORDER BY id";
     $tR = $dbc->query($tQ);
-    while ( $trow = $dbc->fetch_array($tR) ) {
+    while ( $trow = $dbc->fetchRow($tR) ) {
         $taxNames[$trow['id']] = $trow['description'];
         $taxRates[$trow['id']] = $trow['rate'];
     }

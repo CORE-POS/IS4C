@@ -16,7 +16,7 @@ body {
 }
 </style>
 <link rel="stylesheet" href="../css/toggle-switch.css" type="text/css" />
-<script type="text/javascript" src="../js/jquery.js"></script>
+<script type="text/javascript" src="../js/<?php echo MiscLib::jqueryFile(); ?>"></script>
 </head>
 <body>
 <?php include('tabs.php'); ?>

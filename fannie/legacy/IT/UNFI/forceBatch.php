@@ -14,7 +14,7 @@ $batchID = $_GET['batchID'];
 $batchInfoQ = $sql->prepare("SELECT * FROM batchTest WHERE batchID = ?");
 $batchInfoR = $sql->execute($batchInfoQ, array($batchID));
 
-$batchInfoW = $sql->fetch_array($batchInfoR);
+$batchInfoW = $sql->fetchRow($batchInfoR);
 
 $forceQ = $sql->prepare("UPDATE products AS p
         LEFT JOIN batchListTest as l

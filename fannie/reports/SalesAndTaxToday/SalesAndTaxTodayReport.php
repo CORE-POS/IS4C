@@ -162,7 +162,7 @@ echo "<br />id $id";
             FROM taxrates
             WHERE id > 0 ORDER BY id");
         $tR = $dbc->execute($tQ);
-        while ( $trow = $dbc->fetch_array($tR) ) {
+        while ( $trow = $dbc->fetchRow($tR) ) {
             $taxId = $trow['id'];
             //x$taxNames1[$taxId] = $trow['description'];
             if ( $trow['rate'] > 0 ) {

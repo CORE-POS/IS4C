@@ -74,7 +74,7 @@ class PayrollARReport extends FannieReportPage {
         */
         $result = $dbc->execute($query);
         $ret = array();
-        while ($row = $dbc->fetch_array($result)){
+        while ($row = $dbc->fetchRow($result)){
             $record = array();
             for($i=0;$i<$dbc->numFields($result);$i++)
                 $record[] = $row[$i];

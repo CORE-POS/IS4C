@@ -33,10 +33,11 @@ class DefaultReceiptFilter
 
     /**
       Filtering function
+      @param $dbc a SQLManager object
       @param $data an SQL result object
       @return an array of records
     */
-    public function filter($data)
+    public function filter($dbc, $data)
     {
         $reverseMap = array();
         $tenderTTL = 0.00;
@@ -45,7 +46,6 @@ class DefaultReceiptFilter
         $returnset = array();
 
         // walk through backwards and pick rows to keep
-        $dbc = Database::tDataConnect();
         $count = 0;
         $prev_row = array();
         while($row = $dbc->fetch_row($data)) {

@@ -64,9 +64,9 @@ class DepartmentEditor extends FannieRESTfulPage
     {
         $taxes = array();
         $taxes[0] = "NoTax";
-        $p = $dbc->prepare("SELECT id,description FROM taxrates ORDER BY id");
-        $resp = $dbc->execute($p);
-        while($row = $dbc->fetch_row($resp)){
+        $prep = $dbc->prepare("SELECT id,description FROM taxrates ORDER BY id");
+        $resp = $dbc->execute($prep);
+        while ($row = $dbc->fetchRow($resp)) {
             $taxes[$row[0]] = $row[1];
         }
 
@@ -80,76 +80,35 @@ class DepartmentEditor extends FannieRESTfulPage
 
         $dept = $this->getDept($dbc, $this->id);
         $taxes = $this->getTaxes($dbc);
-
-        $ret = '<div class="row">'
-            . '<label class="control-label col-sm-2">Dept #</label>'
-            . '<label class="control-label col-sm-4">Name</label>'
-            . '<label class="control-label col-sm-2">Tax</label>'
-            . '<label class="control-label col-sm-1">FS</label>'
-            . '<label class="control-label col-sm-1">WIC</label>'
-            . '</div>';
-        $ret .= '<div class="row">';
-        $ret .= '<div class="col-sm-2">';
-        if ($this->id == -1){
-            $ret .= "<input class=\"form-control\" type=text name=did id=deptno />";
-        } else {
-            $ret .= $this->id;
-        }
-        $ret .= "</div>";
-        $ret .= "<div class=\"col-sm-4\"><input type=text maxlength=30 name=name 
-            id=deptname value=\"" . $dept->dept_name() . "\" class=\"form-control\" /></div>";
-        $ret .= "<div class=\"col-sm-2\"><select class=\"form-control\" id=depttax name=tax>";
+        $vals = array(
+            'name' => $dept->dept_name(),
+            'fs' => ($dept->dept_fs()==1 ? 'checked' : ''),
+            'wic' => ($dept->dept_wicable()==1 ? 'checked' : ''),
+            'dOpts' => $this->discountOpts($dept->dept_discount(), $dept->line_item_discount()),
+            'min' => sprintf('%.2f', $dept->dept_minimum()),
+            'max' => sprintf('%.2f', $dept->dept_limit()),
+            'margin' => sprintf('%.2f', 100*$dept->margin()),
+            'pcode' => $dept->salesCode(),
+            'tax' => '',
+        );
         foreach ($taxes as $k=>$v) {
             if ($k == $dept->dept_tax()) {
-                $ret .= "<option value=$k selected>$v</option>";
+                $vals['tax'] .= "<option value=$k selected>$v</option>";
             } else {
-                $ret .= "<option value=$k>$v</option>";
+                $vals['tax'] .= "<option value=$k>$v</option>";
             }
         }
-        $ret .= "</select></div>";
-        $ret .= "<div class=\"col-sm-1\"><input type=checkbox value=1 name=fs id=deptfs "
-            . ($dept->dept_fs()==1?'checked':'') . " class=\"checkbox\" /></div>";
-        $ret .= "<div class=\"col-sm-1\"><input type=checkbox value=1 name=wic id=deptwic "
-            . ($dept->dept_wicable()==1?'checked':'') . " class=\"checkbox\" /></div>";
-        $ret .= "</div>";
-        $ret .= '<div class="row">'
-            . '<label class="control-label col-sm-2">Discount</label>'
-            . '<label class="control-label col-sm-2">Min</label>'
-            . '<label class="control-label col-sm-2">Max</label>'
-            . '<label class="control-label col-sm-2">Margin</label>'
-            . '<label class="control-label col-sm-2">Sales Code</label>'
-            . '</div>';
-        $ret .= '<div class="row form-inline">';
-        $ret .= "<div class=\"col-sm-2\">
-            <select name=\"disc\" id=\"deptdisc\" class=\"form-control\">
-            " . $this->discountOpts($dept->dept_discount(), $dept->line_item_discount()) . "
-            </select>
-            </div>";
-        $ret .= sprintf("<div class=\"col-sm-2\"><div class=\"input-group\">
-            <span class=\"input-group-addon\">\$</span>
-            <input type=number name=min class=\"form-control\" 
-            id=deptmin value=\"%.2f\" min=\"0\" max=\"9999\" step=\"0.01\" />
-            </div></div>",$dept->dept_minimum(),0);  
-        $ret .= sprintf("<div class=\"col-sm-2\"><div class=\"input-group\">
-            <span class=\"input-group-addon\">\$</span>
-            <input type=number name=max class=\"form-control\" id=deptmax 
-            value=\"%.2f\" min=\"0\" max=\"99999\" step=\"0.01\" /></div></div>",$dept->dept_limit(),0);  
-        $ret .= sprintf("<div class=\"col-sm-2\"><div class=\"input-group\"><input type=number name=margin 
-            class=\"form-control\" id=deptmargin value=\"%.2f\" min=\"0\" max=\"999\" step=\"0.01\" />
-            <span class=\"input-group-addon\">%%</span></div></div>",$dept->margin()*100);
-        $ret .= "<div class=\"col-sm-2\"><input type=text id=deptsalescode 
-           class=\"form-control\" name=pcode value=\"" . $dept->salesCode() . "\" /></div>";
-        $ret .= '</div>';
         if ($this->id != -1) {
-            $ret .= "<input type=hidden name=did id=deptno value=\"" . $this->id . "\" />";
-            $ret .= "<input type=hidden name=new id=isNew value=0 />";
+            $vals['hiddenID'] = "<input type=hidden name=did id=deptno value=\"" . $this->id . "\" />";
+            $vals['isNew'] = 0;
+            $vals['textID'] = $this->id;
         } else {
-            $ret .= "<input type=hidden id=isNew name=new value=1 />";
+            $vals['hiddenID'] = '';
+            $vals['isNew'] = 1;
+            $vals['textID'] = "<input class=\"form-control\" type=text name=did id=deptno />";
         }
-        $ret .= "<p><button type=submit value=Save onclick=\"deptEdit.deptSave(); return false;\"
-            class=\"btn btn-default\">Save</button></p>";
 
-        echo $ret;
+        echo include(__DIR__ . '/dept.form.html');
 
         return false;
     }
@@ -231,27 +190,21 @@ class DepartmentEditor extends FannieRESTfulPage
 
     private function legacySave($dbc, $deptID, $margin, $pcode)
     {
-        if ($dbc->tableExists('deptMargin')) {
-            $chkM = $dbc->prepare('SELECT dept_ID FROM deptMargin WHERE dept_ID=?');
-            $marginR = $dbc->execute($chkM, array($deptID));
-            if ($dbc->num_rows($marginR) > 0){
-                $upP = $dbc->prepare('UPDATE deptMargin SET margin=? WHERE dept_ID=?');
-                $dbc->execute($upP, array($margin, $deptID));
-            } else {
-                $ins = $dbc->prepare('INSERT INTO deptMargin (dept_ID,margin) VALUES (?,?)');
-                $dbc->execute($ins, array($deptID, $margin));
-            }
-        }
-
-        if ($dbc->tableExists('deptSalesCodes')) {
-            $chkS = $dbc->prepare('SELECT dept_ID FROM deptSalesCodes WHERE dept_ID=?');
-            $codeR = $dbc->execute($chkS, array($deptID));
-            if ($dbc->num_rows($codeR) > 0) {
-                $upP = $dbc->prepare('UPDATE deptSalesCodes SET salesCode=? WHERE dept_ID=?');
-                $dbc->execute($upP, array($pcode, $deptID));
-            } else {
-                $ins = $dbc->prepare('INSERT INTO deptSalesCodes (dept_ID,salesCode) VALUES (?,?)');
-                $dbc->execute($ins, array($deptID, $pcode));
+        $sets = array(
+            array('deptMargin', 'margin', $margin),
+            array('deptSalesCodes', 'salesCode', $pcode),
+        );
+        foreach ($sets as $set) {
+            if ($dbc->tableExists($set[0])) {
+                $chkM = $dbc->prepare('SELECT dept_ID FROM ' . $set[0] . ' WHERE dept_ID=?');
+                $marginR = $dbc->execute($chkM, array($deptID));
+                if ($dbc->numRows($marginR) > 0){
+                    $upP = $dbc->prepare('UPDATE ' . $set[0] . ' SET ' . $set[1] . '=? WHERE dept_ID=?');
+                    $dbc->execute($upP, array($set[2], $deptID));
+                } else {
+                    $ins = $dbc->prepare('INSERT INTO ' . $set[0] . '(dept_ID,' . $set[1] . ') VALUES (?,?)');
+                    $dbc->execute($ins, array($deptID, $set[2]));
+                }
             }
         }
     }

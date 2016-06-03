@@ -81,7 +81,7 @@ if (isset($_GET['dept1']) || isset($_GET['upc']) || isset($_GET['manufacturer'])
   $currentPrice = '';
   $lastprice = '';
   $currQ = $sql->prepare("select price from products where upc=?");
-  while ($row = $sql->fetch_array($r)){
+  while ($row = $sql->fetchRow($r)){
     if ($prevUPC != $row['upc']){
     if ($prevUPC != ''){
       echo "<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>";
@@ -90,7 +90,7 @@ if (isset($_GET['dept1']) || isset($_GET['upc']) || isset($_GET['manufacturer'])
         }
     if (!isset($_GET['upc'])){
       $currR = $sql->execute($currQ, array($row['upc']));
-      $currW = $sql->fetch_array($currR);
+      $currW = $sql->fetchRow($currR);
       $currentPrice = $currW[0];
         }
     /*

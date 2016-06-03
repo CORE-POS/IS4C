@@ -56,7 +56,7 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $batchtypes = array();
         $typesQ = $dbc->prepare("select batchTypeID,typeDesc from batchType order by batchTypeID");
         $typesR = $dbc->execute($typesQ);
-        while ($typesW = $dbc->fetch_array($typesR))
+        while ($typesW = $dbc->fetchRow($typesR))
             $batchtypes[$typesW[0]] = $typesW[1];
         return $batchtypes;
     }
@@ -248,7 +248,8 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         <div class="row form-group form-horizontal">
             <label class="col-sm-2 control-label">Type</label>
             <div class="col-sm-4">
-                <select name="ftype" class="form-control">
+                <select name="ftype" class="form-control" required>
+                    <option value="">Select one...</option>
                     <option>UPCs</option>
                     <option>Likecodes</option>
                 </select>

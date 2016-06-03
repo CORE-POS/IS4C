@@ -36,7 +36,7 @@ $batchListR = $sql->query($batchListQ);
 echo "<table border=1 cellpadding=2 cellspacing=0>";
 $i = 0;
 echo "<th>Batch Name<th>Start Date";
-while($batchListW = $sql->fetch_array($batchListR)){
+while($batchListW = $sql->fetchRow($batchListR)){
    $start = $batchListW[2];
    $end = $batchListW[3];
    $imod = $i%2;

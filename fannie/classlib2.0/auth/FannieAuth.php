@@ -303,7 +303,7 @@ class FannieAuth
         if ($sql->num_rows($fetchR) == 0) {
             return false;
         }
-        $uid = $sql->fetch_array($fetchR);
+        $uid = $sql->fetchRow($fetchR);
         $uid = $uid[0];
 
         return $uid;

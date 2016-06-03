@@ -23,7 +23,7 @@
      if ($sql->num_rows($r) == 0)
          return false;
      
-     $w = $sql->fetch_array($r);
+     $w = $sql->fetchRow($r);
      return $w[0];
  }
  

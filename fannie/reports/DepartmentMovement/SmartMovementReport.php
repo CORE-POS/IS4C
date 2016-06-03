@@ -81,12 +81,14 @@ class SmartMovementReport extends FannieReportPage
                 }
             }
         }
+        $stores = FormLib::storePicker();
         $dates_form .= '
             <label>Start Date</label>
             <input class="date-field" type="text" name="date1" value="' . FormLib::get('date1') . '" /> 
             <label>End Date</label>
             <input class="date-field" type="text" name="date2" value="' . FormLib::get('date2') . '" /> 
             <input type="hidden" name="excel" value="" id="excel" />
+            ' . $stores['html'] . '
             <button type="submit" onclick="$(\'#excel\').val(\'\');return true;">Change Dates</button>
             <button type="submit" onclick="$(\'#excel\').val(\'csv\');return true;">Download</button>
             </form>';

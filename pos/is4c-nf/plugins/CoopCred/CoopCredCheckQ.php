@@ -110,7 +110,7 @@ class CoopCredCheckQ extends Parser {
         $notOkStyle = "style='font-size:0.8em;' ";
         $noteStyle = "style='font-size:0.7em;' ";
         $message .= "<table {$tableStyle1} cellpadding=2 cellspacing=0 border=0>";
-        while ($row = $conn->fetch_array($ccR)) {
+        while ($row = $conn->fetchRow($ccR)) {
             $programOK = CoopCredLib::programOK($row['tenderType'], $conn);
             if ($programOK === True) {
                 $programCode = 'CCred' . $CORE_LOCAL->get("CCredProgramID");

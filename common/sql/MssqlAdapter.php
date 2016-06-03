@@ -25,6 +25,16 @@ namespace COREPOS\common\sql;
 
 class MssqlAdapter implements DialectAdapter
 {
+    public function createNamedDB($name)
+    {
+        return 'CREATE DATABASE ' . $this->identifierEscape($name);
+    }
+
+    public function useNamedDB($name)
+    {
+        return 'USE ' . $this->identifierEscape($name);
+    }
+
     public function identifierEscape($str)
     {
         return '[' . $str . ']';
@@ -129,6 +139,11 @@ class MssqlAdapter implements DialectAdapter
         $ret = array_reduce($expressions, function($carry, $e) { return $carry . $e . '+'; }, '');
         
         return substr($ret, 0, strlen($ret)-1);
+    }
+
+    public function setLockTimeout($seconds)
+    {
+        return sprintf('SET LOCK_TIMEOUT %d', 1000*$seconds);
     }
 }
 

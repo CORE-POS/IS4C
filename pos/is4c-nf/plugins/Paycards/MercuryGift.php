@@ -374,7 +374,7 @@ class MercuryGift extends BasicCCModule
         if (!$search || $dbTrans->num_rows($search) != 1) {
             return PaycardLib::PAYCARD_ERR_NOSEND; // database error, nothing sent (ok to retry)
         }
-        $log = $dbTrans->fetch_array($search);
+        $log = $dbTrans->fetchRow($search);
         $authcode = $log['xAuthorizationCode'];
         $this->temp = $authcode;
         
@@ -390,7 +390,7 @@ class MercuryGift extends BasicCCModule
         if (!$search || $dbTrans->num_rows($search) != 1) {
             return PaycardLib::PAYCARD_ERR_NOSEND; // database error, nothing sent (ok to retry)
         }
-        $row = $dbTrans->fetch_array($search);
+        $row = $dbTrans->fetchRow($search);
         $vdMethod = "";
         switch ($row['mode']) {
             case 'tender':

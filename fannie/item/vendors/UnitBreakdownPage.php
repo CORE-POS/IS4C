@@ -130,6 +130,7 @@ class UnitBreakdownPage extends FannieRESTfulPage
 
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $this->plu = BarcodeLib::padUPC($this->plu);
+        $this->sku = trim($this->sku);
 
         $skuP = $dbc->prepare('
             SELECT upc

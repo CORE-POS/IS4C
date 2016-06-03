@@ -81,7 +81,7 @@ class HouseCouponList extends NoInputCorePage
         <?php
         $selected = "selected";
         for ($i = 0; $i < $num_rows; $i++) {
-            $row = $dbc->fetch_array($result);
+            $row = $dbc->fetchRow($result);
             printf('<option value="%s" %s>%d. %s</option>',
                     ($prefix . str_pad($row['coupID'], 5, '0', STR_PAD_LEFT)),
                     $selected, ($i+1), $row['description']

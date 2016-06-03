@@ -16,7 +16,7 @@ function displayRecipe($id){
     $q = $sql->prepare("select r.name,r.upc,r.margin,r.price,r.servings,r.current_margin,i.info
           from recipes as r, info as i where r.id=i.recipeID and r.id=?");
     $r = $sql->execute($q, array($id));
-    $w = $sql->fetch_array($r);
+    $w = $sql->fetchRow($r);
     
     $name = $w['name'];
     $upc = $w['upc'];
@@ -53,7 +53,7 @@ function getSteps($id){
     $q = $sql->prepare("select step from steps where recipeID = ? order by ord");
     $r = $sql->execute($q, array($id));
     $i = 1;
-    while ($w = $sql->fetch_array($r)){
+    while ($w = $sql->fetchRow($r)){
         $ret .= "<tr>";
         $ret .= "<td>$i.</td>";
         $ret .= "<td id=steplist$i>";
@@ -76,7 +76,7 @@ function getIngredients($id,$mult=1){
     $r = $sql->execute($q, array($id));
     $i = 1;
     $numbering = 1;
-    while ($w = $sql->fetch_array($r)){
+    while ($w = $sql->fetchRow($r)){
         $ret .= "<tr>";
         if ($w[0] == 'LABEL'){
             $numbering = 0;
