@@ -167,7 +167,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     private void showPaymentScreen()
     {
         WriteMessageToDevice(GetCardType());
-        Thread.Sleep(1000);
+        Thread.Sleep(2000);
         char fs = (char)0x1c;
         string buttons = "Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
         WriteMessageToDevice(UpdateScreenMessage(buttons));

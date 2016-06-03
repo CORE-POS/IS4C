@@ -367,10 +367,10 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         try {
             doc.LoadXml(result);
             XmlNode status = doc.SelectSingleNode("RStream/CmdResponse/CmdStatus");
-            if (status.Value != "Success") {
+            if (status.InnerText != "Success") {
                 return null;
             }
-            string sigdata = doc.SelectSingleNode("RStream/Signature").Value;
+            string sigdata = doc.SelectSingleNode("RStream/Signature").InnerText;
             List<Point> points = SigDataToPoints(sigdata);
 
             int ticks = Environment.TickCount;
