@@ -63,7 +63,7 @@ class FormFactory
                 Conf::save($name, $current_value);
             }
         } else {
-            ParamConf::paramSave($this->dbc, $name, $current_value);
+            ParamConf::save($this->dbc, $name, $current_value);
         }
 
         if (is_array($current_value)) {
@@ -282,7 +282,7 @@ class FormFactory
                 Conf::save($name, $current_value);
             }
         } else {
-            ParamConf::paramSave($this->dbc, $name, $current_value);
+            ParamConf::save($this->dbc, $name, $current_value);
         }
     }
 
