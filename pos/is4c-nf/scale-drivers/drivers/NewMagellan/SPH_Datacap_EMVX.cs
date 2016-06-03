@@ -45,6 +45,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     protected int LISTEN_PORT = 8999; // acting as a Datacap stand-in
     protected string sequence_no = null;
     private bool log_xml = true;
+    private RBA_Stub rba = null;
 
     public SPH_Datacap_EMVX(string p) : base(p)
     { 
@@ -53,6 +54,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             string[] parts = p.Split(new char[]{':'}, 2);
             device_identifier = parts[0];
             com_port = parts[1];
+        }
+        if (device_identifier == "INGENICOISC250_MERCURY_E2E") {
+            rba = new RBA_Stub("COM"+com_port);
         }
     }
 
@@ -73,6 +77,12 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             emv_ax_control = new DsiEMVX();
         }
         PadReset();
+
+        if (rba != null) {
+            rba.SetParent(this.parent);
+            rba.SetVerbose(this.verbose_mode);
+            rba.stubStart();
+        }
 
         return true;
     }
@@ -103,6 +113,10 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                             bytes_read = stream.Read(buffer, 0, buffer.Length);
                             message += System.Text.Encoding.ASCII.GetString(buffer, 0, bytes_read);
                         } while (stream.DataAvailable);
+
+                        if (rba != null) {
+                            rba.stubStop();
+                        }
 
                         message = GetHttpBody(message);
 
@@ -184,6 +198,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         switch(msg) {
             case "termReset":
             case "termReboot":
+                if (rba != null) {
+                    rba.stubStop();
+                }
                 initDevice();
                 break;
             case "termManual":
@@ -191,6 +208,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             case "termApproved":
                 break;
             case "termSig":
+                if (rba != null) {
+                    rba.stubStop();
+                }
                 GetSignature();
                 break;
             case "termGetType":
