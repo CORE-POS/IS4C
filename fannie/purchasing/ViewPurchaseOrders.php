@@ -345,8 +345,8 @@ class ViewPurchaseOrders extends FannieRESTfulPage
     
         $notes = $dbc->prepare('SELECT notes FROM PurchaseOrderNotes WHERE orderID=?');
         $notes = $dbc->getValue($notes, $this->id);
-        $vname = $dbc->prepare('SELECT vendorName FROM vendors WHERE vendorID=?');
-        $vname = $dbc->getValue($vname, array($orderObj->vendorID));
+        $vname = $dbc->prepare('SELECT * FROM vendors WHERE vendorID=?');
+        $vendor = $dbc->getRow($vname, array($orderObj->vendorID));
         $sname = $dbc->prepare('SELECT description FROM Stores WHERE storeID=?');
         $sname = $dbc->getValue($sname, array($orderObj->storeID));
 
@@ -361,7 +361,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
     <div class="form-inline">
         <b>Store</b>: {$sname}
         &nbsp;&nbsp;&nbsp;&nbsp;
-        <b>Vendor</b>: {$vname}
+        <b>Vendor</b>: {$vendor['vendorName']}
         &nbsp;&nbsp;&nbsp;&nbsp;
         <b>Created</b>: {$orderObj->creationDate}
         &nbsp;&nbsp;&nbsp;&nbsp;
@@ -396,12 +396,13 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         </table>
     </div>
     <div class="col-sm-6">
+    <p>
 HTML;
         if (!$order->placed()) {
             $ret .= <<<HTML
 <a class="btn btn-default btn-sm"
     href="EditOnePurchaseOrder.php?id={$this->id}">Add Items</a>
-&nbsp;&nbsp;&nbsp;&nbsp;';
+&nbsp;&nbsp;&nbsp;&nbsp;
 <a class="btn btn-default btn-sm collapse" id="receiveBtn"
     href="ViewPurchaseOrders.php?id={$this->id}&receive=1">Receive Order</a>
 &nbsp;&nbsp;&nbsp;&nbsp;
@@ -423,6 +424,15 @@ HTML;
     href="ViewPurchaseOrders.php?id={$this->id}&recode=1">Alter Codings</a>
 HTML;
         }
+        $ret .= <<<HTML
+        </p>
+<div class="panel panel-default"><div class="panel-body">
+Ph: {$vendor['phone']}<br />
+Fax: {$vendor['fax']}<br />
+Email: {$vendor['email']}<br />
+{$vendor['address']}, {$vendor['city']}, {$vendor['state']} {$vendor['zip']}
+</div></div>
+HTML;
         $ret .= '</div></div>';
 
         $model = new PurchaseOrderItemsModel($dbc);
