@@ -61,11 +61,11 @@ class MemArTransferTool extends FannieRESTfulPage
         list($dlist, $dArgs) = $dbc->safeInClause($temp_depts);
         $prep = $dbc->prepare("SELECT dept_no,dept_name FROM departments WHERE dept_no IN ($dlist)");
         $res = $dbc->execute($prep,$dArgs);
-        if ($dbc->num_rows($res) == 0){
+        if ($dbc->numRows($res) == 0){
             $this->errors .= '<div class="alert alert-danger">Error: department(s) don\'t exist.</div>';
         }
         $ret = array();
-        while ($row = $dbc->fetch_row($r)) {
+        while ($row = $dbc->fetchRow($res)) {
             $ret[$row[0]] = $row[1];
         }
 
@@ -83,12 +83,12 @@ class MemArTransferTool extends FannieRESTfulPage
         $this->dept = FormLib::get_form_value('dept');
         $this->amount = FormLib::get_form_value('amount');
 
-        if (!isset($this->depts[$this->dept])){
+        if ($this->dept !== '' && !isset($this->depts[$this->dept])){
             $this->errors .= "<div class=\"alert alert-danger\">Error: AR department doesn't exist</div>"
                 ."<br /><br />"
                 ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
         }
-        if (!is_numeric($this->amount)){
+        if ($this->amount !== '' && !is_numeric($this->amount)){
             $this->errors .= "<div class=\"alert alert-danger\">Error: amount given (".$this->amount.") isn't a number</div>"
                 ."<br /><br />"
                 ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
