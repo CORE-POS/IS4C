@@ -40,8 +40,8 @@ class MemArTransferTool extends FannieRESTfulPage
     private $errors = '';
     private $depts = array();
 
-    private $dept;
-    private $amount;
+    protected $dept;
+    protected $amount;
 
     protected function getDepartments($ar_depts)
     {
@@ -145,7 +145,7 @@ class MemArTransferTool extends FannieRESTfulPage
         $ret .= "<input type=\"hidden\" name=\"amount\" value=\"{$this->amount}\" />";
         $ret .= "<input type=\"hidden\" name=\"memFrom\" value=\"{$this->memFrom}\" />";
         $ret .= "<input type=\"hidden\" name=\"memTo\" value=\"{$this->memTo}\" />";
-        $ret .= "<button type=\"submit\" name=\"submit2\" value=\"Confirm\" 
+        $ret .= "<button type=\"submit\" name=\"confirm\" value=\"Confirm\" 
                     class=\"btn btn-default\">Confirm</button>";
         $ret .= "</form>";
         
