@@ -321,7 +321,7 @@ class MailChimpTask extends FannieTask
             try {
                 $chimp->lists->updateMember($LISTID, $email_struct, $update, '', false);
             } catch (Exception $ex) {
-                echo $ex;
+                echo $ex->getMessage();
             }
             sleep(1);
         }
