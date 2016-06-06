@@ -463,10 +463,10 @@ function withdraw()
                 $item->card_no(),
                 $item->phone(),
                 $item->phone(),
-                $item->payment()
+                htmlspecialchars($item->payment())
             );
             foreach (array('Cash', 'Card', 'Gift Card', 'Check', 'Other') as $tender) {
-                $ret .= sprintf('<option %s value="%s>%s</option>',
+                $ret .= sprintf('<option %s value="%s">%s</option>',
                     ($tender == $item->payment() ? 'selected' : ''),
                     $tender, $tender);
             }
@@ -474,7 +474,7 @@ function withdraw()
                         </select>
                 <td><span class="collapse">%s</span>
                     <textarea class="form-control editable" name="editNotes" value="%s" rows="1" cols="30" />%s</textarea></td>',
-                $item->payment(),
+                htmlspecialchars($item->payment()),
                 $item->details(),
                 $item->details()
             );  
