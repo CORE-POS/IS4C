@@ -33,7 +33,6 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
         include_once($FANNIE_ROOT.'modules/plugins2.0/WfcClassRegistry/wfcuRegistryModel.php');
     }
 
-    $classSize = $_POST['size'];
     $timeStamp = date('Y-m-d h:i:s');
     $dbc = FannieDB::get($FANNIE_OP_DB);
     $item = new wfcuRegistryModel($dbc);    
@@ -54,19 +53,6 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
         $countRows = 0;
         while($row = $dbc->fetch_row($result)) {
             $countRows++;
-        }
-        
-        $prep = $dbc->prepare('SELECT soldOut FROM productUser WHERE upc=?');
-        $result = $dbc->execute($prep, array($_POST['upc']));
-        $soldOut = $dbc->fetch_row($result);
-        
-        if ( ($countRows > $classSize - 3) && $soldOut) {
-            mail(
-                'it@wholefoodscoop.com',
-                'WFC-U Class Signup Full for class PLU#' . $_POST['upc'],
-                'This class is close to being full, please make "sold out."', 
-                'From: automail@wholefoods.coop
-            ');
         }
     } elseif ($_POST['field'] === 'editLast') {
         $item->last_name($_POST['value']);
