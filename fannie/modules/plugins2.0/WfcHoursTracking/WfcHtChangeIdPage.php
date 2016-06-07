@@ -45,6 +45,7 @@ class WfcHtChangeIdPage extends FannieRESTfulPage
         $db = WfcHtLib::hours_dbconnect();
         $old = FormLib::get('oldID'); 
         $new = FormLib::get('newID'); 
+        echo "$old to $new<br />";
 
         $model = new WfcHtEmployeesModel($db);
         $model->empID($new);
@@ -93,7 +94,6 @@ class WfcHtChangeIdPage extends FannieRESTfulPage
     {
         $db = WfcHtLib::hours_dbconnect();
         $model = new WfcHtEmployeesModel($db);
-        $model->deleted(1);
 
         $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">
             <div class="form-group">

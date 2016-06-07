@@ -85,7 +85,7 @@ class WfcHtSyncPage extends FanniePage
                 if ($name != $row['name']) {
                     echo '<span class="glpyhicon glyphicon-exclamation-sign"></span>';
                 }
-                echo "$name exists as ";
+                echo "$name ($uid) exists as ";
                 echo $row['name'] . '<br />';
             }
         }
