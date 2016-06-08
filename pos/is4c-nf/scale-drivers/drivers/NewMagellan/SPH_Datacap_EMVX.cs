@@ -266,15 +266,13 @@ public class SPH_Datacap_EMVX : SerialPortHandler
               to allow multiple IPs
             */
             XmlDocument request = new XmlDocument();
-            request.Load(xml);
-            var IPs = request
-                .SelectSingleNode("TStream/Transaction/HostOrIP/")
-                .innerXml.Split(new Char[]{','}, StringSplitOptions.RemoveEmptyEntries);
+            request.LoadXml(xml);
+            var IPs = request.SelectSingleNode("TStream/Transaction/HostOrIP").InnerXml.Split(new Char[]{','}, StringSplitOptions.RemoveEmptyEntries);
             string result = "";
             foreach (string IP in IPs) {
                 // try request with an IP
-                request.SelectSingleNode("TStream/Transaction/HostOrIP").innerXml = IP;
-                string result = emv_ax_control.ProcessTransaction(request.OuterXml);
+                request.SelectSingleNode("TStream/Transaction/HostOrIP").InnerXml = IP;
+                result = emv_ax_control.ProcessTransaction(request.OuterXml);
                 XmlDocument doc = new XmlDocument();
                 try {
                     doc.LoadXml(result);
@@ -299,9 +297,10 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                     // another transaction
                     break;
                 }
-
-                return result;
             }
+
+            return result;
+
         } catch (Exception ex) {
             // request was invalid xml
             if (this.verbose_mode > 0) {
