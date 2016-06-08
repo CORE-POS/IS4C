@@ -260,20 +260,56 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             }
         }
 
-        string result = emv_ax_control.ProcessTransaction(xml);
-        // track SequenceNo values in responses
-        XmlDocument doc = new XmlDocument();
         try {
-            doc.LoadXml(result);
-            XmlNode sequence = doc.SelectSingleNode("RStream/CmdResponse/SequenceNo");
-            sequence_no = sequence.Value;
+            /**
+              Extract HostOrIP field and split it on commas
+              to allow multiple IPs
+            */
+            XmlDocument request = new XmlDocument();
+            request.Load(xml);
+            var IPs = request
+                .SelectSingleNode("TStream/Transaction/HostOrIP/")
+                .innerXml.Split(new Char[]{','}, StringSplitOptions.RemoveEmptyEntries);
+            string result = "";
+            foreach (string IP in IPs) {
+                // try request with an IP
+                request.SelectSingleNode("TStream/Transaction/HostOrIP").innerXml = IP;
+                string result = emv_ax_control.ProcessTransaction(request.OuterXml);
+                XmlDocument doc = new XmlDocument();
+                try {
+                    doc.LoadXml(result);
+                    // track SequenceNo values in responses
+                    XmlNode sequence = doc.SelectSingleNode("RStream/CmdResponse/SequenceNo");
+                    sequence_no = sequence.InnerXml;
+                    XmlNode return_code = doc.SelectSingleNode("RStream/CmdResponse/DSIXReturnCode");
+                    XmlNode origin = doc.SelectSingleNode("RStream/CmdResponse/ResponseOrigin");
+                    /**
+                      On anything that is not a local connectivity failure, exit the
+                      loop and return the result without trying any further IPs.
+                    */
+                    if (origin.InnerXml != "Client" || return_code.InnerXml != "003006") {
+                        break;
+                    }
+                } catch (Exception ex) {
+                    // response was invalid xml
+                    if (this.verbose_mode > 0) {
+                        Console.WriteLine(ex);
+                    }
+                    // status is unclear so do not attempt 
+                    // another transaction
+                    break;
+                }
+
+                return result;
+            }
         } catch (Exception ex) {
+            // request was invalid xml
             if (this.verbose_mode > 0) {
                 Console.WriteLine(ex);
             }
         }
 
-        return result;
+        return "";
     }
 
     /**
