@@ -98,6 +98,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         
         $upc = FormLib::get('upc');
+        echo 'UPC: ' . $upc;
         $args = $upc;
         $prep = $dbc->prepare('
             SELECT 
@@ -110,7 +111,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             FROM woodshed_no_replicate.CoopDealsJune
             WHERE upc = ?
         ');
-        $res = $dbc->execute($prep, $args);
+        $res = $dbc->execute($prep, $upc);
         $ret .=  "<table class='table'  align='center' width='100%'>";
         while ($row = $dbc->fetch_row($res)) {
             $ret .=  '<tr><td><b>upc</td><td>' . $row['upc'] . '</tr>';
@@ -121,11 +122,11 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             $ret .=  '<td><b>Sale Price</b></td><td>' . $rounder->round($row['srp']) . '</td></tr>';
             $salePrice = $rounder->round($row['srp']);
             $ret .=  '<td><b>Sale Period</b></td><td>June</td></tr>';
-            $res = $row['upc'];
+            $check = $row['upc'];
         }
         $ret .= '</table>';
         
-        if ($res == '') {
+        if ($check == '') {
             echo '<div class="alert alert-danger">Product not found in Co-op Deals for this period.</div>';
         } else {
             $query = '
