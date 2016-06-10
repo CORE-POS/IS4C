@@ -147,7 +147,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             ';
             $result = $dbc->query($query);
             $ret .=  '
-                <form method="post" class="form-inline">
+                <form method="get" class="form-inline">
                     Current Sales Batches<br>
                     <select class="form-control" name="batches">
             ';
