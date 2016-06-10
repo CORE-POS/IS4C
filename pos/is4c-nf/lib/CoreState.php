@@ -42,7 +42,6 @@ static public function initiate_session()
     self::memberReset();
     self::transReset();
     self::printReset();
-    PaycardLib::paycard_reset();
 
     Database::getsubtotals();
     Database::loadglobalvalues();
