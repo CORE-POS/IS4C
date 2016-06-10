@@ -75,9 +75,11 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         ');
         $dbc->execute($prep, $args);
         if ($dbc->error()) {
-            return '<div class="alert alert-danger">' . $dbc->error(). "</div>";
+            return '<div class="alert alert-danger">' . $dbc->error(). "</div>"
+                . '<a class="btn btn-default" href="http://key/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
         } else {
-            return '<div class="alert alert-success">Item Added to Batch</div>';
+            return '<div class="alert alert-success">Item Added to Batch</div>'
+                . '<a class="btn btn-default" href="http://key/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
         }
         
     }
