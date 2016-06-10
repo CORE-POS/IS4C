@@ -70,7 +70,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 ?,
                 ?,
                 ?,
-                \'1\'
+                "1"
             )
         ');
         $dbc->execute($prep, $args);
@@ -85,7 +85,8 @@ class CoopDealsLookupPage extends FannieRESTfulPage
     function get_upc_view()
     {
         
-        $ret = '';if (FormLib::get('linea') != 1) {
+        $ret = '';
+        if (FormLib::get('linea') != 1) {
             $this->add_onload_command("\$('#upc').focus();\n");
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
@@ -95,11 +96,12 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 <input type="text" class="form-control" name="upc" id="upc" placeholder="Scan Barcode" autofocus>
             </form>
         ';
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $rounder = new \COREPOS\Fannie\API\item\PriceRounder();
         
         $upc = FormLib::get('upc');
         echo 'UPC: ' . $upc;
-        $args = $upc;
+        //$args = $upc;
         $prep = $dbc->prepare('
             SELECT 
                 upc, 
@@ -109,9 +111,11 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 description, 
                 srp
             FROM woodshed_no_replicate.CoopDealsJune
-            WHERE upc = ?
+            WHERE upc = ?;
         ');
+        //echo $prep . '<br>';
         $res = $dbc->execute($prep, $upc);
+        //echo $res . '<br>';
         $ret .=  "<table class='table'  align='center' width='100%'>";
         while ($row = $dbc->fetch_row($res)) {
             $ret .=  '<tr><td><b>upc</td><td>' . $row['upc'] . '</tr>';
