@@ -54,8 +54,7 @@ class AutoLoader extends LibraryClass
     static public function loadClass($name)
     {
         global $CORE_LOCAL;
-        $mapItem = LaneCache::get("ClassLookup");
-        $map = $mapItem->get();
+        $map = CoreLocal::get("ClassLookup");
         if (!is_array($map)) {
             // attempt to build map before giving up
             $map = self::loadMap();
@@ -121,9 +120,7 @@ class AutoLoader extends LibraryClass
         $class_map = array();
         $search_path = realpath(dirname(__FILE__).'/../');
         self::recursiveLoader($search_path, $class_map);
-        $map = LaneCache::get('ClassLookup');
-        $map->set($class_map);
-        LaneCache::set($map);
+        CoreLocal::set('ClassLookup', $class_map);
 
         return $class_map;
     }
