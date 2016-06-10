@@ -100,6 +100,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $rounder = new \COREPOS\Fannie\API\item\PriceRounder();
         
         $upc = FormLib::get('upc');
+        $upc = str_pad($upc, 13, "0", STR_PAD_LEFT);
         echo 'UPC: ' . $upc;
         //$args = $upc;
         $prep = $dbc->prepare('
@@ -111,12 +112,13 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 description, 
                 srp
             FROM woodshed_no_replicate.CoopDealsJune
-            WHERE upc = ?;
+            WHERE upc = ? ;
         ');
         //echo $prep . '<br>';
         $res = $dbc->execute($prep, $upc);
         //echo $res . '<br>';
         $ret .=  "<table class='table'  align='center' width='100%'>";
+        $check = '';
         while ($row = $dbc->fetch_row($res)) {
             $ret .=  '<tr><td><b>upc</td><td>' . $row['upc'] . '</tr>';
             $ret .=  '<td><b>Desc</b></td><td>' . $row['description'] . '</tr>';
