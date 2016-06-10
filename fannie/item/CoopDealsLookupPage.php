@@ -157,9 +157,9 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             $ret .=  '
                 </select><br>
                     <input type="submit" class="btn btn-danger" value="Add this item to batch">
-                    <input type="hidden" id="insert" value="1">
-                    <input type="hidden" id="upc" value="' . $upc . '">
-                    <input type="hidden" id="salePrice" value="' . $salePrice . '">
+                    <input type="hidden" name="insert" value="1">
+                    <input type="hidden" name="upc" value="' . $upc . '">
+                    <input type="hidden" name="salePrice" value="' . $salePrice . '">
                 </form>
             ';   
         }
