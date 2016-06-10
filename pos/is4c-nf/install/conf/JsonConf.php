@@ -49,7 +49,7 @@ class JsonConf
       @param $key string key
       @return boolean success
     */
-    static private function remove($key)
+    static public function remove($key)
     {
         $ini_json = dirname(__FILE__) . '/../../ini.json';
         if (!is_writable($ini_json)) {
