@@ -377,9 +377,10 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             return $row['orderID'];
         } else {
             $insQ = 'INSERT INTO PurchaseOrder (vendorID, creationDate,
-                placed, userID) VALUES (?, '.$dbc->now().', 0, ?)';
+                placed, userID, storeID) VALUES (?, '.$dbc->now().', 0, ?, ?)';
             $insP = $dbc->prepare($insQ);
-            $insR = $dbc->execute($insP, array($vendorID, $userID));
+            $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+            $insR = $dbc->execute($insP, array($vendorID, $userID, $store));
             return $dbc->insertID();
         }
     }
