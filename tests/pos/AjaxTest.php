@@ -24,7 +24,7 @@ class AjaxTest extends PHPUnit_Framework_TestCase
     
     public function testParser()
     {
-        $ajax = new COREPOS\\pos\\ajax\\AjaxParser();
+        $ajax = new COREPOS\pos\ajax\AjaxParser();
         $ajax->enablePageDrawing(true);
         CoreLocal::set('strRemembered', 'invalidInput');
         CoreLocal::set('msgrepeat', 1);    
@@ -38,13 +38,13 @@ class AjaxTest extends PHPUnit_Framework_TestCase
 
     public function testCabReceipt()
     {
-        $ajax = new COREPOS\\pos\\ajax\\AjaxCabReceipt();
+        $ajax = new COREPOS\pos\ajax\AjaxCabReceipt();
         $this->assertEquals('Done', $ajax->ajax(array('cab-reference'=>'9999-99-1')));
     }
 
     public function testDecision()
     {
-        $ajax = new COREPOS\\pos\\ajax\\AjaxDecision();
+        $ajax = new COREPOS\pos\ajax\AjaxDecision();
         $json = $ajax->ajax();
         $this->assertInternalType('array', $json);
         $this->assertEquals(false, $json['endorse']);
@@ -54,22 +54,22 @@ class AjaxTest extends PHPUnit_Framework_TestCase
 
     public function testEnd()
     {
-        $ajax = new COREPOS\\pos\\ajax\\AjaxEnd();
+        $ajax = new COREPOS\pos\ajax\AjaxEnd();
         $input = array('receiptType'=>'full', 'ref'=>'1-1-1');
         $this->assertEquals(array(), $ajax->ajax($input));
     }
 
     public function testEndorse()
     {
-        $ajax = new COREPOS\\pos\\ajax\\AjaxEndorse();
+        $ajax = new COREPOS\pos\ajax\AjaxEndorse();
         $this->assertEquals('Done', $ajax->ajax());
     }
 
     public function testScale()
     {
-        $ajax = new COREPOS\\pos\\ajax\\AjaxScale();
+        $ajax = new COREPOS\pos\ajax\AjaxScale();
         $this->assertEquals(' lb', $ajax->ajax());
-        $ajax = new COREPOS\\pos\\ajax\\AjaxPollScale();
+        $ajax = new COREPOS\pos\ajax\AjaxPollScale();
         $this->assertInternalType('string', $ajax->ajax());
     }
 }
