@@ -207,7 +207,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'LocalStorage',
             'FooterBox',
             'Plugin',
-            'PrintHandler',
+            'COREPOS\pos\lib\PrintHandlers\PrintHandler',
         );
 
         foreach($required_classes as $class){
@@ -242,7 +242,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'CustomerReceiptMessage',
             'ProductSearch',
             'DiscountModule',
-            'PrintHandler',
+            'COREPOS\pos\lib\PrintHandlers\PrintHandler',
             'TotalAction',
             'VariableWeightReWrite',
             'ItemNotFound',
@@ -256,12 +256,12 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
     public function testBitmap()
     {
         /**
-          Using PrintHandler::RenderBitmapFromFile
+          Using COREPOS\pos\lib\PrintHandlers\PrintHandler::RenderBitmapFromFile
           will call all the methods of the Bitmap class
           that actually get used
         */
 
-        $ph = new PrintHandler();
+        $ph = new COREPOS\pos\lib\PrintHandlers\PrintHandler();
         $file = dirname(__FILE__).'/../../pos/is4c-nf/graphics/WfcLogo2014.bmp';
 
         $this->assertFileExists($file);
