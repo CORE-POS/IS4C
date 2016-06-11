@@ -1,4 +1,9 @@
 <?php
+
+namespace COREPOS\pos\lib\PrintHandlers;
+use \Bitmap;
+use \ReceiptLib;
+
 /**
  @class PrintHandler
  Generic print module
@@ -9,6 +14,18 @@
 */
 
 class PrintHandler {
+
+    public static function factory($class)
+    {
+        if ($class != '' && class_exists($class)) {
+            return new $class();
+        } elseif ($class != '' && class_exists('COREPOS\\pos\\lib\\PrintHandlers\\' . $class)) {
+            $class = 'COREPOS\\pos\\lib\PrintHandlers\\' . $class();
+            return new $class();
+        }
+
+        return new COREPOS\pos\lib\PrintHandlers\ESCPOSPrintHandler();
+    }
     
     /**
      Get printer tab

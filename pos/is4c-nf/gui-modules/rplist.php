@@ -21,17 +21,15 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\PrintHandlers\PrintHandler;
+
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class rplist extends NoInputCorePage 
 {
     private function printReceipt($trans)
     {
-        $print_class = CoreLocal::get('ReceiptDriver');
-        if ($print_class === '' || !class_exists($print_class)) {
-            $print_class = 'ESCPOSPrintHandler';
-        }
-        $PRINT_OBJ = new $print_class();
+        $PRINT_OBJ = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
         $saved = CoreLocal::get('receiptToggle');
         CoreLocal::set('receiptToggle', 1);
         $receipt = ReceiptLib::printReceipt('reprint', $trans);

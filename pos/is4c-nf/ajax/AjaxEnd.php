@@ -25,6 +25,7 @@ namespace COREPOS\pos\ajax;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\Drawers;
 use COREPOS\pos\lib\Kickers\Kicker;
+use COREPOS\pos\lib\PrintHandlers\PrintHandler;
 use \AjaxCallback;
 use \Database;
 use \CoreLocal;
@@ -87,7 +88,7 @@ class AjaxEnd extends AjaxCallback
             Drawers::kick();
         }
 
-        $PRINT_OBJ = $this->printObj();
+        $PRINT_OBJ = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
         $EMAIL_OBJ = $this->emailObj();
         foreach ($receiptContent as $receipt) {
             if (is_array($receipt)) {
@@ -120,15 +121,6 @@ class AjaxEnd extends AjaxCallback
         } else {
             return false;
         }
-    }
-
-    private function printObj()
-    {
-        $print_class = CoreLocal::get('ReceiptDriver');
-        if ($print_class === '' || !class_exists($print_class)) {
-            $print_class = 'ESCPOSPrintHandler';
-        }
-        return new $print_class();
     }
 
     private function emailObj()

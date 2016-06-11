@@ -123,7 +123,10 @@ $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')))
     <td>
     <?php
     $mods = AutoLoader::listModules('PrintHandler',True);
-    echo $form->selectField('ReceiptDriver', $mods, 'ESCPOSPrintHandler');
+    $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
+    echo $form->selectField('ReceiptDriver', $mods, 'COREPOS-pos-lib-PrintHandlers-ESCPOSPrintHandler');
+    $fixed = str_replace('-', '\\', CoreLocal::get('ReceiptDriver'));
+    InstallUtilities::paramSave('ReceiptDriver', $fixed);
     ?>
     <span class="noteTxt"></span>
     </td>

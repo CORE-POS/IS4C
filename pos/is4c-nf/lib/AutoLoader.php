@@ -136,7 +136,7 @@ class AutoLoader extends LibraryClass
         'SpecialDept'       => '/Scanning/SpecialDepts',
         'TenderModule'      => '/Tenders',
         'ProductSearch'     => '/Search/Products',
-        'PrintHandler'      => '/PrintHandlers',
+        'COREPOS\pos\lib\PrintHandlers\PrintHandler' => '/PrintHandlers',
         'TotalAction'       => '/TotalActions',
         'TenderReport'      => '/ReceiptBuilding/TenderReports',
         'BasicModel'        => '/models',
@@ -273,6 +273,7 @@ class AutoLoader extends LibraryClass
             'models',
             'NewMagellan',
             'noauto',
+            'PrintHandlers',
             'rs232',
             'test',
         );

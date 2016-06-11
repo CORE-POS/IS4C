@@ -1,4 +1,9 @@
 <?php
+
+namespace COREPOS\pos\lib\PrintHandlers;
+use \Bitmap;
+use \ReceiptLib;
+
 /*
 ESCPOSPrintHandler
 version 1 (2009-09-25)

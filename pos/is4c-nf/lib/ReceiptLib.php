@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\PrintHandlers\PrintHandler;
+
 /**
   @class ReceiptLib
   Receipt functions
@@ -28,6 +30,9 @@
 class ReceiptLib extends LibraryClass {
 
     static private $PRINT_OBJ;
+
+    static private $EMAIL_PH = 'COREPOS\\pos\\lib\\PrintHandlers\EmailPrintHandler';
+    static private $HTML_PH  = 'COREPOS\\pos\\lib\\PrintHandlers\HtmlEmailPrintHandler';
 
 // --------------------------------------------------------------
 static public function build_time($timestamp) {
@@ -162,8 +167,8 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
             // on every receipt
             $img_file = $graphics_path.'/'.$headerLine;
             if (isset($img_cache[basename($img_file)]) && !empty($img_cache[basename($img_file)]) 
-                && get_class(self::$PRINT_OBJ)!='EmailPrintHandler'
-                && get_class(self::$PRINT_OBJ)!='HtmlEmailPrintHandler'
+                && get_class(self::$PRINT_OBJ)!=self::$EMAIL_PH
+                && get_class(self::$PRINT_OBJ)!=self::$HTML_PH
                 ){
                 $receipt .= $img_cache[basename($img_file)]."\n";
             }
@@ -413,10 +418,7 @@ static public function boldFont() {
 static private function initDriver()
 {
     if (!is_object(self::$PRINT_OBJ)) {
-        $print_class = CoreLocal::get('ReceiptDriver');
-        if ($print_class === '' || !class_exists($print_class))
-            $print_class = 'ESCPOSPrintHandler';
-        self::$PRINT_OBJ = new $print_class();
+        self::$PRINT_OBJ = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
     }
 }
 static public function bold()
@@ -875,11 +877,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
     }
     $chargeProgram = 'charge';
 
-    $print_class = CoreLocal::get('ReceiptDriver');
-    if ($print_class === '' || !class_exists($print_class)) {
-        $print_class = 'ESCPOSPrintHandler';
-    }
-    self::$PRINT_OBJ = new $print_class();
+    self::$PRINT_OBJ = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
     $receipt = "";
 
     $noreceipt = (CoreLocal::get("receiptToggle")==1 ? 0 : 1);
@@ -1128,11 +1126,7 @@ static public function mostRecentReceipt()
 static public function code39($barcode)
 {
     if (!is_object(self::$PRINT_OBJ)) {
-        $print_class = CoreLocal::get('ReceiptDriver');
-        if ($print_class === '' || !class_exists($print_class)) {
-            $print_class = 'ESCPOSPrintHandler';
-        }
-        self::$PRINT_OBJ = new $print_class();
+        self::$PRINT_OBJ = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
     }
 
     return self::$PRINT_OBJ->BarcodeCODE39($barcode);
@@ -1141,9 +1135,9 @@ static public function code39($barcode)
 static public function emailReceiptMod()
 {
     if (class_exists('PHPMailer') && CoreLocal::get('emailReceiptHtml') != '' && class_exists(CoreLocal::get('emailReceiptHtml'))) {
-        return 'HtmlEmailPrintHandler';
+        return self::$HTML_PH;
     } else {
-        return 'EmailPrintHandler';
+        return self::$EMAIL_PH;
     }
 }
 
