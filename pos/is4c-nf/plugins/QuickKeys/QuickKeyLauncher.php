@@ -85,7 +85,7 @@ class QuickKeyLauncher extends Parser
             }
         }
         if (count($my_keys) == 0) {
-            include(dirname(__FILE__) . '/quickkeys/keys/' . $number . '.php');
+            include(dirname(__FILE__) . '/quickkeys/noauto/' . $number . '.php');
         }
 
         return $my_keys;

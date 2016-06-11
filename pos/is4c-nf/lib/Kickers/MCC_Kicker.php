@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Kickers;
+use \CoreLocal;
+use \Database;
+
 /**
   @class Kicker
   Base class for opening cash drawer

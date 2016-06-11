@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Kickers;
+use \CoreLocal;
+use \Database;
+
 class Harvest_Kicker extends Kicker {
 
     public function doKick($trans_num)

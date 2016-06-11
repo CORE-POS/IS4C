@@ -24,6 +24,7 @@
 namespace COREPOS\pos\ajax;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\Drawers;
+use COREPOS\pos\lib\Kickers\Kicker;
 use \AjaxCallback;
 use \Database;
 use \CoreLocal;
@@ -151,11 +152,7 @@ class AjaxEnd extends AjaxCallback
     {
         $dokick = false;
         if ($transFinished) {
-            $kicker_class = (CoreLocal::get("kickerModule")=="") ? 'Kicker' : CoreLocal::get('kickerModule');
-            $kicker_object = new $kicker_class();
-            if (!is_object($kicker_object)) {
-                $kicker_object = new Kicker();
-            }
+            $kicker_object = Kicker::factory(CoreLocal::get('kickerModule'));
             $dokick = $kicker_object->doKick($receiptNum);
         }
 

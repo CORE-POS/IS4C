@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Kickers;
+
 /**
   @class NoKick
   Never open cash drawer

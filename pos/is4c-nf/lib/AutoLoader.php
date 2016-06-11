@@ -128,7 +128,7 @@ class AutoLoader extends LibraryClass
     static private $class_paths = array(
         'DiscountType'      => '/Scanning/DiscountTypes',
         'FooterBox'         => '/FooterBoxes',
-        'Kicker'            => '/Kickers',
+        'COREPOS\pos\lib\Kickers\Kicker' => '/Kickers',
         'Parser'            => '/../parser-class-lib/parse',
         'PreParser'         => '/../parser-class-lib/preparse',
         'PriceMethod'       => '/Scanning/PriceMethods',
@@ -211,6 +211,8 @@ class AutoLoader extends LibraryClass
 
             if (is_subclass_of($name,$base_class)) {
                 $ret[] = $name;
+            } elseif ($ns_class === $base_class && $include_base) {
+                $ret[] = $name;
             }
 
             ob_end_clean();
@@ -264,10 +266,14 @@ class AutoLoader extends LibraryClass
             'gui-modules',
             'install',
             'js',
+            'Kickers',
             'locale',
             'log',
+            'Magellan',
             'models',
             'NewMagellan',
+            'noauto',
+            'rs232',
             'test',
         );
 

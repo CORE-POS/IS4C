@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Kickers;
+use \CoreLocal;
+use \Database;
+
 /**
   @class Kicker
   Base class for opening cash drawer
@@ -28,6 +32,18 @@
 */
 class Kicker 
 {
+
+    public static function factory($class)
+    {
+        if ($class != '' && class_exists($class)) {
+            return new $class();
+        } elseif ($class != '' && class_exists('COREPOS\\pos\\lib\\Kickers\\' . $class)) {
+            $class = 'COREPOS\\pos\\lib\Kickers\\' . $class();
+            return new $class();
+        }
+
+        return new self();
+    }
 
     /**
       Determine whether to open the drawer

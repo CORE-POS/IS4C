@@ -8,18 +8,18 @@ class KickersTest extends PHPUnit_Framework_TestCase
     public function testAll()
     {
         $defaults = array(
-            'Kicker',
-            'NoKick',
+            'COREPOS\\pos\\lib\\Kickers\\Kicker',
+            'COREPOS\\pos\\lib\\Kickers\\NoKick',
         );
 
-        $all = AutoLoader::ListModules('Kicker',True);
+        $all = AutoLoader::ListModules('COREPOS\\pos\\lib\\Kickers\\Kicker',True);
         foreach($defaults as $d){
             $this->assertContains($d, $all);
         }
 
         foreach($all as $class){
             $obj = new $class();
-            $this->assertInstanceOf('Kicker',$obj);
+            $this->assertInstanceOf('COREPOS\\pos\\lib\\Kickers\\Kicker',$obj);
 
             $test1 = $obj->kickOnSignIn();
             $test2 = $obj->kickOnSignOut();
@@ -32,7 +32,7 @@ class KickersTest extends PHPUnit_Framework_TestCase
 
     public function testDefault()
     {
-        $k = new Kicker();
+        $k = new COREPOS\pos\lib\Kickers\Kicker();
         CoreLocal::set('training', 1);
         $this->assertEquals(false, $k->doKick('1-1-1'));
         $this->assertEquals(false, $k->kickOnSignIn());
@@ -41,7 +41,7 @@ class KickersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, $k->kickOnSignIn());
         $this->assertEquals(true, $k->kickOnSignOut());
         
-        $k = new NoKick();
+        $k = new COREPOS\pos\lib\Kickers\NoKick();
         $this->assertEquals(false, $k->doKick('1-1-1'));
         $this->assertEquals(false, $k->kickOnSignIn());
         $this->assertEquals(false, $k->kickOnSignOut());

@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\Drawers;
+use COREPOS\pos\lib\Kickers\Kicker;
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
  *
@@ -193,8 +194,7 @@ class Steering extends Parser
                         if (session_id() != '') {
                             session_write_close();
                         }
-                        $kicker_class = (CoreLocal::get("kickerModule")=="") ? 'Kicker' : CoreLocal::get('kickerModule');
-                        $kicker_object = new $kicker_class();
+                        $kicker_object = Kicker::factory(CoreLocal::get('kickerModule'));
                         if ($kicker_object->kickOnSignOut()) {
                             Drawers::kick();
                         }

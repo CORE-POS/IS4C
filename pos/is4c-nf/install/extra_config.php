@@ -198,8 +198,11 @@ InstallUtilities::paramSave('printerPort',CoreLocal::get('printerPort'));
     <td><b>Drawer Behavior Module</b>:</td>
     <td>
     <?php
-    $kmods = AutoLoader::listModules('Kicker',True);
+    $kmods = AutoLoader::listModules('COREPOS\pos\lib\Kickers\Kicker',True);
+    $kmods = array_map(function($i){ return str_replace('\\', '-', $i); }, $kmods);
     echo $form->selectField('kickerModule', $kmods, 'Kicker');
+    $rewrite = str_replace('-', '\\', CoreLocal::get('kickerModule')); 
+    InstallUtilities::saveParam('kickerModule', $rewrite);
     ?>
     </td>
 </tr>
