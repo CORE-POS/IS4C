@@ -160,7 +160,7 @@ class CacheItemPool
             $num++;
         }
 
-        return $temp . $sep . $num;
+        return $temp . $sep . $name;
     }
 }
 
