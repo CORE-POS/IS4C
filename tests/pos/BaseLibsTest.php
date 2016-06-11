@@ -199,7 +199,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'DisplayLib',
             'ReceiptLib',
             'Database',
-            'COREPOS\pos\lib\Kickers\Kicker',
             'SpecialUPC',
             'SpecialDept',
             'DiscountType',
@@ -207,7 +206,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'LocalStorage',
             'FooterBox',
             'Plugin',
-            'COREPOS\pos\lib\PrintHandlers\PrintHandler',
         );
 
         foreach($required_classes as $class){
@@ -226,7 +224,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $listable = array(
             'DiscountType',
             'FooterBox',
-            'COREPOS\pos\lib\Kickers\Kicker',
             'PreParser',
             'PriceMethod',
             'SpecialUPC',
@@ -242,7 +239,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'CustomerReceiptMessage',
             'ProductSearch',
             'DiscountModule',
-            'COREPOS\pos\lib\PrintHandlers\PrintHandler',
             'TotalAction',
             'VariableWeightReWrite',
             'ItemNotFound',
