@@ -20,7 +20,7 @@ class PrintHandler {
         if ($class != '' && class_exists($class)) {
             return new $class();
         } elseif ($class != '' && class_exists('COREPOS\\pos\\lib\\PrintHandlers\\' . $class)) {
-            $class = 'COREPOS\\pos\\lib\PrintHandlers\\' . $class();
+            $class = 'COREPOS\\pos\\lib\PrintHandlers\\' . $class;
             return new $class();
         }
 
