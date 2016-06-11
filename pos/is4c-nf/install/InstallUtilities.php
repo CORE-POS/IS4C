@@ -21,16 +21,15 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\install;
+
 use COREPOS\pos\install\conf\Conf;
 use COREPOS\pos\install\conf\PhpConf;
 use COREPOS\pos\install\conf\JsonConf;
 use COREPOS\pos\install\conf\ParamConf;
+use \CoreLocal;
 
-if (!class_exists('AutoLoader')) {
-    include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
-}
-
-class InstallUtilities extends LibraryClass 
+class InstallUtilities 
 {
     static public function dbOrFail($db)
     {
@@ -136,10 +135,10 @@ class InstallUtilities extends LibraryClass
           means ini.php overwrote a setting with a different
           value.
         */
-        CoreState::loadParams();
+        \CoreState::loadParams();
         include(dirname(__FILE__) . '/../ini.php');
 
-        $dbc = Database::pDataConnect();
+        $dbc = \Database::pDataConnect();
 
         /**
           Again backwards. Check lane-specific parameters first

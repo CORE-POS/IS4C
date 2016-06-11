@@ -1,6 +1,7 @@
 <?php
 use COREPOS\pos\install\conf\Conf;
 use COREPOS\pos\install\conf\FormFactory;
+use COREPOS\pos\install\InstallUtilities;
 ?>
 <!DOCTYPE html>
 <html>
@@ -8,7 +9,6 @@ use COREPOS\pos\install\conf\FormFactory;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 CoreState::loadParams();
-include('InstallUtilities.php');
 $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')));
 ?>
 <head>

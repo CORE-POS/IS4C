@@ -21,7 +21,33 @@
 
 *********************************************************************************/
 
-$receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
-$receiptNum = isset($_REQUEST['ref']) ? $_REQUEST['ref'] : '';
-header('Location: ../ajax/AjaxEnd.php?receiptType=' . $receiptType . '&ref=' . $receiptNum);
+namespace COREPOS\pos\ajax;
+use \CoreLocal;
+use \ReceiptLib;
+use \AjaxCallback;
+
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+
+/**
+  @class AjaxCabReceipt
+*/
+class AjaxCabReceipt extends AjaxCallback
+{
+    protected $encoding = 'plain';
+
+    public function ajax($input=array())
+    {
+        if (isset($_REQUEST['input'])) {
+            CoreLocal::set("cabReference",$_REQUEST['input']);
+        } elseif (isset($input['cab-reference'])) {
+            CoreLocal::set('cabReference', $input['cab-reference']);
+        }
+        $receipt = ReceiptLib::printReceipt('cab', CoreLocal::get('cabReference'));
+        ReceiptLib::writeLine($receipt);
+
+        return 'Done';
+    }
+}
+
+AjaxCabReceipt::run();
 

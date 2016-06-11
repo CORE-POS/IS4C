@@ -187,15 +187,15 @@ class CoreLocal
     */
     public static function migrateSettings()
     {
-        if (file_exists(dirname(__FILE__).'/../../ini.php') && class_exists('InstallUtilities')) {
+        if (file_exists(dirname(__FILE__).'/../../ini.php')) {
             $file = dirname(__FILE__).'/../../ini.php';
             $settings = self::readIniPhp();
+            $db = Database::pDataConnect();
             foreach ($settings as $key => $value) {
                 if (!in_array($key, self::$INI_SETTINGS)) {
                     if ($key == 'SpecialDeptMap') {
                         // SpecialDeptMap has a weird array structure
                         // and gets moved to a dedicated table
-                        $db = Database::pDataConnect();
                         if (CoreLocal::get('NoCompat') == 1 || $db->table_exists('SpecialDeptMap')) {
                             $mapModel = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($db);
                             $mapModel->initTable($sconf);
@@ -203,7 +203,7 @@ class CoreLocal
                         }
                     } else {
                         // other settings go into opdata.parameters
-                        $saved = InstallUtilities::paramSave($key, $value); 
+                        $saved = \COREPOS\pos\install\conf\ParamConf::save($db, $key, $value);
                         if ($saved && is_writable($file)) {
                             \COREPOS\pos\install\conf\Conf::remove($key);
                         }

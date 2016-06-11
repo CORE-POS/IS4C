@@ -21,7 +21,24 @@
 
 *********************************************************************************/
 
-$receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
-$receiptNum = isset($_REQUEST['ref']) ? $_REQUEST['ref'] : '';
-header('Location: ../ajax/AjaxEnd.php?receiptType=' . $receiptType . '&ref=' . $receiptNum);
+namespace COREPOS\pos\ajax;
+use \AjaxCallback;
+use \DisplayLib;
+
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+
+class AjaxScale extends AjaxCallback
+{
+    protected $encoding = 'plain';
+
+    public function ajax($input=array())
+    {
+        $input = isset($_REQUEST['input'])?$_REQUEST['input']:'';
+        $display = DisplayLib::scaledisplaymsg($input);
+
+        return is_array($display) ? $display['display'] : $display;
+    }
+}
+
+AjaxScale::run();
 

@@ -4,7 +4,7 @@ var adminlist = (function($) {
     mod.suspendOrder = function(ref) {
         $.ajax({
             type: 'post',
-            url: '../ajax-callbacks/AjaxEnd.php',
+            url: '../ajax/AjaxEnd.php',
             cache: false,
             data: 'receiptType=suspended&ref=' + ref,
             dataType: 'json'

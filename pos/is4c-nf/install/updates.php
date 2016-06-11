@@ -1,5 +1,6 @@
 <?php
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\install\InstallUtilities;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 CoreState::loadParams();

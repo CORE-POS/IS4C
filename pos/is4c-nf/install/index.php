@@ -25,12 +25,12 @@ use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\install\conf\Conf;
 use COREPOS\pos\install\conf\FormFactory;
 use COREPOS\pos\install\db\Creator;
+use COREPOS\pos\install\InstallUtilities;
 
 ini_set('display_errors','1');
 
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-include('InstallUtilities.php');
 $form = new FormFactory(null);
 ?>
 <html>

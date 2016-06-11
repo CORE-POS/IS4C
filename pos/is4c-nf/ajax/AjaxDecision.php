@@ -21,7 +21,43 @@
 
 *********************************************************************************/
 
-$receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
-$receiptNum = isset($_REQUEST['ref']) ? $_REQUEST['ref'] : '';
-header('Location: ../ajax/AjaxEnd.php?receiptType=' . $receiptType . '&ref=' . $receiptNum);
+namespace COREPOS\pos\ajax;
+use COREPOS\pos\lib\FormLib;
+use \AjaxCallback;
+use \CoreLocal;
+use \MiscLib;
+
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+
+/**
+  @class AjaxDecision
+*/
+class AjaxDecision extends AjaxCallback
+{
+    protected $encoding = 'json';
+
+    public function ajax($input=array())
+    {
+        $decision = strtoupper(FormLib::get('input', 'CL'));
+
+        $ret = array(
+            'dest_page'=>MiscLib::baseURL() . 'gui-modules/pos2.php',
+            'endorse'=> false, 
+            'cleared'=>false,
+        );
+
+        if ($decision == "CL") {
+            CoreLocal::set("msgrepeat",0);
+            CoreLocal::set("lastRepeat",'');
+            CoreLocal::set("toggletax",0);
+            CoreLocal::set("togglefoodstamp",0);
+            CoreLocal::set("RepeatAgain", false);
+            $ret['cleared'] = true;
+        }
+
+        return $ret;
+    }
+}
+
+AjaxDecision::run();
 

@@ -2,7 +2,6 @@
 use COREPOS\pos\install\data\Loader;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-include('InstallUtilities.php');
 ?>
 <html>
 <head>

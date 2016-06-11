@@ -54,7 +54,7 @@ $input = array(
 TransRecord::finalizeTransaction(true);
 
 if (!class_exists('AjaxEnd')) {
-    include(dirname(__FILE__) . '/AjaxEnd.php');
+    include(__DIR__ . '/../AjaxEnd.php');
 }
 $ajax = new AjaxEnd();
 $ajax->ajax($input);

@@ -12,7 +12,7 @@ var boxMsg2 = (function($) {
 
     var endorse = function(endorseType, endorseAmt, callback) {
         $.ajax({
-            url: '../ajax-callbacks/AjaxEndorse.php',
+            url: '../ajax/AjaxEndorse.php',
             type: 'get',
             data: 'type='+endorseType+'&amount='+endorseAmt,
             cache: false
@@ -25,7 +25,7 @@ var boxMsg2 = (function($) {
         var endorseAmt = $('#endorseAmt').val();
         var cmd = $('#repeat-cmd').val();
         $.ajax({
-            url: urlStem + 'ajax-callbacks/AjaxDecision.php',
+            url: urlStem + 'ajax/AjaxDecision.php',
             type: 'get',
             data: 'input='+str,
             dataType: 'json',

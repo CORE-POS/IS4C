@@ -227,7 +227,7 @@ class AutoLoader extends LibraryClass
         }
     }
 
-    static private function fileToFullClass($file)
+    static public function fileToFullClass($file)
     {
         $file = realpath($file);
         if (substr($file, -4) == '.php') {
@@ -257,12 +257,16 @@ class AutoLoader extends LibraryClass
         // skip searching these directories
         // to improve overall performance
         $exclude = array(
+            'ajax',
+            'ajax-callbacks',
             'css',
             'graphics',
             'gui-modules',
+            'install',
             'js',
             'locale',
             'log',
+            'models',
             'NewMagellan',
             'test',
         );

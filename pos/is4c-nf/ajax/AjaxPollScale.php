@@ -21,7 +21,34 @@
 
 *********************************************************************************/
 
-$receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
-$receiptNum = isset($_REQUEST['ref']) ? $_REQUEST['ref'] : '';
-header('Location: ../ajax/AjaxEnd.php?receiptType=' . $receiptType . '&ref=' . $receiptNum);
+namespace COREPOS\pos\ajax;
+use COREPOS\pos\lib\FormLib;
+use \AjaxCallback;
+use \CoreLocal;
+
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+
+class AjaxPollScale extends AjaxCallback
+{
+    protected $encoding = 'plain';
+
+    public function ajax($input=array())
+    {
+        $scaleDriver = CoreLocal::get("scaleDriver");
+        $sd = 0;
+        if ($scaleDriver != "") {
+            $sd = new $scaleDriver();
+        }
+
+        if (is_object($sd)) {
+            ob_start();
+            $sd->ReadFromScale();    
+            return ob_get_clean();
+        } else {
+            return "{}"; // no driver => empty json
+        }
+    }
+}
+
+AjaxPollScale::run();
 

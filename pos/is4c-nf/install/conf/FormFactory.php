@@ -52,7 +52,7 @@ class FormFactory
             $current_value = $this->sanitizeString($current_value);
         }
 
-        CoreLocal::set($name, $current_value);
+        \CoreLocal::set($name, $current_value);
         if ($storage == Conf::INI_SETTING) {
             if (is_array($current_value)) {
                 $out_value = 'array(' . implode(',', $current_value) . ')';

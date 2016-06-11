@@ -2,6 +2,7 @@
 
 use COREPOS\pos\install\conf\Conf;
 use COREPOS\pos\install\conf\JsonConf;
+use COREPOS\pos\install\InstallUtilities;
 
 ?>
 <!DOCTYPE html>
@@ -10,7 +11,6 @@ use COREPOS\pos\install\conf\JsonConf;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 CoreState::loadParams();
-include('InstallUtilities.php');
 $known_good_modules = array(
     'SPH_Magellan_Scale' => array(
         'description' => 'Magellan Scanner/scale (recommended)',

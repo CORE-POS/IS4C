@@ -81,7 +81,7 @@ var pos2 = (function($) {
 
     mod.receiptFetch = function(r_type, ref){
         $.ajax({
-            url: urlStem + 'ajax-callbacks/AjaxEnd.php',
+            url: urlStem + 'ajax/AjaxEnd.php',
             type: 'get',
             data: 'receiptType='+r_type+'&ref='+ref,
             dataType: 'json',

@@ -3,7 +3,7 @@ var CORE_JS_PREFIX = "";
 function runParser(input_str,rel_prefix){
 	CORE_JS_PREFIX = rel_prefix;
 	$.ajax({
-		url: CORE_JS_PREFIX+'ajax-callbacks/AjaxParser.php',
+		url: CORE_JS_PREFIX+'ajax/AjaxParser.php',
 		type: 'GET',
 		data: "input="+input_str,
 		dataType: "json",
@@ -51,7 +51,7 @@ function parserHandler(data)
 
 	if (data.receipt){
 		$.ajax({
-			url: CORE_JS_PREFIX+'ajax-callbacks/AjaxEnd.php',
+			url: CORE_JS_PREFIX+'ajax/AjaxEnd.php',
 			type: 'GET',
 			data: 'receiptType='+data.receipt+'&ref='+data.trans_num,
 			dataType: 'json',
