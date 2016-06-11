@@ -382,7 +382,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(0, strlen(ReceiptLib::twoColumns($col2, $col1)));
 
         $this->assertEquals(array('any'=>'','print'=>''), ReceiptLib::memReceiptMessages(1));
-        $this->assertEquals('EmailPrintHandler', ReceiptLib::emailReceiptMod());
+        $this->assertEquals('COREPOS\pos\lib\PrintHandlers\EmailPrintHandler', ReceiptLib::emailReceiptMod());
 
         $port = CoreLocal::get('printerPort');
         $temp_file = tempnam(sys_get_temp_dir(), 'ppp');

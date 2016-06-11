@@ -199,7 +199,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'DisplayLib',
             'ReceiptLib',
             'Database',
-            'Kicker',
+            'COREPOS\pos\lib\Kickers\Kicker',
             'SpecialUPC',
             'SpecialDept',
             'DiscountType',
@@ -226,7 +226,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $listable = array(
             'DiscountType',
             'FooterBox',
-            'Kicker',
+            'COREPOS\pos\lib\Kickers\Kicker',
             'PreParser',
             'PriceMethod',
             'SpecialUPC',
