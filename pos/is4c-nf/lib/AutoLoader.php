@@ -327,7 +327,7 @@ if (file_exists(dirname(__FILE__) . '/../../../vendor/autoload.php')) {
     include_once(dirname(__FILE__) . '/../../../vendor/autoload.php');
 }
 
-COREPOS\common\ErrorHandler::setLogger(new LaneLogger());
+COREPOS\common\ErrorHandler::setLogger(new \COREPOS\pos\lib\LaneLogger());
 COREPOS\common\ErrorHandler::setErrorHandlers();
 
 /** 

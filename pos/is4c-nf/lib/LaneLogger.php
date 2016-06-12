@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+
 /**
   Logging class that matches the spec for PSR-3 LoggerInterface
   If the actual interface definition is available via composer
