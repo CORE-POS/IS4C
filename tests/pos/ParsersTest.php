@@ -366,7 +366,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('LastID', 0);
         $obj->check('UNDO');
         $out = $obj->parse('UNDO');
-        $this->assertEquals('=UndoAdminLogin', substr($out['main_frame'], -15));
+        $this->assertEquals('-UndoAdminLogin', substr($out['main_frame'], -15));
 
         $obj->check('SK');
         $out = $obj->parse('SK');
@@ -651,7 +651,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('refundComment', '');
         CoreLocal::set('SecurityRefund', 21, true);
         $out = $d->parse('100DP10');
-        $this->assertEquals('=RefundAdminLogin', substr($out['main_frame'], -17));
+        $this->assertEquals('-RefundAdminLogin', substr($out['main_frame'], -17));
         CoreLocal::set('SecurityRefund', 0, true);
         $out = $d->parse('100DP10');
         $this->assertEquals('/refundComment.php', substr($out['main_frame'], -18));

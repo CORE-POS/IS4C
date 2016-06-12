@@ -145,7 +145,7 @@ class requestInfo extends NoInputCorePage
 
     public function unitTest($phpunit)
     {
-        $phpunit->assertEquals(true, $this->validateClass('COREPOS-pos-lib-adminlogin-AnyTenderReportRequest'));
+        $phpunit->assertEquals(true, $this->validateClass('COREPOS\\pos\\lib\\adminlogin\\AnyTenderReportRequest'));
         ob_start();
         $phpunit->assertEquals(false, $this->handleInput('CL', 'COREPOS\\pos\\lib\\adminlogin\\AnyTenderReportRequest', ''));
         $phpunit->assertEquals(true, $this->handleInput('', 'COREPOS\\pos\\lib\\adminlogin\\AnyTenderReportRequest', ''));

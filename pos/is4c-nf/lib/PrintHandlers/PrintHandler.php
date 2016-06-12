@@ -481,8 +481,6 @@ class PrintHandler {
     function RenderBitmap($arg, $align='C'){
         $slip = "";
 
-        if (!class_exists('Bitmap')) return "";
-
         $bmp = null;
         if (is_object($arg) && is_a($arg, 'Bitmap')){
             $bmp = $arg;
