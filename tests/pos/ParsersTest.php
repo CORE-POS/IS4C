@@ -378,7 +378,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('SecuritySR', 21, true);
         $obj->check('MG');
         $out = $obj->parse('MG');
-        $this->assertEquals('=SusResAdminLogin', substr($out['main_frame'], -17));
+        $this->assertEquals('-SusResAdminLogin', substr($out['main_frame'], -17));
         CoreLocal::set('SecuritySR', 0, true);
         $obj->check('MG');
         $out = $obj->parse('MG');
@@ -430,7 +430,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
         $obj->check('PO');
         $out = $obj->parse('PO');
-        $this->assertEquals('=PriceOverrideAdminLogin', substr($out['main_frame'], -24));
+        $this->assertEquals('-PriceOverrideAdminLogin', substr($out['main_frame'], -24));
 
         CoreLocal::set('memType', 1);
         $obj->check('MSTG');
@@ -440,7 +440,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('SecuritySR', 21, true);
         $obj->check('MSTG');
         $out = $obj->parse('MSTG');
-        $this->assertEquals('=MemStatusAdminLogin', substr($out['main_frame'], -20));
+        $this->assertEquals('-MemStatusAdminLogin', substr($out['main_frame'], -20));
         CoreLocal::set('SecuritySR', 0, true);
         $obj->check('MSTG');
         $out = $obj->parse('MSTG');
