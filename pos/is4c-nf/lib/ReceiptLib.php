@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Bitmap;
 use COREPOS\pos\lib\PrintHandlers\PrintHandler;
 
 /**

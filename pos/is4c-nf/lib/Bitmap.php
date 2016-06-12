@@ -1,4 +1,8 @@
 <?php
+
+namespace COREPOS\pos\lib;
+use \Exception;
+
 /*
 Bitmap.class.php
 version 1 (2009-09-24)

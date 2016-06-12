@@ -1,7 +1,7 @@
 <?php
 
 namespace COREPOS\pos\lib\PrintHandlers;
-use \Bitmap;
+use COREPOS\pos\lib\Bitmap;
 use \ReceiptLib;
 
 /*
