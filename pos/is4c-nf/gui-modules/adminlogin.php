@@ -48,6 +48,7 @@ class adminlogin extends NoInputCorePage
     private function getClass()
     {
         $class = FormLib::get('class');
+        $class = str_replace('-', '\\', $class);
         // make sure calling class implements required
         // method and properties
         $method = new ReflectionMethod($class, 'adminLoginCallback');

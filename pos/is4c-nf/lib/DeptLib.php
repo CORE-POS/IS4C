@@ -65,7 +65,7 @@ class DeptLib extends \LibraryClass
         $row = self::getDepartment($dbc, $dept);
 
         if ($row['line_item_discount'] && \CoreLocal::get('itemPD') > 0 && \CoreLocal::get('SecurityLineItemDiscount') == 30 && \CoreLocal::get('msgrepeat')==0){
-            $ret['main_frame'] = \MiscLib::baseURL() . "gui-modules/adminlogin.php?class=LineItemDiscountAdminLogin";
+            $ret['main_frame'] = \MiscLib::baseURL() . "gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-LineItemDiscountAdminLogin";
             return $ret;
         } elseif ($row['line_item_discount'] && \CoreLocal::get('itemPD') > 0) {
             $discount = \MiscLib::truncate2($price * (\CoreLocal::get('itemPD')/100.00));

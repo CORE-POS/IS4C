@@ -546,7 +546,7 @@ public static function ageCheck($required_age, $ret)
 {
     $my_url = MiscLib::baseURL();
     if (CoreLocal::get("cashierAge") < 18 && CoreLocal::get("cashierAgeOverride") != 1){
-        $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=AgeApproveAdminLogin";
+        $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-AgeApproveAdminLogin";
         return array(true, $ret);
     }
 

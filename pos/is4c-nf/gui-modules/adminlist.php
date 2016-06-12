@@ -49,7 +49,7 @@ class adminlist extends NoInputCorePage
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
             } elseif ($choice == 'OTR' && $this->security >= 30){
-                $this->change_page($this->page_url.'gui-modules/requestInfo.php?class=AnyTenderReportRequest');
+                $this->change_page($this->page_url.'gui-modules/requestInfo.php?class=COREPOS-pos-lib-adminlogin-AnyTenderReportRequest');
                 return False;
             } elseif ($choice == 'UNDO' && $this->security >= 30){
                 $this->change_page($this->page_url . 'gui-modules/undo.php');

@@ -98,7 +98,7 @@ class Steering extends Parser
                         DisplayLib::standardClearButton()
                     );
                 } elseif (CoreLocal::get("SecuritySR") > 20){
-                    $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=MemStatusAdminLogin";
+                    $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-MemStatusAdminLogin";
                 } else {
                     $this->ret['output'] = DisplayLib::boxMsg(
                         _("You must be an admin to do this."),
@@ -113,7 +113,7 @@ class Steering extends Parser
                 if (CoreLocal::get("LastID") != "0") {
                     $this->ret['output'] = $in_progress_msg;
                 } else {
-                    $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=UndoAdminLogin";
+                    $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-UndoAdminLogin";
                 }
                 return true;
 
@@ -123,7 +123,7 @@ class Steering extends Parser
                 return true;
             case 'MG':
                 if (CoreLocal::get("SecuritySR") > 20) {
-                    $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=SusResAdminLogin";
+                    $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-SusResAdminLogin";
                 } else {
                     $this->ret['main_frame'] = $my_url."gui-modules/adminlist.php";
                 }
@@ -225,7 +225,7 @@ class Steering extends Parser
                 return true;
 
             case "PO":
-                $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=PriceOverrideAdminLogin";
+                $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-PriceOverrideAdminLogin";
                 return true;
         }
 

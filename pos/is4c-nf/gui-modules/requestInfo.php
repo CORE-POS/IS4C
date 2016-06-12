@@ -100,6 +100,7 @@ class requestInfo extends NoInputCorePage
         }
         // make sure calling class implements required
         // method and properties
+        $class = str_replace('-', '\\', $class);
         try {
             $this->validateClass($class);
         }
@@ -144,12 +145,12 @@ class requestInfo extends NoInputCorePage
 
     public function unitTest($phpunit)
     {
-        $phpunit->assertEquals(true, $this->validateClass('AnyTenderReportRequest'));
+        $phpunit->assertEquals(true, $this->validateClass('COREPOS-pos-lib-adminlogin-AnyTenderReportRequest'));
         ob_start();
-        $phpunit->assertEquals(false, $this->handleInput('CL', 'AnyTenderReportRequest', ''));
-        $phpunit->assertEquals(true, $this->handleInput('', 'AnyTenderReportRequest', ''));
-        $phpunit->assertEquals(true, $this->handleInput('asdf', 'AnyTenderReportRequest', ''));
-        $phpunit->assertEquals(false, $this->handleInput('1', 'AnyTenderReportRequest', ''));
+        $phpunit->assertEquals(false, $this->handleInput('CL', 'COREPOS-pos-lib-adminlogin-AnyTenderReportRequest', ''));
+        $phpunit->assertEquals(true, $this->handleInput('', 'COREPOS-pos-lib-adminlogin-AnyTenderReportRequest', ''));
+        $phpunit->assertEquals(true, $this->handleInput('asdf', 'COREPOS-pos-lib-adminlogin-AnyTenderReportRequest', ''));
+        $phpunit->assertEquals(false, $this->handleInput('1', 'COREPOS-pos-lib-adminlogin-AnyTenderReportRequest', ''));
         ob_get_clean();
         ob_start();
         $this->body_content();

@@ -67,7 +67,7 @@ class DeptKey extends Parser
             $ret['main_frame'] = $my_url.'gui-modules/deptlist.php?in=' . $amt;
         } elseif (CoreLocal::get("refund")==1 && CoreLocal::get("refundComment") == "") {
             if (CoreLocal::get("SecurityRefund") > 20) {
-                $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=RefundAdminLogin";
+                $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-RefundAdminLogin";
             } else {
                 $ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
             }

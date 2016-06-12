@@ -625,7 +625,7 @@ class UPC extends Parser
         if (CoreLocal::get("refund")==1 && CoreLocal::get("refundComment") == ""){
             $ret['udpmsg'] = 'twoPairs';
             if (CoreLocal::get("SecurityRefund") > 20){
-                $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=RefundAdminLogin";
+                $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-RefundAdminLogin";
             } else {
                 $ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
             }
@@ -633,7 +633,7 @@ class UPC extends Parser
             return $ret;
         }
         if (CoreLocal::get('itemPD') > 0 && CoreLocal::get('SecurityLineItemDiscount') == 30 && CoreLocal::get('msgrepeat')==0){
-            $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=LineItemDiscountAdminLogin";
+            $ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-LineItemDiscountAdminLogin";
             return $ret;
         }
 

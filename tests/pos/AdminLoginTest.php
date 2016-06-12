@@ -7,14 +7,14 @@ class AdminLoginTest extends PHPUnit_Framework_TestCase
     public function testGeneric()
     {
         $classes = array(
-            'AgeApproveAdminLogin' => '&repeat=1',
-            'DDDAdminLogin' => '/ddd.php',
-            'LineItemDiscountAdminLogin' => '&repeat=1',
-            'MemStatusAdminLogin' => '/boxMsg2.php',
-            'PriceOverrideAdminLogin' => '/priceOverride.php',
-            'RefundAdminLogin' => '/refundComment.php',
-            'SusResAdminLogin' => '/adminlist.php',
-            'UndoAdminLogin' => '/undo.php',
+            'COREPOS\\pos\\lib\\adminlogin\\AgeApproveAdminLogin' => '&repeat=1',
+            'COREPOS\\pos\\lib\\adminlogin\\DDDAdminLogin' => '/ddd.php',
+            'COREPOS\\pos\\lib\\adminlogin\\LineItemDiscountAdminLogin' => '&repeat=1',
+            'COREPOS\\pos\\lib\\adminlogin\\MemStatusAdminLogin' => '/boxMsg2.php',
+            'COREPOS\\pos\\lib\\adminlogin\\PriceOverrideAdminLogin' => '/priceOverride.php',
+            'COREPOS\\pos\\lib\\adminlogin\\RefundAdminLogin' => '/refundComment.php',
+            'COREPOS\\pos\\lib\\adminlogin\\SusResAdminLogin' => '/adminlist.php',
+            'COREPOS\\pos\\lib\\adminlogin\\UndoAdminLogin' => '/undo.php',
             'ManagerApproveTender' => '&repeat=1',
             'StoreTransferTender' => '&repeat=1',
         );

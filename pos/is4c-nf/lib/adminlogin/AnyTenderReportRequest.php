@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\adminlogin;
+use \CoreLocal;
+use \MiscLib;
+use \TenderReport;
+
 /**
   @class AnyTenderReportRequest
   requestInfo callback for printing

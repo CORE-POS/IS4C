@@ -38,7 +38,7 @@ class DDDReason extends NoInputCorePage
             // no reasons configured. skip the 
             // this page and continue to next step.
             CoreLocal::set('shrinkReason', 0);
-            $this->change_page($this->page_url."gui-modules/adminlogin.php?class=DDDAdminLogin");
+            $this->change_page($this->page_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-DDDAdminLogin");
 
             return false;
         } else if ($db->num_rows($result) == 1) {
@@ -47,7 +47,7 @@ class DDDReason extends NoInputCorePage
             // to next step
             $row = $db->fetch_row($result);
             CoreLocal::set('shrinkReason', $row['shrinkReasonID']);
-            $this->change_page($this->page_url."gui-modules/adminlogin.php?class=DDDAdminLogin");
+            $this->change_page($this->page_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-DDDAdminLogin");
 
             return false;
         } else {
@@ -63,7 +63,7 @@ class DDDReason extends NoInputCorePage
                 $this->change_page($this->page_url."gui-modules/pos2.php");
             } else {
                 CoreLocal::set("shrinkReason", (int)$input);
-                $this->change_page($this->page_url."gui-modules/adminlogin.php?class=DDDAdminLogin");
+                $this->change_page($this->page_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-DDDAdminLogin");
             }
 
             return false;
