@@ -147,10 +147,10 @@ class requestInfo extends NoInputCorePage
     {
         $phpunit->assertEquals(true, $this->validateClass('COREPOS-pos-lib-adminlogin-AnyTenderReportRequest'));
         ob_start();
-        $phpunit->assertEquals(false, $this->handleInput('CL', 'COREPOS-pos-lib-adminlogin-AnyTenderReportRequest', ''));
-        $phpunit->assertEquals(true, $this->handleInput('', 'COREPOS-pos-lib-adminlogin-AnyTenderReportRequest', ''));
-        $phpunit->assertEquals(true, $this->handleInput('asdf', 'COREPOS-pos-lib-adminlogin-AnyTenderReportRequest', ''));
-        $phpunit->assertEquals(false, $this->handleInput('1', 'COREPOS-pos-lib-adminlogin-AnyTenderReportRequest', ''));
+        $phpunit->assertEquals(false, $this->handleInput('CL', 'COREPOS\\pos\\lib\\adminlogin\\AnyTenderReportRequest', ''));
+        $phpunit->assertEquals(true, $this->handleInput('', 'COREPOS\\pos\\lib\\adminlogin\\AnyTenderReportRequest', ''));
+        $phpunit->assertEquals(true, $this->handleInput('asdf', 'COREPOS\\pos\\lib\\adminlogin\\AnyTenderReportRequest', ''));
+        $phpunit->assertEquals(false, $this->handleInput('1', 'COREPOS\\pos\\lib\\adminlogin\\AnyTenderReportRequest', ''));
         ob_get_clean();
         ob_start();
         $this->body_content();
