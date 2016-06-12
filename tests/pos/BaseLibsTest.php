@@ -106,8 +106,8 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $record['upc'] = '0000000000000';
         $record['description'] = uniqid('TEST-');
         TransRecord::addRecord($record);
-        SuspendLib::suspendorder();
-        $this->assertEquals(1, SuspendLib::checksuspended());
+        COREPOS\pos\lib\SuspendLib::suspendorder();
+        $this->assertEquals(1, COREPOS\pos\lib\SuspendLib::checksuspended());
 
         $query = "
             SELECT *
