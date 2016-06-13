@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\parser\parse\ScrollItems;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 /* wraps around an undone transaction to limit editing options
