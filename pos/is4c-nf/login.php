@@ -23,7 +23,7 @@
 
 if (!class_exists("AutoLoader")) include("lib/AutoLoader.php");
 
-LaneCache::clear();
+COREPOS\pos\lib\LocalStorage\LaneCache::clear();
 
 AutoLoader::loadMap();
 
