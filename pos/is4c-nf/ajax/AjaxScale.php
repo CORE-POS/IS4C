@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\ajax;
-use \AjaxCallback;
+use COREPOS\pos\lib\AjaxCallback;
 use \DisplayLib;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');

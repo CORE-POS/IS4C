@@ -1,4 +1,7 @@
 <?php
+
+use COREPOS\pos\lib\AjaxCallback;
+
 /**
  * @backupGlobals disabled
  */

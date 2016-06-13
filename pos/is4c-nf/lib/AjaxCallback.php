@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use \AutoLoader;
+use \ReflectionClass;
+
 /**
   @class AjaxCallback
 */

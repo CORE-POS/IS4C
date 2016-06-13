@@ -26,7 +26,7 @@ use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\Drawers;
 use COREPOS\pos\lib\Kickers\Kicker;
 use COREPOS\pos\lib\PrintHandlers\PrintHandler;
-use \AjaxCallback;
+use COREPOS\pos\lib\AjaxCallback;
 use \Database;
 use \CoreLocal;
 use \CoreState;

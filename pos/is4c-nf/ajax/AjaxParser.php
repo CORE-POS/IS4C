@@ -23,7 +23,7 @@
 
 namespace COREPOS\pos\ajax;
 use COREPOS\pos\lib\FormLib;
-use \AjaxCallback;
+use COREPOS\pos\lib\AjaxCallback;
 use \CoreLocal;
 use \DisplayLib;
 use \LaneCache;

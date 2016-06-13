@@ -24,7 +24,7 @@
 namespace COREPOS\pos\ajax;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\Franking;
-use \AjaxCallback;
+use COREPOS\pos\lib\AjaxCallback;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
