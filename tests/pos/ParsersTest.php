@@ -1087,7 +1087,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     function testUPC()
     {
         $u = new COREPOS\pos\parser\parse\UPC();
-        foreach (array(UPC::SCANNED_PREFIX, UPC::MACRO_PREFIX, UPC::HID_PREFIX, UPC::GS1_PREFIX) as $prefix) {
+        foreach (array(COREPOS\pos\parser\parse\UPC::SCANNED_PREFIX, COREPOS\pos\parser\parse\UPC::MACRO_PREFIX, COREPOS\pos\parser\parse\UPC::HID_PREFIX, COREPOS\pos\parser\parse\UPC::GS1_PREFIX) as $prefix) {
             $this->assertEquals(true, $u->check($prefix . '4011'));
         }
         $scaleUPC = '0XA0020121000199';
@@ -1123,8 +1123,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
             $this->assertEquals($a, $u->expandUPCE($e));
         }
 
-        $this->assertEquals(false, UPC::requestInfoCallback('foo'));
-        $this->assertNotEquals(false, UPC::requestInfoCallback('20000101'));
+        $this->assertEquals(false, COREPOS\pos\parser\parse\UPC::requestInfoCallback('foo'));
+        $this->assertNotEquals(false, COREPOS\pos\parser\parse\UPC::requestInfoCallback('20000101'));
 
         // cover item-not-found
         $this->assertInternalType('array', $u->parse('0041234512345'));
