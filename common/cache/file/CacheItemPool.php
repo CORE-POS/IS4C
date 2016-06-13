@@ -154,11 +154,6 @@ class CacheItemPool
     {
         $temp = sys_get_temp_dir();
         $sep = DIRECTORY_SEPARATOR;
-        $num = 0;
-        while (file_exists($temp . $sep . $name) && !is_writable($temp . $sep . $name)) {
-            $name .= $num;
-            $num++;
-        }
 
         return $temp . $sep . $name;
     }
