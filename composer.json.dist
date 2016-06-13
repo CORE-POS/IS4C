@@ -1,7 +1,7 @@
 {
     "name": "core-pos/core-pos",
     "description": "A Point of Sale System for Co-ops",
-    "license": "GPL",
+    "license": "GPL2",
     "type": "package",
     "homepage": "https://github.com/CORE-POS/IS4C",
     "authors": [

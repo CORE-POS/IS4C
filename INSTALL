@@ -4,8 +4,12 @@ For detailed explanations, see the documentation.
 
 Prequisites:
 * A webserver. Apache 2+ is recommended.
-* PHP 5.3 or greater
+* PHP 5.5 or greater
 * An SQL server. MySQL 5+ is recommended.
+
+Install depedencies:
+1. Copy composer.json.dist to composer.json
+2. Run "composer install"
 
 Install the front end POS:
 1. Include pos/is4c-nf somewhere on the webserver.
