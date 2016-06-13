@@ -24,7 +24,7 @@
 namespace COREPOS\pos\lib\LocalStorage;
 
 if (!class_exists("COREPOS\\pos\\lib\\LocalStorage\\LocalStorage")) {
-    include_once(__DIR__ . '/LocalStorage.php'));
+    include_once(__DIR__ . '/LocalStorage.php');
 }
 
 /**

@@ -24,7 +24,7 @@
 use COREPOS\pos\lib\LocalStorage\LaneConfig;
 
 if (!class_exists("COREPOS\\pos\\lib\\LocalStorage\\LocalStorage")) {
-    include_once(__DIR__ . '/LocalStorage.php'));
+    include_once(__DIR__ . '/LocalStorage.php');
 }
 if (!class_exists('COREPOS\\pos\\lib\\LocalStorage\\LaneConfig')) {
     include(__DIR__ . '/LaneConfig.php');
