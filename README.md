@@ -17,6 +17,7 @@ version branches.
 * Install PHP, MySQL, and a webserver
 * `git clone --depth 1 https://github.com/CORE-POS/IS4C.git`
 * If desired, checkout the lastest version branch instead of master.
+* Copy `composer.json.dist` to `composer.json` and run `composer install`.
 * Browse to `fannie/install/` to set up the back end.
 * Browse to `pos/is4c-nf/install/` to set up the lane.
 
