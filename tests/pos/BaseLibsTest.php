@@ -178,8 +178,8 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
     {
         // get codepath where session var is not array
         CoreLocal::set('ClassLookup', false);
-        AutoLoader::loadClass('LocalStorage');
-        $this->assertEquals(true, class_exists('LocalStorage', false));
+        AutoLoader::loadClass('COREPOS\\pos\\lib\\LocalStorage\\LocalStorage');
+        $this->assertEquals(true, class_exists('COREPOS\\pos\\lib\\LocalStorage\\LocalStorage', false));
 
         $class_map = AutoLoader::loadMap();
         $this->assertInternalType('array', $class_map);

@@ -170,7 +170,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $t->parse('FNTL');
         $this->assertEquals('/fsTotalConfirm.php', substr($out['main_frame'], -19));
         $out = $t->parse('TETL');
-        $this->assertEquals('=Totals', substr($out['main_frame'], -7));
+        $this->assertEquals('-Totals', substr($out['main_frame'], -7));
         lttLib::clear();
         CoreLocal::set('percentDiscount', 10);
         CoreLocal::set('fsTaxExempt', 1);
