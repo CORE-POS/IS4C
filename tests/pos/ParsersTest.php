@@ -190,7 +190,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
         $out = $t->parse('WICTL');
         $this->assertNotEquals(0, strlen($out['output']));
-        $this->assertEquals(true, Totals::requestInfoCallback('1234'));
+        $this->assertEquals(true, COREPOS\pos\parser\parse\Totals::requestInfoCallback('1234'));
         lttLib::clear();
 
         // just for coverage of omtr_ttl 
