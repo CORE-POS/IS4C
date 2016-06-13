@@ -1,5 +1,8 @@
 <?php
 
+use COREPOS\pos\parser\parse\DeptKey;
+use COREPOS\pos\parser\parse\UPC;
+
 /**
  * @backupGlobals disabled
  */

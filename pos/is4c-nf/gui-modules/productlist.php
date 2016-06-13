@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\parser\parse\UPC;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 

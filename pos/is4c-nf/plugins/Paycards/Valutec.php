@@ -154,7 +154,7 @@ class Valutec extends BasicCCModule
             case PaycardLib::PAYCARD_MODE_VOID:
             case PaycardLib::PAYCARD_MODE_VOIDITEM:
                 CoreLocal::set("autoReprint",1);
-                $void = new Void();
+                $void = new COREPOS\pos\parser\parse\Void();
                 $void->voidid(CoreLocal::get("paycard_id"), array());
                 $resp = CoreLocal::get("paycard_response");
                 CoreLocal::set("boxMsg","<b>Voided</b><font size=-1>

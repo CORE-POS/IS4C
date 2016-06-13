@@ -8,7 +8,7 @@ class DisplayTest extends PHPUnit_Framework_TestCase
     public function testScreenDisplay()
     {
         lttLib::clear();
-        $u = new UPC();
+        $u = new COREPOS\pos\parser\parse\UPC();
         $u->check('666');
         $u->parse('666');
 
@@ -118,7 +118,7 @@ class DisplayTest extends PHPUnit_Framework_TestCase
 
         CoreLocal::set('quantity', 2);
         CoreLocal::set('multiple', 1);
-        $u = new UPC();
+        $u = new COREPOS\pos\parser\parse\UPC();
         $u->check('4627');
         $u->parse('4627');
         $item = array(

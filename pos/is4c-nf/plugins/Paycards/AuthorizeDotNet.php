@@ -205,8 +205,8 @@ class AuthorizeDotNet extends BasicCCModule {
             }
             break;
         case PaycardLib::PAYCARD_MODE_VOID:
-            $v = new Void();
-            $v->voidid(CoreLocal::get("paycard_id"), array());
+            $void = new COREPOS\pos\parser\parse\Void();
+            $void->voidid(CoreLocal::get("paycard_id"), array());
             CoreLocal::set("boxMsg","<b>Voided</b><p><font size=-1>[enter] to continue<br>\"rp\" to reprint slip</font>");
             break;    
         }

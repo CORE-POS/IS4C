@@ -395,7 +395,7 @@ class MercuryE2E extends BasicCCModule
                 } 
                 break;
             case PaycardLib::PAYCARD_MODE_VOID:
-                $void = new Void();
+                $void = new COREPOS\pos\parser\parse\Void();
                 $void->voidid(CoreLocal::get("paycard_id"), array());
                 // advanced ID to the void line
                 CoreLocal::set('paycard_id', CoreLocal::get('paycard_id')+1);

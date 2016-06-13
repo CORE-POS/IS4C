@@ -558,7 +558,7 @@ public static function ageCheck($required_age, $ret)
     $today = strtotime( date('Y-m-d') );
     if ($of_age_on_day > $today) {
         $ret['udpmsg'] = 'twoPairs';
-        $ret['main_frame'] = $my_url.'gui-modules/requestInfo.php?class=UPC';
+        $ret['main_frame'] = $my_url.'gui-modules/requestInfo.php?class=COREPOS-pos-parser-parse-UPC';
         return array(true, $ret);
     }
 
