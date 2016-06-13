@@ -65,7 +65,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
         $record['total'] = -1.00;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new Void();
+        $v = new COREPOS\pos\parser\parse\Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInternalType('array', $json);
