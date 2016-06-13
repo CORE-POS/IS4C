@@ -40,7 +40,7 @@ class BalanceCheck extends Parser
     function parse($str)
     {
         $ret = $this->default_json();
-        COREPOS\pos\lib\MemberLib::chargeOk();
+        \COREPOS\pos\lib\MemberLib::chargeOk();
         $memChargeCommitted=CoreLocal::get("availBal") - CoreLocal::get("memChargeTotal");
         $title = _('Member #') . CoreLocal::get('memberID');
         $msg = _("Current AR balance is ") . CoreLocal::get("balance") . "<br />"
