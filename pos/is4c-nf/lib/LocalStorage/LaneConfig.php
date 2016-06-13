@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\LocalStorage;
+
 if (!class_exists('COREPOS\common\cache\file\CacheItemPool', false)) {
     include(dirname(__FILE__) . '/../../../../common/cache/file/CacheItemPool.php');
 }
@@ -45,7 +47,7 @@ class LaneConfig
     private static function init()
     {
         if (self::$instance === null) {
-            self::$instance = new COREPOS\common\cache\file\CacheItemPool('lane.config.cache');
+            self::$instance = new \COREPOS\common\cache\file\CacheItemPool('lane.config.cache');
         }
     }
 

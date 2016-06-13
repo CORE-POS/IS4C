@@ -21,8 +21,11 @@
 
 *********************************************************************************/
 
-if (!class_exists("LocalStorage")) {
-    include_once(realpath(dirname(__FILE__).'/LocalStorage.php'));
+namespace COREPOS\pos\lib\LocalStorage;
+use \CoreLocal;
+
+if (!class_exists("COREPOS\\pos\\lib\\LocalStorage\\LocalStorage")) {
+    include_once(__DIR__ . '/LocalStorage.php'));
 }
 
 /**

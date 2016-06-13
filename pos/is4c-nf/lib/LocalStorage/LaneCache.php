@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\LocalStorage;
+
 if (!class_exists('COREPOS\common\cache\file\CacheItemPool', false)) {
     include(dirname(__FILE__) . '/../../../../common/cache/file/CacheItemPool.php');
 }
@@ -42,7 +44,7 @@ class LaneCache
     public static function get($key)
     {
         if (self::$instance === null) {
-            self::$instance = new COREPOS\common\cache\file\CacheItemPool('lane.cache');
+            self::$instance = new \COREPOS\common\cache\file\CacheItemPool('lane.cache');
         }
 
         return self::$instance->getItem($key);
@@ -51,7 +53,7 @@ class LaneCache
     public static function set($item)
     {
         if (self::$instance === null) {
-            self::$instance = new COREPOS\common\cache\file\CacheItemPool('lane.cache');
+            self::$instance = new \COREPOS\common\cache\file\CacheItemPool('lane.cache');
         }
         self::$instance->save($item);
     }
@@ -59,7 +61,7 @@ class LaneCache
     public static function clear()
     {
         if (self::$instance === null) {
-            self::$instance = new COREPOS\common\cache\file\CacheItemPool('lane.cache');
+            self::$instance = new \COREPOS\common\cache\file\CacheItemPool('lane.cache');
         }
         self::$instance->clear();
         self::$instance->commit();

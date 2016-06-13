@@ -8,14 +8,14 @@ class LocalStorageTest extends PHPUnit_Framework_TestCase
     public function testAll()
     {
         $defaults = array(
-            'SessionStorage',
-            'UnitTestStorage',
-            'WrappedStorage',
+            'COREPOS\\pos\\lib\\LocalStorage\\SessionStorage',
+            'COREPOS\\pos\\lib\\LocalStorage\\UnitTestStorage',
+            'COREPOS\\pos\\lib\\LocalStorage\\WrappedStorage',
         );
 
         foreach ($defaults as $class) {
             $obj = new $class();
-            $this->assertInstanceOf('LocalStorage',$obj);
+            $this->assertInstanceOf('COREPOS\\pos\\lib\\LocalStorage\\LocalStorage',$obj);
 
             $unk = $obj->get('unknownKey');
             $this->assertInternalType('string',$unk);

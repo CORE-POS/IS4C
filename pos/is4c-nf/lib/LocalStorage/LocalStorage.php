@@ -1,5 +1,8 @@
 <?php
 
+namespace COREPOS\pos\lib\LocalStorage;
+use \Iterator;
+
 /**
   @class LocalStorage
 

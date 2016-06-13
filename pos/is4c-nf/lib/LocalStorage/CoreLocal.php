@@ -21,11 +21,13 @@
 
 *********************************************************************************/
 
-if (!class_exists("LocalStorage")) {
-    include_once(realpath(dirname(__FILE__).'/LocalStorage.php'));
+use COREPOS\pos\lib\LocalStorage\LaneConfig;
+
+if (!class_exists("COREPOS\\pos\\lib\\LocalStorage\\LocalStorage")) {
+    include_once(__DIR__ . '/LocalStorage.php'));
 }
-if (!class_exists('LaneConfig')) {
-    include(dirname(__FILE__) . '/LaneConfig.php');
+if (!class_exists('COREPOS\\pos\\lib\\LocalStorage\\LaneConfig')) {
+    include(__DIR__ . '/LaneConfig.php');
 }
 
 /**
@@ -160,8 +162,8 @@ class CoreLocal
           a temporary, *non-global* $CORE_LOCAL and then loops
           through to add them to the actual global session
         */
-        if (!class_exists('UnitTestStorage')) {
-            include(dirname(__FILE__) . '/UnitTestStorage.php');
+        if (!class_exists('COREPOS\\pos\\lib\\LocalStorage\\UnitTestStorage')) {
+            include(__DIR__ . '/UnitTestStorage.php');
         }
         $settings = array();
         if (self::validateJsonIni()) {
@@ -239,7 +241,7 @@ class CoreLocal
     public static function readIniPhp()
     {
         $php = dirname(__FILE__) . '/../../ini.php';
-        $CORE_LOCAL = new UnitTestStorage();
+        $CORE_LOCAL = new \COREPOS\pos\lib\LocalStorage\UnitTestStorage();
         if (file_exists($php)) {
             include($php);
         }
@@ -254,7 +256,7 @@ class CoreLocal
     public static function readIniJson()
     {
         $json = dirname(__FILE__) . '/../../ini.json';
-        $ret = new UnitTestStorage();
+        $ret = new \COREPOS\pos\lib\LocalStorage\UnitTestStorage();
         if (file_exists($json)) {
             $encoded = file_get_contents($json);
             $decoded = json_decode($encoded, true);

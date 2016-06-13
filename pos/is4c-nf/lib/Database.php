@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\LocalStorage\LaneCache;
+
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     *  3Feb2015 Eric Lee New function logger(), anticipate change to uploadCC().
