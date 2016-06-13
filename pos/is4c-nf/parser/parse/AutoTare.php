@@ -24,6 +24,7 @@
 namespace COREPOS\pos\parser\parse;
 use \CoreLocal;
 use \DisplayLib;
+use \MiscLib;
 use \Parser;
 use \TransRecord;
 
