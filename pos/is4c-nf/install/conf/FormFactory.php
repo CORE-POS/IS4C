@@ -142,9 +142,9 @@ class FormFactory
                 $selected = 'selected';
             } elseif ($is_array && !$has_keys && in_array($value, $current_value)) {
                 $selected = 'selected';
-            } elseif ($has_keys && $current_value == $key) {
+            } elseif ($has_keys && ($current_value == $key || $this->endMatch($key, $current_value))) {
                 $selected = 'selected';
-            } elseif (!$has_keys && $current_value == $value) {
+            } elseif (!$has_keys && ($current_value == $value || $this->endMatch($value, $current_value))) {
                 $selected = 'selected';
             }
             $optval = $has_keys ? $key : $value;
@@ -156,6 +156,12 @@ class FormFactory
         $ret .= '</select>' . "\n";
 
         return $ret;
+    }
+
+    private function endMatch($full, $end)
+    {
+        $len = strlen($end);
+        return substr($full, -1*$len) === $end;
     }
 
     public function checkboxField($name, $label, $default_value=0, $storage=Conf::EITHER_SETTING, $choices=array(0, 1), $attributes=array())
