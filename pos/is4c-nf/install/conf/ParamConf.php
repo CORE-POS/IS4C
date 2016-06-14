@@ -9,7 +9,7 @@ class ParamConf
         list($value, $save_as_array) = self::paramValueToArray($value);
 
         $saved = false;
-        if ($sql !== false) {
+        if ($sql !== false && $sql !== null) {
             $prep = $sql->prepare('SELECT param_value FROM parameters
                                         WHERE param_key=? AND lane_id=?');
             $exists = $sql->execute($prep, array($key, \CoreLocal::get('laneno')));
