@@ -1,5 +1,7 @@
 <?php
 
+use COREPOS\pos\lib\ReceiptLib;
+
 class DeveloperReceiptMessage extends CustomerReceiptMessage 
 {
     public function message($str)

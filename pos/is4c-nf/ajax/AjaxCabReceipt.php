@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\ajax;
+use COREPOS\pos\lib\ReceiptLib;
 use \CoreLocal;
-use \ReceiptLib;
 use COREPOS\pos\lib\AjaxCallback;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');

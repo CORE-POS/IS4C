@@ -23,6 +23,7 @@
 
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\PrintHandlers\PrintHandler;
+use COREPOS\pos\lib\ReceiptLib;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 

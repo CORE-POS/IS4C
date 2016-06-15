@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\ReceiptLib;
+
 /**
   @class GenericSigSlipMessage
   Attach a generic signature slip to a receipt.

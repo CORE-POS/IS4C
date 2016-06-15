@@ -23,6 +23,7 @@
 
 namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
 
 /**
   @class Drawer

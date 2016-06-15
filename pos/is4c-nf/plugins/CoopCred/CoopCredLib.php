@@ -22,6 +22,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\ReceiptLib;
+
 /**
   @class CoopCredLib
   Functions for the Coop Cred plugin.

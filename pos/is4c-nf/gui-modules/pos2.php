@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\ReceiptLib;
+
 session_cache_limiter('nocache');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');

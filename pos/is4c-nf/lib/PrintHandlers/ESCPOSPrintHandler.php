@@ -2,7 +2,7 @@
 
 namespace COREPOS\pos\lib\PrintHandlers;
 use COREPOS\pos\lib\Bitmap;
-use \ReceiptLib;
+use COREPOS\pos\lib\ReceiptLib;
 
 /*
 ESCPOSPrintHandler

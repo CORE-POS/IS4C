@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\ReceiptLib;
+
 /**
   @class GCBalanceReceiptMessage
 */

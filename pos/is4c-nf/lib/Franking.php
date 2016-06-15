@@ -22,11 +22,12 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\ReceiptLib;
 
 /**
   @class Franking
 */
-class Franking extends \LibraryClass 
+class Franking 
 {
     static public function frank($amount) 
     {

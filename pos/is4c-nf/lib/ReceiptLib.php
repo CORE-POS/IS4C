@@ -21,9 +21,13 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\Bitmap;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\PrintHandlers\PrintHandler;
+use \CoreLocal;
+use \Database;
+use \MiscLib;
 
 /**
   @class ReceiptLib
@@ -211,7 +215,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
 //#'C - is this never called?
 static public function printChargeFooterCust($dateTimeStamp, $ref, $program="charge") 
 {
-    $chgName = COREPOS\pos\lib\MemberLib::getChgName();            // added by apbw 2/14/05 SCR
+    $chgName = \COREPOS\pos\lib\MemberLib::getChgName();            // added by apbw 2/14/05 SCR
 
     $date = self::build_time($dateTimeStamp);
 
@@ -261,7 +265,7 @@ static public function printChargeFooterCust($dateTimeStamp, $ref, $program="cha
 */
 static public function printChargeFooterStore($dateTimeStamp, $ref, $program="charge") 
 {
-    $chgName = COREPOS\pos\lib\MemberLib::getChgName();            // added by apbw 2/14/05 SCR
+    $chgName = \COREPOS\pos\lib\MemberLib::getChgName();            // added by apbw 2/14/05 SCR
     
     $date = self::build_time($dateTimeStamp);
 
@@ -372,7 +376,7 @@ static public function centerBig($text) {
 /***** CvR 06/28/06 calculate current balance for receipt ****/
 static public function chargeBalance($receipt, $program="charge", $trans_num='')
 {
-    COREPOS\pos\lib\MemberLib::chargeOk();
+    \COREPOS\pos\lib\MemberLib::chargeOk();
 
     $labels = array();
     $labels['charge'] = array("Current IOU Balance:" , 1);

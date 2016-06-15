@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\ReceiptLib;
+
 /**
   @class TenderReport
   Generate a tender report

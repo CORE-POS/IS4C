@@ -1,5 +1,7 @@
 <?php
 
+use COREPOS\pos\lib\ReceiptLib;
+
 class WfcEquityMessage extends CustomerReceiptMessage {
 
     function message($str)

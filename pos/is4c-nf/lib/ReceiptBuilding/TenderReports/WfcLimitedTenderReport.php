@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
 
 /**
   @class WfcLimitedTenderReport
