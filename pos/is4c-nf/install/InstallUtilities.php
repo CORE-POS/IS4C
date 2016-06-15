@@ -27,6 +27,7 @@ use COREPOS\pos\install\conf\Conf;
 use COREPOS\pos\install\conf\PhpConf;
 use COREPOS\pos\install\conf\JsonConf;
 use COREPOS\pos\install\conf\ParamConf;
+use COREPOS\pos\lib\CoreState;
 use \CoreLocal;
 
 class InstallUtilities 
@@ -135,7 +136,7 @@ class InstallUtilities
           means ini.php overwrote a setting with a different
           value.
         */
-        \CoreState::loadParams();
+        CoreState::loadParams();
         include(dirname(__FILE__) . '/../ini.php');
 
         $dbc = \Database::pDataConnect();

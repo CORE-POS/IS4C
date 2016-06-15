@@ -21,13 +21,18 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\FormLib;
+use \CoreLocal;
+use \Database;
+use \DiscountModule;
+use \MiscLib;
 
 /**
  @class CoreState
  Setup session variables
 */
-class CoreState extends LibraryClass 
+class CoreState 
 {
 
 /**
@@ -541,7 +546,7 @@ static public function loadData()
         $row_local = $db_local->fetchRow($result_local);
         
         if ($row_local["card_no"] && strlen($row_local["card_no"]) > 0) {
-            COREPOS\pos\lib\MemberLib::setMember($row_local['card_no'], 1);
+            \COREPOS\pos\lib\MemberLib::setMember($row_local['card_no'], 1);
         }
     }
 }

@@ -3,6 +3,7 @@
 use COREPOS\pos\install\conf\Conf;
 use COREPOS\pos\install\conf\JsonConf;
 use COREPOS\pos\install\InstallUtilities;
+use COREPOS\pos\lib\CoreState;
 
 ?>
 <!DOCTYPE html>

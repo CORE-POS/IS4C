@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\CoreState;
+
 /**
   @class CoopCredTender
   Tender module for Coop Cred accounts

@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\CoreState;
+
 /**
   @class StoreChargeTender
   Tender module for charge accounts

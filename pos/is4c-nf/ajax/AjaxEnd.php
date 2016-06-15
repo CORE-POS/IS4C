@@ -27,9 +27,9 @@ use COREPOS\pos\lib\Drawers;
 use COREPOS\pos\lib\Kickers\Kicker;
 use COREPOS\pos\lib\PrintHandlers\PrintHandler;
 use COREPOS\pos\lib\AjaxCallback;
+use COREPOS\pos\lib\CoreState;
 use \Database;
 use \CoreLocal;
-use \CoreState;
 use \ReceiptLib;
 use \UdpComm;
 

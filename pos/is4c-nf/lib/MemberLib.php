@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\CoreState;
 
 /**
   @class MemberLib
@@ -33,7 +34,7 @@ class MemberLib extends \LibraryClass
     */
     static public function clear()
     {
-        \CoreState::memberReset();
+        CoreState::memberReset();
         $dbc = \Database::tDataConnect();
         $dbc->query("UPDATE localtemptrans SET card_no=0,percentDiscount=NULL");
         \CoreLocal::set("ttlflag",0);    

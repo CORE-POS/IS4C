@@ -1,6 +1,7 @@
 <?php
 
 namespace COREPOS\pos\install\db;
+use COREPOS\pos\lib\CoreState;
 
 class Creator
 {
@@ -90,7 +91,7 @@ class Creator
             $db->query('INSERT INTO drawerowner (drawer_no) VALUES (2)', $name);
         }
 
-        \CoreState::loadParams();
+        CoreState::loadParams();
         
         return $errors;
     }

@@ -1,5 +1,7 @@
 <?php
 
+use COREPOS\pos\lib\CoreState;
+
 /**
   Initialize environment & session so testing behaves
   correctly

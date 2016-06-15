@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\CoreState;
+
 /**
   @class DisplayLib
   Functions for drawing display elements

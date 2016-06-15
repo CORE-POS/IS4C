@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib;
-use \CoreState;
+use COREPOS\pos\lib\CoreState;
 use \Database;
 
 /**

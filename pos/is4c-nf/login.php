@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\CoreState;
+
 if (!class_exists("AutoLoader")) include("lib/AutoLoader.php");
 
 COREPOS\pos\lib\LocalStorage\LaneCache::clear();
