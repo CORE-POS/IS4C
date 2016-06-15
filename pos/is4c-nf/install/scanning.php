@@ -93,7 +93,15 @@ body {
 <tr>
 <tr>
     <td><b>Unknown Item Handler</b></td>
-    <td><?php echo $form->selectField('ItemNotFound', AutoLoader::listModules('ItemNotFound', true), 'ItemNotFound'); ?>
+    <?php
+    $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ItemNotFound', true);
+    $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
+    ?>
+    <td><?php echo $form->selectField('ItemNotFound', $mods, 'ItemNotFound'); ?>
+    <?php
+    $val = str_replace('-', '\\', CoreLocal::get('ItemNotFound'));
+    InstallUtilities::paramSave('ItemNotFound', $val);
+    ?>
     <span class='noteTxt'>Module called when a UPC does not match any item or Special UPC handler</span>
     </td>
 </tr>

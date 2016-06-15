@@ -4,6 +4,7 @@ use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DiscountModule;
+use COREPOS\pos\lib\ItemNotFound;
 
 /**
  * @backupGlobals disabled
@@ -247,7 +248,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'DiscountModule',
             'TotalAction',
             'VariableWeightReWrite',
-            'ItemNotFound',
         );
         foreach ($listable as $base_class) {
             $mods = AutoLoader::listModules($base_class);

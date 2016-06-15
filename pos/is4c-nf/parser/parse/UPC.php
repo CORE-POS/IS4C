@@ -23,6 +23,7 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ItemNotFound;
 use \CoreLocal;
 use \DiscountType;
 use \DisplayLib;
@@ -712,11 +713,7 @@ class UPC extends Parser
             }
         }
         
-        $handler = CoreLocal::get('ItemNotFound');
-        if ($handler === '' || !class_exists($handler)) {
-            $handler = 'ItemNotFound';
-        }
-        $obj = new $handler();
+        $obj = ItemNotFound::factory(CoreLocal::get('ItemNotFound'));
         $ret = $obj->handle($upc, $ret);
 
         return $ret;
