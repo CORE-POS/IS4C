@@ -87,6 +87,8 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         if (isset($_SESSION['store_id'])) $store_id = $_SESSION['store_id'];
         
         if (isset($session) && isset($store_id)) {
+            $dbc = FannieDB::get('woodshed_no_replicate');
+            
             $date = date('Y-m-d');
             $argsB = array($date, $upc, $store_id, $session);
             $prepB = $dbc->prepare('
