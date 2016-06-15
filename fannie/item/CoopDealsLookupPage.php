@@ -76,12 +76,32 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $dbc->execute($prep, $args);
         if ($dbc->error()) {
             return '<div class="alert alert-danger">' . $dbc->error(). "</div>"
-                . '<a class="btn btn-default" href="http://key/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
+                . '<a class="btn btn-default" href="http://192.168.1.2/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
         } else {
             return '<div class="alert alert-success">Item Added to Batch</div>'
-                . '<a class="btn btn-default" href="http://key/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
+                . '<a class="btn btn-default" href="http://192.168.1.2/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
         }
         
+        //  Update 'Missing Sign' queue in SaleChangeQueues. 
+        if (isset($_SESSION['session'])) $session = $_SESSION['session'];
+        if (isset($_SESSION['store_id'])) $store_id = $_SESSION['store_id'];
+        
+        if (isset($session) && isset($store_id)) {
+            $date = date('Y-m-d');
+            $argsB = array($date, $upc, $store_id, $session);
+            $prepB = $dbc->prepare('
+                INSERT INTO woodshed_no_replicate.SaleChangeQueues
+                (date, queue, upc, store_id, session)
+                VALUES (
+                    ?,
+                    "8",
+                    ?,
+                    ?,
+                    ?
+                )
+            ');
+            $dbc->execute($prepB, $argsB);    
+        }        
     }
     
     function get_upc_view()
@@ -158,6 +178,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             }
             $ret .=  '
                 </select><br>
+                    <br>
                     <input type="submit" class="btn btn-danger" value="Add this item to batch">
                     <input type="hidden" name="insert" value="1">
                     <input type="hidden" name="upc" value="' . $upc . '">
@@ -166,7 +187,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             ';   
         }
         
-        $ret .= '<a class="btn btn-default" href="http://key/scancoord/SaleChangeScanner.php">
+        $ret .= '<br><a class="btn btn-default" href="http://192.168.1.2/scancoord/SaleChangeScanner.php">
             Back to Sign info<br>Scanner</a>';
         
         return $ret;
@@ -186,6 +207,9 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="id" class="form-inline">
                 <input type="text" class="form-control" name="upc" id="upc" placeholder="Scan Barcode" autofocus>
             </form>
+            <br>
+            <a class="btn btn-default" href="http://192.168.1.2/scancoord/SaleChangeScanner.php">
+            Back to Sign info<br>Scanner</a>
         ';
     }
     
