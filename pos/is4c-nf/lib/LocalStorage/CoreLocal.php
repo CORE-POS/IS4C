@@ -230,6 +230,11 @@ class CoreLocal
             $json[$key] = $val;
         }
 
+        // this may occur before autoloading has kicked in
+        if (!class_exists('COREPOS\\pos\\lib\\JsonLib')) {
+            include(__DIR__ . '/../JsonLib.php');
+        }
+
         return JsonLib::prettyJSON(json_encode($json));
     }
 
