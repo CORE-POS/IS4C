@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
   @class OntarioMealTaxRebateAction
   Update tax codes and add comment records

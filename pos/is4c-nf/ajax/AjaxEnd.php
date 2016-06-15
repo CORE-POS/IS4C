@@ -23,12 +23,12 @@
 
 namespace COREPOS\pos\ajax;
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\Drawers;
 use COREPOS\pos\lib\Kickers\Kicker;
 use COREPOS\pos\lib\PrintHandlers\PrintHandler;
 use COREPOS\pos\lib\AjaxCallback;
 use COREPOS\pos\lib\CoreState;
-use \Database;
 use \CoreLocal;
 use \ReceiptLib;
 use \UdpComm;

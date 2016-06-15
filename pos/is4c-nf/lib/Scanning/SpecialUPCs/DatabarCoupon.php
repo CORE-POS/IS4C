@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 class DatabarCoupon extends SpecialUPC 
 {
 

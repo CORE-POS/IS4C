@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
   @class YPSITenderReport
   Ypsilanti Food Co-op custom tender report format

@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\parser\parse\ScrollItems;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');

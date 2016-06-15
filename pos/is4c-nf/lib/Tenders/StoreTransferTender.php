@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
   @class StoreTransfer
   Tender module for inter-departmental transfers

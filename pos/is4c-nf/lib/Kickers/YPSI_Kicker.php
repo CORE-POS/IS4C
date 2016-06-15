@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib\Kickers;
-use \Database;
+use COREPOS\pos\lib\Database;
 
 /**
   @class YPSI_Kicker

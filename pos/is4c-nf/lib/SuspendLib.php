@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\Database;
 use \CoreLocal;
-use \Database;
 use \ReceiptLib;
 use \TransRecord;
 

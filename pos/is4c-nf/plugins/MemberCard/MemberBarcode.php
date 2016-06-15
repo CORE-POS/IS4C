@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
   @class MemberBarcode
   WFC barcoded member ID implementation

@@ -28,6 +28,7 @@ use COREPOS\pos\install\conf\PhpConf;
 use COREPOS\pos\install\conf\JsonConf;
 use COREPOS\pos\install\conf\ParamConf;
 use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
 use \CoreLocal;
 
 class InstallUtilities 
@@ -139,7 +140,7 @@ class InstallUtilities
         CoreState::loadParams();
         include(dirname(__FILE__) . '/../ini.php');
 
-        $dbc = \Database::pDataConnect();
+        $dbc = Database::pDataConnect();
 
         /**
           Again backwards. Check lane-specific parameters first

@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
   @class WfcLimitedTenderReport
   Generate an extremely simplified tender report

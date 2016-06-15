@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 class InactiveMemSearch extends MemberLookup {
 
     public function lookup_by_number($num)

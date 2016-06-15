@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
   @class PrehLib
   A horrible, horrible catch-all clutter of functions

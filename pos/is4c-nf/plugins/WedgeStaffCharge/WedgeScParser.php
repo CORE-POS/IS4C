@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 class WedgeScParser extends Parser 
 {
     private $left;

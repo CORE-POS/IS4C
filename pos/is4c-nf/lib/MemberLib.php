@@ -23,6 +23,7 @@
 
 namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
 
 /**
   @class MemberLib
@@ -35,7 +36,7 @@ class MemberLib extends \LibraryClass
     static public function clear()
     {
         CoreState::memberReset();
-        $dbc = \Database::tDataConnect();
+        $dbc = Database::tDataConnect();
         $dbc->query("UPDATE localtemptrans SET card_no=0,percentDiscount=NULL");
         \CoreLocal::set("ttlflag",0);    
         $opts = array('upc'=>'DEL_MEMENTRY');
@@ -70,7 +71,7 @@ class MemberLib extends \LibraryClass
             "redraw_footer"=>false
         );
         
-        $dbc = \Database::pDataConnect();
+        $dbc = Database::pDataConnect();
         $result = $dbc->query($query);
         $num_rows = $dbc->num_rows($result);
 
@@ -193,7 +194,7 @@ class MemberLib extends \LibraryClass
                 }
 
                 if ($chargeOk == 1) {
-                    $conn = \Database::pDataConnect();
+                    $conn = Database::pDataConnect();
                     $query = "SELECT ChargeLimit AS CLimit
                         FROM custdata
                         WHERE personNum=1 AND CardNo = $member";
@@ -261,7 +262,7 @@ class MemberLib extends \LibraryClass
         if (\CoreLocal::get("SSI") == 1) {
             $memMsg .= " #";
         }
-        $conn = \Database::pDataConnect();
+        $conn = Database::pDataConnect();
         if (\CoreLocal::get('NoCompat') == 1 || $conn->tableExists('CustomerNotifications')) {
             $blQ = '
                 SELECT message
@@ -287,7 +288,7 @@ class MemberLib extends \LibraryClass
     */
     static public function setMember($member, $personNumber, $row=array())
     {
-        $conn = \Database::pDataConnect();
+        $conn = Database::pDataConnect();
 
         /**
           Look up the member information here. There's no good 
@@ -362,7 +363,7 @@ class MemberLib extends \LibraryClass
           Set member number and attributes
           in the current transaction
         */
-        $conn2 = \Database::tDataConnect();
+        $conn2 = Database::tDataConnect();
         $memquery = "
             UPDATE localtemptrans 
             SET card_no = '" . $member . "',
@@ -412,7 +413,7 @@ class MemberLib extends \LibraryClass
         if ($cardno == \CoreLocal::get("defaultNonMem")) return false;
         if (\CoreLocal::get("balance") == 0) return false;
 
-        $dbc = \Database::mDataConnect();
+        $dbc = Database::mDataConnect();
 
         if (\CoreLocal::get('NoCompat') != 1 && !$dbc->table_exists("unpaid_ar_today")) return false;
 
@@ -455,7 +456,7 @@ class MemberLib extends \LibraryClass
     */
     static public function chargeOk() 
     {
-        $conn = \Database::pDataConnect();
+        $conn = Database::pDataConnect();
         $query = "SELECT c.ChargeLimit - c.Balance AS availBal,
             c.Balance, c.ChargeOk
             FROM custdata AS c 
@@ -485,7 +486,7 @@ class MemberLib extends \LibraryClass
     static public function getChgName() 
     {
         $query = "select LastName, FirstName from custdata where CardNo = '" .\CoreLocal::get("memberID") ."'";
-        $connection = \Database::pDataConnect();
+        $connection = Database::pDataConnect();
         $result = $connection->query($query);
         $num_rows = $connection->num_rows($result);
 

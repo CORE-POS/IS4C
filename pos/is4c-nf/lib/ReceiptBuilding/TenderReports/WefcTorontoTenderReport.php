@@ -22,6 +22,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
   @class WefcTorontoTenderReport
   Like PFC tender report except reports for the entire

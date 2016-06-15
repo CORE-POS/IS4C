@@ -33,6 +33,7 @@
     *                       in body_content() using temp_message.
 
 */
+use COREPOS\pos\lib\Database;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 

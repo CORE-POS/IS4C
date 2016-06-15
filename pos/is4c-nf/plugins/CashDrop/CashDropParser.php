@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 class CashDropParser extends Parser {
 
     function check($str){

@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\parser\parse;
+use COREPOS\pos\lib\Database;
 use \CoreLocal;
-use \Database;
 use \DisplayLib;
 use \Parser;
 use \PrehLib;

@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
   @class DefaultReceiptSavings
   Print "savings" messages for receipt

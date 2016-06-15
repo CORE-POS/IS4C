@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\CoreState;
-use \Database;
 
 /**
   @class Authenticate

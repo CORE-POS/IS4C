@@ -14,6 +14,8 @@
     in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *********************************************************************************/
+
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 class WicTenderPage extends BasicCorePage 

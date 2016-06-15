@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\LocalStorage\LaneConfig;
+use COREPOS\pos\lib\Database;
 
 if (!class_exists("COREPOS\\pos\\lib\\LocalStorage\\LocalStorage")) {
     include_once(__DIR__ . '/LocalStorage.php');

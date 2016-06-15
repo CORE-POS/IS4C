@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
    @class SpecialOrder
    WFC Electronic Special Orders

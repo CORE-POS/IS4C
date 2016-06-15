@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
  @class PaycardLib
  @brief Defines constants and functions for card processing.

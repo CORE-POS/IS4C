@@ -22,6 +22,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
     @class CCredSigSlip
     Make a signature slip for each Coop Cred tender used in the transaction.

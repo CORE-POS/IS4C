@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
   Using Datacap ActiveX requires the cashier
   to select a card type. Commands are DATACAP

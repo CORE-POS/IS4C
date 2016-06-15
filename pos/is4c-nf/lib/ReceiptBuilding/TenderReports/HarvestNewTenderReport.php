@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
   @class HarvestNewTenderReport
   Generate a tender report using the NEW methods (no TTG)

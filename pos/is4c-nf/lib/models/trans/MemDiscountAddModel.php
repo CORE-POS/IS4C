@@ -23,6 +23,7 @@
 
 namespace COREPOS\pos\lib\models\trans;
 use COREPOS\pos\lib\models\BasicModel;
+use COREPOS\pos\lib\Database;
 
 /*
 if (!class_exists('\\COREPOS\\pos\lib\\models\\trans\\LocalTransModel')) {
@@ -116,9 +117,9 @@ to apply the relevant discount(s).
     public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False)
     {
         if ($db_name == \CoreLocal::get('pDatabase')) {
-            $this->connection = \Database::pDataConnect();
+            $this->connection = Database::pDataConnect();
         } else if ($db_name == \CoreLocal::get('tDatabase')) {
-            $this->connection = \Database::tDataConnect();
+            $this->connection = Database::tDataConnect();
         } else {
             echo "Error: Unknown database ($db_name)";
             return false;

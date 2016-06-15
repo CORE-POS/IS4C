@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
 2014-04-01:
  Mercury has a public webservices implementation on github:

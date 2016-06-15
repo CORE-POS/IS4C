@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 class WedgeStaffCharge extends Plugin {
 
     public $plugin_description = 'Legacy staff charge functionality that does not

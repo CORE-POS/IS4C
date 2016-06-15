@@ -22,6 +22,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
     @class CCredUsedBalances
     List post-transaction balances for Coop Cred accounts

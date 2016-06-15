@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
 
 /**
   @class DisplayLib

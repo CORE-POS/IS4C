@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
   @class AllItemProductUserSearch
   Use the productUser table to supplement searches.

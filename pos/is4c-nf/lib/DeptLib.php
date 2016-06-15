@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\Database;
 
 /**
   @class DeptLib
@@ -61,7 +62,7 @@ class DeptLib extends \LibraryClass
         $dept = $dept/10;
         $discount = 0;
 
-        $dbc = \Database::pDataConnect();
+        $dbc = Database::pDataConnect();
         $row = self::getDepartment($dbc, $dept);
 
         if ($row['line_item_discount'] && \CoreLocal::get('itemPD') > 0 && \CoreLocal::get('SecurityLineItemDiscount') == 30 && \CoreLocal::get('msgrepeat')==0){
@@ -144,7 +145,7 @@ class DeptLib extends \LibraryClass
         $query2 = "select department, sum(total) as total from localtemptrans where department = "
             .$dept['dept_no']." group by department";
 
-        $db2 = \Database::tDataConnect();
+        $db2 = Database::tDataConnect();
         $result2 = $db2->query($query2);
 
         $num_rows2 = $db2->num_rows($result2);

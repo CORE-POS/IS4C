@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib\Kickers;
+use COREPOS\pos\lib\Database;
 use \CoreLocal;
-use \Database;
 
 /**
   @class WFC_Kicker

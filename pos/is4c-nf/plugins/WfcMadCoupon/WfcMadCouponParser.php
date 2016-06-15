@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 class WfcMadCouponParser extends Parser {
 
     function check($str){

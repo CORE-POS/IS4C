@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+
 /**
   @class ItemSearchAll_WEFC_Toronto
   Use the productUser table to supplement searches.
