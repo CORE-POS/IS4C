@@ -60,7 +60,7 @@ class NewMagellan extends ScaleDriverWrapper {
         if (!empty($scans)) $output['scans'] = ltrim($scans[0],'0');
 
         if (!empty($output)) {
-            echo JsonLib::array_to_json($output);
+            echo json_encode($output);
         } else {
             echo "{}";
         }

@@ -23,6 +23,7 @@
 
 use COREPOS\pos\lib\LocalStorage\LaneConfig;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\JsonLib;
 
 if (!class_exists("COREPOS\\pos\\lib\\LocalStorage\\LocalStorage")) {
     include_once(__DIR__ . '/LocalStorage.php');
@@ -227,9 +228,6 @@ class CoreLocal
         $json = array();
         foreach ($php as $key => $val) {
             $json[$key] = $val;
-        }
-        if (!class_exists('JsonLib')) {
-            include(dirname(__FILE__) . '/../JsonLib.php');
         }
 
         return JsonLib::prettyJSON(json_encode($json));

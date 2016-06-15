@@ -33,7 +33,7 @@ class mgrlogin extends NoInputCorePage
     function preprocess(){
         if (FormLib::get('input') !== '') {
             $arr = $this->mgrauthenticate(FormLib::get('input'));
-            echo JsonLib::array_to_json($arr);
+            echo json_encode($arr);
             return False;
         } else {
             // beep on initial page load

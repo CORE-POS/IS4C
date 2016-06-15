@@ -56,7 +56,7 @@ class PaycardTransLookupPage extends BasicCorePage
                 $resp = $obj->lookupTransaction($ref, $local, $mode);
             }
 
-            echo JsonLib::array_to_json($resp);
+            echo json_encode($resp);
 
             return false;
         }

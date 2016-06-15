@@ -1,6 +1,7 @@
 <?php
 
 namespace COREPOS\pos\install\conf;
+use COREPOS\pos\lib\JsonLib;
 
 class JsonConf
 {
@@ -37,7 +38,7 @@ class JsonConf
         }
 
         $json[$key] = $value;
-        $saved = file_put_contents($ini_json, \JsonLib::prettyJSON(json_encode($json)));
+        $saved = file_put_contents($ini_json, JsonLib::prettyJSON(json_encode($json)));
 
         return ($saved === false) ? false : true;
     }
@@ -62,7 +63,7 @@ class JsonConf
         }
 
         unset($json[$key]);
-        $saved = file_put_contents($ini_json, \JsonLib::prettyJSON(json_encode($json)));
+        $saved = file_put_contents($ini_json, JsonLib::prettyJSON(json_encode($json)));
 
         return ($saved === false) ? false : true;
     }
