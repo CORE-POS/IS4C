@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\SuspendLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');

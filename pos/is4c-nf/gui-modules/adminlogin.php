@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\FormLib;
 
 /* this module is intended for re-use. 

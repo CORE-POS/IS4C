@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\Drawers;
 use COREPOS\pos\lib\Kickers\Kicker;

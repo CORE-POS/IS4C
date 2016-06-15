@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Authenticate;
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class paycardboxMsgVoid extends PaycardProcessPage {
