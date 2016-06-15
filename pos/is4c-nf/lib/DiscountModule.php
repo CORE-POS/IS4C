@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\pos\lib\DiscountModule;
+namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\Database;
 use \CoreLocal;
 use \PrehLib;
