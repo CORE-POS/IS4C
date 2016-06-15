@@ -24,6 +24,7 @@
 namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DiscountModule;
 
 /**
   @class MemberLib
@@ -376,7 +377,7 @@ class MemberLib extends \LibraryClass
         */
         if (\CoreLocal::get('discountEnforced')) {
             // skip subtotaling automatically since that occurs farther down
-            \DiscountModule::updateDiscount(new \DiscountModule($row['Discount'], 'custdata'), false);
+            DiscountModule::updateDiscount(new DiscountModule($row['Discount'], 'custdata'), false);
         }
 
         /**

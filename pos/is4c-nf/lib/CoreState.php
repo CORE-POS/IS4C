@@ -23,9 +23,9 @@
 
 namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\FormLib;
 use \CoreLocal;
-use \DiscountModule;
 use \MiscLib;
 
 /**

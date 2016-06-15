@@ -155,7 +155,6 @@ class AutoLoader extends LibraryClass
     );
 
     private static $base_classes = array(
-        'DiscountModule'    => '/DiscountModule.php',
         'MemberLookup'      => '/MemberLookup.php',
         'ItemNotFound'      => '/ItemNotFound.php',
     );

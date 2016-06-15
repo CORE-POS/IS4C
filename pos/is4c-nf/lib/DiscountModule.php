@@ -21,7 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\Database;
+use \CoreLocal;
+use \PrehLib;
+use \TransRecord;
 
 /**
   @class DiscountModule

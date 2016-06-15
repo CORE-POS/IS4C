@@ -3,6 +3,7 @@
 use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DiscountModule;
 
 /**
  * @backupGlobals disabled
