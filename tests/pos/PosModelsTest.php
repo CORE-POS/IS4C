@@ -1,4 +1,7 @@
 <?php
+
+use COREPOS\pos\lib\Database;
+
 /**
  * @backupGlobals disabled
  */

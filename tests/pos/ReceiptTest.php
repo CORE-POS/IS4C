@@ -1,5 +1,6 @@
 <?php
 
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\Drawers;
 use COREPOS\pos\lib\Franking;
 

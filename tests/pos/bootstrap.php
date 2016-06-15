@@ -10,7 +10,7 @@ define('CONF_LOADED', true);
 include(dirname(__FILE__).'/../../pos/is4c-nf/lib/AutoLoader.php');
 COREPOS\pos\lib\LocalStorage\LaneCache::clear();
 AutoLoader::loadMap();
-CoreState::loadParams();
+COREPOS\pos\lib\CoreState::loadParams();
 AutoLoader::blacklist('CoopCred');
 AutoLoader::blacklist('CCredMembershipsModel');
 AutoLoader::blacklist('CCredProgramsModel');
