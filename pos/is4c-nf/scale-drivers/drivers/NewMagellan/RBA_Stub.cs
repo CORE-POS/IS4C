@@ -217,8 +217,6 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
                     }
                     if (Choice(enc.GetString(buffer))) {
                         WriteMessageToDevice(SimpleMessageScreen("Waiting for total"));
-                    } else {
-                        showPaymentScreen();
                     }
                     bytes.Clear();
                 }
