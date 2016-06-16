@@ -88,15 +88,12 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         
         if (isset($session) && isset($store_id)) {
             $dbc = FannieDB::get('woodshed_no_replicate');
-            
-            $date = date('Y-m-d');
-            $argsB = array($date, $upc, $store_id, $session);
+            $argsB = array($upc, $store_id, $session);
             $prepB = $dbc->prepare('
                 INSERT INTO woodshed_no_replicate.SaleChangeQueues
-                (date, queue, upc, store_id, session)
+                (queue, upc, store_id, session)
                 VALUES (
-                    ?,
-                    "8",
+                    8,
                     ?,
                     ?,
                     ?
@@ -149,8 +146,18 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             $ret .=  '<td><b>Brand</b></td><td>' . $row['brand'] . '</tr>';
             $ret .=  '<td><b>Flyer Period</b></td><td>' . $row['flyerPeriod'] . '</tr>';
             $ret .=  '<td><b>Sku</b></td><td>' . $row['sku'] . '</tr>';
-            $ret .=  '<td><b>Sale Price</b></td><td>' . $rounder->round($row['srp']) . '</td></tr>';
-            $salePrice = $rounder->round($row['srp']);
+            $srp = $row['srp'];
+            if ($srp === 1.50 || $srp === 2 || $srp === 2.5 || $srp === 3 
+                || $srp === 3.50 || $srp === 4 || $srp === 4.49 
+                || $srp === 3.33 || $srp === 1.33 || $srp === 1.66 
+                || $srp === 2.33 || $srp === 1.25 || $srp === 0.8 
+                || $srp === 1) {
+                    $ret .=  '<td><b>Sale Price</b></td><td>' . $srp . '</td></tr>';
+                    $salePrice = $srp;
+                } else {
+                    $ret .=  '<td><b>Sale Price</b></td><td>' . $rounder->round($srp) . '</td></tr>';
+                    $salePrice = $rounder->round($srp);
+                }
             $ret .=  '<td><b>Sale Period</b></td><td>June</td></tr>';
             $check = $row['upc'];
         }
