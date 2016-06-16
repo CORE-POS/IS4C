@@ -104,6 +104,13 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
         SPH_Thread.Join();
     }
 
+    public void addScreenMessage(string message)
+    {
+        try {
+            WriteMessageToDevice(SetVariableMessage("104", message));
+        } catch (Exception) { }
+    }
+
     /**
       Simple wrapper to write an array of bytes
     */
@@ -168,9 +175,11 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     {
         try {
             WriteMessageToDevice(GetCardType());
+            WriteMessageToDevice(ScreenLinesReset());
+            addScreenMessage("           Your co-op since 1970");
             Thread.Sleep(2000);
             char fs = (char)0x1c;
-            string buttons = "Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
+            string buttons = "TPROMPT6,Whole Foods Co-op"+fs+"Bbtnb,CHIP+PIN"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
             WriteMessageToDevice(UpdateScreenMessage(buttons));
         } catch (Exception ex) {
         }

@@ -195,6 +195,13 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             //sig_message = msg.Substring(7);
             msg = "termSig";
         }
+        if (msg.Length > 10 && msg.Substring(0, 10) == "screenLine") {
+            string line = msg.Substring(10);
+            msg = "IGNORE";
+            if (rba != null) {
+                rba.addScreenMessage(line);
+            }
+        }
         switch(msg) {
             case "termReset":
             case "termReboot":

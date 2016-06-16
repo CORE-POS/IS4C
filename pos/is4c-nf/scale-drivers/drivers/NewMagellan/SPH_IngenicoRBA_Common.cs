@@ -524,6 +524,23 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
         return msg;
     }
 
+    protected byte[] ScreenLinesReset()
+    {
+        byte[] msg = new byte[6];
+        msg[0] = 0x2; // STX
+
+        msg[1] = 0x31; // Reset Code
+        msg[2] = 0x35;
+        msg[3] = 0x2e;
+
+        msg[4] = 0x38;
+
+        msg[5] = 0x3; // ETX
+        
+        return msg;
+    }
+
+
     protected byte[] StatusRequestMessage()
     {
         byte[] msg = new byte[5];
@@ -641,6 +658,7 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
       Not used in current implementation. Commented to
       reduce compilation warnings.
       29Dec2014
+    */
     protected byte[] SetVariableMessage(string var_code, string var_value)
     {
         System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
@@ -670,7 +688,6 @@ public class SPH_IngenicoRBA_Common : SerialPortHandler
 
         return msg;
     }
-    */
 
     /**
       Not used in current implementation. Commented to
