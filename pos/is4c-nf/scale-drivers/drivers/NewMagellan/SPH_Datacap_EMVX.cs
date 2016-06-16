@@ -47,8 +47,8 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     private string com_port = "0";
     protected string server_list = "x1.mercurypay.com;x2.backuppay.com";
     protected int LISTEN_PORT = 8999; // acting as a Datacap stand-in
+    protected short CONNECT_TIMEOUT = 60;
     protected string sequence_no = null;
-    private bool log_xml = true;
     private RBA_Stub rba = null;
 
     public SPH_Datacap_EMVX(string p) : base(p)
@@ -73,6 +73,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         if (pdc_ax_control == null) {
             pdc_ax_control = new DsiPDCX();
             pdc_ax_control.ServerIPConfig(server_list, 0);
+            pdc_ax_control.SetResponseTimeout(CONNECT_TIMEOUT);
             InitPDCX();
         }
         pdc_ax_control.CancelRequest();
@@ -139,11 +140,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
 
                         byte[] response = System.Text.Encoding.ASCII.GetBytes(result);
                         stream.Write(response, 0, response.Length);
-                        if (log_xml) {
-                            using (StreamWriter file = new StreamWriter("log.xml", true)) {
-                                file.WriteLine(result);
-                            }
-                        }
                     }
                     client.Close();
                 }
@@ -254,11 +250,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         if (this.verbose_mode > 0) {
             Console.WriteLine(xml);
         }
-        if (log_xml) {
-            using (StreamWriter file = new StreamWriter("log.xml", true)) {
-                file.WriteLine(xml);
-            }
-        }
 
         try {
             /**
@@ -323,11 +314,6 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         if (this.verbose_mode > 0) {
             Console.WriteLine(xml);
         }
-        if (log_xml) {
-            using (StreamWriter file = new StreamWriter("log.xml", true)) {
-                file.WriteLine(xml);
-            }
-        }
 
         return pdc_ax_control.ProcessTransaction(xml, 1, null, null);
     }
@@ -385,6 +371,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     */
     protected string GetSignature()
     {
+        var reset = PadReset();
+        Console.WriteLine(reset);
+
         string xml="<?xml version=\"1.0\"?>"
             + "<TStream>"
             + "<Transaction>"
