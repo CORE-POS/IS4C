@@ -62,45 +62,51 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $batchName = $row['batchName'];
         $args = array($upc, $batchID, $salePrice, $salePrice);
         
-        $prep = ('
-            INSERT INTO batchList
-            (upc, batchID, salePrice, groupSalePrice, active)
-            VALUES (
-                ?,
-                ?,
-                ?,
-                ?,
-                "1"
-            )
-        ');
-        $dbc->execute($prep, $args);
-        if ($dbc->error()) {
-            return '<div class="alert alert-danger">' . $dbc->error(). "</div>"
-                . '<a class="btn btn-default" href="http://192.168.1.2/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
-        } else {
-            return '<div class="alert alert-success">Item Added to Batch</div>'
-                . '<a class="btn btn-default" href="http://192.168.1.2/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
-        }
-        
-        //  Update 'Missing Sign' queue in SaleChangeQueues. 
-        if (isset($_SESSION['session'])) $session = $_SESSION['session'];
-        if (isset($_SESSION['store_id'])) $store_id = $_SESSION['store_id'];
-        
-        if (isset($session) && isset($store_id)) {
-            $dbc = FannieDB::get('woodshed_no_replicate');
-            $argsB = array($upc, $store_id, $session);
-            $prepB = $dbc->prepare('
-                INSERT INTO woodshed_no_replicate.SaleChangeQueues
-                (queue, upc, store_id, session)
+        $inBatch = 0;
+        $argsZ = array($upc, $batchID);
+        $prepZ = $dbc->prepare('SELECT upc FROM batchList WHERE upc = ? AND batchID = ?');
+        $inBatch = $dbc->execute($prepZ, $argsZ);
+        if (!$inBatch) {
+            $prep = ('
+                INSERT INTO batchList
+                (upc, batchID, salePrice, groupSalePrice, active)
                 VALUES (
-                    8,
                     ?,
                     ?,
-                    ?
+                    ?,
+                    ?,
+                    "1"
                 )
             ');
-            $dbc->execute($prepB, $argsB);    
-        }        
+            $dbc->execute($prep, $args);
+            if ($dbc->error()) {
+                return '<div class="alert alert-danger">' . $dbc->error(). "</div>"
+                    . '<a class="btn btn-default" href="http://192.168.1.2/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
+            } else {
+                return '<div class="alert alert-success">Item Added to Batch</div>'
+                    . '<a class="btn btn-default" href="http://192.168.1.2/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
+            }
+            
+            //  Update 'Missing Sign' queue in SaleChangeQueues. 
+            if (isset($_SESSION['session'])) $session = $_SESSION['session'];
+            if (isset($_SESSION['store_id'])) $store_id = $_SESSION['store_id'];
+            
+            if (isset($session) && isset($store_id)) {
+                $dbc = FannieDB::get('woodshed_no_replicate');
+                $argsB = array($upc, $store_id, $session);
+                $prepB = $dbc->prepare('
+                    INSERT INTO woodshed_no_replicate.SaleChangeQueues
+                    (queue, upc, store_id, session)
+                    VALUES (
+                        8,
+                        ?,
+                        ?,
+                        ?
+                    )
+                ');
+                $dbc->execute($prepB, $argsB);    
+            }       
+        }                   
     }
     
     function get_upc_view()
