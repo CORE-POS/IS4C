@@ -15,8 +15,8 @@ class AdminLoginTest extends PHPUnit_Framework_TestCase
             'COREPOS\\pos\\lib\\adminlogin\\RefundAdminLogin' => '/refundComment.php',
             'COREPOS\\pos\\lib\\adminlogin\\SusResAdminLogin' => '/adminlist.php',
             'COREPOS\\pos\\lib\\adminlogin\\UndoAdminLogin' => '/undo.php',
-            'ManagerApproveTender' => '&repeat=1',
-            'StoreTransferTender' => '&repeat=1',
+            'COREPOS\\pos\\lib\\Tenders\\ManagerApproveTender' => '&repeat=1',
+            'COREPOS\\pos\\lib\\Tenders\\StoreTransferTender' => '&repeat=1',
         );
 
         foreach ($classes as $class => $url) {

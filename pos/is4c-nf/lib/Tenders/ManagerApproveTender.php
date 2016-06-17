@@ -60,7 +60,7 @@ class ManagerApproveTender extends TenderModule
 
         if (CoreLocal::get("approvetender") != 1) {
             CoreLocal::set("approvetender",1);
-            return $my_url."gui-modules/adminlogin.php?class=ManagerApproveTender";
+            return $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-Tenders-ManagerApproveTender";
         } else {
             CoreLocal::set("approvetender",0);
             return true;
