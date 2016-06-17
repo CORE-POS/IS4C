@@ -62,51 +62,45 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $batchName = $row['batchName'];
         $args = array($upc, $batchID, $salePrice, $salePrice);
         
-        $inBatch = 0;
-        $argsZ = array($upc, $batchID);
-        $prepZ = $dbc->prepare('SELECT upc FROM batchList WHERE upc = ? AND batchID = ?');
-        $inBatch = $dbc->execute($prepZ, $argsZ);
-        if (!$inBatch) {
-            $prep = $dbc->prepare('
-                INSERT INTO batchList
-                (upc, batchID, salePrice, groupSalePrice, active)
+        $prep = $dbc->prepare('
+            INSERT INTO batchList
+            (upc, batchID, salePrice, groupSalePrice, active)
+            VALUES (
+                ?,
+                ?,
+                ?,
+                ?,
+                "1"
+            )
+        ');
+        $dbc->execute($prep, $args);
+        if ($dbc->error()) {
+            return '<div class="alert alert-danger">' . $dbc->error(). "</div>"
+                . '<a class="btn btn-default" href="http://192.168.1.2/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
+        } else {
+            return '<div class="alert alert-success">Item Added to Batch</div>'
+                . '<a class="btn btn-default" href="http://192.168.1.2/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
+        }
+        
+        //  Update 'Missing Sign' queue in SaleChangeQueues. 
+        if (isset($_SESSION['session'])) $session = $_SESSION['session'];
+        if (isset($_SESSION['store_id'])) $store_id = $_SESSION['store_id'];
+        
+        if (isset($session) && isset($store_id)) {
+            $dbc = FannieDB::get('woodshed_no_replicate');
+            $argsB = array($upc, $store_id, $session);
+            $prepB = $dbc->prepare('
+                INSERT INTO woodshed_no_replicate.SaleChangeQueues
+                (queue, upc, store_id, session)
                 VALUES (
+                    8,
                     ?,
                     ?,
-                    ?,
-                    ?,
-                    "1"
+                    ?
                 )
             ');
-            $dbc->execute($prep, $args);
-            if ($dbc->error()) {
-                return '<div class="alert alert-danger">' . $dbc->error(). "</div>"
-                    . '<a class="btn btn-default" href="http://192.168.1.2/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
-            } else {
-                return '<div class="alert alert-success">Item Added to Batch</div>'
-                    . '<a class="btn btn-default" href="http://192.168.1.2/git/fannie/item/CoopDealsLookupPage.php">Return</a>';
-            }
-            
-            //  Update 'Missing Sign' queue in SaleChangeQueues. 
-            if (isset($_SESSION['session'])) $session = $_SESSION['session'];
-            if (isset($_SESSION['store_id'])) $store_id = $_SESSION['store_id'];
-            
-            if (isset($session) && isset($store_id)) {
-                $dbc = FannieDB::get('woodshed_no_replicate');
-                $argsB = array($upc, $store_id, $session);
-                $prepB = $dbc->prepare('
-                    INSERT INTO woodshed_no_replicate.SaleChangeQueues
-                    (queue, upc, store_id, session)
-                    VALUES (
-                        8,
-                        ?,
-                        ?,
-                        ?
-                    )
-                ');
-                $dbc->execute($prepB, $argsB);    
-            }       
-        }                   
+            $dbc->execute($prepB, $argsB);    
+        }        
     }
     
     function get_upc_view()
@@ -116,7 +110,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         if (FormLib::get('linea') != 1) {
             $this->add_onload_command("\$('#upc').focus();\n");
         }
-        $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
+        $this->addOnloadCommand("enableLinea('# ', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
         
         $ret .= '
             <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="id" class="form-inline">
