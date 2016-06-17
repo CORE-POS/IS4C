@@ -23,7 +23,7 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
-use COREPOS\pos\Tenders\TenderModule;
+use COREPOS\pos\lib\Tenders\TenderModule;
 use \CoreLocal;
 use \MiscLib;
 use \Parser;
