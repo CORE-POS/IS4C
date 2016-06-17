@@ -29,9 +29,9 @@ use COREPOS\pos\lib\Kickers\Kicker;
 use COREPOS\pos\lib\PrintHandlers\PrintHandler;
 use COREPOS\pos\lib\AjaxCallback;
 use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\UdpComm;
 use \CoreLocal;
 use \ReceiptLib;
-use \UdpComm;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 

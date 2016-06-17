@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\UdpComm;
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class paycardSuccess extends BasicCorePage 

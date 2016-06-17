@@ -1,10 +1,12 @@
 <?php
 
+namespace COREPOS\pos\lib;
+
 /**
   @class UdpComm
   UDP send & receive function
 */
-class UdpComm extends LibraryClass 
+class UdpComm 
 {
     /**
       Send a message via UDP

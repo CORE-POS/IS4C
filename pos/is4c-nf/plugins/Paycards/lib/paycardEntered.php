@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\UdpComm;
+
 if (!class_exists("PaycardLib")) 
     include_once(realpath(dirname(__FILE__)."/paycardLib.php"));
 

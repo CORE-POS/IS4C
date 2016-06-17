@@ -6,6 +6,7 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\ItemNotFound;
 use COREPOS\pos\lib\JsonLib;
+use COREPOS\pos\lib\UdpComm;
 
 /**
  * @backupGlobals disabled
