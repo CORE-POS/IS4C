@@ -35,7 +35,7 @@ class DiscountType
 
     static public $MAP = array(
         0   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\NormalPricing',
-        1   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\EveryoneSale'
+        1   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\EveryoneSale',
         2   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\MemberSale',
         3   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\PercentMemSale',
         4   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\StaffSale',
