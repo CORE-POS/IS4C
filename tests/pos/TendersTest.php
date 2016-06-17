@@ -154,7 +154,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('transfertender', 0);
         $out = $st->preReqCheck();
         $this->assertEquals(1, CoreLocal::get('transfertender'));
-        $this->assertEquals('=StoreTransferTender', substr($out, -20));
+        $this->assertEquals('-StoreTransferTender', substr($out, -20));
         $out = $st->preReqCheck();
         $this->assertEquals(0, CoreLocal::get('transfertender'));
         $this->assertEquals(true, $out);
@@ -224,7 +224,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
 
         CoreLocal::set('approvetender', 0);
         $out = $st->preReqCheck();
-        $this->assertEquals('=ManagerApproveTender', substr($out, -21));
+        $this->assertEquals('-ManagerApproveTender', substr($out, -21));
         $this->assertEquals(1, CoreLocal::get('approvetender'));
         $out = $st->preReqCheck();
         $this->assertEquals(true, $out);
