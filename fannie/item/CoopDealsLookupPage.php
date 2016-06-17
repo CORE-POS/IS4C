@@ -67,7 +67,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $prepZ = $dbc->prepare('SELECT upc FROM batchList WHERE upc = ? AND batchID = ?');
         $inBatch = $dbc->execute($prepZ, $argsZ);
         if (!$inBatch) {
-            $prep = ('
+            $prep = $dbc->prepare('
                 INSERT INTO batchList
                 (upc, batchID, salePrice, groupSalePrice, active)
                 VALUES (
