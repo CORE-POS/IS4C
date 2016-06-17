@@ -24,8 +24,8 @@
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\ItemNotFound;
+use COREPOS\pos\lib\Scanning\DiscountType;
 use \CoreLocal;
-use \DiscountType;
 use \DisplayLib;
 use \MiscLib;
 use \Parser;

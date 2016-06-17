@@ -5,6 +5,7 @@ use COREPOS\pos\install\conf\FormFactory;
 use COREPOS\pos\install\InstallUtilities;
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\Scanning\DiscountType;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 CoreState::loadParams();
@@ -233,7 +234,7 @@ if (is_array(FormLib::get('DT_MODS'))) {
 if (!is_array(CoreLocal::get('DiscountTypeClasses'))) {
     CoreLocal::set('DiscountTypeClasses', array(), true);
 }
-$discounts = AutoLoader::listModules('DiscountType');
+$discounts = AutoLoader::listModules('COREPOS\\pos\\lib\\Scanning\\DiscountType');
 $dt_conf = CoreLocal::get("DiscountTypeClasses");
 $dt_conf[] = ''; // add blank slot for adding another discounttype
 $i = 64;

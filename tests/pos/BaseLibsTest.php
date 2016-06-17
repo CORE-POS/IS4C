@@ -210,7 +210,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'Database',
             'SpecialUPC',
             'SpecialDept',
-            'DiscountType',
             'PriceMethod',
             'LocalStorage',
             'FooterBox',
@@ -231,7 +230,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         }
 
         $listable = array(
-            'DiscountType',
             'FooterBox',
             'PreParser',
             'PriceMethod',

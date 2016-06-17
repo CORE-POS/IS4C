@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Scanning\DiscountType;
+
 class CasePriceDiscount extends DiscountType 
 {
 

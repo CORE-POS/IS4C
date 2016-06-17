@@ -1,6 +1,13 @@
 <?php
 
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\Scanning\DiscountType;
+use COREPOS\pos\lib\Scanning\DiscountTypes\NormalPricing;
+use COREPOS\pos\lib\Scanning\DiscountTypes\EveryoneSale;
+use COREPOS\pos\lib\Scanning\DiscountTypes\MemberSale;
+use COREPOS\pos\lib\Scanning\DiscountTypes\StaffSale;
+use COREPOS\pos\lib\Scanning\DiscountTypes\SlidingMemSale;
+use COREPOS\pos\lib\Scanning\DiscountTypes\PercentMemSale;
 use COREPOS\pos\parser\parse\DeptKey;
 use COREPOS\pos\parser\parse\UPC;
 
@@ -12,24 +19,24 @@ class ScanningTest extends PHPUnit_Framework_TestCase
     public function testDiscountType()
     {
         $defaults = array(
-            'NormalPricing',
-            'EveryoneSale',
-            'MemberSale',
-            'StaffSale',
-            'SlidingMemSale',
-            'PercentMemSale',
+            'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\NormalPricing',
+            'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\EveryoneSale',
+            'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\MemberSale',
+            'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\StaffSale',
+            'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\SlidingMemSale',
+            'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\PercentMemSale',
         );
 
-        $all = AutoLoader::ListModules('DiscountType',False);
+        $all = AutoLoader::ListModules('COREPOS\\pos\\lib\\Scanning\\DiscountType',False);
         foreach($defaults as $d){
             $this->assertContains($d, $all);
         }
 
-        $all[] = 'DiscountType';
+        $all[] = 'COREPOS\\pos\\lib\\Scanning\\DiscountType';
 
         foreach($all as $class){
             $obj = new $class();
-            $this->assertInstanceOf('DiscountType',$obj);
+            $this->assertInstanceOf('COREPOS\\pos\\lib\\Scanning\\DiscountType',$obj);
             
             $this->assertInternalType('boolean',$obj->isSale());
             $this->assertInternalType('boolean',$obj->isMemberOnly());

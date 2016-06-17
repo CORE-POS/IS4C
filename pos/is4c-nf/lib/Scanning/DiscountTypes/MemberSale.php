@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\DiscountTypes;
+use COREPOS\pos\lib\Scanning\DiscountType;
+use \CoreLocal;
+use \MiscLib;
+use \TransRecord;
+
 class MemberSale extends DiscountType 
 {
 

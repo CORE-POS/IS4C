@@ -128,7 +128,7 @@ class AutoLoader extends LibraryClass
     }
 
     static private $class_paths = array(
-        'DiscountType'      => '/Scanning/DiscountTypes',
+        'COREPOS\pos\lib\Scanning\DiscountType' => '/Scanning/DiscountTypes',
         'FooterBox'         => '/FooterBoxes',
         'COREPOS\pos\lib\Kickers\Kicker' => '/Kickers',
         'Parser'            => '/../parser/parse',

@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\DiscountTypes;
+use COREPOS\pos\lib\Scanning\DiscountType;
+use \CoreLocal;
+use \TransRecord;
+
 class StaffSale extends DiscountType 
 {
 
