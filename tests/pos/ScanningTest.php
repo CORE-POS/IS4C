@@ -10,6 +10,7 @@ use COREPOS\pos\lib\Scanning\DiscountTypes\SlidingMemSale;
 use COREPOS\pos\lib\Scanning\DiscountTypes\PercentMemSale;
 use COREPOS\pos\lib\Scanning\PriceMethod;
 use COREPOS\pos\lib\Scanning\PriceMethods\BasicPM;
+use COREPOS\pos\lib\Scanning\PriceMethods\GroupPM;
 use COREPOS\pos\lib\Scanning\PriceMethods\NoDiscOnSalesPM;
 use COREPOS\pos\lib\Scanning\PriceMethods\QttyEnforcedGroupPM;
 use COREPOS\pos\lib\Scanning\PriceMethods\SplitABGroupPM;
