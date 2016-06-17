@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use \CoreLocal;
+use \DisplayLib;
+use \TransRecord;
+
 /**
   @class FoodstampTender
   Tender module for EBT

@@ -1,5 +1,19 @@
 <?php
 
+use COREPOS\pos\lib\Tenders\TenderModule;
+use COREPOS\pos\lib\Tenders\CheckTender;
+use COREPOS\pos\lib\Tenders\CreditCardTender;
+use COREPOS\pos\lib\Tenders\DisabledTender;
+use COREPOS\pos\lib\Tenders\FoodstampTender;
+use COREPOS\pos\lib\Tenders\GiftCardTender;
+use COREPOS\pos\lib\Tenders\GiftCertificateTender;
+use COREPOS\pos\lib\Tenders\ManagerApproveTender;
+use COREPOS\pos\lib\Tenders\NoChangeTender;
+use COREPOS\pos\lib\Tenders\NoDefaultAmountTender;
+use COREPOS\pos\lib\Tenders\StoreChargeTender;
+use COREPOS\pos\lib\Tenders\SignedStoreChargeTender;
+use COREPOS\pos\lib\Tenders\StoreTransferTender;
+
 /**
  * @backupGlobals disabled
  */
@@ -8,26 +22,26 @@ class TendersTest extends PHPUnit_Framework_TestCase
     public function testAll()
     {
         $defaults = array(
-            'TenderModule',
-            'CheckTender',
-            'CreditCardTender',
-            'DisabledTender',
-            'FoodstampTender',
-            'GiftCardTender',
-            'GiftCertificateTender',
-            'RefundAndCashbackTender',
-            'StoreChargeTender',
-            'StoreTransferTender'
+            'COREPOS\\pos\\lib\\Tenders\\TenderModule',
+            'COREPOS\\pos\\lib\\Tenders\\CheckTender',
+            'COREPOS\\pos\\lib\\Tenders\\CreditCardTender',
+            'COREPOS\\pos\\lib\\Tenders\\DisabledTender',
+            'COREPOS\\pos\\lib\\Tenders\\FoodstampTender',
+            'COREPOS\\pos\\lib\\Tenders\\GiftCardTender',
+            'COREPOS\\pos\\lib\\Tenders\\GiftCertificateTender',
+            'COREPOS\\pos\\lib\\Tenders\\RefundAndCashbackTender',
+            'COREPOS\\pos\\lib\\Tenders\\StoreChargeTender',
+            'COREPOS\\pos\\lib\\Tenders\\StoreTransferTender'
         );
 
-        $all = AutoLoader::ListModules('TenderModule',True);
+        $all = AutoLoader::ListModules('COREPOS\\pos\\lib\\Tenders\\TenderModule',True);
         foreach($defaults as $d){
             $this->assertContains($d, $all);
         }
 
         foreach($all as $class){
             $obj = new $class('CA',1.00);
-            $this->assertInstanceOf('TenderModule',$obj);
+            $this->assertInstanceOf('COREPOS\\pos\\lib\\Tenders\\TenderModule',$obj);
 
             $err = $obj->ErrorCheck();
             $this->assertThat($err,

@@ -136,7 +136,7 @@ class AutoLoader extends LibraryClass
         'COREPOS\pos\lib\Scanning\PriceMethod' => '/Scanning/PriceMethods',
         'SpecialUPC'        => '/Scanning/SpecialUPCs',
         'SpecialDept'       => '/Scanning/SpecialDepts',
-        'TenderModule'      => '/Tenders',
+        'COREPOS\pos\lib\Tenders\TenderModule' => '/Tenders',
         'ProductSearch'     => '/Search/Products',
         'COREPOS\pos\lib\PrintHandlers\PrintHandler' => '/PrintHandlers',
         'TotalAction'       => '/TotalActions',

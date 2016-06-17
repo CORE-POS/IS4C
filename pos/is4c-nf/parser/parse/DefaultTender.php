@@ -23,11 +23,11 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\Tenders\TenderModule;
 use \CoreLocal;
 use \MiscLib;
 use \Parser;
 use \PrehLib;
-use \TenderModule;
 
 class DefaultTender extends Parser 
 {
@@ -89,6 +89,9 @@ class DefaultTender extends Parser
             $map = CoreLocal::get("TenderMap");
             if (is_array($map) && isset($map[$str])){
                 $class = $map[$str];
+                if (!class_exists($class)) { // try namespaced version
+                    $class = 'COREPOS\\pos\\lib\\Tenders\\' . $class;
+                }
                 $tender_object = new $class($str, False);
                 $objs[] = $tender_object;
             }

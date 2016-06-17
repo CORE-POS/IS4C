@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use \CoreLocal;
+use \MiscLib;
+
 /**
   @class StoreChargeTender
   Tender module for charge accounts

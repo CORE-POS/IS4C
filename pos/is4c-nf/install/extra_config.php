@@ -399,7 +399,7 @@ if (is_array(FormLib::get('TenderMapping'))) {
             continue;
         }
         list($code, $mod) = explode(":", $tm);
-        $settings[$code] = $mod;
+        $settings[$code] = str_replace('-', '\\', $mod);
     }
     if (!isset($tender_table['TenderModule'])) {
         InstallUtilities::paramSave('TenderMap',$settings);
@@ -434,7 +434,8 @@ if (is_array(FormLib::get('TenderMapping'))) {
         CoreLocal::set('TenderMap', $settings);
     }
 }
-$mods = AutoLoader::listModules('TenderModule');
+$mods = AutoLoader::listModules('COREPOS\\pos\\lib\\Tenders\\TenderModule');
+$mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
 //  Tender Report: Desired tenders column
 $settings2 = CoreLocal::get("TRDesiredTenders");
 if (!is_array($settings2)) $settings2 = array();
@@ -461,9 +462,22 @@ while($row = $db->fetch_row($res)){
     echo '<td><select name="TenderMapping[]">';
     echo '<option value="">default</option>';
     foreach($mods as $m){
+        /**
+          Map unnamespaced values to namespaced values
+          so the configuration doesn't break
+        */
+        $selected = false;
+        if (isset($settings[$row['TenderCode']])) {
+            $current = $settings[$row['TenderCode']];
+            if ($current == $m) {
+                $selected = true; // direct match
+            } elseif (substr($m, -1*(strlen($current)+1)) == '-' . $current) {
+                $selected = true; // namespace match
+            }
+        }
         printf('<option value="%s:%s" %s>%s</option>',
             $row['TenderCode'],$m,
-            (isset($settings[$row['TenderCode']])&&$settings[$row['TenderCode']]==$m)?'selected':'',
+            ($selected ? 'selected' : ''),
             $m);    
     }
     echo '</select></td>';

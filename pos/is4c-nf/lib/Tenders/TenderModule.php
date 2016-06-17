@@ -21,7 +21,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
 use COREPOS\pos\lib\Database;
+use \CoreLocal;
+use \DisplayLib;
+use \MiscLib;
+use \TransRecord;
 
 /**
   @class TenderModule

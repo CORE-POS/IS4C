@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use \CoreLocal;
+use \DisplayLib;
+use \MiscLib;
+
 /**
   @class StoreTransfer
   Tender module for inter-departmental transfers

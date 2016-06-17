@@ -91,7 +91,7 @@ class tenderlist extends NoInputCorePage
             SELECT TenderCode,TenderName 
             FROM tenders 
             WHERE MaxAmount > 0
-                AND TenderModule <> 'DisabledTender'
+                AND TenderModule NOT LIKE '%DisabledTender'
             ORDER BY TenderName");
 
         echo "<div class=\"baseHeight\">"

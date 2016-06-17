@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use \DisplayLib;
+
 /**
   @class DisabledTender
   Tender module for disabling tenders

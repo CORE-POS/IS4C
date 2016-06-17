@@ -33,7 +33,7 @@ class PrehLib extends LibraryClass
 
 static private function getTenderMods($right)
 {
-    $ret = array('TenderModule');
+    $ret = array('COREPOS\\pos\\lib\\Tenders\\TenderModule');
 
     /**
       Get a tender-specific module if
@@ -58,7 +58,7 @@ static private function getTenderMods($right)
     }
     if (is_array($map) && isset($map[$right])) {
         $class = $map[$right];
-        if ($class != 'TenderModule') {
+        if ($class != 'COREPOS\\pos\\lib\\Tenders\\TenderModule') {
             $ret[] = $class;
         }
     }
@@ -98,6 +98,9 @@ static public function tender($right, $strl)
     $tender_mods = self::getTenderMods($right);
     $tender_object = null;
     foreach ($tender_mods as $class) {
+        if (!class_exists($class)) { // try namespaced version
+            $class = 'COREPOS\\pos\\lib\\Tenders\\' . $class;
+        }
         if (!class_exists($class)) {
             $ret['output'] = DisplayLib::boxMsg(
                 _('tender is misconfigured'),
