@@ -21,7 +21,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\PriceMethods;
+use COREPOS\pos\lib\Scanning\PriceMethod;
 use COREPOS\pos\lib\Database;
+use \CoreLocal;
+use \MiscLib;
+use \TransRecord;
 
 /** 
    @class MoreThanQttyPM

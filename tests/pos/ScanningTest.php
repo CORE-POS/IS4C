@@ -8,6 +8,12 @@ use COREPOS\pos\lib\Scanning\DiscountTypes\MemberSale;
 use COREPOS\pos\lib\Scanning\DiscountTypes\StaffSale;
 use COREPOS\pos\lib\Scanning\DiscountTypes\SlidingMemSale;
 use COREPOS\pos\lib\Scanning\DiscountTypes\PercentMemSale;
+use COREPOS\pos\lib\Scanning\PriceMethod;
+use COREPOS\pos\lib\Scanning\PriceMethods\BasicPM;
+use COREPOS\pos\lib\Scanning\PriceMethods\NoDiscOnSalePM;
+use COREPOS\pos\lib\Scanning\PriceMethods\QttyEnforcedGroupPM;
+use COREPOS\pos\lib\Scanning\PriceMethods\SplitABGroupPM;
+use COREPOS\pos\lib\Scanning\PriceMethods\ABGroupPM;
 use COREPOS\pos\parser\parse\DeptKey;
 use COREPOS\pos\parser\parse\UPC;
 

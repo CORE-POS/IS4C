@@ -6,6 +6,7 @@ use COREPOS\pos\install\InstallUtilities;
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\Scanning\DiscountType;
+use COREPOS\pos\lib\Scanning\PriceMethod;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 CoreState::loadParams();
@@ -291,7 +292,7 @@ if (is_array(FormLib::get('PM_MODS'))) {
 if (!is_array(CoreLocal::get('PriceMethodClasses'))){
     CoreLocal::set('PriceMethodClasses', array(), true);
 }
-$pms = AutoLoader::listModules('PriceMethod');
+$pms = AutoLoader::listModules('COREPOS\\pos\\lib\\Scanning\\PriceMethod');
 $pm_conf = CoreLocal::get("PriceMethodClasses");
 $pm_conf[] = ''; // add blank slot for adding another method
 $i = 100;

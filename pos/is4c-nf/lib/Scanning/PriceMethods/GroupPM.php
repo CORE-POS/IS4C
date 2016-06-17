@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\PriceMethods;
+use COREPOS\pos\lib\Scanning\PriceMethod;
+use \CoreLocal;
+use \MiscLib;
+use \TransRecord;
+
 /** 
    @class GroupPM
    

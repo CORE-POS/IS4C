@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning;
+use COREPOS\pos\lib\Scanning\PriceMethods\BasicPM;
+use \CoreLocal;
+
 /**
   @class PriceMethod
   Base class for handling different price methods
@@ -40,13 +44,13 @@
 class PriceMethod 
 {
     public static $MAP = array(
-        0   => 'BasicPM',
-        1   => 'GroupPM',
-        2   => 'QttyEnforcedGroupPM',
-        3   => 'SplitABGroupPM',
-        4   => 'ABGroupPM',
-        5   => 'BigGroupPM',
-        6   => 'MoreThanQttyPM',
+        0   => 'COREPOS\\pos\\lib\\Scanning\\PriceMethods\\BasicPM',
+        1   => 'COREPOS\\pos\\lib\\Scanning\\PriceMethods\\GroupPM',
+        2   => 'COREPOS\\pos\\lib\\Scanning\\PriceMethods\\QttyEnforcedGroupPM',
+        3   => 'COREPOS\\pos\\lib\\Scanning\\PriceMethods\\SplitABGroupPM',
+        4   => 'COREPOS\\pos\\lib\\Scanning\\PriceMethods\\ABGroupPM',
+        5   => 'COREPOS\\pos\\lib\\Scanning\\PriceMethods\\BigGroupPM',
+        6   => 'COREPOS\\pos\\lib\\Scanning\\PriceMethods\\MoreThanQttyPM',
     );
 
     protected $savedRow;
