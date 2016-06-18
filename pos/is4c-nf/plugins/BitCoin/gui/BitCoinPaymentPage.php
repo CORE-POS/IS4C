@@ -23,6 +23,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class BitCoinPaymentPage extends InputCorePage 

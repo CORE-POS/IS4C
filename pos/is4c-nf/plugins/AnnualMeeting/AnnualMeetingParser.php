@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\TransRecord;
+
 class AnnualMeetingParser extends Parser {
 
     private $plus = array('1042','1041');

@@ -27,6 +27,7 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\Drawers;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\UdpComm;
 use COREPOS\pos\lib\Kickers\Kicker;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');

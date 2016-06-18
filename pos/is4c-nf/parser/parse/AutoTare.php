@@ -24,9 +24,9 @@
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
 use \CoreLocal;
 use \Parser;
-use \TransRecord;
 
 class AutoTare extends Parser 
 {

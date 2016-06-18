@@ -24,7 +24,7 @@
 namespace COREPOS\pos\lib\Scanning\PriceMethods;
 use COREPOS\pos\lib\Scanning\PriceMethod;
 use COREPOS\pos\lib\MiscLib;
-use \TransRecord;
+use COREPOS\pos\lib\TransRecord;
 
 /** 
    @class NoDiscOnSalePM

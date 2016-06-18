@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\TransRecord;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 

@@ -23,9 +23,9 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
 use \CoreLocal;
 use \Parser;
-use \TransRecord;
 
 class Clear extends Parser {
     function check($str){

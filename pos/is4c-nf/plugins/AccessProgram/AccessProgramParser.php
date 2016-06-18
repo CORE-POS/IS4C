@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\TransRecord;
 
 class AccessProgramParser extends Parser {
 

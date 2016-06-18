@@ -25,6 +25,7 @@ use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
 
 /* this module is intended for re-use. 
  * Pass the name of a class with the

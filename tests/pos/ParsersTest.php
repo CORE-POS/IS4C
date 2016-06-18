@@ -2,6 +2,7 @@
 
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\TransRecord;
 
 include(dirname(__FILE__).'/../../pos/is4c-nf/parser-class-lib/PreParser.php');
 include(dirname(__FILE__).'/../../pos/is4c-nf/parser-class-lib/Parser.php');

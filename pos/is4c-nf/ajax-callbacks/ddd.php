@@ -23,6 +23,7 @@
 
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\TransRecord;
 
 ini_set('display_errors','Off');
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');

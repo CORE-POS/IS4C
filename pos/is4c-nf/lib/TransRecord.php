@@ -21,10 +21,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\ReceiptLib;
+use \CoreLocal;
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -37,7 +39,7 @@ use COREPOS\pos\lib\ReceiptLib;
   @class TransRecord
   Defines functions for adding records to the transaction
 */
-class TransRecord extends LibraryClass 
+class TransRecord 
 {
 
 /*------------------------------------------------------------------------------

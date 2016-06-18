@@ -25,6 +25,7 @@ use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\UdpComm;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');

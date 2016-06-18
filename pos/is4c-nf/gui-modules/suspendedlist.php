@@ -23,6 +23,7 @@
 
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\TransRecord;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class suspendedlist extends NoInputCorePage 

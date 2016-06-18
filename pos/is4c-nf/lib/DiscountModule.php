@@ -24,8 +24,8 @@
 namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\PrehLib;
+use COREPOS\pos\lib\TransRecord;
 use \CoreLocal;
-use \TransRecord;
 
 /**
   @class DiscountModule

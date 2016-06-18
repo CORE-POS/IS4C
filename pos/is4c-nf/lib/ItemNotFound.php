@@ -23,7 +23,7 @@
 
 namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\DisplayLib;
-use \TransRecord;
+use COREPOS\pos\lib\TransRecord;
 
 /**
   @class ItemNotFound

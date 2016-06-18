@@ -9,6 +9,7 @@ use COREPOS\pos\lib\ItemNotFound;
 use COREPOS\pos\lib\JsonLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\PrehLib;
+use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\UdpComm;
 
 /**

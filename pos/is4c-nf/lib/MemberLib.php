@@ -27,6 +27,7 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
 
 /**
   @class MemberLib
@@ -43,7 +44,7 @@ class MemberLib extends \LibraryClass
         $dbc->query("UPDATE localtemptrans SET card_no=0,percentDiscount=NULL");
         \CoreLocal::set("ttlflag",0);    
         $opts = array('upc'=>'DEL_MEMENTRY');
-        \TransRecord::add_log_record($opts);
+        TransRecord::add_log_record($opts);
     }
 
     /**
@@ -387,7 +388,7 @@ class MemberLib extends \LibraryClass
         */
         \CoreLocal::set("memberID",$member);
         $opts = array('upc'=>'MEMENTRY','description'=>'CARDNO IN NUMFLAG','numflag'=>$member);
-        \TransRecord::add_log_record($opts);
+        TransRecord::add_log_record($opts);
 
         /**
           Optionally add a subtotal line depending

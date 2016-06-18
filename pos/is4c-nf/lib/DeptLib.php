@@ -26,6 +26,7 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\PrehLib;
+use COREPOS\pos\lib\TransRecord;
 
 /**
   @class DeptLib
@@ -171,7 +172,7 @@ class DeptLib extends \LibraryClass
                 );
                 $ret['udpmsg'] = 'errorBeep';
             } else {
-                \TransRecord::addRecord(array(
+                TransRecord::addRecord(array(
                     'description' => $dept['dept_name'] . ' Coupon',
                     'trans_type' => 'I',
                     'trans_subtype' => 'CP',
@@ -287,11 +288,11 @@ class DeptLib extends \LibraryClass
             $ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
         } else {
             if (\CoreLocal::get("casediscount") > 0) {
-                \TransRecord::addcdnotify();
+                TransRecord::addcdnotify();
                 \CoreLocal::set("casediscount",0);
             }
             
-            \TransRecord::addRecord(array(
+            TransRecord::addRecord(array(
                 'upc' => $price . 'DP' . $dept['dept_no'],
                 'description' => $dept['dept_name'],
                 'trans_type' => 'D',
@@ -311,7 +312,7 @@ class DeptLib extends \LibraryClass
             \CoreLocal::set("msgrepeat",0);
 
             if (\CoreLocal::get("itemPD") > 0) {
-                \TransRecord::adddiscount($discount, $dept);
+                TransRecord::adddiscount($discount, $dept);
             }
 
             $ret['output'] = DisplayLib::lastpage();

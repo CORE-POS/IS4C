@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
 
 class MiscLoggingParser extends Parser {
 

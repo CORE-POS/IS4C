@@ -23,8 +23,8 @@
 
 namespace COREPOS\pos\lib\Tenders;
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\TransRecord;
 use \CoreLocal;
-use \TransRecord;
 
 /**
   @class FoodstampTender
