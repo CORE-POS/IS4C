@@ -94,7 +94,7 @@ class Franking
 
     static public function endorse($text) 
     {
-        \ReceiptLib::writeLine(chr(27).chr(64).chr(27).chr(99).chr(48).chr(4)      
+        ReceiptLib::writeLine(chr(27).chr(64).chr(27).chr(99).chr(48).chr(4)      
             // .chr(27).chr(33).chr(10)
             .$text
             .chr(27).chr(99).chr(48).chr(1)
@@ -104,7 +104,7 @@ class Franking
 
     static private function center_check($text) 
     {
-        return \ReceiptLib::center($text, 60);                // apbw 03/24/05 Wedge printer swap patch
+        return ReceiptLib::center($text, 60);                // apbw 03/24/05 Wedge printer swap patch
     }
 
 }

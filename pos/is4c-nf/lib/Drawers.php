@@ -34,9 +34,9 @@ class Drawers extends \LibraryClass
     {
         $pin = self::current();
         if ($pin == 1) {
-            \ReceiptLib::writeLine(chr(27).chr(112).chr(0).chr(48)."0");
+            ReceiptLib::writeLine(chr(27).chr(112).chr(0).chr(48)."0");
         } elseif ($pin == 2) {
-            \ReceiptLib::writeLine(chr(27).chr(112).chr(1).chr(48)."0");
+            ReceiptLib::writeLine(chr(27).chr(112).chr(1).chr(48)."0");
         }
     }
 
