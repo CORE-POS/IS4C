@@ -24,6 +24,7 @@
 namespace COREPOS\pos\ajax;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\AjaxCallback;
+use COREPOS\pos\lib\DriverWrappers\ScaleDriverWrapper;
 use \CoreLocal;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
