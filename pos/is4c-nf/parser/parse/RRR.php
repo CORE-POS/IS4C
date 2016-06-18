@@ -24,9 +24,9 @@
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\TransRecord;
 use \CoreLocal;
 use \Parser;
-use \TransRecord;
 
 class RRR extends Parser 
 {
