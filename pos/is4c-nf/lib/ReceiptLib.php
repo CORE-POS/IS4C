@@ -32,8 +32,8 @@ use \MiscLib;
   @class ReceiptLib
   Receipt functions
 */
-class ReceiptLib extends LibraryClass {
-
+class ReceiptLib 
+{
     static private $PRINT_OBJ;
 
     static private $EMAIL_PH = 'COREPOS\\pos\\lib\\PrintHandlers\EmailPrintHandler';
