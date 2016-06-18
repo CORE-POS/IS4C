@@ -22,6 +22,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\DisplayLib;
+
 /** List the Coop Cred Programs the member belongs to
  *   with stutus and balance for each.
  */

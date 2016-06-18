@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\parser\parse;
+use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\UdpComm;
-use \DisplayLib;
 use \Parser;
 
 class DriverStatus extends Parser 

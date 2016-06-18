@@ -23,9 +23,9 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\UdpComm;
 use \CoreLocal;
-use \DisplayLib;
 use \Parser;
 
 class SigTermCommands extends Parser 

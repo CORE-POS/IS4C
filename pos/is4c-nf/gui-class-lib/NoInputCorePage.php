@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\DisplayLib;
+
 /** @class InputCorePage
 
     This class automatically adds the input header

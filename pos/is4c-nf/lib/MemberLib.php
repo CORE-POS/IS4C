@@ -25,6 +25,7 @@ namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DiscountModule;
+use COREPOS\pos\lib\DisplayLib;
 
 /**
   @class MemberLib
@@ -87,7 +88,7 @@ class MemberLib extends \LibraryClass
                 $row = $dbc->fetch_row($result);
                 self::setMember($row["CardNo"], $row["personNum"]);
                 $ret['redraw_footer'] = true;
-                $ret['output'] = \DisplayLib::lastpage();
+                $ret['output'] = DisplayLib::lastpage();
 
                 if ($member_number != \CoreLocal::get('defaultNonMem')) {
                     $ret['udpmsg'] = 'goodBeep';

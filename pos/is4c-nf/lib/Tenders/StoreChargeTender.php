@@ -23,8 +23,8 @@
 
 namespace COREPOS\pos\lib\Tenders;
 use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\DisplayLib;
 use \CoreLocal;
-use \DisplayLib;
 use \MiscLib;
 
 /**

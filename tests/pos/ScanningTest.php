@@ -1,6 +1,7 @@
 <?php
 
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\Scanning\DiscountType;
 use COREPOS\pos\lib\Scanning\DiscountTypes\NormalPricing;
 use COREPOS\pos\lib\Scanning\DiscountTypes\EveryoneSale;

@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib;
-use \DisplayLib;
+use COREPOS\pos\lib\DisplayLib;
 use \TransRecord;
 
 /**

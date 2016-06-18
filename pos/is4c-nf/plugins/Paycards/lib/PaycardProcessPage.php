@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\DisplayLib;
+
 /** @class PaycardProcessPage
 
     This class automatically includes the header and footer

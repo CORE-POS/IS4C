@@ -21,6 +21,7 @@
 
 *********************************************************************************/
  
+use COREPOS\pos\lib\DisplayLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class posCustDisplay extends BasicCorePage 

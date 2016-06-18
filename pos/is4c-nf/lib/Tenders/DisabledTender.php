@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib\Tenders;
-use \DisplayLib;
+use COREPOS\pos\lib\DisplayLib;
 
 /**
   @class DisabledTender

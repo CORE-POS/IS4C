@@ -23,6 +23,7 @@
 
 use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class cablist extends NoInputCorePage 

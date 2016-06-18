@@ -23,6 +23,7 @@
 
 namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 
 /**
   @class DeptLib
@@ -50,7 +51,7 @@ class DeptLib extends \LibraryClass
         }
             
         if (!is_numeric($dept) || !is_numeric($price) || strlen($price) < 1 || strlen($dept) < 2) {
-            $ret['output'] = \DisplayLib::inputUnknown();
+            $ret['output'] = DisplayLib::inputUnknown();
             \CoreLocal::set("quantity",1);
             $ret['udpmsg'] = 'errorBeep';
             return $ret;
@@ -75,11 +76,11 @@ class DeptLib extends \LibraryClass
         $discount = $discount * \CoreLocal::get('quantity');
 
         if ($row === false) {
-            $ret['output'] = \DisplayLib::boxMsg(
+            $ret['output'] = DisplayLib::boxMsg(
                 _("department unknown"),
                 '',
                 false,
-                \DisplayLib::standardClearButton()
+                DisplayLib::standardClearButton()
             );
             $ret['udpmsg'] = 'errorBeep';
             \CoreLocal::set("quantity",1);
@@ -150,21 +151,21 @@ class DeptLib extends \LibraryClass
 
         $num_rows2 = $db2->num_rows($result2);
         if ($num_rows2 == 0) {
-            $ret['output'] = \DisplayLib::boxMsg(
+            $ret['output'] = DisplayLib::boxMsg(
                 _("no item found in")."<br />".$dept["dept_name"],
                 '',
                 false,
-                \DisplayLib::standardClearButton()
+                DisplayLib::standardClearButton()
             );
             $ret['udpmsg'] = 'errorBeep';
         } else {
             $row2 = $db2->fetchRow($result2);
             if ($price > $row2["total"]) {
-                $ret['output'] = \DisplayLib::boxMsg(
+                $ret['output'] = DisplayLib::boxMsg(
                     _("coupon amount greater than department total"),
                     '',
                     false,
-                    \DisplayLib::standardClearButton()
+                    DisplayLib::standardClearButton()
                 );
                 $ret['udpmsg'] = 'errorBeep';
             } else {
@@ -182,7 +183,7 @@ class DeptLib extends \LibraryClass
                     'voided' => 0,
                 ));
                 \CoreLocal::set("ttlflag",0);
-                $ret['output'] = \DisplayLib::lastpage();
+                $ret['output'] = DisplayLib::lastpage();
                 $ret['redraw_footer'] = True;
                 $ret['udpmsg'] = 'goodBeep';
             }
@@ -201,7 +202,7 @@ class DeptLib extends \LibraryClass
             switch ($dept['memberOnly']) {
                 case 1: // member only, no override
                     if (\CoreLocal::get('isMember') == 0) {
-                        $ret['output'] = \DisplayLib::boxMsg(_(
+                        $ret['output'] = DisplayLib::boxMsg(_(
                                             _('Department is member-only'),
                                             _('Enter member number first'),
                                             false,
@@ -227,7 +228,7 @@ class DeptLib extends \LibraryClass
                     break;
                 case 3: // anyone but default non-member
                     if (\CoreLocal::get('memberID') == '0') {
-                        $ret['output'] = \DisplayLib::boxMsg(_(
+                        $ret['output'] = DisplayLib::boxMsg(_(
                                             _('Department is member-only'),
                                             _('Enter member number first'),
                                             false,
@@ -235,11 +236,11 @@ class DeptLib extends \LibraryClass
                                         ));
                         $modified = true;
                     } else if (\CoreLocal::get('memberID') == \CoreLocal::get('defaultNonMem')) {
-                        $ret['output'] = \DisplayLib::boxMsg(_(
+                        $ret['output'] = DisplayLib::boxMsg(_(
                                             _('Department not allowed with this member'),
                                             '',
                                             false,
-                                            \DisplayLib::standardClearButton()
+                                            DisplayLib::standardClearButton()
                                         ));
                         $modified = true;
                     }
@@ -311,7 +312,7 @@ class DeptLib extends \LibraryClass
                 \TransRecord::adddiscount($discount, $dept);
             }
 
-            $ret['output'] = \DisplayLib::lastpage();
+            $ret['output'] = DisplayLib::lastpage();
             $ret['redraw_footer'] = true;
             $ret['udpmsg'] = 'goodBeep';
         }

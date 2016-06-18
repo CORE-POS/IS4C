@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\DisplayLib;
+
 /**
   @class BasicCCModule
   Generic Credit Card processing module

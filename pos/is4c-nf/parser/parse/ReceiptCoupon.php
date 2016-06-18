@@ -1,7 +1,7 @@
 <?php
 
 namespace COREPOS\pos\parser\parse;
-use \DisplayLib;
+use COREPOS\pos\lib\DisplayLib;
 use \HouseCoupon;
 use \Parser;
 

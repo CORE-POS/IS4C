@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\UdpComm;
 
 /** 

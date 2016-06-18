@@ -2,6 +2,7 @@
 
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\Tenders\TenderModule;
 
 /**

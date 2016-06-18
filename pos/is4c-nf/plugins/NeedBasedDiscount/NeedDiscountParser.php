@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\DiscountModule;
+use COREPOS\pos\lib\DisplayLib;
 
 class NeedDiscountParser extends Parser 
 {

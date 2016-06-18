@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\DisplayLib;
+
 class AccessProgramParser extends Parser {
 
     public function check($str)

@@ -23,6 +23,7 @@
 
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DiscountModule;
+use COREPOS\pos\lib\DisplayLib;
 
 /**
   @class PrehLib

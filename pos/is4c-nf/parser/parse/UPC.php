@@ -23,11 +23,11 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\ItemNotFound;
 use COREPOS\pos\lib\Scanning\DiscountType;
 use COREPOS\pos\lib\Scanning\PriceMethod;
 use \CoreLocal;
-use \DisplayLib;
 use \MiscLib;
 use \Parser;
 use \Plugin;

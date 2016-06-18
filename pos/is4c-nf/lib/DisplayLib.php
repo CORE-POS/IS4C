@@ -21,14 +21,18 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
+use \CoreLocal;
+use \MiscLib;
 
 /**
   @class DisplayLib
   Functions for drawing display elements
 */
-class DisplayLib extends LibraryClass {
+class DisplayLib 
+{
 
 /**
   Get the standard footer with total and

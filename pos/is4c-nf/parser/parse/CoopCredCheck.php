@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\parser\parse;
+use COREPOS\pos\lib\DisplayLib;
 use \CoreLocal;
-use \DisplayLib;
 use \Parser;
 
 class CoopCredCheck extends Parser {
