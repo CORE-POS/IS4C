@@ -23,8 +23,8 @@
 
 namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\PrehLib;
 use \CoreLocal;
-use \PrehLib;
 use \TransRecord;
 
 /**

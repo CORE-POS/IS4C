@@ -23,8 +23,8 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\PrehLib;
 use \Parser;
-use \PrehLib;
 
 class CheckKey extends Parser {
     function check($str){

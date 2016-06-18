@@ -21,16 +21,19 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+use \TransRecord;
 
 /**
   @class PrehLib
   A horrible, horrible catch-all clutter of functions
 */
-class PrehLib extends LibraryClass 
+class PrehLib 
 {
 
 static private function getTenderMods($right)
@@ -381,7 +384,7 @@ static public function omtr_ttl()
         /* If member can do Store Charge, warn on certain conditions.
          * Important preliminary is to refresh totals.
         */
-        $temp = COREPOS\pos\lib\MemberLib::chargeOk();
+        $temp = \COREPOS\pos\lib\MemberLib::chargeOk();
         if (CoreLocal::get("balance") < CoreLocal::get("memChargeTotal") && CoreLocal::get("memChargeTotal") > 0){
             if (CoreLocal::get('msgrepeat') == 0){
                 CoreLocal::set("boxMsg",sprintf("<b>A/R Imbalance</b><br />

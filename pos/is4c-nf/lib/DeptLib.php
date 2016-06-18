@@ -25,6 +25,7 @@ namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\PrehLib;
 
 /**
   @class DeptLib
@@ -91,7 +92,7 @@ class DeptLib extends \LibraryClass
             $my_url = MiscLib::baseURL();
 
             if ($row['dept_see_id'] > 0) {
-                list($bad_age, $ret) = \PrehLib::ageCheck($row['dept_see_id'], $ret);
+                list($bad_age, $ret) = PrehLib::ageCheck($row['dept_see_id'], $ret);
                 if ($bad_age === true) {
                     return $ret;
                 }
@@ -265,7 +266,7 @@ class DeptLib extends \LibraryClass
         $tax = $dept["dept_tax"];
         $foodstamp = $dept['dept_fs'] != 0 ? 1 : 0;
         $deptDiscount = $dept["dept_discount"];
-        list($tax, $foodstamp, $deptDiscount) = \PrehLib::applyToggles($tax, $foodstamp, $deptDiscount);
+        list($tax, $foodstamp, $deptDiscount) = PrehLib::applyToggles($tax, $foodstamp, $deptDiscount);
 
         $minMaxButtons = array(
             'Confirm [enter]' => '$(\'#reginput\').val(\'\');submitWrapper();',

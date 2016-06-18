@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\PrehLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class UnpaidAR extends BasicCorePage 

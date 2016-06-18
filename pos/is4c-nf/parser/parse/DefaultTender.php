@@ -24,10 +24,10 @@
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\Tenders\TenderModule;
 use \CoreLocal;
 use \Parser;
-use \PrehLib;
 
 class DefaultTender extends Parser 
 {

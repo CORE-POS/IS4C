@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\UdpComm;
 
 if (!class_exists("PaycardLib")) 

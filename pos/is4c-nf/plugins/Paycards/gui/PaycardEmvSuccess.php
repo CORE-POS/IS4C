@@ -24,6 +24,7 @@
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\UdpComm;
+use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\ReceiptLib;
 
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');

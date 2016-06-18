@@ -26,12 +26,12 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\ItemNotFound;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\Scanning\DiscountType;
 use COREPOS\pos\lib\Scanning\PriceMethod;
 use \CoreLocal;
 use \Parser;
 use \Plugin;
-use \PrehLib;
 use \TransRecord;
 
 class UPC extends Parser 

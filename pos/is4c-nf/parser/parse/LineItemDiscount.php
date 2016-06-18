@@ -24,9 +24,9 @@
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\PrehLib;
 use \CoreLocal;
 use \Parser;
-use \PrehLib;
 use \TransRecord;
 
 class LineItemDiscount extends Parser 
