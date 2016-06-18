@@ -26,7 +26,6 @@ use COREPOS\pos\lib\Bitmap;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\PrintHandlers\PrintHandler;
 use \CoreLocal;
-use \Database;
 use \MiscLib;
 
 /**
