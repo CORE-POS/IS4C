@@ -27,6 +27,7 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
 
 /**
@@ -397,7 +398,7 @@ class MemberLib extends \LibraryClass
         if (\CoreLocal::get('member_subtotal') === 0 || \CoreLocal::get('member_subtotal') === '0') {
             $noop = "";
         } else {
-            \PrehLib::ttl();
+            PrehLib::ttl();
         } 
     }
 
