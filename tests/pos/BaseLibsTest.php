@@ -43,7 +43,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         $scale = MiscLib::scaleObject();
         if ($scale !== 0){
-            $this->assertInstanceOf('ScaleDriverWrapper', $scale);
+            $this->assertInstanceOf('COREPOS\\pos\\lib\\DriverWrappers\\ScaleDriverWrapper', $scale);
         }
 
         MiscLib::goodBeep();

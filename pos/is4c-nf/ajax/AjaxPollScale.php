@@ -34,11 +34,7 @@ class AjaxPollScale extends AjaxCallback
 
     public function ajax($input=array())
     {
-        $scaleDriver = CoreLocal::get("scaleDriver");
-        $sd = 0;
-        if ($scaleDriver != "") {
-            $sd = new $scaleDriver();
-        }
+        $sd = ScaleDriverWrapper::factory(CoreLocal::get('scaleDriver'));
 
         if (is_object($sd)) {
             ob_start();

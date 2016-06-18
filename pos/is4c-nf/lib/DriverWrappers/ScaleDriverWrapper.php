@@ -20,6 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+namespace COREPOS\pos\lib\DriverWrappers;
+
 /** @class ScaleDriverWrapper
     PHP Module for talking to hardware
 
@@ -35,6 +37,17 @@
 
 class ScaleDriverWrapper 
 {
+    public static function factory($class)
+    {
+        if (class_exists($class)) {
+            return new $class();
+        } elseif (class_exists('COREPOS\\pos\\lib\\DriverWrappers\\' . $class)) {
+            $class = 'COREPOS\\pos\\lib\\DriverWrappers\\' . $class;
+            return new $class();
+        }
+
+        return new \COREPOS\pos\lib\DriverWrappers\NewMagellan();
+    }
 
     /**
       Javascript used to interact with

@@ -20,12 +20,16 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\DriverWrappers\ScaleDriverWrapper;
+use \CoreLocal;
  
 /**
   @clss MiscLib
   Generic functions
 */
-class MiscLib extends LibraryClass 
+class MiscLib 
 {
 
 /**
@@ -145,13 +149,7 @@ static public function win32()
 */
 static public function scaleObject()
 {
-    $scaleDriver = CoreLocal::get("scaleDriver");
-    $sdh = 0;
-    if ($scaleDriver != ""){
-        $sdh = new $scaleDriver();
-    }
-
-    return $sdh;
+    return ScaleDriverWrapper::factory(CoreLocal::get('scaleDriver'));
 }
 
 /**

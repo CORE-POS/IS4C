@@ -20,14 +20,16 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+namespace COREPOS\pos\lib\DriverWrappers;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\UdpComm;
+use \CoreLocal;
 
 class NewMagellan extends ScaleDriverWrapper {
 
     function ReadFromScale()
     {
-        $readdir = dirname(__FILE__) . '/../drivers/NewMagellan/ss-output';
+        $readdir = __DIR__ . '/../../scale-drivers/drivers/NewMagellan/ss-output';
         // do not process any scale input while 
         // transaction is ending
         if (CoreLocal::get('End') != 0) {
@@ -71,7 +73,7 @@ class NewMagellan extends ScaleDriverWrapper {
 
     function ReadReset()
     {
-        $readdir = dirname(__FILE__) . '/../drivers/NewMagellan/ss-output';
+        $readdir = __DIR__ . '/../../scale-drivers/drivers/NewMagellan/ss-output';
         $dir  = opendir($readdir);
         while (false !== ($file = readdir($dir))) {
             if (is_dir($readdir."/".$file)) continue;

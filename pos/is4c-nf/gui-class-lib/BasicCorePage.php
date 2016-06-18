@@ -24,6 +24,7 @@
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\UdpComm;
+use COREPOS\pos\lib\DriverWrappers\ScaleDriverWrapper;
 
 /** 
 
@@ -296,11 +297,7 @@ JAVASCRIPT;
         if (!$include_scans) {
             return '';
         }
-        $scaleDriver = CoreLocal::get("scaleDriver");
-        if ($scaleDriver == '' || !class_exists($scaleDriver)) {
-            return '';
-        }
-        $scaleObj = new $scaleDriver();
+        $scaleObj = ScaleDriverWrapper::factory(CoreLocal::get('scaleDriver'));
         ?>
         <script type="text/javascript"
             src="<?php echo $this->page_url; ?>js/<?php echo $scaleObj->javascriptFile(); ?>">

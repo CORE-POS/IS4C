@@ -20,7 +20,9 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+namespace COREPOS\pos\lib\DriverWrappers;
 use COREPOS\pos\lib\DisplayLib;
+use \CoreLocal;
 
 class ssd extends ScaleDriverWrapper {
 
@@ -52,7 +54,7 @@ class ssd extends ScaleDriverWrapper {
 
     private function getFile($filename)
     {
-        $file = dirname(__FILE__) . '/../drivers/rs232/' . $filename;
+        $file = __DIR__ . '/../../scale-drivers/drivers/rs232/' . $filename;
         if (file_exists($file)) {
             $scale_data = file_get_contents($file);
         } else {
