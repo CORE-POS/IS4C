@@ -23,9 +23,9 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\Tenders\TenderModule;
 use \CoreLocal;
-use \MiscLib;
 use \Parser;
 use \PrehLib;
 

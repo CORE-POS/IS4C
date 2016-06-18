@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib\adminlogin;
+use COREPOS\pos\lib\MiscLib;
 use \CoreLocal;
-use \MiscLib;
 
 /**
   @class MemStatusAdminLogin

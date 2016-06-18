@@ -23,6 +23,7 @@
 
 namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\MiscLib;
 
 /**
   @class Franking
@@ -33,7 +34,7 @@ class Franking
     {
         $date = strftime("%m/%d/%y %I:%M %p", time());
         $ref = trim(\CoreLocal::get("memberID"))." ".trim(\CoreLocal::get("CashierNo"))." ".trim(\CoreLocal::get("laneno"))." ".trim(\CoreLocal::get("transno"));
-        $tender = "AMT: ".\MiscLib::truncate2($amount)."  CHANGE: ".\MiscLib::truncate2(\CoreLocal::get("change"));
+        $tender = "AMT: ".MiscLib::truncate2($amount)."  CHANGE: ".MiscLib::truncate2(\CoreLocal::get("change"));
         $output = self::center_check($ref)."\n"
             .self::center_check($date)."\n"
             .self::center_check(\CoreLocal::get("ckEndorse1"))."\n"
@@ -59,7 +60,7 @@ class Franking
         $output .= str_repeat(" ", 12).$next_year;
         $output .= str_repeat("\n", 3);
         $output .= str_repeat(" ", 75);
-        $output .= "$".\MiscLib::truncate2($amount);
+        $output .= "$".MiscLib::truncate2($amount);
         self::endorse($output); 
     }
 

@@ -22,6 +22,7 @@
     DHermann test
 *********************************************************************************/
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\install\conf\Conf;
 use COREPOS\pos\install\conf\FormFactory;
 use COREPOS\pos\install\db\Creator;

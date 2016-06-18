@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\MiscLib;
+
 class EquityEndorseDept extends SpecialDept 
 {
     public $help_summary = 'Prompt to print receipt number on equity paperwork via endorser';

@@ -23,8 +23,8 @@
 
 namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\LocalStorage\LaneCache;
+use COREPOS\pos\lib\MiscLib;
 use \CoreLocal;
-use \MiscLib;
 use \Exception;
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

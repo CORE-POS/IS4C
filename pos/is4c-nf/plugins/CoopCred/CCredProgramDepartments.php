@@ -22,6 +22,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\MiscLib;
+
 class CCredProgramDepartments extends SpecialDept 
 {
 

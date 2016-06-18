@@ -23,6 +23,7 @@
 
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
 
 if (!class_exists("BasicCCModule")) include_once(realpath(dirname(__FILE__)."/BasicCCModule.php"));
 if (!class_exists("xmlData")) include_once(realpath(dirname(__FILE__)."/lib/xmlData.php"));

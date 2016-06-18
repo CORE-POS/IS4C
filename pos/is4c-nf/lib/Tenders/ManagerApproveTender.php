@@ -23,8 +23,8 @@
 
 namespace COREPOS\pos\lib\Tenders;
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
 use \CoreLocal;
-use \MiscLib;
 
 /**
   @class StoreTransfer

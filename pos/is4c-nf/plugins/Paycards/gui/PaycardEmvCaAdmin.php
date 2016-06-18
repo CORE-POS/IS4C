@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\PrintHandlers\PrintHandler;
 
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');

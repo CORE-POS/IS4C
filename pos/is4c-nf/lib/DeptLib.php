@@ -24,6 +24,7 @@
 namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
 
 /**
   @class DeptLib
@@ -67,10 +68,10 @@ class DeptLib extends \LibraryClass
         $row = self::getDepartment($dbc, $dept);
 
         if ($row['line_item_discount'] && \CoreLocal::get('itemPD') > 0 && \CoreLocal::get('SecurityLineItemDiscount') == 30 && \CoreLocal::get('msgrepeat')==0){
-            $ret['main_frame'] = \MiscLib::baseURL() . "gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-LineItemDiscountAdminLogin";
+            $ret['main_frame'] = MiscLib::baseURL() . "gui-modules/adminlogin.php?class=COREPOS-pos-lib-adminlogin-LineItemDiscountAdminLogin";
             return $ret;
         } elseif ($row['line_item_discount'] && \CoreLocal::get('itemPD') > 0) {
-            $discount = \MiscLib::truncate2($price * (\CoreLocal::get('itemPD')/100.00));
+            $discount = MiscLib::truncate2($price * (\CoreLocal::get('itemPD')/100.00));
             $price -= $discount;
         }
         $discount = $discount * \CoreLocal::get('quantity');
@@ -87,7 +88,7 @@ class DeptLib extends \LibraryClass
         } elseif ($ringAsCoupon) {
             $ret = self::deptCouponRing($row, $price, $ret);
         } else {
-            $my_url = \MiscLib::baseURL();
+            $my_url = MiscLib::baseURL();
 
             if ($row['dept_see_id'] > 0) {
                 list($bad_age, $ret) = \PrehLib::ageCheck($row['dept_see_id'], $ret);
@@ -219,7 +220,7 @@ class DeptLib extends \LibraryClass
                                 '[enter] to continue, [clear] to cancel'
                             ));
                             \CoreLocal::set('lastRepeat', 'memberOnlyDept');
-                            $ret['main_frame'] = \MiscLib::baseURL() . 'gui-modules/boxMsg2.php';
+                            $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/boxMsg2.php';
                             $modified = true;
                         } else if (\CoreLocal::get('lastRepeat') == 'memberOnlyDept') {
                             \CoreLocal::set('lastRepeat', '');
@@ -278,11 +279,11 @@ class DeptLib extends \LibraryClass
         if ($price > $deptmax && (\CoreLocal::get('OpenRingHardMinMax') || \CoreLocal::get("msgrepeat") == 0)) {
             \CoreLocal::set("boxMsg","$".$price." "._("is greater than department limit"));
             \CoreLocal::set('boxMsgButtons', $minMaxButtons);
-            $ret['main_frame'] = \MiscLib::base_url().'gui-modules/boxMsg2.php';
+            $ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
         } elseif ($price < $deptmin && (\CoreLocal::get('OpenRingHardMinMax') || \CoreLocal::get("msgrepeat") == 0)) {
             \CoreLocal::set("boxMsg","$".$price." "._("is lower than department minimum"));
             \CoreLocal::set('boxMsgButtons', $minMaxButtons);
-            $ret['main_frame'] = \MiscLib::base_url().'gui-modules/boxMsg2.php';
+            $ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
         } else {
             if (\CoreLocal::get("casediscount") > 0) {
                 \TransRecord::addcdnotify();

@@ -1,5 +1,7 @@
 <?php
 
+use COREPOS\pos\lib\MiscLib;
+
 class InactiveMemTotalAction extends TotalAction
 {
     public function apply()

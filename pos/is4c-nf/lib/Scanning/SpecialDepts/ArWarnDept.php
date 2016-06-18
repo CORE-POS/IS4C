@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\MiscLib;
+
 class ArWarnDept extends SpecialDept 
 {
 

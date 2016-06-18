@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\MiscLib;
 
 if (!class_exists("AutoLoader")) include("lib/AutoLoader.php");
 

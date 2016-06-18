@@ -26,6 +26,7 @@ use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
 
 /**
   @class MemberLib
@@ -105,7 +106,7 @@ class MemberLib extends \LibraryClass
           be next.
           If verifyName is enabled, confirming the name should be next.
         */
-        $ret['main_frame'] = \MiscLib::base_url() . "gui-modules/memlist.php?idSearch=" . $member_number;
+        $ret['main_frame'] = MiscLib::base_url() . "gui-modules/memlist.php?idSearch=" . $member_number;
 
         return $ret;
     }

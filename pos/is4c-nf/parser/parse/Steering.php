@@ -24,8 +24,8 @@
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
 use \CoreLocal;
-use \MiscLib;
 use \Parser;
 use \PrehLib;
 use \TransRecord;

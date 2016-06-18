@@ -23,8 +23,8 @@
 
 namespace COREPOS\pos\lib\Scanning;
 use COREPOS\pos\lib\Scanning\DiscountTypes\NormalPricing;
+use COREPOS\pos\lib\MiscLib;
 use \CoreLocal;
-use \MiscLib;
 
 /**
   @class DiscountType

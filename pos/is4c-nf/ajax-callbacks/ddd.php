@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\ReceiptLib;
 
 ini_set('display_errors','Off');

@@ -24,8 +24,8 @@
 namespace COREPOS\pos\lib\Tenders;
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
 use \CoreLocal;
-use \MiscLib;
 
 /**
   @class StoreChargeTender

@@ -23,7 +23,7 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\DisplayLib;
-use \MiscLib;
+use COREPOS\pos\lib\MiscLib;
 use \Parser;
 use \TransRecord;
 

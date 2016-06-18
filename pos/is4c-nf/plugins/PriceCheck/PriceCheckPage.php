@@ -23,6 +23,7 @@
 
 use COREPOS\pos\lib\Database;
 use \COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\Scanning\DiscountType;
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 

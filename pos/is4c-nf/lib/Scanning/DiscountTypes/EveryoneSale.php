@@ -24,8 +24,8 @@
 namespace COREPOS\pos\lib\Scanning\DiscountTypes;
 use COREPOS\pos\lib\Scanning\DiscountType;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\MiscLib;
 use \CoreLocal;
-use \MiscLib;
 use \TransRecord;
 
 class EveryoneSale extends DiscountType 

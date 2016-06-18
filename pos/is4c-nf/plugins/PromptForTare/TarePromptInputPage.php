@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
 
 /* this module is intended for re-use. Just set 
  * Pass the name of a class with the

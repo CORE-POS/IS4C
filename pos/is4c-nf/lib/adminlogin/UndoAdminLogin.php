@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib\adminlogin;
-use \MiscLib;
+use COREPOS\pos\lib\MiscLib;
 
 /**
   @class UndoAdminLogin

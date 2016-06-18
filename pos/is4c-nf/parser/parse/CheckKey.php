@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\parser\parse;
-use \MiscLib;
+use COREPOS\pos\lib\MiscLib;
 use \Parser;
 use \PrehLib;
 

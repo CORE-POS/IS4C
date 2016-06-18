@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\parser\parse\UPC;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');

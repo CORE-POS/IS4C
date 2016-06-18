@@ -23,6 +23,7 @@
 
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
 
 class DatabarCoupon extends SpecialUPC 
 {

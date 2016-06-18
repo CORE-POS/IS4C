@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\MiscLib;
+
 /**
   @class ArOverpayAction
   Check total AR payments again current balance

@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\MiscLib;
+
 class PaidOutDept extends SpecialDept
 {
     public $help_summary = 'Negate entered amount and also prompt for comment';

@@ -24,9 +24,9 @@
 namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\Bitmap;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\PrintHandlers\PrintHandler;
 use \CoreLocal;
-use \MiscLib;
 
 /**
   @class ReceiptLib

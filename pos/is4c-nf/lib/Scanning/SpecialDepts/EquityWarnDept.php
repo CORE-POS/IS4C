@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\MiscLib;
+
 class EquityWarnDept extends SpecialDept 
 {
     public $help_summary = 'Require cashier confirmation on equity sale';
