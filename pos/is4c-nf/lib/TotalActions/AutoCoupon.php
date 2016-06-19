@@ -23,6 +23,7 @@
 
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\lib\Scanning\SpecialUPCs\HouseCoupon;
 
 /**
   @class AutoCoupon

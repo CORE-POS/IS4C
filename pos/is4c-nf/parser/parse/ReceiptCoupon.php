@@ -2,7 +2,7 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\DisplayLib;
-use \HouseCoupon;
+use COREPOS\pos\lib\Scanning\SpecialUPCs\HouseCoupon;
 use \Parser;
 
 class ReceiptCoupon extends Parser
