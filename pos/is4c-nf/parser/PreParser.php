@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\parse;
+use \Parser;
+
 /**
   @class PreParser
   The base module for preparsing input
@@ -111,7 +114,7 @@ class PreParser {
     */
     static public function get_preparse_chain()
     {
-        return Parser::get_parse_chain('PreParser');
+        return Parser::get_parse_chain('COREPOS\\pos\\parse\\PreParser');
     }
 
 }

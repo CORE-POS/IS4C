@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\parse\PreParser;
+
 class CashDropPreParser extends PreParser {
 
     function check($str)

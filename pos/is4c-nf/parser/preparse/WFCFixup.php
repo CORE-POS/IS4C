@@ -23,7 +23,7 @@
 
 namespace COREPOS\pos\parser\preparse;
 use \CoreLocal;
-use \PreParser;
+use COREPOS\pos\parse\PreParser;
 
 class WFCFixup extends PreParser {
     var $remainder;

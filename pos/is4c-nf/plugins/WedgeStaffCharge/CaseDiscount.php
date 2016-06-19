@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\parse\PreParser;
+
 class CaseDiscount extends PreParser {
     
     function check($str){

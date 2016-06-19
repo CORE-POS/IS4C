@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\parse;
+
 /**
   @class PostParser
   The base module for parsing modifying Parser results
@@ -65,7 +67,7 @@ class PostParser
     */
     static public function getPostParseChain()
     {
-        $set = AutoLoader::ListModules('PostParser');
+        $set = AutoLoader::ListModules('COREPOS\\pos\\parse\\PostParser');
         $set = array_reverse($set);
 
         return $set;

@@ -205,7 +205,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $required_classes = array(
             'AutoLoader',
             'Authenticate',
-            'PreParser',
             'Parser',
             'DisplayLib',
             'Database',
@@ -227,7 +226,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         }
 
         $listable = array(
-            'PreParser',
             'DiscountModule',
             'TotalAction',
         );

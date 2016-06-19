@@ -133,7 +133,7 @@ class AutoLoader extends LibraryClass
         'COREPOS\pos\lib\FooterBoxes\FooterBox' => '/FooterBoxes',
         'COREPOS\pos\lib\Kickers\Kicker' => '/Kickers',
         'Parser'            => '/../parser/parse',
-        'PreParser'         => '/../parser/preparse',
+        'COREPOS\\pos\\parse\\PreParser' => '/../parser/preparse',
         'COREPOS\pos\lib\Scanning\PriceMethod' => '/Scanning/PriceMethods',
         'COREPOS\pos\lib\Scanning\SpecialUPC' => '/Scanning/SpecialUPCs',
         'COREPOS\pos\lib\Scanning\SpecialDept' => '/Scanning/SpecialDepts',
