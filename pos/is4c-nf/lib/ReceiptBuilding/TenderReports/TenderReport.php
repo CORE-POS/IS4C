@@ -60,7 +60,7 @@ static public function printReport($class=false){
 static public function get()
 {
     $trClass = CoreLocal::get("TenderReportMod");
-    if ($trClass == '') {
+    if ($trClass == '' || !class_exists($trClass)) {
         $trClass = 'COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\DefaultTenderReport';
     }
     return $trClass::get();
