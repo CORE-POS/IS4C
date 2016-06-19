@@ -141,7 +141,7 @@ class AutoLoader extends LibraryClass
         'COREPOS\pos\lib\Tenders\TenderModule' => '/Tenders',
         'COREPOS\pos\lib\Search\Products\ProductSearch' => '/Search/Products',
         'COREPOS\pos\lib\PrintHandlers\PrintHandler' => '/PrintHandlers',
-        'TotalAction'       => '/TotalActions',
+        'COREPOS\pos\lib\TotalActions\TotalAction'       => '/TotalActions',
         'COREPOS\pos\lib\ReceiptBuilding\TenderReports\TenderReport' => '/ReceiptBuilding/TenderReports',
         'BasicModel'        => '/models',
         'COREPOS\pos\lib\models\BasicModel' => '/models',

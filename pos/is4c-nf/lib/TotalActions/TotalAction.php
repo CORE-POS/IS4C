@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\TotalActions;
+
 /**
   @class TotalAction
   Base class for applying actions to
@@ -28,6 +30,18 @@
 */
 class TotalAction 
 {
+    public static function factory($class)
+    {
+        if ($class != '' && class_exists($class)) {
+            return new $class();
+        } elseif ($class != '' && class_exists('COREPOS\\pos\\lib\\TotalActions\\' . $class)) {
+            $class = 'COREPOS\\pos\\lib\\TotalActions\\' . $class;
+            return new $class();
+        }
+
+        return new self();
+    }
+
     /**
       Apply action
       @return [boolean] true if the action

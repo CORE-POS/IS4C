@@ -226,7 +226,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         $listable = array(
             'DiscountModule',
-            'TotalAction',
         );
         foreach ($listable as $base_class) {
             $mods = AutoLoader::listModules($base_class);

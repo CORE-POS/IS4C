@@ -331,7 +331,8 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
     <td><b>Subtotal Actions</b></td>
     <td rowspan="2">
     <?php
-    $mods = AutoLoader::listModules('TotalAction');
+    $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\TotalActions\\TotalAction');
+    $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
     echo $form->selectField('TotalActions',
         $mods,
         array(),
@@ -339,6 +340,8 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
         true,
         array('multiple'=>'multiple', 'size'=>5)
     );
+    CoreLocal::set('TotalActions', array_map(function($i){ return str_replace('-', '\\', $i); }, CoreLocal::get('TotalActions')));
+    InstallUtilities::paramSave('TotalActions', CoreLocal::get('TotalActions'));
     ?>
     </td>
 </tr>

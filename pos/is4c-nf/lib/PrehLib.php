@@ -27,6 +27,7 @@ use COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\lib\TotalActions\TotalAction;
 use \CoreLocal;
 
 /**
@@ -205,14 +206,7 @@ static private function runTotalActions()
             if ("$ttl_class" == "") {
                 continue;
             }
-            if (!class_exists($ttl_class)) {
-                CoreLocal::set("boxMsg",sprintf("TotalActions class %s doesn't exist.", $ttl_class));
-                CoreLocal::set('boxMsgButtons', array(
-                    'Dismiss [clear]' => '$(\'#reginput\').val(\'CL\');submitWrapper();',
-                ));
-                return MiscLib::baseURL()."gui-modules/boxMsg2.php?quiet=1";
-            }
-            $mod = new $ttl_class();
+            $mod = TotalAction::factory($ttl_class);
             $result = $mod->apply();
             if ($result !== true && is_string($result)) {
                 return $result; // redirect URL
