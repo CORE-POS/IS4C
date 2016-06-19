@@ -33,6 +33,7 @@
     *                       in body_content() using temp_message.
 
 */
+use COREPOS\pos\lib\gui\NoInputCorePage;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\PrehLib;
 

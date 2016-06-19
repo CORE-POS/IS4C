@@ -271,12 +271,11 @@ class AutoLoader extends LibraryClass
             'Kickers',
             'locale',
             'log',
-            'Magellan',
+            'scale-drivers',
             'models',
-            'NewMagellan',
             'noauto',
             'PrintHandlers',
-            'rs232',
+            'ReceiptBuilding',
             'test',
         );
 

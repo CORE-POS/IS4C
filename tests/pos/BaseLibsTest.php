@@ -207,7 +207,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'Authenticate',
             'PreParser',
             'Parser',
-            'BasicCorePage',
             'DisplayLib',
             'Database',
             'SpecialUPC',

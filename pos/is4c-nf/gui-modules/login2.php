@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\BasicCorePage;
 use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;

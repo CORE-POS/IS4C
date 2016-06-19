@@ -21,10 +21,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\gui;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\UdpComm;
 use COREPOS\pos\lib\DriverWrappers\ScaleDriverWrapper;
+use \CoreLocal;
 
 /** 
 

@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\gui;
 use COREPOS\pos\lib\DisplayLib;
 
 /** @class InputCorePage

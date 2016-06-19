@@ -35,6 +35,7 @@
  * page or True to go to pos2.php.
  */
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
 use COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\MiscLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
