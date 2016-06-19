@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Sort;
+
 /**
   @class InOrderReceiptSort
   Does nothing. Leave items in the order they

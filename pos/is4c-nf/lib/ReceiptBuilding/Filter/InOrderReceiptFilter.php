@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Filter;
+
 /**
   @class InOrderReceiptFilter
   Do not add category headers

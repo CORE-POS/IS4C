@@ -374,9 +374,12 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
     <td><b>Tender Report</b>:</td>
     <td>
     <?php
-    $mods = AutoLoader::listModules('TenderReport');
+    $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\TenderReport');
+    $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
     sort($mods);
-    echo $form->selectField('TenderReportMod', $mods, 'DefaultTenderReport');
+    echo $form->selectField('TenderReportMod', $mods, 'COREPOS-pos-lib-ReceiptBuilding-DefaultTenderReport');
+    CoreLocal::set('TenderReportMod', str_replace('-', '\\', CoreLocal::get('TenderReportMod')));
+    InstallUtilities::paramSave('TenderReportMod', CoreLocal::get('TenderReportMod'));
     ?>
     </td>
 </tr>

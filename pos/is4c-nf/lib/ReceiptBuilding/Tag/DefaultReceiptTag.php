@@ -21,41 +21,48 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Tag;
+
 /**
-  @class InOrderReceiptSort
-  Does nothing. Leave items in the order they
-  were entered.
+  @class DefaultReceiptTag
+  Module for marking receipt records
+  as certain types. Subclasses can
+  override the tag() method
 */
-class InOrderReceiptSort extends DefaultReceiptSort 
+class DefaultReceiptTag 
 {
 
     /**
-      Sorting function
+      Tagging function
       @param $rowset an array of records
       @return an array of records
     */
-    public function sort($rowset)
+    public function tag($rowset)
     {
-        $nontenders = array();
-        $tenders = array();
-        foreach($rowset as $row) {
-            if ($row['trans_type'] == 'T' && $row['department'] == 0) {
-                $tenders[] = $row;
-            } else {
-                $nontenders[] = $row;
+        for($i=0;$i<count($rowset);$i++) {
+            switch($rowset[$i]['trans_type']) {
+                case 'T':
+                    if ($rowset[$i]['department'] == 0) {
+                        $rowset[$i]['tag'] = 'Tender';
+                    } else {
+                        $rowset[$i]['tag'] = 'Item';
+                    }
+                    break;
+                case 'I':
+                case 'D':
+                    $rowset[$i]['tag'] = 'Item';
+                    break;
+                case 'H':
+                case '0':
+                    $rowset[$i]['tag'] = 'Other';
+                    break;
+                default:
+                    $rowset[$i]['tag'] = 'Total';
+                    break;
             }
         }
-
-        $returnset = array();
-        foreach($nontenders as $row) {
-            $returnset[] = $row;
-        }
-        foreach($tenders as $row) {
-            $returnset[] = $row;
-        }
-
-        return $returnset;
+        
+        return $rowset;
     }
-
-}    
+}
 

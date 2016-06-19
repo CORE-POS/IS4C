@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\DataFetch;
+use \CoreLocal;
+
 /**
   @class DefaultReceiptDataFetch
   Module for fetching records from

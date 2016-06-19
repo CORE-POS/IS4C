@@ -21,13 +21,35 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Format;
+
 /**
-  @class TotalFormat
+  @class DefaultReceiptFormat
   Module for print-formatting 
-  total records. 
+  receipt records. Subclasses can
+  override the format() method
 */
-class TotalReceiptFormat extends DefaultReceiptFormat 
+class DefaultReceiptFormat 
 {
+    protected $print_handler;
+
+    public function setPrintHandler($ph)
+    {
+        $this->print_handler = $ph;
+    }
+    
+    /*
+      boolean. 
+    */
+    public $is_bold;
+
+    /**
+      constructor. disables bolding by default
+    */
+    public function __construct()
+    {
+        $is_bold = False;
+    }
 
     /**
       Formatting function
@@ -36,35 +58,7 @@ class TotalReceiptFormat extends DefaultReceiptFormat
     */
     public function format($row)
     {
-        switch($row['upc']) {
-            case 'TOTAL':
-                $this->is_bold = true;
-                return $this->align($row['upc'],$row['total']);    
-                break;
-            case 'SUBTOTAL':
-            case 'TAX':
-                return $this->align($row['upc'],$row['total']);    
-                break;
-            case 'DISCOUNT':
-                $text = sprintf("** %d%% Discount Applied **",$row['percentDiscount']);
-                $text = str_pad($text, 44, ' ', STR_PAD_RIGHT);
-                $amount = str_pad(sprintf('%.2f',$row['total']), 
-                                8, 
-                                ' ',
-                                STR_PAD_LEFT);
-                return $text.$amount;
-                break;
-        }
-    }
-
-    private function align($text, $amount)
-    {
-        $amount = sprintf('%.2f',$amount);
-
-        $ret = str_pad($text,44,' ',STR_PAD_LEFT);
-        $ret .= str_pad($amount,8,' ',STR_PAD_LEFT);
-
-        return $ret;
+        return "";
     }
 }
 

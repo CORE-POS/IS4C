@@ -21,25 +21,43 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Sort;
+
 /**
-  @class TenderFormat
-  Module for print-formatting 
-  tender records.
+  @class InOrderReceiptSort
+  Does nothing. Leave items in the order they
+  were entered.
 */
-class TenderReceiptFormat extends DefaultReceiptFormat 
+class InOrderReceiptSort extends DefaultReceiptSort 
 {
 
     /**
-      Formatting function
-      @param $row a single receipt record
-      @return a formatted string
+      Sorting function
+      @param $rowset an array of records
+      @return an array of records
     */
-    public function format($row)
+    public function sort($rowset)
     {
-        $ret = str_pad($row['description'],44,' ',STR_PAD_LEFT);
-        $ret .= str_pad(sprintf('%.2f',-1*$row['total']),8,' ',STR_PAD_LEFT);
+        $nontenders = array();
+        $tenders = array();
+        foreach($rowset as $row) {
+            if ($row['trans_type'] == 'T' && $row['department'] == 0) {
+                $tenders[] = $row;
+            } else {
+                $nontenders[] = $row;
+            }
+        }
 
-        return $ret;
+        $returnset = array();
+        foreach($nontenders as $row) {
+            $returnset[] = $row;
+        }
+        foreach($tenders as $row) {
+            $returnset[] = $row;
+        }
+
+        return $returnset;
     }
-}
+
+}    
 

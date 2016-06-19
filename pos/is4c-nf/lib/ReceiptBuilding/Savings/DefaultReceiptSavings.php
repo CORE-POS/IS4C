@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Savings;
 use COREPOS\pos\lib\Database;
 
 /**

@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\HtmlEmail;
+
 /**
   @class DefaultHtmlEmail
   Module for building HTML

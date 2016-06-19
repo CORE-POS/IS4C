@@ -1,5 +1,6 @@
 <?php
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Messages;
 use COREPOS\pos\lib\ReceiptLib;
 
 class DeveloperReceiptMessage extends CustomerReceiptMessage 

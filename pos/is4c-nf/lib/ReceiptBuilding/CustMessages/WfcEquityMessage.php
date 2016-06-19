@@ -1,6 +1,8 @@
 <?php
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Messages;
 use COREPOS\pos\lib\ReceiptLib;
+use \CoreLocal;
 
 class WfcEquityMessage extends CustomerReceiptMessage {
 

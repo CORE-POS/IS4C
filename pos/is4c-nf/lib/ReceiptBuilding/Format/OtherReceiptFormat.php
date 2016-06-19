@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Format;
+
 /**
   @class OtherFormat
   Module for print-formatting 

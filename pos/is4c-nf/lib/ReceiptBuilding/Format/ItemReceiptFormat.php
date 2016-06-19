@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Format;
+use \CoreLocal;
+
 /**
   @class ItemFormat
   Module for print-formatting 

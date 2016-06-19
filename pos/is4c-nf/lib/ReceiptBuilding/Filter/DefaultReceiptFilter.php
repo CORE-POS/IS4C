@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Filter;
+
 /**
   @class DefaultReceiptFilter
   Module for adding and removing

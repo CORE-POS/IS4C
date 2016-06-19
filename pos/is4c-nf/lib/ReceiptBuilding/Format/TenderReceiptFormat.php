@@ -21,33 +21,15 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Format;
+
 /**
-  @class DefaultReceiptFormat
+  @class TenderFormat
   Module for print-formatting 
-  receipt records. Subclasses can
-  override the format() method
+  tender records.
 */
-class DefaultReceiptFormat 
+class TenderReceiptFormat extends DefaultReceiptFormat 
 {
-    protected $print_handler;
-
-    public function setPrintHandler($ph)
-    {
-        $this->print_handler = $ph;
-    }
-    
-    /*
-      boolean. 
-    */
-    public $is_bold;
-
-    /**
-      constructor. disables bolding by default
-    */
-    public function __construct()
-    {
-        $is_bold = False;
-    }
 
     /**
       Formatting function
@@ -56,7 +38,10 @@ class DefaultReceiptFormat
     */
     public function format($row)
     {
-        return "";
+        $ret = str_pad($row['description'],44,' ',STR_PAD_LEFT);
+        $ret .= str_pad(sprintf('%.2f',-1*$row['total']),8,' ',STR_PAD_LEFT);
+
+        return $ret;
     }
 }
 

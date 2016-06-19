@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Messages;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\ReceiptLib;
+use \CoreLocal;
 
 /**
   @class EbtReceiptMessage

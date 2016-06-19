@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Sort;
+
 /**
   @class DefaultReceiptFilter
   Module for sorting receipt records

@@ -21,10 +21,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Sort;
+
 /**
-  @class DoubleSubtotalReceiptSort
+  @class DiscountFirstReceiptSort
 */
-class DoubleSubtotalReceiptSort extends DefaultReceiptSort 
+class DiscountFirstReceiptSort extends DefaultReceiptSort 
 {
     public function sort($rowset)
     {
@@ -44,12 +46,11 @@ class DoubleSubtotalReceiptSort extends DefaultReceiptSort
                   and and put the prediscount amount in subtotal
                 */
                 $discount_amount = $rowset[$i]['total'];
-                $subtotal1 = $rowset[$i+1];
-                $subtotal2 = $rowset[$i+1];
-                $subtotal1['total'] -= $discount_amount;
-                $newset[] = $subtotal1;
+                $subtotal_amount = $rowset[$i+1]['total'];
+                $subtotal_amount -= $discount_amount; 
+                $rowset[$i+1]['total'] = $subtotal_amount;
+                $newset[] = $rowset[$i+1];
                 $newset[] = $rowset[$i];
-                $newset[] = $subtotal2;
                 $i++;
             } else {
                 $newset[] = $rowset[$i];

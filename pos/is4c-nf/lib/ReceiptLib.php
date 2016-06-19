@@ -476,25 +476,37 @@ static public function graphedLocalTTL()
 static private function getFetch()
 {
     $FETCH_MOD = CoreLocal::get("RBFetchData");
-    return $FETCH_MOD == '' ? 'DefaultReceiptDataFetch' : $FETCH_MOD;
+    if ($FETCH_MOD != '' && !class_exists($FETCH_MOD)) {
+        $FETCH_MOD = 'COREPOS\\pos\\lib\\ReceiptBuilding\\DataFetch\\' . $FETCH_MOD;
+    }
+    return $FETCH_MOD == '' ? 'COREPOS\\pos\\lib\\ReceiptBuilding\\DataFetch\\DefaultReceiptDataFetch' : $FETCH_MOD;
 }
 
 static private function getFilter()
 {
     $mod = CoreLocal::get("RBFilter");
-    return $mod == '' ? 'DefaultReceiptFilter' : $mod;
+    if ($mod != '' && !class_exists($mod)) {
+        $mod = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Filter\\' . $mod;
+    }
+    return $mod == '' ? 'COREPOS\\pos\\lib\\ReceiptBuilding\\Filter\\DefaultReceiptFilter' : $mod;
 }
 
 static private function getSort()
 {
     $mod = CoreLocal::get("RBSort");
-    return $mod == '' ? 'DefaultReceiptSort' : $mod;
+    if ($mod != '' && !class_exists($mod)) {
+        $mod = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Sort\\' . $mod;
+    }
+    return $mod == '' ? 'COREPOS\\pos\\lib\\ReceiptBuilding\\Sort\\DefaultReceiptSort' : $mod;
 }
 
 static private function getTag()
 {
     $mod = CoreLocal::get("RBTag");
-    return $mod == '' ? 'DefaultReceiptTag' : $mod;
+    if ($mod != '' && !class_exists($mod)) {
+        $mod = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Tag\\' . $mod;
+    }
+    return $mod == '' ? 'COREPOS\\pos\\lib\\ReceiptBuilding\\Tag\\DefaultReceiptTag' : $mod;
 }
 
 static public function receiptFromBuilders($reprint=False,$trans_num='')
@@ -525,7 +537,7 @@ static public function receiptFromBuilders($reprint=False,$trans_num='')
 
     $ret = "";
     foreach ($recordset as $record) {
-        $class_name = $record['tag'].'ReceiptFormat';
+        $class_name = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Format\\' . $record['tag'] . 'ReceiptFormat';
         if (!class_exists($class_name)) continue;
         $obj = new $class_name();
         $obj->setPrintHandler(self::$PRINT_OBJ);
@@ -770,7 +782,12 @@ static private function getTypeMap()
 {
     $type_map = array();
     foreach(self::messageMods() as $class){
-        if (!class_exists($class)) continue;
+        if (!class_exists($class)) {
+            $class = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Messages\\' . $class;
+            if (!class_exists($class)) {
+                continue;
+            }
+        }
         $obj = new $class();
         if ($obj->standalone_receipt_type != '')
             $type_map[$obj->standalone_receipt_type] = $obj;
@@ -782,8 +799,10 @@ static private function getTypeMap()
 static private function memberFooter($receipt, $ref)
 {
     $mod = CoreLocal::get('ReceiptThankYou');
-    if ($mod === '' || !class_exists($mod)) {
-        $mod = 'DefaultReceiptThanks';
+    if ($mod != '' && class_exists('COREPOS\\pos\\lib\\ReceiptBuilding\\ThankYou\\' . $mod)) {
+        $mod = 'COREPOS\\pos\\lib\\ReceiptBuilding\\ThankYou\\' . $mod;
+    } elseif ($mod === '' || !class_exists($mod)) {
+        $mod = 'COREPOS\\pos\\lib\\ReceiptBuilding\\ThankYou\\DefaultReceiptThanks';
     }
     $obj = new $mod();
     $obj->setPrintHandler(self::$PRINT_OBJ);
@@ -821,7 +840,12 @@ static private function messageModFooters($receipt, $where, $ref, $reprint)
     $modQ = "SELECT ";
     $select_mods = array();
     foreach(self::messageMods() as $class){
-        if (!class_exists($class)) continue;
+        if (!class_exists($class)) {
+            $class = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Messages\\' . $class;
+            if (!class_exists($class)) {
+                continue;
+            }
+        }
         $obj = new $class();
         $obj->setPrintHandler(self::$PRINT_OBJ);
         $modQ .= $obj->select_condition().' AS '.$dbc->identifierEscape($class).',';
@@ -914,8 +938,10 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
             $receipt['any'] .= self::$PRINT_OBJ->addRenderingSpacer('end of items');
 
             $savingsMode = CoreLocal::get('ReceiptSavingsMode');
-            if ($savingsMode === '' || !class_exists($savingsMode)) {
-                $savingsMode = 'DefaultReceiptSavings';
+            if ($savingsMode != '' && class_exists('COREPOS\\pos\\lib\\ReceiptBuilding\\Savings\\' . $savingsMode)) {
+                $savingsMode = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Savings\\' . $savingsMode;
+            } elseif ($savingsMode === '' || !class_exists($savingsMode)) {
+                $savingsMode = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Savings\\DefaultReceiptSavings';
             }
             $savings = new $savingsMode();
             $savings->setPrintHandler(self::$PRINT_OBJ);
@@ -1075,6 +1101,9 @@ static public function memReceiptMessages($card_no)
     while ($row = $dbc->fetch_row($memR)) {
         // EL This bit new for messages from plugins.
         $class_name = $row['modifier_module'];
+        if (!empty($class_name) && class_exists('COREPOS\\pos\\lib\\ReceiptBuilding\\CustMessages\\' . $class_name)) {
+            $class_name = 'COREPOS\\pos\\lib\\ReceiptBuilding\\CustMessages\\' . $class_name;
+        }
         if (!empty($class_name) && class_exists($class_name)) {
             $obj = new $class_name();
             $obj->setPrintHandler(self::$PRINT_OBJ);
