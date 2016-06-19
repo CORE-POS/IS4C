@@ -23,14 +23,14 @@ class FooterBoxesTest extends PHPUnit_Framework_TestCase
             'COREPOS\\pos\\lib\\FooterBoxes\\TransPercentDiscount'
         );
 
-        $all = AutoLoader::ListModules('FooterBox',True);
+        $all = AutoLoader::ListModules('COREPOS\pos\lib\FooterBoxes\FooterBox',True);
         foreach($defaults as $d){
             $this->assertContains($d, $all);
         }
 
         foreach($all as $class){
             $obj = FooterBox::factory($class);
-            $this->assertInstanceOf('FooterBox',$obj);
+            $this->assertInstanceOf('COREPOS\pos\lib\FooterBoxes\FooterBox',$obj);
 
             $this->assertObjectHasAttribute('header_css',$obj);
             $this->assertObjectHasAttribute('display_css',$obj);

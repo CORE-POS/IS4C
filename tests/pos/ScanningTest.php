@@ -808,7 +808,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $sd = new SpecialDept();
         $this->assertEquals('Documentation Needed!', $sd->help_text());
         $arr = $sd->register(1, 'not-array');
-        $expect = array(1 => array('COREPOS\\pos\\lib\\FooterBoxes\\SpecialDept'));
+        $expect = array(1 => array('COREPOS\\pos\\lib\\Scanning\\SpecialDept'));
         $this->assertEquals($expect, $arr);
         $this->assertEquals(array(), $sd->handle(1, 1, array()));
 
