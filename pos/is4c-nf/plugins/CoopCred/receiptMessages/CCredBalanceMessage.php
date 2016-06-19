@@ -23,6 +23,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\ReceiptBuilding\CustMessages\CustomerReceiptMessage;
 
 /**
   @class CCredBalanceMessage
