@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\parser\preparse;
-use COREPOS\pos\parse\PreParser;
+use COREPOS\pos\parser\PreParser;
 
 class MemStatusToggle extends PreParser {
 

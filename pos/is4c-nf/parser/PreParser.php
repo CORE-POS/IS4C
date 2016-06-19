@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\pos\parse;
+namespace COREPOS\pos\parser;
 use \Parser;
 
 /**
@@ -114,7 +114,7 @@ class PreParser {
     */
     static public function get_preparse_chain()
     {
-        return Parser::get_parse_chain('COREPOS\\pos\\parse\\PreParser');
+        return Parser::get_parse_chain('COREPOS\\pos\\parser\\PreParser');
     }
 
 }

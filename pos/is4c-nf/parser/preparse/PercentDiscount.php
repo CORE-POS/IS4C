@@ -23,7 +23,7 @@
 
 namespace COREPOS\pos\parser\preparse;
 use \CoreLocal;
-use COREPOS\pos\parse\PreParser;
+use COREPOS\pos\parser\PreParser;
 
 class PercentDiscount extends PreParser 
 {

@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\pos\parse;
+namespace COREPOS\pos\parser;
 use \AutoLoader;
 
 /**
@@ -68,7 +68,7 @@ class PostParser
     */
     static public function getPostParseChain()
     {
-        $set = AutoLoader::ListModules('COREPOS\\pos\\parse\\PostParser');
+        $set = AutoLoader::ListModules('COREPOS\\pos\\parser\\PostParser');
         $set = array_reverse($set);
 
         return $set;
