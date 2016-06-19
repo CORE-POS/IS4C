@@ -135,7 +135,7 @@ class AutoLoader extends LibraryClass
         'Parser'            => '/../parser/parse',
         'PreParser'         => '/../parser/preparse',
         'COREPOS\pos\lib\Scanning\PriceMethod' => '/Scanning/PriceMethods',
-        'SpecialUPC'        => '/Scanning/SpecialUPCs',
+        'COREPOS\pos\lib\Scanning\SpecialUPC' => '/Scanning/SpecialUPCs',
         'COREPOS\pos\lib\Scanning\SpecialDept' => '/Scanning/SpecialDepts',
         'COREPOS\pos\lib\Tenders\TenderModule' => '/Tenders',
         'ProductSearch'     => '/Search/Products',

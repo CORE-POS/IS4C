@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Scanning\SpecialUPC;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 

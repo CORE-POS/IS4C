@@ -209,7 +209,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'Parser',
             'DisplayLib',
             'Database',
-            'SpecialUPC',
             'LocalStorage',
             'Plugin',
         );
@@ -229,7 +228,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         $listable = array(
             'PreParser',
-            'SpecialUPC',
             'ProductSearch',
             'DiscountModule',
             'TotalAction',

@@ -113,7 +113,8 @@ body {
     </td>
     <td>
     <?php
-    $mods = AutoLoader::listModules('SpecialUPC');
+    $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\Scanning\\SpecialUPC');
+    $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
     echo $form->selectField('SpecialUpcClasses',
         $mods,
         array(),
@@ -121,6 +122,8 @@ body {
         true,
         array('multiple'=>'multiple', 'size'=>10)
     );
+    CoreLocal::set('SpecialUpcClasses', array_map(function($i){ return str_replace('-', '\\', $i); }, CoreLocal::get('SpecialUpcClasses')));
+    InstallUtilities::paramSave('SpecialUpcClasses', CoreLocal::get('SpecialUpcClasses'));
     ?>
     </td>
 </tr>

@@ -22,7 +22,7 @@
 
 *********************************************************************************/
 
-use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\gui\InputCorePage;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
 include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');

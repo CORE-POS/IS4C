@@ -28,6 +28,11 @@ use COREPOS\pos\lib\Scanning\SpecialDepts\PaidOutDept;
 use COREPOS\pos\lib\Scanning\VariableWeightReWrite;
 use COREPOS\pos\lib\Scanning\VariableWeightReWrites\ItemNumberOnlyReWrite;
 use COREPOS\pos\lib\Scanning\VariableWeightReWrites\ZeroedPriceReWrite;
+use COREPOS\pos\lib\Scanning\SpecialUPC;
+use COREPOS\pos\lib\Scanning\SpecialUPCs\CouponCode;
+use COREPOS\pos\lib\Scanning\SpecialUPCs\DatabarCoupon;
+use COREPOS\pos\lib\Scanning\SpecialUPCs\HouseCoupon;
+use COREPOS\pos\lib\Scanning\SpecialUPCs\SpecialUPC;
 
 /**
  * @backupGlobals disabled
@@ -545,20 +550,20 @@ class ScanningTest extends PHPUnit_Framework_TestCase
     public function testSpecialUPCs() 
     {
         $defaults = array(
-            'CouponCode',
-            'DatabarCoupon',
-            'HouseCoupon',
-            'SpecialOrder'
+            'COREPOS\\pos\\lib\\Scanning\\SpecialUPCs\\CouponCode',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialUPCs\\DatabarCoupon',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialUPCs\\HouseCoupon',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialUPCs\\SpecialOrder'
         );
 
-        $all = AutoLoader::ListModules('SpecialUPC',False);
+        $all = AutoLoader::ListModules('COREPOS\\pos\\lib\\Scanning\\SpecialUPC',False);
         foreach($defaults as $d){
             $this->assertContains($d, $all);
         }
 
         foreach($all as $class){
             $obj = new $class();
-            $this->assertInstanceOf('SpecialUPC',$obj);
+            $this->assertInstanceOf('COREPOS\\pos\\lib\\Scanning\\SpecialUPC',$obj);
             $this->assertInternalType('boolean',$obj->is_special('silly nonsense input'));
         }
 

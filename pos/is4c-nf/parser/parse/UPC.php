@@ -31,6 +31,7 @@ use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\Scanning\DiscountType;
 use COREPOS\pos\lib\Scanning\PriceMethod;
 use COREPOS\pos\lib\Scanning\SpecialDept;
+use COREPOS\pos\lib\Scanning\SpecialUPC;
 use \CoreLocal;
 use \Parser;
 use \Plugin;
@@ -698,7 +699,7 @@ class UPC extends Parser
         $dbc = Database::pDataConnect();
         $objs = is_array(CoreLocal::get("SpecialUpcClasses")) ? CoreLocal::get('SpecialUpcClasses') : array();
         foreach($objs as $class_name){
-            $instance = new $class_name();
+            $instance = SpecialUPC::factory($class_name);
             if ($instance->isSpecial($upc)){
                 return $instance->handle($upc,$ret);
             }
