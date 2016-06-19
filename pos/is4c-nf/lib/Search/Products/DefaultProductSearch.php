@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Search\Products;
+use \CoreLocal;
 use COREPOS\pos\lib\Database;
 
 /**

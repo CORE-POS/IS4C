@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\Search\Products\ProductSearch;
 
 /**
   @class AllItemProductUserSearch

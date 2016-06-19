@@ -228,7 +228,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         $listable = array(
             'PreParser',
-            'ProductSearch',
             'DiscountModule',
             'TotalAction',
         );
