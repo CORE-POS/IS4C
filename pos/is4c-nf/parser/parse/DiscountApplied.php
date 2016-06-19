@@ -25,7 +25,7 @@ namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\PrehLib;
 use \CoreLocal;
-use COREPOS\pos\lib\parser\Parser;
+use COREPOS\pos\parser\Parser;
 
 class DiscountApplied extends Parser 
 {

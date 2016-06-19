@@ -23,7 +23,7 @@
 
 namespace COREPOS\pos\parser\parse;
 use \CoreLocal;
-use COREPOS\pos\lib\parser\Parser;
+use COREPOS\pos\parser\Parser;
 
 class ScaleInput extends Parser {
     function check($str){

@@ -23,7 +23,7 @@
 
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\PrehLib;
-use COREPOS\pos\lib\parser\Parser;
+use COREPOS\pos\parser\Parser;
 
 /**
   Using Datacap ActiveX requires the cashier

@@ -23,7 +23,7 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\MiscLib;
-use COREPOS\pos\lib\parser\Parser;
+use COREPOS\pos\parser\Parser;
 
 class Lock extends Parser {
     function check($str){

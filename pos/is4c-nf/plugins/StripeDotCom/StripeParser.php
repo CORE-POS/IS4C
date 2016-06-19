@@ -1,6 +1,6 @@
 <?php
 
-use COREPOS\pos\lib\parser\Parser;
+use COREPOS\pos\parser\Parser;
 
 class StripeParser extends Parser
 {

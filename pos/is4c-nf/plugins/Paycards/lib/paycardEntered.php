@@ -23,7 +23,7 @@
 
 use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\UdpComm;
-use COREPOS\pos\lib\parser\Parser;
+use COREPOS\pos\parser\Parser;
 
 if (!class_exists("PaycardLib")) 
     include_once(realpath(dirname(__FILE__)."/paycardLib.php"));

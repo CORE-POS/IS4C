@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\DisplayLib;
-use COREPOS\pos\lib\parser\Parser;
+use COREPOS\pos\parser\Parser;
 
 class VirtualCouponParser extends Parser {
     

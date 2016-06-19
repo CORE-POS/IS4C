@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-use COREPOS\pos\lib\parser\Parser;
+use COREPOS\pos\parser\Parser;
 
 class PriceCheckParser extends Parser {
     function check($str){
