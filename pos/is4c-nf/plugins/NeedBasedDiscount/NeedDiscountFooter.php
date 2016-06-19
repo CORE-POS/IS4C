@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\FooterBoxes\TransPercentDiscount;
+
 class NeedDiscountFooter extends TransPercentDiscount {
 
     function header_content()
