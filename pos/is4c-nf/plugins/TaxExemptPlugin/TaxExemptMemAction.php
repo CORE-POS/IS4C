@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\TransRecord;
-use COREPOS\pos\lib\TotalActions\TotalAction;
+use COREPOS\pos\lib\TotalActions\MemTotalAction;
 
 class TaxExemptMemAction extends MemTotalAction 
 {
