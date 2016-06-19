@@ -23,8 +23,8 @@
 
 namespace COREPOS\pos\lib\adminlogin;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\ReceiptBuilding\TenderReports\TenderReport;
 use \CoreLocal;
-use \TenderReport;
 
 /**
   @class AnyTenderReportRequest
