@@ -15,12 +15,12 @@ class FooterBoxesTest extends PHPUnit_Framework_TestCase
     public function testAll()
     {
         $defaults = array(
-            'FooterBox',
-            'EveryoneSales',
-            'MemSales',
-            'MultiTotal',
-            'SavedOrCouldHave',
-            'TransPercentDiscount'
+            'COREPOS\\pos\\lib\\FooterBoxes\\FooterBox',
+            'COREPOS\\pos\\lib\\FooterBoxes\\EveryoneSales',
+            'COREPOS\\pos\\lib\\FooterBoxes\\MemSales',
+            'COREPOS\\pos\\lib\\FooterBoxes\\MultiTotal',
+            'COREPOS\\pos\\lib\\FooterBoxes\\SavedOrCouldHave',
+            'COREPOS\\pos\\lib\\FooterBoxes\\TransPercentDiscount'
         );
 
         $all = AutoLoader::ListModules('FooterBox',True);
