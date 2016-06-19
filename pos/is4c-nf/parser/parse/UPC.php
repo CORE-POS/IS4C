@@ -610,7 +610,7 @@ class UPC extends Parser
             $rewrite_class = CoreLocal::get('VariableWeightReWriter');
             if ($rewrite_class != '' && class_exists('COREPOS\\pos\\lib\\Scanning\\VariableWeightReWrites\\' . $rewrite_class)) {
                 $rewrite_class = 'COREPOS\\pos\\lib\\Scanning\\VariableWeightReWrites\\' . $rewrite_class;
-            if ($rewrite_class === '' || !class_exists($rewrite_class)) {
+            } elseif ($rewrite_class === '' || !class_exists($rewrite_class)) {
                 $rewrite_class = 'COREPOS\\pos\\lib\\Scanning\\VariableWeightReWrites\\ZeroedPriceReWrite';
             }
             $rewriter = new $rewrite_class();
