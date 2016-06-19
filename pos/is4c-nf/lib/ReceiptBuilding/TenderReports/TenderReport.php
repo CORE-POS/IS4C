@@ -61,7 +61,7 @@ static public function get()
 {
     $trClass = CoreLocal::get("TenderReportMod");
     if ($trClass == '') {
-        $trClass = 'DefaultTenderReport';
+        $trClass = 'COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\DefaultTenderReport';
     }
     return $trClass::get();
 }
