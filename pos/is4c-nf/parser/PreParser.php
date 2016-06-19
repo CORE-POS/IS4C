@@ -22,7 +22,6 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\parser;
-use \Parser;
 
 /**
   @class PreParser
