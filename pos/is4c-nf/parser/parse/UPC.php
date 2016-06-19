@@ -608,8 +608,10 @@ class UPC extends Parser
                 $scalepriceEAN = MiscLib::truncate2(substr($upc, -5)/100);
             }
             $rewrite_class = CoreLocal::get('VariableWeightReWriter');
+            if ($rewrite_class != '' && class_exists('COREPOS\\pos\\lib\\Scanning\\VariableWeightReWrites\\' . $rewrite_class)) {
+                $rewrite_class = 'COREPOS\\pos\\lib\\Scanning\\VariableWeightReWrites\\' . $rewrite_class;
             if ($rewrite_class === '' || !class_exists($rewrite_class)) {
-                $rewrite_class = 'ZeroedPriceReWrite';
+                $rewrite_class = 'COREPOS\\pos\\lib\\Scanning\\VariableWeightReWrites\\ZeroedPriceReWrite';
             }
             $rewriter = new $rewrite_class();
             $upc = $rewriter->translate($upc, $scaleCheckDigits);

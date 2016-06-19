@@ -234,7 +234,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'ProductSearch',
             'DiscountModule',
             'TotalAction',
-            'VariableWeightReWrite',
         );
         foreach ($listable as $base_class) {
             $mods = AutoLoader::listModules($base_class);

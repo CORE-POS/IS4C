@@ -25,6 +25,9 @@ use COREPOS\pos\lib\Scanning\SpecialDepts\EquityEndorseDept;
 use COREPOS\pos\lib\Scanning\SpecialDepts\EquityWarnDept;
 use COREPOS\pos\lib\Scanning\SpecialDepts\BottleReturnDept;
 use COREPOS\pos\lib\Scanning\SpecialDepts\PaidOutDept;
+use COREPOS\pos\lib\Scanning\VariableWeightReWrite;
+use COREPOS\pos\lib\Scanning\VariableWeightReWrites\ItemNumberOnlyReWrite;
+use COREPOS\pos\lib\Scanning\VariableWeightReWrites\ZeroedPriceReWrite;
 
 /**
  * @backupGlobals disabled
