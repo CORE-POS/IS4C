@@ -32,7 +32,7 @@ use COREPOS\pos\lib\Scanning\SpecialUPC;
 use COREPOS\pos\lib\Scanning\SpecialUPCs\CouponCode;
 use COREPOS\pos\lib\Scanning\SpecialUPCs\DatabarCoupon;
 use COREPOS\pos\lib\Scanning\SpecialUPCs\HouseCoupon;
-use COREPOS\pos\lib\Scanning\SpecialUPCs\SpecialUPC;
+use COREPOS\pos\lib\Scanning\SpecialUPCs\SpecialOrder;
 
 /**
  * @backupGlobals disabled
