@@ -213,7 +213,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'SpecialUPC',
             'SpecialDept',
             'LocalStorage',
-            'FooterBox',
             'Plugin',
         );
 
@@ -231,7 +230,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         }
 
         $listable = array(
-            'FooterBox',
             'PreParser',
             'SpecialUPC',
             'SpecialDept',

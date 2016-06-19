@@ -260,26 +260,30 @@ $current_mods = CoreLocal::get("FooterModules");
 if (is_array(FormLib::get('FOOTER_MODS'))) $current_mods = FormLib::get('FOOTER_MODS');
 elseif(!is_array($current_mods) || count($current_mods) != 5){
     $current_mods = array(
-    'SavedOrCouldHave',
-    'TransPercentDiscount',
-    'MemSales',
-    'EveryoneSales',
-    'MultiTotal'
+    'COREPOS-pos-lib-FooterBoxes-SavedOrCouldHave',
+    'COREPOS-pos-lib-FooterBoxes-TransPercentDiscount',
+    'COREPOS-pos-lib-FooterBoxes-MemSales',
+    'COREPOS-pos-lib-FooterBoxes-EveryoneSales',
+    'COREPOS-pos-lib-FooterBoxes-MultiTotal'
     );
 }
-$footer_mods = AutoLoader::listModules('FooterBox');
+$footer_mods = AutoLoader::listModules('COREPOS\\pos\\lib\\FooterBoxes\\FooterBox');
+$footer_mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $footer_mods);
 for($i=0;$i<5;$i++){
     echo '<select name="FOOTER_MODS[]">';
     foreach($footer_mods as $fm){
+        $match = false;
+        if ($current_mods[$i] == $fm) {
+            $match = true;
+        } elseif (substr($fm, -1*(strlen($current_mods[$i])+1)) == '-' . $current_mods[$m]) {
+            $match = true;
+        }
         printf('<option %s>%s</option>',
-            ($current_mods[$i]==$fm?'selected':''),$fm);
+            ($match?'selected':''),$fm);
     }
     echo '</select><br />';
 }
-$saveStr = "array(";
-foreach($current_mods as $m)
-    $saveStr .= "'".$m."',";
-$saveStr = rtrim($saveStr,",").")";
+$current_mods = array_map(function($i){ return str_replace('-', '\\', $i); }, $current_mods);
 InstallUtilities::paramSave('FooterModules',$current_mods);
 ?>
 </td></tr>

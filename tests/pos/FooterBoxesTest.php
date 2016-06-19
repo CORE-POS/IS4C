@@ -1,5 +1,12 @@
 <?php
 
+use COREPOS\pos\lib\FooterBoxes\FooterBox;
+use COREPOS\pos\lib\FooterBoxes\TransPercentDiscount;
+use COREPOS\pos\lib\FooterBoxes\SavedOrCouldHave;
+use COREPOS\pos\lib\FooterBoxes\PatronagePts;
+use COREPOS\pos\lib\FooterBoxes\MemSales;
+use COREPOS\pos\lib\FooterBoxes\MultiTotal;
+
 /**
  * @backupGlobals disabled
  */
@@ -22,7 +29,7 @@ class FooterBoxesTest extends PHPUnit_Framework_TestCase
         }
 
         foreach($all as $class){
-            $obj = new $class();
+            $obj = FooterBox::factory($class);
             $this->assertInstanceOf('FooterBox',$obj);
 
             $this->assertObjectHasAttribute('header_css',$obj);

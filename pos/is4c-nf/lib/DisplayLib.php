@@ -25,6 +25,7 @@ namespace COREPOS\pos\lib;
 use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\FooterBoxes\FooterBox;
 use \CoreLocal;
 
 /**
@@ -57,7 +58,7 @@ static public function printfooter($readOnly=False)
         );
     }
     
-    $modchain = array_map(function($class){ return new $class(); }, $FOOTER_MODULES);
+    $modchain = array_map(function($class){ return FooterBox::factory($class); }, $FOOTER_MODULES);
 
     if (!$readOnly) {
         CoreLocal::set("runningTotal",CoreLocal::get("amtdue"));

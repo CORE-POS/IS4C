@@ -130,7 +130,7 @@ class AutoLoader extends LibraryClass
 
     static private $class_paths = array(
         'COREPOS\pos\lib\Scanning\DiscountType' => '/Scanning/DiscountTypes',
-        'FooterBox'         => '/FooterBoxes',
+        'COREPOS\pos\lib\FooterBoxes\FooterBox' => '/FooterBoxes',
         'COREPOS\pos\lib\Kickers\Kicker' => '/Kickers',
         'Parser'            => '/../parser/parse',
         'PreParser'         => '/../parser/preparse',

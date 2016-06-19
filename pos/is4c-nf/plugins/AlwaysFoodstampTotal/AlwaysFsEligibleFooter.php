@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\FooterBoxes\FooterBox;
 
 class AlwaysFsEligibleFooter extends FooterBox 
 {

@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\FooterBoxes;
+use \CoreLocal;
+
 class MemSales extends FooterBox 
 {
 
