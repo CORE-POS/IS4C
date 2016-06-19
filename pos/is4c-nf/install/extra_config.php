@@ -292,7 +292,7 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
     <td>
     <?php
     // get current settings
-    $notifiers = AutoLoader::listModules('Notifier');
+    $notifiers = AutoLoader::listModules('COREPOS\\pos\\lib\\Notifier');
     echo $form->selectField('Notifiers', 
         $notifiers, 
         array(), 

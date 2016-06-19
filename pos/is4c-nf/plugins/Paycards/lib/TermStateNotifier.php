@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Notifier;
+
 /**
   @class TermStateNotifier
   Display status of CC terminal
