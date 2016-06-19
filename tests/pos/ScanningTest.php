@@ -18,6 +18,13 @@ use COREPOS\pos\lib\Scanning\PriceMethods\SplitABGroupPM;
 use COREPOS\pos\lib\Scanning\PriceMethods\ABGroupPM;
 use COREPOS\pos\parser\parse\DeptKey;
 use COREPOS\pos\parser\parse\UPC;
+use COREPOS\pos\lib\Scanning\SpecialDept;
+use COREPOS\pos\lib\Scanning\SpecialDepts\ArWarnDept;
+use COREPOS\pos\lib\Scanning\SpecialDepts\AutoReprintDept;
+use COREPOS\pos\lib\Scanning\SpecialDepts\EquityEndorseDept;
+use COREPOS\pos\lib\Scanning\SpecialDepts\EquityWarnDept;
+use COREPOS\pos\lib\Scanning\SpecialDepts\BottleReturnDept;
+use COREPOS\pos\lib\Scanning\SpecialDepts\PaidOutDept;
 
 /**
  * @backupGlobals disabled
@@ -803,15 +810,15 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(array(), $sd->handle(1, 1, array()));
 
         $defaults = array(
-            'ArWarnDept',
-            'AutoReprintDept',
-            'EquityEndorseDept',
-            'EquityWarnDept',
-            'BottleReturnDept',
-            'PaidOutDept',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\ArWarnDept',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\AutoReprintDept',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\EquityEndorseDept',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\EquityWarnDept',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\BottleReturnDept',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\PaidOutDept',
         );
 
-        $all = AutoLoader::ListModules('SpecialDept',False);
+        $all = AutoLoader::ListModules('COREPOS\\pos\\lib\\Scanning\\SpecialDept',False);
         foreach($defaults as $d){
             $this->assertContains($d, $all);
         }
@@ -819,7 +826,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $map = array();
         foreach($all as $class){
             $obj = new $class();
-            $this->assertInstanceOf('SpecialDept',$obj);
+            $this->assertInstanceOf('COREPOS\\pos\\lib\\Scanning\\SpecialDept',$obj);
             $map = $obj->register(1,$map);
             $this->assertInternalType('array',$map);
             $this->assertArrayHasKey(1,$map);

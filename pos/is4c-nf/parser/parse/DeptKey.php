@@ -24,6 +24,7 @@
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\Scanning\SpecialDept;
 use \CoreLocal;
 use \Parser;
 
@@ -109,7 +110,7 @@ class DeptKey extends Parser
         $index = (int)($dept/10);
         if (is_array($deptmods) && isset($deptmods[$index])) {
             foreach($deptmods[$index] as $mod) {
-                $obj = new $mod();
+                $obj = SpecialDept::factory($mod);
                 $ret = $obj->handle($dept,$amt/100,$ret);
             }
         }

@@ -30,6 +30,7 @@ use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\lib\Scanning\DiscountType;
 use COREPOS\pos\lib\Scanning\PriceMethod;
+use COREPOS\pos\lib\Scanning\SpecialDept;
 use \CoreLocal;
 use \Parser;
 use \Plugin;
@@ -206,7 +207,7 @@ class UPC extends Parser
         }
         if (is_array($deptmods) && isset($deptmods[$row['department']])){
             foreach($deptmods[$row['department']] as $mod){
-                $obj = new $mod();
+                $obj = SpecialDept::factory($mod);
                 $ret = $obj->handle($row['department'],$row['normal_price'],$ret);
                 if ($ret['main_frame'])
                     return $ret;

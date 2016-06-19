@@ -347,7 +347,8 @@ save 5%.
 </td></tr>
 <tr><td>
 <?php
-$sdepts = AutoLoader::listModules('SpecialDept');
+$sdepts = AutoLoader::listModules('COREPOS\\pos\\lib\\Scanning\\SpecialDept');
+$sdepts = array_map(function($i){ return str_replace('\\', '-', $i); }, $sdepts);
 $dbc = Database::pDataConnect();
 $specialDeptMapExists = $dbc->table_exists('SpecialDeptMap');
 $mapModel = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($dbc);
@@ -373,7 +374,7 @@ if (is_array(FormLib::get('SDEPT_MAP_LIST'))) {
         if (!isset($SDEPT_MAP_LIST[$i])) continue;
         if (empty($SDEPT_MAP_LIST[$i])) continue;
 
-        $class = $SDEPT_MAP_NAME[$i];
+        $class = str_replace('-', '\\', $SDEPT_MAP_NAME[$i]);
         $ids = preg_split('/\D+/',$SDEPT_MAP_LIST[$i]);
         foreach ($ids as $id) {
             if ($specialDeptMapExists) {

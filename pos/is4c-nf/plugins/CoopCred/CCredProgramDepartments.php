@@ -23,6 +23,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\Scanning\SpecialDept;
 
 class CCredProgramDepartments extends SpecialDept 
 {

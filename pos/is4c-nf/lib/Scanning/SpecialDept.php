@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning;
+use \ReflectionClass;
+
 /**
   @class SpecialDept
 
@@ -82,6 +85,18 @@ class SpecialDept
     public function handle($deptID,$amount,$json)
     {
         return $json;
+    }
+
+    public static function factory($class)
+    {
+        if ($class != '' && class_exists($class)) {
+            return new $class();
+        } elseif ($class != '' && class_exists('COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\' . $class)) {
+            $class = 'COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\' . $class;
+            return new $class();
+        }
+
+        return new self();
     }
 }
 
