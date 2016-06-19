@@ -28,9 +28,9 @@ use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\LocalStorage\LaneCache;
 use \CoreLocal;
-use COREPOS\pos\lib\parser\Parser;
-use COREPOS\pos\parse\PostParser;
-use COREPOS\pos\parse\PreParser;
+use COREPOS\pos\parser\Parser;
+use COREPOS\pos\parser\PostParser;
+use COREPOS\pos\parser\PreParser;
 use \paycardEntered;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
