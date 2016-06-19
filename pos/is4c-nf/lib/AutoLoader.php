@@ -23,6 +23,7 @@
 
 use COREPOS\pos\lib\LocalStorage\LaneCache;
 use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\plugins\Plugin;
 
 if (!defined('CONF_LOADED')) {
     include_once(dirname(__FILE__).'/LocalStorage/conf.php');

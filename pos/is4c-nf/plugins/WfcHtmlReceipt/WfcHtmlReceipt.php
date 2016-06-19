@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 class WfcHtmlReceipt extends Plugin 
 {
     public $plugin_description = 'WFC wrapper for HTML emailed receipts';

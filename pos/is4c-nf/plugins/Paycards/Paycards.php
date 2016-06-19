@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 class Paycards extends Plugin {
 
     public $plugin_description = 'Plugin for integrated payment cards';

@@ -54,7 +54,7 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 $type_check = CoreLocal::get('PluginList');
 if (!is_array($type_check)) CoreLocal::set('PluginList',array());
 
-$mods = AutoLoader::listModules('Plugin');
+$mods = AutoLoader::listModules('COREPOS\\pos\\plugins\\Plugin');
 sort($mods);
 
 foreach($mods as $m){

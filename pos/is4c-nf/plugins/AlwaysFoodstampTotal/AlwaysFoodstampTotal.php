@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 class AlwaysFoodstampTotal extends Plugin {
 
     public $plugin_description = 'Always display foodstamp total. Provides

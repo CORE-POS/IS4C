@@ -21,7 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\plugins;
 use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+use \ReflectionClass;
 
 /**
   Plugin class

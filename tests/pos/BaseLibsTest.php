@@ -209,7 +209,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             'DisplayLib',
             'Database',
             'LocalStorage',
-            'Plugin',
         );
 
         foreach($required_classes as $class){

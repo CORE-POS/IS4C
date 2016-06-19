@@ -29,6 +29,9 @@ class PluginsTest extends PHPUnit_Framework_TestCase
             } 
         }
         foreach (array_merge($first, $files) as $name => $file) {
+            if ($name === 'Plugin') {
+                continue;
+            }
             if (!is_file($file) && is_file($name)) {
                 $tmp = $file;
                 $file = $name;

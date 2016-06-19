@@ -34,7 +34,7 @@ use COREPOS\pos\lib\Scanning\SpecialDept;
 use COREPOS\pos\lib\Scanning\SpecialUPC;
 use \CoreLocal;
 use COREPOS\pos\parser\Parser;
-use \Plugin;
+use COREPOS\pos\plugins\Plugin;
 
 class UPC extends Parser 
 {

@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 class MiscLogging extends Plugin {
 
     public $plugin_description = 'Plugin for creating informational, hidden transaction records';
