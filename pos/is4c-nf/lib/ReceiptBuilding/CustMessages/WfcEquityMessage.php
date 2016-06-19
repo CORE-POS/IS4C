@@ -1,6 +1,6 @@
 <?php
 
-namespace COREPOS\pos\lib\ReceiptBuilding\Messages;
+namespace COREPOS\pos\lib\ReceiptBuilding\CustMessages;
 use COREPOS\pos\lib\ReceiptLib;
 use \CoreLocal;
 

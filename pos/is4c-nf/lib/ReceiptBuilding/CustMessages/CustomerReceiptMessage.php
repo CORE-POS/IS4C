@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\pos\lib\ReceiptBuilding\Messages;
+namespace COREPOS\pos\lib\ReceiptBuilding\CustMessages;
 
 /**
   @class CustomerReceiptMessage
