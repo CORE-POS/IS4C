@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\parser\Parser;
+
 class PriceCheckParser extends Parser {
     function check($str){
         if ($str == "PC")

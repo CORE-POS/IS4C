@@ -26,7 +26,7 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\Scanning\SpecialDept;
 use \CoreLocal;
-use \Parser;
+use COREPOS\pos\lib\parser\Parser;
 
 class DeptKey extends Parser 
 {

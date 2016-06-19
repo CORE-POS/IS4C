@@ -26,7 +26,7 @@ use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
 use \CoreLocal;
-use \Parser;
+use COREPOS\pos\lib\parser\Parser;
 
 class EndOfShift extends Parser 
 {

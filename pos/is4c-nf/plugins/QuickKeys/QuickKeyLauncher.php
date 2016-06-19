@@ -23,6 +23,7 @@
 
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\parser\Parser;
 
 class QuickKeyLauncher extends Parser 
 {

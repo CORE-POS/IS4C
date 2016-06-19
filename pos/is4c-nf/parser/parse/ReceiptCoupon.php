@@ -3,7 +3,7 @@
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\Scanning\SpecialUPCs\HouseCoupon;
-use \Parser;
+use COREPOS\pos\lib\parser\Parser;
 
 class ReceiptCoupon extends Parser
 {

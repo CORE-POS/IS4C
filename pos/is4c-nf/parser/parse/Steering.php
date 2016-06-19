@@ -28,7 +28,7 @@ use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\TransRecord;
 use \CoreLocal;
-use \Parser;
+use COREPOS\pos\lib\parser\Parser;
 use COREPOS\pos\lib\Drawers;
 use COREPOS\pos\lib\Kickers\Kicker;
 

@@ -28,7 +28,7 @@ use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\LocalStorage\LaneCache;
 use \CoreLocal;
-use \Parser;
+use COREPOS\pos\lib\parser\Parser;
 use COREPOS\pos\parse\PostParser;
 use COREPOS\pos\parse\PreParser;
 use \paycardEntered;

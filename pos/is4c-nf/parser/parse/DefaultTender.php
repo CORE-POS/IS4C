@@ -27,7 +27,7 @@ use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\PrehLib;
 use COREPOS\pos\lib\Tenders\TenderModule;
 use \CoreLocal;
-use \Parser;
+use COREPOS\pos\lib\parser\Parser;
 
 class DefaultTender extends Parser 
 {

@@ -25,7 +25,7 @@ namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
 use \CoreLocal;
-use \Parser;
+use COREPOS\pos\lib\parser\Parser;
 
 class CashBuy extends Parser 
 {

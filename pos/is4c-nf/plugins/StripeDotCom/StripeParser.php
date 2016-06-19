@@ -1,5 +1,7 @@
 <?php
 
+use COREPOS\pos\lib\parser\Parser;
+
 class StripeParser extends Parser
 {
     public function check($str)

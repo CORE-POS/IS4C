@@ -25,7 +25,7 @@ namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
-use \Parser;
+use COREPOS\pos\lib\parser\Parser;
 
 class Comment extends Parser {
     function check($str){

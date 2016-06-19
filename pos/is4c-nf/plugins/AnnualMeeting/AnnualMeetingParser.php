@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\lib\parser\Parser;
 
 class AnnualMeetingParser extends Parser {
 

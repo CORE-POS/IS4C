@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\parse;
+use \AutoLoader;
 
 /**
   @class PostParser

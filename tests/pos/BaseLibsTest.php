@@ -205,7 +205,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $required_classes = array(
             'AutoLoader',
             'Authenticate',
-            'Parser',
             'DisplayLib',
             'Database',
             'LocalStorage',
@@ -217,12 +216,12 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             $this->assertFileExists($class_map[$class]);
         }
 
-        $mods = AutoLoader::listModules('Parser');
+        $mods = AutoLoader::listModules('COREPOS\\pos\\parser\\Parser');
         $this->assertInternalType('array',$mods);
         $this->assertNotEmpty($mods);
         foreach($mods as $m){
             $obj = new $m();
-            $this->assertInstanceOf('Parser',$obj);
+            $this->assertInstanceOf('COREPOS\\pos\\parser\\Parser',$obj);
         }
 
         $listable = array(

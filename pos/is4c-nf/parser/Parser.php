@@ -21,7 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\parser;
 use COREPOS\pos\lib\ReceiptLib;
+use \AutoLoader;
 
 /**
   @class Parser
@@ -145,7 +147,7 @@ class Parser {
       Scan the parse directory for module files.
       Return an array of available modules.
     */
-    static public function get_parse_chain($type='Parser')
+    static public function get_parse_chain($type='COREPOS\\pos\\parser\\Parser')
     {
         $set = AutoLoader::ListModules($type);
         $set = array_reverse($set);

@@ -1,5 +1,7 @@
 <?php
 
+use COREPOS\pos\lib\parser\Parser;
+
 class BitCoinParser extends Parser
 {
     public function check($str)

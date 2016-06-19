@@ -23,7 +23,7 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\lib\DisplayLib;
-use \Parser;
+use COREPOS\pos\lib\parser\Parser;
 
 class PartialReceipt extends Parser {
     function check($str){

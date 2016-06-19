@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\parser\parse;
-use \Parser;
+use COREPOS\pos\lib\parser\Parser;
 
 class Wakeup extends Parser {
     function check($str)

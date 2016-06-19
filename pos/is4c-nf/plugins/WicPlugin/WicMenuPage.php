@@ -30,7 +30,6 @@ class WicMenuPage extends NoInputCorePage
     function preprocess()
     {
         if (isset($_REQUEST["selectlist"])) {
-            $parser = new PaycardDatacapParser();
             switch ($_REQUEST['selectlist']) {
                 case 'WICON':
                     CoreLocal::set('WicMode', true);

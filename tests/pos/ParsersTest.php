@@ -4,6 +4,7 @@ use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\TransRecord;
 use COREPOS\pos\parse\PreParser;
+use COREPOS\pos\parse\Parser;
 use COREPOS\pos\parse\PostParser;
 
 include(dirname(__FILE__).'/../../pos/is4c-nf/parser-class-lib/PreParser.php');
@@ -37,7 +38,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertNotEmpty($chain);
         foreach($chain as $class){
             $instance = new $class();
-            $this->assertInstanceOf('Parser',$instance);
+            $this->assertInstanceOf('COREPOS\\pos\\parse\\Parser',$instance);
             // just for coverage; not vital functionality
             $this->assertNotEquals(0, strlen($instance->doc()));
         }

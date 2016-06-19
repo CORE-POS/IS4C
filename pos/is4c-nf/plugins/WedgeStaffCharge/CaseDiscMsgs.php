@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\parser\Parser;
 
 class CaseDiscMsgs extends Parser 
 {

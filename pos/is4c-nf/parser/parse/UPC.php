@@ -33,7 +33,7 @@ use COREPOS\pos\lib\Scanning\PriceMethod;
 use COREPOS\pos\lib\Scanning\SpecialDept;
 use COREPOS\pos\lib\Scanning\SpecialUPC;
 use \CoreLocal;
-use \Parser;
+use COREPOS\pos\lib\parser\Parser;
 use \Plugin;
 
 class UPC extends Parser 
