@@ -156,8 +156,8 @@ class AutoLoader extends LibraryClass
     );
 
     private static $base_classes = array(
-        'MemberLookup'      => '/MemberLookup.php',
-        'COREPOS\\pos\\lib\\ItemNotFound'      => '/ItemNotFound.php',
+        'COREPOS\\pos\\lib\\MemberLookup' => '/MemberLookup.php',
+        'COREPOS\\pos\\lib\\ItemNotFound' => '/ItemNotFound.php',
     );
 
     /**
