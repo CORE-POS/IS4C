@@ -15,7 +15,7 @@ use COREPOS\pos\lib\ReceiptBuilding\Format\DefaultReceiptFormat;
 use COREPOS\pos\lib\ReceiptBuilding\Format\ItemReceiptFormat;
 use COREPOS\pos\lib\ReceiptBuilding\CustMessages\WfcEquityMessage;
 use COREPOS\pos\lib\ReceiptBuilding\CustMessages\CustomerReceiptMessage;
-use COREPOS\pos\lib\ReceiptBuilding\HtmlEmail\DeffaultHtmlEmail;
+use COREPOS\pos\lib\ReceiptBuilding\HtmlEmail\DefaultHtmlEmail;
 
 /**
  * @backupGlobals disabled
