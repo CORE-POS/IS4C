@@ -74,8 +74,6 @@ class CoreLocal
             self::init();
         }
 
-        // intentional; cache is still too slow
-        return self::$storage_object->get($key);
         if (LaneConfig::has($key)) {
             return LaneConfig::get($key);
         } else {
@@ -97,8 +95,6 @@ class CoreLocal
             self::init();
         }
         
-        // intentional; cache is still too slow
-        return self::$storage_object->set($key, $val);
         if ($immutable) {
             LaneConfig::set($key, $val);
         } else {
