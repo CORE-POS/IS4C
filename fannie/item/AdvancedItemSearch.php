@@ -59,6 +59,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
         'searchInUse',
         'searchDiscountable',
         'searchLocation',
+        'searchStore_id',
         'searchSignage',
         'searchOrigin',
         'searchLikeCode',
@@ -585,6 +586,27 @@ class AdvancedItemSearch extends FannieRESTfulPage
             }
         } catch (Exception $ex) {}
 
+        return $search;
+    }
+    
+    /**
+      Restrict search to products.store_id = 0 (both), 1 or 2
+      @param $search [Search Object] see runSearchMethods()
+      @param $form [ValueContainer] representing submitted form values
+      @return [Search Object] see runSearchMethods()
+    */
+    private function searchStore_id($search, $form)
+    {
+        try {
+            if ($form->store_id !== '') {
+                if ($form->store_id == '1') {
+                    $search->where .= ' AND p.store_id = 1; ';
+                } elseif ($form->store_id == '2') {
+                    $search->where .= ' AND p.store_id = 2; ';
+                }
+            }
+        } catch (Exception $ex) {}
+        
         return $search;
     }
 
@@ -1191,7 +1213,12 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 InUse
                 <input type="checkbox" name="in_use" id="in_use" value="1" checked class="checkbox-inline" />
                 </label>
-                </td>'; 
+                ';
+        $ret .= ' | 
+                <label class="control-label small" for="store_id">Store ID</label>
+                <select name="store_id" class="form-control input-sm"><option value="">All Stores</option>
+                <option value="1">Hillside</option><option value="2">Denfeld</option></select>
+                </td>';
 
         $ret .= '</tr><tr>';
 
