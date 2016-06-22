@@ -189,7 +189,7 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     public function preprocess()
     {
-        if (php_sapi_name() !== 'cli' && !header_sent() && session_id() === '') {
+        if (php_sapi_name() !== 'cli' && !headers_sent() && session_id() === '') {
             /* this page requires a session to pass some extra
                state information through multiple requests */
             session_start();
