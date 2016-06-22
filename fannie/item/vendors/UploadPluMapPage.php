@@ -177,7 +177,7 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $vendP = $dbc->prepare('SELECT vendorName FROM vendors WHERE vendorID=?');
         $vname = $dbc->getValue($vendP,array($vid));
-        if ($vname) {
+        if (!$vname) {
             $this->add_onload_command("\$('#FannieUploadForm').remove();");
             return '<div class="alert alert-danger">Error: No Vendor Found</div>';
         }
