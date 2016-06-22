@@ -145,7 +145,7 @@ class BatchReport extends FannieReportPage
             $sumSales += $row[3];
         }
 
-        return array('Total',null,null,$sumSales,$sumQty);
+        return array('Total',null,null,$sumSales,$sumQty, '', '');
     }
 
     private function getBatches($dbc, $filter1, $filter2)
