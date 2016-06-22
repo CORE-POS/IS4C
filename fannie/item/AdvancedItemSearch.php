@@ -1,29 +1,39 @@
 <?php
 /*******************************************************************************
+
     Copyright 2013 Whole Foods Community Co-op
+
     This file is part of CORE-POS.
+
     CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
+
     CORE-POS is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
+
     You should have received a copy of the GNU General Public License
     in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 *********************************************************************************/
+
 require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
+
 class AdvancedItemSearch extends FannieRESTfulPage
 {
     protected $header = 'Advanced Search';
     protected $title = 'Advanced Search';
+
     public $description = '[Advanced Search] is a tool to look up items with lots of search options.';
     public $has_unit_tests = true;
+
     /**
       List of search methods. Search methods
       are used to compose a query's FROM
@@ -53,6 +63,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
         'searchOrigin',
         'searchLikeCode',
     );
+
     /**
       List of filter methods. Filter methods
       accept an array of items and add or remove
@@ -63,6 +74,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
         'filterMovement',
         'filterSavedItems',
     );
+
     public function preprocess()
     {
         $this->__routes[] = 'get<search>';
@@ -71,6 +83,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $this->__routes[] = 'get<init>';
         return parent::preprocess();
     }
+
     // failover on ajax call
     // if javascript breaks somewhere and the form
     // winds up submitted, at least display the results
@@ -80,17 +93,21 @@ class AdvancedItemSearch extends FannieRESTfulPage
         ob_start();
         $this->get_search_handler();
         $this->post_results = ob_get_clean();
+
         return true;
     }
+
     // failover on ajax call
     protected function post_upc_view()
     {
         return $this->get_view() . $this->post_results;
     }
+
     protected function post_search_handler()
     {
         return $this->get_search_handler();
     }
+
     /**
       Search based on a UPC. Asterisk is treated as a wildcard. 
       @param $search [Search Object] see runSearchMethods()
@@ -115,8 +132,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $search->args[] = $upc;
             }
         }
+
         return $search;
     }
+
     private function searchUPCs($search, $form)
     {
         if ($form->upcs !== '') {
@@ -126,8 +145,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $search->where .= ' AND p.upc IN (' . str_repeat('?,', count($upcs));
             $search->where = substr($search->where, 0, strlen($search->where)-1) . ')';
         }
+
         return $search;
     }
+
     /**
       Search based on item description. 
       @param $search [Search Object] see runSearchMethods()
@@ -146,8 +167,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $search->args[] = '%' . $form->description . '%';
             }
         }
+
         return $search;
     }
+
     /**
       Search based on item brand. Numeric values are treated as
       UPC prefixes where as non-numeric values are matched against
@@ -177,8 +200,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 }
             }
         } catch (Exception $ex) {}
+
         return $search;
     }
+
     /**
       Search based on super department.
       @param $search [Search Object] see runSearchMethods()
@@ -207,8 +232,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $search->where = substr($search->where, 0, strlen($search->where)-1) . ') ';
                 }
         }
+
         return $search;
     }
+
     /**
       Search based on a department range. If only one value is
       specified it matches that single department.
@@ -232,8 +259,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $search->args[] = $dept1 < $dept2 ? $dept1 : $dept2;
             $search->args[] = $dept2 > $dept1 ? $dept2 : $dept1;
         }
+
         return $search;
     }
+
     /**
       Checks where items exist in the scaleItems table
       @param $search [Search Object] see runSearchMethods()
@@ -246,8 +275,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $search->from .= ' INNER JOIN scaleItems AS h ON h.plu=p.upc ';
             $search->where = str_replace('p.modified', 'h.modified', $search->where);
         }
+
         return $search;
     }
+
     /**
       Checks whether the item's modified date is before, after,
       or exactly on the specified date. If service scale has been
@@ -272,8 +303,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
                     break;
             }
         }
+
         return $search;
     }
+
     private function modifiedOn($search, $form)
     {
         $search->where .= ' AND p.modified BETWEEN ? AND ? ';
@@ -285,8 +318,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $search->args[] = $form->modDate . ' 00:00:00';
             $search->args[] = $form->modDate . ' 23:59:59';
         }
+
         return $search;
     }
+
     private function modifiedBeforeAfter($search, $form, $op)
     {
         $time = $op === '<' ? '00:00:00' : '23:59:59';
@@ -297,6 +332,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 . ' OR h.modified ' . $op . ' ?) ';
             $search->args[] = $form->modDate . ' ' . $time;
         }
+
         return $search;
     }
     
@@ -320,6 +356,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                  * $from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc ';
                  */
             }
+
             if (isset($form->vendorSale)) {
                 $search->where .= ' AND v.saleCost <> 0 ';
                 $search->where .= ' AND p.default_vendor_id=? ';
@@ -327,8 +364,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $search->args[] = $form->vendor;
             }
         }
+
         return $search;
     }
+
     /**
       Search items with a price greater than, less than, or exactly
       equal to the specified value
@@ -341,8 +380,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
         if ($form->price !== '') {
             $search = $this->numericComparison($search, $form->price_op, 'p.normal_price', $form->price);
         }
+
         return $search;
     }
+
     /**
       Search items with a cost greater than, less than, or exactly
       equal to the specified value
@@ -355,8 +396,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
         if ($form->cost !== '') {
             $search = $this->numericComparison($search, $form->cost_op, 'p.cost', $form->cost);
         }
+
         return $search;
     }
+
     private function numericComparison($search, $op, $field, $value)
     {
         switch ($op) {
@@ -373,8 +416,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $search->args[] = $value;
                 break;
         }
+
         return $search;
     }
+
     /**
       Search items that do or do not have a custom pricing rule
       @param $search [Search Object] see runSearchMethods()
@@ -394,8 +439,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $search->args[] = $form->price_rule;
             }
         }
+
         return $search;
     }
+
     /**
       Search items that have a given tax rate
       @param $search [Search Object] see runSearchMethods()
@@ -408,8 +455,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $search->where .= ' AND p.tax=? ';
             $search->args[] = $form->tax;
         }
+
         return $search;
     }
+
     /**
       Search items that have a given local setting
       @param $search [Search Object] see runSearchMethods()
@@ -422,8 +471,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $search->where .= ' AND p.local=? ';
             $search->args[] = $form->local;
         }
+
         return $search;
     }
+
     /**
       Search items that are or are not foodstamp eligible
       @param $search [Search Object] see runSearchMethods()
@@ -436,8 +487,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $search->where .= ' AND p.foodstamp=? ';
             $search->args[] = $form->fs;
         }
+
         return $search;
     }
+
     /**
       Restrict search to products.inUse=1
       @param $search [Search Object] see runSearchMethods()
@@ -450,8 +503,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $search->where .= ' AND p.inUse=? ';
             $search->args[] = $form->in_use;
         }
+
         return $search;
     }
+
     /**
       Search items that are or are not discount eligible
       @param $search [Search Object] see runSearchMethods()
@@ -474,8 +529,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $search->args[] = 0;
             }
         }
+
         return $search;
     }
+
     /**
       Search items that do or do not have a basic physical location
       @param $search [Search Object] see runSearchMethods()
@@ -491,8 +548,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $search->where .= ' AND p.upc NOT IN (SELECT upc FROM prodPhysicalLocation) ';
             }
         }
+
         return $search;
     }
+
     /**
       Search items that do or do not have signage fields populated
       @param $search [Search Object] see runSearchMethods()
@@ -517,8 +576,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
                     OR s.description = '') ";
             }
         }
+
         return $search;
     }
+
     /**
       Search items that have a given origin ID
       @param $search [Search Object] see runSearchMethods()
@@ -533,8 +594,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $search->args[] = $form->origin;
             $search->args[] = $form->origin;
         }
+
         return $search;
     }
+
     /**
       Search items in a given like code. Special values ANY and NONE
       will search items that belong to any like code or do not belong
@@ -558,8 +621,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $search->args[] = $form->likeCode;
             }
         }
+
         return $search;
     }
+
     /**
       Filters item list based on whether or not they
       are in a sale batch
@@ -570,13 +635,16 @@ class AdvancedItemSearch extends FannieRESTfulPage
     private function filterSales($items, $form)
     {
         if ($form->onsale !== '') {
+
             $where = '1=1';
             $args = array();
             $dbc = $this->connection;
+
             if ($form->saletype !== '') {
                 $where .= ' AND b.batchType = ? ';
                 $args[] = $form->saletype;
             }
+
             $all = isset($form->sale_all) ? 1 : 0;
             $prev = isset($form->sale_past) ? 1 : 0;
             $now = isset($form->sale_current) ? 1 : 0;
@@ -598,6 +666,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                     $where .= ' AND b.startDate > ' .$dbc->curdate();
                 }
             }
+
             $query = 'SELECT l.upc FROM batchList AS l INNER JOIN batches AS b
                         ON b.batchID=l.batchID WHERE ' . $where . ' 
                         GROUP BY l.upc';
@@ -607,6 +676,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
             while ($row = $this->connection->fetchRow($result)) {
                 $saleUPCs[] = $row['upc'];
             }
+
             if ($form->onsale == 0) {
                 // only items that are not selected sales
                 foreach($saleUPCs as $s_upc) {
@@ -626,8 +696,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $items = $valid;
             }
         }
+
         return $items;
     }
+
     /**
       Filters item list based on whether they
       sold within a given number of days
@@ -641,8 +713,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $movementStart = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j')-$form->soldOp-1, date('Y')));
             $movementEnd = date('Y-m-d', strtotime('yesterday'));
             $dlog = DTransactionsModel::selectDlog($movementStart, $movementEnd);
+
             $args = array($movementStart.' 00:00:00', $movementEnd.' 23:59:59');
             list($upc_in, $args) = $this->connection->safeInClause($items, $args);
+
             $query = "SELECT t.upc
                       FROM $dlog AS t
                       WHERE tdate BETWEEN ? AND ?
@@ -658,8 +732,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
             }
             $items = $valid;
         }
+
         return $items;
     }
+
     /**
       This is really a reversed filter. It appends items that the user
       has checked in previous results onto the list of items. But since
@@ -692,6 +768,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
             }
             $savedQ = substr($savedQ, 0, strlen($savedQ)-1);
             $savedQ .= ')';
+
             $savedP = $this->connection->prepare($savedQ);
             $savedR = $this->connection->execute($savedP, $savedItems);
             while ($savedW = $this->connection->fetchRow($savedR)) {
@@ -702,13 +779,16 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 }
             }
         }
+
         return $items;
     }
+
     /**
       Run all search methods to compose the inital SQL query
       Then execute the query and return the results
       @param $form [ValueContainer] representing submitted form values
       @return [array] of items keyed by UPC
+
       All search methods take a simple object as an argument
       and return an object with the same structure. The search 
       objects has these properties:
@@ -732,10 +812,13 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $search = $this->$method($search, $form);
             } catch (Exception $ex) {}
         }
+
         if ($search->where == '1=1') {
             throw new Exception('Too many results');
         }
+
         $this->connection->selectDB($this->config->get('OP_DB'));
+
         $query = '
             SELECT p.upc, 
                 p.brand,
@@ -751,12 +834,15 @@ class AdvancedItemSearch extends FannieRESTfulPage
             WHERE ' . $search->where;
         $prep = $this->connection->prepare($query);
         $result = $this->connection->execute($prep, $search->args);
+
         $items = array();
         while ($row = $this->connection->fetchRow($result)) {
             $items[$row['upc']] = $row;
         }
+
         return $items;
     }
+
     /**
       Run all filter methods and return the filtered
       list of items
@@ -774,6 +860,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
         
         return $items;
     }
+
     protected function get_search_handler()
     {
         try {
@@ -782,18 +869,23 @@ class AdvancedItemSearch extends FannieRESTfulPage
             echo $ex->getMessage();
             return false;
         }
+
         $items = $this->runFilterMethods($items, $this->form);
+
         if (count($items) > 5000) {
             echo 'Too many results';
             return false;
         }
+
         $dataStr = http_build_query($_GET);
         echo 'Found ' . count($items) . ' items';
         echo '&nbsp;&nbsp;&nbsp;&nbsp;';
         echo '<a href="AdvancedItemSearch.php?init=' . base64_encode($dataStr) . '">Permalink for this Search</a>';
         echo $this->streamOutput($items);
+
         return false;
     }
+
     protected function get_init_handler()
     {
         $vars = base64_decode($this->init);
@@ -805,8 +897,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
             }
         }
         $this->add_onload_command('getResults();' . "\n");
+
         return true;
     }
+
     private function streamOutput($data) 
     {
         $ret = '';
@@ -841,12 +935,15 @@ class AdvancedItemSearch extends FannieRESTfulPage
             );
         }
         $ret .= '</tbody></table>';
+
         return $ret;
     }
+
     protected function get_init_view()
     {
         return $this->get_view();
     }
+
     public function css_content()
     {
         return '
@@ -856,27 +953,35 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 }
             ';
     }
+
     protected function get_view()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
+
         $url = $this->config->get('URL');
         $today = date('Y-m-d');
+
         $this->addScript('search.js');
         $this->addScript('autocomplete.js');
         $this->addOnloadCommand("bindAutoComplete('#brand-field', '../ws/', 'brand');\n");
         $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.js');
+
         $model = new SuperDeptNamesModel($dbc);
         $superOpts = $model->toOptions(-1);
+
         $depts = $dbc->query('SELECT dept_no, dept_name FROM departments order by dept_no');
         $deptOpts = '';
         while ($row = $dbc->fetchRow($depts)) {
             $deptOpts .= sprintf('<option value="%d">%d %s</option>', $row['dept_no'], $row['dept_no'], $row['dept_name']);
         }
+
         $model = new VendorsModel($dbc);
         $vendorOpts = $model->toOptions(-999);
+
         $rule = new PriceRuleTypesModel($dbc);
         $ruleOpts = $rule->toOptions();
+
         $origins = $dbc->query('SELECT originID, shortName, local FROM origins ORDER BY shortName');
         $originOpts = $localOpts = '';
         while ($row = $dbc->fetchRow($origins)) {
@@ -889,15 +994,20 @@ class AdvancedItemSearch extends FannieRESTfulPage
         if ($localOpts === '') {
             $localOpts = '<option value="1">Yes</option>';
         }
+
         $model = new LikeCodesModel($dbc);
         $lcOpts = $model->toOptions();
+
         $model = new TaxRatesModel($dbc);
         $taxOpts = $model->toOptions();
+
         $model = new BatchTypeModel($dbc);
         $model->discType(0, '<>');
         $btOpts = $model->toOptions();
+
         return include(__DIR__ . '/search.template.html');
     }
+
     public function helpContent()
     {
         return '<p>
@@ -920,10 +1030,12 @@ class AdvancedItemSearch extends FannieRESTfulPage
             products that were selected in the first search.
             </p>';
     }
+
     public function unitTest($phpunit)
     {
         $get = $this->get_view();
         $phpunit->assertNotEquals(0, strlen($get));
+
         // search crafted to use as many methods as possible
         // and return a single result
         $form = new \COREPOS\common\mvc\ValueContainer();
@@ -947,10 +1059,12 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $form->location = 0;
         $form->signinfo = 0;
         $form->likeCode = 'NONE';
+
         $items = $this->runSearchMethods($form);
         $phpunit->assertInternalType('array', $items);
         $phpunit->assertEquals(1, count($items));
         $phpunit->assertArrayHasKey('0001707710532', $items);
+
         // easiest filter to trigger is the saved items
         // sales or movement would require substantially more
         // sample data
@@ -959,5 +1073,8 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $phpunit->assertInternalType('array', $items);
         $phpunit->assertEquals(3, count($items));
     }
+
 }
+
 FannieDispatch::conditionalExec();
+
