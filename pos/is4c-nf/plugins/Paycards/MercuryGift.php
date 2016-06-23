@@ -869,7 +869,7 @@ class MercuryGift extends BasicCCModule
         if (CoreLocal::get("training") == 1) {
             return "595901";
         } else {
-	    return CoreLocal::get('MercuryGiftID');
+            return CoreLocal::get('MercuryGiftID');
         }
     }
 
@@ -878,7 +878,7 @@ class MercuryGift extends BasicCCModule
         if (CoreLocal::get("training") == 1) {
             return "xyz";
         } else {
-	    return CoreLocal::get('MercuryGiftPassword');
+            return CoreLocal::get('MercuryGiftPassword');
         }
     }
 
