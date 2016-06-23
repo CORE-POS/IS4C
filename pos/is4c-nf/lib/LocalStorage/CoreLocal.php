@@ -121,7 +121,7 @@ class CoreLocal
     private static function validateJsonIni()
     {
         $json = dirname(__FILE__) . '/../../ini.json';
-        if (!file_exists($json) && !is_writable($json)) {
+        if (!file_exists($json) && !is_writable(dirname(__FILE__) . '/../../')) {
             return false;
         } elseif (file_exists($json)) {
             $settings = self::readIniJson();
