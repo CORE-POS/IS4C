@@ -33,9 +33,6 @@ if (!class_exists("AutoLoader")) include_once(realpath(dirname(__FILE__).'/../..
 
 if (!class_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/PaycardLib.php"));
 
-define('MERCURY_GTERMINAL_ID',"");
-define('MERCURY_GPASSWORD',"");
-
 class MercuryGift extends BasicCCModule 
 {
     private $temp;
@@ -872,7 +869,7 @@ class MercuryGift extends BasicCCModule
         if (CoreLocal::get("training") == 1) {
             return "595901";
         } else {
-            return MERCURY_GTERMINAL_ID;
+	    return CoreLocal::get('MercuryGiftID');
         }
     }
 
@@ -881,7 +878,7 @@ class MercuryGift extends BasicCCModule
         if (CoreLocal::get("training") == 1) {
             return "xyz";
         } else {
-            return MERCURY_GPASSWORD;
+	    return CoreLocal::get('MercuryGiftPassword');
         }
     }
 
