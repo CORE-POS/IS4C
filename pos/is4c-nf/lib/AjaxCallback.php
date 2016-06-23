@@ -50,7 +50,7 @@ class AjaxCallback
     public static function run()
     {
         $callback_class = get_called_class();
-        $file = filter_input(INPUT_SERVER, 'PHP_SELF');
+        $file = filter_input(INPUT_SERVER, 'SCRIPT_FILENAME');
         $nsClass = AutoLoader::fileToFullClass($file);
         if ($callback_class === $nsClass || basename($file) === $callback_class . '.php') {
             ini_set('display_errors', 'off');
