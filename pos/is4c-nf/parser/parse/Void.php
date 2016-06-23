@@ -66,7 +66,7 @@ class Void extends Parser
                 $status = $this->checkstatus($trans_id);
                 $this->scaleprice = $status['scaleprice'];
 
-                $ret = $this->branchByVoided($status['voided'], $trans_id, $ret);
+                $ret = $this->branchByVoided($status['voided'], $trans_id, $status['status'], $ret);
             }
 
             if (empty($ret['output']) && empty($ret['main_frame'])) {
@@ -83,7 +83,7 @@ class Void extends Parser
         return $ret;
     }
 
-    private function branchByVoided($voided, $trans_id, $ret)
+    private function branchByVoided($voided, $trans_id, $status, $ret)
     {
         /**
           Voided values:
@@ -120,7 +120,7 @@ class Void extends Parser
             $ret = $this->voiditem($trans_id, $ret);
         }
 
-        return $rete;
+        return $ret;
     }
 
     /**
