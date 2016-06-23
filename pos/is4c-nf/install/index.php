@@ -52,7 +52,7 @@ body {
 <form action=index.php method=post>
 
 <div class="alert"><?php Conf::checkWritable('../ini.json', false, 'JSON'); ?></div>
-<div class="alert"><?php Conf::checkWritable('../ini.php', False, 'PHP'); ?></div>
+<div class="alert"><?php Conf::checkWritable('../ini.php', true, 'PHP'); ?></div>
 
 PHP is running as: <?php echo Conf::whoami(); ?><br />
 <?php
