@@ -24,7 +24,7 @@ class PrintHandler {
             return new $class();
         }
 
-        return new COREPOS\pos\lib\PrintHandlers\ESCPOSPrintHandler();
+        return new \COREPOS\pos\lib\PrintHandlers\ESCPOSPrintHandler();
     }
     
     /**
