@@ -48,6 +48,22 @@ class MasterSuperDeptsModel extends ViewModel
         ';
     }
 
+    public function toOptions($selected=0, $id_as_label=false)
+    {
+        $res = $this->connection->query('
+            SELECT superID, super_name
+            FROM MasterSuperDepts
+            GROUP BY superID, super_name');
+        $ret = '';
+        while ($row = $this->connection->fetchRow($res)) {
+            $ret .= sprintf('<option %s value="%d">%s</option>',
+                ($row['superID'] == $selected ? 'selected' : ''),
+                $row['superID'], $row['super_name']);
+        }
+
+        return $ret;
+    }
+
     public function doc()
     {
         return '
