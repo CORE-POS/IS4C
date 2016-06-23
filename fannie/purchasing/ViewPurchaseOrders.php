@@ -390,7 +390,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
                 <td rowspan="10" colspan="2">
                     <label>Notes</label>
                     <textarea class="form-control" 
-                        onkeypress="autoSaveNotes({$this->id}', this);">{$notes}</textarea>
+                        onkeypress="autoSaveNotes({$this->id}, this);">{$notes}</textarea>
                 </td>
             {{CODING}}
         </table>
