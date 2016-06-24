@@ -482,6 +482,18 @@ class FannieReportPage extends FanniePage
         return $data;
     }
 
+    private function getCacheKey()
+    {
+        $reflector = new ReflectionClass($this);
+        $qstr = filter_input(INPUT_SERVER, 'QUERY_STRING');
+        $qstr = str_replace('&excel=xls', '', $qstr);
+        $qstr = str_replace('&excel=csv', '', $qstr);
+        $qstr = str_replace('?excel=xls', '', $qstr);
+        $qstr = str_replace('?excel=csv', '', $qstr);
+
+        return $reflector->getName() . $qstr;
+    }
+
     /**
       Look for cached SQL data
     
@@ -499,10 +511,9 @@ class FannieReportPage extends FanniePage
             return false;
         }
 
-        $reflector = new ReflectionClass($this);
         $data = COREPOS\Fannie\API\data\DataCache::getFile
             ($this->report_cache, 
-            $reflector->getName()
+            $this->getCacheKey()
         );
 
         return $data ? unserialize(gzuncompress($data)) : false;
@@ -517,11 +528,10 @@ class FannieReportPage extends FanniePage
     */
     protected function freshenCache($data)
     {
-        $reflector = new ReflectionClass($this);
         return COREPOS\Fannie\API\data\DataCache::putFile(
             $this->report_cache,
             gzcompress(serialize($data)),
-            $reflector->getName()
+            $this->getCacheKey()
         );
     }
 
