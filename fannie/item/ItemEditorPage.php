@@ -255,7 +255,9 @@ HTML;
             $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
                 FROM products AS p LEFT JOIN 
                 prodExtra AS x ON p.upc=x.upc
-                WHERE description LIKE ? ";
+                WHERE description LIKE ? 
+                    OR p.brand LIKE ?";
+            $args[] = '%'.$upc.'%';    
             $args[] = '%'.$upc.'%';    
         }
         if (!$inUseFlag) {
