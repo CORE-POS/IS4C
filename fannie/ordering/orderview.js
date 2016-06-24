@@ -145,6 +145,7 @@ var orderView = (function($) {
             mod.toggleA($(this).data('order'), $(this).data('trans'));
         });
         $('.btn-search').click(mod.searchWindow);
+        bindAutoComplete('input.input-vendor', '../ws/', 'vendor');
     };
 
     mod.addUPC = function()

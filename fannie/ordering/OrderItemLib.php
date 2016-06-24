@@ -79,10 +79,12 @@ class OrderItemLib
                 COALESCE(n.vendorName, \'\') AS vendorName,
                 p.upc,
                 COALESCE(v.sku, \'\') AS sku,
-                p.department
+                p.department,
+                r.priceRuleTypeID
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
+                LEFT JOIN PriceRules AS r ON p.price_rule_id=r.priceRuleID
             WHERE p.upc=?
                 AND p.inUse=1
         ');
@@ -111,7 +113,8 @@ class OrderItemLib
                 COALESCE(n.vendorName, \'\') AS vendorName,
                 v.upc,
                 v.sku,
-                0 AS department
+                0 AS department,
+                0 AS priceRuleTypeID
             FROM vendorItems AS v 
                 LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
             WHERE v.upc=?
@@ -158,10 +161,12 @@ class OrderItemLib
                 COALESCE(n.vendorName, \'\') AS vendorName,
                 p.upc,
                 COALESCE(v.sku, \'\') AS sku,
-                p.department
+                p.department,
+                r.priceRuleTypeID
             FROM products AS p
                 LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                 LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
+                LEFT JOIN PriceRules AS r ON p.price_rule_id=r.priceRuleID
             WHERE v.sku LIKE ?
                 AND p.inUse=1
         ');
@@ -190,7 +195,8 @@ class OrderItemLib
                 v.upc,
                 v.sku,
                 COALESCE(n.vendorName, \'\') AS vendorName,
-                0 AS department
+                0 AS department,
+                0 AS priceRuleTypeID
             FROM vendorItems AS v 
                 LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
             WHERE v.sku LIKE ?
@@ -279,11 +285,16 @@ class OrderItemLib
     */
     private static function notStockedUnitPrice($item, $is_member)
     {
-        if ($item['discountable']) {
-            return self::markUpOrDown($item, $is_member);
-        } else {
+        if (FannieConfig::config('COOP_ID') === 'WFC_Duluth' 
+            && ($pdW['priceRuleTypeID'] == 6 || $pdW['priceRuleTypeID'] == 7 || $pdW['priceRuleTypeID'] == 8)) {
             return $item['normal_price'];
         }
+
+        if ($item['discountable']) {
+            return self::markUpOrDown($item, $is_member);
+        }
+
+        return $item['normal_price'];
     }
 
     /**

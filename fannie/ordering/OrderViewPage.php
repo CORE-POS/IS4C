@@ -829,7 +829,8 @@ HTML;
             v.sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch,
             o.trans_id,o.unitPrice,o.memType,o.staff
             FROM {$TRANS}PendingSpecialOrder as o
-            left join vendorItems as v on o.upc=v.upc AND vendorID=1
+                LEFT JOIN vendors AS n ON o.mixMatch=n.vendorName
+                LEFT JOIN vendorItems as v on o.upc=v.upc AND n.vendorID=v.vendorID
             WHERE order_id=? AND trans_type='I' 
             ORDER BY trans_id DESC");
         $res = $dbc->execute($prep, array($orderID));
@@ -880,7 +881,7 @@ HTML;
                 class="form-control input-sm price-field item-field" /></td>',
                 $row['unitPrice'],$row['trans_id']);
             $ret .= sprintf('<td class="form-inline">Supplier: <input type="text" value="%s" size="12" 
-                    class="form-control input-sm item-field" name="vendor"
+                    class="form-control input-sm item-field input-vendor" name="vendor"
                     maxlength="26" 
                     /></td>',$row['mixMatch']);
             $ret .= '<td>Discount</td>';
@@ -1087,6 +1088,7 @@ HTML;
 HTML;
 
         $this->addScript('orderview.js');
+        $this->addScript('../item/autocomplete.js');
 
         return $ret;
     }
