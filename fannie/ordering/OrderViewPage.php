@@ -25,6 +25,10 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
+if (!class_exists('SoPoBridge')) {
+    include(__DIR__ . '/SoPoBridge.php');
+}
+
 class OrderViewPage extends FannieRESTfulPage
 {
     protected $header = 'View Order';
@@ -51,8 +55,22 @@ class OrderViewPage extends FannieRESTfulPage
         $this->__routes[] = 'post<orderID><noteDept><noteText><addr><addr2><city><state><zip><ph1><ph2><email>';
         $this->__routes[] = 'delete<orderID><transID>';
         $this->addRoute('post<orderID><description><srp><actual><qty><dept><unitPrice><vendor><transID><changed>');
+        $this->addRoute('post<addPO><orderID><transID><storeID>');
 
         return parent::preprocess();
+    }
+
+    protected function post_addPO_orderID_transID_storeID_handler()
+    {
+        $bridge = new SoPoBridge($this->connection, $this->config);
+        $poID = $bridge->addItemToPurchaseOrder($this->orderID, $this->transID, $this->storeID);
+        if ($poID) {
+            echo json_encode(array('error'=>false, 'poID'=>$poID));
+        } else {
+            echo json_encode(array('error'=>true));
+        }
+
+        return false;
     }
 
     protected function post_orderID_transID_dept_handler()
@@ -836,6 +854,9 @@ HTML;
         $res = $dbc->execute($prep, array($orderID));
         $num_rows = $dbc->num_rows($res);
         $prev_id = 0;
+        $bridge = new SoPoBridge($dbc, $this->config);
+        $store = $dbc->prepare("SELECT storeID FROM {$TRANS}SpecialOrders WHERE specialOrderID=?");
+        $storeID = $dbc->getValue($store, array($orderID));
         while ($row = $dbc->fetch_row($res)) {
             if ($row['trans_id'] == $prev_id) continue;
             $ret .= sprintf('
@@ -895,19 +916,27 @@ HTML;
             }
             $ret .= sprintf('<td colspan="2">Printed: %s</td>',
                     ($row['charflag']=='P'?'Yes':'No'));
+            $ret .= '<td colspan="2">';
+            if ($storeID && $bridge->canPurchaseOrder($orderID, $row['trans_id'])) {
+                $ordered = $bridge->findPurchaseOrder($orderID, $row['trans_id'], $storeID);
+                if ($ordered) {
+                    $ret .= '<a href="../purchasing/ViewPurchaseOrders.php?id=' . $ordered . '">In PO</a> | ';
+                } else {
+                    $ret .= sprintf('<span><a class="btn btn-default btn-xs add-po-btn" 
+                        data-order="%d" data-trans="%d" data-store="%d">Add to PO</a></span> | ',
+                        $orderID, $row['trans_id'], $storeID);
+                }
+            }
             if ($num_rows > 1) {
-                $ret .= sprintf('<td colspan="2"><a href="" class="btn btn-default btn-sm"
+                $ret .= sprintf('<a href="" class="btn btn-default btn-xs"
                     onclick="orderView.doSplit(%d,%d);return false;">Split Item to New Order</a><br />
                     O <input type="checkbox" class="itemChkO" %s data-order="%d" data-trans="%d" />&nbsp;&nbsp;&nbsp;&nbsp;
-                    A <input type="checkbox" class="itemChkA" %s data-order="%d" data-trans="%d" />
-                    </td>',
+                    A <input type="checkbox" class="itemChkA" %s data-order="%d" data-trans="%d" />',
                     $orderID,$row['trans_id'],
                     ($row['memType']>0?'checked':''),$orderID,$row['trans_id'],
                     ($row['staff']>0?'checked':''),$orderID,$row['trans_id']);
-            } else {
-                $ret .= '<td colspan="2"></td>';
             }
-            $ret .= '</tr>';
+            $ret .= '</td></tr>';
             $ret .= '<tr><td class="small" colspan="9"><span style="font-size:1;">&nbsp;</span>';
             $ret .= '<input type="hidden" name="transID" class="item-field" value="' . $row['trans_id'] . '" /></td></tr>';
             $ret .= '</tbody>';

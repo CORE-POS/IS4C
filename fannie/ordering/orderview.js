@@ -144,6 +144,25 @@ var orderView = (function($) {
         $('.itemChkA').change(function () {
             mod.toggleA($(this).data('order'), $(this).data('trans'));
         });
+        $('.add-po-btn').click(function(ev) {
+            ev.preventDefault();
+            var dstr = 'addPO=1&orderID=' + $(this).data('order');
+            dstr += '&transID='+$(this).data('trans');
+            dstr += '&storeID='+$(this).data('store');
+            var elem = $(this);
+            $.ajax({
+                url: 'OrderViewPage.php',
+                type: 'post',
+                data: dstr,
+                dataType: 'json'
+            }).done(function(resp) {
+                if (!resp.error && resp.poID) {
+                    elem.closest('span').html('<a href="../purchasing/ViewPurchaseOrders.php?id=' + resp.poID + '">In PO</a>');
+                    // want to check, not necessarily toggle
+                    //mod.toggleO(elem.data('order'), elem.data('trans'));
+                }
+            });
+        });
         $('.btn-search').click(mod.searchWindow);
         bindAutoComplete('input.input-vendor', '../ws/', 'vendor');
     };

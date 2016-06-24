@@ -23,7 +23,7 @@ class SoPoBridge
     {
         $prep = $this->dbc->prepare('
             SELECT orderID
-            FROM PurchaseOrders
+            FROM PurchaseOrder
             WHERE vendorID=?
                 AND storeID=?
                 AND vendorOrderID LIKE \'SO-%\'
@@ -48,18 +48,18 @@ class SoPoBridge
                 AND o.trans_id=?
         ');
 
-        return $this->dbc->getValue($prep, array($soID, $transID));
+        return $this->dbc->getRow($prep, array($soID, $transID));
     }
 
     private function numCases($soID, $transID)
     {
-        $pending = $this->config->get('TRANS') . $dbc->sep() . 'PendingSpecialOrder';
+        $pending = $this->config->get('TRANS_DB') . $this->dbc->sep() . 'PendingSpecialOrder';
         $prep = $this->dbc->prepare('
             SELECT ItemQtty
             FROM ' . $pending . '
             WHERE order_id=?
                 AND trans_id=?');
-        return $this->dbc->getValue($prep, $soID, $transID);
+        return $this->dbc->getValue($prep, array($soID, $transID));
     }
 
     /**
@@ -97,7 +97,9 @@ class SoPoBridge
         $poitem->caseSize($item['units']);
         $poitem->brand($item['brand']);
         $poitem->description($item['description']);
-        $poitem->internalUPC(str_pad($soID, 13, '0', STR_PAD_LEFT));
+        // put specialOrderID & transID into UPC to cross reference 
+        // between PO and SO lines
+        $poitem->internalUPC(str_pad($soID, 9, '0', STR_PAD_LEFT) . str_pad($transID, 4, '0', STR_PAD_LEFT));
         $saved = $poitem->save();
 
         return $saved ? $poID : false;
@@ -131,7 +133,7 @@ class SoPoBridge
             $storeID,
             $vendorInfo['sku'],
             $cases,
-            str_pad($soID, 13, '0', STR_PAD_LEFT),
+            str_pad($soID, 9, '0', STR_PAD_LEFT) . str_pad($transID, 4, '0', STR_PAD_LEFT),
         ));
     }
 }
