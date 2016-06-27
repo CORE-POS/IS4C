@@ -197,13 +197,12 @@ class SQLManager
             $conn->Execute($adapter->useNamedDB($database));
             $conn->SelectDB($database);
             $this->connections[$database] = $conn;
+            return true;
         } else {
             $this->last_connect_error = $conn->ErrorMsg();
             $this->connections[$database] = false;
             return false;
         }
-
-        return true;
     }
 
     /**

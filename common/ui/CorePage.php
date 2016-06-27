@@ -86,7 +86,7 @@ class CorePage
       DI Setter method for database
       @param $sql [SQLManager] database object
     */
-    public function setConnection(\SQLManager $sql)
+    public function setConnection($sql)
     {
         $this->connection = $sql;
     }

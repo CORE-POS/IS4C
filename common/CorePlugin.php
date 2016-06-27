@@ -112,11 +112,8 @@ class CorePlugin
     public static function isEnabled($plugin)
     {
         $plugin_list = static::getPluginList();
-        if (!is_array($plugin_list)) {
-            return false;
-        }
 
-        return (in_array($plugin, $plugin_list)) ? true : false;
+        return (is_array($plugin_list) && in_array($plugin, $plugin_list)) ? true : false;
     }
 
     protected static function defaultSearchDir()
