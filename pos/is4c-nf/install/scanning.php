@@ -408,7 +408,8 @@ foreach ($sdepts as $sd) {
             $list .= $id.', ';
     }
     $list = rtrim($list,', ');
-    $obj = new $sd();
+    $sclass = str_replace('-', '\\', $sd);
+    $obj = new $sclass();
     printf('<tr><td title="%s">%s</td><td>
         <input type="text" name="SDEPT_MAP_LIST[]" value="%s" />
         <input type="hidden" name="SDEPT_MAP_NAME[]" value="%s" />
