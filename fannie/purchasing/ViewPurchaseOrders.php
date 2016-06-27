@@ -124,8 +124,14 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $poi = new PurchaseOrderItemsModel($this->connection);
         $poi->orderID($this->id);
         $cache = new InventoryCacheModel($this->connection);
+        $bridge = new SoPoBridge($this->connection, $this->config);
         foreach ($poi->find() as $item) {
             $cache->recalculateOrdered($item->internalUPC(), $model->storeID());
+            if ($this->setPlaced ==1 && $poi->isSpecialOrder()) {
+                $soID = substr($poi->internalUPC(), 0, 9);
+                $transID = substr($poi->internalUPC(), 9);
+                $bridge->markAsPlaced($soID, $transID);
+            }
         }
         echo ($this->setPlaced == 1) ? $model->placedDate() : 'n/a';
 

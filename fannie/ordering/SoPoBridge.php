@@ -136,5 +136,27 @@ class SoPoBridge
             str_pad($soID, 9, '0', STR_PAD_LEFT) . str_pad($transID, 4, '0', STR_PAD_LEFT),
         ));
     }
+
+    /**
+      Update line item's status as placed, update order status too if needed
+    */
+    public function markAsPlaced($soID, $transID)
+    {
+        $table = $this->config->get('TRANS_DB') . $this->dbc->sep() . 'PendingSpecialOrder';
+        $itemP = $this->dbc->prepare('
+            UPDATE ' . $table . ' 
+            SET memType=1
+            WHERE order_id=?
+                AND trans_id=?');
+        $this->dbc->execute($itemP, array($soID, $transID));
+
+        $all = $this->dbc->prepare('SELECT MIN(memType) FROM ' . $table . ' WHERE order_id=? AND trans_id > 0');
+        $min = $this->dbc->execute($all, array($soID));
+        if ($min == 1) {
+            $table = $this->config->get('TRANS_DB') . $this->dbc->sep() . 'SpecialOrders';
+            $upP = $this->dbc->prepare('UPDATE ' . $table . ' SET statusFlag=?, subStatus=? WHERE specialOrderID=?');
+            $this->dbc->execute($upP, array(4, time(), $soID));
+        }
+    }
 }
 
