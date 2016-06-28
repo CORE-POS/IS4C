@@ -231,7 +231,7 @@ class WfcClassRegistryPage extends FanniePage
             ');
             $result = $dbc->execute($query, $plu);
             $curClassSize = $dbc->fetch_row($result);
-            if ($curClassSize >= ($classSize - 3)) {
+            if (!is_array($classSize) && $curClassSize[0] >= ($classSize - 3)) {
                 $query = $dbc->prepare('
                     SELECT details 
                     FROM wfcuRegistry
