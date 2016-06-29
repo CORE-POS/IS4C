@@ -482,7 +482,7 @@ class PrintHandler {
         $slip = "";
 
         $bmp = null;
-        if (is_object($arg) && is_a($arg, 'Bitmap')){
+        if (is_object($arg) && is_a($arg, 'COREPOS\\pos\\lib\\Bitmap')){
             $bmp = $arg;
         }
         else if (file_exists($arg)){
