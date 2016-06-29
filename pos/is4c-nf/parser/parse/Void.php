@@ -110,12 +110,12 @@ class Void extends Parser
         } elseif ($voided == 10) {
             TransRecord::reverseTaxExempt();
         } elseif ($status == "V") {
-            $ret['output'] = Exception(DisplayLib::boxMsg(
+            $ret['output'] = DisplayLib::boxMsg(
                 _("Item already voided"),
                 '',
                 false,
                 DisplayLib::standardClearButton()
-            ));
+            );
         } else {
             $ret = $this->voiditem($trans_id, $ret);
         }
