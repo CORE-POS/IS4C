@@ -87,6 +87,7 @@ class UploadPluMapPage extends \COREPOS\Fannie\API\FannieUploadPage
         if (is_array($data) && isset($data[$SKU]) && isset($data[$PLU])) {
             // grab data from appropriate columns
             $sku = $data[$SKU];
+            $plu = str_replace('-','',$data[$PLU]);
             $plu = substr($data[$PLU],0,13);
             $plu = BarcodeLib::padUPC($plu);
             if (!is_numeric($plu)) { 
