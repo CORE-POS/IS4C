@@ -132,7 +132,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 sku,
                 description, 
                 srp
-            FROM woodshed_no_replicate.CoopDealsJune
+            FROM woodshed_no_replicate.CoopDealsJuly
             WHERE upc = ? ;
         ');
         //echo $prep . '<br>';
