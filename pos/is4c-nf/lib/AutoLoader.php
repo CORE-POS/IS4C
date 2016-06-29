@@ -67,7 +67,7 @@ class AutoLoader extends LibraryClass
             }
         }
 
-        if (isset($map[$name]) && !file_exists($map[$name])) {
+        if (strpos($name, '\\') === false && isset($map[$name]) && !file_exists($map[$name])) {
             // file is missing. 
             // rebuild map to see if the class is
             // gone or the file just moved
