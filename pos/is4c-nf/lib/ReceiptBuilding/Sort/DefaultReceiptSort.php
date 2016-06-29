@@ -86,7 +86,7 @@ class DefaultReceiptSort
     
         // first add uncategorized item records
         if (count($items['_uncategorized'] > 0)) {
-            usort($items['_uncategorized'],array('DefaultReceiptSort','record_compare'));
+            usort($items['_uncategorized'],array('COREPOS\\pos\\lib\\ReceiptBuilding\\Sort\\DefaultReceiptSort','record_compare'));
             foreach($items['_uncategorized'] as $row) {
                 $returnset[] = $row;
             }
@@ -100,7 +100,7 @@ class DefaultReceiptSort
             foreach($headers as $hrow) {
                 if (count($items[$hrow['description']]) > 0) {
                     $returnset[] = $hrow;
-                    usort($items[$hrow['description']],array('DefaultReceiptSort','record_compare'));
+                    usort($items[$hrow['description']],array('COREPOS\\pos\\lib\\ReceiptBuilding\\Sort\\DefaultReceiptSort','record_compare'));
                     foreach($items[$hrow['description']] as $irow) {
                         $returnset[] = $irow;
                     }
@@ -130,7 +130,7 @@ class DefaultReceiptSort
 
         // finally tenders
         if(count($tenders) > 0) {
-            usort($tenders, array('DefaultReceiptSort','record_compare'));
+            usort($tenders, array('COREPOS\\pos\\lib\\ReceiptBuilding\\Sort\\DefaultReceiptSort','record_compare'));
             foreach($tenders as $trow) {
                 $returnset[] = $trow;
             }
