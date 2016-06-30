@@ -37,12 +37,18 @@ namespace COREPOS\pos\lib\DriverWrappers;
 
 class ScaleDriverWrapper 
 {
+    private static $builtin = array(
+        'NewMagellan',
+        'ScaleDriverWrapper',
+        'ssd',
+    );
+
     public static function factory($class)
     {
-        if (class_exists($class)) {
-            return new $class();
-        } elseif (class_exists('COREPOS\\pos\\lib\\DriverWrappers\\' . $class)) {
+        if ($class != '' && in_array($class, self::$builtin)) {
             $class = 'COREPOS\\pos\\lib\\DriverWrappers\\' . $class;
+            return new $class();
+        } elseif (class_exists($class)) {
             return new $class();
         }
 

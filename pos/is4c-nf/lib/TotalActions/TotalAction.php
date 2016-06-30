@@ -30,12 +30,20 @@ namespace COREPOS\pos\lib\TotalActions;
 */
 class TotalAction 
 {
+    private static $builtin = array(
+        'ArOverpayAction',
+        'AutoCoupon',
+        'MemTotalAction',
+        'OntarioMealTaxRebateAction',
+        'TotalAction',
+    );
+
     public static function factory($class)
     {
-        if ($class != '' && class_exists($class)) {
-            return new $class();
-        } elseif ($class != '' && class_exists('COREPOS\\pos\\lib\\TotalActions\\' . $class)) {
+        if ($class != '' && in_array($class, self::$builtin)) {
             $class = 'COREPOS\\pos\\lib\\TotalActions\\' . $class;
+            return new $class();
+        } elseif ($class != '' && class_exists($class)) {
             return new $class();
         }
 

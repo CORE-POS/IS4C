@@ -15,12 +15,20 @@ use COREPOS\pos\lib\ReceiptLib;
 
 class PrintHandler {
 
+    private static $builtin = array(
+        'ESCPOSPrintHandler',
+        'EmailPrintHandler',
+        'HtmlEmailPrintHandler',
+        'PdfPrintHandler',
+        'PrintHandler',
+    );
+
     public static function factory($class)
     {
-        if ($class != '' && class_exists($class)) {
-            return new $class();
-        } elseif ($class != '' && class_exists('COREPOS\\pos\\lib\\PrintHandlers\\' . $class)) {
+        if ($class != '' && in_array($class, self::$builtin)) {
             $class = 'COREPOS\\pos\\lib\PrintHandlers\\' . $class;
+            return new $class();
+        } elseif ($class != '' && class_exists($class)) {
             return new $class();
         }
 

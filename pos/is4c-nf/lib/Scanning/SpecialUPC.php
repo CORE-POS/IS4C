@@ -36,13 +36,19 @@ namespace COREPOS\pos\lib\Scanning;
 
 class SpecialUPC 
 {
+    private static $builtin = array(
+        'CouponCode',
+        'DatabaseCoupon',
+        'HouseCoupon',
+        'SpecialOrder',
+    );
 
     public static function factory($class)
     {
-        if ($class != '' && class_exists($class)) {
-            return new $class();
-        } elseif ($class != '' && class_exists('COREPOS\\pos\\lib\\Scanning\\SpecialUPCs\\' . $class)) {
+        if ($class != '' && in_array($class, self::$builtin)) {
             $class = 'COREPOS\\pos\\lib\\Scanning\\SpecialUPCs\\' . $class;
+            return new $class();
+        } elseif ($class != '' && class_exists($class)) {
             return new $class();
         }
 

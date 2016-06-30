@@ -35,7 +35,7 @@ class ItemNotFound
 {
     public static function factory($class)
     {
-        if ($class !== '' && class_exists($class)) {
+        if ($class !== '' && $class !== 'ItemNotFound' && class_exists($class)) {
             return new $class();
         }
 

@@ -33,12 +33,24 @@ use \CoreLocal;
 class Kicker 
 {
 
+    private static $builtin = array(
+        'AlwaysKick',
+        'Harvest_Kicker',
+        'Kicker',
+        'MCC_Kicker',
+        'NoKick',
+        'RAFC_Kicker',
+        'WEFC_Toronto_Kicker',
+        'WFC_Kicker',
+        'YPSI_Kicker',
+    );
+
     public static function factory($class)
     {
-        if ($class != '' && class_exists($class)) {
-            return new $class();
-        } elseif ($class != '' && class_exists('COREPOS\\pos\\lib\\Kickers\\' . $class)) {
+        if ($class != '' && in_array($class, self::$builtin)) {
             $class = 'COREPOS\\pos\\lib\Kickers\\' . $class;
+            return new $class();
+        } elseif ($class != '' && class_exists($class)) {
             return new $class();
         }
 

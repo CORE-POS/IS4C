@@ -87,12 +87,21 @@ class SpecialDept
         return $json;
     }
 
+    private static $builtin = array(
+        'ArWarnDept',
+        'AutoReprintDept',
+        'BottleReturnDept',
+        'EquityEndorseDept',
+        'EquityWarnDept',
+        'PaidOutDept',
+    );
+
     public static function factory($class)
     {
-        if ($class != '' && class_exists($class)) {
-            return new $class();
-        } elseif ($class != '' && class_exists('COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\' . $class)) {
+        if ($class != '' && in_array($class, self::$builtin)) {
             $class = 'COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\' . $class;
+            return new $class();
+        } elseif ($class != '' && class_exists($class)) {
             return new $class();
         }
 
