@@ -511,7 +511,7 @@ static private function getSort()
 static private function getTag()
 {
     $mod = CoreLocal::get("RBTag");
-    if ($mod == 'DefaultReceiptDataTag') {
+    if ($mod == 'DefaultReceiptTag') {
         $mod = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Tag\\' . $mod;
     }
     return $mod == '' ? 'COREPOS\\pos\\lib\\ReceiptBuilding\\Tag\\DefaultReceiptTag' : $mod;
