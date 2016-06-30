@@ -257,6 +257,15 @@ Device = new ScannerDevice({
     }
 });
 ScannerDevice.registerListener(Device);
+
+if (typeof WebBarcode == 'object') {
+    WebBarcode.onBarcodeScan(function(ev) {
+        var data = ev.value;
+        var upc = data.substring(0,data.length-1);
+        $('#upc_in').val(upc);
+        $('#goBtn').click();
+    });
+}
         <?php } ?>
 
         <?php
