@@ -39,7 +39,7 @@ class PluginsTest extends PHPUnit_Framework_TestCase
             }
             list(,$path) = explode('plugins', $file, 2);
             $path = ltrim($path, '/');
-            $ns_class = 'COREPOS\\pos\\';
+            $ns_class = 'COREPOS\\pos\\plugins\\';
             foreach (explode('/', $path) as $piece) {
                 $ns_class .= $piece . '\\';
             }
@@ -49,7 +49,7 @@ class PluginsTest extends PHPUnit_Framework_TestCase
                 // class already defined
                 continue;
             }
-            if ($class == 'PaycardRequest') var_dump($ns_class);
+            var_dump($name . '-' . $ns_class);
             ob_start();
             include($file);
             $output = ob_get_clean();
