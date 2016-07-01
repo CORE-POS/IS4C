@@ -23,7 +23,10 @@ class DeliInventoryPage2 extends DeliInventoryPage
     public function body_content()
     {
         $ret = parent::body_content();
-        return str_replace('send.js', 'send2.js', $ret);
+        $ret = str_replace('send.js', 'send2.js', $ret);
+        $ret = str_replace('index.js', 'index2.js', $ret);
+
+        return $ret;
     }
 }
 
