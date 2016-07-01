@@ -246,14 +246,14 @@ class DeliCateringOrdersPage extends FannieRESTfulPage
                 $ret .= '<tr><td>' . $row['name'] . '</td><td>' .  $row['qty'] . '</td><td>$' . $row['price'] . 
                     '</td><td>' . $curTotal . '</tr>';
                     
-                if ($row['op1']) $ret .= '<tr><td><li><i>' . $row['name'] . '</i>: ' . $row['op1'] . '</td></tr>';
-                if ($row['op2']) $ret .= '<tr><td><li><i>' . $row['name'] . '</i>: ' . $row['op2'] . '</td></tr>';
-                if ($row['op3']) $ret .= '<tr><td><li><i>' . $row['name'] . '</i>: ' . $row['op3'] . '</td></tr>';
-                if ($row['op4']) $ret .= '<tr><td><li><i>' . $row['name'] . '</i>: ' . $row['op4'] . '</td></tr>';
-                if ($row['op5']) $ret .= '<tr><td><li><i>' . $row['name'] . '</i>: ' . $row['op5'] . '</td></tr>';
-                if ($row['op6']) $ret .= '<tr><td><li><i>' . $row['name'] . '</i>: ' . $row['op6'] . '</td></tr>';
-                if ($row['op7']) $ret .= '<tr><td><li><i>' . $row['name'] . '</i>: ' . $row['op7'] . '</td></tr>';
-                if ($row['op8']) $ret .= '<tr><td><li><i>' . $row['name'] . '</i>: ' . $row['op8'] . '</td></tr>';
+                if ($row['op1']) $ret .= '<tr><td>~~' . $row['op1'] . '</td></tr>';
+                if ($row['op2']) $ret .= '<tr><td>~~' . $row['op2'] . '</td></tr>';
+                if ($row['op3']) $ret .= '<tr><td>~~' . $row['op3'] . '</td></tr>';
+                if ($row['op4']) $ret .= '<tr><td>~~' . $row['op4'] . '</td></tr>';
+                if ($row['op5']) $ret .= '<tr><td>~~' . $row['op5'] . '</td></tr>';
+                if ($row['op6']) $ret .= '<tr><td>~~' . $row['op6'] . '</td></tr>';
+                if ($row['op7']) $ret .= '<tr><td>~~' . $row['op7'] . '</td></tr>';
+                if ($row['op8']) $ret .= '<tr><td>~~' . $row['op8'] . '</td></tr>';
               
             }
         //$ret .= '<tr><td></td><td></td><td><b>Final Subtotal:</b></td><td>' . $curTotal . '</tr>';
