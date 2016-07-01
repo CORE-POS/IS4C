@@ -37,10 +37,19 @@ class PluginsTest extends PHPUnit_Framework_TestCase
                 $file = $name;
                 $name = $tmp;
             }
-            if (class_exists($name, false)) {
+            list(,$path) = explode('plugins', $file, 2);
+            $path = ltrim($path, '/');
+            $ns_class = 'COREPOS\\pos\\';
+            foreach (explode('/', $path) as $piece) {
+                $ns_class .= $piece . '\\';
+            }
+            // 5 => .php\
+            $ns_class = substr($ns_class, 0, strlen($ns_class)-5);
+            if (class_exists($name, false) || class_exists($ns_class, false)) {
                 // class already defined
                 continue;
             }
+            if ($class == 'PaycardRequest') var_dump($ns_class);
             ob_start();
             include($file);
             $output = ob_get_clean();
