@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\Database;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class checklist extends NoInputCorePage 
@@ -35,7 +38,6 @@ class checklist extends NoInputCorePage
             // javascript causes this input if the
             // user presses CL{enter}
             // Redirect to main screen
-            CoreLocal::set("tenderTotal","0");    
             $this->change_page($this->page_url."gui-modules/pos2.php");
             return False;
         }
@@ -44,7 +46,7 @@ class checklist extends NoInputCorePage
             // built department input string and set it
             // to be the next POS entry
             // Redirect to main screen
-            $input = CoreLocal::get("tenderTotal")."CQ".$entered;
+            $input = FormLib::get('amt') . 'CQ' . $entered;
             $this->change_page(
                 $this->page_url 
                 . "gui-modules/pos2.php"
@@ -85,9 +87,9 @@ class checklist extends NoInputCorePage
     */
     function body_content()
     {
-        $db = Database::pDataConnect();
-        $q = "SELECT TenderCode,TenderName FROM tenders WHERE TenderName LIKE '%check%' ORDER BY TenderName";
-        $r = $db->query($q);
+        $amount = FormLib::get('amt', 0);
+        $dbc = Database::pDataConnect();
+        $res = $dbc->query("SELECT TenderCode,TenderName FROM tenders WHERE TenderName LIKE '%check%' ORDER BY TenderName");
 
         echo "<div class=\"baseHeight\">"
             ."<div class=\"listbox\">"
@@ -97,13 +99,14 @@ class checklist extends NoInputCorePage
             ."size=\"15\" onblur=\"\$('#search').focus();\">";
 
         $selected = "selected";
-        while($row = $db->fetch_row($r)){
+        while ($row = $dbc->fetchRow($res)) {
             echo "<option value='".$row["TenderCode"]."' ".$selected.">";
             echo $row['TenderName'];
             echo '</option>';
             $selected = "";
         }
         echo "</select>"
+            .'<input type="hidden" name="amt" value="' . $amount . '" />'
             ."</form>"
             ."</div>"
             ."<div class=\"listboxText coloredText centerOffset\">"

@@ -38,26 +38,26 @@ class StockSumTodayModel extends ViewModel
 
     public function definition()
     {
-        $FANNIE_EQUITY_DEPARTMENTS = FannieConfig::config('EQUITY_DEPARTMENTS', '');
-        $ret = preg_match_all('/[0-9]+/', $FANNIE_EQUITY_DEPARTMENTS, $depts);
+        $eq_depts = FannieConfig::config('EQUITY_DEPARTMENTS', '');
+        $ret = preg_match_all('/[0-9]+/', $eq_depts, $depts);
         if ($ret == 0) {
             $depts = array(-999);
         } else {
             $depts = array_pop($depts);
         }
 
-        $in = '';
+        $inStr = '';
         foreach ($depts as $d) {
-            $in .= sprintf('%d,', $d);
+            $inStr .= sprintf('%d,', $d);
         }
-        $in = substr($in, 0, strlen($in)-1);
+        $inStr = substr($inStr, 0, strlen($inStr)-1);
 
         return '
             SELECT card_no,
-                SUM(CASE WHEN department IN (' . $in . ') THEN total ELSE 0 END) AS totPayments,
+                SUM(CASE WHEN department IN (' . $inStr . ') THEN total ELSE 0 END) AS totPayments,
                 MIN(tdate) AS startdate
             FROM dlog
-            WHERE department IN (' . $in . ')
+            WHERE department IN (' . $inStr . ')
                 AND ' . $this->connection->datediff('tdate', $this->connection->now()) . ' = 0
             GROUP BY card_no';
     }

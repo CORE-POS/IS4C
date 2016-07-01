@@ -51,7 +51,7 @@ if (isset($_GET['action'])){
 
         $prep = $sql->prepare($UNFI_ALL_QUERY . ' AND p.upc = ?');
         $result = $sql->execute($prep, array($upc));
-        $row = $sql->fetch_array($result);
+        $row = $sql->fetchRow($result);
         
         $pupc = $row[0];
         $uupc = $row['upcc'];
@@ -242,7 +242,7 @@ $getCatR = $mysql->execute($getCatP, $getCatArgs);
 
 $strCat = "(";
 $cat_args = array();
-while($getCatW = $mysql->fetch_array($getCatR)){
+while($getCatW = $mysql->fetchRow($getCatR)){
    $cat = $getCatW['unfi_cat'];
    //echo $cat . "<br>";
    $strCat .= "?,";
@@ -262,7 +262,7 @@ $strCat = $strCat . ")";
    $prep = $sql->prepare($UNFI_ALL_QUERY . " AND v.vendorDept IN $strCat ORDER BY $sort, p.department, p.upc");
    $result = $sql->execute($prep, $cat_args);
 
-   while($row = $sql->fetch_array($result)){
+   while($row = $sql->fetchRow($result)){
       $pupc = $row[0];
       $uupc = $row['upcc'];
       $pdesc = $row['description'];

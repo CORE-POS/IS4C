@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\webservices {
+namespace COREPOS\Fannie\API\webservices;
 
 class FannieWebService 
 {
@@ -77,9 +77,4 @@ class FannieWebService
     }
 }
 
-}
-
-namespace {
-    class FannieWebService extends \COREPOS\Fannie\API\webservices\FannieWebService {}
-}
 

@@ -21,7 +21,11 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\BasicCorePage;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\UdpComm;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class SigCapturePage extends BasicCorePage 
@@ -190,7 +194,6 @@ class SigCapturePage extends BasicCorePage
         $this->add_onload_command("addToForm('code', '{$_REQUEST['code']}');\n");
         
         CoreLocal::set("boxMsg",'');
-        CoreLocal::set("msgrepeat",2);
     } // END body_content() FUNCTION
 }
 

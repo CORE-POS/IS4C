@@ -1,4 +1,5 @@
 <?php
+use COREPOS\pos\lib\Database;
 if (!class_exists('AutoLoader')) include(dirname(__FILE__).'/../lib/AutoLoader.php');
 AutoLoader::loadMap();
 

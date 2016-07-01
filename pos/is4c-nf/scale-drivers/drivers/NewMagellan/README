@@ -1,9 +1,7 @@
 ================================
 COMPILATION
 ================================
-
-NewMagellan can be build as a .NET 2.0 application or
-a .NET 4.0 application. The 4.0 version is recommended.
+NewMagellan is a .NET 4.0 application.
 
 * Building the .NET 4.0 version
     * Windows 7
@@ -19,35 +17,18 @@ a .NET 4.0 application. The 4.0 version is recommended.
         * Type "msbuild"
     * Non-Windows
         * Install mono and related development packages,
-          e.g. mono-devel. If "dmcs --version" returns
+          e.g. mono-devel. If "mcs --version" returns
           3.2.8+, you're probably fine.
         * Open a terminal and navigate to this folder
         * Type "xbuild"
-        * To build with HidSharp, type "xbuild /target:Future"
-* Building the .NET 2.0 version
-    * Windows (any)
-        * Install the .NET 2.0 SDK
-        * Run the SDK command line program
-        * Navigate to this folder
-        * Type "make"
-        * Any errors relating to HidSharp can be ignored
-    * Non-Windows
-        * Install mono and related development packages,
-          e.g. mono-devel. If "gmcs --version" returns
-          something, you're probably fine.
-        * Open a terminal and navigate to this folder
-        * Type "make"
-        * If your gmcs version is 2+, you may be able
-          to get HidSharp support by typing "make future".
-          The development package for udev will be required.
+    * Ubuntu has a particularly fragmented mono package set. See:
+      https://github.com/CORE-POS/IS4C/wiki/New-Magellan#building-on-ubuntu-1404lts
 
 ================================
-WHY ARE THERE TWO VERSIONS?
+What happened to the .NET 2.0 version
 ================================
-NewMagellan is beginning to take advantage of 3rd party libraries.
-Some of these require a build environemnt less than a decade old.
-None of these 3rd party libraries are currently required. If that
-changes, the .NET 2.0 version will likely go away.
+NewMagellan is beginning to take advantage of 3rd party libraries. 
+Some of these require a build environment less than a decade old.
 
 * HidSharp
     * This is a cross-platform abstraction layer for reading and

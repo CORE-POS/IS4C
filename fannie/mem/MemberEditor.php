@@ -83,12 +83,26 @@ class MemberEditor extends FanniePage {
                 /** get current account settings for reference **/
                 $account = \COREPOS\Fannie\API\member\MemberREST::get($this->memNum);
                 \COREPOS\Fannie\API\member\MemberModule::setAccount($account);
-                FannieAPI::listModules('MemberModule');
+                FannieAPI::listModules('COREPOS\Fannie\API\member\MemberModule');
                 foreach($FANNIE_MEMBER_MODULES as $mm){
                     if (class_exists($mm)) {
                         $instance = new $mm();
-                        $this->msgs .= $instance->saveFormData($this->memNum);
+                        $saved = $instance->saveFormData($this->memNum, $account);
+                        /**
+                          The API return type is changing here. Any un-updated
+                          module that still returns a string should not clobber
+                          the $account info.
+                        */
+                        if (is_array($saved)) {
+                            $account = $saved;
+                        } else {
+                            $this->msgs .= $saved;
+                        }
                     }
+                }
+                $post_result = \COREPOS\Fannie\API\member\MemberREST::post($this->memNum, $account);
+                if ($post_result['errors'] > 0) {
+                    $this->msgs .= 'Error saving account';
                 }
 
                 $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -205,7 +219,7 @@ class MemberEditor extends FanniePage {
         $current_width = 100;
         $account = \COREPOS\Fannie\API\member\MemberREST::get($this->memNum);
         \COREPOS\Fannie\API\member\MemberModule::setAccount($account);
-        FannieAPI::listModules('MemberModule');
+        FannieAPI::listModules('COREPOS\Fannie\API\member\MemberModule');
         foreach ($this->config->get('MEMBER_MODULES') as $mm) {
             if (!class_exists($mm)) {
                 continue;

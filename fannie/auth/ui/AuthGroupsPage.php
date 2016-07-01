@@ -38,22 +38,23 @@ class AuthGroupsPage extends FannieRESTfulPage
     public $description = "
     Manage authentication groups.
     ";
-    public $themed = true;
 
     public function preprocess()
     {
-        $this->__routes[] = 'get<new>';
-        $this->__routes[] = 'get<remove>';
-        $this->__routes[] = 'get<reset>';
-        $this->__routes[] = 'get<newUser>';
-        $this->__routes[] = 'get<removeUser>';
-        $this->__routes[] = 'get<newAuth>';
-        $this->__routes[] = 'get<removeAuth>';
-        $this->__routes[] = 'post<id><name>';
-        $this->__routes[] = 'post<id><name><newUser>';
-        $this->__routes[] = 'delete<id><name>';
-        $this->__routes[] = 'post<id><authClass><start><end>';
-        $this->__routes[] = 'delete<id><authClass>';
+        $this->addRoute(
+            'get<new>',
+            'get<remove>',
+            'get<reset>',
+            'get<newUser>',
+            'get<removeUser>',
+            'get<newAuth>',
+            'get<removeAuth>',
+            'post<id><name>',
+            'post<id><name><newUser>',
+            'delete<id><name>',
+            'post<id><authClass><start><end>',
+            'delete<id><authClass>'
+        );
 
         return parent::preprocess();
     }
@@ -115,85 +116,100 @@ class AuthGroupsPage extends FannieRESTfulPage
     protected function get_id_view()
     {
         $group = detailGroup($this->id);
-        $ret = '<h2>' . $group['name'] . '</h2>';
+        $self = filter_input(INPUT_SERVER, 'PHP_SELF');
 
+        $userTable = '';
         $delUsers = count($group['users'] > 1) ? true : false;
-        $ret .= '<strong>Users</strong>
-            <table class="table table-bordered">
-            <tr>
-                <th>User</th>
-                <th>Remove from Group</th>
-            </tr>';
         foreach ($group['users'] as $user) {
             $link = sprintf('<a href="?_method=delete&id=%s&name=%s">%s</a>',
                 $group['name'], $user,
                 COREPOS\Fannie\API\lib\FannieUI::deleteIcon());
-            $ret .= sprintf('<tr><td>%s</td><td>%s</td></tr>',
+            $userTable .= sprintf('<tr><td>%s</td><td>%s</td></tr>',
                 $user,
                 $delUsers ? $link : '&nbsp'
             );
         }
-        $ret .= '</table>';
 
-        $ret .= '<hr />';
-
-        $ret .= '<strong>Users</strong>
-            <table class="table table-bordered">
-            <tr>
-                <th>Authorization</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Remove from Group</th>
-            </tr>';
+        $authTable = '';
         foreach ($group['auths'] as $info) {
             $link = sprintf('<a href="?_method=delete&id=%s&authClass=%s">%s</a>',
                 $group['name'], $info[0],
                 COREPOS\Fannie\API\lib\FannieUI::deleteIcon());
-            $ret .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+            $authTable .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
                 $info[0], $info[1], $info[2], $link);
         }
-        $ret .= '</table>
-            <p>
-                <a href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" class="btn btn-default">Group Menu</a>
-                <a href="?newUser=1&init=' . $this->id . '" class="btn btn-default btn-reset">Add User</a>
-                <a href="?newAuth=1&init=' . $this->id . '" class="btn btn-default btn-reset">Add Auth</a>
-            </p>';
 
-        return $ret;
+        return <<<HTML
+<h2>{$group['name']}</h2>
+<strong>Users</strong>
+<table class="table table-bordered">
+    <tr>
+        <th>User</th>
+        <th>Remove from Group</th>
+    </tr>
+    {$userTable}
+</table>
+<hr />
+<strong>Users</strong>
+<table class="table table-bordered">
+    <tr>
+        <th>Authorization</th>
+        <th>Start</th>
+        <th>End</th>
+        <th>Remove from Group</th>
+    </tr>
+    {$authTable}
+</table>
+<p>
+    <a href="{$self}" class="btn btn-default">Group Menu</a>
+    <a href="?newUser=1&init={$this->id}" class="btn btn-default btn-reset">Add User</a>
+    <a href="?newAuth=1&init={$this->id}" class="btn btn-default btn-reset">Add Auth</a>
+</p>
+HTML;
     }
 
     protected function groupSelect()
     {
         $selected = FormLib::get('init', -999);
         $this->add_onload_command("\$('select.form-control').focus();\n");
-        $ret = '<div class="form-group">
-            <label>Group</label>
-            <select name="id" class="form-control">';
+        $opts = '';
         foreach (getGroupList() as $uid => $name) {
-            $ret .=  "<option " . ($name == $selected ? 'selected' : '') . ">".$name."</option>";
+            $opts .=  "<option " . ($name == $selected ? 'selected' : '') . ">".$name."</option>";
         }
-        $ret .= '</select></div>';
 
-        return $ret;
+        return <<<HTML
+<div class="form-group">
+    <label>Group</label>
+    <select name="id" class="form-control">';
+        {$opts}
+    </select>
+</div>
+HTML;
+
     }
 
     protected function group_form($hidden, $verb)
     {
-        $ret = '<form method="get" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">';
-        $ret .= $this->groupSelect();
-        $ret .= '
-            <p>
-            <button class="btn btn-default" type="submit">' . $verb . '</button>
-            </p>';
+        $self = filter_input(INPUT_SERVER, 'PHP_SELF');
+        $hide = '';
         if (!is_array($hidden)) {
             $hidden = array($hidden => $hidden);
         }
         foreach ($hidden as $name => $value) {
-            $ret .= sprintf('<input type="hidden" name="%s" value="%s" />', $name, $value);
+            $hide .= sprintf('<input type="hidden" name="%s" value="%s" />', $name, $value);
         }
-        $ret .= '</form>';
+        $gSelect = $this->groupSelect();
 
-        return $ret;
+        return <<<HTML
+<form method="get" action="{$self}">';
+    {$gSelect}
+    <p>
+        <button class="btn btn-default" type="submit">{$verb}</button>
+    </p>
+    {$hide}
+</form>
+HTML;
+
     }
 
     protected function get_newUser_view()
@@ -234,64 +250,70 @@ class AuthGroupsPage extends FannieRESTfulPage
 
     protected function get_new_view()
     {
-        $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">
-            <div class="form-group">
-                <label>Group Name</label>
-                <input type="text" name="id" class="form-control" required />
-            </div>
-            <div class="form-group">
-                <label>First User</label>
-                <select name="name" class="form-control">';
-        foreach (getUserList() as $uid => $name) {
-            $ret .= '<option>' . $name . '</option>';
-        }
-        $ret .= '</select></div>
-            <p><button type="submit" class="btn btn-default">Create Group</button></p>
-            </form>';
-        $this->add_onload_command("\$('input.form-control').focus();\n");
+        $self = filter_input(INPUT_SERVER, 'PHP_SELF');
+        $users = array_reduce(getUserList(), function($c, $i) { return $c . '<option>' . $i . '</option>'; });
+        $this->addOnloadCommand("\$('input.form-control').focus();\n");
 
-        return $ret;
+        return <<<HTML
+<form method="post" action="{$self}">
+    <div class="form-group">
+        <label>Group Name</label>
+        <input type="text" name="id" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>First User</label>
+        <select name="name" class="form-control">
+            {$users}
+        </select>
+    </div>
+    <p><button type="submit" class="btn btn-default">Create Group</button></p>
+</form>
+HTML;
+
     }
 
     protected function get_newAuth_view()
     {
-        $ret = '<form method="post" action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '">';
-        $ret .= $this->groupSelect();
-        $ret .= '
-            <table class="table table-bordered table-striped">
-            <tr>
-                <th>Authorization Class</th>
-                <th class="col-sm-3">Notes</th>
-                <th>Subclass Start</th>
-                <th>Subclass End</th>
-            </tr>';
-            $ret .= '<tr>
-                <td><select name="authClass" class="form-control"
-                onchange="$(\'.auth-notes\').hide();$(\'#auth-notes-\'+this.value).show();">';
-            foreach (getAuthList() as $name) {
-                $ret .= sprintf('<option>' . $name . '</option>');
-            }
-            $ret .= '</select></td>
-                <td>';
-            $first = true;
-            foreach (getAuthList() as $name) {
-                $notes = getAuthNotes($name);
-                $ret .= sprintf('<span class="auth-notes %s" id="auth-notes-%s">%s</span>',
-                    ($first ? '' : 'collapse'), $name, $notes);
-                $first = false;
-            }
-            $ret .= '</td>
-                <td><input type="text" name="start" value="all" class="form-control" /></td>
-                <td><input type="text" name="end" value="all" class="form-control" /></td>
-                </tr>';
-        $ret .= '</table>
-            <p>
-            <button class="btn btn-default" type="submit">Add Authorization</button>
-            <a href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" class="btn btn-default btn-reset">Groups Menu</a>
-            </p>';
-        $ret .= '</form>';
+        $self = filter_input(INPUT_SERVER, 'PHP_SELF');
+        $gSelect = $this->groupSelect();
+        $authOpts=$noteOpts='';
+        $first = true;
+        foreach (getAuthList() as $name) {
+            $authOpts .= '<option>' . $name . '</option>';
+            $notes = getAuthNotes($name);
+            $noteOpts .= sprintf('<span class="auth-notes %s" id="auth-notes-%s">%s</span>',
+                ($first ? '' : 'collapse'), $name, $notes);
+            $first = false;
+        }
 
-        return $ret;
+        return <<<HTML
+<form method="post" action="{$self}">
+    {$gSelect}
+    <table class="table table-bordered table-striped">
+        <tr>
+            <th>Authorization Class</th>
+            <th class="col-sm-3">Notes</th>
+            <th>Subclass Start</th>
+            <th>Subclass End</th>
+        </tr>
+        <tr>
+            <td><select name="authClass" class="form-control"
+                onchange="\$('.auth-notes').hide();$('#auth-notes-'+this.value).show();">
+                {$authOpts}
+            </select></td>
+            <td>
+                {$noteOpts}
+            </td>
+            <td><input type="text" name="start" value="all" class="form-control" /></td>
+            <td><input type="text" name="end" value="all" class="form-control" /></td>
+        </tr>
+    </table>
+    <p>
+        <button class="btn btn-default" type="submit">Add Authorization</button>
+        <a href="{$self}" class="btn btn-default btn-reset">Groups Menu</a>
+    </p>
+</form>
+HTML;
     }
 
     protected function get_removeAuth_view()
@@ -313,23 +335,27 @@ class AuthGroupsPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        ob_start();
-        echo '<div class="row container" id="btn-bar">';
-        echo '<a class="btn btn-default" href="AuthIndexPage.php">Menu</a> ';
-        echo '<a class="btn btn-default" href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?new=1">Add Group</a> ';
-        echo '<a class="btn btn-default" href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?remove=1">Delete Group</a> ';
-        echo '<a class="btn btn-default" href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?newUser=1">Add User</a> ';
-        echo '<a class="btn btn-default" href="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '?newAuth=1">Add Auth</a> ';
-        echo '</div>';
-        echo '<table class="table table-bordered">
-            <tr><th>Group Name</th><th>Group ID</th></tr>';
+        $self = filter_input(INPUT_SERVER, 'PHP_SELF');
+        $gTable = '';
         foreach (getGroupList() as $gid => $name) {
-            printf('<tr><td><a href="?id=%s">%s</a></td><td>%s</td></tr>',
+            $gTable .= sprintf('<tr><td><a href="?id=%s">%s</a></td><td>%s</td></tr>',
                 $name, $name, $gid);
         }
-        echo '</table>';
 
-        return ob_get_clean();
+        return <<<HTML
+<div class="row container" id="btn-bar">
+    <a class="btn btn-default" href="AuthIndexPage.php">Menu</a>
+    <a class="btn btn-default" href="{$self}?new=1">Add Group</a>
+    <a class="btn btn-default" href="{$self}?remove=1">Delete Group</a>
+    <a class="btn btn-default" href="{$self}?newUser=1">Add User</a>
+    <a class="btn btn-default" href="{$self}?newAuth=1">Add Auth</a>
+</div>
+<table class="table table-bordered">
+    <tr><th>Group Name</th><th>Group ID</th></tr>
+    {$gTable}
+</table>
+HTML;
+
     }
 
     public function unitTest($phpunit)

@@ -1,5 +1,39 @@
 <?php
 
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\Scanning\DiscountType;
+use COREPOS\pos\lib\Scanning\DiscountTypes\NormalPricing;
+use COREPOS\pos\lib\Scanning\DiscountTypes\EveryoneSale;
+use COREPOS\pos\lib\Scanning\DiscountTypes\MemberSale;
+use COREPOS\pos\lib\Scanning\DiscountTypes\StaffSale;
+use COREPOS\pos\lib\Scanning\DiscountTypes\SlidingMemSale;
+use COREPOS\pos\lib\Scanning\DiscountTypes\PercentMemSale;
+use COREPOS\pos\lib\Scanning\PriceMethod;
+use COREPOS\pos\lib\Scanning\PriceMethods\BasicPM;
+use COREPOS\pos\lib\Scanning\PriceMethods\GroupPM;
+use COREPOS\pos\lib\Scanning\PriceMethods\NoDiscOnSalesPM;
+use COREPOS\pos\lib\Scanning\PriceMethods\QttyEnforcedGroupPM;
+use COREPOS\pos\lib\Scanning\PriceMethods\SplitABGroupPM;
+use COREPOS\pos\lib\Scanning\PriceMethods\ABGroupPM;
+use COREPOS\pos\parser\parse\DeptKey;
+use COREPOS\pos\parser\parse\UPC;
+use COREPOS\pos\lib\Scanning\SpecialDept;
+use COREPOS\pos\lib\Scanning\SpecialDepts\ArWarnDept;
+use COREPOS\pos\lib\Scanning\SpecialDepts\AutoReprintDept;
+use COREPOS\pos\lib\Scanning\SpecialDepts\EquityEndorseDept;
+use COREPOS\pos\lib\Scanning\SpecialDepts\EquityWarnDept;
+use COREPOS\pos\lib\Scanning\SpecialDepts\BottleReturnDept;
+use COREPOS\pos\lib\Scanning\SpecialDepts\PaidOutDept;
+use COREPOS\pos\lib\Scanning\VariableWeightReWrite;
+use COREPOS\pos\lib\Scanning\VariableWeightReWrites\ItemNumberOnlyReWrite;
+use COREPOS\pos\lib\Scanning\VariableWeightReWrites\ZeroedPriceReWrite;
+use COREPOS\pos\lib\Scanning\SpecialUPC;
+use COREPOS\pos\lib\Scanning\SpecialUPCs\CouponCode;
+use COREPOS\pos\lib\Scanning\SpecialUPCs\DatabarCoupon;
+use COREPOS\pos\lib\Scanning\SpecialUPCs\HouseCoupon;
+use COREPOS\pos\lib\Scanning\SpecialUPCs\SpecialOrder;
+
 /**
  * @backupGlobals disabled
  */
@@ -8,24 +42,24 @@ class ScanningTest extends PHPUnit_Framework_TestCase
     public function testDiscountType()
     {
         $defaults = array(
-            'NormalPricing',
-            'EveryoneSale',
-            'MemberSale',
-            'StaffSale',
-            'SlidingMemSale',
-            'PercentMemSale',
+            'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\NormalPricing',
+            'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\EveryoneSale',
+            'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\MemberSale',
+            'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\StaffSale',
+            'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\SlidingMemSale',
+            'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\PercentMemSale',
         );
 
-        $all = AutoLoader::ListModules('DiscountType',False);
+        $all = AutoLoader::ListModules('COREPOS\\pos\\lib\\Scanning\\DiscountType',False);
         foreach($defaults as $d){
             $this->assertContains($d, $all);
         }
 
-        $all[] = 'DiscountType';
+        $all[] = 'COREPOS\\pos\\lib\\Scanning\\DiscountType';
 
         foreach($all as $class){
             $obj = new $class();
-            $this->assertInstanceOf('DiscountType',$obj);
+            $this->assertInstanceOf('COREPOS\\pos\\lib\\Scanning\\DiscountType',$obj);
             
             $this->assertInternalType('boolean',$obj->isSale());
             $this->assertInternalType('boolean',$obj->isMemberOnly());
@@ -516,20 +550,20 @@ class ScanningTest extends PHPUnit_Framework_TestCase
     public function testSpecialUPCs() 
     {
         $defaults = array(
-            'CouponCode',
-            'DatabarCoupon',
-            'HouseCoupon',
-            'SpecialOrder'
+            'COREPOS\\pos\\lib\\Scanning\\SpecialUPCs\\CouponCode',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialUPCs\\DatabarCoupon',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialUPCs\\HouseCoupon',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialUPCs\\SpecialOrder'
         );
 
-        $all = AutoLoader::ListModules('SpecialUPC',False);
+        $all = AutoLoader::ListModules('COREPOS\\pos\\lib\\Scanning\\SpecialUPC',False);
         foreach($defaults as $d){
             $this->assertContains($d, $all);
         }
 
         foreach($all as $class){
             $obj = new $class();
-            $this->assertInstanceOf('SpecialUPC',$obj);
+            $this->assertInstanceOf('COREPOS\\pos\\lib\\Scanning\\SpecialUPC',$obj);
             $this->assertInternalType('boolean',$obj->is_special('silly nonsense input'));
         }
 
@@ -613,6 +647,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $record['department'] = 181;
         $record['quantity'] = 1;
         $record['ItemQtty'] = 1;
+        $record['discountable'] = 1;
         $record['unitPrice'] = -4.59;
         $record['total'] = -4.59;
         $record['regPrice'] = -4.59;
@@ -778,20 +813,20 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $sd = new SpecialDept();
         $this->assertEquals('Documentation Needed!', $sd->help_text());
         $arr = $sd->register(1, 'not-array');
-        $expect = array(1 => array('SpecialDept'));
+        $expect = array(1 => array('COREPOS\\pos\\lib\\Scanning\\SpecialDept'));
         $this->assertEquals($expect, $arr);
         $this->assertEquals(array(), $sd->handle(1, 1, array()));
 
         $defaults = array(
-            'ArWarnDept',
-            'AutoReprintDept',
-            'EquityEndorseDept',
-            'EquityWarnDept',
-            'BottleReturnDept',
-            'PaidOutDept',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\ArWarnDept',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\AutoReprintDept',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\EquityEndorseDept',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\EquityWarnDept',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\BottleReturnDept',
+            'COREPOS\\pos\\lib\\Scanning\\SpecialDepts\\PaidOutDept',
         );
 
-        $all = AutoLoader::ListModules('SpecialDept',False);
+        $all = AutoLoader::ListModules('COREPOS\\pos\\lib\\Scanning\\SpecialDept',False);
         foreach($defaults as $d){
             $this->assertContains($d, $all);
         }
@@ -799,7 +834,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $map = array();
         foreach($all as $class){
             $obj = new $class();
-            $this->assertInstanceOf('SpecialDept',$obj);
+            $this->assertInstanceOf('COREPOS\\pos\\lib\\Scanning\\SpecialDept',$obj);
             $map = $obj->register(1,$map);
             $this->assertInternalType('array',$map);
             $this->assertArrayHasKey(1,$map);

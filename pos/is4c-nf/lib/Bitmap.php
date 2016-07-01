@@ -1,4 +1,8 @@
 <?php
+
+namespace COREPOS\pos\lib;
+use \Exception;
+
 /*
 Bitmap.class.php
 version 1 (2009-09-24)
@@ -379,7 +383,7 @@ class Bitmap
         $this->image = str_repeat("\x00", $rowBytes * $this->height);
     } // __construct()
     
-    private function save($filename) {
+    public function save($filename) {
         // prepare the image
         $rowBytes = (int)((($this->width * $this->bpp) + 7) / 8);
         $rowDataSize = (int)((($this->width * $this->bpp) + 31) / 32) * 4;
@@ -604,7 +608,7 @@ class Bitmap
         }
     }
     
-    private function drawLine($pt1, $pt2, $val) 
+    public function drawLine($pt1, $pt2, $val) 
     {
         // validate coordinates
         try {

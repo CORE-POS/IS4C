@@ -21,13 +21,18 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DiscountModule;
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
 
 /**
  @class CoreState
  Setup session variables
 */
-class CoreState extends LibraryClass 
+class CoreState 
 {
 
 /**
@@ -42,7 +47,6 @@ static public function initiate_session()
     self::memberReset();
     self::transReset();
     self::printReset();
-    PaycardLib::paycard_reset();
 
     Database::getsubtotals();
     Database::loadglobalvalues();
@@ -542,7 +546,7 @@ static public function loadData()
         $row_local = $db_local->fetchRow($result_local);
         
         if ($row_local["card_no"] && strlen($row_local["card_no"]) > 0) {
-            PrehLib::setMember($row_local['card_no'], 1);
+            \COREPOS\pos\lib\MemberLib::setMember($row_local['card_no'], 1);
         }
     }
 }
@@ -619,7 +623,7 @@ static public function loadParams()
 
     // newer & optional table. should not fail
     // if it's missing
-    if (!$dbc->table_exists('parameters')) {
+    if (CoreLocal::get('NoCompat') != 1 && !$dbc->table_exists('parameters')) {
         return;
     }
     
@@ -630,7 +634,7 @@ static public function loadParams()
     foreach ($parameters->find() as $global) {
         $key = $global->param_key();
         $value = $global->materializeValue();
-        CoreLocal::set($key, $value);
+        CoreLocal::set($key, $value, true);
     }
 
     // apply store-specific settings next
@@ -641,7 +645,7 @@ static public function loadParams()
     foreach ($parameters->find() as $local) {
         $key = $local->param_key();
         $value = $local->materializeValue();
-        CoreLocal::set($key, $value);
+        CoreLocal::set($key, $value, true);
     }
 
     // apply lane-specific settings last
@@ -652,7 +656,7 @@ static public function loadParams()
     foreach ($parameters->find() as $local) {
         $key = $local->param_key();
         $value = $local->materializeValue();
-        CoreLocal::set($key, $value);
+        CoreLocal::set($key, $value, true);
     }
 }
 

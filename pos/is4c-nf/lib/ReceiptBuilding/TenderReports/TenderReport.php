@@ -21,16 +21,24 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\TenderReports;
+use COREPOS\pos\lib\ReceiptLib;
+use \CoreLocal;
+
 /**
   @class TenderReport
   Generate a tender report
 */
-class TenderReport extends LibraryClass {
+class TenderReport 
+{
 
 /**
   Write tender report to the printer
 */
 static public function printReport($class=false){
+    if ($class && !$class_exists($class)) {
+        $class = 'COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\' . $class;
+    }
     if ($class === false) {
         $contents = self::get();
     } else {
@@ -52,8 +60,8 @@ static public function printReport($class=false){
 static public function get()
 {
     $trClass = CoreLocal::get("TenderReportMod");
-    if ($trClass == '') {
-        $trClass = 'DefaultTenderReport';
+    if ($trClass == '' || !class_exists($trClass)) {
+        $trClass = 'COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\DefaultTenderReport';
     }
     return $trClass::get();
 }

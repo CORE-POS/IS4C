@@ -105,7 +105,6 @@ class PurchasingIndexPage extends FannieRESTfulPage
                 <ul>
                     <li><a href="ManualPurchaseOrderPage.php">Manually</a></li>
                     <li><a href="ImportPurchaseOrder.php">From Spreadsheet</a></li>
-                    <li><a href="importers/AlbertsPdfImport.php">Custom Alberts PDF Import</a></li>
                     <li><a href="importers/CpwInvoiceImport.php">Custom CPW XLS Import</a></li>
                     <li><a href="importers/SpartanNashInvoiceImport.php">Custom Spartan Nash CSV Import</a></li>
                 </ul>

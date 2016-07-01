@@ -16,9 +16,9 @@ var emv = (function($){
         // go to dedicated error page?
         $('div.baseHeight').html('Finishing transaction');
         var f = $('<form id="js-form"></form>');
-        if (xhr.responseXml != null) {
+        if (xhr.responseXml !== null) {
             f.append($('<input type="hidden" name="xml-resp" />').val(xhr.responseXml));
-        } else if (xhr.responseText != null) {
+        } else if (xhr.responseText !== null) {
             f.append($('<input type="hidden" name="xml-resp" />').val(xhr.responseText));
         } else {
             f.append($('<input type="hidden" name="xml-resp" />').val(''));

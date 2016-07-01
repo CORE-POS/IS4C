@@ -1,9 +1,14 @@
 <?php
+use COREPOS\pos\install\conf\Conf;
+use COREPOS\pos\install\conf\FormFactory;
+use COREPOS\pos\install\InstallUtilities;
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
+
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-include('../ini.php');
 CoreState::loadParams();
-include('InstallUtilities.php');
+$form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')));
 ?>
 <html>
 <head>
@@ -21,28 +26,38 @@ body {
 <b>Logs</b><br />
 Default logs:
 <ul>
-    <li><i>php-errors.log</i> contains PHP errors, warnings, notices, etc depending on error reporting settings for PHP installation.</li>
-    <li><i>queries.log</i> lists failed queries</li>
+    <li><i>debug_lane.log</i> contains failed queries, PHP errors, warnings, notices, etc depending on error reporting settings for PHP installation.</li>
+    <li><i>lane.log</i> contains informational logging</li>
 </ul>
-<div class="alert"><?php InstallUtilities::checkWritable('../log/php-errors.log'); ?></div>
-<div class="alert"><?php InstallUtilities::checkWritable('../log/queries.log'); ?></div>
+<div class="alert"><?php Conf::checkWritable('../log/debug_lane.log'); ?></div>
+<div class="alert"><?php Conf::checkWritable('../log/lane.log'); ?></div>
 Optional logs:
 <ul>
     <li><i>core_local.log</i> lists changes to session/state values. Fills FAST.</li>
 </ul>
-<div class="alert"><?php InstallUtilities::checkWritable('../log/core_local.log','True'); ?></div>
+<div class="alert"><?php Conf::checkWritable('../log/core_local.log','True'); ?></div>
 <hr />
 <form action=debug.php method=post>
+<b>Disable DB Compatibility checks</b>:
+<?php
+echo $form->selectField('NoCompat', array(1=>'Yes',0=>'No'), 0);
+?>
+<br />
+By default CORE will often query the status of tables to verify whether newer columns
+exist before attempting to use them. Disabling these checks may yield modest performance
+gains but if database schemas are not up to date any resulting crashes will not be
+graceful.
+<hr />
 <b>Log State Changes</b>: 
 <?php
-echo InstallUtilities::installSelectField('Debug_CoreLocal', array(1=>'Yes',0=>'No'), 0);
+echo $form->selectField('Debug_CoreLocal', array(1=>'Yes',0=>'No'), 0);
 ?>
 <br />
 See optional logs above.
 <hr />
 <b>Show Page Changes</b>: 
 <?php
-echo InstallUtilities::installSelectField('Debug_Redirects', array(1=>'Yes',0=>'No'), 0);
+echo $form->selectField('Debug_Redirects', array(1=>'Yes',0=>'No'), 0);
 ?>
 <br />
 This option changes HTTP redirects into manual, clickable links. A stack
@@ -52,7 +67,7 @@ available for those. If not, find a better browser.
 <hr />
 <b>Character Set</b>
 <?php
-echo InstallUtilities::installTextField('CoreCharSet', 'utf-8');
+echo $form->textField('CoreCharSet', 'utf-8');
 ?>
 <p>
 Change the character set used to display pages. Common values are "utf-8" and "iso-8859-1".

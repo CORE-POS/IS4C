@@ -3,7 +3,7 @@ var mgrlogin = (function($) {
 
     var cancelOrder = function(data, urlStem) {
         $.ajax({
-            url: urlStem + 'ajax-callbacks/AjaxEnd.php',
+            url: urlStem + 'ajax/AjaxEnd.php',
             type: 'get',
             data: 'receiptType=cancelled&ref='+data.trans_num,
             cache: false

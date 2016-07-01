@@ -7,16 +7,16 @@ class AdminLoginTest extends PHPUnit_Framework_TestCase
     public function testGeneric()
     {
         $classes = array(
-            'AgeApproveAdminLogin' => '&repeat=1',
-            'DDDAdminLogin' => '/ddd.php',
-            'LineItemDiscountAdminLogin' => '&repeat=1',
-            'MemStatusAdminLogin' => '/boxMsg2.php',
-            'PriceOverrideAdminLogin' => '/priceOverride.php',
-            'RefundAdminLogin' => '/refundComment.php',
-            'SusResAdminLogin' => '/adminlist.php',
-            'UndoAdminLogin' => '/undo.php',
-            'ManagerApproveTender' => '&repeat=1',
-            'StoreTransferTender' => '&repeat=1',
+            'COREPOS\\pos\\lib\\adminlogin\\AgeApproveAdminLogin' => '&repeat=1',
+            'COREPOS\\pos\\lib\\adminlogin\\DDDAdminLogin' => '/ddd.php',
+            'COREPOS\\pos\\lib\\adminlogin\\LineItemDiscountAdminLogin' => '&repeat=1',
+            'COREPOS\\pos\\lib\\adminlogin\\MemStatusAdminLogin' => '/boxMsg2.php',
+            'COREPOS\\pos\\lib\\adminlogin\\PriceOverrideAdminLogin' => '/priceOverride.php',
+            'COREPOS\\pos\\lib\\adminlogin\\RefundAdminLogin' => '/refundComment.php',
+            'COREPOS\\pos\\lib\\adminlogin\\SusResAdminLogin' => '/adminlist.php',
+            'COREPOS\\pos\\lib\\adminlogin\\UndoAdminLogin' => '/undo.php',
+            'COREPOS\\pos\\lib\\Tenders\\ManagerApproveTender' => '&repeat=1',
+            'COREPOS\\pos\\lib\\Tenders\\StoreTransferTender' => '&repeat=1',
         );
 
         foreach ($classes as $class => $url) {
@@ -36,10 +36,10 @@ class AdminLoginTest extends PHPUnit_Framework_TestCase
 
     public function testVoidAdminLogin()
     {
-        $this->assertEquals(true, Void::adminLoginCallback(true));
+        $this->assertEquals(true, COREPOS\pos\parser\parse\Void::adminLoginCallback(true));
         $this->assertEquals(1, CoreLocal::get('voidOverride'));
         $this->assertEquals(1, CoreLocal::get('msgrepeat'));
-        $this->assertEquals(false, Void::adminLoginCallback(false));
+        $this->assertEquals(false, COREPOS\pos\parser\parse\Void::adminLoginCallback(false));
         $this->assertEquals(0, CoreLocal::get('voidOverride'));
         CoreLocal::set('msgrepeat', 0);
     }

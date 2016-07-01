@@ -161,6 +161,17 @@ class FannieReportPage extends FanniePage
     const META_CHART_DATA    = 8;
     const META_COLOR    = 16;
 
+    protected function hasAllFields($fields)
+    {
+        foreach($fields as $field) {
+            if (FormLib::get($field, '') === '') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /**
       Handle pre-display tasks such as input processing
       @return
@@ -175,15 +186,7 @@ class FannieReportPage extends FanniePage
     */
     public function preprocess()
     {
-        $all_fields = true;
-        foreach($this->required_fields as $field) {
-            if (FormLib::get($field, '') === '') {
-                $all_fields = false;
-                break;
-            }
-        }
-
-        if ($all_fields) {
+        if ($this->hasAllFields($this->required_fields)) {
             $this->form = new \COREPOS\common\mvc\FormValueContainer();
             $this->content_function = 'report_content'; 
             if ($this->config->get('WINDOW_DRESSING')) {
@@ -209,35 +212,148 @@ class FannieReportPage extends FanniePage
     
     }
 
+    protected function hasWarehouseSource()
+    {
+        $plugins = $this->config->get('PLUGIN_LIST');
+        if (FormLib::get('data-source') === 'CoreWarehouse' && is_array($plugins) && in_array('CoreWarehouse', $plugins)) {
+            $reflector = new ReflectionClass($this);
+            $source = \COREPOS\Fannie\Plugin\CoreWarehouse\CwReportDataSource::getDataSource($reflector->getName());
+            return $source !== false ? $source : false;
+        }
+
+        return false;
+    }
+
     function bodyContent()
     {
         $plugins = $this->config->get('PLUGIN_LIST');
-        if (is_array($plugins) && in_array('CoreWarehouse', $plugins)) {
-            $reflector = new ReflectionClass($this);
-            $source = \COREPOS\Fannie\Plugin\CoreWarehouse\CwReportDataSource::getDataSource($reflector->getName());
-            if ($source !== false) {
-                $source_select = '
-                    <div class="col-sm-12" id="data-source-fields">
-                        <div class="form-group">
-                            <label>Data Source</label> <select name="data-source" class="form-control" id="select-data-source">
-                                <option>Standard</option>
-                                <option>CoreWarehouse</option>
-                            </select>
-                        </div>';
-                $source_select = array_reduce($source->additionalFields($reflector->getName()),
-                    function ($carry, $field) {
-                        return $carry . '<div class="form-group">' . $field->toHTML() . '</div>';
-                    },
-                    $source_select
-                );
-                $source_select .= '</div>';
-                $source_select = preg_replace('/\s\s+/', '', $source_select);
-                $this->addOnloadCommand("\$('#primary-content form').prepend('$source_select');\n");
-                $this->addOnloadCommand("\$('#primary-content .cw-field').attr('disabled', true);\n");
-                $this->addOnloadCommand("\$('#select-data-source').change(function(){ if ($(this).val()=='CoreWarehouse') { $('#primary-content .cw-field').attr('disabled', false); } else { $('#primary-content .cw-field').attr('disabled', true); } });\n");
-            }
+        if (($source=$this->hasWarehouseSource()) !== false) {
+            $source_select = '
+                <div class="col-sm-12" id="data-source-fields">
+                    <div class="form-group">
+                        <label>Data Source</label> <select name="data-source" class="form-control" id="select-data-source">
+                            <option>Standard</option>
+                            <option>CoreWarehouse</option>
+                        </select>
+                    </div>';
+            $source_select = array_reduce($source->additionalFields($reflector->getName()),
+                function ($carry, $field) {
+                    return $carry . '<div class="form-group">' . $field->toHTML() . '</div>';
+                },
+                $source_select
+            );
+            $source_select .= '</div>';
+            $source_select = preg_replace('/\s\s+/', '', $source_select);
+            $this->addOnloadCommand("\$('#primary-content form').prepend('$source_select');\n");
+            $this->addOnloadCommand("\$('#primary-content .cw-field').attr('disabled', true);\n");
+            $this->addOnloadCommand("\$('#select-data-source').change(function(){ if ($(this).val()=='CoreWarehouse') { $('#primary-content .cw-field').attr('disabled', false); } else { $('#primary-content .cw-field').attr('disabled', true); } });\n");
         }
         return $this->form_content();
+    }
+
+    protected function getData()
+    {
+        $data = array();
+        $cached = $this->checkDataCache();
+        if ($cached !== false) {
+            $data = $cached;
+        } else {
+            /**
+              Use CoreWarehouse data source if requested & available
+              Fail back to FannieReportPage::fetch_report_data()
+              if a data source cannot be found or data source fails
+              to handle the request
+            */
+            if (($source=$this->hasWarehouseSource()) !== false && FormLib::get('data-source') === 'CoreWarehouse') {
+                $data = $source->fetchReportData($reflector->getName(), $this->config, $this->connection);
+                if ($data === false) {
+                    $data = $this->fetch_report_data();
+                }
+            } else {
+                $data = $this->fetch_report_data();
+            }
+            $this->freshenCache($data);
+        }
+
+        return $data;
+    }
+
+    protected function multiContent($data)
+    {
+        $output = '';
+        if ($this->report_format != 'xls') {
+            foreach($data as $report_data) {
+                $this->assign_headers();
+                // calculate_footers() here because it can affect headers.
+                $footers = $this->calculate_footers($report_data);
+                $headers = $this->report_headers;
+                $this->header_index = 0;
+                $output .= $this->render_data($report_data,$headers,
+                            $footers,$this->report_format);
+                if ($this->report_format == 'html') {
+                    $output .= '<br />';
+                } elseif ($this->report_format == 'csv') {
+                    $output .= "\r\n";
+                }
+            }
+        } else {
+            /**
+              For XLS multi-report ouput, re-assemble the reports into a single
+              long array of rows (dataset).
+            */
+            $xlsdata = array();
+            foreach($data as $report_data) {
+                $this->assign_headers();
+                // calculate_footers() here because it can affect headers.
+                $footers = $this->calculate_footers($report_data);
+                $this->header_index = 0;
+                if (!empty($this->report_headers)) {
+                    $headers1 = $this->select_headers(true);
+                    $xlsdata[] = $headers1;
+                }
+                $report_data = $this->xlsMeta($report_data);
+                $xlsdata = array_reduce($report_data, 
+                    function($carry, $line) {
+                        $carry[] = $line;
+                        return $carry;
+                    },
+                    $xlsdata
+                );
+                if (!empty($footers)) {
+                    // A single footer row
+                    if (!is_array($footers[0])) {
+                        $xlsdata[] = $footers;
+                    // More than one footer row
+                    } else {
+                        $xlsdata = array_reduce($footers, 
+                            function($carry, $footer) {
+                                $carry[] = $footer;
+                                return $carry;
+                            },
+                            $xlsdata
+                        );
+                    }
+                }
+                $xlsdata[] = array('');
+                $this->multi_counter++;
+            }
+            $output = $this->render_data($xlsdata,array(),array(),'xls');
+        }
+
+        return $output;
+    }
+
+    protected function singleContent($data)
+    {
+        // NOT multi_report_mode
+        $this->assign_headers();
+        $footers = $this->calculate_footers($data);
+        /* $data may contain REPEAT_HEADERS calls
+         * If the 2nd+ headers should be different then report_headers
+         *  has two dimensions.
+         */
+        return $this->render_data($data,$this->report_headers,
+                $footers,$this->report_format);
     }
 
     /**
@@ -262,108 +378,12 @@ class FannieReportPage extends FanniePage
     */
     function report_content()
     {
-        $data = array();
-        $cached = $this->checkDataCache();
-        if ($cached !== false) {
-            $data = unserialize(gzuncompress($cached));
-            if ($data === false) {
-                $data = $this->fetch_report_data();
-                $this->freshenCache($data);
-            }
-        } else {
-            /**
-              Use CoreWarehouse data source if requested & available
-              Fail back to FannieReportPage::fetch_report_data()
-              if a data source cannot be found or data source fails
-              to handle the request
-            */
-            $plugins = $this->config->get('PLUGIN_LIST');
-            if (FormLib::get('data-source') === 'CoreWarehouse' && is_array($plugins) && in_array('CoreWarehouse', $plugins)) {
-                $reflector = new ReflectionClass($this);
-                $source = \COREPOS\Fannie\Plugin\CoreWarehouse\CwReportDataSource::getDataSource($reflector->getName());
-                if ($source != false) {
-                    $data = $source->fetchReportData($reflector->getName(), $this->config, $this->connection);
-                    if ($data === false) {
-                        $data = $this->fetch_report_data();
-                    }
-                } else {
-                    $data = $this->fetch_report_data();
-                }
-            } else {
-                $data = $this->fetch_report_data();
-            }
-            $this->freshenCache($data);
-        }
+        $data = $this->getData();
         $output = '';
         if ($this->multi_report_mode) {
-            if ($this->report_format != 'xls') {
-                foreach($data as $report_data) {
-                    $this->assign_headers();
-                    // calculate_footers() here because it can affect headers.
-                    $footers = $this->calculate_footers($report_data);
-                    $headers = $this->report_headers;
-                    $this->header_index = 0;
-                    $output .= $this->render_data($report_data,$headers,
-                                $footers,$this->report_format);
-                    if ($this->report_format == 'html') {
-                        $output .= '<br />';
-                    } elseif ($this->report_format == 'csv') {
-                        $output .= "\r\n";
-                    }
-                }
-            } else {
-                /**
-                  For XLS multi-report ouput, re-assemble the reports into a single
-                  long array of rows (dataset).
-                */
-                $xlsdata = array();
-                foreach($data as $report_data) {
-                    $this->assign_headers();
-                    // calculate_footers() here because it can affect headers.
-                    $footers = $this->calculate_footers($report_data);
-                    $this->header_index = 0;
-                    if (!empty($this->report_headers)) {
-                        $headers1 = $this->select_headers(true);
-                        $xlsdata[] = $headers1;
-                    }
-                    $report_data = $this->xlsMeta($report_data);
-                    $xlsdata = array_reduce($report_data, 
-                        function($carry, $line) {
-                            $carry[] = $line;
-                            return $carry;
-                        },
-                        $xlsdata
-                    );
-                    if (!empty($footers)) {
-                        // A single footer row
-                        if (!is_array($footers[0])) {
-                            $xlsdata[] = $footers;
-                        // More than one footer row
-                        } else {
-                            $xlsdata = array_reduce($footers, 
-                                function($carry, $footer) {
-                                    $carry[] = $footer;
-                                    return $carry;
-                                },
-                                $xlsdata
-                            );
-                        }
-                    }
-                    $xlsdata[] = array('');
-                    $this->multi_counter++;
-                }
-                $output = $this->render_data($xlsdata,array(),array(),'xls');
-            }
+            $output = $this->multiContent($data);
         } else {
-            // NOT multi_report_mode
-            $this->assign_headers();
-            $footers = $this->calculate_footers($data);
-            /* $data may contain REPEAT_HEADERS calls
-             * If the 2nd+ headers should be different then report_headers
-             *  has two dimensions.
-             */
-            $output = $this->render_data($data,$this->report_headers,
-                    $footers,$this->report_format);
+            $output = $this->singleContent($data);
         }
 
         return $output;
@@ -413,7 +433,6 @@ class FannieReportPage extends FanniePage
      */
     public function assign_headers()
     {
-
     }
 
     /**
@@ -430,21 +449,22 @@ class FannieReportPage extends FanniePage
     public function select_headers($incrIndex=False) 
     {
         $headers = array();
-        $h = $this->header_index;
+        $hIndex = $this->header_index;
         if (is_array($this->report_headers[0])) {
-            if (isset($this->report_headers[$h])) {
-                $headers = $this->report_headers[$h];
+            if (isset($this->report_headers[$hIndex])) {
+                $headers = $this->report_headers[$hIndex];
             } else {
-                $h = (count($this->report_headers) - 1);
-                if ($h >= 0) {
-                    $headers = $this->report_headers[$h];
+                $hIndex = (count($this->report_headers) - 1);
+                if ($hIndex >= 0) {
+                    $headers = $this->report_headers[$hIndex];
                 }
-            }
-            if ($incrIndex) {
-                $this->header_index++;
             }
         } else {
             $headers = $this->report_headers;
+        }
+
+        if ($incrIndex) {
+            $this->header_index++;
         }
 
         return $headers;
@@ -460,6 +480,18 @@ class FannieReportPage extends FanniePage
     protected function format($data)
     {
         return $data;
+    }
+
+    private function getCacheKey()
+    {
+        $reflector = new ReflectionClass($this);
+        $qstr = filter_input(INPUT_SERVER, 'QUERY_STRING');
+        $qstr = str_replace('&excel=xls', '', $qstr);
+        $qstr = str_replace('&excel=csv', '', $qstr);
+        $qstr = str_replace('?excel=xls', '', $qstr);
+        $qstr = str_replace('?excel=csv', '', $qstr);
+
+        return $reflector->getName() . $qstr;
     }
 
     /**
@@ -478,25 +510,13 @@ class FannieReportPage extends FanniePage
         if (isset($_GET['no-cache']) && $_GET['no-cache'] === '1') {
             return false;
         }
-        $archive_db = $this->config->get('ARCHIVE_DB');
-        $dbc = FannieDB::get($archive_db);
-        if ($this->report_cache != 'day' && $this->report_cache != 'month') {
-            return False;
-        }
-        $table = $archive_db . $dbc->sep() . "reportDataCache";
-        $hash = filter_input(INPUT_SERVER, 'REQUEST_URI');
-        $hash = str_replace("&excel=xls","",$hash);
-        $hash = str_replace("&excel=csv","",$hash);
-        $hash = md5($hash);
-        $query = $dbc->prepare("SELECT report_data FROM $table WHERE
-            hash_key=? AND expires >= ".$dbc->now());
-        $result = $dbc->execute($query,array($hash));
-        if ($dbc->num_rows($result) > 0) {
-            $ret = $dbc->fetch_row($result);
-            return $ret[0];
-        } else {
-            return false;
-        }
+
+        $data = COREPOS\Fannie\API\data\DataCache::getFile
+            ($this->report_cache, 
+            $this->getCacheKey()
+        );
+
+        return $data ? unserialize(gzuncompress($data)) : false;
     }
 
     /**
@@ -508,34 +528,11 @@ class FannieReportPage extends FanniePage
     */
     protected function freshenCache($data)
     {
-        $archive_db = $this->config->get('ARCHIVE_DB');
-        $dbc = FannieDB::get($archive_db);
-        if ($this->report_cache != 'day' && $this->report_cache != 'month') {
-            return false;
-        }
-        $table = $archive_db . $dbc->sep() . "reportDataCache";
-        $hash = filter_input(INPUT_SERVER, 'REQUEST_URI');
-        $hash = str_replace("excel=xls","",$hash);
-        $hash = str_replace("excel=csv","",$hash);
-        $hash = str_replace("no-cache=1","",$hash);
-        if (substr($hash, -1) == '?') {
-            $hash = substr($hash, 0, strlen($hash)-1);
-        }
-        $hash = md5($hash);
-        $expires = '';
-        if ($this->report_cache == 'day') {
-            $expires = date('Y-m-d',mktime(0,0,0,date('n'),date('j')+1,date('Y')));
-        } elseif ($this->report_cache == 'month') {
-            $expires = date('Y-m-d',mktime(0,0,0,date('n')+1,date('j'),date('Y')));
-        }
-
-        $delQ = $dbc->prepare("DELETE FROM $table WHERE hash_key=?");
-        $dbc->execute($delQ,array($hash));
-        $upQ = $dbc->prepare("INSERT INTO $table (hash_key, report_data, expires)
-            VALUES (?,?,?)");
-        $dbc->execute($upQ, array($hash, gzcompress(serialize($data)), $expires));
-
-        return true;
+        return COREPOS\Fannie\API\data\DataCache::putFile(
+            $this->report_cache,
+            gzcompress(serialize($data)),
+            $this->getCacheKey()
+        );
     }
 
     /**

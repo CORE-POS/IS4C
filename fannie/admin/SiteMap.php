@@ -32,7 +32,7 @@ class SiteMap extends FannieRESTfulPage
     protected $title = 'Site Map';
 
     public $must_authenticate = true;
-    public $auth_classes = array('admin');
+    public $auth_classes = array('admin', 'sitemap');
     public $themed = true;
 
     public $description = '[Site Map] is a list of all known pages. It\'s very likely the page
@@ -55,6 +55,9 @@ class SiteMap extends FannieRESTfulPage
             if (!$obj->discoverable) {
                 continue;
             }
+            $obj->setConfig($this->config);
+            $obj->setLogger($this->logger);
+            $obj->setConnection($this->connection);
             $reflect = new ReflectionClass($obj);
             $file = $reflect->getFileName();
             if (DIRECTORY_SEPARATOR == '\\') {

@@ -190,7 +190,7 @@ class CostHistoryReport extends FannieReportPage
         }
 
         $data = array();
-        while ($row = $sql->fetch_array($r)) {
+        while ($row = $sql->fetchRow($r)) {
             $record = array(
                     $row['upc'],
                     $row['description'],
@@ -214,7 +214,7 @@ class CostHistoryReport extends FannieReportPage
         $deptsQ = $sql->prepare("select dept_no,dept_name from departments order by dept_no");
         $deptsR = $sql->execute($deptsQ);
         $deptsList = "";
-        while ($deptsW = $sql->fetch_array($deptsR)) {
+        while ($deptsW = $sql->fetchRow($deptsR)) {
             $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
         }
         

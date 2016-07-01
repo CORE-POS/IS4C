@@ -77,12 +77,12 @@ class StatementsPluginBusiness extends FannieRESTfulPage
         $transR = $dbc->execute($transP, $trans_args);
 
         $arRows = array();
-        while ($w = $dbc->fetch_row($transR)) {
-            if (!isset($arRows[$w['card_no']])) {
-                $arRows[$w['card_no']] = array();
+        while ($row = $dbc->fetch_row($transR)) {
+            if (!isset($arRows[$row['card_no']])) {
+                $arRows[$row['card_no']] = array();
             }
-            $arRows[$w['card_no']][] = $w;
-            $date = explode(' ',$w['tdate']);
+            $arRows[$row['card_no']][] = $row;
+            $date = explode(' ',$row['tdate']);
             $date_id = date('Ymd', strtotime($date[0]));
         }
 
@@ -114,36 +114,36 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                 if ($info['charges'] != 0) {
                     $found_charge = true;
                 }
-                $dt = strtotime($info['tdate']);
+                $tstamp = strtotime($info['tdate']);
                 $args = array(
-                    date('Y-m-d 00:00:00', $dt),
-                    date('Y-m-d 23:59:59', $dt),
+                    date('Y-m-d 00:00:00', $tstamp),
+                    date('Y-m-d 23:59:59', $tstamp),
                     $info['trans_num'],
                     $info['card_no'],
                 );
                 if ($info['timespan'] == 'TODAY') {
-                    $r = $dbc->execute($todayP, $args);
+                    $res = $dbc->execute($todayP, $args);
                 } else {
-                    $r = $dbc->execute($detailsP, $args);
+                    $res = $dbc->execute($detailsP, $args);
                 }
-                while ($w = $dbc->fetch_row($r)) {
-                    $tn = $w['trans_num'];
-                    if (!isset($details[$w['card_no']])) {
-                        $details[$w['card_no']] = array();
+                while ($row = $dbc->fetch_row($res)) {
+                    $trans_num = $row['trans_num'];
+                    if (!isset($details[$row['card_no']])) {
+                        $details[$row['card_no']] = array();
                     }
-                    if (!isset($details[$w['card_no']][$tn])) {
-                        $details[$w['card_no']][$tn] = array();
+                    if (!isset($details[$row['card_no']][$trans_num])) {
+                        $details[$row['card_no']][$trans_num] = array();
                     }
-                    $details[$w['card_no']][$tn][] = $w['description'];
+                    $details[$row['card_no']][$trans_num][] = $row['description'];
                 }
             }
             if ($found_charge) {
                 $actual = array();
-                $i=0;
-                while ($arRows[$card_no][$i]['charges'] == 0) {
-                    $i++;
+                $num=0;
+                while ($arRows[$card_no][$num]['charges'] == 0) {
+                    $num++;
                 }
-                for ($i; $i<count($arRows[$card_no]); $i++) {
+                for ($i=$num; $i<count($arRows[$card_no]); $i++) {
                     $actual[] = $arRows[$card_no][$i];
                 }
                 $arRows[$card_no] = $actual;
@@ -232,7 +232,6 @@ class StatementsPluginBusiness extends FannieRESTfulPage
             $pdf->Cell($columns[2],8,'',0,0,'L',1);
             $pdf->Cell($columns[3],8,'Amount',0,1,'L',1);
  
-            $gazette = false;
             if (!isset($arRows[$card_no])) {
                 $arRows[$card_no] = array();
             }
@@ -245,9 +244,6 @@ class StatementsPluginBusiness extends FannieRESTfulPage
 
                 $detail = $details[$card_no][$trans];
 
-                if (strstr($detail[0],"Gazette Ad")) {
-                    $gazette = true;
-                }
                 $lineitem = (count($detail)==1) ? $detail[0] : '(multiple items)';
                 foreach ($detail as $line) {
                     if ($line == 'ARPAYMEN') {
@@ -291,52 +287,6 @@ class StatementsPluginBusiness extends FannieRESTfulPage
                 $pdf->Cell(35,8,'Credit Balance',0,0,'L',1);
             }
             $pdf->Cell(25,8,'$ ' . sprintf("%.2f",$balance),0,0,'L');
-
-            if ($gazette) {
-                $pdf->SetLeftMargin(10);
-                $pdf->Image('logo_bw.png',85,213, 25);
-
-                $pdf->SetY(205);
-                $pdf->Cell(0,8,'','B',1);
-                $pdf->Ln(5);
-    
-                $pdf->Cell(30,5,'Whole Foods Co-op');
-                $pdf->Cell(115,5,'');
-                $pdf->Cell(20,5,'Invoice Date:',0,0,'R');
-                $pdf->Cell(20,5,date("m/d/Y"),0,1,'L');
-                $pdf->Cell(30,5,'610 East 4th Street');
-                $pdf->Cell(115,5,'');
-                $pdf->Cell(20,5,'Customer Number:',0,0,'R');
-                $pdf->Cell(20,5,$card_no,0,1,'L');
-                $pdf->Cell(30,5,'Duluth, MN 55805');
-                $pdf->Cell(115,5,'');
-                $pdf->Cell(20,5,'Invoice Total:',0,0,'R');
-                $pdf->Cell(20,5,$balance,0,1,'L');
-
-                $pdf->Ln(5);
-                $pdf->Cell(10,10,trim($card_no),0);
-                $pdf->Ln(5);
-                $pdf->Cell(50,10,trim($primary['lastName']),0);
-                $pdf->Ln(5);
-                $pdf->Cell(80,10,$account['addressFirstLine'],0);
-                if ($account['addressSecondLine']) {
-                    $pdf->Ln(5);
-                    $pdf->Cell(80,10,$account['addressSecondLine'],0);
-                }
-                $pdf->Ln(5);
-                $pdf->Cell(90,10,$account['city'] . ', ' . $account['state'] . '   ' . $account['zip'],0);
-
-                $pdf->SetXY(80,240);
-                $pdf->SetFontSize(10);
-                $pdf->MultiCell(110,6,"( ) Please continue this ad in the next issue.
-( ) I would like to make some changes to my ad for the next issue.
-( ) I do not wish to continue an ad in the next issue.
-( ) I will contact you at a later date with my advertising decision.");
-                $pdf->Ln(3);
-    
-                $pdf->SetFontSize(12);
-                $pdf->Cell(0,8,'Please Return This Portion With Your Payment',0,0,'C');
-            }
         }
 
         $pdf->Output('makeStatement.pdf','D');

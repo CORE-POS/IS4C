@@ -35,12 +35,14 @@ class SpecialOrdersMenu extends FanniePage
 
     public function body_content()
     {
+        $view = $this->config->get('SO_UI') === 'bootstrap' ? 'OrderViewPage.php' : 'view.php';
+        $list = $this->config->get('SO_UI') === 'bootstrap' ? 'NewSpecialOrdersPage.php' : 'clearinghouse.php';
         return <<<HTML
 <ul>
-<li><a href="view.php">Create Order</a></li>
+<li><a href="{$view}">Create Order</a></li>
 <li>Review Orders
     <ul>
-    <li><a href="clearinghouse.php">Active Orders</a></li>
+    <li><a href="{$list}">Active Orders</a></li>
     <li><a href="OldSpecialOrdersPage.php">Old Orders</a></li>
     </ul>
 </li>

@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\SpecialDepts;
+use COREPOS\pos\lib\Scanning\SpecialDept;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+
 class EquityEndorseDept extends SpecialDept 
 {
     public $help_summary = 'Prompt to print receipt number on equity paperwork via endorser';

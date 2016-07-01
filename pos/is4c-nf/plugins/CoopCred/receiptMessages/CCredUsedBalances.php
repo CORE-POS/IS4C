@@ -22,6 +22,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\ReceiptBuilding\Messages\ReceiptMessage;
+
 /**
     @class CCredUsedBalances
     List post-transaction balances for Coop Cred accounts
@@ -225,7 +229,7 @@ class CCredUsedBalances extends ReceiptMessage {
 
         $result = $db->query($query);
         
-        while($row = $db->fetch_array($result)){
+        while($row = $db->fetchRow($result)){
             $trantype = $row['tranType'];  
             if ($row['amount'] < 0) {
                 $amt = "-$".number_format(-1*$row['amount'],2);

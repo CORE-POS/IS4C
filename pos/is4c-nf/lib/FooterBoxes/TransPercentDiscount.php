@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\FooterBoxes;
+use \CoreLocal;
+
 class TransPercentDiscount extends FooterBox 
 {
 

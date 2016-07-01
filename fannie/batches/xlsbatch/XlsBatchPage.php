@@ -56,7 +56,7 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $batchtypes = array();
         $typesQ = $dbc->prepare("select batchTypeID,typeDesc from batchType order by batchTypeID");
         $typesR = $dbc->execute($typesQ);
-        while ($typesW = $dbc->fetch_array($typesR))
+        while ($typesW = $dbc->fetchRow($typesR))
             $batchtypes[$typesW[0]] = $typesW[1];
         return $batchtypes;
     }
@@ -70,9 +70,7 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $owner = FormLib::get('bowner','');
 
         $dtQ = $dbc->prepare("SELECT discType FROM batchType WHERE batchTypeID=?");
-        $dtR = $dbc->execute($dtQ, array($btype));
-        $dtW = $dbc->fetchRow($dtR);
-        $discountType = is_array($dtW) ? $dtW[0] : 0;
+        $discountType = $dbc->getValue($dtQ, array($btype));
 
         $insQ = $dbc->prepare("
             INSERT INTO batches 
@@ -108,7 +106,7 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $model->active(0);
 
         $ret = '';
-        foreach($linedata as $line){
+        foreach ($linedata as $line) {
             if (!isset($line[$indexes['upc_lc']])) continue;
             if (!isset($line[$indexes['price']])) continue;
             $upc = $line[$indexes['upc_lc']];
@@ -117,11 +115,10 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $upc = str_replace("-","",$upc);    
             $price = trim($price,' ');
             $price = trim($price,'$');
-            if(!is_numeric($upc)){
+            if (!is_numeric($upc)) {
                 $ret .= "<i>Omitting item. Identifier {$upc} isn't a number</i><br />";
                 continue; 
-            }
-            elseif(!is_numeric($price)){
+            } elseif(!is_numeric($price)){
                 $ret .= "<i>Omitting item. Price {$price} isn't a number</i><br />";
                 continue;
             }
@@ -251,7 +248,8 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         <div class="row form-group form-horizontal">
             <label class="col-sm-2 control-label">Type</label>
             <div class="col-sm-4">
-                <select name="ftype" class="form-control">
+                <select name="ftype" class="form-control" required>
+                    <option value="">Select one...</option>
                     <option>UPCs</option>
                     <option>Likecodes</option>
                 </select>

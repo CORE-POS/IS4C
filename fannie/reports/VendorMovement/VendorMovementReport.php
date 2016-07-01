@@ -36,7 +36,7 @@ class VendorMovementReport extends FannieReportPage
     protected $header = "Vendor Movement Report";
     protected $required_fields = array('date1', 'date2');
 
-    private function getQuery($groupby, $dlog)
+    private function getQuery($groupby, $store, $dlog)
     {
         switch ($groupby) {
             case 'upc':
@@ -58,6 +58,7 @@ class VendorMovementReport extends FannieReportPage
                         LEFT JOIN MasterSuperDepts AS s ON d.dept_no = s.dept_ID
                     WHERE (v.vendorName LIKE ? OR x.distributor LIKE ?)
                         AND t.tdate BETWEEN ? AND ?
+                        AND " . DTrans::isStoreID($store, 't') . "
                     GROUP BY t.upc,
                         COALESCE(p.brand, x.manufacturer),
                         p.description,
@@ -78,6 +79,7 @@ class VendorMovementReport extends FannieReportPage
                         LEFT JOIN prodExtra AS x ON p.upc=x.upc
                     WHERE (v.vendorName LIKE ? OR x.distributor LIKE ?)
                         AND t.tdate BETWEEN ? AND ?
+                        AND " . DTrans::isStoreID($store, 't') . "
                     GROUP BY YEAR(t.tdate),
                         MONTH(t.tdate),
                         DAY(t.tdate)
@@ -100,6 +102,7 @@ class VendorMovementReport extends FannieReportPage
                         LEFT JOIN prodExtra AS x ON p.upc=x.upc
                     WHERE (v.vendorName LIKE ? OR x.distributor LIKE ?)
                         AND t.tdate BETWEEN ? AND ?
+                        AND " . DTrans::isStoreID($store, 't') . "
                     GROUP BY d.dept_no,
                         d.dept_name,
                         s.super_name
@@ -115,16 +118,24 @@ class VendorMovementReport extends FannieReportPage
         try {
             $date1 = $this->form->date1;
             $date2 = $this->form->date2;
+
+            // backwards compat; convert submitted vendorID to name
             $vendor = $this->form->vendor;
+            $model = new VendorsModel($dbc);
+            $model->vendorID($vendor);
+            $model->load();
+            $vendor = $model->vendorName();
+
             $groupby = $this->form->groupby;
+            $store = $this->form->store;
         } catch (Exception $ex) {
             return array();
         }
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
 
-        $query = $this->getQuery($groupby, $dlog);
-        $args = array('%'.$vendor.'%','%'.$vendor.'%',$date1.' 00:00:00',$date2.' 23:59:59');
+        $query = $this->getQuery($groupby, $store, $dlog);
+        $args = array('%'.$vendor.'%','%'.$vendor.'%',$date1.' 00:00:00',$date2.' 23:59:59', $store);
         $prep = $dbc->prepare($query);
 
         $result = $dbc->execute($prep,$args);
@@ -149,7 +160,7 @@ class VendorMovementReport extends FannieReportPage
         return $ret;
     }
 
-    private function getSums($q, $t)
+    private function getSums($data, $q, $t)
     {
         $sumQty = 0.0;
         $sumSales = 0.0;
@@ -171,19 +182,19 @@ class VendorMovementReport extends FannieReportPage
             case 8:
                 $this->report_headers = array('UPC','Brand','Description','Qty','$',
                     'Dept#','Department','Super');
-                list($sumQty, $sumSales) = $this->getSums(3, 4);
+                list($sumQty, $sumSales) = $this->getSums($data, 3, 4);
 
-                return array('Total',null,null,$sumQty,$sumSales,null,null,null);
+                return array('Total',null,null,$sumQty,$sumSales,'',null,null);
 
             case 5:
                 $this->report_headers = array('Dept#','Department','Qty','$','Super');
-                list($sumQty, $sumSales) = $this->getSums(2, 3);
+                list($sumQty, $sumSales) = $this->getSums($data, 2, 3);
 
-                return array('Total',null,$sumQty,$sumSales,null);
+                return array('Total',null,$sumQty,$sumSales,'');
 
             case 3:
                 $this->report_headers = array('Date','Qty','$');
-                list($sumQty, $sumSales) = $this->getSums(1, 2);
+                list($sumQty, $sumSales) = $this->getSums($data, 1, 2);
 
                 return array('Total',$sumQty,$sumSales);
         }
@@ -192,14 +203,16 @@ class VendorMovementReport extends FannieReportPage
     public function form_content()
     {
         $this->addScript('../../item/autocomplete.js');
+        $vendor = new VendorsModel($this->connection);
         ob_start();
 ?>
 <form method = "get" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
 <div class="col-sm-5">
     <div class="form-group">
         <label>Vendor</label>
-        <input type=text name=vendor id=vendor 
-            class="form-control" required />
+        <select name="vendor" class="form-control chosen-select">
+            <?php echo $vendor->toOptions(); ?>
+        </select>
     </div>
     <div class="form-group">
         <label>Start Date</label>
@@ -230,12 +243,19 @@ class VendorMovementReport extends FannieReportPage
 </div>
 <div class="col-sm-5">
     <?php echo FormLib::date_range_picker(); ?>
+    <div class="form-group">
+        <label>Store</label>
+        <?php
+        $store = FormLib::storePicker();
+        echo $store['html'];
+        ?>
+    </div>
 </div>
 </form>
 <?php
-        $auto_url = $this->config->URL . 'ws/';
-        $this->add_onload_command("bindAutoComplete('#vendor', '$auto_url', 'vendor');\n");
-        $this->add_onload_command('$(\'#vendor\').focus();');
+        $this->addScript($this->config->get('URL') . 'src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile($this->config->get('URL') . 'src/javascript/chosen/bootstrap-chosen.css');
+        $this->addOnloadCommand("\$('.chosen-select').chosen();\n");
 
         return ob_get_clean();
     }

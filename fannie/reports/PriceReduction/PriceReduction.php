@@ -68,29 +68,21 @@ class PriceReduction extends FannieReportPage
                 P.modified, V.vendorDept, V.vendorID, D.margin as uMarg, D.vendorID, 
                 D.deptID, S.margin as dMarg, P.auto_par
                 FROM products as P
-                LEFT JOIN vendorItems as V ON P.upc = V.upc AND P.default_vendor_id = V.vendorID
-                LEFT JOIN vendorDepartments as D ON (V.vendorID = D.vendorID) AND (D.deptID = V.vendorDept) 
-                LEFT JOIN departments as S ON (P.department = S.dept_no)
+                    INNER JOIN MasterSuperDepts AS m ON P.department=m.dept_ID
+                    LEFT JOIN vendorItems as V ON P.upc = V.upc AND P.default_vendor_id = V.vendorID
+                    LEFT JOIN vendorDepartments as D ON (V.vendorID = D.vendorID) AND (D.deptID = V.vendorDept) 
+                    LEFT JOIN departments as S ON (P.department = S.dept_no)
                 WHERE P.inUse = 1 AND P.price_rule_id = 0
-                    AND P.cost <> 0 ";
-                    
-        if (FormLib::get('dept') == 1) {
-            $query .= " AND (P.department >= 1 AND P.department <= 25) OR (P.department >= 239 AND P.department <= 259) ";
-        } else if (FormLib::get('dept') == 2) {
-            $query .= " AND (P.department >= 26 AND P.department <= 59) ";
-        } else if (FormLib::get('dept') == 3) {
-            $query .= " AND (P.department >= 151 AND P.department <= 191) ";
-        } else if (FormLib::get('dept') == 4) {
-            $query .= " AND (P.department >= 86 AND P.department <= 128) ";
-        } else if (FormLib::get('dept') == 5) {
-            $query .= " AND (P.department >= 240 AND P.department <= 250) ";
-        }
-            
-        $query .= " GROUP BY P.upc 
+                    AND P.cost <> 0 
+                    AND m.superID=? 
+                GROUP BY P.upc 
                 ORDER BY P.modified
                 ; ";
-        $result = $dbc->query($query);
-        while ($row = $dbc->fetch_row($result)) {
+                    
+        $prep = $dbc->prepare($query);
+        $args = array(FormLib::get('dept'));
+        $result = $dbc->execute($prep, $args);
+        while ($row = $dbc->fetchRow($result)) {
             $upc[] = $row['upc'];
             $desc[] = $row['description'];
             $cost[] = $row['cost'];
@@ -142,17 +134,14 @@ class PriceReduction extends FannieReportPage
     
     public function form_content()
     {
+        $model = new MasterSuperDeptsModel($this->connection);
         $this->add_onload_command('$(\'#startdate\').focus()');
         return '<form method="post" id="form1">
             <label>Select %/degree to check margins to</label>
             <input type="text" name="degree" value="" class="form-control"
                 required id="degree" />
             <select form="form1" name="dept">
-                <option value="1">Bulk</option>
-                <option value="2">Cool</option>
-                <option value="3">Grocery</option>
-                <option value="4">Wellness</option>                
-                <option value="5">General Merch</option>                
+                ' . $model->toOptions(-999) . '
             </select>
             <p>
             <button type="submit" class="btn btn-default">Get Report</button>

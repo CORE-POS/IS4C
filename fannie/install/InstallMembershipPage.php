@@ -97,17 +97,9 @@ confset('FANNIE_MEMBER_MODULES',$saveStr);
 ?>
 <select multiple name="FANNIE_MEMBER_MODULES[]" size="10" class="form-control">
 <?php
-$tmp = array();
-$modules = FannieAPI::listModules('MemberModule');
-foreach ($modules as $class) {
-    $tmp[] = $class;
-}
 $modules = FannieAPI::listModules('\COREPOS\Fannie\API\member\MemberModule');
-foreach ($modules as $class) {
-    $tmp[] = $class;
-}
-sort($tmp);
-foreach($tmp as $module){
+sort($modules);
+foreach($modules as $module){
     printf("<option %s>%s</option>",(in_array($module,$FANNIE_MEMBER_MODULES)?'selected':''),$module);
 }
 ?>

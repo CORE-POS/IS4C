@@ -1,8 +1,7 @@
 <?php
+use COREPOS\pos\install\data\Loader;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-include(realpath(dirname(__FILE__).'/../ini.php'));
-include('InstallUtilities.php');
 ?>
 <html>
 <head>
@@ -30,33 +29,33 @@ $db = new \COREPOS\pos\lib\SQLManager(CoreLocal::get('localhost'),
 if (isset($_REQUEST['employees'])){
     echo "Loading employees";
     $db->query("TRUNCATE TABLE employees");
-    InstallUtilities::loadSampleData($db,'employees');    
+    Loader::loadSampleData($db,'employees');    
 }
 elseif(isset($_REQUEST['custdata'])){
     echo "Loading custdata";
     $db->query("TRUNCATE TABLE custdata");
-    InstallUtilities::loadSampleData($db,'custdata');
+    Loader::loadSampleData($db,'custdata');
 }
 elseif(isset($_REQUEST['products'])){
     echo "Loading products";
     $db->query("TRUNCATE TABLE products");
-    InstallUtilities::loadSampleData($db,'products');
+    Loader::loadSampleData($db,'products');
 }
 elseif (isset($_REQUEST['tenders'])){
     echo "Loading tenders";
     $db->query("TRUNCATE TABLE tenders");
-    InstallUtilities::loadSampleData($db,'tenders');
+    Loader::loadSampleData($db,'tenders');
 } elseif(isset($_REQUEST['depts'])){
     echo "Loading departments";
     $db->query("TRUNCATE TABLE departments");
-    InstallUtilities::loadSampleData($db,'departments');
+    Loader::loadSampleData($db,'departments');
     echo "<br />Loading super departments";
     $db->query("TRUNCATE TABLE MasterSuperDepts");
-    InstallUtilities::loadSampleData($db,'MasterSuperDepts');
+    Loader::loadSampleData($db,'MasterSuperDepts');
 } elseif(isset($_REQUEST['quicklookups'])){
     echo "Loading QuickLookups";
     $db->query("TRUNCATE TABLE QuickLookups");
-    InstallUtilities::loadSampleData($db,'QuickLookups');
+    Loader::loadSampleData($db,'QuickLookups');
 }
 ?>
 </b></div>

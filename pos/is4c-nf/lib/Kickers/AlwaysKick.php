@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Kickers;
+
 /**
   @class AlwaysKick
   Always open cash drawer

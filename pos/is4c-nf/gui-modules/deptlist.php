@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class deptlist extends NoInputCorePage 
@@ -34,7 +38,6 @@ class deptlist extends NoInputCorePage
             // javascript causes this input if the
             // user presses CL{enter}
             // Redirect to main screen
-            CoreLocal::set("departmentAmount","0");    
             $this->change_page($this->page_url."gui-modules/pos2.php");
             return false;
         }
@@ -43,7 +46,7 @@ class deptlist extends NoInputCorePage
             // built department input string and set it
             // to be the next POS entry
             // Redirect to main screen
-            $input = CoreLocal::get("departmentAmount")."DP".$entered."0";
+            $input = FormLib::get('in')."DP".$entered."0";
             $qty = CoreLocal::get("quantity");
             if ($qty != "" & $qty != 1 & $qty != 0) {
                 $input = $qty."*".$input;
@@ -88,9 +91,9 @@ class deptlist extends NoInputCorePage
     */
     function body_content()
     {
-        $db = Database::pDataConnect();
-        $q = "SELECT dept_no,dept_name FROM departments ORDER BY dept_name";
-        $r = $db->query($q);
+        $input = FormLib::get('in');
+        $dbc = Database::pDataConnect();
+        $res = $dbc->query("SELECT dept_no,dept_name FROM departments ORDER BY dept_name");
 
         echo "<div class=\"baseHeight\">"
             ."<div class=\"listbox\">"
@@ -101,7 +104,7 @@ class deptlist extends NoInputCorePage
             ."size=\"15\" onblur=\"\$('#search').focus();\">";
 
         $selected = "selected";
-        while($row = $db->fetch_row($r)){
+        while ($row = $dbc->fetchRow($res)) {
             echo "<option value='".$row["dept_no"]."' ".$selected.">";
             // &shy; prevents the cursor from moving out of
             // step with filter-as-you-type
@@ -127,6 +130,7 @@ class deptlist extends NoInputCorePage
                 Cancel <span class="smaller">[clear]</span>
                 </button></p>'
             ."</div><!-- /.listboxText coloredText .centerOffset -->"
+            .'<input type="hidden" name="in" value="' . $input . '" />'
             ."</form>"
             ."<div class=\"clear\"></div>";
         echo "</div>";

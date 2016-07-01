@@ -1,5 +1,8 @@
 <?php
 
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TotalActions\TotalAction;
+
 class InactiveMemTotalAction extends TotalAction
 {
     public function apply()
@@ -32,7 +35,7 @@ class InactiveMemTotalAction extends TotalAction
             return true;
         } else {
             CoreLocal::set('InactiveMemList', array());
-            PrehLib::clearMember(); 
+            COREPOS\pos\lib\MemberLib::clear();
 
             return false;
         }

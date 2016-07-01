@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Notifier;
+
 /**
   @class CashDropNotifier
   Alert cashier a drop is needed

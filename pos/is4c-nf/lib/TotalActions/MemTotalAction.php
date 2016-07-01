@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\TotalActions;
+
 /**
   @class MemTotalAction
   Define an action that is called when a member

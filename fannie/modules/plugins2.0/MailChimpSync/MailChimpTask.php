@@ -158,7 +158,7 @@ class MailChimpTask extends FannieTask
                     switch ($status) {
                         // subscribed users can be updated easily
                         case 'subscribed':
-                            $memlist = $this->unknownSubscribed($record, $columns, $chimp, $memlist);
+                            $memlist = $this->unknownSubscribed($record, $columns, $chimp, $LISTID, $memlist);
                             break;
                         /**
                           Unsubscribed are currently ignored. The can't be updated as is.
@@ -292,7 +292,7 @@ class MailChimpTask extends FannieTask
         $this->meminfo->reset();
         $this->meminfo->card_no($card_no);
         $this->meminfo->load();
-        if ($this->meminfo->email_1() != $email && strtotime($changed) > strtotime($this->meminfo->modified())) {
+        if ($this->meminfo->email_1() != $email && (strtotime($changed) > strtotime($this->meminfo->modified()) || $this->meminfo->email_1() == '')) {
             $this->cronMsg(sprintf("MISMATCH: POS says %s, MailChimp says %s, Mailchimp is newer",
             $this->meminfo->email_1(), $email), FannieLogger::INFO);
             $this->meminfo->email_1($email);
@@ -321,7 +321,7 @@ class MailChimpTask extends FannieTask
             try {
                 $chimp->lists->updateMember($LISTID, $email_struct, $update, '', false);
             } catch (Exception $ex) {
-                echo $ex;
+                echo $ex->getMessage();
             }
             sleep(1);
         }
@@ -361,7 +361,7 @@ class MailChimpTask extends FannieTask
       Callback when list includes a subscribed entry
       without a member number
     */
-    protected function unknownSubscribed($record, $columns, $chimp, $memlist)
+    protected function unknownSubscribed($record, $columns, $chimp, $LISTID, $memlist)
     {
         list($card_no, $email, $fname, $lname, $changed) = $this->unpackRecord($record, $columns);
         $update = array();

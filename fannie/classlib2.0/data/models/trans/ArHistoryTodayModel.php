@@ -40,28 +40,28 @@ class ArHistoryTodayModel extends ViewModel
 
     public function definition()
     {
-        $FANNIE_AR_DEPARTMENTS = FannieConfig::config('AR_DEPARTMENTS', '');
-        $ret = preg_match_all('/[0-9]+/', $FANNIE_AR_DEPARTMENTS, $depts);
+        $ar_depts = FannieConfig::config('AR_DEPARTMENTS', '');
+        $ret = preg_match_all('/[0-9]+/', $ar_depts, $depts);
         if ($ret == 0) {
             $depts = array(-999);
         } else {
             $depts = array_pop($depts);
         }
 
-        $in = '';
+        $inStr = '';
         foreach ($depts as $d) {
-            $in .= sprintf('%d,', $d);
+            $inStr .= sprintf('%d,', $d);
         }
-        $in = substr($in, 0, strlen($in)-1);
+        $inStr = substr($inStr, 0, strlen($inStr)-1);
 
         return '
             SELECT card_no,
                 SUM(CASE WHEN trans_subtype=\'MI\' THEN -total ELSE 0 END) AS charges,
-                SUM(CASE WHEN department IN (' . $in . ') THEN total ELSE 0 END) AS payments,
+                SUM(CASE WHEN department IN (' . $inStr . ') THEN total ELSE 0 END) AS payments,
                 MAX(tdate) AS tdate,
                 trans_num
             FROM dlog
-            WHERE (trans_subtype=\'MI\' OR department IN (' . $in . '))
+            WHERE (trans_subtype=\'MI\' OR department IN (' . $inStr . '))
                 AND ' . $this->connection->datediff('tdate', $this->connection->now()) . ' = 0
             GROUP BY card_no,
                 trans_num';

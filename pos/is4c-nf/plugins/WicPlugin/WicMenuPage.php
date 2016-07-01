@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\MiscLib;
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class WicMenuPage extends NoInputCorePage 
@@ -28,7 +30,6 @@ class WicMenuPage extends NoInputCorePage
     function preprocess()
     {
         if (isset($_REQUEST["selectlist"])) {
-            $parser = new PaycardDatacapParser();
             switch ($_REQUEST['selectlist']) {
                 case 'WICON':
                     CoreLocal::set('WicMode', true);

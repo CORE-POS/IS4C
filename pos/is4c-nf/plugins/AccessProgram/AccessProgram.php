@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 class AccessProgram extends Plugin {
 
     public $plugin_settings = array(

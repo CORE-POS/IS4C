@@ -206,13 +206,13 @@ function flipover(opt){
         $deptQ = $dbc->prepare("select dept_no,dept_name from departments order by dept_no");
         $deptR = $dbc->execute($deptQ);
         $depts = array();
-        while ($deptW = $dbc->fetch_array($deptR)){
+        while ($deptW = $dbc->fetchRow($deptR)){
             $depts[$deptW[0]] = $deptW[1];
         }
 
         ob_start();
         ?>
-<form action="CorrelatedMovementReport.php" method=post>
+<form action="CorrelatedMovementReport.php" method="get">
 <div class="row">
     <div class="col-sm-6">
         <ul class="nav nav-tabs" role="tablist">

@@ -10,6 +10,9 @@ class DeliInventoryPage extends FanniePage
     public $page_set = 'Plugin :: DeliInventory';
     protected $window_dressing = false;
 
+    protected $model_class = 'DeliInventoryCatModel';
+    protected $table_name = 'deliInventoryCat';
+
     public function preprocess()
     {
         global $FANNIE_OP_DB;
@@ -61,7 +64,8 @@ if (isset($_GET['action'])){
         }
         $total = $stocktotal * $price;
             
-        $model = new DeliInventoryCatModel($sql);
+        $class = $this->model_class;
+        $model = new $class($sql);
         $model->item($item);
         $model->orderno($orderno);
         $model->units($units);
@@ -105,7 +109,8 @@ if (isset($_GET['action'])){
         }
         $total = $stocktotal * $price;
         
-        $model = new DeliInventoryCatModel($sql);
+        $class = $this->model_class;
+        $model = new $class($sql);
         $model->id($id);
         $model->item($item);
         $model->orderno($orderno);
@@ -141,7 +146,8 @@ if (isset($_GET['action'])){
     case 'deleteitem':
         $id = $_GET['id'];
         
-        $model = new DeliInventoryCatModel($sql);
+        $class = $this->model_class;
+        $model = new $class($sql);
         $model->id($id);
         $cat = $model->category();
         $model->delete();
@@ -175,7 +181,7 @@ if (isset($_GET['action'])){
         $oldcat = preg_replace("/_/"," ",$_GET['oldcat']);
         $newcat = preg_replacE("/_/"," ",$_GET['newcat']);
 
-        $update = $sql->prepare('UPDATE deliInventoryCat SET category=? WHERE category=?');
+        $update = $sql->prepare('UPDATE ' . $this->table_name . ' SET category=? WHERE category=?');
         $sql->execute($update, array($newcat, $oldcat));
 
         $out .= $this->gettable();
@@ -184,13 +190,13 @@ if (isset($_GET['action'])){
         $id = $_GET['id'];
         $cat = preg_replace("/_/"," ",$_GET['category']);
         
-        $fetchQ = "select category from deliInventoryCat
+        $fetchQ = "select category from " . $this->table_name . "
                group by category order by category";
         $fetchR = $sql->query($fetchQ);
         
         $out .= "$id"."`";
         $out .= "<select onchange=\"saveCat($id);\" id=catSelect$id>";
-        while ($fetchW = $sql->fetch_array($fetchR)){
+        while ($fetchW = $sql->fetchRow($fetchR)){
             if ($fetchW[0] == $cat)
                 $out .= "<option selected>$fetchW[0]</option>";
             else
@@ -202,7 +208,8 @@ if (isset($_GET['action'])){
         $id = $_GET['id'];
         $newcat = $_GET['newcat'];
 
-        $model = new DeliInventoryCatModel($sql);
+        $class = $this->model_class;
+        $model = new $class($sql);
         $model->id($id);
         $model->category($newcat);
         $model->save();
@@ -216,7 +223,7 @@ if (isset($_GET['action'])){
         echo json_encode($ret);
         break;
     case 'clearAll':
-        $clearQ = "update deliInventoryCat set cases=0, fraction=0,
+        $clearQ = "update " . $this->table_name . " set cases=0, fraction=0,
             totalstock=0, total=0";
         $clearR = $sql->query($clearQ);
         $out .= $this->gettable();
@@ -228,7 +235,11 @@ if (isset($_GET['action'])){
 } else {
     return true;
 }
+    }
 
+    protected function currentlyLine()
+    {
+        return '<h3>Currently Hillside - <a href="DeliInventoryPage2.php">Switch</a></h3>';
     }
 
     private function gettable($limit=false,$limitCat="ALL")
@@ -248,7 +259,7 @@ if (isset($_GET['action'])){
                case when fraction='0' then NULL else fraction end as fraction,
                case when totalstock='0' then NULL else totalstock end as totalstock,
                price,total,category,id
-                   from deliInventoryCat
+                   from " . $this->table_name . "
                WHERE 1=1 ";
         $args = array();
         if ($limit){
@@ -259,12 +270,12 @@ if (isset($_GET['action'])){
         $fetchP = $sql->prepare($fetchQ); 
         $fetchR = $sql->execute($fetchP, $args);
 
-        $ret .= '<h3>Currently Hillside - <a href="DeliInventoryPage2.php">Switch</a></h3>';
+        $ret .= $this->currentlyLine();
         $ret .= "<a href=\"\" onclick=\"saveAll();return false;\">Save all changes</a> | <a href=\"\" onclick=\"clearAll();return false;\">Clear all totals</a><br /><br />";
 
         $currentCat = "";
         $sum = 0.0;
-        while ($fetchW = $sql->fetch_array($fetchR)){
+        while ($fetchW = $sql->fetchRow($fetchR)){
             $catfixed = $currentCat;
             if ($fetchW['category'] != $currentCat){
                 if ($currentCat != ""){
@@ -378,7 +389,7 @@ if (isset($_GET['action'])){
         global $FANNIE_OP_DB, $FANNIE_URL;
         $sql = FannieDB::get($FANNIE_OP_DB);
 
-        $prep = $sql->prepare('UPDATE deliInventoryCat SET id=? WHERE id=?');
+        $prep = $sql->prepare('UPDATE ' . $this->table_name . ' SET id=? WHERE id=?');
 
         $sql->execute($prep, array(-1*$id2, $id2));
         $sql->execute($prep, array($id2, $id1));
@@ -402,6 +413,7 @@ if (isset($_GET['action'])){
 <head><title>Inventory</title>
 <script type="text/javascript" src="<?php echo $FANNIE_URL; ?>src/javascript/jquery.js"></script>
 <script type="text/javascript" src="index.js"></script>
+<script type="text/javascript" src="send.js"></script>
 <link rel="stylesheet" type="text/css" href="index.css">
 </head>
 <body>

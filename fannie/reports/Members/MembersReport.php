@@ -74,7 +74,9 @@ class MembersReport extends FannieReportPage
                 $saveW['reason'] .= ", ".$w['reason'];
             }
         }
-        $data[] = $this->formatRow($saveW);
+        if (count($saveW) > 0) {
+            $data[] = $this->formatRow($saveW);
+        }
 
         return $data;
     }

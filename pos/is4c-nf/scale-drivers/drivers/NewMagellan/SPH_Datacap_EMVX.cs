@@ -26,7 +26,12 @@ using System.Threading;
 using System.Net;
 using System.Net.Sockets;
 using System.Xml;
+using System.Drawing;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
 using CustomForms;
+using BitmapBPP;
 using DSIEMVXLib;
 using AxDSIEMVXLib;
 using DSIPDCXLib;
@@ -40,19 +45,22 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     private DsiPDCX pdc_ax_control = null; // can I include both?
     private string device_identifier = null;
     private string com_port = "0";
-    protected string server_list = "x1.mercurydev.net;x2.mercurydev.net";
+    protected string server_list = "x1.mercurypay.com;x2.backuppay.com";
     protected int LISTEN_PORT = 8999; // acting as a Datacap stand-in
     protected string sequence_no = null;
     private bool log_xml = true;
+    private RBA_Stub rba = null;
 
     public SPH_Datacap_EMVX(string p) : base(p)
     { 
-        verbose_mode = 1;
         device_identifier=p;
         if (p.Contains(":")) {
             string[] parts = p.Split(new char[]{':'}, 2);
             device_identifier = parts[0];
             com_port = parts[1];
+        }
+        if (device_identifier == "INGENICOISC250_MERCURY_E2E") {
+            rba = new RBA_Stub("COM"+com_port);
         }
     }
 
@@ -73,6 +81,12 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             emv_ax_control = new DsiEMVX();
         }
         PadReset();
+
+        if (rba != null) {
+            rba.SetParent(this.parent);
+            rba.SetVerbose(this.verbose_mode);
+            rba.stubStart();
+        }
 
         return true;
     }
@@ -103,6 +117,10 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                             bytes_read = stream.Read(buffer, 0, buffer.Length);
                             message += System.Text.Encoding.ASCII.GetString(buffer, 0, bytes_read);
                         } while (stream.DataAvailable);
+
+                        if (rba != null) {
+                            rba.stubStop();
+                        }
 
                         message = GetHttpBody(message);
 
@@ -184,6 +202,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         switch(msg) {
             case "termReset":
             case "termReboot":
+                if (rba != null) {
+                    rba.stubStop();
+                }
                 initDevice();
                 break;
             case "termManual":
@@ -191,6 +212,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             case "termApproved":
                 break;
             case "termSig":
+                if (rba != null) {
+                    rba.stubStop();
+                }
                 GetSignature();
                 break;
             case "termGetType":
@@ -236,20 +260,55 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             }
         }
 
-        string result = emv_ax_control.ProcessTransaction(xml);
-        // track SequenceNo values in responses
-        XmlDocument doc = new XmlDocument();
         try {
-            doc.LoadXml(result);
-            XmlNode sequence = doc.SelectSingleNode("RStream/CmdResponse/SequenceNo");
-            sequence_no = sequence.Value;
+            /**
+              Extract HostOrIP field and split it on commas
+              to allow multiple IPs
+            */
+            XmlDocument request = new XmlDocument();
+            request.LoadXml(xml);
+            var IPs = request.SelectSingleNode("TStream/Transaction/HostOrIP").InnerXml.Split(new Char[]{','}, StringSplitOptions.RemoveEmptyEntries);
+            string result = "";
+            foreach (string IP in IPs) {
+                // try request with an IP
+                request.SelectSingleNode("TStream/Transaction/HostOrIP").InnerXml = IP;
+                result = emv_ax_control.ProcessTransaction(request.OuterXml);
+                XmlDocument doc = new XmlDocument();
+                try {
+                    doc.LoadXml(result);
+                    // track SequenceNo values in responses
+                    XmlNode sequence = doc.SelectSingleNode("RStream/CmdResponse/SequenceNo");
+                    sequence_no = sequence.InnerXml;
+                    XmlNode return_code = doc.SelectSingleNode("RStream/CmdResponse/DSIXReturnCode");
+                    XmlNode origin = doc.SelectSingleNode("RStream/CmdResponse/ResponseOrigin");
+                    /**
+                      On anything that is not a local connectivity failure, exit the
+                      loop and return the result without trying any further IPs.
+                    */
+                    if (origin.InnerXml != "Client" || return_code.InnerXml != "003006") {
+                        break;
+                    }
+                } catch (Exception ex) {
+                    // response was invalid xml
+                    if (this.verbose_mode > 0) {
+                        Console.WriteLine(ex);
+                    }
+                    // status is unclear so do not attempt 
+                    // another transaction
+                    break;
+                }
+            }
+
+            return result;
+
         } catch (Exception ex) {
+            // request was invalid xml
             if (this.verbose_mode > 0) {
                 Console.WriteLine(ex);
             }
         }
 
-        return result;
+        return "";
     }
 
     /**
@@ -332,6 +391,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             + "<MerchantID>MerchantID</MerchantID>"
             + "<TranCode>GetSignature</TranCode>"
             + "<SecureDevice>"+ this.device_identifier + "</SecureDevice>"
+            + "<ComPort>" + this.com_port + "</ComPort>"
             + "<Account>"
             + "<AcctNo>SecureDevice</AcctNo>"
             + "</Account>"
@@ -342,10 +402,21 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         try {
             doc.LoadXml(result);
             XmlNode status = doc.SelectSingleNode("RStream/CmdResponse/CmdStatus");
-            if (status.Value != "Success") {
+            if (status.InnerText != "Success") {
                 return null;
             }
-            string sigdata = doc.SelectSingleNode("RStream/Signature").Value;
+            string sigdata = doc.SelectSingleNode("RStream/Signature").InnerText;
+            List<Point> points = SigDataToPoints(sigdata);
+
+            int ticks = Environment.TickCount;
+            string my_location = AppDomain.CurrentDomain.BaseDirectory;
+            char sep = Path.DirectorySeparatorChar;
+            while (File.Exists(my_location + sep + "ss-output/"  + sep + ticks)) {
+                ticks++;
+            }
+            string filename = my_location + sep + "ss-output"+ sep + "tmp" + sep + ticks + ".bmp";
+            BitmapBPP.Signature sig = new BitmapBPP.Signature(filename, points);
+            parent.MsgSend("TERMBMP" + ticks + ".bmp");
         } catch (Exception) {
             return null;
         }
@@ -363,6 +434,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             case "VX805XPI_MERCURY_E2E":
                 return "VX805";
             case "INGENICOISC250":
+            case "INGENICOISC250_MERCURY_E2E":
                 return "ISC250";
             default:
                 return device;
@@ -378,6 +450,8 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             case "VX805XPI":
             case "VX805XPI_MERCURY_E2E":
                 return "EMV_VX805_MERCURY";
+            case "INGENICOISC250_MERCURY_E2E":
+                return "EMV_ISC250_MERCURY";
             default:
                 return "EMV_" + device;
         }
@@ -393,6 +467,28 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 return true;
             default:
                 return false;
+        }
+    }
+
+    protected List<Point> SigDataToPoints(string data)
+    {
+        char[] comma = new char[]{','};
+        char[] colon = new char[]{':'};
+        var pairs = from pair in data.Split(colon) 
+            select pair.Split(comma);
+        var points = from pair in pairs 
+            where pair.Length == 2
+            select new Point(CoordsToInt(pair[0]), CoordsToInt(pair[1]));
+
+        return points.ToList();
+    }
+
+    protected int CoordsToInt(string coord)
+    {
+        if (coord == "#") {
+            return 0;
+        } else {
+            return Int32.Parse(coord);
         }
     }
 }

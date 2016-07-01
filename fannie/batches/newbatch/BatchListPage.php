@@ -38,7 +38,6 @@ class BatchListPage extends FannieRESTfulPage
 
     public $description = '[Sales Batches] is the primary tool for creating, editing, and managing 
     sale and price change batches.';
-    public $has_unit_tests = true;
 
     private $audited = 1;
     private $con = null;
@@ -200,9 +199,8 @@ class BatchListPage extends FannieRESTfulPage
      */
     function newBatchInput()
     {
-        global $FANNIE_URL, $FANNIE_OP_DB;
-        
-        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $url = $this->config->get('URL');
 
         $ownersQ = $dbc->prepare("SELECT super_name 
                                   FROM MasterSuperDepts 
@@ -210,10 +208,14 @@ class BatchListPage extends FannieRESTfulPage
                                   ORDER BY super_name");
         $ownersR = $dbc->execute($ownersQ);
         $owners = array();
-        while($ownersW = $this->con->fetch_row($ownersR)) {
+        $oOpts = '';
+        while ($ownersW = $this->con->fetchRow($ownersR)) {
             $owners[] = $ownersW[0];
+            $oOpts .= '<option>' . $ownersW[0] . '</option>';
         }
         $owners[] = 'IT';
+        $oOpts .= '<option>IT</option>';
+        $oJSON = json_encode($owners);
 
         $typesQ = $dbc->prepare("SELECT batchTypeID,
                                     typeDesc 
@@ -221,56 +223,49 @@ class BatchListPage extends FannieRESTfulPage
                                  ORDER BY batchTypeID");
         $typesR = $dbc->execute($typesQ);
         $types = array();
-        while ($typesW = $dbc->fetch_row($typesR)) {
+        $tOpts = '';
+        while ($typesW = $dbc->fetchRow($typesR)) {
             $types[$typesW['batchTypeID']] = $typesW['typeDesc'];
+            $tOpts .= sprintf('<option value="%d">%s</option>', $typesW['batchTypeID'], $typesW['typeDesc']);
         }
+        $tJSON = json_encode($types);
 
-        $ret = "<form id=\"newBatchForm\" onsubmit=\"newBatch(); return false;\">";
-        $ret .= '<h3>Create a Batch</h3>';
-        $ret .= '<div class="row">
+        return <<<HTML
+<form id="newBatchForm" onsubmit="newBatch(); return false;">
+    <h3>Create a Batch</h3>
+        <div class="row">
             <label class="col-sm-2">Batch/Sale Type</label>
             <label class="col-sm-2">Name</label>
             <label class="col-sm-2">Start date</label>
             <label class="col-sm-2">End date</label>
             <label class="col-sm-3">Owner/Super Dept.</label>
-            </div>';
-        $ret .= '<div class="row">';
-        $ret .= '<div class="col-sm-2"><select class="form-control" id=newBatchType name="newType">';
-        foreach ($types as $id=>$desc) {
-            $ret .= "<option value=$id>$desc</option>";
-        }
-        $ret .= "</select></div>";
-        $ret .= '<div class="col-sm-2"><input class="form-control" type=text id=newBatchName name="newName" /></div>';
-        $ret .= '<div class="col-sm-2"><input class="form-control date-field" type=text id=newBatchStartDate name="newStart" /></div>';
-        $ret .= '<div class="col-sm-2"><input class="form-control date-field" type=text id=newBatchEndDate name="newEnd" /></div>';
-        $ret .= '<div class="col-sm-2"><select class="form-control" id=newBatchOwner name="newOwner">';
-        $ret .= '<option value=""></option>';
-        foreach ($owners as $o) {
-            $ret .= "<option>$o</option>";
-        }
-        $ret .= "</select></div>";
-        $ret .= '<div class="col-sm-1"><button type=submit class="btn btn-default">Create Batch</button></div>';
-        $ret .= '</div>';
-        
-        $ret .= "<p></p>"; // spacer
-
-        $ret .= '<div class="row">';
-        $ret .= '<div class="col-sm-6">';
-        $ret .= "<select class=\"form-control\" id=filterOwner onchange=\"changeOwnerFilter(this.value);\">";
-        $ret .= '<option value="">Filter list by batch owner / super dept.</option>';
-        foreach ($owners as $o) {
-            $ret .= "<option>$o</option>";
-        }
-        $ret .= "</select>";
-        $ret .= '</div>';
-        
-        $ret .= " <a href=\"{$FANNIE_URL}admin/labels/BatchShelfTags.php\">Print shelf tags</a>";
-        $ret .= '</div>';
-
-        $ret .= '<input type="hidden" id="ownerJSON" value=\'' . json_encode($owners) . '\' />';
-        $ret .= '<input type="hidden" id="typeJSON" value=\'' . json_encode($types) . '\' />';
-
-        return $ret;
+        </div>
+        <div class="row">
+            <div class="col-sm-2"><select class="form-control" id=newBatchType name="newType">
+                {$tOpts}
+            </select></div>
+            <div class="col-sm-2"><input class="form-control" type=text placeholder="Batch Name" id=newBatchName name="newName" /></div>
+            <div class="col-sm-2"><input class="form-control date-field" placeholder="Start Date" type=text id=newBatchStartDate name="newStart" /></div>
+            <div class="col-sm-2"><input class="form-control date-field" placeholder="End Date" type=text id=newBatchEndDate name="newEnd" /></div>
+            <div class="col-sm-2"><select class="form-control" id=newBatchOwner name="newOwner">
+                <option value=""></option>
+                {$oOpts}
+            </select></div>
+            <div class="col-sm-1"><button type=submit class="btn btn-default">Create Batch</button></div>
+        </div>
+        <p></p> <!-- spacer -->
+        <div class="row">
+            <div class="col-sm-6">
+                <select class="form-control" id=filterOwner onchange="changeOwnerFilter(this.value);">
+                    <option value="">Filter list by batch owner / super dept.</option>
+                    {$oOpts}
+                </select>
+            </div>
+            <a href="{$url}admin/labels/BatchShelfTags.php">Print shelf tags</a>
+        </div>
+        <input type="hidden" id="ownerJSON" value='{$oJSON}' />
+        <input type="hidden" id="typeJSON" value='{$tJSON}' />
+HTML;
     }
 
     /* display functions
@@ -380,7 +375,7 @@ class BatchListPage extends FannieRESTfulPage
         
         $count = 0;
         $lastBatchID = 0;
-        while ($fetchW = $dbc->fetch_array($fetchR)) {
+        while ($fetchW = $dbc->fetchRow($fetchR)) {
             /**
               strtotime() and date() are not reciprocal functions
               date('Y-m-d', strtotime('0000-00-00')) results in
@@ -444,27 +439,25 @@ class BatchListPage extends FannieRESTfulPage
 
     function get_view()
     {
-        global $FANNIE_URL;
-        $this->add_script('list.js');
-        $this->add_script('../../src/javascript/tablesorter/jquery.tablesorter.min.js');
+        $url = $this->config->get('URL');
+        $inputForm = $this->newBatchInput();
+        $batchList = $this->batchListDisplay();
+        $this->addScript('list.js');
+        $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.min.js');
         $this->add_css_file('index.css');
-        ob_start();
-        ?>
-        <div id="inputarea">
-        <?php echo $this->newBatchInput(); ?>
-        </div>
-        <div id="displayarea">
-        <?php echo $this->batchListDisplay(); ?>
-        </div>
-        <input type=hidden id=uid value="<?php echo $this->current_user; ?>" />
-        <input type=hidden id=isAudited value="<?php echo $this->audited; ?>" />
-        <?php
-        $ret = ob_get_clean();
-    
-        $ret .= "<input type=hidden id=buttonimgpath value=\"{$FANNIE_URL}src/img/buttons/\" />";
-        $this->add_onload_command("\$('.tablesorter').tablesorter();");
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter();");
 
-        return $ret;
+        return <<<HTML
+<div id="inputarea">
+    {$inputForm}
+</div>
+<div id="displayarea">
+    {$batchList}
+</div>
+<input type=hidden id=uid value="{$this->current_user}" />
+<input type=hidden id=isAudited value="{$this->audited}" />
+<input type=hidden id=buttonimgpath value="{$url}src/img/buttons/" />
+HTML;
     }
 
     public function helpContent()

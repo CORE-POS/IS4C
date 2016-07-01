@@ -273,12 +273,12 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         // set organic flag on OG1 (100%) or OG2 (95%)
         $organic_flag = 0;
         if (strstr($prodInfo, 'OG2') || strstr($prodInfo, 'OG1')) {
-            $organic_flag = 17;
+            $organic_flag = (1 << (17 - 1));
         }
         // set gluten-free flag on g
         $gf_flag = 0;
         if (strstr($prodInfo, 'g')) {
-            $gf_flag = 18;
+            $organic_flag = (1 << (18 - 1));
         }
 
         return array($organic_flag, $gf_flag);

@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\TenderReports;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
+use \CoreLocal;
+
 /**
   @class TenderReport
   Generate a tender report
@@ -164,7 +169,7 @@ static public function get(){
             if ((CoreLocal::get("store") == "harvest-cb") && ($tender_code == "PE" || $tender_code == "BU" || $tender_code == "EL" || $tender_code == "PY" || $tender_code == "TV")) $itemize = 1;
             elseif (CoreLocal::get("store") == "wfc") $itemize=1;
             else $itemize = 0;
-            $row = $db_a->fetch_array($result);
+            $row = $db_a->fetchRow($result);
             $timeStamp = self::timeStamp($row["tdate"]);
             if ($itemize == 1) {
                 $receipt .= "  ".substr($timeStamp.$blank, 0, 13)

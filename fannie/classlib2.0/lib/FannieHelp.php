@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\lib {
+namespace COREPOS\Fannie\API\lib;
 
 class FannieHelp {
 
@@ -67,5 +67,4 @@ class FannieHelp {
 
 }
 
-}
 

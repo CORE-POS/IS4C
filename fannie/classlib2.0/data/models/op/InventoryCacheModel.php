@@ -61,16 +61,18 @@ class InventoryCacheModel extends BasicModel
                     INNER JOIN PurchaseOrder AS o ON i.orderID=o.orderID
                 WHERE internalUPC=?
                     AND placedDate IS NOT NULL
-                    AND placedDate >= ?');
+                    AND storeID=?
+                    AND i.isSpecialOrder = 0
+                    AND (placedDate >= ? OR receivedDate >= ?)');
         }
 
         return self::$orderStmt;
     }
 
-    public static function calculateOrdered($dbc, $upc, $date)
+    public static function calculateOrdered($dbc, $upc, $storeID, $date)
     {
         $orderP = self::orderStatement($dbc);
-        $ordered = $dbc->getValue($orderP, array($upc, $date));
+        $ordered = $dbc->getValue($orderP, array($upc, $storeID, $date, $date));
 
         return $ordered ? $ordered : 0;
     }
@@ -79,9 +81,9 @@ class InventoryCacheModel extends BasicModel
     {
         $obj = new InventoryCacheModel($this->connection);
         $obj->upc($upc);
-        $obj->storeID(1);
+        $obj->storeID($storeID);
         if ($obj->load()) {
-            $orders = InventoryCacheModel::calculateOrdered($this->connection, $upc, $obj->cacheStart());
+            $orders = InventoryCacheModel::calculateOrdered($this->connection, $upc, $storeID, $obj->cacheStart());
             $obj->ordered($orders);
             $obj->onHand($obj->baseCount() + $obj->ordered() - $obj->sold() - $obj->shrunk());
             $obj->save();

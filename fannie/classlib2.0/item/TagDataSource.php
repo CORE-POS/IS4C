@@ -1,5 +1,7 @@
 <?php
 
+namespace COREPOS\Fannie\API\item;
+
 /**
   @class TagDataSource
   This class exists solely as a parent

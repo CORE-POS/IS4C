@@ -83,7 +83,7 @@ else if (isset($_POST['lc'])){
             WHERE upc=?");
     for ($i=0;$i<count($lcs);$i++){
         $upcR = $ms->execute($upcP, $lcs[$i]);
-        $upc = array_pop($ms->fetch_array($upcR));
+        $upc = array_pop($ms->fetchRow($upcR));
 
         $l = (strtolower($local[$i])=='y')?1:0;
         $qty = $caseq1[$i]." ".$caseq2[$i];

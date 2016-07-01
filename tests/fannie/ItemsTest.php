@@ -7,7 +7,7 @@ class ItemsTest extends PHPUnit_Framework_TestCase
 {
     public function testItems()
     {
-        $items = FannieAPI::listModules('ItemModule', true);
+        $items = FannieAPI::listModules('COREPOS\Fannie\API\item\ItemModule', true);
         $conf = FannieConfig::factory();
         $con = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));
 
@@ -176,6 +176,33 @@ class ItemsTest extends PHPUnit_Framework_TestCase
         $form->likeCode = -1;
         $module->setForm($form);
         $this->assertEquals(true, $module->saveFormData('0000000004011'));
+    }
+
+    public function testScaleLibs()
+    {
+        $connection = FannieDB::get($config->OP_DB);
+        $obj = new ServiceScalesModel($connection); 
+        $item_info = array(
+            'RecordType' => 'WriteOneItem',
+            'PLU' => '1234',
+            'Description' => 'asdf asdf asdf asfd asdf asfd asdf asdf asdf',
+            'ReportingClass' => '1',
+            'Label' => '1',
+            'Tare' => '0.05',
+            'ShelfLife' => '7',
+            'Price' => '1.99',
+            'Type' => 'Random Weight',
+            'NetWeight' => '1',
+            'Graphics' => '1',
+            'ExpandedText' => 'Ingredients go here',
+        );
+
+        $this->assertInternalType('string', COREPOS\Fannie\API\item\EpScaleLib::getItemLine($item_info, $obj));
+        $this->assertInternalType('string', COREPOS\Fannie\API\item\EpScaleLib::getIngredientLine($item_info, $obj));
+        $this->assertInternalType('string', COREPOS\Fannie\API\item\HobartDgwLib::getItemLine($item_info, $obj));
+        $item_info['RecordType'] = 'ChangeOneItem';
+        $this->assertInternalType('string', COREPOS\Fannie\API\item\EpScaleLib::getItemLine($item_info, $obj));
+        $this->assertInternalType('string', COREPOS\Fannie\API\item\HobartDgwLib::getItemLine($item_info, $obj));
     }
 
 }

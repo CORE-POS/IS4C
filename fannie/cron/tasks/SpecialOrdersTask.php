@@ -180,7 +180,7 @@ class SpecialOrdersTask extends FannieTask
             $msg_body = "Homeless orders detected!\n\n";
             while ($row = $sql->fetch_row($res)) {
                 $msg_body .= $row['datetime'].' - '.(empty($row['name'])?'(no name)':$row['name']).' - '.$row['description']."\n";
-                $msg_body .= "http://" . $_SERVER['SERVER_NAME'] . '/' . $this->config->get('URL')
+                $msg_body .= "http://" . $this->config->get('HTTP_HOST') . '/' . $this->config->get('URL')
                     . "ordering/view.php?orderID=".$row['order_id']."\n\n";
             }
             $msg_body .= "These messages will be sent daily until orders get departments\n";

@@ -67,6 +67,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
         $model->hasOwnItems(1);
         $stores = $model->find();
         $model = new ProductsModel($dbc);
+        $extra = new ProdExtraModel($dbc);
         for ($i=0; $i<count($upcs); $i++) {
             $upc = BarcodeLib::padUPC($upcs[$i]);
             $model->upc($upc);
@@ -100,7 +101,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
             }
 
             if ((isset($vendor[$i]) && $vendor[$i] != '') || (isset($brand[$i]) && $brand[$i] != '')) {
-                $this->updateProdExtra($dbc, $upc,
+                $this->updateProdExtra($extra, $upc,
                     isset($brand[$i]) ? $brand[$i] : '',
                     isset($vendor[$i]) ? $vendor[$i] : '');
             }
@@ -169,9 +170,8 @@ class EditItemsFromSearch extends FannieRESTfulPage
         return $model;
     }
 
-    private function updateProdExtra($dbc, $upc, $brand, $vendor)
+    private function updateProdExtra($extra, $upc, $brand, $vendor)
     {
-        $extra = new ProdExtraModel($dbc);
         $extra->upc($upc);
         $extra->distributor($vendor);
         $extra->manufacturer($brand);

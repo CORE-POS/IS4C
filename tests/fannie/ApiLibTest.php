@@ -125,8 +125,28 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
             $this->assertInternalType('array', $signs->loadItems());
         }
 
-        $source = new TagDataSource();
+        $source = new \COREPOS\Fannie\API\item\TagDataSource();
         $this->assertInternalType('array', $source->getTagData($dbc, '4011', false));
+
+        $signs->addOverride('0000000004011', 'description', 'foo');
+        $signs->addExclude('0000000004011'); 
+
+        $this->assertEquals('2/$5', $signs->formatPrice(2.50, 2));
+        $this->assertEquals('3/$1', $signs->formatPrice(0.33, 1));
+        $this->assertEquals('3/$2', $signs->formatPrice(0.66, 1));
+        $this->assertEquals('2/$5', $signs->formatPrice('2.50', 1));
+        $this->assertEquals('5/$4', $signs->formatPrice(0.80, 1));
+        $this->assertEquals('4/$1', $signs->formatPrice(0.25, 1));
+        $this->assertEquals('5/$5', $signs->formatPrice(1.00, 1));
+        $this->assertEquals('5/$10', $signs->formatPrice('2.00', 1));
+        $this->assertEquals('$1.99', $signs->formatPrice('$1.99', 1));
+        $this->assertEquals('4/$2', $signs->formatPrice('4/$2', 1));
+
+        $this->assertEquals('1.99', $signs->formatPrice(1.99, -1, 0));
+        $this->assertEquals('$1 OFF', $signs->formatPrice(1.99, -1, 2.99));
+        $this->assertEquals('$0.50 OFF', $signs->formatPrice(1.99, -1, 2.49));
+        $this->assertEquals('SAVE 50%', $signs->formatPrice(1.00, -2, 2.00));
+        $this->assertEquals('BUY ONE GET ONE FREE', $signs->formatPrice(1.00, -3, 2.00));
     }
 
     public function testConfig()
@@ -191,15 +211,6 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(0, strlen(DTrans::joinCustomerAccount('d','p')));
         $this->assertNotEquals(0, strlen(DTrans::joinTenders('d','p')));
         DTrans::getTransNo(FannieDB::get(FannieConfig::config('TRANS_DB')));
-    }
-
-    public function testDispatch()
-    {
-        $logger = new FannieLogger();
-        FannieDispatch::setLogger($logger);
-        FannieDispatch::errorHandler(1, 'foo');
-        FannieDispatch::exceptionHandler(new Exception('foo'));
-        FannieDispatch::catchFatal();
     }
 
     public function testMargin()
@@ -281,6 +292,31 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
             $this->assertNotEquals('', $class::toSaleCode('500'));
             $this->assertNotEquals('', $class::perStoreCode('500', 1));
         }
+    }
+
+    public function testDataUtil()
+    {
+        $this->assertInternalType('boolean', COREPOS\Fannie\API\data\Util::checkHost('127.0.0.1', 'MYSQLI'));
+        $this->assertInternalType('boolean', COREPOS\Fannie\API\data\Util::checkHost('127.0.0.1', 'MSSQL'));
+        $this->assertInternalType('boolean', COREPOS\Fannie\API\data\Util::checkHost('127.0.0.1', 'PGSQL'));
+        $this->assertInternalType('boolean', COREPOS\Fannie\API\data\Util::checkHost('127.0.0.1', 'FOOBAR'));
+    }
+
+    public function testUploadLib()
+    {
+        foreach (array(UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE, UPLOAD_ERR_PARTIAL, UPLOAD_ERR_NO_FILE, UPLOAD_ERR_NO_TMP_DIR, UPLOAD_ERR_CANT_WRITE, 'foo') as $error_code) {
+            $this->assertInternalType('string', COREPOS\Fannie\API\lib\UploadLib::errorToMessage($error_code));
+        }
+    }
+
+    public function testDispatch()
+    {
+        if (!class_exists('AdminIndexPage')) {
+            include(dirname(__FILE__) . '/../../fannie/admin/AdminIndexPage.php');
+        }
+        ob_start();
+        FannieDispatch::runPage('AdminIndexPage');
+        ob_end_clean();
     }
 }
 

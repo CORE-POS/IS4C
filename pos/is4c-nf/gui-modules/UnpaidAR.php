@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\BasicCorePage;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\PrehLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class UnpaidAR extends BasicCorePage 
@@ -38,7 +41,7 @@ class UnpaidAR extends BasicCorePage
 
             if (strtoupper($dec) == "CL"){
                 if (CoreLocal::get('memType') == 0){
-                    PrehLib::setMember(CoreLocal::get("defaultNonMem"), 1);
+                    COREPOS\pos\lib\MemberLib::setMember(CoreLocal::get("defaultNonMem"), 1);
                 }
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
@@ -94,7 +97,6 @@ class UnpaidAR extends BasicCorePage
         echo "<div id=\"footer\">";
         echo DisplayLib::printfooter();
         echo "</div>";
-        CoreLocal::set("msgrepeat",2);
     } // END body_content() FUNCTION
 }
 

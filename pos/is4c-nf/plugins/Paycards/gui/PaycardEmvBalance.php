@@ -22,34 +22,37 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
+if (!class_exists('AutoLoader')) include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class PaycardEmvBalance extends PaycardProcessPage 
 {
     private $prompt = false;
-    private $run_transaction = false;
+    private $runTransaction = false;
 
     function preprocess()
     {
         // check for posts before drawing anything, so we can redirect
-        if (isset($_REQUEST['reginput'])) {
-            $input = strtoupper(trim($_REQUEST['reginput']));
+        if (FormLib::get('reginput',false) !== false) {
+            $input = strtoupper(trim(FormLib::get('reginput')));
             // CL always exits
             if ($input == "CL") {
-                PaycardLib::paycard_reset();
+                $this->conf->reset();
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return false;
             } elseif ($input == "" || $input == 'MANUAL') {
                 $this->action = "onsubmit=\"return false;\"";    
-                $this->add_onload_command("emvSubmit();");
+                $this->addOnloadCommand("emvSubmit();");
                 if ($input == 'MANUAL') {
                     $this->prompt = true;
                 }
-                $this->run_transaction = true;
+                $this->runTransaction = true;
             }
             // if we're still here, we haven't accepted a valid amount yet; display prompt again
-        } elseif (isset($_REQUEST['xml-resp'])) {
-            $xml = $_REQUEST['xml-resp'];
+        } elseif (FormLib::get('xml-resp') !== '') {
+            $xml = FormLib::get('xml-resp');
             $this->emvResponseHandler($xml, true);
             return false;
         }
@@ -59,17 +62,17 @@ class PaycardEmvBalance extends PaycardProcessPage
 
     function head_content()
     {
-        if (!$this->run_transaction) {
+        if (!$this->runTransaction) {
             return '';
         }
-        $e2e = new MercuryE2E();
+        $e2e = new MercuryDC();
         ?>
 <script type="text/javascript" src="../js/emv.js"></script>
 <script type="text/javascript">
 function emvSubmit() {
     $('div.baseHeight').html('Processing transaction');
     // POST XML request to driver using AJAX
-    var xmlData = '<?php echo json_encode($e2e->prepareDataCapBalance(CoreLocal::get('CacheCardType'), $this->prompt)); ?>';
+    var xmlData = '<?php echo json_encode($e2e->prepareDataCapBalance($this->conf->get('CacheCardType'), $this->prompt)); ?>';
     if (xmlData == '"Error"') { // failed to save request info in database
         location = '<?php echo MiscLib::baseURL(); ?>gui-modules/boxMsg2.php';
         return false;
@@ -86,7 +89,7 @@ function emvSubmit() {
         <div class="baseHeight">
         <?php
         // generate message to print
-        echo PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_GIFT,"Check Card Balance?",
+        echo PaycardLib::paycardMsgBox("Check Card Balance?",
             "",
             "[enter] to continue<br>[clear] to cancel");
         ?>
@@ -95,5 +98,5 @@ function emvSubmit() {
     }
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new PaycardEmvBalance();
+AutoLoader::dispatch();
+

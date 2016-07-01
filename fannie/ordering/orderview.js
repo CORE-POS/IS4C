@@ -40,9 +40,9 @@ var orderView = (function($) {
     mod.confirmC = function(oid,tid,label){
         if (window.confirm("Are you sure you want to close this order as "+label+"?")){
             $.ajax({
-                url: 'ajax-calls.php',
+                url: 'OrderAjax.php',
                 type: 'post',
-                data: 'action=closeOrder&orderID='+oid+'&status='+tid
+                data: 'id='+oid+'&close='+tid
             }).done(function(){
                 window.location = $('#redirectURL').val();
             });
@@ -86,6 +86,11 @@ var orderView = (function($) {
         });
         $('#orderStatus').change(function() {
             mod.updateStatus($('#orderID').val(), $(this).val());
+            if ($(this).val() == 0) { // New No Call
+                $('#ctcselect').val(0); // No
+            } else if ($(this).val() == 3) { // New Call
+                $('#ctcselect').val(1); // Yes
+            }
         });
         $('#orderStore').change(function() {
             mod.updateStore($('#orderID').val(), $(this).val());
@@ -139,7 +144,27 @@ var orderView = (function($) {
         $('.itemChkA').change(function () {
             mod.toggleA($(this).data('order'), $(this).data('trans'));
         });
+        $('.add-po-btn').click(function(ev) {
+            ev.preventDefault();
+            var dstr = 'addPO=1&orderID=' + $(this).data('order');
+            dstr += '&transID='+$(this).data('trans');
+            dstr += '&storeID='+$(this).data('store');
+            var elem = $(this);
+            $.ajax({
+                url: 'OrderViewPage.php',
+                type: 'post',
+                data: dstr,
+                dataType: 'json'
+            }).done(function(resp) {
+                if (!resp.error && resp.poID) {
+                    elem.closest('span').html('<a href="../purchasing/ViewPurchaseOrders.php?id=' + resp.poID + '">In PO</a>');
+                    // want to check, not necessarily toggle
+                    //mod.toggleO(elem.data('order'), elem.data('trans'));
+                }
+            });
+        });
         $('.btn-search').click(mod.searchWindow);
+        bindAutoComplete('input.input-vendor', '../ws/', 'vendor');
     };
 
     mod.addUPC = function()
@@ -167,9 +192,9 @@ var orderView = (function($) {
     };
     mod.saveCtC = function (val,oid){
         $.ajax({
-            url: 'ajax-calls.php',
+            url: 'OrderAjax.php',
             type: 'post',
-            data: 'action=saveCtC&orderID='+oid+'&val='+val
+            data: 'id='+oid+'&ctc='+val
         });
     };
     mod.newQty = function (oid,tid){
@@ -194,25 +219,25 @@ var orderView = (function($) {
     };
     mod.savePN = function (oid,val){
         $.ajax({
-            url: 'ajax-calls.php',
+            url: 'OrderAjax.php',
             type: 'post',
-            data: 'action=savePN&val='+val+'&orderID='+oid
+            data: 'pn='+val+'&id='+oid
         });
     };
     mod.saveConfirmDate = function (val,oid){
         if (val){
             $.ajax({
-                url: 'ajax-calls.php',
+                url: 'OrderAjax.php',
                 type: 'post',
-                data: 'action=confirmOrder&orderID='+oid
+                data: 'id='+oid+'&confirm=1'
             }).done(function(resp){
                 $('#confDateSpan').html('Confirmed '+resp);
             });
         } else {
             $.ajax({
-                url: 'ajax-calls.php',
+                url: 'OrderAjax.php',
                 type: 'post',
-                data: 'action=unconfirmOrder&orderID='+oid
+                data: 'id='+oid+'&confirm=0'
             }).done(function(){
                 $('#confDateSpan').html('Not confirmed');
             });
@@ -292,9 +317,9 @@ var orderView = (function($) {
     };
     mod.updateStatus = function updateStatus(oid,val){
         $.ajax({
-            url: 'ajax-calls.php',
+            url: 'OrderAjax.php',
             type: 'post',
-            data: 'action=UpdateStatus&orderID='+oid+'&val='+val
+            data: 'id='+oid+'&status='+val
         }).done(function(resp){
             $('#statusdate'+oid).html(resp);	
         });
@@ -302,9 +327,9 @@ var orderView = (function($) {
     mod.updateStore = function updateStore(oid, val)
     {
         $.ajax({
-            url: 'ajax-calls.php',
+            url: 'OrderAjax.php',
             type: 'post',
-            data: 'action=UpdateStore&orderID='+oid+'&val='+val
+            data: 'id='+oid+'&store='+val
         });
     }
 

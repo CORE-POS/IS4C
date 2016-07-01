@@ -68,8 +68,6 @@ class CoopDealsReviewPage extends FanniePage
         $b_end = date('Y-m-d', strtotime(FormLib::get_form_value('bend',date('Y-m-d'))));
         $naming = FormLib::get_form_value('naming','');
         $upcs = FormLib::get_form_value('upc',array());
-        $prices = FormLib::get_form_value('price',array());
-        $names = FormLib::get_form_value('batch',array());
         $set = FormLib::get('deal-set');
         $batchIDs = array();
 
@@ -78,6 +76,10 @@ class CoopDealsReviewPage extends FanniePage
         } else {
             $superdept_grouping = "";
         }
+
+        list($upcIn, $args) = $dbc->safeInClause($upcs);
+        $args[] = $set;
+
         $saleItemsP = $dbc->prepare("
             SELECT t.upc,
                 t.price,
@@ -92,11 +94,11 @@ class CoopDealsReviewPage extends FanniePage
             FROM CoopDealsItems as t
                 " . DTrans::joinProducts('t', 'p', 'INNER') . "
                 LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
-            WHERE p.inUse=1
+            WHERE t.upc IN ({$upcIn})
                 AND t.dealSet=?
             ORDER BY s.super_name, t.upc
         ");
-        $saleItemsR = $dbc->execute($saleItemsP, array($set));
+        $saleItemsR = $dbc->execute($saleItemsP, $args);
 
         $batchP = $dbc->prepare('
             INSERT INTO batches (
@@ -180,13 +182,18 @@ class CoopDealsReviewPage extends FanniePage
                 p.brand,
                 p.description,
                 t.price,
-                CASE WHEN s.super_name IS NULL THEN 'sale' ELSE s.super_name END as batch,
+                MAX(CASE WHEN s.super_name IS NULL THEN 'sale' ELSE s.super_name END) as batch,
                 t.abtpr as subbatch
             FROM CoopDealsItems as t
-                " . DTrans::joinProducts('t', 'p', 'INNER') . "
+                LEFT JOIN products AS p ON t.upc=p.upc
                 LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
             WHERE t.dealSet=?
                 AND p.inUse=1
+            GROUP BY t.upc,
+                p.brand,
+                p.description,
+                t.price,
+                t.abtpr
             ORDER BY s.super_name,t.upc
         ");
         $result = $dbc->execute($query, array($set));
@@ -205,6 +212,7 @@ class CoopDealsReviewPage extends FanniePage
         <th>New Batch Name</th></tr>\n
         </thead><tbody>";
         while ($row = $dbc->fetch_row($result)) {
+            $ret .= sprintf('<input type="hidden" name="upc[]" value="%s" />', $row['upc']);
             $ret .= sprintf('<tr>
                         <td>%s</td>
                         <td>%s</td>

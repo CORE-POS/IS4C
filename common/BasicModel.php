@@ -157,11 +157,7 @@ class BasicModel
         if (empty($this->unique)) {
             $this->unique = array_keys(array_filter($this->columns,
                 function ($definition) {
-                    if (isset($definition['primary_key']) && $definition['primary_key']) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    return (isset($definition['primary_key']) && $definition['primary_key']);
                 }
             ));
         }
@@ -360,6 +356,8 @@ class BasicModel
         if (isset($definition['increment']) && $definition['increment']) {
             if ($dbms == 'mssql') {
                 $sql .= ' IDENTITY (1, 1) NOT NULL';
+            } elseif ($dbms === 'pgsql' || $dbms === 'pdo_pgsql') {
+                $sql = preg_replace('/$' . $type . '/', 'SERIAL', $sql, 1);
             } else {
                 $sql .= ' NOT NULL AUTO_INCREMENT';
             }
@@ -428,7 +426,7 @@ class BasicModel
         $exists = $this->connection->tableExists($this->fq_name);
         if (!$exists && !$this->create()) {
             $ret['error'] = 1;
-            $ret['details'] = $this->connection->error($db_name);
+            $ret['error_msg'] = $this->connection->error($db_name);
             $reflect = new \ReflectionClass($this);
             $ret['query'] = $reflect->getName() . '::create()';
         }
@@ -635,7 +633,7 @@ class BasicModel
       @param $dbms string DB name
       @return string
     */
-    protected function getMeta($type, $dbms)
+    public function getMeta($type, $dbms)
     {
         if (!isset($this->meta_types[strtoupper($type)])) {
             return $type;
@@ -1207,6 +1205,22 @@ class $name extends " . $this->new_model_namespace . ($as_view ? 'ViewModel' : '
         return json_encode($this->instance);
     }
 
+    public function toStdClass()
+    {
+        $ret = new \stdClass();
+        foreach ($this->columns as $name => $info) {
+            $val = null;
+            if (isset($this->instance[$name])) {
+                $val = $this->instance[$name];
+            } elseif (isset($this->instance['default'])) {
+                $val = $this->instance['default'];
+            }
+            $ret->{$name} = $val;
+        }
+
+        return $ret;
+    }
+
     /**
       Return an HTML string with <option> tags for
       each record. Table must have a single column 
@@ -1447,7 +1461,7 @@ class $name extends " . $this->new_model_namespace . ($as_view ? 'ViewModel' : '
                     }
                 }
                 $obj = new $class(null);
-                if (!is_a($obj, 'BasicModel')) {
+                if (!is_a($obj, 'COREPOS\\common\\BasicModel')) {
                     return $carry;
                 }
 
@@ -1465,7 +1479,7 @@ class $name extends " . $this->new_model_namespace . ($as_view ? 'ViewModel' : '
             array()
         );
         ksort($tables);
-        echo array_reduce(array_keys($table),
+        echo array_reduce(array_keys($tables),
             function ($carry, $item) {
                 return $carry . '* [' . $item . '](#' . strtolower($item) . ')' . "\n";
             },
@@ -1474,7 +1488,7 @@ class $name extends " . $this->new_model_namespace . ($as_view ? 'ViewModel' : '
         echo "\n";
         echo array_reduce($tables,
             function ($carry, $item) {
-                return $doc . "\n";
+                return $carry . $item . "\n";
             },
             ''
         ); 

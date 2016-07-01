@@ -90,7 +90,7 @@ public class SPH_Magellan_Locking : SerialPortHandler {
             Thread.Sleep(300);
             Beeps(2);
         }
-        else if (msg == "rePoll"){
+        else if (msg == "rePoll" || msg == "wakeup"){
             got_weight = false;
             safeWrite("S14\r");
         }

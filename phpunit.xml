@@ -15,11 +15,13 @@
             <file>tests/fannie/LogTest.php</file>
             <file>tests/fannie/MembersTest.php</file>
             <file>tests/fannie/ModelsTest.php</file>
+            <file>tests/fannie/MonitorsTest.php</file>
             <file>tests/fannie/OrdersTest.php</file>
             <file>tests/fannie/PagesFannieTest.php</file>
             <file>tests/fannie/PluginFannieTest.php</file>
             <file>tests/fannie/TagTest.php</file>
             <file>tests/fannie/TasksTest.php</file>
+            <file>tests/fannie/WebServicesTest.php</file>
             <file>tests/fannie/ConfigFannieTest.php</file>
 
             <file>tests/common/CommonTest.php</file>
@@ -68,14 +70,7 @@
                 <directory>fannie/src/Excel</directory>
                 <directory>fannie/src/fpdf</directory>
                 <directory>fannie/sync/special</directory>
-                <file>pos/is4c-nf/ajax-callbacks/ajax-cabreceipt.php</file>
-                <file>pos/is4c-nf/ajax-callbacks/ajax-decision.php</file>
-                <file>pos/is4c-nf/ajax-callbacks/ajax-end.php</file>
-                <file>pos/is4c-nf/ajax-callbacks/ajax-endorse.php</file>
-                <file>pos/is4c-nf/ajax-callbacks/ajax-parser.php</file>
-                <file>pos/is4c-nf/ajax-callbacks/ajax-poll-scale.php</file>
-                <file>pos/is4c-nf/ajax-callbacks/ajax-scale.php</file>
-                <file>pos/is4c-nf/ajax-callbacks/ddd.php</file>
+                <directory>pos/is4c-nf/ajax-callbacks/</directory>
                 <file>pos/is4c-nf/lib/Scanning/SpecialUPCs/HouseCoupon.php</file>
                 <directory>pos/is4c-nf/plugins</directory>
                 <directory>pos/is4c-nf/test</directory>

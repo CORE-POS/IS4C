@@ -20,6 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+use Endroid\QrCode\QrCode;
 include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
@@ -152,7 +154,27 @@ class SpecialOrderTags extends FannieRESTfulPage
             
             $upc = "454".str_pad($oid,6,'0',STR_PAD_LEFT).str_pad($tid,2,'0',STR_PAD_LEFT);
 
-            $pdf = $signage->drawBarcode($upc, $pdf, $posX+30, $posY+95, array('height'=>14,'fontsize'=>8));
+            $pdf = $signage->drawBarcode($upc, $pdf, $posX+10, $posY+95, array('height'=>14,'fontsize'=>8));
+
+            $reorder_url = 'http://wholefoods.coop/reorder/' . $oid . '-' . $tid;
+            if (class_exists('Endroid\\QrCode\\QrCode')) {
+                $qrImg = tempnam(sys_get_temp_dir(), 'qrc') . '.png';
+                $qrCode = new QrCode();
+                $qrCode->setText($reorder_url)
+                    ->setSize(60)
+                    ->setPadding(2)
+                    ->setErrorCorrection('high')
+                    ->setForegroundColor(array('r' => 0, 'g' => 0, 'b' => 0, 'a' => 0))
+                    ->setBackgroundColor(array('r' => 255, 'g' => 255, 'b' => 255, 'a' => 0))
+                    ->setLabelFontSize(6)
+                    ->render($qrImg);
+
+                $pdf->Image($qrImg, $posX+60, $posY+93);
+                unlink($qrImg);
+            }
+
+            $pdf->SetXY($posX,$posY+115);
+            $pdf->Cell(90,10,"Re-Order: $reorder_url", 0, 0, 'C');
 
             $count++;
         }
@@ -166,13 +188,11 @@ class SpecialOrderTags extends FannieRESTfulPage
     {
         ob_start();
         ?>
-        <script type="text/javascript">
         function toggleChecked(status){
             $(".cbox").each( function() {
                 $(this).attr("checked",status);
             });
         }
-        </script>
         <?php
 
         return ob_get_clean();

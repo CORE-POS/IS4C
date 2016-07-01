@@ -377,9 +377,10 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             return $row['orderID'];
         } else {
             $insQ = 'INSERT INTO PurchaseOrder (vendorID, creationDate,
-                placed, userID) VALUES (?, '.$dbc->now().', 0, ?)';
+                placed, userID, storeID) VALUES (?, '.$dbc->now().', 0, ?, ?)';
             $insP = $dbc->prepare($insQ);
-            $insR = $dbc->execute($insP, array($vendorID, $userID));
+            $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+            $insR = $dbc->execute($insP, array($vendorID, $userID, $store));
             return $dbc->insertID();
         }
     }
@@ -391,23 +392,24 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $model = new VendorsModel(FannieDB::get($FANNIE_OP_DB));
-        $ret = '';
-        $ret .= '<form class="form" action="EditOnePurchaseOrder.php" method="get">';
-        $ret .= '<div class="form-group">';
-        $ret .= '<label>Select a vendor</label>';
-        $ret .= '<select name="id" class="form-control">';
-        foreach($model->find('vendorName') as $vendor){
-            $ret .= sprintf('<option value="%d">%s</option>',
-                $vendor->vendorID(), $vendor->vendorName());
-        }
-        $ret .= '</select>';
-        $ret .= '</div>';
-        $ret .= '<p><button type="submit" class="btn btn-default">Go</button>';
-        $ret .= '&nbsp;&nbsp;&nbsp;';
-        $ret .= '<button type="button" class="btn btn-default"
-            onclick="location=\'PurchasingIndexPage.php\'; return false;">Home</button></p>';
-        $ret .= '</form>';
-        return $ret;
+        $vOpts = $model->toOptions();
+
+        return <<<HTML
+<form class="form" action="EditOnePurchaseOrder.php" method="get">
+    <div class="form-group">
+        <label>Select a vendor</label>
+        <select name="vendorID" class="form-control">
+            {$vOpts}
+        </select>
+    </div>
+    <p>
+        <button type="submit" class="btn btn-default">Go</button>
+        &nbsp;&nbsp;&nbsp;
+        <a class="btn btn-default" href="PurchasingIndexPage.php">Home</a>
+    </p>
+</form>
+HTML;
+
     }
 
     public function helpContent()

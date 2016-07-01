@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class tenderlist extends NoInputCorePage 
@@ -35,7 +39,6 @@ class tenderlist extends NoInputCorePage
             // javascript causes this input if the
             // user presses CL{enter}
             // Redirect to main screen
-            CoreLocal::set("tenderTotal","0");    
             $this->change_page($this->page_url."gui-modules/pos2.php");
             return false;
         }
@@ -44,7 +47,7 @@ class tenderlist extends NoInputCorePage
             // built department input string and set it
             // to be the next POS entry
             // Redirect to main screen
-            $input = CoreLocal::get("tenderTotal").$entered;
+            $input = FormLib::get('amt') . $entered;
             $this->change_page(
                 $this->page_url
                 . "gui-modules/pos2.php"
@@ -84,12 +87,14 @@ class tenderlist extends NoInputCorePage
     */
     function body_content()
     {
-        $db = Database::pDataConnect();
-        $q = "SELECT TenderCode,TenderName FROM tenders 
+        $amount = FormLib::get('amt', 0);
+        $dbc = Database::pDataConnect();
+        $res = $dbc->query("
+            SELECT TenderCode,TenderName 
+            FROM tenders 
             WHERE MaxAmount > 0
-                AND TenderModule <> 'DisabledTender'
-            ORDER BY TenderName";
-        $r = $db->query($q);
+                AND TenderModule NOT LIKE '%DisabledTender'
+            ORDER BY TenderName");
 
         echo "<div class=\"baseHeight\">"
             ."<div class=\"listbox\">"
@@ -99,7 +104,7 @@ class tenderlist extends NoInputCorePage
             ."size=\"15\" onblur=\"\$('#search').focus();\">";
 
         $selected = "selected";
-        while($row = $db->fetch_row($r)){
+        while ($row = $dbc->fetchRow($res)) {
             echo "<option value='".$row["TenderCode"]."' ".$selected.">";
             echo $row['TenderName'];
             echo '</option>';
@@ -113,12 +118,12 @@ class tenderlist extends NoInputCorePage
                 . '</div>';
         }
         echo "<div class=\"listboxText coloredText centerOffset\">";
-        if (CoreLocal::get("tenderTotal") >= 0) {
+        if ($amount >= 0) {
             echo _("tendering").' $';
         } else {
             echo _("refunding").' $';
         }
-        printf('%.2f',abs(CoreLocal::get("tenderTotal"))/100);
+        printf('%.2f',abs($amount)/100);
         echo '<br />';
         echo _("use arrow keys to navigate")
             . '<p><button type="submit" class="pos-button wide-button coloredArea">
@@ -129,6 +134,7 @@ class tenderlist extends NoInputCorePage
                 Cancel <span class="smaller">[clear]</span>
                 </button></p>'
             ."</div><!-- /.listboxText coloredText .centerOffset -->"
+            .'<input type="hidden" name="amt" value="' . $amount . '" />'
             ."</form>"
             ."<div class=\"clear\"></div>";
         echo "</div>";

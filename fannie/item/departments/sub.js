@@ -20,58 +20,70 @@
 
 *********************************************************************************/
 
-function showSubsForDept(did){
-	var d= 'did='+did+'&action=showSubsForDept';
-	var name = $('#deptselect option:selected').text();
-	$.ajax({
-		url: 'SubDeptEditor.php',
-		type: 'POST',
-		timeout: 5000,
-		data: d
-	}).fail(function(){
-        showBootstrapAlert('#alertarea', 'danger', 'Error loading sub departments');
-    }).done(function(resp){
-        $('#subselect').html(resp);
-        $('#subdiv').show();
-        $('#formdiv').show();
-        $('#subname').html('Subdepts in '+name);
-	});
+var subDept = (function($) {
+    var mod = {};
 
-}
+    var alertMsg = function(severity, msg) {
+        showBootstrapAlert('#alertarea', severity, msg);
+    };
 
-function addSub(){
-	var name = $('#newname').val();
-	var did = $('#deptselect').val();
-	var d = 'action=addSub&name='+name+'&did='+did;
-	$.ajax({
-		url: 'SubDeptEditor.php',
-		type: 'POST',
-		timeout: 5000,
-		data: d
-    }).fail(function() {
-        showBootstrapAlert('#alertarea', 'danger', 'Error creating sub department');
-    }).done(function(resp){
-        $('#subselect').html(resp);
-        $('#newname').val('');
-        showBootstrapAlert('#alertarea', 'success', 'Added sub department ' + name); 
-	});
-}
+    var errorMsg = function(msg) {
+        alertMsg('danger', msg);
+    };
 
-function deleteSub(){
-	var did = $('#deptselect').val();
-	var d = 'action=deleteSub&did='+did;
-	$('#subselect option:selected').each(function(){
-		d += '&sid[]='+$(this).val();
-	});
-	$.ajax({
-		url: 'SubDeptEditor.php',
-		type: 'POST',
-		timeout: 5000,
-		data: d
-    }).fail(function(){
-        showBootstrapAlert('#alertarea', 'danger', 'Error deleting sub department(s)');
-    }).done(function(resp){
-        $('#subselect').html(resp);
-        showBootstrapAlert('#alertarea', 'success', 'Deleted subdepartment(s)');
-	});
-}
+    var goodMsg = function(msg) {
+        alertMsg('success', msg);
+    };
+
+    mod.show = function(did) {
+        var d= 'did='+did+'&action=showSubsForDept';
+        var name = $('#deptselect option:selected').text();
+        $.ajax({
+            type: 'post',
+            data: d
+        }).fail(function(){
+            errorMsg('Error loading sub departments');
+        }).done(function(resp){
+            $('#subselect').html(resp);
+            $('#subdiv').show();
+            $('#formdiv').show();
+            $('#subname').html('Subdepts in '+name);
+        });
+    };
+
+    mod.add = function() {
+        var name = $('#newname').val();
+        var did = $('#deptselect').val();
+        var d = 'action=addSub&name='+name+'&did='+did;
+        $.ajax({
+            type: 'post',
+            data: d
+        }).fail(function() {
+            errorMsg('Error creating sub department');
+        }).done(function(resp){
+            $('#subselect').html(resp);
+            $('#newname').val('');
+            goodMsg('Added sub department ' + name);
+        });
+    };
+
+    mod.del = function() {
+        var did = $('#deptselect').val();
+        var d = 'action=deleteSub&did='+did;
+        $('#subselect option:selected').each(function(){
+            d += '&sid[]='+$(this).val();
+        });
+        $.ajax({
+            type: 'post',
+            data: d
+        }).fail(function(){
+            errorMsg('Error deleting sub department(s)');
+        }).done(function(resp){
+            $('#subselect').html(resp);
+            goodMsg('Deleted sub department(s)');
+        });
+    };
+
+    return mod;
+
+}(jQuery));

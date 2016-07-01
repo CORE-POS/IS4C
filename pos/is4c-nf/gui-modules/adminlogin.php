@@ -21,7 +21,12 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Authenticate;
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
 
 /* this module is intended for re-use. 
  * Pass the name of a class with the
@@ -48,6 +53,7 @@ class adminlogin extends NoInputCorePage
     private function getClass()
     {
         $class = FormLib::get('class');
+        $class = str_replace('-', '\\', $class);
         // make sure calling class implements required
         // method and properties
         $method = new ReflectionMethod($class, 'adminLoginCallback');

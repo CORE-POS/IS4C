@@ -62,6 +62,7 @@ class BatchSignStylesPage extends FannieRESTfulPage
         $mult['-1'] = '$X off';
         $mult['-2'] = 'X% off';
         $mult['-3'] = 'BOGO';
+        $mult['-4'] = 'Exact';
 
         return $mult;
     }

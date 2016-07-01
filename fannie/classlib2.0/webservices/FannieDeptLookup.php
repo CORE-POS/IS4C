@@ -21,10 +21,9 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\webservices 
-{
+namespace COREPOS\Fannie\API\webservices;
 
-class FannieDeptLookup extends FannieWebService 
+class FannieDeptLookup extends \COREPOS\Fannie\API\webservices\FannieWebService
 {
     
     public $type = 'json'; // json/plain by default
@@ -98,7 +97,7 @@ class FannieDeptLookup extends FannieWebService
         $dbc = \FannieDB::getReadOnly(\FannieConfig::factory()->get('OP_DB'));
         switch (strtolower($args->type)) {
             case 'settings':
-                $model = new DepartmentsModel($dbc);
+                $model = new \DepartmentsModel($dbc);
                 $model->dept_no($args->dept_no);
                 $model->load();
                 $ret['tax'] = $model->dept_tax();
@@ -183,13 +182,5 @@ class FannieDeptLookup extends FannieWebService
         }
     }
 
-}
-
-}
-
-namespace 
-{
-    // global namespace wrapper class
-    class FannieDeptLookup extends \COREPOS\Fannie\API\webservices\FannieDeptLookup {}
 }
 

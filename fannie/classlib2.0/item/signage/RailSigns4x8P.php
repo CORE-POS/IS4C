@@ -40,13 +40,7 @@ class RailSigns4x8P extends \COREPOS\Fannie\API\item\FannieSignage
     public function drawPDF()
     {
         $pdf = new \FPDF('P', 'mm', 'Letter');
-        if (\COREPOS\Fannie\API\FanniePlugin::isEnabled('CoopDealsSigns')) {
-            $this->font = 'Gill';
-            $this->alt_font = 'GillBook';
-            define('FPDF_FONTPATH', dirname(__FILE__) . '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
-            $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
-            $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
-        }
+        $pdf = $this->loadPluginFonts($pdf);
 
         $bar_width = 50;
         $pdf->SetTopMargin($this->top);  //Set top margin of the page

@@ -1,5 +1,8 @@
 <?php
 
+namespace COREPOS\pos\lib\LocalStorage;
+use \Iterator;
+
 /**
   @class LocalStorage
 
@@ -13,8 +16,6 @@
 
 class LocalStorage implements Iterator
 {
-
-    protected $immutables = array();
 
     protected $iterator_position = 0;
     protected $iterator_keys = array();
@@ -46,40 +47,13 @@ class LocalStorage implements Iterator
       Save the value with the given key
       @param $key A unique key string
       @param $val The value (mixed)
-      @param $immutable the value is a constant
 
       The value can be any PHP type that the
       underlying mechanism can store.
     */
-    public function set($key,$val,$immutable=false)
+    public function set($key,$val)
     {
         debug($key);
-    }
-
-    /**
-      Store an immutable value by key
-      @param $key A unique key string
-      @param $val The value (mixed)
-
-      Values are saved in LocalStorage::immutables
-    */
-    protected function immutableSet($key,$val)
-    {
-        $this->immutables[$key] = $val;
-    }
-    
-    /**
-      Check if a key is present in immutables
-      @param $key A unique key string
-      @return bool
-    */
-    public function isImmutable($key)
-    {
-        if (isset($this->immutables[$key])) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     /**
@@ -142,12 +116,9 @@ class LocalStorage implements Iterator
         $this->iterator_keys = $this->iteratorKeys();
     }
 
-    /**
-      Iterator interface helper for child classes
-    */
     public function iteratorKeys()
     {
-        return array_keys($this->immutables);
+        return array();
     }
 }
 

@@ -1,4 +1,12 @@
 <?php
+
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\parser\PreParser;
+use COREPOS\pos\parser\Parser;
+use COREPOS\pos\parser\PostParser;
+
 include(dirname(__FILE__).'/../../pos/is4c-nf/parser-class-lib/PreParser.php');
 include(dirname(__FILE__).'/../../pos/is4c-nf/parser-class-lib/Parser.php');
 if (!class_exists('lttLib')) {
@@ -20,7 +28,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertNotEmpty($chain);
         foreach($chain as $class){
             $instance = new $class();
-            $this->assertInstanceOf('PreParser',$instance);
+            $this->assertInstanceOf('COREPOS\\pos\\parser\\PreParser',$instance);
             // just for coverage; not vital functionality
             $this->assertNotEquals(0, strlen($instance->doc()));
         }
@@ -30,7 +38,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertNotEmpty($chain);
         foreach($chain as $class){
             $instance = new $class();
-            $this->assertInstanceOf('Parser',$instance);
+            $this->assertInstanceOf('COREPOS\\pos\\parser\\Parser',$instance);
             // just for coverage; not vital functionality
             $this->assertNotEquals(0, strlen($instance->doc()));
         }
@@ -105,8 +113,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     function testCcMenu()
     {
         $plugins = CoreLocal::get('PluginList');
-        CoreLocal::set('PluginList', array('Paycards'));
-        $obj = new CCMenu();
+        CoreLocal::set('PluginList', array('Paycards'), true);
+        $obj = new COREPOS\pos\parser\preparse\CCMenu();
         $this->assertEquals(true, $obj->check('CC'));
         $this->assertEquals('QM1', $obj->parse('CC'));
         CoreLocal::set('PluginList', $plugins);
@@ -114,7 +122,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testMemStatusToggle()
     {
-        $obj = new MemStatusToggle();
+        $obj = new COREPOS\pos\parser\preparse\MemStatusToggle();
         $this->assertEquals(false, $obj->check('foo'));
         $this->assertEquals('foo', $obj->parse('foo'));
     }
@@ -145,16 +153,16 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testWakeup()
     {
-        $obj = new Wakeup();
+        $obj = new COREPOS\pos\parser\parse\Wakeup();
         $this->assertEquals(true, $obj->check('WAKEUP'));
 
         $out = $obj->parse('WAKEUP');
-        $this->assertEquals('rePoll', $out['udpmsg']);
+        $this->assertEquals('wakeup', $out['udpmsg']);
     }
 
     function testToggleReceipt()
     {
-        $obj = new ToggleReceipt();
+        $obj = new COREPOS\pos\parser\parse\ToggleReceipt();
         CoreLocal::set('receiptToggle', 0);
         $obj->parse('NR');
         $this->assertEquals(1, CoreLocal::get('receiptToggle'));
@@ -165,12 +173,12 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testTotals()
     {
-        $t = new Totals();
+        $t = new COREPOS\pos\parser\parse\Totals();
 
         $out = $t->parse('FNTL');
         $this->assertEquals('/fsTotalConfirm.php', substr($out['main_frame'], -19));
         $out = $t->parse('TETL');
-        $this->assertEquals('=Totals', substr($out['main_frame'], -7));
+        $this->assertEquals('-Totals', substr($out['main_frame'], -7));
         lttLib::clear();
         CoreLocal::set('percentDiscount', 10);
         CoreLocal::set('fsTaxExempt', 1);
@@ -183,14 +191,14 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $t->parse('TL');
         $this->assertEquals('/memlist.php', substr($out['main_frame'], -12));
         lttLib::clear();
-        PrehLib::setMember(1, 1);
+        COREPOS\pos\lib\MemberLib::setMember(1, 1);
         $out = $t->parse('TL');
         $this->assertNotEquals(0, strlen($out['output']));
         $this->assertEquals(true, $out['redraw_footer']);
         lttLib::clear();
         $out = $t->parse('WICTL');
         $this->assertNotEquals(0, strlen($out['output']));
-        $this->assertEquals(true, Totals::requestInfoCallback('1234'));
+        $this->assertEquals(true, COREPOS\pos\parser\parse\Totals::requestInfoCallback('1234'));
         lttLib::clear();
 
         // just for coverage of omtr_ttl 
@@ -200,7 +208,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testTenderOut()
     {
-        $to = new TenderOut();
+        $to = new COREPOS\pos\parser\parse\TenderOut();
         $this->assertEquals(true, $to->check('TO'));
 
         CoreLocal::set('LastID', 0);
@@ -208,7 +216,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(0, strlen($out['output']));
 
         lttLib::clear();
-        PrehLib::deptkey(10, 100);
+        COREPOS\pos\lib\DeptLib::deptkey(10, 100);
         $out = $to->parse('TO');
         $this->assertNotEquals(0, strlen($out['output']));
 
@@ -224,20 +232,19 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testTenderKey()
     {
-        $tk = new TenderKey();
+        $tk = new COREPOS\pos\parser\parse\TenderKey();
         $this->assertEquals(true, $tk->check('TT'));
         $out = $tk->parse('TT');
-        $this->assertEquals('/tenderlist.php', substr($out['main_frame'], -15));
+        $this->assertNotEquals(false, strstr($out['main_frame'], '/tenderlist.php'));
 
         $this->assertEquals(true, $tk->check('100TT'));
         $out = $tk->parse('100TT');
-        $this->assertEquals('/tenderlist.php', substr($out['main_frame'], -15));
-        $this->assertEquals(100, CoreLocal::get('tenderTotal'));
+        $this->assertNotEquals(false, strstr($out['main_frame'], '/tenderlist.php'));
     }
 
     function testSigTermCommands()
     {
-        $st = new SigTermCommands();
+        $st = new COREPOS\pos\parser\parse\SigTermCommands();
 
         $this->assertEquals(true, $st->check('TERMAUTOENABLE'));
         $this->assertEquals('direct', CoreLocal::get('PaycardsStateChange'));
@@ -318,7 +325,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testReceiptCoupon()
     {
-        $rc = new ReceiptCoupon();
+        $rc = new COREPOS\pos\parser\parse\ReceiptCoupon();
         $one = 'RC9901001'; // expire 2099-01-01
         $two = 'RC0001001'; // expire 2000-01-01
         $this->assertEquals(true, $rc->check($one));
@@ -331,7 +338,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testEndOfShift()
     {
-        $e = new EndOfShift();
+        $e = new COREPOS\pos\parser\parse\EndOfShift();
         $this->assertEquals(true, $e->check('ES'));
         $out = $e->parse('ES');
         lttLib::clear();
@@ -342,7 +349,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testSteering()
     {
-        $obj = new Steering();
+        $obj = new COREPOS\pos\parser\parse\Steering();
 
         CoreLocal::set('LastID', 1);
         $obj->check('CAB');
@@ -367,7 +374,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('LastID', 0);
         $obj->check('UNDO');
         $out = $obj->parse('UNDO');
-        $this->assertEquals('=UndoAdminLogin', substr($out['main_frame'], -15));
+        $this->assertEquals('-UndoAdminLogin', substr($out['main_frame'], -15));
 
         $obj->check('SK');
         $out = $obj->parse('SK');
@@ -376,11 +383,11 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $obj->parse('DDD');
         $this->assertEquals('/DDDReason.php', substr($out['main_frame'], -14));
 
-        CoreLocal::set('SecuritySR', 21);
+        CoreLocal::set('SecuritySR', 21, true);
         $obj->check('MG');
         $out = $obj->parse('MG');
-        $this->assertEquals('=SusResAdminLogin', substr($out['main_frame'], -17));
-        CoreLocal::set('SecuritySR', 0);
+        $this->assertEquals('-SusResAdminLogin', substr($out['main_frame'], -17));
+        CoreLocal::set('SecuritySR', 0, true);
         $obj->check('MG');
         $out = $obj->parse('MG');
         $this->assertEquals('/adminlist.php', substr($out['main_frame'], -14));
@@ -431,18 +438,18 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
         $obj->check('PO');
         $out = $obj->parse('PO');
-        $this->assertEquals('=PriceOverrideAdminLogin', substr($out['main_frame'], -24));
+        $this->assertEquals('-PriceOverrideAdminLogin', substr($out['main_frame'], -24));
 
         CoreLocal::set('memType', 1);
         $obj->check('MSTG');
         $out = $obj->parse('MSTG');
         $this->assertNotEquals(0, strlen($out['output']));
         CoreLocal::set('memType', 0);
-        CoreLocal::set('SecuritySR', 21);
+        CoreLocal::set('SecuritySR', 21, true);
         $obj->check('MSTG');
         $out = $obj->parse('MSTG');
-        $this->assertEquals('=MemStatusAdminLogin', substr($out['main_frame'], -20));
-        CoreLocal::set('SecuritySR', 0);
+        $this->assertEquals('-MemStatusAdminLogin', substr($out['main_frame'], -20));
+        CoreLocal::set('SecuritySR', 0, true);
         $obj->check('MSTG');
         $out = $obj->parse('MSTG');
         $this->assertNotEquals(0, strlen($out['output']));
@@ -472,7 +479,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testStackableDiscount()
     {
-        $sd = new StackableDiscount();
+        $sd = new COREPOS\pos\parser\parse\StackableDiscount();
         $this->assertEquals(false, $sd->check('ZSD'));
         CoreLocal::set('tenderTotal', 1);
         $this->assertEquals(true, $sd->check('100SD'));
@@ -497,7 +504,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     function testScrollItems()
     {
         $inputs = array('D', 'U', 'D5', 'U5');
-        $obj = new ScrollItems();
+        $obj = new COREPOS\pos\parser\parse\ScrollItems();
         foreach ($inputs as $input) {
             $this->assertEquals(true, $obj->check($input));
             $out = $obj->parse($input);
@@ -507,7 +514,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testScaleInput()
     {
-        $obj = new ScaleInput();
+        $obj = new COREPOS\pos\parser\parse\ScaleInput();
         $out = $obj->parse('S111234');
         $this->assertEquals(1, CoreLocal::get('scale'));
         $this->assertEquals(12.34, CoreLocal::get('weight'));
@@ -520,11 +527,11 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testRepeatKey()
     {
-        $rk = new RepeatKey();
+        $rk = new COREPOS\pos\parser\parse\RepeatKey();
         $this->assertEquals(true, $rk->check('*'));
         $this->assertEquals(true, $rk->check('*2'));
         $dbc = Database::tDataConnect();
-        $upc = new UPC();
+        $upc = new COREPOS\pos\parser\parse\UPC();
         lttLib::clear();
         $out = $rk->parse('*');
         $this->assertNotEquals(0, strlen($out['output']));
@@ -548,7 +555,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testRRR()
     {
-        $r = new RRR();
+        $r = new COREPOS\pos\parser\parse\RRR();
         $this->assertEquals(true, $r->check('RRR'));
         $this->assertEquals(true, $r->check('2*RRR'));
         CoreLocal::set('LastID', 0);
@@ -561,7 +568,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testPartialReceipt()
     {
-        $obj = new PartialReceipt();
+        $obj = new COREPOS\pos\parser\parse\PartialReceipt();
         $out = $obj->parse('PP');
         $this->assertEquals('partial', $out['receipt']);
         $this->assertNotEquals(0, strlen($out['output']));
@@ -569,7 +576,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testMemberID()
     {
-        $m = new MemberID();
+        $m = new COREPOS\pos\parser\parse\MemberID();
         $this->assertEquals(true, $m->check('1ID'));
         $out = $m->parse('0ID');
         $this->assertNotEquals(0, strlen($out['output']));
@@ -579,8 +586,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $out = $m->parse('1ID');
         $this->assertEquals('/memlist.php?idSearch=1', substr($out['main_frame'], -23));
         CoreLocal::set('memberID', 1);
-        CoreLocal::set('defaultNonMem', 99999);
-        CoreLocal::set('RestrictDefaultNonMem', 1);
+        CoreLocal::set('defaultNonMem', 99999, true);
+        CoreLocal::set('RestrictDefaultNonMem', 1, true);
         $out = $m->parse('99999ID');
         $this->assertNotEquals(0, strlen($out['output']));
         CoreState::memberReset();
@@ -592,15 +599,15 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testLock()
     {
-        $obj = new Lock();
+        $obj = new COREPOS\pos\parser\parse\Lock();
         $out = $obj->parse('LOCK');
         $this->assertEquals('/login3.php', substr($out['main_frame'], -11));
     }
 
     function testDonationKey()
     {
-        $d = new DonationKey();
-        CoreLocal::set('roundUpDept', 1);
+        $d = new COREPOS\pos\parser\parse\DonationKey();
+        CoreLocal::set('roundUpDept', 1, true);
         $this->assertEquals(true, $d->check('RU'));
         $this->assertEquals(true, $d->check('2RU'));
         $dbc = Database::tDataConnect();
@@ -619,7 +626,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testDiscountApplied()
     {
-        $sd = new DiscountApplied();
+        $sd = new COREPOS\pos\parser\parse\DiscountApplied();
         $this->assertEquals(false, $sd->check('ZDA'));
         CoreLocal::set('tenderTotal', 1);
         $this->assertEquals(true, $sd->check('100DA'));
@@ -643,18 +650,17 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testDeptKey()
     {
-        $d = new DeptKey();
+        $d = new COREPOS\pos\parser\parse\DeptKey();
         CoreLocal::set('refund', 1);
         CoreLocal::set('SpecialDeptMap', false);
         $out = $d->parse('1.00DP');
-        $this->assertEquals('/deptlist.php', substr($out['main_frame'], -13));
-        $this->assertEquals('RF100', CoreLocal::get('departmentAmount'));
+        $this->assertNotEquals(false, strstr($out['main_frame'], '/deptlist.php'));
         $this->assertInternalType('array', CoreLocal::get('SpecialDeptMap'));
         CoreLocal::set('refundComment', '');
-        CoreLocal::set('SecurityRefund', 21);
+        CoreLocal::set('SecurityRefund', 21, true);
         $out = $d->parse('100DP10');
-        $this->assertEquals('=RefundAdminLogin', substr($out['main_frame'], -17));
-        CoreLocal::set('SecurityRefund', 0);
+        $this->assertEquals('-RefundAdminLogin', substr($out['main_frame'], -17));
+        CoreLocal::set('SecurityRefund', 0, true);
         $out = $d->parse('100DP10');
         $this->assertEquals('/refundComment.php', substr($out['main_frame'], -18));
         CoreLocal::set('refund', 0);
@@ -662,7 +668,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testBalanceCheck()
     {
-        $obj = new BalanceCheck();
+        $obj = new COREPOS\pos\parser\parse\BalanceCheck();
         $this->assertEquals(true, $obj->check('BQ'));
         $out = $obj->parse('BQ');
         $this->assertNotEquals(0, strlen($out['output']));
@@ -670,7 +676,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testComment()
     {
-        $cm = new Comment();
+        $cm = new COREPOS\pos\parser\parse\Comment();
         lttLib::clear();
         $out = $cm->parse('CMTEST');
         $dbc = Database::tDataConnect();
@@ -683,7 +689,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testClear()
     {
-        $obj = new Clear();
+        $obj = new COREPOS\pos\parser\parse\Clear();
         $out = $obj->parse('CL');
         $this->assertEquals(0, CoreLocal::get('msgrepeat'));
         $this->assertEquals('', CoreLocal::get('strRemembered'));
@@ -694,15 +700,14 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testCheckKey()
     {
-        $obj = new CheckKey();
+        $obj = new COREPOS\pos\parser\parse\CheckKey();
         $out = $obj->parse('100CQ');
-        $this->assertEquals(100, CoreLocal::get('tenderTotal'));
-        $this->assertEquals('/checklist.php', substr($out['main_frame'], -14));
+        $this->assertNotEquals(false, strstr($out['main_frame'], '/checklist.php'));
     }
 
     function testAutoTare()
     {
-        $tare = new AutoTare();
+        $tare = new COREPOS\pos\parser\parse\AutoTare();
         $this->assertEquals(true, $tare->check('TW'));
         $this->assertEquals(true, $tare->check('5TW'));
         CoreLocal::set('weight', 0);
@@ -735,7 +740,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
         // test regular price item
         lttLib::clear();
-        $u = new UPC();
+        $u = new COREPOS\pos\parser\parse\UPC();
         $this->assertEquals(true, $u->check('666'));
         $json = $u->parse('666');
         $this->assertInternalType('array', $json);
@@ -753,7 +758,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new Void();
+        $v = new COREPOS\pos\parser\parse\Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInternalType('array', $json);
@@ -768,7 +773,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
         CoreLocal::set('quantity', 2);
         CoreLocal::set('multiple', 1);
-        $u = new UPC();
+        $u = new COREPOS\pos\parser\parse\UPC();
         $this->assertEquals(true, $u->check('666'));
         $json = $u->parse('666');
         $this->assertInternalType('array', $json);
@@ -786,7 +791,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 2;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new Void();
+        $v = new COREPOS\pos\parser\parse\Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInternalType('array', $json);
@@ -803,7 +808,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('multiple', 0);
         CoreLocal::set('refund', 1);
         CoreLocal::set('refundComment', 'TEST REFUND');
-        $u = new UPC();
+        $u = new COREPOS\pos\parser\parse\UPC();
         $this->assertEquals(true, $u->check('666'));
         $json = $u->parse('666');
         $this->assertInternalType('array', $json);
@@ -822,7 +827,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new Void();
+        $v = new COREPOS\pos\parser\parse\Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInternalType('array', $json);
@@ -837,7 +842,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
         CoreLocal::set('refund', 0);
         CoreLocal::set('refundComment', '');
-        $u = new UPC();
+        $u = new COREPOS\pos\parser\parse\UPC();
         $this->assertEquals(true, $u->check('4627'));
         $json = $u->parse('4627');
         $this->assertInternalType('array', $json);
@@ -867,7 +872,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $drecord['voided'] = 2;
         lttLib::verifyRecord(2, $drecord, $this);
         CoreLocal::set('currentid', 1);
-        $v = new Void();
+        $v = new COREPOS\pos\parser\parse\Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInternalType('array', $json);
@@ -882,7 +887,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         // test member sale
         lttLib::clear();
         CoreLocal::set('isMember', 1);
-        $u = new UPC();
+        $u = new COREPOS\pos\parser\parse\UPC();
         $this->assertEquals(true, $u->check('0003049488122'));
         $json = $u->parse('0003049488122');
         $this->assertInternalType('array', $json);
@@ -911,7 +916,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $drecord['voided'] = 2;
         lttLib::verifyRecord(2, $drecord, $this);
         CoreLocal::set('currentid', 1);
-        $v = new Void();
+        $v = new COREPOS\pos\parser\parse\Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInternalType('array', $json);
@@ -926,7 +931,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         // test member sale as non-member
         lttLib::clear();
         CoreLocal::set('isMember', 0);
-        $u = new UPC();
+        $u = new COREPOS\pos\parser\parse\UPC();
         $this->assertEquals(true, $u->check('0003049488122'));
         $json = $u->parse('0003049488122');
         $this->assertInternalType('array', $json);
@@ -948,7 +953,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new Void();
+        $v = new COREPOS\pos\parser\parse\Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInternalType('array', $json);
@@ -964,7 +969,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     function testOpenRings()
     {
         lttLib::clear();
-        $d = new DeptKey();
+        $d = new COREPOS\pos\parser\parse\DeptKey();
         $this->assertEquals(true, $d->check('100DP10'));
         $json = $d->parse('100DP10');
         $this->assertInternalType('array', $json);
@@ -981,7 +986,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new Void();
+        $v = new COREPOS\pos\parser\parse\Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInternalType('array', $json);
@@ -995,7 +1000,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
         CoreLocal::set('refund', 1);
         CoreLocal::set('refundComment', 'TEST REFUND');
-        $d = new DeptKey();
+        $d = new COREPOS\pos\parser\parse\DeptKey();
         $this->assertEquals(true, $d->check('100DP10'));
         $json = $d->parse('100DP10');
         $this->assertInternalType('array', $json);
@@ -1013,7 +1018,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['ItemQtty'] = 1;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new Void();
+        $v = new COREPOS\pos\parser\parse\Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInternalType('array', $json);
@@ -1035,7 +1040,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
             include (dirname(__FILE__) . '/lttLib.php');
         }
         lttLib::clear();
-        $upc = new UPC();
+        $upc = new COREPOS\pos\parser\parse\UPC();
         $upc->parse('0000000000111');
         $record = lttLib::genericRecord();
         $record['upc'] = '0000000000111';
@@ -1053,7 +1058,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $record['discountable'] = 1;
         $record['mixMatch'] = '499';
         lttLib::verifyRecord(1, $record, $this);
-        $tfs = new TaxFoodShift();
+        $tfs = new COREPOS\pos\parser\parse\TaxFoodShift();
         $tfs->parse('TFS');
         $record['tax'] = 0;
         $record['foodstamp'] = 1;
@@ -1064,19 +1069,24 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testLineItemDiscount()
     {
-        $ld = new LineItemDiscount();
+        $ld = new COREPOS\pos\parser\parse\LineItemDiscount();
         $this->assertEquals(true, $ld->check('LD'));
+        $ld->parse('LD');
+        $upc = new COREPOS\pos\parser\parse\UPC();
+        $upc->parse('111');
+        $ld->parse('LD');
+        TransRecord::addtender('tender', 'TT', 1);
         $ld->parse('LD');
         lttLib::clear();
     }
 
     function testDefaultTender()
     {
-        $t = new DefaultTender();
+        $t = new COREPOS\pos\parser\parse\DefaultTender();
         $this->assertEquals(true, $t->check('123ZZ'));
         $this->assertEquals(true, $t->check('CA'));
         $this->assertInternalType('array', $t->parse('CA'));
-        $d = new DeptKey();
+        $d = new COREPOS\pos\parser\parse\DeptKey();
         $d->parse('100DP10'); // avoid ending transaction
         $this->assertInternalType('array', $t->parse('1CA'));
         lttLib::clear();
@@ -1084,8 +1094,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testUPC()
     {
-        $u = new UPC();
-        foreach (array(UPC::SCANNED_PREFIX, UPC::MACRO_PREFIX, UPC::HID_PREFIX, UPC::GS1_PREFIX) as $prefix) {
+        $u = new COREPOS\pos\parser\parse\UPC();
+        foreach (array(COREPOS\pos\parser\parse\UPC::SCANNED_PREFIX, COREPOS\pos\parser\parse\UPC::MACRO_PREFIX, COREPOS\pos\parser\parse\UPC::HID_PREFIX, COREPOS\pos\parser\parse\UPC::GS1_PREFIX) as $prefix) {
             $this->assertEquals(true, $u->check($prefix . '4011'));
         }
         $scaleUPC = '0XA0020121000199';
@@ -1121,8 +1131,8 @@ class ParsersTest extends PHPUnit_Framework_TestCase
             $this->assertEquals($a, $u->expandUPCE($e));
         }
 
-        $this->assertEquals(false, UPC::requestInfoCallback('foo'));
-        $this->assertNotEquals(false, UPC::requestInfoCallback('20000101'));
+        $this->assertEquals(false, COREPOS\pos\parser\parse\UPC::requestInfoCallback('foo'));
+        $this->assertNotEquals(false, COREPOS\pos\parser\parse\UPC::requestInfoCallback('20000101'));
 
         // cover item-not-found
         $this->assertInternalType('array', $u->parse('0041234512345'));
@@ -1135,7 +1145,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
     function testDriverStatus()
     {
-        $ds = new DriverStatus();
+        $ds = new COREPOS\pos\parser\parse\DriverStatus();
         $this->assertEquals(true, $ds->check('POS'));
         $this->assertInternalType('array', $ds->parse('POS'));
     }

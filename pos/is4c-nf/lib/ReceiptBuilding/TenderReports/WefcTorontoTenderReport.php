@@ -22,6 +22,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\TenderReports;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\ReceiptLib;
+use \CoreLocal;
+
 /**
   @class WefcTorontoTenderReport
   Like PFC tender report except reports for the entire
@@ -209,7 +215,7 @@ static public function get(){
         
     $cashierR = $db_a->query($cashierQ);
 
-    for ($i = 0; $i < $row = $db_a->fetch_array($cashierR); $i++) {
+    for ($i = 0; $i < $row = $db_a->fetchRow($cashierR); $i++) {
             $cashier_names .= $row['cashier'].", ";
     }
 
@@ -346,7 +352,7 @@ static public function get(){
         $sum = 0;
 
         for ($i = 0; $i < $numRows; $i++) {
-            $row = $db_a->fetch_array($result);
+            $row = $db_a->fetchRow($result);
             $timeStamp = self::timeStamp($row["$tDate"]);
             if ($itemize == 1 && $row["total"]) {
                 $receipt .= "  ".substr($timeStamp.$blank, 0, 10)
@@ -425,7 +431,7 @@ static private function trTotal($codes,$label,$listEach=False,$reportIfNone=True
             " ORDER BY " . self::$tDate;
     }
     $tenderR = $db_a->query($tenderQ);
-    $tender = $db_a->fetch_array($tenderR);
+    $tender = $db_a->fetchRow($tenderR);
     $numRows = $db_a->num_rows($tenderR);
     $ret = '';
     // Reports even if 0. reportIfNone
@@ -443,7 +449,7 @@ static private function trTotal($codes,$label,$listEach=False,$reportIfNone=True
         $ret .= ReceiptLib::centerString(self::$dashLine)."1\n";
         $ret .= $fieldNames;
         for ($i = 0; $i < $numRows; $i++) {
-            $row = $db_a->fetch_array($tenderR);
+            $row = $db_a->fetchRow($tenderR);
             $timeStamp = TenderReport::timeStamp($row["self::$tDate"]);
             $ret .= "  ".substr($timeStamp.$blank, 0, 10)
                 .substr($row["register_no"].$blank, 0, 9)

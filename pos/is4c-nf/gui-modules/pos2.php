@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\BasicCorePage;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\ReceiptLib;
+
 session_cache_limiter('nocache');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -33,7 +38,7 @@ class pos2 extends BasicCorePage
     {
         $this->display = "";
 
-        $ajax = new AjaxParser();
+        $ajax = new COREPOS\pos\ajax\AjaxParser();
         $ajax->enablePageDrawing(false);
         $json = $ajax->ajax(array('field'=>'reginput'));
         $redirect = $this->doRedirect($json);

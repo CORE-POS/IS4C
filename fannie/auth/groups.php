@@ -60,7 +60,7 @@ function addGroup($group,$user){
 
   $gidQ = $sql->prepare("select max(gid) from userGroups");
   $gidR = $sql->execute($gidQ);
-  $row = $sql->fetch_array($gidR);
+  $row = $sql->fetchRow($gidR);
   $gid = $row[0] + 1;
 
   $addQ = $sql->prepare("insert into userGroups values (?,?,?)");
@@ -242,14 +242,14 @@ function detailGroup($group){
   $usersR = $sql->execute($usersQ,array($group));
   
   $gid = 0;
-  while ($row = $sql->fetch_array($usersR)){
+  while ($row = $sql->fetchRow($usersR)){
     $ret['gid'] = $row[0];
     $ret['users'][] = $row[1];
   }
 
   $authsQ = $sql->prepare("select auth,sub_start,sub_end from userGroupPrivs where gid=? order by auth");
   $authsR = $sql->execute($authsQ,array($ret['gid']));
-  while ($row = $sql->fetch_array($authsR)){
+  while ($row = $sql->fetchRow($authsR)){
     $ret['auths'][] = array($row[0], $row[1], $row[2]);
   }
 

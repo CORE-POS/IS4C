@@ -43,7 +43,7 @@ else {
   $q = $sql->prepare("select projDesc, notes, link, priority from projects where projID=?");
   $r = $sql->execute($q, array($projID));
 
-  $row = $sql->fetch_array($r);
+  $row = $sql->fetchRow($r);
   $olddesc = $row['projDesc'];
   $oldnotes = preg_replace('/<br \/>/',"\n",$row['notes']); 
   $oldlink = $row['link'];
@@ -52,7 +52,7 @@ else {
   $emailQ = $sql->prepare("select email from project_parties where projID=? order by email");
   $emailR = $sql->execute($emailQ, array($projID));
   $emaillist = "";
-  while ($emailW = $sql->fetch_array($emailR))
+  while ($emailW = $sql->fetchRow($emailR))
     $emaillist .= $emailW[0].", ";
   $emaillist = substr($emaillist,0,strlen($emaillist)-2);
 ?>

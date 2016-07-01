@@ -29,7 +29,7 @@ if (isset($_POST['add'])){
     
     $namesQ = $sql->prepare("select FirstName,LastName from is4c_op.custdata where CardNo=? and personNum=1");
     $namesR = $sql->execute($namesQ, array($cardno));
-    $namesW = $sql->fetch_array($namesR);
+    $namesW = $sql->fetchRow($namesR);
     $fname = $namesW[0];
     $lname = $namesW[1];
     

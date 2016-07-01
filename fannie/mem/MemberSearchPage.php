@@ -60,7 +60,7 @@ class MemberSearchPage extends FanniePage {
 
             /* process each available search and merge the
                results */
-            FannieAPI::listModules('MemberModule');
+            FannieAPI::listModules('COREPOS\Fannie\API\member\MemberModule');
             foreach($FANNIE_MEMBER_MODULES as $mm){
                 if (class_exists($mm)) {
                     $instance = new $mm();
@@ -78,8 +78,8 @@ class MemberSearchPage extends FanniePage {
             /* if modules find exactly one member, go directly to
                the result */
             if (count($this->results) == 1){
-                $num = array_pop(array_keys($this->results));
-                header("Location: MemberEditor.php?memNum=".$num);
+                $mem = array_pop($this->results);
+                header("Location: MemberEditor.php?memNum=".$mem['cardNo']);
                 return False;
             }
 
@@ -147,7 +147,7 @@ class MemberSearchPage extends FanniePage {
             </div>';
         $searchJS = '';
         $load = array();
-        FannieAPI::listModules('MemberModule');
+        FannieAPI::listModules('COREPOS\Fannie\API\member\MemberModule');
         foreach ($this->config->get('MEMBER_MODULES') as $mm) {
             if (class_exists($mm)) {
                 $instance = new $mm();

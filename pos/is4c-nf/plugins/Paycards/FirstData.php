@@ -21,8 +21,12 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\plugins\Paycards\sql\PaycardRequest;
+use COREPOS\pos\plugins\Paycards\sql\PaycardResponse;
+use COREPOS\pos\plugins\Paycards\xml\XmlData;
+
 if (!class_exists("BasicCCModule")) include_once(realpath(dirname(__FILE__)."/BasicCCModule.php"));
-if (!class_exists("xmlData")) include_once(realpath(dirname(__FILE__)."/lib/xmlData.php"));
 if (!class_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/PaycardLib.php"));
 
 if (!class_exists("AutoLoader")) include_once(realpath(dirname(__FILE__).'/../../lib/AutoLoader.php'));
@@ -38,7 +42,16 @@ define('FD_KEY_PASSWD','');
 
 */
 
-class FirstData extends BasicCCModule {
+class FirstData extends BasicCCModule 
+{
+    
+    private $pmod;
+    public function __construct()
+    {
+        $this->pmod = new PaycardModule();
+        $this->pmod->setDialogs(new PaycardDialogs());
+        $this->conf = new PaycardConf();
+    }
 
     function handlesType($type){
         if ($type == PaycardLib::PAYCARD_TYPE_CREDIT) return True;
@@ -47,7 +60,7 @@ class FirstData extends BasicCCModule {
 
     function handleResponse($authResult)
     {
-        switch(CoreLocal::get("paycard_mode")){
+        switch($this->conf->get("paycard_mode")){
         case PaycardLib::PAYCARD_MODE_AUTH:
             return $this->handleResponseAuth($authResult);
         case PaycardLib::PAYCARD_MODE_VOID:
@@ -57,41 +70,43 @@ class FirstData extends BasicCCModule {
 
     function entered($validate,$json)
     {
-        $this->trans_pan['pan'] = CoreLocal::get("paycard_PAN");
-        return PaycardModule::ccEntered($this->trans_pan['pan'], $validate, $json);
+        $this->trans_pan['pan'] = $this->conf->get("paycard_PAN");
+        return $this->pmod->ccEntered($this->trans_pan['pan'], $validate, $json);
     }
 
-    function paycard_void($transID,$laneNo=-1,$transNo=-1,$json=array()) 
+    function paycardVoid($transID,$laneNo=-1,$transNo=-1,$json=array()) 
     {
         $this->voidTrans = "";
         $this->voidRef = "";
-        return PaycardModule::ccVoid($transID, $laneNo, $transNo, $json);
+        return $this->pmod->ccVoid($transID, $laneNo, $transNo, $json);
     }
 
-    function handleResponseAuth($authResult)
+    private function statusToCode($statusMsg)
     {
-        $inner_xml = $this->desoapify("SOAP-ENV:Body",$authResult['response']);
-        $xml = new xmlData($inner_xml);
+        switch (strtoupper($statusMsg)) {
+            case 'APPROVED':
+                return 1;
+            case 'DECLINED':
+            case 'FRAUD':
+                return 2;
+            case 'FAILED':
+            case 'DUPLICATE':
+                return 0;
+        } 
+
+        return 4;
+    }
+
+    protected function handleResponseAuth($authResult)
+    {
+        $innerXml = $this->desoapify("SOAP-ENV:Body",$authResult['response']);
+        $xml = new XmlData($innerXml);
         $request = $this->last_request;
         $this->last_paycard_transaction_id = $request->last_paycard_transaction_id;
-        $response = new PaycardResponse($request, $authResult);
-        $dbTrans = PaycardLib::paycard_db();
+        $response = new PaycardResponse($request, $authResult, PaycardLib::paycard_db());
 
-        $cvv2 = CoreLocal::get("paycard_cvv2");
-
-        $validResponse = ($xml->isValid()) ? 1 : 0;
         $statusMsg = $xml->get("fdggwsapi:TransactionResult");
-        $responseCode = 4;
-        switch(strtoupper($statusMsg)){
-        case 'APPROVED':
-            $responseCode=1; break;
-        case 'DECLINED':
-        case 'FRAUD':
-            $responseCode=2; break;
-        case 'FAILED':
-        case 'DUPLICATE':
-            $responseCode=0; break;
-        }
+        $responseCode = $this->statusToCode($statusMsg);
         $response->setResponseCode($responseCode);
         // aren't two separate codes from goemerchant
         $resultCode = $responseCode;
@@ -109,59 +124,59 @@ class FirstData extends BasicCCModule {
             $response->saveResponse();
         } catch (Exception $ex) { }
 
-        $comm = PaycardModule::commError($authResult);
+        $comm = $this->pmod->commError($authResult);
         if ($comm !== false) {
             TransRecord::addcomment('');
             return $comm;
         }
 
-        switch ($responseCode){
+        switch ($responseCode) {
             case 1: // APPROVED
                 return PaycardLib::PAYCARD_ERR_OK;
             case 2: // DECLINED
-                CoreLocal::set("boxMsg",'Card Declined');
+                $this->conf->set("boxMsg",'Card Declined');
                 break;
             case 0: // ERROR
                 $texts = $xml->get_first("fdggwsapi:ProcessorResponseMessage");
-                CoreLocal::set("boxMsg","Error: $texts");
+                $this->conf->set("boxMsg","Error: $texts");
                 break;
             default:
-                CoreLocal::set("boxMsg","An unknown error occurred<br />at the gateway");
+                $this->conf->set("boxMsg","An unknown error occurred<br />at the gateway");
         }
         return PaycardLib::PAYCARD_ERR_PROC;
     }
 
-    function handleResponseVoid($authResult){
+    protected function handleResponseVoid($authResult){
         throw new Exception('Void not implemented');
     }
 
     function cleanup($json=array())
     {
-        switch(CoreLocal::get("paycard_mode")){
+        switch($this->conf->get("paycard_mode")){
         case PaycardLib::PAYCARD_MODE_AUTH:
             // cast to string. tender function expects string input
             // numeric input screws up parsing on negative values > $0.99
-            $amt = "".(-1*(CoreLocal::get("paycard_amount")));
-            $t_type = 'CC';
-            if (CoreLocal::get('paycard_issuer') == 'American Express')
-                $t_type = 'AX';
+            $amt = "".(-1*($this->conf->get("paycard_amount")));
+            $tType = 'CC';
+            if ($this->conf->get('paycard_issuer') == 'American Express')
+                $tType = 'AX';
             // if the transaction has a non-zero PaycardTransactionID,
             // include it in the tender line
-            $record_id = $this->last_paycard_transaction_id;
-            $charflag = ($record_id != 0) ? 'PT' : '';
-            TransRecord::addFlaggedTender("Credit Card", $t_type, $amt, $record_id, $charflag);
-            CoreLocal::set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[void] to cancel and void</font>");
-            if (CoreLocal::get("paycard_amount") <= CoreLocal::get("CCSigLimit") && CoreLocal::get("paycard_amount") >= 0){
-                CoreLocal::set("boxMsg","<b>Approved</b><font size=-1><p>No signature required<p>[enter] to continue<br>[void] to cancel and void</font>");
+            $recordID = $this->last_paycard_transaction_id;
+            $charflag = ($recordID != 0) ? 'PT' : '';
+            TransRecord::addFlaggedTender("Credit Card", $tType, $amt, $recordID, $charflag);
+            $this->conf->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[void] to cancel and void</font>");
+            if ($this->conf->get("paycard_amount") <= $this->conf->get("CCSigLimit") && $this->conf->get("paycard_amount") >= 0){
+                $this->conf->set("boxMsg","<b>Approved</b><font size=-1><p>No signature required<p>[enter] to continue<br>[void] to cancel and void</font>");
             }    
             break;
         case PaycardLib::PAYCARD_MODE_VOID:
-            $void = new Void();
-            $void->voidid(CoreLocal::get("paycard_id"), array());
-            CoreLocal::set("boxMsg","<b>Voided</b><p><font size=-1>[enter] to continue<br>\"rp\" to reprint slip</font>");
+            $void = new COREPOS\pos\parser\parse\Void();
+            $void->voidid($this->conf->get("paycard_id"), array());
+            $this->conf->set("boxMsg","<b>Voided</b><p><font size=-1>[enter] to continue<br>\"rp\" to reprint slip</font>");
             break;    
         }
-        if (CoreLocal::get("paycard_amount") > CoreLocal::get("CCSigLimit") || CoreLocal::get("paycard_amount") < 0)
+        if ($this->conf->get("paycard_amount") > $this->conf->get("CCSigLimit") || $this->conf->get("paycard_amount") < 0)
             $json['receipt'] = "ccSlip";
         return $json;
     }
@@ -170,49 +185,44 @@ class FirstData extends BasicCCModule {
     {
         switch($type){
         case PaycardLib::PAYCARD_MODE_AUTH: 
-            return $this->send_auth();
+            return $this->sendAuth();
         case PaycardLib::PAYCARD_MODE_VOID: 
-            return $this->send_void(); 
+            return $this->sendVoid(); 
         default:
-            PaycardLib::paycard_reset();
+            $this->conf->reset();
             return $this->setErrorMsg(0);
         }
     }    
 
-    function send_auth()
+    protected function sendAuth()
     {
         $dbTrans = PaycardLib::paycard_db();
         if( !$dbTrans){
-            PaycardLib::paycard_reset();
+            $this->conf->reset();
             return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // database error, nothing sent (ok to retry)
         }
 
-        $request = new PaycardRequest($this->refnum(CoreLocal::get('paycard_id')));
+        $request = new PaycardRequest($this->refnum($this->conf->get('paycard_id')), $dbTrans);
         $request->setProcessor('FirstData');
         $mode = 'sale';
-        $this->trans_pan['pan'] = CoreLocal::get("paycard_PAN");
+        $this->trans_pan['pan'] = $this->conf->get("paycard_PAN");
         $cardPAN = $this->trans_pan['pan'];
-        $cardExM = substr(CoreLocal::get("paycard_exp"),0,2);
-        $cardExY = substr(CoreLocal::get("paycard_exp"),2,2);
-        $cardTr1 = CoreLocal::get("paycard_tr1");
-        $cardTr2 = CoreLocal::get("paycard_tr2");
-        $cardTr3 = CoreLocal::get("paycard_tr3");
-        $request->setCardholder(CoreLocal::get("paycard_name"));
-        $cvv2 = CoreLocal::get("paycard_cvv2");
+        $cardExM = substr($this->conf->get("paycard_exp"),0,2);
+        $cardExY = substr($this->conf->get("paycard_exp"),2,2);
+        $cardTr1 = $this->conf->get("paycard_tr1");
+        $cardTr2 = $this->conf->get("paycard_tr2");
+        $request->setCardholder($this->conf->get("paycard_name"));
 
-        if (CoreLocal::get("training") == 1){
+        if ($this->conf->get("training") == 1){
             $cardPAN = "4111111111111111";
-            $cardPANmasked = "xxxxxxxxxxxxTEST";
-            $cardIssuer = "Visa";
-            $cardTr1 = False;
-            $cardTr2 = False;
+            $cardTr1 = $cardTr2 = false;
             $request->setCardholder("Just Testing");
             $nextyear = mktime(0,0,0,date("m"),date("d"),date("Y")+1);
             $cardExM = date("m",$nextyear);
             $cardExY = date("y",$nextyear);
         }
         $request->setPAN($cardPAN);
-        $request->setIssuer(CoreLocal::get("paycard_issuer"));
+        $request->setIssuer($this->conf->get("paycard_issuer"));
 
         $sendPAN = 0;
         $sendExp = 0;
@@ -231,16 +241,12 @@ class FirstData extends BasicCCModule {
             $sendTr2 = 1;
             $magstripe .= ";".$cardTr2."?";
         }
-        if ($cardTr2 && $cardTr3){
-            $sendPAN = 1;
-            $magstripe .= ";".$cardTr3."?";
-        }
         $request->setSent($sendPAN, $sendExp, $sendTr1, $sendTr2);
 
         try {
             $request->saveRequest();
         } catch (Exception $ex) {
-            PaycardLib::paycard_reset();
+            $this->conf->reset();
             return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
         }
 
@@ -249,30 +255,29 @@ class FirstData extends BasicCCModule {
         $xml = '<fdggwsapi:FDGGWSApiOrderRequest  
              xmlns:v1="http://secure.linkpt.net/fdggwsapi/schemas_us/v1" 
               xmlns:fdggwsapi="http://secure.linkpt.net/fdggwsapi/schemas_us/fdggwsapi"> 
-             <v1:Transaction>';
-
-        $xml .= "<v1:CreditCardTxType> 
-               <v1:Type>$mode</v1:Type> 
-              </v1:CreditCardTxType>";
-          $xml .= "<v1:CreditCardData> 
-               <v1:CardNumber>$pan</v1:CardNumber> 
-               <v1:ExpMonth>$cardExM</v1:ExpMonth> 
-               <v1:ExpYear>$cardExY</v1:ExpYear> 
-               <v1:CardCodeValue>$cvv2</v1:CardCodeValue>
-              </v1:CreditCardData>";
-        $xml .= "<v1:Payment>
-            <v1:ChargeTotal>" . $request->formattedAmount() . "</v1:ChargeTotal> 
-            </v1:Payment>";
-        $xml .= "<v1:TransactionDetails>
-            <v1:OrderId>" . $request->refNum . "</v1:OrderId>
-            <v1:Ip>" . filter_input(INPUT_SERVER, 'REMOTE_ADDR') . "</v1:Ip>
-            </v1:TransactionDetails>";
-        $xml .= '</v1:Transaction> 
-            </fdggwsapi:FDGGWSApiOrderRequest>';
+<v1:Transaction>
+    <v1:CreditCardTxType> 
+        <v1:Type>' . $mode . '</v1:Type> 
+    </v1:CreditCardTxType>
+    <v1:CreditCardData> 
+        <v1:CardNumber>' . $cardPAN . '</v1:CardNumber> 
+        <v1:ExpMonth>' . $cardExM . '</v1:ExpMonth> 
+        <v1:ExpYear>' . $cardExY . '</v1:ExpYear> 
+    </v1:CreditCardData>
+    <v1:Payment>
+        <v1:ChargeTotal>' . $request->formattedAmount() . '</v1:ChargeTotal> 
+    </v1:Payment>
+    <v1:TransactionDetails>
+        <v1:OrderId>' . $request->refNum . '</v1:OrderId>
+        <v1:Ip>' . filter_input(INPUT_SERVER, 'REMOTE_ADDR') . '</v1:Ip>
+    </v1:TransactionDetails>
+</v1:Transaction> 
+</fdggwsapi:FDGGWSApiOrderRequest>';
 
         $this->GATEWAY = "https://ws.firstdataglobalgateway.com/fdggwsapi/services/order.wsdl";
-        if ($live == 0)
+        if ($this->conf->get("training") == 1) {
             $this->GATEWAY = "https://ws.merchanttest.firstdataglobalgateway.com/fdggwsapi/services/order.wsdl";
+        }
 
         $extraCurlSetup = array(
             CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
@@ -286,17 +291,16 @@ class FirstData extends BasicCCModule {
         return $this->curlSend($soaptext,'SOAP',True,$extraCurlSetup);
     }
 
-    var $void_trans;
-    var $void_ref;
-    function send_void($amt,$pan,$exp){
+    protected function sendVoid()
+    {
         throw new Exception('Void not implemented');
     }
 
-    function refnum($transID)
+    public function refnum($transID)
     {
-        $transNo   = (int)CoreLocal::get("transno");
-        $cashierNo = (int)CoreLocal::get("CashierNo");
-        $laneNo    = (int)CoreLocal::get("laneno");    
+        $transNo   = (int)$this->conf->get("transno");
+        $cashierNo = (int)$this->conf->get("CashierNo");
+        $laneNo    = (int)$this->conf->get("laneno");    
 
         // assemble string
         $ref = "";
@@ -320,7 +324,7 @@ class FirstData extends BasicCCModule {
       @param $namespace include an xmlns attribute
       @return soap string
     */
-    function soapify($action,$objs,$namespace="",$encode_tags=True){
+    protected function soapify($action,$objs,$namespace="",$encode_tags=True){
         $ret = "<?xml version=\"1.0\"?>
             <SOAP-ENV:Envelope";
         foreach ($this->SOAP_ENVELOPE_ATTRS as $attr){

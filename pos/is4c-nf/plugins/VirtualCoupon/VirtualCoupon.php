@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 class VirtualCoupon extends Plugin {
 
     public $plugin_settings = array(

@@ -96,6 +96,16 @@ class BatchTypeEditor extends FanniePage {
 
             return false; // ajax call
         }
+        if (FormLib::get('savePartial') !== '') {
+            $model->batchTypeID(FormLib::get('bid'));
+            $model->allowSingleStore(FormLib::get('savePartial'));
+            if ($model->save() === false) {
+                $json['error'] = 'Error saving SO eligibility';
+            }
+            echo json_encode($json);
+
+            return false; // ajax call
+        }
         if (FormLib::get('saveUI') !== '') {
             $model->batchTypeID(FormLib::get('bid'));
             $model->editorUI(FormLib::get('saveUI'));
@@ -137,6 +147,7 @@ class BatchTypeEditor extends FanniePage {
             <th>Discount Type</th>
             <th>Dated Signs</th>
             <th title="Special Order Eligible">SO Eligible</th>
+            <th title="Allow one-store only Batches">Partials</th>
             <th>Editing Interface</th>
             <th>&nbsp;</td>
         </tr>';
@@ -169,6 +180,12 @@ class BatchTypeEditor extends FanniePage {
                     <input type="checkbox" %s onchange="batchTypeEditor.saveSO.call(this, %d);" />
                     </td>',
                     ($obj->specialOrderEligible() ? 'checked' : ''),
+                    $obj->batchTypeID()
+                );
+        $ret .= sprintf('<td align="center">
+                    <input type="checkbox" %s onchange="batchTypeEditor.savePartial.call(this, %d);" />
+                    </td>',
+                    ($obj->allowSingleStore() ? 'checked' : ''),
                     $obj->batchTypeID()
                 );
         $ret .= sprintf('<td>
@@ -234,6 +251,9 @@ class BatchTypeEditor extends FanniePage {
             <p><i>SO Eligible</i> controls how sale pricing interacts with special
             orders. If a sale type is special order eligible, customers who order
             items that are currently on sale will get the sale price.</p>
+            <p><i>Partial</i> is only relevant in multistore deployments. If partial
+            is enabled batches of that type may be applied to only one store. For
+            batch types where partial is disabled the batch must apply to all stores.</p>
             <p><i>Editor Interface</i> is an option to provide alternate tools to
             create batches. Some more complex types of sales do not fit neatly
             into the standard batch editor. The current options are:

@@ -1,0 +1,46 @@
+{
+    "name": "core-pos/core-pos",
+    "description": "A Point of Sale System for Co-ops",
+    "license": "GPL2",
+    "type": "package",
+    "homepage": "https://github.com/CORE-POS/IS4C",
+    "authors": [
+        {
+            "name": "Andy Theuninck",
+            "email": "andy@wholefoods.coop"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/CORE-POS/IS4C/issues",
+        "wiki": "https://github.com/CORE-POS/IS4C/wiki",
+        "source": "https://github.com/CORE-POS/IS4C"
+    },
+    "require": {
+        "components/jquery": "1.11.1",
+        "components/bootstrap": "3.2.*",
+        "components/bootstrap-default": "~3.2",
+        "phpmailer/phpmailer": "~5.2",
+        "psr/log": "~1.0",
+        "sabre/vobject": "~3.4",
+        "endroid/qrcode": "~1.5",
+        "itbz/fpdf": "~1.7",
+        "phpoffice/phpexcel": "^1.8",
+        "mailchimp/mailchimp": "^2.0",
+        "datto/json-rpc-http": "^3.1",
+        "ircmaxell/password-compat": "^1.0",
+        "predis/predis": "^1.0",
+        "symfony/http-foundation": "^2.6",
+        "domisys/image_barcode2": "^3.0",
+        "everyman/neo4jphp": "dev-master",
+        "sebastian/git": "^2.1",
+        "corepos/composer-installer": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.5.*",
+        "squizlabs/php_codesniffer": "2.*",
+        "codeclimate/php-test-reporter": "^0.2.0"
+    },
+    "config": {
+        "component-dir": "fannie/src/javascript/composer-components/"
+    }
+}

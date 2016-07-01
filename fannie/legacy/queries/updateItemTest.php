@@ -62,7 +62,7 @@ $local = (isset($_POST["local"])) ? (int)$_POST["local"] : 0;
 */
 $deptSubQ = $sql->prepare("select superID from MasterSuperDepts where dept_ID = ?");
 $deptSubR = $sql->execute($deptSubQ, array($dept));
-$deptSubW = $sql->fetch_array($deptSubR);
+$deptSubW = $sql->fetchRow($deptSubR);
 $deptSub = $deptSubW[0];
 if (!$validatedUser && !$auditedUser && $logged_in){
   $validatedUser = validateUserQuiet('pricechange',$deptSub);
@@ -163,7 +163,7 @@ $model->pushToLanes();
 
 $query1 = $sql->prepare("SELECT * FROM products WHERE upc = ?");
 $result1 = $sql->execute($query1, array($upc));
-$row = $sql->fetch_array($result1);
+$row = $sql->fetchRow($result1);
 $strMod = strtotime($row['modified']);
 //echo $strMod;
 //$modDate = date('Y-m-j h:i:s',$strMod);
@@ -399,7 +399,7 @@ if(!empty($likeCode)){
         //echo $selectQ;
         $selectR = $sql->execute($selectQ, array($likeCode));
         $prodUpdate = new ProdUpdateModel($sql);
-        while($selectW = $sql->fetch_array($selectR)){
+        while($selectW = $sql->fetchRow($selectR)){
            $upcL = $selectW['upc'];
            if($upcL != $upc){
                 $prodUpdate->reset();
@@ -430,7 +430,7 @@ echo "<table>";
         $dept=$row[12];
         $query2 = $sql->prepare("SELECT * FROM departments where dept_no = ?");
         $result2 = $sql->execute($query2, array($dept));
-    $row2 = $sql->fetch_array($result2);
+    $row2 = $sql->fetchRow($result2);
     echo "<td>";
         echo $dept . ' ' . 
     $row2['dept_name'];

@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use \AutoLoader;
+use \ReflectionClass;
+
 /**
   @class AjaxCallback
 */
@@ -46,7 +50,9 @@ class AjaxCallback
     public static function run()
     {
         $callback_class = get_called_class();
-        if (basename($_SERVER['PHP_SELF']) === $callback_class . '.php') {
+        $file = filter_input(INPUT_SERVER, 'SCRIPT_FILENAME');
+        $nsClass = AutoLoader::fileToFullClass($file);
+        if ($callback_class === $nsClass || basename($file) === $callback_class . '.php') {
             ini_set('display_errors', 'off');
             /** 
               timing calls is off by default. uncomment start

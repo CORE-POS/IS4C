@@ -447,12 +447,14 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             array_shift($this->colors);
         }
 
+        $otherStore = $this->getOtherStore($store, $week->obfWeekID());
+
         $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
         $cat = new ObfCategoriesModelV2($dbc);
         $cat->hasSales(0);
         $cat->name('Admin');
         foreach ($cat->find('name') as $c) {
-        $data[] = $this->headerRow($c->name());
+            $data[] = $this->headerRow($c->name());
             $labor->obfCategoryID($c->obfCategoryID());
             $labor->load();
 
@@ -468,7 +470,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $total_hours->quarterActual += $quarter['hours'];
             $total_hours->quarterProjected += $qt_proj_hours;
 
-            list($proj_hours, $trend_hours) = $this->projectHours($c, $total_sales->projected, $total_sales->trend);
+            list($proj_hours, $trend_hours) = $this->projectHours($c, $total_sales->projected+$otherStore['plan'], $total_sales->trend);
             list($proj_wages, $trend_wages) = $this->projectWages($labor, $proj_hours, $trend_hours);
 
             $data[] = array(
@@ -476,12 +478,12 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 '',
                 number_format($proj_hours, 0),
                 '',
-                number_format($trend_hours, 0),
+                '',//number_format($trend_hours, 0),
                 number_format($labor->hours(), 0),
                 '',
                 '',
                 number_format($labor->hours() - $proj_hours, 0),
-                number_format($quarter['hours'] - $qt_proj_hours, 0),
+                '',//number_format($quarter['hours'] - $qt_proj_hours, 0),
                 'meta' => FannieReportPage::META_COLOR,
                 'meta_background' => $this->colors[0],
                 'meta_foreground' => 'black',
@@ -493,14 +495,14 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $data[] = array(
                 'Sales per Hour',
                 '',
-                sprintf('%.2f', $total_sales->projected / $proj_hours),
+                sprintf('%.2f', ($total_sales->projected+$otherStore['plan']) / $proj_hours),
                 '',
-                sprintf('%.2f', $total_sales->trend / $trend_hours),
-                number_format($labor->hours() == 0 ? 0 : $total_sales->thisYear / $labor->hours(), 2),
+                '',//sprintf('%.2f', $total_sales->trend / $trend_hours),
+                number_format($labor->hours() == 0 ? 0 : ($total_sales->thisYear+$otherStore['actual']) / $labor->hours(), 2),
                 '',
                 '',
                 number_format(($labor->hours() == 0 ? 0 : $total_sales->thisYear/$labor->hours()) - ($total_sales->projected / $proj_hours), 2),
-                number_format($quarter_actual_sph - $quarter_proj_sph, 2),
+                '',//number_format($quarter_actual_sph - $quarter_proj_sph, 2),
                 'meta' => FannieReportPage::META_COLOR,
                 'meta_background' => $this->colors[0],
                 'meta_foreground' => 'black',
@@ -522,16 +524,32 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $data[] = $this->headerRow('Total Organization');
 
         $data[] = array(
+            'Sales',
+            number_format($total_sales->lastYear+$otherStore['lastYear'], 0),
+            number_format($total_sales->projected+$otherStore['plan'], 0),
+            '',
+            '',
+            number_format($total_sales->thisYear+$otherStore['actual'], 0),
+            sprintf('%.2f%%', $this->percentGrowth($total_sales->thisYear+$otherStore['actual'], $total_sales->lastYear+$otherStore['lastYear'])),
+            '',
+            number_format(($total_sales->thisYear+$otherStore['actual']) - ($total_sales->projected+$otherStore['plan']), 0),
+            '',
+            'meta' => FannieReportPage::META_COLOR,
+            'meta_background' => $this->colors[0],
+            'meta_foreground' => 'black',
+        );
+
+        $data[] = array(
             'Hours',
             '',
-            number_format($total_hours->projected, 0),
-            '',
-            number_format($total_hours->trend, 0),
-            number_format($total_hours->actual, 0),
+            number_format($total_hours->projected+$otherStore['planHours'], 0),
             '',
             '',
-            number_format($total_hours->actual - $total_hours->projected, 0),
-            number_format($qtd_hours_ou, 0),
+            number_format($total_hours->actual+$otherStore['hours'], 0),
+            '',
+            '',
+            number_format(($total_hours->actual+$otherStore['hours']) - ($total_hours->projected+$otherStore['planHours']), 0),
+            '',
             'meta' => FannieReportPage::META_COLOR,
             'meta_background' => $this->colors[0],
             'meta_foreground' => 'black',
@@ -542,14 +560,14 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $data[] = array(
             'Sales per Hour',
             '',
-            sprintf('%.2f', $total_sales->projected / $total_hours->projected),
-            '',
-            sprintf('%.2f', $total_sales->trend / $total_hours->trend),
-            number_format($total_hours->actual == 0 ? 0 : $total_sales->thisYear / $total_hours->actual, 2),
+            sprintf('%.2f', ($total_sales->projected+$otherStore['plan']) / ($total_hours->projected+$otherStore['planHours'])),
             '',
             '',
-            number_format(($total_hours->actual == 0 ? 0 : $total_sales->thisYear/$total_hours->actual) - ($total_sales->projected/$total_hours->projected), 2),
-            number_format($quarter_actual_sph - $quarter_proj_sph, 2),
+            number_format($total_hours->actual == 0 ? 0 : ($total_sales->thisYear+$otherStore['actual']) / ($total_hours->actual+$otherStore['hours']), 2),
+            '',
+            '',
+            number_format($total_hours->actual == 0 ? 0 : (($total_sales->thisYear+$otherStore['actual'])/($total_hours->actual+$otherStore['hours'])) - (($total_sales->projected+$otherStore['plan'])/($total_hours->projected+$otherStore['planHours'])), 2),
+            '',//number_format($quarter_actual_sph - $quarter_proj_sph, 2),
             'meta' => FannieReportPage::META_COLOR,
             'meta_background' => $this->colors[0],
             'meta_foreground' => 'black',
@@ -564,6 +582,75 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $data[] = $this->ownershipThisYear($dbc, $end_ts);
 
         return $data;
+    }
+
+    private function getOtherStore($storeID, $weekID)
+    {
+        $dbc = $this->connection;
+        $conf = $this->config->get('PLUGIN_SETTINGS');
+        $dbc->selectDB($conf['ObfDatabaseV2']);
+        /**
+          Get sales, plan, and transactions from cache
+          Loops through categories to project hours for
+          each individual category based on sales
+        */
+        $query = $dbc->prepare('
+            SELECT SUM(actualSales) AS actual,
+                SUM(lastYearSales) AS lastYear,
+                MAX(transactions) AS trans,
+                MAX(lastYearTransactions) AS lyTrans,
+                SUM(lastYearSales * (1+s.growthTarget)) AS plan,
+                s.obfCategoryID AS catID
+            FROM ObfSalesCache AS s
+                INNER JOIN ObfCategories AS c ON s.obfCategoryID=c.obfCategoryID
+            WHERE s.obfWeekID=?
+                AND c.storeID=?
+            GROUP BY s.obfCategoryID');
+        $args = array($weekID, $storeID==1?2:1);
+        $info = array('actual'=>0, 'lastYear'=>0, 'trans'=>0, 'lyTrans'=>0, 'plan'=>0);
+        $res = $dbc->execute($query, $args);
+        $cat = new ObfCategoriesModelV2($dbc);
+        $plan = array();
+        while ($row = $dbc->fetchRow($res)) {
+            $info['actual'] += $row['actual'];
+            $info['lastYear'] += $row['lastYear'];
+            $info['trans'] = $row['trans'];
+            $info['lyTrans'] = $row['lyTrans'];
+            $info['plan'] += $row['plan'];
+            $cat->obfCategoryID($row['catID']);
+            $cat->load();
+            $plan[$row['catID']] = $this->projectHours($cat, $row['plan'], $row['plan']);
+        }
+
+        /**
+          Get additional hours & wages from non-inventory labor
+          Plan hours is built from hours projected in the previous loop
+          If plan hours was NOT previously calculated it means the category has
+          no sales and should use total store sales for projecting instead
+        */
+        $extra = $dbc->prepare('
+            SELECT hours,
+                l.obfCategoryID AS catID
+            FROM ObfLabor AS l
+                INNER JOIN ObfCategories AS c ON l.obfCategoryID=c.obfCategoryID
+            WHERE l.obfWeekID=?
+                AND c.storeID=?');
+        $info['hours'] = 0;
+        $info['planHours'] = 0;
+        $res = $dbc->execute($extra, $args);
+        while ($row = $dbc->fetchRow($res)) {
+            $info['hours'] += $row['hours'];
+            if (isset($plan[$row['catID']])) {
+                $info['planHours'] += $plan[$row['catID']][0];
+            } else {
+                $cat->obfCategoryID($row['catID']);
+                $cat->load();
+                list($tmpP, $tmpT) = $this->projectHours($cat, $info['plan'], $info['plan']);
+                $info['planHours'] += $tmpP;
+            }
+        }
+
+        return $info;
     }
 }
 

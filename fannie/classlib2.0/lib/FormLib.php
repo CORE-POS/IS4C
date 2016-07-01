@@ -539,6 +539,7 @@ HTML;
         $end_date = self::getDate('date2', date('Y-m-d'));
         $dlog = DTransactionsModel::selectDlog($start_date, $end_date);
         $lookupType = self::get('lookup-type', 'dept');
+        $store = self::get('store', 0);
 
         $query = '
             FROM ' . $dlog . ' AS t 
@@ -569,6 +570,8 @@ HTML;
         $query .= ' WHERE t.tdate BETWEEN ? AND ? ';
         $args[] = $start_date . ' 00:00:00';
         $args[] = $end_date . ' 23:59:59';
+        $query .= ' AND ' . DTrans::isStoreID($store, 't') . ' ';
+        $args[] = $store;
 
         switch ($lookupType) {
             case 'dept':

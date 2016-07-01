@@ -14,20 +14,6 @@ function createRequestObject() {
 var http = createRequestObject();
 var busy = false;
 
-/* send action to this page 
-   tack on more arguments as needed with '&' and '='
-*/
-function phpSend(action) {
-    if (busy)
-	setTimeout("phpSend('"+action+"')",10);
-    else {
-	http.open('get', 'DeliInventoryPage.php?action='+action);
-	http.onreadystatechange = handleResponse;
-	http.send(null);
-	busy = true;
-    }
-}
-
 /* ajax callback function 
    by convention, results return [actionname]`[data]
    splitting on backtick separates, then switch on action name

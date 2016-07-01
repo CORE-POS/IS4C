@@ -242,10 +242,12 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
             $filter_status = $this->form->f1;
             $filter_buyer = $this->form->f2;
             $filter_supplier = $this->form->f3;
+            $filter_store = $this->form->f4;
         } catch (Exception $ex) {
             $filter_status='';
             $filter_buyer='';
             $filter_supplier='';
+            $filter_store = COREPOS\Fannie\API\lib\Store::getIdByIp();
         }
 
         $ret = '';
@@ -276,6 +278,13 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
           vendors table
         */
         $suppliers = $this->getOrderSuppliers($dbc);
+        $stores = FormLib::storePicker('f4');
+        $stores['html'] = str_replace(
+            '<select',
+            '<select id="f_4" onchange="refilter();"',
+            $stores['html']
+        );
+        $stores['html'] = str_replace('form-control', 'form-control input-sm', $stores['html']);
 
         $filterstring = "";
         $filterargs = array();
@@ -283,6 +292,10 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
             $filter_status = (int)$filter_status;
             $filterstring .= ' AND statusFlag=?';
             $filterargs[] = $filter_status;
+        }
+        if ($filter_store) {
+            $filterstring .= ' AND o.storeID=? ';
+            $filterargs[] = $filter_store;
         }
 
         $ret .= '<a href="index.php">Main Menu</a>';
@@ -327,6 +340,11 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
                 ($v===$filter_supplier?'selected':''),$v);
         }
         $ret .= '</select>';
+
+        $ret .= '&nbsp;';
+
+        $ret .= '<b>Store</b>: ' . $stores['html'];
+
         $ret .= '</div>';
 
         /**
@@ -444,6 +462,10 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
         }
         fclose($fptr);
         $ret .= "</tbody></table>";
+        $ret .= '<p>
+            <button type="submit" class="btn btn-default">Print Selected</button>
+            </p>
+            </form>';
 
         $this->add_script('../src/javascript/tablesorter/jquery.tablesorter.js');
         $this->add_onload_command("\$('.tablesorter').tablesorter();");
@@ -458,8 +480,9 @@ function refilter(){
     var f1 = $('#f_1').val();
     var f2 = $('#f_2').val();
     var f3 = $('#f_3').val();
+    var f4 = $('#f_4').val();
 
-    var loc = '?f1='+f1+'&f2='+f2+'&f3='+f3;
+    var loc = '?f1='+f1+'&f2='+f2+'&f3='+f3+'&f4='+f4;
     if ($('#cardno').length!=0)
         loc += '&card_no='+$('#cardno').val();
     
@@ -473,9 +496,9 @@ function applyMemNum(n){
 }
 function updateStatus(oid,val){
     $.ajax({
-        url: 'ajax-calls.php',
+        url: 'OrderAjax.php',
         type: 'post',
-        data: 'action=UpdateStatus&orderID='+oid+'&val='+val,
+        data: 'id='+oid+'&status='+val,
         cache: false
     }).done(function(resp){
         $('#statusdate'+oid).html(resp);    
@@ -483,9 +506,9 @@ function updateStatus(oid,val){
 }
 function togglePrint(username,oid){
     $.ajax({
-        url: 'ajax-calls.php',
+        url: 'OrderViewPage.php',
         type: 'post',
-        data: 'action=UpdatePrint&orderID='+oid+'&user='+username,
+        data: 'orderID='+oid+'&togglePrint=1',
         cache: false
     });
 }

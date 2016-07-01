@@ -321,8 +321,9 @@ class OverShortMAS extends FannieRESTfulPage {
         $ret = '';
         $debit = $credit = 0.0;
         if (FormLib::get_form_value('excel','') === ''){
-            $ret .= sprintf('<a href="OverShortMAS.php?startDate=%s&endDate=%s&excel=yes">Download</a>',
-                    $this->startDate, $this->endDate);
+            $store = FormLib::get('store', 0);
+            $ret .= sprintf('<a href="OverShortMAS.php?startDate=%s&endDate=%s&store=%s&excel=yes">Download</a>',
+                    $this->startDate, $this->endDate, $store);
             $ret .= '<table class="table table-bordered small">';
             foreach($records as $r){
                 if (preg_match('/\(\d+-\d+-\d+ \d+-\d+-\d+\)/',$r[5])){

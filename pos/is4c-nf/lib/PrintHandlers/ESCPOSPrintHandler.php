@@ -1,4 +1,9 @@
 <?php
+
+namespace COREPOS\pos\lib\PrintHandlers;
+use COREPOS\pos\lib\Bitmap;
+use COREPOS\pos\lib\ReceiptLib;
+
 /*
 ESCPOSPrintHandler
 version 1 (2009-09-25)
@@ -635,10 +640,10 @@ class ESCPOSPrintHandler extends PrintHandler {
     function RenderBitmap($arg, $align='C'){
         $slip = "";
 
-        if (!class_exists('Bitmap')) return "";
+        if (!class_exists('COREPOS\\pos\\lib\\Bitmap')) return "";
 
         $bmp = null;
-        if (is_object($arg) && is_a($arg, 'Bitmap')){
+        if (is_object($arg) && is_a($arg, 'COREPOS\\pos\\lib\\Bitmap')){
             $bmp = $arg;
         }
         else if (file_exists($arg)){

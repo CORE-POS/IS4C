@@ -21,8 +21,15 @@
 
 *********************************************************************************/
 
-if (!class_exists("LocalStorage")) {
-    include_once(realpath(dirname(__FILE__).'/LocalStorage.php'));
+use COREPOS\pos\lib\LocalStorage\LaneConfig;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\JsonLib;
+
+if (!class_exists("COREPOS\\pos\\lib\\LocalStorage\\LocalStorage")) {
+    include_once(__DIR__ . '/LocalStorage.php');
+}
+if (!class_exists('COREPOS\\pos\\lib\\LocalStorage\\LaneConfig')) {
+    include(__DIR__ . '/LaneConfig.php');
 }
 
 /**
@@ -43,7 +50,6 @@ class CoreLocal
         'localPass',
         'pDatabase',
         'tDatabase',
-        'LaneMap',
     );
 
     /**
@@ -68,7 +74,11 @@ class CoreLocal
             self::init();
         }
 
-        return self::$storage_object->get($key);
+        if (LaneConfig::has($key)) {
+            return LaneConfig::get($key);
+        } else {
+            return self::$storage_object->get($key);
+        }
     }
 
     /**
@@ -84,8 +94,12 @@ class CoreLocal
         if (self::$storage_object === null) {
             self::init();
         }
-
-        return self::$storage_object->set($key, $val, $immutable);
+        
+        if ($immutable) {
+            LaneConfig::set($key, $val);
+        } else {
+            return self::$storage_object->set($key, $val);
+        }
     }
 
     /**
@@ -98,10 +112,45 @@ class CoreLocal
     }
 
     /**
+       Check whether ini.json has all required settings
+       If it does not, try to migrate ini.php to ini.json
+       @return
+        - true if all settings present or successful migration
+        - false otherwise
+    */
+    private static function validateJsonIni()
+    {
+        $json = dirname(__FILE__) . '/../../ini.json';
+        if (!file_exists($json) && !is_writable(dirname(__FILE__) . '/../../')) {
+            return false;
+        } elseif (file_exists($json)) {
+            $settings = self::readIniJson();
+            $settings = $settings->iteratorKeys();
+        } else {
+            $settings = array();
+        }
+
+        $all = true;
+        foreach (self::$INI_SETTINGS as $key) {
+            if (!in_array($key, $settings)) {
+                $all = false;
+                break;
+            }
+        }
+
+        if ($all) {
+            return true;
+        } else {
+            $jsonStr = self::convertIniPhpToJson();
+            return file_put_contents($json, $jsonStr) ? true : false;
+        }
+    }
+
+    /**
       Load values from an ini file. 
       Will read the first file found from:
-      1. ini.php
-      2. ini.json
+      1. ini.json
+      2. ini.php
     */
     private static function loadIni()
     {
@@ -111,14 +160,15 @@ class CoreLocal
           a temporary, *non-global* $CORE_LOCAL and then loops
           through to add them to the actual global session
         */
-        if (!class_exists('UnitTestStorage')) {
-            include(dirname(__FILE__) . '/UnitTestStorage.php');
+        if (!class_exists('COREPOS\\pos\\lib\\LocalStorage\\UnitTestStorage')) {
+            include(__DIR__ . '/UnitTestStorage.php');
         }
         $settings = array();
-        if (file_exists(dirname(__FILE__) . '/../../ini.php')) {
-            $settings = self::readIniPhp();
-        } elseif (file_exists(dirname(__FILE__) . '/../../ini.json')) {
+        if (!self::get('ValidJson') && self::validateJsonIni()) {
             $settings = self::readIniJson();
+            self::set('ValidJson', true);
+        } elseif (file_exists(dirname(__FILE__) . '/../../ini.php')) {
+            $settings = self::readIniPhp();
         }
         foreach ($settings as $key => $value) {
             if (!in_array($key, self::$INI_SETTINGS)) {
@@ -126,7 +176,7 @@ class CoreLocal
                 // eventually these settings should be
                 // ignored
             }
-            self::set($key, $value);
+            self::set($key, $value, true);
         }
     }
 
@@ -138,25 +188,25 @@ class CoreLocal
     */
     public static function migrateSettings()
     {
-        if (file_exists(dirname(__FILE__).'/../../ini.php') && class_exists('InstallUtilities')) {
+        if (file_exists(dirname(__FILE__).'/../../ini.php')) {
             $file = dirname(__FILE__).'/../../ini.php';
             $settings = self::readIniPhp();
+            $db = Database::pDataConnect();
             foreach ($settings as $key => $value) {
                 if (!in_array($key, self::$INI_SETTINGS)) {
                     if ($key == 'SpecialDeptMap') {
                         // SpecialDeptMap has a weird array structure
                         // and gets moved to a dedicated table
-                        $db = Database::pDataConnect();
-                        if ($db->table_exists('SpecialDeptMap')) {
+                        if (CoreLocal::get('NoCompat') == 1 || $db->table_exists('SpecialDeptMap')) {
                             $mapModel = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($db);
                             $mapModel->initTable($sconf);
-                            InstallUtilities::confRemove($key);
+                            \COREPOS\pos\install\conf\Conf::remove($key);
                         }
                     } else {
                         // other settings go into opdata.parameters
-                        $saved = InstallUtilities::paramSave($key, $value); 
+                        $saved = \COREPOS\pos\install\conf\ParamConf::save($db, $key, $value);
                         if ($saved && is_writable($file)) {
-                            InstallUtilities::confRemove($key);
+                            \COREPOS\pos\install\conf\Conf::remove($key);
                         }
                     }
                 }
@@ -177,6 +227,11 @@ class CoreLocal
             $json[$key] = $val;
         }
 
+        // this may occur before autoloading has kicked in
+        if (!class_exists('COREPOS\\pos\\lib\\JsonLib')) {
+            include(__DIR__ . '/../JsonLib.php');
+        }
+
         return JsonLib::prettyJSON(json_encode($json));
     }
 
@@ -187,7 +242,7 @@ class CoreLocal
     public static function readIniPhp()
     {
         $php = dirname(__FILE__) . '/../../ini.php';
-        $CORE_LOCAL = new UnitTestStorage();
+        $CORE_LOCAL = new \COREPOS\pos\lib\LocalStorage\UnitTestStorage();
         if (file_exists($php)) {
             include($php);
         }
@@ -202,7 +257,7 @@ class CoreLocal
     public static function readIniJson()
     {
         $json = dirname(__FILE__) . '/../../ini.json';
-        $ret = new UnitTestStorage();
+        $ret = new \COREPOS\pos\lib\LocalStorage\UnitTestStorage();
         if (file_exists($json)) {
             $encoded = file_get_contents($json);
             $decoded = json_decode($encoded, true);
@@ -235,11 +290,7 @@ class CoreLocal
     */
     public static function isImmutable($key)
     {
-        if (self::$storage_object === null) {
-            self::init();
-        }
-
-        return self::$storage_object->isImmutable($key);
+        return LaneConfig::has($key);
     }
 
     /**

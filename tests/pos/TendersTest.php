@@ -1,5 +1,19 @@
 <?php
 
+use COREPOS\pos\lib\Tenders\TenderModule;
+use COREPOS\pos\lib\Tenders\CheckTender;
+use COREPOS\pos\lib\Tenders\CreditCardTender;
+use COREPOS\pos\lib\Tenders\DisabledTender;
+use COREPOS\pos\lib\Tenders\FoodstampTender;
+use COREPOS\pos\lib\Tenders\GiftCardTender;
+use COREPOS\pos\lib\Tenders\GiftCertificateTender;
+use COREPOS\pos\lib\Tenders\ManagerApproveTender;
+use COREPOS\pos\lib\Tenders\NoChangeTender;
+use COREPOS\pos\lib\Tenders\NoDefaultAmountTender;
+use COREPOS\pos\lib\Tenders\StoreChargeTender;
+use COREPOS\pos\lib\Tenders\SignedStoreChargeTender;
+use COREPOS\pos\lib\Tenders\StoreTransferTender;
+
 /**
  * @backupGlobals disabled
  */
@@ -8,26 +22,26 @@ class TendersTest extends PHPUnit_Framework_TestCase
     public function testAll()
     {
         $defaults = array(
-            'TenderModule',
-            'CheckTender',
-            'CreditCardTender',
-            'DisabledTender',
-            'FoodstampTender',
-            'GiftCardTender',
-            'GiftCertificateTender',
-            'RefundAndCashbackTender',
-            'StoreChargeTender',
-            'StoreTransferTender'
+            'COREPOS\\pos\\lib\\Tenders\\TenderModule',
+            'COREPOS\\pos\\lib\\Tenders\\CheckTender',
+            'COREPOS\\pos\\lib\\Tenders\\CreditCardTender',
+            'COREPOS\\pos\\lib\\Tenders\\DisabledTender',
+            'COREPOS\\pos\\lib\\Tenders\\FoodstampTender',
+            'COREPOS\\pos\\lib\\Tenders\\GiftCardTender',
+            'COREPOS\\pos\\lib\\Tenders\\GiftCertificateTender',
+            'COREPOS\\pos\\lib\\Tenders\\RefundAndCashbackTender',
+            'COREPOS\\pos\\lib\\Tenders\\StoreChargeTender',
+            'COREPOS\\pos\\lib\\Tenders\\StoreTransferTender'
         );
 
-        $all = AutoLoader::ListModules('TenderModule',True);
+        $all = AutoLoader::ListModules('COREPOS\\pos\\lib\\Tenders\\TenderModule',True);
         foreach($defaults as $d){
             $this->assertContains($d, $all);
         }
 
         foreach($all as $class){
             $obj = new $class('CA',1.00);
-            $this->assertInstanceOf('TenderModule',$obj);
+            $this->assertInstanceOf('COREPOS\\pos\\lib\\Tenders\\TenderModule',$obj);
 
             $err = $obj->ErrorCheck();
             $this->assertThat($err,
@@ -65,7 +79,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
         $record['total'] = -1.00;
         lttLib::verifyRecord(1, $record, $this);
         CoreLocal::set('currentid', 1);
-        $v = new Void();
+        $v = new COREPOS\pos\parser\parse\Void();
         $this->assertEquals(true, $v->check('VD'));
         $json = $v->parse('VD');
         $this->assertInternalType('array', $json);
@@ -140,7 +154,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('transfertender', 0);
         $out = $st->preReqCheck();
         $this->assertEquals(1, CoreLocal::get('transfertender'));
-        $this->assertEquals('=StoreTransferTender', substr($out, -20));
+        $this->assertEquals('-StoreTransferTender', substr($out, -20));
         $out = $st->preReqCheck();
         $this->assertEquals(0, CoreLocal::get('transfertender'));
         $this->assertEquals(true, $out);
@@ -210,7 +224,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
 
         CoreLocal::set('approvetender', 0);
         $out = $st->preReqCheck();
-        $this->assertEquals('=ManagerApproveTender', substr($out, -21));
+        $this->assertEquals('-ManagerApproveTender', substr($out, -21));
         $this->assertEquals(1, CoreLocal::get('approvetender'));
         $out = $st->preReqCheck();
         $this->assertEquals(true, $out);
@@ -226,26 +240,26 @@ class TendersTest extends PHPUnit_Framework_TestCase
     function testGiftCert()
     {
         $obj = new GiftCertificateTender('TC', 1);
-        CoreLocal::set('enableFranking', 1);
+        CoreLocal::set('enableFranking', 1, true);
         CoreLocal::set('msgrepeat', 0);
         $ret = $obj->preReqCheck();
         $this->assertEquals(true, $ret !== true);
-        CoreLocal::set('enableFranking', 0);
+        CoreLocal::set('enableFranking', 0, true);
         CoreLocal::set('msgrepeat', 0);
     }
 
     function testCheck()
     {
         $obj = new CheckTender('CK', 1);
-        CoreLocal::set('enableFranking', 1);
+        CoreLocal::set('enableFranking', 1, true);
         CoreLocal::set('msgrepeat', 0);
         $ret = $obj->preReqCheck();
         $this->assertEquals(true, $ret !== true);
-        CoreLocal::set('enableFranking', 0);
+        CoreLocal::set('enableFranking', 0, true);
         CoreLocal::set('msgrepeat', 0);
 
         CoreLocal::set('isMember', 1);
-        CoreLocal::set('dollarOver', 0);
+        CoreLocal::set('dollarOver', 0, true);
         CoreLocal::set('amtdue', 0.50);
         $this->assertNotEquals(0, strlen($obj->ErrorCheck()));
         CoreLocal::set('isMember', 0);

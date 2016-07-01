@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\Messages;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
+use \CoreLocal;
+
 /**
   @class CCReceiptMessage
 */
@@ -55,14 +60,14 @@ class CCReceiptMessage extends ReceiptMessage {
 
         $slip = '';
         $idclause = '';
-        $db = Database::tDataConnect();
+        $dbc = Database::tDataConnect();
         if ($reprint)
-            $db = Database::mDataConnect();
+            $dbc = Database::mDataConnect();
         if ($sigSlip && is_numeric(CoreLocal::get('paycard_id'))) {
             $idclause = ' AND transID='.CoreLocal::get('paycard_id');
         }
 
-        $trans_type = $db->concat('p.cardType', "' '", 'p.transType', '');
+        $trans_type = $dbc->concat('p.cardType', "' '", 'p.transType', '');
 
         $query = "SELECT $trans_type AS tranType,
                     CASE WHEN p.transType = 'Return' THEN -1*p.amount ELSE p.amount END as amount,
@@ -85,9 +90,9 @@ class CCReceiptMessage extends ReceiptMessage {
                     AND p.cardType IN ('Credit', 'Debit')
                   ORDER BY p.requestDatetime";
 
-        $result = $db->query($query);
+        $result = $dbc->query($query);
 
-        $emvP = $db->prepare('
+        $emvP = $dbc->prepare('
             SELECT content
             FROM EmvReceipt
             WHERE dateID=?
@@ -97,12 +102,12 @@ class CCReceiptMessage extends ReceiptMessage {
                 AND transID=?
         ');
         
-        while ($row = $db->fetch_array($result)) {
+        while ($row = $dbc->fetchRow($result)) {
             $slip .= ReceiptLib::centerString("................................................")."\n";
             // do not look for EmvReceipt server side; use classic receipt
-            $emvR = $reprint ? false : $db->execute($emvP, array(date('Ymd'), $emp, $reg, $trans, $row['transID']));
-            if ($emvR && $db->numRows($emvR)) {
-                $emvW = $db->fetchRow($emvR);
+            $emvR = $reprint ? false : $dbc->execute($emvP, array(date('Ymd'), $emp, $reg, $trans, $row['transID']));
+            if ($emvR && $dbc->numRows($emvR)) {
+                $emvW = $dbc->fetchRow($emvR);
                 $lines = explode("\n", $emvW['content']);
                 for ($i=0; $i<count($lines); $i++) {
                     if (isset($lines[$i+1]) && (strlen($lines[$i]) + strlen($lines[$i+1])) < 56) {
@@ -135,32 +140,23 @@ class CCReceiptMessage extends ReceiptMessage {
                     $slip .= "\n" . ReceiptLib::centerString(_('(Customer Copy)')) . "\n";
                 }
             } else {
-                $trantype = $row['tranType'];  
                 if ($row['amount'] < 0) {
                     $amt = "-$".number_format(-1*$row['amount'],2);
                 } else {
                     $amt = "$".number_format($row['amount'],2);
                 }
-                $pan = $row['PAN']; // already masked in the database
-                $entryMethod = $row['entryMethod'];
-                $cardBrand = $row['issuer'];
-                $approvalPhrase = $row['xResultMessage'];
-                $authCode = "#".$row['xApprovalNumber'];
-                $sequenceNum = $row['xTransactionID'];  
-                $name = $row["name"];
 
                 if ($sigSlip) {
                     for ($i=1; $i<= CoreLocal::get('chargeSlipCount'); $i++) {
                         $slip .= ReceiptLib::centerString(CoreLocal::get("chargeSlip" . $i))."\n";
                     }
-                    $slip .= $trantype."\n"            // trans type:  purchase, canceled purchase, refund or canceled refund
-                        ."Card: ".$cardBrand."  ".$pan."\n"
+                    $slip .= $row['tranType']."\n" // trans type:  purchase, canceled purchase, refund or canceled refund
+                        ."Card: ".$row['issuer']."  ".$row['PAN']."\n"
                         ."Reference:  ".$ref."\n"
                         ."Date & Time:  ".$date."\n"
-                        ."Entry Method:  ".$entryMethod."\n"          // swiped or manual entry
-                        ."Sequence Number:  ".$sequenceNum."\n"    // their sequence #        
-                        //."Authorization:  ".$approvalPhrase." ".$authCode."\n"        // result + auth number
-                        ."Authorization:  ".$approvalPhrase."\n"        // result + auth number
+                        ."Entry Method:  ".$row['entryMethod']."\n" // swiped or manual entry
+                        ."Sequence Number:  ".$row['xTransactionID']."\n" 
+                        ."Authorization:  ".$row['xResultMessage']."\n" 
                         .ReceiptLib::boldFont()  // change to bold font for the total
                         ."Amount: ".$amt."\n"        
                         .ReceiptLib::normalFont();
@@ -168,27 +164,21 @@ class CCReceiptMessage extends ReceiptMessage {
                         .ReceiptLib::centerString("according to card issuer agreement.")."\n\n"
                     
                         .ReceiptLib::centerString("X____________________________________________")."\n"
-                        .ReceiptLib::centerString($name)."\n";
+                        .ReceiptLib::centerString($row['name'])."\n";
                 } else {
                     // use columns instead
-                    $c1 = array();
-                    $c2 = array();
-                    $c1[] = $trantype;
-                    $c1[] = "Entry Method:  ".$entryMethod;
-                    $c1[] = "Sequence Number:  ".$sequenceNum;
-                    $c2[] = $cardBrand."  ".$pan;
-                    $c2[] = "Authorization:  ".$approvalPhrase;
-                    $c2[] = ReceiptLib::boldFont()."Amount: ".$amt.ReceiptLib::normalFont();
-                    $slip .= ReceiptLib::twoColumns($c1,$c2);
+                    $col1 = array();
+                    $col2 = array();
+                    $col1[] = $row['tranType'];
+                    $col1[] = "Entry Method:  ".$row['entryMethod'];
+                    $col1[] = "Sequence Number:  ".$row['xTransactionID'];
+                    $col2[] = $row['issuer']."  ".$row['PAN'];
+                    $col2[] = "Authorization:  ".$row['xResultMessage'];
+                    $col2[] = ReceiptLib::boldFont()."Amount: ".$amt.ReceiptLib::normalFont();
+                    $slip .= ReceiptLib::twoColumns($col1,$col2);
                 }
             }
             $slip .= ReceiptLib::centerString(".................................................")."\n";
-
-            if ($sigSlip){
-                // Cut is added automatically by printing process
-                //$slip .= "\n\n\n\n".chr(27).chr(105);
-                break;
-            }
         }
 
         return $slip;

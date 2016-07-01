@@ -21,7 +21,13 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Authenticate;
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\SuspendLib;
+use COREPOS\pos\lib\ReceiptBuilding\TenderReports\TenderReport;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class adminlist extends NoInputCorePage 
@@ -49,7 +55,7 @@ class adminlist extends NoInputCorePage
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
             } elseif ($choice == 'OTR' && $this->security >= 30){
-                $this->change_page($this->page_url.'gui-modules/requestInfo.php?class=AnyTenderReportRequest');
+                $this->change_page($this->page_url.'gui-modules/requestInfo.php?class=COREPOS-pos-lib-adminlogin-AnyTenderReportRequest');
                 return False;
             } elseif ($choice == 'UNDO' && $this->security >= 30){
                 $this->change_page($this->page_url . 'gui-modules/undo.php');

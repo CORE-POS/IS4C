@@ -1,10 +1,16 @@
 <?php
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\install\conf\Conf;
+use COREPOS\pos\install\conf\FormFactory;
+use COREPOS\pos\install\InstallUtilities;
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\Scanning\DiscountType;
+use COREPOS\pos\lib\Scanning\PriceMethod;
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-include('../ini.php');
 CoreState::loadParams();
-include('InstallUtilities.php');
+$form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')));
 ?>
 <html>
 <head>
@@ -20,8 +26,8 @@ body {
 <div id="wrapper">
 <h2>IT CORE Lane Installation: Scanning Options</h2>
 
-<div class="alert"><?php InstallUtilities::checkWritable('../ini.php', False, 'PHP'); ?></div>
-<div class="alert"><?php InstallUtilities::checkWritable('../ini-local.php', True, 'PHP'); ?></div>
+<div class="alert"><?php Conf::checkWritable('../ini.json', False, 'JSON'); ?></div>
+<div class="alert"><?php Conf::checkWritable('../ini.php', False, 'PHP'); ?></div>
 
 <form action=scanning.php method=post>
 <table id="install" border=0 cellspacing=0 cellpadding=4>
@@ -44,7 +50,7 @@ body {
     <td>
     <?php
     $checkOpts = array(1=>'Include Check Digits', 0=>'Omit Check Digits');
-    echo InstallUtilities::installSelectField('UpcIncludeCheckDigits', $checkOpts, 0);
+    echo $form->selectField('UpcIncludeCheckDigits', $checkOpts, 0);
     ?>
     </td>
 </tr>
@@ -69,7 +75,7 @@ body {
     <td>
     <?php
     $opts = array(1=>'Verbatim', 0=>'Three Digit Thousandths');
-    echo InstallUtilities::installSelectField('ManualWeightMode', $opts, 0);
+    echo $form->selectField('ManualWeightMode', $opts, 0);
     ?>
     </td>
 </tr>
@@ -79,7 +85,7 @@ body {
     </td>
     <td>
     <?php
-    echo InstallUtilities::installSelectField('EanIncludeCheckDigits', $checkOpts, 0);
+    echo $form->selectField('EanIncludeCheckDigits', $checkOpts, 0);
     ?>
     </td>
 </tr>
@@ -89,7 +95,15 @@ body {
 <tr>
 <tr>
     <td><b>Unknown Item Handler</b></td>
-    <td><?php echo InstallUtilities::installSelectField('ItemNotFound', AutoLoader::listModules('ItemNotFound', true), 'ItemNotFound'); ?>
+    <?php
+    $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ItemNotFound', true);
+    $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
+    ?>
+    <td><?php echo $form->selectField('ItemNotFound', $mods, 'ItemNotFound'); ?>
+    <?php
+    $val = str_replace('-', '\\', CoreLocal::get('ItemNotFound'));
+    InstallUtilities::paramSave('ItemNotFound', $val);
+    ?>
     <span class='noteTxt'>Module called when a UPC does not match any item or Special UPC handler</span>
     </td>
 </tr>
@@ -99,20 +113,23 @@ body {
     </td>
     <td>
     <?php
-    $mods = AutoLoader::listModules('SpecialUPC');
-    echo InstallUtilities::installSelectField('SpecialUpcClasses',
+    $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\Scanning\\SpecialUPC');
+    $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
+    echo $form->selectField('SpecialUpcClasses',
         $mods,
         array(),
-        InstallUtilities::EITHER_SETTING,
+        Conf::EITHER_SETTING,
         true,
         array('multiple'=>'multiple', 'size'=>10)
     );
+    CoreLocal::set('SpecialUpcClasses', array_map(function($i){ return str_replace('-', '\\', $i); }, CoreLocal::get('SpecialUpcClasses')));
+    InstallUtilities::paramSave('SpecialUpcClasses', CoreLocal::get('SpecialUpcClasses'));
     ?>
     </td>
 </tr>
 <tr>
     <td><b>House Coupon Prefix</b></td>
-    <td><?php echo InstallUtilities::installTextField('houseCouponPrefix', '00499999'); ?>
+    <td><?php echo $form->textField('houseCouponPrefix', '00499999'); ?>
     <span class='noteTxt'>Set the barcode prefix for houseCoupons.  Should be 8 digits starting with 004. Default is 00499999.</span>
     </td>
 </tr>
@@ -121,7 +138,7 @@ body {
     <td>
     <?php
     $couponTax = array(1=>'Tax pre-coupon total', 0=>'Tax post-coupon total');
-    echo InstallUtilities::installSelectField('CouponsAreTaxable', $couponTax, 1);
+    echo $form->selectField('CouponsAreTaxable', $couponTax, 1);
     ?>
     <span class='noteTxt'>Apply sales tax based on item price before any coupons, or
     apply sales tax to item price inclusive of coupons.</span>
@@ -140,7 +157,7 @@ body {
             $default[] = $row['dept_no'];
         }
     }
-    echo InstallUtilities::installTextField('EquityDepartments', $default, InstallUtilities::EITHER_SETTING, false);
+    echo $form->textField('EquityDepartments', $default, Conf::EITHER_SETTING, false);
     ?>
     <span class='noteTxt'>Set the department number(s) that are considered member equity</span>
     </td>
@@ -149,7 +166,7 @@ body {
     <td><b>Open Ring Min/Max Limits</b></td>
     <td>
     <?php
-    echo InstallUtilities::installSelectField('OpenRingHardMinMax', array(1=>'Absolute Limit', 0=>'Warning Only'), 0);
+    echo $form->selectField('OpenRingHardMinMax', array(1=>'Absolute Limit', 0=>'Warning Only'), 0);
     ?>
     <span class='noteTxt'>
     Set whether open ring department limits are bypassable warnings or complete blocks.
@@ -169,7 +186,7 @@ body {
             $default[] = $row['dept_no'];
         }
     }
-    echo InstallUtilities::installTextField('ArDepartments', $default, InstallUtilities::EITHER_SETTING, false);
+    echo $form->textField('ArDepartments', $default, Conf::EITHER_SETTING, false);
     ?>
     <span class='noteTxt'>Set the department number(s) that are store charge balance payments. 
         Also known as AR or accounts receivable.</span>
@@ -187,7 +204,7 @@ body {
         $row = $dbc->fetch_row($lookup);
         $default = $row['dept_no'];
     }
-    echo InstallUtilities::installTextField('roundUpDept', $default);
+    echo $form->textField('roundUpDept', $default);
     ?>
     <span class='noteTxt'>Set the department number for lines entered via the "round up" donation function.</span>
     </td>
@@ -221,7 +238,7 @@ if (is_array(FormLib::get('DT_MODS'))) {
 if (!is_array(CoreLocal::get('DiscountTypeClasses'))) {
     CoreLocal::set('DiscountTypeClasses', array(), true);
 }
-$discounts = AutoLoader::listModules('DiscountType');
+$discounts = AutoLoader::listModules('COREPOS\\pos\\lib\\Scanning\\DiscountType');
 $dt_conf = CoreLocal::get("DiscountTypeClasses");
 $dt_conf[] = ''; // add blank slot for adding another discounttype
 $i = 64;
@@ -278,7 +295,7 @@ if (is_array(FormLib::get('PM_MODS'))) {
 if (!is_array(CoreLocal::get('PriceMethodClasses'))){
     CoreLocal::set('PriceMethodClasses', array(), true);
 }
-$pms = AutoLoader::listModules('PriceMethod');
+$pms = AutoLoader::listModules('COREPOS\\pos\\lib\\Scanning\\PriceMethod');
 $pm_conf = CoreLocal::get("PriceMethodClasses");
 $pm_conf[] = ''; // add blank slot for adding another method
 $i = 100;
@@ -333,7 +350,8 @@ save 5%.
 </td></tr>
 <tr><td>
 <?php
-$sdepts = AutoLoader::listModules('SpecialDept');
+$sdepts = AutoLoader::listModules('COREPOS\\pos\\lib\\Scanning\\SpecialDept');
+$sdepts = array_map(function($i){ return str_replace('\\', '-', $i); }, $sdepts);
 $dbc = Database::pDataConnect();
 $specialDeptMapExists = $dbc->table_exists('SpecialDeptMap');
 $mapModel = new \COREPOS\pos\lib\models\op\SpecialDeptMapModel($dbc);
@@ -341,16 +359,10 @@ $sconf = CoreLocal::get('SpecialDeptMap');
 /**
   If a mapping exists and the new table is available,
   migrate existing settings to the table and remove
-  the setting from ini and/or ini-local
+  the setting from ini 
 */
 if (is_array($sconf) && $specialDeptMapExists) {
     $mapModel->initTable($sconf);
-    if (InstallUtilities::confExists('SpecialDeptMap')) {
-        InstallUtilities::confRemove('SpecialDeptMap');
-    }
-    if (InstallUtilities::confExists('SpecialDeptMap', true)) {
-        InstallUtilities::confRemove('SpecialDeptMap', true);
-    }
 }
 if (!is_array($sconf)) $sconf = array();
 if (is_array(FormLib::get('SDEPT_MAP_LIST'))) {
@@ -365,7 +377,7 @@ if (is_array(FormLib::get('SDEPT_MAP_LIST'))) {
         if (!isset($SDEPT_MAP_LIST[$i])) continue;
         if (empty($SDEPT_MAP_LIST[$i])) continue;
 
-        $class = $SDEPT_MAP_NAME[$i];
+        $class = str_replace('-', '\\', $SDEPT_MAP_NAME[$i]);
         $ids = preg_split('/\D+/',$SDEPT_MAP_LIST[$i]);
         foreach ($ids as $id) {
             if ($specialDeptMapExists) {
@@ -396,7 +408,8 @@ foreach ($sdepts as $sd) {
             $list .= $id.', ';
     }
     $list = rtrim($list,', ');
-    $obj = new $sd();
+    $sclass = str_replace('-', '\\', $sd);
+    $obj = new $sclass();
     printf('<tr><td title="%s">%s</td><td>
         <input type="text" name="SDEPT_MAP_LIST[]" value="%s" />
         <input type="hidden" name="SDEPT_MAP_NAME[]" value="%s" />
@@ -413,7 +426,7 @@ if (!$specialDeptMapExists) {
         $saveStr = rtrim($saveStr,',').'),';
     }
     $saveStr = rtrim($saveStr,',').')';
-    InstallUtilities::confsave('SpecialDeptMap',$saveStr);
+    Conf::save('SpecialDeptMap',$saveStr);
 }
 ?>
 </td></tr>
@@ -435,7 +448,7 @@ if (!$specialDeptMapExists) {
     <td>
     <?php
     $mods = AutoLoader::listModules('VariableWeightReWrite');
-    echo InstallUtilities::installSelectField('VariableWeightReWriter', $mods, 'ZeroedPriceReWrite');
+    echo $form->selectField('VariableWeightReWriter', $mods, 'ZeroedPriceReWrite');
     ?>
     </td>
 </tr>

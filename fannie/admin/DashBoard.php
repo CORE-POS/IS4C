@@ -169,6 +169,13 @@ class DashBoard extends FannieRESTfulPage
             make sure at least one monitor is active and the Monitoring Task
             is enabled in scheduled tasks.</p>';
     }
+
+    public function unitTest($phpunit)
+    {
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
+        $phpunit->assertNotEquals(0, strlen($this->monitorConfiguration()));
+        $phpunit->assertNotEquals(0, strlen($this->emailConfiguration()));
+    }
 }
 
 FannieDispatch::conditionalExec();

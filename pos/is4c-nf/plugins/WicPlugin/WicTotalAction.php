@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\TotalActions\TotalAction;
+
 /**
   @class WicTotalAction
 */

@@ -47,10 +47,25 @@ class PIPurchasesPage extends PIKillerPage {
         return True;
     }
 
+    protected function getFilter($filter)
+    {
+        $sql = '';
+        $args = array();
+        switch ($filter) {
+            case 'R':
+                $sql = ' AND trans_status=\'R\' ';
+                break;
+        }
+
+        return array($sql, $args);
+    }
+
     protected function get_id_view(){
         global $FANNIE_TRANS_DB,$FANNIE_URL;
         $table = DTransactionsModel::selectDlog($this->__models['start'],$this->__models['end']);
         $my = date('Ym',strtotime($this->__models['start']));
+
+        list($fwhere, $fargs) = $this->getFilter(FormLib::get('filter'));
 
         $dbc = FannieDB::get($FANNIE_TRANS_DB);
         $query = "SELECT month(tdate) as mt,day(tdate) as dt,year(tdate) as yt,trans_num,
@@ -63,11 +78,13 @@ class PIPurchasesPage extends PIKillerPage {
             sum(case when upc like '00499999%' then total else 0 end) as wfcoupon
             FROM $table as t
             WHERE card_no=?
-            AND tdate BETWEEN ? AND ?
+                AND tdate BETWEEN ? AND ?
+                $fwhere
             GROUP BY year(tdate),month(tdate),day(tdate),trans_num
             ORDER BY yt DESC, mt DESC,
             dt DESC";
         $args = array($this->id, $this->__models['start'].' 00:00:00', $this->__models['end'].' 23:59:59');
+        $args = array_merge($args, $fargs);
         if ($my == date('Ym') && substr($table, -5) != '.dlog' && substr($table, -8) != '.dlog_15') {
             // current month. tack on today's transactions
             $today = "SELECT month(tdate) as mt,day(tdate) as dt,year(tdate) as yt,trans_num,
@@ -105,6 +122,17 @@ class PIPurchasesPage extends PIKillerPage {
             if (date("Y",$ts) == 2004 && date("n",$ts) == 9)
                 break;  
         }
+        echo "</select>";
+        echo '&nbsp;|&nbsp;';
+        echo "<select name=filter onchange=\"\$('#myform').submit();\">";
+        $filters = array(
+            'No filter' => '',
+            'Returns' => 'R',
+        );
+        foreach ($filters as $label => $val) {
+            printf('<option %s value="%s">%s</option>',
+                ($val == FormLib::get('filter') ? 'selected' : ''), $val, $label);
+        }    
         echo "</select>";
 
         $visits = 0;

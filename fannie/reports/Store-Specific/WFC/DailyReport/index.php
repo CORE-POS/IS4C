@@ -117,7 +117,7 @@ echo WfcLib::tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Co
          array(WfcLib::ALIGN_LEFT,WfcLib::ALIGN_LEFT,WfcLib::ALIGN_RIGHT|WfcLib::TYPE_MONEY,WfcLib::ALIGN_RIGHT),2);
 
 if ($store != 50) {
-    echo '<br /><a href="../../../Paycards/PcDailyReport.php?date='. $dstr . '">Integrated CC Supplement</a><br />';
+    echo '<br /><a href="../../../Paycards/PcDailyReport.php?date='. $dstr . '&store=' . $store . '">Integrated CC Supplement</a><br />';
 
     $couponQ = "
         SELECT SUM(-d.total) AS ttl,
@@ -376,7 +376,7 @@ $transinfo = array("Member"=>array(0,0.0,0.0,0.0,0.0),
            "Non Member"=>array(0,0.0,0.0,0.0,0.0),
            "Staff Member"=>array(0,0.0,0.0,0.0,0.0),
            "Staff NonMem"=>array(0,0.0,0.0,0.0,0.0));
-while($row = $dbc->fetch_array($transR)){
+while($row = $dbc->fetchRow($transR)){
     if (!isset($transinfo[$row[2]])) continue;
     $transinfo[$row[2]][0] += 1;
     $transinfo[$row[2]][1] += $row[1];

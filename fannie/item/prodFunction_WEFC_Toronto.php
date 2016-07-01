@@ -581,7 +581,7 @@ function itemParse($upc){
     echo "<option value=-1>(none)</option>";
     $likelistQ = "select * from likeCodes order by likecode";
     $likelistR = $dbc->query($likelistQ);
-    while ($llRow = $dbc->fetch_array($likelistR)){
+    while ($llRow = $dbc->fetchRow($likelistR)){
       echo "<option value={$llRow[0]}";
       echo ">{$llRow[0]} {$llRow[1]}</option>";
     }
@@ -600,7 +600,7 @@ function itemParse($upc){
         elseif($num > 1){
             moreItems($upc);
             for($i=0;$i < $num;$i++){
-                $rowItem= $dbc->fetch_array($resultItem);
+                $rowItem= $dbc->fetchRow($resultItem);
                 $upc = $rowItem['upc'];
                 echo "<a href='../item/itemMaint_WEFC_Toronto.php?upc=$upc'>" . $upc . " </a>- " . $rowItem['description'];
                 if($rowItem['discounttype'] == 0) { echo "-- $" .$rowItem['normal_price']. "<br>"; }
@@ -625,7 +625,7 @@ function itemParse($upc){
         }
 
         // products.* and prodExtra .manufacturer and .distributor
-        $rowItem = $dbc->fetch_array($resultItem);
+        $rowItem = $dbc->fetchRow($resultItem);
 
         // All of prodExtra
         $upc = $rowItem['upc'];
@@ -1159,7 +1159,7 @@ function itemParse($upc){
         echo "<option value=-1>(none)</option>";
         $likelistQ = "select * from likeCodes order by likecode";
         $likelistR = $dbc->query($likelistQ);
-        while ($llRow = $dbc->fetch_array($likelistR)){
+        while ($llRow = $dbc->fetchRow($likelistR)){
             echo "<option value={$llRow[0]}";
             if ($llRow[0] == $likecode){
                 echo " selected";

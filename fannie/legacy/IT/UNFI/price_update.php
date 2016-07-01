@@ -15,7 +15,7 @@ else if ($buyID != 0){
     $getBuyerQ = $sql->prepare("SELECT subdept_name from subdepts where subdept_no = ?");
 
     $getBuyerR = $sql->execute($getBuyerQ, array($buyID));
-    $getBuyerW = $sql->fetch_array($getBuyerR);
+    $getBuyerW = $sql->fetchRow($getBuyerR);
     $buyer = $getBuyerW['subdept_name'];
 }
 $date = date('mjY');
@@ -40,7 +40,7 @@ $shelftag = new ShelftagsModel($sql);
 foreach ($_POST["pricechange"] as $value) {
       //echo $getUNFIPriceQ . "<br>";
       $getUNFIPriceR = $sql->execute($getUNFIPriceQ, array($value));
-      $getUNFIPriceW = $sql->fetch_array($getUNFIPriceR);
+      $getUNFIPriceW = $sql->fetchRow($getUNFIPriceR);
       $upc = $getUNFIPriceW['upc'];
       $upcl = ltrim($getUNFIPriceW['upc'],0);
       $upcl = str_pad($upcl,10,"0",STR_PAD_LEFT);
@@ -52,7 +52,7 @@ foreach ($_POST["pricechange"] as $value) {
 
       //echo $getTagInfoQ;
       $getTagInfoR = $sql->execute($getTagInfoQ, array('%'.$upcl.'%'));
-      $getTagInfoW = $sql->fetch_array($getTagInfoR);
+      $getTagInfoW = $sql->fetchRow($getTagInfoR);
       $desc = $getTagInfoW['item_desc'];
       $sku = $getTagInfoW['unfi_sku'];
       $brand = addslashes($getTagInfoW['brand']);

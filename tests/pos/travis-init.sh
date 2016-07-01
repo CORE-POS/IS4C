@@ -22,3 +22,15 @@ echo "\$CORE_LOCAL->set('pDatabase', 'unit_test_opdata');\n" >> pos/is4c-nf/ini.
 echo "\$CORE_LOCAL->set('tDatabase', 'unit_test_translog');\n" >> pos/is4c-nf/ini.php
 echo "\$CORE_LOCAL->set('DBMS', '$DB_DRIVER');\n" >> pos/is4c-nf/ini.php
 
+cat << EOF > pos/is4c-nf/ini.json
+{
+    laneno: 99,
+    store_id: 1,
+    localhost: "127.0.0.1",
+    localUser: "root",
+    localPass: "",
+    pDatabase: "unit_test_opdata",
+    tDatabase: "unit_test_translog",
+    DBMS: "$DB_DRIVER"
+}
+EOF

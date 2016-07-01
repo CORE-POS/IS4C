@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\FooterBoxes;
+use \CoreLocal;
+
 class PatronagePts extends FooterBox {
 
     public $header_css_class = 'coloredText';

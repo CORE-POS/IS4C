@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Notifier;
+
 /**
   @class TermStateNotifier
   Display status of CC terminal
@@ -28,35 +30,43 @@
 */
 class TermStateNotifier extends Notifier 
 {
+    public function __construct()
+    {
+        $this->conf = new PaycardConf();
+    }
+
     /**
       Display the notification
       @return [string] html
     */
     public function draw()
     {
-        if (CoreLocal::get('PaycardsCashierFacing') == '1') {
+        if ($this->conf->get('PaycardsCashierFacing') == '1') {
             return '';
         }
 
         // style box to look like a little screen
         $ret = '<div style="background:#ccc;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
         $rdy = '<div style="background:#0c0;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
-        switch(CoreLocal::get('ccTermState')) {
+        switch ($this->conf->get('ccTermState')) {
             case 'swipe':
                 return $ret.'Slide<br />Card</div>';
-                break;
             case 'ready':
                 return $rdy.'Ready</div>';
-                break;
             case 'pin':
                 return $ret.'Enter<br />PIN</div>';
-                break;
             case 'type':
                 return $ret.'Card<br />Type</div>';
-                break;
             case 'cashback':
                 return $ret.'Cash<br />Back</div>';
-                break;
+            case 'DCDC':
+                return $ret.'DC';
+            case 'DCCC':
+                return $ret.'CC';
+            case 'DCEF':
+                return $ret.'EF';
+            case 'DCEC':
+                return $ret.'EC';
         }
 
         return '';

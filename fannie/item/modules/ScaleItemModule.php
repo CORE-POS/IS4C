@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class ScaleItemModule extends ItemModule 
+class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule 
 {
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
@@ -315,8 +315,8 @@ class ScaleItemModule extends ItemModule
                 $scales[] = $repr;
             }
 
-            HobartDgwLib::writeItemsToScales($item_info, $scales);
-            EpScaleLib::writeItemsToScales($item_info, $scales);
+            \COREPOS\Fannie\API\item\HobartDgwLib::writeItemsToScales($item_info, $scales);
+            \COREPOS\Fannie\API\item\EpScaleLib::writeItemsToScales($item_info, $scales);
         }
 
         /**
@@ -357,7 +357,7 @@ class ScaleItemModule extends ItemModule
                 $dbc->execute($delP, array($mapW['serviceScaleID'], $upc));
             }
             if (count($scales) > 0) {
-                HobartDgwLib::deleteItemsFromScales($item_info['PLU'], $scales); 
+                \COREPOS\Fannie\API\item\HobartDgwLib::deleteItemsFromScales($item_info['PLU'], $scales); 
             }
         }
     }

@@ -16,6 +16,7 @@ function selectSubmit(selector, myform, filter_selector, leave_submit) {
     var prevPrevKey = 0;
     var filter_string = '';
     var disabled = false;
+    var ignoreNextEnter = false;
 
     $(document).keydown(function (e){
         var jsKey; 
@@ -25,7 +26,11 @@ function selectSubmit(selector, myform, filter_selector, leave_submit) {
             jsKey = e.keyCode;
         }
 
-        if (jsKey == 13) {
+        if (ignoreNextEnter && jsKey == 13) {
+            ignoreNextEnter = false;
+            e.preventDefault();
+            e.stopPropagation();
+        } else if (jsKey == 13) {
             enterDown = 1;
             e.preventDefault();
             e.stopPropagation();
@@ -159,6 +164,9 @@ function selectSubmit(selector, myform, filter_selector, leave_submit) {
         if (jsKey > 31) {
             prevPrevKey = prevKey;
             prevKey = jsKey;
+        }
+        if (prevPrevKey == 52 && prevKey == 50) {
+            ignoreNextEnter = true;
         }
     });
 

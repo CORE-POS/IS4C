@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 class WfcMadCoupon extends Plugin {
 
     public $plugin_description = "WFC's quarterly member appreciation discount. Very

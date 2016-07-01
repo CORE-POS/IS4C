@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\adminlogin;
+use COREPOS\pos\lib\MiscLib;
+
 /**
   @class PriceOverrideAdminLogin
   adminlogin callback for adjusting
@@ -36,7 +39,7 @@ class PriceOverrideAdminLogin
     static public function adminLoginCallback($success)
     {
         if ($success) {
-            return MiscLib::base_url().'gui-modules/priceOverride.php';
+            return MiscLib::baseURL().'gui-modules/priceOverride.php';
         } else {
             return false;
         }

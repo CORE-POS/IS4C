@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning;
+use COREPOS\pos\lib\Scanning\DiscountTypes\NormalPricing;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+
 /**
   @class DiscountType
   Base module for computing sale prices
@@ -29,12 +34,12 @@ class DiscountType
 {
 
     static public $MAP = array(
-        0   => 'NormalPricing',
-        1   => 'EveryoneSale',
-        2   => 'MemberSale',
-        3   => 'PercentMemSale',
-        4   => 'StaffSale',
-        5   => 'SlidingMemSale',
+        0   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\NormalPricing',
+        1   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\EveryoneSale',
+        2   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\MemberSale',
+        3   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\PercentMemSale',
+        4   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\StaffSale',
+        5   => 'COREPOS\\pos\\lib\\Scanning\\DiscountTypes\\SlidingMemSale',
     );
 
     /**

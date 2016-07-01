@@ -91,7 +91,7 @@ if (isset($_GET['salesCode1'])){
         echo "ASC>pCode</a></td>";
     echo "</tr>\n";//create table header
     
-    while ($myrow = $sql->fetch_array($result)) //create array from query
+    while ($myrow = $sql->fetchRow($result)) //create array from query
         printf("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n",$myrow[0], $myrow[1],$myrow[2],$myrow[3],$myrow[4]);
     //convert row information to strings, enter in table cells
     

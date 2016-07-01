@@ -5,19 +5,16 @@ function cscallback(){
 		return false;
 	}
 
-	var c = $('#cost').val();
-	var d = $('#department').val();
-	var u = $('#upc').val();
-	var d = 'action=margin&upc='+u+'&dept='+d+'&cost='+c;
+	var cost = $('#cost').val();
+	var dept = $('#department').val();
+	var upc = $('#upc').val();
+	var d = 'action=margin&upc='+upc+'&dept='+dept+'&cost='+cost;
 
 	$.ajax({
 		url: 'ajax.php',
-		type: 'POST',
-		dataType: 'text/html',
-		timeout: 5000,
 		data: d
     }).fail(function(){
-        alert('Error loading XML document');
+        window.alert('Error loading XML document');
     }).done(function(resp){
         resp = '<legend>Margin</legend>'+resp;
         $('#marginfs').html(resp);
@@ -25,7 +22,7 @@ function cscallback(){
 }
 
 function updateLC(the_likecode){
-	if (the_likecode == "-1"){
+	if (the_likecode === "-1"){
 		$('#lchidden').hide();
 		return false;
 	}
@@ -33,12 +30,9 @@ function updateLC(the_likecode){
 	var d = 'action=likecode&lc='+the_likecode;
 	$.ajax({
 		url: 'ajax.php',
-		type: 'POST',
-		dataType: 'text/html',
-		timeout: 5000,
 		data: d
     }).fail(function(){
-		alert('Error loading XML document');
+		window.alert('Error loading XML document');
     }).done(function(resp){
         $('#lctable').html(resp);
         $('#lchidden').show();

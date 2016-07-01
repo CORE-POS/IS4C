@@ -202,14 +202,14 @@ class OverShortDayPage extends FanniePage
                             AND tender_type=\'SCA\'');
             $countP = $dbc->prepare("select amt from dailyCounts where date=? and emp_no=? and tender_type=? AND storeID=?");
 
-            while ($row = $dbc->fetch_array($empsR)){
+            while ($row = $dbc->fetchRow($empsR)){
                 $emp_no = $row[1];
                 $perCashierTotal = 0;
                 $perCashierCountTotal = 0;
                 $perCashierOSTotal = 0;
 
                 $noteR = $dbc->execute($noteP, array($emp_no, $date, $store));
-                $noteW = $dbc->fetch_array($noteR);
+                $noteW = $dbc->fetchRow($noteR);
                 $note = stripslashes($noteW[0]);
 
                 $output .= "<input type=hidden class=\"cashier\" value=\"$row[1]\" />";
@@ -244,7 +244,7 @@ class OverShortDayPage extends FanniePage
                     if ($dbc->num_rows($fetchR) != 0) {
                         $fetchW = $dbc->fetch_row($fetchR);
                         $value = $fetchW[0];
-                    } elseif ($code !== 'CA' && $code !== 'CK' && $code !== 'TK' && $code !== 'WT') {
+                    } elseif ($code !== 'CA' && $code !== 'CK' && $code !== 'WT') {
                         $value = $posAmt;
                     }
                     $output .= "<td><div class=\"input-group\">
@@ -319,7 +319,7 @@ class OverShortDayPage extends FanniePage
             $output .= "<td id=overallOSTotal>$overallOSTotal</td></tr>";
 
             $noteR = $dbc->execute($noteP, array(-1, $date));
-            $noteW = $dbc->fetch_array($noteR);
+            $noteW = $dbc->fetchRow($noteR);
             $note = $noteW[0];
             $output .= "<tr><td>&nbsp;</td><td>Notes</td><td colspan=3</td>";
             $output .= "<textarea class=\"form-control\" rows=5 cols=35 id=totalsnote>$note</textarea></td></tr>";

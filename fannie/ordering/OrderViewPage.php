@@ -25,6 +25,10 @@ if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
+if (!class_exists('SoPoBridge')) {
+    include(__DIR__ . '/SoPoBridge.php');
+}
+
 class OrderViewPage extends FannieRESTfulPage
 {
     protected $header = 'View Order';
@@ -51,8 +55,22 @@ class OrderViewPage extends FannieRESTfulPage
         $this->__routes[] = 'post<orderID><noteDept><noteText><addr><addr2><city><state><zip><ph1><ph2><email>';
         $this->__routes[] = 'delete<orderID><transID>';
         $this->addRoute('post<orderID><description><srp><actual><qty><dept><unitPrice><vendor><transID><changed>');
+        $this->addRoute('post<addPO><orderID><transID><storeID>');
 
         return parent::preprocess();
+    }
+
+    protected function post_addPO_orderID_transID_storeID_handler()
+    {
+        $bridge = new SoPoBridge($this->connection, $this->config);
+        $poID = $bridge->addItemToPurchaseOrder($this->orderID, $this->transID, $this->storeID);
+        if ($poID) {
+            echo json_encode(array('error'=>false, 'poID'=>$poID));
+        } else {
+            echo json_encode(array('error'=>true));
+        }
+
+        return false;
     }
 
     protected function post_orderID_transID_dept_handler()
@@ -148,7 +166,7 @@ class OrderViewPage extends FannieRESTfulPage
 
         $upP = $dbc->prepare('
             UPDATE PendingSpecialOrder 
-            SET memType = (staff+1)%2
+            SET staff = (staff+1)%2
             WHERE order_id=? 
                 AND trans_id=?');
         $dbc->execute($upP, array($this->orderID, $this->transID));
@@ -416,12 +434,16 @@ class OrderViewPage extends FannieRESTfulPage
             }
             $ret .= '</select><p />';
         }
-        $ret .= '<b>Store</b>: ';
-        $ret .= '<select id="orderStore" class="form-control input-sm">';
-        $ret .= '<option value="0">Choose...</option>';
-        $stores = new StoresModel($dbc);
-        $ret .= $stores->toOptions($orderModel->storeID());
-        $ret .= '</select>';
+        if ($this->config->get('STORE_MODE') === 'HQ') {
+            $ret .= '<b>Store</b>: ';
+            $ret .= '<select id="orderStore" class="form-control input-sm">';
+            $ret .= '<option value="0">Choose...</option>';
+            $stores = new StoresModel($dbc);
+            $ret .= $stores->toOptions($orderModel->storeID());
+            $ret .= '</select>';
+        } else {
+            $ret .= '<input type="hidden" id="orderStore" value="1" />';
+        }
         $ret .= '</div><div class="col-sm-4 text-right">';
 
         $ret .= "<a href=\"\" class=\"btn btn-default btn-sm done-btn\">Done</a>";
@@ -439,7 +461,7 @@ class OrderViewPage extends FannieRESTfulPage
                 (isset($prints[$orderID])?'checked':''),
                 $username,$orderID
             );
-        $ret .= sprintf('<br /><a href="tagpdf.php?oids[]=%d" target="_tags%d">Print Now</a>',
+        $ret .= sprintf('<br /><a href="SpecialOrderTags.php?oids[]=%d" target="_tags%d">Print Now</a>',
                 $orderID,$orderID);
         $ret .= '</div></div>';
 
@@ -660,15 +682,6 @@ class OrderViewPage extends FannieRESTfulPage
         $dbc->query('INSERT ' . $TRANS . 'SpecialOrders ' . $values);
         $orderID = $dbc->insertID();
 
-        /**
-          @deprecated 24Apr14
-          New SpecialOrders table is standard now
-        */
-        if ($dbc->table_exists($TRANS . 'SpecialOrderID')) {
-            $soP = $dbc->prepare('INSERT INTO ' . $TRANS . 'SpecialOrderID (id) VALUES (?)');
-            $soR = $dbc->execute($soP, array($orderID));
-        }
-
         $ins_array = $this->genericRow($orderID);
         $ins_array['numflag'] = 2;
         $ins_array['mixMatch'] = $user;
@@ -695,10 +708,6 @@ class OrderViewPage extends FannieRESTfulPage
         $s_order->noteSuperID($note_vals['superID']);
         $s_order->save();
         $dbc->selectDB($this->config->get('TRANS_DB')); // switch back to previous
-
-        if ($dbc->table_exists($TRANS . 'SpecialOrderStatus')) {
-            $dbc->smartInsert("{$TRANS}SpecialOrderStatus",$status_vals);
-        }
 
         $this->createContactRow($orderID);
 
@@ -774,8 +783,14 @@ class OrderViewPage extends FannieRESTfulPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
+
+        if (FannieAuth::validateUserQuiet('ordering_edit')) {
+            $items = $this->editableItemList($this->orderID);
+        } else {
+            $items = itemList($this->orderID);
+        }
         
-        $ret = <<<HTML
+        echo <<<HTML
 <form> 
 <div class="form-inline">
     <div class="input-group">
@@ -794,28 +809,21 @@ class OrderViewPage extends FannieRESTfulPage
 </div>
 </form>
 <p />
+{$items}
+<p />
+<b><a href="" onclick="\$('#manualclosebuttons').toggle();return false;">Manually close order</a></b>
+<span id="manualclosebuttons" class="collapse"> as:
+    <a href="" class="btn btn-default close-order-btn" data-close="7">Completed</a>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="" class="btn btn-default close-order-btn" data-close="8">Canceled</a>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="" class="btn btn-default close-order-btn" data-close="9">Inquiry</a>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br />
+    <div class="alert alert-danger">
+        Closing an order means slips for these items will no longer scan at the registers
+    </div>
+</span>
 HTML;
-
-        if (FannieAuth::validateUserQuiet('ordering_edit')) {
-            $ret .= $this->editableItemList($this->orderID);
-        } else {
-            $ret .= itemList($this->orderID);
-        }
-
-        $ret .= '<p />';
-        $ret .= '<b><a href="" onclick="$(\'#manualclosebuttons\').toggle();return false;">Manually close order</a></b>';
-        $ret .= sprintf('<span id="manualclosebuttons" class="collapse"> as:
-                <a href="" class="btn btn-default close-order-btn" data-close="7">Completed</a>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="" class="btn btn-default close-order-btn" data-close="8">Canceled</a>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="" class="btn btn-default close-order-btn" data-close="9">Inquiry</a>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br />
-                <div class="alert alert-danger">Closing an order means slips for these
-                items will no longer scan at the registers</div></span>',
-                $this->orderID,$this->orderID,$this->orderID);
-
-        echo $ret;
 
         return false;
     }
@@ -839,12 +847,16 @@ HTML;
             v.sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch,
             o.trans_id,o.unitPrice,o.memType,o.staff
             FROM {$TRANS}PendingSpecialOrder as o
-            left join vendorItems as v on o.upc=v.upc AND vendorID=1
+                LEFT JOIN vendors AS n ON o.mixMatch=n.vendorName
+                LEFT JOIN vendorItems as v on o.upc=v.upc AND n.vendorID=v.vendorID
             WHERE order_id=? AND trans_type='I' 
             ORDER BY trans_id DESC");
         $res = $dbc->execute($prep, array($orderID));
         $num_rows = $dbc->num_rows($res);
         $prev_id = 0;
+        $bridge = new SoPoBridge($dbc, $this->config);
+        $store = $dbc->prepare("SELECT storeID FROM {$TRANS}SpecialOrders WHERE specialOrderID=?");
+        $storeID = $dbc->getValue($store, array($orderID));
         while ($row = $dbc->fetch_row($res)) {
             if ($row['trans_id'] == $prev_id) continue;
             $ret .= sprintf('
@@ -890,7 +902,7 @@ HTML;
                 class="form-control input-sm price-field item-field" /></td>',
                 $row['unitPrice'],$row['trans_id']);
             $ret .= sprintf('<td class="form-inline">Supplier: <input type="text" value="%s" size="12" 
-                    class="form-control input-sm item-field" name="vendor"
+                    class="form-control input-sm item-field input-vendor" name="vendor"
                     maxlength="26" 
                     /></td>',$row['mixMatch']);
             $ret .= '<td>Discount</td>';
@@ -904,19 +916,27 @@ HTML;
             }
             $ret .= sprintf('<td colspan="2">Printed: %s</td>',
                     ($row['charflag']=='P'?'Yes':'No'));
+            $ret .= '<td colspan="2">';
+            if ($storeID && $bridge->canPurchaseOrder($orderID, $row['trans_id'])) {
+                $ordered = $bridge->findPurchaseOrder($orderID, $row['trans_id'], $storeID);
+                if ($ordered) {
+                    $ret .= '<a href="../purchasing/ViewPurchaseOrders.php?id=' . $ordered . '">In PO</a> | ';
+                } else {
+                    $ret .= sprintf('<span><a class="btn btn-default btn-xs add-po-btn" 
+                        data-order="%d" data-trans="%d" data-store="%d">Add to PO</a></span> | ',
+                        $orderID, $row['trans_id'], $storeID);
+                }
+            }
             if ($num_rows > 1) {
-                $ret .= sprintf('<td colspan="2"><a href="" class="btn btn-default btn-sm"
+                $ret .= sprintf('<a href="" class="btn btn-default btn-xs"
                     onclick="orderView.doSplit(%d,%d);return false;">Split Item to New Order</a><br />
                     O <input type="checkbox" class="itemChkO" %s data-order="%d" data-trans="%d" />&nbsp;&nbsp;&nbsp;&nbsp;
-                    A <input type="checkbox" class="itemChkA" %s data-order="%d" data-trans="%d" />
-                    </td>',
+                    A <input type="checkbox" class="itemChkA" %s data-order="%d" data-trans="%d" />',
                     $orderID,$row['trans_id'],
                     ($row['memType']>0?'checked':''),$orderID,$row['trans_id'],
                     ($row['staff']>0?'checked':''),$orderID,$row['trans_id']);
-            } else {
-                $ret .= '<td colspan="2"></td>';
             }
-            $ret .= '</tr>';
+            $ret .= '</td></tr>';
             $ret .= '<tr><td class="small" colspan="9"><span style="font-size:1;">&nbsp;</span>';
             $ret .= '<input type="hidden" name="transID" class="item-field" value="' . $row['trans_id'] . '" /></td></tr>';
             $ret .= '</tbody>';
@@ -929,19 +949,17 @@ HTML;
 
     private function getQtyForm($orderID,$default,$transID,$description)
     {
-        $dbc = $this->connection;
-        $dbc->selectDB($this->config->get('OP_DB'));
-        $ret = '<i>This item ('.$description.') requires a quantity</i><br />';
-        $ret .= "<form data-order=\"$orderID\" data-trans=\"$transID\">";
-        $ret .= '<div class="form-inline">';
-        $ret .= '<label>Qty</label>: <input type="text" id="newqty" 
-            class="form-control input-sm" value="'.$default.'" maxlength="3" size="4" />';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<button type="submit" class="btn btn-default">Enter Qty</button>';
-        $ret .= '</div>';
-        $ret .= '</form>';
-
-        return $ret;
+        return <<<HTML
+<i>This item ({$description}) requires a quantity</i><br />
+<form data-order="{$orderID}" data-trans="{$transID}">
+    <div class="form-inline">
+        <label>Qty</label>: <input type="text" id="newqty" 
+            class="form-control input-sm" value="{$default}" maxlength="3" size="4" />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <button type="submit" class="btn btn-default">Enter Qty</button>
+    </div>
+</form>
+HTML;
     }
 
     private function getDeptForm($orderID,$transID,$description)
@@ -949,10 +967,6 @@ HTML;
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
-        $ret = '<i>This item ('.$description.') requires a department</i><br />';
-        $ret .= "<form data-order=\"$orderID\" data-trans=\"$transID\">";
-        $ret .= '<div class="form-inline">';
-        $ret .= '<select id="newdept" class="form-control">';
         $prep = $dbc->prepare("select super_name,
             CASE WHEN MIN(map_to) IS NULL THEN MIN(m.dept_ID) ELSE MIN(map_to) END
             from MasterSuperDepts
@@ -961,16 +975,23 @@ HTML;
             where m.superID > 0
             group by super_name ORDER BY super_name");
         $res = $dbc->execute($prep);
-        while ($row = $dbc->fetch_row($res)) {
-            $ret .= sprintf('<option value="%d">%s</option>',$row[1],$row[0]);
+        $opts = '';
+        while ($row = $dbc->fetchRow($res)) {
+            $opts .= sprintf('<option value="%d">%s</option>',$row[1],$row[0]);
         }
-        $ret .= "</select>";
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<button type="submit" class="btn btn-default">Enter Dept</button>';
-        $ret .= '</div>';
-        $ret .= '</form>';
-        
-        return $ret;
+
+        return <<<HTML
+<i>This item ({$description}) requires a department</i><br />
+<form data-order="{$orderID}" data-trans="{$transID}">
+    <div class="form-inline">
+        <select id="newdept" class="form-control">
+            {$opts}
+        </select>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <button type="submit" class="btn btn-default">Enter Dept</button>
+    </div>
+</form>
+HTML;
     }
 
     private function reprice($oid,$tid,$reg=false)
@@ -1034,7 +1055,7 @@ HTML;
 
     protected function get_orderID_view()
     {
-        $orderID = $this->orderID;
+        $orderID = (int)$this->orderID;
         $refer = filter_input(INPUT_SERVER, 'HTTP_REFERER');
         $return_path = ($refer && strstr($refer,'fannie/ordering/NewSpecialOrdersPage.php')) ? $refer : '';
         if (!empty($return_path)) {
@@ -1044,19 +1065,18 @@ HTML;
         } else {
             $return_path = $this->config->get('URL') . "ordering/";
         }
-        $ret = sprintf("<input type=hidden id=redirectURL value=\"%s\" />",$return_path);
+        $ret = '';
 
-        $prev = -1;
-        $next = -1;
-        $found = False;
+        $prev = $next = -1;
+        $found = false;
         $cachepath = sys_get_temp_dir()."/ordercache/";
         $cachekey = FormLib::get('k');
         if ($cachekey && file_exists($cachepath.$cachekey)) {
             $fptr = fopen($cachepath.$cachekey,'r');
             while (($buffer = fgets($fptr, 4096)) !== false) {
-                if ((int)$buffer == $orderID) $found = True;
-                else if (!$found) $prev = (int)$buffer;
-                else if ($found) {
+                if ((int)$buffer == $orderID) $found = true;
+                elseif (!$found) $prev = (int)$buffer;
+                elseif ($found) {
                     $next = (int)$buffer;
                     break;
                 }
@@ -1079,10 +1099,11 @@ HTML;
                     <span class="glyphicon glyphicon-chevron-right"></span>Next</a>',$next,$cachekey);
             }
             $ret .= '</div></div>';
-            $ret .= '<p />';
         }
 
         $ret .= <<<HTML
+<p />
+<input type=hidden id=redirectURL value="{$return_path}" />
 <div class="panel panel-default">
     <div class="panel-heading">Customer Information</div>
     <div class="panel-body" id="customerDiv"></div>
@@ -1092,10 +1113,11 @@ HTML;
     <div class="panel-body" id="itemDiv"></div>
 </div>
 <div id="footerDiv"></div>
+<input type=hidden value="{$orderID}" id="init_oid" />
 HTML;
-        $ret .= sprintf("<input type=hidden value=\"%d\" id=\"init_oid\" />",$orderID);
 
         $this->addScript('orderview.js');
+        $this->addScript('../item/autocomplete.js');
 
         return $ret;
     }

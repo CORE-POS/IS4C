@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Scanning\SpecialUPC;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+
 /**
   @class MemberBarcode
   WFC barcoded member ID implementation
@@ -60,9 +64,9 @@ class MemberBarcode extends SpecialUPC
             return $json;
         }
 
-        $row = $db->fetch_array($result);
+        $row = $db->fetchRow($result);
         CoreLocal::set("memberCardUsed",1);
-        $json = PrehLib::memberID($row[0]);
+        $json = COREPOS\pos\lib\MemberLib::memberID($row[0]);
 
         return $json;
     }

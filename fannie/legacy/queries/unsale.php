@@ -40,7 +40,7 @@ else {
   // i don't know what's going on.  SO DON'T CHANGE ANYTHING
   if ($sql->num_rows($batchIDR) != 0){
     // now delete the upc from the batch list(s)
-    while ($row = $sql->fetch_array($batchIDR)){
+    while ($row = $sql->fetchRow($batchIDR)){
       $batchID = $row['batchID'];
       $batchQ = $sql->prepare("delete from batchList where
                upc = ? and batchID = ?");

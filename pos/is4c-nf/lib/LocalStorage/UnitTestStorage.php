@@ -21,8 +21,10 @@
 
 *********************************************************************************/
 
-if (!class_exists("LocalStorage")) {
-    include_once(realpath(dirname(__FILE__).'/LocalStorage.php'));
+namespace COREPOS\pos\lib\LocalStorage;
+
+if (!class_exists("COREPOS\\pos\\lib\\LocalStorage\\LocalStorage")) {
+    include_once(__DIR__ . '/LocalStorage.php');
 }
 
 /**
@@ -32,14 +34,10 @@ if (!class_exists("LocalStorage")) {
 */
 class UnitTestStorage extends LocalStorage 
 {
-
     private $mutable = array();
 
     public function get($key)
     {
-        if ($this->isImmutable($key)) {
-            return $this->immutables[$key];
-        }
         if (!isset($this->mutable["$key"])) {
             return "";
         }
@@ -47,18 +45,14 @@ class UnitTestStorage extends LocalStorage
         return $this->mutable["$key"];
     }
 
-    public function set($key,$val,$immutable=false){
-        if ($immutable) {
-            $this->immutableSet($key,$val);
-        } else {
-            $this->mutable["$key"] = $val;
-        }
+    public function set($key,$val) {
+        $this->mutable["$key"] = $val;
         $this->debug($key,$val);
     }
 
     public function iteratorKeys()
     {
-        return array_merge(parent::iteratorKeys(), array_keys($this->mutable));
+        return array_keys($this->mutable);
     }
 }
 

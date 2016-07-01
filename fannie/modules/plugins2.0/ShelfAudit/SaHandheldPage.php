@@ -59,9 +59,16 @@ class SaHandheldPage extends FanniePage {
         if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli' && session_id() == '') {
             @session_start();
         }
-        if (!isset($_SESSION['SaPluginSection']))
+        if (!isset($_SESSION['SaPluginSection'])) {
             $_SESSION['SaPluginSection'] = 0;
-        $this->section = $_SESSION['SaPluginSection'];
+        }
+        $section = FormLib::get('section', false);
+        if ($section !== false) {
+            $this->section = $section;
+            $_SESSION['SaPluginSection'] = $section;
+        } else {
+            $this->section = $_SESSION['SaPluginSection'];
+        }
 
         /* ajax callbacks */
         $ajax = FormLib::get_form_value('action','');
@@ -96,20 +103,22 @@ class SaHandheldPage extends FanniePage {
                 products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc
                 LEFT JOIN '.$FANNIE_PLUGIN_SETTINGS['ShelfAuditDB'].$dbc->sep().
                 'sa_inventory AS s ON p.upc=s.upc AND s.clear=0 AND s.storeID=?
+                    AND s.section=?
                 WHERE p.upc=? 
                 ORDER BY v.vendorID';
             $p = $dbc->prepare($q);
-            $r = $dbc->execute($p,array($store, $upc));
+            $r = $dbc->execute($p,array($store, $this->section, $upc));
             if($dbc->num_rows($r)==0){
                 // try again; item on-hand but not in products
                 $q = 'SELECT v.description,v.brand,s.quantity,v.units FROM
                     vendorItems AS v 
                     LEFT JOIN '.$FANNIE_PLUGIN_SETTINGS['ShelfAuditDB'].$dbc->sep().
                     'sa_inventory AS s ON s.upc=v.upc AND s.clear=0 AND s.storeID=?
+                        AND s.section=?
                     WHERE v.upc=? 
                     ORDER BY v.vendorID';
                 $p = $dbc->prepare($q);
-                $r = $dbc->execute($p,array($store, $upc));
+                $r = $dbc->execute($p,array($store, $this->section, $upc));
             }
 
             
@@ -248,6 +257,15 @@ Device = new ScannerDevice({
     }
 });
 ScannerDevice.registerListener(Device);
+
+if (typeof WebBarcode == 'object') {
+    WebBarcode.onBarcodeScan(function(ev) {
+        var data = ev.value;
+        var upc = data.substring(0,data.length-1);
+        $('#upc_in').val(upc);
+        $('#goBtn').click();
+    });
+}
         <?php } ?>
 
         <?php
@@ -261,6 +279,12 @@ ScannerDevice.registerListener(Device);
 <a href="SaMenuPage.php">Menu</a>
  - Store # <?php echo $store; ?>
 <input type="hidden" name="store" id="store" value="<?php echo ((int)$store); ?>" />
+<label>
+    <input type="radio" name="section" value=0 <?php echo $_SESSION['SaPluginSection']==0 ? 'checked' : ''; ?>/> Backstock
+</label>
+<label>
+    <input type="radio" name="section" value=1 <?php echo $_SESSION['SaPluginSection']==1 ? 'checked' : ''; ?>/> Floor
+</label>
 <br />
 <div class="form-group form-inline">
     <div class="input-group">

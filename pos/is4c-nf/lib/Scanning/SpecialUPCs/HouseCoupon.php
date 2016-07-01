@@ -21,6 +21,15 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\SpecialUPCs;
+use COREPOS\pos\lib\Scanning\SpecialUPC;
+use \CoreLocal;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DiscountModule;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+
 /**
   @class HouseCoupon
   WFC style custom store coupons
@@ -82,7 +91,6 @@ class HouseCoupon extends SpecialUPC
     private function lookupCoupon($id)
     {
         $dbc = Database::pDataConnect();
-        $hctable = $dbc->tableDefinition('houseCoupons');
         $infoQ = "SELECT endDate," 
                     . $dbc->identifierEscape('limit') . ",
                     discountType, 
@@ -95,19 +103,28 @@ class HouseCoupon extends SpecialUPC
                         WHEN endDate IS NULL THEN 0 
                         ELSE ". $dbc->datediff('endDate', $dbc->now()) . " 
                     END AS expired";
-        // new(ish) columns 16apr14
-        if (isset($hctable['description'])) {
-            $infoQ .= ', description';
-        } else {
-            $infoQ .= ', \'\' AS description';
-        }
-        if (isset($hctable['startDate'])) {
-            $infoQ .= ", CASE 
+        if (CoreLocal::get('NoCompat') == 1) {
+            $infoQ .= ", description, 
+                        CASE 
                           WHEN startDate IS NULL THEN 0 
                           ELSE ". $dbc->datediff('startDate', $dbc->now()) . " 
                         END as preStart";
         } else {
-            $infoQ .= ', 0 AS preStart';
+            // new(ish) columns 16apr14
+            $hctable = $dbc->tableDefinition('houseCoupons');
+            if (isset($hctable['description'])) {
+                $infoQ .= ', description';
+            } else {
+                $infoQ .= ', \'\' AS description';
+            }
+            if (isset($hctable['startDate'])) {
+                $infoQ .= ", CASE 
+                              WHEN startDate IS NULL THEN 0 
+                              ELSE ". $dbc->datediff('startDate', $dbc->now()) . " 
+                            END as preStart";
+            } else {
+                $infoQ .= ', 0 AS preStart';
+            }
         }
         $infoQ .= " FROM  houseCoupons 
                     WHERE coupID=" . ((int)$id);

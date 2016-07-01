@@ -21,6 +21,13 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+use \CoreLocal;
+
 /**
   @class TenderModule
   Base class for modular tenders
@@ -57,7 +64,7 @@ class TenderModule
         $result = $dbc->query($query);
 
         if ($dbc->num_rows($result) > 0) {
-            $row = $dbc->fetch_array($result);
+            $row = $dbc->fetchRow($result);
             $this->name_string = $row['TenderName'];
             $this->change_type = $row['TenderType'];
             $this->change_string = $row['ChangeMessage'];

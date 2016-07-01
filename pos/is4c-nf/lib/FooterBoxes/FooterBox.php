@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\FooterBoxes;
+
 /**
   @class FooterBox
   Base class for displaying footer
@@ -64,6 +66,30 @@ class FooterBox
     {
         return "";
     }
+
+    private static $builtin = array(
+        'EveryoneSales',
+        'FooterBox',
+        'MemSales',
+        'MultiTotal',
+        'PatronagePts',
+        'SavedOrCouldHave',
+        'TotalSavingFooter',
+        'TransPercentDiscount',
+    );
+
+    public static function factory($class)
+    {
+        if ($class != '' && in_array($class, self::$builtin)) {
+            $class = 'COREPOS\\pos\\lib\FooterBoxes\\' . $class;
+            return new $class();
+        } elseif ($class != '' && class_exists($class)) {
+            return new $class();
+        }
+
+        return new COREPOS\pos\lib\FooterBoxes\FooterBox();
+    }
+ 
 }
 
 /**

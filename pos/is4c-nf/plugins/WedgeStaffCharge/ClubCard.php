@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\parser\Parser;
+
 class ClubCard extends Parser 
 {
     function check($str)
@@ -46,7 +52,7 @@ class ClubCard extends Parser
         $num_rows = $connection->num_rows($result);
 
         if ($num_rows > 0) {
-            $row = $connection->fetch_array($result);
+            $row = $connection->fetchRow($result);
             $strUPC = $row["upc"];
             $strDescription = $row["description"];
             $dblVolSpecial = $row["VolSpecial"];            

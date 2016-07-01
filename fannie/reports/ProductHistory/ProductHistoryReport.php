@@ -34,7 +34,7 @@ class ProductHistoryReport extends FannieReportPage
 
     protected $title = "Fannie : Product History";
     protected $header = "Product History Report";
-    protected $report_headers = array('Date','Description', 'Price', 'Cost', 'Dept#', 'Tax', 'FS', 'WIC', 'Scale', 'Qty Rq\'d', 'NoDisc', 'UserID');
+    protected $report_headers = array('Date','Description', 'Price', 'Cost', 'Sale Price', 'Dept#', 'Tax', 'FS', 'WIC', 'Scale', 'Qty Rq\'d', 'NoDisc', 'UserID', 'Update Type');
     protected $required_fields = array('upc');
 
     protected $sort_direction = 1;
@@ -51,10 +51,6 @@ class ProductHistoryReport extends FannieReportPage
         }
 
         $table = 'prodUpdate';
-        $def = $dbc->tableDefinition('prodUpdate');
-        if (!isset($def['prodUpdateID'])) { // older schema
-            $table = 'prodUpdateArchive';
-        }
         $query = 'SELECT
                     upc,
                     description,
@@ -71,7 +67,9 @@ class ProductHistoryReport extends FannieReportPage
                     user,
                     forceQty,
                     noDisc,
-                    inUse
+                    inUse,
+                    salePrice,
+                    updateType
                   FROM ' . $table . '
                   WHERE upc = ?';
         $args = array($upc);
@@ -101,6 +99,7 @@ class ProductHistoryReport extends FannieReportPage
             $row['description'],
             $row['price'],
             $row['cost'],
+            $row['salePrice'],
             $row['dept'],
             $row['tax'],
             $row['fs'],
@@ -109,6 +108,7 @@ class ProductHistoryReport extends FannieReportPage
             $row['forceQty'],
             $row['noDisc'],
             $row['user'],
+            $row['updateType'],
         );
     }
     
@@ -152,7 +152,7 @@ class ProductHistoryReport extends FannieReportPage
     {
         $data = array('modified'=>'2000-01-01', 'description'=>'test', 'price'=>1,
             'cost'=>1, 'dept'=>1, 'tax'=>0, 'fs'=>1, 'scale'=>0, 'forceQty'=>0,
-            'noDisc'=>0, 'user'=>1234, 'wic'=>1);
+            'noDisc'=>0, 'user'=>1234, 'wic'=>1, 'salePrice'=>0, 'updateType'=>'TEST');
         $phpunit->assertInternalType('array', $this->rowToRecord($data));
     }
 }

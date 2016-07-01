@@ -103,9 +103,9 @@ class LaneTender extends FannieReportPage
         $query .= ' GROUP BY d.emp_no, d.trans_subtype
             ORDER BY d.emp_no
         ';
-        $statement = $dbc->prepare_statement($query);
+        $statement = $dbc->prepare($query);
         $args = array($d1.' 00:00:00', $d2.' 23:59:59');
-        $result = $dbc->exec_statement($statement, $args);
+        $result = $dbc->exec($statement, $args);
         $cashierNames = array();
         while ($row = $dbc->fetch_row($result)) {
             $data[$row['register_no']]['tenders'][$row['trans_subtype']][0] += $row['amount'];
@@ -138,9 +138,9 @@ class LaneTender extends FannieReportPage
                 AND date BETWEEN ? AND ? 
             GROUP BY lane, tender_type
         ';
-        $statement = $dbc->prepare_statement($query);
+        $statement = $dbc->prepare($query);
         $args = array($d1.' 00:00:00', $d2.' 23:59:59');
-        $result = $dbc->exec_statement($statement, $args);
+        $result = $dbc->exec($statement, $args);
         while ($row = $dbc->fetch_row($result)) {
             $data[$row['lane']]['tenders'][$row['tender_type']][1] += $row['amount'];
         }

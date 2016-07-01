@@ -29,24 +29,24 @@
   in the variable $CORE_LOCAL.
 */
 
-$elog = realpath(dirname(__FILE__).'/../../log/').'/php-errors.log';
+$elog = realpath(dirname(__FILE__).'/../../log/').'/debug_lane.log';
 ini_set('error_log',$elog);
-ini_set('display_errors', false);
+//ini_set('display_errors', false);
 
-$LOCAL_STORAGE_MECHANISM = 'SessionStorage';
+$LOCAL_STORAGE_MECHANISM = 'COREPOS\\pos\\lib\\LocalStorage\\SessionStorage';
 
 if (!class_exists($LOCAL_STORAGE_MECHANISM)) {
-    include(realpath(dirname(__FILE__).'/'.$LOCAL_STORAGE_MECHANISM.".php"));
+    include(__DIR__ . '/SessionStorage.php');
 }
 if (!class_exists('CoreLocal')) {
-    include(dirname(__FILE__) . '/CoreLocal.php');
+    include(__DIR__ . '/CoreLocal.php');
 }
-if (!class_exists('WrappedStorage')) {
-    include(dirname(__FILE__) . '/WrappedStorage.php');
+if (!class_exists('COREPOS\\pos\\lib\\LocalStorage\\WrappedStorage')) {
+    include(__DIR__ . '/WrappedStorage.php');
 }
 CoreLocal::setHandler($LOCAL_STORAGE_MECHANISM);
 
-$CORE_LOCAL = new WrappedStorage();
+$CORE_LOCAL = new COREPOS\pos\lib\LocalStorage\WrappedStorage();
 global $CORE_LOCAL;
 
 // this includes ini.php

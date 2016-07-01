@@ -22,61 +22,65 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\UdpComm;
+if (!class_exists('AutoLoader')) include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class PaycardEmvGift extends PaycardProcessPage 
 {
     private $prompt = false;
-    private $run_transaction = false;
+    private $runTransaction = false;
     private $amount = false;
     private $mode = false;
 
     function preprocess()
     {
         // check for posts before drawing anything, so we can redirect
-        if (isset($_REQUEST['mode'])) {
-            $this->mode = $_REQUEST['mode'];
+        if (FormLib::get('mode') !== '') {
+            $this->mode = FormLib::get('mode');
             if ($this->mode != PaycardLib::PAYCARD_MODE_ACTIVATE && $this->mode != PaycardLib::PAYCARD_MODE_ADDVALUE) {
-                CoreLocal::set('boxMsg', 'Invalid Gift Card Mode');
+                $this->conf->set('boxMsg', 'Invalid Gift Card Mode');
                 $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
 
                 return false;
             }
         }
-        if (isset($_REQUEST['amount']) && is_numeric($_REQUEST['amount'])) {
-            $this->amount = $_REQUEST['amount'];
+        if (is_numeric(FormLib::get('amount'))) {
+            $this->amount = FormLib::get('amount');
         }
 
-        if (isset($_REQUEST['reginput'])) {
-            $input = strtoupper(trim($_REQUEST['reginput']));
+        if (FormLib::get('reginput', false) !== false) {
+            $input = strtoupper(trim(FormLib::get('reginput')));
             // CL always exits
             if( $input == "CL") {
-                CoreLocal::set("msgrepeat",0);
-                CoreLocal::set("toggletax",0);
-                CoreLocal::set("togglefoodstamp",0);
-                PaycardLib::paycard_reset();
-                CoreLocal::set("CachePanEncBlock","");
-                CoreLocal::set("CachePinEncBlock","");
-                CoreLocal::set("CacheCardType","");
-                CoreLocal::set("CacheCardCashBack",0);
-                CoreLocal::set('ccTermState','swipe');
+                $this->conf->set("msgrepeat",0);
+                $this->conf->set("toggletax",0);
+                $this->conf->set("togglefoodstamp",0);
+                $this->conf->reset();
+                $this->conf->set("CachePanEncBlock","");
+                $this->conf->set("CachePinEncBlock","");
+                $this->conf->set("CacheCardType","");
+                $this->conf->set("CacheCardCashBack",0);
+                $this->conf->set('ccTermState','swipe');
                 UdpComm::udpSend("termReset");
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
             } elseif ($this->amount && ($input == "" || $input == 'MANUAL')) {
                 $this->action = "onsubmit=\"return false;\"";    
-                $this->add_onload_command("emvSubmit();");
+                $this->addOnloadCommand("emvSubmit();");
                 if ($input == 'MANUAL') {
                     $this->prompt = true;
                 }
-                $this->run_transaction = true;
+                $this->runTransaction = true;
             } elseif ($input != "" && is_numeric($input)) {
                 // any other input is an alternate amount
                 $this->amount = $input / 100.00;
             }
             // if we're still here, we haven't accepted a valid amount yet; display prompt again
-        } elseif (isset($_REQUEST['xml-resp'])) {
-            $xml = $_REQUEST['xml-resp'];
+        } elseif (FormLib::get('xml-resp') !== '') {
+            $xml = FormLib::get('xml-resp');
             $this->emvResponseHandler($xml);
             return false;
         } // post?
@@ -86,10 +90,10 @@ class PaycardEmvGift extends PaycardProcessPage
 
     function head_content()
     {
-        if (!$this->run_transaction) {
+        if (!$this->runTransaction) {
             return '';
         }
-        $e2e = new MercuryE2E();
+        $e2e = new MercuryDC();
         ?>
 <script type="text/javascript" src="../js/emv.js"></script>
 <script type="text/javascript">
@@ -110,9 +114,7 @@ function emvSubmit()
 
     function body_content()
     {
-        ?>
-        <div class="baseHeight">
-        <?php
+        echo '<div class="baseHeight">';
         $title = ($this->mode == PaycardLib::PAYCARD_MODE_ACTIVATE) ? 'Activate Gift Card' : 'Add Value to Gift Card';
         $msg = '';
         if (!$this->amount) {
@@ -122,23 +124,18 @@ function emvSubmit()
             $msg .= 'Value: $' . sprintf('%.2f', $this->amount) . '
                     [enter] to continue if correct<br>Enter a different amount if incorrect<br>
                     [clear] to cancel';
+            $this->addOnloadCommand("\$('#formlocal').append(\$('<input type=\"hidden\" name=\"amount\" />').val({$this->amount}));\n");
         }
         // generate message to print
-        echo PaycardLib::paycard_msgBox(
-                PaycardLib::PAYCARD_TYPE_GIFT,
+        echo PaycardLib::paycardMsgBox(
                 $title,
                 '',
                 $msg
         );
-        ?>
-        </div>
-        <?php
-        $this->add_onload_command("\$('#formlocal').append(\$('<input type=\"hidden\" name=\"mode\" />').val({$this->mode}));\n");
-        if ($this->amount) {
-            $this->add_onload_command("\$('#formlocal').append(\$('<input type=\"hidden\" name=\"amount\" />').val({$this->amount}));\n");
-        }
+        echo '</div>';
+        $this->addOnloadCommand("\$('#formlocal').append(\$('<input type=\"hidden\" name=\"mode\" />').val({$this->mode}));\n");
     }
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new PaycardEmvGift();
+AutoLoader::dispatch();
+

@@ -1,4 +1,18 @@
 <?php
+
+use COREPOS\pos\lib\Authenticate;
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\DiscountModule;
+use COREPOS\pos\lib\ItemNotFound;
+use COREPOS\pos\lib\JsonLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\Notifier;
+use COREPOS\pos\lib\PrehLib;
+use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\lib\UdpComm;
+
 /**
  * @backupGlobals disabled
  */
@@ -30,7 +44,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         $scale = MiscLib::scaleObject();
         if ($scale !== 0){
-            $this->assertInstanceOf('ScaleDriverWrapper', $scale);
+            $this->assertInstanceOf('COREPOS\\pos\\lib\\DriverWrappers\\ScaleDriverWrapper', $scale);
         }
 
         MiscLib::goodBeep();
@@ -106,8 +120,8 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $record['upc'] = '0000000000000';
         $record['description'] = uniqid('TEST-');
         TransRecord::addRecord($record);
-        SuspendLib::suspendorder();
-        $this->assertEquals(1, SuspendLib::checksuspended());
+        COREPOS\pos\lib\SuspendLib::suspendorder();
+        $this->assertEquals(1, COREPOS\pos\lib\SuspendLib::checksuspended());
 
         $query = "
             SELECT *
@@ -178,11 +192,10 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
     {
         // get codepath where session var is not array
         CoreLocal::set('ClassLookup', false);
-        AutoLoader::loadClass('LocalStorage');
-        $this->assertEquals(true, class_exists('LocalStorage', false));
+        AutoLoader::loadClass('COREPOS\\pos\\lib\\LocalStorage\\LocalStorage');
+        $this->assertEquals(true, class_exists('COREPOS\\pos\\lib\\LocalStorage\\LocalStorage', false));
 
-        AutoLoader::loadMap();
-        $class_map = CoreLocal::get('ClassLookup');
+        $class_map = AutoLoader::loadMap();
         $this->assertInternalType('array', $class_map);
         $this->assertNotEmpty($class_map);
         
@@ -193,22 +206,9 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $required_classes = array(
             'AutoLoader',
             'Authenticate',
-            'PreParser',
-            'Parser',
-            'BasicCorePage',
-            'TenderModule',
             'DisplayLib',
-            'ReceiptLib',
             'Database',
-            'Kicker',
-            'SpecialUPC',
-            'SpecialDept',
-            'DiscountType',
-            'PriceMethod',
             'LocalStorage',
-            'FooterBox',
-            'Plugin',
-            'PrintHandler',
         );
 
         foreach($required_classes as $class){
@@ -216,37 +216,16 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
             $this->assertFileExists($class_map[$class]);
         }
 
-        $mods = AutoLoader::listModules('Parser');
+        $mods = AutoLoader::listModules('COREPOS\\pos\\parser\\Parser');
         $this->assertInternalType('array',$mods);
         $this->assertNotEmpty($mods);
         foreach($mods as $m){
             $obj = new $m();
-            $this->assertInstanceOf('Parser',$obj);
+            $this->assertInstanceOf('COREPOS\\pos\\parser\\Parser',$obj);
         }
 
         $listable = array(
-            'DiscountType',
-            'FooterBox',
-            'Kicker',
-            'PreParser',
-            'PriceMethod',
-            'SpecialUPC',
-            'SpecialDept',
-            'TenderModule',
-            'TenderReport',
-            'DefaultReceiptDataFetch',
-            'DefaultReceiptFilter',
-            'DefaultReceiptSort',
-            'DefaultReceiptTag',
-            'DefaultReceiptSavings',
-            'ReceiptMessage',
-            'CustomerReceiptMessage',
-            'ProductSearch',
             'DiscountModule',
-            'PrintHandler',
-            'TotalAction',
-            'VariableWeightReWrite',
-            'ItemNotFound',
         );
         foreach ($listable as $base_class) {
             $mods = AutoLoader::listModules($base_class);
@@ -257,12 +236,12 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
     public function testBitmap()
     {
         /**
-          Using PrintHandler::RenderBitmapFromFile
+          Using COREPOS\pos\lib\PrintHandlers\PrintHandler::RenderBitmapFromFile
           will call all the methods of the Bitmap class
           that actually get used
         */
 
-        $ph = new PrintHandler();
+        $ph = new COREPOS\pos\lib\PrintHandlers\PrintHandler();
         $file = dirname(__FILE__).'/../../pos/is4c-nf/graphics/WfcLogo2014.bmp';
 
         $this->assertFileExists($file);
@@ -625,7 +604,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         lttLib::clear();
 
-        TransRecord::addCoupon('0051234512345',123,-1.23,1);
+        TransRecord::addCoupon('0051234512345',123,-1.23,array('foodstamp'=>1));
         $record = lttLib::genericRecord();
         $record['upc'] = '0051234512345';
         $record['description'] = ' * Manufacturers Coupon';

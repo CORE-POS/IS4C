@@ -33,6 +33,8 @@ class FannieAuthLoginPage extends FannieRESTfulPage
     protected $title = 'Fannie : Auth';
     protected $header = 'Fannie : Auth';
 
+    protected $enable_linea = true;
+
     /**
      * Force authenticate requirement off
      * to avoid a redirect loop
@@ -141,8 +143,11 @@ class FannieAuthLoginPage extends FannieRESTfulPage
             echo '</p>';
             echo '<button type="submit" class="btn btn-default">Login</button>';
             echo "<input type=hidden value=$redirect name=redirect />";
+            echo "<input type=hidden id=\"linea-in\" />";
             echo "</form>";
             $this->add_onload_command('$(\'#authUserName\').focus();');
+            $this->addScript('auth.js');
+            $this->addOnloadCommand("enableLinea('#linea-in', CoreAuth.linea);\n");
         }
 
         return ob_get_clean();

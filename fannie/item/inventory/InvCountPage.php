@@ -39,8 +39,33 @@ class InvCountPage extends FannieRESTfulPage
         $this->addRoute('get<live>');
         $this->addRoute('get<vendor>');
         $this->addRoute('post<vendor>');
+        $this->addRoute('get<recalc><store>');
+        $this->addRoute('get<recalc><live>');
 
         return parent::preprocess();
+    }
+
+    protected function get_recalc_store_handler()
+    {
+        if (!class_exists('InventoryTask')) {
+            include(dirname(__FILE__) . '/../../cron/tasks/InventoryTask.php');
+        }
+        $task = new InventoryTask();
+        $config = FannieConfig::factory();
+        $logger = new FannieLogger();
+        $task->setConfig($config);
+        $task->setLogger($logger);
+        $task->setStoreID($this->store);
+        $task->setVendorID($this->recalc);
+        $task->run();
+
+        return 'InvCountPage.php?recalc=1&live=' . $this->recalc . '&store=' . $this->store;
+    }
+
+    protected function get_recalc_live_view()
+    {
+        return '<div class="alert alert-success">Refreshed totals</div>'
+            . $this->get_live_view();
     }
 
     protected function post_id_handler()
@@ -299,7 +324,16 @@ class InvCountPage extends FannieRESTfulPage
         $today = $this->connection->prepare('
             SELECT ' . DTrans::sumQuantity() . ' AS qty
             FROM ' . DTransactionsModel::selectDlog(date('Y-m-d')) . '
-            WHERE upc=?');
+            WHERE upc=?
+                AND store_id=?');
+        $shrink = $this->connection->prepare('
+            SELECT ' . DTrans::sumQuantity() . ' AS qty
+            FROM ' . DTransactionsModel::selectDTrans(date('Y-m-d')) . '
+            WHERE upc=?
+                AND store_id=?
+                AND trans_status=\'Z\'
+                AND register_no <> 99
+                AND emp_no <> 9999');
         $res = $this->connection->execute($prep, array($store, $this->live));
         $ret = '<table class="table table-bordered table-striped">';
         $ret .= '<tr>
@@ -316,9 +350,14 @@ class InvCountPage extends FannieRESTfulPage
             if ($this->isBreakable($row['upc'], $this->live)) {
                 continue;
             }
-            $adj = $this->connection->getValue($today, array($row['upc']));
+            $adj = $this->connection->getValue($today, array($row['upc'], $store));
             if ($adj) {
                 $row['sold'] += $adj;
+                $row['onHand'] -= $adj;
+            }
+            $adj = $this->connection->getValue($shrink, array($row['upc'], $store));
+            if ($adj) {
+                $row['shrunk'] += $adj;
                 $row['onHand'] -= $adj;
             }
             $ret .= sprintf('<tr>
@@ -344,6 +383,10 @@ class InvCountPage extends FannieRESTfulPage
             );
         }
         $ret .= '</table>';
+        $ret .= '<p>
+            <a href="?recalc=' . $this->live . '&store=' . $store . '"
+                class="btn btn-default">Recalculate Totals</a>
+            </p>';
 
         return $ret;
     }

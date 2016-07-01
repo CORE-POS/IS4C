@@ -22,13 +22,16 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
+use COREPOS\pos\lib\Authenticate;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
+if (!class_exists('AutoLoader')) include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class PaycardEmvVoid extends PaycardProcessPage 
 {
-    private $prompt = false;
     private $id = false;
-    private $run_transaction = false;
+    private $runTransaction = false;
 
     function preprocess()
     {
@@ -37,37 +40,37 @@ class PaycardEmvVoid extends PaycardProcessPage
         $query = '
             SELECT MAX(paycardTransactionID) 
             FROM PaycardTransactions
-            WHERE transID=' . ((int)CoreLocal::get('paycard_id'));
+            WHERE transID=' . ((int)$this->conf->get('paycard_id'));
         $res = $dbc->query($query);
         if ($res && $dbc->numRows($res)) {
             $row = $dbc->fetchRow($res);
             $this->id = $row[0];
         }
         if (!$this->id) {
-            CoreLocal::set('boxMsg', 'Cannot locate transaction to void');
+            $this->conf->set('boxMsg', 'Cannot locate transaction to void');
             $this->change_page(MiscLib::baseURL() . 'gui-modules/boxMsg2.php');
             return false;
         }
-        CoreLocal::set('paycard_mode', PaycardLib::PAYCARD_MODE_VOID);
+        $this->conf->set('paycard_mode', PaycardLib::PAYCARD_MODE_VOID);
 
         // check for posts before drawing anything, so we can redirect
-        if (isset($_REQUEST['reginput'])) {
-            $input = strtoupper(trim($_REQUEST['reginput']));
+        if (FormLib::get('reginput', false) !== false) {
+            $input = strtoupper(trim(FormLib::get('reginput')));
             // CL always exits
             if ($input == "CL") {
-                PaycardLib::paycard_reset();
-                CoreLocal::set("toggletax",0);
-                CoreLocal::set("togglefoodstamp",0);
+                $this->conf->reset();
+                $this->conf->set("toggletax",0);
+                $this->conf->set("togglefoodstamp",0);
                 $this->change_page($this->page_url."gui-modules/pos2.php?reginput=TO&repeat=1");
                 return false;
             } elseif (Authenticate::checkPassword($input)) {
                 $this->action = "onsubmit=\"return false;\"";    
-                $this->add_onload_command("emvSubmit();");
-                $this->run_transaction = true;
+                $this->addOnloadCommand("emvSubmit();");
+                $this->runTransaction = true;
             }
             // if we're still here, we haven't accepted a valid amount yet; display prompt again
-        } elseif (isset($_REQUEST['xml-resp'])) {
-            $xml = $_REQUEST['xml-resp'];
+        } elseif (FormLib::get('xml-resp') !== '') {
+            $xml = FormLib::get('xml-resp');
             $this->emvResponseHandler($xml);
             return false;
         }
@@ -77,10 +80,10 @@ class PaycardEmvVoid extends PaycardProcessPage
 
     function head_content()
     {
-        if (!$this->run_transaction) {
+        if (!$this->runTransaction) {
             return '';
         }
-        $e2e = new MercuryE2E();
+        $e2e = new MercuryDC();
         ?>
 <script type="text/javascript" src="../js/emv.js"></script>
 <script type="text/javascript">
@@ -105,19 +108,16 @@ function emvSubmit()
         <div class="baseHeight">
         <?php
         // generate message to print
-        $amt = CoreLocal::get("paycard_amount");
-        $type = CoreLocal::get("CacheCardType");
+        $amt = $this->conf->get("paycard_amount");
         if ($amt > 0) {
-            echo PaycardLib::paycard_msgBox(
-                $type,
-                "Void " . PaycardLib::paycard_moneyFormat($amt) . " Payment?",
+            echo PaycardLib::paycardMsgBox(
+                "Void " . PaycardLib::moneyFormat($amt) . " Payment?",
                 "Please enter password then",
                 "[enter] to continue voiding or<br>[clear] to cancel the void"
             );
         } else {
-            echo PaycardLib::paycard_msgBox(
-                $type,"
-                Void " . PaycardLib::paycard_moneyFormat($amt) . " Refund?",
+            echo PaycardLib::paycardMsgBox(
+                "Void " . PaycardLib::moneyFormat($amt) . " Refund?",
                 "Please enter password then",
                 "[enter] to continue voiding or<br>[clear] to cancel the void"
             );
@@ -128,5 +128,5 @@ function emvSubmit()
     }
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new PaycardEmvVoid();
+AutoLoader::dispatch();
+

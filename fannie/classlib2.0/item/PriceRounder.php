@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\item {
+namespace COREPOS\Fannie\API\item;
 
 /**
   @class PriceRounder
@@ -148,4 +148,3 @@ class PriceRounder
     */
 }
 
-}

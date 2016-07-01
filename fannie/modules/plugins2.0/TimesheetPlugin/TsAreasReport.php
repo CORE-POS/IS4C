@@ -38,7 +38,7 @@ class TsAreasReport extends FanniePage {
             <select name="period" class="form-control">
             <option>Please select a starting pay period.</option>';
 
-        while ($row = $ts_db->fetch_array($result)) {
+        while ($row = $ts_db->fetchRow($result)) {
             echo "<option value=\"" . $row['periodID'] . "\"";
             if ($row['periodID'] == $ID) { echo ' SELECTED';}
             echo ">(" . $row['periodStart'] . " - " . $row['periodEnd'] . ")</option>";

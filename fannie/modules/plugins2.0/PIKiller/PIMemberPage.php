@@ -155,6 +155,7 @@ class PIMemberPage extends PIKillerPage {
             $default = new MemtypeModel($dbc);
             $default->memtype($json['customerTypeID']);
             $default->load();
+            $json['memberStatus'] = $default->custdataType();
             $account_holder['discount'] = $default->discount();
             $account_holder['staff'] = $default->staff();
             $account_holder['chargeAllowed'] = $json['chargeLimit'] == 0 ? 0 : 1;

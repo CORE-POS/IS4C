@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\FooterBoxes\FooterBox;
+
 class AlwaysFsTotalFooter extends FooterBox 
 {
 

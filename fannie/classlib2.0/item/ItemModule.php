@@ -21,8 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\item
-{
+namespace COREPOS\Fannie\API\item;
 
 class ItemModule 
 {
@@ -107,13 +106,5 @@ class ItemModule
     {
 
     }
-}
-
-}
-
-namespace 
-{
-    // global namespace wrapper class
-    class ItemModule extends \COREPOS\Fannie\API\item\ItemModule {}
 }
 

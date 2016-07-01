@@ -22,6 +22,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\ReceiptBuilding\Messages\ReceiptMessage;
+
 /**
     @class CCredSigSlip
     Make a signature slip for each Coop Cred tender used in the transaction.
@@ -79,7 +83,7 @@ class CCredSigSlip extends ReceiptMessage {
         if ($conn === False) {
             return "Error: ccDataConnect() failed." . $lineEnd;
         }
-        $chgName = ReceiptLib::getChgName();
+        $chgName = COREPOS\pos\lib\MemberLib::getChgName();
         
         $dateTimeStamp = time();
         $date = ReceiptLib::build_time($dateTimeStamp);
@@ -195,7 +199,7 @@ class CCredSigSlip extends ReceiptMessage {
 
         $result = $db->query($query);
         
-        while($row = $db->fetch_array($result)){
+        while($row = $db->fetchRow($result)){
             $trantype = $row['tranType'];  
             if ($row['amount'] < 0) {
                 $amt = "-$".number_format(-1*$row['amount'],2);

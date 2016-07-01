@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\parser\Parser;
+
 class WedgeScParser extends Parser 
 {
     private $left;
@@ -54,7 +60,7 @@ class WedgeScParser extends Parser
         $pConn = Database::pDataConnect();
         $result = $pConn->query($pQuery);
         $num_rows = $pConn->num_rows($result);
-        $row = $pConn->fetch_array($result);
+        $row = $pConn->fetchRow($result);
 
         if ($num_rows == 0) {
             $json['output'] = DisplayLib::xboxMsg(

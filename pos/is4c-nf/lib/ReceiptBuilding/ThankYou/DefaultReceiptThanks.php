@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\ReceiptBuilding\ThankYou;
+use \CoreLocal;
+
 /**
   @class DefaultReceiptThanks
   Prints thank you line(s)

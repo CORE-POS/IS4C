@@ -75,43 +75,12 @@ class AR extends \COREPOS\Fannie\API\member\MemberModule
         return $ret;
     }
 
-    function saveFormData($memNum)
+    public function saveFormData($memNum, $json=array())
     {
         $limit = FormLib::get_form_value('AR_limit',0);
-        $json = array(
-            'cardNo' => $memNum,
-            'chargeLimit' => $limit,
-            'customers' => array(),
-        );
-        $account = self::getAccount();
-        $json['customerAccountID'] = $account['customerAccountID'];
-        foreach ($account['customers'] as $c) {
-            if ($c['accountHolder']) {
-                $json['customers'][] = array(
-                    'customerID' => $c['customerID'],
-                    'customerAccountID' => $account['customerAccountID'],
-                    'chargeAllowed' => ($limit == 0 ? 0 : 1),
-                    'accountHolder' => 1,
-                    'cardNo' => $memNum,
-                );
-            } elseif ($c['customerID']) {
-                // unnecessary to specify all customers in old schema
-                // new schema will only update correctly if IDs exist
-                $json['customers'][] = array(
-                    'customerID' => $c['customerID'],
-                    'cardNo' => $memNum,
-                    'chargeAllowed' => ($limit == 0 ? 0 : 1),
-                    'accountHolder' => 0,
-                );
-            }
-        }
-        $resp = \COREPOS\Fannie\API\member\MemberREST::post($memNum, $json);
-        
-        if ($resp['errors'] > 0) {
-            return 'Error: Problem saving A/R limit<br />';
-        } else {
-            return '';
-        }
+        $json['chargeLimit'] = $json;
+
+        return $json;
     }
 }
 

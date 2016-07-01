@@ -44,7 +44,7 @@ function getCategories(){
     $q = "select name,id from categories order by name";
     $r = $sql->query($q);
     if ($sql->num_rows($r) != 0){
-        while ($w = $sql->fetch_array($r)){
+        while ($w = $sql->fetchRow($r)){
             $ret .= "<li><a href=\"\" onClick=\"viewRecipes(".$w[1]."); return false;\">";
             $ret .= $w[0]."</a></li>";
         }
@@ -59,7 +59,7 @@ function getRecipes($id){
     global $sql;
     $q = $sql->prepare("select name from categories where id=?");
     $r = $sql->execute($q, array($id));
-    $w = $sql->fetch_array($r);
+    $w = $sql->fetchRow($r);
     $catName = $w[0];    
 
     $ret = "<b>Category</b>: ".$catName."<br />";
@@ -68,7 +68,7 @@ function getRecipes($id){
     $q = $sql->prepare("select name,id from recipes where categoryID = ? order by name");
     $r = $sql->execute($q, array($id));
     if ($sql->num_rows($r) != 0){
-        while ($w = $sql->fetch_array($r)){
+        while ($w = $sql->fetchRow($r)){
             $ret .= "<li><a href=\"\" onClick=\"displayRecipe(".$w[1]."); return false;\">";
             $ret .= $w[0]."</a></li>";
         }
@@ -85,7 +85,7 @@ function displayRecipe($id){
     $q = $sql->prepare("select r.name,r.upc,r.margin,r.price,r.servings,r.current_margin,i.info
           from recipes as r, info as i where r.id=i.recipeID and r.id=?");
     $r = $sql->execute($q, array($id));
-    $w = $sql->fetch_array($r);
+    $w = $sql->fetchRow($r);
     
     $name = $w['name'];
     $upc = $w['upc'];
@@ -126,7 +126,7 @@ function getSteps($id){
     $q = $sql->prepare("select step from steps where recipeID = ? order by ord");
     $r = $sql->execute($q, array($id));
     $i = 1;
-    while ($w = $sql->fetch_array($r)){
+    while ($w = $sql->fetchRow($r)){
         if ($i % 2 != 0)
             $ret .= "<tr style=\"background: #cccccc;\">";
         else
@@ -152,7 +152,7 @@ function getIngredients($id,$mult=1){
     $r = $sql->execute($q, array($id));
     $i = 1;
     $numbering = 1;
-    while ($w = $sql->fetch_array($r)){
+    while ($w = $sql->fetchRow($r)){
         if ($i % 2 != 0)
             $ret .= "<tr style=\"background: #cccccc;\">";
         else

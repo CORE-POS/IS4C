@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\lib {
+namespace COREPOS\Fannie\API\lib;
 
 /**
   @class AuditLib
@@ -70,7 +70,7 @@ class AuditLib
         $message .= "\n";
         $message .= "Adjust this item?\n";
         $url = $conf->get('URL');
-        $server_name = filter_input(INPUT_SERVER, 'SERVER_NAME');
+        $server_name = $conf->get('HTTP_HOST');
         $message .= "http://{$server_name}/{$url}item/ItemEditorPage.php?searchupc=$upc\n";
         $message .= "\n";
         $username = \FannieAuth::checkLogin();
@@ -173,7 +173,7 @@ class AuditLib
         $message .= "\n";
         $message .= "View this batch:\n";
         $url = $conf->get('URL');
-        $server_name = filter_input(INPUT_SERVER, 'SERVER_NAME');
+        $server_name = $conf->get('HTTP_HOST');
         $message .= "http://{$server_name}{$url}batches/newbatch/EditBatchPage.php?id={$batchID}\n";
         $message .= "\n";
         $message .= "View this item:\n";
@@ -223,11 +223,5 @@ class AuditLib
 
         return ($emails === '') ? false : $emails;
     }
-}
-
-}
-
-namespace {
-    class AuditLib extends \COREPOS\Fannie\API\lib\AuditLib {}
 }
 

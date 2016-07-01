@@ -42,7 +42,7 @@ report when items are sold that have been marked not inUse.';
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $yesterday = date('Y-m-d', strtotime('yesterday'));
         $url = $this->config->get('URL');
-        $host = php_uname('n');
+        $host = $this->config->get('HTTP_HOST');
         $dtrans = DTransactionsModel::selectDTrans($yesterday);
 
         $findP = $dbc->prepare('
@@ -70,6 +70,9 @@ report when items are sold that have been marked not inUse.';
             $msg = sprintf('%s (%s) was sold %d times while not inUse',
                 $w['description'], $w['upc'], $w['occurences']);
             $email = \COREPOS\Fannie\API\lib\AuditLib::getAddresses($w['department']);
+            if ($this->config->get('COOP_ID') === 'WFC_Duluth') {
+                $email = $this->config->get('ADMIN_EMAIL');
+            }
             if ($email) {
                 $subject = 'Not In Use Report';
                 $from = "From: automail\r\n";

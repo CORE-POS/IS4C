@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class WfcWebModule extends ItemModule 
+class WfcWebModule extends \COREPOS\Fannie\API\item\ItemModule 
 {
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)

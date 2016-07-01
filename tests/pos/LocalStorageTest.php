@@ -8,14 +8,14 @@ class LocalStorageTest extends PHPUnit_Framework_TestCase
     public function testAll()
     {
         $defaults = array(
-            'SessionStorage',
-            'UnitTestStorage',
-            'WrappedStorage',
+            'COREPOS\\pos\\lib\\LocalStorage\\SessionStorage',
+            'COREPOS\\pos\\lib\\LocalStorage\\UnitTestStorage',
+            'COREPOS\\pos\\lib\\LocalStorage\\WrappedStorage',
         );
 
         foreach ($defaults as $class) {
             $obj = new $class();
-            $this->assertInstanceOf('LocalStorage',$obj);
+            $this->assertInstanceOf('COREPOS\\pos\\lib\\LocalStorage\\LocalStorage',$obj);
 
             $unk = $obj->get('unknownKey');
             $this->assertInternalType('string',$unk);
@@ -40,18 +40,6 @@ class LocalStorageTest extends PHPUnit_Framework_TestCase
             $get = $obj->get('testArray');
             $this->assertInternalType('array',$get, 'Array test failed for ' . $class);
             $this->assertEquals(array(1, 2), $get, 'Array equality failed for ' . $class);
-
-            $obj->set('imm','imm',True);
-            $get = $obj->get('imm');
-            $this->assertInternalType('string',$get);
-            $this->assertEquals('imm',$get);
-
-            $is = $obj->isImmutable('imm');
-            $isNot = $obj->isImmutable('testArray');
-            $this->assertInternalType('boolean',$is);
-            $this->assertInternalType('boolean',$isNot);
-            $this->assertEquals(True,$is);
-            $this->assertEquals(False,$isNot);
 
             foreach ($obj as $key => $val) {
                 // is iterable

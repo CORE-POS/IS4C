@@ -77,6 +77,26 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
     protected $header = 'Gazette Billing';
     protected $title = 'Gazette Billing';
 
+    private function letterToSize($letter)
+    {
+        switch (strtoupper($letter)) {
+            case 'A':
+                return '1/20';
+            case 'B':
+                return '1/20';
+            case 'C':
+                return '1/15';
+            case 'D':
+                return '1/10';
+            case 'E':
+                return '1/5';
+            case 'F':
+                return '1/2';
+            default:
+                return $letter;
+        }
+    }
+
     function preprocess(){
         $posted_info = FormLib::get_form_value('cardnos');
         if (is_array($posted_info)){
@@ -212,8 +232,13 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $clr = trim(strtoupper($data[$COLOR]));
             if (isset($clr[0]) && $clr[0] == "B") $clr = "B/W";
             elseif($clr == "COLOR") $clr = "FULL";
-            if (!strstr($sz, '/')) 
+            elseif($clr == 'FC') $clr = 'FULL';
+            if (!strstr($sz, '/')) {
                 $sz = $this->decimal_to_fraction($sz);
+                if (!strstr($sz, '/')) {
+                    $sz = $this->letterToSize($sz);
+                }
+            }
 
             if (strstr($cn,'STAR CREATIVE')){
                 if (strstr($cn,'TYCOONS'))
@@ -249,17 +274,16 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $searchR = $sql->execute($searchP, array(6880));
             }
             
-            $warning = '';
             if ($sql->num_rows($searchR) == 0){
-                $warning .= sprintf("<i>Warning: no membership found for %s (%s)<br />",
+                $warnings .= sprintf("<i>Warning: no membership found for %s (%s)<br />",
                     $data[$CONTACT],$ph);
             }
             elseif ($sql->num_rows($searchR) > 1){
-                $warning .= sprintf("<i>Warning: multiple memberships found for %s (%s)<br />",
+                $warnings .= sprintf("<i>Warning: multiple memberships found for %s (%s)<br />",
                     $data[$CONTACT],$ph);
             }
             elseif (!isset($BILLING_NONMEMBER[$sz.$clr])){
-                $warning .= sprintf('<i>Warning: size/color "%s" unknown<br />',
+                $warnings .= sprintf('<i>Warning: size/color "%s" unknown<br />',
                         $sz.$clr);
             }
             else {
@@ -289,8 +313,8 @@ class WfcGazetteBillingPage extends \COREPOS\Fannie\API\FannieUploadPage {
         $ret .= "</form>";
         $this->output_html = $ret;
 
-        if (!empty($warning)) {
-            $this->output_html = '<div class="alert alert-warning">' . $warning . '</div>' . $this->output_html;
+        if (!empty($warnings)) {
+            $this->output_html = '<div class="alert alert-warning">' . $warnings . '</div>' . $this->output_html;
         }
 
         return true;

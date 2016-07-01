@@ -25,7 +25,7 @@ if (!class_exists('FannieAPI')) {
     include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
 }
 
-class VendorItemModule extends ItemModule {
+class VendorItemModule extends \COREPOS\Fannie\API\item\ItemModule {
 
     public function showEditForm($upc, $display_mode=1, $expand_mode=1)
     {

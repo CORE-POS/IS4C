@@ -28,6 +28,10 @@ include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
+if (FannieConfig::config('SO_UI') === 'bootstrap') {
+    header('Location: OldSpecialOrdersPage.php');
+    return;
+}
 if (!function_exists('checkLogin')) {
     include($FANNIE_ROOT.'auth/login.php');
 }
@@ -376,26 +380,6 @@ function applyMemNum(n){
         $('#bodytag').append('<input type="hidden" id="cardno" />');
     $('#cardno').val(n);
     refilter();
-}
-function updateStatus(oid,val){
-    $.ajax({
-    url: 'ajax-calls.php',
-    type: 'post',
-    data: 'action=UpdateStatus&orderID='+oid+'&val='+val,
-    cache: false,
-    success: function(resp){
-        $('#statusdate'+oid).html(resp);    
-    }
-    });
-}
-function togglePrint(username,oid){
-    $.ajax({
-    url: 'ajax-calls.php',
-    type: 'post',
-    data: 'action=UpdatePrint&orderID='+oid+'&user='+username,
-    cache: false,
-    success: function(resp){}
-    });
 }
 </script>
 <?php

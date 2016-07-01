@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\TransRecord;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class undo extends NoInputCorePage 
@@ -213,7 +216,7 @@ class undo extends NoInputCorePage
                 }
             }
 
-            PrehLib::setMember($card_no, 1);
+            COREPOS\pos\lib\MemberLib::setMember($card_no, 1);
             CoreLocal::set("autoReprint",0);
 
             /* do NOT restore logged in cashier until this transaction is complete */

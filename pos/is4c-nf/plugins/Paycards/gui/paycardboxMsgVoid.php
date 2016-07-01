@@ -21,54 +21,56 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
+use COREPOS\pos\lib\Authenticate;
+use COREPOS\pos\lib\FormLib;
+if (!class_exists('AutoLoader')) include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
-class paycardboxMsgVoid extends PaycardProcessPage {
-
-    protected $mask_input = True;
+class paycardboxMsgVoid extends PaycardProcessPage 
+{
+    protected $mask_input = true;
 
     function preprocess()
     {
         // check for posts before drawing anything, so we can redirect
-        if( isset($_REQUEST['reginput'])) {
-            $input = strtoupper(trim($_REQUEST['reginput']));
+        if (FormLib::get('reginput', false) !== false) {
+            $input = strtoupper(trim(FormLib::get('reginput')));
             // CL always exits
-            if( $input == "CL") {
-                PaycardLib::paycard_reset();
-                CoreLocal::set("toggletax",0);
-                CoreLocal::set("togglefoodstamp",0);
+            if ($input == "CL") {
+                $this->conf->reset();
+                $this->conf->set("toggletax",0);
+                $this->conf->set("togglefoodstamp",0);
                 $this->change_page($this->page_url."gui-modules/pos2.php?reginput=TO&repeat=1");
-                return False;
+                return false;
             }
     
             $continue = false;
             // when voiding tenders, the input must be an FEC's passcode
-            if (CoreLocal::get("paycard_mode") == PaycardLib::PAYCARD_MODE_VOID && $input != "" && substr($input,-2) != "CL") {
+            if ($this->conf->get("paycard_mode") == PaycardLib::PAYCARD_MODE_VOID && $input != "" && substr($input,-2) != "CL") {
                 if (Authenticate::checkPermission($input, 11)) {
-                    CoreLocal::set("adminP",$input);
+                    $this->conf->set("adminP",$input);
                     $continue = true;
                 }
             }
             // when voiding items, no code is necessary, only confirmation
-            if (CoreLocal::get("paycard_mode") != PaycardLib::PAYCARD_MODE_VOID && $input == "")
+            if ($this->conf->get("paycard_mode") != PaycardLib::PAYCARD_MODE_VOID && $input == "")
                 $continue = true;
             // go?
             if ($continue) {
                 // send the request, then disable the form
-                $this->add_onload_command('paycard_submitWrapper();');
+                $this->addOnloadCommand('paycard_submitWrapper();');
                 $this->action = "onsubmit=\"return false;\"";
             }
             // if we're still here, display prompt again
-        } elseif (CoreLocal::get("paycard_mode") == PaycardLib::PAYCARD_MODE_AUTH) {
+        } elseif ($this->conf->get("paycard_mode") == PaycardLib::PAYCARD_MODE_AUTH) {
             // call paycard_void on first load to set up
             // transaction and check for problems
-            $trans_id = CoreLocal::get("paycard_id");
-            foreach(CoreLocal::get("RegisteredPaycardClasses") as $rpc){
+            $transID = $this->conf->get("paycard_id");
+            foreach($this->conf->get("RegisteredPaycardClasses") as $rpc){
                 $myObj = new $rpc();
-                if ($myObj->handlesType(CoreLocal::get("paycard_type"))){
-                    $ret = $myObj->paycard_void($trans_id);
+                if ($myObj->handlesType($this->conf->get("paycard_type"))){
+                    $ret = $myObj->paycardVoid($transID);
                     if (isset($ret['output']) && !empty($ret['output'])){
-                        CoreLocal::set("boxMsg",$ret['output']);
+                        $this->conf->set("boxMsg",$ret['output']);
                         $this->change_page($this->page_url."gui-modules/boxMsg2.php");
                         return False;
                     }
@@ -81,26 +83,18 @@ class paycardboxMsgVoid extends PaycardProcessPage {
 
     function body_content()
     {
-        ?>
-        <div class="baseHeight">
-        <?php
+        echo '<div class="baseHeight">';
         // generate message to print
-        $type = CoreLocal::get("paycard_type");
-        $mode = CoreLocal::get("paycard_mode");
-        $amt = CoreLocal::get("paycard_amount");
-        if( $mode == PaycardLib::PAYCARD_MODE_VOIDITEM) {
-            echo PaycardLib::paycard_msgBox($type,"Void " . PaycardLib::paycard_moneyFormat($amt) . " Gift Card?","","[enter] to continue voiding<br>[clear] to cancel the void");
-        } else if( $amt > 0) {
-            echo PaycardLib::paycard_msgBox($type,"Void " . PaycardLib::paycard_moneyFormat($amt) . " Payment?","Please enter password then","[enter] to continue voiding or<br>[clear] to cancel the void");
+        $amt = $this->conf->get("paycard_amount");
+        if ($amt > 0) {
+            echo PaycardLib::paycardMsgBox("Void " . PaycardLib::moneyFormat($amt) . " Payment?","Please enter password then","[enter] to continue voiding or<br>[clear] to cancel the void");
         } else {
-            echo PaycardLib::paycard_msgBox($type,"Void " . PaycardLib::paycard_moneyFormat($amt) . " Refund?","Please enter password then","[enter] to continue voiding or<br>[clear] to cancel the void");
+            echo PaycardLib::paycardMsgBox("Void " . PaycardLib::moneyFormat($amt) . " Refund?","Please enter password then","[enter] to continue voiding or<br>[clear] to cancel the void");
         }
-        CoreLocal::set("msgrepeat",2);
-        ?>
-        </div>
-        <?php
+        $this->conf->set("msgrepeat",2);
+        echo '</div>';
     }
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new paycardboxMsgVoid();
+AutoLoader::dispatch();
+

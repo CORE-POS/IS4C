@@ -21,6 +21,13 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\SpecialUPCs;
+use COREPOS\pos\lib\Scanning\SpecialUPC;
+use \CoreLocal;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\TransRecord;
+
 /**
    @class SpecialOrder
    WFC Electronic Special Orders
@@ -86,7 +93,7 @@ class SpecialOrder extends SpecialUPC
             return $json;
         }
 
-        $row = $db->fetch_array($result);
+        $row = $db->fetchRow($result);
         TransRecord::addRecord(array(
             'upc' => $row['upc'],
             'description' => $row['description'],

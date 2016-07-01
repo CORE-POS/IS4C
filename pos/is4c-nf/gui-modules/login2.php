@@ -21,7 +21,16 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\BasicCorePage;
+use COREPOS\pos\lib\Authenticate;
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\Drawers;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\lib\UdpComm;
+use COREPOS\pos\lib\Kickers\Kicker;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 AutoLoader::LoadMap();
 CoreState::loadParams();
@@ -151,15 +160,15 @@ class login2 extends BasicCorePage
         /**
           Find a drawer for the cashier
         */
-        $my_drawer = ReceiptLib::currentDrawer();
+        $my_drawer = Drawers::current();
         if ($my_drawer == 0) {
-            $available = ReceiptLib::availableDrawers();    
+            $available = Drawers::available();    
             if (count($available) > 0) { 
-                ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$available[0]);
+                Drawers::assign(CoreLocal::get('CashierNo'),$available[0]);
                 $my_drawer = $available[0];
             }
         } else {
-            ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$my_drawer);
+            Drawers::assign(CoreLocal::get('CashierNo'),$my_drawer);
         }
 
         return $my_drawer;
@@ -175,10 +184,9 @@ class login2 extends BasicCorePage
         if (session_id() != '') {
             session_write_close();
         }
-        $kicker_class = (CoreLocal::get("kickerModule")=="") ? 'Kicker' : CoreLocal::get('kickerModule');
-        $kicker_object = new $kicker_class();
+        $kicker_object = Kicker::factory(CoreLocal::get('kickerModule'));
         if ($kicker_object->kickOnSignIn()) {
-            ReceiptLib::drawerKick();
+            Drawers::kick();
         }
     }
 

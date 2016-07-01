@@ -1,13 +1,24 @@
+<?php
+
+use COREPOS\pos\install\conf\Conf;
+use COREPOS\pos\install\conf\JsonConf;
+use COREPOS\pos\install\InstallUtilities;
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\MiscLib;
+
+?>
 <!DOCTYPE html>
 <html>
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
-include('../ini.php');
 CoreState::loadParams();
-include('InstallUtilities.php');
 $known_good_modules = array(
     'SPH_Magellan_Scale' => array(
+        'description' => 'Magellan Scanner/scale (recommended)',
+        'common-ports' => array('COM*', '/dev/ttyS*'),
+    ),
+        'SPH_Magellan_Classic' => array(
         'description' => 'Magellan Scanner/scale',
         'common-ports' => array('COM*', '/dev/ttyS*'),
     ),
@@ -20,6 +31,7 @@ $known_good_modules = array(
         'common-ports' => array(
             'VX805XPI:*' => 'Verifone VX805 on COM*',
             'VX805XPI_MERCURY_E2E:*' => 'Verifone VX805 with Mercury encryption on COM*',
+            'INGENICOISC250_MERCURY_E2E' => 'Ingenico iSC250 with Mercury encryption on COM*',
         ),
     ),
     'SPH_Datacap_EMVX' => array(
@@ -27,6 +39,7 @@ $known_good_modules = array(
         'common-ports' => array(
             'VX805XPI:*' => 'Verifone VX805 on COM*',
             'VX805XPI_MERCURY_E2E:*' => 'Verifone VX805 with Mercury encryption on COM*',
+            'INGENICOISC250_MERCURY_E2E' => 'Ingenico iSC250 with Mercury encryption on COM*',
         ),
     ),
     'SPH_SignAndPay_Native' => array(
@@ -67,14 +80,14 @@ function expand_port_list($list)
 <head>
 <title>IT CORE Lane Installation: NewMagellan Driver</title>
 <link rel="stylesheet" href="../css/toggle-switch.css" type="text/css" />
-<script type="text/javascript" src="../js/jquery.js"></script>
+<script type="text/javascript" src="../js/<?php echo MiscLib::jqueryFile(); ?>"></script>
 </head>
 <body>
 <?php include('tabs.php'); ?>
 <div id="wrapper">    
 <h2>IT CORE Lane Installation: Hardware Driver Settings (NewMagellan)</h2>
 
-<div class="alert"><?php InstallUtilities::checkWritable('../ini.json', false, 'JSON'); ?></div>
+<div class="alert"><?php Conf::checkWritable('../ini.json', false, 'JSON'); ?></div>
 
 <form action=driver.php method=post>
 <table id="install" border=0 cellspacing=0 cellpadding=4>
@@ -155,7 +168,7 @@ foreach ($json['NewMagellanPorts'] as $port) {
     $i++;
 }
 $json['NewMagellanPorts'] = $valid;
-InstallUtilities::jsonConfSave('NewMagellanPorts', $json['NewMagellanPorts']);
+JsonConf::save('NewMagellanPorts', $json['NewMagellanPorts']);
 ?>
 <tr>
     <td colspan=3 class="tblHeader">&nbsp;</td>

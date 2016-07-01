@@ -68,7 +68,7 @@ class BatchShelfTags extends FanniePage {
                   order by b.batchID desc");
         $fetchR = $dbc->execute($fetchQ);
         $ret .= "<select name=batchID[] multiple class=\"form-control\" size=15>";
-        while($fetchW = $dbc->fetch_array($fetchR))
+        while($fetchW = $dbc->fetchRow($fetchR))
             $ret .= "<option value=$fetchW[0]>$fetchW[1]</option>";
         $ret .= "</select>";
         $ret .= '<p><div class="form-group form-inline">';

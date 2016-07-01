@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use \CoreLocal;
+
 /**
   @class CheckTender
   Tender module for checks

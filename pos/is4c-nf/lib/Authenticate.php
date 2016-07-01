@@ -21,11 +21,15 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\CoreState;
+
 /**
   @class Authenticate
   Functions for user authentication
 */
-class Authenticate extends LibraryClass 
+class Authenticate 
 {
  
 
@@ -55,7 +59,7 @@ static public function checkPassword($password, $activity=1)
     $query_g = "select LoggedIn,CashierNo from globalvalues";
     $db_g = Database::pDataConnect();
     $result_g = $db_g->query($query_g);
-    $row_g = $db_g->fetch_array($result_g);
+    $row_g = $db_g->fetchRow($result_g);
 
     if ($row_g["LoggedIn"] == 0) {
         $query_q = '
@@ -71,7 +75,7 @@ static public function checkPassword($password, $activity=1)
         $num_rows_q = $db_g->num_rows($result_q);
 
         if ($num_rows_q > 0) {
-            $row_q = $db_g->fetch_array($result_q);
+            $row_q = $db_g->fetchRow($result_q);
 
             Database::loadglobalvalues();
 

@@ -205,7 +205,7 @@ class ViewsheetPage extends FanniePage {
 
         $result = $ts_db->execute($query,array($emp_no,$periodID));
         $periodHours = 0.00;
-        while ($row = $ts_db->fetch_array($result)) {
+        while ($row = $ts_db->fetchRow($result)) {
             if ($row[0] > 24) {
                 $fontopen = '<font color="red">'; $fontclose = '</font>';
             } 
@@ -311,7 +311,7 @@ class ViewsheetPage extends FanniePage {
         echo '<label>Pay Period</label><select name="period" class="form-control">
             <option>Please select a payperiod to view.</option>';
 
-        while ($row = $ts_db->fetch_array($result)) {
+        while ($row = $ts_db->fetchRow($result)) {
             echo "<option value=\"$row[2]\"";
             if ($row[2] == $ID) { echo ' SELECTED';}
             echo ">($row[0] - $row[1])</option>";

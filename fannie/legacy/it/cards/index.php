@@ -26,7 +26,7 @@ if (isset($_POST['memnos'])){
     
     echo "Memberno,First Name,Second Name,Address,City/State/Zip,Exp\n";
     $curName1 = "";
-    while ($fetchW = $sql->fetch_array($fetchR)){
+    while ($fetchW = $sql->fetchRow($fetchR)){
         echo $fetchW[0].",";
         if ($fetchW[1] == 1)
             $curName1 = $fetchW[3]." ".$fetchW[2];
@@ -57,7 +57,7 @@ else if (isset($_GET['range1'])){
     echo "<select name=memnos[] size=15 multiple>";
     $fetchQ = $sql->prepare("select cardno from custdata where cardno between ? and ? group by cardno order by cardno");
     $fetchR = $sql->execute($fetchQ, array($range1, $range2));
-    while ($fetchW = $sql->fetch_array($fetchR))
+    while ($fetchW = $sql->fetchRow($fetchR))
         echo "<option selected>$fetchW[0]</option>";
     echo "</select><br />";
     echo "<input type=submit value=Submit />";

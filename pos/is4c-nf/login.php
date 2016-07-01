@@ -21,20 +21,19 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\CoreState;
+use COREPOS\pos\lib\MiscLib;
+
 if (!class_exists("AutoLoader")) include("lib/AutoLoader.php");
 
-CoreLocal::set("parse_chain",'');
-CoreLocal::set("preparse_chain",'');
-CoreLocal::set("postparse_chain",'');
+COREPOS\pos\lib\LocalStorage\LaneCache::clear();
 
 AutoLoader::loadMap();
 
 CoreState::initiate_session();
 
-if (CoreLocal::get("SessionFirstRun") == "") {
-    CoreLocal::set("SessionFirstRun",1);
-}
-
+CoreLocal::set('ValidJson', false);
+CoreLocal::refresh();
 CoreLocal::migrateSettings();
 
 if (MiscLib::pingport('127.0.0.1:15674', 'not a database')) {

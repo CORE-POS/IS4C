@@ -11,7 +11,7 @@ if (isset($_GET['action'])){
         $out .= "<tr><th>UPC</th><th>description</th>";
         $q = $sql->prepare("select p.upc,p.description from products as p, upcLike as u where p.upc = u.upc and u.likeCode = ? order by p.description");
         $r = $sql->execute($q, array($lc));
-        while ($w = $sql->fetch_array($r)){
+        while ($w = $sql->fetchRow($r)){
             $out .= "<tr>";
             $out .=  "<td><a href=productTest.php?upc=$w[0]>$w[0]</td>";
             $out .=  "<td>$w[1]</td>";
@@ -98,7 +98,7 @@ $r = $sql->query($q);
 
 echo "<div id=codetable>";
 echo "<table cellspacing=2 cellpadding=2 border=1><tr><th>Like code</th><th>description</th></tr>";
-while ($row = $sql->fetch_array($r)){
+while ($row = $sql->fetchRow($r)){
   echo "<tr><td>$row[0]</td><td><a href=\"\" onclick=\"phpSend('getitems&lc=$row[0]'); return false;\">$row[1]</a></td></tr>";
 }
 echo "</table>";

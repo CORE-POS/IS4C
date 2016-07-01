@@ -97,7 +97,7 @@ if ($ret > 0) {
         if (strpos($lane['host'], ':') > 0) {
             list($lane_host, $lane_port) = explode(':', $lane['host'], 2);
         }
-        $lane_cmd = 'mysql'
+        $lane_cmd = 'mysql --connect-timeout 15 '
             . ' -u ' . escapeshellarg($lane['user'])
             . ' -p' . escapeshellarg($lane['pw'])
             . ' -h ' . escapeshellarg($lane_host)
@@ -105,7 +105,7 @@ if ($ret > 0) {
             . ' ' . escapeshellarg($lane['op'])
             . ' < ' . escapeshellarg($tempfile)
             . ' 2>&1';
-        $lane_cmd_obfusc = 'mysql'
+        $lane_cmd_obfusc = 'mysql --connect-timeout 15 '
             . ' -u ' . escapeshellarg($lane['user'])
             . ' -p' . str_repeat('*', 8)
             . ' -h ' . escapeshellarg($lane_host)

@@ -133,7 +133,7 @@ class StoreSummaryReport extends FannieReportPage {
         $tR = $dbc->execute($tQ);
         // Try generating code in this loop for use in SELECT and reporting.
         //  See SalesAndTaxTodayReport.php
-        while ( $trow = $dbc->fetch_array($tR) ) {
+        while ( $trow = $dbc->fetchRow($tR) ) {
             $taxNames[$trow['id']] = $trow['description'];
         }
 
@@ -252,7 +252,7 @@ class StoreSummaryReport extends FannieReportPage {
         $this->grandTax1Total = 0;
         $this->grandTax2Total = 0;
 
-        while($row = $dbc->fetch_array($costsR)){
+        while($row = $dbc->fetchRow($costsR)){
             if ($curSuper != $row['sid']){
                 $curSuper = $row['sid'];
             }

@@ -190,7 +190,7 @@ class NonMovementReport extends FannieReportPage {
         $deptsQ = $dbc->prepare("select dept_no,dept_name from departments order by dept_no");
         $deptsR = $dbc->execute($deptsQ);
         $deptsList = "";
-        while ($deptsW = $dbc->fetch_array($deptsR))
+        while ($deptsW = $dbc->fetchRow($deptsR))
             $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";
         ob_start();
 ?>

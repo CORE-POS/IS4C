@@ -169,13 +169,14 @@ class OLERead {
         $offset = 0;
         while ($offset < strlen($this->entry)) {
             $data = substr($this->entry, $offset, PROPERTY_STORAGE_BLOCK_SIZE);
-            $this->props[] = $this->propertyToArray($data);
+            $props = $this->propertyToArray($data);
+            $this->props[] = $props;
 
-            if (($name == "Workbook") || ($name == "Book")) {
+            if (($props['name'] == "Workbook") || ($props['name'] == "Book")) {
                 $this->wrkbook = count($this->props) - 1;
             }
 
-            if ($name == "Root Entry") {
+            if ($props['name'] == "Root Entry") {
                 $this->rootentry = count($this->props) - 1;
             }
             
@@ -219,6 +220,20 @@ class OLERead {
               $startBlock = $blockChain[$startBlock];
         }
 
+        return $streamData;
+    }
+
+    private function getSmallBlock($rootdata, $block, $chain, $size)
+    {
+        $streamData = '';
+        //$count = 0;
+        $pos = 0;
+        while ($block != -2) {
+            $pos = $block * $size;
+            $streamData .= substr($rootdata, $pos, $size);
+            $block = $chain[$block];
+        }
+            
         return $streamData;
     }
     

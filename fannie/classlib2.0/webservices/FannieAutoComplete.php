@@ -21,10 +21,9 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\webservices 
-{
+namespace COREPOS\Fannie\API\webservices; 
 
-class FannieAutoComplete extends FannieWebService 
+class FannieAutoComplete extends \COREPOS\Fannie\API\webservices\FannieWebService 
 {
     
     public $type = 'json'; // json/plain by default
@@ -126,19 +125,6 @@ class FannieAutoComplete extends FannieWebService
                 while ($row = $dbc->fetch_row($res)) {
                     $ret[] = $row['vendorName'];
                 }
-                if ($dbc->tableExists('prodExtra')) {
-                    $prep = $dbc->prepare('SELECT distributor
-                                           FROM prodExtra
-                                           WHERE distributor LIKE ?
-                                           GROUP BY distributor
-                                           ORDER BY distributor');
-                    $res = $dbc->execute($prep, array($args->search . '%'));
-                    while ($row = $dbc->fetch_row($res)) {
-                        if (!in_array($row['distributor'], $ret)) {
-                            $ret[] = $row['distributor'];
-                        }
-                    }
-                }
 
                 return $ret;
 
@@ -196,11 +182,4 @@ class FannieAutoComplete extends FannieWebService
     }
 }
 
-}
-
-namespace 
-{
-    // global namespace wrapper class
-    class FannieAutoComplete extends \COREPOS\Fannie\API\webservices\FannieAutoComplete {}
-}
 

@@ -37,7 +37,7 @@ class SQLManager extends \COREPOS\common\SQLManager
     */
     public function __construct($server,$type,$database,$username,$password='',$persistent=false, $new=false)
     {
-        $this->setQueryLog(dirname(__FILE__) . '/../log/queries.log');
+        $this->setQueryLog(new \COREPOS\pos\lib\LaneLogger());
 
         parent::__construct(
             $server, 

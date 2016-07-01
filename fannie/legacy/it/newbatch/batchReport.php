@@ -35,7 +35,7 @@ if(isset($_GET['excel'])){
 <?php
 }
 
-while($batchInfoW = $sql->fetch_array($batchInfoR)){
+while($batchInfoW = $sql->fetchRow($batchInfoR)){
    $bName = $batchInfoW['batchName'];
    if(isset($_GET['startDate'])){
       $bStart = $_GET['startDate']." 00:00:00";
@@ -81,7 +81,7 @@ $salesBatchR= $sql->query($salesBatchQ);
 $i = 0;
 
 echo "<table border=0 cellpadding=1 cellspacing=0 ><th>UPC<th>Description<th>$ Sales<th>Quantity";
-while($salesBatchW = $sql->fetch_array($salesBatchR)){
+while($salesBatchW = $sql->fetchRow($salesBatchR)){
    $upc = $salesBatchW['upc'];
    $desc = $salesBatchW['description'];
    $sales = $salesBatchW['sales'];

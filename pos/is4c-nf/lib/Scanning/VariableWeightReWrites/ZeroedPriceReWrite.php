@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\VariableWeightReWrites;
+use COREPOS\pos\lib\Scanning\VariableWeightReWrite;
+
 /**
   @class ZeroedPriceReWrite
 

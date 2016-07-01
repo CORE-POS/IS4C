@@ -21,6 +21,14 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Scanning\SpecialUPCs;
+use COREPOS\pos\lib\Scanning\SpecialUPC;
+use \CoreLocal;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+
 /**
   @class CouponCode
   Handle standard manufacturer coupons
@@ -205,6 +213,7 @@ class CouponCode extends SpecialUPC
             sum(case when c.quantity is null then 0 else c.quantity end) as couponQtty,
             max(case when c.quantity is not null then 0 else t.foodstamp end) as foodstamp,
             max(case when c.quantity is not null then 0 else t.tax end) as tax,
+            max(case when c.quantity is not null then 0 else t.discountable end) as discountable,
             max(t.emp_no) as emp_no,
             max(t.trans_no) as trans_no,
             t.trans_id from
@@ -238,9 +247,9 @@ class CouponCode extends SpecialUPC
         /* count up per-item quantites that have not
            yet had a coupon applied to them */
         $available = array();
-        $emp_no=$transno=$dept=$foodstamp=$tax=-1;
+        $emp_no=$transno=$dept=$foodstamp=$tax=$discountable=-1;
         $act_qty = 0;
-        while($row = $dbc->fetch_array($result)) {
+        while($row = $dbc->fetchRow($result)) {
             if ($row["itemQtty"] - $row["couponQtty"] > 0) {
                 $trans_id = $row["trans_id"];
                 $available[$trans_id] = array(0,0);
@@ -255,6 +264,7 @@ class CouponCode extends SpecialUPC
                 $dept = $row["department"];
                 $foodstamp = $row["foodstamp"];
                 $tax = $row['tax'];
+                $discountable = $row['discountable'];
             }
         }
 
@@ -316,7 +326,8 @@ class CouponCode extends SpecialUPC
 
         $value = MiscLib::truncate2($value);
         $json['udpmsg'] = 'goodBeep';
-        TransRecord::addCoupon($upc, $dept, $value, $foodstamp, $tax);
+        $status = array('tax'=>$tax, 'foodstamp'=>$foodstamp, 'discountable'=>$discountable);
+        TransRecord::addCoupon($upc, $dept, $value, $status);
         $json['output'] = DisplayLib::lastpage();
         $json['redraw_footer'] = True;
 

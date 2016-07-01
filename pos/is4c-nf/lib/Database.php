@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\LocalStorage\LaneCache;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+use \Exception;
+
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     *  3Feb2015 Eric Lee New function logger(), anticipate change to uploadCC().
@@ -33,8 +39,8 @@
   @class Database
   Functions related to the database
 */
-class Database extends LibraryClass {
-
+class Database 
+{
 
 /***********************************************************************************************
 
@@ -135,7 +141,7 @@ static public function getsubtotals()
     $query = "SELECT * FROM subtotals";
     $connection = self::tDataConnect();
     $result = $connection->query($query);
-    $row = $connection->fetch_array($result);
+    $row = $connection->fetchRow($result);
 
     // reset a few variables
     if (!$row || $row["LastID"] == 0) {
@@ -153,8 +159,6 @@ static public function getsubtotals()
     }
     // runningTotal => SUM(localtemptrans.total)
     CoreLocal::set("runningTotal", (!$row || !isset($row['runningTotal'])) ? 0 : (double)$row["runningTotal"] );
-    // complicated, but replaced by taxView & LineItemTaxes() method
-    CoreLocal::set("taxTotal", (!$row || !isset($row['taxTotal'])) ? 0 : (double)$row["taxTotal"] );
     // discountTTL => SUM(localtemptrans.total) where discounttype=1
     // probably not necessary
     CoreLocal::set("discounttotal", (!$row || !isset($row['discountTTL'])) ? 0 : (double)$row["discountTTL"] );
@@ -170,8 +174,6 @@ static public function getsubtotals()
     }
     // transDiscount => lttsummary.discountableTTL * lttsummary.percentDiscount
     CoreLocal::set("transDiscount", (!$row || !isset($row['transDiscount'])) ? 0 : (double)$row["transDiscount"] );
-    // complicated, but replaced by taxView & LineItemTaxes() method
-    CoreLocal::set("fsTaxExempt", (!$row || !isset($row['fsTaxExempt'])) ? 0 : (double)$row["fsTaxExempt"] );
     // foodstamp total net percentdiscount minus previous foodstamp tenders
     CoreLocal::set("fsEligible", (!$row || !isset($row['fsEligible'])) ? 0 : (double)$row["fsEligible"] );
     // chargeTotal => hardcoded to localtemptrans.trans_subtype MI or CX
@@ -202,7 +204,6 @@ static public function getsubtotals()
          localtemptrans.total is negative on tenders
          so the query uses an addition sign but in 
          effect it's subracting.
-    */
     $replacementQ = "
         SELECT
             CASE WHEN MAX(trans_id) IS NULL THEN 0 ELSE MAX(trans_id) END AS LastID,
@@ -230,6 +231,7 @@ static public function getsubtotals()
         FROM localtemptrans AS l
         WHERE trans_type <> 'L'
     ";
+    */
 
     /* ENABLED LIVE 15Aug2013
        Calculate taxes & exemptions separately from
@@ -241,7 +243,7 @@ static public function getsubtotals()
        view is deprecated we can revisit how these two
        session variables should behave.
     */
-    $taxes = Database::LineItemTaxes();
+    $taxes = self::LineItemTaxes();
     $taxTTL = 0.00;
     $exemptTTL = 0.00;
     foreach($taxes as $tax) {
@@ -291,7 +293,7 @@ static public function getsubtotals()
 */
 static public function LineItemTaxes()
 {
-    $dbc = Database::tDataConnect();
+    $dbc = self::tDataConnect();
     $taxQ = "SELECT id, description, taxTotal, fsTaxable, fsTaxTotal, foodstampTender, taxrate
         FROM taxView ORDER BY taxrate DESC";
     $taxR = $dbc->query($taxQ);
@@ -365,14 +367,14 @@ static public function gettransno($CashierNo)
         .((int)$CashierNo)." and register_no = "
         .((int)$register_no).' AND datetime >= ' . $connection->curdate();
     $result = $connection->query($query);
-    $row = $connection->fetch_array($result);
+    $row = $connection->fetchRow($result);
     if (!$row || !$row["maxtransno"]) {
         $trans_no = 1;
         // automatically trim the relevant table
         // on some installs localtranstoday might be
         // a view pointed at localtrans_today
         $cleanQ = 'DELETE FROM localtranstoday WHERE datetime < ' . $connection->curdate();
-        if ($connection->isView('localtranstoday')) {
+        if (CoreLocal::get('NoCompat') != 1 && $connection->isView('localtranstoday')) {
             $cleanQ = str_replace('localtranstoday', 'localtrans_today', $cleanQ);
         }
         $connection->query($cleanQ);
@@ -498,7 +500,8 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
       and the cache may be wrong so always requery in
       that case.
     */
-    $cache = CoreLocal::get('MatchingColumnCache');
+    $cacheItem = LaneCache::get('MatchingColumnCache');
+    $cache = $cacheItem->get();
     if (!is_array($cache)) {
         $cache = array();
     }
@@ -531,8 +534,10 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
         $ret .= $col.",";
     }
     $ret = rtrim($ret,",");
+
     $cache[$table_name] = $ret;
-    CoreLocal::set('MatchingColumnCache', $cache);
+    $cacheItem->set($cache);
+    LaneCache::set($cacheItem);
 
     return $ret;
 }
@@ -593,7 +598,7 @@ static public function uploadCCdata()
 
     $tables = array('PaycardTransactions', 'CapturedSignature');
     foreach ($tables as $table) {
-        if ($sql->tableExists($table)) {
+        if (CoreLocal::get('NoCompat') == 1 || $sql->tableExists($table)) {
             $cols = self::getMatchingColumns($sql, $table);
             $success = $sql->transfer(CoreLocal::get('tDatabase'),
                 "SELECT {$cols} FROM {$table}",
@@ -619,7 +624,7 @@ static public function loadglobalvalues()
         FntlFlag,TaxExempt from globalvalues";
     $dbc = self::pDataConnect();
     $result = $dbc->query($query);
-    $row = $dbc->fetch_array($result);
+    $row = $dbc->fetchRow($result);
 
     CoreLocal::set("CashierNo",$row["CashierNo"]);
     CoreLocal::set("cashier",$row["Cashier"]);
@@ -794,15 +799,15 @@ static public function rotateTempData()
 
     $connection->query("insert into localtrans select * from localtemptrans");
     // localtranstoday converted from view to table
-    if (!$connection->isView('localtranstoday')) {
+    if (CoreLocal::get('NoCompat') == 1 || !$connection->isView('localtranstoday')) {
         $connection->query("insert into localtranstoday select * from localtemptrans");
     }
     // legacy table when localtranstoday is still a view
-    if ($connection->table_exists('localtrans_today')) {
+    if (CoreLocal::get('NoCompat') != 1 && $connection->table_exists('localtrans_today')) {
         $connection->query("insert into localtrans_today select * from localtemptrans");
     }
 
-    $cols = Database::localMatchingColumns($connection, 'dtransactions', 'localtemptrans');
+    $cols = self::localMatchingColumns($connection, 'dtransactions', 'localtemptrans');
     $ret = $connection->query("insert into dtransactions ($cols) select $cols from localtemptrans");
 
     /**
@@ -855,7 +860,7 @@ static public function clearTempTables()
  */
 static public function logger($msg="")
 {
-    $connection = Database::tDataConnect();
+    $connection = self::tDataConnect();
 
     if (method_exists($connection, 'logger')) {
         $ret = $connection->logger($msg);

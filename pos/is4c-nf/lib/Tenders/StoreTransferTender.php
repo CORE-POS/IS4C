@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
+use \CoreLocal;
+
 /**
   @class StoreTransfer
   Tender module for inter-departmental transfers
@@ -65,7 +71,7 @@ class StoreTransferTender extends TenderModule
 
         if (CoreLocal::get("transfertender") != 1) {
             CoreLocal::set("transfertender",1);
-            return $my_url."gui-modules/adminlogin.php?class=StoreTransferTender";
+            return $my_url."gui-modules/adminlogin.php?class=COREPOS-pos-lib-Tenders-StoreTransferTender";
         } else {
             CoreLocal::set("transfertender",0);
             return true;

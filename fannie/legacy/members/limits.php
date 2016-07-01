@@ -13,7 +13,7 @@ if (isset($_GET['type']))
 if (!isset($_GET['excel'])){
     echo "<form method=get action=limits.php>";
     echo "<select name=type>";
-    while ($memTypesW = $sql->fetch_array($memTypesR)){
+    while ($memTypesW = $sql->fetchRow($memTypesR)){
         if ($memTypesW[0] == $selected)
             echo "<option value=$memTypesW[0] selected>$memTypesW[0] $memTypesW[1]</option>";
         else
@@ -42,7 +42,7 @@ if (isset($_GET['type'])){
 
     echo "<table cellspacing=3 cellpadding=0 border=1>";
     echo "<tr><th>Member #</th><th>Charge limit</th></tr>";
-    while ($memW = $sql->fetch_array($memR)){
+    while ($memW = $sql->fetchRow($memR)){
         echo "<tr>";
         if (!isset($_GET['excel']))
             echo "<td><a href=memGen.php?memID=$memW[0]>$memW[0]</a></td>";

@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use COREPOS\pos\lib\DisplayLib;
+use \CoreLocal;
+
 /**
   @class CreditCardTender
   Tender module for credit cards

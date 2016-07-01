@@ -76,6 +76,7 @@ class CustomerCountReport extends FannieReportPage {
         $dbc->selectDB($this->config->get('OP_DB'));
         $date1 = $this->form->date1;
         $date2 = $this->form->date2;
+        $store = FormLib::get('store', 0);
 
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
         $date1 .= ' 00:00:00';
@@ -88,17 +89,18 @@ class CustomerCountReport extends FannieReportPage {
             tdate BETWEEN ? AND ?
             and trans_type = 'T'
             AND upc <> 'RRR'
+            AND " . DTrans::isStoreID($store, 't') . "
             group by year(tdate),month(tdate),day(tdate),trans_num
             order by year(tdate),month(tdate),day(tdate),max(memType)";
         $salesP = $dbc->prepare($sales);
-        $result = $dbc->execute($salesP, array($date1, $date2));
+        $result = $dbc->execute($salesP, array($date1, $date2, $store));
 
         /**
           Create result records based on date and increment them
           when the same type is encountered again
         */
         $ret = array();
-        while ($row = $dbc->fetch_array($result)){
+        while ($row = $dbc->fetchRow($result)){
             $stamp = date("M j, Y",mktime(0,0,0,$row['month'],$row['day'],$row['year']));
             if (!isset($ret[$stamp])){ 
                 $ret[$stamp] = array("date"=>$stamp);
@@ -136,6 +138,7 @@ class CustomerCountReport extends FannieReportPage {
     function form_content()
     {
         list($lastMonday, $lastSunday) = \COREPOS\Fannie\API\lib\Dates::lastWeek();
+        $store = FormLib::storePicker();
         ob_start();
 ?>
 <form action=CustomerCountReport.php method=get>
@@ -149,6 +152,10 @@ class CustomerCountReport extends FannieReportPage {
     <label>End Date</label>
     <input type=text id=date2 name=date2 value="<?php echo $lastSunday; ?>" 
         class="form-control date-field" required />
+</p>
+<p>
+    <label>Store</label>
+    <?php echo $store['html']; ?>
 </p>
 <p>
     <button type=submit name=submit value="Submit" class="btn btn-default">Submit</button>

@@ -1,0 +1,15 @@
+#
+# COPY ME TO versions.yml
+#
+
+# git repo
+remote: https://github.com/CORE-POS/IS4C.git
+
+# tag, branch, or SHA that will be installed
+# by the deploy.lanes.yml playbook
+deploy: version-2.2
+
+# tag, branch, or SHA that will be installed
+# by the rollback.lanes.yml playbook
+# should be a known-good version
+rollback: version-2.1

@@ -71,12 +71,12 @@ class SaReportPage extends FanniePage {
         } else if (FormLib::get('change')=='yes') {
         }
 
-        if (FormLib::get_form_value('view') == 'dept'){
-            $order='d.dept_no,s.section,s.datetime';
+        if (FormLib::get_form_value('view') == 'section'){
+            $order='s.section,d.dept_no,s.datetime';
         } elseif(FormLib::get_form_value('excel') == 'yes'){
             $order='salesCode, d.dept_no, s.datetime';
         } else {
-            $order='s.section,d.dept_no,s.datetime';
+            $order='d.dept_no,s.section,s.datetime';
         }
     
         $this->store = FormLib::get('store', false);
@@ -91,7 +91,11 @@ class SaReportPage extends FanniePage {
             s.datetime,
             s.upc,
             s.quantity,
-            s.section,
+            CASE
+                WHEN s.section=0 THEN \'Backstock\'
+                WHEN s.section=1 THEN \'Floor\'
+                ELSE \'Unknown\'
+            END AS section,
             CASE 
                 WHEN p.description IS NULL AND v.description IS NULL THEN \'Not in POS\' 
                 WHEN p.description IS NULL AND v.description IS NOT NULL THEN v.description
@@ -140,9 +144,10 @@ class SaReportPage extends FanniePage {
             if ($num_rows>0) {
                 $this->scans=array();
                 while ($row = $dbc->fetchRow($r)){
-                    if (!isset($upcs[$row['upc']])) {
+                    $key = $row['upc'] . '-' . $row['section'];
+                    if (!isset($upcs[$key])) {
                         $this->scans[] = $row;
-                        $upcs[$row['upc']] = true;
+                        $upcs[$key] = true;
                     }
                 }
             } else {
@@ -288,7 +293,7 @@ table.shelf-audit tr:hover {
             <p><a href="SaHandheldPage.php">Alternate Scan Page</a></p>
             <p><?php echo($this->sql_actions); ?></p>
             <p><?php echo($this->status); ?></p>
-            <p><a href="?view=dept">view by pos department</a> <a href="SaReportPage.php">view by scanned section</a></p>
+            <p><a href="SaReportPage.php">view by pos department</a> <a href="SaReportPage.php?view=section">view by scanned section</a></p>
             <p><?php echo $stores['html']; ?></p>
             <p><a href="?excel=yes&store=<?php echo $this->store; ?>">download as csv</a></p>
         <?php
@@ -310,7 +315,7 @@ table.shelf-audit tr:hover {
                 $counter_total=$row['quantity']*$row['normal_retail'];
                 
                 if ($counter=='d') { $caption=$row['dept_name'].' Department'; }
-                else { $caption='Section #'.$row['section']; }
+                else { $caption='Section: '.$row['section']; }
                 
                 $table .= '
         <table class="table shelf-audit">
@@ -350,7 +355,7 @@ table.shelf-audit tr:hover {
                 else { $counter_number=$row['section']; }
                 
                 if ($counter=='d') { $caption=$row['dept_name'].' Department'; }
-                else { $caption='Section #'.$row['section']; }
+                else { $caption='Section: '.$row['section']; }
                                 
                 $table .= '
             </tbody>

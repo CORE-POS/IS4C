@@ -21,10 +21,9 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\webservices 
-{
+namespace COREPOS\Fannie\API\webservices;
 
-class FannieMemberLaneSync extends FannieWebService 
+class FannieMemberLaneSync extends \COREPOS\Fannie\API\webservices\FannieWebService
 {
     
     public $type = 'json'; // json/plain by default
@@ -61,12 +60,5 @@ class FannieMemberLaneSync extends FannieWebService
 
         return array('done'=>true);
     }
-}
-
-}
-
-namespace {
-    // global namespace wrapper class
-    class FannieMemberLaneSync extends \COREPOS\Fannie\API\webservices\FannieMemberLaneSync {}
 }
 

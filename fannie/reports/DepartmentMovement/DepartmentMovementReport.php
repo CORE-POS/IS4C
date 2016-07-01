@@ -205,7 +205,7 @@ class DepartmentMovementReport extends FannieReportPage
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep,$args);
         $ret = array();
-        while ($row = $dbc->fetch_array($result)) {
+        while ($row = $dbc->fetchRow($result)) {
             $record = array();
             if ($groupby == "Date") {
                 $record[] = $row[1]."/".$row[2]."/".$row[0];

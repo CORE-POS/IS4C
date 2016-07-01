@@ -1,4 +1,7 @@
 <?php
+
+use COREPOS\pos\lib\gui\InputCorePage;
+
 /**
  * @backupGlobals disabled
  */
@@ -7,7 +10,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
 
     public function testLib()
     {
-        $classes = array('BasicCorePage', 'InputCorePage', 'NoInputCorePage');
+        $classes = array('COREPOS\\pos\\lib\\gui\\BasicCorePage', 'COREPOS\\pos\\lib\\gui\\InputCorePage', 'COREPOS\\pos\\lib\\gui\\NoInputCorePage');
         foreach ($classes as $class) {
             ob_start();
             $obj = new $class();
@@ -26,8 +29,6 @@ class PagesTest extends PHPUnit_Framework_TestCase
 
     public function testDrawing()
     {
-        CoreLocal::set('Debug_Redirects', 1, True);
-
         $dh = opendir(dirname(__FILE__).'/../../pos/is4c-nf/gui-modules');
         $pages = array();
         while( ($file=readdir($dh)) !== False){
@@ -39,6 +40,7 @@ class PagesTest extends PHPUnit_Framework_TestCase
 
         foreach($pages as $class => $definition){
             include_once(dirname(__FILE__).'/../../pos/is4c-nf/gui-modules/'.$definition);
+            CoreLocal::set('Debug_Redirects', 1, True);
 
             // get the default output
             ob_start();

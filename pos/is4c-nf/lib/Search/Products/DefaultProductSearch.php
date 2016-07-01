@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Search\Products;
+use \CoreLocal;
+use COREPOS\pos\lib\Database;
+
 /**
   @class DefaultProductSearch
   Look up products in the database
@@ -32,12 +36,11 @@ class DefaultProductSearch extends ProductSearch
         $ret = array();
         $sql = Database::pDataConnect();
         $args = array('%' . $str . '%');
-        $table = $sql->tableDefinition('products');
         $string_search = "(description LIKE ?)";
         // new coluumns 16Apr14
         // search in products.brand and products.formatted_name
         // if those columns are available
-        if (isset($table['brand']) && isset($table['formatted_name'])) {
+        if (CoreLocal::get('NoCompat') == 1) {
             $string_search = "(
                                 description LIKE ?
                                 OR brand LIKE ?
@@ -48,6 +51,20 @@ class DefaultProductSearch extends ProductSearch
                 '%' . $str . '%',
                 '%' . $str . '%',
             );
+        } else {
+            $table = $sql->tableDefinition('products');
+            if (isset($table['brand']) && isset($table['formatted_name'])) {
+                $string_search = "(
+                                    description LIKE ?
+                                    OR brand LIKE ?
+                                    OR formatted_name LIKE ?
+                                  )";
+                $args = array(
+                    '%' . $str . '%',
+                    '%' . $str . '%',
+                    '%' . $str . '%',
+                );
+            }
         }
         $query = "SELECT upc, 
                     description, 

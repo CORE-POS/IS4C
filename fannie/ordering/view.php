@@ -27,6 +27,10 @@ include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
+if (FannieConfig::config('SO_UI') === 'bootstrap' && count($_GET) === 0) {
+    header('Location: OrderViewPage.php');
+    return;
+}
 if (!function_exists('checkLogin')) {
     include($FANNIE_ROOT.'auth/login.php');
 }
@@ -95,7 +99,7 @@ if (isset($_REQUEST['k']) && file_exists($cachepath.$_REQUEST['k'])){
 <div id="itemDiv"></div>
 </fieldset>
 <div id="footerDiv"></div>
-<script type="text/javascript" src="view.js">
+<script type="text/javascript" src="view.js?date=20160513">
 </script>
 <?php
 printf("<input type=hidden value=\"%d\" id=\"init_oid\" />",$orderID);

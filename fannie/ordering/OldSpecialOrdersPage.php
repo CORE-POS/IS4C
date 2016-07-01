@@ -318,24 +318,6 @@ function applyMemNum(n){
     $('#cardno').val(n);
     refilter();
 }
-function updateStatus(oid,val){
-    $.ajax({
-        url: 'ajax-calls.php',
-        type: 'post',
-        data: 'action=UpdateStatus&orderID='+oid+'&val='+val,
-        cache: false
-    }).done(function(resp){
-        $('#statusdate'+oid).html(resp);    
-    });
-}
-function togglePrint(username,oid){
-    $.ajax({
-        url: 'ajax-calls.php',
-        type: 'post',
-        data: 'action=UpdatePrint&orderID='+oid+'&user='+username,
-        cache: false
-    });
-}
         <?php
         return ob_get_clean();
     }

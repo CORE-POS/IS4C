@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\parser\Parser;
+
 class VirtualCouponParser extends Parser {
     
     function check($str){

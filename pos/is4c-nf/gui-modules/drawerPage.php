@@ -21,7 +21,11 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Authenticate;
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\Drawers;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class drawerPage extends NoInputCorePage 
@@ -38,7 +42,6 @@ class drawerPage extends NoInputCorePage
             Database::setglobalvalue("LoggedIn", 0);
             CoreLocal::set("LoggedIn",0);
             CoreLocal::set("training",0);
-            CoreLocal::set("gui-scale","no");
             $this->change_page($this->page_url."gui-modules/login2.php");
         } else {
             $this->change_page($this->page_url."gui-modules/pos2.php");
@@ -52,12 +55,12 @@ class drawerPage extends NoInputCorePage
         // take over a drawer
         if ($this->my_drawer != 0){
             // free up the current drawer if it exists
-            ReceiptLib::drawerKick();
-            ReceiptLib::freeDrawer($this->my_drawer);
+            Drawers::kick();
+            Drawers::free($this->my_drawer);
         }
         // switch to the requested drawer
-        ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$new_drawer);
-        ReceiptLib::drawerKick();
+        Drawers::assign(CoreLocal::get('CashierNo'),$new_drawer);
+        Drawers::kick();
         $this->my_drawer = $new_drawer;
     }
 
@@ -68,12 +71,12 @@ class drawerPage extends NoInputCorePage
             if ($new_drawer == $id){
                 if ($this->my_drawer != 0){
                     // free up the current drawer if it exists
-                    ReceiptLib::drawerKick();
-                    ReceiptLib::freeDrawer($this->my_drawer);
+                    Drawers::kick();
+                    Drawers::free($this->my_drawer);
                 }
                 // switch to the requested drawer
-                ReceiptLib::assignDrawer(CoreLocal::get('CashierNo'),$new_drawer);
-                ReceiptLib::drawerKick();
+                Drawers::assign(CoreLocal::get('CashierNo'),$new_drawer);
+                Drawers::kick();
                 $this->my_drawer = $new_drawer;
 
                 break;
@@ -83,8 +86,8 @@ class drawerPage extends NoInputCorePage
 
     function preprocess()
     {
-        $this->my_drawer = ReceiptLib::currentDrawer();
-        $this->available = ReceiptLib::availableDrawers();
+        $this->my_drawer = Drawers::current();
+        $this->available = Drawers::available();
         $this->is_admin = false;
         $sec = Authenticate::getPermission(CoreLocal::get('CashierNo'));
         if ($sec >= 30) {

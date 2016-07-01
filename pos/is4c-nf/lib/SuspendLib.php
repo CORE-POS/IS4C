@@ -21,11 +21,17 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\TransRecord;
+use \CoreLocal;
+
 /**
   @class SuspendLib
   Functions related to suspend and resume transaction
 */
-class SuspendLib extends LibraryClass 
+class SuspendLib 
 {
 
 /**
@@ -39,7 +45,7 @@ static public function suspendorder()
     $query_a = "select emp_no, trans_no from localtemptrans";
     $db_a = Database::tDataConnect();
     $result_a = $db_a->query($query_a);
-    $row_a = $db_a->fetch_array($result_a);
+    $row_a = $db_a->fetchRow($result_a);
     $cashier_no = substr("000".$row_a["emp_no"], -2);
     $trans_no = substr("0000".$row_a["trans_no"], -4);
     $trans_num = ReceiptLib::receiptNumber();

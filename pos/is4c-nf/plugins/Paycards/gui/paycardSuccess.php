@@ -21,65 +21,46 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\PrehLib;
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\UdpComm;
+use COREPOS\pos\lib\gui\BasicCorePage;
+if (!class_exists('AutoLoader')) include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class paycardSuccess extends BasicCorePage 
 {
-
-    private $bmp_path;
+    private $bmpPath;
 
     function preprocess()
     {
-        $this->bmp_path = $this->page_url . 'scale-drivers/drivers/NewMagellan/ss-output/tmp/';
+        $this->conf = new PaycardConf();
+        $this->bmpPath = $this->page_url . 'scale-drivers/drivers/NewMagellan/ss-output/tmp/';
+        $this->capture = new SigCapture($this->conf);
 
         // check for input
-        if(isset($_REQUEST["reginput"])) {
-            $input = strtoupper(trim($_POST["reginput"]));
+        if (FormLib::get('reginput', false) !== false) {
+            $input = strtoupper(trim(FormLib::get('reginput')));
 
             // capture file if present; otherwise re-request 
             // signature via terminal
-            if (isset($_REQUEST['doCapture']) && $_REQUEST['doCapture'] == 1 && $input == '') {
-                if (isset($_REQUEST['bmpfile']) && !empty($_REQUEST['bmpfile']) && file_exists($_REQUEST['bmpfile'])) {
-                    $bmp = file_get_contents($_REQUEST['bmpfile']);
-                    $format = 'BMP';
-                    $img_content = $bmp;
-
-                    $dbc = Database::tDataConnect();
-                    $capQ = 'INSERT INTO CapturedSignature
-                                (tdate, emp_no, register_no, trans_no,
-                                 trans_id, filetype, filecontents)
-                             VALUES
-                                (?, ?, ?, ?,
-                                 ?, ?, ?)';
-                    $capP = $dbc->prepare($capQ);
-                    $args = array(
-                        date('Y-m-d H:i:s'),
-                        CoreLocal::get('CashierNo'),
-                        CoreLocal::get('laneno'),
-                        CoreLocal::get('transno'),
-                        CoreLocal::get('paycard_id'),
-                        $format,
-                        $img_content,
-                    );
-                    $capR = $dbc->execute($capP, $args);
-
-                    unlink($_REQUEST['bmpfile']);
-                    // continue to below. finishing transaction is the same
-                    // as with paper signature slip
-
-                } else {
+            if (FormLib::get('doCapture') == 1 && $input == '') {
+                if (!file_exists(FormLib::get('bmpfile'))) {
                     UdpComm::udpSend('termSig');
 
                     return true;
                 }
+                $this->capture->save(FormLib::get('bmpfile'), Database::tDataConnect());
+                // continue to below. finishing transaction is the same
+                // as with paper signature slip
             }
 
-            $mode = CoreLocal::get("paycard_mode");
-            $type = CoreLocal::get("paycard_type");
-            $tender_id = CoreLocal::get("paycard_id");
-            if( $input == "") { // [enter] exits this screen
+            $mode = $this->conf->get("paycard_mode");
+            if ($input == "") { // [enter] exits this screen
                 // remember the mode, type and transid before we reset them
-                CoreLocal::set("boxMsg","");
+                $this->conf->set("boxMsg","");
 
                 /**
                   paycard_mode is sometimes cleared pre-emptively
@@ -90,48 +71,48 @@ class paycardSuccess extends BasicCorePage
                 $peek = PrehLib::peekItem(true);
                 if ($mode == PaycardLib::PAYCARD_MODE_AUTH || 
                     ($peek !== false && isset($peek['trans_type']) && $peek['trans_type'] == 'T')) {
-                    CoreLocal::set("strRemembered","TO");
-                    CoreLocal::set("msgrepeat",1);
-                    CoreLocal::set('paycardTendered', true);
-                } else {
-                    TransRecord::debugLog('Not Tendering Out (mode): ' . print_r($mode, true));
+                    $this->conf->set("strRemembered","TO");
+                    $this->conf->set("msgrepeat",1);
+                    $this->conf->set('paycardTendered', true);
                 }
 
                 // only reset terminal if the terminal was used for the transaction
                 // activating a gift card should not reset terminal
-                if (CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_ENCRYPTED) {
+                if ($this->conf->get("paycard_type") == PaycardLib::PAYCARD_TYPE_ENCRYPTED) {
                     UdpComm::udpSend('termReset');
-                    CoreLocal::set('ccTermState','swipe');
-                    CoreLocal::set("CacheCardType","");
+                    $this->conf->set('ccTermState','swipe');
+                    $this->conf->set("CacheCardType","");
                 }
-                PaycardLib::paycard_reset();
+                $this->conf->reset();
 
                 $this->change_page($this->page_url."gui-modules/pos2.php");
 
-                return False;
-            } else if ($mode == PaycardLib::PAYCARD_MODE_AUTH && $input == "VD" 
-                && (CoreLocal::get('CacheCardType') == 'CREDIT' || CoreLocal::get('CacheCardType') == '')){
-                $plugin_info = new Paycards();
-                $this->change_page($plugin_info->pluginUrl()."/gui/paycardboxMsgVoid.php");
-                return False;
+                return false;
+            } elseif ($mode == PaycardLib::PAYCARD_MODE_AUTH && $input == "VD" 
+                && ($this->conf->get('CacheCardType') == 'CREDIT' || $this->conf->get('CacheCardType') == '')){
+                $pluginInfo = new Paycards();
+                $this->change_page($pluginInfo->pluginUrl()."/gui/paycardboxMsgVoid.php");
+                return false;
             }
         }
         /* shouldn't happen unless session glitches
            but getting here implies the transaction
            succeeded */
-        $var = CoreLocal::get("boxMsg");
+        $var = $this->conf->get("boxMsg");
         if (empty($var)){
-            CoreLocal::set("boxMsg",
+            $this->conf->set("boxMsg",
                 "<b>Approved</b><font size=-1>
                 <p>&nbsp;
                 <p>[enter] to continue
                 <br>[void] " . _('to reverse the charge') . "
                 </font>");
         }
-        return True;
+
+        return true;
     }
 
-    function head_content(){
+    function head_content()
+    {
         ?>
         <script type="text/javascript">
         var formSubmitted = false;
@@ -165,7 +146,7 @@ class paycardSuccess extends BasicCorePage
         }
         function parseWrapper(str) {
             if (str.substring(0, 7) == 'TERMBMP') {
-                var fn = '<?php echo $this->bmp_path; ?>' + str.substring(7);
+                var fn = '<?php echo $this->bmpPath; ?>' + str.substring(7);
                 $('<input>').attr({
                     type: 'hidden',
                     name: 'bmpfile',
@@ -197,88 +178,63 @@ class paycardSuccess extends BasicCorePage
 
     function body_content()
     {
-        $this->input_header("onsubmit=\"return submitWrapper();\" action=\"".$_SERVER['PHP_SELF']."\"");
-        ?>
-        <div class="baseHeight">
-        <?php
-        // Signature Capture support
-        // If:
-        //   a) enabled
-        //   b) a Credit transaction
-        //   c) Over limit threshold OR a return
-        $isCredit = (CoreLocal::get('CacheCardType') == 'CREDIT' || CoreLocal::get('CacheCardType') == '') ? true : false;
-        // gift doesn't set CacheCardType so customer swipes and
-        // cashier types don't overwrite each other's type
-        if (CoreLocal::get('paycard_type') == PaycardLib::PAYCARD_TYPE_GIFT) {
-            $isCredit = false;
-        }
-        $needSig = (CoreLocal::get('paycard_amount') > CoreLocal::get('CCSigLimit') || CoreLocal::get('paycard_amount') < 0) ? true : false;
-        $isVoid = (CoreLocal::get('paycard_mode') == PaycardLib::PAYCARD_MODE_VOID) ? true : false;
-        if (CoreLocal::get("PaycardsSigCapture") == 1 && $isCredit && $needSig && !$isVoid) {
-            echo "<div id=\"boxMsg\" class=\"centeredDisplay\">";
-
-            echo "<div class=\"boxMsgAlert coloredArea\">";
-            echo "Waiting for signature";
-            echo "</div>";
-
-            echo "<div class=\"\">";
-
-            echo "<div id=\"imgArea\"></div>";
-            echo '<div class="textArea">';
-            echo '$' . sprintf('%.2f', CoreLocal::get('paycard_amount')) . ' as CREDIT';
-            echo '<br />';
-            echo '<span id="sigInstructions" style="font-size:90%;">';
-            echo '[enter] to get re-request signature, [void] ' . _('to reverse the charge');
-            echo '<br />';
-            if (isset($_REQUEST['reginput']) && ($_REQUEST['reginput'] == '' || $_REQUEST['reginput'] == 'CL')) {
-                echo '<b>';
-            }
-            echo '[reprint] to quit &amp; use paper slip';
-            if (isset($_REQUEST['reginput']) && ($_REQUEST['reginput'] == '' || $_REQUEST['reginput'] == 'CL')) {
-                echo '</b>';
-            }
-            echo '</span>';
-            echo "</div>";
-
-            echo "</div>"; // empty class
-            echo "</div>"; // #boxMsg
-
+        $this->input_header("onsubmit=\"return submitWrapper();\" action=\"".filter_input(INPUT_SERVER,'PHP_SELF')."\"");
+        echo '<div class="baseHeight">';
+        if ($this->capture->required()) {
+            $reginput = FormLib::get('reginput');
+            $openB = ($reginput === '' || $reginput === 'CL') ? '<b>' : '';
+            $closeB = ($reginput === '' || $reginput === 'CL') ? '</b>' : '';
+            $amount = sprintf('%.2f', $this->conf->get('paycard_amount'));
+            echo <<<HTML
+<div id="boxMsg" class="centeredDisplay">
+    <div class="boxMsgAlert coloredArea">
+        Waiting for signature
+    </div>
+    <div class="">
+        <div id="imgArea"></div>
+        <div class="textArea">
+            \${$amount} as CREDIT
+            <br />
+            <span id="sigInstructions" style="font-size:90%;">
+                [enter] to get re-request signature, [void] to reverse the charge
+                <br />
+                {$openB}[reprint] to quit &amp; use paper slip{$closeB}
+            </span>
+        </div>
+    </div>
+</div>
+HTML;
             UdpComm::udpSend('termSig');
-            $this->add_onload_command("addToForm('doCapture', '1');\n");
+            $this->addOnloadCommand("addToForm('doCapture', '1');\n");
         } else {
-            echo DisplayLib::boxMsg(CoreLocal::get("boxMsg"), "", true);
-            if (CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_ENCRYPTED) {
+            echo DisplayLib::boxMsg($this->conf->get("boxMsg"), "", true);
+            if ($this->conf->get("paycard_type") == PaycardLib::PAYCARD_TYPE_ENCRYPTED) {
                 UdpComm::udpSend('termApproved');
             }
         }
-        CoreLocal::set("CachePanEncBlock","");
-        CoreLocal::set("CachePinEncBlock","");
-        ?>
-        </div>
-        <?php
+        $this->conf->set("CachePanEncBlock","");
+        $this->conf->set("CachePinEncBlock","");
+        echo '</div>';
         echo "<div id=\"footer\">";
         echo DisplayLib::printfooter();
         echo "</div>";
 
-        $rp_type = '';
-        if( CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_GIFT) {
-            if( CoreLocal::get("paycard_mode") == PaycardLib::PAYCARD_MODE_BALANCE) {
-                $rp_type = "gcBalSlip";
-            } 
-            else {
-                $rp_type ="gcSlip";
-            }
-        } 
-        else if( CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_CREDIT) {
-            $rp_type = "ccSlip";
+        $rpType = $this->rpType($this->conf->get('paycard_type'));
+        printf("<input type=\"hidden\" id=\"rp_type\" value=\"%s\" />",$rpType);
+    }
+    
+    private function rpType($type)
+    {
+        switch ($type) {
+            case PaycardLib::PAYCARD_TYPE_GIFT:
+                return $this->conf->get('paycard_mode') == PaycardLib::PAYCARD_MODE_BALANCE ? 'gcBalSlip' : 'gcSlip';
+            case PaycardLib::PAYCARD_TYPE_CREDIT:
+            case PaycardLib::PAYCARD_TYPE_ENCRYPTED:
+            default:
+                return 'ccSlip';
         }
-        else if( CoreLocal::get("paycard_type") == PaycardLib::PAYCARD_TYPE_ENCRYPTED) {
-            $rp_type = "ccSlip";
-        }
-        printf("<input type=\"hidden\" id=\"rp_type\" value=\"%s\" />",$rp_type);
     }
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new paycardSuccess();
+AutoLoader::dispatch();
 

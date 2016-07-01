@@ -1,0 +1,18 @@
+# [Work-in-progress]
+# Ansible playbook to deploy newer code from a git repo to lanes.
+# Relevant portion of lanes' file systems must be accessible
+# via network share.
+#
+# To run:
+#   ansible-playbook -h localhost, -c local deploy.lanes.yml
+#
+---
+- hosts: "localhost"
+  
+  tasks:
+    - include_vars: lanes.paths.yml 
+    - include_vars: versions.yml 
+    - name: Deploy latest version to path(s)
+      debug: msg="git repo={{remote}} desc={{item}} version={{deploy}} force=yes depth=1"
+      #git repo={{remote}} desc={{item}} version={{deploy}} force=yes depth=1
+      with_items:  lanes 

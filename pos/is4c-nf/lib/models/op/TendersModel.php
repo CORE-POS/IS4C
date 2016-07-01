@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib\models\op;
+use COREPOS\pos\lib\CoreState;
 use COREPOS\pos\lib\models\BasicModel;
 
 class TendersModel extends BasicModel 
@@ -82,7 +83,7 @@ TenderType and TenderID are mostly ignored.
     public function hookAddColumnTenderModule()
     {
         \CoreLocal::refresh();
-        \CoreState::loadParams();
+        CoreState::loadParams();
         $current_map = \CoreLocal::get('TenderMap');
         if (!is_array($current_map)) {
             $current_map = array();

@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\BasicCorePage;
+use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class boxMsg2 extends BasicCorePage 
@@ -79,7 +82,6 @@ class boxMsg2 extends BasicCorePage
         
         CoreLocal::set("boxMsg",'');
         CoreLocal::set("boxMsgButtons", array());
-        CoreLocal::set("msgrepeat",2);
         if (!isset($_REQUEST['quiet']))
             MiscLib::errorBeep();
     } // END body_content() FUNCTION

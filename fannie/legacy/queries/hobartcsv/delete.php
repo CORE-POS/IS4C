@@ -12,7 +12,7 @@ if (isset($_GET['scale'])){
     $fetchR = $sql->query($fetchQ);
     $plus = array();
     $i = 0;
-    while ($fetchW = $sql->fetch_array($fetchR)){
+    while ($fetchW = $sql->fetchRow($fetchR)){
         preg_match("/002(\d\d\d\d)0/",$fetchW[0],$matches);
         $plu = $matches[1];
         if (!empty($plu)){

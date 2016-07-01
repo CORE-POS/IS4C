@@ -16,7 +16,7 @@ if (!isset($_GET['batchID'])){
               order by b.batchID desc";
     $fetchR = $sql->query($fetchQ);
     echo "<select name=batchID[] multiple style=\"{width:300px;}\" size=20>";
-    while($fetchW = $sql->fetch_array($fetchR))
+    while($fetchW = $sql->fetchRow($fetchR))
         echo "<option value=$fetchW[0]>$fetchW[1]</option>";
     echo "</select><br />";
     echo "<input type=submit value=Print /> ";
@@ -176,7 +176,7 @@ else {
         $t -= $diff;
         
         //cycle through result array of query
-        while($row = $sql->fetch_array($result)){
+        while($row = $sql->fetchRow($result)){
            //If $m == 32 add a new page and reset all counters..
            if($m == 32){
               $pdf->AddPage();
@@ -268,7 +268,7 @@ else {
         $down = 31.0;
 
         //cycle through result array of query
-        while($row = $sql->fetch_array($result)){
+        while($row = $sql->fetchRow($result)){
            //If $m == 32 add a new page and reset all counters..
            if($m == 32){
               $pdf->AddPage();

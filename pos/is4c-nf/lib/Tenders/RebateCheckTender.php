@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\Tenders;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\TransRecord;
+use \CoreLocal;
+
 /**
   @class RebateCheckTender
   Tender module for checks

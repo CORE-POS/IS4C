@@ -48,7 +48,7 @@ if (!isset($FANNIE_LANES) || !is_array($FANNIE_LANES)) {
     $FANNIE_LANES = array();
 }
 
-set_time_limit(0);
+set_time_limit(60);
 ini_set('memory_limit','256M');
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,

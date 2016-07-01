@@ -32,6 +32,9 @@
 
 */
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\FormLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -145,7 +148,7 @@ class memlist extends NoInputCorePage
             if ($memberID == CoreLocal::get('defaultNonMem')) {
                 $personNum = 1;
             }
-            PrehLib::setMember($memberID, $personNum);
+            COREPOS\pos\lib\MemberLib::setMember($memberID, $personNum);
 
             if (CoreLocal::get('store') == "WEFC_Toronto") {
                 $error_msg = $this->wefcCardCheck($memberID);
@@ -158,7 +161,7 @@ class memlist extends NoInputCorePage
 
             // don't bother with unpaid balance check if there is no balance
             if ($memberID != CoreLocal::get("defaultNonMem") && CoreLocal::get('balance') > 0) {
-                $unpaid = PrehLib::checkUnpaidAR($memberID);
+                $unpaid = COREPOS\pos\lib\MemberLib::checkUnpaidAR($memberID);
                 if ($unpaid) {
                     $this->change_page($this->page_url."gui-modules/UnpaidAR.php");
                 } else {
@@ -182,7 +185,7 @@ class memlist extends NoInputCorePage
     private function getCallbackAction($card_no)
     {
         $dbc = Database::pDataConnect();
-        if (!$dbc->tableExists('CustomerNotifications')) {
+        if (CoreLocal::get('NoCompat') != 1 && !$dbc->tableExists('CustomerNotifications')) {
             echo 'no notifications';
             return false;
         }
@@ -282,7 +285,7 @@ class memlist extends NoInputCorePage
             return $this->notice_statement;
         }
 
-        if ($dbc->tableExists('CustomerNotifications')) {
+        if (CoreLocal::get('NoCompat') == 1 || $dbc->tableExists('CustomerNotifications')) {
             $this->notice_statement = $dbc->prepare('
                 SELECT message
                 FROM CustomerNotifications

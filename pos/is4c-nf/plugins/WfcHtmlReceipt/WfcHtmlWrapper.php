@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\ReceiptBuilding\HtmlEmail\DefaultHtmlEmail;
+
 class WfcHtmlWrapper extends DefaultHtmlEmail
 {
     public function receiptHeader()

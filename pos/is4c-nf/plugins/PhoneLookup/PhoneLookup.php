@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\plugins\Plugin;
+
 class PhoneLookup extends Plugin {
 
     public $plugin_settings = "";

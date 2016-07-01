@@ -161,39 +161,48 @@ class ItemEditorPage extends FanniePage
     {
         $FANNIE_URL = $this->config->get('URL');
         $ret = '';
+        $vars = array(
+            'enter' => _('Enter'),
+            'orName' => _('or product name here'),
+            'advancedSearch' => _('Advanced Search'),
+            'openPLU' => _('Find Open PLU Range'),
+            'self' => filter_input(INPUT_SERVER, 'PHP_SELF'),
+            'msgs' => '',
+        );
         if (!empty($this->msgs)) {
-            $ret .= '<blockquote style="border:solid 1px black;">';
-            $ret .= $this->msgs;
-            $ret .= '</blockquote>';
+            $vars['msgs'] = '<blockquote style="border:solid 1px black;">'
+                    . $this->msgs
+                    . '</blockquote>';
         }
-        $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method=get>';
-        $ret .= '
-            <div class="container-fluid">
-            <div class="row form-group form-inline">
-            <input name=searchupc type=text id=upc
-                class="form-control" /> 
-            ' . _('Enter') .' 
+        $ret = <<<HTML
+{$vars['msgs']}
+<form action="{$vars['self']}" method=get>
+    <div class="container-fluid">
+        <div class="row form-group form-inline">
+            <input name=searchupc type=text id=upc class="form-control" /> 
+            {$vars['enter']}
             <select name="ntype" class="form-control">
-            <option>UPC</option>
-            <option>SKU</option>
-            <option>Brand Prefix</option>
+                <option>UPC</option>
+                <option>SKU</option>
+                <option>Brand Prefix</option>
             </select> 
-            ' . _('or product name here') 
-            . '</div></div>';
-
-        $ret .= '<p><button name=searchBtn type=submit
-                    class="btn btn-default">Go</button>
-                 &nbsp;&nbsp;&nbsp;&nbsp;
-                 <label>
-                    <input type="checkbox" name="inUse" value="1" />
-                    Include items that are not inUse
-                 </label>
-                 </p>';
-        $ret .= '</form>';
-        $ret .= '<p><a href="AdvancedItemSearch.php">' . _('Advanced Search') . '</a>';
-        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<a href="PluRangePage.php">' . _('Find Open PLU Range') . '</a>';
-        $ret .= '</p>';
+            {$vars['orName']}
+        </div>
+    </div>
+    <p>
+        <button name=searchBtn type=submit class="btn btn-default">Go</button>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <label>
+            <input type="checkbox" name="inUse" value="1" />
+            Include items that are not inUse
+        </label>
+    </p>
+</form>
+<p><a href="AdvancedItemSearch.php">{$vars['advancedSearch']}</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="PluRangePage.php">{$vars['openPLU']}</a>
+</p>
+HTML;
         
         $this->add_script('autocomplete.js');
         $wsUrl = $FANNIE_URL . 'ws/';
@@ -246,7 +255,9 @@ class ItemEditorPage extends FanniePage
             $query = "SELECT p.*,x.distributor,p.brand AS manufacturer 
                 FROM products AS p LEFT JOIN 
                 prodExtra AS x ON p.upc=x.upc
-                WHERE description LIKE ? ";
+                WHERE description LIKE ? 
+                    OR p.brand LIKE ?";
+            $args[] = '%'.$upc.'%';    
             $args[] = '%'.$upc.'%';    
         }
         if (!$inUseFlag) {
@@ -450,37 +461,32 @@ class ItemEditorPage extends FanniePage
         $this->add_script($url . 'src/javascript/fancybox/jquery.fancybox-1.3.4.js?v=1');
         $this->add_css_file($url . 'src/javascript/fancybox/jquery.fancybox-1.3.4.css');
         if (!$isNew) {
-            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<a href="DeleteItemPage.php?id='.$upc.'" class="btn btn-danger btn-sm">Delete this item</a>';
-
-            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<label class="badge">History</label> <span class="btn-group">';
-            $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
-                href="'.$url.'reports/PriceHistory/?upc='.$upc.'" title="Price History">Price</a>';
-
-            $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
-                href="'.$url.'reports/CostHistory/?upc='.$upc.'" title="Cost History">Cost</a>';
-
-            $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
-                href="'.$url.'reports/RecentSales/?upc='.$upc.'" title="Sales History">Sales</a>';
-
-            $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
-                href="'.$url.'reports/ItemBatches/ItemBatchesReport.php?upc='.$upc.'" 
-                title="Batch History">Batches</a>';
-
-            $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
-                href="'.$url.'reports/ItemOrderHistory/ItemOrderHistoryReport.php?upc='.$upc.'" 
-                title="Order History">Orders</a>';
-            $ret .= '</span>';
-
-            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .= '<a class="btn btn-default btn-sm iframe fancyboxLink" 
-                href="'.$url.'item/addShelfTag.php?upc='.$upc.'" title="Queue a tag for this item">Shelf Tag</a>';
-
-            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-            $ret .=  '<a class="btn btn-default btn-sm" 
-                href="' . $url . 'item/CloneItemPage.php?id=' . $upc . '" 
-                title="Create a duplicate item with a different UPC">Clone Item</a>';
+            $ret .= <<<HTML
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="DeleteItemPage.php?id={$upc}" class="btn btn-danger btn-sm">Delete this item</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<label class="badge">History</label> <span class="btn-group">
+<a class="btn btn-default btn-sm iframe fancyboxLink" 
+    href="{$url}reports/PriceHistory/?upc={$upc}" title="Price History">Price</a>
+<a class="btn btn-default btn-sm iframe fancyboxLink" 
+    href="{$url}reports/CostHistory/?upc={$upc}" title="Cost History">Cost</a>
+<a class="btn btn-default btn-sm iframe fancyboxLink" 
+    href="{$url}reports/RecentSales/?upc={$upc}" title="Sales History">Sales</a>
+<a class="btn btn-default btn-sm iframe fancyboxLink" 
+    href="{$url}reports/ItemBatches/ItemBatchesReport.php?upc={$upc}" 
+    title="Batch History">Batches</a>
+<a class="btn btn-default btn-sm iframe fancyboxLink" 
+    href="{$url}reports/ItemOrderHistory/ItemOrderHistoryReport.php?upc={$upc}" 
+    title="Order History">Orders</a>
+</span>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a class="btn btn-default btn-sm iframe fancyboxLink" 
+    href="{$url}item/addShelfTag.php?upc={$upc}" title="Queue a tag for this item">Shelf Tag</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a class="btn btn-default btn-sm" 
+    href="{$url}item/CloneItemPage.php?id={$upc}" 
+    title="Create a duplicate item with a different UPC">Clone Item</a>
+HTML;
         }
         $ret .= '</p>';
 
@@ -547,12 +553,12 @@ class ItemEditorPage extends FanniePage
             $this->add_onload_command("bindAutoComplete('input.vendor_field', '$wsUrl', 'vendor');\n");
             $this->add_onload_command("bindAutoComplete('.unit-of-measure', '$wsUrl', 'unit');\n");
             $this->add_onload_command("\$('.unit-of-measure').autocomplete('option', 'minLength', 1);\n");
-            $this->add_onload_command("addVendorDialog();\n");
+            $this->add_onload_command("baseItem.addVendorDialog();\n");
             if ($this->config->get('STORE_MODE') == 'HQ') {
-                $this->addOnloadCommand("\$('#item-editor-form').submit(syncStoreTabs);\n");
-                $this->addOnloadCommand("\$('.syncable-input').change(syncStoreTabs);\n");
-                $this->addOnloadCommand("\$('.syncable-checkbox').change(syncStoreTabs);\n");
-                $this->addOnloadCommand("markUnSynced();\n");
+                $this->addOnloadCommand("\$('#item-editor-form').submit(baseItem.syncStoreTabs);\n");
+                $this->addOnloadCommand("\$('.syncable-input').change(baseItem.syncStoreTabs);\n");
+                $this->addOnloadCommand("\$('.syncable-checkbox').change(baseItem.syncStoreTabs);\n");
+                $this->addOnloadCommand("baseItem.markUnSynced();\n");
             }
         }
 

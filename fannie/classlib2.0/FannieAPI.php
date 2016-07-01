@@ -252,25 +252,20 @@ class FannieAPI
         return array();
     }
 
-    /**
-      Get a list of all available classes implementing a given
-      base class
-      @param $base_class [string] name of base class
-      @param $include_base [boolean] include base class name in the result set
-        [optional, default false]
-      @return [array] of [string] class names
-    */
-    static public function listModules($base_class, $include_base=false)
+    static private function searchDirectories($base_class)
     {
         $directories = array();
         $directories[] = dirname(__FILE__).'/../modules/plugins2.0/';
+        // leading backslash is ignored
+        if ($base_class[0] == '\\') {
+            $base_class = substr($base_class, 1);
+        }
 
         switch($base_class) {
-            case 'ItemModule':
+            case 'COREPOS\Fannie\API\item\ItemModule':
                 $directories[] = dirname(__FILE__).'/../item/modules/';
                 break;
-            case 'MemberModule':
-            case '\COREPOS\Fannie\API\member\MemberModule':
+            case 'COREPOS\Fannie\API\member\MemberModule':
                 $directories[] = dirname(__FILE__).'/../mem/modules/';
                 break;
             case 'FannieTask':
@@ -280,20 +275,20 @@ class FannieAPI
                 $directories[] = dirname(__FILE__).'/data/models/';
                 break;
             case 'BasicModelHook':
-            case '\COREPOS\Fannie\API\data\hooks\BasicModelHook':
+            case 'COREPOS\Fannie\API\data\hooks\BasicModelHook':
                 $directories[] = dirname(__FILE__).'/data/hooks/';
                 break;
             case 'FannieReportPage':
                 $directories[] = dirname(__FILE__).'/../reports/';
                 $directories[] = dirname(__FILE__).'/../purchasing/reports/';
                 break;
-            case '\COREPOS\Fannie\API\FannieReportTool':
+            case 'COREPOS\Fannie\API\FannieReportTool':
                 $directories[] = dirname(__FILE__).'/../reports/';
                 break;
-            case '\COREPOS\Fannie\API\item\FannieSignage':
+            case 'COREPOS\Fannie\API\item\FannieSignage':
                 $directories[] = dirname(__FILE__) . '/item/signage/';
                 break;
-            case '\COREPOS\Fannie\API\monitor\Monitor':
+            case 'COREPOS\Fannie\API\monitor\Monitor':
                 $directories[] = dirname(__FILE__) . '/monitor/';
                 break;
             case 'FanniePage':
@@ -311,6 +306,21 @@ class FannieAPI
                 */
                 break;
         }
+
+        return $directories;
+    }
+
+    /**
+      Get a list of all available classes implementing a given
+      base class
+      @param $base_class [string] name of base class
+      @param $include_base [boolean] include base class name in the result set
+        [optional, default false]
+      @return [array] of [string] class names
+    */
+    static public function listModules($base_class, $include_base=false, $debug=false)
+    {
+        $directories = self::searchDirectories($base_class);
 
         // recursive search
         $search = function($path, $depth) use (&$search) {
@@ -336,10 +346,11 @@ class FannieAPI
             array()
         );
 
-        $ret = array();
-        if (count($files) > 1607) {
-            var_dump($files);
+        if ($debug) {
+            return $files;
         }
+
+        $ret = array();
         foreach($files as $file) {
             $class = substr(basename($file),0,strlen(basename($file))-4);
             // matched base class
@@ -379,6 +390,8 @@ class FannieAPI
             if (class_exists($class, false) && is_subclass_of($class, $base_class)) {
                 $ret[] = $class;
             } elseif (class_exists($namespaced_class, false) && is_subclass_of($namespaced_class, $base_class)) {
+                $ret[] = $namespaced_class;
+            } elseif (class_exists($namespaced_class, false) && $namespaced_class == $base_class && $include_base) {
                 $ret[] = $namespaced_class;
             }
         }

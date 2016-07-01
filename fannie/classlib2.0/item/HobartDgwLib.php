@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\item {
+namespace COREPOS\Fannie\API\item;
 
 class HobartDgwLib 
 {
@@ -405,11 +405,5 @@ class HobartDgwLib
 
         return $upc;
     }
-}
-
-}
-
-namespace {
-    class HobartDgwLib extends \COREPOS\Fannie\API\item\HobartDgwLib {}
 }
 

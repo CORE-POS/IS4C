@@ -21,7 +21,13 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Authenticate;
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\lib\UdpComm;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -31,7 +37,7 @@ class mgrlogin extends NoInputCorePage
     function preprocess(){
         if (FormLib::get('input') !== '') {
             $arr = $this->mgrauthenticate(FormLib::get('input'));
-            echo JsonLib::array_to_json($arr);
+            echo json_encode($arr);
             return False;
         } else {
             // beep on initial page load

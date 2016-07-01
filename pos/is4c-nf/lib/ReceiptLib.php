@@ -21,13 +21,23 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\Bitmap;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\PrintHandlers\PrintHandler;
+use \CoreLocal;
+
 /**
   @class ReceiptLib
   Receipt functions
 */
-class ReceiptLib extends LibraryClass {
-
+class ReceiptLib 
+{
     static private $PRINT_OBJ;
+
+    static private $EMAIL_PH = 'COREPOS\\pos\\lib\\PrintHandlers\EmailPrintHandler';
+    static private $HTML_PH  = 'COREPOS\\pos\\lib\\PrintHandlers\HtmlEmailPrintHandler';
 
 // --------------------------------------------------------------
 static public function build_time($timestamp) {
@@ -122,25 +132,6 @@ static public function printToServer($printer_server, $text)
     }
 }
 // --------------------------------------------------------------
-static public function center_check($text) {
-
-//    return str_repeat(" ", 22).center($text, 60);    // apbw 03/24/05 Wedge printer swap patch
-    return self::center($text, 60);                // apbw 03/24/05 Wedge printer swap patch
-}
-
-// --------------------------------------------------------------
-// concatenated by tt/apbw 3/16/05 old wedge printer Franking Patch II
-
-static public function endorse($text) {
-
-    self::writeLine(chr(27).chr(64).chr(27).chr(99).chr(48).chr(4)      
-    // .chr(27).chr(33).chr(10)
-    .$text
-    .chr(27).chr(99).chr(48).chr(1)
-    .chr(12)
-    .chr(27).chr(33).chr(5));
-}
-// -------------------------------------------------------------
 
 static public function center($text, $linewidth) {
     $blank = str_repeat(" ", 59);
@@ -151,89 +142,6 @@ static public function center($text, $linewidth) {
 }
 
 // -------------------------------------------------------------
-static public function drawerKick() {
-    // do not open drawer on non-local requests
-    // this may not work on all web servers or 
-    // network configurations
-    /**
-      30Apr14 - Does not work correctly
-      Needs more investigation. IPv6 maybe?
-    if (isset($_SERVER) && isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] != '127.0.0.1') {
-        return;
-    }
-    */
-    $pin = self::currentDrawer();
-    if ($pin == 1)
-        self::writeLine(chr(27).chr(112).chr(0).chr(48)."0");
-    elseif ($pin == 2)
-        self::writeLine(chr(27).chr(112).chr(1).chr(48)."0");
-    //self::writeLine(chr(27).chr(112).chr(48).chr(55).chr(121));
-}
-
-/**
-  Which drawer is currently in use
-  @return
-    1 - Use the first drawer
-    2 - Use the second drawer
-    0 - Current cashier has no drawer
-
-  This always returns 1 when dual drawer mode
-  is enabled. Assignments in the table aren't
-  relevant.
-*/
-static public function currentDrawer()
-{
-    if (CoreLocal::get('dualDrawerMode') !== 1) return 1;
-    $dbc = Database::pDataConnect();
-    $chkQ = 'SELECT drawer_no FROM drawerowner WHERE emp_no='.CoreLocal::get('CashierNo');
-    $chkR = $dbc->query($chkQ);
-    if ($dbc->num_rows($chkR) == 0) return 0;
-    else {
-        $chkW = $dbc->fetchRow($chkR);
-        return $chkW['drawer_no'];
-    }
-}
-
-/**
-  Assign drawer to cashier
-  @param $emp the employee number
-  @param $num the drawer number
-  @return success True/False
-*/
-static public function assignDrawer($emp,$num){
-    $dbc = Database::pDataConnect();
-    $upQ = sprintf('UPDATE drawerowner SET emp_no=%d WHERE drawer_no=%d',$emp,$num);
-    $upR = $dbc->query($upQ);
-    return ($upR !== False) ? True : False;
-}
-
-/**
-  Unassign drawer
-  @param $num the drawer number
-  @return success True/False
-*/
-static public function freeDrawer($num){
-    $dbc = Database::pDataConnect();
-    $upQ = sprintf('UPDATE drawerowner SET emp_no=NULL WHERE drawer_no=%d',$num);
-    $upR = $dbc->query($upQ);
-    return ($upR !== False) ? True : False;
-}
-
-/**
-  Get list of available drawers
-  @return array of drawer numbers
-*/
-static public function availableDrawers()
-{
-    $dbc = Database::pDataConnect();
-    $query = 'SELECT drawer_no FROM drawerowner WHERE emp_no IS NULL ORDER BY drawer_no';
-    $res = $dbc->query($query);
-    $ret = array();
-    while ($row = $dbc->fetch_row($res)) {
-        $ret[] = $row['drawer_no'];
-    }
-    return $ret;
-}
 
 // -------------------------------------------------------------
 static public function printReceiptHeader($dateTimeStamp, $ref) 
@@ -264,8 +172,8 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
             // on every receipt
             $img_file = $graphics_path.'/'.$headerLine;
             if (isset($img_cache[basename($img_file)]) && !empty($img_cache[basename($img_file)]) 
-                && get_class(self::$PRINT_OBJ)!='EmailPrintHandler'
-                && get_class(self::$PRINT_OBJ)!='HtmlEmailPrintHandler'
+                && get_class(self::$PRINT_OBJ)!=self::$EMAIL_PH
+                && get_class(self::$PRINT_OBJ)!=self::$HTML_PH
                 ){
                 $receipt .= $img_cache[basename($img_file)]."\n";
             }
@@ -301,16 +209,12 @@ static public function printReceiptHeader($dateTimeStamp, $ref)
             
     return $receipt;
 }
-// -------------------------------------------------------------
-static public function promoMsg() {
-
-}
 
 // Charge Footer split into two functions by apbw 2/1/05
 //#'C - is this never called?
 static public function printChargeFooterCust($dateTimeStamp, $ref, $program="charge") 
 {
-    $chgName = self::getChgName();            // added by apbw 2/14/05 SCR
+    $chgName = \COREPOS\pos\lib\MemberLib::getChgName();            // added by apbw 2/14/05 SCR
 
     $date = self::build_time($dateTimeStamp);
 
@@ -360,7 +264,7 @@ static public function printChargeFooterCust($dateTimeStamp, $ref, $program="cha
 */
 static public function printChargeFooterStore($dateTimeStamp, $ref, $program="charge") 
 {
-    $chgName = self::getChgName();            // added by apbw 2/14/05 SCR
+    $chgName = \COREPOS\pos\lib\MemberLib::getChgName();            // added by apbw 2/14/05 SCR
     
     $date = self::build_time($dateTimeStamp);
 
@@ -416,12 +320,6 @@ static public function printChargeFooterStore($dateTimeStamp, $ref, $program="ch
 
 static public function printCabCoupon($dateTimeStamp, $ref)
 {
-    /* no cut
-    $receipt = "\n\n\n\n\n\n\n"
-           .chr(27).chr(105)
-           .chr(27).chr(33).chr(5)
-           ."\n";
-     */
     $receipt = "\n";
 
     $receipt .= self::biggerFont(self::centerBig("WHOLE FOODS COMMUNITY CO-OP"))."\n\n";
@@ -457,87 +355,6 @@ static public function printCabCoupon($dateTimeStamp, $ref)
     return $receipt;
 }
 
-// -------------  frank.php incorporated into printlib on 3/24/05 apbw (from here to eof) -------
-
-static public function frank($amount) 
-{
-    $date = strftime("%m/%d/%y %I:%M %p", time());
-    $ref = trim(CoreLocal::get("memberID"))." ".trim(CoreLocal::get("CashierNo"))." ".trim(CoreLocal::get("laneno"))." ".trim(CoreLocal::get("transno"));
-    $tender = "AMT: ".MiscLib::truncate2($amount)."  CHANGE: ".MiscLib::truncate2(CoreLocal::get("change"));
-    $output = self::center_check($ref)."\n"
-        .self::center_check($date)."\n"
-        .self::center_check(CoreLocal::get("ckEndorse1"))."\n"
-        .self::center_check(CoreLocal::get("ckEndorse2"))."\n"
-        .self::center_check(CoreLocal::get("ckEndorse3"))."\n"
-        .self::center_check(CoreLocal::get("ckEndorse4"))."\n"
-        .self::center_check($tender)."\n";
-
-
-
-    self::endorse($output);
-}
-
-// -----------------------------------------------------
-
-static public function frankgiftcert($amount) 
-{
-    $ref = trim(CoreLocal::get("CashierNo"))."-".trim(CoreLocal::get("laneno"))."-".trim(CoreLocal::get("transno"));
-    $time_now = strftime("%m/%d/%y", time());                // apbw 3/10/05 "%D" didn't work - Franking patch
-    $next_year_stamp = mktime(0,0,0,date("m"), date("d"), date("Y")+1);
-    $next_year = strftime("%m/%d/%y", $next_year_stamp);        // apbw 3/10/05 "%D" didn't work - Franking patch
-    // lines 200-207 edited 03/24/05 apbw Wedge Printer Swap Patch
-    $output = "";
-    $output .= str_repeat("\n", 6);
-    $output .= "ref: " .$ref. "\n";
-    $output .= str_repeat(" ", 5).$time_now;
-    $output .= str_repeat(" ", 12).$next_year;
-    $output .= str_repeat("\n", 3);
-    $output .= str_repeat(" ", 75);
-    $output .= "$".MiscLib::truncate2($amount);
-    self::endorse($output); 
-
-}
-
-// -----------------------------------------------------
-
-static public function frankstock($amount) 
-{
-    $time_now = strftime("%m/%d/%y", time());        // apbw 3/10/05 "%D" didn't work - Franking patch
-    /* pointless
-    if (CoreLocal::get("franking") == 0) {
-        CoreLocal::set("franking",1);
-    }
-     */
-    $ref = trim(CoreLocal::get("CashierNo"))."-".trim(CoreLocal::get("laneno"))."-".trim(CoreLocal::get("transno"));
-    $output  = "";
-    $output .= str_repeat("\n", 40);    // 03/24/05 apbw Wedge Printer Swap Patch
-    if (CoreLocal::get("equityAmt")){
-        $output = "Equity Payment ref: ".$ref."   ".$time_now; // WFC 
-        CoreLocal::set("equityAmt","");
-        CoreLocal::set("LastEquityReference",$ref);
-    }
-    else {
-        $output .= "Stock Payment $".$amount." ref: ".$ref."   ".$time_now; // apbw 3/24/05 Wedge Printer Swap Patch
-    }
-
-    self::endorse($output);
-}
-//-------------------------------------------------------
-
-
-static public function frankclassreg() 
-{
-    $ref = trim(CoreLocal::get("CashierNo"))."-".trim(CoreLocal::get("laneno"))."-".trim(CoreLocal::get("transno"));
-    $time_now = strftime("%m/%d/%y", time());        // apbw 3/10/05 "%D" didn't work - Franking patch
-    $output  = "";        
-    $output .= str_repeat("\n", 11);        // apbw 3/24/05 Wedge Printer Swap Patch
-    $output .= str_repeat(" ", 5);        // apbw 3/24/05 Wedge Printer Swap Patch
-    $output .= "Validated: ".$time_now."  ref: ".$ref;     // apbw 3/24/05 Wedge Printer Swap Patch
-
-    self::endorse($output);    
-
-}
-
 /***** jqh 09/29/05 functions added for new receipt *****/
 static public function biggerFont($str) {
     $receipt=chr(29).chr(33).chr(17);
@@ -558,15 +375,11 @@ static public function centerBig($text) {
 /***** CvR 06/28/06 calculate current balance for receipt ****/
 static public function chargeBalance($receipt, $program="charge", $trans_num='')
 {
-    PrehLib::chargeOK();
+    \COREPOS\pos\lib\MemberLib::chargeOk();
 
     $labels = array();
-    $labels['charge'] = array("Current IOU Balance:"
-            , 1
-    );
-    $labels['debit'] = array("Debit available:"
-            , -1
-    );
+    $labels['charge'] = array("Current IOU Balance:" , 1);
+    $labels['debit'] = array("Debit available:", -1);
 
     $dbc = Database::tDataConnect();
     list($emp, $reg, $trans) = self::parseRef($trans_num);
@@ -601,37 +414,6 @@ static public function chargeBalance($receipt, $program="charge", $trans_num='')
     return $receipt;
 }
 
-static public function getChgName() {
-    /*      
-        the name that appears beneath the signature 
-        line on the customer copy is pulled from the session. 
-        Pulling the name here from custdata w/o respecting
-        personNum can cause this name to differ from the 
-        signature line, so I'm using the session value here too. I'm 
-        leaving the query in place as a check that memberID
-        is valid; shouldn't slow anything down noticably.
-
-        I also changed the memberID strlen qualifier because the 
-        != 4 or == 4 decision was causing inconsistent behavior 
-        with older memberships that have memberIDs shorter than 
-        4 digits.
-
-        andy
-    */
-    $query = "select LastName, FirstName from custdata where CardNo = '" .CoreLocal::get("memberID") ."'";
-    $connection = Database::pDataConnect();
-    $result = $connection->query($query);
-    $num_rows = $connection->num_rows($result);
-
-    if ($num_rows > 0) {
-        $LastInit = substr(CoreLocal::get("lname"), 0, 1).".";
-        return trim(CoreLocal::get("fname")) ." ". $LastInit;
-    }
-    else{
-        return CoreLocal::get('memMsg');
-    }
-}
-
 static public function normalFont() {
     return chr(27).chr(33).chr(5);
 }
@@ -641,10 +423,7 @@ static public function boldFont() {
 static private function initDriver()
 {
     if (!is_object(self::$PRINT_OBJ)) {
-        $print_class = CoreLocal::get('ReceiptDriver');
-        if ($print_class === '' || !class_exists($print_class))
-            $print_class = 'ESCPOSPrintHandler';
-        self::$PRINT_OBJ = new $print_class();
+        self::$PRINT_OBJ = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
     }
 }
 static public function bold()
@@ -697,25 +476,45 @@ static public function graphedLocalTTL()
 static private function getFetch()
 {
     $FETCH_MOD = CoreLocal::get("RBFetchData");
-    return $FETCH_MOD == '' ? 'DefaultReceiptDataFetch' : $FETCH_MOD;
+    if ($FETCH_MOD == 'DefaultReceiptDataFetch') {
+        $FETCH_MOD = 'COREPOS\\pos\\lib\\ReceiptBuilding\\DataFetch\\' . $FETCH_MOD;
+    }
+    return $FETCH_MOD == '' ? 'COREPOS\\pos\\lib\\ReceiptBuilding\\DataFetch\\DefaultReceiptDataFetch' : $FETCH_MOD;
 }
 
 static private function getFilter()
 {
     $mod = CoreLocal::get("RBFilter");
-    return $mod == '' ? 'DefaultReceiptFilter' : $mod;
+    if ($mod == 'DefaultReceiptFilter' || $mod == 'InOrderReceiptFilter') {
+        $mod = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Filter\\' . $mod;
+    }
+    return $mod == '' ? 'COREPOS\\pos\\lib\\ReceiptBuilding\\Filter\\DefaultReceiptFilter' : $mod;
 }
+
+static private $sorts = array(
+    'DefaultReceiptSort',
+    'DiscountFirstReceiptSort',
+    'DoubleSubtotalReceiptSort',
+    'GroupSavingsSort',
+    'InOrderReceiptSort',
+);
 
 static private function getSort()
 {
     $mod = CoreLocal::get("RBSort");
-    return $mod == '' ? 'DefaultReceiptSort' : $mod;
+    if ($mod != '' && in_array($mod, self::$sorts)) {
+        $mod = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Sort\\' . $mod;
+    }
+    return $mod == '' ? 'COREPOS\\pos\\lib\\ReceiptBuilding\\Sort\\DefaultReceiptSort' : $mod;
 }
 
 static private function getTag()
 {
     $mod = CoreLocal::get("RBTag");
-    return $mod == '' ? 'DefaultReceiptTag' : $mod;
+    if ($mod == 'DefaultReceiptTag') {
+        $mod = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Tag\\' . $mod;
+    }
+    return $mod == '' ? 'COREPOS\\pos\\lib\\ReceiptBuilding\\Tag\\DefaultReceiptTag' : $mod;
 }
 
 static public function receiptFromBuilders($reprint=False,$trans_num='')
@@ -727,7 +526,8 @@ static public function receiptFromBuilders($reprint=False,$trans_num='')
     $FETCH_MOD = self::getFetch();
     $mod = new $FETCH_MOD();
     $data = array();
-    $data = $mod->fetch($empNo,$laneNo,$transNo);
+    $dbc = Database::tDataConnect();
+    $data = $mod->fetch($dbc,$empNo,$laneNo,$transNo);
 
     // load module configuration
     $FILTER_MOD = self::getFilter();
@@ -735,7 +535,7 @@ static public function receiptFromBuilders($reprint=False,$trans_num='')
     $TAG_MOD = self::getTag();
 
     $fil = new $FILTER_MOD();
-    $recordset = $fil->filter($data);
+    $recordset = $fil->filter($dbc, $data);
 
     $sort = new $SORT_MOD();
     $recordset = $sort->sort($recordset);
@@ -745,7 +545,7 @@ static public function receiptFromBuilders($reprint=False,$trans_num='')
 
     $ret = "";
     foreach ($recordset as $record) {
-        $class_name = $record['tag'].'ReceiptFormat';
+        $class_name = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Format\\' . $record['tag'] . 'ReceiptFormat';
         if (!class_exists($class_name)) continue;
         $obj = new $class_name();
         $obj->setPrintHandler(self::$PRINT_OBJ);
@@ -789,7 +589,7 @@ static public function receiptDetail($reprint=false, $trans_num='')
         $num_rows = $dbc->num_rows($result);
         // loop through the results to generate the items listing.
         for ($i = 0; $i < $num_rows; $i++) {
-            $row = $dbc->fetch_array($result);
+            $row = $dbc->fetchRow($result);
             $detail .= $row[0]."\n";
         }
     } else { 
@@ -841,7 +641,7 @@ static public function receiptDetail($reprint=false, $trans_num='')
                 1 as sequence,null as dept_name,3 as ordered,'' as upc
                 from lttsummary";
                 $resultExempt = $dbc->query($queryExempt);
-                $rowExempt = $dbc->fetch_array($resultExempt);
+                $rowExempt = $dbc->fetchRow($resultExempt);
                 $detail .= $rowExempt[0]."\n";
             } else {
                 if (CoreLocal::get("promoMsg") == 1 && $row[4] == 1 ){ 
@@ -964,7 +764,7 @@ static private function setupReprint($where)
     $queryID = "select LastName,FirstName,Type,blueLine from custdata 
         where CardNo = '".CoreLocal::get("memberID")."' and personNum=1";
     $result = $dbc->query($queryID);
-    $row = $dbc->fetch_array($result);
+    $row = $dbc->fetchRow($result);
 
     // set session variables from member info
     CoreLocal::set("lname",$row["LastName"]);
@@ -986,11 +786,29 @@ static private function setupReprint($where)
     return $dateTimeStamp;
 }
 
+static private $msgMods = array(
+    'BarcodeTransIdentifierMessage',
+    'CCReceiptMessage',
+    'DeclineReceiptMessage',
+    'EbtReceiptMessage',
+    'EquitySoldReceiptMessage',
+    'GCBalanceReceiptMessage',
+    'GCReceiptMessage',
+    'GenericSigSlipMessage',
+    'ReceiptMessage',
+    'StoreCreditIssuedReceiptMessage',
+);
+
 static private function getTypeMap()
 {
     $type_map = array();
     foreach(self::messageMods() as $class){
-        if (!class_exists($class)) continue;
+        if (in_array($class, self::$msgMods)) {
+            $class = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Messages\\' . $class;
+        }
+        if (!class_exists($class)) {
+            continue;
+        }
         $obj = new $class();
         if ($obj->standalone_receipt_type != '')
             $type_map[$obj->standalone_receipt_type] = $obj;
@@ -1002,8 +820,10 @@ static private function getTypeMap()
 static private function memberFooter($receipt, $ref)
 {
     $mod = CoreLocal::get('ReceiptThankYou');
-    if ($mod === '' || !class_exists($mod)) {
-        $mod = 'DefaultReceiptThanks';
+    if ($mod != '' && class_exists('COREPOS\\pos\\lib\\ReceiptBuilding\\ThankYou\\' . $mod)) {
+        $mod = 'COREPOS\\pos\\lib\\ReceiptBuilding\\ThankYou\\' . $mod;
+    } elseif ($mod === '' || !class_exists($mod)) {
+        $mod = 'COREPOS\\pos\\lib\\ReceiptBuilding\\ThankYou\\DefaultReceiptThanks';
     }
     $obj = new $mod();
     $obj->setPrintHandler(self::$PRINT_OBJ);
@@ -1041,7 +861,12 @@ static private function messageModFooters($receipt, $where, $ref, $reprint)
     $modQ = "SELECT ";
     $select_mods = array();
     foreach(self::messageMods() as $class){
-        if (!class_exists($class)) continue;
+        if (in_array($class, self::$msgMods)) {
+            $class = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Messages\\' . $class;
+        }
+        if (!class_exists($class)) {
+            continue;
+        }
         $obj = new $class();
         $obj->setPrintHandler(self::$PRINT_OBJ);
         $modQ .= $obj->select_condition().' AS '.$dbc->identifierEscape($class).',';
@@ -1102,11 +927,7 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
     }
     $chargeProgram = 'charge';
 
-    $print_class = CoreLocal::get('ReceiptDriver');
-    if ($print_class === '' || !class_exists($print_class)) {
-        $print_class = 'ESCPOSPrintHandler';
-    }
-    self::$PRINT_OBJ = new $print_class();
+    self::$PRINT_OBJ = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
     $receipt = "";
 
     $noreceipt = (CoreLocal::get("receiptToggle")==1 ? 0 : 1);
@@ -1138,8 +959,10 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
             $receipt['any'] .= self::$PRINT_OBJ->addRenderingSpacer('end of items');
 
             $savingsMode = CoreLocal::get('ReceiptSavingsMode');
-            if ($savingsMode === '' || !class_exists($savingsMode)) {
-                $savingsMode = 'DefaultReceiptSavings';
+            if ($savingsMode != '' && class_exists('COREPOS\\pos\\lib\\ReceiptBuilding\\Savings\\' . $savingsMode)) {
+                $savingsMode = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Savings\\' . $savingsMode;
+            } elseif ($savingsMode === '' || !class_exists($savingsMode)) {
+                $savingsMode = 'COREPOS\\pos\\lib\\ReceiptBuilding\\Savings\\DefaultReceiptSavings';
             }
             $savings = new $savingsMode();
             $savings->setPrintHandler(self::$PRINT_OBJ);
@@ -1245,7 +1068,7 @@ static private function simpleReceipt($receipt, $arg1, $where)
 
     // loop through the results to generate the items listing.
     for ($i = 0; $i < $num_rows; $i++) {
-        $row = $dbc->fetch_array($result);
+        $row = $dbc->fetchRow($result);
         $receipt .= $row[0]."\n";
     }
     /***** jqh end change *****/
@@ -1285,7 +1108,7 @@ static public function memReceiptMessages($card_no)
           WHERE card_no=' . ((int)$card_no) . '
           ORDER BY msg_text';
     // use newer CustomerNotifications table if present
-    if ($dbc->tableExists('CustomerNotifications')) {
+    if (CoreLocal::get('NoCompat') == 1 || $dbc->tableExists('CustomerNotifications')) {
         $memQ = '
             SELECT message AS msg_text,
                 modifierModule AS modifier_module
@@ -1299,6 +1122,9 @@ static public function memReceiptMessages($card_no)
     while ($row = $dbc->fetch_row($memR)) {
         // EL This bit new for messages from plugins.
         $class_name = $row['modifier_module'];
+        if (!empty($class_name) && class_exists('COREPOS\\pos\\lib\\ReceiptBuilding\\CustMessages\\' . $class_name)) {
+            $class_name = 'COREPOS\\pos\\lib\\ReceiptBuilding\\CustMessages\\' . $class_name;
+        }
         if (!empty($class_name) && class_exists($class_name)) {
             $obj = new $class_name();
             $obj->setPrintHandler(self::$PRINT_OBJ);
@@ -1319,17 +1145,6 @@ static public function memReceiptMessages($card_no)
     }
 
     return $ret;
-}
-
-static public function shutdownFunction()
-{
-    $error = error_get_last(); 
-    if ($error !== null && $error['type'] == 1) {
-        // fatal error occurred
-        ob_end_clean();
-
-        echo '{ "error" : "Printer is not responding" }';
-    }
 }
 
 /**
@@ -1358,7 +1173,7 @@ static public function mostRecentReceipt()
     if ($dbc->num_rows($result) == 0) {
         return false;
     } else {
-        $row = $dbc->fetch_array($result);
+        $row = $dbc->fetchRow($result);
         return $row['emp_no'] . '-' . $row['register_no'] . '-' . $row['trans_no'];
     }
 }
@@ -1366,11 +1181,7 @@ static public function mostRecentReceipt()
 static public function code39($barcode)
 {
     if (!is_object(self::$PRINT_OBJ)) {
-        $print_class = CoreLocal::get('ReceiptDriver');
-        if ($print_class === '' || !class_exists($print_class)) {
-            $print_class = 'ESCPOSPrintHandler';
-        }
-        self::$PRINT_OBJ = new $print_class();
+        self::$PRINT_OBJ = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
     }
 
     return self::$PRINT_OBJ->BarcodeCODE39($barcode);
@@ -1379,9 +1190,9 @@ static public function code39($barcode)
 static public function emailReceiptMod()
 {
     if (class_exists('PHPMailer') && CoreLocal::get('emailReceiptHtml') != '' && class_exists(CoreLocal::get('emailReceiptHtml'))) {
-        return 'HtmlEmailPrintHandler';
+        return self::$HTML_PH;
     } else {
-        return 'EmailPrintHandler';
+        return self::$EMAIL_PH;
     }
 }
 

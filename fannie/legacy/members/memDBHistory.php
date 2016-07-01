@@ -29,7 +29,7 @@ else if (isset($_GET['edit'])){
     echo "<th>Blueline</th><th>Shown</th></tr>";
 
     $personnum=0;
-    while ($fetchW = $sql->fetch_array($fetchR)){
+    while ($fetchW = $sql->fetchRow($fetchR)){
         $cardno = $fetchW[0];
         $personnum = $fetchW[1];
         echo "<tr>";
@@ -166,7 +166,7 @@ else {
     $ops = array('Original','Edit','<b>Current</b>');
     $colors = array('#ffffcc','#ffffff');
     $c = 1;
-    while ($fetchW = $sql->fetch_array($fetchR)){
+    while ($fetchW = $sql->fetchRow($fetchR)){
         if ($fetchW[4] == 1)
             $c = ($c+1) % 2;
         echo "<tr>";

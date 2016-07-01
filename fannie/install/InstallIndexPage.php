@@ -173,7 +173,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 }
             }
             if ($missing) {
-                echo '<div class="well">Install dependencies by running';
+                echo '<div class="well">Install dependencies by running <a href="https://getcomposer.org/">composer</a>';
                 echo "<pre>";
                 echo '$ cd "' . substr($FANNIE_ROOT, 0, strlen($FANNIE_ROOT)-7) . "\"\n";
                 echo '$ /path/to/composer.phar update';
@@ -186,7 +186,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
     {
         return array_reduce(
             array_filter($arr, function($i) { return $i['error'] != 0; }),
-            function ($carry, $item) { return $carry . $item['details'] . '<br />'; }
+            function ($carry, $item) { return $carry . $item['error_msg'] . '<br />'; }
         );
     }
 
@@ -526,7 +526,16 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         <?php
         echo installTextField('FANNIE_HOME_PAGE', $FANNIE_HOME_PAGE, 'item/ItemEditorPage.php');
         ?>
-
+        <br />Host name of this server
+        <br />Used primarily to include links in email notifications. This can't always be autodetected
+        in some environments and configurations.
+        <?php
+        echo installTextField('FANNIE_HTTP_HOST', $FANNIE_HTTP_HOST, filter_input(INPUT_SERVER, 'HTTP_HOST'));
+        ?>
+        <br />Adminsitrator email address
+        <?php
+        echo installTextField('FANNIE_ADMIN_EMAIL', $FANNIE_ADMIN_EMAIL);
+        ?>
         <hr />
         <h4 class="install">Locale</h4>
         Set the Country and Language where Fannie will run.
@@ -660,6 +669,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'ProdPriceHistoryModel',
         'PurchaseOrderModel',
         'PurchaseOrderItemsModel',
+        'PurchaseOrderNotesModel',
         'PurchaseOrderSummaryModel',
         'ReasoncodesModel',
         'ScaleItemsModel',

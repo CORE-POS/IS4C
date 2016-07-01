@@ -26,7 +26,7 @@ include_once(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 
 $receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
 $receiptNum = isset($_REQUEST['ref']) ? $_REQUEST['ref'] : '';
-header('Location: AjaxEnd.php?receiptType=' . $receiptType . '&ref=' . $receiptNum);
+header('Location: ../ajax/AjaxEnd.php?receiptType=' . $receiptType . '&ref=' . $receiptNum);
 
 /**
   Use requested receipt type to determine whether transaction
@@ -60,8 +60,6 @@ $output = $noSync;
 ob_start();
 
 if (strlen($receiptType) > 0) {
-
-    register_shutdown_function(array('ReceiptLib', 'shutdownFunction'));
 
     $receiptContent = array();
 

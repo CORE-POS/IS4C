@@ -109,7 +109,7 @@ class OverShortCashierPage extends FanniePage {
             $totals[$totalsW[0]] = $totalsW[2];
             $names[$totalsW[0]] = $totalsW[1];
             $code = $totalsW[0];
-            if ($code !== 'CA' && $code !== 'CK' && $code !== 'TK' && $code !== 'WT') {
+            if ($code !== 'CA' && $code !== 'CK' && $code !== 'WT') {
                 $counts[$code] = $totals[$code];
             } else {
                 $counts[$totalsW[0]] = 0.00;

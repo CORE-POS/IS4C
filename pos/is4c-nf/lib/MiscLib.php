@@ -20,12 +20,16 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\DriverWrappers\ScaleDriverWrapper;
+use \CoreLocal;
  
 /**
   @clss MiscLib
   Generic functions
 */
-class MiscLib extends LibraryClass 
+class MiscLib 
 {
 
 /**
@@ -110,13 +114,13 @@ static public function pingport($host, $dbms)
     if (strstr($host,":")) {
         list($host,$port) = explode(":",$host);
     }
-    $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-    socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
-    socket_set_block($sock);
-    $test = @socket_connect($sock,$host,$port);
-    socket_close($sock);
-
-    return ($test ? 1 : 0);
+    $sock = @stream_socket_client('tcp://' . $host . ':' . $port, $errno, $error, 1);
+    if ($sock) {
+        fclose($sock);
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 /**
@@ -145,13 +149,7 @@ static public function win32()
 */
 static public function scaleObject()
 {
-    $scaleDriver = CoreLocal::get("scaleDriver");
-    $sdh = 0;
-    if ($scaleDriver != ""){
-        $sdh = new $scaleDriver();
-    }
-
-    return $sdh;
+    return ScaleDriverWrapper::factory(CoreLocal::get('scaleDriver'));
 }
 
 /**
@@ -337,6 +335,11 @@ public static function centStrToDouble($str)
     $ret *= $mult;
 
     return $ret;
+}
+
+public static function jqueryFile()
+{
+    return self::win32() ? 'jquery-1.8.3.min.js' : 'jquery.js';
 }
 
 } // end class MiscLib

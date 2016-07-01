@@ -3,8 +3,7 @@ language: php
 # keep verisions minimal to limit total
 # builds on free service. politeness.
 php:
-    - "5.6"
-    - "5.3"
+    - "5.5"
 
 services:
     - mysql
@@ -28,7 +27,6 @@ env:
 install:
     - sh tests/fannie/travis-init.sh
     - sh tests/pos/travis-init.sh
-    - rm composer.json
     - composer init -n
     - composer require codeclimate/php-test-reporter johnkary/phpunit-speedtrap
     - mkdir -p build/logs

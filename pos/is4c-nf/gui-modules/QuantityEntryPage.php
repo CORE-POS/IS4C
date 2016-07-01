@@ -21,7 +21,10 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\BasicCorePage;
+use COREPOS\pos\lib\DisplayLib;
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\UdpComm;
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -105,7 +108,6 @@ class QuantityEntryPage extends BasicCorePage
             */
             CoreLocal::set("qttyvalid",0);
             CoreLocal::set("quantity",0);
-            CoreLocal::set("msgrepeat",0);
             $this->change_page($this->page_url."gui-modules/pos2.php");
             return false;
         } elseif (is_numeric($qtty) && $qtty < 9999 && $qtty >= 0) {
@@ -206,8 +208,6 @@ class QuantityEntryPage extends BasicCorePage
         </div>
 
         <?php
-        CoreLocal::set("msgrepeat",2);
-        CoreLocal::set("item",CoreLocal::get("strEntered"));
         UdpComm::udpSend('errorBeep');
         echo "<div id=\"footer\">";
         echo DisplayLib::printfooter();

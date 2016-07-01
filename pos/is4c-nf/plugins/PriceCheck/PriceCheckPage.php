@@ -21,7 +21,11 @@
 
 *********************************************************************************/
 
-use \COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\Scanning\DiscountType;
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class PriceCheckPage extends NoInputCorePage 
@@ -100,7 +104,7 @@ class PriceCheckPage extends NoInputCorePage
     {
         $DTClasses = CoreLocal::get("DiscountTypeClasses");
         if ($discounttype < 64 && isset(DiscountType::$MAP[$discounttype])) {
-            $class = DiscountType::$MAP[$row['discounttype']];
+            $class = DiscountType::$MAP[$discounttype];
             $DiscountObject = new $class();
         } else if ($discounttype > 64 && isset($DTClasses[($discounttype-64)])) {
             $class = $DTClasses[($discounttype)-64];
@@ -144,6 +148,8 @@ class PriceCheckPage extends NoInputCorePage
             _("[scan] another item"),
             _("[clear] to cancel"),
         );
+        
+        return array($info, $inst);
     }
 
     private function upcText()
@@ -161,6 +167,8 @@ class PriceCheckPage extends NoInputCorePage
             _("[enter] to ring this item"),
             _("[clear] to cancel"),
         );
+        
+        return array($info, $inst);
     }
 
     function body_content()
@@ -173,11 +181,11 @@ class PriceCheckPage extends NoInputCorePage
         );
         if (!empty($this->upc)) {
             if (!$this->found) {
-                $this->noUpcText();
+                list($info, $inst) = $this->noUpcText();
                 $this->upc = "";
                 MiscLib::errorBeep();                
             } else {
-                $this->upcText();
+                list($info, $inst) = $this->upcText();
             }
         }
         ?>

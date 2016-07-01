@@ -50,12 +50,12 @@ include($FANNIE_ROOT.'src/Credentials/projects.wfc.php');
 $q = $sql->prepare("select projDesc, ITName, reqestDate, status, notes, link, priority from projects where projID = ?");
 $r = $sql->execute($q, array($projID));
 
-$row = $sql->fetch_array($r);
+$row = $sql->fetchRow($r);
 
 $emailQ = $sql->prepare("select email from project_parties where projID=? order by email");
 $emailR = $sql->execute($emailQ, array($projID));
 $emaillist = "";
-while ($emailW = $sql->fetch_array($emailR))
+while ($emailW = $sql->fetchRow($emailR))
     $emaillist .= $emailW[0].", ";
 $emaillist = substr($emaillist,0,strlen($emaillist)-2);
 
@@ -77,7 +77,7 @@ switch($row['status']){
      echo "<select name=assign>";
      $q2 = "select * from employees";
      $r2 = $sql->query($q2);
-     while ($row2 = $sql->fetch_array($r2)){
+     while ($row2 = $sql->fetchRow($r2)){
        echo "<option>{$row2[0]}</option>";
      }
      echo "</select>";
@@ -165,7 +165,7 @@ else {
 }
 echo "<hr />";
 for ($i = 0; $i < $num; $i++){
-  $row = $sql->fetch_array($notesR);
+  $row = $sql->fetchRow($notesR);
   echo "Posted by {$row['ITName']} on {$row['stamp']}";
   echo "<blockquote>{$row['notes']}</blockquote>";
   echo "<hr />";

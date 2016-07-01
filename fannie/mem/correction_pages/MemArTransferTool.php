@@ -26,163 +26,106 @@ if (!class_exists('FannieAPI')) {
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class MemArTransferTool extends FanniePage {
+class MemArTransferTool extends FannieRESTfulPage 
+{
 
     protected $title='Fannie - Member Management Module';
     protected $header='Transfer A/R';
 
     public $description = '[Transfer AR] moves an AR payment from one member to another.';
-    public $themed = true;
 
     protected $must_authenticate = true;
     protected $auth_classes =  array('editmembers');
 
     private $errors = '';
-    private $mode = 'init';
     private $depts = array();
 
-    private $CORRECTION_CASHIER = 1001;
-    private $CORRECTION_LANE = 30;
-    private $CORRECTION_DEPT = 800;
+    protected $dept;
+    protected $amount;
 
-    private $dept;
-    private $amount;
-    private $cn1;
-    private $cn2;
-    private $name1;
-    private $name2;
-
-    function preprocess(){
-        global $FANNIE_AR_DEPARTMENTS, $FANNIE_OP_DB;
-        global $FANNIE_EMP_NO, $FANNIE_REGISTER_NO;
-        global $FANNIE_CORRECTION_DEPT;
-        /**
-          Use fannie settings if properly configured
-        */
-        if (is_numeric($FANNIE_EMP_NO)) {
-            $this->CORRECTION_CASHIER = $FANNIE_EMP_NO;
-        }
-        if (is_numeric($FANNIE_REGISTER_NO)) {
-            $this->CORRECTION_LANE = $FANNIE_REGISTER_NO;
-        }
-        if (is_numeric($FANNIE_CORRECTION_DEPT)) {
-            $this->CORRECTION_DEPT = $FANNIE_CORRECTION_DEPT;
-        }
-
-        if (empty($FANNIE_AR_DEPARTMENTS)){
+    protected function getDepartments($ar_depts)
+    {
+        if (empty($ar_depts)){
             $this->errors .= '<div class="alert alert-danger">Error: no AR departments found</div>';
-            return True;
+            return array();
         }
 
-        $ret = preg_match_all("/[0-9]+/",$FANNIE_AR_DEPARTMENTS,$depts);
+        $ret = preg_match_all("/[0-9]+/",$ar_depts,$depts);
         if ($ret == 0){
             $this->errors .= '<div class="alert alert-danger">Error: can\'t read AR department definitions</div>';
-            return True;
+            return array();
         }
         $temp_depts = array_pop($depts);
 
-        $dlist = "(";
-        $dArgs = array();
-        foreach ($temp_depts as $d){
-            $dlist .= "?,"; 
-            $dArgs[] = $d;
-        }
-        $dlist = substr($dlist,0,strlen($dlist)-1).")";
-
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-        $q = $dbc->prepare("SELECT dept_no,dept_name FROM departments WHERE dept_no IN $dlist");
-        $r = $dbc->execute($q,$dArgs);
-        if ($dbc->num_rows($r) == 0){
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+        list($dlist, $dArgs) = $dbc->safeInClause($temp_depts);
+        $prep = $dbc->prepare("SELECT dept_no,dept_name FROM departments WHERE dept_no IN ($dlist)");
+        $res = $dbc->execute($prep,$dArgs);
+        if ($dbc->numRows($res) == 0){
             $this->errors .= '<div class="alert alert-danger">Error: department(s) don\'t exist.</div>';
-            return true;
+        }
+        $ret = array();
+        while ($row = $dbc->fetchRow($res)) {
+            $ret[$row[0]] = $row[1];
         }
 
-        $this->depts = array();
-        while($row = $dbc->fetch_row($r)){
-            $this->depts[$row[0]] = $row[1];
-        }
+        return $ret;
+    }
 
-        if (FormLib::get_form_value('submit1',False) !== False)
-            $this->mode = 'confirm';
-        elseif (FormLib::get_form_value('submit2',False) !== False)
-            $this->mode = 'finish';
+    public function preprocess()
+    {
+        $this->addRoute('post<dept><amount><memFrom><memTo>','post<dept><amount><memFrom><memTo><confirm>');
+
+        $ar_depts = $this->config->get('AR_DEPARTMENTS');
+        $this->depts = $this->getDepartments($ar_depts);
 
         // error check inputs
-        if ($this->mode != 'init'){
+        $this->dept = FormLib::get_form_value('dept');
+        $this->amount = FormLib::get_form_value('amount');
 
-            $this->dept = FormLib::get_form_value('dept');
-            $this->amount = FormLib::get_form_value('amount');
-            $this->cn1 = FormLib::get_form_value('memFrom');
-            $this->cn2 = FormLib::get_form_value('memTo');
+        if ($this->dept !== '' && !isset($this->depts[$this->dept])){
+            $this->errors .= "<div class=\"alert alert-danger\">Error: AR department doesn't exist</div>"
+                ."<br /><br />"
+                ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
+        }
+        if ($this->amount !== '' && !is_numeric($this->amount)){
+            $this->errors .= "<div class=\"alert alert-danger\">Error: amount given (".$this->amount.") isn't a number</div>"
+                ."<br /><br />"
+                ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
+        }
 
-            if (!isset($this->depts[$this->dept])){
-                $this->errors .= "<div class=\"alert alert-danger\">Error: AR department doesn't exist</div>"
-                    ."<br /><br />"
-                    ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
-                return True;
-            }
-            if (!is_numeric($this->amount)){
-                $this->errors .= "<div class=\"alert alert-danger\">Error: amount given (".$this->amount.") isn't a number</div>"
-                    ."<br /><br />"
-                    ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
-                return True;
-            }
-            if (!is_numeric($this->cn1)){
-                $this->errors .= "<div class=\"alert alert-danger\">Error: member given (".$this->cn1.") isn't a number</div>"
-                    ."<br /><br />"
-                    ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
-                return True;
-            }
-            if (!is_numeric($this->cn2)){
-                $this->errors .= "<div class=\"alert alert-danger\">Error: member given (".$this->cn2.") isn't a number</div>"
-                    ."<br /><br />"
-                    ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
-                return True;
-            }
+        return parent::preprocess();
+    }
 
-            $account = \COREPOS\Fannie\API\member\MemberREST::get($this->cn1);
+    protected function getName($num)
+    {
+        if (!is_numeric($num)) {
+            $this->errors .= "<div class=\"alert alert-danger\">Error: value given (".$num.") isn't a number</div>"
+                ."<br /><br />"
+                ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
+            return '';
+        } else {
+            $account = \COREPOS\Fannie\API\member\MemberREST::get($num);
             if ($account == false) {
-                $this->errors .= "<div class=\"alert alert-success\">Error: no such member: ".$this->cn1."</div>"
+                $this->errors .= "<div class=\"alert alert-success\">Error: no such member: ".$num."</div>"
                     ."<br /><br />"
                     ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
-                return True;
+                return '';
             }
             foreach ($account['customers'] as $c) {
                 if ($c['accountHolder']) {
-                    $this->name1 = $c['firstName'] . ' ' . $c['lastName'];
-                    break;
-                }
-            }
-
-            $account = \COREPOS\Fannie\API\member\MemberREST::get($this->cn2);
-            if ($account == false) {
-                $this->errors .= "<div class=\"alert alert-success\">Error: no such member: ".$this->cn2."</div>"
-                    ."<br /><br />"
-                    ."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
-                return True;
-            }
-            foreach ($account['customers'] as $c) {
-                if ($c['accountHolder']) {
-                    $this->name2 = $c['firstName'] . ' ' . $c['lastName'];
-                    break;
+                    return $c['firstName'] . ' ' . $c['lastName'];
                 }
             }
         }
 
-        return True;
+        return '';
     }
     
-    function body_content(){
-        if ($this->mode == 'init')
-            return $this->form_content();
-        elseif($this->mode == 'confirm')
-            return $this->confirm_content();
-        elseif($this->mode == 'finish')
-            return $this->finish_content();
-    }
-
-    function confirm_content(){
-
+    protected function post_dept_amount_memFrom_memTo_view()
+    {
+        $name1 = $this->getName($this->memFrom);
+        $name2 = $this->getName($this->memTo);
         if (!empty($this->errors)) return $this->errors;
 
         $ret = "<form action=\"MemArTransferTool.php\" method=\"post\">";
@@ -190,40 +133,41 @@ class MemArTransferTool extends FanniePage {
         $ret .= "<div class=\"alert alert-info\">";
         $ret .= sprintf("\$%.2f %s will be moved from %d (%s) to %d (%s)",
             $this->amount,$this->depts[$this->dept],
-            $this->cn1,$this->name1,$this->cn2,$this->name2);
+            $this->memFrom,$name1,$this->memTo,$name2);
         $ret .= "</div><p>";
         $ret .= sprintf('<div class="form-group">
             <label>Comment</label>
             <input type="text" class="form-control" 
                 name="correction-comment" value="AR XFER %d TO %d" />
             </div>',
-            $this->cn1, $this->cn2);
+            $this->memFrom, $this->memTo);
         $ret .= "<input type=\"hidden\" name=\"dept\" value=\"{$this->dept}\" />";
         $ret .= "<input type=\"hidden\" name=\"amount\" value=\"{$this->amount}\" />";
-        $ret .= "<input type=\"hidden\" name=\"memFrom\" value=\"{$this->cn1}\" />";
-        $ret .= "<input type=\"hidden\" name=\"memTo\" value=\"{$this->cn2}\" />";
-        $ret .= "<button type=\"submit\" name=\"submit2\" value=\"Confirm\" 
+        $ret .= "<input type=\"hidden\" name=\"memFrom\" value=\"{$this->memFrom}\" />";
+        $ret .= "<input type=\"hidden\" name=\"memTo\" value=\"{$this->memTo}\" />";
+        $ret .= "<button type=\"submit\" name=\"confirm\" value=\"Confirm\" 
                     class=\"btn btn-default\">Confirm</button>";
-        $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-        $ret .= "<input type=\"submit\" name=\"submit2\" value=\"Confirm\" />";
         $ret .= "</form>";
         
         return $ret;
     }
 
-    function finish_content(){
-
+    protected function post_dept_amount_memFrom_memTo_confirm_view()
+    {
         if (!empty($this->errors)) return $this->errors;
 
         $ret = '';
+        $emp_no = $this->config->get('EMP_NO', 1001);
+        $reg_no = $this->config->get('REGISTER_NO', 30);
+        $xfer_dept = $this->config->get('CORRECTION_DEPT', 800);
 
-        $trans_no = DTrans::getTransNo($this->connection, $this->CORRECTION_CASHIER, $this->CORRECTION_LANE);
+        $trans_no = DTrans::getTransNo($this->connection, $emp_no, $reg_no);
         $params = array(
-            'card_no' => $this->cn1,
-            'register_no' => $this->CORRECTION_LANE,
-            'emp_no' => $this->CORRECTION_CASHIER,
+            'card_no' => $this->memFrom,
+            'register_no' => $reg_no,
+            'emp_no' => $emp_no,
         );
-        DTrans::addOpenRing($this->connection, $this->CORRECTION_DEPT, $this->amount, $trans_no, $params);
+        DTrans::addOpenRing($this->connection, $xfer_dept, $this->amount, $trans_no, $params);
         DTrans::addOpenRing($this->connection, $this->dept, -1*$this->amount, $trans_no, $params);
         
         $comment = FormLib::get('correction-comment');
@@ -232,44 +176,44 @@ class MemArTransferTool extends FanniePage {
                 'description' => $comment,
                 'trans_type' => 'C',
                 'trans_subtype' => 'CM',
-                'card_no' => $this->cn1,
-                'register_no' => $this->CORRECTION_LANE,
-                'emp_no' => $this->CORRECTION_CASHIER,
+                'card_no' => $this->memFrom,
+                'register_no' => $reg_no,
+                'emp_no' => $emp_no,
             );
             DTrans::addItem($this->connection, $trans_no, $params);
         }
 
-        $ret .= sprintf("Receipt #1: %s",$this->CORRECTION_CASHIER.'-'.$this->CORRECTION_LANE.'-'.$trans_no);
+        $ret .= sprintf("Receipt #1: %s",$emp_no.'-'.$reg_no.'-'.$trans_no);
 
-        $trans_no = DTrans::getTransNo($this->connection, $this->CORRECTION_CASHIER, $this->CORRECTION_LANE);
+        $trans_no = DTrans::getTransNo($this->connection, $emp_no, $reg_no);
         $params = array(
-            'card_no' => $this->cn2,
-            'register_no' => $this->CORRECTION_LANE,
-            'emp_no' => $this->CORRECTION_CASHIER,
+            'card_no' => $this->memTo,
+            'register_no' => $reg_no,
+            'emp_no' => $emp_no,
         );
         DTrans::addOpenRing($this->connection, $this->dept, $this->amount, $trans_no, $params);
-        DTrans::addOpenRing($this->connection, $this->CORRECTION_DEPT, -1*$this->amount, $trans_no, $params);
+        DTrans::addOpenRing($this->connection, $xfer_dept, -1*$this->amount, $trans_no, $params);
 
         if (!empty($comment)) {
             $params = array(
                 'description' => $comment,
                 'trans_type' => 'C',
                 'trans_subtype' => 'CM',
-                'card_no' => $this->cn2,
-                'register_no' => $this->CORRECTION_LANE,
-                'emp_no' => $this->CORRECTION_CASHIER,
+                'card_no' => $this->memTo,
+                'register_no' => $reg_no,
+                'emp_no' => $emp_no,
             );
             DTrans::addItem($this->connection, $trans_no, $params);
         }
 
         $ret .= "<br /><br />";
-        $ret .= sprintf("Receipt #2: %s",$this->CORRECTION_CASHIER.'-'.$this->CORRECTION_LANE.'-'.$trans_no);
+        $ret .= sprintf("Receipt #2: %s",$emp_no.'-'.$reg_no.'-'.$trans_no);
 
         return $ret;
     }
 
-    function form_content(){
-
+    protected function get_view()
+    {
         if (!empty($this->errors)) return $this->errors;
 
         ob_start();
@@ -280,8 +224,8 @@ class MemArTransferTool extends FanniePage {
             <label>Transfer</label>
             <div class="input-group">
                 <span class="input-group-addon">$</span>
-                <input type="text" name="amount" class="form-control"
-                    required />
+                <input type="number" min="-9999" max="9999" step="0.01" 
+                    name="amount" class="form-control" required />
             </div>
             <select name="dept" class="form-control">
             <?php
@@ -325,22 +269,18 @@ class MemArTransferTool extends FanniePage {
     public function unitTest($phpunit)
     {
         $this->errors = 'foo';
-        $this->mode = 'init';
-        $phpunit->assertEquals('foo', $this->body_content());
+        $phpunit->assertEquals('foo', $this->get_view());
         $this->errors = '';
         $this->depts = array(1 => 'Dept', 2 => 'Other Dept');
-        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $phpunit->assertNotEquals(0, strlen($this->get_view()));
         $this->errors = 'foo';
-        $this->mode = 'confirm';
-        $phpunit->assertEquals('foo', $this->body_content());
+        $phpunit->assertNotEquals(0, strlen($this->post_dept_amount_memFrom_memTo_view()));
         $this->errors = '';
         $this->amount = 1;
         $this->dept = 1;
-        $this->cn1 = 1;
-        $this->cn2 = 2;
-        $this->name1 = 'JoeyJoeJoe';
-        $this->name2 = 'JoeyJoeJoe';
-        $phpunit->assertNotEquals(0, strlen($this->body_content()));
+        $this->memFrom = 1;
+        $this->memTo = 1;
+        $phpunit->assertNotEquals(0, strlen($this->post_dept_amount_memFrom_memTo_view()));
     }
 }
 

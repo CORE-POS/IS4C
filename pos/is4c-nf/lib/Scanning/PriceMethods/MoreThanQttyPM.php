@@ -20,6 +20,14 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+namespace COREPOS\pos\lib\Scanning\PriceMethods;
+use COREPOS\pos\lib\Scanning\PriceMethod;
+use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
+use \CoreLocal;
+
 /** 
    @class MoreThanQttyPM
    
@@ -82,7 +90,7 @@ class MoreThanQttyPM extends PriceMethod {
         $trans_qty = 0;
         $undisc_ttl = 0;
         if ($num_rowst > 0){
-            $rowt = $dbt->fetch_array($resultt);
+            $rowt = $dbt->fetchRow($resultt);
             $trans_qty = floor($rowt['mmqtty']);
             $undisc_ttl = $rowt['unDiscountedTotal'];
         }

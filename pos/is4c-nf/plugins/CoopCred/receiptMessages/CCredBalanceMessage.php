@@ -21,6 +21,10 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+use COREPOS\pos\lib\ReceiptLib;
+use COREPOS\pos\lib\ReceiptBuilding\CustMessages\CustomerReceiptMessage;
+
 /**
   @class CCredBalanceMessage
   Return a message containing Available Balance
@@ -103,7 +107,7 @@ class CCredBalanceMessage extends CustomerReceiptMessage {
 
         /* For each Coop Cred Program the member is in.
          */
-        while ($row = $conn->fetch_array($ccR)) {
+        while ($row = $conn->fetchRow($ccR)) {
             $programOK = CoopCredLib::programOK($row['tenderType'], $conn);
             if ($programOK === True) {
                 $subs = CoopCredLib::getCCredSubtotals($row['tenderType'], $conn);

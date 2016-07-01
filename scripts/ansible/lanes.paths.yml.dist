@@ -1,0 +1,8 @@
+#
+# COPY ME TO lanes.paths.yml
+#
+
+# Path to repo on the lane(s) accessible
+# via SMB/CIFS/NFS/etc
+lanes:
+    - /path/to/lane/IS4C

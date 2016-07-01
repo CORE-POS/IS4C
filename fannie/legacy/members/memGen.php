@@ -48,7 +48,7 @@ $row = "";
 $query_drop = "";
 $result = prefetch_result($memID,$lName,$fName,$query_drop);
 if ($sql->num_rows($result) > 0){
-  $row = $sql->fetch_array($result);
+  $row = $sql->fetchRow($result);
   $memID = $row[0];
 }
 

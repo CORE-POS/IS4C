@@ -49,7 +49,7 @@ class VendorIndexPage extends FannieRESTfulPage
     {
         $this->addRoute(
             'get<id><autoAdd>',
-            'get<new><name>',
+            'post<new><name>',
             'get<info>',
             'post<info>',
             'post<delivery>',
@@ -68,7 +68,7 @@ class VendorIndexPage extends FannieRESTfulPage
         return 'VendorIndexPage.php?vid=' . $this->id;
     }
 
-    protected function get_new_name_handler()
+    protected function post_new_name_handler()
     {
         echo $this->newVendor($this->name);
 
@@ -422,10 +422,16 @@ class VendorIndexPage extends FannieRESTfulPage
                 <option value="0">No</option>';
         $origins = new OriginsModel($dbc);
         $origins->local(1);
-        foreach ($origins->find('shortName') as $origin) {
-            $ret .= sprintf('<option %s value="%d">%s</option>',
-                ($origin->originID() == $model->localOriginID() ? 'selected' : ''),
-                $origin->originID(), $origin->shortName());
+        $locals = $origins->find('shortName');
+        if (count($locals) == 0) {
+            $ret .= sprintf('<option value="1" %s>Yes</option>',
+                    ($model->localOriginID() == 1 ? 'selected' : ''));
+        } else {
+            foreach ($locals as $origin) {
+                $ret .= sprintf('<option %s value="%d">%s</option>',
+                    ($origin->originID() == $model->localOriginID() ? 'selected' : ''),
+                    $origin->originID(), $origin->shortName());
+            }
         }
         $ret .= '</select>
                 </div>
@@ -511,7 +517,12 @@ class VendorIndexPage extends FannieRESTfulPage
         </select>
         </p>
         <p id="contentarea">
-        <?php if ($vid) { echo $this->getVendorInfo($vid); } ?>
+        <?php 
+        if ($vid) { 
+            echo $this->getVendorInfo($vid); 
+            $this->addOnloadCommand("\$('.delivery').change(vendorEditor.saveDelivery);\n");
+        } 
+        ?>
         </p>
         <?php
 
@@ -590,7 +601,7 @@ class VendorIndexPage extends FannieRESTfulPage
 
         $this->name = 'TEST';
         ob_start();
-        $this->get_new_name_handler();
+        $this->post_new_name_handler();
         $this->get_info_handler();
         ob_end_clean();
     }

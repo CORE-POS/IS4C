@@ -21,8 +21,11 @@
 
 *********************************************************************************/
 
-if (!class_exists("LocalStorage")) {
-    include_once(realpath(dirname(__FILE__).'/LocalStorage.php'));
+namespace COREPOS\pos\lib\LocalStorage;
+use \CoreLocal;
+
+if (!class_exists("COREPOS\\pos\\lib\\LocalStorage\\LocalStorage")) {
+    include_once(__DIR__ . '/LocalStorage.php');
 }
 
 /**
@@ -39,19 +42,12 @@ class WrappedStorage extends LocalStorage
         return CoreLocal::get($key);
     }
 
-    public function set($key,$val,$immutable=false)
+    public function set($key,$val)
     {
-        return CoreLocal::set($key, $val, $immutable);
-    }
-
-    public function isImmutable($key)
-    {
-        return CoreLocal::isImmutable($key);
-    }
-
-    public function iteratorKeys()
-    {
-        return CoreLocal::iteratorKeys();
+        // WrappedStorage is used to load configuration
+        // values from ini.php. These should be treated
+        // as immutable
+        return CoreLocal::set($key, $val, true);
     }
 }
 

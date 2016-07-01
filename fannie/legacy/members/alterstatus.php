@@ -112,7 +112,7 @@ else if (validateUserQuiet('editmembers')){
 else if (validateUserQuiet('editmembers_csc') && isset($_GET['fixedaddress'])){
     $curQ = "select reasoncode from suspensions where cardno=$memNum";
     $curR = $sql->query($curQ);
-    $curCode = (int)(array_pop($sql->fetch_array($curR)));
+    $curCode = (int)(array_pop($sql->fetchRow($curR)));
 
     $newCode = $curCode & ~16;
     alterReason($memNum,$newCode);

@@ -1,5 +1,7 @@
 <?php
 
+use COREPOS\pos\lib\Database;
+
 /**
   Helper functions for dealing with transactions table
 */

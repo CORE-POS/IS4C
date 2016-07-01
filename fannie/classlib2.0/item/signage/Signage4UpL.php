@@ -35,10 +35,10 @@ class Signage4UpL extends \COREPOS\Fannie\API\item\FannieSignage
     protected $font = 'Arial';
     protected $alt_font = 'Arial';
 
-    protected $width = 136.52;
+    protected $width = 139;
     protected $height = 108;
     protected $top = 30;
-    protected $left = 15;
+    protected $left = 16;
 
     public function drawPDF()
     {

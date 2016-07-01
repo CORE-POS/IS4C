@@ -21,7 +21,12 @@
 
 *********************************************************************************/
 
+use COREPOS\pos\lib\gui\NoInputCorePage;
+use COREPOS\pos\lib\Authenticate;
+use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\FormLib;
+use COREPOS\pos\lib\Drawers;
+use COREPOS\pos\lib\UdpComm;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class nslogin extends NoInputCorePage 
@@ -55,7 +60,7 @@ class nslogin extends NoInputCorePage
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return False;
             } elseif (Authenticate::checkPassword($passwd)) {
-                ReceiptLib::drawerKick();
+                Drawers::kick();
                 if (CoreLocal::get('LoudLogins') == 1) {
                     UdpComm::udpSend('twoPairs');
                 }

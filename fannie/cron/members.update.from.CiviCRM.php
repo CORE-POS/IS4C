@@ -912,7 +912,7 @@ if ( $debug == 1)
     echo "$message\n";
 
 /* Assignment doesn't fail.
-   But it doesn't affect the behaviour of fetch_array
+   But it doesn't affect the behaviour of fetchRow
      If not assigned, is DEFAULT
 //$dbConn->fetchMode = ADODB_FETCH_NUM;
 $fm = $dbConn->fetchMode;
@@ -962,11 +962,11 @@ if (0) {
     // Quick test.
     echo "Civi Members Numbered\n";
     // PHP Fatal error:  Call to undefined method ADORecordSet_mysql::fetch_row() in /var/www/IS4C/fannie/cron/nightly.update.members.php on line 694
-    // PHP Fatal error:  Call to undefined method ADORecordSet_mysql::fetch_array() in /var/www/IS4C/fannie/cron/nightly.update.members.php on line 694
+    // PHP Fatal error:  Call to undefined method ADORecordSet_mysql::fetchRow() in /var/www/IS4C/fannie/cron/nightly.update.members.php on line 694
 //$res = $sql->query("SELECT month(datetime),year(datetime) FROM dtransactions");
 //$row = $sql->fetch_row($res);
     //mysqli: while ( $row = $civim->fetch_row() ) {}
-    while ( $row = $dbConn->fetch_array($civim) ) {
+    while ( $row = $dbConn->fetchRow($civim) ) {
         // The numeric keys come first. 0,2,4. Name keys 1, 3, 5.
         $flds = getNameKeys($row);
         //$flds = array_keys($row);

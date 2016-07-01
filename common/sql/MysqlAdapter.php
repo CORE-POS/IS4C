@@ -25,6 +25,16 @@ namespace COREPOS\common\sql;
 
 class MysqlAdapter implements DialectAdapter
 {
+    public function createNamedDB($name)
+    {
+        return 'CREATE DATABASE ' . $this->identifierEscape($name);
+    }
+
+    public function useNamedDB($name)
+    {
+        return 'USE ' . $this->identifierEscape($name);
+    }
+
     public function identifierEscape($str)
     {
         return '`' . $str . '`';
@@ -127,6 +137,11 @@ class MysqlAdapter implements DialectAdapter
         $ret = array_reduce($expressions, function($carry, $e) { return $carry . $e . ','; }, $ret);
         
         return substr($ret, 0, strlen($ret)-1) . ')';
+    }
+
+    public function setLockTimeout($seconds)
+    {
+        return sprintf('SET SESSION innodb_lock_wait_timeout = %d', $seconds);
     }
 }
 

@@ -79,7 +79,7 @@ class Giganto2UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->SetFont($this->font, '', $this->BIG_FONT);
             if (strstr($price, 'lb')) {
                 $price = str_replace(' /lb.', '/lb.', $price);
-                $pdf->SetFont($this->font, '', $this->BIG_FONT-27);
+                $pdf->SetFont($this->font, '', $this->BIG_FONT-29);
             } elseif (strstr($price, 'OFF')) {
                 $pdf->SetFont($this->font, '', $this->BIG_FONT-27);
             }

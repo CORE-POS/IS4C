@@ -29,7 +29,7 @@
  * For bootstrapped v.2 re-code the table with floating divs.
  */
 
-class CoopCredMember extends MemberModule 
+class CoopCredMember extends COREPOS\Fannie\API\member\MemberModule 
 {
 
     protected $regularMemberMin = 1;
@@ -459,7 +459,7 @@ class CoopCredMember extends MemberModule
      * If member not in CCredMemberships for this program
      *  add to CCRedMembers IFF creditOK ticked.
      */
-    function SaveFormData($memNum)
+    public function saveFormData($memNum, $json=array())
     {
         global $FANNIE_ROOT;
         //$dbc = $this->db();

@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\lib\FooterBoxes;
+use \CoreLocal;
+
 class TotalSavingFooter extends FooterBox 
 {
     public $display_css = "font-weight:bold;font-size:150%;";

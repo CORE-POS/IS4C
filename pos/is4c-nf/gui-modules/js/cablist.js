@@ -5,7 +5,7 @@ var cablist = (function($) {
         var ref = $('#selectlist').val();
         if (ref != ""){
             $.ajax({
-                url: urlStem + 'ajax-callbacks/AjaxCabReceipt.php',
+                url: urlStem + 'ajax/AjaxCabReceipt.php',
                 type: 'get',
                 cache: false,
                 data: 'input='+ref
