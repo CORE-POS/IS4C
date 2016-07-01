@@ -32,6 +32,8 @@ AutoLoader::loadMap();
 
 CoreState::initiate_session();
 
+CoreLocal::set('ValidJson', false);
+CoreLocal::refresh();
 CoreLocal::migrateSettings();
 
 if (MiscLib::pingport('127.0.0.1:15674', 'not a database')) {
