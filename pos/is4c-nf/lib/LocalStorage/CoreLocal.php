@@ -164,8 +164,9 @@ class CoreLocal
             include(__DIR__ . '/UnitTestStorage.php');
         }
         $settings = array();
-        if (self::validateJsonIni()) {
+        if (self::get('ValidJson') == '' && self::validateJsonIni()) {
             $settings = self::readIniJson();
+            self::set('ValidJson', true);
         } elseif (file_exists(dirname(__FILE__) . '/../../ini.php')) {
             $settings = self::readIniPhp();
         }
