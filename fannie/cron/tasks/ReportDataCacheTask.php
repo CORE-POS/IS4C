@@ -44,8 +44,6 @@ Replaces nightly.tablecache.php';
         global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
         $sql = FannieDB::get($FANNIE_OP_DB);
 
-        $this->recacheBatchMerge($sql);
-
         $chk = $sql->query('DELETE FROM shelftags WHERE id < 0');
 
         $this->recacheCashierPerformance();
@@ -64,33 +62,6 @@ Replaces nightly.tablecache.php';
         $monthly = \COREPOS\Fannie\API\data\DataCache::fileCacheDir('monthly');
         if ($monthly && date('j') == 1) {
             $this->clearFileCache($monthly);
-        }
-    }
-
-    private function recacheBatchMerge($sql)
-    {
-        $chk = $sql->query("TRUNCATE TABLE batchMergeTable");
-        if ($chk === false) {
-            $this->cronMsg("Could not truncate batchMergeTable", FannieLogger::WARNING);
-        }
-        $chk = $sql->query("INSERT INTO batchMergeTable
-                        SELECT b.startDate,b.endDate,p.upc,p.description,b.batchID
-                        FROM batches AS b LEFT JOIN batchList AS l
-                        ON b.batchID=l.batchID 
-                            " . DTrans::joinProducts('l', 'p', 'INNER')
-                        );
-        if ($chk === false) {
-            $this->cronMsg("Could not load batch reporting data for UPCs", FannieLogger::WARNING);
-        }
-        $chk = $sql->query("INSERT INTO batchMergeTable 
-                        SELECT b.startDate, b.endDate, p.upc, p.description, b.batchID
-                        FROM batchList AS l LEFT JOIN batches AS b
-                        ON b.batchID=l.batchID INNER JOIN upcLike AS u
-                        ON l.upc = " . $sql->concat("'LC'", $sql->convert('u.likeCode', 'CHAR'), '') . "
-                        " . DTrans::joinProducts('u', 'p', 'INNER') . "
-                        WHERE p.upc IS NOT NULL");
-        if ($chk === false) {
-            $this->cronMsg("Could not load batch reporting data for likecodes", FannieLogger::WARNING);
         }
     }
 

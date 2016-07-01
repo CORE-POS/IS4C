@@ -47,26 +47,6 @@ set_time_limit(0);
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
         $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
-$chk = $sql->query("TRUNCATE TABLE batchMergeTable");
-if ($chk === False)
-    echo cron_msg("Could not truncate batchMergeTable");
-$chk = $sql->query("INSERT INTO batchMergeTable
-                SELECT b.startDate,b.endDate,p.upc,p.description,b.batchID
-                FROM batches AS b LEFT JOIN batchList AS l
-                ON b.batchID=l.batchID 
-                    " . DTrans::joinProducts('l', 'p', 'INNER'));
-if ($chk === False)
-    echo cron_msg("Could not load batch reporting data for UPCs");
-$chk = $sql->query("INSERT INTO batchMergeTable 
-                SELECT b.startDate, b.endDate, p.upc, p.description, b.batchID
-                FROM batchList AS l LEFT JOIN batches AS b
-                ON b.batchID=l.batchID INNER JOIN upcLike AS u
-                ON l.upc = " . $sql->concat('LC', $sql->convert('u.likeCode', 'CHAR'), '')
-                . ' ' . DTrans::joinProducts('u', 'p', 'INNER') . "
-                WHERE p.upc IS NOT NULL");
-if ($chk === False)
-    echo cron_msg("Could not load batch reporting data for likecodes");
-
 $sql->query("use $FANNIE_TRANS_DB");
 
 $cashierPerformanceSQL = "
