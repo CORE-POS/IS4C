@@ -24,7 +24,7 @@ var paycardboxmsgAuth = (function($) {
             if (!called) {
                 var validate = $.ajax({
                     data: 'validate=1',
-                    dataType: 'json',
+                    dataType: 'json'
                 }).done(function (resp) {
                     if (resp.valid) {
                         paycard_submitWrapper();

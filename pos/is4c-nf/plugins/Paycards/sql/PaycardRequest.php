@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\plugins\Paycards\sql;
+use \Exception;
+use \PaycardConf;
+
 class PaycardRequest
 {
     public $issuer = 'UNKNOWN';
@@ -32,30 +36,40 @@ class PaycardRequest
     );
     public $pan = '';
 
-    public function __construct($refNum)
+    public function __construct($refNum, $dbTrans)
     {
+        $this->conf = new PaycardConf();
+        $this->dbTrans = $dbTrans;
         $this->refNum = $refNum;
         $this->today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
         $this->now = date('Y-m-d H:i:s'); // full timestamp
-        $this->cashierNo = CoreLocal::get("CashierNo");
-        $this->laneNo = CoreLocal::get("laneno");
-        $this->transNo = CoreLocal::get("transno");
-        $this->transID = CoreLocal::get("paycard_id");
-        $this->setType(CoreLocal::get('CacheCardType'));
-        $this->amount = CoreLocal::get("paycard_amount");
-        if (($this->type == "Debit" || $this->type == "EBTCASH") && $this->amount > CoreLocal::get("amtdue")) {
-            $this->cashback = $this->amount - CoreLocal::get("amtdue");
-            $this->amount = CoreLocal::get("amtdue");
-        } else {
-            $this->cashback = 0;
-        }
+        $this->cashierNo = $this->conf->get("CashierNo");
+        $this->laneNo = $this->conf->get("laneno");
+        $this->transNo = $this->conf->get("transno");
+        $this->transID = $this->conf->get("paycard_id");
+        $this->setType($this->conf->get('CacheCardType'));
+        list($this->amount, $this->cashback) = $this->initAmounts();
         $this->mode = (($this->amount < 0) ? 'Return' : 'Sale');
-        $this->manual = (CoreLocal::get("paycard_keyed")===True ? 1 : 0);
-        $this->live = 1;
-        if (CoreLocal::get("training") != 0 || CoreLocal::get("CashierNo") == 9999) {
-            $this->live = 0;
-        }
+        $this->manual = ($this->conf->get("paycard_keyed")===True ? 1 : 0);
+        $this->live = $this->isLive();
         $this->cardholder = 'Cardholder';
+    }
+
+    private function initAmounts()
+    {
+        $amount = $this->conf->get("paycard_amount");
+        if (($this->type == "Debit" || $this->type == "EBTCASH") && $amount > $this->conf->get("amtdue")) {
+            $cashback = $amount - $this->conf->get("amtdue");
+            $amount = $this->conf->get("amtdue");
+            return array($amount, $cashback);
+        }
+
+        return array($amount, 0);
+    }
+
+    private function isLive()
+    {
+        return ($this->conf->get("training") != 0 || $this->conf->get("CashierNo") == 9999) ? 1 : 0;
     }
 
     public function formattedAmount()
@@ -76,9 +90,9 @@ class PaycardRequest
         else $this->type = $type;
     }
 
-    public function setManual($m)
+    public function setManual($man)
     {
-        $this->manual = $m;
+        $this->manual = $man;
     }
 
     public function setRefNum($ref)
@@ -91,9 +105,9 @@ class PaycardRequest
         $this->mode = $mode;
     }
 
-    public function setAmount($a)
+    public function setAmount($amt)
     {
-        $this->amount = $a;
+        $this->amount = $amt;
     }
 
     public function setCardholder($name)
@@ -129,8 +143,6 @@ class PaycardRequest
 
     public function saveRequest()
     {
-        $dbTrans = PaycardLib::paycard_db();
-
         $insQ = '
                 INSERT INTO PaycardTransactions (
                     dateID, empNo, registerNo, transNo, transID,
@@ -147,24 +159,22 @@ class PaycardRequest
             ($this->amount+$this->cashback), $this->pan, $this->issuer,
             $this->cardholder, $this->manual, $this->now,
         );
-        $insP = $dbTrans->prepare($insQ);
-        $insR = $dbTrans->execute($insP, $ptArgs);
-        if ($insR) {
-            $this->last_paycard_transaction_id = $dbTrans->insertID();
-        } else {
+        $insP = $this->dbTrans->prepare($insQ);
+        $insR = $this->dbTrans->execute($insP, $ptArgs);
+        if ($insR === false) {
             throw new Exception('Error saving PaycardTransactions');
         }
+        $this->last_paycard_transaction_id = $this->dbTrans->insertID();
     }
 
     public function changeAmount($amt)
     {
         $this->amount = $amt;
-        $dbTrans = PaycardLib::paycard_db();
         $upQ = sprintf('UPDATE PaycardTransactions
                         SET amount=%.2f
                         WHERE paycardTransactionID=%d',
                         $amt, $this->last_paycard_transaction_id);
-        $dbTrans->query($upQ);
+        $this->dbTrans->query($upQ);
     }
 
     public function updateCardInfo($pan, $name, $issuer)
@@ -172,15 +182,14 @@ class PaycardRequest
         $this->setPAN($pan);
         $this->cardholder = $name;
         $this->issuer = $issuer;
-        $dbTrans = PaycardLib::paycard_db();
-        $upP = $dbTrans->prepare('
+        $upP = $this->dbTrans->prepare('
             UPDATE PaycardTransactions
             SET PAN=?,
                 issuer=?,
                 name=?
             WHERE paycardTransactionID=?
         ');
-        $dbTrans->execute($upP, array(
+        $this->dbTrans->execute($upP, array(
             $this->pan,
             $this->issuer,
             $this->cardholder,

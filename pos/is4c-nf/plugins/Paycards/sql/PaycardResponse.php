@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+namespace COREPOS\pos\plugins\Paycards\sql;
+use \Exception;
+
 class PaycardResponse
 {
     public $validResponse = 1;
@@ -37,20 +40,18 @@ class PaycardResponse
         'acq' => '',
     );
 
-
-    public function __construct($req, $curlResult)
+    public function __construct($req, $curlResult, $dbTrans)
     {
         $this->request = $req;
         $this->now = date('Y-m-d H:i:s');
         $this->curlTime = $curlResult['curlTime'];
         $this->curlErr = $curlResult['curlErr'];
         $this->curlHttp = $curlResult['curlHTTP'];
+        $this->dbTrans = $dbTrans;
     }
 
     public function saveResponse()
     {
-        $dbTrans = PaycardLib::paycard_db();
-
         $finishQ = sprintf("UPDATE PaycardTransactions
                             SET responseDatetime='%s',
                                 seconds=%f,
@@ -83,58 +84,57 @@ class PaycardResponse
                             $this->token['acq'],
                             $this->request->last_paycard_transaction_id
         );
-        $throw = false;
-        if (!$dbTrans->query($finishQ)) {
+        if (!$this->dbTrans->query($finishQ)) {
             throw new Exception('Error updating PaycardTransactions with response data');
         }
     }
 
 
-    public function setToken($r, $p, $a)
+    public function setToken($rec, $proc, $acq)
     {
-        $this->token['record'] = $r;
-        $this->token['proc'] = $p;
-        $this->token['acq'] = $a;
+        $this->token['record'] = $rec;
+        $this->token['proc'] = $proc;
+        $this->token['acq'] = $acq;
     }
 
-    public function setBalance($b)
+    public function setBalance($bal)
     {
-        $this->balance = $b;
+        $this->balance = $bal;
     }
 
-    public function setValid($v)
+    public function setValid($valid)
     {
-        $this->validResponse = $v;
+        $this->validResponse = $valid;
     }
 
-    public function setResponseCode($r)
+    public function setResponseCode($res)
     {
-        $this->responseCode = $r;
+        $this->responseCode = $res;
     }
 
-    public function setResultCode($r)
+    public function setResultCode($res)
     {
-        $this->resultCode = $r;
+        $this->resultCode = $res;
     }
 
-    public function setResultMsg($r)
+    public function setResultMsg($res)
     {
-        $this->resultMsg = substr($r, 0, 100);
+        $this->resultMsg = substr($res, 0, 100);
     }
 
-    public function setApprovalNum($a)
+    public function setApprovalNum($appr)
     {
-        $this->approvalNum = $a;
+        $this->approvalNum = $appr;
     }
 
-    public function setTransactionID($t)
+    public function setTransactionID($tid)
     {
-        $this->transactionID = substr($t, 0, 12);
+        $this->transactionID = substr($tid, 0, 12);
     }
 
-    public function setNormalizedCode($n)
+    public function setNormalizedCode($norm)
     {
-        $this->normalizedCode = $n;
+        $this->normalizedCode = $norm;
     }
 }
 

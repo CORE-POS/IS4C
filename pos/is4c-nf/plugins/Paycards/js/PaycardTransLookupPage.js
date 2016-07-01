@@ -18,16 +18,16 @@ var PaycardTransLookupPage = (function($) {
     };
 
     mod.formCallback = function() {
-        if (gettingResult == 1) {
+        if (gettingResult === 1) {
             return false;
         }
 
         var reginput = $('#reginput').val();
 
-        if (reginput == '') {
-            location = enter_url;
-        } else if (reginput.toUpperCase() == 'CL') {
-            location = clear_url;
+        if (reginput === '') {
+            window.location = enter_url;
+        } else if (reginput.toUpperCase() === 'CL') {
+            window.location = clear_url;
         } else {
             $('#reginput').val('');
         }

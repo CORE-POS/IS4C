@@ -21,38 +21,45 @@
 
 *********************************************************************************/
 
-class DatacapCaAdmin extends LibraryClass
+use COREPOS\pos\plugins\Paycards\xml\BetterXmlData;
+
+class DatacapCaAdmin 
 {
-    public static function caLanguage()
+    public function __construct()
     {
-        if (CoreLocal::get('PaycardsDatacapMode') == 2) {
-            return 'English';
-        } elseif (CoreLocal::get('PaycardsDatacapMode') == 3) {
-            return 'French';
-        } else {
-            return 'English';
-        }
+        $this->conf = new PaycardConf();
     }
 
-    private static function basicAdminXml()
+    public function caLanguage()
+    {
+        if ($this->conf->get('PaycardsDatacapMode') == 2) {
+            return 'English';
+        } elseif ($this->conf->get('PaycardsDatacapMode') == 3) {
+            return 'French';
+        }
+
+        return 'English';
+    }
+
+    private function basicAdminXml()
     {
         $e2e = new MercuryE2E();
         $termID = $e2e->getTermID();
-        $operatorID = CoreLocal::get("CashierNo");
-        $mcTerminalID = CoreLocal::get('PaycardsTerminalID');
-        $refNum = $e2e->refnum(CoreLocal::get('LastID'));
-        $dc_host = CoreLocal::get('PaycardsDatacapLanHost');
-        if (empty($dc_host)) {
-            $dc_host = '127.0.0.1';
+        $operatorID = $this->conf->get("CashierNo");
+        $mcTerminalID = $this->conf->get('PaycardsTerminalID');
+        $refNum = $e2e->refnum($this->conf->get('LastID'));
+        $dcHost = $this->conf->get('PaycardsDatacapLanHost');
+        if (empty($dcHost)) {
+            $dcHost = '127.0.0.1';
         }
         $msgXml = '<?xml version="1.0"?'.'>
             <TStream>
             <Transaction>
-            <HostOrIP>'.$dc_host.'</HostOrIP>
+            <HostOrIP>'.$dcHost.'</HostOrIP>
             <MerchantID>'.$termID.'</MerchantID>
             <TerminalID>'.$mcTerminalID.'</TerminalID>
             <OperatorID>'.$operatorID.'</OperatorID>
-            <MerchantLanguage>'.self::caLanguage().'</MerchantLanguage>
+            <MerchantLanguage>'.$this->caLanguage().'</MerchantLanguage>
             <TranCode>{{TranCode}}</TranCode>
             <SecureDevice>{{SecureDevice}}</SecureDevice>
             <ComPort>{{ComPort}}</ComPort>
@@ -65,47 +72,47 @@ class DatacapCaAdmin extends LibraryClass
         return $msgXml;
     }
 
-    public static function keyChange()
+    public function keyChange()
     {
-        return str_replace('{{TranCode}}', 'EMVKeyChange', self::basicAdminXml());
+        return str_replace('{{TranCode}}', 'EMVKeyChange', $this->basicAdminXml());
     }
 
-    public static function paramDownload()
+    public function paramDownload()
     {
-        return str_replace('{{TranCode}}', 'EMVParamDownload', self::basicAdminXml());
+        return str_replace('{{TranCode}}', 'EMVParamDownload', $this->basicAdminXml());
     }
 
-    public static function keyReport()
+    public function keyReport()
     {
-        return str_replace('{{TranCode}}', 'EMVPublicKeyReport', self::basicAdminXml());
+        return str_replace('{{TranCode}}', 'EMVPublicKeyReport', $this->basicAdminXml());
     }
 
-    public static function statsReport()
+    public function statsReport()
     {
-        return str_replace('{{TranCode}}', 'EMVStatisticsReport', self::basicAdminXml());
+        return str_replace('{{TranCode}}', 'EMVStatisticsReport', $this->basicAdminXml());
     }
 
-    public static function declineReport()
+    public function declineReport()
     {
-        return str_replace('{{TranCode}}', 'EMVOfflineDeclineReport', self::basicAdminXml());
+        return str_replace('{{TranCode}}', 'EMVOfflineDeclineReport', $this->basicAdminXml());
     }
 
-    public static function paramReport()
+    public function paramReport()
     {
-        return str_replace('{{TranCode}}', 'EMVParameterReport', self::basicAdminXml());
+        return str_replace('{{TranCode}}', 'EMVParameterReport', $this->basicAdminXml());
     }
 
-    public static function parseResponse($xml)
+    public function parseResponse($xml)
     {
         $xml = new BetterXmlData($xml);
 
         $status = $xml->query('/RStream/CmdResponse/CmdStatus');
-        $msg_text = $xml->query('/RStream/CmdResponse/TextResponse');
+        $msgText = $xml->query('/RStream/CmdResponse/TextResponse');
         $printData = $xml->query('/RStream/PrintData/*', true);
 
         $ret = array(
             'status' => $status,
-            'msg-text' => $msg_text,
+            'msg-text' => $msgText,
             'receipt' => $printData,
         );
 
