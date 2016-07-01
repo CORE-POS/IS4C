@@ -73,6 +73,7 @@ class MarginMovementReport extends FannieReportPage
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
         $deptMulti = FormLib::get('departments', array());
+        $subs = FormLib::get('subdepts', array());
         $include_sales = FormLib::get('includeSales', 0);
     
         $buyer = FormLib::get('buyer', '');
@@ -92,6 +93,10 @@ class MarginMovementReport extends FannieReportPage
         if ($buyer != -1) {
             list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args);
             $where .= $conditional;
+        }
+        if (count($subs) > 0) {
+            list($inStr, $args) = $dbc->safeInClause($subs, $args);
+            $where .= " AND p.subdept IN ($inStr) ";
         }
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);

@@ -88,6 +88,7 @@ class NonMovementReport extends FannieReportPage {
         $deptStart = FormLib::get_form_value('deptStart',0);
         $deptEnd = FormLib::get_form_value('deptEnd',0);
         $deptMulti = FormLib::get('departments', array());
+        $subs = FormLib::get('subdepts', array());
 
         $tempName = "TempNoMove";
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
@@ -118,6 +119,10 @@ class NonMovementReport extends FannieReportPage {
         if ($buyer != -1) {
             list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args, 'p');
             $where .= $conditional;
+        }
+        if (count($subs) > 0) {
+            list($inStr, $args) = $dbc->safeInClause($subs, $args);
+            $where .= " AND p.subdept IN ($inStr) ";
         }
 
         $query = "

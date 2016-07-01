@@ -47,6 +47,7 @@ class VendorSalesReport extends FannieReportPage
         $deptStart = FormLib::get('deptStart', 1);
         $deptEnd = FormLib::get('deptEnd', 1);
         $deptMulti = FormLib::get('departments', array());
+        $subs = FormLib::get('subdepts', array());
         $buyer = FormLib::get('buyer', '');
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
@@ -90,6 +91,10 @@ class VendorSalesReport extends FannieReportPage
         if ($buyer != -1) {
             list($conditional, $args) = DTrans::departmentClause($deptStart, $deptEnd, $deptMulti, $args, 't');
             $query .= $conditional;
+        }
+        if (count($subs) > 0) {
+            list($inStr, $args) = $dbc->safeInClause($subs, $args);
+            $query .= " AND p.subdept IN ($inStr) ";
         }
         $query .= '
             GROUP BY COALESCE(v.vendorName, x.distributor)
