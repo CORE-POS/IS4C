@@ -175,7 +175,7 @@ class DeliCateringOrdersPage extends FannieRESTfulPage
     {
         $ret = "";
         $ret .= '<a class="btn btn-default" href="
-            http://localhost/IS4C/fannie/modules/plugins2.0/DeliCateringOrders/DeliCateringOrdersPage.php">
+            http://key/git/fannie/modules/plugins2.0/DeliCateringOrders/DeliCateringOrdersPage.php">
             Back to View Orders</a>';
         
         $dbc = FannieDB::get($this->config->get('OP_DB'));
@@ -434,7 +434,7 @@ class DeliCateringOrdersPage extends FannieRESTfulPage
         }
         
         $ret .= '<a class="btn btn-default" href="
-            http://localhost/IS4C/fannie/modules/plugins2.0/DeliCateringOrders/DeliCateringOrdersPage.php">
+            http://key/git/fannie/modules/plugins2.0/DeliCateringOrders/DeliCateringOrdersPage.php">
             Back to View Orders</a>';
             
         return $ret;
@@ -1367,7 +1367,17 @@ class DeliCateringOrdersPage extends FannieRESTfulPage
              
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         
-        $ret .= '<br><br><b>Review Order</b><br>';
+        $ret .= '<br><br><h3>Review Order</h3><br>';
+        
+        
+        $ret .= '<table class="table">';
+        $ret .= '<tr><td width="150 px"><b>Owner Number:</b></td><td>' . $data['card_no'] . '</td>';
+        $ret .= '<tr><td ><b>Customer Name:</b></td><td>' . $data['name'] . '</td>';
+        $ret .= '<tr><td ><b>Phone Number:</b></td><td>' . $data['phone'] . '</td>';
+        $ret .= '<tr><td ><b>Alternate Phone:</b></td><td>' . $data['alt_phone'] . '</td>';
+        $ret .= '<tr><td ><b>Email Address:</b></td><td>' . $data['email'] . '</td>';
+        $ret .= '</table>';
+        
         $ret .= '<table class="table">';
         $ret .= '<th>Product</th><th>Quantity</th><th>Unit Price</th><th>Subtotal</th>';
         $curTotal = 0;
