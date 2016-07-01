@@ -35,7 +35,7 @@ class DeliCateringOrdersPage extends FannieRESTfulPage
     protected $orders = array();
     protected $must_authenticate = true;
     protected $auth_classes = array('deli', 'csc', 'mod', 'it');
-    protected $description = '[Deli Catering Orders] is a tool to take new Deli Catering Orders.';
+    public $description = '[Deli Catering Orders] is a tool to take new Deli Catering Orders.';
 
     function preprocess(){
         
