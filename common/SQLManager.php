@@ -140,7 +140,7 @@ class SQLManager
         $conn = $this->clearConnectTimeout($conn, $type);
         $this->connections[$database] = $conn;
 
-        $this->last_connection_error = false;
+        $this->last_connect_error = false;
         if (!$connected) {
             $this->last_connect_error = $conn->ErrorMsg();
             return $this->connectAndCreate($server, $type, $username, $password, $database);
@@ -186,7 +186,7 @@ class SQLManager
         $connected = $conn->Connect($this->getDSN($server,$type,false),$username,$password,$database);
         $conn = $this->clearConnectTimeout($conn, $type);
         if ($connected) {
-            $this->last_connection_error = false;
+            $this->last_connect_error = false;
             $adapter = $this->getAdapter(strtolower($type));
             $stillok = $conn->Execute($adapter->createNamedDB($database));
             if (!$stillok) {
