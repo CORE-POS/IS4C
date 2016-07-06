@@ -217,7 +217,16 @@ class FormLib extends \COREPOS\common\FormLib
 <form method="get" class="form-horizontal">
 <div class="row">
     <div class="col-sm-6">
-        <?php echo self::standardDepartmentFields('buyer'); ?>
+        <?php echo self::standardDepartmentFields('buyer');  ?>
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Store</label>
+            <div class="col-sm-8">
+            <?php
+            $stores = FormLib::storePicker();
+            echo $stores['html'];
+            ?>
+            </div>
+        </div>
         <div id="date-dept-form-left-col"></div> 
     </div>
     <?php echo self::standardDateFields(); ?>
