@@ -36,7 +36,7 @@ class TenderReport
   Write tender report to the printer
 */
 static public function printReport($class=false){
-    if ($class && !$class_exists($class)) {
+    if ($class && !class_exists($class)) {
         $class = 'COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\' . $class;
     }
     if ($class === false) {
