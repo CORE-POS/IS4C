@@ -31,7 +31,7 @@ class SaleTypeMovementReport extends FannieReportPage
     public $description = '[Sale Type Movement] breaks down sales by type of promotion';
     public $report_set = 'Movement';
 
-    protected $report_headers = array('Type', '$', '%');
+    protected $report_headers = array('Type', '$ Sales', '# Items', '% Sales');
     protected $sort_direction = 1;
     protected $sort_column = 1;
     protected $title = "Fannie : Sale Type Report";
@@ -76,7 +76,7 @@ class SaleTypeMovementReport extends FannieReportPage
                 INNER JOIN PriceRuleTypes AS t ON r.priceRuleTypeID=t.priceRuleTypeID
             WHERE upc=?');
 
-        $sales = array('Normal'=>array('Normal', 0.00), 'Other Sale'=>array('Other Sale', 0.00));
+        $sales = array('Normal'=>array('Normal', 0.00, 0), 'Other Sale'=>array('Other Sale', 0.00, 0));
         $res = $dbc->execute($query, $args);
         $sum = 0.0;
         while ($row = $dbc->fetchRow($res)) {
@@ -93,21 +93,25 @@ class SaleTypeMovementReport extends FannieReportPage
                 $batch = $dbc->getRow($batchP, $bArgs);
                 if ($batch) {
                     if (!isset($sales[$batch['typeDesc']])) {
-                        $sales[$batch['typeDesc']] = array($batch['typeDesc'], 0.00);
+                        $sales[$batch['typeDesc']] = array($batch['typeDesc'], 0.00, 0);
                     }
                     $sales[$batch['typeDesc']][1] += $row['ttl'];
+                    $sales[$batch['typeDesc']][2] += 1;
                 } else {
                     $sales['Other Sale'][1] += $row['ttl'];
+                    $sales['Other Sale'][2] += 1;
                 }
             } else {
                 $rule = $dbc->getValue($ruleP, array($row['upc']));
                 if ($rule) {
                     if (!isset($sales[$rule])) {
-                        $sales[$rule] = array($rule, 0.00);
+                        $sales[$rule] = array($rule, 0.00, 0);
                     }
                     $sales[$rule][1] += $row['ttl'];
+                    $sales[$rule][2] += 1;
                 } else {
                     $sales['Normal'][1] += $row['ttl'];
+                    $sales['Normal'][2] += 1;
                 }
             }
             $sum += $row['ttl']; 
@@ -126,7 +130,7 @@ class SaleTypeMovementReport extends FannieReportPage
     public function calculate_footers($data)
     {
         $sum = array_reduce($data, function($c,$i) { return $c+$i[1];});
-        return array('Total', $sum, '');
+        return array('Total', $sum, '', '');
     }
 
     public function form_content()

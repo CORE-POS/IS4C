@@ -1028,42 +1028,42 @@ class ObfWeeklyReport extends FannieReportPage
                 }
                 if ($catID == 7) {
                     $sales->superID(6);
-                    $sales->lastYearSales(25576.85);
+                    $sales->lastYearSales(0.92*25576.85);
                     $sales->save();
                 } elseif ($catID == 8) {
                     $sales->superID(10); 
-                    $sales->lastYearSales(5088.447);
+                    $sales->lastYearSales(0.92*5088.447);
                     $sales->save();
                     $sales->superID(11); 
-                    $sales->lastYearSales(16961.49);
+                    $sales->lastYearSales(0.92*16961.49);
                     $sales->save();
                     $sales->superID(16); 
-                    $sales->lastYearSales(6219.213);
+                    $sales->lastYearSales(0.92*6219.213);
                     $sales->save();
                 } elseif ($catID == 9) {
                     $sales->superID(1); 
-                    $sales->lastYearSales(12788.43);
+                    $sales->lastYearSales(0.92*12788.43);
                     $sales->save();
                     $sales->superID(4); 
-                    $sales->lastYearSales(28942.23);
+                    $sales->lastYearSales(0.92*28942.23);
                     $sales->save();
                     $sales->superID(5); 
-                    $sales->lastYearSales(11105.74);
+                    $sales->lastYearSales(0.92*11105.74);
                     $sales->save();
                     $sales->superID(7); 
-                    $sales->lastYearSales(134.62);
+                    $sales->lastYearSales(0.92*134.62);
                     $sales->save();
                     $sales->superID(8); 
-                    $sales->lastYearSales(8076.90);
+                    $sales->lastYearSales(0.92*8076.90);
                     $sales->save();
                     $sales->superID(9); 
-                    $sales->lastYearSales(1211.54);
+                    $sales->lastYearSales(0.92*1211.54);
                     $sales->save();
                     $sales->superID(13); 
-                    $sales->lastYearSales(7403.83);
+                    $sales->lastYearSales(0.92*7403.83);
                     $sales->save();
                     $sales->superID(17); 
-                    $sales->lastYearSales(12451.89);
+                    $sales->lastYearSales(0.92*12451.89);
                     $sales->save();
                 }
             }
