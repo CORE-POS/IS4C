@@ -110,15 +110,14 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
     private function normalizePrice($price)
     {
         $int_price = floor($price * 100);
-        if ($int_price % 10 == 0 ) $int_price--;
-        while ($int_price % 10 != 9) {
+        while ($int_price % 10 != 5 && $int_price % 10 != 9) {
             $int_price++;
         }
-        if ($int_price % 100 == 9) {
+        if ($int_price % 100 == 5 || $int_price % 100 == 9) {
             $int_price += 10;
         }
 
-        return $this->round($int_price/100.00, 2);
+        return round($int_price/100.00, 2);
     }
 
     public function get_view()

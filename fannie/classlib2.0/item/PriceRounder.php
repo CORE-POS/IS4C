@@ -45,7 +45,8 @@ class PriceRounder
     public function round($price, $extra_parameters=array())
     {
         // operate in cents
-        $price = floor($price * 100);        
+        $price = floor($price * 100);    
+        if ($price % 10 == 0 ) $price--;            
         
         // if price < $1.00
         if ($price < 100) {
