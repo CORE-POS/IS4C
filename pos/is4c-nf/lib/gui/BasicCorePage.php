@@ -61,9 +61,9 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
     public function __construct()
     {
         $this->page_url = MiscLib::base_url();
-        if (file_exists(dirname(__FILE__) . '/../graphics/is4c.gif')) {
+        if (file_exists(dirname(__FILE__) . '/../../graphics/is4c.gif')) {
             $this->body_class = 'mainBGimage';
-        } elseif (file_exists(dirname(__FILE__) . '/../graphics/your_logo_here.gif')) {
+        } elseif (file_exists(dirname(__FILE__) . '/../../graphics/your_logo_here.gif')) {
             $this->body_class = 'placeholderBGimage';
         }
         ob_start();
@@ -98,7 +98,7 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
         echo "<link rel=\"stylesheet\" type=\"text/css\"
             href=\"{$my_url}/css/pos.css\">";
         // include store css file if it exists
-        if (file_exists(dirname(__FILE__).'/../css/store.css')){
+        if (file_exists(dirname(__FILE__).'/../../css/store.css')){
             echo "<link rel=\"stylesheet\" type=\"text/css\"
                 href=\"{$my_url}/css/store.css\">";
         }
