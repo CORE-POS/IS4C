@@ -48,29 +48,31 @@ class AutoParsTask extends FannieTask
                   MAX(discounttype) AS onSale
                 FROM ' . $FANNIE_TRANS_DB . $dbc->sep() . 'dlog_90_view AS d
                 WHERE d.upc=?
+                    AND d.store_id=?
                     AND charflag <> \'SO\'
                     AND trans_status <> \'R\'
                 GROUP BY year(tdate), month(tdate), day(tdate)
                 ORDER BY year(tdate), month(tdate), day(tdate) DESC';
         $salesP = $dbc->prepare($salesQ);
-        $prodP = $dbc->prepare('UPDATE products SET auto_par=? WHERE upc=?');
+        $prodP = $dbc->prepare('UPDATE products SET auto_par=? WHERE upc=? AND store_id=?');
 
-        $product = new ProductsModel($dbc);
-        $product->inUse(1);
-        $prodR = $dbc->query('
-            SELECT upc
+        $date = date('Y-m-d', strtotime('1 month ago'));
+        $lookupP = $dbc->prepare('
+            SELECT upc,store_id
             FROM products
-            WHERE inUse=1
+            WHERE (inUse=1 OR last_sold >= ?)
         ');
+        $prodR = $dbc->execute($lookupP, array($date));
         $lambda = 0.25;
         // average daily sales for items at retail price
         // sale days are discarded from both quantity sold
         // and number of days
         while ($prodW = $dbc->fetchRow($prodR)) {
             $upc = $prodW['upc'];
-            $salesR = $dbc->execute($salesP, array($upc));
+            $store = $prodW['store_id'];
+            $salesR = $dbc->execute($salesP, array($upc, $store));
             if ($dbc->numRows($salesR) == 0) {
-                $dbc->execute($prodP, array(0, $upc));
+                $dbc->execute($prodP, array(0, $upc, $store));
                 if ($this->test_mode) {
                     break;
                 } else {
@@ -105,7 +107,7 @@ class AutoParsTask extends FannieTask
                 $count++;
             }
             $avg = ($count == 0) ? 0 : $sum/$count;
-            $dbc->execute($prodP, array($avg, $upc));
+            $dbc->execute($prodP, array($avg, $upc, $store));
         }
     }
 
