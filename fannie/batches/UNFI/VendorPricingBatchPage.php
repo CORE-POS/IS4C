@@ -223,15 +223,15 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 $background = 'selection';
             } elseif ($row['variable_pricing'] == 0 && $row['normal_price'] < 10.00) {
                 $background = ( 
-					($row['normal_price']+0.10 < $row['rawSRP'])
+                    ($row['normal_price']+0.10 < $row['rawSRP'])
                     && ($row['srp']-.14 > $row['normal_price'])
-				) ?'red':'green';
+                ) ?'red':'green';
                 if ($row['normal_price']-.10 > $row['rawSRP']) {
                     $background = (
-						($row['normal_price']-.10 > $row['rawSRP']) 
+                        ($row['normal_price']-.10 > $row['rawSRP']) 
                         && ($row['normal_price']-.14 > $row['srp']) 
-						&& ($row['rawSRP'] < $row['srp']+.10)  
-					)?'yellow':'green';
+                        && ($row['rawSRP'] < $row['srp']+.10)  
+                    )?'yellow':'green';
                 }
             } elseif ($row['variable_pricing'] == 0 && $row['normal_price'] >= 10.00) {
                 $background = ( ($row['normal_price']+1.00 < $row['rawSRP'])
@@ -239,7 +239,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 if ($row['normal_price']-1.00 > $row['rawSRP']) {
                     $background = ($row['normal_price']-1.00 > $row['rawSRP']
                         && ($row['normal_price'] > $row['srp'])
-						&& ($row['rawSRP'] < $row['srp']+.10) )?'yellow':'green';
+                        && ($row['rawSRP'] < $row['srp']+.10) )?'yellow':'green';
                 }
             }
             if (isset($batchUPCs[$row['upc']])) {
