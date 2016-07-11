@@ -1,0 +1,128 @@
+<html>
+	<head>
+		<title>Writing a Parser object</title>
+	</head>
+	<body>
+<div style="text-align:center;">
+	<h2>Quick Parsing Primer</h2>
+    Revised: March 30, 2015
+</div>
+    <div style="border: solid 1px black; font-size: 115%; padding: 1em;">
+    The latest documentation can be found on the <a href="https://github.com/CORE-POS/IS4C/wiki/Input-Parsing-and-Control-Flow">Project Wiki</a>.
+    The information below may be out of date. 
+    </div>
+	Parsing currently happens in ajax-callbacks/ajax-parser.php. Two arrays of parser objects
+	are automatically built from the files in parser-class-lib/preparse and parser-class-lib/parse.
+	These arrays are cached in $_SESSION, so you may need to close &amp; relaunch your browser
+	to enable a new module.
+	<hr />
+	<h2>Preparse Objects</h2>
+	Preparse object inherit from parser-class-lib/Parser.php. The check() method is called for
+	every available preparse object. If check() returns true, parse() is called for that object.
+	The return value of parse() <i>replaces</i> the current user input.
+	<p />
+	The following sets the toggletax value in session, then
+	removes the trigger prefix from the input string. 
+	Includes are omitted for simplicity; see any module included
+	in the release for greater detail.	
+	<h3>Example Preparse Object</h3>
+	<pre>
+	class TaxShift extends Parser {
+		function check($str){	
+			if (substr($str,0,3) == "1TN")
+				return True;
+			return False;
+		}
+
+		function parse($str){
+			global $CORE_LOCAL;
+			$CORE_LOCAL->set("toggletax",1);
+			return substr($str,3);
+		}
+	}
+	</pre>
+	<h2>Parse Objects</h2>
+	Parse objects also inherit from parser-class-lib/Parser.php. Here, the check() method is called for each object
+	in turn until one returns true. The parse() method is called for that class and input processing stops. Parse 
+	objects are slightly more complicated because the parse() function must return an array.
+	<p />
+	The return value of parse() in this case should be a keyed array. This structure converts easily to a JSON, which
+	in turn makes passing data to javascript more reliable and well-defined. The base class, Parser, provides a method
+	default_json() that generates a proper array with sane defaults.
+	<p />
+	<i>Return value structure</i><br />
+	<b>main_frame</b> URL string, default false. If this is set, the browser moves to the specified URL. This option
+	overrides all others.<br />
+	<b>target</b> CSS selector, default ".baseHeight". If this is set, output will be written to the current screen
+	inside the element specified. Any JQuery selector is valid here.<br />
+	<b>output</b> HTML string, default false. If set, this is written in the element specified by <b>target</b>.<br />
+	<b>redraw_footer</b> boolean, default false. If set, the footer values (you saved, total, etc) are re-drawn.<br />
+	<b>receipt</b> string receipt type, default false. If set, prints the given receipt type.<br />
+	<b>scale</b> string scale input, default false. If set, this updates the HTML scale display accordingly.<br />
+	<b>udpmsg</b> string, default false. If set, this string is streamed directly to the scale driver via UDP. Experimental.<br />
+	<b>retry</b> string, default false. If set, the string is reparsed in 70 milliseconds. I "waiting for the scale" on
+	by weight items is the only actual use for this.
+	<h3>Parse Examples</h3>
+	It's not as bad as it sounds. Here's an example of a parse object that
+	sends the browser to a new screen when "CAB" is entered (again, includes omitted):
+	<pre>
+	class CabCoupon extends Parser {
+		function check($str){
+			if ($str == "CAB") return True;
+			return False;
+		}
+
+		function parse($str){
+			$return_value = $this->default_json();
+			$return_value['main_frame'] = MiscLib::base_url()."gui-modules/CabDisplay.php";	
+			return $return_value;
+		}
+	}
+	</pre>
+	Here's another example. This example prints a partial
+	receipt &amp; displays a notification:
+	<pre>
+	class PartialPrint extends Parser {
+		function check($str){
+			if ($str == "PRP") return True;
+			return False;
+		}
+
+		function parse($str){
+			$return_value = $this->default_json();
+			$return_value['output'] = DisplayLib::boxMsg("Printing Receipt");
+			$return_value['receipt'] = "partial";
+			return $return_value;
+		}
+	}
+	</pre>
+	<h2>Testing</h2>
+	One downside (depending on perspective) of the AJAX system with JSON returns is your code has to be
+	clean. Any PHP warnings or errors result in invalid JSON objects.
+	The form in the "test" directory (&nbsp;<tt>/IS4C/pos/is4c-nf/test/index.php</tt>&nbsp;) lets you
+	post input to the parser and see exactly what's being output. Useful for debugging.
+	Try it at: <a href="/IS4C/pos/is4c-nf/test/index.php" target="_test">Parse Tester</a> ,
+	treating the textbox as though it were the one on pos2.php.
+	(Have at least a login page open in the same browser in order establish session vars.)
+	<br />
+	<br />
+<pre>
+
+<a name="change_log">Change Log:</a>
+
+22Aug12 Eric Lee In "Testing" added some text and a link to Parse Tester.
+20Aug12 Andy Theuninck
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+	</body>
+</html>

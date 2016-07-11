@@ -1,0 +1,72 @@
+<html>
+<head><title>Instructions for Movement Reporting page</title>
+<link href="../../../styles.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div id=docmain>
+<p class=xbig>How to use the Batch Controller Page</p>
+<div id=doctext>
+<p class=medim>Below is a screenshot of the interface for the Batch Controller page. The page can be accessed directly by navigating to <a href="../../it/newbatch/index.php" target="blank">http://key/it/newbatch/</a>.
+<p class=medium><img border=1 src="../../images/batches1.png"></p>
+</div>
+<p class=big>Definitions: </p>
+<div id=doctext>
+<p class=medium><b>Batch Type</b> - Type of batch (CAP, Member only special [MOS], price change, etc).</p> 
+<p class=medium><b>Name</b> - Name for batch. Typically set to something recognizable (e.g. CAP GROC Dec 2006, for December 2006 Grocery CAP batch).</p>
+<p class=medium><b>Start date</b> - Date for the start of the batch</p>
+<p class=medium><b>End date</b> - Date for the end of the batch.</p>
+<p class=medium><b>Owner</b> - Buyer or department creating the batch.</p> 
+<p class=medium><b>Filter</b> - Filter batches by their owner</p>
+<p class=medium><b>Current</b> - Batches that are currently running sales in the POS</p>
+<p class=medium><b>Pending</b> - Batches that are scheduled for some date in the future</p>
+<p class=medium><b>Historical</b> - Batches that have ended.</p>
+</div>
+<br/><br/>
+<p class=big><u>To start a new batch</u></p>
+<div id=doctext>
+<p class=medium>Select the Batch Type.<br><img src="../../images/batches2.png" border=1></p>
+<p class=medium>Once you have selected a batch type, enter a name for the batch. Placing your cursor in the 'Start date' and 'End date' fields will popup calendars to select the start and end dates of the batch. <br><img src="../../images/batches3.png" border=1></p><b>Note: if a mistake is made entering the date, you will need to hand edit the date.</b> The calendar will show 'Undefined' as its year on a second attempt. <br><img src="../../images/batches4.png" border=1><p />
+<p class=medium>Lastly, select an Owner for the report. It is not necessary to enter an owner, but by doing so, you will be able to filter this batch, by selecting this owner.<br><img src="../../images/batches5.png" border = 1></p> 
+<p class=medium>Click 'Add' to add this batch to the batch list. <b>Note: if the batch date is set for the future, it will not show under 'Current' batches, but under 'Pending' batches.</b></p>
+<br/><br/><p class=big><u>The batch list display</u></p>
+<p class=medium>The first thing to note in the batch list display is that there are several options for viewing the batchlist. The default view is to show 'Current' batches. The view can be changed to show Pending batches, Historical batches or All batches, but selecting the appropriate Display link.<br><img src="../../images/batches6.png" border =1></p> 
+<br /><br /><p class=big><u>Editing batch information</u></p>
+<p class=medium>To edit basic information for a batch such as its name, start/end date, owner, etc., Click 'Edit' on the line for the batch in question.<br>
+<img src="../../images/batches7.png" border=1></p>
+<p class=medium>This will open all the fields for that batch for editing and change the 'Edit' link to 'Save'. Once your edits have been made, click 'Save' and the batch information will be updated.<br><img src="../../images/batches8.png" border=1></p>
+<p class=big><u>Deleting a batch</u></p>
+<p class=medium>To delete a batch, click the 'Delete' link for the batch.<br><img src="../../images/batches7.png" border=1><p>
+<p class=medium>You will be asked to confirm that you indeed do want to delete the batch.<br><img src="../../images/batches9.png" border=1></p>
+
+<p class=big><u>Displaying a Movement Report for a batch</u></p>
+<p class=medium>Clicking the 'Report' link <img src="../../images/batches7.png" border=1> will display the sales history for the items in the batch during the sale period defined by the start and end dates of the batch.</p>
+<p class=medium><img src="../../images/batches10.png" border=1></p>
+<p class=medium>You will notice here that you have the option of changing the date range for the products in the sales batch movement report. This is useful when you wish to see how these products moved during a period within the sales batch time frame (for example, over the last weekend) or even for a period outside the batch dates (for example, you are looking to see how this product sold the month before the sales batch and the month after). The displayed report can also be dumped to an Excel file using the 'Click here for Excel version' link.</p>
+<p class=big><u>Editing items in a batch</u></p>
+<p class=medium>Once a batch has been created, items can be added/subtracted from a batch by clicking the link that is the name of the batch. This will load the item maintenance interface to the batch controller.<br><img src="../../images/batches11.png" border=1></p>
+<p class=medium>Entering a upc and clicking 'Add' (or pressing [Enter]) will pull preliminary information (description and current price) about the item. <br>
+<img src="../../images/batches12.png" border=1></p>
+<p class=medium>A Sale price field will appear at this point, as well. Enter the sale price for the item and click 'Add' or press [Enter] and the item will be added to the list of items in the sales batch.<br><img src="../../images/batches13.png" border=1></p>
+<p class=medium>To edit the sale price for an item already in a sales batch, click 'Edit', edit the sale price and click 'Save' and the price will be changed within the sales batch. <br \><img src="../../images/batches14.png" border=1><br \>To delete an item a batch, click 'Delete'. This will remove the item from the batch.</p>  
+<p class=big><u>Adding like codes to batches</u></p>
+<p class=medium>Like codes can be used in batches in addition to items. To enter the items in a like code, select 'Like Code'. This switches to a like code entry form. If you know the like code that you want, you can simply enter it in the left box. Otherwise, select it from the drop down list. To go back to the regular entry form, uncheck 'Like Code'.<br>
+<img src="../../images/batches15.png" border=1></p>
+<p class=medium>This will load a review showing the like code description and price information for that like code.<br><img src="../../images/batches16.png" border=1></p>
+<p class=medium>Upon adding this item to the batch you will now see a description of 'LC' plus the like code ID number listed in the item list.<br>
+<img src="../../images/batches17.png" border=1></p>
+<p class=medium>Like codes in the batch item list can be edited and deleted like items (see above: Editing items in a batch)</p>
+<p class=big><u>Shelf Tags</u></p>
+<p class=medium>Shelf tags are incorporated directly into the batch page. To create a new shelf tag for an item, check the 'New shelf tag" checkbox. This will automatically maintain the same setting while items are being entered.</p>
+<img src="../../images/batches18.png" border=1 />
+<p class=medium>Adding an item with a new shelf tag brings up an additional entry form for shelf tag specific information. 'Add' will add the item to the batch and create a new shelf tag. 'Cancel' will go back without adding the item or creating a shelf tag.</p>
+<img src="../../images/batches19.png" border=1 />
+<p class=medium>There are two ways to print shelf tags. When viewing a single batch, click 'Print Shelf Tags'.</p>
+<img src="../../images/batches20.png" border=1 />
+<p class=medium>Alternately, to get shelf tags from multiple batches at once, click the 'Print Shelf Tags' link on the list of all batches.</p>
+<img src="../../images/batches21.png" border=1 />
+<p class=medium>A list of all batches that have shelf tags is presented. Select as many as desired, then click 'Print'</p>
+<img src="../../images/batches22.png" border=1 />
+</div>
+</div>
+</body>
+</html>

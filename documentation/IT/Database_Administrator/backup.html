@@ -1,0 +1,52 @@
+<html>
+<head>
+	<title>Backups</title>
+</head>
+<body>
+Fannie includes a default task for creating MySQL database
+backups. For other database systems, you're on your own.
+This document is tailored towards MySQL in a Linux/UNIX
+environment. Making it work in Windows should be possible though.
+<h1>Backup Basics</h1>
+Nothing overly fancy is going on here. Backups are performed using
+mysqldump. The main advantage is utilizing fannie's configuration
+so there's one <i>master</i> file with database connection info
+that all tools and scripts rely on. If you rotate database passwords
+periodically, that means just one file to update.
+<h1>Configuration</h1>
+Fannie's main install/config page exposes a few configuration options
+for database backups:
+<ul>
+	<li><i>Path to backups</i> is where to store the backups. Each
+	database (default is4c_op, is4c_trans, &amp; trans_archve) is
+	given its own subdirectory here. This path should be writeable
+	and of course have adequate free space</li>
+	<li><i>Path to mysqldump</i> is your system directory for mysql-related
+	programs. The default, /usr/bin/, should be fine on most systems. Some
+	systems given cron a very limited shell, so full paths with binaries
+	provide some error-proofing.</li>
+	<li><i>Number of backups</i> is how many backups, per database, to
+	store. Backups are named with a date stamp (e.g., is4c_opYYYYMMDD.sql).
+	When the number of existing backups exceeds this setting, the oldest
+	one(s) are deleted.</li>
+	<li><i>Compress backups</i> is optional. Turning this one just passes
+	the backup through gzip. The normal mysql dumps are plain text, so
+	space savings from compression are pretty significant. For very large
+	databases, the CPU overhead of compression is also significant though.
+	For multi-GB databses, a bigger disk may be a better solution.</li>
+</ul>
+Once the configuration is set, just enable and schedule the job
+<b>nightly.db.backup.php</b> via Fannie Dayend Polling =&gt; Scheduled Tasks.
+<h1>Restoring a Backup</h1>
+First, if you used compression, decompress the desired backup file. In most
+graphical environments, that's just double-clicking it. On the command line,
+try <i>gzip -d &lt;backup file&gt;</i>.
+<p />
+Next, load the backup file. If you're using any sort of GUI tool to manage
+your MySQL server, just find it's backup/restore option and restore from your
+backup file. The format's pretty universal, so any tool should handle it. Working
+on the command line, try <i>mysql -u &lt;mysql username&gt; -p &lt;mysql password&gt;
+-h &lt;mysql host IP&gt; &lt; &lt;backup file&gt;</i>. Example for clarity:
+<i>mysql -u root -p secret_passcode -h localhost &lt; is4c_op20120101.sql</i>.
+</body>
+</html>

@@ -1,0 +1,149 @@
+<html>
+<head>
+	<title>Advanced Pricing</title>
+</head>
+<body>
+	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
+	updated as of: June 3, 2014<br />
+	last author: Andy Theuninck
+	</div>
+<!-- 19Aug12 EL Change <h1> to <h2> and add whitespace for source readability -->
+<p>
+CORE supports a number of ways of calculating an item's price beyond simply assigning
+an item a static price. These methods do not all have a direct user interface in
+Fannie so this document will include discussion of the underlying database.
+</p>
+<p>
+There are two sets of four columns used for price calculations. The first
+set is for regular pricing: <i>pricemethod, normal_price, groupprice, and quantity</i>. 
+The second set is for sale pricing: <i>specialpricemethod, special_price, 
+specialgroupprice, and specialquantity</i>. The remainder of the document will use
+the first set of column names for brevity. The second set are exactly equivalent,
+respectively, for sale items. One other column of note is <i>mixmatchcode</i>
+which is used to define groups of items.
+</p>
+<p>
+<ul>
+    <li><b>Basic Price Method</b> (pricemethod #0)
+        <ul>
+        <li>The most common pricing method and widely supported through Fannie.
+        <li>The item price is simply <i>normal_price</i>.
+        </ul>
+    </li>
+    <li><b>Group Price Method</b> (pricemethod #1)
+        <ul>
+        <li>Non-strict volume pricing
+        <li>Example: three for a dollar:
+            <ul>
+                <li>pricemethod = 1</li>
+                <li>normal_price is irrelevant</li>
+                <li>groupprice = 1.00</li>
+                <li>quantity = 3</li>
+            </ul>
+        <li>Each item will ring up at <i>groupprice</i> divided by <i>quantity</i>.
+            Buying a complete set is not required.</li>
+        </ul>
+    </li>
+    <li><b>Quantity Enforced Group Price Method</b> (pricemethod #2)
+        <ul>
+        <li>Strict volume pricing
+        <li>Example: three for a dollar:
+            <ul>
+                <li>pricemethod = 2</li>
+                <li>normal_price = 0.40</li>
+                <li>groupprice = 1.00</li>
+                <li>quantity = 3</li>
+            </ul>
+        <li>Each full set will ring up at the group price. In the example, 
+        the first item would ring in at $0.40 (<i>normal_price</i>), the
+        second item would also ring in at $0.40 (<i>normal_price</i>), and
+        the third item would ring in at $0.20 (the value required to reach
+        the correct <i>groupprice</i> for the set).</li>
+        <li>Items with the same <i>mixmatchcode</i> are considered equivalent
+        and will all count towards the required <i>quantity</i>.</li>
+        </ul>
+    </li>
+    <li><b>Split AB Group Price Method</b> (pricemethod #3)
+        <ul>
+            <li>Buy item A, save on item B</li>
+            <li>Example: buy two sodas, save $0.50 on bottle opener
+                <ul>
+                    <li>Soda:
+                        <ul>
+                            <li>pricemethod = 3
+                            <li>normal_price = regular retail price
+                            <li>groupprice = 0.50
+                            <li>quantity = 3
+                            <li>mixmatchcode = 123
+                        </ul>
+                    <li>Bottle opener:
+                        <ul>
+                            <li>pricemethod = 3
+                            <li>normal_price = regular retail price
+                            <li>groupprice = 0.50
+                            <li>quantity = 3
+                            <li>mixmatchcode = -123
+                        </ul>
+                </ul>
+            </li>
+            <li>All items will ring in at <i>normal_price</i>. When
+            a full set is reached, <b>two</b> separate discount records
+            are added. The discount is split evenly. One record has the
+            department value for item A and one record has the department
+            value for item B.</li>
+            <li>The <i>groupprice</i> column contains the total discount amount</li>
+            <li>The <i>quantity</i> column contains the number of item A required
+            plus one. The requirement for item B is always considered one item.</li>
+            <li>The <i>mixmatchcode</i> defines which item(s) are considered A and
+            which item(s) are considered B. This value must be numeric with the
+            positive code for A and the negative code for B.</li>
+        </ul>
+    </li>
+    <li><b>AB Group Price Method</b> (pricemethod #4)
+        <ul>
+            <li>Buy item A, save on item B</li>
+            <li>This is identical to <i>Split AB Group Price</i> except
+            only a single discount record is added for each complete set.
+            The department value for item B is always used for the discount.</li>
+        </ul>
+    </li>
+    <li><b>Big Group Price Method</b> (pricemethod #5)
+        <ul>
+            <li>Buy a number of different items, save on another item</li>
+            <li>This is an expanded version of AB pricing. The customer
+            has to buy item A, item B, item C, etc to get the discount.</li>
+            <li>The sets of items are defined using <i>mixmatchcode</i>. The
+            first ten characters should be the same for all items, followed
+            by an underscore, followed by either <i>d</i> to denote the 
+            discounted item or <i>q</i> and an integer to denote the qualifying
+            item.</li>
+            <li>All items ring in at <i>normal_price</i>.</li>
+            <li>A separate discount record for <i>groupprice</i> is added when
+            all items have been purchased</li>
+            <li>The <i>quantity</i> column defines the number of qualifying items.
+            If <i>quantity</i> is three and <i>mixmatchcode</i> starts with
+            myBigGroup, the customer needs to buy at least one item each with 
+            myBigGroup_q0, myBigGroup_q1, myBigGroup_q2, and myBigGroup_d.</li>
+        </ul>
+    </li>
+    <li><b>More Than Quantity Price Method</b> (pricemethod #6)
+        <ul>
+            <li>Save X% if purchasing Y or more items</li>
+            <li>Example: buy 12 or more bottles of wine, save 5%
+                <ul>
+                    <li>pricemethod = 6
+                    <li>normal_price = regular retail price
+                    <li>groupprice = 0.05
+                    <li>quantity = 12
+                </ul>
+            </li>
+            <li>Items with the same <i>mixmatchcode</i> are considered
+            equivalent</li>
+            <li><i>groupprice</i> is interpreted as a percentage.</li> 
+            <li>All items are discounted once the threshold is reached,
+            not just the final one (e.g., the 12th bottle in the example)</li>
+        </ul>
+    </li>
+</ul>
+</body>
+</html>

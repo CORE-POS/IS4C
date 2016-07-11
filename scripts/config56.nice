@@ -1,0 +1,92 @@
+#! /bin/sh
+#
+# Created by configure
+#
+# Sample configure script for building PHP5.6 
+# with extra modules required by CORE built in
+# statically. Paths may not be correct for all
+# systems but this is somewhere to start
+#
+# Run this script in the PHP sourcecode directory
+
+'./configure' \
+'--prefix=/usr/local' \
+'--exec-prefix=/usr/local' \
+'--bindir=/usr/local/bin' \
+'--sbindir=/usr/local/sbin' \
+'--sysconfdir=/etc/php56' \
+'--datadir=/usr/local/share' \
+'--includedir=/usr/local/include' \
+'--libdir=/usr/local/lib64' \
+'--libexecdir=/usr/local/libexec' \
+'--localstatedir=/var/php56' \
+'--sharedstatedir=/usr/local/com' \
+'--mandir=/usr/local/share/man' \
+'--infodir=/usr/local/share/info' \
+'--cache-file=config.cache' \
+'--with-libdir=lib64' \
+'--with-config-file-path=/etc/php56' \
+'--with-config-file-scan-dir=/etc/php56/php.d' \
+'--disable-debug' \
+'--with-pic' \
+'--disable-rpath' \
+'--with-pear' \
+'--with-bz2' \
+'--with-freetype-dir=/usr' \
+'--with-png-dir=/usr' \
+'--with-xpm-dir=/usr' \
+'--enable-gd-native-ttf' \
+'--without-gdbm' \
+'--with-gettext' \
+'--with-gmp' \
+'--with-iconv' \
+'--with-jpeg-dir=/usr' \
+'--with-openssl' \
+'--with-pcre-regex=/usr' \
+'--with-zlib' \
+'--with-layout=GNU' \
+'--enable-exif' \
+'--enable-ftp' \
+'--enable-sockets' \
+'--enable-sysvsem' \
+'--enable-sysvshm' \
+'--enable-sysvmsg' \
+'--with-kerberos' \
+'--enable-shmop' \
+'--enable-calendar' \
+'--with-sqlite3' \
+'--with-libxml-dir=/usr' \
+'--enable-xml' \
+'--with-mysql' \
+'--with-mysqli' \
+'--with-gd' \
+'--disable-dom' \
+'--disable-dba' \
+'--without-unixODBC' \
+'--enable-pdo' \
+'--disable-xmlreader' \
+'--disable-xmlwriter' \
+'--enable-phar' \
+'--disable-fileinfo' \
+'--enable-json' \
+'--without-pspell' \
+'--disable-wddx' \
+'--with-curl' \
+'--enable-posix' \
+'--disable-sysvmsg' \
+'--disable-sysvshm' \
+'--disable-sysvsem' \
+'--with-ldap' \
+'--enable-opcache' \
+'--enable-fpm' \
+'--with-fpm-user=apache' \
+'--with-fpm-group=apache' \
+'--with-pdo-mysql' \
+'--enable-zip' \
+'--enable-xmlwriter' \
+'--enable-xmlreader' \
+'--enable-dom' \
+'--with-xsl' \
+'--enable-intl' \
+'--enable-mbstring' \
+"$@"

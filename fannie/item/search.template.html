@@ -1,0 +1,308 @@
+<?php
+return <<<HTML
+<div class="col-sm-10">
+    <form method="post" id="searchform" onsubmit="getResults(); return false;" onreset="formReset();">
+
+    <table class="table table-bordered">
+        <tr>
+            <td class="text-right">
+                <label class="small control-label">
+                    <a href="" class="btn btn-default btn-xs"
+                    onclick="$('.upc-in').toggle(); return false;">+</a>
+                    UPC
+                </label>
+            </td>
+            <td>
+                <textarea class="upc-in form-control input-sm collapse" name="upcs"></textarea>
+                <input type="text" name="upc" class="upc-in form-control input-sm" 
+                    placeholder="UPC or PLU" />
+            </td>
+            <td class="text-right">
+                <label class="control-label small">Descript.</label>
+            </td>
+            <td>
+                <input type="text" name="description" class="form-control input-sm" 
+                    placeholder="Item Description" />
+            </td>
+            <td class="text-right">
+                <label class="control-label small">Brand</label>
+            </td>
+            <td>
+                <input type="text" name="brand" class="form-control input-sm" 
+                    placeholder="Brand Name" id="brand-field" />
+            </td>
+        </tr>
+        <tr>
+            <td class="text-right">
+                <label class="control-label small">Super Dept</label>
+            </td>
+            <td>
+                <select name="superID" class="form-control input-sm" onchange="chainSuper(this.value);" >
+                    <option value="">Select Super...</option>
+                    {$superOpts}
+                </select>
+            </td>
+            <td class="text-right">
+                <label class="control-label small">Dept Start</label>
+            </td>
+            <td>
+                <select name="deptStart" id="dept-start" class="form-control input-sm">
+                    <option value="">Select Start...</option>
+                    {$deptOpts}
+                </select>
+            </td>
+            <td class="text-right">
+                <label class="control-label small">Dept End</label>
+            </td>
+            <td>
+                <select name="deptEnd" id="dept-end" class="form-control input-sm">
+                    <option value="">Select End...</option>
+                    {$deptOpts}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <select class="form-control input-sm" name="modOp">
+                    <option>Modified On</option>
+                    <option>Modified Before</option>
+                    <option>Modified After</option>
+                </select>
+            </td>
+            <td>
+            <input type="text" name="modDate" id="modDate" class="form-control input-sm date-field" 
+                    placeholder="Modified date" />
+           </td>
+           <td class="text-right">
+                <label class="control-label small">Movement</label>
+            </td>
+            <td>
+                <select name="soldOp" class="form-control input-sm"><option value="">n/a</option><option value="7">Last 7 days</option>
+                    <option value="30">Last 30 days</option><option value="90">Last 90 days</option></select>
+            </td>
+            <td class="text-right">
+                <label class="control-label small">Vendor</label>
+             </td>
+             <td>
+                <select name="vendor" class="form-control input-sm"
+                    onchange="if(this.value==='' || this.value==='0') $('#vendorSale').attr('disabled','disabled'); else $('#vendorSale').removeAttr('disabled');" >
+                    <option value="">Any</option>
+                    <option value="0">Not Assigned</option>
+                    {$vendorOpts}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td class="text-right">
+                <label class="control-label small">Price</label>
+            </td>
+            <td class="form-inline">
+                <select name="price_op" class="form-control input-sm">
+                    <option>=</option>
+                    <option>&lt;</option>
+                    <option>&gt;</option>
+                </select>
+                <input type="text" class="form-control input-sm price-field"
+                    name="price" placeholder="$0.00" />
+            </td>
+            <td class="text-right">
+                <label class="control-label small">Cost</label>
+            </td>
+            <td class="form-inline">
+                <select name="cost_op" class="form-control input-sm">
+                    <option>=</option>
+                    <option>&lt;</option>
+                    <option>&gt;</option>
+                </select>
+                <input type="text" class="form-control input-sm price-field"
+                    name="cost" placeholder="$0.00" />
+            </td>
+            <td class="form-inline" colspan="2">
+                <label class="control-label small">Pricing Rule</label>
+                <select name="price_rule" class="form-control input-sm">
+                    <option value="">Any</option>
+                    <option value="0">Standard</option>
+                    {$ruleOpts}
+                    <option value="-1">Variable</option>
+                </select>
+            </td>
+            </td>
+        </tr>
+        <tr>
+            <td class="text-right">
+                <label class="control-label small">Origin</label>
+            </td>
+            <td>
+                <select name="originID" class="form-control input-sm"><option value="0">Any Origin</option>
+                    {$originOpts}
+                </select>
+            </td>
+            <td class="text-right">
+                <label class="control-label small">Likecode</label> 
+            </td>
+            <td>
+                <select name="likeCode" class="form-control input-sm"><option value="">Choose Like Code</option>
+                    <option value="ANY">In Any Likecode</option>
+                    <option value="NONE">Not in a Likecode</option>
+                    {$lcOpts}
+                </select>
+            </td>
+            <td colspan="2">
+                <label class="small" for="vendorSale">
+                    On Vendor Sale
+                    <input type="checkbox" id="vendorSale" name="vendorSale" class="checkbox-inline" disabled />
+                </label>
+                 | 
+                <label class="small" for="in_use">
+                    InUse
+                    <input type="checkbox" name="in_use" id="in_use" value="1" checked class="checkbox-inline" />
+                </label>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" class="form-inline">
+                <div class="form-group">
+                    <label class="control-label small">Tax</label>
+                    <select name="tax" class="form-control input-sm">
+                        <option value="">Any</option>
+                        <option value="0">NoTax</option>
+                        {$taxOpts}
+                    </select>
+                </div>
+                &nbsp;&nbsp;
+                <div class="form-group">
+                    <label class="control-label small">FS</label>
+                    <select name="fs" class="form-control input-sm">
+                    <option value="">Any</option><option value="1">Yes</option><option value="0">No</option></select>
+                </div>
+            </td>
+            <td colspan="2" class="form-inline">
+                <div class="form-group">
+                    <label class="control-label small">Local</label>
+                    <select name="local" class="form-control input-sm">
+                        <option value="">Any</option>
+                        <option value="0">No</option>
+                        {$localOpts}
+                    </select>
+                </div>
+                &nbsp;&nbsp;
+                <div class="form-group">
+                    <label class="control-label small">%Disc</label>
+                    <select name="discountable" class="form-control input-sm">
+                        <option value="">Any</option>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                        <option value="2">Trans Only</option>
+                        <option value="3">Line Only</option>
+                    </select>
+                </div>
+                <label class="small" for="serviceScale">
+                    Service Scale
+                    <input type="checkbox" id="serviceScale" name="serviceScale" class="checkbox-inline" />
+                </label>
+            </td>
+            <td colspan="2" class="form-inline">
+                <div class="form-group">
+                    <label class="control-label small">Location</label>
+                    <select name="location" class="form-control input-sm">
+                    <option value="">Any</option><option value="1">Yes</option><option value="0">No</option>
+                    </select>
+                </div>
+                &nbsp;&nbsp;
+                <div class="form-group">
+                    <label class="control-label small">Sign Info</label>
+                    <select name="signinfo" class="form-control input-sm">
+                    <option value="">Any</option><option value="1">Yes</option><option value="0">No</option>
+                    </select>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="6" class="form-inline">
+                <label class="control-label small">In Sale Batch</label>
+                <select name="onsale" class="form-control input-sm"
+                    onchange="if(this.value==='') $('.saleField').attr('disabled','disabled'); else $('.saleField').removeAttr('disabled');" >
+                    <option value="">Any</option>
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
+                </select>
+                &nbsp;&nbsp;
+                <label class="control-label small">Sale Type</label>
+                <select disabled class="saleField form-control input-sm" name="saletype">
+                    <option value="">Any Sale Type</option>
+                    {$btOpts}
+                </select>
+                &nbsp;&nbsp;
+                <label class="small">
+                    All Sales
+                    <input type="checkbox" disabled class="saleField checkbox-inline" name="sale_all" id="sale_all" value="1" /> 
+                </label> | 
+                <label class="small">
+                    Past Sales
+                    <input type="checkbox" disabled class="saleField checkbox-inline" name="sale_past" id="sale_past" value="1" /> 
+                </label> | 
+                <label class="small">
+                    Current Sales
+                    <input type="checkbox" disabled class="saleField checkbox-inline" name="sale_current" id="sale_current" value="1" /> 
+                </label> | 
+                <label class="small">
+                    Upcoming Sales
+                    <input type="checkbox" disabled class="saleField checkbox-inline" name="sale_upcoming" id="sale_upcoming" value="1" /> 
+                </label>
+            </td>
+        </tr>
+    </table>
+    <button type="submit" class="btn btn-default btn-core">Find Items</button>
+    <button type="reset" class="btn btn-default btn-reset">Clear Settings</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <span id="selection-counter"></span>
+    </form>
+
+    <hr />
+
+    <div class="progress collapse">
+        <div class="progress-bar progress-bar-striped active"  role="progressbar" 
+            aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+            <span class="sr-only">Searching</span>
+        </div>
+    </div>
+
+    <div id="resultArea"></div>
+</div> <!-- // end col-sm-10 -->
+<div class="col-sm-2">
+    <div class="panel panel-default">
+        <div class="panel-heading">Selected Items</div>
+        <div class="panel-body">
+            <p><button type="submit" class="btn btn-default btn-xs" 
+                onclick="goToBatch();">Price or Sale Batch</button></p>
+            <p><button type="submit" class="btn btn-default btn-xs" 
+                onclick="goToEdit();">Group Edit Items</button></p>
+            <p><button type="submit" class="btn btn-default btn-xs" 
+                onclick="goToList();">Product List Tool</button></p>
+            <p><button class="btn btn-default btn-xs" type="submit" 
+                onclick="goToSigns();">Tags/Signs</button></p>
+            <p><button class="btn btn-default btn-xs" type="submit" 
+                onclick="goToMargins();">Margins</button></p>
+            <p><button class="btn btn-default btn-xs" type="submit" 
+                onclick="goToCoupons();">Store Coupons</button></p>
+            <p><button class="btn btn-default btn-xs" type="submit" 
+                onclick="goToSync();">Scale Sync</button></p>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Report on Items</div>
+        <div class="panel-body">
+            <select id="reportURL" class="form-control input-sm">
+                <option value="{$url}reports/DepartmentMovement/SmartMovementReport.php?date1={$today}&date2={$today}&lookup-type=u">
+                    Movement</option>
+                <option value="{$url}reports/from-search/PercentageOfSales/PercentageOfSalesReport.php">
+                    %% of Sales</option>
+            </select>
+            <p><button class="btn btn-default btn-xs" type="submit" 
+                onclick="goToReport();">Get Report</button></p>
+        </div>
+    </div>
+    <form method="post" id="actionForm" target="__advs_act"></form>
+</div>
+HTML;
+

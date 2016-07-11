@@ -1,0 +1,37 @@
+<html>
+<head><title>Instructions for Movement Reporting page</title>
+<link href="../../../styles.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div id=docmain>
+<p class=xbig>How to use the Movement Reporting Page</p>
+<div id=doctext>
+<p class=medim>Below is a screenshot of the interface for the Movement Report Page. The page can be accessed directly by navigating to <a href="../deliQuery.php" target="blank">http://key/queries/deliQuery.php</a>.
+<p class=medium><img border=1 src="../../images/deliQ1.png"></p>
+</div>
+<p class=big>Definitions: </p>
+<div id=doctext>
+<p class=medium><b>Buyer/Dept</b> - All departments/items associated with a particular buyer or department manager.</p>
+<p class=medium><b>Send to Excel</b> - Generate an Excel document from report, rather than display report.</p>
+<p class=medium><b>Department Start/End</b> - Report will include the movement of all items in departments included in range.</p>
+<p class=medium><b>Date Start/End</b> - Report will include all movement on all days included in range.</p>
+<p class=medium><b>Sum movement by?</b> - Determines what category to sum movement information</p>
+</div>
+<br/><br/>
+<p class=big>To generate a movement report for all departments for a Buyer/Dept</p>
+<div id=doctext>
+<p class=medium>Select Buyer/Dept interested in.<br><img src="../../images/deliQ2.png" border=1></p>
+<p class=medium>Once you have selected a Buyer/Dept, selecting a Department Start/End is no longer considered in generating the report. Next, select a start date and end date for the report.<br><img src="../../images/deliQ3.png" border=1></p>
+<p class=medium>Lastly, you need to decide how you would like the movement summed. Summing by PLU will show movement at the item level, summing by department will show total movement in departments selected with buyer/dept, and summing by date will sum all movement in the selected buyer/dept manager's departments</p>
+<br/><br/><p class=big>To generate movement report for specific department range</p>
+<p class=medium>This report is generally the same as by Buyer/Dept, except that the Buyer/Dept must be set to the blank row at the top of the select list. If a Buyer/Dept is selected it will override any department selections made. Department ranges may be set by either entering department numbers, or by selecting departments from drop down menus.<br><img src="../../images/deliQ4.png" border=1></p>
+<p class=medium>Once the department range is set, a date range needs to be set per instructions above, as well as, setting sum by criteria.</p>
+<p class=big>Sending report to Excel</p>
+<p class=medium>There are two ways of sending this report to Excel. The first is to simply click the 'Send to Excel' checkbox BEFORE running the report. <br><img src="../../images/deliQ5.png" border=1></p>
+<p class-medium>The other method is to click the 'Save to Excel' link on the resulting report without selecting the 'Send to Excel' checkbox before running the report<br><img src="../../images/deliQ6.png" border=1></p>
+<p class=big>Using the Movement Report</p>
+<p class=medium>The image above shows the look of the movement report. The header for the report explains how it is currently summed, the date of the report, the date range and the either the Buyer/Dept or the department range. As explained above, the report may also be sent to Excel, by clicking the Save to Excel' link. The default sort for this report is by UPC if report is summed by PLU/UPC, date if summed by date, and by department if summed by department. The column headers are all links to sort the report. Clicking the same column header twice will sort the report in the reverse direction from its current sort.</p>
+</div>
+</div>
+</body>
+</html>

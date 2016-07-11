@@ -1,0 +1,49 @@
+#left {
+	position: absolute;
+	left: 5px;
+	width: 13em;
+	padding: 0.2em;
+	margin-top: 0.3em;
+	border: solid black 1px;
+}
+
+body {
+	background: url(images/LogoBig.gif);
+	background-repeat: no-repeat;
+}
+
+a {
+	color: blue;
+	text-decoration: none;
+}
+
+form {
+	display: inline;
+}
+
+img {
+	border: none;
+}
+
+#right {
+	position: absolute;
+	left: 14em;
+	padding: 0.2em;
+	width: 40em;
+	height: 200px;
+	background: url(images/tomatoman.png);
+	background-repeat: no-repeat;
+	background-position: top right;
+}
+
+#top {
+	width: 95%;
+	padding: 0.2em;
+	left: 5px;
+	border: solid black 1px;
+	font-size: 120%;
+}
+
+#ingredientSelect {
+	visibility: hidden;
+}

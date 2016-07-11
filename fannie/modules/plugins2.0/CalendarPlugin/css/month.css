@@ -1,0 +1,103 @@
+a {
+	color: blue;
+}
+
+p.index {
+	margin-left: 1.5em;
+	line-height: .7em;
+}
+
+div.indexTitle {
+	font-weight: bold;
+	font-size: 120%;
+	line-height: 1em;
+}
+
+p#indexCreateNew {
+	font-size: 90%;
+	margin-left: 3em;
+}
+
+div.monthViewHeader {
+	font-size: 130%;
+	font-weight: bold;
+	text-align: center;
+}
+
+table.monthview {
+	border: solid 1px black;
+}
+
+table.monthview a {
+	color: #0000ff;
+}
+
+th.monthview_head {
+	width: 10em;
+	border: solid 1px black;
+}
+
+td.monthview_body {
+	border: solid 1px black;
+	width: 10em;
+	height: 5em;
+	vertical-align: top;
+}
+
+div.monthview_box {
+	margin: 0 6px 6px 6px;
+	font-size: 80%;
+}
+
+div.monthview_box_alt {
+	margin: 0 6px 6px 6px;
+	font-size: 80%;
+	color: #000099;
+}
+
+td.monthview_previous {
+	padding-left: 20px;
+	text-align: left;
+}
+
+td.monthview_next {
+	padding-right: 20px;
+	text-align: right;
+}
+
+td.monthview_current {
+	text-align: center;
+}
+
+div.overlay_outerbox {
+	margin: 5px;
+	border: solid 1px black;
+}
+
+div.overlay_date {
+	border-bottom: solid 1px black;
+	font-size: 90%;
+	font-weight: bold;
+	padding-left: 10px;
+}
+
+div.overlay_one {
+	padding: 5px;
+	color: #000000;
+	background: #ffffff;
+}
+
+div.overlay_two {
+	padding: 5px;
+	color: #000000;
+	background: #dddddd;
+}
+
+div#overlayinput {
+	color: #000000;
+	float: left;
+}
+
+#overlayinput b{
+	color: black;
+}

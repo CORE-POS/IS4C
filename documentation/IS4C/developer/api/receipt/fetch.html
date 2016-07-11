@@ -1,0 +1,49 @@
+<html>
+	<head>
+	<title>DefaultReceiptDataFetch</title>
+	</head>
+<body>
+<div style="text-align:center;">
+<h2>DefaultReceiptDataFetch</h2>
+<a href="#change_log">Revised: 10Apr2013</a>
+</div>
+<p>Fetching data is the first step in building a receipt. Modules
+implementing DefaultReceiptDataFetch are responsible for
+retreiving transaction data from the database. Unless you provide
+replacement modules for every stage, the data should be based on
+localtemptrans but you can join in data from other tables so
+that modules in later steps don't need to issue additional queries.
+<p>
+Subclasses must implement one method, <b>fetch</b>. This method
+takes three optional arguments and returns an SQL result. If the
+employee number, register number, and transaction number are provided
+the subclass should fetch reprint data for that transaction. If the
+arguments are omitted, the subclass should fetch data for the
+current transaction.
+</p>
+<p><b>Example</b>:
+<pre>
+class ExampleFetchData extends DefaultReceiptDataFetch {
+	function fetch($empNo=False,$laneNo=False,$transNo=False){
+		$db = Database::tDataConnect();
+		if ($empNo && $laneNo && $transNo){
+			return $db->query("SELECT * FROM localtranstoday
+				WHERE emp_no=$empNo AND
+				register_no=$laneNo AND
+				trans_no=$transNo");
+		}
+		else {
+			return $db->query('SELECT * FROM localtemptrans');
+		}
+	}
+}
+</pre>
+</p>
+<hr />
+<pre>
+<a name="change_log">Change Log:</a>
+
+10Apr13 Andy Theuninck - Created document
+</pre>
+</body>
+</html>

@@ -1,0 +1,8 @@
+There are still some things left to do on this font:
+
+1) Get it inspected by a bank or other authority.  See if it works!  :-)
+
+2) Implement stem hint replacement on some of the glyphs such as
+   "3" and "8" and the symbols - I wasn't sure how to do this.
+
+3) The arcs on the "7" may not be quite right... close enough though, I think.

@@ -1,0 +1,33 @@
+<?php 
+require('../../auth/login.php');
+
+if (validateUserQuiet('barcodes')){
+?>
+<html>
+<head>
+<title>Barcode Label Page</title>
+<link href="../../styles.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div id=logo><img src='../../members/images/newLogo_small.gif'></div>
+<div id=main>
+<table>
+<tr class=big bgcolor=brown><td colspan=3 align=center><font color=ffffcc>Barcode page</font></td></tr>
+<tr class=medium><td><a href=barcodekarl.php>Grocery Barcodes</a></td><td>&nbsp;</td><td><a class=small href=dumpBarkarl.php>Clear grocery barcodes</a></td></tr>
+<tr class=medium><td><a href=barcodebrad.php>Cool Barcodes</a></td><td>&nbsp;</td><td><a class=small href=dumpBarbrad.php>Clear cool barcodes</a></td></tr>
+<tr class=medium><td><a href=barcodejill.php>HBC Barcodes</a></td><td>&nbsp;</td><td><a class=small href=dumpBarjill.php>Clear HBC barcodes</a></td></tr>
+<tr class=medium><td><a href=barcodesusan.php>Gen Merch Barcodes</a></td><td>&nbsp;</td><td><a class=small href=dumpBarsusan.php>Clear Gen Merch barcodes</a></td></tr>
+<tr class=medium><td><a href=barcodejesse.php>Meat Barcodes</a></td><td>&nbsp;</td><td><a class=small href=dumpBarjesse.php>Clear Meat barcodes</a></td></tr>
+<tr><td colspan=3>&nbsp;</td></tr>
+<tr class=medium><td><a href=barcodenew.php>'New' Barcodes</a></td><td>&nbsp;</td><td><a class=small href=dumpBarcodes.php>Clear 'new' barcodes</a></td></tr>
+</table>
+</div>
+</body>
+</body>
+<?php
+}
+else {
+  echo "<a href=../../auth/ui/loginform.php?redirect=/queries/labels/index.php>Login</a> to view barcodes<p />";
+  
+}
+?>

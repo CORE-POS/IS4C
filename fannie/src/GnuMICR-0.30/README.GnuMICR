@@ -1,0 +1,93 @@
+GNUMICR MICR / E13-B font
+
+A PostScript(tm) Type 1 MICR Font released under the GPL.
+
+Copyright (c) 2000-2003, Eric Sandeen <sandeen-gnumicr *at* sandeen *dot* net>
+
+This font is released under the GNU General Public License ("GPL")
+(see the file COPYING for details).
+
+Important details to note about the license:
+
+1) This font comes with NO WARRANTY.  I am not responsible for any
+   damages or expenses resulting from its use.
+
+2) This font may only be distributed with the license and the source code 
+   to the font intact.  It's not exactly clear to me how the GNU GPL applies to 
+   fonts, but in my eyes, the font file "GnuMICR.raw" is the "source code" to
+   this font, and the files "GnuMICR.pfa" and "GnuMICR.pfb" are the compiled
+   versions.  if you redistribute the "compiled" version, you must also
+   distribute, or offer to distribute,  the "source" version (see COPYING).
+
+   Also, it is my wish that this font not be distributed in such a way
+   that it is built into a proprietary piece of software.  I'll leave
+   the legal wrangling to the lawyers, but in my opinion, if you
+   write, say, a non-GPL'd check printing application for Windows,
+   you should not hard-code or embed this font into your application.
+   I feel that this would be the font-equivalent of linking libraries.
+   If you wish to distribute this font with your app, that's fine,
+   but I feel that it should be distributed alongside the application,
+   with all copyright & license info intact, per the terms of the GPL.
+
+   I have spent MANY hours on this font.  Please respect my work, and
+   follow my wishes regarding licensing of this particular font.
+ 
+   For a brief introduction to fonts, copyright, and piracy, see
+   "Ethics and Licensing Issues Related to Type" at
+   http://www.linuxdoc.org/HOWTO/Font-HOWTO-12.html
+
+--------------------------
+
+Ok, with that out of the way...
+
+A while ago, I set out to be able to print my own checks under Linux.  The
+first requirement was that I find a MICR font (those funky numbers and
+symbols at the bottom of your check) that could be freely
+distributed with the application.  I quickly found that such a thing didn't
+exist, so I set out to make my own.  This font is the result.
+
+I coded this font by hand, without the aid of any GUI font application.
+My goal was to be as accurate as possible, with complete control over
+the resulting font.  I found dimensions and other specs for the font 
+and their use at http://www.cdnpay.ca/eng/rules/006.ENG.htm
+This seems to be mostly geared towards Canadian standards, but the MICR
+font is an ISO standard, and the glyph dimensions should be the same
+as are used in the United States.
+
+My sole source for information for this font was the URL above.  This font
+is NOT a modified version of any existing MICR font.
+
+The "source code" to this font is the file "GnuMICR.raw"  This file
+may be converted into an actual Type 1 (.pfa or .pfb) font with
+the "t1utils" package available
+at http://www.lcdf.org/~eddietwo/type/#t1utils
+
+I have not had this font tested by any bank.  You should get best results
+with a 600dpi PostScript(tm) printer, probably worse results with a 300
+dpi laserjet printer via GhostScript.  The hinting on the font is likely
+not perfect, so rendering at lower DPI may introduce some errors.
+
+I have had some very good reports of people using this font for
+commercial printing, however.
+
+I'm not a PostScript(tm) expert by any means.  If anyone who is reading
+this document _is_ and would like to offer suggestions or patches for the 
+font or its associated .afm file, please feel free to do so.
+
+Also, if you have access to the tools needed to really test the font,
+and you feel like doing that, I would really like to hear from you.
+I'd like to make this the best MICR font available.  I think it's
+well on its way - see "comparison.png" for an overlay of GnuMICR
+vs. a sample from a commercial font.  Note the strange arcs in some
+regions of the commercial font.
+
+The TTF font provided in this package was converted by a third
+party using Windows NT.  As such, I have very little confidence
+in the quality of the TTF font.  If you want the result of my hard
+work on dimensional accuracy, use the postscript font.
+
+See the file INSTALL for help installing this font.
+
+-Eric Sandeen
+ July 1, 2000
+ Updated March 2, 2003

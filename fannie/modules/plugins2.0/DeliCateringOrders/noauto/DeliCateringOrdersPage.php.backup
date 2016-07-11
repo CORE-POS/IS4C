@@ -1,0 +1,192 @@
+<?php 
+/*******************************************************************************
+
+    Copyright 2013 Whole Foods Co-op
+
+    This file is part of IT CORE.
+
+    IT CORE is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    IT CORE is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    in the file license.txt along with IT CORE; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+*********************************************************************************/
+
+include(dirname(__FILE__).'/../../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+
+class DeliCateringOrdersPage extends FannieRESTfulPage 
+{
+
+    protected $header = 'Deli Catering Orders';
+    protected $title = 'Deli Catering Orders';
+    protected $results = array();
+
+    function preprocess(){
+        $this->__routes[] = 'get<id><first><last>';
+        return parent::preprocess();
+    }
+    
+    public function css_content()
+    {
+        return '
+                .descbox {
+                    height: 150px;
+                    width: 550px;
+                    position: relative;
+                    padding: 5px;
+                    
+                }
+                .longdescbox {
+                    height: 150px;
+                    width: 650px;
+                    position: relative;
+                    padding: 5px;
+                    
+                }
+                .title {
+                    font-size: 20px;
+                    
+                    position: relative;
+                    text-align: left;
+                }
+                .desc {
+                    font-size: 16px;
+                    position: relative;
+                    float: left;
+                    width: 400px;
+                    padding: 10px;
+                    
+                }
+                .quantbox {
+                    height: 100px;
+                    width: 280;
+                    position: relative;
+                    float: right;
+                    padding: 10px;
+                    text-align: right;
+                    
+                }
+                p {
+                    text-align: center;
+                    font-size: 20px;
+                }
+                .form-qty {
+                    width: 50px;
+                }
+                .form-up-btn {
+                    height: 12px;
+                    width: 20px;
+                    background-image: url(src/up.png);   
+                }
+                .form-down-btn {
+                    height: 12px;
+                    width: 20px;
+                    background-image: url(src/down.png);   
+                }
+                fieldset {
+                    border: 1px solid black;
+                }
+                .menu {
+                    background-color: lightgrey;
+                    padding: 20px;
+                }
+        ';
+    }
+    
+    public function get_view()
+    {
+        print '
+       
+        <div align=\'center\'>
+        <ul class="nav navbar-nav">
+            <li ><a>Appetizers</a>
+            <li ><a>Fruit And Veggie Trays</a>
+            <li ><a>Sandwhiches</a>
+            <li ><a>Entrees</a>
+            <li ><a>Baked Goods</a>
+        </ul>
+        </div><br><br>
+        
+        <h2>Appetizers</h2>
+        <form name="appetizers">
+            <div class=\'descbox\'>
+                <div class=\'title\'>
+                    Gourmet Cheese Platter
+                </div>
+                <div class=\'desc\'>
+                    An assortment of artisan cheeses for every palate. Creamy 
+                    imported Brie, aged Gouda, sharp Irish cheddar, gorgonzola, 
+                    fresh chevre, and applewood smoked cheddar. Served with 
+                    seasonal fruit and sliced baguette.
+                </div>
+                <div class=\'quantbox\'>
+                  <strong>$54.99</strong><br><i>Serves 8 - 10</i><br>
+                  <input type=\'text\' name=\'id1\' id=\'qty1\' class=\'form-qty\'><br>
+                  <input type=\'button\' name=\'add\' class=\'form-up-btn\' onclick=\'javascript: document.getElementById("qty1").value++;\' value=\'+\'>
+                  <input type=\'button\' name=\'subtract\' class=\'form-down-btn\' onclick=\'javascript: document.getElementById("qty1").value--;\' value=\'-\'>      
+                </div>
+            </div>
+
+            <div class=\'descbox\'>
+                <div class=\'title\'>
+                    <br>Gourmet Cheese & Charcuterie Platter
+                </div>
+                <div class=\'desc\'>
+                    The same variety of delicious cheeses, but with the 
+                    addition of Lake Superior smoked trout, duck liver 
+                    pate with cognac, and thinly sliced Olli salami.
+                </div>
+                <div class=\'quantbox\'>
+                  <strong>$99.99</strong><br><i>Serves 16 - 20</i><br>
+                  <input type=\'text\' name=\'id2\' id=\'qty2\' class=\'form-qty\'><br>
+                  <input type=\'button\' name=\'add\' class=\'form-up-btn\' onclick=\'javascript: document.getElementById("qty2").value++;\' value=\'+\'>
+                  <input type=\'button\' name=\'subtract\' class=\'form-down-btn\' onclick=\'javascript: document.getElementById("qty2").value--;\' value=\'-\'>
+                  
+                </div>
+            </div>
+            
+                <div class=\'longdescbox\'>
+                <div class=\'title\'>
+                    Spanikopita Platter
+                </div>
+                <div class=\'desc\'>
+                    Flaky phyllo dough wrapped around a savory 
+                    combination of spinach, onions, feta and herbs. 
+                    Served with a tangy tzatziki sauce for dipping.
+                </div>
+                <div class=\'quantbox\'>
+                  <strong>$34.99</strong><br>Small<br><i>Serves 8 - 10</i><br>
+                  <input type=\'text\' name=\'id3\' id=\'qty3\' class=\'form-qty\'><br>
+                  <input type=\'button\' name=\'add\' class=\'form-up-btn\' onclick=\'javascript: document.getElementById("qty3").value++;\' value=\'+\'>
+                  <input type=\'button\' name=\'subtract\' class=\'form-down-btn\' onclick=\'javascript: document.getElementById("qty3").value--;\' value=\'-\'>
+                </div>
+                <div class=\'quantbox\'>
+                <strong>$64.99</strong><br>Large<br><i>Serves 16 - 20</i><br>
+                  <input type=\'text\' name=\'id4\' id=\'qty4\' class=\'form-qty\'><br>
+                  <input type=\'button\' name=\'add\' class=\'form-up-btn\' onclick=\'javascript: document.getElementById("qty4").value++;\' value=\'+\'>
+                  <input type=\'button\' name=\'subtract\' class=\'form-down-btn\' onclick=\'javascript: document.getElementById("qty4").value--;\' value=\'-\'>
+                </div>
+            </div>
+            
+            <input type="submit" class="btn btn-default" value="create order">
+        </form>
+        ';
+    }
+
+   
+}
+
+FannieDispatch::conditionalExec();
+

@@ -1,0 +1,111 @@
+<html>
+<head>
+	<title>House Coupon Explanations</title>
+    <style type='text/css'>
+        span.b {
+            font-weight:bold;
+        }
+    span.i {
+        font-style:italic;
+        }
+    span.u {
+        text-decoration:underscore;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="font-size:1.4em; text-align:center;">Explanation of<br />House Coupon<br />Terms and Options</h1>
+<!-- p>Even if the coupon is not a traditional printed one
+it is helpful to keep the characteristics of printed ones
+in mind.
+</p -->
+<!-- h3>EL Questions:</h3>
+<ul>
+    <li>Anytime.  Means?: coupon can be entered at any point in the transaction. versus Must be entered at the end, after Subtotal
+    <li>x
+</ul -->
+
+<h3>First, the simple ones:</h3>
+<ul>
+    <li><b>Begins</b> is when the coupon becomes effective.
+    The coupon will not be applied, or be accepted, before this date.
+    This makes it possible to set coupons, especially auto coupons,
+    up in advance, as is done for sale batches.
+    <li><b>Expires</b> is when the coupon runs through, inclusive.
+    E.g., if the expiration date is January 31, 2010, the coupon will ring as "expired" starting February 1, 2010
+    <li><b>Limit</b> is the number of times the coupon can be used <i>per transaction</i>
+    <li><b>Member-only</b> coupons can only be used by members
+    <li><b>Department</b> dicates how the discount gets coded by the POS. This is strictly
+    an accounting setting to control whose sales/budget the coupon value is deducted from.
+    It does not influence what item(s) the coupon applies to.</li>
+<!--
+The amount of the discount is credited to this department,
+in other words sales of the department are reduced by the amount of the discount.
+There can be a dedicated Discounts department for coupons that don't apply to
+a single department.
+-->
+    <li><b>Auto</b> if Yes, will be applied automatically,
+without the customer/member needing to present or mention it,
+[?when the transaction is totalled].
+</ul>
+
+<h3>Required purchases</h3>
+The bulk of features are here.
+The settings for minimum purchase quantity dictate which kinds of discounts can be applied.
+Many of these have similar options for <i>at least</i> and <i>more than</i>.
+The usage is the same for all of them and affects how the minimum is applied.
+E.g., if a soda coupon requires a quantity of at least 2, then purchasing
+2 sodas is enough to use the coupon. On the other hand, if the requirement was a
+quantity of more than 2, then 3 (or more) soda purchases would be needed.
+<ul>
+    <li><b>Quantity</b> (Q, Q+) requires a minimum purchase of specific items.
+    Quantity is measured by weight or by each depending on the scale setting (yes/no) for the item.
+    A quantity minimum must have items associated with it.
+    Quantity is the one of the more flexible minimum types;
+    it works with every discount type except <i>scaling discount (department)</i>
+    <li><b>Department in $</b> (D, D+) requires a minimum total purchase across the selected departments.
+Purchase is measured in dollars rather than quantity. Applicable discount types are
+<i>scaling discount (department)</i>, <i>flat discount</i>, and <i>percent discount</i>.
+    <li><b>Department in Quantity</b> (C, C+) requires a minimum total purchase across the selected departments.
+Purchase is measured in quantity (by weight or by each depending on the scale setting for the item. 
+Applicable discount types are
+<i>scaling discount (department)</i>, <i>flat discount</i>, and <i>percent discount</i>.
+    <li><b>Mixed</b> (M) is the most complicated minimum type (yet). The customer must purchase
+at least the specified quantity of <i>qualifying</i> items and some quantity of <i>discount</i>
+items. Mixed discount is the only case where an item's QUALIFIER/DISCOUNT/BOTH setting
+should be used. Like quantity discount, mixed discount can be used with any discount
+type except <i>scaling discount (department)</i>
+    <li><b>Total</b> ($, $+) discount simply refers to the total of the entire transaction in
+dollars. No specific items or departments are associated with this minimum. The only
+applicable discount types are <i>flat discount</i> and <i>percent discount</i>
+    <li><b>No minimum</b> (blank) is exactly what it sounds like.
+</ul>
+
+<h3>Discount types</h3>
+<ul>
+<li><b>Q Quantity</b> discount gives a certain number of items free. Fractions are OK, so
+this ends up being like a percent discount. A value of 1.0 gives an item for free, a value of
+0.5 gives an item for 50% off, etc. The discount is always applied to the cheapest valid item.
+<li><b>P Set Price</b> discount locks in the coupon price. Regardless of the regular price, the 
+price with coupon will be exactly what's specified here.
+<li><b>FI Flat (Scaling) Discount (Item)</b> discounts the chepeast applicable item by the specified amount.
+This scales with quantity to deal with by-weight items.
+<li><b>FD Flat (Scaling) Discount (Department)</b> is the same as above except for an item in the specified
+department(s) instead of a specific UPC
+<li><b>F Flat Discount</b> removes exactly the given amount, once, from the transaction
+<li><b>Per-Item Discount</b> removes the discount amount times the number of matching items.</li>
+<li><b>BOGO (Buy one get one)</b> applies a discount at the price of the product per pair of items rang until Discount Value is met.</li>
+<li><b>Percent Discounts</b> provide a percentage off all discountable items (e.g., member 
+appreciation month):
+    <ul>
+        <li><b>%</b> <i>End of transaction</i> must be applied at the end of the transaction.</li>
+        <li><b>%B</b> <i>Coupon discount OR member discount</i> applies the better of the two discounts.</li>
+        <li><b>%D</b> <i>Department</i> applies only to items in the chosen department(s)</li>
+        <li><b>PD</b> <i>Anytime</i> can be entered at anytime but may interact with member's percent
+        discount in unexpected ways depending what order everything occurs.</li>
+    </ul>
+<li><b>AD All Discount (Department)</b> ?For a Department.
+</ul>
+
+</body>
+</html>

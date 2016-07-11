@@ -1,0 +1,85 @@
+<html>
+<head>
+	<title>MemberLookup</title>
+</head>
+<body>
+<div style="text-align:center;">
+<h1>MemberLookup</h1>
+<!--
+30Jul13 AT Doc first written
+-->
+<br />as of: July 30, 2013
+</div>
+<p>
+Member Lookup modules take cashier input and search for
+member accounts. Custom modules could provide additional search
+methods beyond the default member number / last name options.
+Custom modules could also provide additional processing or even
+reroute POS entirely to a different page for additional input.
+</p>
+<p><b>Methods</b>
+<ul>
+<li>boolean <b>handle_numbers</b>()<br />
+Indicates whether the module handles numeric input.
+Defaults to true.</li>
+<li>boolean <b>handle_text</b>()<br />
+Indicates whether the module handles text input.
+Defaults to true.</li>
+<li>array <b>lookup_by_number</b>(integer $num)<br />
+Search by numeric input. See <i>Return Values</i> for
+details on search result format.</li>
+<li>array <b>lookup_by_text</b>(string $text)<br />
+Search by text input. See <i>Return Values</i> for
+details on search result format.</li>
+</ul>
+</p>
+<p>
+<b>Return Values</b><br />
+Search results should return a keyed array. The class method
+<b>default_value</b>() provides an empty, default return value.
+The array should have two keys.
+<ul>
+<li><b>url</b> - string URL or boolean False. Return a string value
+will redirect POS to that page.</li>
+<li><b>results</b> - an array of matching memberships to display as
+a &lt;select&gt; field. Array keys for <b>results</b> should be 
+custdata.CardNo::custdata.personNum. Array values are the labels that
+will appear on the screen.</li>
+</ul>
+</p>
+<p>
+<b>Example</b>: find member by phone number
+<pre>
+class LookupByPhone extends MemberLookup {
+
+	public function handle_text(){
+		return False;
+	}
+
+	public function lookup_by_number($num){
+		$db = Database::pDataConnect();
+		$ret = $this->default_value();
+
+		// need table for lookup
+		if (!$db->table_exists('meminfo'))
+			return $ret;
+
+		$query = 'SELECT CardNo,personNum,
+			LastName,FirstName,phone
+			FROM custdata AS c LEFT JOIN
+			meminfo AS m ON c.CardNo=m.card_no
+			WHERE m.phone='.((int)$num);
+		$result = $db->query($query);
+		while($row = $db->fetch_row($result)){
+			$key = $row['CardNo'].'::'.$row['personNum'];
+			$label = $row['LastName'].', '.$row['FirstName']
+				.' ('.$row['phone'].')';
+			$ret['results'][$key] = $label;
+		}
+		return $ret;
+	}
+}
+</pre>
+</p>
+</body>
+</html>

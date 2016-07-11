@@ -1,0 +1,44 @@
+<?php
+/*
+	COPY / RENAME TO ini.php
+*/
+
+/*******************************************************************************
+
+    Copyright 2001, 2004 Wedge Community Co-op
+
+    This file is part of IT CORE.
+
+    IT CORE is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    IT CORE is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    in the file license.txt along with CORE; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+if (!isset($CORE_LOCAL)) {
+	require_once(realpath(dirname(__FILE__)."/lib/LocalStorage/conf.php"));
+}
+
+/**
+  Optionally define register number and
+  store number for all lanes by IP address.
+  Add additional lines for other IPs
+*/
+$CORE_LOCAL->set('LaneMap', array(
+    '255.255.255.255' => array('register_id' => 99, 'store_id' => 1),
+));
+
+/************************************************************************************
+General Settings
+************************************************************************************/
+
+?>

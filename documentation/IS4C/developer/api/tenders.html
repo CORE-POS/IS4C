@@ -1,0 +1,76 @@
+<html>
+<head>
+	<title>TenderModule</title>
+</head>
+<body>
+<div style="text-align:center;">
+<h1>TenderModule</h1>
+<!--
+13Aug13 AT Doc first written
+-->
+<br />as of: August 13, 2013
+</div>
+<p>
+Tender modules may be attached to one or more tenders. Tender modules
+can impose error conditions, set up session variables, or display
+prompts for the cashier. All modules should inherit from TenderModule.
+</p>
+<p>
+TenderModules have the following properties. The base class constructor
+will populate these proprties. Be careful if you choose to override that
+function.
+<blockquote>
+string <b>tender_code</b> (corresponds to opdata.tenders.TenderCode)<br />
+string <b>name_string</b> (corresponds to opdata.tenders.TenderName)<br />
+string <b>change_type</b> (corresponds to opdata.tenders.TenderType)<br />
+string <b>change_string</b> (corresponds to opdata.tenders.ChangeMessage)<br />
+number <b>min_limit</b> (corresponds to opdata.tenders.MinAmount)<br />
+number <b>max_limit</b> (corresponds to opdata.tenders.MaxAmount)<br />
+mixed <b>amount</b> the number entered or boolean False if no number was provided.
+</blockquote>
+</p>
+<p>TenderModules have the following methods:
+<ul>
+<li>mixed <b>ErrorCheck()</b><br />
+This checks the transaction and returns an error if there is any reason the
+tender cannot be used. It returns an HTML string describing the problem or
+boolean True if no error is found. Note that the base class version of 
+ErrorCheck() is always called. It's not necessary to duplicate those checks
+in subclasses.</li>
+<li>mixed <b>PreReqCheck()</b><br />
+This sets up any necessary session variables and optionally directs the cashier
+to another page. Typically redirects are to get a confirmation before continuing
+with the tender. It returns a URL string to redirect or boolean True if no
+redirect is necessary. Note that the base class version of PreReqCheck()
+is always called. It's not necessary to duplicate any of that functionality in
+subclasses.</li>
+<li>[none] <b>Add()</b><br />
+Add a tender record to the transaction. Not usually overridden.</li>
+<li>string <b>ChangeType()</b><br />
+Returns the tender code that should be used for the change record (if there is one).
+The default is simply the object's <i>change_type</i> property.
+</li>
+<li>boolean <b>AllowDefault()</b><br />
+Allow the tender to be used without specifying an amount.
+The default is True.</li>
+<li>number <b>DefaultTotal()</b><br />
+The value to use for an amount if none has been specified.
+The default is the session variable <i>runningTotal</i>.</li>
+<li>string <b>DefaultPrompt()</b><br />
+Sets up session variables then returns a URL for the prompt page.
+Override to alter the prompt text, go to a different page, add
+additional actions like check endorsing, etc.</li>
+<li>string <b>DisabledPrompt()</b><br />
+Returns an HTML error message when an amount is required but
+none was provided. Override to alter the message.</li>
+</ul>
+</p>
+<p>
+I'm not going to sketch out an illustrative example. Something that tried
+to use all the methods at once would be really contrived. I suggest looking
+at <i>GiftCardTender.php</i> for a nice example of using <b>ErrorCheck()</b>
+and <b>PreReqCheck</b>. <i>GiftCertificateTender.php</i> is a fairly 
+straightforward example of overriding <b>DefaultPrompt()</b>.
+</p>
+</body>
+</html>

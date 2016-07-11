@@ -1,0 +1,32 @@
+<html>
+	<head>
+	<title>DefaultReceiptSort</title>
+	</head>
+<body>
+<div style="text-align:center;">
+<h2>DefaultReceiptSort</h2>
+<a href="#change_log">Revised: 10Apr2013</a>
+</div>
+<p>Sorting data is the third step in building a receipt. Modules
+implementing DefaultReceiptSort take the array of records from
+the second step, rearrange the order, and return it. Subclasses
+must implement the method <b>sort</b> which takes an array of
+records as an argument and also returns an array of records.
+</p>
+<p><b>Example</b>:
+<pre>
+class ExampleSort extends DefaultReceiptSort {
+	function filter($rowset){
+		return array_reverse($rowset);
+	}
+}
+</pre>
+</p>
+<hr />
+<pre>
+<a name="change_log">Change Log:</a>
+
+10Apr13 Andy Theuninck - Created document
+</pre>
+</body>
+</html>

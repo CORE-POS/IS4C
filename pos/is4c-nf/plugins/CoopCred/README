@@ -1,0 +1,5 @@
+ 6Jul2014
+Any .php here must be compilable if the plugin is enabled.
+Un-compilable programs will make programs that scan all enabled plugins die.
+  For example, $INSTALL pages do this.
+To prevent this, give work-in-progress an extension other than .php, e.g. php_

@@ -1,0 +1,4 @@
+# udev rules for PrehKeyTec devices 
+# copy this file to /etc/rules.d/52-prehkeytec.rules
+SUBSYSTEM=="usb", SYSFS{idVendor}=="053a", KERNEL=="hiddev*", MODE="0666"
+

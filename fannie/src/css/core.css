@@ -1,0 +1,54 @@
+.price-field {
+    width: 5.5em !important;
+}
+.upc-field {
+    width: 9.5em !important;
+}
+.input-group-chrome {
+    width: 100%;
+}
+.btn-reset {
+    margin-left: 25px;
+}
+
+.tablesorter-core > thead >tr > th {
+    cursor: pointer;
+    cursor: hand;
+}
+.tablesorter-core > thead > tr > th .core-sort-down {
+    display: none;
+}
+.tablesorter-core > thead > tr > th .core-sort-up {
+    display: none;
+}
+.tablesorter-core > thead > tr > th.headerSortDown .core-sort-down {
+    display: inline;
+}
+.tablesorter-core > thead > tr > th.headerSortDown .core-sort-up {
+    display: none;
+}
+.tablesorter-core > thead > tr > th.headerSortDown .core-sort-none {
+    display: none;
+}
+.tablesorter-core > thead > tr > th.headerSortUp .core-sort-up {
+    display: inline;
+}
+.tablesorter-core > thead > tr > th.headerSortUp .core-sort-down {
+    display: none;
+}
+.tablesorter-core > thead > tr > th.headerSortUp .core-sort-none {
+    display: none;
+}
+
+/**
+  Override the hover row color in the tablesorter bootstrap
+  theme. Adding the extra tablesorter-core class increases
+  specificity.
+*/
+.tablesorter-bootstrap.tablesorter-core > tbody > tr.hover > td,
+.tablesorter-bootstrap.tablesorter-core > tbody > tr.odd:hover > td,
+.tablesorter-bootstrap.tablesorter-core > tbody > tr.even:hover > td,
+.tablesorter-bootstrap.tablesorter-core > tbody > tr.tablesorter-hasChildRow.odd:hover ~ .tablesorter-childRow.odd > td,
+.tablesorter-bootstrap.tablesorter-core > tbody > tr.tablesorter-hasChildRow.even:hover ~ .tablesorter-childRow.even > td {
+    background-color: #d9edf7;
+}

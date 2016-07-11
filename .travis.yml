@@ -1,0 +1,41 @@
+language: php
+
+# keep verisions minimal to limit total
+# builds on free service. politeness.
+php:
+    - "5.5"
+
+services:
+    - mysql
+
+sudo: false
+
+branches:
+    only:
+        - master
+
+addons:
+    code_climate:
+        repo_token: 461be60a44fc2293c80a05712a1aa18ff7d12effec9a806d7722435b12ea2bbe
+
+# test both msyqli and PDO 
+env:
+    matrix:
+        - DB_DRIVER=pdo_mysql
+        - DB_DRIVER=mysqli
+
+install:
+    - sh tests/fannie/travis-init.sh
+    - sh tests/pos/travis-init.sh
+    - composer init -n
+    - composer require codeclimate/php-test-reporter johnkary/phpunit-speedtrap
+    - mkdir -p build/logs
+    - npm install acorn
+
+script:
+    - phpunit -d max_execution_time=0 -c phpunit.xml
+    - sh tests/acorn.sh
+
+after_script:
+    - vendor/bin/test-reporter
+
