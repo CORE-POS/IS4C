@@ -229,6 +229,13 @@ class BatchListPage extends FannieRESTfulPage
             $tOpts .= sprintf('<option value="%d">%s</option>', $typesW['batchTypeID'], $typesW['typeDesc']);
         }
         $tJSON = json_encode($types);
+        $stores = new StoresModel($dbc);
+        $stores->hasOwnItems(1);
+        $storeOpts = '';
+        foreach ($stores->find() as $obj) {
+            $storeOpts .= sprintf('<option value="%d">%s</option>',
+                $obj->storeID(), $obj->description());
+        }
 
         return <<<HTML
 <form id="newBatchForm" onsubmit="newBatch(); return false;">
@@ -253,13 +260,24 @@ class BatchListPage extends FannieRESTfulPage
             </select></div>
             <div class="col-sm-1"><button type=submit class="btn btn-default">Create Batch</button></div>
         </div>
+</form>
         <p></p> <!-- spacer -->
         <div class="row">
-            <div class="col-sm-6">
-                <select class="form-control" id=filterOwner onchange="changeOwnerFilter(this.value);">
+            <div class="col-sm-4">
+                <select class="form-control" id=filterOwner onchange="reFilter();">
                     <option value="">Filter list by batch owner / super dept.</option>
                     {$oOpts}
                 </select>
+            </div>
+            <div class="col-sm-2">
+                <select class="form-control" id="filterStore" onchange="reFilter();">
+                    <option value="">Store...</option>
+                    {$storeOpts}
+                </select>
+            </div>
+            <div class="col-sm-2">
+                <input type="text" class="form-control" id="filterName" 
+                    placeholder="Batch name..." onchange="reFilter();" />
             </div>
             <a href="{$url}admin/labels/BatchShelfTags.php">Print shelf tags</a>
         </div>
@@ -277,10 +295,15 @@ HTML;
         global $FANNIE_URL;
         $dbc = $this->con;
 
+        $filters = json_decode($filter, true);
+        if ($filters === null) {
+            $filters = array();
+        }
+
         if ($mode === '') {
             $mode = $this->config->get('BATCH_VIEW', 'all');
         }
-        
+
         $colors = array('#ffffff','#ffffcc');
         $c = 0;
         $ret = "";
@@ -342,9 +365,13 @@ HTML;
                         COUNT(l.upc) AS items,
                    $ownerclause
                     LEFT JOIN batchType AS t ON b.batchType = t.batchTypeID
-                    LEFT JOIN batchList AS l ON b.batchID=l.batchID
-                   WHERE 1=1 ";
+                    LEFT JOIN batchList AS l ON b.batchID=l.batchID ";
         $args = array();
+        if (isset($filters['store']) && $filters['store'] != '') {
+            $fetchQ .= ' INNER JOIN StoreBatchMap AS m ON b.batchID=m.batchID AND m.storeID=? ';
+            $args[] = $filters['store'];
+        }
+        $fetchQ .= " WHERE 1=1 ";
         switch($mode) {
             case 'pending':
                 $fetchQ .= ' AND '. $dbc->datediff("b.startDate",$dbc->now()) . ' > 0 ';
@@ -359,9 +386,13 @@ HTML;
                 break;    
         }
         // use a filter - only works in 'all' mode
-        if ($filter != '') {
+        if (isset($filters['owner']) && $filters['owner'] != '') {
             $fetchQ .= ' AND ' . $owneralias . '.owner = ? ';
-            $args[] = $filter;
+            $args[] = $filters['owner'];
+        }
+        if (isset($filters['name']) && $filters['name'] != '') {
+            $fetchQ .= ' AND b.batchName LIKE ? ';
+            $args[] = '%' . $filters['name'] . '%';
         }
         $fetchQ .= ' GROUP BY b.batchName, b.batchType, b.startDate, b.endDate, b.batchID,
                         t.typeDesc, ' . $owneralias . '.owner ';
