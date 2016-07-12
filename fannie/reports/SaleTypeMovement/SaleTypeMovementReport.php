@@ -120,7 +120,7 @@ class SaleTypeMovementReport extends FannieReportPage
         $data = array();
         foreach ($sales as $type => $record) {
             $record[1] = sprintf('%.2f', $record[1]);
-            $record[] = sprintf('%.2f%%', 100*($record[1]/$sum));
+            $record[] = $sum == 0 ? 0 : sprintf('%.2f%%', 100*($record[1]/$sum));
             $data[] = $record;
         }
 

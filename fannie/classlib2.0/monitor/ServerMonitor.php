@@ -30,7 +30,7 @@ class ServerMonitor extends Monitor
         return array(
             'osVersion' => php_uname(),
             'phpVersion' => phpversion(), 
-            'coreVersion' => file_get_contents(dirname(__FILE__) . '/../../../../VERSION'),
+            'coreVersion' => file_get_contents(dirname(__FILE__) . '/../../../VERSION'),
         );
     }
 
