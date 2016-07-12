@@ -286,7 +286,7 @@ class OrderItemLib
     private static function notStockedUnitPrice($item, $is_member)
     {
         if (FannieConfig::config('COOP_ID') === 'WFC_Duluth' 
-            && ($pdW['priceRuleTypeID'] == 6 || $pdW['priceRuleTypeID'] == 7 || $pdW['priceRuleTypeID'] == 8)) {
+            && ($item['priceRuleTypeID'] == 6 || $item['priceRuleTypeID'] == 7 || $item['priceRuleTypeID'] == 8)) {
             return $item['normal_price'];
         }
 
