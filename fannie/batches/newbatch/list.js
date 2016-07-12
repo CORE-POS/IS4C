@@ -132,14 +132,24 @@ function deleteBatch(id, name)
     }
 }
 
-function changeTimeSlice(mode) 
+function getFilters()
 {
-    batchListPager($('#filterOwner').val(), mode, '');
+    var filters = {};
+    filters.owner = $('#filterOwner').val();
+    filters.store = $('#filterStore').val();
+    filters.name = $('#filterName').val();
+
+    return JSON.stringify(filters);
 }
 
-function changeOwnerFilter(owner)
+function changeTimeSlice(mode) 
 {
-    batchListPager(owner, 'all', '');
+    batchListPager(getFilters(), mode, '');
+}
+
+function reFilter()
+{
+    batchListPager(getFilters(), 'all', '');
 }
 
 function batchListPager(filter,mode,batchID)
