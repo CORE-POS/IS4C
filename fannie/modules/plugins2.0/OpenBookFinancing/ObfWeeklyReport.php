@@ -980,7 +980,7 @@ class ObfWeeklyReport extends FannieReportPage
             foreach (array(1,2) as $storeID) {
                 $tArgs = array_merge($args, array($storeID)); 
                 $transR = $dbc->execute($transP, $tArgs);
-                if (!$future && $transR) {
+                if ($transR) {
                     $month_trans = $dbc->numRows($transR);
                     $avg_trans = ($month_trans / $num_days) * 7;
                     $trans_info[$storeID] = $avg_trans;

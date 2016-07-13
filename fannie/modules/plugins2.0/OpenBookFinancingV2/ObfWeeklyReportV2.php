@@ -87,7 +87,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         */
         $sales = $class_lib::getCache($dbc);
         $sales->obfWeekID($week->obfWeekID());
-        $sales->actualSales(0, '>');
+        $sales->lastYearSales(0, '>');
         $num_cached = $sales->find();
         if (count($num_cached) == 0) {
             $dateInfo = array(
@@ -409,8 +409,9 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             'meta_foreground' => 'black',
         );
 
-        $proj_trans = $total_trans->lastYear * 1.05;
-        $qtd_proj_trans = $total_trans->quarterLastYear * 1.05;
+        $transGrowth = $store == 1 ? 0.925 : 1.0;
+        $proj_trans = $total_trans->lastYear * $transGrowth;
+        $qtd_proj_trans = $total_trans->quarterLastYear * $transGrowth;
         $data[] = array(
             'Transactions',
             number_format($total_trans->lastYear),
