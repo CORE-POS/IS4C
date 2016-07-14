@@ -502,28 +502,28 @@ class DeliCateringOrdersPage extends FannieRESTfulPage
                     
                     $ret .= '
                     <tr><td width="150px">Owner Number</td><td>
-                    <input type="input" class="form-control" name="card_no" ';
+                    <input type="input" class="form-control" style="width: 75px" name="card_no" id="card_no" ';
                     if ($_GET['card_no'] > 0) $ret .= 'value="' . $_GET['card_no'] . '" '; 
-                              $ret .= 'required></td>
+                              $ret .= 'onChange="autoFill();" required></td>
                     
                     <tr><td width="150px">Name</td><td>
-                    <input type="input" class="form-control" name="name"';
+                    <input type="input" class="form-control" name="name" id="name" ';
                     if ($_GET['name']) $ret .= 'value="' . $_GET['name'] . '" '; 
                               $ret .= ' required></td>
                      
                      
                     <tr><td width="150px">Phone Number</td><td>
-                    <input type="input" class="form-control" name="phone"';
+                    <input type="input" class="form-control" name="phone" id="phone" ';
                     if ($_GET['phone']) $ret .= 'value="' . $_GET['phone'] . '" '; 
                               $ret .= ' required></td>
                     
                     <tr><td width="150px">Alternate Phone</td><td>
-                    <input type="input" class="form-control" name="alt_phone"';
+                    <input type="input" class="form-control" name="alt_phone" id="alt_phone" ';
                     if ($_GET['alt_phone']) $ret .= 'value="' . $_GET['alt_phone'] . '" '; 
                               $ret .= '></td>
          
                     <tr><td width="150px">Email Address</td><td>
-                    <input type="input" class="form-control" name="email"';
+                    <input type="input" class="form-control" style="width: 250px" name="email" id="email" ';
                     if ($_GET['email']) $ret .= 'value="' . $_GET['email'] . '" '; 
                               $ret .= '></td>
                               
@@ -1507,6 +1507,46 @@ class DeliCateringOrdersPage extends FannieRESTfulPage
         $ret .= "</table>";
         
         return $ret;
+    }
+    
+    public function javascriptContent()
+    {
+        ob_start();
+        ?>
+function autoFill()
+{
+    var x = document.getElementById("orderform");
+    var card_no = x.elements[4].value;
+    $.ajax({
+		type: 'get',
+        url: 'DeliCateringAjax.php',
+		dataType: 'json',
+        data: 'card_no='+card_no,
+		error: function(xhr, status, error)
+		{ 
+			alert('error:' + status + ':' + error + ':' + xhr.responseText) 
+		},
+        success: function(response)
+        {
+        }
+    })
+	.done(function(data){
+		if (data.name) {
+			$('#name').val(data.name);
+		}
+		if (data.phone) {
+			$('#phone').val(data.phone);
+		}
+		if (data.altPhone) {
+			$('#altPhone').val(data.altPhone);
+		}
+		if (data.email) {
+			$('#email').val(data.email);
+		}
+	})
+}
+        <?php
+        return ob_get_clean();
     }
    
 }
