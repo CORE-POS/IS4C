@@ -233,9 +233,14 @@ class HouseCouponEditor extends FanniePage
         $ret .= '</p>';
         $ret .= '</form>';
         $ret .= '<table class="table">';
-        $ret .= '<tr><th>ID</th><th>Name</th><th>Value</th><th>Expires</th></tr>';
+        $ret .= '<tr><th>ID</th><th>Name</th><th>Value</th>';
+        $ret .= '<th>Begins</th><th>Expires</th></tr>';
         $model = new HouseCouponsModel($dbc);
         foreach($model->find('coupID') as $obj) {
+            if (strstr($obj->startDate(), ' ')) {
+                $tmp = explode(' ', $obj->startDate());
+                $obj->startDate($tmp[0]);
+            }
             if (strstr($obj->endDate(), ' ')) {
                 $tmp = explode(' ', $obj->endDate());
                 $obj->endDate($tmp[0]);
@@ -252,7 +257,7 @@ class HouseCouponEditor extends FanniePage
                 $report_dates = array(date('Y-m-01'), date('Y-m-t'));
             }
             $ret .= sprintf('<tr><td>#%d <a href="HouseCouponEditor.php?edit_id=%d">Edit</a></td>
-                    <td>%s</td><td>%.2f%s</td><td>%s</td>
+                    <td>%s</td><td>%.2f%s</td><td>%s</td><td>%s</td>
                     <td>
                         <a href="%sws/barcode-pdf/?upc=%s&name=%s"
                         class="btn btn-default">Print Barcode</a>
@@ -262,7 +267,8 @@ class HouseCouponEditor extends FanniePage
                         class="btn btn-default %s">Member Baskets</a>
                     </tr>',
                     $obj->coupID(),$obj->coupID(),$obj->description(),
-                    $obj->discountValue(), $obj->discountType(), $obj->endDate(),
+                    $obj->discountValue(), $obj->discountType(),
+                    $obj->startDate(), $obj->endDate(),
                     $FANNIE_URL,
                     ('499999' . str_pad($obj->coupID(), 5, '0', STR_PAD_LEFT)),
                     urlencode($obj->description()),
