@@ -205,7 +205,7 @@ InstallUtilities::paramSave('printerPort',CoreLocal::get('printerPort'));
     $kmods = array_map(function($i){ return str_replace('\\', '-', $i); }, $kmods);
     echo $form->selectField('kickerModule', $kmods, 'Kicker');
     $rewrite = str_replace('-', '\\', CoreLocal::get('kickerModule')); 
-    InstallUtilities::saveParam('kickerModule', $rewrite);
+    InstallUtilities::paramSave('kickerModule', $rewrite);
     ?>
     </td>
 </tr>
@@ -369,7 +369,7 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
     <td>
     <?php 
     $ebtOpts = array(1 => 'Cash Side', 0 => 'Food Side');
-    echo InstallUtilities::installselectField('fntlDefault', $ebtOpts, 1);
+    echo InstallUtilities::selectField('fntlDefault', $ebtOpts, 1);
     ?>
     </td>
 </tr>
