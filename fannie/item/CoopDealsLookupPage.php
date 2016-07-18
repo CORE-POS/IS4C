@@ -110,7 +110,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         if (FormLib::get('linea') != 1) {
             $this->add_onload_command("\$('#upc').focus();\n");
         }
-        $this->addOnloadCommand("enableLinea('# ', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
+        $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
         
         $ret .= '
             <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="id" class="form-inline">
