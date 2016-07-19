@@ -397,9 +397,10 @@ function updateStatus(oid,val){
     url: 'OrderAjax.php',
     type: 'post',
     data: 'id='+oid+'&status='+val,
+    dataType: 'json',
     cache: false,
     success: function(resp){
-        $('#statusdate'+oid).html(resp);    
+        $('#statusdate'+oid).html(resp.tdate);
     }
     });
 }

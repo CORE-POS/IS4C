@@ -28,6 +28,9 @@ if (!class_exists('FannieAPI')) {
 if (!class_exists('SoPoBridge')) {
     include(__DIR__ . '/SoPoBridge.php');
 }
+if (!class_exists('OrderNotifications')) {
+    include(__DIR__ . '/OrderNotifications.php');
+}
 
 class OrderViewPage extends FannieRESTfulPage
 {
@@ -170,6 +173,11 @@ class OrderViewPage extends FannieRESTfulPage
             WHERE order_id=? 
                 AND trans_id=?');
         $dbc->execute($upP, array($this->orderID, $this->transID));
+
+        $json = array();
+        $email = new OrderNotifications($dbc);
+        $json['sentEmail'] = $email->itemArrivedEmail($this->orderID, $this->transID);
+        echo json_encode($json);
 
         return false;
     }
@@ -517,7 +525,7 @@ class OrderViewPage extends FannieRESTfulPage
             $ret .= '</select></td>';
             $ret .= '<td>&nbsp;</td>';
         }
-        $ret .= '<td colspan="4" class="form-inline">For Department:
+        $ret .= '<td colspan="4" class="form-inline">Notes For Department:
             <select id="nDept" class="form-control input-sm contact-field" 
                 name="noteDept">
             <option value="0">Choose...</option>';
@@ -549,7 +557,12 @@ class OrderViewPage extends FannieRESTfulPage
                         class="form-control input-sm contact-field"
                         name="addr" />
                 </td>
-                <th>E-mail</th>
+                <th>
+                    <label title="Send email arrival notifications" >
+                        E-mail
+                        <input type="checkbox" id="sendEmails" %s />
+                    </label>
+                </th>
                 <td>
                     <input type="text" id="t_email" value="%s" 
                         class="form-control input-sm contact-field"
@@ -601,6 +614,7 @@ class OrderViewPage extends FannieRESTfulPage
                 </td>
             </tr>',
             $street,
+            $orderModel->sendEmails() ? 'checked' : '',
             $orderModel->email(),
             $orderModel->notes(),
             $street2, 

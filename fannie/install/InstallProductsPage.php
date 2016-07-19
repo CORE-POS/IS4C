@@ -220,6 +220,10 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         ); 
         echo installSelectField('FANNIE_SO_UI', $FANNIE_SO_UI, $so_opts, 'bootstrap');
         ?>
+        <label>Special Order Email Template ID</label>
+        <?php
+        echo installTextField('FANNIE_SO_TEMPLATE', $FANNIE_SO_TEMPLATE, 0);
+        ?> 
         <hr />
         <label>Default Shelf Tag Layout</label>
         <?php
