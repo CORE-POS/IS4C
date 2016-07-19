@@ -98,6 +98,9 @@ var orderView = (function($) {
         $('.print-cb').change(function() {
             mod.togglePrint($('#orderID').val());
         });
+        $('#sendEmails').change(function() {
+            mod.toggleSendEmails($('#orderID').val(), $('#sendEmails').prop('checked'));
+        });
     };
 
     mod.searchWindow = function (){
@@ -246,22 +249,34 @@ var orderView = (function($) {
     mod.togglePrint = function (oid)
     {
         $.ajax({
-            dataType: 'post',
+            type: 'post',
             data: 'togglePrint=1&orderID='+oid
+        });
+    };
+    mod.toggleSendEmails = function(oid, s) {
+        $.ajax({
+            url: 'OrderAjax.php',
+            type: 'post',
+            data: 'id='+oid+'&sendEmails='+(s?1:0)
         });
     };
     mod.toggleO = function (oid,tid)
     {
         $.ajax({
-            dataType: 'post',
+            type: 'post',
             data: 'toggleMemType=1&orderID='+oid+'&transID='+tid
         });
     };
     mod.toggleA = function (oid,tid)
     {
         $.ajax({
-            dataType: 'post',
+            type: 'post',
+            dataType: 'json',
             data: 'toggleStaff=1&orderID='+oid+'&transID='+tid
+        }).done(function(resp) {
+            if (resp.sentEmail) {
+                alert('Emailed Arrival Notification');
+            }
         });
     };
     mod.doSplit = function (oid,tid){
@@ -319,9 +334,13 @@ var orderView = (function($) {
         $.ajax({
             url: 'OrderAjax.php',
             type: 'post',
+            dataType: 'json',
             data: 'id='+oid+'&status='+val
         }).done(function(resp){
-            $('#statusdate'+oid).html(resp);	
+            $('#statusdate'+oid).html(resp.tdate);
+            if (resp.sentEmail) {
+                alert('Emailed Arrival Notification');
+            }
         });
     };
     mod.updateStore = function updateStore(oid, val)

@@ -24,6 +24,9 @@ include(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include(dirname(__FILE__) . '/../classlib2.0/FannieAPI.php');
 }
+if (!class_exists('OrderNotifications')) {
+    include(__DIR__ . '/OrderNotifications.php');
+}
 
 class OrderAjax extends FannieRESTfulPage
 {
@@ -37,7 +40,8 @@ class OrderAjax extends FannieRESTfulPage
             'post<id><pn>',
             'post<id><confirm>',
             'post<id><store>',
-            'post<id><close>'
+            'post<id><close>',
+            'post<id><sendEmails>'
         );
 
         return parent::preprocess();
@@ -47,6 +51,16 @@ class OrderAjax extends FannieRESTfulPage
     {
         $this->connection->selectDB($this->config->get('TRANS_DB'));
         return $this->connection;
+    }
+
+    protected function post_id_sendEmails_handler()
+    {
+        $model = new SpecialOrdersModel($this->tdb());
+        $model->specialOrderID($this->id);
+        $model->sendEmails($this->sendEmails);
+        $model->save();
+
+        return false;
     }
 
     protected function post_id_close_handler()
@@ -137,7 +151,13 @@ class OrderAjax extends FannieRESTfulPage
         $soModel->subStatus($timestamp);
         $soModel->save();
 
-        echo date("m/d/Y");
+        $json = array('tdate'=> date('m/d/Y'));
+        if ($this->status == 5) {
+            $email = new OrderNotifications($dbc);
+            $json['sentEmail'] = $email->orderArrivedEmail($this->id);
+        }
+
+        echo json_encode($json);
 
         return false;
     }
