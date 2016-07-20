@@ -115,7 +115,7 @@ class QuickKeyLauncher extends Parser
                 <div class="qkBox">
                     <div id="qkDiv%d">
                         <button type="button" class="quick_button pos-button coloredBorder"
-                            onclick="$(\'#reginput\').val($(\'#reginput\').val()+\'%s\');submitWrapper();">
+                            onclick="$(\'#reginput\').val($(\'#reginput\').val()+\'%s\');pos2.submitWrapper();">
                         %s
                         </button>
                     </div>
