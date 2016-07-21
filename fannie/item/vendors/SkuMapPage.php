@@ -64,11 +64,11 @@ class SkuMapPage extends FannieRESTfulPage
         $posX = 5;
         $posY = 20;
         while ($row = $dbc->fetchRow($res)) {
-			//$prepB = $dbc->prepare('SELECT units, size FROM vendorItems WHERE sku = ?');
-			$prepB = $dbc->prepare('SELECT max(receivedDate), caseSize, unitSize, brand FROM PurchaseOrderItems WHERE sku = ?');
-			$resB = $dbc->execute($prepB, $row['sku']);
-			$tagSize = array();
-			$tagSize = $dbc->fetch_row($resB);
+            //$prepB = $dbc->prepare('SELECT units, size FROM vendorItems WHERE sku = ?');
+            $prepB = $dbc->prepare('SELECT max(receivedDate), caseSize, unitSize, brand FROM PurchaseOrderItems WHERE sku = ?');
+            $resB = $dbc->execute($prepB, $row['sku']);
+            $tagSize = array();
+            $tagSize = $dbc->fetch_row($resB);
             $pdf->SetXY($posX+3, $posY);
             $pdf->Cell(0, 5, substr($row['description'], 1, 25));
             $pdf->Ln(3);
@@ -79,8 +79,8 @@ class SkuMapPage extends FannieRESTfulPage
             imagepng($img, $file);
             $pdf->Image($file, $posX, $posY+7);
             unlink($file);
-			$pdf->SetXY($posX+3, $posY+16);
-			$pdf->Cell(0, 5, $tagSize['unitSize'] . ' / ' . $tagSize['caseSize'] . ' - ' . $tagSize['brand']);
+            $pdf->SetXY($posX+3, $posY+16);
+            $pdf->Cell(0, 5, $tagSize['unitSize'] . ' / ' . $tagSize['caseSize'] . ' - ' . $tagSize['brand']);
             $posX += 52;
             if ($posX > 170) {
                 $posX = 5;
