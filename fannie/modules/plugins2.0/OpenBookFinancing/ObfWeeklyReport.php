@@ -959,7 +959,7 @@ class ObfWeeklyReport extends FannieReportPage
             $sales->save();
         }
 
-        if (count($num_cached) == 0) {
+        if (count($num_cached[1]) == 0) {
             /**
               Now lookup year-over-year info
               Since it examines a whole month rather than a single

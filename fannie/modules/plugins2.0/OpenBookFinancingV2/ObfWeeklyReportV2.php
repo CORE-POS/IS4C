@@ -87,16 +87,20 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         */
         $sales = $class_lib::getCache($dbc);
         $sales->obfWeekID($week->obfWeekID());
-        $sales->lastYearSales(0, '>');
+        $sales->actualSales(0, '>');
         $num_cached = $sales->find();
-        if (count($num_cached) == 0) {
+        $sales->reset();
+        $sales->obfWeekID($week->obfWeekID());
+        $sales->lastYearSales(0, '>');
+        $ly_cached = $sales->find();
+        if (count($num_cached) == 0 || count($ly_cached) == 0) {
             $dateInfo = array(
                 'start_ts' => $start_ts,
                 'end_ts' => $end_ts,
                 'start_ly' => $start_ly,
                 'end_ly' => $end_ly,
             );
-            $this->updateSalesCache($week, $num_cached, $dateInfo);
+            $this->updateSalesCache($week, array($num_cached, $ly_cached), $dateInfo);
         }
 
         // record set to return
