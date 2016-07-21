@@ -40,11 +40,11 @@ class CoopDealsLookupPage extends FannieRESTfulPage
     
     function preprocess()
     {
-		if (php_sapi_name() !== 'cli') {
-			if (session_id() == '') {
-				session_start();
-			}
-		}
+        if (php_sapi_name() !== 'cli') {
+            if (session_id() == '') {
+                session_start();
+            }
+        }
 
        $this->__routes[] = 'get<upc>';
        $this->__routes[] = 'get<insert>';
@@ -115,7 +115,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
     {
         
         $ret = '';
-		echo 'Month: ' . strtoupper($_SESSION['month']) . '<br>';
+        echo 'Month: ' . strtoupper($_SESSION['month']) . '<br>';
         if (FormLib::get('linea') != 1) {
             $this->add_onload_command("\$('#upc').focus();\n");
         }
@@ -130,7 +130,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $upc = FormLib::get('upc');
         $upc = str_pad($upc, 13, "0", STR_PAD_LEFT);
         echo 'UPC: ' . $upc;
-		$month = 'CoopDeals' . $_SESSION['month'];
+        $month = 'CoopDeals' . $_SESSION['month'];
         $args = array($month, $upc);
         $prep = $dbc->prepare('
             SELECT 
@@ -153,15 +153,15 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             $ret .=  '<td><b>Flyer Period</b></td><td>' . $row['flyerPeriod'] . '</tr>';
             $ret .=  '<td><b>Sku</b></td><td>' . $row['sku'] . '</tr>';
             $srp = $row['srp'];
-			$ret .= '<td><b>Sale Price</b></td><td>' . $srp . '</td></tr>';
+            $ret .= '<td><b>Sale Price</b></td><td>' . $srp . '</td></tr>';
             $ret .=  '<td><b>Sale Period</b></td><td>' . substr($month, 9) . '</td></tr>';
             $check = $row['upc'];
         }
         $ret .= '</table>';
 
-		if ($dbc->error()) {
-			$ret .= '<div class="alert alert-warning">' . $dbc->error() . '</div>';
-		}
+        if ($dbc->error()) {
+            $ret .= '<div class="alert alert-warning">' . $dbc->error() . '</div>';
+        }
 
         if ($check == '') {
             echo '<div class="alert alert-danger">Product not found in ' . $month . '.</div>';
@@ -204,16 +204,16 @@ class CoopDealsLookupPage extends FannieRESTfulPage
     
     function get_month_view() 
     {
-		$_SESSION['month'] = FormLib::get('month');
+        $_SESSION['month'] = FormLib::get('month');
         //$this->add_script('../autocomplete.js');
         //$this->add_onload_command("bindAutoComplete('#upc', '../../ws/', 'item');\n");
         if (FormLib::get('linea') != 1) {
             $this->add_onload_command("\$('#upc').focus();\n");
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
-		
-		$ret = '';  
-		echo 'Month: ' . strtoupper($_SESSION['month']) . '<br>';
+        
+        $ret = '';  
+        echo 'Month: ' . strtoupper($_SESSION['month']) . '<br>';
         $ret .= '
             <form id="upc-form" action="' . $_SERVER['PHP_SELF'] . '"  method="get" name="upc-form" class="form-inline">
                 <input type="text" class="form-control" name="upc" id="upc" placeholder="Scan Barcode" autofocus>
@@ -222,33 +222,33 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             Back to Sign info<br>Scanner</a><br><br>
         ';
 
-		return $ret;
+        return $ret;
     }
 
-	function get_view() 
-	{
-		return '
-			<form method="get" name="id-form" class="form-inline">
-				<label>Select a Month</label>
-				<select name="month" class="form-control">
-					<option value="Jan">January</option>
-					<option value="Feb">February</option>
-					<option value="Mar">March</option>
-					<option value="Apr">April</option>
-					<option value="May">May</option>
-					<option value="June">June</option>
-					<option value="July">July</option>
-					<option value="Aug">August</option>
-					<option value="Sep">September</option>
-					<option value="Oct">October</option>
-					<option value="Nov">November</option>
-					<option value="Dec">December</option>
-				</select><br>
-				<input type="submit" class="form-control"><br>
-			</form>
-		';
+    function get_view() 
+    {
+        return '
+            <form method="get" name="id-form" class="form-inline">
+                <label>Select a Month</label>
+                <select name="month" class="form-control">
+                    <option value="Jan">January</option>
+                    <option value="Feb">February</option>
+                    <option value="Mar">March</option>
+                    <option value="Apr">April</option>
+                    <option value="May">May</option>
+                    <option value="June">June</option>
+                    <option value="July">July</option>
+                    <option value="Aug">August</option>
+                    <option value="Sep">September</option>
+                    <option value="Oct">October</option>
+                    <option value="Nov">November</option>
+                    <option value="Dec">December</option>
+                </select><br>
+                <input type="submit" class="form-control"><br>
+            </form>
+        ';
 
-	}
+    }
     
 }
     
