@@ -47,10 +47,12 @@ class GumLib
 
         // end of loan timestamp
         $ed = mktime(0, 0, 0, date('n', $ld)+$loan->termInMonths(), date('j', $ld), date('Y', $ld));
+        /*
         $today = strtotime('today');
         if ($today < $ed) {
             $ed = strtotime('180 days ago');
         }
+        */
         // end of next fiscal year
         $fy = mktime(0, 0, 0, $fyM, $fyD, $startYear);
 
