@@ -630,6 +630,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'EquityPaymentPlansModel',
         'EquityPaymentPlanAccountsModel',
         'FloorSectionsModel',
+        'FloorSectionProductMapModel',
+        'FloorSectionsListViewModel',
         'HouseCouponsModel',
         'HouseCouponItemsModel',
         'HouseVirtualCouponsModel',
