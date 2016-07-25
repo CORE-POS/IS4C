@@ -85,7 +85,7 @@ $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')))
     $savings = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\Savings\\DefaultReceiptSavings', true);
     $savings = array_map(function($i){ return str_replace('\\', '-', $i); }, $savings);
     echo $form->selectField('ReceiptSavingsMode', $savings, 'COREPOS-pos-lib-ReceiptBuilding-Savings-DefaultReceiptSavings');
-    CoreLocal::set('ReceiptSavingsMode', str_replace('-', '\\', CoreLocal::get('ReceiptSavingsMode')));
+    CoreLocal::set('ReceiptSavingsMode', str_replace('-', '\\', CoreLocal::get('ReceiptSavingsMode')), true);
     InstallUtilities::paramSave('ReceiptSavingsMode', CoreLocal::get('ReceiptSavingsMode'));
     ?>
     <span class='noteTxt'>
@@ -119,7 +119,7 @@ $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')))
     $thanks = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\ThankYou\\DefaultReceiptThanks', true);
     $thanks = array_map(function($i){ return str_replace('\\', '-', $i); }, $thanks);
     echo $form->selectField('ReceiptThankYou', $thanks, 'COREPOS-pos-lib-ReceiptBuilding-ThankYou-DefaultReceiptThanks');
-    CoreLocal::set('ReceiptThankYou', str_replace('-', '\\', CoreLocal::get('ReceiptThankYou')));
+    CoreLocal::set('ReceiptThankYou', str_replace('-', '\\', CoreLocal::get('ReceiptThankYou')), true);
     InstallUtilities::paramSave('ReceiptThankYou', CoreLocal::get('ReceiptThankYou'));
     ?>
     <span class='noteTxt'>
@@ -151,7 +151,7 @@ $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')))
     $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
     sort($mods);
     echo $form->selectField('RBFetchData', $mods, 'COREPOS-pos-lib-ReceiptBuilding-DataFetch-DefaultReceiptDataFetch');
-    CoreLocal::set('RBFetchData', str_replace('-', '\\', CoreLocal::get('RBFetchData')));
+    CoreLocal::set('RBFetchData', str_replace('-', '\\', CoreLocal::get('RBFetchData')), true);
     InstallUtilities::paramSave('RBFetchData', CoreLocal::get('RBFetchData'));
     ?>
     </td>
@@ -164,7 +164,7 @@ $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')))
     $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
     sort($mods);
     echo $form->selectField('RBFilter', $mods, 'DefaultReceiptFilter');
-    CoreLocal::set('RBFilter', str_replace('-', '\\', CoreLocal::get('RBFilter')));
+    CoreLocal::set('RBFilter', str_replace('-', '\\', CoreLocal::get('RBFilter')), true);
     InstallUtilities::paramSave('RBFilter', CoreLocal::get('RBFilter'));
     ?>
     </td>
@@ -177,7 +177,7 @@ $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')))
     $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
     sort($mods);
     echo $form->selectField('RBSort', $mods, 'DefaultReceiptSort');
-    CoreLocal::set('RBSort', str_replace('-', '\\', CoreLocal::get('RBSort')));
+    CoreLocal::set('RBSort', str_replace('-', '\\', CoreLocal::get('RBSort')), true);
     InstallUtilities::paramSave('RBSort', CoreLocal::get('RBSort'));
     ?>
     </td>
@@ -190,7 +190,7 @@ $form = new FormFactory(InstallUtilities::dbOrFail(CoreLocal::get('pDatabase')))
     $mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $mods);
     sort($mods);
     echo $form->selectField('RBTag', $mods, 'DefaultReceiptTag');
-    CoreLocal::set('RBTag', str_replace('-', '\\', CoreLocal::get('RBTag')));
+    CoreLocal::set('RBTag', str_replace('-', '\\', CoreLocal::get('RBTag')), true);
     InstallUtilities::paramSave('RBTag', CoreLocal::get('RBTag'));
     ?>
     </td>
@@ -278,7 +278,7 @@ InstallUtilities::paramSave('ReceiptMessageMods',CoreLocal::get('ReceiptMessageM
     ?>
     <td><?php echo $form->selectField('emailReceiptHtml', $e_mods, ''); ?></td>
     <?php
-    CoreLocal::set('emailReceiptHtml', str_replace('-', '\\', CoreLocal::get('emailReceiptHtml')));
+    CoreLocal::set('emailReceiptHtml', str_replace('-', '\\', CoreLocal::get('emailReceiptHtml')), true);
     InstallUtilities::paramSave('emailReceiptHtml', CoreLocal::get('emailReceiptHtml'));
     ?>
 </tr>
