@@ -402,14 +402,14 @@ if ($specialDeptMapExists) {
     $sconf = CoreLocal::get('SpecialDeptMap');
 }
 foreach ($sdepts as $sd) {
-    $list = "";
+    $sclass = str_replace('-', '\\', $sd);
+    $obj = new $sclass();
+    $list = '';
     foreach($sconf as $id => $mods){
-        if (in_array($sd,$mods))
+        if (in_array($sclass,$mods))
             $list .= $id.', ';
     }
     $list = rtrim($list,', ');
-    $sclass = str_replace('-', '\\', $sd);
-    $obj = new $sclass();
     printf('<tr><td title="%s">%s</td><td>
         <input type="text" name="SDEPT_MAP_LIST[]" value="%s" />
         <input type="hidden" name="SDEPT_MAP_NAME[]" value="%s" />
