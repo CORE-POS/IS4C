@@ -50,10 +50,10 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
             $obj->pluginDisable();
         }
     }
-    CoreLocal::set('PluginList',$_REQUEST['PLUGINLIST']);
+    CoreLocal::set('PluginList',$_REQUEST['PLUGINLIST'], true);
 }
 $type_check = CoreLocal::get('PluginList');
-if (!is_array($type_check)) CoreLocal::set('PluginList',array());
+if (!is_array($type_check)) CoreLocal::set('PluginList',array(), true);
 
 $mods = AutoLoader::listModules('COREPOS\\pos\\plugins\\Plugin');
 sort($mods);
