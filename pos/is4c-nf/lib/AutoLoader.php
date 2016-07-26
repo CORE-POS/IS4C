@@ -200,7 +200,7 @@ class AutoLoader extends LibraryClass
 
             if (strstr($file,'plugins')) {
                 $parent = Plugin::memberOf($file);
-                if ($base_class !== 'Plugin' && $parent && !Plugin::isEnabled($parent)) {
+                if ($base_class !== 'COREPOS\\pos\\plugins\\Plugin' && $parent && !Plugin::isEnabled($parent)) {
                     continue;
                 }
             }
