@@ -354,20 +354,9 @@ foreach($orders as $w){
 fclose($fp);
 $ret .= "</table>";
 
-$ret .= '<p>
-    <a href="" onclick="orderPlacer(); return false;">Place Some of These</a>
-</p>';
-
 echo $ret;
 ?>
 <script type="text/javascript">
-function orderPlacer() {
-    var ids = '';
-    $('input[name^=oids]').each(function() {
-        ids += 'id[]='+$(this).val() + '&';
-    });
-    window.location = 'OrderPlacer.php?' + ids;
-}
 function refilter(){
     var f1 = $('#f_1').val();
     var f2 = $('#f_2').val();
