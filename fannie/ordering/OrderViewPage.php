@@ -87,6 +87,37 @@ class OrderViewPage extends FannieRESTfulPage
                 AND trans_id=?'); 
         $upR = $dbc->execute($upP, array($this->dept, $this->orderID, $this->transID));
 
+        $desc = FormLib::get('newdesc');
+        if (!empty($desc)) {
+            $brand = FormLib::get('newbrand');
+            if (!empty($brand)) {
+                $desc = $brand . ' ' . $desc;
+            }
+            $upP = $dbc->prepare('
+                UPDATE PendingSpecialOrder
+                SET description=?
+                WHERE order_id=?
+                    AND trans_id=?'); 
+            $upR = $dbc->execute($upP, array($desc, $this->orderID, $this->transID));
+        }
+
+        $qtyType = FormLib::get('newQtyType', 'Cases');
+        if (strtolower($qtyType) !== 'cases') {
+            $upP = $dbc->prepare('
+                UPDATE PendingSpecialOrder
+                SET quantity=ItemQtty
+                WHERE order_id=?
+                    AND trans_id=?'); 
+            $upR = $dbc->execute($upP, array($this->orderID, $this->transID));
+
+            $upP = $dbc->prepare('
+                UPDATE PendingSpecialOrder
+                SET ItemQtty=1
+                WHERE order_id=?
+                    AND trans_id=?'); 
+            $upR = $dbc->execute($upP, array($this->orderID, $this->transID));
+        }
+
         return $this->get_orderID_items_handler();
     }
 
@@ -993,16 +1024,40 @@ HTML;
         while ($row = $dbc->fetchRow($res)) {
             $opts .= sprintf('<option value="%d">%s</option>',$row[1],$row[0]);
         }
+        $current = $dbc->prepare("
+            SELECT description, ItemQtty
+            FROM {$TRANS}PendingSpecialOrder
+            WHERE order_id=?
+                AND trans_id=?");
+        $info = $dbc->getRow($current, array($orderID, $transID));
 
         return <<<HTML
-<i>This item ({$description}) requires a department</i><br />
+<i>This item ({$description}) requires additional information</i><br />
 <form data-order="{$orderID}" data-trans="{$transID}">
-    <div class="form-inline">
-        <select id="newdept" class="form-control">
-            {$opts}
-        </select>
+    <div class="form-inline more-item-info">
+        <div class="form-group">
+            <label>Brand</label>
+            <input type="text" name="newbrand" id="newbrand" class="form-control input-sm" />
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <input type="text" name="newdesc" value="{$info['description']}" class="form-control input-sm" />
+        </div>
+        <div class="form-group">
+            <label>Qty {$info['ItemQtty']} is</label>
+            <select name="newQtyType" class="form-control input-sm">
+                <option>Cases</option>
+                <option>Eaches</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Dept.</label>
+            <select id="newdept" name="dept" class="form-control input-sm">
+                {$opts}
+            </select>
+        </div>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <button type="submit" class="btn btn-default">Enter Dept</button>
+        <button type="submit" class="btn btn-default">Add Item</button>
     </div>
 </form>
 HTML;

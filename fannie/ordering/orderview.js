@@ -118,7 +118,7 @@ var orderView = (function($) {
                 return false;
             });
         } else if ($('#newdept').length) {
-            $('#newdept').focus();	
+            $('#newbrand').focus();	
             $('#itemDiv form').submit(function (e) {
                 mod.newDept($(this).data('order'), $(this).data('trans'));
                 e.preventDefault();
@@ -211,10 +211,10 @@ var orderView = (function($) {
         });
     };
     mod.newDept = function (oid,tid){
-        var d = $('#newdept').val();
+        var dstr = $('.more-item-info :input').serialize();
         $.ajax({
             type: 'post',
-            data: 'orderID='+oid+'&transID='+tid+'&dept='+d
+            data: 'orderID='+oid+'&transID='+tid+'&'+dstr
         }).done(function(resp){
             $('#itemDiv').html(resp);
             mod.afterLoadItems();

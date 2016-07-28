@@ -43,7 +43,7 @@ class OrderItemLib
         }
 
         $item = self::$generic_item;
-        $item['description'] = $upc . ' SO';
+        $item['description'] = $upc;
         $item['upc'] = $upc;
 
         return $item;
