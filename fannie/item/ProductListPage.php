@@ -62,6 +62,11 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $this->mode = 'list';
         }
 
+        $this->addScript('productList.js');
+        if ($this->canEditItems) {
+            $this->addOnloadCommand('productList.enableEditing()');
+        }
+
         return true;
     }
 
@@ -98,10 +103,6 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         foreach ($vModel->find('vendorName') as $v) {
             $vendors[] = $v->vendorName();
         }
-        if ($this->canEditItems) {
-            $this->addOnloadCommand('productList.enableEditing()');
-        }
-        $this->addScript('productList.js');
         ob_start();
         ?>
         var deptObj = <?php echo json_encode($depts); ?>;
