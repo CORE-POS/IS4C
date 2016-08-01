@@ -21,9 +21,11 @@
 *********************************************************************************/
 
 /**
-Theoretical implementation. Assumes single-cable RS232 configuration with
-a carriage return message separator. Scan commands should have an "S" prefix,
-scale commands should not.
+Theoretical implementation. Assumes single-cable RS232 configuration with:
+    STX byte: 0x2
+    ETX byte: 0x3
+    BCC byte: disabled
+    PPD byte: disabled (aka PACESETTER)
 */
 
 using System;
@@ -40,6 +42,8 @@ public class SPH_NCR_Scale : SerialPortHandler
     private WeighState scale_state;
     private Object writeLock = new Object();
     private string last_weight;
+    const byte STX = 0x2;
+    const byte ETX = 0x3;
 
     public SPH_NCR_Scale(string p) : base(p)
     {
@@ -83,9 +87,11 @@ public class SPH_NCR_Scale : SerialPortHandler
         } else if (msg == "reBoot") {
             scale_state = WeighState.None;
             lock (writeLock) {
-                sp.Write("10\r");
+                // ASCII: 10
+                sp.Write(new byte[]{ STX, 0x31, 0x30, ETX }, 0, 4);
                 Thread.Sleep(5000);
-                sp.Write("14\r");
+                // ASCII: 14
+                sp.Write(new byte[]{ STX, 0x31, 0x34, ETX }, 0, 4);
             }
         }
     }
@@ -95,7 +101,8 @@ public class SPH_NCR_Scale : SerialPortHandler
         lock (writeLock) {
             int count = 0;
             while(count < num) {
-                sp.Write("334\r");
+                // ASCII: 334
+                sp.Write(new byte[]{ STX, 0x33, 0x33, 0x34, ETX }, 0, 5);
                 Thread.Sleep(150);
                 count++;
             }
@@ -105,7 +112,8 @@ public class SPH_NCR_Scale : SerialPortHandler
     private void GetStatus()
     {
         lock (writeLock) {
-            sp.Write("14\r");
+            // ASCII: 14
+            sp.Write(new byte[]{ STX, 0x31, 0x34, ETX }, 0, 4);
         }
     }
 
@@ -119,7 +127,8 @@ public class SPH_NCR_Scale : SerialPortHandler
         while (SPH_Running) {
             try {
                 int b = sp.ReadByte();
-                if (b == 13) {
+                if (b == ETX) {
+                    // message complete
                     if (this.verbose_mode > 0) {
                         System.Console.WriteLine("RECV FROM SCALE: "+buffer);
                     }
@@ -131,6 +140,8 @@ public class SPH_NCR_Scale : SerialPortHandler
                         this.PushOutput(buffer);
                     }
                     buffer = "";
+                } else if (b == STX) {
+                    // skip STX byte; converting to character doesn't really work
                 } else {
                     buffer += ((char)b).ToString();
                 }
@@ -148,23 +159,23 @@ public class SPH_NCR_Scale : SerialPortHandler
 
     private string ParseData(string s)
     {
-        if (s.Substring(0,2) == "S0") { // scanner message
-            if (s.Substring(0,4) == "S08A" || s.Substring(0,4) == "S08F") { // UPC-A or EAN-13
+        if (s.Substring(0,1) == "0") { // scanner message
+            if (s.Substring(0,3) == "08A" || s.Substring(0,3) == "08F") { // UPC-A or EAN-13
+                return s.Substring(3);
+            } else if (s.Substring(0,3) == "08E") { // UPC-E
+                return this.ExpandUPCE(s.Substring(3));
+            } else if (s.Substring(0,3) == "08R") { // GTIN / GS1
+                return "GS1~"+s.Substring(2);
+            } else if (s.Substring(0,4) == "08B1") { // Code39
                 return s.Substring(4);
-            } else if (s.Substring(0,4) == "S08E") { // UPC-E
-                return this.ExpandUPCE(s.Substring(4));
-            } else if (s.Substring(0,4) == "S08R") { // GTIN / GS1
-                return "GS1~"+s.Substring(3);
-            } else if (s.Substring(0,5) == "S08B1") { // Code39
-                return s.Substring(5);
-            } else if (s.Substring(0,5) == "S08B2") { // Interleaved 2 of 5
-                return s.Substring(5);
-            } else if (s.Substring(0,5) == "S08B3") { // Code128
-                return s.Substring(5);
+            } else if (s.Substring(0,4) == "08B2") { // Interleaved 2 of 5
+                return s.Substring(4);
+            } else if (s.Substring(0,4) == "08B3") { // Code128
+                return s.Substring(4);
             } else {
                 return s; // catch all
             }
-        } else if (s.Substring(0,2) == "11" || s.Substring(0,2) == "14") { // scale message
+        } else if (s.Substring(0,1) == "1") { // scale message
             /**
               The scale supports two primary commands:
               11 is "get stable weight". This tells the scale to return
@@ -213,10 +224,10 @@ public class SPH_NCR_Scale : SerialPortHandler
                 }
             } else if (s.Substring(0,3) == "144") { // stable non-zero weight
                 GetStatus();
-                if (scale_state != WeighState.NonZero || last_weight != s.Substring(4)) {
+                if (scale_state != WeighState.NonZero || last_weight != s.Substring(3)) {
                     scale_state = WeighState.NonZero;
-                    last_weight = s.Substring(4);
-                    return "S11"+s.Substring(4);
+                    last_weight = s.Substring(3);
+                    return "S11"+s.Substring(3);
                 }
             } else if (s.Substring(0,3) == "145") { // scale under zero weight
                 GetStatus();
