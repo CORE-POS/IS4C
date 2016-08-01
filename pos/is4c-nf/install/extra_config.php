@@ -138,11 +138,11 @@ if (FormLib::get('PPORT',false) !== false) {
     $PPORT = FormLib::get('PPORT');
     $otherPortText = FormLib::get('otherpport', false);
     if ($PPORT === 'other' && $otherPortText !== false) {
-        CoreLocal::set('printerPort',trim($otherPortText));
+        CoreLocal::set('printerPort',trim($otherPortText), true);
         $otherPortChecked = True;
         $otherPortText = trim($otherPortText);
     } else {
-        CoreLocal::set('printerPort',$PPORT);
+        CoreLocal::set('printerPort',$PPORT, true);
         $otherPortChecked = False;
         $otherPortText = "";
     }
