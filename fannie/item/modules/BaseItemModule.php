@@ -527,17 +527,29 @@ HTML;
 
             if (isset($rowItem['discounttype']) && $rowItem['discounttype'] <> 0) {
                 /* show sale info */
-                $batchP = $dbc->prepare("
-                    SELECT b.batchName, 
-                        b.batchID 
-                    FROM batches AS b 
-                        LEFT JOIN batchList as l on b.batchID=l.batchID 
-                        LEFT JOIN StoreBatchMap AS m ON b.batchID=m.batchID
-                    WHERE '" . date('Y-m-d') . "' BETWEEN b.startDate AND b.endDate 
-                        AND (l.upc=? OR l.upc=?)
-                        AND m.storeID=?"
-                );
-                $batchR = $dbc->execute($batchP,array($upc,'LC'.$likeCode,$store_id));
+                if (FannieConfig::get('STORE_MODE') == 'HQ') {
+                    $batchP = $dbc->prepare("
+                        SELECT b.batchName, 
+                            b.batchID 
+                        FROM batches AS b 
+                            LEFT JOIN batchList as l on b.batchID=l.batchID 
+                            LEFT JOIN StoreBatchMap AS m ON b.batchID=m.batchID
+                        WHERE '" . date('Y-m-d') . "' BETWEEN b.startDate AND b.endDate 
+                            AND (l.upc=? OR l.upc=?)
+                            AND m.storeID=?"
+                    );
+                    $batchR = $dbc->execute($batchP,array($upc,'LC'.$likeCode,$store_id));
+                } else {
+                    $batchP = $dbc->prepare("
+                        SELECT b.batchName, 
+                            b.batchID 
+                        FROM batches AS b 
+                            LEFT JOIN batchList as l on b.batchID=l.batchID 
+                        WHERE '" . date('Y-m-d') . "' BETWEEN b.startDate AND b.endDate 
+                            AND (l.upc=? OR l.upc=?)
+                    ");
+                    $batchR = $dbc->execute($batchP,array($upc,'LC'.$likeCode));
+                }
                 $batch = array('batchID'=>0, 'batchName'=>"Unknown");
                 if ($dbc->num_rows($batchR) > 0) {
                     $batch = $dbc->fetch_row($batchR);
