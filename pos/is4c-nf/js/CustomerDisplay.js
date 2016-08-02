@@ -24,7 +24,7 @@ function reloadCustomerDisplay()
 {
     if (!$.isWindow(customerWindow)) {
         launchCustomerDisplay();
+    } else {
+        customerWindow.location.reload();
     }
-    customerWindow.location.reload();
 }
-
