@@ -22,7 +22,7 @@ function updateCustomerDisplay(identifier, content)
 
 function reloadCustomerDisplay()
 {
-    if ((!$.isWindow(customerWindow))) {
+    if (!$.isWindow(customerWindow)) {
         launchCustomerDisplay();
     } else {
         customerWindow.location.reload();
