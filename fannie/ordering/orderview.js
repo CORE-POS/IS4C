@@ -49,27 +49,6 @@ var orderView = (function($) {
         }
     };
 
-    mod.memNumEntered = function(){
-        var oid = $('#orderID').val();
-        var cardno = $('#memNum').val();	
-        $.ajax({
-            type: 'get',
-            data: 'customer=1&orderID='+oid+'&memNum='+cardno,
-            dataType: 'json'
-        }).done(function(resp){
-            if (resp.customer) {
-                $('#customerDiv').html(resp.customer);
-                mod.AfterLoadCustomer();
-            }
-            if (resp.footer) {
-                $('#footerDiv').html(resp.footer);
-                $('#confirm-date').change(function(e) {
-                    mod.saveConfirmDate(e.target.checked, $('#orderID').val());
-                });
-            }
-        });
-    };
-
     mod.afterLoadCustomer = function() {
         $('.contact-field').change(mod.saveContactInfo);
         $('#memNum').change(mod.memNumEntered);
@@ -100,6 +79,27 @@ var orderView = (function($) {
         });
         $('#sendEmails').change(function() {
             mod.toggleSendEmails($('#orderID').val(), $('#sendEmails').prop('checked'));
+        });
+    };
+
+    mod.memNumEntered = function(){
+        var oid = $('#orderID').val();
+        var cardno = $('#memNum').val();	
+        $.ajax({
+            type: 'get',
+            data: 'customer=1&orderID='+oid+'&memNum='+cardno,
+            dataType: 'json'
+        }).done(function(resp){
+            if (resp.customer) {
+                $('#customerDiv').html(resp.customer);
+                mod.AfterLoadCustomer();
+            }
+            if (resp.footer) {
+                $('#footerDiv').html(resp.footer);
+                $('#confirm-date').change(function(e) {
+                    mod.saveConfirmDate(e.target.checked, $('#orderID').val());
+                });
+            }
         });
     };
 

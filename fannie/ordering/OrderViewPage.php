@@ -832,7 +832,7 @@ class OrderViewPage extends FannieRESTfulPage
         if (FannieAuth::validateUserQuiet('ordering_edit')) {
             $items = $this->editableItemList($this->orderID);
         } else {
-            $items = itemList($this->orderID);
+            $items = $this->itemList($this->orderID);
         }
         
         echo <<<HTML
@@ -991,6 +991,72 @@ HTML;
 
         return $ret;
     }
+
+    private function itemList($orderID,$table="PendingSpecialOrder")
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $TRANS = $this->config->get('TRANS_DB') . $dbc->sep();
+
+        $deptP = $dbc->prepare("SELECT dept_no,dept_name FROM departments order by dept_no");
+        $deptR = $dbc->execute($deptP);
+        $depts = array(0=>'Unassigned');
+        while($deptW = $dbc->fetchRow($deptR)) {
+            $depts[$deptW['dept_no']] = $deptW['dept_name'];
+        }
+
+        $prep = $dbc->prepare("SELECT o.upc,o.description,total,quantity,department,
+            v.sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch,
+            o.trans_id,o.unitPrice,o.memType,o.staff
+            FROM {$TRANS}PendingSpecialOrder as o
+                LEFT JOIN vendors AS n ON o.mixMatch=n.vendorName
+                LEFT JOIN vendorItems as v on o.upc=v.upc AND n.vendorID=v.vendorID
+            WHERE order_id=? AND trans_type='I' 
+            ORDER BY trans_id DESC");
+        $res = $dbc->execute($prep, array($orderID));
+        $num_rows = $dbc->num_rows($res);
+
+        $ret = '<table class="table table-bordered table-striped">';
+        $ret .= '<tr><th>UPC</th><th>Description</th><th>Cases</th><th>Pricing</th><th>&nbsp;</th></tr>';
+            //<th>Est. Price</th>
+            //<th>Qty</th><th>Est. Savings</th><th>&nbsp;</th></tr>';
+        $prep = $dbc->prepare("SELECT o.upc,o.description,total,quantity,
+            department,regPrice,ItemQtty,discounttype,trans_id FROM {$TRANS}$table as o
+            WHERE order_id=? AND trans_type='I'");
+        $res = $dbc->execute($prep, array($orderID));
+        while($w = $dbc->fetch_row($res)) {
+            $pricing = "Regular";
+            if ($w['discounttype'] == 1) {
+                $pricing = "Sale";
+            } elseif($w['regPrice'] != $w['total']) {
+                if ($w['discounttype']==2) {
+                    $pricing = "Sale";
+                } else {
+                    $pricing = "% Discount";
+                }
+            }
+            $ret .= sprintf('<tr>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%d</td>
+                    <td>%s</td>
+                    <td><a href="" data-order="%d" data-trans="%d"
+                        class="btn btn-danger btn-xs btn-delete">%s</a></td>
+                    </tr>',
+                    $w['upc'],
+                    $w['description'],
+                    $w['ItemQtty'],
+                    $pricing,
+                    $orderID,$w['trans_id'],
+                    \COREPOS\Fannie\API\lib\FannieUI::deleteIcon()
+                );
+        }
+        $ret .= '</table>';
+
+        return $ret;
+    }
+
+
 
     private function getQtyForm($orderID,$default,$transID,$description)
     {
