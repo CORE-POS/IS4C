@@ -51,6 +51,7 @@ class OrderNotifications
         if (class_exists('ScheduledEmailSendTask')) {
             $config = FannieConfig::factory();
             $settings = $config->get('PLUGIN_SETTINGS');
+            $dbc = $this->dbc;
             $dbc->selectDB($settings['ScheduledEmailDB']);
             $template = new ScheduledEmailTemplatesModel($dbc);
             $template->scheduledEmailTemplateID($config->get('SO_TEMPLATE'));
@@ -75,8 +76,8 @@ class OrderNotifications
                 $item['ItemQtty'] > 1 ? 's' : '',
                 $item['quantity'],
                 $item['total']) . "\n";
-            $ret['html'] = $ret['text'] . '<br>';
         }
+        $ret['html'] = nl2br($ret['text']);
 
         return $ret;
     }
