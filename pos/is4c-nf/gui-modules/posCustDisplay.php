@@ -20,13 +20,14 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
- 
+
 use COREPOS\pos\lib\gui\BasicCorePage;
 use COREPOS\pos\lib\DisplayLib;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class posCustDisplay extends BasicCorePage 
+class posCustDisplay extends BasicCorePage
 {
+    protected $title = "COREPOS Customer Display";
 
     public function body_content()
     {
@@ -40,7 +41,7 @@ class posCustDisplay extends BasicCorePage
             echo "<div class=\"centerOffset\">";
             echo DisplayLib::plainmsg(CoreLocal::get("plainmsg"));
             echo "</div>";
-        } else {    
+        } else {
             // No input and no messages, so
             // list the items
             if (CoreLocal::get("End") == 1) {
@@ -75,4 +76,3 @@ class posCustDisplay extends BasicCorePage
 }
 
 AutoLoader::dispatch();
-
