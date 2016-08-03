@@ -88,7 +88,17 @@ class ObfWeeklyReport extends FannieReportPage
         $start_ts = strtotime($week->startDate());
         $end_ts = mktime(0, 0, 0, date('n', $start_ts), date('j', $start_ts)+6, date('Y', $start_ts));
 
-        return array('Week ' . date('F d, Y', $start_ts) . ' to ' . date('F d, Y', $end_ts));
+        $store = FormLib::get('store');
+        $prev = $this->form->weekID - 1;
+        $next = $this->form->weekID + 1;
+        $other = $store == 1 ? 2 : 1;
+
+        return array(
+            'Week ' . date('F d, Y', $start_ts) . ' to ' . date('F d, Y', $end_ts) . '<br />',
+            "<a href=\"?weekID={$prev}&store={$store}\">Prev Week</a> 
+            | <a href=\"?weekID={$next}&store={$store}\">Next Week</a>
+            | <a href=\"?weekID={$this->form->weekID}&store={$other}\">Other Store</a>",
+        );
     }
 
     protected function initTotalSales()
