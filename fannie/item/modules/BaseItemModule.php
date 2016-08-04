@@ -51,6 +51,11 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
         foreach ($store_model->find('storeID') as $obj) {
             $stores[$obj->storeID()] = $obj;
         }
+        if (count($stores) == 0) {
+            $store_model->storeID(1);
+            $store_model->description('DEFAULT STORE');
+            $stores[1] = $store_model;
+        }
 
         return $stores;
     }
