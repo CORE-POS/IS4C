@@ -11,8 +11,9 @@ function runParser(input_str,rel_prefix){
 	}).done(parserHandler).fail(parserError);
 }
 
-function parserError()
+function parserError(xhr, statusText, err)
 {
+    errorLog.show(xhr, statusText, err);
 }
 
 function customerWindowHtml(selector, content)
@@ -27,11 +28,11 @@ function parserHandler(data)
 	if (data.main_frame){
 		window.location = data.main_frame;
 		return;
-	} else {
-		if (data.output) {
-			$(data.target).html(data.output);
-            customerWindowHtml(data.target, data.output);
-        }
+	}
+
+    if (data.output) {
+        $(data.target).html(data.output);
+        customerWindowHtml(data.target, data.output);
 	}
 
 	if (data.redraw_footer){

@@ -1,4 +1,4 @@
-var pos2 = (function($) {
+var pos2 = (function($, errorLog) {
     var mod = {};
 
     var urlStem = '../';
@@ -95,10 +95,11 @@ var pos2 = (function($) {
                 var newicon = icon.replace(/(.*graphics)\/.*/, "$1/deadreceipt.gif");
                 $('#receipticon').attr('src', newicon);
             }
-        }).fail(function() {
+        }).fail(function(xhr, statusText, err) {
             var icon = $('#receipticon').attr('src');
             var newicon = icon.replace(/(.*graphics)\/.*/, "$1/deadreceipt.gif");
             $('#receipticon').attr('src', newicon);
+            errorLog.show(xhr, statusText, err);
         });
     };
 
@@ -112,4 +113,4 @@ var pos2 = (function($) {
     };
 
     return mod;
-}(jQuery));
+}(jQuery, errorLog));

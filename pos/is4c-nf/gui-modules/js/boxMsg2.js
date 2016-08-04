@@ -1,4 +1,4 @@
-var boxMsg2 = (function($) {
+var boxMsg2 = (function($, errorLog) {
     var mod = {};
 
     var changePage = function(data, cmd) {
@@ -38,10 +38,12 @@ var boxMsg2 = (function($) {
             } else {
                 changePage(data, cmd);
             }
+        }).fail(function(xhr, statusText, err) {
+            errorLog.show(xhr, statusText, err);
         });
         return false;
     };
 
     return mod;
 
-}(jQuery));
+}(jQuery, errorLog));

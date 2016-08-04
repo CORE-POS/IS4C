@@ -106,6 +106,7 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
         $jquery = MiscLib::jqueryFile();
         echo "<script type=\"text/javascript\"
             src=\"{$my_url}/js/{$jquery}\"></script>";
+        echo '<script type="text/javascript" src="' . $my_url . '/js/errorLog.js"></script>';
         $this->head_content();
         echo "</head>";
         echo '<body class="'.$this->body_class.'">';
