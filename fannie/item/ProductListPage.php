@@ -124,7 +124,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $store_id = FormLib::get('store_id');
             $upc = BarcodeLib::padUPC($upc);
             $form = new COREPOS\common\mvc\FormValueContainer();
-            $this->saveItem($dbc, $upc, $form);
+            $this->saveItem($dbc, $upc, $store_id, $form);
             break;  
         case 'deleteCheck':
             $upc = FormLib::get('upc');
@@ -158,7 +158,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         'local' => 'local',
     );
 
-    private function saveItem($dbc, $upc, $form)
+    private function saveItem($dbc, $upc, $store_id, $form)
     {
         $model = new ProductsModel($dbc);
         $model->upc($upc);
