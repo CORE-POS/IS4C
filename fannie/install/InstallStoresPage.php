@@ -128,7 +128,9 @@ class InstallStoresPage extends \COREPOS\Fannie\API\InstallPage {
                 $saveStr .= '),';
             }
             $saveStr .= ')';
-            confset('FANNIE_STORE_NETS', "$saveStr");
+            if (count($netIDs) > 0) {
+                confset('FANNIE_STORE_NETS', "$saveStr");
+            }
             header('Location: InstallStoresPage.php');
             return false;
         }
