@@ -729,6 +729,14 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             $rules->save();
         }
 
+        $stores = new StoresModel($con);
+        if (count($stores->find()) == 0) {
+            $stores->storeID(1);
+            $stores->description('DEFAULT STORE');
+            $stores->hasOwnItems(1);
+            $stores->save();
+        }
+
         $ret[] = dropDeprecatedStructure($con, $op_db_name, 'expingMems', true);
         $ret[] = dropDeprecatedStructure($con, $op_db_name, 'expingMems_thisMonth', true);
 
