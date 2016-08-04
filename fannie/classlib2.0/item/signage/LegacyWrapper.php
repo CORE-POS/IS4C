@@ -43,7 +43,7 @@ class LegacyWrapper extends \COREPOS\Fannie\API\item\FannieSignage
     public function drawPDF()
     {
         if (empty(self::$wrapped)) {
-            return false;
+            return 'No legacy layout selected';
         }
         $data = $this->loadItems();
         $layout = str_replace(' ', '_', self::$wrapped);
@@ -52,7 +52,7 @@ class LegacyWrapper extends \COREPOS\Fannie\API\item\FannieSignage
             include($file);
         }
         if (!function_exists($layout)) {
-            return false;
+            return 'No legacy layout selected';
         }
         $layout($data, 0);
     }
