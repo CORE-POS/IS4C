@@ -42,11 +42,17 @@ class LegacyWrapper extends \COREPOS\Fannie\API\item\FannieSignage
 
     public function drawPDF()
     {
+        if (empty(self::$wrapped)) {
+            return false;
+        }
         $data = $this->loadItems();
         $layout = str_replace(' ', '_', self::$wrapped);
         $file = __DIR__ . '/../../../admin/labels/pdf_layouts/' . $layout . '.php';
-        if (!function_exists($layout)) {
+        if (file_exists($file) && !function_exists($layout)) {
             include($file);
+        }
+        if (!function_exists($layout)) {
+            return false;
         }
         $layout($data, 0);
     }
