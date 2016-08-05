@@ -40,8 +40,7 @@ class OrderAjax extends FannieRESTfulPage
             'post<id><pn>',
             'post<id><confirm>',
             'post<id><store>',
-            'post<id><close>',
-            'post<id><sendEmails>'
+            'post<id><close>'
         );
 
         return parent::preprocess();
@@ -51,16 +50,6 @@ class OrderAjax extends FannieRESTfulPage
     {
         $this->connection->selectDB($this->config->get('TRANS_DB'));
         return $this->connection;
-    }
-
-    protected function post_id_sendEmails_handler()
-    {
-        $model = new SpecialOrdersModel($this->tdb());
-        $model->specialOrderID($this->id);
-        $model->sendEmails($this->sendEmails);
-        $model->save();
-
-        return false;
     }
 
     protected function post_id_close_handler()

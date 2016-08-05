@@ -20,7 +20,8 @@ class OrderNotifications
         $ret = false;
         if ($items[0]['staff'] && $order->sendEmails()) {
             $formatted = $this->formatItems($items);
-            $ret = $this->sendArrivedEmail($order->email(), $formatted);
+            $addr = $this->getAddress($order);
+            $ret = $this->sendArrivedEmail($addr, $formatted);
         }
 
         return $ret;
@@ -36,10 +37,29 @@ class OrderNotifications
         $ret = false;
         if ($order->statusFlag() == 5 && $order->sendEmails()) {
             $formatted = $this->formatItems($items);
-            $ret = $this->sendArrivedEmail($order->email(), $formatted);
+            $addr = $this->getAddress($order);
+            $ret = $this->sendArrivedEmail($addr, $formatted);
         }
 
         return $ret;
+    }
+
+    private function getAddress($order)
+    {
+        switch ($order->sendEmails()) {
+            case 1:
+                return $order->email();
+            case 2:
+                return preg_replace('/[^0-9]/', '', $order->phone()) . '@mms.att.net';
+            case 3:
+                return preg_replace('/[^0-9]/', '', $order->phone()) . '@pm.sprint.com';
+            case 4:
+                return preg_replace('/[^0-9]/', '', $order->phone()) . '@tmomail.net';
+            case 5:
+                return preg_replace('/[^0-9]/', '', $order->phone()) . '@vzwpix.com';
+            default:
+                return false;
+        }
     }
 
     /**

@@ -55,7 +55,7 @@ class OrderViewPage extends FannieRESTfulPage
         $this->__routes[] = 'post<orderID><transID><toggleStaff>';
         $this->__routes[] = 'post<orderID><transID><toggleMemType>';
         $this->__routes[] = 'post<orderID><togglePrint>';
-        $this->__routes[] = 'post<orderID><noteDept><noteText><addr><addr2><city><state><zip><ph1><ph2><email>';
+        $this->__routes[] = 'post<orderID><noteDept><noteText><ph1><ph2><email>';
         $this->__routes[] = 'delete<orderID><transID>';
         $this->addRoute('post<orderID><description><srp><actual><qty><dept><unitPrice><vendor><transID><changed>');
         $this->addRoute('post<addPO><orderID><transID><storeID>');
@@ -260,27 +260,19 @@ class OrderViewPage extends FannieRESTfulPage
         return false;
     }
 
-    protected function post_orderID_noteDept_noteText_addr_addr2_city_state_zip_ph1_ph2_email_handler()
+    protected function post_orderID_noteDept_noteText_ph1_ph2_email_handler()
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
-
-        $street = $this->addr;
-        if (!empty($this->addr2)) {
-            $street .= "\n" . $this->addr2;
-        }
 
         $soModel = new SpecialOrdersModel($dbc);
         $soModel->specialOrderID($this->orderID);
         $soModel->noteSuperID($this->noteDept);
         $soModel->notes($this->noteText);
-        $soModel->street($street);
-        $soModel->city($this->city);
-        $soModel->state($this->state);
-        $soModel->zip($this->zip);
         $soModel->phone($this->ph1);
         $soModel->altPhone($this->ph2);
         $soModel->email($this->email);
+        $soModel->sendEmails(FormLib::get('contactBy'));
 
         if (FormLib::get('fn', false) !== false) {
             $soModel->firstName(FormLib::get('fn'));
@@ -573,31 +565,34 @@ class OrderViewPage extends FannieRESTfulPage
         }
         $ret .= "</select></td></tr>";
 
-        // address
-        $street = $orderModel->street();
-        $street2 = '';
-        if(strstr($street,"\n")) {
-            list($street, $street2) = explode("\n", $street, 2);
+        $contactOpts = array(
+            0 => 'Call',
+            1 => 'Email',
+            2 => 'Text (AT&T)',
+            3 => 'Text (Sprint)',
+            4 => 'Text (T-Mobile)',
+            5 => 'Text (Verizon)',
+        );
+        $contactHtml = '';
+        foreach ($contactOpts as $id=>$val) {
+            $contactHtml .= sprintf('<option %s value="%d">%s</option>',
+                ($orderModel->sendEmails() == $id ? 'selected' : ''),
+                $id, $val);
         }
 
         $ret .= sprintf('
             <tr>
-                <th>Address</th>
-                <td>
-                    <input type="text" id="t_addr1" value="%s" 
-                        class="form-control input-sm contact-field"
-                        name="addr" />
-                </td>
-                <th>
-                    <label title="Send email arrival notifications" >
-                        E-mail
-                        <input type="checkbox" id="sendEmails" %s />
-                    </label>
-                </th>
+                <th>E-mail</th>
                 <td>
                     <input type="text" id="t_email" value="%s" 
                         class="form-control input-sm contact-field"
                         name="email" />
+                </td>
+                <th>Phone</th>
+                <td>
+                    <input type="text" id="t_ph1" name="ph1"
+                        class="form-control input-sm contact-field"
+                        value="%s" />
                 </td>
                 <td rowspan="2" colspan="4">
                     <textarea id="nText" rows="5" cols="25" 
@@ -606,54 +601,23 @@ class OrderViewPage extends FannieRESTfulPage
                 </td>
             </tr>
             <tr>
-                <th>Addr (2)</th>
-                <td>
-                    <input type="text" id="t_addr2" value="%s" 
-                        class="form-control input-sm contact-field"
-                        name="addr2" />
-                </td>
-                <th>City</th>
-                <td>
-                    <input type="text" id="t_city" name="city"
-                        class="form-control input-sm contact-field"
-                        value="%s" size="10" />
-                </td>
-            </tr>
-            <tr>
-                <th>Phone</th>
-                <td>
-                    <input type="text" id="t_ph1" name="ph1"
-                        class="form-control input-sm contact-field"
-                        value="%s" />
-                </td>
                 <th>Alt. Phone</th>
                 <td>
                     <input type="text" id="t_ph2" value="%s" name="ph2"
                         class="form-control input-sm contact-field" />
                 </td>
-                <th>State</th>
+                <th>Prefer</th>
                 <td>
-                    <input type="text" id="t_state" value="%s" size="2" 
-                        class="form-control input-sm contact-field"
-                        name="state"  />
-                </td>
-                <th>Zip</th>
-                <td>
-                    <input type="text" id="t_zip" value="%s" size="5" 
-                        class="form-control input-sm contact-field"
-                        name="zip" />
+                    <select name="contactBy" class="form-control input-sm contact-field">
+                        %s
+                    </select>
                 </td>
             </tr>',
-            $street,
-            $orderModel->sendEmails() ? 'checked' : '',
             $orderModel->email(),
-            $orderModel->notes(),
-            $street2, 
-            $orderModel->city(), 
             $orderModel->phone(), 
-            $orderModel->altPhone(), 
-            $orderModel->state(), 
-            $orderModel->zip() 
+            $orderModel->notes(),
+            $orderModel->altPhone(),
+            $contactHtml
         );
 
         $ret .= '</table>';

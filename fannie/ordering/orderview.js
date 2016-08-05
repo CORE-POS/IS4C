@@ -77,9 +77,6 @@ var orderView = (function($) {
         $('.print-cb').change(function() {
             mod.togglePrint($('#orderID').val());
         });
-        $('#sendEmails').change(function() {
-            mod.toggleSendEmails($('#orderID').val(), $('#sendEmails').prop('checked'));
-        });
     };
 
     mod.memNumEntered = function(){
@@ -251,13 +248,6 @@ var orderView = (function($) {
         $.ajax({
             type: 'post',
             data: 'togglePrint=1&orderID='+oid
-        });
-    };
-    mod.toggleSendEmails = function(oid, s) {
-        $.ajax({
-            url: 'OrderAjax.php',
-            type: 'post',
-            data: 'id='+oid+'&sendEmails='+(s?1:0)
         });
     };
     mod.toggleO = function (oid,tid)
