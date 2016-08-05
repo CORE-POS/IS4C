@@ -80,7 +80,7 @@ those same items revert to normal pricing.
         $b_def = $this->connection->tableDefinition($this->name);
         $p_def = $this->connection->tableDefinition('products');
         $has_limit = (isset($b_def['transLimit']) && isset($p_def['special_limit'])) ? true : false;
-        $isHQ = FannieConfig::get('STORE_MODE') == 'HQ' ? true : false;
+        $isHQ = FannieConfig::config('STORE_MODE') == 'HQ' ? true : false;
         if ($batchInfoW['discountType'] != 0) { // item is going on sale
             $forceQ="
                 UPDATE products AS p
