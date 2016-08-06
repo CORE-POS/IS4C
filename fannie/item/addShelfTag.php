@@ -229,8 +229,11 @@ HTML;
         <span class="btn-group">
           <button type="submit" class="btn btn-default"
               name="submit" value="New">Create Tag</button>
+          <?php if(isset($FANNIE_SINGLE_LABEL_LAYOUT) && $FANNIE_SINGLE_LABEL_LAYOUT != ""
+               && isset($FANNIE_SINGLE_LABEL_PRINTER) && $FANNIE_SINGLE_LABEL_PRINTER != "") { ?>
           <button type="submit" class="btn btn-default"
               name="print" value="now">Instant Tag</button>
+          <?php } ?>
         </p>
         <div class="form-group form-inline">
         <label>Barcode page</label>
