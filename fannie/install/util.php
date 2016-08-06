@@ -93,7 +93,7 @@ function check_db_host($host,$dbms)
             break;
         case 'MSSQL':
             $port = 1433;
-            break;
+            break;    
         case 'PGSQL':
             $port = 5432;
             break;
@@ -107,14 +107,14 @@ function check_db_host($host,$dbms)
 
     $test = false;
     $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-    socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0));
+    socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
     socket_set_block($sock);
     try {
         $test = @socket_connect($sock,$host,$port);
     } catch(Exception $ex) {}
     socket_close($sock);
 
-    return ($test ? true : false);
+    return ($test ? true : false);    
 }
 
 function db_test_connect($host,$type,$db,$user,$pw){
@@ -128,7 +128,7 @@ function db_test_connect($host,$type,$db,$user,$pw){
         $sql = new SQLManager($host,$type,$db,$user,$pw);
     }
     catch(Exception $ex) {}
-
+    
     if ($sql === False || $sql->connections[$db] === False)
         return False;
     else
@@ -254,7 +254,7 @@ function whoami(){
 /**
   Check if file exists and is writable by PHP
   @param $filename the file
-  @param $optional boolean file is not required
+  @param $optional boolean file is not required 
   @param $template string template for creating file
 
   Known $template values: PHP
@@ -372,7 +372,7 @@ function installTextField($name, &$current_value, $default_value='', $quoted=tru
   Render configuration variable as an <select> tag
   Process any form submissions
   Write configuration variable to config.php
-
+  
   @param $name [string] name of the variable
   @param $current_value [mixed] the actual config variable
   @param $options [array] list of options
@@ -444,3 +444,4 @@ function installSelectField($name, &$current_value, $options, $default_value='',
 
     return $ret;
 }
+

@@ -194,7 +194,7 @@ HTML;
             <input type='text' name='description' maxlength=30
                 class="form-control focus" value="<?php echo strtoupper($desc); ?>" />
         <label>Brand</label>
-            <input type='text' name='brand' maxlength=15
+            <input type='text' name='brand' maxlength=15 
                 class="form-control" value="<?php echo strtoupper($brand); ?>" />
         </div>
         <div class="form-group form-inline">
@@ -215,7 +215,7 @@ HTML;
         </div>
         <div class="form-group form-inline">
         <label># Tags</label>
-        <input type="text" name="count" size="3" value="1"
+        <input type="text" name="count" size="3" value="1" 
             class="form-control" />
         <label>SKU</label>
         <input type='text' name='sku' size=8

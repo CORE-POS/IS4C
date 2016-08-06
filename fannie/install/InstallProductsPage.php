@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 //ini_set('display_errors','1');
-include(dirname(__FILE__) . '/../config.php');
+include(dirname(__FILE__) . '/../config.php'); 
 if (!class_exists('FannieAPI')) {
     include_once(dirname(__FILE__) . '/../classlib2.0/FannieAPI.php');
 }
@@ -199,7 +199,7 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
             'current' => 'Current',
             'Pending' => 'Pending',
             'Historical' => 'Historical',
-        );
+        ); 
         echo installSelectField('FANNIE_BATCH_VIEW', $FANNIE_BATCH_VIEW, $batch_opts, 'all');
         ?>
         <hr />
@@ -208,7 +208,7 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         $report_opts = array(
             'range' => 'Range of Departments',
             'multi' => 'Multi Select',
-        );
+        ); 
         echo installSelectField('FANNIE_REPORT_DEPT_MODE', $FANNIE_REPORT_DEPT_MODE, $report_opts, 'range');
         ?>
         <hr />
@@ -217,13 +217,13 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         $so_opts = array(
             'bootstrap' => 'Consistent',
             'legacy' => 'Legacy',
-        );
+        ); 
         echo installSelectField('FANNIE_SO_UI', $FANNIE_SO_UI, $so_opts, 'bootstrap');
         ?>
         <label>Special Order Email Template ID</label>
         <?php
         echo installTextField('FANNIE_SO_TEMPLATE', $FANNIE_SO_TEMPLATE, 0);
-        ?>
+        ?> 
         <hr />
         <label>Default Shelf Tag Layout</label>
         <?php
@@ -313,7 +313,7 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
 
         <hr />
         <h4 class="install">Product Editing</h4>
-        <p class='ichunk' style="margin:0.4em 0em 0.4em 0em;"><b>Compose Product Description</b>:
+        <p class='ichunk' style="margin:0.4em 0em 0.4em 0em;"><b>Compose Product Description</b>: 
         <?php
         echo installSelectField('FANNIE_COMPOSE_PRODUCT_DESCRIPTION', $FANNIE_COMPOSE_PRODUCT_DESCRIPTION,
                     array(1 => 'Yes', 0 => 'No'), 0);
@@ -325,7 +325,7 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         <br /> "Eden Seville Orange Marma 500g"
         </p>
 
-        <p class='ichunk' style="margin:0.0em 0em 0.4em 0em;"><b>Compose Long Product Description</b>:
+        <p class='ichunk' style="margin:0.0em 0em 0.4em 0em;"><b>Compose Long Product Description</b>: 
         <?php
         echo installSelectField('FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION', $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION,
                     array(1 => 'Yes', 0 => 'No'), 0);
