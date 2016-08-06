@@ -78,9 +78,6 @@ HTML;
     }
 
     private function print_tag() {
-      $layout = "Zebra_Single_Label";  // This should be user configurable eventually
-
-      $layout = FormLib::get('layout',$layout);
       $offset = FormLib::get('offset', 0);
 
       $data = array(array(
@@ -108,18 +105,13 @@ HTML;
           include(dirname(__FILE__) . '/../admin/labels/FpdfWithBarcode.php');
       }
 
-      $layout_file = dirname(__FILE__) . '/../admin/labels/pdf_layouts/' . $layout . '.php';
-      if (count($data) > 0 && file_exists($layout_file) && !function_exists($layout)) {
+      $layout_file = dirname(__FILE__) . '/../admin/labels/pdf_layouts/' . $FANNIE_SINGLE_LABEL_LAYOUT . '.php';
+      if (count($data) > 0 && file_exists($layout_file) && !function_exists($FANNIE_SINGLE_LABEL_LAYOUT)) {
           include($layout_file);
       }
-      if (function_exists($layout)) {
-          // $layout($data, $offset); // This line renders the PDF to the browser. Comment out if sending to printer
-
-          /* The rest of this if statement sends this PDF to the printer. Comment
-           * the next 7 or so lines to not print.
-           */
+      if (function_exists($FANNIE_SINGLE_LABEL_LAYOUT)) {
           $filename = "/tmp/".uniqid().".pdf";
-          $layout($data, $offset, $filename);
+          $FANNIE_SINGLE_LABEL_LAYOUT($data, $offset, $filename);
           echo "<pre>";
           $printer = "";
           if(isset($FANNIE_SINGLE_LABEL_PRINTER) && $FANNIE_SINGLE_LABEL_PRINTER != "") {
