@@ -28,6 +28,7 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 class posCustDisplay extends BasicCorePage
 {
     protected $title = "COREPOS Customer Display";
+    protected $hardware_polling = false;
 
     public function body_content()
     {

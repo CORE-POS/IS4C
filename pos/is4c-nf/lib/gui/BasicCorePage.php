@@ -50,6 +50,7 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
     protected $page_url;
     protected $body_class='mainBGimage';
     protected $title = "COREPOS";
+    protected $hardware_polling = true;
 
     /**
       Constructor
@@ -120,7 +121,7 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
         ob_start();
         echo "</div>";
         $this->scale_box();
-        $this->scanner_scale_polling();
+        $this->scanner_scale_polling($this->hardware_polling);
 
         return ob_get_clean();
     }
