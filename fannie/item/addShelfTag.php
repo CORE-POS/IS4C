@@ -77,28 +77,89 @@ HTML;
         return '</body></html>';
     }
 
+    private function print_tag() {
+      $layout = "Zebra_Single_Label";  // This should be user configurable eventually
+      $printer = "zebra";
+
+      $layout = FormLib::get('layout',$layout);
+      $offset = FormLib::get('offset', 0);
+
+      $data = array(array(
+        'normal_price' => FormLib::get('price'),
+        'description' => FormLib::get('description'),
+        'brand' => FormLib::get('brand'),
+        'units' => FormLib::get('units'),
+        'size' => FormLib::get('size'),
+        'sku' => FormLib::get('sku'),
+        'pricePerUnit' => FormLib::get('ppo'),
+        'upc' => FormLib::get('upc'),
+        'vendor' => FormLib::get('vendor'),
+        'scale' => FormLib::get('scale'),
+        'numflag' => FormLib::get('numflag'),
+        'count' => FormLib::get('count', 0)
+      ));
+
+      if (!defined('FPDF_FONTPATH')) {
+        define('FPDF_FONTPATH','font/');
+      }
+      if (!class_exists('FPDF', false)) {
+          require(dirname(__FILE__) . '/../src/fpdf/fpdf.php');
+      }
+      if (!class_exists('FpdfWithBarcode', false)) {
+          include(dirname(__FILE__) . '/../admin/labels/FpdfWithBarcode.php');
+      }
+
+      $layout_file = dirname(__FILE__) . '/../admin/labels/pdf_layouts/' . $layout . '.php';
+      if (count($data) > 0 && file_exists($layout_file) && !function_exists($layout)) {
+          include($layout_file);
+      }
+      if (function_exists($layout)) {
+          // $layout($data, $offset); // This line renders the PDF to the browser. Comment out if sending to printer
+
+          /* The rest of this if statement sends this PDF to the printer. Comment
+           * the next 7 or so lines to not print.
+           */
+          $filename = "/tmp/".uniqid().".pdf";
+          $layout($data, $offset, $filename);
+          echo "<pre>";
+          passthru("/usr/bin/lp -d ".$printer." ".$filename);
+          echo "</pre>";
+          unlink($filename);
+          return '<div class="alert alert-success">Printing '.$filename.'</div>';
+      } else {
+          echo 'Invalid data and/or layout';
+      }
+
+      return false;
+
+    }
+
     protected function post_upc_view()
     {
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
-
-        $shelftag = new ShelftagsModel($dbc);
-        $shelftag->id(FormLib::get('subID', 0));
-        $shelftag->upc(FormLib::get('upc'));
-        $shelftag->normal_price(FormLib::get('price'));
-        $shelftag->pricePerUnit(FormLib::get('ppo'));
-        $shelftag->description(FormLib::get('description'));
-        $shelftag->brand(FormLib::get('brand'));
-        $shelftag->sku(FormLib::get('sku'));
-        $shelftag->size(FormLib::get('size'));
-        $shelftag->units(FormLib::get('units'));
-        $shelftag->vendor(FormLib::get('vendor'));
-        $shelftag->count(FormLib::get('count', 1));
-        $insR = $shelftag->save();
-
-        if ($insR === false) {
-            return '<div class="alert alert-danger">Error creating tag</div>';
+        if(FormLib::get('print') == "now") {
+          return $this->print_tag();
         } else {
+          $dbc = FannieDB::get($this->config->get('OP_DB'));
+
+          $shelftag = new ShelftagsModel($dbc);
+          $shelftag->id(FormLib::get('subID', 0));
+          $shelftag->upc(FormLib::get('upc'));
+          $shelftag->normal_price(FormLib::get('price'));
+          $shelftag->pricePerUnit(FormLib::get('ppo'));
+          $shelftag->description(FormLib::get('description'));
+          $shelftag->brand(FormLib::get('brand'));
+          $shelftag->sku(FormLib::get('sku'));
+          $shelftag->size(FormLib::get('size'));
+          $shelftag->units(FormLib::get('units'));
+          $shelftag->vendor(FormLib::get('vendor'));
+          $shelftag->count(FormLib::get('count', 1));
+          $insR = $shelftag->save();
+
+          if ($insR === false) {
+            return '<div class="alert alert-danger">Error creating tag</div>';
+          } else {
             return '<div class="alert alert-success">Created Tag</div>';
+          }
         }
     }
 
@@ -137,7 +198,7 @@ HTML;
             <input type='text' name='description' maxlength=30
                 class="form-control focus" value="<?php echo strtoupper($desc); ?>" />
         <label>Brand</label>
-            <input type='text' name='brand' maxlength=15 
+            <input type='text' name='brand' maxlength=15
                 class="form-control" value="<?php echo strtoupper($brand); ?>" />
         </div>
         <div class="form-group form-inline">
@@ -158,7 +219,7 @@ HTML;
         </div>
         <div class="form-group form-inline">
         <label># Tags</label>
-        <input type="text" name="count" size="3" value="1" 
+        <input type="text" name="count" size="3" value="1"
             class="form-control" />
         <label>SKU</label>
         <input type='text' name='sku' size=8
@@ -170,8 +231,11 @@ HTML;
             <strong><?php printf("%.2f",$price); ?></strong>
         </span>
         <input type='hidden' name='price' size=8 value=<?php echo $price; ?> />
-        <button type="submit" class="btn btn-default"
-            name="submit" value="New">Create Tag</button>
+        <span class="btn-group">
+          <button type="submit" class="btn btn-default"
+              name="submit" value="New">Create Tag</button>
+          <button type="submit" class="btn btn-default"
+              name="print" value="now">Instant Tag</button>
         </p>
         <div class="form-group form-inline">
         <label>Barcode page</label>
@@ -197,4 +261,3 @@ HTML;
 }
 
 FannieDispatch::conditionalExec();
-
