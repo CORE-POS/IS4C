@@ -79,7 +79,6 @@ HTML;
 
     private function print_tag() {
       $layout = "Zebra_Single_Label";  // This should be user configurable eventually
-      $printer = "zebra";
 
       $layout = FormLib::get('layout',$layout);
       $offset = FormLib::get('offset', 0);
@@ -122,7 +121,11 @@ HTML;
           $filename = "/tmp/".uniqid().".pdf";
           $layout($data, $offset, $filename);
           echo "<pre>";
-          passthru("/usr/bin/lp -d ".$printer." ".$filename);
+          $printer = "";
+          if(isset($FANNIE_SINGLE_LABEL_PRINTER) && $FANNIE_SINGLE_LABEL_PRINTER != "") {
+            $printer = "-d ".$FANNIE_SINGLE_LABEL_PRINTER." ";
+          }
+          passthru("/usr/bin/lp ".$printer.$filename);
           echo "</pre>";
           unlink($filename);
           return '<div class="alert alert-success">Printing '.$filename.'</div>';
