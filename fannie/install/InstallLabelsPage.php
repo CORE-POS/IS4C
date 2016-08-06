@@ -44,9 +44,15 @@ class InstallLabelsPage extends \COREPOS\Fannie\API\InstallPage
         <form action="InstallLabelsPage.php" method="post">
         <?php
         echo $this->writeCheck(dirname(__FILE__) . '/../config.php');
-
+        $printers = array();
+        $printer_options = array();
+        exec("lpstat -a", $printers);
+        foreach($printers as $printer) {
+          $name = explode(" ", $printer, 2);
+          $printer_options[$name[0]] = $name[0];
+        }
         echo '<h4 class="install">Labels</h4>';
-        echo 'Printer for instant label: '.installTextField('FANNIE_SINGLE_LABEL_PRINTER', $FANNIE_SINGLE_LABEL_PRINTER, '');
+        echo 'Printer for instant label: '.installSelectField('FANNIE_SINGLE_LABEL_PRINTER', $FANNIE_SINGLE_LABEL_PRINTER, $printer_options);
         echo '<hr />
             <p>
                 <button type="submit" name="psubmit" value="1" class="btn btn-default">Save Configuration</button>
