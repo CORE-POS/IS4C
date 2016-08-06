@@ -105,17 +105,18 @@ HTML;
           include(dirname(__FILE__) . '/../admin/labels/FpdfWithBarcode.php');
       }
 
-      $layout_file = dirname(__FILE__) . '/../admin/labels/pdf_layouts/' . $FANNIE_SINGLE_LABEL_LAYOUT . '.php';
-      if (count($data) > 0 && file_exists($layout_file) && !function_exists($FANNIE_SINGLE_LABEL_LAYOUT)) {
+      $layout_file = dirname(__FILE__) . '/../admin/labels/pdf_layouts/' . $this->config->get('SINGLE_LABEL_LAYOUT') . '.php';
+      if (count($data) > 0 && file_exists($layout_file) && !function_exists($this->config->get('SINGLE_LABEL_LAYOUT'))) {
           include($layout_file);
       }
-      if (function_exists($FANNIE_SINGLE_LABEL_LAYOUT)) {
+      if (function_exists($this->config->get('SINGLE_LABEL_LAYOUT'))) {
           $filename = "/tmp/".uniqid().".pdf";
-          $FANNIE_SINGLE_LABEL_LAYOUT($data, $offset, $filename);
+          $layout = $this->config->get('SINGLE_LABEL_LAYOUT');
+          $layout($data, $offset, $filename);
           echo "<pre>";
           $printer = "";
-          if(isset($FANNIE_SINGLE_LABEL_PRINTER) && $FANNIE_SINGLE_LABEL_PRINTER != "") {
-            $printer = "-d ".$FANNIE_SINGLE_LABEL_PRINTER." ";
+          if($this->config->get('SINGLE_LABEL_PRINTER') != "") {
+            $printer = "-d ".$this->config->get('SINGLE_LABEL_PRINTER')." ";
           }
           passthru("/usr/bin/lp ".$printer.$filename);
           echo "</pre>";
@@ -231,7 +232,8 @@ HTML;
               name="submit" value="New">Create Tag</button>
           <?php
           $instant_tag_disabled = "disabled";
-          if($FANNIE_SINGLE_LABEL_LAYOUT != "" && $FANNIE_SINGLE_LABEL_PRINTER != "") {
+          if($this->config->get('SINGLE_LABEL_LAYOUT') != "" &&
+             $this->config->get('SINGLE_LABEL_PRINTER') != "") {
                  $instant_tag_disabled = "";
            } ?>
           <button type="submit" class="btn btn-default" <?php echo $instant_tag_disabled; ?>
