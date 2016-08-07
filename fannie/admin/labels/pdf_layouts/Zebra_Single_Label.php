@@ -53,7 +53,7 @@ if (!class_exists('FpdfWithBarcode')) {
     $left = 0;
     $space = 1.190625 * 2;
 
-    $pdf=new Zebra_Single_Label('L', 'mm', array(31.75, 57.15));
+    $pdf=new Zebra_Single_Label_PDF('L', 'mm', array(31.75, 57.15));
     $pdf->SetMargins(0, 0);
     $pdf->SetAutoPageBreak('off', 0);
     $pdf->SetFont('Arial', '', 10);
