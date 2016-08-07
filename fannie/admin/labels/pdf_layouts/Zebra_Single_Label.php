@@ -24,7 +24,7 @@ if (!class_exists('FpdfWithBarcode')) {
     include(dirname(__FILE__) . '/../FpdfWithBarcode.php');
 }
 
-  class Zebra_Single_Label extends FpdfWithBarcode
+  class Zebra_Single_Label_PDF extends FpdfWithBarcode
   {
     function barcodeText($x, $y, $h, $barcode, $len)
     {
