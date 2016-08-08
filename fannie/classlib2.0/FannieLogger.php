@@ -76,7 +76,7 @@ class FannieLogger extends \COREPOS\common\Logger
         }
 
         try {
-            $monolog = new Monolog\Logger();
+            $monolog = new Monolog\Logger('fannie');
             $file = __DIR__ . '/../logs/fannie.log';
             $stream = new Monolog\Handler\StreamHandler($file);
             $monolog->pushHandler($stream);
