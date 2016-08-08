@@ -77,6 +77,20 @@ var orderView = (function($) {
         $('.print-cb').change(function() {
             mod.togglePrint($('#orderID').val());
         });
+        $('.btn-test-send').click(function(){
+            $.ajax({
+                url: 'OrderAjax.php',
+                type: 'post',
+                data: 'id='+$('#orderID').val()+'&testNotify=1',
+                done: function(resp) {
+                    if (resp.sentEmail) {
+                        alert('Emailed Test Notification');
+                    } else {
+                        alert('Notification Test Failed');
+                    }
+                }
+            });
+        });
     };
 
     mod.memNumEntered = function(){
@@ -89,7 +103,7 @@ var orderView = (function($) {
         }).done(function(resp){
             if (resp.customer) {
                 $('#customerDiv').html(resp.customer);
-                mod.AfterLoadCustomer();
+                mod.afterLoadCustomer();
             }
             if (resp.footer) {
                 $('#footerDiv').html(resp.footer);

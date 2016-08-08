@@ -44,6 +44,20 @@ class OrderNotifications
         return $ret;
     }
 
+    public function orderTestEmail($orderID)
+    {
+        $order = $this->getOrder($orderID);
+        $ret = false;
+        $formatted = array(
+            'text' => 'This is just a test message to verify delivery',
+            'html' => 'This is just a test message to verify delivery',
+        );
+        $addr = $this->getAddress($order);
+        $ret = $this->sendArrivedEmail($addr, $formatted);
+
+        return $ret;
+    }
+
     private function getAddress($order)
     {
         switch ($order->sendEmails()) {

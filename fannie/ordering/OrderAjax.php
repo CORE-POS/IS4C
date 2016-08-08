@@ -40,7 +40,8 @@ class OrderAjax extends FannieRESTfulPage
             'post<id><pn>',
             'post<id><confirm>',
             'post<id><store>',
-            'post<id><close>'
+            'post<id><close>',
+            'post<id><testNotify>'
         );
 
         return parent::preprocess();
@@ -145,6 +146,18 @@ class OrderAjax extends FannieRESTfulPage
             $email = new OrderNotifications($dbc);
             $json['sentEmail'] = $email->orderArrivedEmail($this->id);
         }
+
+        echo json_encode($json);
+
+        return false;
+    }
+
+    protected function post_id_testNotify_handler()
+    {
+        $dbc = $this->tdb();
+        $json = array();
+        $email = new OrderNotifications($dbc);
+        $json['sentEmail'] = $email->orderTestEmail($this->id);
 
         echo json_encode($json);
 

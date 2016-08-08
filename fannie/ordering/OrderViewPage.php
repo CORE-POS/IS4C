@@ -607,10 +607,11 @@ class OrderViewPage extends FannieRESTfulPage
                         class="form-control input-sm contact-field" />
                 </td>
                 <th>Prefer</th>
-                <td>
+                <td class="form-inline">
                     <select name="contactBy" class="form-control input-sm contact-field">
                         %s
                     </select>
+                    <button class="btn btn-default btn-sm btn-test-send">Test Send</button>
                 </td>
             </tr>',
             $orderModel->email(),
