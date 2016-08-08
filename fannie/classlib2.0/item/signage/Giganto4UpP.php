@@ -99,7 +99,7 @@ class Giganto4UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $sign++;
         }
 
-        $pdf->Output('Signage4UpL.pdf', 'I');
+        $pdf->Output('Giganto4UpP.pdf', 'I');
     }
 }
 
