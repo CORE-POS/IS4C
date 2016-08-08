@@ -447,7 +447,7 @@ if (!$specialDeptMapExists) {
     </td>
     <td>
     <?php
-    $mods = AutoLoader::listModules('VariableWeightReWrite');
+    $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\Scanning\\VariableWeightReWrite');
     echo $form->selectField('VariableWeightReWriter', $mods, 'ZeroedPriceReWrite');
     ?>
     </td>
