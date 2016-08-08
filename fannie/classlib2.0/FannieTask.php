@@ -79,7 +79,7 @@ class FannieTask
         $this->config = $fc;
     }
 
-    public function setLogger(FannieLogger $fl)
+    public function setLogger($fl)
     {
         $this->logger = $fl;
     }
@@ -213,7 +213,7 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
     include(dirname(__FILE__).'/FannieAPI.php');
 
     $config = FannieConfig::factory();
-    $logger = new FannieLogger();
+    $logger = FannieLogger:factory();
     COREPOS\common\ErrorHandler::setLogger($logger);
     COREPOS\common\ErrorHandler::setErrorHandlers();
 
