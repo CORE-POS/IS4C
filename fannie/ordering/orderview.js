@@ -81,13 +81,13 @@ var orderView = (function($) {
             $.ajax({
                 url: 'OrderAjax.php',
                 type: 'post',
-                data: 'id='+$('#orderID').val()+'&testNotify=1',
-                done: function(resp) {
-                    if (resp.sentEmail) {
-                        alert('Emailed Test Notification');
-                    } else {
-                        alert('Notification Test Failed');
-                    }
+                dataType: 'json',
+                data: 'id='+$('#orderID').val()+'&testNotify=1'
+            }).done(function(resp){
+                if (resp.sentEmail) {
+                    alert('Emailed Test Notification');
+                } else {
+                    alert('Notification Test Failed');
                 }
             });
         });
