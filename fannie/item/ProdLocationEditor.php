@@ -42,12 +42,83 @@ class ProdLocationEditor extends FannieRESTfulPage
     {
         
         $this->__routes[] = 'get<start>';
-        $this->__routes[] = 'post<save>';
+        $this->__routes[] = 'get<batch>';
+        $this->__routes[] = 'post<batch><save>';
+        $this->__routes[] = 'post<upc><save>';
+        $this->__routes[] = 'get<start>';
+        $this->__routes[] = 'get<searchupc>';
         return parent::preprocess();
     }
     
-    function post_save_view()
+    function post_upc_save_view()
     {
+        echo '<h4>post_upc_save_view</h4>';
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $upc = FormLib::get('upc');
+        //$section = FormLib::get('section');
+        //$model = new FloorSectionProductMapModel($dbc);
+        $model = new FloorSectionProductMapModel($dbc);
+        $count = FormLib::get('numolocations');
+        $newSection = array();
+        $oldSection = array();
+        for ($i = 1; $i <= $count; $i++) {
+            $curName = 'newSection' . $i;
+            $oldName = 'oldLocation' . $i;
+            $newSection[] = FormLib::get($curName);
+            $oldSection[] = FormLib::get($oldName);
+        }
+        
+        foreach ($newSection as $key => $floorsection) {
+            $args = array($floorsection, $upc, $oldSection[$key]);
+            $prep = $dbc->prepare('
+                UPDATE FloorSectionProductMap
+                SET floorSectionID = ?
+                WHERE upc = ? 
+                    AND floorSectionID = ?;
+            ');
+            $dbc->execute($prep, $args);
+            if (mysql_errno() > 0) {
+                echo mysql_errno() . ": " . mysql_error(). "<br>";
+            }
+            echo $floorsection . '<br>';
+        }
+        
+        
+        
+        
+        /*
+        $error = array('error'=>0);        
+        $model->upc($upc);
+        $model->floorSectionID($section);
+        //$model->store_id($store_id);
+        $result = $model->save();
+        */
+        
+        /*
+        $args = array($upc, $section);
+        $prep = $dbc->prepare('
+            INSERT INTO FloorSectionProductMap (upc, floorSectionID) 
+            VALUES (?, ?)
+        ');
+        $dbc->execute($prep, $args);
+        */
+        $ret = '';
+        if ($dbc->error()) {
+            //$error['error'] = 1;
+            $ret .= '<div class="alert alert-danger">Save Failed</div>';
+            $ret .= '<div class="alert alert-warning">Error: ' . $dbc->error() . '</div>';
+        } else {
+            $ret .= '<div class="alert alert-success">Product Location Saved</div>';
+        }
+        $ret .= '<a class="btn btn-default" href="http://localhost/IS4C/fannie/item/ProdLocationEditor.php">Return</a><br><br>';
+        
+        return $ret;
+    }
+    
+    function post_batch_save_view()
+    {
+        echo 'post_batch_save_view<br>';
         
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -60,62 +131,38 @@ class ProdLocationEditor extends FannieRESTfulPage
             if (strlen($upc) == 13) $item[$upc] = $section;
         }
             
-        $model = new ProdPhysicalLocationModel($dbc);
+        /*
+        $model = new FloorSectionProductMapModel($dbc);
         foreach ($item as $upc => $section) {
+            echo $section . '<br>';
             $model->upc($upc);
-            $model->store_id($store_id);
+            //$model->store_id($store_id); //deprecated
             $model->floorSectionID($section);
-            $result = $model->save();
+            $model->save();
         }
-        
-        $query = $dbc->prepare('
-                select 
-                    p.upc,
-                    pp.floorSectionID
-                from products as p 
-                    left join prodPhysicalLocation as pp on pp.upc=p.upc 
-                    left join batchList as bl on bl.upc=p.upc 
-                    left join batches as b on b.batchID=bl.batchID 
-                where b.batchID >= ' . $start . '
-                    and b.batchID <= ' . $end . ' 
-                    and pp.floorSectionID is NULL 
-                    AND department NOT BETWEEN 508 AND 998
-                    AND department NOT BETWEEN 250 AND 259
-                    AND department NOT BETWEEN 225 AND 234
-                    AND department NOT BETWEEN 1 AND 25
-                    AND department NOT BETWEEN 61 AND 78
-                    AND department != 46
-                    AND department != 150
-                    AND department != 208
-                    AND department != 235
-                    AND department != 240
-                    AND department != 500
-                group by p.upc
-                order by p.department;
+        */
+        foreach ($item as $upc => $section) {
+            $args = array($upc, $section );
+            $prep = $dbc->prepare('
+                INSERT INTO FloorSectionProductMap (upc, floorSectionID) values (?, ?);
             ');
-            $result = $dbc->execute($query);
-            $count = 0;
-            while($row = $dbc->fetch_row($result)) {
-                $count++;
-                //$ret .= $row['upc'] . " location updated to " . $row['floorSectionID'] . "<br>";
-            }
-            if (mysql_errno() > 0) {
-                echo mysql_errno() . ": " . mysql_error(). "<br>";
-            } 
-            if ($count > 0) {
-                $ret .= 'There are still ' . $count . ' products
-                    missing locations in the selected range of batches.';
-            } else {
-                $ret .= '<div class="text-success"><h3>You have successfully updated the products in the declared 
-                    batch range.</h3></div>';
-            }
+            $dbc->execute($prep, $args);    
+        }
+        if (mysql_errno() > 0) {
+            echo mysql_errno() . ": " . mysql_error(). "<br>";
+        } else {
+            $ret .= '<div class="alert alert-success">Update Successful</div>';
+        }        
+        
+        $ret .= '<br><br><a class="btn btn-default" href="javascript:history.back()">Back</a><br><br>';
+        $ret .= '<a class="btn btn-default" href="http://localhost/IS4C/fannie/item/ProdLocationEditor.php">Return</a><br><br>';
         
         return $ret;
     }
 
     function get_start_view()
     {
-        
+        echo '<h4>get_start_view</h4>';
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
@@ -133,7 +180,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                     p.brand,
                     d.dept_name
                 from products as p 
-                    left join prodPhysicalLocation as pp on pp.upc=p.upc 
+                    left join FloorSectionProductMap as pp on pp.upc=p.upc 
                     left join batchList as bl on bl.upc=p.upc 
                     left join batches as b on b.batchID=bl.batchID 
                     left join productUser as pu on pu.upc=p.upc
@@ -170,96 +217,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             
             //  Find suggestions for each item's location based on department.
             foreach ($item as $key => $row) {
-                //$item[$key]['sugDept'] = 
-                if($row['dept']>=1 && $row['dept']<=17){
-                    $item[$key]['sugDept'] = 16;
-                }
-                
-                // Cool 1
-                if ($row['dept']==39 || $row['dept']==40 || $row['dept']==44 || $row['dept']==45) {
-                    $item[$key]['sugDept'] = 11;
-                }
-                
-                // Cool 2
-                if ($row['dept']==38 || $row['dept']==41 || $row['dept']==42){
-                    $item[$key]['sugDept'] = 13;
-                }
-                
-                // Cool 3
-                if ($row['dept']==32 || $row['dept']==35 || $row['dept']==37 ) {
-                    $item[$key]['sugDept'] = 14;
-                }
-                
-                // Cool 4
-                if ( ($row['dept']>=26 && $row['dept']<=31)
-                    || ($row['dept']==34 ) ) {
-                    $item[$key]['sugDept'] = 15;
-                }
-                
-                // Grocery 1
-                if( ($row['dept']>=170 && $row['dept']<=173)
-                    || ($row['dept']==160 ) || ($row['dept']==169) ) {
-                    $item[$key]['sugDept'] = 1;
-                }
-                
-                // Grocery 2
-                if( ($row['dept']==156) || ($row['dept']==161) || ($row['dept']==163)
-                    || ($row['dept']==166) || ($row['dept']==172) || ($row['dept']==174)
-                    || ($row['dept']==175) || ($row['dept']==177) ) {
-                    $item[$key]['sugDept'] = 2;
-                }
-                
-                // Grocery 3
-                if( ($row['dept']==153) || ($row['dept']==157)
-                    || ($row['dept']==164) || ($row['dept']==167) || ($row['dept']==168)
-                    || ($row['dept']==176) ) {
-                    $item[$key]['sugDept'] = 3;
-                }
-                
-                // Grocery 4
-                if( ($row['dept']==151) || ($row['dept']==152) ) {
-                    $item[$key]['sugDept'] = 4;
-                }
-                
-                // Grocery 5
-                if( ($row['dept']==159) || ($row['dept']==155) ) {
-                    $item[$key]['sugDept'] = 5;
-                }
-                
-                // Grocery 6
-                if($row['dept']==158) {
-                    $item[$key]['sugDept'] = 6;
-                }
-                
-                // Grocery 7
-                if($row['dept']==165) {
-                    $item[$key]['sugDept'] = 7;
-                }
-                
-                // Grocery 8
-                if($row['dept']==159 || $row['dept']==162 || $row['dept']==179) {
-                    $item[$key]['sugDept'] = 8;
-                }
-                
-                // Wellness 1
-                if($row['dept']==88 || $row['dept']==90 || $row['dept']==95 ||
-                    $row['dept']==96 || $row['dept']==98 || $row['dept']==99 ) {
-                    $item[$key]['sugDept'] = 9;
-                }
-                
-                // Wellness 2
-                if($row['dept']==86 ||$row['dept']==87 || $row['dept']==89 ||
-                    $row['dept']==90 || $row['dept']==90 || $row['dept']==91 ||
-                    $row['dept']==94 || $row['dept']==97 || $row['dept']==102) {
-                    $item[$key]['sugDept'] = 10;
-                }
-                
-                // Wellness 3
-                if($row['dept']==101 || ($row['dept']>=105 && $row['dept']<=109) ) {
-                    
-                    $item[$key]['sugDept'] = 12;
-                }
-                
+                $item[$key]['sugDept'] = self::getLocation($item[$key]['dept']);
             }
 
             $query = $dbc->prepare('SELECT
@@ -282,12 +240,13 @@ class ProdLocationEditor extends FannieRESTfulPage
                     <th>UPC</th>
                     <td>Brand</th>
                     <td>Description</th>
-                    <td>Department</th>
                     <td>Dept. No.</th>
+                    <td>Department</th>
                     <td>Location</th>
                 </thead>
                 <form method="post">
                     <input type="hidden" name="save" value="1">
+                    <input type="hidden" name="batch" value="1">
                     <input type="hidden" name="start" value="' . $start . '">
                     <input type="hidden" name="end" value="' . $end . '">
                     <input type="hidden" name="store_id" value="' . $store_id . '">
@@ -297,8 +256,8 @@ class ProdLocationEditor extends FannieRESTfulPage
                     <tr><td><a href="ItemEditorPage.php?searchupc=' . $key . '" target="">' . $key . '</a></td>
                     <td>' . $row['brand'] . '</td>
                     <td>' . $row['desc'] . '</td>
-                    <td>' . $row['dept_name'] . '</td>
                     <td>' . $row['dept'] . '</td>
+                    <td>' . $row['dept_name'] . '</td>
                     <td><Span class="collapse"> </span>
                         <select class="form-control input-sm" name="' . $key . '" value="" />
                             <option value="NULL">* no location selected *</option>';
@@ -314,41 +273,293 @@ class ProdLocationEditor extends FannieRESTfulPage
                     $ret .= '</tr>';
             }
             
-            $ret .= '<tr><td><input type="submit" class="btn btn-default" value="Update Locations"></td></table>
-                </form>';   
+        $ret .= '<tr><td><input type="submit" class="btn btn-default" value="Update Locations"></td>
+            <td><a class="btn btn-default" href="http://localhost/IS4C/fannie/item/ProdLocationEditor.php">Back</a><br><br></td></table>
+            </form>';   
             
+                
+        return $ret;
+    }
+    
+    function get_batch_view()
+    {
+        echo '<h4>get_batch_view</h4>';
+        $ret = "";
+        $ret .= '
+            <form method="get"class="form-inline">
+            
+            <div class="input-group" style="width:200px;">
+                <span class="input-group-addon">Batch#</span>
+                <input type="text" class="form-control inline" name="start" autofocus required>
+            </div>
+            <div class="input-group" style="width:200px;">
+                <span class="input-group-addon">to Batch#</span>
+                <input type="text" class="form-control inline" name="end" required><br>                
+            </div><br><br>
+            
+                <input type="hidden" name="store_id" value="1" required>
+                
+                <input type="submit" class="btn btn-default" value="Find item locations">
+            </form><br>
+            <a class="btn btn-default" href="http://localhost/IS4C/fannie/item/ProdLocationEditor.php">Back</a><br><br>
+        ';
+        
+        return $ret;
+    }
+    
+    function get_searchupc_view()
+    {
+        echo '<h4>get_searchupc_view</h4>';
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        
+        $query = $dbc->prepare('SELECT
+                    floorSectionID,
+                    name
+                FROM FloorSections
+                ORDER BY name;');
+            $result = $dbc->execute($query);
+            $floor_section = array();
+            while($row = $dbc->fetch_row($result)) {
+                $floor_section[$row['floorSectionID']] = $row['name'];
+            }
+            if (mysql_errno() > 0) {
+                echo mysql_errno() . ": " . mysql_error(). "<br>";
+            }
+            $floor_section['none'] = 'none';
+            
+        $ret = '';
+        $ret .= '<div class="container"><div class="row"><div class="col-md-5">';
+        $ret .= '
+            
+            <form class="form-inline" method="get">
+                <input type="hidden" name="store_id" class="form-control" style="width: 315px;">
+                <br><br>
+                <div class="input-group">
+                    <span class="input-group-addon">UPC</span>
+                    <input type="text" class="form-control" id="upc" style="width: 200px" name="upc" autofocus required>&nbsp;&nbsp;
+                    <input type="hidden" class="btn btn-default" style="width: 300px" name="searchupc" value="Update Locations by UPC">
+                    <input type="submit" class="btn btn-default" value="Go">
+                </div>
+            </form><br>
+        ';
+        
+        //  Delete me please!
+        echo '
+            <div class="input-group">
+                <span class="input-group-addon">test</span>
+                <select class="form-control" style="width: 200px"></select>
+            </div>
+        ';
+        
+        if ($upc = FormLib::get('upc')) {
+            $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
+            $store_id = FormLib::get('store_id');
+            $args = array($upc, $store_id);
+            $prep = $dbc->prepare('
+                SELECT 
+                    p.upc,
+                    p.description,
+                    f.floorSectionID,
+                    p.department,
+                    d.dept_name,
+                    p.brand
+                FROM products AS p
+                    left join FloorSectionProductMap as f on f.upc=p.upc 
+                    left join departments as d on d.dept_no=p.department
+                WHERE p.upc = ?
+                    AND p.store_id = ?
+                GROUP BY f.floorSectionID
+            ');
+            $result = $dbc->execute($prep, $args);
+            $curLocation = array();
+            while ($row = $dbc->fetch_row($result)) {
+                $floorID = $row['floorSectionID'];
+                $brand = $row['brand'];
+                $department = $row['department'];
+                $dept_name = $row['dept_name'];
+                $description = $row['description'];
+                $curLocation[] = $row['floorSectionID'];
+                $sugLocation = self::getLocation($row['department']);
+                //$floor_section[$row['floorSectionID']] == the name of the floor section.
+            }
+            
+            $ret .= '<div class="panel panel-default" style="width: 400px; border: none;">';
+                $ret .= '<table class="table table-striped">';
+                $ret .= '<tr><td><b>UPC: </b></td><td>' . $upc . '</td></tr>';
+                $ret .= '<tr><td><b>Brand / Description: </b></td><td>' . $brand . ' - ' . $description . '</td></tr>';
+                $ret .= '<tr><td><b>Department: </b></td><td>' . $department . ' - ' . $dept_name . '</td></tr>';
+                $ret .= '<tr><td><b>Suggested Location: </b></td><td>' . $floor_section[$sugLocation] . '</td></tr>';
+                $ret .= '</table></div>';
+                $ret .= '<div class="well">spot-holder for adding a<br>new location for this item.<br></div>';
+                
+                $ret .= '<a class="btn btn-default" href="http://localhost/IS4C/fannie/item/ProdLocationEditor.php">Back</a><br><br>';                
+                $ret .= '</div><div class="col-md-5">'; //end of column A
+                
+                $ret .= '
+                    <form method="post">
+                    <input type="hidden" name="save" value="1">
+                    <input type="hidden" name="upc" value="' . $upc . '">
+                ';
+                $count = 0;
+                foreach ($curLocation as $value) {
+                    $count++;
+                    $name = 'section' . $count; 
+                    $oldName = 'oldLocation' . $count;
+                    $ret .= '<input type="hidden" name="' . $oldName . '" value="' . $value . '">';
+                    $ret .= '
+                        <div class="panel panel-default" style="width: 300px;">
+                        <div class="panel-heading"><b>Location #' . $count . '</b></div>
+                            <select name="' . $name . '" class="form-control" style="width: 100%;">
+                    ';
+                    foreach ($floor_section as $fs_key => $fs_value) {
+                        $ret .= '<option value="' . $fs_key . '" name="' . $fs_key . '"';
+                        if ($value == $fs_key) {
+                            $ret .= 'selected';
+                        }    
+                        $ret .= '>' . $fs_value . '</option>';
+                    }
+                    $ret .= '</select></div>';
+                }
+                
+            
+            /*$ret .= '
+                <select name="section" class="form-control" style="width: 100%;">
+                    <option value="0">No Location Designated</option>';
+            foreach ($floor_section as $fs_key => $fs_value) {
+                $ret .= '<option value="' . $fs_key . '" name="' . $fs_key . '"';
+                if ($floorID) {
+                    $ret .= 'selected';
+                }    
+                $ret .= '>' . $fs_value . '</option>';
+            }
+            
+            $ret .= '</select>';*/
+            //$ret .= '</div>';
+            $ret .= '
+                <input type="submit" class="btn btn-default" style="width: 250px;" value="Update Locations"><br><br>
+                <input type="hidden" name="numolocations" value="' . $count . '">
+                </form>
+            ';
+            
+            
+            /*
+            foreach ($floor_section as $fs_key => $fs_value) {
+                if ($fs_key == $item[$key]['sugDept']) {
+                    $ret .= '<option value="' . $fs_key . '" name="' . $key . '" selected>' . $fs_value . '</option>';
+                } else {
+                    $ret .= '<option value="' . $fs_key . '" name="' . $key . '">' . $fs_value . '</option>';
+                }
+            }*/
+            
+        }   
+        
+        $ret .= '</div></div></div>'; //<column B><row><container>
         
         return $ret;
     }
     
     function get_view()
     {
-        $ret = "";
-        $ret .= '
-            <div class="col-md-2"><form method="get">
-            <p> 
-                Enter range of batchIDs to check for items missing locations.
-            </p>
-                <select class="form-control inline" name="store_id" required>
-                <option value="1">Hillside</option>
-                <option value="2">Denfeld</option>
-                <input type="text" class="form-control inline" name="start" autofocus required>
-                <input type="text" class="form-control inline" name="end" required>
-                <input type="submit" class="btn btn-default" value="Go">
-            </form></div>
+        return '
+            <h4>get_view</h4>
+            <div class="container pull-left">
+            <form class="form-inline" method="get">
+                <input type="submit" class="btn btn-default" style="width: 300px" name="searchupc" value="Update Locations by UPC"><br><br>
+            </form>
+            <form class="form-inline" method="get">
+                <input type="submit" class="btn btn-default" style="width: 300px" name="batch" value="Update Locations by BATCH"><br><br>
+            </form>
+            </div>
         ';
-        
-        return $ret;
     }
 
     public function helpContent()
     {
-        return '<p>=
-            This tool edits physical sales floor location
+        return '<p>
+            Edit the physical sales-floor location
             of products found in batches that fall within a 
             specified range of batch IDs.
+            <lu>
+                <li><b>Update Locations by UPC</b> Update or add locations for an individual item.</li>
+                <li><b>Update Locations by BATCH</b> Generate a list of items included in a desired range of 
+                    batch IDs to update multiple locations at once.</li>
+            </lu>
             </p>
             ';
+    }
+    
+    public function getLocation($dept)
+    {
+        //  Suggest physical location of product based on department.
+        if ($dept>=1 && $dept<=17) {
+            //return 
+            return 16;
+        } elseif ($dept==245) {
+            //bulk 1
+            return 16;
+        } elseif ($dept==39 || $dept==40 || $dept==44 || $dept==45 ||
+        $dept==260 || $dept==261) {
+            // Cool 1
+            return 11;
+        } elseif ($dept==38 || $dept==41 || $dept==42){
+            // Cool 2
+            return 13;
+        } elseif ($dept==32 || $dept==35 || $dept==37 ) {
+            // Cool 3
+            return 14;
+        } elseif ( ($dept>=26 && $dept<=31)
+            || ($dept==34 ) ) {
+            // Cool 4
+            return 15;
+        } elseif( ($dept>=170 && $dept<=173)
+            || ($dept==160 ) || ($dept==169) ) {
+            // Grocery 1
+            return 1;
+        } elseif( ($dept==156) || ($dept==161) || ($dept==163)
+            || ($dept==166) || ($dept==172) || ($dept==174)
+            || ($dept==175) || ($dept==177) ) {
+            // Grocery 2
+            return 2;
+        } elseif( ($dept==153) || ($dept==157)
+            || ($dept==164) || ($dept==167) || ($dept==168)
+            || ($dept==176) ) {
+            // Grocery 3
+            return 3;
+        } elseif( ($dept==151) || ($dept==152) || $dept==182) {
+            // Grocery 4
+            return 4;
+        } elseif( ($dept==159) || ($dept==155) ) {
+            // Grocery 5
+            return 5;
+        } elseif($dept==158) {
+            // Grocery 6
+            return 6;
+        } elseif($dept==165) {
+            // Grocery 7
+            return 7;
+        } elseif($dept==159 || $dept==162 || $dept==179 
+            || $dept==154 || $dept==242) {
+            // Grocery 8
+            return 8;
+        } elseif($dept==88 || $dept==90 || $dept==95 ||
+            $dept==96 || $dept==98 || $dept==99 ||
+            $dept==100) {
+            // Wellness 1
+            return 9;
+        } elseif($dept==86 ||$dept==87 || $dept==89 ||
+            $dept==90 || $dept==90 || $dept==91 ||
+            $dept==94 || $dept==97 || $dept==102 ||
+            $dept==93 || $dept==104) {
+            // Wellness 2
+            return 10;
+        } elseif($dept==101 || ($dept>=105 && $dept<=109) ) {
+            // Wellness 3
+            return 12;
+        } else {
+            return 'none';
+        }
+        
     }
     
 }
