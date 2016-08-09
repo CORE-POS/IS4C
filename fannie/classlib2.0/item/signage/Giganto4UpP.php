@@ -78,6 +78,12 @@ class Giganto4UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
             $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($row*$this->height) + 35);
             $pdf->SetFont($this->font, '', $this->BIG_FONT);
+            if (strstr($price, 'lb')) {
+                $price = str_replace(' /lb.', '/lb.', $price);
+                $pdf->SetFont($this->font, '', $this->BIG_FONT-29);
+            } elseif (strstr($price, 'OFF')) {
+                $pdf->SetFont($this->font, '', $this->BIG_FONT-27);
+            }
             $pdf->Cell($effective_width, 20, $price, 0, 1, 'C');
 
             if ($item['startDate'] != '' && $item['endDate'] != '') {
