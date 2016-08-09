@@ -151,7 +151,8 @@ class FormLib extends \COREPOS\common\FormLib
 
     public static function date_range_picker($one='date1',$two='date2',$week_start=1)
     {
-        return self::dateRangePicker($one, $two, $week_start);
+        $week_start = (!FannieConfig::config('FANNIE_WEEK_START')) ? 1 :  FannieConfig::config('FANNIE_WEEK_START');
+		return self::dateRangePicker($one, $two, $week_start);
     }
 
     /**
