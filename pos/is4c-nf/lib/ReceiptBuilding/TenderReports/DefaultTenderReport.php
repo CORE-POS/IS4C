@@ -72,7 +72,7 @@ static public function get()
                     END AS tender
                   FROM dtransactions 
                   WHERE emp_no=".CoreLocal::get("CashierNo")."
-                    AND tender_code = '".$tender_code."' 
+                    AND trans_subtype = '".$tender_code."' 
                     AND trans_status NOT IN ('X','Z')
                   ORDER BY datetime";
         $result = $db_a->query($query);
