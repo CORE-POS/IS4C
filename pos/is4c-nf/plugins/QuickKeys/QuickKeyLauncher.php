@@ -126,7 +126,7 @@ class QuickKeyLauncher extends Parser
             $ret .= '<div class="qkBox">
                 <div>
                     <button type="button" class="quick_button pos-button errorColoredArea"
-                        onclick="$(\'#reginput\').val(\'CL\');submitWrapper();">
+                        onclick="$(\'#reginput\').val(\'CL\');pos2.submitWrapper();">
                         Clear <span class="smaller">[clear]</span>
                     </button>
                 </div>
