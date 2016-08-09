@@ -235,7 +235,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 }
             } elseif ($row['variable_pricing'] == 0 && $row['normal_price'] >= 10.00) {
                 $background = ($row['normal_price'] < $row['rawSRP']
-					&& $row['srp'] > $row['normal_price']) ?'red':'green';
+                    && $row['srp'] > $row['normal_price']) ?'red':'green';
                 if ($row['normal_price']-0.49 > $row['rawSRP']) {
                     $background = ($row['normal_price']-0.49 > $row['rawSRP']
                         && ($row['normal_price'] > $row['srp'])
