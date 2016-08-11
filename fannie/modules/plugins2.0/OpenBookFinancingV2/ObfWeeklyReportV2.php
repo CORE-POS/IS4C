@@ -211,7 +211,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $labor->obfCategoryID($category->obfCategoryID());
             $labor->load();
             // use SPLH instead of pre-allocated
-            list($proj_hours, $trend_hours) = $this->projectHours($category, $dept_proj, $dept_trend);
+            list($proj_hours, $trend_hours) = $this->projectHours($labor->splhTarget(), $dept_proj, $dept_trend);
             // approximate wage to convert hours into dollars
             list($proj_wages, $trend_wages) = $this->projectWages($labor, $proj_hours, $trend_hours);
 
@@ -309,7 +309,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $total_hours->quarterActual += $quarter['hours'];
             $total_hours->quarterProjected += $qt_proj_hours;
 
-            list($proj_hours, $trend_hours) = $this->projectHours($c, $total_sales->projected, $total_sales->trend);
+            list($proj_hours, $trend_hours) = $this->projectHours($labor->splhTarget(), $total_sales->projected, $total_sales->trend);
             list($proj_wages, $trend_wages) = $this->projectWages($labor, $proj_hours, $trend_hours);
 
             $data[] = array(
@@ -475,7 +475,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $total_hours->quarterActual += $quarter['hours'];
             $total_hours->quarterProjected += $qt_proj_hours;
 
-            list($proj_hours, $trend_hours) = $this->projectHours($c, $total_sales->projected+$otherStore['plan'], $total_sales->trend);
+            list($proj_hours, $trend_hours) = $this->projectHours($labor->splhTarget(), $total_sales->projected+$otherStore['plan'], $total_sales->trend);
             list($proj_wages, $trend_wages) = $this->projectWages($labor, $proj_hours, $trend_hours);
 
             $data[] = array(
@@ -624,7 +624,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $info['plan'] += $row['plan'];
             $cat->obfCategoryID($row['catID']);
             $cat->load();
-            $plan[$row['catID']] = $this->projectHours($cat, $row['plan'], $row['plan']);
+            $plan[$row['catID']] = $this->projectHours($cat->salesPerLaborHourTarget(), $row['plan'], $row['plan']);
         }
 
         /**
@@ -650,7 +650,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             } else {
                 $cat->obfCategoryID($row['catID']);
                 $cat->load();
-                list($tmpP, $tmpT) = $this->projectHours($cat, $info['plan'], $info['plan']);
+                list($tmpP, $tmpT) = $this->projectHours($cat->salesPerLaborHourTarget(), $info['plan'], $info['plan']);
                 $info['planHours'] += $tmpP;
             }
         }

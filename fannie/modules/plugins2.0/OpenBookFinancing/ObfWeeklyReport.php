@@ -209,10 +209,10 @@ class ObfWeeklyReport extends FannieReportPage
         return $average_wage;
     }
 
-    protected function projectHours($category, $dept_proj, $dept_trend)
+    protected function projectHours($splhGoal, $dept_proj, $dept_trend)
     {
-        $proj_hours = $dept_proj / $category->salesPerLaborHourTarget();
-        $trend_hours = $dept_trend / $category->salesPerLaborHourTarget();
+        $proj_hours = $dept_proj / $splhGoal;
+        $trend_hours = $dept_trend / $splhGoal;
 
         return array($proj_hours, $trend_hours);
     }
