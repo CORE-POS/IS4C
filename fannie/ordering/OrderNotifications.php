@@ -20,6 +20,7 @@ class OrderNotifications
         $ret = false;
         if ($items[0]['staff'] && $order->sendEmails()) {
             $formatted = $this->formatItems($items);
+            $formatted['store'] = $this->getStore($orderID);
             $addr = $this->getAddress($order);
             $ret = $this->sendArrivedEmail($addr, $formatted);
         }
@@ -37,6 +38,7 @@ class OrderNotifications
         $ret = false;
         if ($order->statusFlag() == 5 && $order->sendEmails()) {
             $formatted = $this->formatItems($items);
+            $formatted['store'] = $this->getStore($orderID);
             $addr = $this->getAddress($order);
             $ret = $this->sendArrivedEmail($addr, $formatted);
         }
@@ -114,6 +116,19 @@ class OrderNotifications
         $ret['html'] = nl2br($ret['text']);
 
         return $ret;
+    }
+
+    private function getStore($orderID)
+    {
+        $config = FannieConfig::factory();
+        $query = '
+            SELECT s.description
+            FROM SpecialOrders AS o
+                INNER JOIN ' . $config->get('OP_DB') . $this->dbc->sep() . 'Stores AS s
+                    ON s.storeID=o.storeID
+            WHERE o.specialOrderID=?';
+        $prep = $this->dbc->prepare($query);
+        return $this->dbc->getValue($prep, array($orderID));
     }
 
     /**
