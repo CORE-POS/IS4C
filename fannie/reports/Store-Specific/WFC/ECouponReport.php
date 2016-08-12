@@ -7,6 +7,9 @@ if (!class_exists('FannieAPI')) {
 
 class ECouponReport extends FannieRESTfulPage
 {
+    protected $header = 'WFC Coupon Reporting';
+    protected $title = 'WFC Coupon Reporting';
+
     protected function get_view()
     {
         $dbc = $this->connection;
