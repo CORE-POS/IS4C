@@ -130,6 +130,7 @@ var orderView = (function($) {
             });
         } else if ($('#newdept').length) {
             $('#newbrand').focus();	
+            bindAutoComplete('#newbrand', '../ws/', 'brand');
             $('#itemDiv form').submit(function (e) {
                 mod.newDept($(this).data('order'), $(this).data('trans'));
                 e.preventDefault();
