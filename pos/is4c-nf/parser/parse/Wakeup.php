@@ -23,8 +23,10 @@
 
 namespace COREPOS\pos\parser\parse;
 use COREPOS\pos\parser\Parser;
+use COREPOS\pos\lib\TransRecord;
 
-class Wakeup extends Parser {
+class Wakeup extends Parser 
+{
     function check($str)
     {
         if ($str == "WAKEUP" || $str == 'WAKEUP2'){
@@ -33,9 +35,11 @@ class Wakeup extends Parser {
         return False;
     }
 
-    function parse($str){
+    function parse($str)
+    {
         $ret = $this->default_json();
         $ret['udpmsg'] = $str == 'WAKEUP' ? 'wakeup' : 'reBoot';
+        TransRecord::addLogRecord(array('upc'=>$str));
         return $ret;
     }
 
