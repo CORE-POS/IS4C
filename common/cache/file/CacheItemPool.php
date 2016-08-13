@@ -31,8 +31,8 @@ namespace COREPOS\common\cache\file;
 */
 class CacheItemPool
 {
-    private $items = array();
-    private $file = 'core.cache';
+    protected $items = array();
+    protected $file = 'core.cache';
 
     public function __construct($file='core.cache')
     {
@@ -109,7 +109,7 @@ class CacheItemPool
         return $this->saveToFile($this->file, $this->items);
     }
 
-    private function itemToInternal($item)
+    protected function itemToInternal($item)
     {
         $arr = array('val' => $item->get());
         $exp = $item->expires();
@@ -120,7 +120,7 @@ class CacheItemPool
         return $arr;
     }
 
-    private function illegalKey($key)
+    protected function illegalKey($key)
     {
         if (preg_match('#\{\}\(\)/\\@:#', $key)) {
             return true;
@@ -129,7 +129,7 @@ class CacheItemPool
         }
     }
 
-    private function loadFromFile($file)
+    protected function loadFromFile($file)
     {
         // mark path as in use
         if (!file_exists($file)) {
@@ -141,7 +141,7 @@ class CacheItemPool
         return is_array($decode) ? $decode : array();
     }
 
-    private function saveToFile($file, $items)
+    protected function saveToFile($file, $items)
     {
         return file_put_contents($file, serialize($items), LOCK_EX);
     }
@@ -150,7 +150,7 @@ class CacheItemPool
       Locate writable cache file. Just a safety check
       against odd permissions issues.
     */
-    private function getCacheFile($name)
+    protected function getCacheFile($name)
     {
         $temp = sys_get_temp_dir();
         $sep = DIRECTORY_SEPARATOR;

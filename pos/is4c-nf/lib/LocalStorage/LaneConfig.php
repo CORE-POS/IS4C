@@ -47,7 +47,11 @@ class LaneConfig
     private static function init()
     {
         if (self::$instance === null) {
-            self::$instance = new \COREPOS\common\cache\file\CacheItemPool('lane.config.cache');
+            if (function_exists('opcache_compile_file')) {
+                self::$instance = new COREPOS\common\cache\file\CacheItemPool('lane.config.cache');
+            } else {
+                self::$instance = new COREPOS\common\cache\php\CacheItemPool('lane.config.cache');
+            }
         }
     }
 
