@@ -157,6 +157,12 @@ class AjaxParser extends AjaxCallback
 
     public function ajax($input=array())
     {
+        if (CoreLocal::get('CashierNo') === '') { // session is missing/invalid
+            return array(
+                'main_frame' => MiscLib::baseURL() . 'login.php',
+            );
+        }
+
         $in_field = 'input';
         if (isset($input['field'])) {
             $in_field = $input['field'];
