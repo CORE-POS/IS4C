@@ -32,11 +32,17 @@ class AjaxTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('strRemembered', 'invalidInput');
         CoreLocal::set('msgrepeat', 1);    
         $json = $ajax->ajax();
-
         $this->assertInternalType('array', $json);
+        $this->assertEquals(true, substr($json['main_frame'], -9) == 'login.php');
+
+        CoreLocal::set('strRemembered', 'invalidInput');
+        CoreLocal::set('msgrepeat', 1);    
+        CoreLocal::set('CashierNo', 1);
+        $json = $ajax->ajax();
         $this->assertEquals(false, $json['main_frame']);
         $this->assertEquals('.baseHeight', $json['target']);
         $this->assertNotEquals(0, strlen($json['output']));
+        CoreLocal::set('CashierNo', '');
     }
 
     public function testCabReceipt()
