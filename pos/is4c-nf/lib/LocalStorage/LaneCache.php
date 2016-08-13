@@ -45,9 +45,9 @@ class LaneCache
     {
         if (self::$instance === null) {
             if (function_exists('opcache_compile_file')) {
-                self::$instance = new COREPOS\common\cache\php\CacheItemPool('lane.cache');
+                self::$instance = new \COREPOS\common\cache\php\CacheItemPool('lane.cache');
             } else {
-                self::$instance = new COREPOS\common\cache\file\CacheItemPool('lane.cache');
+                self::$instance = new \COREPOS\common\cache\file\CacheItemPool('lane.cache');
             }
         }
     }
