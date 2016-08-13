@@ -119,6 +119,5 @@ class RefundComment extends NoInputCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new RefundComment();
+AutoLoader::dispatch();
 

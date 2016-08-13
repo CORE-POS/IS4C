@@ -92,6 +92,5 @@ class boxMsg2 extends BasicCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new boxMsg2();
+AutoLoader::dispatch();
 

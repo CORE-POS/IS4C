@@ -164,6 +164,5 @@ class VirtCoupDisplay extends NoInputCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new VirtCoupDisplay();
+AutoLoader::dispatch();
 
