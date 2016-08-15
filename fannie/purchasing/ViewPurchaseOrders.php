@@ -124,6 +124,9 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $poi = new PurchaseOrderItemsModel($this->connection);
         $poi->orderID($this->id);
         $cache = new InventoryCacheModel($this->connection);
+        if (!class_exists('SoPoBridge')) {
+            include(__DIR__ . '/../ordering/SoPoBridge.php');
+        }
         $bridge = new SoPoBridge($this->connection, $this->config);
         foreach ($poi->find() as $item) {
             $cache->recalculateOrdered($item->internalUPC(), $model->storeID());
