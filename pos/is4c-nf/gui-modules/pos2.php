@@ -91,8 +91,8 @@ class pos2 extends BasicCorePage
     {
         if (CoreLocal::get('CustomerDisplay') == true) {
             $child_url = MiscLib::baseURL() . 'gui-modules/posCustDisplay.php';
-            $this->add_onload_command("setCustomerURL('{$child_url}');\n");
-            $this->add_onload_command("reloadCustomerDisplay();\n");
+            $this->add_onload_command("CustomerDisplay.setURL('{$child_url}');\n");
+            $this->add_onload_command("CustomerDisplay.reloadCustomerDisplay();\n");
         }
     }
 

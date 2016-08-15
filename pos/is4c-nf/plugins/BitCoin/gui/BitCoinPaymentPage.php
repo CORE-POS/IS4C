@@ -166,5 +166,5 @@ function monitorPaymentStatus(payment_id)
     }
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new BitCoinPaymentPage();
+AutoLoader::dispatch();
+

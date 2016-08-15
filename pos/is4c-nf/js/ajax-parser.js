@@ -18,9 +18,7 @@ function parserError(xhr, statusText, err)
 
 function customerWindowHtml(selector, content)
 {
-    if (typeof customerWindow !== 'undefined' && $.isWindow(customerWindow)) {
-        customerWindow.$(selector).html(content);
-    }
+    CustomerDisplay.updateCustomerDisplay(selector, content);
 }
 
 function parserHandler(data)
