@@ -39,86 +39,96 @@ class ProdLocationEditor extends FannieRESTfulPage
     private $data = array();
 
     function preprocess()
-    {
-        
+    {   
         $this->__routes[] = 'get<start>';
         $this->__routes[] = 'get<batch>';
         $this->__routes[] = 'post<batch><save>';
         $this->__routes[] = 'post<upc><save>';
         $this->__routes[] = 'get<start>';
         $this->__routes[] = 'get<searchupc>';
+        $this->__routes[] = 'post<newLocation>';
         return parent::preprocess();
     }
     
-    function post_upc_save_view()
+    function post_newLocation_view()
     {
-        echo '<h4>post_upc_save_view</h4>';
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $upc = FormLib::get('upc');
-        //$section = FormLib::get('section');
-        //$model = new FloorSectionProductMapModel($dbc);
-        $model = new FloorSectionProductMapModel($dbc);
-        $count = FormLib::get('numolocations');
-        $newSection = array();
-        $oldSection = array();
-        for ($i = 1; $i <= $count; $i++) {
-            $curName = 'newSection' . $i;
-            $oldName = 'oldLocation' . $i;
-            $newSection[] = FormLib::get($curName);
-            $oldSection[] = FormLib::get($oldName);
-        }
+        $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
+        $newLocation = FormLib::get('newLocation');
         
-        foreach ($newSection as $key => $floorsection) {
-            $args = array($floorsection, $upc, $oldSection[$key]);
-            $prep = $dbc->prepare('
-                UPDATE FloorSectionProductMap
-                SET floorSectionID = ?
-                WHERE upc = ? 
-                    AND floorSectionID = ?;
-            ');
-            $dbc->execute($prep, $args);
-            if (mysql_errno() > 0) {
-                echo mysql_errno() . ": " . mysql_error(). "<br>";
-            }
-            echo $floorsection . '<br>';
-        }
-        
-        
-        
-        
-        /*
-        $error = array('error'=>0);        
-        $model->upc($upc);
-        $model->floorSectionID($section);
-        //$model->store_id($store_id);
-        $result = $model->save();
-        */
-        
-        /*
-        $args = array($upc, $section);
+        $args = array($upc, $newLocation);
         $prep = $dbc->prepare('
-            INSERT INTO FloorSectionProductMap (upc, floorSectionID) 
-            VALUES (?, ?)
+            INSERT INTO floorSectionProductMap (upc, floorSectionID) 
+                values (?, ?)
         ');
         $dbc->execute($prep, $args);
-        */
+        if (mysql_errno() > 0) {
+            echo mysql_errno() . ": " . mysql_error(). "<br>";
+        }
+       
         $ret = '';
         if ($dbc->error()) {
-            //$error['error'] = 1;
             $ret .= '<div class="alert alert-danger">Save Failed</div>';
             $ret .= '<div class="alert alert-warning">Error: ' . $dbc->error() . '</div>';
         } else {
             $ret .= '<div class="alert alert-success">Product Location Saved</div>';
         }
-        $ret .= '<a class="btn btn-default" href="http://localhost/IS4C/fannie/item/ProdLocationEditor.php">Return</a><br><br>';
+        $ret .= '<a class="btn btn-default" href="http://key/git/fannie/item/ProdLocationEditor.php">Return</a><br><br>';
+        
+        return $ret;
+    }
+    
+    function post_upc_save_view()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $upc = FormLib::get('upc');
+        $mapID = array();
+        $secID = array();
+        foreach ($_POST as $key => $value) {
+            if(substr($key,0,7) == 'section') {
+                $secID[substr($key,7)] = $value;
+                
+            }
+        }
+        $count = FormLib::get('numolocations');
+        $newSection = array();
+        $mapID = array();
+        for ($i = 1; $i <= $count; $i++) {
+            $curName = 'newSection' . $i;
+            $oldName = 'mapID' . $i;
+            $newSection[] = FormLib::get($curName);
+        }
+        foreach ($secID as $mapID => $sectionID) {
+            $args = array($sectionID, $upc, $mapID);
+            $prep = $dbc->prepare('
+                UPDATE FloorSectionProductMap
+                SET floorSectionID = ?
+                WHERE upc = ? 
+                    AND floorSectionProductMapID = ?;
+            ');
+            $dbc->execute($prep, $args);
+            if (mysql_errno() > 0) {
+                echo mysql_errno() . ": " . mysql_error(). "<br>";
+            }
+        }
+
+        $ret = '';
+        if ($dbc->error()) {
+            $ret .= '<div class="alert alert-danger">Save Failed</div>';
+            $ret .= '<div class="alert alert-warning">Error: ' . $dbc->error() . '</div>';
+        } else {
+            $ret .= '<div class="alert alert-success">Product Location Saved</div>';
+        }
+        $ret .= '<a class="btn btn-default" href="http://key/git/fannie/item/ProdLocationEditor.php">Return</a><br><br>';
         
         return $ret;
     }
     
     function post_batch_save_view()
     {
-        echo 'post_batch_save_view<br>';
         
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -128,19 +138,10 @@ class ProdLocationEditor extends FannieRESTfulPage
         $ret = '';
         $item = array();
         foreach ($_POST as $upc => $section) {
-            if (strlen($upc) == 13) $item[$upc] = $section;
+            $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
+            $item[$upc] = $section;
         }
-            
-        /*
-        $model = new FloorSectionProductMapModel($dbc);
-        foreach ($item as $upc => $section) {
-            echo $section . '<br>';
-            $model->upc($upc);
-            //$model->store_id($store_id); //deprecated
-            $model->floorSectionID($section);
-            $model->save();
-        }
-        */
+
         foreach ($item as $upc => $section) {
             $args = array($upc, $section );
             $prep = $dbc->prepare('
@@ -155,14 +156,13 @@ class ProdLocationEditor extends FannieRESTfulPage
         }        
         
         $ret .= '<br><br><a class="btn btn-default" href="javascript:history.back()">Back</a><br><br>';
-        $ret .= '<a class="btn btn-default" href="http://localhost/IS4C/fannie/item/ProdLocationEditor.php">Return</a><br><br>';
+        $ret .= '<a class="btn btn-default" href="http://key/git/fannie/item/ProdLocationEditor.php">Return</a><br><br>';
         
         return $ret;
     }
 
     function get_start_view()
     {
-        echo '<h4>get_start_view</h4>';
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
@@ -274,7 +274,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             }
             
         $ret .= '<tr><td><input type="submit" class="btn btn-default" value="Update Locations"></td>
-            <td><a class="btn btn-default" href="http://localhost/IS4C/fannie/item/ProdLocationEditor.php">Back</a><br><br></td></table>
+            <td><a class="btn btn-default" href="http://key/git/fannie/item/ProdLocationEditor.php">Back</a><br><br></td></table>
             </form>';   
             
                 
@@ -283,7 +283,6 @@ class ProdLocationEditor extends FannieRESTfulPage
     
     function get_batch_view()
     {
-        echo '<h4>get_batch_view</h4>';
         $ret = "";
         $ret .= '
             <form method="get"class="form-inline">
@@ -301,7 +300,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                 
                 <input type="submit" class="btn btn-default" value="Find item locations">
             </form><br>
-            <a class="btn btn-default" href="http://localhost/IS4C/fannie/item/ProdLocationEditor.php">Back</a><br><br>
+            <a class="btn btn-default" href="http://key/git/fannie/item/ProdLocationEditor.php">Back</a><br><br>
         ';
         
         return $ret;
@@ -309,7 +308,6 @@ class ProdLocationEditor extends FannieRESTfulPage
     
     function get_searchupc_view()
     {
-        echo '<h4>get_searchupc_view</h4>';
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
@@ -333,29 +331,21 @@ class ProdLocationEditor extends FannieRESTfulPage
         $ret .= '
             
             <form class="form-inline" method="get">
-                <input type="hidden" name="store_id" class="form-control" style="width: 315px;">
+                <input type="hidden" name="store_id" class="form-control">
                 <br><br>
                 <div class="input-group">
                     <span class="input-group-addon">UPC</span>
-                    <input type="text" class="form-control" id="upc" style="width: 200px" name="upc" autofocus required>&nbsp;&nbsp;
+                    <input type="text" class="form-control" id="upc" style="width: 175px" name="upc" autofocus required>&nbsp;&nbsp;
                     <input type="hidden" class="btn btn-default" style="width: 300px" name="searchupc" value="Update Locations by UPC">
-                    <input type="submit" class="btn btn-default" value="Go">
+                    <input type="submit" class="btn btn-default" value="Go" style="width: 50">
                 </div>
             </form><br>
-        ';
-        
-        //  Delete me please!
-        echo '
-            <div class="input-group">
-                <span class="input-group-addon">test</span>
-                <select class="form-control" style="width: 200px"></select>
-            </div>
         ';
         
         if ($upc = FormLib::get('upc')) {
             $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
             $store_id = FormLib::get('store_id');
-            $args = array($upc, $store_id);
+            $args = array($upc);
             $prep = $dbc->prepare('
                 SELECT 
                     p.upc,
@@ -363,13 +353,13 @@ class ProdLocationEditor extends FannieRESTfulPage
                     f.floorSectionID,
                     p.department,
                     d.dept_name,
-                    p.brand
+                    p.brand,
+                    f.floorsectionproductmapid
                 FROM products AS p
                     left join FloorSectionProductMap as f on f.upc=p.upc 
                     left join departments as d on d.dept_no=p.department
                 WHERE p.upc = ?
-                    AND p.store_id = ?
-                GROUP BY f.floorSectionID
+                GROUP BY floorsectionproductmapid
             ');
             $result = $dbc->execute($prep, $args);
             $curLocation = array();
@@ -379,78 +369,78 @@ class ProdLocationEditor extends FannieRESTfulPage
                 $department = $row['department'];
                 $dept_name = $row['dept_name'];
                 $description = $row['description'];
-                $curLocation[] = $row['floorSectionID'];
+                if(isset($row['floorSectionID'])) $curLocation[] = $row['floorSectionID'];
                 $sugLocation = self::getLocation($row['department']);
-                //$floor_section[$row['floorSectionID']] == the name of the floor section.
+                $primaryKey[] = $row['floorsectionproductmapid'];
             }
             
-            $ret .= '<div class="panel panel-default" style="width: 400px; border: none;">';
+            $ret .= '<div class="panel panel-default" style="width: 435px; border: none;">';
                 $ret .= '<table class="table table-striped">';
                 $ret .= '<tr><td><b>UPC: </b></td><td>' . $upc . '</td></tr>';
                 $ret .= '<tr><td><b>Brand / Description: </b></td><td>' . $brand . ' - ' . $description . '</td></tr>';
                 $ret .= '<tr><td><b>Department: </b></td><td>' . $department . ' - ' . $dept_name . '</td></tr>';
                 $ret .= '<tr><td><b>Suggested Location: </b></td><td>' . $floor_section[$sugLocation] . '</td></tr>';
                 $ret .= '</table></div>';
-                $ret .= '<div class="well">spot-holder for adding a<br>new location for this item.<br></div>';
                 
-                $ret .= '<a class="btn btn-default" href="http://localhost/IS4C/fannie/item/ProdLocationEditor.php">Back</a><br><br>';                
+                $ret .= '
+                    <h4>Add a New Physical Location</h4>
+                    <form method="post">
+                    <div class="input-group">
+                            <span class="input-group-addon">Location</span>
+                            <select name="newLocation" class="form-control" style="width: 200px;">';
+                        foreach ($floor_section as $fs_key => $fs_value) {
+                            $ret .= '<option value="' . $fs_key . '" name="' . $fs_key . '">' . $fs_value . '</option>';    
+                        }
+                        $ret .= '
+                            </select>&nbsp;&nbsp;
+                            <input type="submit" value="Add Location" class="btn btn-default">
+                            </form></div>
+                        '; 
+                
+                $ret .= '<br><a class="btn btn-default" href="http://key/git/fannie/item/ProdLocationEditor.php">Back</a><br><br>';                
                 $ret .= '</div><div class="col-md-5">'; //end of column A
                 
                 $ret .= '
+                    <br>
+                    <h4>Edit Current Physical Locations</h4>
                     <form method="post">
                     <input type="hidden" name="save" value="1">
                     <input type="hidden" name="upc" value="' . $upc . '">
                 ';
                 $count = 0;
+                if (count($curLocation) == 0) $ret .= '<div class="alert alert-danger" 
+                    style="width: 265px;">No locations have been set for this product.</div>';
                 foreach ($curLocation as $value) {
                     $count++;
-                    $name = 'section' . $count; 
-                    $oldName = 'oldLocation' . $count;
+                    $name = 'section' . $primaryKey[$count-1]; 
+                    //$name = 'mapid' . $primaryKey;
+                    $oldName = 'mapID' . ($primaryKey[$count-1]);
                     $ret .= '<input type="hidden" name="' . $oldName . '" value="' . $value . '">';
                     $ret .= '
-                        <div class="panel panel-default" style="width: 300px;">
-                        <div class="panel-heading"><b>Location #' . $count . '</b></div>
-                            <select name="' . $name . '" class="form-control" style="width: 100%;">
-                    ';
-                    foreach ($floor_section as $fs_key => $fs_value) {
-                        $ret .= '<option value="' . $fs_key . '" name="' . $fs_key . '"';
-                        if ($value == $fs_key) {
-                            $ret .= 'selected';
-                        }    
-                        $ret .= '>' . $fs_value . '</option>';
-                    }
-                    $ret .= '</select></div>';
+                        <div class="input-group">
+                            <span class="input-group-addon">Loc#' . $count . '</span>
+                            <select name="' . $name . '" class="form-control" style="width: 200px;">';
+                        foreach ($floor_section as $fs_key => $fs_value) {
+                                
+                            //echo $fs_key . ' :: ' . $fs_value . '<br>'; --keys and values are correct. 
+                                
+                            $ret .= '<option value="' . $fs_key . '" name="' . $fs_key . '"';
+                            if ($value == $fs_key) {
+                                $ret .= ' selected';
+                            }    
+                            $ret .= '>' . $fs_value . '</option>';
+                        }
+                        $ret .= '</select></div><br>';
+                    
+                        if ($count == 0) $ret .= '<span class="alert-warning">There is currently no location set for this product.</span>';
+                            
                 }
-                
-            
-            /*$ret .= '
-                <select name="section" class="form-control" style="width: 100%;">
-                    <option value="0">No Location Designated</option>';
-            foreach ($floor_section as $fs_key => $fs_value) {
-                $ret .= '<option value="' . $fs_key . '" name="' . $fs_key . '"';
-                if ($floorID) {
-                    $ret .= 'selected';
-                }    
-                $ret .= '>' . $fs_value . '</option>';
-            }
-            
-            $ret .= '</select>';*/
-            //$ret .= '</div>';
             $ret .= '
-                <input type="submit" class="btn btn-default" style="width: 250px;" value="Update Locations"><br><br>
+                <input type="submit" class="btn btn-default" style="width: 265px;" value="Update Locations"><br><br>
                 <input type="hidden" name="numolocations" value="' . $count . '">
                 </form>
             ';
-            
-            
-            /*
-            foreach ($floor_section as $fs_key => $fs_value) {
-                if ($fs_key == $item[$key]['sugDept']) {
-                    $ret .= '<option value="' . $fs_key . '" name="' . $key . '" selected>' . $fs_value . '</option>';
-                } else {
-                    $ret .= '<option value="' . $fs_key . '" name="' . $key . '">' . $fs_value . '</option>';
-                }
-            }*/
+
             
         }   
         
@@ -462,7 +452,6 @@ class ProdLocationEditor extends FannieRESTfulPage
     function get_view()
     {
         return '
-            <h4>get_view</h4>
             <div class="container pull-left">
             <form class="form-inline" method="get">
                 <input type="submit" class="btn btn-default" style="width: 300px" name="searchupc" value="Update Locations by UPC"><br><br>
