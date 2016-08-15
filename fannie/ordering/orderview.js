@@ -21,7 +21,8 @@ var orderView = (function($) {
         var elem = $(this).closest('tbody');
         $.ajax({
             type: 'post',
-            data: dstr
+            data: dstr,
+            dataType: 'json'
         }).done(function(resp) {
             if (resp.regPrice) {
                 elem.find('input[name="srp"]').val(resp.regPrice);
