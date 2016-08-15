@@ -256,18 +256,22 @@ class OrderItemLib
         }
     }
 
+    public static function getUnitPrice($item, $is_member)
+    {
+        if ($item['stocked'] && self::useSalePrice($item, $is_member)) {
+            return $item['special_price'];
+        } else {
+            return $item['normal_price'];
+        }
+    }
+
     /**
       Get the unit price for an item based on pricing
       rules
     */
-    public static function getUnitPrice($item, $is_member)
+    public static function getEffectiveUnit($item, $is_member)
     {
-        if ($item['stocked'] && self::useSalePrice($item, $is_member)) {
-            // only use sale price if it's a better deal
-            $sale = $item['special_price'];
-            $nonsale = self::stockedUnitPrice($item, $is_member);
-            return $sale <= $nonsale ? $sale : $nonsale;
-        } elseif ($item['stocked']) {
+        if ($item['stocked']) {
             return self::stockedUnitPrice($item, $is_member);
         } else {
             return self::notStockedUnitPrice($item, $is_member);
@@ -276,7 +280,7 @@ class OrderItemLib
 
     public static function getCasePrice($item, $is_member)
     {
-        return $item['caseSize'] * self::getUnitPrice($item, $is_member);
+        return $item['caseSize'] * self::getEffectiveUnit($item, $is_member);
     }
 
     /**
