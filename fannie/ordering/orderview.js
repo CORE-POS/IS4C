@@ -53,9 +53,6 @@ var orderView = (function($) {
     mod.afterLoadCustomer = function() {
         $('.contact-field').change(mod.saveContactInfo);
         $('#memNum').change(mod.memNumEntered);
-        $('#ctcselect').change(function() {
-            mod.saveCtC($(this).val(), $('#orderID').val());
-        });
         $('#s_personNum').change(function() {
             mod.savePN($('#orderID').val(), $(this).val());
         });
@@ -94,6 +91,16 @@ var orderView = (function($) {
         });
     };
 
+    mod.saveCtC = function (val,oid){
+        console.log(val);
+        console.log(oid);
+        $.ajax({
+            url: 'OrderAjax.php',
+            type: 'post',
+            data: 'id='+oid+'&ctc='+val
+        });
+    };
+
     mod.memNumEntered = function(){
         var oid = $('#orderID').val();
         var cardno = $('#memNum').val();	
@@ -110,6 +117,9 @@ var orderView = (function($) {
                 $('#footerDiv').html(resp.footer);
                 $('#confirm-date').change(function(e) {
                     mod.saveConfirmDate(e.target.checked, $('#orderID').val());
+                });
+                $('#ctcselect').change(function() {
+                    mod.saveCtC($(this).val(), $('#orderID').val());
                 });
             }
         });
@@ -204,13 +214,6 @@ var orderView = (function($) {
         }).done(function(resp){
             $('#itemDiv').html(resp);
             mod.afterLoadItems();
-        });
-    };
-    mod.saveCtC = function (val,oid){
-        $.ajax({
-            url: 'OrderAjax.php',
-            type: 'post',
-            data: 'id='+oid+'&ctc='+val
         });
     };
     mod.newQty = function (oid,tid){
@@ -377,6 +380,9 @@ $(document).ready(function(){
             $('#footerDiv').html(resp.footer);
             $('#confirm-date').change(function(e) {
                 orderView.saveConfirmDate(e.target.checked, $('#orderID').val());
+            });
+            $('#ctcselect').change(function() {
+                orderView.saveCtC($(this).val(), $('#orderID').val());
             });
             $('.done-btn').click(function(e) {
                 orderView.validateAndHome();
