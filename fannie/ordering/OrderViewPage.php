@@ -162,7 +162,7 @@ class OrderViewPage extends FannieRESTfulPage
             $this->transID,
         ));
 
-        if ($this->changed == 'srp' || $this->changed == 'qty' || $this->changed == 'unit') {
+        if ($this->changed == 'srp' || $this->changed == 'qty' || $this->changed == 'unitPrice') {
             $info = $this->reprice($this->orderID, $this->transID, ($this->changed == 'srp' ? $this->srp : false));
         } else {
             $info = array('regPrice' => $this->srp, 'total' => $this->actual);
