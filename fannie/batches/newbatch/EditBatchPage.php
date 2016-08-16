@@ -1001,12 +1001,20 @@ HTML;
             }
 
             $loc = 'n/a';
+			/*
             if (!empty($fetchW['subsection'])) {
                 $loc = substr($fetchW['super_name'],0,4);
                 $loc .= $fetchW['subsection'].', ';
                 $loc .= 'Unit '.$fetchW['shelf_set'].', ';
                 $loc .= 'Shelf '.$fetchW['shelf'];
             } elseif (!empty($fetchW['floorSectionID'])) {
+                if (isset($fetchW['sections'])) {
+                    $loc = $fetchW['sections'];
+                } else {
+                    $loc = 'n/a';
+                }
+            }*/
+			if (!empty($fetchW['sections'])) {
                 if (isset($fetchW['sections'])) {
                     $loc = $fetchW['sections'];
                 } else {
