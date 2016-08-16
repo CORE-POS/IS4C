@@ -772,13 +772,15 @@ HTML;
                 y.subsection, 
                 y.shelf_set, 
                 y.shelf,
-                p.brand
+                p.brand,
+                f.sections
             FROM batchList AS b 
                 " . DTrans::joinProducts('b') . "
                 LEFT JOIN likeCodes AS l ON b.upc = CONCAT('LC',CONVERT(l.likeCode,CHAR))
                 LEFT JOIN batchCutPaste AS c ON b.upc=c.upc AND b.batchID=c.batchID
                 LEFT JOIN prodPhysicalLocation AS y ON b.upc=y.upc
                 LEFT JOIN superDeptNames AS m ON y.section=m.superID
+                LEFT JOIN FloorSectionsListView as f on b.upc=f.upc
             WHERE b.batchID = ? 
             $orderby";
         $fetchArgs[] = $id;
@@ -1005,7 +1007,11 @@ HTML;
                 $loc .= 'Unit '.$fetchW['shelf_set'].', ';
                 $loc .= 'Shelf '.$fetchW['shelf'];
             } elseif (!empty($fetchW['floorSectionID'])) {
-                $loc = $sections[$fetchW['floorSectionID']];
+                if (isset($fetchW['sections'])) {
+                    $loc = $fetchW['sections'];
+                } else {
+                    $loc = 'n/a';
+                }
             }
             $ret .= "<td bgcolor=$colors[$cur]>".$loc.'</td>';
             $ret .= '<input type="hidden" class="batch-hidden-upc" value="' . $fetchW['upc'] . '" />';
