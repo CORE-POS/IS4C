@@ -225,6 +225,11 @@ class OrderItemLib
             }
         }
 
+        if (FannieConfig::config('COOP_ID') === 'WFC_Duluth' 
+            && ($item['priceRuleTypeID'] == 6 || $item['priceRuleTypeID'] == 7 || $item['priceRuleTypeID'] == 8)) {
+            $ret['discountable'] = 0;
+        }
+
         return $ret;
     }
 
@@ -302,11 +307,6 @@ class OrderItemLib
     */
     private static function stockedUnitPrice($item, $is_member)
     {
-        if (FannieConfig::config('COOP_ID') === 'WFC_Duluth' 
-            && ($item['priceRuleTypeID'] == 6 || $item['priceRuleTypeID'] == 7 || $item['priceRuleTypeID'] == 8)) {
-            return $item['normal_price'];
-        }
-
         if ($item['discountable']) {
             return self::markUpOrDown($item, $is_member);
         } else {
