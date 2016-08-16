@@ -994,7 +994,7 @@ HTML;
             }
 
             $loc = 'n/a';
-			if (!empty($fetchW['locationName'])) {
+            if (!empty($fetchW['locationName'])) {
                 $loc = $fetchW['locationName'];
             }
             $ret .= "<td bgcolor=$colors[$cur]>".$loc.'</td>';
