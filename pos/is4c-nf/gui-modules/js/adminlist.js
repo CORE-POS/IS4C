@@ -8,7 +8,7 @@ var adminlist = (function($, errorLog) {
             cache: false,
             data: 'receiptType=suspended&ref=' + ref,
             dataType: 'json'
-        }).fail(xhr, statusText, err) {
+        }).fail(function(xhr, statusText, err) {
             errorLog.show(xhr, statusText, err);
         }).always(function() {
             window.location = '../gui-modules/pos2.php';

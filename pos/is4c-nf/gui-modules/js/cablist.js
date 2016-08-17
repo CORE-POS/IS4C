@@ -9,7 +9,7 @@ var cablist = (function($, errorLog) {
                 type: 'get',
                 cache: false,
                 data: 'input='+ref
-            }).fail(xhr, statusText, err) {
+            }).fail(function(xhr, statusText, err) {
                 errorLog.show(xhr, statusText, err);
             }).done(function(data){
                 window.location = urlStem + 'gui-modules/pos2.php';

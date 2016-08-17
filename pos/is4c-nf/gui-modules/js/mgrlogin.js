@@ -7,7 +7,7 @@ var mgrlogin = (function($, errorLog) {
             type: 'get',
             data: 'receiptType=cancelled&ref='+data.trans_num,
             cache: false
-        }).fail(xhr, statusText, err) {
+        }).fail(function(xhr, statusText, err) {
             errorLog.show(xhr, statusText, err);
         }).done(function(data) {
             window.location = urlStem + 'gui-modules/pos2.php';
@@ -33,7 +33,7 @@ var mgrlogin = (function($, errorLog) {
             type: 'get',
             cache: false,
             dataType: 'json'
-        }).fail(xhr, statusText, err) {
+        }).fail(function(xhr, statusText, err) {
             errorLog.show(xhr, statusText, err);
         }).done(function(data) {
             if (data.cancelOrder){
