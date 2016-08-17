@@ -402,6 +402,7 @@ class OrderViewPage extends FannieRESTfulPage
                 }
             }
 
+            $custdata->personNum($personNum);
             if ($custdata->load()) {
                 $status_row['Type'] = $custdata->Type();
                 if ($status_row['Type'] == 'INACT') {
