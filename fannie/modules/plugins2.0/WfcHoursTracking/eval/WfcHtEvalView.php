@@ -15,10 +15,64 @@ class WfcHtEvalView extends FannieRESTfulPage
     {
         $this->addRoute(
             'get<addForm>',
-            'get<commentForm>'
+            'get<commentForm>',
+            'post<id><month><year><type><score><pos>',
+            'post<id><user><comment>',
+            'delete<id><eval>',
+            'delete<id><comment>'
         );
 
         return parent::preprocess();
+    }
+
+    protected function delete_id_commnt_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB('HoursTracking');
+        $q = $dbc->prepare("UPDATE evalComments SET deleted=1 WHERE id=?");
+        $r = $dbc->execute($q, array($this->comment));
+        echo $this->getComments($dbc, $this->id);
+
+        return false;
+    }
+
+    protected function delete_id_eval_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB('HoursTracking');
+        $q = $dbc->prepare("DELETE FROM evalScores WHERE id=? AND empID=?");
+        $dbc->execute($q, array($this->eval, $this->id));
+
+        echo $this->getHistory($dbc, $this->id);
+
+        return false;
+    }
+
+    protected function post_id_user_comment_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB('HoursTracking');
+        $q = $dbc->prepare("INSERT INTO evalComments(empID,comment,stamp,user,deleted) VALUES
+            (?,?,now(),?,0)");
+        $r = $dbc->execute($q, array($this->id, $this->comment, $this->user));
+
+        echo $this->getComments($dbc, $this->id);
+
+        return false;
+    }
+
+    protected function post_id_month_year_type_score_pos_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB('HoursTracking');
+
+        $q = $dbc->prepare("INSERT INTO evalScores (empID,evalType,evalScore,month,year,pos)
+            VALUES (?,?,?,?,?,?)");
+        $r = $dbc->execute($q, array($this->id, $this->type, $this->score, $this->month, $this->year, $this->pos));
+
+        echo $this->getHistory($dbc, $this->id);
+
+        return false;
     }
 
     protected function get_addForm_handler()
@@ -160,11 +214,12 @@ class WfcHtEvalView extends FannieRESTfulPage
             $score = str_pad($w[3],3,'0');
             $score = substr($score,0,strlen($score)-2).".".substr($score,-2);
             $ret .= sprintf("<tr><td>%s</td><td>%s</td><td>%.2f</td><td>%s</td>
-                    <td><a href=\"\" onclick=\"return delEntry(%d);\">[ X ]</a></tr>",
+                    <td><a href=\"\" onclick=\"return delEntry(%d);\" class=\"btn btn-danger btn-sm\">%s</a></tr>",
                 date("F Y",mktime(0,0,0,$w[0],1,$w[1])),
                 $w[2],
                 $score,
-                $w[4],$w[5]);
+                $w[4],$w[5],
+                COREPOS\Fannie\API\lib\FannieUI::deleteIcon());
         }
         $ret .= "</table>";
         return $ret;
@@ -178,9 +233,11 @@ class WfcHtEvalView extends FannieRESTfulPage
         $r = $dbc->execute($q, array($id));
         while($w = $dbc->fetch_row($r)){
             $ret .= sprintf('<div class="cHeader">%s - %s
-                    <a href="" onclick="deleteComment(%d);return false;">[delete]</a></div>
+                    <a href="" onclick="deleteComment(%d);return false;"
+                    class="btn btn-danger btn-xs">%s</a></div>
                     <div class="cBody">%s</div>',
                     $w['stamp'],$w['user'],$w['id'],
+                    COREPOS\Fannie\API\lib\FannieUI::deleteIcon(),
                     str_replace("\n","<br />",$w['comment']));
         }
         return $ret;

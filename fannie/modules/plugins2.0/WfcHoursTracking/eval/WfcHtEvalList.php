@@ -11,6 +11,23 @@ class WfcHtEvalList extends FannieRESTfulPage
     protected $must_authenticate = true;
     protected $auth_classes = array('evals');
 
+    protected function put_handler()
+    {
+
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $dbc = $this->connection;
+        $dbc->selectDB('HoursTracking');
+
+        $idP = $dbc->prepare("SELECT MAX(empID) FROM employees WHERE empID > 10000");
+        $newID = $dbc->getValue($idP);
+        $newID = $newID ? 10000 : $newID+1;
+
+        $newP = $dbc->prepare('INSERT INTO employees (empID, name, deleted) VALUES (?, ?, ?)');
+        $dbc->execute($newP, array($newID, '0 NEW EMPLOYEE', 1));
+
+        return 'WfcHtEvalList.php';
+    }
+
     protected function get_view()
     {
         $settings = $this->config->get('PLUGIN_SETTINGS');
@@ -61,9 +78,12 @@ class WfcHtEvalList extends FannieRESTfulPage
         }
         echo '</select>';
         echo ' <input type=text class="form-control" size=4 name=eY value="'.date("Y").'" />';
-        echo ' <button type=submit class="btn btn-default">Filter</button></div></form>';
+        echo ' <button type=submit class="btn btn-default">Filter</button>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="?_method=put" class="btn btn-default">Add Employee</a>
+            </div></form>';
         echo '<b>Reports</b>: ';
-        echo '<a href="report.php">Most Recent Eval</a>';
+        echo '<a href="WfcHtEvalReport.php">Most Recent Eval</a>';
         echo '<p />';
         echo "<table class=\"table table-bordered table-striped\">";
         echo '<tr>

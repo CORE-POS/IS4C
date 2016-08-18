@@ -46,9 +46,9 @@ function showCommentForm(){
 }
 
 function saveComment(){
-    var dstr = "addComment=yes&id="+$('#empID').val();
+    var dstr = "id="+$('#empID').val();
     dstr += "&user="+$('#username').val();
-    dstr += "&comment="+escape($('#newcomment').val());
+    dstr += "&comment="+encodeURIComponent($('#newcomment').val());
     
     $.ajax({
         type: 'post',
@@ -61,7 +61,7 @@ function saveComment(){
 }
 
 function addEntry(){
-    var dstr = "addEntry=add&id="+$('#empID').val();
+    var dstr = "id="+$('#empID').val();
     dstr += "&month="+$('#addmonth').val();    
     dstr += "&year="+$('#addyear').val();    
     dstr += "&type="+$('#addtype').val();    
@@ -82,8 +82,8 @@ function delEntry(id){
     if (!confirm("Delete this eval score")) return false;
 
     $.ajax({
-        type: 'post',
-        data: 'delEntry='+id+'&empID='+$('#empID').val(),
+        type: 'delete',
+        data: 'eval='+id+'&id='+$('#empID').val(),
         success: function(data){
             $('#historyfs').html(data);
         }
@@ -95,8 +95,8 @@ function deleteComment(id){
     if (!confirm("Delete this comment")) return false;
 
     $.ajax({
-        type: 'post',
-        data: 'deleteComment='+id+'&empID='+$('#empID').val(),
+        type: 'delete',
+        data: 'comment='+id+'&id='+$('#empID').val(),
         success: function(data){
             $('#commentfs').html(data);
         }
