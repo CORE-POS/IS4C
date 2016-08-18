@@ -53,7 +53,7 @@ class StaffArAccountsPage extends FannieRESTfulPage
         $dbc = FannieDB::get($this->config->get('TRANS_DB'));
 
         header('Content-Type: application/ms-excel');
-        header('Content-Disposition: attachment; filename="Payroll '. date('Y-m-d') .'.csv"');
+        header('Content-Disposition: attachment; filename="epiU8U16.csv"');
         $res = $dbc->query("
             SELECT s.adpID,
                 a.lastName,
@@ -62,11 +62,13 @@ class StaffArAccountsPage extends FannieRESTfulPage
             FROM staffAR AS a
                 LEFT JOIN staffID AS s ON a.cardNo=s.cardno
             ORDER BY a.lastName");
+        echo "Co Code,Batch ID,File #,adjust ded code ,adjust ded amount\r\n";
         while ($row = $dbc->fetchRow($res)) {
-            printf('"%s","%s","%s",%.2f' . "\r\n",
+            printf('"%s","%s","%s","%s",%.2f' . "\r\n",
+                'U8U',
+                '160815',
                 $row['adpID'],
-                $row['lastName'],
-                $row['firstName'],
+                'I',
                 $row['adjust']
             );
         }
