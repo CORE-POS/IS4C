@@ -10,6 +10,7 @@ class WfcHtEvalView extends FannieRESTfulPage
     protected $header = 'Eval List'; 
     protected $must_authenticate = true;
     protected $auth_classes = array('evals');
+    public $discoverable = false;
 
     public function preprocess()
     {
@@ -133,7 +134,7 @@ class WfcHtEvalView extends FannieRESTfulPage
         if (!empty($month) && !empty($year)){
             $date = $year."-".str_pad($month,2,'0',STR_PAD_LEFT)."-01";
         }
-        $dbc = $this->dbc;
+        $dbc = $this->connection;
         $dbc->selectDB('HoursTracking');
         $hire = isset($_REQUEST['hire'])?$_REQUEST['hire']:'';
         if (strstr($hire,"/") !== False){
@@ -144,12 +145,16 @@ class WfcHtEvalView extends FannieRESTfulPage
                 $hire = '';
         }
         $etype = $_REQUEST['etype'];
+        $name = FormLib::get('name');
         
         $delQ = $dbc->prepare("DELETE FROM evalInfo WHERE empID=?");
         $insQ = $dbc->prepare("INSERT evalInfo VALUES (?,?,?,?,?)");
         $dbc->execute($delQ, array($this->id));
         $dbc->execute($insQ, array($this->id, $pos, $date, $hire, $etype));
+        $nameP = $dbc->prepare('UPDATE employees SET name=? WHERE empID=?');
+        $nameR = $dbc->execute($nameP, array($name, $this->id));
         echo "Info saved\nPositions: $pos\nNext Eval: ".trim($date,"'")."\nHire: ".trim($hire,"'");
+
      
         return false;
     }
@@ -162,7 +167,7 @@ class WfcHtEvalView extends FannieRESTfulPage
             WHERE e.empID=?");
         $r = $dbc->execute($q, array($id));
         $w = $dbc->fetch_row($r);
-        $ret .= "<tr><th>Name</th><td colspan=2>$w[0]</td></tr>";
+        $ret .= "<tr><th>Name</th><td colspan=2><input type=text class=\"form-control\" id=\"empName\" value=\"$w[0]\" /></td></tr>";
         $ret .= "<tr><th>Position(s)</th><td colspan=2><input type=text class=\"form-control\" id=\"empPositions\" value=\"$w[1]\" /></td></tr>";
         $tmp = explode("-",$w[3]);
         if (count($tmp) == 3)

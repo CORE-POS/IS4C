@@ -11,6 +11,7 @@ class WfcHtEvalReport extends FannieReportPage
     protected $must_authenticate = true;
     protected $auth_classes = array('evals');
     protected $report_headers = array('Name', 'ADP#', 'Date', 'Type', 'Score');
+    public $discoverable = false;
 
     public function fetch_report_data()
     {

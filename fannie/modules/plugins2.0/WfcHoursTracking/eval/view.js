@@ -12,6 +12,7 @@ function saveEmpInfo(){
     dstr += "&year="+$('#nextYear').val();
     dstr += "&hire="+$('#hireDate').val();
     dstr += "&etype="+$('#etype').val();
+    dstr += "&name="+encodeURIComponent($('#empName').val());
     $.ajax({
         type: 'post',
         data: dstr,

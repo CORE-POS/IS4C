@@ -10,6 +10,7 @@ class WfcHtEvalList extends FannieRESTfulPage
     protected $header = 'Eval List'; 
     protected $must_authenticate = true;
     protected $auth_classes = array('evals');
+    public $discoverable = false;
 
     protected function put_handler()
     {
