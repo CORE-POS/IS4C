@@ -365,6 +365,19 @@ class OrderItemLib
         );  
         $eligible = $dbc->getValue($saleP, array($item['upc'], $item['special_price']));
 
+        if ($eligible) {
+            return true;
+        }
+
+
+        $lcP = $dbc->prepare('SELECT likeCode FROM upcLike WHERE upc=?');
+        $like = $dbc->getValue($lcP, array($item['upc']));
+        if (!$like) {
+            return false;
+        }
+
+        $eligible = $dbc->getValue($saleP, array('LC' . $like, $item['special_price']));
+
         return $eligible ? true : false;
     }
 
