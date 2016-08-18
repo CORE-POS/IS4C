@@ -209,8 +209,9 @@ class RenderReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
             upc
             FROM $table 
             WHERE datetime BETWEEN ? AND ? 
-            AND register_no=? AND emp_no=? and trans_no=?
-            AND voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+                AND register_no=? AND emp_no=? and trans_no=?
+                AND voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+                AND trans_type <> 'L'
             ORDER BY trans_id";
         $args = array("$year-$month-$day 00:00:00", "$year-$month-$day 23:59:59", 
                 $reg_no, $emp_no, $trans_no);

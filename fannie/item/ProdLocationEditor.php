@@ -60,7 +60,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         
         $args = array($upc, $newLocation);
         $prep = $dbc->prepare('
-            INSERT INTO floorSectionProductMap (upc, floorSectionID) 
+            INSERT INTO FloorSectionProductMap (upc, floorSectionID) 
                 values (?, ?)
         ');
         $dbc->execute($prep, $args);
@@ -89,8 +89,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         $secID = array();
         foreach ($_POST as $key => $value) {
             if(substr($key,0,7) == 'section') {
-                $secID[substr($key,7)] = $value;
-                
+                $secID[substr($key,7)] = $value;                
             }
         }
         $count = FormLib::get('numolocations');
@@ -139,7 +138,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         $item = array();
         foreach ($_POST as $upc => $section) {
             $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
-            $item[$upc] = $section;
+            if ($section > 0) $item[$upc] = $section;
         }
 
         foreach ($item as $upc => $section) {
@@ -260,7 +259,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                     <td>' . $row['dept_name'] . '</td>
                     <td><Span class="collapse"> </span>
                         <select class="form-control input-sm" name="' . $key . '" value="" />
-                            <option value="NULL">* no location selected *</option>';
+                            <option value="0">* no location selected *</option>';
                     
                     foreach ($floor_section as $fs_key => $fs_value) {
                         if ($fs_key == $item[$key]['sugDept']) {

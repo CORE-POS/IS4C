@@ -49,7 +49,7 @@ class pos2 extends BasicCorePage
         $this->setOutput($json);
         $this->registerRetry($json);
         $this->registerPrintJob($json);
-        if (CoreLocal::get('CustomerDisplay') === true) {
+        if (CoreLocal::get('CustomerDisplay') == true) {
             $this->loadCustomerDisplay();
         }
 
@@ -89,10 +89,10 @@ class pos2 extends BasicCorePage
 
     private function loadCustomerDisplay()
     {
-        if (CoreLocal::get('CustomerDisplay') === true) {
+        if (CoreLocal::get('CustomerDisplay') == true) {
             $child_url = MiscLib::baseURL() . 'gui-modules/posCustDisplay.php';
-            $this->add_onload_command("setCustomerURL('{$child_url}');\n");
-            $this->add_onload_command("reloadCustomerDisplay();\n");
+            $this->add_onload_command("CustomerDisplay.setURL('{$child_url}');\n");
+            $this->add_onload_command("CustomerDisplay.reloadCustomerDisplay();\n");
         }
     }
 

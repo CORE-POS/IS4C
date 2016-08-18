@@ -178,7 +178,7 @@ class FormFactory
 
     public function checkboxField($name, $label, $default_value=0, $storage=Conf::EITHER_SETTING, $choices=array(0, 1), $attributes=array())
     {
-        $current_value = $this->getCurrentValue($name, $default_value, $quoted);
+        $current_value = $this->getCurrentValue($name, $default_value, false);
 
         // sanitize
         if (!is_array($choices) || count($choices) != 2) {

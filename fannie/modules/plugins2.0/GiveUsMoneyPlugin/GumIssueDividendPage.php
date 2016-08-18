@@ -160,13 +160,10 @@ class GumIssueDividendPage extends FannieRESTfulPage
                 $pdf->Cell(0, 5, 'Dear Owner:', 0, 1);
                 $pdf->Ln(2);
                 $pdf->SetX($l);
-                $pdf->MultiCell(135, 5, 'Based on the Co-op\'s profitability in Fiscal Year 2015 (July 1, 2014-June 30, 2015), the Board of Directors approved a four percent (4%) dividend on your Class C equity investment. Your dividend is pro-rated based on when you made your investment during that fiscal year. As this check represents an annual return on your investment, the amount cannot be compounded.');
+                $pdf->MultiCell(135, 5, 'Based on the Co-op\'s profitability in Fiscal Year 2016 (July 1, 2015-June 30, 2016), the Board of Directors approved a three percent (3%) dividend on your Class C equity investment. Your dividend is pro-rated based on when you made your investment during that fiscal year. Your Class C investment is eligible, subject to Board discretion, for an annual dividend, not compound interest.');
                 $pdf->Ln(2);
                 $pdf->SetX($l);
-                $pdf->MultiCell(135, 5, 'You are welcome to cash your check toward a purchase at the Co-op. Thank you for investing in Whole Foods Co-op');
-                $pdf->Ln(4);
-                $pdf->SetX($l);
-                $pdf->Cell(0, 5, 'Thank you,', 0, 1);
+                $pdf->MultiCell(135, 5, 'You are welcome to cash your check toward a purchase at the Co-op. Thank you for investing in Whole Foods Co-op.');
                 $pdf->Ln(4);
                 $pdf->SetX($l);
                 $pdf->Cell(0, 5, 'Sharon Murphy', 0, 1);

@@ -47,14 +47,14 @@ class SpecialOrdersModel extends BasicModel
     'altPhone' => array('type'=>'VARCHAR(30)'),
     'email' => array('type'=>'VARCHAR(50)'),
     'storeID' => array('type'=>'INT'),
+    'sendEmails' => array('type'=>'TINYINT', 'default'=>0),
     );
 
     public function doc()
     {
         return '
-This table just exists as an accumulator
-so that IDs in PendingSpecialOrder and
-CompletedSpecialOrder never conflict
+This table stores general information about the order
+and the customer who is placing it.
         ';
     }
 }

@@ -181,5 +181,6 @@ class WicTenderPage extends BasicCorePage
             </p>';
     }
 }
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new WicTenderPage();
+
+AutoLoader::dispatch();
+

@@ -1,4 +1,4 @@
-var adminlist = (function($) {
+var adminlist = (function($, errorLog) {
     var mod = {};
 
     mod.suspendOrder = function(ref) {
@@ -8,6 +8,8 @@ var adminlist = (function($) {
             cache: false,
             data: 'receiptType=suspended&ref=' + ref,
             dataType: 'json'
+        }).fail(function(xhr, statusText, err) {
+            errorLog.show(xhr, statusText, err);
         }).always(function() {
             window.location = '../gui-modules/pos2.php';
         });
@@ -15,4 +17,4 @@ var adminlist = (function($) {
     };
 
     return mod;
-}(jQuery));
+}(jQuery, errorLog));

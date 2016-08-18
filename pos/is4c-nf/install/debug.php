@@ -65,6 +65,14 @@ trace is also included. There are some javascript-based URL changes that
 this won't catch, but your browser surely has a fancy javascript console
 available for those. If not, find a better browser.
 <hr />
+<b>Show AJAX errors</b>
+<?php
+echo $form->selectField('Debug_JS', array(1=>'Yes',0=>'No'), 0);
+?>
+<br />
+This option will write information along the bottom of the screen when
+an AJAX request dies with a fatal error.
+<hr />
 <b>Character Set</b>
 <?php
 echo $form->textField('CoreCharSet', 'utf-8');

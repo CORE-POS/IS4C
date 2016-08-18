@@ -257,7 +257,7 @@ class FannieCRUDPage extends \FannieRESTfulPage
             $ret .= '<tr>';
             foreach ($columns as $col_name => $c) {
                 if ($col_name == $id_col) {
-                    $ret .= '<input type="hidden" name="id[]" value="' . $o->$id_col() . '" />';    
+                    $ret .= '<input type="hidden" class="crudID" name="id[]" value="' . $o->$id_col() . '" />';    
                 } else {
                     $css = 'form-control';
                     if (strtoupper($c['type'] == 'DATETIME')) {
@@ -290,8 +290,10 @@ class FannieCRUDPage extends \FannieRESTfulPage
                     method: "PUT",
                     dataType: "json"
                 }).done(function(resp) {
-                    if (resp.added) {
+                    if (resp.added && $(\'input.crudID\').length > 0) {
                         $("form.crud-form").submit();
+                    } else if (resp.added) {
+                        window.location.reload();
                     } else {
                         showBootstrapAlert(".flash-div", "danger", "Error adding entry");
                     }

@@ -630,6 +630,8 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'EquityPaymentPlansModel',
         'EquityPaymentPlanAccountsModel',
         'FloorSectionsModel',
+        'FloorSectionProductMapModel',
+        'FloorSectionsListViewModel',
         'HouseCouponsModel',
         'HouseCouponItemsModel',
         'HouseVirtualCouponsModel',
@@ -725,6 +727,14 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             $rules->priceRuleID(1);
             $rules->details('Generic Variable Price');
             $rules->save();
+        }
+
+        $stores = new StoresModel($con);
+        if (count($stores->find()) == 0) {
+            $stores->storeID(1);
+            $stores->description('DEFAULT STORE');
+            $stores->hasOwnItems(1);
+            $stores->save();
         }
 
         $ret[] = dropDeprecatedStructure($con, $op_db_name, 'expingMems', true);

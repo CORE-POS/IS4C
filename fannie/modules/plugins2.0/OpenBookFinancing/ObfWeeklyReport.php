@@ -88,7 +88,17 @@ class ObfWeeklyReport extends FannieReportPage
         $start_ts = strtotime($week->startDate());
         $end_ts = mktime(0, 0, 0, date('n', $start_ts), date('j', $start_ts)+6, date('Y', $start_ts));
 
-        return array('Week ' . date('F d, Y', $start_ts) . ' to ' . date('F d, Y', $end_ts));
+        $store = FormLib::get('store');
+        $prev = $this->form->weekID - 1;
+        $next = $this->form->weekID + 1;
+        $other = $store == 1 ? 2 : 1;
+
+        return array(
+            'Week ' . date('F d, Y', $start_ts) . ' to ' . date('F d, Y', $end_ts) . '<br />',
+            "<a href=\"?weekID={$prev}&store={$store}\">Prev Week</a> 
+            | <a href=\"?weekID={$next}&store={$store}\">Next Week</a>
+            | <a href=\"?weekID={$this->form->weekID}&store={$other}\">Other Store</a>",
+        );
     }
 
     protected function initTotalSales()
@@ -199,10 +209,10 @@ class ObfWeeklyReport extends FannieReportPage
         return $average_wage;
     }
 
-    protected function projectHours($category, $dept_proj, $dept_trend)
+    protected function projectHours($splhGoal, $dept_proj, $dept_trend)
     {
-        $proj_hours = $dept_proj / $category->salesPerLaborHourTarget();
-        $trend_hours = $dept_trend / $category->salesPerLaborHourTarget();
+        $proj_hours = $dept_proj / $splhGoal;
+        $trend_hours = $dept_trend / $splhGoal;
 
         return array($proj_hours, $trend_hours);
     }
@@ -959,7 +969,7 @@ class ObfWeeklyReport extends FannieReportPage
             $sales->save();
         }
 
-        if (count($num_cached) == 0) {
+        if (count($num_cached[1]) == 0) {
             /**
               Now lookup year-over-year info
               Since it examines a whole month rather than a single
@@ -980,7 +990,7 @@ class ObfWeeklyReport extends FannieReportPage
             foreach (array(1,2) as $storeID) {
                 $tArgs = array_merge($args, array($storeID)); 
                 $transR = $dbc->execute($transP, $tArgs);
-                if (!$future && $transR) {
+                if ($transR) {
                     $month_trans = $dbc->numRows($transR);
                     $avg_trans = ($month_trans / $num_days) * 7;
                     $trans_info[$storeID] = $avg_trans;

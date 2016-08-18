@@ -227,7 +227,6 @@ class BatchFromSearch extends FannieRESTfulPage
                             $row['batchTypeID'], $row['discType']
             );
         }
-        $ret .= '</select>';
 
         $name = FannieAuth::checkLogin();
         $batchName = ($name ? $name : 'Batch') . ' ' . date('M j');

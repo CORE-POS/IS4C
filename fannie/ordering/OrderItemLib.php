@@ -43,7 +43,7 @@ class OrderItemLib
         }
 
         $item = self::$generic_item;
-        $item['description'] = $upc . ' SO';
+        $item['description'] = $upc;
         $item['upc'] = $upc;
 
         return $item;
@@ -225,6 +225,11 @@ class OrderItemLib
             }
         }
 
+        if (FannieConfig::config('COOP_ID') === 'WFC_Duluth' 
+            && ($item['priceRuleTypeID'] == 6 || $item['priceRuleTypeID'] == 7 || $item['priceRuleTypeID'] == 8)) {
+            $ret['discountable'] = 0;
+        }
+
         return $ret;
     }
 
@@ -256,18 +261,22 @@ class OrderItemLib
         }
     }
 
+    public static function getUnitPrice($item, $is_member)
+    {
+        if ($item['stocked'] && self::useSalePrice($item, $is_member)) {
+            return $item['special_price'];
+        } else {
+            return $item['normal_price'];
+        }
+    }
+
     /**
       Get the unit price for an item based on pricing
       rules
     */
-    public static function getUnitPrice($item, $is_member)
+    public static function getEffectiveUnit($item, $is_member)
     {
-        if ($item['stocked'] && self::useSalePrice($item, $is_member)) {
-            // only use sale price if it's a better deal
-            $sale = $item['special_price'];
-            $nonsale = self::stockedUnitPrice($item, $is_member);
-            return $sale <= $nonsale ? $sale : $nonsale;
-        } elseif ($item['stocked']) {
+        if ($item['stocked']) {
             return self::stockedUnitPrice($item, $is_member);
         } else {
             return self::notStockedUnitPrice($item, $is_member);
@@ -276,7 +285,7 @@ class OrderItemLib
 
     public static function getCasePrice($item, $is_member)
     {
-        return $item['caseSize'] * self::getUnitPrice($item, $is_member);
+        return $item['caseSize'] * self::getEffectiveUnit($item, $is_member);
     }
 
     /**
@@ -285,11 +294,6 @@ class OrderItemLib
     */
     private static function notStockedUnitPrice($item, $is_member)
     {
-        if (FannieConfig::config('COOP_ID') === 'WFC_Duluth' 
-            && ($pdW['priceRuleTypeID'] == 6 || $pdW['priceRuleTypeID'] == 7 || $pdW['priceRuleTypeID'] == 8)) {
-            return $item['normal_price'];
-        }
-
         if ($item['discountable']) {
             return self::markUpOrDown($item, $is_member);
         }

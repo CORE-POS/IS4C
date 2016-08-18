@@ -138,11 +138,11 @@ if (FormLib::get('PPORT',false) !== false) {
     $PPORT = FormLib::get('PPORT');
     $otherPortText = FormLib::get('otherpport', false);
     if ($PPORT === 'other' && $otherPortText !== false) {
-        CoreLocal::set('printerPort',trim($otherPortText));
+        CoreLocal::set('printerPort',trim($otherPortText), true);
         $otherPortChecked = True;
         $otherPortText = trim($otherPortText);
     } else {
-        CoreLocal::set('printerPort',$PPORT);
+        CoreLocal::set('printerPort',$PPORT, true);
         $otherPortChecked = False;
         $otherPortText = "";
     }
@@ -205,7 +205,7 @@ InstallUtilities::paramSave('printerPort',CoreLocal::get('printerPort'));
     $kmods = array_map(function($i){ return str_replace('\\', '-', $i); }, $kmods);
     echo $form->selectField('kickerModule', $kmods, 'Kicker');
     $rewrite = str_replace('-', '\\', CoreLocal::get('kickerModule')); 
-    InstallUtilities::saveParam('kickerModule', $rewrite);
+    InstallUtilities::paramSave('kickerModule', $rewrite);
     ?>
     </td>
 </tr>
@@ -269,13 +269,14 @@ elseif(!is_array($current_mods) || count($current_mods) != 5){
 }
 $footer_mods = AutoLoader::listModules('COREPOS\\pos\\lib\\FooterBoxes\\FooterBox');
 $footer_mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $footer_mods);
+$current_mods = array_map(function($i){ return str_replace('\\', '-', $i); }, $current_mods);
 for($i=0;$i<5;$i++){
     echo '<select name="FOOTER_MODS[]">';
     foreach($footer_mods as $fm){
         $match = false;
         if ($current_mods[$i] == $fm) {
             $match = true;
-        } elseif (substr($fm, -1*(strlen($current_mods[$i])+1)) == '-' . $current_mods[$m]) {
+        } elseif (substr($fm, -1*(strlen($current_mods[$i])+1)) == '-' . $current_mods[$i]) {
             $match = true;
         }
         printf('<option %s>%s</option>',
@@ -369,7 +370,7 @@ InstallUtilities::paramSave('FooterModules',$current_mods);
     <td>
     <?php 
     $ebtOpts = array(1 => 'Cash Side', 0 => 'Food Side');
-    echo InstallUtilities::installselectField('fntlDefault', $ebtOpts, 1);
+    echo $form->selectField('fntlDefault', $ebtOpts, 1);
     ?>
     </td>
 </tr>
@@ -479,7 +480,7 @@ while($row = $db->fetch_row($res)){
         */
         $selected = false;
         if (isset($settings[$row['TenderCode']])) {
-            $current = $settings[$row['TenderCode']];
+            $current = str_replace('\\', '-', $settings[$row['TenderCode']]);
             if ($current == $m) {
                 $selected = true; // direct match
             } elseif (substr($m, -1*(strlen($current)+1)) == '-' . $current) {

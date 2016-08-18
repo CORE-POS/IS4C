@@ -55,6 +55,19 @@ class BarcodeLib
         '9'=>array('A','B','B','A','B','A')
     );
 
+    public static function expandUPCE($entered)
+    {
+        $par6 = substr($entered, -1);
+        if ($par6 == 0) $entered = substr($entered, 0, 3)."00000".substr($entered, 3, 3);
+        elseif ($par6 == 1) $entered = substr($entered, 0, 3)."10000".substr($entered, 3, 3);
+        elseif ($par6 == 2) $entered = substr($entered, 0, 3)."20000".substr($entered, 3, 3);
+        elseif ($par6 == 3) $entered = substr($entered, 0, 4)."00000".substr($entered, 4, 2);
+        elseif ($par6 == 4) $entered = substr($entered, 0, 5)."00000".substr($entered, 5, 1);
+        else $entered = substr($entered, 0, 6)."0000".$par6;
+
+        return $entered;
+    }
+
     /**
       Zero-padd a UPC to standard length
       @param $upc string upc
@@ -62,6 +75,9 @@ class BarcodeLib
     */
     static public function padUPC($upc)
     {
+        if (substr($upc, 0, 1) == 0 && strlen($upc) == 7) {
+            $upc = self::expandUPCE($upc);
+        }
         return str_pad(trim($upc), 13, '0', STR_PAD_LEFT);
     }
 

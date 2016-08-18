@@ -31,6 +31,11 @@ class boxMsg2 extends BasicCorePage
     function head_content(){
         ?>
         <script type="text/javascript" src="js/boxMsg2.js"></script>
+        <script type="text/javascript">
+            function submitWrapper() {
+                boxMsg2.submitWrapper('../');
+            }
+        </script>
         <?php
         $this->noscan_parsewrapper_js();
     }
@@ -87,6 +92,5 @@ class boxMsg2 extends BasicCorePage
     } // END body_content() FUNCTION
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new boxMsg2();
+AutoLoader::dispatch();
 

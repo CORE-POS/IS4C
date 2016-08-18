@@ -45,7 +45,16 @@ class EndItemSale extends FannieRESTfulPage {
         $model->discounttype(0);
         $model->special_price(0);
         $model->modified(date('Y-m-d H:i:s'));
-        $model->save();
+        if ($this->config->get('STORE_MODE') == 'HQ') {
+            $stores = new StoresModel($dbc);
+            $stores->hasOwnItems(1);
+            foreach ($stores->find() as $obj) {
+                $model->store_id($obj->storeID());
+                $model->save();
+            }
+        } else {
+            $model->save();
+        }
 
         $batchID = FormLib::get_form_value('batchID');
         $batchUPC = FormLib::get_form_value('batchUPC');

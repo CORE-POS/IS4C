@@ -28,16 +28,16 @@ use COREPOS\pos\lib\UdpComm;
 use COREPOS\pos\lib\DriverWrappers\ScaleDriverWrapper;
 use \CoreLocal;
 
-/** 
+/**
 
  @class BasicCorePage
-  
+
    This is the base class for all display scripts
 
    Display scripts are not required to use this
    base class but it does provide a lot of common
    functionality for building HTML pages with standard
-   headers, footers, and styling. 
+   headers, footers, and styling.
 
  */
 
@@ -49,6 +49,8 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
     */
     protected $page_url;
     protected $body_class='mainBGimage';
+    protected $title = "COREPOS";
+    protected $hardware_polling = true;
 
     /**
       Constructor
@@ -91,7 +93,7 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
         <html>
         <?php
         echo "<head>";
-        echo "<title>COREPOS</title>";
+        echo "<title>".$this->title."</title>";
         $charset = CoreLocal::get('CoreCharSet') === '' ? 'utf-8' : CoreLocal::get('CoreCharSet');
         // 18Aug12 EL Add content/charset.
         echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=$charset\" />\n";
@@ -105,6 +107,7 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
         $jquery = MiscLib::jqueryFile();
         echo "<script type=\"text/javascript\"
             src=\"{$my_url}/js/{$jquery}\"></script>";
+        echo '<script type="text/javascript" src="' . $my_url . '/js/errorLog.js"></script>';
         $this->head_content();
         echo "</head>";
         echo '<body class="'.$this->body_class.'">';
@@ -118,7 +121,7 @@ class BasicCorePage extends \COREPOS\common\ui\CorePage
         ob_start();
         echo "</div>";
         $this->scale_box();
-        $this->scanner_scale_polling();
+        $this->scanner_scale_polling($this->hardware_polling);
 
         return ob_get_clean();
     }
@@ -198,7 +201,7 @@ JAVASCRIPT;
     {
         $my_url = $this->page_url;
         $this->add_onload_command("betterDate();\n\$('#reginput').focus();");
-        
+
         // this needs to be configurable; just fixing
         // a giant PHP warning for the moment
         $time = strftime("%m/%d/%y %I:%M %p", time());
@@ -274,11 +277,11 @@ JAVASCRIPT;
     {
         ?>
         <div id="scalebox">
-            <div id="scaleTop" class="coloredArea"> 
+            <div id="scaleTop" class="coloredArea">
             <?php echo _("weight"); ?>
             </div>
             <div id="scaleBottom">
-            <?php echo DisplayLib::scaledisplaymsg(); ?>    
+            <?php echo DisplayLib::scaledisplaymsg(); ?>
             </div>
             <div id="scaleIconBox">
             <?php echo DisplayLib::drawNotifications(); ?>
@@ -384,7 +387,7 @@ JAVASCRIPT;
       This one ignores scan input and runs anything
       else through the parser
     */
-    protected function noscan_parsewrapper_js() 
+    protected function noscan_parsewrapper_js()
     {
     ?>
     <script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
@@ -408,7 +411,7 @@ JAVASCRIPT;
   scripts. If the URL in the browser address bar
   is your script, it's a top level script. No other
   includes are necessary. AutoLoader will include
-  other classes as needed. 
+  other classes as needed.
 
   body_content() draws the page. Methods from BasicCorePage
   provide the standard input box at the top and footer
@@ -423,4 +426,3 @@ JAVASCRIPT;
   necessary to actually display anything.
 
 */
-

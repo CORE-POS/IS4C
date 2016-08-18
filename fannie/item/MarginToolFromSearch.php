@@ -394,7 +394,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
         $ret = '';
 
         // list super depts & starting margins
-        list($in_sql, $args) = $dbc->safeInClause($this->upcs);
+        list($in_sql, $args) = $dbc->safeInClause($this->depts);
         $superQ = "SELECT m.superID, super_name,
                     SUM(cost) AS totalCost,
                     SUM(CASE WHEN p.cost = 0 THEN 0 ELSE p.normal_price END) as totalPrice

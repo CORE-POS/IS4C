@@ -80,12 +80,13 @@ those same items revert to normal pricing.
         $b_def = $this->connection->tableDefinition($this->name);
         $p_def = $this->connection->tableDefinition('products');
         $has_limit = (isset($b_def['transLimit']) && isset($p_def['special_limit'])) ? true : false;
+        $isHQ = FannieConfig::config('STORE_MODE') == 'HQ' ? true : false;
         if ($batchInfoW['discountType'] != 0) { // item is going on sale
             $forceQ="
                 UPDATE products AS p
                     INNER JOIN batchList AS l ON p.upc=l.upc
                     INNER JOIN batches AS b ON l.batchID=b.batchID
-                    INNER JOIN StoreBatchMap AS m ON b.batchID=m.batchID and p.store_id=m.storeID
+                    " . ($isHQ ? ' INNER JOIN StoreBatchMap AS m ON b.batchID=m.batchID and p.store_id=m.storeID ' : '') . "
                 SET p.start_date = b.startDate, 
                     p.end_date=b.endDate,
                     p.special_price=l.salePrice,
@@ -109,7 +110,7 @@ those same items revert to normal pricing.
                     INNER JOIN upcLike AS v ON v.upc=p.upc
                     INNER JOIN batchList as l ON l.upc=concat('LC',convert(v.likecode,char))
                     INNER JOIN batches AS b ON b.batchID=l.batchID
-                    INNER JOIN StoreBatchMap AS m ON b.batchID=m.batchID and p.store_id=m.storeID
+                    " . ($isHQ ? ' INNER JOIN StoreBatchMap AS m ON b.batchID=m.batchID and p.store_id=m.storeID ' : '') . "
                 SET p.special_price = l.salePrice,
                     p.end_date = b.endDate,
                     p.start_date=b.startDate,
@@ -177,7 +178,7 @@ those same items revert to normal pricing.
             $forceQ = "
                 UPDATE products AS p
                     INNER JOIN batchList AS l ON l.upc=p.upc
-                    INNER JOIN StoreBatchMap AS m ON l.batchID=m.batchID and p.store_id=m.storeID
+                    " . ($isHQ ? ' INNER JOIN StoreBatchMap AS m ON l.batchID=m.batchID and p.store_id=m.storeID ' : '') . "
                 SET p.normal_price = l.salePrice,
                     p.modified = now()
                 WHERE l.upc not like 'LC%'
@@ -195,7 +196,7 @@ those same items revert to normal pricing.
                 UPDATE products AS p
                     INNER JOIN upcLike AS v ON v.upc=p.upc 
                     INNER JOIN batchList as b on b.upc=concat('LC',convert(v.likecode,char))
-                    INNER JOIN StoreBatchMap AS m ON b.batchID=m.batchID and p.store_id=m.storeID
+                    " . ($inHQ ? ' INNER JOIN StoreBatchMap AS m ON b.batchID=m.batchID and p.store_id=m.storeID ' : '') . "
                 SET p.normal_price = b.salePrice,
                     p.modified=now()
                 WHERE b.upc LIKE 'LC%'

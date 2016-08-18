@@ -1,4 +1,4 @@
-var cablist = (function($) {
+var cablist = (function($, errorLog) {
     var mod = {};
 
     mod.submitWrapper = function(urlStem) {
@@ -9,6 +9,8 @@ var cablist = (function($) {
                 type: 'get',
                 cache: false,
                 data: 'input='+ref
+            }).fail(function(xhr, statusText, err) {
+                errorLog.show(xhr, statusText, err);
             }).done(function(data){
                 window.location = urlStem + 'gui-modules/pos2.php';
             });
@@ -20,4 +22,4 @@ var cablist = (function($) {
     };
 
     return mod;
-}(jQuery));
+}(jQuery, errorLog));

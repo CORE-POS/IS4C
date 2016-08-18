@@ -118,5 +118,5 @@ class StripeAmountPage extends BasicCorePage
     }
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
-    new StripeAmountPage();
+AutoLoader::dispatch();
+

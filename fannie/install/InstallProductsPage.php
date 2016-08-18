@@ -220,6 +220,10 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         ); 
         echo installSelectField('FANNIE_SO_UI', $FANNIE_SO_UI, $so_opts, 'bootstrap');
         ?>
+        <label>Special Order Email Template ID</label>
+        <?php
+        echo installTextField('FANNIE_SO_TEMPLATE', $FANNIE_SO_TEMPLATE, 0);
+        ?> 
         <hr />
         <label>Default Shelf Tag Layout</label>
         <?php
@@ -238,7 +242,30 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
             $source[$m] = $m;
         }
         echo installSelectField('FANNIE_TAG_DATA_SOURCE', $FANNIE_TAG_DATA_SOURCE, $source);
+
+
+        $printers = array();
+        $printer_options = array(""=>"");
+        exec("lpstat -a", $printers);
+        foreach($printers as $printer) {
+          $name = explode(" ", $printer, 2);
+          $printer_options[$name[0]] = $name[0];
+        }
+        echo 'Printer for instant label: '.installSelectField('FANNIE_SINGLE_LABEL_PRINTER', $FANNIE_SINGLE_LABEL_PRINTER, $printer_options);
+
+        $layouts = array(""=>"");
+        $dh = scandir(dirname(__FILE__).'/../admin/labels/pdf_layouts/');
+        foreach($dh as $filename) {
+          if($filename != "." && $filename != "..") {
+            $file = substr($filename, 0, strlen($filename)-4);
+            $layouts[$file] =  str_replace("_", " ", $file);
+          }
+        }
+
+        echo 'Layout for instant label: '.installSelectField('FANNIE_SINGLE_LABEL_LAYOUT', $FANNIE_SINGLE_LABEL_LAYOUT, $layouts, 'Zebra_Single_Label');
         ?>
+
+
         <label>Default Signage Layout</label>
         <?php
         $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\FannieSignage');
@@ -331,4 +358,3 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
 }
 
 FannieDispatch::conditionalExec();
-

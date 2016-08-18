@@ -499,9 +499,13 @@ function updateStatus(oid,val){
         url: 'OrderAjax.php',
         type: 'post',
         data: 'id='+oid+'&status='+val,
+        dataType: 'json',
         cache: false
     }).done(function(resp){
-        $('#statusdate'+oid).html(resp);    
+        $('#statusdate'+oid).html(resp.tdate);
+        if (resp.sentEmail) {
+            alert('Emailed Arrival Notification');
+        }
     });
 }
 function togglePrint(username,oid){

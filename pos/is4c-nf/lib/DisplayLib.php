@@ -124,6 +124,9 @@ static public function printfooter($readOnly=False)
     }
     $ret .= "</tr>";
     $ret .= "</table>";
+    if (CoreLocal::get('Debug_JS')) {
+        $ret .= '<div id="jsErrorLog"></div>';
+    }
 
     return $ret;
 }

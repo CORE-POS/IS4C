@@ -320,6 +320,5 @@ class memlist_cards extends NoInputCorePage
 // /class memlist
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-    new memlist_cards();
+AutoLoader::dispatch();
 

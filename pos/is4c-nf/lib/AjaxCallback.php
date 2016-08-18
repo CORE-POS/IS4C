@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 namespace COREPOS\pos\lib;
+use COREPOS\pos\lib\LaneLogger;
 use \AutoLoader;
 use \ReflectionClass;
 
@@ -31,6 +32,7 @@ use \ReflectionClass;
 class AjaxCallback
 {
     protected $encoding = 'json';
+    protected static $logger;
 
     public function getEncoding()
     {
@@ -49,9 +51,11 @@ class AjaxCallback
  
     public static function run()
     {
+        register_shutdown_function(array('COREPOS\\pos\\lib\\AjaxCallback', 'ajaxFatal'));
         $callback_class = get_called_class();
         $file = filter_input(INPUT_SERVER, 'SCRIPT_FILENAME');
         $nsClass = AutoLoader::fileToFullClass($file);
+        self::$logger = new LaneLogger();
         if ($callback_class === $nsClass || basename($file) === $callback_class . '.php') {
             ini_set('display_errors', 'off');
             /** 
@@ -61,13 +65,20 @@ class AjaxCallback
             //self::perfStart();
             self::executeCallback($callback_class);
             //self::perfEnd();
+        } else {
+            self::$logger->debug("Unknown AJAX request: {$callback_class} (File: {$file}, NS: {$nsClass}");
         }
     }
 
     private static function executeCallback($callback_class)
     {
         $obj = new $callback_class();
+        ob_start();
         $output = $obj->ajax();
+        $extra_output = ob_get_clean();
+        if (strlen($extra_output) > 0) {
+            self::$logger->debug("Extra AJAX output: {$extra_output}");
+        }
 
         switch ($obj->getEncoding()) {
             case 'json':
@@ -96,6 +107,26 @@ class AjaxCallback
             $fptr = fopen($log, 'a');
             fwrite($fptr, $file . "," . $timer . "\n");
             fclose($fptr);
+        }
+    }
+
+    /**
+      Output valid JSON when a fatal error occurs. Logging
+      is handled by COREPOS\common\ErrorHandler. This response
+      lets calling javascript code notify the user that something
+      went wrong.
+    */
+    public static function ajaxFatal()
+    {
+        $error = error_get_last();
+        if ($error["type"] == E_ERROR 
+            || $error['type'] == E_PARSE 
+            || $error['type'] == E_CORE_ERROR
+            || $error['type'] == E_COMPILE_ERROR) {
+
+            $msg = "{$error['message']} ({$error['file']} line {$error['line']})";
+            $json = array('error' => $msg);
+            echo json_encode($json);
         }
     }
 }
