@@ -1085,6 +1085,7 @@ HTML;
         <div class="form-group">
             <label>Dept.</label>
             <select id="newdept" name="dept" class="form-control input-sm">
+                 <option value="">Choose...</option>
                 {$opts}
             </select>
         </div>
