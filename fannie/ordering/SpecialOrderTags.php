@@ -156,6 +156,7 @@ class SpecialOrderTags extends FannieRESTfulPage
 
             $pdf = $signage->drawBarcode($upc, $pdf, $posX+10, $posY+95, array('height'=>14,'fontsize'=>8));
 
+            /*
             $reorder_url = 'http://wholefoods.coop/reorder/' . $oid . '-' . $tid;
             if (class_exists('Endroid\\QrCode\\QrCode')) {
                 $qrImg = tempnam(sys_get_temp_dir(), 'qrc') . '.png';
@@ -172,6 +173,7 @@ class SpecialOrderTags extends FannieRESTfulPage
                 $pdf->Image($qrImg, $posX+60, $posY+93);
                 unlink($qrImg);
             }
+            */
 
             $pdf->SetXY($posX,$posY+115);
             $pdf->Cell(90,10,"Re-Order: $reorder_url", 0, 0, 'C');

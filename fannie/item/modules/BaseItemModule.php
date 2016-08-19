@@ -532,7 +532,7 @@ HTML;
 
             if (isset($rowItem['discounttype']) && $rowItem['discounttype'] <> 0) {
                 /* show sale info */
-                if (FannieConfig::get('STORE_MODE') == 'HQ') {
+                if (FannieConfig::config('STORE_MODE') == 'HQ') {
                     $batchP = $dbc->prepare("
                         SELECT b.batchName, 
                             b.batchID 

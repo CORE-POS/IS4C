@@ -402,6 +402,7 @@ class OrderViewPage extends FannieRESTfulPage
                 }
             }
 
+            $custdata->personNum($personNum);
             if ($custdata->load()) {
                 $status_row['Type'] = $custdata->Type();
                 if ($status_row['Type'] == 'INACT') {
@@ -1084,6 +1085,7 @@ HTML;
         <div class="form-group">
             <label>Dept.</label>
             <select id="newdept" name="dept" class="form-control input-sm">
+                 <option value="">Choose...</option>
                 {$opts}
             </select>
         </div>
