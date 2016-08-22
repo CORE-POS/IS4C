@@ -528,7 +528,8 @@ class HouseCoupon extends SpecialUPC
                 $valQ = "
                     SELECT 
                        SUM(CASE WHEN ItemQtty IS NULL THEN 0 ELSE ItemQtty END) AS qty
-                    " . $this->baseSQL($transDB, $coupID, 'upc'); 
+                    " . $this->baseSQL($transDB, $coupID, 'upc') . "
+                    and h.type in ('BOTH', 'DISCOUNT')";
                 $valR = $transDB->query($valQ);
                 $row = $transDB->fetch_row($valR);
                 $value = $row['qty'] * $value;
