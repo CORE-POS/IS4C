@@ -534,6 +534,28 @@ class HouseCoupon extends SpecialUPC
                 $row = $transDB->fetch_row($valR);
                 $value = $row['qty'] * $value;
                 break;
+            case' PS': // per set of items
+                $value = $infoW["discountValue"];
+
+                $qualQ = "
+                    SELECT 
+                       SUM(CASE WHEN ItemQtty IS NULL THEN 0 ELSE ItemQtty END) AS qty
+                    " . $this->baseSQL($transDB, $coupID, 'upc') . "
+                    and h.type in ('BOTH', 'QUALIFIER')";
+                $qualR = $transDB->query($qualQ);
+                $qualW = $transDB->fetch_row($qualR);
+
+                $discQ = "
+                    SELECT 
+                       SUM(CASE WHEN ItemQtty IS NULL THEN 0 ELSE ItemQtty END) AS qty
+                    " . $this->baseSQL($transDB, $coupID, 'upc') . "
+                    and h.type in ('BOTH', 'DISCOUNT')";
+                $discR = $transDB->query($discQ);
+                $discW = $transDB->fetch_row($discR);
+
+                $sets = ($qualW['qty'] > $discW['qty']) ? $discW['qty'] : $qualW['qty'];
+                $value = $sets * $value;
+                break;
             case "F": // completely flat; no scaling for weight
                 $value = $infoW["discountValue"];
                 break;
