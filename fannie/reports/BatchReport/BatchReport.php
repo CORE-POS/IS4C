@@ -89,15 +89,13 @@ class BatchReport extends FannieReportPage
             SELECT d.upc, 
                 p.brand,
                 p.description, 
-                l.floorSectionID,
-                f.name AS location,
+				lv.sections AS location,
                 SUM(d.total) AS sales, "
                 . DTrans::sumQuantity('d') . " AS quantity, 
                 SUM(CASE WHEN trans_status IN('','0','R') THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings
             FROM $dlog AS d "
                 . DTrans::joinProducts('d', 'p', 'INNER') . "
-            LEFT JOIN prodPhysicalLocation AS l ON l.upc=p.upc
-            LEFT JOIN FloorSections as f ON f.floorSectionID=l.floorSectionID
+			LEFT JOIN FloorSectionsListView as lv on d.upc=lv.upc
             WHERE d.tdate BETWEEN ? AND ?
                 AND d.upc IN ($in_sql)
                 AND " . DTrans::isStoreID($store, 'd') . "
