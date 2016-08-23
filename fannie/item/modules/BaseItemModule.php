@@ -512,7 +512,7 @@ HTML;
                             class="chosen-select form-control vendor_field syncable-input"
                             onchange="baseItem.vendorChanged(this.value);">';
                 $ret .= '<option value="0">Select a vendor</option>';
-                $vendR = $dbc->query('SELECT vendorID, vendorName FROM vendors ORDER BY vendorName');
+                $vendR = $dbc->query('SELECT vendorID, vendorName FROM vendors WHERE inactive=0 ORDER BY vendorName');
                 while ($vendW = $dbc->fetchRow($vendR)) {
                     $ret .= sprintf('<option %s>%s</option>',
                                 ($vendW['vendorID'] == $normalizedVendorID ? 'selected' : ''),
