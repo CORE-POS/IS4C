@@ -174,6 +174,7 @@ class SaItemList extends SaHandheldPage
                 <th>Size</th>
                 <th>Qty</th>
             </tr>';
+        $upcs = '';
         while ($row = $this->connection->fetchRow($res)) {
             $ret .= sprintf('<tr>
                 <td>%s</td>
@@ -192,8 +193,11 @@ class SaItemList extends SaHandheldPage
                 $row['size'],
                 $row['qty']
             ); 
+            $upcs .= $row['upc'] . "\n";
         }
         $ret .= '</table>';
+
+        $ret .= '<textarea>' . $upcs . '</textarea>';
 
         return $ret;
     }
