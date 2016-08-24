@@ -356,6 +356,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $notes = $dbc->getValue($notes, $this->id);
         $vname = $dbc->prepare('SELECT * FROM vendors WHERE vendorID=?');
         $vendor = $dbc->getRow($vname, array($orderObj->vendorID));
+        $vendor['notes'] = nl2br($vendor['notes']);
         $sname = $dbc->prepare('SELECT description FROM Stores WHERE storeID=?');
         $sname = $dbc->getValue($sname, array($orderObj->storeID));
 
@@ -439,7 +440,8 @@ HTML;
 Ph: {$vendor['phone']}<br />
 Fax: {$vendor['fax']}<br />
 Email: {$vendor['email']}<br />
-{$vendor['address']}, {$vendor['city']}, {$vendor['state']} {$vendor['zip']}
+{$vendor['address']}, {$vendor['city']}, {$vendor['state']} {$vendor['zip']}<br />
+{$vendor['notes']}
 </div></div>
 HTML;
         $ret .= '</div></div>';
