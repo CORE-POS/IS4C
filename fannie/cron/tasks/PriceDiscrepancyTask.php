@@ -39,6 +39,93 @@ class PriceDiscrepancyTask extends FannieTask
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $url = $this->config->get('URL');
+        $host = $this->config->get('HTTP_HOST');
+        
+        $msg = "";
+        $msg .= self::priceTask($dbc);
+        $msg .= self::deptTask($dbc);
+        
+        if ($msg != "") {
+            $to = $this->config->get('ADMIN_EMAIL');
+            $from = $to;
+            $subject = 'Product Discrepancies Discovered Between Stores';
+            $msg .= "\n";
+            mail($to, $subject, $msg, 'From: ' . $from);
+        }
+    }
+    
+    private function deptTask($dbc)
+    {
+        $itemA = array();
+        $itemB = array();
+
+        $queryA = $dbc->prepare('
+            SELECT upc, department 
+            FROM products 
+                WHERE store_id=1
+                    AND department NOT BETWEEN 508 AND 998
+                    AND department NOT BETWEEN 250 AND 259
+                    AND department NOT BETWEEN 225 AND 234
+                    AND department NOT BETWEEN 1 AND 25
+                    AND department NOT BETWEEN 61 AND 78
+                    AND department != 46
+                    AND department != 150
+                    AND department != 208
+                    AND department != 235
+                    AND department != 240
+                    AND department != 500
+        ');
+        $resultA = $dbc->execute($queryA);
+        while ($row = $dbc->fetch_row($resultA))  {
+            $itemA[$row['upc']] = $row['department'];
+        }
+        
+        $queryB = $dbc->prepare('
+            SELECT upc, department 
+            FROM products 
+            WHERE store_id=2
+                AND department NOT BETWEEN 508 AND 998
+                    AND department NOT BETWEEN 250 AND 259
+                    AND department NOT BETWEEN 225 AND 234
+                    AND department NOT BETWEEN 1 AND 25
+                    AND department NOT BETWEEN 61 AND 78
+                    AND department != 46
+                    AND department != 150
+                    AND department != 208
+                    AND department != 235
+                    AND department != 240
+                    AND department != 500
+        ');
+        $resultb = $dbc->execute($queryB);
+        while ($row = $dbc->fetch_row($resultB))  {
+            $itemB[$row['upc']] = $row['department'];
+        }
+        
+        $count = 0;
+        foreach ($itemA as $upc => $department)  {
+            if (isset($itemB[$upc])) {
+                if ($department != $itemB[$upc]) $count++;
+            }
+        }
+
+        $msg = "";
+        if ($count > 0 ) {
+            $msg = $count . " department discrepancies were discovered\n";
+            foreach ($itemA as $upc => $department)  {
+                $link = "<http://192.168.1.2/git/fannie/item/ItemEditorPage.php?searchupc=" . $upc . "\t";
+                if ($department != $itemB[$upc]) {
+                    $msg .=  $link . $department . "\t" . $itemB[$upc] . "\n";
+                }
+            }
+            
+        }
+
+        return $msg;
+    }
+    
+    private function priceTask($dbc)
+    {
         $item = array();
         $prep = $dbc->prepare("SELECT 
                 upc, 
@@ -69,28 +156,31 @@ class PriceDiscrepancyTask extends FannieTask
         while ($row = $dbc->fetch_row($result)) {
             $item[$row['upc']]['isdiscrep'] = 1;
             $item[$row['upc']]['desc'] = $row['description'];
-            $item[$row['upc']]['hprice'] = $row['normal_price'];
-            $item[$row['upc']]['dprice'] = $row['normal_price'] - $row['discrepancy'];
+            $item[$row['upc']]['priceA'] = $row['normal_price'];
+            $item[$row['upc']]['priceB'] = $row['normal_price'] - $row['discrepancy'];
             $item[$row['upc']]['size'] = $row['size'];
             $item[$row['upc']]['brand'] = $row['brand'];
         }
         
-        $ret = "";
+        $msg = "";
         foreach ($item as $key => $row) {
-            $ret .= $key . " :: " . $row['desc'] . "\n";
+            $link = "<http://192.168.1.2/git/fannie/item/ItemEditorPage.php?searchupc=" . $key . "\t";
+            $msg .= $link . $row['desc'] . "\t" . $row['priceA'] . "\t" . $row['priceB'] . "\n";
         }
 
-        $ret .= "\n";
         
         if($item) {
+            $msg .= "\n";
             //  Replace this link with the link to the Fannie Page once it exists.
-            $ret .= 'To make Corrections, visit ';
-            $link = 'http://' . $this->config->get('HTTP_HOST') . $this->config->get('URL')
-                . 'fannie/item/PriceDiscrepancyScanner/PriceDiscrepancyPage.php';
-            $ret = wordwrap($ret, 10, '\n');
-            $ret = str_replace('\n', '', $ret);
-            mail($this->config->get('ADMIN_EMAIL'), count($item) . ' Price Discrepancies found in POS', $ret, 'From: ' . $this->config->get('ADMIN_EMAIL'));
+            $msg .= 'To make Corrections, visit ';
+            $link = "http://" . $this->config->get("HTTP_HOST") . $this->config->get("URL")
+                . "fannie/item/PriceDiscrepancyScanner/PriceDiscrepancyPage.php";
+            //$msg = wordwrap($msg, 10, '\n');
+            //$msg = str_replace('\n', '', $msg);
+            //mail($this->config->get('ADMIN_EMAIL'), count($item) . ' Price Discrepancies found in POS', $msg, 'From: ' . $this->config->get('ADMIN_EMAIL'));
         }
+        
+        return $msg;
     }
 }
 
