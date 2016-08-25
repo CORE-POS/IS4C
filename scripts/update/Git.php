@@ -16,6 +16,17 @@ class Git extends SebastianBergmann\Git\Git
     {
         return $this->execute("remote show {$name}");
     }
+
+    public function fetch($remote='')
+    {
+        $this->execute("fetch {$remote}");
+    }
+
+    public function tags($remote='')
+    {
+        $vals = $this->execute("git ls-remote --tags {$remote}");
+        var_dump($vals);
+    }
     
     public function pull($remote='', $ref='', $rebase=true)
     {
