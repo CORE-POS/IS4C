@@ -196,7 +196,7 @@ those same items revert to normal pricing.
                 UPDATE products AS p
                     INNER JOIN upcLike AS v ON v.upc=p.upc 
                     INNER JOIN batchList as b on b.upc=concat('LC',convert(v.likecode,char))
-                    " . ($inHQ ? ' INNER JOIN StoreBatchMap AS m ON b.batchID=m.batchID and p.store_id=m.storeID ' : '') . "
+                    " . ($isHQ ? ' INNER JOIN StoreBatchMap AS m ON b.batchID=m.batchID and p.store_id=m.storeID ' : '') . "
                 SET p.normal_price = b.salePrice,
                     p.modified=now()
                 WHERE b.upc LIKE 'LC%'
