@@ -60,7 +60,11 @@ class UpdateAutoCommand extends Command
     
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $git = new Git(__DIR__ . '/../../');
+        $path = $this->getApplication()->configValue("projectPath");
+        if ($path && $path[0] != "/") {
+            $path = __DIR__ . "/" . $path;
+        }
+        $git = new Git($path);
         $branch = $git->getCurrentBranch();
         $revs = $git->getRevisions();
         $last = array_pop($revs); 
@@ -80,7 +84,17 @@ class UpdateAutoCommand extends Command
         $tags = $git->tags('upstream');
         $tags = $this->goodTags($tags);
         $latest = $tags[0];
-        $current = trim(file_get_contents(__DIR__ . '/' . $this->getApplication()->configValue("versionFile")));
+        $current = false;
+        if (file_exists($path . '/composer.json')) {
+            $composer = file_get_contents($path . '/composer.json');
+            $composer = json_decode($composer, true);
+            if (isset($composer['version'])) {
+                $current = $composer['version'];
+            }
+        }
+        if (!$current) {
+            $current = trim(file_get_contents(__DIR__ . '/' . $this->getApplication()->configValue("versionFile")));
+        }
         if (!preg_match('/^(\d+.\d+.\d+)/', $current, $matches)) {
             $output->writeln("<error>Version {$current} is not semVar</error>");
             return;

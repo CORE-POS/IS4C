@@ -21,7 +21,11 @@ class UpdateMinorCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $git = new Git(__DIR__ . '/../../');
+        $path = $this->getApplication()->configValue("projectPath");
+        if ($path && $path[0] != "/") {
+            $path = __DIR__ . "/" . $path;
+        }
+        $git = new Git($path);
         $branch = $git->getCurrentBranch();
         $repo = $this->getApplication()->configValue('repo');
         if (!strstr($branch, 'version-')) {
