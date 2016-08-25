@@ -97,10 +97,10 @@ class UpdateAutoCommand extends Command
         $git->branch($test_branch, $branch);
 
         if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
-            $output->writeln("Running: <comment>git pull --rebase {$repo} {$latest}</comment>");
+            $output->writeln("Running: <comment>git pull {$repo} {$latest}</comment>");
         }
 
-        $updated = $git->pull($repo, $latest);
+        $updated = $git->pull($repo, $latest, false);
         if ($updated !== true) {
             $output->writeln("<error>Unable to complete update</error>");
             $output->writeln("Details:");
