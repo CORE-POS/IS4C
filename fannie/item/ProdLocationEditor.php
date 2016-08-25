@@ -75,8 +75,8 @@ class ProdLocationEditor extends FannieRESTfulPage
         } else {
             $ret .= '<div class="alert alert-success">Product Location Saved</div>';
         }
-        $ret .= '<a class="btn btn-default" href="http://key/git/fannie/item/ProdLocationEditor.php">Return</a><br><br>';
-        
+        $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php?searchupc=Update+Locations+by+UPC">Back</a>&nbsp;&nbsp;';
+        $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php">Home</a><br><br>';        
         return $ret;
     }
     
@@ -121,7 +121,8 @@ class ProdLocationEditor extends FannieRESTfulPage
         } else {
             $ret .= '<div class="alert alert-success">Product Location Saved</div>';
         }
-        $ret .= '<a class="btn btn-default" href="http://key/git/fannie/item/ProdLocationEditor.php">Return</a><br><br>';
+        $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php?searchupc=Update+Locations+by+UPC">Back</a>&nbsp;&nbsp;';
+        $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php">Home</a><br><br>';
         
         return $ret;
     }
@@ -155,7 +156,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         }        
         
         $ret .= '<br><br><a class="btn btn-default" href="javascript:history.back()">Back</a><br><br>';
-        $ret .= '<a class="btn btn-default" href="http://key/git/fannie/item/ProdLocationEditor.php">Return</a><br><br>';
+        $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php">Return</a><br><br>';
         
         return $ret;
     }
@@ -273,7 +274,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             }
             
         $ret .= '<tr><td><input type="submit" class="btn btn-default" value="Update Locations"></td>
-            <td><a class="btn btn-default" href="http://key/git/fannie/item/ProdLocationEditor.php">Back</a><br><br></td></table>
+            <td><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br></td></table>
             </form>';   
             
                 
@@ -299,7 +300,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                 
                 <input type="submit" class="btn btn-default" value="Find item locations">
             </form><br>
-            <a class="btn btn-default" href="http://key/git/fannie/item/ProdLocationEditor.php">Back</a><br><br>
+            <a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br>
         ';
         
         return $ret;
@@ -396,7 +397,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                             </form></div>
                         '; 
                 
-                $ret .= '<br><a class="btn btn-default" href="http://key/git/fannie/item/ProdLocationEditor.php">Back</a><br><br>';                
+                $ret .= '<br><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br>';                
                 $ret .= '</div><div class="col-md-5">'; //end of column A
                 
                 $ret .= '
