@@ -29,6 +29,7 @@ install:
     - sh tests/pos/travis-init.sh
     - rm composer.json
     - composer init -n
+    - cat composer.json
     - composer require codeclimate/php-test-reporter johnkary/phpunit-speedtrap
     - mkdir -p build/logs
     - npm install acorn
