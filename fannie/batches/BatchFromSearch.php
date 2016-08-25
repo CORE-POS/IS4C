@@ -111,12 +111,12 @@ class BatchFromSearch extends FannieRESTfulPage
 
     private function itemsToBatch($batchID, $dbc, $upcs, $prices)
     {
-		$rounder = new \COREPOS\Fannie\API\item\PriceRounder();
+        $rounder = new \COREPOS\Fannie\API\item\PriceRounder();
         // add items to batch
         for($i=0; $i<count($upcs); $i++) {
             $upc = $upcs[$i];
             $price = isset($prices[$i]) ? $prices[$i] : 0.00;
-			$price = $rounder->round($price);
+            $price = $rounder->round($price);
             $list = new BatchListModel($dbc);
             $list->upc(BarcodeLib::padUPC($upc));
             $list->batchID($batchID);
