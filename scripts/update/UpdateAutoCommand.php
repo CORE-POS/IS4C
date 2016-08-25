@@ -16,7 +16,8 @@ class UpdateAutoCommand extends Command
     protected function configure()
     {
         $this->setName('update:auto')
-            ->setDescription('Update to the latest version');
+            ->setDescription('Update to the latest version')
+            ->addOption('force', null, InputOption::VALUE_NONE, 'Automatically resolve merge conflicts', null);
     }
 
     protected function goodTags($tags)
@@ -96,11 +97,13 @@ class UpdateAutoCommand extends Command
         }
         $git->branch($test_branch, $branch);
 
+        $force = $input->getOption('force');
         if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
-            $output->writeln("Running: <comment>git pull {$repo} {$latest}</comment>");
+            $force_cmd = $force ? ' -s recursive -Xtheirs ' : ' ';
+            $output->writeln("Running: <comment>git pull{$force_cmd}{$repo} {$latest}</comment>");
         }
 
-        $updated = $git->pull($repo, $latest, false);
+        $updated = $git->pull($repo, $latest, false, $force);
         if ($updated !== true) {
             $output->writeln("<error>Unable to complete update</error>");
             $output->writeln("Details:");

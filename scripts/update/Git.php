@@ -33,18 +33,22 @@ class Git extends SebastianBergmann\Git\Git
         return $vals;
     }
     
-    public function pull($remote='', $ref='', $rebase=true)
+    public function pull($remote='', $ref='', $rebase=true, $force=false)
     {
         $revs = $this->getRevisions();
         $last = array_pop($revs);
 
+        $cmd = "pull";
+        if ($rebase) {
+            $cmd .= " --rebase";
+        }
+        if ($force) {
+            $cmd .= " -s recursive " . ($rebase ? "-Xours" : "-Xtheirs");
+        }
+
         $ret = true;
         try {
-            if ($rebase) {
-                $this->execute("pull --rebase {$remote} {$ref}");
-            } else {
-                $this->execute("pull {$remote} {$ref}");
-            }
+            $this->execute("{$cmd} {$remote} {$ref}");
         } catch (Exception $ex) {
             $this->execute("reset --hard {$last['sha1']}");
             $ret = $ex->getMessage();
