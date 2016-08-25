@@ -32,7 +32,7 @@ class VersionCommand extends Command
         $origin = $git->fetchURL("origin");
         $output->writeln("git origin: <info>{$origin}</info>");
         if (strstr($origin, 'CORE-POS/IS4C') && strstr($branch, 'version-')) {
-            $output->writeln("<comment>You're running a stable release</comment>");
+            $output->writeln("<comment>You're running a stable, public release</comment>");
         } else {
             $output->writeln("<comment>You're [probably] developing on a fork</comment>");
         }

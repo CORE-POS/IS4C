@@ -13,7 +13,7 @@ class ConfiguredApplication extends Application
             $this->jsonConfig = $json ?: array();
         }
 
-        return $json[$key] ?: null;
+        return $this->jsonConfig[$key] ?: null;
     } 
 }
 

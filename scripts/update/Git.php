@@ -24,8 +24,13 @@ class Git extends SebastianBergmann\Git\Git
 
     public function tags($remote='')
     {
-        $vals = $this->execute("git ls-remote --tags {$remote}");
-        var_dump($vals);
+        $vals = $this->execute("ls-remote --tags {$remote}");
+        $vals = array_map(function($i) {
+            list($before, $tag) = explode("refs/tags/", $i, 2);
+            return $tag;
+        }, $vals);
+        $vals = array_filter($vals, function($i) { return substr($i, -3) !== '^{}'; });
+        return $vals;
     }
     
     public function pull($remote='', $ref='', $rebase=true)
@@ -42,10 +47,10 @@ class Git extends SebastianBergmann\Git\Git
             }
         } catch (Exception $ex) {
             $this->execute("reset --hard {$last['sha1']}");
-            $ret = false;
+            $ret = $ex->getMessage();
         }
 
-        return true;
+        return $ret;
     }
 
     public function branch($name, $source_rev='')

@@ -19,56 +19,100 @@ class UpdateAutoCommand extends Command
             ->setDescription('Update to the latest version');
     }
 
+    protected function goodTags($tags)
+    {
+        $tags = array_filter($tags, function ($i) { return preg_match('/^\d+\.\d+\.\d+/', $i); });
+        usort($tags, array('UpdateAutoCommand', 'semVarSort'));
+
+        return array_reverse($tags);
+    }
+
+    public static function semVarSort($a, $b)
+    {
+        if (preg_match('/^(\d+\.\d+\.\d+)/', $a, $matches)) {
+            $a = $matches[1];
+        } else {
+            return 0;
+        }
+        if (preg_match('/^(\d+\.\d+\.\d+)/', $b, $matches)) {
+            $b = $matches[1];
+        } else {
+            return 0;
+        }
+        list($a_maj, $a_min, $a_rev) = explode('.', $a);
+        list($b_maj, $b_min, $b_rev) = explode('.', $b);
+        if ($a_maj < $b_maj) {
+            return -1;
+        } elseif ($a_maj > $b_maj) {
+            return 1;
+        } elseif ($a_min < $b_min) {
+            return -1;
+        } elseif ($a_min > $b_min) {
+            return 1;
+        } elseif ($a_rev < $b_rev) {
+            return -1;
+        } elseif ($a_rev > $b_rev) {
+            return 1;
+        }
+        return 0;
+    }
+    
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $git = new Git(__DIR__ . '/../../');
         $branch = $git->getCurrentBranch();
         $revs = $git->getRevisions();
         $last = array_pop($revs); 
+        $repo = $this->getApplication()->configValue('repo');
     
         try {
             // verify upstream is a remte
             $upstream = $git->remote('upstream');
         } catch (Exception $ex) {
-            $repo = $this->getApplication()->configValue('repo');
             if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
                 $output->writeln("Running: <comment>git remote add upstream {$repo}</comment>");
             }
             $git->addRemote('upstream', $repo);
         }
-        $git->fetch('upstream');
-        $git->tags('upstream');
 
-        /*
-        $version = 'version-' . $input->getArgument('version');
-        
-        $test_branch = 'test-' . $version . '-' . date('YmdHis');
+        $git->fetch('upstream');
+        $tags = $git->tags('upstream');
+        $tags = $this->goodTags($tags);
+        $latest = $tags[0];
+        $current = trim(file_get_contents(__DIR__ . '/' . $this->getApplication()->configValue("versionFile")));
+        if (!preg_match('/^(\d+.\d+.\d+)/', $current, $matches)) {
+            $output->writeln("<error>Version {$current} is not semVar</error>");
+            return;
+        }
+        $current = $matches[0];
+        if (self::semVarSort($current, $latest) != -1) {
+            $output->writeln("<info>Version {$current} is up-to-date</info>");
+            return;
+        }
+
+        $test_branch = 'snapshot-' . $current . '-' . date('Y-m-d-His');
         if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
             $output->writeln("Running: <comment>git branch {$test_branch} {$branch}</comment>");
         }
         $git->branch($test_branch, $branch);
 
         if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
-            $output->writeln("Running: <comment>git checkout {$test_branch}</comment>");
+            $output->writeln("Running: <comment>git pull --rebase {$repo} {$latest}</comment>");
         }
-        $git->checkout($test_branch);
 
-        if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
-            $output->writeln("Running: <comment>git pull --rebase https://github.com/CORE-POS/IS4C.git {$version}</comment>");
+        $updated = $git->pull($repo, $latest);
+        if ($updated !== true) {
+            $output->writeln("<error>Unable to complete update</error>");
+            $output->writeln("Details:");
+            foreach (explode("\r\n", $updated) as $line) {
+                $output->writeln($line);
+            }
+        } else {
+            $output->writeln("\nTo get back to your previous environment temporarily run:");
+            $output->writeln("<comment>git checkout {$test_branch}</comment>");
+            $output->writeln("\nTo undo this update permanently run:");
+            $output->writeln("<comment>git reset --hard {$last['sha1']}");
         }
-        $git->pull('https://github.com/CORE-POS/IS4C.git', $version);
-
-        $output->writeln("<info>You're on a new branch named</info> <error>{$test_branch}</error>");
-        $output->writeln("\nTo get back to your previous environment run:");
-        $output->writeln("<comment>git checkout {$branch}</comment>");
-        $output->writeln("<comment>git branch -D {$test_branch}</comment>");
-        $output->writeln("\nTo merge these changes into your previous environment run:");
-        $output->writeln("<comment>git checkout {$branch}</comment>");
-        $output->writeln("<comment>git merge {$test_branch}</comment>");
-        $output->writeln("<comment>git branch -d {$test_branch}</comment>");
-        $output->writeln("\nTo undo the merge run:");
-        $output->writeln("<comment>git reset --hard {$last['sha1']}");
-        */
     }
 }
 
