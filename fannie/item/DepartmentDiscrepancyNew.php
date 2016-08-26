@@ -51,7 +51,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
         $ret = array('error'=>NULL,'error_msg'=>NULL);
         $lastUPC = '';
         foreach ($_GET as $key => $value) {
-            //$key . " :: " . $value . '<br>';
+            //  $key . " :: " . $value . '<br>';
             //$upc = substr($key,0,4);
             for ($i=1;$i<3;$i++) {
                 unset($ret);
@@ -88,7 +88,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
             
         }
         
-        echo '<a class="btn btn-default" href="http://localhost/IS4C/fannie/item/DepartmentDiscrepancyNew.php">Back</a><br><br>';
+        echo '<a class="btn btn-default" href="http://key/git/fannie/item/DepartmentDiscrepancyNew.php">Back</a><br><br>';
         
 
     }
@@ -163,7 +163,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
         while ($row = $dbc->fetch_row($result)) {
             $upc[] = $row['upc'];
             $ret .= '<tr>';
-            $ret .= '<td><a href="http://localhost/IS4C/fannie/item/ItemEditorPage.php?searchupc=' 
+            $ret .= '<td><a href="http://key/git/fannie/item/ItemEditorPage.php?searchupc=' 
                 . $row['upc'] . '" target="_blank">' . $row['upc'] . '</a></td>';
             
             if (isset($row['longBrand']) && $row['longBrand'] != '') {
@@ -264,7 +264,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
             //$ret .= '<td><input type="hidden" name="upc" value="' . $row['upc'] . '"></td>';
               
         }
-        $ret .= '<a href="http://localhost/IS4C/fannie/item/DepartmentDiscrepancyNew.php">Back</a><br><br>';
+        $ret .= '<a href="http://key/git/fannie/item/DepartmentDiscrepancyNew.php">Back</a><br><br>';
         $ret .= '</tr><tr><td><input type="submit" class="btn btn-default" 
             value="Update Products"></td>';
         $ret .= '</table>
@@ -301,7 +301,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
         }
         foreach ($dept as $dept_no => $dept_name) {
             $ret .= '<tr>';
-            $ret .= '<td><a href="http://localhost/IS4C/fannie/item/DepartmentDiscrepancyNew.php?dept=1&dept_no='
+            $ret .= '<td><a href="http://key/git/fannie/item/DepartmentDiscrepancyNew.php?dept=1&dept_no='
                 . $dept_no . '&dept_name=' . $dept_name . '&order=department">' . $dept_no . ' ' . $dept_name . '</a></td>';            
             $queryD = $dbc->prepare('
                 SELECT 
@@ -335,7 +335,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
                         $k = '<span class="redcircle"><b>' . $k . '</b></span>';
                     }
                 }
-                $ret .= '<td><a href="http://localhost/IS4C/fannie/item/DepartmentDiscrepancyNew.php?dept=1&dept_no=' 
+                $ret .= '<td><a href="http://key/git/fannie/item/DepartmentDiscrepancyNew.php?dept=1&dept_no=' 
                     . $dept_no . '&dept_name=' . $dept_name . '&order=tax">' . $i . ' ' . $j . ' ' . $k . '</a></td>'; //Tax
                 
                 unset($k);                    
@@ -350,7 +350,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
                 } elseif ($min == $j && $i != 0) {
                     $j = '<span class="redcircle"><b>' . $j . '</b></span>';
                 }
-                $ret .= '<td><a href="http://localhost/IS4C/fannie/item/DepartmentDiscrepancyNew.php?dept=1&dept_no=' 
+                $ret .= '<td><a href="http://key/git/fannie/item/DepartmentDiscrepancyNew.php?dept=1&dept_no=' 
                     . $dept_no . '&dept_name=' . $dept_name . '&order=foodstamp">' . $i . ' ' . $j . '</a></td>'; //Foodstamp
                 
                 unset($k);                    
@@ -365,7 +365,7 @@ class DepartmentDiscrepancyNew extends FannieRESTfulPage {
                 } elseif ($min == $j && $i != 0) {
                     $j = '<span class="redcircle"><b>' . $j . '</b></span>';
                 }
-                $ret .= '<td><a href="http://localhost/IS4C/fannie/item/DepartmentDiscrepancyNew.php?dept=1&dept_no=' 
+                $ret .= '<td><a href="http://key/git/fannie/item/DepartmentDiscrepancyNew.php?dept=1&dept_no=' 
                     . $dept_no . '&dept_name=' . $dept_name . '&order=wic">' . $i . ' ' . $j . '</a></td>'; //Wic
                    
             }
