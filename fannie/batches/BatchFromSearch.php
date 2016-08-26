@@ -58,9 +58,9 @@ class BatchFromSearch extends FannieRESTfulPage
         $enddate = $this->form->endDate;
         $owner = $this->form->batchOwner;
         $priority = 0;
-		$round = FALSE;
+        $round = FALSE;
         //$round = $this->form->priceRound;
-		$round = FormLib::get('priceRound');		
+        $round = FormLib::get('priceRound');
 
         $upcs = $this->form->upc;
         $prices = $this->form->price;
@@ -119,9 +119,9 @@ class BatchFromSearch extends FannieRESTfulPage
         for($i=0; $i<count($upcs); $i++) {
             $upc = $upcs[$i];
             $price = isset($prices[$i]) ? $prices[$i] : 0.00;
-			if ($round) {
-				$price = $rounder->round($price);
-			}
+            if ($round) {
+                $price = $rounder->round($price);
+            }
             $list = new BatchListModel($dbc);
             $list->upc(BarcodeLib::padUPC($upc));
             $list->batchID($batchID);
@@ -269,8 +269,8 @@ class BatchFromSearch extends FannieRESTfulPage
         {$oOpts}
         <option>IT</option>
     </select>
-	<label>Round Prices</label>:
-	<input type="checkbox" name="priceRound" value="1">&nbsp;&nbsp;
+    <label>Round Prices</label>:
+    <input type="checkbox" name="priceRound" value="1">&nbsp;&nbsp;
     <button type="submit" name="createBatch" value="1"
             class="btn btn-default">Create Batch</button>
 </div>
