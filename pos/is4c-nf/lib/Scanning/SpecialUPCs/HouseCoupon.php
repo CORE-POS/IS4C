@@ -534,7 +534,7 @@ class HouseCoupon extends SpecialUPC
                 $row = $transDB->fetch_row($valR);
                 $value = $row['qty'] * $value;
                 break;
-            case' PS': // per set of items
+            case 'PS': // per set of items
                 $value = $infoW["discountValue"];
 
                 $qualQ = "
