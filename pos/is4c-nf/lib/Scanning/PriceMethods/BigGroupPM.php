@@ -60,6 +60,8 @@ class BigGroupPM extends PriceMethod
 
         $stem = substr($mixMatch,0,10);    
         $sets = 99;
+        $volume = $priceObj->isSale() ? $row['specialquantity'] : $row['quantity'];
+        $mixMatch = $row['mixmatchcode'];
         // count up total sets
         for($i=0; $i<=$volume; $i++){
             $tmp = $stem."_q".$i;
@@ -103,7 +105,7 @@ class BigGroupPM extends PriceMethod
                     $pricing['discount'] = MiscLib::truncate2($row['specialgroupprice'] * $quantity);
             }
             else {
-                $pricing['unitPrice'] = $pricing['unitPrice'] - $row['specialgroupprice'];
+                $pricing['unitPrice'] = $pricing['unitPrice'] - $row['groupprice'];
             }
 
             TransRecord::addRecord(array(
